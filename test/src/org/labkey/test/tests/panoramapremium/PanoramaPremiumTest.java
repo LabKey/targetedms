@@ -23,7 +23,6 @@ import org.junit.experimental.categories.Category;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.TestTimeoutException;
 import org.labkey.test.categories.InDevelopment;
-import org.labkey.test.pages.panoramapremium.BeginPage;
 
 import java.util.Collections;
 import java.util.List;
@@ -62,10 +61,6 @@ public class PanoramaPremiumTest extends BaseWebDriverTest
     public void testPanoramaPremiumModule()
     {
         _containerHelper.enableModule("PanoramaPremium");
-        BeginPage beginPage = BeginPage.beginAt(this, getProjectName());
-        assertEquals(200, getResponseCode());
-        final String expectedHello = "Hello, and welcome to the PanoramaPremium module.";
-        assertEquals("Wrong hello message", expectedHello, beginPage.getHelloMessage());
     }
 
     @Override
