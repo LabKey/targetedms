@@ -1,0 +1,155 @@
+<p>
+    Configure the QC Metrics to be included in Quality Control Plots.
+</p>
+
+<div id="qcMetricsTable"></div>
+<div id="qcMetricsError"></div>
+<script type="text/javascript">
+
+    if (!LABKEY.internal)
+        LABKEY.internal = {};
+
+    LABKEY.internal.ConfigureQCMetrics = new function () {
+        var qcMetrics;
+        var qcMetricsTable ='';
+        var configRows = [];
+
+        function showQCMetrics() {
+            qcMetricsTable += '<form id="qcMetricsForm" >';
+
+            qcMetricsTable += '<table class="labkey-data-region-legacy labkey-show-borders">' +
+                    '<tr><td class="labkey-column-header">Enabled</td><td class="labkey-column-header">Name</td></tr>';
+
+            jQuery.each(qcMetrics, function (index, row) {
+                var rowClass = index % 2 === 1 ? "labkey-row" : "labkey-alternate-row";
+                configRows.push({metric: row.id, name: row.name, Enabled: row.Enabled, Inserted: row.Inserted});
+
+                qcMetricsTable += '<tr class="' + rowClass + '">';
+
+                if (row.Enabled) {
+                    qcMetricsTable += '<td>' + '<input type="checkbox" name="enabled" id=\"' +  "checkbox-"+ row.id  +  '\" checked="checked"/>' + '</td>';
+                }
+                else {
+                    qcMetricsTable += '<td>' + '<input type="checkbox" name="enabled" id=\"' +  "checkbox-"+ row.id  +  '\">' + '</td>';
+                }
+
+                qcMetricsTable += '<td>' + LABKEY.Utils.encodeHtml(row.name) + '</td>' +
+                        '</tr>';
+
+            });
+
+            qcMetricsTable += '</table>' + '<br>' +
+                    '<button type="button" class="labkey-button" onclick="LABKEY.internal.ConfigureQCMetrics.save()" style="margin-right: 20px;">Save' + '</button>' +
+                    '<button type="button" class="labkey-button" onclick="LABKEY.internal.ConfigureQCMetrics.resetQCMetrics()">Cancel' + '</button>' +
+                    '</form>';
+
+            jQuery('#qcMetricsTable').html(qcMetricsTable);
+        }
+
+        function getReturnURL() {
+            var returnURL = LABKEY.ActionURL.getParameter('returnUrl');
+
+            if(returnURL) {
+                return returnURL;
+            }
+            else {
+                return LABKEY.ActionURL.buildURL('project', 'start');
+            }
+        }
+
+        return {
+            getQCMetrics: function() {
+                LABKEY.Query.selectRows({
+                    schemaName: 'targetedms',
+                    queryName: 'qcMetricsConfig',
+                    scope: this,
+                    success: function (result) {
+                        qcMetrics = result.rows;
+                        showQCMetrics();
+                    },
+                    failure: LABKEY.Utils.getCallbackWrapper(LABKEY.internal.ConfigureQCMetrics.onError, this, true)
+                });
+            },
+            onError: function(exception, responseObj){
+                console.error(arguments);
+
+                var msg = LABKEY.Utils.getMsgFromError(responseObj, exception, {
+                    showExceptionClass: false,
+                    msgPrefix: 'Error: '
+                });
+
+                jQuery('#qcMetricsError').html('<p>' + msg + '</p>');
+            },
+            resetQCMetrics: function(){
+                window.location = getReturnURL();
+            },
+            save: function () {
+                var recordsToInsert = [];
+                var recordsToUpdate = [];
+
+                LABKEY.internal.ConfigureQCMetrics.rowsBeforeSave.forEach(function (metricRow) {
+
+                    var isMetricChecked = jQuery('#checkbox-' + metricRow.metric).is(':checked');
+                    var wasMetricChecked = metricRow.Enabled;
+
+                    if(metricRow.Inserted) {
+                        //metric unchecked now
+                        if(wasMetricChecked && !isMetricChecked) {
+                            recordsToUpdate.push({metric: metricRow.metric, Enabled: isMetricChecked});
+                        }
+
+                        //metric checked now
+                        if(!wasMetricChecked && isMetricChecked) {
+                            recordsToUpdate.push({metric: metricRow.metric, Enabled: isMetricChecked});
+                        }
+                        metricRow.Enabled = isMetricChecked;
+                    }
+                    else {
+                        recordsToInsert.push({metric: metricRow.metric, Enabled: isMetricChecked});
+                        metricRow.Inserted = true;
+                    }
+                });
+
+                var rowsToUpsert = false;
+                var commands = [];
+
+                if(recordsToInsert.length > 0) {
+                    commands.push({
+                        schemaName: 'targetedms',
+                        queryName: 'qcenabledmetrics',
+                        command: 'insert',
+                        rows: recordsToInsert
+                    });
+                    rowsToUpsert = true;
+                }
+
+                if(recordsToUpdate.length > 0) {
+                    commands.push({
+                        schemaName: 'targetedms',
+                        queryName: 'qcenabledmetrics',
+                        command: 'update',
+                        rows: recordsToUpdate
+                    });
+                    rowsToUpsert = true;
+                }
+
+                if(rowsToUpsert) {
+                    LABKEY.Query.saveRows({
+                        commands: commands,
+                        success: function (data) {
+                            window.location = getReturnURL();
+                        },
+                        failure: LABKEY.Utils.getCallbackWrapper(LABKEY.internal.ConfigureQCMetrics.onError, this, true)
+                    });
+                } else {
+                    window.location = getReturnURL();
+                }
+
+            },
+            rowsBeforeSave: configRows
+        }
+    };
+
+    LABKEY.internal.ConfigureQCMetrics.getQCMetrics();
+
+</script>

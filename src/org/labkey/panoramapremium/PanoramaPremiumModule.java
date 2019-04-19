@@ -21,7 +21,9 @@ import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerManager;
 import org.labkey.api.module.CodeOnlyModule;
 import org.labkey.api.module.ModuleContext;
+import org.labkey.api.view.Portal;
 import org.labkey.api.view.WebPartFactory;
+import org.labkey.panoramapremium.View.ConfigureQCMetricsCustomizer;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -48,6 +50,7 @@ public class PanoramaPremiumModule extends CodeOnlyModule
     protected void init()
     {
         addController(PanoramaPremiumController.NAME, PanoramaPremiumController.class);
+        Portal.registerNavTreeCustomizer("Targeted MS QC Plots", ConfigureQCMetricsCustomizer.get());
     }
 
     @Override

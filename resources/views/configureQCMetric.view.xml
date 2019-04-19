@@ -1,0 +1,5 @@
+<view xmlns="http://labkey.org/data/xml/view" title="Configure QC Metrics">
+    <permissions>
+        <permission name="admin"/>
+    </permissions>
+</view>
