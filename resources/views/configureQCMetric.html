@@ -27,10 +27,10 @@
                 qcMetricsTable += '<tr class="' + rowClass + '">';
 
                 if (row.Enabled) {
-                    qcMetricsTable += '<td>' + '<input type="checkbox" name="enabled" id=\"' +  "checkbox-"+ row.id  +  '\" checked="checked"/>' + '</td>';
+                    qcMetricsTable += '<td>' + '<input type="checkbox" name=\"' + row.name + '\" id=\"' +  "checkbox-"+ row.id  +  '\" checked="checked"/>' + '</td>';
                 }
                 else {
-                    qcMetricsTable += '<td>' + '<input type="checkbox" name="enabled" id=\"' +  "checkbox-"+ row.id  +  '\">' + '</td>';
+                    qcMetricsTable += '<td>' + '<input type="checkbox" name=\"' + row.name + '\" id=\"' +  "checkbox-"+ row.id  +  '\">' + '</td>';
                 }
 
                 qcMetricsTable += '<td>' + LABKEY.Utils.encodeHtml(row.name) + '</td>' +
@@ -136,6 +136,7 @@
                 if(rowsToUpsert) {
                     LABKEY.Query.saveRows({
                         commands: commands,
+                        method: 'POST',
                         success: function (data) {
                             window.location = getReturnURL();
                         },
