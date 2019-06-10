@@ -1456,6 +1456,7 @@
             <column columnName="Series2Label"/>
             <column columnName="Series2SchemaName"/>
             <column columnName="Series2QueryName"/>
+            <column columnName="PrecursorScoped"/>
         </columns>
     </table>
     <table tableName="QCMetricExclusion" tableDbType="TABLE">
