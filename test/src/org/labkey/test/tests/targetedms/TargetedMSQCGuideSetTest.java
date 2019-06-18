@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018 LabKey Corporation
+ * Copyright (c) 2016-2019 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -382,7 +382,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         queryURL.navigate(this);
 
         // if the query does not exist, create it
-        if (isElementPresent(Locator.tagContainingText("span", "Table or query not found")))
+        if (isElementPresent(Locator.tagContainingText("h3", "doesn't exist")))
         {
             String sql = "SELECT gs.RowId AS GuideSetId, gs.TrainingStart, gs.TrainingEnd, gs.ReferenceEnd, SeriesLabel,\n" +
                     "COUNT(MetricValue) AS NumRecords, AVG(MetricValue) AS Mean, STDDEV(MetricValue) AS StandardDev\n" +
