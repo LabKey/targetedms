@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 LabKey Corporation
+ * Copyright (c) 2019 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,4 +14,5 @@
  * limitations under the License.
  */
 
-ALTER TABLE targetedms.qcmetricconfiguration ADD COLUMN PrecursorScoped BOOLEAN NOT NULL DEFAULT TRUE;
+-- Increase the length of the Gene column. The gene field can contain all possible gene names that a protein product is associated with. This can get really long.
+ALTER TABLE targetedms.PeptideGroup ALTER COLUMN gene NVARCHAR(2000);

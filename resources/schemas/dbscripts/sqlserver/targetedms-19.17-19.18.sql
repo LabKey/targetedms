@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-EXEC core.fn_dropifexists 'QCEmailNotifications','targetedms','TABLE', NULL;
+ALTER TABLE targetedms.qcmetricconfiguration ADD PrecursorScoped BIT NOT NULL DEFAULT 1;

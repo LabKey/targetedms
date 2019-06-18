@@ -14,5 +14,4 @@
  * limitations under the License.
  */
 
--- Increase the length of the Gene column. The gene field can contain all possible gene names that a protein product is associated with. This can get really long.
-ALTER TABLE targetedms.PeptideGroup ALTER COLUMN gene NVARCHAR(2000);
+EXEC core.fn_dropifexists 'QCEmailNotifications','targetedms','TABLE', NULL;

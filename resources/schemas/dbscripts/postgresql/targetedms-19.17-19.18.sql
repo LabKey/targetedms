@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-DROP TABLE IF EXISTS targetedms.QCEmailNotifications;
+ALTER TABLE targetedms.qcmetricconfiguration ADD COLUMN PrecursorScoped BOOLEAN NOT NULL DEFAULT TRUE;
