@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 LabKey Corporation
+ * Copyright (c) 2012-2019 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class TransitionPeptideSearchViewProvider implements ProteinService.Query
             @Override
             protected TableInfo createTable()
             {
-                TargetedMSTable result = (TargetedMSTable) super.createTable();
+                TargetedMSTable result = (TargetedMSTable) getSchema().getTable(getSettings().getQueryName(), ContainerFilter.getContainerFilterByName(settings.getContainerFilterName(), getUser()), true, true);
                 result.addCondition(new SimpleFilter(form.createFilter("Sequence")));
 
 				boolean isJournalFolder = JournalManager.isJournalProject(viewContext.getContainer());
