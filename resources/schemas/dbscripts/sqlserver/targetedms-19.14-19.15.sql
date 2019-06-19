@@ -32,6 +32,7 @@ CREATE TABLE targetedms.AuditLogEntry (
 );
 
 CREATE UNIQUE INDEX uix_auditLogEntry_document on targetedms.AuditLogEntry(documentGUID, entryHash);
+CREATE INDEX uix_auditLogEntry_version on targetedms.AuditLogEntry(versionId);
 
 EXEC core.fn_dropifexists 'AuditLogMessage','targetedms','TABLE', NULL;
 

@@ -175,8 +175,6 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
 
-import org.labkey.api.audit.AuditLogService;
-
 
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
@@ -3266,7 +3264,6 @@ public class TargetedMSController extends SpringActionController
         protected DocumentPrecursorsView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
         {
             DocumentPrecursorsView view;
-            String log_message;
             if(PeptidePrecursorsView.DATAREGION_NAME.equals(dataRegion))
             {
                 FolderType folderType = TargetedMSManager.getFolderType(getContainer());
@@ -3280,9 +3277,6 @@ public class TargetedMSController extends SpringActionController
                     queryName = TargetedMSSchema.TABLE_EXPERIMENT_PRECURSOR;
                 }
 
-                //TODO: Remove after testing.
-                log_message = String.format("Showing precursors form with id %d for a data region", form.getId());
-
                 view = new PeptidePrecursorsView(getViewContext(),
                         new TargetedMSSchema(getUser(), getContainer()),
                         queryName,
@@ -3293,9 +3287,6 @@ public class TargetedMSController extends SpringActionController
             }
             else
             {
-                //TODO: Remove after testing.
-                log_message = String.format("Showing precursors form with id %d", form.getId());
-
                 view = new SmallMoleculePrecursorsView(getViewContext(),
                         new TargetedMSSchema(getUser(), getContainer()),
                         TargetedMSSchema.TABLE_MOLECULE_PRECURSOR,

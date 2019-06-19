@@ -24,8 +24,6 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -144,8 +142,7 @@ public class AuditLogEntry
 
     public byte[] getTimezoneHashingBytes(){
         DecimalFormat dd = new DecimalFormat("##.#");
-        byte[] tzBytes = dd.format(_timezoneOffsetMinutes/60.).getBytes(Charset.forName("UTF8"));
-        return tzBytes;
+        return dd.format(_timezoneOffsetMinutes/60.).getBytes(Charset.forName("UTF8"));
     }
 
     //--------------------------------------------------------------------------------
@@ -200,7 +197,7 @@ public class AuditLogEntry
     public String calculateHash() throws NoSuchAlgorithmException
     {
         var utf8 = Charset.forName("UTF8");
-        MessageDigest digest = null;
+        MessageDigest digest;
         digest = MessageDigest.getInstance("SHA1");
 
         digest.update(_userName.getBytes(utf8));
@@ -219,17 +216,15 @@ public class AuditLogEntry
 
         _calculatedHashBytes = digest.digest();
 
-        String result = new String(Base64.getEncoder().encode(_calculatedHashBytes), Charset.forName("US-ASCII"));
-
-        return result;
+        return new String(Base64.getEncoder().encode(_calculatedHashBytes), Charset.forName("US-ASCII"));
     }
 
     /***
      * Returns true if all messages of this entry have expanded English text
      * @return
      */
-    public boolean canBeHashed(AuditLogMessageExpander p_expander){
-        if(p_expander.needsExpansion(_extraInfo))
+    public boolean canBeHashed(AuditLogMessageExpander pExpander){
+        if(pExpander.needsExpansion(_extraInfo))
             return false;
         for(AuditLogMessage msg : _allInfoMessage){
             if(msg.getEnText() == null)
@@ -251,11 +246,11 @@ public class AuditLogEntry
         return this;
     }
 
-    public AuditLogEntry expandEntry(AuditLogMessageExpander p_expander){
+    public AuditLogEntry expandEntry(AuditLogMessageExpander pExpander){
         if(_extraInfo != null)
-            setExtraInfo(p_expander.expandLogString(_extraInfo));
+            setExtraInfo(pExpander.expandLogString(_extraInfo));
         for(int i = 0; i < _allInfoMessage.size(); i++)
-            p_expander.expandMessage(_allInfoMessage.get(i));
+            pExpander.expandMessage(_allInfoMessage.get(i));
 
         return this;
     }

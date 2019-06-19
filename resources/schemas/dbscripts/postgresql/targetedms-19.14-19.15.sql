@@ -31,6 +31,7 @@ CREATE TABLE targetedms.AuditLogEntry (
 );
 
 CREATE UNIQUE INDEX uix_auditLogEntry_document on targetedms.AuditLogEntry USING btree (documentGUID, entryHash);
+CREATE INDEX uix_auditLogEntry_version on targetedms.AuditLogEntry USING btree (versionId);
 
 
 CREATE TABLE targetedms.AuditLogMessage(
