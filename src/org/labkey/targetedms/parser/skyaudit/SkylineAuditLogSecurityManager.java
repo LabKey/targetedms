@@ -72,11 +72,10 @@ public class SkylineAuditLogSecurityManager
     /**
      * Calculate integrity level for the current upload based on the container access
      * and user privileges.
-     * @return
+     * @return returns member if INTEGRITY_LEVEL enum for the current integrity level
      */
     public INTEGRITY_LEVEL getIntegrityLevel(){
 
-        //_container.
         return _verificationLevel;
     }
 

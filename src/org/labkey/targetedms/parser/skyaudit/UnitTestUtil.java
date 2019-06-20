@@ -60,7 +60,7 @@ public class UnitTestUtil
         return getTestFile(pFileName, UnitTestUtil._resourcePath);
     }
 
-    private static File getTestFile(String pFileName, String[] pPathList) throws UnsupportedEncodingException{
+    private static File getTestFile(String pFileName, String[] pPathList){
 
         //we get location of the current class file, trace it up tp the LabKey folder (which is
         //not good for production code but for testing util it should be fine) and append the
@@ -120,11 +120,16 @@ public class UnitTestUtil
         if (zipDir.exists())
         {
             String[] children = zipDir.list();
+            if(children == null) return null;
             boolean res = false;    //this variable is here for debug purposes: to inspect the result of deletion operation
             for(String child : children){
                 File f = new File(zipDir, child);
                 if(f.exists())
+                {
                     res = f.delete();
+                    pLogger.debug(String.format("The file %s exists. Deletion attempt status %s.", f.toString(), res));
+                }
+
             }
         }
         List<File> files = ZipUtil.unzipToDirectory(pZip, zipDir, pLogger);

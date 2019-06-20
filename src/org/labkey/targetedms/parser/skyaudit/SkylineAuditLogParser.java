@@ -144,8 +144,6 @@ public class SkylineAuditLogParser
      * This method parses the beginning of the log: the hashes and audit_log tag and stops at
      * the first log entry, ready to proceed with read/save loop
      * @throws IOException
-     * @throws SAXException
-     * @throws AuditLogParsingException
      * @throws XMLStreamException
      */
     private void parseLogHeader() throws IOException, XMLStreamException
@@ -243,7 +241,7 @@ public class SkylineAuditLogParser
     }
 
     private AuditLogMessage parseAuditLogMessage() throws XMLStreamException, AuditLogParsingException{
-        LinkedList<String> names = new LinkedList<String>();
+        List<String> names = new LinkedList<>();
         AuditLogMessage result = new AuditLogMessage();
         while(_stream.hasNext()){
             switch(_stream.nextTag()){
@@ -279,10 +277,7 @@ public class SkylineAuditLogParser
             _stream.close();
             _fileStream.close();
         }
-        catch(XMLStreamException e){
-            _logger.warn("Exception when trying to close audit log XML stream.", e);
-        }
-        catch(IOException e){
+        catch(IOException | XMLStreamException e){
             _logger.warn("Exception when trying to close audit log XML stream.", e);
         }
     }
@@ -368,7 +363,7 @@ public class SkylineAuditLogParser
             {
                 File logFile = UnitTestUtil.getSampleDataFile("AuditLogFiles/InvalidSchemaTest.skyl");
                 SkylineAuditLogParser parser = new SkylineAuditLogParser(logFile, _logger);
-                Assert.assertTrue("Expected file validation failure but it succeeded.", false);
+                Assert.fail("Expected file validation failure but it succeeded.");
             }
             catch(Exception  e) {
                 Assert.assertTrue(true);

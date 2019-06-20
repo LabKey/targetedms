@@ -59,7 +59,7 @@ public class AuditLogMessageExpander
         _loader = new AuditLogResourceLoader(_logger);
         _resources = _loader.loadResources();
 
-        _parserFunctions = new ArrayList<UnaryOperator<String>>() {
+        _parserFunctions = new ArrayList<>() {
             {
                 add((s) -> getResource(AuditLogResourceLoader.PROPERTIES, s));
                 add((s) -> getResource(AuditLogResourceLoader.PROPERTY_ELEMENTS, s));
@@ -71,7 +71,7 @@ public class AuditLogMessageExpander
             }
         };
 
-        _checkerFunctions = new ArrayList<Predicate<String>>() {
+        _checkerFunctions = new ArrayList<>() {
             {
                 add((s) -> _resources.get(AuditLogResourceLoader.PROPERTIES).containsKey(s));
                 add((s) -> _resources.get(AuditLogResourceLoader.PROPERTY_ELEMENTS).containsKey(s));
@@ -295,9 +295,9 @@ public class AuditLogMessageExpander
         }
 
         /**
-         * Parses the resource XML file and returns key-value map of the resource
-         * @param pFile
-         * @return
+         * Parses the resource XML file
+         * @param pFile XML file to parse
+         * @return key-value map of the resources in the file
          * @throws IOException
          * @throws XMLStreamException
          */

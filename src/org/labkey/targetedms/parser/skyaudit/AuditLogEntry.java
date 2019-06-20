@@ -54,7 +54,7 @@ public class AuditLogEntry
         return new AuditLogTree(_entryId, _documentGUID, _entryHash, _parentEntryHash);
     }
 
-    protected List<AuditLogMessage> _allInfoMessage = new LinkedList<AuditLogMessage>();
+    protected List<AuditLogMessage> _allInfoMessage = new LinkedList<>();
 
     public List<AuditLogMessage> getAllInfoMessage()
     {
@@ -184,8 +184,8 @@ public class AuditLogEntry
     }
 
     /***
-     * Returns true if hash of this entry matches with calculated hash
-     * @return
+     * Verifies if entry hash is correct
+     * @return Returns true if hash of this entry matches with calculated hash
      */
     public boolean verifyHash() throws NoSuchAlgorithmException{
             return this.calculateHash().equals(_entryHash);
@@ -220,8 +220,8 @@ public class AuditLogEntry
     }
 
     /***
-     * Returns true if all messages of this entry have expanded English text
-     * @return
+     * Checks if the entry hash can be calculated.
+     * @return true if all messages of this entry have expanded English text
      */
     public boolean canBeHashed(AuditLogMessageExpander pExpander){
         if(pExpander.needsExpansion(_extraInfo))
@@ -234,7 +234,7 @@ public class AuditLogEntry
     }
     /***
      * Saves this entry into the database
-     * @return
+     * @return this object
      */
     public AuditLogEntry persist(){
         Table.insert(null, TargetedMSManager.getTableInfoSkylineAuditLogEntry(), this);
@@ -249,8 +249,8 @@ public class AuditLogEntry
     public AuditLogEntry expandEntry(AuditLogMessageExpander pExpander){
         if(_extraInfo != null)
             setExtraInfo(pExpander.expandLogString(_extraInfo));
-        for(int i = 0; i < _allInfoMessage.size(); i++)
-            pExpander.expandMessage(_allInfoMessage.get(i));
+        for(AuditLogMessage msg : _allInfoMessage)
+            pExpander.expandMessage(msg);
 
         return this;
     }
