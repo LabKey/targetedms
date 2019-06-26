@@ -36,6 +36,7 @@ import org.labkey.api.util.NetworkDrive;
 import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.api.writer.ZipUtil;
+import org.labkey.targetedms.parser.skyaudit.AuditLogException;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
