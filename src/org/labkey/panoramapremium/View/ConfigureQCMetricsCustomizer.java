@@ -1,7 +1,6 @@
 package org.labkey.panoramapremium.View;
 
-import org.labkey.api.data.Container;
-import org.labkey.api.security.User;
+import org.jetbrains.annotations.NotNull;
 import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.NavTree;
@@ -21,6 +20,7 @@ public class ConfigureQCMetricsCustomizer implements NavTreeCustomizer
         return _instance;
     }
 
+    @NotNull
     @Override
     public List<NavTree> getNavTrees(ViewContext viewContext)
     {
@@ -36,7 +36,7 @@ public class ConfigureQCMetricsCustomizer implements NavTreeCustomizer
         }
         else
         {
-            return null;
+            return new ArrayList<>();
         }
     }
 }

@@ -1,0 +1,97 @@
+<p>
+    Panorama can automatically notify you when new data is imported into this folder.
+</p>
+<p>
+    <input type="radio" name="subscriptionType"/> Do not email with notifications about newly imported data<br/>
+    <input type="radio" name="subscriptionType" id="enable"/> Email me when the
+    <select name="sampleCount">
+        <option value="1">most</option>
+        <option value="2">two most</option>
+        <option value="3">three most</option>
+        <option value="4">four most</option>
+        <option value="5">five most</option>
+    </select>
+    recently imported samples each have at least
+    <input type="number" style="width: 3em" min="0" name="outlierCount" /> outliers
+</p>
+<input type="button" value="Save" class="labkey-button primary"  onclick="LABKEY.internal.SubscribeQCNotification.onSave()"/>
+<input type="button" value="Cancel" class="labkey-button" onclick="LABKEY.internal.SubscribeQCNotification.onCancel()" />
+
+<div id="qcMetricsError"></div>
+
+<script type="text/javascript">
+    if (!LABKEY.internal)
+        LABKEY.internal = {};
+
+    LABKEY.internal.SubscribeQCNotification = new function () {
+
+        function getReturnURL() {
+            var returnURL = LABKEY.ActionURL.getParameter('returnUrl');
+
+            if(returnURL) {
+                return returnURL;
+            }
+            else {
+                return LABKEY.ActionURL.buildURL('project', 'start');
+            }
+        }
+
+        return {
+            onCancel: function () {
+                window.location = getReturnURL();
+            },
+
+            onSave: function () {
+                var enable = jQuery('#enable').is(':checked');
+                var samples = jQuery('select[name=sampleCount]').val()
+                var outliers = jQuery('input[name=outlierCount]').val();
+
+                var records = [];
+                var commands = [];
+
+
+                LABKEY.Query.selectRows({
+                   schemaName: 'PanoramaPremium',
+                   queryName: 'qcemailnotifications',
+                   columns: ['userId'],
+                   filterArray: [LABKEY.Filter.create('userId', LABKEY.user.id, LABKEY.Filter.Types.EQUAL)],
+                   success: function (data) {
+                       var op = data.rows.length > 0 ? 'update':'insert';
+
+                       records.push({enabled: enable, outliers: outliers, samples: samples, userId: LABKEY.user.id});
+
+                       commands.push({
+                           schemaName: 'PanoramaPremium',
+                           queryName: 'qcemailnotifications',
+                           command: op,
+                           rows: records
+                       });
+
+                       LABKEY.Query.saveRows({
+                           commands: commands,
+                           method: 'POST',
+                           success: function () {
+                               window.location = getReturnURL();
+                           },
+                           failure: LABKEY.Utils.getCallbackWrapper(LABKEY.internal.SubscribeQCNotification.onError, this, true)
+                       });
+                   }
+                });
+
+            },
+            onError: function (exception, responseObj) {
+                var msg = LABKEY.Utils.getMsgFromError(responseObj, exception, {
+                    showExceptionClass: false,
+                    msgPrefix: 'Error: '
+                });
+
+                if (responseObj.exception === "The existing row was not found.") {
+                    msg = 'You are not subscribed to any notification.'
+                }
+
+                jQuery('#qcMetricsError').html('<p>' + LABKEY.Utils.encodeHtml(msg) + '</p>');
+            }
+
+        }
+    };
+</script>

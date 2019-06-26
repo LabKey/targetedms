@@ -19,17 +19,21 @@ package org.labkey.panoramapremium;
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerManager;
-import org.labkey.api.module.CodeOnlyModule;
+import org.labkey.api.module.DefaultModule;
 import org.labkey.api.module.ModuleContext;
+import org.labkey.api.targetedms.TargetedMSService;
+import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.view.Portal;
 import org.labkey.api.view.WebPartFactory;
 import org.labkey.panoramapremium.View.ConfigureQCMetricsCustomizer;
+import org.labkey.panoramapremium.View.OutlierNotificationSubscriber;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 
 
-public class PanoramaPremiumModule extends CodeOnlyModule
+public class PanoramaPremiumModule extends DefaultModule
 {
     public static final String NAME = "PanoramaPremium";
 
@@ -47,10 +51,25 @@ public class PanoramaPremiumModule extends CodeOnlyModule
     }
 
     @Override
+    public boolean hasScripts()
+    {
+        return true;
+    }
+
+    @Override
+    public double getVersion()
+    {
+        return 19.11;
+    }
+
+    @Override
     protected void init()
     {
         addController(PanoramaPremiumController.NAME, PanoramaPremiumController.class);
+        PanoramaPremiumSchema.register(this);
         Portal.registerNavTreeCustomizer("Targeted MS QC Plots", ConfigureQCMetricsCustomizer.get());
+        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", OutlierNotificationSubscriber.get());
+        TargetedMSService.get().registerSkylineDocumentImportListener(QCNotificationSender.get());
     }
 
     @Override
@@ -66,4 +85,12 @@ public class PanoramaPremiumModule extends CodeOnlyModule
     {
         return Collections.emptyList();
     }
+
+    @Override
+    @NotNull
+    public Set<String> getSchemaNames()
+    {
+        return PageFlowUtil.set(PanoramaPremiumManager.get().getSchemaName());
+    }
+
 }

@@ -19,6 +19,7 @@ package org.labkey.panoramapremium;
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerManager.ContainerListener;
+import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.security.User;
 import java.util.Collections;
 import java.util.Collection;
@@ -35,6 +36,9 @@ public class PanoramaPremiumContainerListener implements ContainerListener
     @Override
     public void containerDeleted(Container c, User user)
     {
+        //Clean up QC email notifications
+        new SqlExecutor(PanoramaPremiumManager.getSchema()).execute("DELETE FROM " + PanoramaPremiumManager.getTableInfoQCEmailNotifications() + " WHERE Container = ?", c);
+
     }
 
     @Override

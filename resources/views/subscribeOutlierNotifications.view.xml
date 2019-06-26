@@ -1,6 +1,6 @@
-<view xmlns="http://labkey.org/data/xml/view" title="Configure QC Metrics">
+<view xmlns="http://labkey.org/data/xml/view" title="Panorama QC Notifications">
     <permissions>
-        <permission name="admin"/>
+        <permission name="read"/>
     </permissions>
     <dependencies>
         <dependency path="internal/jQuery"/>

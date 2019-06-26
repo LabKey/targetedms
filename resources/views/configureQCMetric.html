@@ -1,5 +1,5 @@
 <p>
-    Configure the QC Metrics to be included in Quality Control Plots.
+    Configure the metrics to be tracked for quality control and system suitability.
 </p>
 
 <div id="qcMetricsTable"></div>
@@ -18,7 +18,7 @@
             qcMetricsTable += '<form id="qcMetricsForm" >';
 
             qcMetricsTable += '<table class="labkey-data-region-legacy labkey-show-borders">' +
-                    '<tr><td class="labkey-column-header">Enabled</td><td class="labkey-column-header">Name</td></tr>';
+                    '<tr><td class="labkey-column-header">Enabled</td><td class="labkey-column-header">Name</td><td class="labkey-column-header">Type</td></tr>';
 
             jQuery.each(qcMetrics, function (index, row) {
                 var rowClass = index % 2 === 1 ? "labkey-row" : "labkey-alternate-row";
@@ -26,21 +26,17 @@
 
                 qcMetricsTable += '<tr class="' + rowClass + '">';
 
-                if (row.Enabled) {
-                    qcMetricsTable += '<td>' + '<input type="checkbox" name=\"' + row.name + '\" id=\"' +  "checkbox-"+ row.id  +  '\" checked="checked"/>' + '</td>';
-                }
-                else {
-                    qcMetricsTable += '<td>' + '<input type="checkbox" name=\"' + row.name + '\" id=\"' +  "checkbox-"+ row.id  +  '\">' + '</td>';
-                }
+                qcMetricsTable += '<td>' + '<input type="checkbox" ' + (row.Enabled ? checked="checked" : '') + ' name=\"' + LABKEY.Utils.encodeHtml(row.name) + '\" id=\"' +  "checkbox-"+ row.id  +  '\"></td>';
 
-                qcMetricsTable += '<td>' + LABKEY.Utils.encodeHtml(row.name) + '</td>' +
+                qcMetricsTable += '<td>' + LABKEY.Utils.encodeHtml(row.name) + '</td>';
+                qcMetricsTable += '<td>' + (row.PrecursorScoped ? 'Precursor' : 'Run') + '</td>' +
                         '</tr>';
 
             });
 
             qcMetricsTable += '</table>' + '<br>' +
-                    '<button type="button" class="labkey-button" onclick="LABKEY.internal.ConfigureQCMetrics.save()" style="margin-right: 20px;">Save' + '</button>' +
-                    '<button type="button" class="labkey-button" onclick="LABKEY.internal.ConfigureQCMetrics.resetQCMetrics()">Cancel' + '</button>' +
+                    '<button type="button" class="labkey-button primary" onclick="LABKEY.internal.ConfigureQCMetrics.save()" style="margin-right: 20px;">Save</button>' +
+                    '<button type="button" class="labkey-button" onclick="LABKEY.internal.ConfigureQCMetrics.resetQCMetrics()">Cancel</button>' +
                     '</form>';
 
             jQuery('#qcMetricsTable').html(qcMetricsTable);
@@ -62,6 +58,7 @@
                 LABKEY.Query.selectRows({
                     schemaName: 'targetedms',
                     queryName: 'qcMetricsConfig',
+                    sort: 'name',
                     scope: this,
                     success: function (result) {
                         qcMetrics = result.rows;
