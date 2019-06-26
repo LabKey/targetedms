@@ -52,7 +52,7 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
                 + '\nSELECT NULL AS GuideSetId, MIN(SampleFileId.AcquiredTime) AS TrainingStart, MAX(SampleFileId.AcquiredTime) AS TrainingEnd,'
                 + '\nNULL AS ReferenceEnd, SeriesLabel, \'' + series + '\' AS SeriesType, COUNT(SampleFileId) AS NumRecords, AVG(MetricValue) AS Mean, STDDEV(MetricValue) AS StandardDev'
                 + '\nFROM '+ schema + '.' + table
-                + exclusion
+                + exclusion + '\nAND (SampleFileId.AcquiredTime < (coalesce((select MIN(TrainingStart) from guideset), now())))'
                 + '\nGROUP BY SeriesLabel';
     },
 
@@ -421,10 +421,10 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
         var plotDiv = Ext4.get(this.plotDivId);
         if (plotDiv) {
             if (response.message) {
-                plotDiv.update("<span>" + response.message + "</span>");
+                plotDiv.update("<span>" + Ext4.util.Format.htmlEncode(response.message) + "</span>");
             }
             else {
-                plotDiv.update("<span class='labkey-error'>Error: " + response.exception + "</span>");
+                plotDiv.update("<span class='labkey-error'>Error: " + Ext4.util.Format.htmlEncode(response.exception) + "</span>");
             }
 
             plotDiv.unmask();
