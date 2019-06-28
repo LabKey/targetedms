@@ -1090,9 +1090,13 @@ public class PeptideSettings
     {
         private int _driftTimePredictionSettingsId;
         private String _modifiedSequence;
-        private int _charge;
+        private String _charge;
         private Double _driftTime;
         private Double _highEnergyDriftTimeOffset;
+        private double _ccs;
+        private double _ionMobility;
+        private double _highEnergyIonMobilityOffset;
+        private String _ionMobilityUnits;
 
         public int getDriftTimePredictionSettingsId()
         {
@@ -1114,12 +1118,12 @@ public class PeptideSettings
             _modifiedSequence = modifiedSequence;
         }
 
-        public int getCharge()
+        public String getCharge()
         {
             return _charge;
         }
 
-        public void setCharge(int charge)
+        public void setCharge(String charge)
         {
             _charge = charge;
         }
@@ -1142,6 +1146,46 @@ public class PeptideSettings
         public void setHighEnergyDriftTimeOffset(Double highEnergyDriftTimeOffset)
         {
             _highEnergyDriftTimeOffset = highEnergyDriftTimeOffset;
+        }
+
+        public double getCcs()
+        {
+            return _ccs;
+        }
+
+        public void setCcs(double ccs)
+        {
+            _ccs = ccs;
+        }
+
+        public double getIonMobility()
+        {
+            return _ionMobility;
+        }
+
+        public void setIonMobility(double ionMobility)
+        {
+            _ionMobility = ionMobility;
+        }
+
+        public double getHighEnergyIonMobilityOffset()
+        {
+            return _highEnergyIonMobilityOffset;
+        }
+
+        public void setHighEnergyIonMobilityOffset(double highEnergyIonMobilityOffset)
+        {
+            _highEnergyIonMobilityOffset = highEnergyIonMobilityOffset;
+        }
+
+        public String getIonMobilityUnits()
+        {
+            return _ionMobilityUnits;
+        }
+
+        public void setIonMobilityUnits(String ionMobilityUnits)
+        {
+            _ionMobilityUnits = ionMobilityUnits;
         }
     }
 }
