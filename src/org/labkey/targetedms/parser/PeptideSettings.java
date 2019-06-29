@@ -1093,9 +1093,9 @@ public class PeptideSettings
         private String _charge;
         private Double _driftTime;
         private Double _highEnergyDriftTimeOffset;
-        private double _ccs;
-        private double _ionMobility;
-        private double _highEnergyIonMobilityOffset;
+        private Double _ccs;
+        private Double _ionMobility;
+        private Double _highEnergyIonMobilityOffset;
         private String _ionMobilityUnits;
 
         public int getDriftTimePredictionSettingsId()
@@ -1148,32 +1148,32 @@ public class PeptideSettings
             _highEnergyDriftTimeOffset = highEnergyDriftTimeOffset;
         }
 
-        public double getCcs()
+        public Double getCcs()
         {
             return _ccs;
         }
 
-        public void setCcs(double ccs)
+        public void setCcs(Double ccs)
         {
             _ccs = ccs;
         }
 
-        public double getIonMobility()
+        public Double getIonMobility()
         {
             return _ionMobility;
         }
 
-        public void setIonMobility(double ionMobility)
+        public void setIonMobility(Double ionMobility)
         {
             _ionMobility = ionMobility;
         }
 
-        public double getHighEnergyIonMobilityOffset()
+        public Double getHighEnergyIonMobilityOffset()
         {
             return _highEnergyIonMobilityOffset;
         }
 
-        public void setHighEnergyIonMobilityOffset(double highEnergyIonMobilityOffset)
+        public void setHighEnergyIonMobilityOffset(Double highEnergyIonMobilityOffset)
         {
             _highEnergyIonMobilityOffset = highEnergyIonMobilityOffset;
         }
