@@ -51,7 +51,7 @@ public class AuditLogEntry
     byte[] _calculatedHashBytes;
 
     public AuditLogTree getTreeEntry(){
-        return new AuditLogTree(_entryId, _documentGUID, _entryHash, _parentEntryHash);
+        return new AuditLogTree(_entryId, _documentGUID, _entryHash, _parentEntryHash, _versionId);
     }
 
     protected List<AuditLogMessage> _allInfoMessage = new LinkedList<>();
@@ -246,6 +246,11 @@ public class AuditLogEntry
         return this;
     }
 
+    /***
+     * Expands tokenized log messages in the entry into readable English text using local resource files.
+     * @param pExpander an instance of AuditLogMessageExpander class to perform the expansion.
+     * @return this object.
+     */
     public AuditLogEntry expandEntry(AuditLogMessageExpander pExpander){
         if(_extraInfo != null)
             setExtraInfo(pExpander.expandLogString(_extraInfo));

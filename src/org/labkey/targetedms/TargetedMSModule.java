@@ -507,7 +507,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     {
         return Set.of(
                 PublishTargetedMSExperimentsController.TestCase.class,
-                SkylineAuditLogImporter.TestCase.class
+                SkylineAuditLogManager.TestCase.class
         );
     }
 

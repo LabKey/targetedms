@@ -658,12 +658,8 @@ public class SkylineDocImporter
                 }
             }
 
-            SkylineAuditLogImporter importer = new SkylineAuditLogImporter(_auditLogFile, run.getDocumentGUID(), _container, _user, _log);
-
-            if(importer.verifyPreRequisites()) {
-                importer.persistAuditLog(run.getRunId());
-                importer.verifyPostRequisites();
-            }
+            SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, _user);
+            importer.importAuditLogFile(_auditLogFile, run.getDocumentGUID(), run.getRunId());
 
             if (_pipeRoot.isCloudRoot())
                 copyExtractedFilesToCloud(run);
