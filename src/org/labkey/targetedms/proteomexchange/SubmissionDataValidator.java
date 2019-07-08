@@ -18,8 +18,13 @@ package org.labkey.targetedms.proteomexchange;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
+import org.labkey.api.data.SimpleFilter;
+import org.labkey.api.data.TableSelector;
+import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.files.FileContentService;
+import org.labkey.api.query.FieldKey;
 import org.labkey.api.util.FileUtil;
 import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.TargetedMSRun;
@@ -32,6 +37,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -240,6 +246,8 @@ public class SubmissionDataValidator
 
         java.nio.file.Path rawFilesDir = getRawFilesDirPath(run.getContainer());
 
+        ExperimentService expSvc = ExperimentService.get();
+
         for(SampleFile sampleFile: sampleFiles)
         {
             String filePath = getFilePath(sampleFile.getFilePath());
@@ -248,10 +256,20 @@ public class SubmissionDataValidator
                 continue;
             }
 
-            String fileName = getSampleFileName(filePath);
+            String fileName = FilenameUtils.getName(filePath);
 
-            if(!Files.exists(rawFilesDir) || !findInDirectoryTree(rawFilesDir, fileName, rootExpContainer))
+            if(!hasExpData(fileName, run.getContainer(), rawFilesDir, expSvc))
             {
+                // If no matching row was found in exp.data and this is NOT a cloud container check for the file on the file system.
+                // TODO: Do we really need this? Can we be sure that a row will always be in exp.data for uploaded raw data?
+                if(!FileContentService.get().isCloudRoot(rootExpContainer))
+                {
+                    if (Files.exists(rawFilesDir) && findInDirectoryTree(rawFilesDir, fileName, rootExpContainer))
+                    {
+                        existingRawFiles.add(filePath);
+                        continue;
+                    }
+                }
                 missingFiles.add(filePath);
             }
             else
@@ -260,49 +278,19 @@ public class SubmissionDataValidator
             }
         }
 
-        // Check if the files have been uploaded to the root experiment container
-        if(!rootExpContainer.equals(run.getContainer()))
-        {
-            rawFilesDir = getRawFilesDirPath(rootExpContainer);
-            if(rawFilesDir == null)
-            {
-                return missingFiles;
-            }
-            List<String> missingInRoot = new ArrayList<>();
-            for(String filePath: missingFiles)
-            {
-                String fileName = getSampleFileName(filePath);
-                if(!findInDirectoryTree(rawFilesDir, fileName, rootExpContainer))
-                {
-                    missingInRoot.add(fileName);
-                }
-                else
-                {
-                    existingRawFiles.add(filePath);
-                }
-            }
-            return missingInRoot;
-        }
-
         return missingFiles;
-    }
-
-    static String getSampleFileName(String filePath)
-    {
-        String fileName = FilenameUtils.getName(filePath);
-        if(fileName != null && fileName.indexOf('?') != -1)
-        {
-            // Example: 2017_July_10_bivalves_292.raw?centroid_ms2=true.  Return just the filename.
-            fileName = fileName.substring(0, fileName.indexOf('?'));
-        }
-        return fileName;
     }
 
     private static String getFilePath(String filePath)
     {
-        // Remove sample name from multi injection files.
+        // If the file path has a '?' part remove it
+        // Example: 2017_July_10_bivalves_292.raw?centroid_ms2=true.
+        int idx = filePath.indexOf('?');
+        filePath = (idx == -1) ? filePath : filePath.substring(0, idx);
+
+        // If the file path has a '|' part for sample name from multi-injection wiff files remove it.
         // Example: D:\Data\CPTAC_Study9s\Site52_041009_Study9S_Phase-I.wiff|Site52_STUDY9S_PHASEI_6ProtMix_QC_07|6
-        int idx = filePath.indexOf('|');
+        idx = filePath.indexOf('|');
         return (idx == -1) ? filePath : filePath.substring(0, idx);
     }
 
@@ -346,12 +334,13 @@ public class SubmissionDataValidator
         }
 
         // Look for zip files
-        try (Stream<Path> list = Files.list(rawFilesDirPath).filter(p -> FileUtil.getFileName(p).startsWith(fileName)))
+        String nameNoExt = FileUtil.getBaseName(fileName);
+        try (Stream<Path> list = Files.list(rawFilesDirPath).filter(p -> FileUtil.getFileName(p).startsWith(nameNoExt)))
         {
             for (Path path : list.collect(Collectors.toList()))
             {
                 String name = FileUtil.getFileName(path);
-                if(name.equalsIgnoreCase(fileName + ".zip"))
+                if(accept(fileName, name))
                 {
                     return true;
                 }
@@ -372,5 +361,48 @@ public class SubmissionDataValidator
             }
         }
         return null;
+    }
+
+    private static boolean hasExpData(String sampleFileName, Container container, Path rawFilesDir, ExperimentService svc)
+    {
+        if(svc == null)
+        {
+            return false;
+        }
+
+        String nameNoExt = FileUtil.getBaseName(sampleFileName);
+
+        SimpleFilter filter = SimpleFilter.createContainerFilter(container);
+        // Look for files that start with the base filename of the sample file.
+        filter.addCondition(FieldKey.fromParts("Name"), nameNoExt, CompareType.STARTS_WITH);
+        // Look for data under @files/RawFiles.
+        // Use FileUtil.pathToString(); this will remove the access ID is this is a S3 path
+        String prefix = FileUtil.pathToString(rawFilesDir);
+        if (!prefix.endsWith("/"))
+        {
+            prefix = prefix + "/";
+        }
+        filter.addCondition(FieldKey.fromParts("datafileurl"), prefix, CompareType.STARTS_WITH);
+
+        List<String> files = new TableSelector(svc.getTinfoData(), Collections.singleton("Name"), filter, null).getArrayList(String.class);
+
+        for (String expDataFile: files)
+        {
+            if(accept(sampleFileName, expDataFile))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean accept(String sampleFileName, String uploadedFileName)
+    {
+        // Accept QC_10.9.17.raw OR for QC_10.9.17.raw.zip OR QC_10.9.17.zip
+        // 170428_DBS_cal_7a.d OR 170428_DBS_cal_7a.d.zip OR 170428_DBS_cal_7a.zip
+        String nameNoExt = FileUtil.getBaseName(sampleFileName);
+        return sampleFileName.equalsIgnoreCase(uploadedFileName)
+                || (sampleFileName + ".zip").equalsIgnoreCase(uploadedFileName)
+                || (nameNoExt + ".zip").equalsIgnoreCase(uploadedFileName);
     }
 }
