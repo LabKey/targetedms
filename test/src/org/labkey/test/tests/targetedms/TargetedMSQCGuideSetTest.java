@@ -359,7 +359,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
             if (stats.getMean() != null)
             {
                 Double delta = stats.getMean() > 1E8 ? 5000.0 : 0.0005;
-                assertEquals("Unexpected guide set stats mean", stats.getMean(), Double.parseDouble(table.getDataAsText(0, "Mean")), delta);
+                assertEquals("Unexpected guide set stats mean", stats.getMean(), Double.parseDouble(table.getDataAsText(0, "Mean").replace(",", "")), delta);
             }
             else
                 assertNull("Unexpected guide set stats mean", stats.getMean());
@@ -367,7 +367,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
             if (stats.getStdDev() != null)
             {
                 Double delta = stats.getMean() > 1E8 ? 5000.0 : 0.0005;
-                assertEquals("Unexpected guide set stats std dev", stats.getStdDev(), Double.parseDouble(table.getDataAsText(0, "StandardDev")), delta);
+                assertEquals("Unexpected guide set stats std dev", stats.getStdDev(), Double.parseDouble(table.getDataAsText(0, "StandardDev").replace(",", "")), delta);
             }
             else
                 assertNull("Unexpected guide set stats std dev", stats.getStdDev());
