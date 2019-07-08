@@ -23,6 +23,7 @@ import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.Selector;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.SqlSelector;
+import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.util.Pair;
@@ -154,6 +155,40 @@ public class ModificationManager
         sql.add(runId);
 
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PeptideSettings.RunStructuralModification.class);
+    }
+
+    public static List<PeptideSettings.IsotopeModification> getIsotopeModificationsUsedInRun(int runId)
+    {
+        return getModificationsUsedInRun(runId, TargetedMSManager.getTableInfoPeptideIsotopeModification(),
+                TargetedMSManager.getTableInfoIsotopeModification(), "IsotopeModId",
+                PeptideSettings.IsotopeModification.class);
+    }
+
+    public static List<PeptideSettings.StructuralModification> getStructuralModificationsUsedInRun(int runId)
+    {
+        return getModificationsUsedInRun(runId, TargetedMSManager.getTableInfoPeptideStructuralModification(),
+                TargetedMSManager.getTableInfoStructuralModification(), "StructuralModId",
+                PeptideSettings.StructuralModification.class);
+    }
+
+    private static <T> List<T> getModificationsUsedInRun(int runId, TableInfo peptideModsTable, TableInfo modsTable, String modIdCol, Class<T> type)
+    {
+        SQLFragment sql = new SQLFragment();
+        sql.append("SELECT DISTINCT (pmod.").append(modIdCol).append("), mod.* FROM ");
+        sql.append(peptideModsTable, "pmod");
+        sql.append(" INNER JOIN ");
+        sql.append(TargetedMSManager.getTableInfoGeneralMolecule(), "m");
+        sql.append(" ON pmod.peptideId = m.Id ");
+        sql.append(" INNER JOIN ");
+        sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
+        sql.append(" ON m.peptideGroupId = pg.Id ");
+        sql.append(" INNER JOIN ");
+        sql.append(modsTable, "mod");
+        sql.append(" ON pmod.").append(modIdCol).append(" = mod.Id ");
+        sql.append(" WHERE pg.RunId = ? ");
+        sql.add(runId);
+
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(type);
     }
 
     public static List<PeptideSettings.PotentialLoss> getPotentialLossesForStructuralMod(int modId)
