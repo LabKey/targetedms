@@ -59,7 +59,7 @@ public class PanoramaPremiumModule extends DefaultModule
     @Override
     public double getVersion()
     {
-        return 19.11;
+        return 19.20;
     }
 
     @Override
@@ -92,5 +92,4 @@ public class PanoramaPremiumModule extends DefaultModule
     {
         return PageFlowUtil.set(PanoramaPremiumManager.get().getSchemaName());
     }
-
 }
