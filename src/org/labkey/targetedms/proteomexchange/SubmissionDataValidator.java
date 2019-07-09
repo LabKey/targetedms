@@ -18,6 +18,8 @@ package org.labkey.targetedms.proteomexchange;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.junit.Assert;
+import org.junit.Test;
 import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.SimpleFilter;
@@ -404,5 +406,55 @@ public class SubmissionDataValidator
         return sampleFileName.equalsIgnoreCase(uploadedFileName)
                 || (sampleFileName + ".zip").equalsIgnoreCase(uploadedFileName)
                 || (nameNoExt + ".zip").equalsIgnoreCase(uploadedFileName);
+    }
+
+    public static class TestCase extends Assert
+    {
+        @Test
+        public void testGetFilePath()
+        {
+            // Skyline tracks centroiding, lockmass settings etc. as part of the file_path attribute of the <sample_file>
+            // element in .sky files. These are appended at the end of the file path as query parameters.
+            // Example: C:\Users\lab\Data\2017_July_10_bivalves_140.raw?centroid_ms1=true&centroid_ms2=true.
+            String fileName = "2017_July_10_bivalves_140.raw";
+            String path = "C:\\Users\\lab\\Data\\2017-Geoduck-SRM-raw\\" + fileName;
+            String pathWithParams = path + "?centroid_ms1=true&centroid_ms2=true";
+
+            assertTrue(path.equals(getFilePath(path)));
+            assertTrue(path.equals(getFilePath(pathWithParams)));
+            assertTrue(fileName.equals(FilenameUtils.getName(getFilePath(pathWithParams))));
+
+            // Skyline stores multi-injection wiff file paths as: <wiff_file_path>|<sample_name>|<sample_index>
+            // Example: C:\Analyst Data\Projects\CPTAC\Site54_STUDY9S_PHASE1_6ProtMix_090919\Site54_190909_Study9S_PHASE-1.wiff|Site54_STUDY9S_PHASE1_6ProtMix_QC_03|2
+            fileName = "Site54_190909_Study9S_PHASE-1.wiff";
+            path = "C:\\Analyst Data\\Projects\\CPTAC\\Site54_STUDY9S_PHASE1_6ProtMix_090919\\" + fileName;
+            String pathWithSampleInfo = path + "|Site54_STUDY9S_PHASE1_6ProtMix_QC_03|2";
+
+            assertTrue(path.equals(getFilePath(path)));
+            assertTrue(path.equals(getFilePath(pathWithSampleInfo)));
+            assertTrue(fileName.equals(FilenameUtils.getName(getFilePath(pathWithSampleInfo))));
+
+            // Add a bogus param with a '|' character
+            String pathWithSampleInfoAndParams = pathWithSampleInfo + "?centroid_ms1=true&centroid_ms2=true&madeup_param=a|b";
+
+            assertTrue(path.equals(getFilePath(path)));
+            assertTrue(path.equals(getFilePath(pathWithSampleInfoAndParams)));
+            assertTrue(fileName.equals(FilenameUtils.getName(getFilePath(pathWithSampleInfoAndParams))));
+        }
+
+        @Test
+        public void testAccept()
+        {
+            // Accept QC_10.9.17.raw OR for QC_10.9.17.raw.zip OR QC_10.9.17.zip
+            assertTrue(accept("QC_10.9.17.raw", "QC_10.9.17.RAW"));
+            assertTrue(accept("QC_10.9.17.raw", "QC_10.9.17.raw.ZIP"));
+            assertTrue(accept("QC_10.9.17.raw", "QC_10.9.17.zip"));
+
+            // Accept 170428_DBS_cal_7a.d OR 170428_DBS_cal_7a.d.zip OR 170428_DBS_cal_7a.zip
+            assertTrue(accept("170428_DBS_cal_7a.d", "170428_DBS_cal_7a.d"));
+            assertTrue(accept("170428_DBS_cal_7a.d", "170428_DBS_cal_7a.d.zip"));
+            assertTrue(accept("170428_DBS_cal_7a.d", "170428_DBS_cal_7a.ZIP"));
+            assertFalse(accept("170428_DBS_cal_7a.d", "170428_DBS_cal_7a.d.7z"));
+        }
     }
 }
