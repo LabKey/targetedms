@@ -1100,7 +1100,7 @@ public class TargetedMSManager
         }
         catch (AuditLogException e)
         {
-            e.printStackTrace();
+            throw new RuntimeException("Error while deleting document's audit log", e);
         }
 
 

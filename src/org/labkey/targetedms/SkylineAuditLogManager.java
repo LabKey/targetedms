@@ -335,7 +335,7 @@ public class SkylineAuditLogManager
             return  result;
         };
 
-        AuditLogTree root = new AuditLogTree(null, null, AuditLogTree.NULL_STRING, null,null);
+        AuditLogTree root = new AuditLogTree(0, null, AuditLogTree.NULL_STRING, null,null);
         Map<String, AuditLogTree> nodes = new SqlExecutor(entryTbl.getSchema()).executeWithResults(treeQuery, resultSetHandler);
         nodes.put(AuditLogTree.NULL_STRING, root);
         for(Map.Entry<String, AuditLogTree> e : nodes.entrySet()){

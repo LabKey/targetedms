@@ -33,10 +33,10 @@ public class AuditLogTree implements Iterable<AuditLogTree>
     private String _entryHash;
     private GUID _documentGUID;
     private String _parentEntryHash;
-    private Integer _entryId;
+    private int _entryId;
     private Integer _versionId;     //runId of the document if this record is the last in that document's log. Null otherwise.
 
-    public AuditLogTree(Integer pEntryid, GUID pDocumentGUID, String pEntryHash, String pParentEntryHash, Integer pVersionId){
+    public AuditLogTree(int pEntryid, GUID pDocumentGUID, String pEntryHash, String pParentEntryHash, Integer pVersionId){
         _entryHash = pEntryHash;
         _documentGUID = pDocumentGUID;
         _parentEntryHash = pParentEntryHash;
