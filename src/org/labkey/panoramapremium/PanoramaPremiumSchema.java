@@ -7,6 +7,7 @@ import org.labkey.api.data.DbSchema;
 import org.labkey.api.data.DbSchemaType;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.module.Module;
+import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.query.DefaultSchema;
 import org.labkey.api.query.QuerySchema;
 import org.labkey.api.query.UserSchema;
@@ -26,6 +27,13 @@ public class PanoramaPremiumSchema extends UserSchema
     {
         DefaultSchema.registerProvider(SCHEMA_NAME, new DefaultSchema.SchemaProvider(module)
         {
+            @Override
+            public boolean isAvailable(DefaultSchema schema, Module module)
+            {
+                return module == null || schema.getContainer().getActiveModules().contains(ModuleLoader.getInstance().getModule("targetedms"));
+            }
+
+            @Override
             public QuerySchema createSchema(DefaultSchema schema, Module module)
             {
                 return new PanoramaPremiumSchema(schema.getUser(), schema.getContainer());
