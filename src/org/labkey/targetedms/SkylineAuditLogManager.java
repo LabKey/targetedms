@@ -44,6 +44,7 @@ import org.labkey.targetedms.parser.skyaudit.SkylineAuditLogSecurityManager;
 import org.labkey.targetedms.parser.skyaudit.TestRun;
 import org.labkey.targetedms.parser.skyaudit.UnitTestUtil;
 
+import javax.validation.constraints.NotNull;
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
@@ -64,7 +65,7 @@ public class SkylineAuditLogManager
 {
 
     private Logger _logger;
-    private SkylineAuditLogSecurityManager _securityMgr = null;
+    private SkylineAuditLogSecurityManager _securityMgr;
 
     private class AuditLogImportContext{
         File _logFile;
@@ -75,13 +76,13 @@ public class SkylineAuditLogManager
         MessageDigest _rootHash = null;
     }
 
-    public SkylineAuditLogManager(Container pContainer, User pUser) throws AuditLogException{
+    public SkylineAuditLogManager(@NotNull Container pContainer, @NotNull User pUser) throws AuditLogException{
         _logger = Logger.getLogger(this.getClass());
         _securityMgr = new SkylineAuditLogSecurityManager(pContainer, pUser);
     }
 
 
-    public void importAuditLogFile(File pAuditLogFile, GUID pDocumentGUID, int pRunId) throws AuditLogException
+    public int importAuditLogFile(@NotNull File pAuditLogFile, @NotNull GUID pDocumentGUID, int pRunId) throws AuditLogException
     {
         AuditLogImportContext context = new AuditLogImportContext();
         context._logFile = pAuditLogFile;
@@ -97,9 +98,12 @@ public class SkylineAuditLogManager
                     SkylineAuditLogSecurityManager.INTEGRITY_LEVEL.ANY);
         }
         if(verifyPreRequisites(context)) {
-            persistAuditLog(context);
+            int entriesCount = persistAuditLog(context);
             verifyPostRequisites(context);
+            return entriesCount;
         }
+        else
+            return 0;
     }
 
 
@@ -132,13 +136,16 @@ public class SkylineAuditLogManager
 
         //retrieve count of documents with the same GUID
         TableInfo runsTbl = TargetedMSManager.getTableInfoRuns();
-        SimpleFilter.FilterClause and = new SimpleFilter.AndClause();
+        SimpleFilter.AndClause and = new SimpleFilter.AndClause();
         SimpleFilter docFilter = new SimpleFilter();
-        ((SimpleFilter.AndClause) and).addClause(
+        and.addClause(       // get all entries for all versions of this document
                 new CompareType.CompareClause(FieldKey.fromParts("documentGuid"), CompareType.EQUAL, pContext._documentGUID.toString())
         );
-        ((SimpleFilter.AndClause) and).addClause(
+        and.addClause(       //except the version we are currently uploading
                 new CompareType.CompareClause(FieldKey.fromParts("Id"), CompareType.NEQ, pContext._runId)
+        );
+        and.addClause(       //and they are successfully loaded
+                new CompareType.CompareClause(FieldKey.fromParts("StatusId"), CompareType.EQUAL, SkylineDocImporter.STATUS_SUCCESS)
         );
         docFilter.addClause(and);
 
@@ -177,8 +184,9 @@ public class SkylineAuditLogManager
 
     /***
      * Iterates through the log entries and persists them one by one
+     * @return number of audit log entries read from the file.
      */
-    private void persistAuditLog(AuditLogImportContext pContext) throws AuditLogException {
+    private int persistAuditLog(AuditLogImportContext pContext) throws AuditLogException {
         try
         {
             AuditLogMessageExpander expander = new AuditLogMessageExpander(_logger);
@@ -188,10 +196,9 @@ public class SkylineAuditLogManager
             //while next entry is not null
             while (pContext._parser.hasNextEntry())
             {
-                AuditLogEntry ent = null;
                 try
                 {
-                    ent = pContext._parser.parseLogEntry();
+                    AuditLogEntry ent = pContext._parser.parseLogEntry();
                     ent.expandEntry(expander);
                     //throw or log the results based on the integrity level setting
                     if (!ent.verifyHash())
@@ -200,6 +207,9 @@ public class SkylineAuditLogManager
                                 String.format("Hash value verification failed for the log entry timestamped with %s", ent.getOffsetCreateTimestamp().toString()),
                                 SkylineAuditLogSecurityManager.INTEGRITY_LEVEL.ANY);
                     }
+                    ent.setDocumentGUID(pContext._documentGUID);
+                    entries.add(ent);
+                    pContext._rootHash.update(ent.getHashString().getBytes(Charset.forName("UTF8")));
                 }
                 catch (XMLStreamException e)
                 {
@@ -215,16 +225,14 @@ public class SkylineAuditLogManager
                             "Error when parsing audit log file.",
                             SkylineAuditLogSecurityManager.INTEGRITY_LEVEL.ANY, e);
                 }
-                ent.setDocumentGUID(pContext._documentGUID);
-                entries.add(ent);
-                pContext._rootHash.update(ent.getHashString().getBytes(Charset.forName("UTF8")));
             }
 
-            if(pContext._runId != null)       //set the document version od on the cronologically last log entry.
+            if(pContext._runId != null)       //set the document version id on the chronologically last log entry.
                 entries.get(0).setVersionId(pContext._runId);
 
             Collections.reverse(entries);
             AuditLogTree treePointer = pContext._logTree;
+            int persistedEntriesCount = 0;
             for(AuditLogEntry ent : entries)
             {
                 //if log tree has the hash
@@ -242,12 +250,17 @@ public class SkylineAuditLogManager
                     // persist the entry and add to the tree
                     ent.setParentEntryHash(treePointer.getEntryHash());
                     ent.persist();
+                    persistedEntriesCount++;
                     AuditLogTree newTreeEntry = ent.getTreeEntry();
                     treePointer.addChild(newTreeEntry);
                     //advance the tree
                     treePointer = newTreeEntry;
                 }
             }
+            if(persistedEntriesCount == 0)      //if no entries were actually saved into the database we are uploading an earlier document version
+                entries.get(entries.size() - 1).updateVersionId(pContext._runId);   //and still need to update the terminal entry with the versionId.
+
+            return entries.size();
         }
         finally{
             pContext._parser.abortParsing();
@@ -272,9 +285,7 @@ public class SkylineAuditLogManager
      * Builds a tree of audit log entry tokens representing the document versioning tree
      * @return the root node of the tree
      */
-    private AuditLogTree buildLogTree(GUID pDocumentGUID) throws AuditLogException {
-        if(pDocumentGUID == null)
-            throw new IllegalArgumentException("Document GUID must be not null to build a log tree.");
+    private AuditLogTree buildLogTree(@NotNull GUID pDocumentGUID) throws AuditLogException {
 
         TableInfo entryTbl = TargetedMSManager.getTableInfoSkylineAuditLogEntry();
 
@@ -345,13 +356,25 @@ public class SkylineAuditLogManager
         Object objGUID = DatabaseUtil.retrieveSimpleType(query);
         assert objGUID.getClass() == String.class;
         AuditLogTree root = buildLogTree(new GUID((String)objGUID));
-        List<Integer> deleteEntryIds = root.deleteList(pRunId).stream().map(e -> e.getEntryId()).collect(Collectors.toList());
+        List<Integer> deleteEntryIds = root.deleteList(pRunId).stream().map(AuditLogTree::getEntryId).collect(Collectors.toList());
 
-        SimpleFilter entryFilter = new SimpleFilter(
-                new SimpleFilter.InClause(FieldKey.fromParts("entryId"), deleteEntryIds, false)
-        );
-        Table.delete(TargetedMSManager.getTableInfoSkylineAuditLogMessage(), entryFilter);
-        Table.delete(TargetedMSManager.getTableInfoSkylineAuditLogEntry(), entryFilter);
+        if(deleteEntryIds.size() > 0)
+        {
+            SimpleFilter entryFilter = new SimpleFilter(
+                    new SimpleFilter.InClause(FieldKey.fromParts("entryId"), deleteEntryIds, false)
+            );
+            Table.delete(TargetedMSManager.getTableInfoSkylineAuditLogMessage(), entryFilter);
+            Table.delete(TargetedMSManager.getTableInfoSkylineAuditLogEntry(), entryFilter);
+        }
+        else{
+            AuditLogTree versionTree = root.findVersionEntry(pRunId);
+            if(versionTree != null)
+            {
+                SQLFragment sqlUpdate = new SQLFragment("UPDATE targetedms.AuditLogEntry SET versionId = NULL WHERE entryId = ?");
+                sqlUpdate.add(versionTree.getEntryId());
+                new SqlExecutor(TargetedMSManager.getSchema()).execute(sqlUpdate);
+            }
+        }
     }
 
     /**
@@ -361,17 +384,24 @@ public class SkylineAuditLogManager
      */
     public void deleteDocumentLog(int pRunId)
     {
-        SQLFragment query = new SQLFragment(String.format("SELECT documentGUID FROM targetedms.Runs WHERE Id = %d", pRunId));
-        Object res = DatabaseUtil.retrieveSimpleType(query);
-        assert res.getClass() == String.class;
-        deleteDocumentLog( new GUID((String)res) );
+        SQLFragment sqlGetGuid = new SQLFragment("SELECT documentGUID FROM targetedms.Runs WHERE Id = ?");
+        sqlGetGuid.add(pRunId);
+
+        Object res = DatabaseUtil.retrieveSimpleType(sqlGetGuid);
+        if(res != null)
+        {
+            assert res.getClass() == String.class;
+            deleteDocumentLog(new GUID((String) res));
+        }
     }
 
-    public void deleteDocumentLog(GUID pDocumentGUID)
+    public void deleteDocumentLog(@NotNull GUID pDocumentGUID)
     {
-        String sqlDeleteMessages = String.format("DELETE FROM targetedms.AuditLogMessage " +
-                                "WHERE entryId IN (SELECT entryId from targetedms.AuditLogEntry WHERE documentGUID = '%s')", pDocumentGUID.toString());
-        String sqlDeleteEntries = String.format("DELETE FROM targetedms.AuditLogMessage WHERE documentGUID = '%s'");
+        SQLFragment sqlDeleteMessages = new SQLFragment("DELETE FROM targetedms.AuditLogMessage " +
+                                "WHERE entryId IN (SELECT entryId from targetedms.AuditLogEntry WHERE documentGUID = ?)");
+        sqlDeleteMessages.add(pDocumentGUID.toString());
+        SQLFragment sqlDeleteEntries = new SQLFragment("DELETE FROM targetedms.AuditLogMessage WHERE documentGUID = ?");
+        sqlDeleteEntries.add(pDocumentGUID.toString());
 
         SqlExecutor exec = new SqlExecutor(TargetedMSSchema.getSchema());
 

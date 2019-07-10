@@ -646,6 +646,11 @@ public class SkylineDocImporter
             run.setCalibrationCurveCount(calCurvesCount);
 
             run.setDocumentGUID(parser.getDocumentGUID());
+
+            SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, _user);
+            int auditLogEntriesCount = importer.importAuditLogFile(_auditLogFile, run.getDocumentGUID(), run.getRunId());
+            run.setAuditLogEntriesCount(auditLogEntriesCount);
+
             Table.update(_user, TargetedMSManager.getTableInfoRuns(), run, run.getId());
 
             if (folderType == TargetedMSService.FolderType.QC)
@@ -657,9 +662,6 @@ public class SkylineDocImporter
                     _log.info(msg);
                 }
             }
-
-            SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, _user);
-            importer.importAuditLogFile(_auditLogFile, run.getDocumentGUID(), run.getRunId());
 
             if (_pipeRoot.isCloudRoot())
                 copyExtractedFilesToCloud(run);

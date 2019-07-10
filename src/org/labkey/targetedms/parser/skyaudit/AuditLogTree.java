@@ -15,6 +15,7 @@
  */
 package org.labkey.targetedms.parser.skyaudit;
 
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.util.GUID;
 
 import java.util.ArrayList;
@@ -128,6 +129,7 @@ public class AuditLogTree implements Iterable<AuditLogTree>
      * @param deleteEntries list of elements to be physically deleted.
      * @return versionId if this child should be deleted, null otherwise.
      */
+    @Nullable
     private Integer recursiveDeleteList(int versionId, List<AuditLogTree> deleteEntries)
     {
         if (_children.size() == 0)      //if this is a leaf
@@ -135,7 +137,7 @@ public class AuditLogTree implements Iterable<AuditLogTree>
             if (this._versionId == null)
             {
                 Logger.getLogger(this.getClass().getCanonicalName()).warning(
-                        String.format("Audit log entry with ID %d is a leaf but has no version ID. This might be a data corruption."));
+                        String.format("Audit log entry with ID %d is a leaf but has no version ID. This might be a data corruption.", this._entryId));
                 return null;
             }
             else if (this._versionId == versionId)      //check if it is the right version id
@@ -151,15 +153,32 @@ public class AuditLogTree implements Iterable<AuditLogTree>
                 {       //if the child is from the right branch add it to the deletion list and remove from the tree.
                     deleteEntries.add(child.getValue());
                     _children.remove(child.getKey());
+                    if (_children.size() == 0 && _versionId == null)      //if there are no other children and the entry does not belong to another version continue down the branch
+                        return versionId;
+                    else
+                        return null;    //otherwise stop because this entry belongs to more than one version.
                 }
-                if (_children.size() == 0 && _versionId == null)      //if there are no other children and the entry does not belong to another version continue down the branch
-                    return versionId;
-                else                            //otherwise stop because this entry belongs to more than one version.
-                    return null;
             }
+            return null;    //We didn't find the versionId in any of the children.
         }
-        assert false;       //this should never be reached
-        return null;
+    }
+
+    public AuditLogTree findVersionEntry(int pVersionId){
+        return recursiveFindVersionEntry(pVersionId);
+    }
+
+    private AuditLogTree recursiveFindVersionEntry(int pVersionId){
+        if (this._versionId != null && this._versionId == pVersionId)      //check if it is the right version id
+            return this;
+        else
+        {
+            for (Map.Entry<String, AuditLogTree> child : _children.entrySet())
+            {       //performing depth-first search because audit log trees are typically deeper than wider.
+                AuditLogTree res = child.getValue().recursiveFindVersionEntry(pVersionId);
+                if(res != null) return res;
+            }
+            return null;
+        }
     }
 
     @Override

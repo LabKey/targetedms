@@ -15,6 +15,8 @@
  */
 package org.labkey.targetedms.parser.skyaudit;
 
+import org.labkey.api.data.SQLFragment;
+import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.data.Table;
 import org.labkey.api.util.GUID;
 import org.labkey.targetedms.TargetedMSManager;
@@ -54,7 +56,7 @@ public class AuditLogEntry
         return new AuditLogTree(_entryId, _documentGUID, _entryHash, _parentEntryHash, _versionId);
     }
 
-    protected List<AuditLogMessage> _allInfoMessage = new LinkedList<>();
+    final protected List<AuditLogMessage> _allInfoMessage = new LinkedList<>();
 
     public List<AuditLogMessage> getAllInfoMessage()
     {
@@ -243,6 +245,31 @@ public class AuditLogEntry
             msg.setEntryId(_entryId);
             Table.insert(null, TargetedMSManager.getTableInfoSkylineAuditLogMessage(), msg);
         }
+        return this;
+    }
+
+    /**
+     * Updates entry's versionId field in the database. It is the only field that can change,
+     * the rest of the entry is immutable.
+     * @param pVersionId new versionId value.
+     * @return this instance if the update is successful.
+     */
+    public AuditLogEntry updateVersionId(Integer pVersionId){
+        this.setVersionId(pVersionId);
+        SQLFragment sqlUpdate = new SQLFragment("");
+
+        if(this._entryId == null){  //entryId can be null if this is an existing entry read from a file and not persisted into the database
+            //attempting to retrieve entryId using the alternative key of document GUID and entry hash.
+            sqlUpdate.append("UPDATE targetedms.AuditLogEntry SET versionId = ? WHERE documentGUID = ? AND entryHash = ?");
+            sqlUpdate.addAll(List.of(pVersionId, this._documentGUID.toString(), this._entryHash));
+        }
+        else
+        {
+            sqlUpdate.append("UPDATE targetedms.AuditLogEntry SET versionId = ? WHERE entryId = ?");
+            sqlUpdate.addAll(List.of(pVersionId, this._entryId));
+        }
+
+        new SqlExecutor(TargetedMSManager.getSchema()).execute(sqlUpdate);
         return this;
     }
 
