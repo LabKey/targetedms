@@ -1934,10 +1934,10 @@ public class TargetedMSManager
                         "Series1QueryName, " +
                         "Series2Label, " +
                         "Series2SchemaName, " +
-                        "Series2QueryName " +
+                        "Series2QueryName, " +
+                        "PrecursorScoped " +
                       "FROM qcMetricsConfig " +
-                      "WHERE Enabled = TRUE " +
-                      "AND PrecursorScoped = TRUE"; // Adding until run scoped metric query is added
+                      "WHERE Enabled = TRUE ";
 
         QuerySchema query = DefaultSchema.get(user, container).getSchema(TargetedMSSchema.SCHEMA_NAME);
         return QueryService.get().selector(query, sql).getArrayList(QCMetricConfiguration.class);

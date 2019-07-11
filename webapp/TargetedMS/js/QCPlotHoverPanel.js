@@ -70,7 +70,8 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
             this.add(this.getPlotPointDetailField('Group', 'CUSUMmN' == this.valueName || 'CUSUMvN' == this.valueName ? 'CUSUM-' : 'CUSUM+'));
         }
 
-        this.add(this.getPlotPointDetailField('m/z', this.pointData['mz']));
+        if(this.metricProps.precursorScoped)
+            this.add(this.getPlotPointDetailField('m/z', this.pointData['mz']));
         this.add(this.getPlotPointDetailField('Acquired', this.pointData['fullDate']));
         if (this.pointData.conversion && this.pointData.rawValue !== undefined && this.valueName.indexOf("CUSUM") === -1) {
             if (this.pointData.conversion === 'percentDeviation') {
@@ -255,15 +256,19 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
 
     getPlotPointClickLink : function() {
         //Choose action target based on precursor type
-        var action = this.pointData['dataType'] == 'Peptide' ? "precursorAllChromatogramsChart" : "moleculePrecursorAllChromatogramsChart",
-            url = LABKEY.ActionURL.buildURL('targetedms', action, LABKEY.ActionURL.getContainer(), {
-                id: this.pointData['PrecursorId'],
-                chromInfoId: this.pointData['PrecursorChromInfoId']
-            });
+        if(this.metricProps.precursorScoped) {
+            var action = this.pointData['dataType'] == 'Peptide' ? "precursorAllChromatogramsChart" : "moleculePrecursorAllChromatogramsChart",
+                    url = LABKEY.ActionURL.buildURL('targetedms', action, LABKEY.ActionURL.getContainer(), {
+                        id: this.pointData['PrecursorId'],
+                        chromInfoId: this.pointData['PrecursorChromInfoId']
+                    });
+        } else {
+            url =  LABKEY.ActionURL.buildURL('targetedms', 'showPrecursorList', null)
+        }
 
         return LABKEY.Utils.textLink({
-            text: 'View Chromatogram',
-            href: url + '#ChromInfo' + this.pointData['PrecursorChromInfoId']
+            text: this.metricProps.precursorScoped ? 'View Chromatogram': 'View Document',
+            href: this.metricProps.precursorScoped ? url + '#ChromInfo' + this.pointData['PrecursorChromInfoId'] : url
         });
     }
 });
