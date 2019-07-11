@@ -53,7 +53,10 @@ public class AuditLogEntry
     byte[] _calculatedHashBytes;
 
     public AuditLogTree getTreeEntry(){
-        return new AuditLogTree(_entryId, _documentGUID, _entryHash, _parentEntryHash, _versionId);
+        if(_entryId != null)
+            return new AuditLogTree(_entryId, _documentGUID, _entryHash, _parentEntryHash, _versionId);
+        else
+            return null;
     }
 
     final protected List<AuditLogMessage> _allInfoMessage = new LinkedList<>();
