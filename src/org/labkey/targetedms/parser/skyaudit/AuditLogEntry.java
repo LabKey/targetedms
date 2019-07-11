@@ -264,12 +264,12 @@ public class AuditLogEntry
         if(this._entryId == null){  //entryId can be null if this is an existing entry read from a file and not persisted into the database
             //attempting to retrieve entryId using the alternative key of document GUID and entry hash.
             sqlUpdate.append("UPDATE targetedms.AuditLogEntry SET versionId = ? WHERE documentGUID = ? AND entryHash = ?");
-            sqlUpdate.addAll(List.of(pVersionId, this._documentGUID.toString(), this._entryHash));
+            sqlUpdate.addAll(pVersionId, this._documentGUID.toString(), this._entryHash);
         }
         else
         {
             sqlUpdate.append("UPDATE targetedms.AuditLogEntry SET versionId = ? WHERE entryId = ?");
-            sqlUpdate.addAll(List.of(pVersionId, this._entryId));
+            sqlUpdate.addAll(pVersionId, this._entryId);
         }
 
         new SqlExecutor(TargetedMSManager.getSchema()).execute(sqlUpdate);

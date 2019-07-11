@@ -26,6 +26,7 @@ import org.labkey.api.data.ContainerManager;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.SqlExecutor;
+import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.Table;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.query.FieldKey;
@@ -136,26 +137,23 @@ public class SkylineAuditLogManager
 
         //retrieve count of documents with the same GUID
         TableInfo runsTbl = TargetedMSManager.getTableInfoRuns();
-        SimpleFilter.AndClause and = new SimpleFilter.AndClause();
         SimpleFilter docFilter = new SimpleFilter();
-        and.addClause(       // get all entries for all versions of this document
+        docFilter.addCondition(       // get all entries for all versions of this document
                 new CompareType.CompareClause(FieldKey.fromParts("documentGuid"), CompareType.EQUAL, pContext._documentGUID.toString())
         );
-        and.addClause(       //except the version we are currently uploading
+        docFilter.addCondition(       //except the version we are currently uploading
                 new CompareType.CompareClause(FieldKey.fromParts("Id"), CompareType.NEQ, pContext._runId)
         );
-        and.addClause(       //and they are successfully loaded
+        docFilter.addCondition(       //and they are successfully loaded
                 new CompareType.CompareClause(FieldKey.fromParts("StatusId"), CompareType.EQUAL, SkylineDocImporter.STATUS_SUCCESS)
         );
-        docFilter.addClause(and);
 
         SQLFragment query = new SQLFragment("SELECT count(*) docCount FROM ")
                     .append(runsTbl.getSelectName())
                     .append(" ")
                     .append(docFilter.getSQLFragment(TargetedMSManager.getSqlDialect()));
 
-        Object res = DatabaseUtil.retrieveSimpleType(query);
-        assert res.getClass() == Integer.class;
+        Integer res = new SqlSelector(TargetedMSManager.getSchema(), query).getObject(Integer.class);
         Integer docCount = (Integer)res;
         pContext._logTree = buildLogTree(pContext._documentGUID);
 
@@ -353,9 +351,9 @@ public class SkylineAuditLogManager
     public void deleteDocumentVersionLog(int pRunId) throws AuditLogException
     {
         SQLFragment query = new SQLFragment(String.format("SELECT documentGUID FROM targetedms.Runs WHERE Id = %d", pRunId));
-        Object objGUID = DatabaseUtil.retrieveSimpleType(query);
-        assert objGUID.getClass() == String.class;
-        AuditLogTree root = buildLogTree(new GUID((String)objGUID));
+        String objGUID = new SqlSelector(TargetedMSManager.getSchema(), query).getObject(String.class);
+        assert objGUID != null;
+        AuditLogTree root = buildLogTree(new GUID(objGUID));
         List<Integer> deleteEntryIds = root.deleteList(pRunId).stream().map(AuditLogTree::getEntryId).collect(Collectors.toList());
 
         if(deleteEntryIds.size() > 0)
@@ -387,11 +385,10 @@ public class SkylineAuditLogManager
         SQLFragment sqlGetGuid = new SQLFragment("SELECT documentGUID FROM targetedms.Runs WHERE Id = ?");
         sqlGetGuid.add(pRunId);
 
-        Object res = DatabaseUtil.retrieveSimpleType(sqlGetGuid);
+        String res = new SqlSelector(TargetedMSManager.getSchema(), sqlGetGuid).getObject(String.class);
         if(res != null)
         {
-            assert res.getClass() == String.class;
-            deleteDocumentLog(new GUID((String) res));
+            deleteDocumentLog(new GUID(res));
         }
     }
 

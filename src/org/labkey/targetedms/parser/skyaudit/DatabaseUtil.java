@@ -3,6 +3,8 @@ package org.labkey.targetedms.parser.skyaudit;
 import org.labkey.api.data.BaseSelector;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SqlExecutor;
+import org.labkey.api.data.SqlSelector;
+import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
 
 import java.util.HashMap;
@@ -12,19 +14,9 @@ public class DatabaseUtil
 {
 
     public static Object retrieveSimpleType(SQLFragment pQuery){
-        BaseSelector.ResultSetHandler<Object> resultSetHandler = (rs, conn) -> {
-            if(rs.next()){
-                Object res = rs.getObject(1);
-                if(rs.wasNull())
-                    return null;
-                else
-                    return res;
-            }
-            else
-                return null;
-        };
 
-        Object result = new SqlExecutor(TargetedMSSchema.getSchema()).executeWithResults(pQuery, resultSetHandler);
+        Object result = new SqlSelector(TargetedMSManager.getSchema(), pQuery)
+                .getObject(Object.class );
         return result;
     }
 
