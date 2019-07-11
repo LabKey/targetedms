@@ -428,7 +428,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
 
     private void verifyGuideSet3Stats(GuideSet gs)
     {
-        gs.addStats(new GuideSetStats("retentionTime", 10, PRECURSORS[1], 32.151, 0.026));
+        gs.addStats(new GuideSetStats("retentionTime", 10, PRECURSORS[1], 32.151, 0.0265));
         gs.addStats(new GuideSetStats("peakArea", 10, PRECURSORS[1], 2.930734907392E11, 6.454531590675328E10));
         gs.addStats(new GuideSetStats("fwhm", 10, PRECURSORS[1], 0.11, 0.015));
         gs.addStats(new GuideSetStats("fwb", 10, PRECURSORS[1], 0.326, 0.025));
