@@ -16,6 +16,7 @@
 package org.labkey.targetedms;
 
 import org.apache.log4j.Logger;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -491,7 +492,11 @@ public class SkylineAuditLogManager
             assertEquals(11, tree.getTreeSize());
         }
 
-
+        @AfterClass
+        public static void cleanup()
+        {
+            UnitTestUtil.cleanupDatabase(_docGUID);
+        }
 
     }
 }
