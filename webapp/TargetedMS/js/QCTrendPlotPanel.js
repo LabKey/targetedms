@@ -404,7 +404,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
             toolbarItems.push(this.getGroupedXCheckbox());
             toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
-            toolbarItems.push(this.getSinglePlotCheckbox());
+            var location = toolbarItems.push(this.getSinglePlotCheckbox());
             toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
             toolbarItems.push(this.getShowExcludedCheckbox());
             // toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
@@ -417,6 +417,15 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 padding: '0 10px 10px 10px',
                 items: toolbarItems
             });
+
+            //hiding the show All series in a single plot checkbox for run scoped metrics
+            var items = this.otherPlotOptionsToolbar.items.items;
+            if(!this.getMetricPropsById(this.metric).precursorScoped) {
+                items[location-2].hide();
+                items[location-1].hide();
+                items[location].hide();
+                items[location+1].hide();
+            }
         }
 
         return this.otherPlotOptionsToolbar;
@@ -858,7 +867,27 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     {
                         this.metric = newVal;
                         this.havePlotOptionsChanged = true;
+                        var items = this.otherPlotOptionsToolbar.items.items;
+                        var showAllSeriesCheckBoxLocation;
 
+                        for(var i=0; i<items.length;i++ ) {
+                            if(items[i].boxLabel ==='Show All Series in a Single Plot')
+                                showAllSeriesCheckBoxLocation = i;
+                        }
+
+                        if(this.getMetricPropsById(newVal).precursorScoped) {
+                            items[showAllSeriesCheckBoxLocation-1].show();
+                            items[showAllSeriesCheckBoxLocation].show();
+                            items[showAllSeriesCheckBoxLocation+1].show();
+                            items[showAllSeriesCheckBoxLocation+2].show();
+
+                        }
+                        else {
+                            items[showAllSeriesCheckBoxLocation-1].hide();
+                            items[showAllSeriesCheckBoxLocation].hide();
+                            items[showAllSeriesCheckBoxLocation+1].hide();
+                            items[showAllSeriesCheckBoxLocation+2].hide();
+                        }
                         this.setBrushingEnabled(false);
                         this.displayTrendPlot();
                     }
