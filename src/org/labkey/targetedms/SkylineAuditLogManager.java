@@ -345,14 +345,14 @@ public class SkylineAuditLogManager
 
     /**
      * Deletes audit log entries belonging to the given document version. It will not delete entries that
-     * belong to more than one version.
+     * belong to more than one version. If the given run has no GUID it does nothing.
      * @param pRunId of the document version to delete
      */
     public void deleteDocumentVersionLog(int pRunId) throws AuditLogException
     {
         SQLFragment query = new SQLFragment(String.format("SELECT documentGUID FROM targetedms.Runs WHERE Id = %d", pRunId));
         String objGUID = new SqlSelector(TargetedMSManager.getSchema(), query).getObject(String.class);
-        assert objGUID != null;
+        if(objGUID == null) return;     //nothing to delete if there is no document or the document has no GUID
         AuditLogTree root = buildLogTree(new GUID(objGUID));
         List<Integer> deleteEntryIds = root.deleteList(pRunId).stream().map(AuditLogTree::getEntryId).collect(Collectors.toList());
 
