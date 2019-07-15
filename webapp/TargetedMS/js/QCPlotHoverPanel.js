@@ -31,7 +31,11 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
 
         this.items = [];
         this.callParent();
-        this.getExistingReplicateExclusions();
+
+        if(!this.metricProps.precursorScoped)
+            this.getRunId();
+        else
+            this.getExistingReplicateExclusions();
     },
 
     getExistingReplicateExclusions : function() {
@@ -60,6 +64,7 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
     },
 
     initializePanel : function() {
+
         if (this.pointData[this.valueName + 'Title'] != undefined) {
             this.add(this.getPlotPointDetailField('Metric', this.pointData[this.valueName + 'Title']));
         }
@@ -256,19 +261,32 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
 
     getPlotPointClickLink : function() {
         //Choose action target based on precursor type
-        if(this.metricProps.precursorScoped) {
-            var action = this.pointData['dataType'] == 'Peptide' ? "precursorAllChromatogramsChart" : "moleculePrecursorAllChromatogramsChart",
-                    url = LABKEY.ActionURL.buildURL('targetedms', action, LABKEY.ActionURL.getContainer(), {
-                        id: this.pointData['PrecursorId'],
-                        chromInfoId: this.pointData['PrecursorChromInfoId']
-                    });
-        } else {
-            url =  LABKEY.ActionURL.buildURL('targetedms', 'showPrecursorList', null)
-        }
+        var action = this.pointData['dataType'] == 'Peptide' ? "precursorAllChromatogramsChart" : "moleculePrecursorAllChromatogramsChart",
+            url = LABKEY.ActionURL.buildURL('targetedms', action, LABKEY.ActionURL.getContainer(), {
+                id: this.pointData['PrecursorId'],
+                chromInfoId: this.pointData['PrecursorChromInfoId']
+            });
 
         return LABKEY.Utils.textLink({
             text: this.metricProps.precursorScoped ? 'View Chromatogram': 'View Document',
-            href: this.metricProps.precursorScoped ? url + '#ChromInfo' + this.pointData['PrecursorChromInfoId'] : url
+            href: this.metricProps.precursorScoped ? url + '#ChromInfo' + this.pointData['PrecursorChromInfoId'] : this.viewDocumentURL
+        });
+    },
+
+    getRunId: function () {
+        LABKEY.Query.selectRows({
+            schemaName: this.metricProps.series1SchemaName,
+            queryName: this.metricProps.series1QueryName,
+            columns: 'SampleFileId/ReplicateId/RunId/Id',
+            scope: this,
+            success: function (results) {
+                var runId;
+                if(results && results.rows)
+                    runId = results.rows[0]["SampleFileId/ReplicateId/RunId/Id"];
+
+                this.viewDocumentURL = LABKEY.ActionURL.buildURL('targetedms', 'showPrecursorList', null, {id: runId});
+                this.getExistingReplicateExclusions();
+            }
         });
     }
 });
