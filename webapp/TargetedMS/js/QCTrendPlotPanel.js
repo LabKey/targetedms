@@ -419,16 +419,19 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             });
 
             //hiding the show All series in a single plot checkbox for run scoped metrics
-            var items = this.otherPlotOptionsToolbar.items.items;
-            if(!this.getMetricPropsById(this.metric).precursorScoped) {
-                items[location-2].hide();
-                items[location-1].hide();
-                items[location].hide();
-                items[location+1].hide();
-            }
+            this.showAllSeriesCheckbox(this.getMetricPropsById(this.metric).precursorScoped, location-1);
         }
 
         return this.otherPlotOptionsToolbar;
+    },
+
+    showAllSeriesCheckbox: function (visible, location)
+    {
+        var items = this.otherPlotOptionsToolbar.items.items;
+        items[location-1].setVisible(visible);
+        items[location].setVisible(visible);
+        items[location+1].setVisible(visible);
+        items[location+2].setVisible(visible);
     },
 
     getAnnotationFiltersToolbar : function()
@@ -875,19 +878,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                                 showAllSeriesCheckBoxLocation = i;
                         }
 
-                        if(this.getMetricPropsById(newVal).precursorScoped) {
-                            items[showAllSeriesCheckBoxLocation-1].show();
-                            items[showAllSeriesCheckBoxLocation].show();
-                            items[showAllSeriesCheckBoxLocation+1].show();
-                            items[showAllSeriesCheckBoxLocation+2].show();
+                        var showAllSeriesCheckBox = this.getMetricPropsById(newVal).precursorScoped;
+                        this.showAllSeriesCheckbox(showAllSeriesCheckBox, showAllSeriesCheckBoxLocation);
 
-                        }
-                        else {
-                            items[showAllSeriesCheckBoxLocation-1].hide();
-                            items[showAllSeriesCheckBoxLocation].hide();
-                            items[showAllSeriesCheckBoxLocation+1].hide();
-                            items[showAllSeriesCheckBoxLocation+2].hide();
-                        }
                         this.setBrushingEnabled(false);
                         this.displayTrendPlot();
                     }
