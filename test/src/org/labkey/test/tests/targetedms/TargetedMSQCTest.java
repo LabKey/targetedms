@@ -55,7 +55,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.CUSUMm;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.LeveyJennings;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.MovingRange;
@@ -660,6 +659,33 @@ public class TargetedMSQCTest extends TargetedMSTest
         }
         // reset to avoid test case dependency
         qcPlotsWebPart.resetInitialQCPlotFields();
+    }
+
+    @Test
+    public void testRunScopedMetric()
+    {
+        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+
+        log("Verifying TIC Area QC Plots");
+        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TICAREA);
+        qcPlotsWebPart.waitForPlots(1, true);
+        String ticPlotSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+        assertFalse(ticPlotSVGText.isEmpty());
+
+        log("Verifying Show All Series Checkbox");
+        assertTextNotPresent("Show All Series in a Single Plot");
+        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.RETENTION);
+        assertTextPresent("Show All Series in a Single Plot");
+
+        log("Verifying tic_area information in hover plot");
+        mouseOver(qcPlotsWebPart.getPointByAcquiredDate("2013-08-09 11:39:00"));
+        waitForElement(qcPlotsWebPart.getBubble());
+        String ticAreahoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
+        assertTrue("Wrong header present", ticAreahoverText.contains("Total Ion Chromatogram Area"));
+        assertTrue("Wrong Link present", ticAreahoverText.contains("VIEW DOCUMENT"));
+        assertFalse("peptide should not be present", ticAreahoverText.contains("peptide"));
+        assertFalse("View Chromatogram link should not be present", ticAreahoverText.contains("VIEW CHROMATOGRAM"));
     }
 
     private void testEachCombinedPlots(QCPlotsWebPart.QCPlotType plotType)
