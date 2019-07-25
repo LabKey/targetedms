@@ -363,7 +363,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.checkAllPlotTypes(true);
 
         // if metric has negative values and we pick log y-axis scale, we should revert to linear scale and show message
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.MASSACCURACTY);
+        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.MASSACCURACY);
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LOG);
         assertEquals("Unexpected number of plots with invalid log scale.", 3, qcPlotsWebPart.getLogScaleInvalidCount());
         assertEquals("Unexpected number of plots with invalid log scale.", 0, qcPlotsWebPart.getLogScaleWarningCount());
@@ -674,11 +674,13 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertFalse(ticPlotSVGText.isEmpty());
 
         log("Verifying Show All Series Checkbox");
-        assertTextNotPresent("Show All Series in a Single Plot");
+        assertElementNotVisible(Locator.tagContainingText("label", "Show All Series in a Single Plot"));
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.RETENTION);
-        assertTextPresent("Show All Series in a Single Plot");
+        assertElementVisible(Locator.tagContainingText("label", "Show All Series in a Single Plot"));
 
         log("Verifying tic_area information in hover plot");
+        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TICAREA);
+        qcPlotsWebPart.waitForPlots(1, true);
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate("2013-08-09 11:39:00"));
         waitForElement(qcPlotsWebPart.getBubble());
         String ticAreahoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
