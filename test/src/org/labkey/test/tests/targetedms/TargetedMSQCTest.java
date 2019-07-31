@@ -154,6 +154,8 @@ public class TargetedMSQCTest extends TargetedMSTest
                     "\n" +
                     "    return testLegends();";
 
+    private final PortalHelper portalHelper = new PortalHelper(this);
+
     @Override
     protected String getProjectName()
     {
@@ -682,9 +684,10 @@ public class TargetedMSQCTest extends TargetedMSTest
         log("Verifying tic_area information in hover plot");
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TICAREA);
         qcPlotsWebPart.waitForPlots(1, true);
-        WebElement startPoint = qcPlotsWebPart.getPointByAcquiredDate(acquiredDate);
+        WebElement startPoint = qcPlotsWebPart.getPointByAcquiredDate("2013-08-26 04:27:53");
         scrollIntoView(startPoint);
-        mouseOver(qcPlotsWebPart.getPointByAcquiredDate("2013-08-09 11:39:00"));
+        waitForText("Instrumentation Change");
+        mouseOver(qcPlotsWebPart.getPointByAcquiredDate(acquiredDate));
         waitForElement(qcPlotsWebPart.getBubble());
         String ticAreahoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
         assertTrue("Wrong header present", ticAreahoverText.contains("Total Ion Chromatogram Area"));
