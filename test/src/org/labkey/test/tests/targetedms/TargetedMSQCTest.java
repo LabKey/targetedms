@@ -682,10 +682,10 @@ public class TargetedMSQCTest extends TargetedMSTest
         log("Verifying tic_area information in hover plot");
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TICAREA);
         qcPlotsWebPart.waitForPlots(1, true);
-        scrollIntoView(qcPlotsWebPart.getSmallPlotLoc());
         WebElement startPoint = qcPlotsWebPart.getPointByAcquiredDate(acquiredDate);
         scrollIntoView(startPoint);
-        qcPlotsWebPart.openExclusionBubble(acquiredDate);
+        mouseOver(qcPlotsWebPart.getPointByAcquiredDate("2013-08-09 11:39:00"));
+        waitForElement(qcPlotsWebPart.getBubble());
         String ticAreahoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
         assertTrue("Wrong header present", ticAreahoverText.contains("Total Ion Chromatogram Area"));
         assertTrue("Wrong Link present", ticAreahoverText.contains("VIEW DOCUMENT"));
