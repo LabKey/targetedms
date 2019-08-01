@@ -28,6 +28,7 @@ import org.labkey.test.TestFileUtils;
 import org.labkey.test.categories.DailyB;
 import org.labkey.test.categories.MS2;
 import org.labkey.test.components.ext4.RadioButton;
+import org.labkey.test.components.html.SiteNavBar;
 import org.labkey.test.components.targetedms.GuideSet;
 import org.labkey.test.components.targetedms.QCAnnotationTypeWebPart;
 import org.labkey.test.components.targetedms.QCAnnotationWebPart;
@@ -666,7 +667,8 @@ public class TargetedMSQCTest extends TargetedMSTest
     @Test
     public void testRunScopedMetric()
     {
-        portalHelper.addWebPart("Wiki");
+        new SiteNavBar(getDriver()).enterPageAdminMode();
+        portalHelper.moveWebPart("QC Plots", PortalHelper.Direction.UP);
         String acquiredDate = "2013-08-09 11:39:00";
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
@@ -686,8 +688,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TICAREA);
         qcPlotsWebPart.waitForPlots(1, true);
         WebElement startPoint = qcPlotsWebPart.getPointByAcquiredDate("2013-08-26 04:27:53");
-        scrollIntoView(Locator.tagContainingText("span","Wiki"));
-        waitForText("Instrumentation Change");
+        sleep(10000);
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate(acquiredDate));
         waitForElement(qcPlotsWebPart.getBubble());
         String ticAreahoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
