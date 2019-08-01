@@ -666,6 +666,7 @@ public class TargetedMSQCTest extends TargetedMSTest
     @Test
     public void testRunScopedMetric()
     {
+        portalHelper.addWebPart("Wiki");
         String acquiredDate = "2013-08-09 11:39:00";
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
@@ -685,7 +686,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TICAREA);
         qcPlotsWebPart.waitForPlots(1, true);
         WebElement startPoint = qcPlotsWebPart.getPointByAcquiredDate("2013-08-26 04:27:53");
-        scrollIntoView(startPoint);
+        scrollIntoView(Locator.tagContainingText("span","Wiki"));
         waitForText("Instrumentation Change");
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate(acquiredDate));
         waitForElement(qcPlotsWebPart.getBubble());
