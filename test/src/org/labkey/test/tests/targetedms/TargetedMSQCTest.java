@@ -694,6 +694,10 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertTrue("Wrong Link present", ticAreahoverText.contains("VIEW DOCUMENT"));
         assertFalse("peptide should not be present", ticAreahoverText.contains("peptide"));
         assertFalse("View Chromatogram link should not be present", ticAreahoverText.contains("VIEW CHROMATOGRAM"));
+
+        log("Moving QC Plots Webpart down");
+        portalHelper.moveWebPart("QC Plots", PortalHelper.Direction.DOWN);
+        portalHelper.exitAdminMode();
     }
 
     private void testEachCombinedPlots(QCPlotsWebPart.QCPlotType plotType)
