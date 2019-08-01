@@ -687,8 +687,6 @@ public class TargetedMSQCTest extends TargetedMSTest
         log("Verifying tic_area information in hover plot");
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TICAREA);
         qcPlotsWebPart.waitForPlots(1, true);
-        WebElement startPoint = qcPlotsWebPart.getPointByAcquiredDate("2013-08-26 04:27:53");
-        sleep(10000);
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate(acquiredDate));
         waitForElement(qcPlotsWebPart.getBubble());
         String ticAreahoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
