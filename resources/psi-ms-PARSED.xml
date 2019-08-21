@@ -19,6 +19,7 @@
     <instrument id="MS:1000141" name="apex IV" vendor="Bruker Daltonics apex series" description="Bruker Daltonics' apex IV: ESI, MALDI, Nanospray, APCI, APPI, Qh-FT_ICR."/>
     <instrument id="MS:1002279" name="maXis 4G" vendor="Bruker Daltonics maXis series" description="Bruker Daltonics' maXis 4G: ESI Q-TOF, Nanospray, APCI, APPI, GC-APCI, CaptiveSpray."/>
     <instrument id="MS:1001541" name="maXis" vendor="Bruker Daltonics maXis series" description="Bruker Daltonics' maXis: ESI Q-TOF, Nanospray, APCI, APPI."/>
+    <instrument id="MS:1003004" name="maXis II" vendor="Bruker Daltonics maXis series" description="Bruker Daltonics' maXis II."/>
     <instrument id="MS:1001540" name="micrOTOF II" vendor="Bruker Daltonics micrOTOF series" description="Bruker Daltonics' micrOTOF II: ESI TOF, Nanospray, APCI, APPI."/>
     <instrument id="MS:1002299" name="micrOTOF-Q III" vendor="Bruker Daltonics micrOTOF series" description="Bruker Daltonics' micrOTOF-Q III: ESI Q-TOF, Nanospray, APCI, APPI, GC-APCI, CaptiveSpray."/>
     <instrument id="MS:1002667" name="impact HD" vendor="Bruker Daltonics micrOTOF series" description="Bruker Daltonics' impact HD."/>
@@ -64,6 +65,7 @@
     <instrument id="MS:1001546" name="amaZon X" vendor="Bruker Daltonics amaZon series" description="Bruker Daltonics' amaZon X: ESI quadrupole ion trap, APCI, APPI, ETD, PTR."/>
     <instrument id="MS:1002301" name="amaZon Speed" vendor="Bruker Daltonics amaZon series" description="Bruker Daltonics' amaZon ETD: ESI quadrupole ion trap, Nanospray, APCI, APPI, GC-APCI, CaptiveSpray."/>
     <instrument id="MS:1001542" name="amaZon ETD" vendor="Bruker Daltonics amaZon series" description="Bruker Daltonics' amaZon ETD: ESI quadrupole ion trap, Nanospray, APCI, APPI, ETD, PTR."/>
+    <instrument id="MS:1003005" name="timsTOF Pro" vendor="Bruker Daltonics" description="Bruker Daltonics' timsTOF Pro."/>
     <instrument id="MS:1000195" name="SymBiot XVI" vendor="SCIEX" description="Applied Biosystems/MDS SCIEX SymBiot XVI MS."/>
     <instrument id="MS:1002587" name="API 165" vendor="SCIEX" description="Applied Biosystems/MDS SCIEX API 165 MS."/>
     <instrument id="MS:1002586" name="API 100LC" vendor="SCIEX" description="Applied Biosystems/MDS SCIEX API 100LC MS."/>
@@ -193,6 +195,7 @@
     <instrument id="MS:1000641" name="DSQ II" vendor="Thermo Scientific" description="Thermo Scientific DSQ II GC-MS."/>
     <instrument id="MS:1000449" name="LTQ Orbitrap" vendor="Thermo Scientific" description="Finnigan LTQ Orbitrap MS."/>
     <instrument id="MS:1000640" name="DFS" vendor="Thermo Scientific" description="Thermo Scientific DFS HR GC-MS."/>
+    <instrument id="MS:1003029" name="Orbitrap Eclipse" vendor="Thermo Scientific" description="&quot;Thermo Scientific Orbitrap Eclipse mass spectrometer with Tribrid architecture consisting of quadrupole mass filter, linear ion trap and Orbitrap mass analyzers.&quot; [PSI:PI]"/>
     <instrument id="MS:1002874" name="TSQ Altis" vendor="Thermo Scientific" description="&quot;Thermo Scientific TSQ Altis Triple Quadrupole MS.&quot; [PSI:PI]"/>
     <instrument id="MS:1000447" name="LTQ" vendor="Thermo Scientific" description="Finnigan LTQ MS."/>
     <instrument id="MS:1002835" name="LTQ Orbitrap Classic" vendor="Thermo Scientific" description="Thermo Fisher Scientific LTQ Orbitrap Classic."/>
@@ -211,6 +214,7 @@
     <instrument id="MS:1002877" name="Q Exactive HF-X" vendor="Thermo Scientific" description="&quot;Thermo Scientific Q Exactive HF-X Hybrid Quadrupole Orbitrap MS.&quot; [PSI:PI]"/>
     <instrument id="MS:1000644" name="TSQ Quantum Access" vendor="Thermo Scientific" description="Thermo Scientific TSQ Quantum Access MS."/>
     <instrument id="MS:1000645" name="Element XR" vendor="Thermo Scientific" description="Thermo Scientific Element XR HR-ICP-MS."/>
+    <instrument id="MS:1003028" name="Orbitrap Exploris 480" vendor="Thermo Scientific" description="&quot;Thermo Scientific Orbitrap Exploris 480 Quadrupole Orbitrap MS.&quot; [PSI:PI]"/>
     <instrument id="MS:1000642" name="MALDI LTQ XL" vendor="Thermo Scientific" description="Thermo Scientific MALDI LTQ XL MS."/>
     <instrument id="MS:1000643" name="MALDI LTQ Orbitrap" vendor="Thermo Scientific" description="Thermo Scientific MALDI LTQ Orbitrap MS."/>
     <instrument id="MS:1000637" name="ITQ 1100" vendor="Thermo Scientific" description="Thermo Scientific ITQ 1100 GC-MS."/>
