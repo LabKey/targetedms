@@ -23,7 +23,9 @@ import org.labkey.test.TestProperties;
 import org.labkey.test.TestTimeoutException;
 import org.labkey.test.components.targetedms.GuideSet;
 import org.labkey.test.components.targetedms.GuideSetWebPart;
+import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.components.targetedms.QCSummaryWebPart;
+import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.pages.targetedms.GuideSetPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
 import org.labkey.test.util.APIContainerHelper;
@@ -291,6 +293,15 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
     {
         clickTab("Panorama Dashboard");
         return new PanoramaDashboard(this);
+    }
+
+    public ConfigureMetricsUIPage goToConfigureMetricsUI()
+    {
+        PanoramaDashboard qcDashboard = goToDashboard();
+        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        qcPlotsWebPart.clickMenuItem("Configure QC Metrics");
+        waitForElement(Locator.tagWithText("button", "Add New Metric"));
+        return new ConfigureMetricsUIPage(this);
     }
 
     @Override
