@@ -295,15 +295,6 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         return new PanoramaDashboard(this);
     }
 
-    public ConfigureMetricsUIPage goToConfigureMetricsUI()
-    {
-        PanoramaDashboard qcDashboard = goToDashboard();
-        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        qcPlotsWebPart.clickMenuItem("Configure QC Metrics");
-        waitForElement(Locator.tagWithText("button", "Add New Metric"));
-        return new ConfigureMetricsUIPage(this);
-    }
-
     @Override
     protected void doCleanup(boolean afterTest) throws TestTimeoutException
     {
