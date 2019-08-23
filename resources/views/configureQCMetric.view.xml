@@ -4,5 +4,7 @@
     </permissions>
     <dependencies>
         <dependency path="internal/jQuery"/>
+        <dependency path="Ext4"/>
+        <dependency path="PanoramaPremium/window/AddNewMetricWindow.js"/>
     </dependencies>
 </view>

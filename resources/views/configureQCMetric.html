@@ -23,12 +23,13 @@
             jQuery.each(qcMetrics, function (index, row) {
                 var rowClass = index % 2 === 1 ? "labkey-row" : "labkey-alternate-row";
                 configRows.push({metric: row.id, name: row.name, Enabled: row.Enabled, Inserted: row.Inserted});
+                var editLock = row.Container === LABKEY.container.id;
 
                 qcMetricsTable += '<tr class="' + rowClass + '">';
 
                 qcMetricsTable += '<td>' + '<input type="checkbox" ' + (row.Enabled ? checked="checked" : '') + ' name=\"' + LABKEY.Utils.encodeHtml(row.name) + '\" id=\"' +  "checkbox-"+ row.id  +  '\"></td>';
 
-                qcMetricsTable += '<td>' + LABKEY.Utils.encodeHtml(row.name) + '</td>';
+                qcMetricsTable += '<td>' + (editLock ? '<a id="editLink" href="#">' : '' ) + LABKEY.Utils.encodeHtml(row.name) + '</td>' + (editLock ? '</a>' : '' );
                 qcMetricsTable += '<td>' + (row.PrecursorScoped ? 'Precursor' : 'Run') + '</td>' +
                         '</tr>';
 
@@ -36,10 +37,41 @@
 
             qcMetricsTable += '</table>' + '<br>' +
                     '<button type="button" class="labkey-button primary" onclick="LABKEY.internal.ConfigureQCMetrics.save()" style="margin-right: 20px;">Save</button>' +
-                    '<button type="button" class="labkey-button" onclick="LABKEY.internal.ConfigureQCMetrics.resetQCMetrics()">Cancel</button>' +
+                    '<button type="button" class="labkey-button" onclick="LABKEY.internal.ConfigureQCMetrics.resetQCMetrics()" style="margin-right: 20px;">Cancel</button>' +
+                    '<button type="button" class="labkey-button" onclick="LABKEY.internal.ConfigureQCMetrics.addNewMetric()">Add New Metric</button>' +
                     '</form>';
 
             jQuery('#qcMetricsTable').html(qcMetricsTable);
+
+            jQuery('#editLink').click(function (e) {
+                e.preventDefault();
+                editMetric(jQuery('#editLink').text());
+                return false;
+            })
+        }
+
+        function editMetric(metricName) {
+            var clickedQcMetricConfig = {};
+            jQuery.each(qcMetrics, function (index, row) {
+                if (row.name === metricName) {
+                    clickedQcMetricConfig = row;
+                }
+            });
+
+            LABKEY.Query.getSchemas({
+                scope: this,
+                containerPath: LABKEY.container.id,
+                success: function (schemasInfo) {
+                    Ext4.create('Panorama.Window.AddCustomMetricWindow', {
+                        parent: this,
+                        height: Ext4.max([Ext4.getBody().getHeight() * 0.3, 350]),
+                        width: Ext4.max([Ext4.getBody().getWidth() * 0.2, 450]),
+                        metric: clickedQcMetricConfig,
+                        operation: 'update',
+                        schemas: schemasInfo.schemas
+                    }).show();
+                }
+            });
         }
 
         function getReturnURL() {
@@ -80,6 +112,25 @@
             resetQCMetrics: function(){
                 window.location = getReturnURL();
             },
+
+            addNewMetric: function() {
+                Ext4.onReady(function(){
+                    LABKEY.Query.getSchemas({
+                        scope: this,
+                        containerPath: LABKEY.container.id,
+                        success:  function(schemasInfo) {
+                            Ext4.create('Panorama.Window.AddCustomMetricWindow', {
+                                parent: this,
+                                height: Ext4.max([Ext4.getBody().getHeight() * 0.3, 350]),
+                                width: Ext4.max([Ext4.getBody().getWidth() * 0.2, 450]),
+                                schemas: schemasInfo.schemas,
+                                operation: 'insert'
+                            }).show();
+                        }
+                    });
+                });
+            },
+
             save: function () {
                 var recordsToInsert = [];
                 var recordsToUpdate = [];

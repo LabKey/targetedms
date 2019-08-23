@@ -16,19 +16,23 @@ import org.labkey.test.components.dumbster.EmailRecordTable;
 import org.labkey.test.components.html.BootstrapMenu;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.components.targetedms.QCSummaryWebPart;
+import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
 import org.labkey.test.tests.targetedms.TargetedMSTest;
 import org.labkey.test.util.ApiPermissionsHelper;
+
 import org.openqa.selenium.NoSuchElementException;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 @Category(Git.class)
-public class TargetedMSQCPremiumTest extends TargetedMSTest
+public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
 {
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -36,7 +40,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSTest
     @Override
     protected String getProjectName()
     {
-        return getClass().getSimpleName() + "Premium Project";
+        return getClass().getSimpleName() + " Project";
     }
 
     @BeforeClass
@@ -64,16 +68,13 @@ public class TargetedMSQCPremiumTest extends TargetedMSTest
     @Test
     public void testConfigureQCMetrics()
     {
-        PanoramaDashboard qcDashboard = goToDashboard();
+        String metric = "Peak Area";
+        ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
+        configureUI.disableMetric(metric);
+
+        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        qcPlotsWebPart.clickMenuItem("Configure QC Metrics");
-        uncheckCheckbox(Locator.checkboxByName("Peak Area"));
-        click(Locator.buttonContainingText("Save"));
-
-        List<String> qcMetricOptions = qcPlotsWebPart.getMetricTypeOptions();
-
-        log("Verifying disabled metric not present in QC Plot dashboard dropdown");
-        qcMetricOptions.forEach(qcMetric-> assertFalse("Disabled QC Metric found - Peak Area", qcMetric.equalsIgnoreCase("Peak Area")));
+        verifyDisabledMetricNotPresent(qcPlotsWebPart, "Peak Area");
 
         impersonate(USER);
         BootstrapMenu qcPlotMenu = qcPlotsWebPart.getWebParMenu();
@@ -114,5 +115,56 @@ public class TargetedMSQCPremiumTest extends TargetedMSTest
         notifications.clickMessage(message);
         assertTextPresent("56"); //Total outliers
 
+    }
+
+    @Test
+    public void testAddNewMetric()
+    {
+        String metricName = "Test Custom Metric";
+        String schema1Name = "targetedms";
+        String series1Query = "AQCTest_Metric"; //starting the query name with A to make it appear top in the list
+
+        log("Adding new test custom metric");
+        //need to preserve the insertion order
+        Map<ConfigureMetricsUIPage.MetricProperties , String > metricProperties = new LinkedHashMap<>();
+        metricProperties.put(ConfigureMetricsUIPage.MetricProperties.metricName, metricName);
+        metricProperties.put(ConfigureMetricsUIPage.MetricProperties.series1Schema, schema1Name);
+        metricProperties.put(ConfigureMetricsUIPage.MetricProperties.series1Query, series1Query);
+        metricProperties.put(ConfigureMetricsUIPage.MetricProperties.series1AxisLabel, metricName);
+        metricProperties.put(ConfigureMetricsUIPage.MetricProperties.metricType, ConfigureMetricsUIPage.MetricType.Precursor.name());
+
+        ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
+        configureUI.addNewMetric(metricProperties);
+
+        log("Verifying new metric got added");
+        goToConfigureMetricsUI();
+        waitForElement(Locator.linkWithText(metricName));
+        assertTextPresent(metricName);
+
+        log("Disabling added test metric");
+        PanoramaDashboard qcDashboard = goToDashboard();
+        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        goToConfigureMetricsUI();
+        configureUI.disableMetric(metricName);
+
+        verifyDisabledMetricNotPresent(qcPlotsWebPart, metricName);
+
+        configureUI = goToConfigureMetricsUI();
+        metricProperties.clear();
+        metricProperties.put(ConfigureMetricsUIPage.MetricProperties.metricName, metricName+"-Edited");
+        configureUI.editMetric(metricName, metricProperties);
+
+        log("Verifying new metric got edited");
+        qcPlotsWebPart.clickMenuItem("Configure QC Metrics");
+        waitForElement(Locator.linkWithText(metricName + "-Edited"));
+        assertTextPresent(metricName + "-Edited");
+    }
+
+    private void verifyDisabledMetricNotPresent(QCPlotsWebPart qcPlotsWebPart, String metricName)
+    {
+        List<String> qcMetricOptions = qcPlotsWebPart.getMetricTypeOptions();
+
+        log("Verifying disabled metric not present in QC Plot dashboard dropdown");
+        qcMetricOptions.forEach(qcMetric-> assertFalse("Disabled QC Metric found - " + metricName, qcMetric.equalsIgnoreCase(metricName)));
     }
 }
