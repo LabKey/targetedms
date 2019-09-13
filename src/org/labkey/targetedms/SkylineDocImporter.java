@@ -324,7 +324,7 @@ public class SkylineDocImporter
 
                 TargetedMSService.FolderType folderType = TargetedMSManager.getFolderType(run.getContainer());
                 Set<URI> files = new HashSet<>();
-                SampleFile srcFile;
+                String srcFile;
 
                 for(SkylineReplicate skyReplicate: parser.getReplicates())
                 {
@@ -360,15 +360,15 @@ public class SkylineDocImporter
                                     srcFile = TargetedMSManager.deleteSampleFileAndDependencies(existingSample.getId());
                                     _log.info("Updating previously imported data for sample file " + sampleFile.getFilePath() + " in QC folder.");
 
-                                    if (null != srcFile && !srcFile.getFilePath().isEmpty())
+                                    if (null != srcFile)
                                     {
                                         try
                                         {
-                                            files.add(new URI(srcFile.getFilePath()));
+                                            files.add(new URI(srcFile));
                                         }
                                         catch (URISyntaxException e)
                                         {
-                                            _log.error("Unable to delete file " + srcFile.getFilePath() + ". May be an invalid path. This file is no longer needed on the server.");
+                                            _log.error("Unable to delete file " + srcFile + ". May be an invalid path. This file is no longer needed on the server.");
                                         }
                                     }
                                 }
@@ -765,7 +765,6 @@ public class SkylineDocImporter
      * Insert new iRT scale/peptides, or update existing scale for library folders
      *
      * @return The existing or new iRT Scale Id for the imported iRT Peptide set. null if no iRT Data for this run.
-     * @throws PipelineJobException
      */
     private @Nullable Integer insertiRTData(SkylineDocumentParser parser) throws PipelineJobException
     {
@@ -822,7 +821,6 @@ public class SkylineDocImporter
      * Verify the standards of the imported scale match the existing standards, and determine which of the import peptides are new
      * to be inserted vs. updates to existing values.
      * @return The list of existing peptides which have recalculated weighted average values.
-     * @throws PipelineJobException
      */
     private ArrayList<IrtPeptide> normalizeIrtImportAndReweighValues(ArrayList<IrtPeptide> existingScale, List<IrtPeptide> importScale) throws PipelineJobException
     {
