@@ -30,6 +30,7 @@
     public void addClientDependencies(ClientDependencies dependencies)
     {
         dependencies.add("Ext4");
+        dependencies.add("internal/jQuery");
     }
 %>
 <%
@@ -91,14 +92,15 @@
     }
 </style>
 <script type="text/javascript">
+
++function($){
+
     var hiddenFields;
     var replicateStore;
     var filterStore;
     var selectedReplicatesFilterList;
     var selectedAnnotationsFilterList;
     var form;
-
-    var $ = jQuery.noConflict();
 
     Ext4.onReady(function(){
         replicateStore = Ext4.create('Ext.data.Store', {
@@ -406,14 +408,14 @@
     }
 
     // Clears Annotations filter box selected values.
-    function clearAnnotations() {
+    clearAnnotations = function(){
         form.getForm().findField('annotationsFilter').clearValue();
         $('#annotationFilters').empty();
         manageFilterListVisibility();
     }
 
     // Clears Replicates filter box selected values.
-    function clearReplicates() {
+    clearReplicates = function(){
         form.getForm().findField('replicatesFilter').clearValue();
         $('#replicateFilters').empty();
         manageFilterListVisibility();
@@ -442,7 +444,7 @@
     }
 
     // Triggered by onclick() function in each list element in the [-](delete) button.
-    function deleteFilter(el, parentTable)
+    deleteFilter = function (el, parentTable)
     {
         var values;
         var formId;
@@ -475,7 +477,7 @@
     });
 
     // Handels showing and hiding the form.
-    function showChart()
+    showChart = function()
     {
         if($('#showGraphImg').attr('src') === LABKEY.contextPath + "/_images/plus.gif")
         {
@@ -490,6 +492,7 @@
             $('#allFilters').hide("slow");
         }
     }
+}(jQuery);
 </script>
 <div id="headContainer">
     <div  onclick="showChart()" style="margin-bottom: 10px;"><img id="showGraphImg" src="<%=getViewContext().getContextPath()%>/_images/minus.gif"> <strong>Display Chart Settings</strong></div>
