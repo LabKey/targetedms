@@ -195,6 +195,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.labkey.api.util.DOM.Attribute.method;
+import static org.labkey.api.util.DOM.DIV;
 import static org.labkey.api.util.DOM.X.FORM;
 import static org.labkey.api.util.DOM.at;
 import static org.labkey.targetedms.TargetedMSModule.EXPERIMENT_FOLDER_WEB_PARTS;
@@ -420,8 +421,9 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(ChromatogramCrawlerForm form, boolean reshow, BindException errors) throws Exception
         {
-            return new HtmlView("Chromatogram Crawler", FORM(at(method, "POST"),
-                    new Button.ButtonBuilder("Start Crawl").submit(true).build()));
+            return new HtmlView("Chromatogram Crawler", DIV("Crawl all containers under the parent " + getContainer().getPath(),
+                    FORM(at(method, "POST"),
+                    new Button.ButtonBuilder("Start Crawl").submit(true).build())));
         }
 
         @Override
