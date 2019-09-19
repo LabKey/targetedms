@@ -81,7 +81,7 @@ public class ChromatogramCrawlerJob extends PipelineJob
     public void run()
     {
         setStatus(TaskStatus.running);
-        var containers = ContainerManager.getAllChildren(ContainerManager.getRoot(), getUser());
+        var containers = ContainerManager.getAllChildren(getContainer(), getUser());
         long totalPCI = new TableSelector(TargetedMSManager.getTableInfoPrecursorChromInfo(), _crawlType.getFilter(), null).getRowCount();
 
         getLogger().info("Starting processing of " + totalPCI + " chromatogram rows over " + containers.size() + " containers");
