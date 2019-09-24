@@ -261,10 +261,10 @@ public class SkylineDocImporter
             run.setiRTscaleId(insertiRTData(parser));
 
             // 1. Transition settings
-            OptimizationSettings optimizationSettings = insertTransitionSettings(parser.getTransitionSettings());
+            OptimizationInfo optimizationInfo = insertTransitionSettings(parser.getTransitionSettings());
 
             // 2. Replicates and sample files
-            ReplicateInfo replicateInfo = insertReplicates(run, parser, optimizationSettings, folderType);
+            ReplicateInfo replicateInfo = insertReplicates(run, parser, optimizationInfo, folderType);
 
             // 3. Peptide settings
             PeptideSettings pepSettings = parser.getPeptideSettings();
@@ -306,7 +306,7 @@ public class SkylineDocImporter
             {
                 // TODO: bulk insert of precursor, transition, chrom info etc.
                 PeptideGroup pepGroup = parser.nextPeptideGroup();
-                insertPeptideGroup(proteinService, optimizationSettings, replicateInfo.skylineIdSampleFileIdMap,
+                insertPeptideGroup(proteinService, optimizationInfo, replicateInfo.skylineIdSampleFileIdMap,
                         modInfo, libraryNameIdMap, pepGroup, parser, peptides, smallMolecules);
                 if (++peptideGroupCount % 100 == 0)
                 {
@@ -383,7 +383,7 @@ public class SkylineDocImporter
         }
     }
 
-    private ReplicateInfo insertReplicates(TargetedMSRun run, SkylineDocumentParser parser, OptimizationSettings optimizationSettings, TargetedMSService.FolderType folderType)
+    private ReplicateInfo insertReplicates(TargetedMSRun run, SkylineDocumentParser parser, OptimizationInfo optimizationInfo, TargetedMSService.FolderType folderType)
     {
         ReplicateInfo replicateInfo = new ReplicateInfo();
 
@@ -399,13 +399,13 @@ public class SkylineDocImporter
             replicate.setSampleDilutionFactor(skyReplicate.getSampleDilutionFactor());
             replicate.setRunId(_runId);
 
-            if(optimizationSettings._cePredictor != null && skyReplicate.getCePredictor() != null && optimizationSettings._cePredictor.equals(skyReplicate.getCePredictor()))
+            if(optimizationInfo._cePredictor != null && skyReplicate.getCePredictor() != null && optimizationInfo._cePredictor.equals(skyReplicate.getCePredictor()))
             {
-                replicate.setCePredictorId(optimizationSettings._cePredictor.getId());
+                replicate.setCePredictorId(optimizationInfo._cePredictor.getId());
             }
-            if(optimizationSettings._dpPredictor != null && skyReplicate.getDpPredictor() != null && optimizationSettings._dpPredictor.equals(skyReplicate.getDpPredictor()))
+            if(optimizationInfo._dpPredictor != null && skyReplicate.getDpPredictor() != null && optimizationInfo._dpPredictor.equals(skyReplicate.getDpPredictor()))
             {
-                replicate.setDpPredictorId(optimizationSettings._dpPredictor.getId());
+                replicate.setDpPredictorId(optimizationInfo._dpPredictor.getId());
             }
 
             if (folderType == TargetedMSService.FolderType.QC)
@@ -966,7 +966,7 @@ public class SkylineDocImporter
         return instrument;
     }
 
-    private void insertPeptideGroup(ProteinService proteinService, OptimizationSettings optimizationSettings, Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
+    private void insertPeptideGroup(ProteinService proteinService, OptimizationInfo optimizationInfo, Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
                                     ModificationInfo modInfo,
                                     Map<String, Integer> libraryNameIdMap, PeptideGroup pepGroup, SkylineDocumentParser parser, Set<String> peptides, Set<String> smallMolecules)
             throws XMLStreamException, IOException
@@ -1089,7 +1089,7 @@ public class SkylineDocImporter
                     break;
             }
 
-            insertPeptideOrSmallMolecule(optimizationSettings, skylineIdSampleFileIdMap, modInfo,
+            insertPeptideOrSmallMolecule(optimizationInfo, skylineIdSampleFileIdMap, modInfo,
                     libraryNameIdMap, pepGroup, generalMolecule);
         }
         if(peptideCount > 0)
@@ -1140,7 +1140,7 @@ public class SkylineDocImporter
         return identifierMap;
     }
 
-    private void insertPeptideOrSmallMolecule(OptimizationSettings optimizationSettings,
+    private void insertPeptideOrSmallMolecule(OptimizationInfo optimizationInfo,
                                               Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
                                               ModificationInfo modInfo,
                                               Map<String, Integer> libraryNameIdMap,
@@ -1207,7 +1207,7 @@ public class SkylineDocImporter
             // 3. precursor
             for (Precursor precursor : peptide.getPrecursorList())
             {
-                insertPrecursor(optimizationSettings,
+                insertPrecursor(optimizationInfo,
                         skylineIdSampleFileIdMap,
                         modInfo,
                         libraryNameIdMap,
@@ -1361,7 +1361,7 @@ public class SkylineDocImporter
         }
     }
 
-    private void insertPrecursor(OptimizationSettings optimizationSettings,
+    private void insertPrecursor(OptimizationInfo optimizationInfo,
                                  Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
                                  ModificationInfo modInfo,
                                  Map<String, Integer> libraryNameIdMap,
@@ -1417,7 +1417,7 @@ public class SkylineDocImporter
         // 4. transition
         for(Transition transition: precursor.getTransitionsList())
         {
-            insertTransition(optimizationSettings, skylineIdSampleFileIdMap, modInfo, precursor, sampleFilePrecursorChromInfoIdMap, transition);
+            insertTransition(optimizationInfo, skylineIdSampleFileIdMap, modInfo, precursor, sampleFilePrecursorChromInfoIdMap, transition);
         }
     }
 
@@ -1441,7 +1441,7 @@ public class SkylineDocImporter
         return gp;
     }
 
-    private void insertTransition(OptimizationSettings optimizationSettings,
+    private void insertTransition(OptimizationInfo optimizationInfo,
                                   Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
                                   ModificationInfo modInfo,
                                   Precursor precursor,
@@ -1472,7 +1472,7 @@ public class SkylineDocImporter
         insertTransitionAnnotation(transition.getAnnotations(), transition.getId());
 
         // Insert appropriate CE and DP transition optimizations
-        if (optimizationSettings._insertCEOptmizations && transition.getCollisionEnergy() != null)
+        if (optimizationInfo._insertCEOptmizations && transition.getCollisionEnergy() != null)
         {
             TransitionOptimization ceOpt = new TransitionOptimization();
             ceOpt.setTransitionId(transition.getId());
@@ -1480,7 +1480,7 @@ public class SkylineDocImporter
             ceOpt.setOptimizationType("ce");
             Table.insert(_user, TargetedMSManager.getTableInfoTransitionOptimization(), ceOpt);
         }
-        if (optimizationSettings._insertDPOptmizations && transition.getDeclusteringPotential() != null)
+        if (optimizationInfo._insertDPOptmizations && transition.getDeclusteringPotential() != null)
         {
             TransitionOptimization dpOpt = new TransitionOptimization();
             dpOpt.setTransitionId(transition.getId());
@@ -2355,7 +2355,7 @@ public class SkylineDocImporter
         return _localDirectory.copyToLocalDirectory(_expData.getDataFileUrl(), _log);
     }
 
-    private OptimizationSettings insertTransitionSettings(TransitionSettings settings)
+    private OptimizationInfo insertTransitionSettings(TransitionSettings settings)
     {
         TransitionSettings.InstrumentSettings instrumentSettings = settings.getInstrumentSettings();
         instrumentSettings.setRunId(_runId);
@@ -2400,17 +2400,17 @@ public class SkylineDocImporter
             insertFullScanSettings(fullScanSettings);
         }
 
-        return new OptimizationSettings(insertCEOptmizations, insertDPOptmizations, cePredictor, dpPredictor);
+        return new OptimizationInfo(insertCEOptmizations, insertDPOptmizations, cePredictor, dpPredictor);
     }
 
-    private class OptimizationSettings
+    private class OptimizationInfo
     {
         private final boolean _insertCEOptmizations;
         private final boolean _insertDPOptmizations;
         private final TransitionSettings.Predictor _cePredictor;
         private final TransitionSettings.Predictor _dpPredictor;
 
-        public OptimizationSettings(boolean insertCEOptmizations, boolean insertDPOptmizations, TransitionSettings.Predictor cePredictor, TransitionSettings.Predictor dpPredictor)
+        public OptimizationInfo(boolean insertCEOptmizations, boolean insertDPOptmizations, TransitionSettings.Predictor cePredictor, TransitionSettings.Predictor dpPredictor)
         {
             _insertCEOptmizations = insertCEOptmizations;
             _insertDPOptmizations = insertDPOptmizations;
