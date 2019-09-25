@@ -5898,7 +5898,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public NavTree appendNavTrail(NavTree root)
         {
-            return root;
+            return root.addChild("Targeted MS Experiment Details");
         }
 
     }
@@ -6012,9 +6012,10 @@ public class TargetedMSController extends SpringActionController
             return view;
         }
 
+        @Override
         public NavTree appendNavTrail(NavTree root)
         {
-            return root;
+            return root.addChild("Update Targeted MS Experiment Details");
         }
     }
 
