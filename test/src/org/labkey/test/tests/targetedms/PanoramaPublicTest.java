@@ -120,12 +120,6 @@ public class PanoramaPublicTest extends TargetedMSTest
         assertEquals("2", expListTable.getDataAsText(0, "Runs"));
         clickAndWait(expListTable.link(0, "Title"));
         assertTextPresentInThisOrder("Targeted MS Experiment", TargetedMsExperimentInsertPage.EXP_TITLE);
-
-        // Go back to source experiment folder and click "Re-submit" so that we are able to delete the Panorama Public project.
-        // If we try to delete the project without doing this first, we will get an error when the shortURL is deleted
-        // since it is linked to an experiment in Panorama Public. (TargetedMSListener.canDelete(ShortURLRecord shortUrl)).
-        goToProjectHome(getProjectName());
-        expWebPart.resubmit();
     }
 
     @Override
