@@ -65,7 +65,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
 
         //small molecule
         importData(SKY_FILE_SMALLMOL_PEP, 3);
-//        verifyImportedSmallMoleculeData();
+        verifyImportedSmallMoleculeData();
 
         verifyAttributeGroupIdCalcs();
     }
