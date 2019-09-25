@@ -264,7 +264,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         String subFolderName = "Small Molecule Pareto Plot Test";
         setupSubfolder(getProjectName(), subFolderName, FolderType.QC); //create a Panorama folder of type QC
 
-        importData(SMALL_MOLECULE);
+        importData(SKY_FILE_SMALLMOL_PEP);
         createGuideSet(gsSmallMolecule, null, subFolderName);
         verifyGuideSetSmallMoleculeStats(gsSmallMolecule);
 

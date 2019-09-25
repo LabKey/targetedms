@@ -17,6 +17,14 @@ package org.labkey.test.tests.targetedms;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.labkey.remoteapi.CommandException;
+import org.labkey.remoteapi.Connection;
+import org.labkey.remoteapi.query.Filter;
+import org.labkey.remoteapi.query.Row;
+import org.labkey.remoteapi.query.Rowset;
+import org.labkey.remoteapi.query.SelectRowsCommand;
+import org.labkey.remoteapi.query.SelectRowsResponse;
+import org.labkey.remoteapi.query.Sort;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.categories.DailyB;
@@ -27,7 +35,12 @@ import org.labkey.test.util.Ext4Helper;
 import org.labkey.test.util.LogMethod;
 import org.openqa.selenium.WebElement;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.labkey.test.util.DataRegionTable.DataRegion;
@@ -39,10 +52,8 @@ public class TargetedMSExperimentTest extends TargetedMSTest
     private static final String SKY_FILE = "MRMer.zip";
     private static final String SKY_FILE2 = "MRMer_renamed_protein.zip";
 
-    private static final String SKY_FILE_SMALLMOL_PEP = "smallmol_plus_peptides.sky.zip";
-
     @Test
-    public void testSteps()
+    public void testSteps() throws IOException, CommandException
     {
         setupFolder(FolderType.Experiment);
         importData(SKY_FILE);
@@ -54,7 +65,45 @@ public class TargetedMSExperimentTest extends TargetedMSTest
 
         //small molecule
         importData(SKY_FILE_SMALLMOL_PEP, 3);
-        verifyImportedSmallMoleculeData();
+//        verifyImportedSmallMoleculeData();
+
+        verifyAttributeGroupIdCalcs();
+    }
+
+    @LogMethod
+    protected void verifyAttributeGroupIdCalcs() throws IOException, CommandException
+    {
+        Connection cn = createDefaultConnection(false);
+        // Query for small molecule data
+        SelectRowsCommand smallMoleculeCommand = new SelectRowsCommand("targetedms", "generalmoleculechrominfo");
+        smallMoleculeCommand.setRequiredVersion(9.1);
+        smallMoleculeCommand.setColumns(Arrays.asList("MoleculeId/CustomIonName", "SampleFileId", "PeakCountRatio", "RetentionTime", "PeptideModifiedAreaProportion", "SampleFileId/ReplicateId/RunId", "MoleculeId/AttributeGroupId", "PeptideId/AttributeGroupId"));
+        smallMoleculeCommand.addFilter("MoleculeId/AttributeGroupId", "C2X", Filter.Operator.EQUAL);
+        smallMoleculeCommand.addFilter("SampleFileId/SampleName", "13417_02_WAA283_3805_071514", Filter.Operator.EQUAL);
+        smallMoleculeCommand.setSorts(Collections.singletonList(new Sort("MoleculeId/CustomIonName")));
+        SelectRowsResponse smallMoleculesResponse = smallMoleculeCommand.execute(cn, getCurrentContainerPath());
+        // Verify proportions are calculated appropriately
+        Rowset smallMoleculeRowSet = smallMoleculesResponse.getRowset();
+        assertEquals("Wrong number of attribute group ID small molecule rows", 4, smallMoleculeRowSet.getSize());
+        Row smallMoleculeRow = smallMoleculeRowSet.iterator().next();
+        assertEquals("Wrong first molecule", "PC aa C24:0", smallMoleculeRow.getValue("MoleculeId/CustomIonName"));
+        // Round to avoid floating point precision false positives
+        assertEquals("Wrong first molecule proportion", 3475, Math.round(((Number)smallMoleculeRow.getValue("PeptideModifiedAreaProportion")).doubleValue() * 10000));
+
+        // Query for peptide data
+        SelectRowsCommand peptideCommand = new SelectRowsCommand("targetedms", "generalmoleculechrominfo");
+        peptideCommand.setRequiredVersion(9.1);
+        peptideCommand.setColumns(Arrays.asList("PeptideId/PeptideModifiedSequence", "SampleFileId", "PeakCountRatio", "RetentionTime", "PeptideModifiedAreaProportion", "PeptideId/AttributeGroupId"));
+        peptideCommand.addFilter("PeptideId/AttributeGroupId", "YAL038WPeptide", Filter.Operator.EQUAL);
+        peptideCommand.setSorts(Arrays.asList(new Sort("PeptideId/PeptideModifiedSequence")));
+        SelectRowsResponse peptideResponse = peptideCommand.execute(cn, getCurrentContainerPath());
+        Rowset peptideRowSet = peptideResponse.getRowset();
+        // Verify proportions are calculated appropriately
+        assertEquals("Wrong number of attribute group ID peptide rows", 3, peptideRowSet.getSize());
+        Row peptideRow = peptideRowSet.iterator().next();
+        assertEquals("Wrong first peptide", "GVNLPGTDVDLPALSEK", peptideRow.getValue("PeptideId/PeptideModifiedSequence"));
+        // Round to avoid floating point precision false positives
+        assertEquals("Wrong first peptide proportion", 2160, Math.round(((Number)peptideRow.getValue("PeptideModifiedAreaProportion")).doubleValue() * 10000));
     }
 
     @LogMethod
