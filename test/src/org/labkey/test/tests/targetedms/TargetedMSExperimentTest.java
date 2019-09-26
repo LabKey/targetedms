@@ -18,12 +18,12 @@ package org.labkey.test.tests.targetedms;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.remoteapi.CommandException;
-import org.labkey.remoteapi.Connection;
 import org.labkey.remoteapi.query.Filter;
-import org.labkey.remoteapi.query.Row;
-import org.labkey.remoteapi.query.Rowset;
 import org.labkey.remoteapi.query.SelectRowsCommand;
 import org.labkey.remoteapi.query.SelectRowsResponse;
+import org.labkey.remoteapi.Connection;
+import org.labkey.remoteapi.query.Row;
+import org.labkey.remoteapi.query.Rowset;
 import org.labkey.remoteapi.query.Sort;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
@@ -38,9 +38,7 @@ import org.openqa.selenium.WebElement;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.labkey.test.util.DataRegionTable.DataRegion;
@@ -51,6 +49,9 @@ public class TargetedMSExperimentTest extends TargetedMSTest
 {
     private static final String SKY_FILE = "MRMer.zip";
     private static final String SKY_FILE2 = "MRMer_renamed_protein.zip";
+
+    private static final String SKY_FILE_SMALLMOL_PEP = "smallmol_plus_peptides.sky.zip";
+    private static final String SKY_FILE_SKYD_14 = "SampleIdTest.sky.zip";
 
     @Test
     public void testSteps() throws IOException, CommandException
@@ -66,8 +67,11 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         //small molecule
         importData(SKY_FILE_SMALLMOL_PEP, 3);
         verifyImportedSmallMoleculeData();
-
         verifyAttributeGroupIdCalcs();
+
+        // SKYD version 14
+        importData(SKY_FILE_SKYD_14, 4);
+        verifyInstrumentSerialNumber();
     }
 
     @LogMethod
@@ -104,6 +108,21 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         assertEquals("Wrong first peptide", "GVNLPGTDVDLPALSEK", peptideRow.getValue("PeptideId/PeptideModifiedSequence"));
         // Round to avoid floating point precision false positives
         assertEquals("Wrong first peptide proportion", 2160, Math.round(((Number)peptideRow.getValue("PeptideModifiedAreaProportion")).doubleValue() * 10000));
+    }
+
+    @LogMethod
+    private void verifyInstrumentSerialNumber() throws IOException, CommandException
+    {
+        SelectRowsCommand cmd = new SelectRowsCommand("targetedms", "samplefile");
+        cmd.setRequiredVersion(9.1);
+        cmd.setColumns(Arrays.asList("ReplicateId/Name", "FilePath", "AcquiredTime", "InstrumentId", "InstrumentSerialNumber", "SampleId"));
+        cmd.addFilter("InstrumentSerialNumber", "6147F", Filter.Operator.EQUAL);
+        SelectRowsResponse response = cmd.execute(createDefaultConnection(false), getCurrentContainerPath());
+
+        assertEquals("Matching row count", 1, response.getRowset().getSize());
+        assertEquals("Matching FilePath", "E:\\skydata\\20110215_MikeB\\S_1.RAW?centroid_ms1=true", response.getRowset().iterator().next().getValue("FilePath"));
+        assertEquals("Matching SampleId", "1:A,1", response.getRowset().iterator().next().getValue("SampleId"));
+        assertEquals("Matching replicate name", "S_1", response.getRowset().iterator().next().getValue("ReplicateId/Name"));
     }
 
     @LogMethod
