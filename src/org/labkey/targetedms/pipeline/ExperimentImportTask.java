@@ -24,10 +24,8 @@ import org.labkey.api.pipeline.AbstractTaskFactory;
 import org.labkey.api.pipeline.AbstractTaskFactorySettings;
 import org.labkey.api.pipeline.PipelineJob;
 import org.labkey.api.pipeline.PipelineJobException;
-import org.labkey.api.pipeline.PipelineJobService;
 import org.labkey.api.pipeline.RecordedActionSet;
 import org.labkey.api.security.User;
-import org.labkey.api.settings.AppProps;
 import org.labkey.api.util.FileType;
 import org.labkey.api.writer.FileSystemFile;
 import org.labkey.api.writer.VirtualFile;
@@ -129,21 +127,6 @@ public class ExperimentImportTask extends PipelineJob.Task<ExperimentImportTask.
         public boolean isJobComplete(PipelineJob job)
         {
             return false;
-        }
-
-        @Override
-        public String getExecutionLocation()
-        {
-            if(AppProps.getInstance().isDevMode())
-            {
-                return PipelineJobService.get().getDefaultExecutionLocation();
-            }
-            return super.getExecutionLocation();
-        }
-        @Override
-        public String getLocation()
-        {
-            return getExecutionLocation();
         }
     }
 }
