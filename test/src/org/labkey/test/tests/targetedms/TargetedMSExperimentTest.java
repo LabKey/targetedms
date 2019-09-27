@@ -324,9 +324,9 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         //Go to SmallMolecules data region
         DataRegionTable drt = new DataRegionTable("SmallMolecules", getDriver());
         assertEquals("PC aa C30:1", drt.getDataAsText(5, "Custom Ion Name"));
-        assertEquals("C38H75N1O8P1", drt.getDataAsText(5, "Ion Formula"));
-        assertEquals("704.9835", drt.getDataAsText(5, "Mass Average"));
-        assertEquals("704.5230", drt.getDataAsText(5, "Mass Monoisotopic"));
+        assertEquals("C38H74NO8P", drt.getDataAsText(5, "Ion Formula"));
+        assertEquals("703.9755", drt.getDataAsText(5, "Mass Average"));
+        assertEquals("703.5152", drt.getDataAsText(5, "Mass Monoisotopic"));
         assertEquals(" ", drt.getDataAsText(5, "Avg. Measured RT"));
         assertElementPresent(Locator.xpath("//img[contains(@src, 'showPeakAreas.view')]"));
         assertElementPresent(Locator.xpath("//img[contains(@src, 'showRetentionTimesChart.view')]"));
@@ -335,9 +335,9 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         clickAndWait(Locator.linkContainingText("PC aa C26:0").index(0)); //two links with this text, want the first one under Custom Ion Name hence index(0).
         waitForElement(Locator.xpath("//tr[td[text()='Group']][td[a[normalize-space()='PC']]]"));
         assertElementPresent(Locator.xpath("//tr[td[text()='Custom Ion Name']][td[normalize-space()='PC aa C26:0']]"));
-        assertElementPresent(Locator.xpath("//tr[td[text()='Ion Formula']][td[normalize-space()='C34H69N1O8P1']]"));
-        assertElementPresent(Locator.xpath("//tr[td[text()='Mass Average']][td[normalize-space()='650.8924']]"));
-        assertElementPresent(Locator.xpath("//tr[td[text()='Mass Monoisotopic']][td[normalize-space()='650.4761']]"));
+        assertElementPresent(Locator.xpath("//tr[td[text()='Ion Formula']][td[normalize-space()='C34H68NO8P']]"));
+        assertElementPresent(Locator.xpath("//tr[td[text()='Mass Average']][td[normalize-space()='649.8845']]"));
+        assertElementPresent(Locator.xpath("//tr[td[text()='Mass Monoisotopic']][td[normalize-space()='649.4683']]"));
         assertElementPresent(Locator.xpath("//tr[td[text()='Avg. RT']][td[normalize-space()='0.9701']]"));
         assertTextPresent("Molecule Precursors");
 
@@ -366,9 +366,9 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         //Look for Small Molecule Precursor List data region
         drt = DataRegion(getDriver()).withName("small_mol_precursors_view").index(1).find();
         assertEquals("PC aa C30:1", drt.getDataAsText(5, "Custom Ion Name"));
-        assertEquals("C38H75N1O8P1", drt.getDataAsText(5, "Ion Formula"));
-        assertEquals("704.9835", drt.getDataAsText(5, "Mass Average"));
-        assertEquals("704.5230", drt.getDataAsText(5, "Mass Monoisotopic"));
+        assertEquals("C38H74NO8P", drt.getDataAsText(5, "Ion Formula"));
+        assertEquals("703.9755", drt.getDataAsText(5, "Mass Average"));
+        assertEquals("703.5152", drt.getDataAsText(5, "Mass Monoisotopic"));
         assertEquals("PC aa C30:1", drt.getDataAsText(5, "Precursor"));
         assertEquals("1+", drt.getDataAsText(5, "Q1 Z"));
         assertEquals("704.5225", drt.getDataAsText(5, "Q1 m/z"));
@@ -397,13 +397,13 @@ public class TargetedMSExperimentTest extends TargetedMSTest
 
         drt = DataRegion(getDriver()).withName("small_mol_transitions_view").index(1).find();
         assertEquals("PC aa C30:1", drt.getDataAsText(5, "Molecule"));
-        assertEquals("C38H75N1O8P1", drt.getDataAsText(5, "Ion Formula"));
-        assertEquals("704.9835", drt.getDataAsText(5, "Mass Average"));
-        assertEquals("704.5230", drt.getDataAsText(5, "Mass Monoisotopic"));
+        assertEquals("C38H74NO8P", drt.getDataAsText(5, "Ion Formula"));
+        assertEquals("703.9755", drt.getDataAsText(5, "Mass Average"));
+        assertEquals("703.5152", drt.getDataAsText(5, "Mass Monoisotopic"));
         assertEquals("PC aa C30:1", drt.getDataAsText(5, "Precursor"));
         assertEquals("1+", drt.getDataAsText(5, "Q1 Z"));
         assertEquals("704.5225", drt.getDataAsText(5, "Q1 m/z"));
-        assertEquals("C5H15N1O4P1", drt.getDataAsText(5, "Fragment"));
+        assertEquals("C5H14NO4P[M+H]", drt.getDataAsText(5, "Fragment"));
         assertEquals("184.0733", drt.getDataAsText(5, "Q3 m/z"));
         assertEquals("1+", drt.getDataAsText(5, "Q3 Z"));
     }
