@@ -14,5 +14,5 @@
  * limitations under the License.
  */
 
-ALTER TABLE targetedms.SampleFile ADD COLUMN InstrumentSerialNumber VARCHAR(200);
-ALTER TABLE targetedms.SampleFile ADD COLUMN SampleId VARCHAR(200);
+ALTER TABLE targetedms.SampleFile ADD InstrumentSerialNumber NVARCHAR(200);
+ALTER TABLE targetedms.SampleFile ADD SampleId NVARCHAR(200);
