@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019 LabKey Corporation
+ * Copyright (c) 2019 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ SELECT
   COALESCE(PrecursorId.Id, MoleculePrecursorId.Id) AS PrecursorId,
   Id AS PrecursorChromInfoId,
   SampleFileId AS SampleFileId,
-  COALESCE(PrecursorId.ModifiedSequence, MoleculePrecursorId.CustomIonName, MoleculePrecursorId.IonFormula) || (CASE WHEN COALESCE(PrecursorId.Charge, MoleculePrecursorId.Charge) > 0 THEN ' +' ELSE ' ' END) || CAST(COALESCE(PrecursorId.Charge, MoleculePrecursorId.Charge) AS VARCHAR) AS SeriesLabel,
---   COALESCE(PrecursorId.ModifiedSequence, MoleculePrecursorId.CustomIonName) AS SeriesLabel,
+  'Test_Peak_Area' AS SeriesLabel,
+  --   COALESCE(PrecursorId.ModifiedSequence, MoleculePrecursorId.CustomIonName) AS SeriesLabel,
   CASE WHEN PrecursorId.Id IS NOT NULL THEN 'Peptide' ELSE 'Fragment' END AS DataType,
   TotalArea AS MetricValue,
   COALESCE(PrecursorId.Mz, MoleculePrecursorId.Mz) AS mz

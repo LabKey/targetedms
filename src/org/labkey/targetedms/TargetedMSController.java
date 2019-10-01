@@ -16,7 +16,6 @@
 
 package org.labkey.targetedms;
 
-
 import com.keypoint.PngEncoder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -3159,7 +3158,7 @@ public class TargetedMSController extends SpringActionController
 
         public NavTree appendNavTrail(NavTree root, TargetedMSRun run)
         {
-            root = root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
+            root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
             if (run != null)
             {
                 root.addChild(run.getDescription(), getShowRunURL(getContainer(), run.getId()));
@@ -5971,7 +5970,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public NavTree appendNavTrail(NavTree root)
         {
-            return root;
+            return root.addChild("Targeted MS Experiment Details");
         }
 
     }
@@ -6085,16 +6084,17 @@ public class TargetedMSController extends SpringActionController
             return view;
         }
 
+        @Override
         public NavTree appendNavTrail(NavTree root)
         {
-            return root;
+            return root.addChild("Update Targeted MS Experiment Details");
         }
     }
 
     private void addExperimentViewDependencies(DataView view)
     {
         view.addClientDependency(ClientDependency.fromPath("Ext4"));
-        view.addClientDependency(ClientDependency.fromPath(AppProps.getInstance().getScheme() + "://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"));
+        view.addClientDependency(ClientDependency.fromPath("internal/jQuery"));
         view.addClientDependency(ClientDependency.fromPath("/TargetedMS/css/bootstrap-tagsinput.css"));
         view.addClientDependency(ClientDependency.fromPath("TargetedMS/js/bootstrap-tagsinput.min.js"));
         view.addClientDependency(ClientDependency.fromPath("/TargetedMS/css/typeahead-examples.css"));
@@ -6160,7 +6160,8 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getConfirmView(SelectedIdsForm deleteForm, BindException errors)
         {
-            return FormPage.getView(TargetedMSController.class, deleteForm, "view/expannotations/deleteExperimentAnnotations.jsp");
+            setTitle("Confirm Delete Experiments");
+            return FormPage.getView("/org/labkey/targetedms/view/expannotations/deleteExperimentAnnotations.jsp", deleteForm);
         }
 
         @Override
@@ -6215,7 +6216,7 @@ public class TargetedMSController extends SpringActionController
 
         public int[] getIds()
         {
-            return PageFlowUtil.toInts(DataRegionSelection.getSelected(getViewContext(), getDataRegionSelectionKey(), false, false));
+            return PageFlowUtil.toInts(DataRegionSelection.getSelected(getViewContext(), getDataRegionSelectionKey(), false));
         }
 
         public String getDataRegionSelectionKey()
@@ -6248,7 +6249,8 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getConfirmView(DeleteExperimentAnnotationsForm deleteForm, BindException errors)
         {
-            return FormPage.getView(TargetedMSController.class, deleteForm, "view/expannotations/deleteExperimentAnnotations.jsp");
+            setTitle("Confirm Delete Experiment");
+            return FormPage.getView("/org/labkey/targetedms/view/expannotations/deleteExperimentAnnotations.jsp", deleteForm);
         }
 
         public boolean handlePost(DeleteExperimentAnnotationsForm form, BindException errors)
