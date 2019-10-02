@@ -116,6 +116,10 @@ public class RunQuantifier
         int done = 0;
         for (PeptideGroup peptideGroup : peptideGroups)
         {
+            progressStatus.setStatus(String.format("Calculating calibration curve for %s, %d of %d",(peptideGroup.getLabel() == null ? "peptide group" : peptideGroup.getLabel().trim()),
+                    ++done,
+                    peptideGroups.size()));
+
             List<GeneralMolecule> generalMolecules = new ArrayList<>();
             generalMolecules.addAll(MoleculeManager.getMoleculesForGroup(peptideGroup.getId()));
             generalMolecules.addAll(PeptideManager.getPeptidesForGroup(peptideGroup.getId(), schema));
@@ -137,11 +141,7 @@ public class RunQuantifier
                     calibrationCurves.add(calibrationCurve);
                 }
             }
-
-            String message = String.format("Calibration curve calculated for %s, %d of %d",(peptideGroup.getLabel() == null ? "peptide group" : peptideGroup.getLabel().trim()),
-                    ++done,
-                    peptideGroups.size());
-            progressStatus.updateProgress(done, peptideGroups.size(), message);
+            progressStatus.updateProgress(done, peptideGroups.size());
         }
         return calibrationCurves;
     }

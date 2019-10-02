@@ -332,8 +332,7 @@ public class SkylineDocImporter
             }
 
             // Done parsing document
-            _log.info("Done parsing Skyline document.");
-            _progressMonitor.getParserProgressTracker().complete();
+            _progressMonitor.getParserProgressTracker().complete("Done parsing Skyline document.");
 
             if (folderType == TargetedMSService.FolderType.QC)
             {
@@ -480,8 +479,7 @@ public class SkylineDocImporter
             for (SampleFile existingSample : entry.getValue())
             {
                 SampleFile srcFile = TargetedMSManager.deleteSampleFileAndDependencies(existingSample.getId());
-                _log.info("Updating previously imported data for sample file " + entry.getKey() + " in QC folder.");
-                status.updateProgress(++s, total);
+                _log.debug(String.format("Updating previously imported data for sample file " + entry.getKey() + " in QC folder. %d of %d", ++s, total));
 
                 if (null != srcFile && !srcFile.getFilePath().isEmpty())
                 {
@@ -494,9 +492,10 @@ public class SkylineDocImporter
                         _log.error("Unable to delete file " + srcFile.getFilePath() + ". May be an invalid path. This file is no longer needed on the server.");
                     }
                 }
+                status.updateProgress(s, total);
             }
         }
-        status.complete();
+        status.complete(total > 0 ? "Done updating previously imported sample file data." : "Did not find any older sample file data to delete.");
     }
 
     @NotNull
@@ -1122,7 +1121,7 @@ public class SkylineDocImporter
                     peptideCount++;
                     if(peptideCount % 50 == 0)
                     {
-                        _log.info(String.format("Inserted %d peptides", peptideCount));
+                        _log.debug(String.format("Inserted %d peptides", peptideCount));
                     }
                     break;
                 case MOLECULE:
@@ -1136,7 +1135,7 @@ public class SkylineDocImporter
                     moleculeCount++;
                     if(moleculeCount % 50 == 0)
                     {
-                        _log.info(String.format("Inserted %d molecules", moleculeCount));
+                        _log.debug(String.format("Inserted %d molecules", moleculeCount));
                     }
                     break;
             }
@@ -1146,11 +1145,11 @@ public class SkylineDocImporter
         }
         if(peptideCount > 0)
         {
-            _log.info(String.format("Total peptides inserted: %d", peptideCount));
+            _log.debug(String.format("Total peptides inserted: %d", peptideCount));
         }
         if(moleculeCount > 0)
         {
-            _log.info(String.format("Total molecules inserted: %d", moleculeCount));
+            _log.debug(String.format("Total molecules inserted: %d", moleculeCount));
         }
     }
 
@@ -2365,25 +2364,30 @@ public class SkylineDocImporter
             return 0;
         }
 
-        _log.info("Quantifying run...");
         RunQuantifier quantifier = new RunQuantifier(run, _user, _container);
         int i = 0;
         IProgressStatus _foldChangeStatus = _progressMonitor.getFoldChangeProgressTracker();
+        if(groupComparisons.size() > 0)
+        {
+            _log.info("Calculating fold changes");
+        }
         for (GroupComparisonSettings groupComparison : groupComparisons)
         {
-            _log.info(String.format("Calculating fold change for group comparison %s, %d of %d", groupComparison.getName(), ++i, groupComparisons.size()));
+            _log.debug(String.format("Calculating fold change for group comparison %s, %d of %d", groupComparison.getName(), ++i, groupComparisons.size()));
             for (FoldChange foldChange : quantifier.calculateFoldChanges(groupComparison))
             {
                 Table.insert(_user, TargetedMSManager.getTableInfoFoldChange(), foldChange);
             }
             _foldChangeStatus.updateProgress(i, groupComparisons.size());
         }
-        _log.info(groupComparisons.size() > 0 ? "Done calculating fold changes." : "No group comparisons found.");
+        _foldChangeStatus.complete(groupComparisons.size() > 0 ? "Done calculating fold changes." : "No group comparisons found.");
 
         if (regressionFit != RegressionFit.NONE)
         {
+            _log.info("Calculating calibration curves");
             List<GeneralMoleculeChromInfo> moleculeChromInfos = new ArrayList<>();
-            List<CalibrationCurveEntity> calibrationCurves = quantifier.calculateCalibrationCurves(quantificationSettings, moleculeChromInfos, _progressMonitor.getCalCurvesProgressTracker());
+            IProgressStatus _calCurveStatus = _progressMonitor.getCalCurvesProgressTracker();
+            List<CalibrationCurveEntity> calibrationCurves = quantifier.calculateCalibrationCurves(quantificationSettings, moleculeChromInfos, _calCurveStatus);
             for (CalibrationCurveEntity calibrationCurve : calibrationCurves)
             {
                 Table.insert(_user, TargetedMSManager.getTableInfoCalibrationCurve(), calibrationCurve);
@@ -2392,11 +2396,10 @@ public class SkylineDocImporter
             {
                 Table.update(_user, TargetedMSManager.getTableInfoGeneralMoleculeChromInfo(), chromInfo, chromInfo.getId());
             }
-            _log.info(calibrationCurves.size() > 0 ? "Done calculating calibration curves." : "No calibration curves found.");
+            _calCurveStatus.complete(calibrationCurves.size() > 0 ? "Done calculating calibration curves." : "No calibration curves found.");
 
             return calibrationCurves.size();
         }
-        _log.info("Done quantifying run.");
         return 0;
     }
 
@@ -2495,23 +2498,23 @@ public class SkylineDocImporter
         progress.updateProgressParts(dataSettings.getGroupComparisons().size() > 0, hasCalCurves);
     }
 
-    private class ProgressMonitor
+    private class ProgressMonitor implements IProgressMonitor
     {
         private final ProgressPart _parserPart;     // Document parsing
         private final ProgressPart _qcCleanupPart;  // QC cleanup - remove redundant samples from older runs
         private final ProgressPart _foldChangePart; // Fold change calculations for group comparisons
         private final ProgressPart _calCurvesPart;  // Calibration curve calculations
 
-        private List<ProgressPart> _progressParts;
+        private List<IProgressStatus> _progressParts;
         private final PipelineJob _job;
         private int _lastProgressPerc = 0;
 
-        private final Logger LOG;
+        private final Logger _log;
 
         public ProgressMonitor(PipelineJob job, TargetedMSService.FolderType folderType, Logger log)
         {
             _job = job;
-            LOG = log;
+            _log = log;
             boolean isQc = (folderType == TargetedMSService.FolderType.QC);
 
             // Progress parts add up to 98%.  There is additional work that could happen after document import in
@@ -2580,18 +2583,26 @@ public class SkylineDocImporter
             _lastProgressPerc = 100;
             doUpdate(_lastProgressPerc);
         }
-        public void updateProgress(String message)
+        @Override
+        public void debug(String message)
         {
             if(!StringUtils.isBlank(message))
             {
-                LOG.info(message);
+                _log.debug(message);
             }
-            updateJobStatus();
         }
-
-        private void updateJobStatus()
+        @Override
+        public void info(String message)
         {
-            int percDone = _progressParts.stream().mapToInt(ProgressPart::getProgressPercent).sum();
+            if(!StringUtils.isBlank(message))
+            {
+                _log.info(message);
+            }
+        }
+        @Override
+        public void updateProgress()
+        {
+            int percDone = _progressParts.stream().mapToInt(IProgressStatus::getProgressPercent).sum();
             if(percDone > _lastProgressPerc)
             {
                 doUpdate(percDone);
@@ -2605,7 +2616,7 @@ public class SkylineDocImporter
             {
                 _job.setStatus(PipelineJob.TaskStatus.running + ", " + percDone + "%"); // This will throw a CancelledException if the job was cancelled.
             }
-            LOG.info(percDone + "% Done");
+            _log.info(percDone + "% Done");
         }
 
 
@@ -2613,9 +2624,9 @@ public class SkylineDocImporter
         {
             private int _partPercent; // percent share of total progress
             private int _percDone;
-            private ProgressMonitor _progressMonitor;
+            private IProgressMonitor _progressMonitor;
 
-            public ProgressPart(int partPercent, ProgressMonitor progressMonitor)
+            public ProgressPart(int partPercent, IProgressMonitor progressMonitor)
             {
                 _partPercent = partPercent;
                 _progressMonitor = progressMonitor;
@@ -2626,42 +2637,55 @@ public class SkylineDocImporter
             }
             public void setPartPercent(int partPercent)
             {
-                _partPercent = partPercent > 100 ? 100 : partPercent;
+                _partPercent = Math.min(100, partPercent);
             }
             @Override
-            public void updateProgress(long total, long done)
+            public void setStatus(String message)
             {
-                updateProgress(total, done, null);
+                _progressMonitor.debug(message);
             }
             @Override
-            public void updateProgress(long done, long total, String message)
+            public void updateProgress(long done, long total)
             {
                 if(done > total) done = total;
                 int pd = total > 0 ? (int)(Math.round((done * 100.0) / total)) : 0;
                 if(pd > _percDone)
                 {
                     _percDone = pd;
-                    _progressMonitor.updateProgress(message);
+                    _progressMonitor.updateProgress();
                 }
             }
+            @Override
             public int getProgressPercent()
             {
                 return _percDone == 0 ? 0 : (int)(Math.round((_percDone * _partPercent) / 100.0));
             }
             @Override
-            public void complete()
+            public void complete(String message)
             {
                 updateProgress(100, 100);
+                _progressMonitor.info(message);
             }
         }
     }
 
+    public interface IProgressMonitor
+    {
+        void updateProgress();
+
+        void debug(String message);
+
+        void info(String message);
+    }
+
     public interface IProgressStatus
     {
-        void updateProgress(long done, long total, String message);
+        void setStatus(String message);
 
         void updateProgress(long done, long total);
 
-        void complete();
+        void complete(String message);
+
+        int getProgressPercent();
     }
 }
