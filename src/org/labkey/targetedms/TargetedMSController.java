@@ -91,7 +91,6 @@ import org.labkey.api.security.permissions.DeletePermission;
 import org.labkey.api.security.permissions.InsertPermission;
 import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.security.permissions.UpdatePermission;
-import org.labkey.api.settings.AppProps;
 import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.HelpTopic;
@@ -3439,10 +3438,7 @@ public class TargetedMSController extends SpringActionController
             QuerySettings settings = new QuerySettings(getViewContext(), DATA_REGION_NAME, LOG_QUERY_NAME);
             TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
             settings.getQueryParameters().put("RUN_ID", form._id);
-            QueryView view = schema.createView(getViewContext(), settings, errors);
-            List<DisplayColumn> dc = view.getDisplayColumns();
-            view.setShowFilterDescription(false);
-            return view;
+            return schema.createView(getViewContext(), settings, errors);
         }
     }
 
@@ -3454,7 +3450,7 @@ public class TargetedMSController extends SpringActionController
         {
             SkylineAuditLogExtraInfoBean bean;
             String errMessage = null;
-            AuditLogEntry ent = AuditLogEntry.retrieve(form.getEntryId());
+            AuditLogEntry ent = AuditLogEntry.retrieve(form.getEntryId(), getViewContext());
             if(ent == null)
                 errMessage = String.format("Entry with id %d does not exist", form.getEntryId());
             if(errMessage != null)
@@ -3462,10 +3458,10 @@ public class TargetedMSController extends SpringActionController
             else
                 bean = new SkylineAuditLogExtraInfoBean(ent, null);
 
+
             WebPartView extraInfoView = new JspView<>("/org/labkey/targetedms/view/skylineAuditLogExtraInfoView.jsp", bean);
-            extraInfoView.render(getViewContext().getRequest(), getViewContext().getResponse());
             getPageConfig().setTemplate(PageConfig.Template.None);
-            return null;
+            return extraInfoView;
 
         }
 
