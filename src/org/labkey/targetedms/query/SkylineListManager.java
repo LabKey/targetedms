@@ -1,6 +1,21 @@
+/*
+ * Copyright (c) 2019 LabKey Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.labkey.targetedms.query;
 
-import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.SQLFragment;
@@ -22,9 +37,18 @@ import org.labkey.targetedms.parser.list.ListItemValue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class SkylineListManager
 {
+    /**
+     * Returns true if the long text columns such as ListDefinition.Name support the equals operator.
+     */
+    public static boolean canFilterNameColumn()
+    {
+        return !TargetedMSSchema.getSchema().getSqlDialect().isSqlServer();
+    }
+
     public static ListDefinition saveListData(User user, ListData listData) {
         ListDefinition listDefinition = Table.insert(user, TargetedMSManager.getTableInfoListDefinition(), listData.getListDefinition());
         List<ListColumn> columns = new ArrayList<>();
@@ -76,13 +100,24 @@ public class SkylineListManager
     {
         SQLFragment fragment = new SQLFragment("SELECT * FROM ");
         fragment.append(getListDefTable(), "t");
-        fragment.append(new SQLFragment(" WHERE t.RunId = ? and t.Name = ?", runId, listName));
+        fragment.append(new SQLFragment(" WHERE t.RunId = ?", runId));
+        if (canFilterNameColumn())
+        {
+            fragment.append(new SQLFragment(" and t.Name = ?", listName));
+        }
         if (containerFilter != null) {
             SQLFragment sqlFragmentContainer = new SQLFragment("(SELECT CONTAINER FROM " + TargetedMSManager.getTableInfoRuns() + " WHERE RunId = ?)", runId);
             fragment.append(" AND ");
             fragment.append(containerFilter.getSQLFragment(TargetedMSSchema.getSchema(), sqlFragmentContainer, null));
         }
-        return new SqlSelector(TargetedMSSchema.getSchema(), fragment).getObject(ListDefinition.class);
+        for (ListDefinition listDefinition : new SqlSelector(TargetedMSSchema.getSchema(), fragment).getCollection(ListDefinition.class))
+        {
+            if (Objects.equals(listName, listDefinition.getName()))
+            {
+                return listDefinition;
+            }
+        }
+        return null;
     }
 
     public static List<ListColumn> getListColumns(ListDefinition listDefinition) {

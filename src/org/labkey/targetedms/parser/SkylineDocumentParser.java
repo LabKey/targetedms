@@ -554,7 +554,12 @@ public class SkylineDocumentParser implements AutoCloseable
         {
             TabLoader tabLoader = new TabLoader(persistedString, false);
             tabLoader.parseAsCSV();
-            List<String> values = Arrays.asList(tabLoader.getFirstNLines(1)[0]);
+            String[][] lines = tabLoader.getFirstNLines(1);
+            if (lines.length == 0)
+            {
+                return Collections.emptyList();
+            }
+            List<String> values = Arrays.asList(lines[0]);
 
             switch (annotationType)
             {
