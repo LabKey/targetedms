@@ -20,6 +20,7 @@
  */
 PARAMETERS(ENTRY_ID INTEGER, CONTAINER_ID VARCHAR)
 WITH logTree as (
+  -- traverse the tree fropm the given entry up to find all the documents it belongs to
   SELECT e.entryId, e.entryHash, e.parentEntryHash, e.versionId
   FROM targetedms.AuditLogEntry e
   WHERE entryId = ENTRY_ID
@@ -29,11 +30,16 @@ WITH logTree as (
          JOIN targetedms.AuditLogEntry e
               ON logTree.entryHash = e.parentEntryHash
 )
-SELECT logTree.*,
-       r.Container,
-       r.DocumentGUID
-  FROM logTree
-  JOIN targetedms.Runs r
-    ON logTree.versionId = r.Id
- WHERE r.Container = CONTAINER_ID
-
+SELECT e.*
+FROM (
+       -- number of documents this entry belongs to
+       SELECT count(*) cnt
+       FROM logTree
+              JOIN targetedms.Runs r
+                   ON logTree.versionId = r.Id
+       WHERE r.Container = CONTAINER_ID
+     ) c
+       JOIN targetedms.AuditLogEntry e
+            ON entryId = ENTRY_ID
+              AND c.cnt > 0  --return this entry info only if it belongs to
+-- at least 1 document from the given container

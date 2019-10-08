@@ -61,11 +61,6 @@ public class AuditLogEntry
 
     byte[] _calculatedHashBytes;
 
-    public static AuditLogEntry retrieve(int pEntryId){
-        SimpleFilter pkFilter = new SimpleFilter(FieldKey.fromParts("entryId"), pEntryId);
-        return new TableSelector(TargetedMSManager.getTableInfoSkylineAuditLogEntry(), pkFilter, null).getObject(pEntryId, AuditLogEntry.class);
-    }
-
     public static AuditLogEntry retrieve(int pEntryId, ViewContext viewContext)
     {
         TargetedMSSchema schema = new TargetedMSSchema(viewContext.getUser(), viewContext.getContainer());
@@ -75,10 +70,8 @@ public class AuditLogEntry
         params.put("ENTRY_ID", pEntryId);
         params.put("CONTAINER_ID", viewContext.getContainer().getEntityId().toString());
         sel.setNamedParameters(params);
-        if(sel.getRowCount()> 0)
-            return retrieve(pEntryId);
-
-        return null;
+        AuditLogEntry res = sel.getObject(AuditLogEntry.class);
+        return res;
     }
 
     public AuditLogTree getTreeEntry(){
