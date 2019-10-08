@@ -15,6 +15,7 @@
  */
 package org.labkey.targetedms.query;
 
+import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.SQLFragment;
@@ -101,26 +102,46 @@ public class PrecursorChromInfoTable extends AnnotatedTargetedMSTable
         totalAreaNormalizedCol.setFormat("##0.####%");
         addColumn(totalAreaNormalizedCol);
 
-        // PeptideModifiedAreaProportion = (area of precursor in the replicate) / (total area of all precursors for the same peptide sequence in the replicate / sample file)
-        SQLFragment peptideModifiedAreaProportionSQL = new SQLFragment("(SELECT CAST(CASE WHEN X.PrecursorAreaInReplicate = 0 THEN NULL ELSE TotalArea / X.PrecursorAreaInReplicate END AS FLOAT) FROM ");
-        peptideModifiedAreaProportionSQL.append(" ( ");
-        peptideModifiedAreaProportionSQL.append(" SELECT SUM(TotalArea) AS PrecursorAreaInReplicate FROM ");
-        peptideModifiedAreaProportionSQL.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
-        peptideModifiedAreaProportionSQL.append(" INNER JOIN ");
-        peptideModifiedAreaProportionSQL.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "gp");
-        peptideModifiedAreaProportionSQL.append(" ON gp.Id = pci.PrecursorId INNER JOIN ");
-        peptideModifiedAreaProportionSQL.append(TargetedMSManager.getTableInfoPeptide(), "p");
-        peptideModifiedAreaProportionSQL.append(" ON p.id = gp.generalmoleculeid WHERE pci.SampleFileId = ").append(ExprColumn.STR_TABLE_ALIAS).append(".SampleFileId");
-        peptideModifiedAreaProportionSQL.append(" AND p.Sequence = (SELECT Sequence FROM ");
-        peptideModifiedAreaProportionSQL.append(TargetedMSManager.getTableInfoPeptide(), "p2");
-        peptideModifiedAreaProportionSQL.append(" INNER JOIN ");
-        peptideModifiedAreaProportionSQL.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "gp2");
-        peptideModifiedAreaProportionSQL.append(" ON gp2.GeneralMoleculeId = p2.Id WHERE gp2.Id = ").append(ExprColumn.STR_TABLE_ALIAS).append(".PrecursorId");;
-        peptideModifiedAreaProportionSQL.append(")) X ");
-        peptideModifiedAreaProportionSQL.append(" ) ");
-        ExprColumn peptideModifiedAreaProportionCol = new ExprColumn(this, "PeptideModifiedAreaProportion", peptideModifiedAreaProportionSQL, JdbcType.DOUBLE);
+        // PrecursorModifiedAreaProportion = (area of precursor in the replicate) / (total area of all precursors for the same peptide sequence in the replicate / sample file)
+        SQLFragment proportionSQL = new SQLFragment("(SELECT CAST(CASE WHEN X.PrecursorAreaInReplicate = 0 THEN NULL ELSE TotalArea / X.PrecursorAreaInReplicate END AS FLOAT) FROM ");
+        proportionSQL.append(" ( ");
+        proportionSQL.append(" SELECT SUM(TotalArea) AS PrecursorAreaInReplicate FROM ");
+        proportionSQL.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
+        proportionSQL.append(" INNER JOIN ");
+        proportionSQL.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "gp");
+        proportionSQL.append(" ON gp.Id = pci.PrecursorId INNER JOIN ");
+        proportionSQL.append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm");
+        proportionSQL.append(" ON gp.GeneralMoleculeId = gm.Id LEFT OUTER JOIN ");
+        proportionSQL.append(TargetedMSManager.getTableInfoMolecule(), "m");
+        proportionSQL.append(" ON gm.Id = m.Id LEFT OUTER JOIN ");
+        proportionSQL.append(TargetedMSManager.getTableInfoPeptide(), "p");
+        proportionSQL.append(" ON p.id = gp.generalmoleculeid WHERE pci.SampleFileId = ").append(ExprColumn.STR_TABLE_ALIAS).append(".SampleFileId");
+        // Group based on user-specified grouping ID if present, and fall back on peptide sequence, custom ion name,
+        // and ion formula (the latter two are for small molecules only), in that order
+        proportionSQL.append(" AND COALESCE(gm.AttributeGroupId, p.Sequence, m.CustomIonName, m.IonFormula) = (SELECT COALESCE(gm2.AttributeGroupId, p2.Sequence, m2.CustomIonName, m2.IonFormula) FROM ");
+        proportionSQL.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "gp2");
+        proportionSQL.append(" INNER JOIN ");
+        proportionSQL.append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm2");
+        proportionSQL.append(" ON gp2.GeneralMoleculeId = gm2.Id LEFT OUTER JOIN ");
+        proportionSQL.append(TargetedMSManager.getTableInfoPeptide(), "p2");
+        proportionSQL.append(" ON p2.Id = gm2.Id LEFT OUTER JOIN ");
+        proportionSQL.append(TargetedMSManager.getTableInfoMolecule(), "m2");
+        proportionSQL.append(" ON gm2.Id = m2.Id WHERE gp2.Id = ").append(ExprColumn.STR_TABLE_ALIAS).append(".PrecursorId");
+        proportionSQL.append(")) X )");
+        ExprColumn peptideModifiedAreaProportionCol = new ExprColumn(this, "PrecursorModifiedAreaProportion", proportionSQL, JdbcType.DOUBLE);
         peptideModifiedAreaProportionCol.setFormat("##0.####%");
         addColumn(peptideModifiedAreaProportionCol);
+    }
+
+    @Override
+    protected ColumnInfo resolveColumn(String name)
+    {
+        // Backwards compatibility with original, misleading column name
+        if ("PeptideModifiedAreaProportion".equalsIgnoreCase(name))
+        {
+            return getColumn("PrecursorModifiedAreaProportion");
+        }
+        return super.resolveColumn(name);
     }
 
     private SQLFragment getTransitionJoinSQL()
