@@ -831,7 +831,8 @@ public class TargetedMSManager
 
     public static TargetedMSRun[] getRunsInContainer(Container container)
     {
-        return getRuns("Container=? AND StatusId=? AND deleted=?", container.getId(), 1, Boolean.FALSE);
+        return getRuns("Container=? AND StatusId=? AND deleted=?",
+                container.getId(), SkylineDocImporter.STATUS_SUCCESS, Boolean.FALSE);
     }
 
     public static TargetedMSRun getRunByFileName(String fileName, Container container)

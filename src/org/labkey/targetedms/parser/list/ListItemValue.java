@@ -70,23 +70,22 @@ public class ListItemValue extends SkylineEntity
         {
             setTextValue(null);
             setNumericValue(null);
-            return;
         }
-        if (value instanceof String)
+        else if (value instanceof String)
         {
             setTextValue((String) value);
-            return;
         }
-        if (value instanceof Number)
+        else if (value instanceof Number)
         {
             setNumericValue(((Number)value).doubleValue());
-            return;
         }
-        if (value instanceof Boolean)
+        else if (value instanceof Boolean)
         {
             setNumericValue(((Boolean) value)?1.0:0.0);
-            return;
         }
-        throw new IllegalArgumentException();
+        else
+        {
+            throw new IllegalArgumentException();
+        }
     }
 }
