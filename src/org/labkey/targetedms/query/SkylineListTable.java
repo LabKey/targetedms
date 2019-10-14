@@ -60,6 +60,7 @@ public class SkylineListTable extends AbstractTableInfo
         public ListColumnInfo(SkylineListTable listTable, ListColumn listColumn) {
             super(new FieldKey(null, listColumn.getName()), listTable);
             _listColumn = listColumn;
+            setJdbcType(listColumn.getAnnotationTypeEnum().getDataType());
         }
 
         @Override
