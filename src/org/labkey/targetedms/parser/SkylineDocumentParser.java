@@ -34,6 +34,7 @@ import org.labkey.api.util.GUID;
 import org.labkey.api.util.NetworkDrive;
 import org.labkey.api.util.UnexpectedException;
 import org.labkey.targetedms.IrtPeptide;
+import org.labkey.targetedms.SkylineDocImporter.IProgressStatus;
 import org.labkey.targetedms.TargetedMSModule;
 import org.labkey.targetedms.chromlib.ConnectionSource;
 import org.labkey.targetedms.parser.list.ListColumn;
@@ -47,6 +48,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -184,7 +186,7 @@ public class SkylineDocumentParser implements AutoCloseable
     private double _matchTolerance = DEFAULT_TOLERANCE;
 
     private final XMLStreamReader _reader;
-    private InputStream _inputStream;
+    private ProgressInputStream _inputStream;
     private final File _file;
     private final Container _container;
     private Logger _log;
@@ -193,11 +195,16 @@ public class SkylineDocumentParser implements AutoCloseable
     private String _softwareVersion;
     private GUID _documentGUID;
 
-    public SkylineDocumentParser(File file, Logger log, Container container) throws XMLStreamException, IOException
+    private long _fileSize;
+    private IProgressStatus _progressStatus;
+
+    public SkylineDocumentParser(File file, Logger log, Container container, IProgressStatus progressStatus) throws XMLStreamException, IOException
     {
         _file = file;
+        _fileSize = file.length();
+        _progressStatus = progressStatus;
         _container = container;
-        _inputStream = new FileInputStream(_file);
+        _inputStream = new ProgressInputStream(new FileInputStream(_file));
         XMLInputFactory inputFactory = XMLInputFactory.newInstance();
         _reader = inputFactory.createXMLStreamReader(_inputStream);
         _log = log;
@@ -238,6 +245,8 @@ public class SkylineDocumentParser implements AutoCloseable
         _replicateSampleFileIdMap = new HashMap<>();
 
         readDocumentSettings(_reader);
+        updateProgress();
+
         parseiRTFile();
         return parseChromatograms(container, user);
     }
@@ -1190,6 +1199,7 @@ public class SkylineDocumentParser implements AutoCloseable
         }
 
         _peptideGroupCount++;
+        updateProgress();
         return pepGroup;
     }
 
@@ -1228,6 +1238,7 @@ public class SkylineDocumentParser implements AutoCloseable
         Peptide peptide = new Peptide();
         readGeneralMolecule(_reader, peptide);
         readPeptide(_reader, peptide);
+        updateProgress();
         return peptide;
     }
 
@@ -1236,6 +1247,7 @@ public class SkylineDocumentParser implements AutoCloseable
         Molecule molecule = new Molecule();
         readGeneralMolecule(_reader, molecule);
         readSmallMolecule(_reader, molecule);
+        updateProgress();
         return molecule;
     }
 
@@ -2672,5 +2684,61 @@ public class SkylineDocumentParser implements AutoCloseable
     public int getReplicateCount()
     {
         return _replicateCount;
+    }
+
+    private void updateProgress()
+    {
+        if(_progressStatus != null)
+        {
+            long bytesRead = _inputStream != null ? _inputStream.getBytesRead() : 0;
+            _progressStatus.updateProgress(bytesRead, _fileSize);
+        }
+    }
+
+    private class ProgressInputStream extends FilterInputStream
+    {
+        private long _bytesRead = 0;
+
+        protected ProgressInputStream(InputStream in)
+        {
+            super(in);
+        }
+
+        @Override
+        public int read() throws IOException
+        {
+            int read = super.read();
+            _bytesRead += read;
+            return read;
+        }
+
+        @Override
+        public int read(@NotNull byte[] b) throws IOException
+        {
+            int read = super.read(b);
+            _bytesRead += read;
+            return read;
+        }
+
+        @Override
+        public int read(@NotNull byte[] b, int off, int len) throws IOException
+        {
+            int read = super.read(b, off, len);
+            _bytesRead += read;
+            return read;
+        }
+
+        @Override
+        public long skip(long n) throws IOException
+        {
+            long skipped = super.skip(n);
+            _bytesRead += skipped;
+            return skipped;
+        }
+
+        long getBytesRead()
+        {
+            return _bytesRead;
+        }
     }
 }
