@@ -76,6 +76,10 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         verifyDisabledMetricNotPresent(qcPlotsWebPart, "Peak Area");
 
+        //re-enabling peak area metric
+        goToConfigureMetricsUI();
+        configureUI.enableMetric(metric);
+
         impersonate(USER);
         BootstrapMenu qcPlotMenu = qcPlotsWebPart.getWebParMenu();
         log("Verifying Configure QC Metrics Menu option not present for non admin");
@@ -113,7 +117,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         assertEquals("Mismatch in the expected number of notification", 1, notifications.getEmailCount());
         EmailRecordTable.EmailMessage message = notifications.getMessageWithSubjectContaining("Panorama QC Notification");
         notifications.clickMessage(message);
-        assertTextPresent("56"); //Total outliers
+        assertTextPresent("56 outliers"); //Total outliers
 
     }
 

@@ -35,6 +35,12 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         super(test.getDriver());
     }
 
+    public void enableMetric(String metric)
+    {
+        checkCheckbox(Locator.checkboxByName(metric));
+        click(Locator.buttonContainingText("Save"));
+    }
+
     public void disableMetric(String metric)
     {
         uncheckCheckbox(Locator.checkboxByName(metric));
