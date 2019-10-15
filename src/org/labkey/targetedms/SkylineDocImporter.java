@@ -55,10 +55,12 @@ import org.labkey.targetedms.SkylinePort.Irt.RetentionTimeProviderImpl;
 import org.labkey.targetedms.calculations.RunQuantifier;
 import org.labkey.targetedms.calculations.quantification.RegressionFit;
 import org.labkey.targetedms.parser.*;
+import org.labkey.targetedms.parser.list.ListData;
 import org.labkey.targetedms.parser.skyaudit.AuditLogException;
 import org.labkey.targetedms.query.LibraryManager;
 import org.labkey.targetedms.query.ReplicateManager;
 import org.labkey.targetedms.query.RepresentativeStateManager;
+import org.labkey.targetedms.query.SkylineListManager;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
@@ -478,18 +480,18 @@ public class SkylineDocImporter
         {
             for (SampleFile existingSample : entry.getValue())
             {
-                SampleFile srcFile = TargetedMSManager.deleteSampleFileAndDependencies(existingSample.getId());
+                String srcFile = TargetedMSManager.deleteSampleFileAndDependencies(existingSample.getId());
                 _log.debug(String.format("Updating previously imported data for sample file " + entry.getKey() + " in QC folder. %d of %d", ++s, total));
 
-                if (null != srcFile && !srcFile.getFilePath().isEmpty())
+                if (null != srcFile)
                 {
                     try
                     {
-                        replicateInfo.potentiallyUnusedFiles.add(new URI(srcFile.getFilePath()));
+                        replicateInfo.potentiallyUnusedFiles.add(new URI(srcFile));
                     }
                     catch (URISyntaxException e)
                     {
-                        _log.error("Unable to delete file " + srcFile.getFilePath() + ". May be an invalid path. This file is no longer needed on the server.");
+                        _log.error("Unable to delete file " + srcFile + ". May be an invalid path. This file is no longer needed on the server.");
                     }
                 }
                 status.updateProgress(s, total);
@@ -512,6 +514,10 @@ public class SkylineDocImporter
         {
             groupComparison.setRunId(_runId);
             Table.insert(_user, TargetedMSManager.getTableInfoGroupComparisonSettings(), groupComparison);
+        }
+        for (ListData listData : dataSettings.getListDatas()) {
+            listData.getListDefinition().setRunId(_runId);
+            SkylineListManager.saveListData(_user, listData);
         }
         return groupComparisons;
     }

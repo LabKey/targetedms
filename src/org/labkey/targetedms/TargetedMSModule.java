@@ -61,6 +61,7 @@ import org.labkey.targetedms.pipeline.CopyExperimentPipelineProvider;
 import org.labkey.targetedms.pipeline.TargetedMSPipelineProvider;
 import org.labkey.targetedms.proteomexchange.SubmissionDataValidator;
 import org.labkey.targetedms.query.JournalManager;
+import org.labkey.targetedms.query.SkylineListSchema;
 import org.labkey.targetedms.search.ModificationSearchWebPart;
 import org.labkey.targetedms.search.ProteinSearchWebPart;
 import org.labkey.targetedms.security.CopyTargetedMSExperimentRole;
@@ -412,6 +413,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     {
         addController("targetedms", TargetedMSController.class);
         TargetedMSSchema.register(this);
+        SkylineListSchema.register(this);
 
         UsageMetricsService svc = UsageMetricsService.get();
         if (null != svc)
@@ -470,8 +472,11 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         RoleManager.registerRole(new CopyTargetedMSExperimentRole());
 
 		// Add a link in the admin console to manage journals.
-		ActionURL url = new ActionURL(PublishTargetedMSExperimentsController.JournalGroupsAdminViewAction.class, ContainerManager.getRoot());
-        AdminConsole.addLink(AdminConsole.SettingsLinkType.Configuration, "targeted ms", url, AdminPermission.class);
+		ActionURL journalsURL = new ActionURL(PublishTargetedMSExperimentsController.JournalGroupsAdminViewAction.class, ContainerManager.getRoot());
+        AdminConsole.addLink(AdminConsole.SettingsLinkType.Configuration, "Targeted MS Journal Groups", journalsURL, AdminPermission.class);
+
+		ActionURL chromatogramURL = new ActionURL(TargetedMSController.ChromatogramCrawlerAction.class, ContainerManager.getRoot());
+        AdminConsole.addLink(AdminConsole.SettingsLinkType.Configuration, "Targeted MS Chromatogram Crawler", chromatogramURL, AdminPermission.class);
 
         FileContentService fcs = FileContentService.get();
         if(null != fcs)
