@@ -9,4 +9,4 @@ SELECT
 FROM PrecursorChromInfoAnnotation
 
 -- Pull only for unmodified variant
-WHERE Name='RSquared' AND precursorchrominfoid.PrecursorId.ModifiedSequence NOT LIKE '%[[]%'
+WHERE Name='RSquared' AND precursorchrominfoid.PrecursorId.ModifiedSequence NOT LIKE '%]%'

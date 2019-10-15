@@ -9,4 +9,4 @@ SELECT
 FROM PrecursorChromInfoAnnotation
 
 -- Pull only for unmodified variant
-WHERE Name='LOQ'  AND precursorchrominfoid.PrecursorId.ModifiedSequence NOT LIKE '%[[]%'
+WHERE Name='LOQ'  AND precursorchrominfoid.PrecursorId.ModifiedSequence NOT LIKE '%]%'
