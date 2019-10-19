@@ -1,11 +1,20 @@
 SELECT
-       COALESCE(precursorchrominfoid.PrecursorId.Id, precursorchrominfoid.MoleculePrecursorId.Id) AS PrecursorId,
-       precursorchrominfoid AS PrecursorChromInfoId,
-       precursorchrominfoid.SampleFileId AS SampleFileId,
-       COALESCE(precursorchrominfoid.PrecursorId.ModifiedSequence, precursorchrominfoid.MoleculePrecursorId.CustomIonName) || (CASE WHEN COALESCE(precursorchrominfoid.PrecursorId.Charge, precursorchrominfoid.MoleculePrecursorId.Charge) > 0 THEN ' +' ELSE ' ' END) || CAST(COALESCE(precursorchrominfoid.PrecursorId.Charge, precursorchrominfoid.MoleculePrecursorId.Charge) AS VARCHAR) AS SeriesLabel,
-       CASE WHEN precursorchrominfoid.PrecursorId.Id IS NOT NULL THEN 'Peptide' ELSE 'Fragment' END AS DataType,
-       CAST(Value AS DOUBLE) AS MetricValue,
-       COALESCE(precursorchrominfoid.PrecursorId.Mz, precursorchrominfoid.MoleculePrecursorId.Mz) AS mz
-FROM PrecursorChromInfoAnnotation
+       pci.PrecursorId.Id AS PrecursorId,
+       PrecursorChromInfoId,
+       x.SampleFileId AS SampleFileId,
+       pci.PrecursorId.PeptideId.Sequence || (CASE WHEN pci.PrecursorId.Charge > 0 THEN ' +' ELSE ' ' END) || CAST(pci.PrecursorId.Charge AS VARCHAR) AS SeriesLabel,
+       'Peptide' AS DataType,
+       MetricValue,
+       pci.PrecursorId.Mz AS mz
 
-WHERE Name='PrecursorAccuracy'
+FROM
+     (
+     SELECT
+            AVG(CAST(p.Value AS DOUBLE)) AS MetricValue,
+            MIN(p.precursorchrominfoid) AS precursorchrominfoid,
+            p.precursorchrominfoid.SampleFileId AS SampleFileId
+     FROM PrecursorChromInfoAnnotation p
+     WHERE Name = 'PrecursorAccuracy'
+     GROUP BY p.precursorchrominfoid.PrecursorId.PeptideId.Sequence, p.precursorchrominfoid.SampleFileId
+     ) x
+INNER JOIN PrecursorChromInfo pci ON x.precursorchrominfoid = pci.Id

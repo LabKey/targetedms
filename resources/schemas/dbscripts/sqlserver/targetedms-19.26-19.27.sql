@@ -28,9 +28,9 @@ INSERT INTO targetedms.QCMetricConfiguration (Container, Name,Series1Label,Serie
   (@rootIdentity, 'Isotopologue LOQ', 'LOQ', 'targetedms', 'QCMetric_IsotopologuePrecursorLOQ', NULL, NULL, NULL, 1, 'QCMetricEnabled_IsotopologuePrecursorLOQ', 'targetedms');
 
 INSERT INTO targetedms.QCMetricConfiguration (Container, Name,Series1Label,Series1SchemaName,Series1QueryName,Series2Label,Series2SchemaName,Series2QueryName,PrecursorScoped, EnabledQueryName, EnabledSchemaName) VALUES
-  (@rootIdentity, 'Isotopologue precursor accuracy', 'Accuracy', 'targetedms', 'QCMetric_IsotopologuePrecursorAccuracy', NULL, NULL, NULL, 1, 'QCMetricEnabled_IsotopologuePrecursorAccuracy', 'targetedms');
+  (@rootIdentity, 'Isotopologue Accuracy', 'Accuracy', 'targetedms', 'QCMetric_IsotopologuePrecursorAccuracy', NULL, NULL, NULL, 1, 'QCMetricEnabled_IsotopologuePrecursorAccuracy', 'targetedms');
 
 INSERT INTO targetedms.QCMetricConfiguration (Container, Name,Series1Label,Series1SchemaName,Series1QueryName,Series2Label,Series2SchemaName,Series2QueryName,PrecursorScoped, EnabledQueryName, EnabledSchemaName) VALUES
-  (@rootIdentity, 'Isotopologue regression RSquared', 'Coefficient', 'targetedms', 'QCMetric_IsotopologuePrecursorRSquared', NULL, NULL, NULL, 1, 'QCMetricEnabled_IsotopologuePrecursorRSquared', 'targetedms');
+  (@rootIdentity, 'Isotopologue Regression RSquared', 'Coefficient', 'targetedms', 'QCMetric_IsotopologuePrecursorRSquared', NULL, NULL, NULL, 1, 'QCMetricEnabled_IsotopologuePrecursorRSquared', 'targetedms');
 
 UPDATE targetedms.QCMetricConfiguration SET EnabledQueryName = 'QCMetricEnabled_lhRatio', EnabledSchemaName ='targetedms' WHERE Series1QueryName = 'QCMetric_lhRatio';
