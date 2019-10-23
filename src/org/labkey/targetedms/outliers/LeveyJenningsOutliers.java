@@ -52,20 +52,17 @@ public class LeveyJenningsOutliers extends Outliers
         for(QCMetricConfiguration qcMetricConfiguration :configurations)
         {
             int id = qcMetricConfiguration.getId();
-            String name = qcMetricConfiguration.getName();
-            String label = qcMetricConfiguration.getSeries1Label();
             String schema = qcMetricConfiguration.getSeries1SchemaName();
             String query = qcMetricConfiguration.getSeries1QueryName();
 
-            sqlFragment.append(sep).append("(").append(getLatestSampleFileStatSql(id, name, label, schema, query, sampleLimit, METRIC_LABEL_ONE)).append(")");
+            sqlFragment.append(sep).append("(").append(getLatestSampleFileStatSql(id, METRIC_NAME, METRIC_LABEL_ONE, schema, query, sampleLimit)).append(")");
             sep = "\nUNION\n";
 
             if(qcMetricConfiguration.getSeries2SchemaName() != null && qcMetricConfiguration.getSeries2QueryName() != null) {
-                label = qcMetricConfiguration.getSeries2Label();
                 schema = qcMetricConfiguration.getSeries2SchemaName();
                 query = qcMetricConfiguration.getSeries2QueryName();
 
-                sqlFragment.append(sep).append("(").append(getLatestSampleFileStatSql(id, name, label, schema, query, sampleLimit, METRIC_LABEL_TWO)).append(")");
+                sqlFragment.append(sep).append("(").append(getLatestSampleFileStatSql(id, METRIC_NAME, METRIC_LABEL_TWO, schema, query, sampleLimit)).append(")");
                 sep = "\nUNION\n";
             }
         }
@@ -101,12 +98,12 @@ public class LeveyJenningsOutliers extends Outliers
      * @return UNION SQL query for the relevant metrics to get the summary info for the last N sample files
      *
      */
-    private static String getLatestSampleFileStatSql(int id, String name, String label, String schema, String query, @Nullable Integer sampleLimit, String metricLabel)
+    private static String getLatestSampleFileStatSql(int id, String name, String label, String schema, String query, @Nullable Integer sampleLimit)
     {
         return "SELECT MAX(stats.GuideSetId) AS GuideSetId,"
                 + "\n'" + id + "' AS MetricId,"
-                + "\n" + METRIC_NAME + id + "$  AS MetricName,"
-                + "\n" + metricLabel  + id + "$  AS MetricLabel,"
+                + "\n" + name + id + "$  AS MetricName,"
+                + "\n" + label  + id + "$  AS MetricLabel,"
                 + "\nX.SampleFile,"
                 + "\nX.AcquiredTime,"
                 + "\nCASE WHEN (exclusion.ReplicateId IS NOT NULL) THEN TRUE ELSE FALSE END AS IgnoreInQC,"
