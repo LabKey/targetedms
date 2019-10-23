@@ -117,6 +117,7 @@ import org.labkey.targetedms.model.ExperimentAnnotations;
 import org.labkey.targetedms.model.Journal;
 import org.labkey.targetedms.model.JournalExperiment;
 import org.labkey.targetedms.model.QCMetricConfiguration;
+import org.labkey.targetedms.outliers.Outliers;
 import org.labkey.targetedms.parser.GeneralMolecule;
 import org.labkey.targetedms.parser.GeneralMoleculeChromInfo;
 import org.labkey.targetedms.parser.Molecule;
@@ -1028,6 +1029,7 @@ public class TargetedMSController extends SpringActionController
             }
 
             CUSUMOutliers cusumOutliers = new CUSUMOutliers();
+            Outliers.setNamedParametersForQCConfigurations(enabledQCMetricConfigurations);
 
             List<LJOutlier> ljOutliers = LeveyJenningsOutliers.getLJOutliers(enabledQCMetricConfigurations, getContainer(), getUser(), form.getSampleLimit());
             if(!ljOutliers.isEmpty())

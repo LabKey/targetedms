@@ -17,6 +17,7 @@ package org.labkey.targetedms.outliers;
 
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
+import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.Sort;
 import org.labkey.api.security.User;
 import org.labkey.api.targetedms.model.LJOutlier;
@@ -36,13 +37,17 @@ public class LeveyJenningsOutliers extends Outliers
     public static List<LJOutlier> getLJOutliers(List<QCMetricConfiguration> configurations, Container container, User user, @Nullable Integer sampleLimit)
     {
         Set<String> columnNames = Set.of("guideSetId","metricId","metricName","metricLabel","sampleFile","acquiredTime","ignoreInQC","nonConformers","totalCount");
-        return executeQuery(container, user, queryContainerSampleFileStats(configurations, sampleLimit), columnNames, new Sort("-acquiredTime,metricLabel")).getArrayList(LJOutlier.class);
+        return executeQuery(container, user, queryContainerSampleFileStats(configurations, sampleLimit), columnNames, new Sort("-acquiredTime,metricLabel"), getNamedParametersForQCConfigurations()).getArrayList(LJOutlier.class);
     }
 
     public static String queryContainerSampleFileStats(List<QCMetricConfiguration> configurations, @Nullable Integer sampleLimit)
     {
-        StringBuilder sqlBuilder = new StringBuilder();
+        SQLFragment sqlFragment = new SQLFragment();
         String sep = "";
+        StringBuilder parameters = new StringBuilder();
+
+        //add Parameters
+        sqlFragment.append(addParametersToSQL(configurations));
 
         for(QCMetricConfiguration qcMetricConfiguration :configurations)
         {
@@ -52,7 +57,7 @@ public class LeveyJenningsOutliers extends Outliers
             String schema = qcMetricConfiguration.getSeries1SchemaName();
             String query = qcMetricConfiguration.getSeries1QueryName();
 
-            sqlBuilder.append(sep).append("(").append(getLatestSampleFileStatSql(id, name, label, schema, query, sampleLimit)).append(")");
+            sqlFragment.append(sep).append("(").append(getLatestSampleFileStatSql(id, name, label, schema, query, sampleLimit, METRIC_LABEL_ONE)).append(")");
             sep = "\nUNION\n";
 
             if(qcMetricConfiguration.getSeries2SchemaName() != null && qcMetricConfiguration.getSeries2QueryName() != null) {
@@ -60,12 +65,12 @@ public class LeveyJenningsOutliers extends Outliers
                 schema = qcMetricConfiguration.getSeries2SchemaName();
                 query = qcMetricConfiguration.getSeries2QueryName();
 
-                sqlBuilder.append(sep).append("(").append(getLatestSampleFileStatSql(id, name, label, schema, query, sampleLimit)).append(")");
+                sqlFragment.append(sep).append("(").append(getLatestSampleFileStatSql(id, name, label, schema, query, sampleLimit, METRIC_LABEL_TWO)).append(")");
                 sep = "\nUNION\n";
             }
         }
 
-        return sqlBuilder.toString();
+        return sqlFragment.toDebugString();
     }
 
 
@@ -96,12 +101,12 @@ public class LeveyJenningsOutliers extends Outliers
      * @return UNION SQL query for the relevant metrics to get the summary info for the last N sample files
      *
      */
-    private static String getLatestSampleFileStatSql(int id, String name, String label, String schema, String query, @Nullable Integer sampleLimit)
+    private static String getLatestSampleFileStatSql(int id, String name, String label, String schema, String query, @Nullable Integer sampleLimit, String metricLabel)
     {
         return "SELECT MAX(stats.GuideSetId) AS GuideSetId,"
                 + "\n'" + id + "' AS MetricId,"
-                + "\n'" + name + "' AS MetricName,"
-                + "\n'" + label + "' AS MetricLabel,"
+                + "\n" + METRIC_NAME + id + "$  AS MetricName,"
+                + "\n" + metricLabel  + id + "$  AS MetricLabel,"
                 + "\nX.SampleFile,"
                 + "\nX.AcquiredTime,"
                 + "\nCASE WHEN (exclusion.ReplicateId IS NOT NULL) THEN TRUE ELSE FALSE END AS IgnoreInQC,"

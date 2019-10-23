@@ -17,6 +17,7 @@ package org.labkey.targetedms.outliers;
 
 import org.json.JSONObject;
 import org.labkey.api.data.Container;
+import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.Sort;
 import org.labkey.api.security.User;
 import org.labkey.targetedms.model.QCMetricConfiguration;
@@ -53,9 +54,9 @@ public class CUSUMOutliers extends  Outliers
                 "\n ORDER BY GuideSetId, p.SeriesLabel, p.AcquiredTime";
     }
 
-    private String getSingleMetricGuideSetRawSql(int metricId, String metricType, String schemaName, String queryName, String series)
+    private String getSingleMetricGuideSetRawSql(int metricId, String label, String schemaName, String queryName, String series)
     {
-        return  "SELECT s.*, g.Comment, '" +  metricType + "' AS MetricType FROM (" +
+        return  "SELECT s.*, g.Comment, " + label + metricId + "$  AS MetricType FROM (" +
                 metricGuideSetRawSql(metricId, schemaName, queryName, null, null, false, series) +
                 ") s" +
                 " LEFT JOIN GuideSet g ON g.RowId = s.GuideSetId";
@@ -63,8 +64,11 @@ public class CUSUMOutliers extends  Outliers
 
     private String queryContainerSampleFileRawGuideSetStats(List<QCMetricConfiguration> configurations)
     {
-        StringBuilder sqlBuilder = new StringBuilder();
+        SQLFragment sqlBuilder = new SQLFragment();
         String sep = "";
+
+        sqlBuilder.append(addParametersToSQL(configurations));
+        sqlBuilder.append("SELECT * FROM (");
 
         for(QCMetricConfiguration configuration: configurations)
         {
@@ -72,17 +76,20 @@ public class CUSUMOutliers extends  Outliers
             String label = configuration.getSeries1Label();
             String schema1Name = configuration.getSeries1SchemaName();
             String query1Name = configuration.getSeries1QueryName();
-            sqlBuilder.append(sep).append("(").append(getSingleMetricGuideSetRawSql(id, label, schema1Name, query1Name, "series1")).append(")");
+            sqlBuilder.append(sep).append("(").append(getSingleMetricGuideSetRawSql(id, METRIC_LABEL_ONE, schema1Name, query1Name, "series1")).append(")");
             sep = "\nUNION\n";
 
             if(configuration.getSeries2SchemaName() != null && configuration.getSeries2QueryName() != null) {
                 String schema2Name = configuration.getSeries2SchemaName();
                 String query2Name = configuration.getSeries2QueryName();
                 label = configuration.getSeries2Label();
-                sqlBuilder.append(sep).append("(").append(getSingleMetricGuideSetRawSql(id, label, schema2Name, query2Name, "series2")).append(")");
+                sqlBuilder.append(sep).append("(").append(getSingleMetricGuideSetRawSql(id, METRIC_LABEL_TWO, schema2Name, query2Name, "series2")).append(")");
             }
         }
-        return "SELECT * FROM (" + sqlBuilder.toString() + ") a"; //wrap unioned results in sql to support sorting
+
+        sqlBuilder.append(") a");
+
+        return  sqlBuilder.toDebugString(); //wrap unioned results in sql to support sorting
     }
 
     private String getEachSeriesTypePlotDataSql(String type, int id, String schemaName, String queryName, String whereClause, String metricType)
@@ -91,7 +98,7 @@ public class CUSUMOutliers extends  Outliers
         sb.append("SELECT '").append(type).append("' AS SeriesType, X.SampleFile, ");
         if(metricType != null)
         {
-            sb.append("'").append(metricType).append("'").append(" AS MetricType, ");
+            sb.append(metricType).append(id + "$").append(" AS MetricType, ");
         }
         sb.append("\nX.PrecursorId, X.PrecursorChromInfoId, X.SeriesLabel, X.DataType, X.mz, X.AcquiredTime,"
                 + "\nX.FilePath, X.MetricValue, x.ReplicateId, gs.RowId AS GuideSetId,"
@@ -111,9 +118,12 @@ public class CUSUMOutliers extends  Outliers
 
     private String queryContainerSampleFileRawData(List<QCMetricConfiguration> configurations)
     {
-        StringBuilder sqlBuilder = new StringBuilder();
+        SQLFragment sqlBuilder = new SQLFragment();
         String sep = "";
         String where ="";
+
+        sqlBuilder.append(addParametersToSQL(configurations));
+        sqlBuilder.append("SELECT * FROM (");
 
         for(QCMetricConfiguration configuration: configurations)
         {
@@ -121,24 +131,25 @@ public class CUSUMOutliers extends  Outliers
             String label = configuration.getSeries1Label();
             String schema1Name = configuration.getSeries1SchemaName();
             String query1Name = configuration.getSeries1QueryName();
-            sqlBuilder.append(sep).append("(").append(getEachSeriesTypePlotDataSql("series1", id, schema1Name, query1Name, where, label)).append(")");
+            sqlBuilder.append(sep).append("(").append(getEachSeriesTypePlotDataSql("series1", id, schema1Name, query1Name, where, METRIC_LABEL_ONE)).append(")");
             sep = "\nUNION\n";
 
             if(configuration.getSeries2SchemaName() != null && configuration.getSeries2QueryName() != null) {
                 String schema2Name = configuration.getSeries2SchemaName();
                 String query2Name = configuration.getSeries2QueryName();
                 label = configuration.getSeries2Label();
-                sqlBuilder.append(sep).append("(").append(getEachSeriesTypePlotDataSql("series2", id, schema2Name, query2Name, where, label)).append(")");
+                sqlBuilder.append(sep).append("(").append(getEachSeriesTypePlotDataSql("series2", id, schema2Name, query2Name, where, METRIC_LABEL_TWO)).append(")");
             }
         }
-        return "SELECT * FROM (" + sqlBuilder.toString() + ") a"; //wrap unioned results in sql to support sorting
+        sqlBuilder.append(") a");
+        return  sqlBuilder.toDebugString() ; //wrap unioned results in sql to support sorting
     }
 
     public List<RawGuideSet> getRawGuideSets(Container container, User user, List<QCMetricConfiguration> configurations)
     {
         Set<String> columnNames = Set.of("trainingStart","trainingEnd","seriesLabel","metricValue","metricType","acquiredTime","seriesType","comment","referenceEnd","guideSetId");
 
-        return executeQuery(container, user, queryContainerSampleFileRawGuideSetStats(configurations), columnNames, new Sort("guideSetId,seriesLabel,acquiredTime")).getArrayList(RawGuideSet.class);
+        return executeQuery(container, user, queryContainerSampleFileRawGuideSetStats(configurations), columnNames, new Sort("guideSetId,seriesLabel,acquiredTime"), getNamedParametersForQCConfigurations()).getArrayList(RawGuideSet.class);
     }
 
     public List<RawMetricDataSet> getRawMetricDataSets(Container container, User user, List<QCMetricConfiguration> configurations)
@@ -146,7 +157,7 @@ public class CUSUMOutliers extends  Outliers
         Set<String> columnNames = Set.of("seriesType","sampleFile","metricType","precursorId","precursorChromInfoId","seriesLabel",
                 "dataType","mz","acquiredTime","filePath","metricValue","replicateId","guideSetId","ignoreInQC","inGuideSetTrainingRange");
 
-        return executeQuery(container, user, queryContainerSampleFileRawData(configurations), columnNames, new Sort("seriesType,seriesLabel,acquiredTime")).getArrayList(RawMetricDataSet.class);
+        return executeQuery(container, user, queryContainerSampleFileRawData(configurations), columnNames, new Sort("seriesType,seriesLabel,acquiredTime"), getNamedParametersForQCConfigurations()).getArrayList(RawMetricDataSet.class);
     }
 
     private Map<String, Map<GuideSetAvgMR, List<Map<String, Double>>>> getAllProcessedMetricGuideSets(List<RawGuideSet> rawGuideSets)
