@@ -28,7 +28,6 @@ import java.util.Set;
 
 public class LeveyJenningsOutliers extends Outliers
 {
-
     private LeveyJenningsOutliers()
     {
         // prevent external construction with a private default constructor
@@ -40,7 +39,7 @@ public class LeveyJenningsOutliers extends Outliers
         return executeQuery(container, user, queryContainerSampleFileStats(configurations, sampleLimit), columnNames, new Sort("-acquiredTime,metricLabel"), getNamedParametersForQCConfigurations()).getArrayList(LJOutlier.class);
     }
 
-    public static String queryContainerSampleFileStats(List<QCMetricConfiguration> configurations, @Nullable Integer sampleLimit)
+    private static String queryContainerSampleFileStats(List<QCMetricConfiguration> configurations, @Nullable Integer sampleLimit)
     {
         SQLFragment sqlFragment = new SQLFragment();
         String sep = "";
@@ -69,8 +68,6 @@ public class LeveyJenningsOutliers extends Outliers
 
         return sqlFragment.toDebugString();
     }
-
-
 
     private static String getMetricGuideSetSql(int id, String schema1Name, String query1Name)
     {
