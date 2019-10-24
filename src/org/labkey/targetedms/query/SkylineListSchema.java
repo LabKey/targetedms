@@ -19,6 +19,8 @@ public class SkylineListSchema extends UserSchema
 {
     public static final String SCHEMA_NAME = "targetedmslists";
 
+    public static final String ID_SEPARATOR = "_";
+
     static public void register(Module module)
     {
         DefaultSchema.registerProvider(SCHEMA_NAME, new DefaultSchema.SchemaProvider(module)
@@ -30,14 +32,15 @@ public class SkylineListSchema extends UserSchema
         });
     }
 
-    public SkylineListSchema(User user, Container container) {
-        super(SCHEMA_NAME, null, user, container, TargetedMSSchema.getSchema());
+    public SkylineListSchema(User user, Container container)
+    {
+        super(SCHEMA_NAME, "Contains data from custom lists imported from Skyline documents", user, container, TargetedMSSchema.getSchema());
     }
 
     @Override
     public @Nullable TableInfo createTable(String name, ContainerFilter cf)
     {
-        int ichHyphen = name.indexOf('-');
+        int ichHyphen = name.indexOf(ID_SEPARATOR);
         if (ichHyphen < 0) {
             return null;
         }

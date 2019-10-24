@@ -16,6 +16,8 @@
 
 package org.labkey.targetedms.query;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.SQLFragment;
@@ -104,7 +106,13 @@ public class SkylineListManager
         return new SqlSelector(TargetedMSSchema.getSchema(), fragment).getArrayList(ListDefinition.class);
     }
 
-    public static ListDefinition getListDefinition(ContainerFilter containerFilter, int runId, String listName)
+    @Nullable
+    public static ListDefinition getListDefinition(@NotNull Container container, int listId)
+    {
+        return new TableSelector(getListDefTable()).getObject(container, listId, ListDefinition.class);
+    }
+
+    public static ListDefinition getListDefinition(@Nullable ContainerFilter containerFilter, int runId, @NotNull String listName)
     {
         SQLFragment fragment = new SQLFragment("SELECT * FROM ");
         fragment.append(getListDefTable(), "t");

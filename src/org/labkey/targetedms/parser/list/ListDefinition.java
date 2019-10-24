@@ -16,6 +16,7 @@
 package org.labkey.targetedms.parser.list;
 
 import org.labkey.targetedms.parser.SkylineEntity;
+import org.labkey.targetedms.query.SkylineListSchema;
 
 public class ListDefinition extends SkylineEntity
 {
@@ -66,6 +67,6 @@ public class ListDefinition extends SkylineEntity
 
     public String getUserSchemaTableName()
     {
-        return getRunId() + "-" + getName();
+        return getRunId() + SkylineListSchema.ID_SEPARATOR + getName();
     }
 }

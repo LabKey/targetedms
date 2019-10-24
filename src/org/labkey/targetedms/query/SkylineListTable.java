@@ -32,7 +32,7 @@ public class SkylineListTable extends AbstractTableInfo
     ListDefinition _listDefinition;
     List<ListColumn> _listColumns;
     public SkylineListTable(UserSchema schema, ListDefinition listDefinition, List<ListColumn> columns) {
-        super(schema.getDbSchema(), listDefinition.getName());
+        super(schema.getDbSchema(), listDefinition.getUserSchemaTableName());
         _userSchema = schema;
         _listDefinition = listDefinition;
         _listColumns = columns;
