@@ -1046,6 +1046,7 @@
             <column columnName="Name"/>
             <column columnName="Targets"/>
             <column columnName="Type"/>
+            <column columnName="Lookup"/>
         </columns>
     </table>
 

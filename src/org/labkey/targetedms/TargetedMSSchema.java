@@ -506,6 +506,12 @@ public class TargetedMSSchema extends UserSchema
             {
                 return FieldKey.fromParts("iRTScaleId", "Container");
             }
+
+            @Override
+            public FieldKey getRunIdFieldKey()
+            {
+                throw new UnsupportedOperationException();
+            }
         },
         IsolationSchemeFK
         {
@@ -558,6 +564,11 @@ public class TargetedMSSchema extends UserSchema
                 return FieldKey.fromParts("PeptideId", "PeptideGroupId", "RunId", "Container");
             }
         };
+
+        public FieldKey getRunIdFieldKey()
+        {
+            return getContainerFieldKey().getParent();
+        }
 
         public abstract SQLFragment getSQL();
         public abstract FieldKey getContainerFieldKey();

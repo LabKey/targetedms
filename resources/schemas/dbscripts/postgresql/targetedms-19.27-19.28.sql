@@ -15,3 +15,5 @@
  */
 
 ALTER TABLE targetedms.Runs ADD COLUMN ListCount INT DEFAULT 0 NOT NULL;
+
+ALTER TABLE targetedms.AnnotationSettings ADD COLUMN Lookup TEXT;

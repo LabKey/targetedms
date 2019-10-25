@@ -39,19 +39,12 @@ import org.labkey.targetedms.parser.list.ListItem;
 import org.labkey.targetedms.parser.list.ListItemValue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class SkylineListManager
 {
-    /**
-     * Returns true if the long text columns such as ListDefinition.Name support the equals operator.
-     */
-    public static boolean canFilterNameColumn()
-    {
-        return !TargetedMSSchema.getSchema().getSqlDialect().isSqlServer();
-    }
-
     public static ListDefinition saveListData(User user, ListData listData)
     {
         ListDefinition listDefinition = Table.insert(user, TargetedMSManager.getTableInfoListDefinition(), listData.getListDefinition());
@@ -95,14 +88,16 @@ public class SkylineListManager
         return TargetedMSSchema.getSchema().getTable(TargetedMSSchema.TABLE_LIST_COLUMN_DEFINITION);
     }
 
-    public static List<ListDefinition> getListDefinitions(Container container)
+    /** @return all lists, sorted by name and then by RunId descending (so the newest one is first) */
+    public static List<ListDefinition> getListDefinitions(@NotNull Container container, @NotNull ContainerFilter containerFilter)
     {
         SQLFragment fragment = new SQLFragment("SELECT * FROM ");
         fragment.append(getListDefTable(), "t");
         fragment.append(" WHERE t.RunId IN (SELECT Id FROM ");
         fragment.append(TargetedMSSchema.getSchema().getTable(TargetedMSSchema.TABLE_RUNS), "r");
-        fragment.append(new SQLFragment(" WHERE Container = ? AND StatusId = ? AND deleted = ?)",
-                container.getId(), SkylineDocImporter.STATUS_SUCCESS, Boolean.FALSE));
+        fragment.append(new SQLFragment(" WHERE StatusId = ? AND deleted = ? AND ", SkylineDocImporter.STATUS_SUCCESS, Boolean.FALSE));
+        fragment.append(containerFilter.getSQLFragment(getListDefTable().getSchema(), new SQLFragment("Container"), container));
+        fragment.append(") ORDER BY t.Name, t.RunId DESC");
         return new SqlSelector(TargetedMSSchema.getSchema(), fragment).getArrayList(ListDefinition.class);
     }
 
@@ -112,24 +107,19 @@ public class SkylineListManager
         return new TableSelector(getListDefTable()).getObject(container, listId, ListDefinition.class);
     }
 
-    public static ListDefinition getListDefinition(@Nullable ContainerFilter containerFilter, int runId, @NotNull String listName)
+    public static ListDefinition getListDefinition(@NotNull ContainerFilter containerFilter, @NotNull Container container, int runId, @NotNull String queryName)
     {
         SQLFragment fragment = new SQLFragment("SELECT * FROM ");
         fragment.append(getListDefTable(), "t");
         fragment.append(new SQLFragment(" WHERE t.RunId = ?", runId));
-        if (canFilterNameColumn())
-        {
-            fragment.append(new SQLFragment(" and t.Name = ?", listName));
-        }
-        if (containerFilter != null)
-        {
-            SQLFragment sqlFragmentContainer = new SQLFragment("(SELECT CONTAINER FROM " + TargetedMSManager.getTableInfoRuns() + " WHERE RunId = ?)", runId);
-            fragment.append(" AND ");
-            fragment.append(containerFilter.getSQLFragment(TargetedMSSchema.getSchema(), sqlFragmentContainer, null));
-        }
+
+        SQLFragment sqlFragmentContainer = new SQLFragment("(SELECT CONTAINER FROM " + TargetedMSManager.getTableInfoRuns() + " WHERE Id = ?)", runId);
+        fragment.append(" AND ");
+        fragment.append(containerFilter.getSQLFragment(TargetedMSSchema.getSchema(), sqlFragmentContainer, container));
+
         for (ListDefinition listDefinition : new SqlSelector(TargetedMSSchema.getSchema(), fragment).getCollection(ListDefinition.class))
         {
-            if (Objects.equals(listName, listDefinition.getName()))
+            if (Objects.equals(queryName, listDefinition.getUserSchemaTableName()))
             {
                 return listDefinition;
             }
@@ -137,8 +127,29 @@ public class SkylineListManager
         return null;
     }
 
+    @Nullable
+    public static ListColumn getPKListColumn(ListDefinition listDefinition)
+    {
+        if (listDefinition.getPkColumnIndex() != null)
+        {
+            for (ListColumn listColumn : getListColumns(listDefinition))
+            {
+                if (listColumn.getColumnIndex() == listDefinition.getPkColumnIndex().intValue())
+                {
+                    return listColumn;
+                }
+            }
+        }
+        return null;
+    }
+
+    @NotNull
     public static List<ListColumn> getListColumns(ListDefinition listDefinition)
     {
-        return new TableSelector(getListColumnTable(), new SimpleFilter(FieldKey.fromParts("ListDefinitionId"), listDefinition.getId()), new Sort("ColumnIndex")).getArrayList(ListColumn.class);
+        return Collections.unmodifiableList(
+                new TableSelector(getListColumnTable(),
+                        new SimpleFilter(FieldKey.fromParts("ListDefinitionId"), listDefinition.getId()),
+                        new Sort("ColumnIndex")).
+                        getArrayList(ListColumn.class));
     }
 }

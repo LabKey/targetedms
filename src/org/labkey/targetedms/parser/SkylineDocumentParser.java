@@ -514,7 +514,8 @@ public class SkylineDocumentParser implements AutoCloseable
                  String name = XmlUtil.readRequiredAttribute(reader, "name", ANNOTATION);
                  String targets = XmlUtil.readRequiredAttribute(reader, "targets", ANNOTATION);
                  String type = XmlUtil.readRequiredAttribute(reader, "type", ANNOTATION);
-                 _dataSettings.addAnnotations(name, targets, type);
+                 String lookup = XmlUtil.readAttribute(reader, "lookup", ANNOTATION);
+                 _dataSettings.addAnnotations(name, targets, type, lookup);
              }
              else if (XmlUtil.isStartElement(reader, evtType, GROUP_COMPARISON))
              {
