@@ -24,8 +24,11 @@ import org.labkey.api.query.UserSchema;
 import org.labkey.targetedms.parser.list.ListColumn;
 import org.labkey.targetedms.parser.list.ListDefinition;
 
-import java.util.List;
-
+/**
+ * A table backed by a list definition imported from a Skyline document. These are similar to LabKey lists,
+ * but implemented separately because they have different scoping rules, more limited design options, and need to
+ * be read-only.
+ */
 public class SkylineListTable extends AbstractTableInfo
 {
     UserSchema _userSchema;

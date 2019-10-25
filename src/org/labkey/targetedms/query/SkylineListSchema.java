@@ -13,7 +13,9 @@ import org.labkey.api.security.User;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.parser.list.ListDefinition;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,6 +25,8 @@ public class SkylineListSchema extends UserSchema
 
     public static final String ID_SEPARATOR = "_";
     public static final String UNION_PREFIX = "All" + ID_SEPARATOR;
+
+    private Map<ContainerFilter, List<ListDefinition>> _listDefinitions = new HashMap<>();
 
     static public void register(Module module)
     {
@@ -41,19 +45,27 @@ public class SkylineListSchema extends UserSchema
         super(SCHEMA_NAME, "Contains data from custom lists imported from Skyline documents", user, container, TargetedMSSchema.getSchema());
     }
 
+    private List<ListDefinition> getListDefinitions(@Nullable ContainerFilter containerFilter)
+    {
+        containerFilter = containerFilter == null ? getDefaultContainerFilter() : containerFilter;
+        return _listDefinitions.computeIfAbsent(containerFilter, (cf) -> SkylineListManager.getListDefinitions(getContainer(), cf));
+    }
+
     @Override
     public @Nullable TableInfo createTable(String name, ContainerFilter cf)
     {
         if (name.toLowerCase().startsWith(UNION_PREFIX.toLowerCase()))
         {
-            List<ListDefinition> listDefs = SkylineListManager.getListDefinitions(getContainer(), getDefaultContainerFilter());
-            listDefs = listDefs.stream().filter((l) -> name.equalsIgnoreCase(l.getUnionUserSchemaTableName())).collect(Collectors.toList());
+            // Find all lists with the same name
+            List<ListDefinition> listDefs = getListDefinitions(cf).stream().filter((l) -> name.equalsIgnoreCase(l.getUnionUserSchemaTableName())).collect(Collectors.toList());
             if (!listDefs.isEmpty())
             {
+                // Use the first one as the base, as it is the most recently imported version
                 ListDefinition firstListDef = listDefs.get(0);
                 SkylineListTable firstTable = new SkylineListTable(this, firstListDef);
                 SkylineListUnionTable result = new SkylineListUnionTable(this, firstTable);
 
+                // For all lists where the designs match exactly, union their contents into the base list
                 for (int i = 1; i < listDefs.size(); i++)
                 {
                     ListDefinition def = listDefs.get(i);
@@ -87,7 +99,7 @@ public class SkylineListSchema extends UserSchema
     @Override
     public Set<String> getTableNames()
     {
-        List<ListDefinition> listDefs = SkylineListManager.getListDefinitions(getContainer(), getDefaultContainerFilter());
+        List<ListDefinition> listDefs = getListDefinitions(null);
         Set<String> result = new CaseInsensitiveHashSet();
         result.addAll(listDefs.stream().map(ListDefinition::getUserSchemaTableName).collect(Collectors.toSet()));
         result.addAll(listDefs.stream().map(ListDefinition::getUnionUserSchemaTableName).collect(Collectors.toSet()));

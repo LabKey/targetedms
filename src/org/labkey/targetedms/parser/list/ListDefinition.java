@@ -22,6 +22,7 @@ import org.labkey.targetedms.query.SkylineListSchema;
 import java.util.List;
 import java.util.Objects;
 
+/** Bean class for a list definition imported from a Skyline document */
 public class ListDefinition extends SkylineEntity
 {
     private int _runId;
@@ -70,6 +71,7 @@ public class ListDefinition extends SkylineEntity
         _displayColumnIndex = displayColumnIndex;
     }
 
+    /** @return a generated name not tied to this specific list definition, but for unioning all lists of the same shape */
     public String getUserSchemaTableName()
     {
         if (getName().length() > 50)
@@ -80,6 +82,7 @@ public class ListDefinition extends SkylineEntity
         return getRunId() + SkylineListSchema.ID_SEPARATOR + getName();
     }
 
+    /** @return a generated name unique to this specific list definition */
     public String getUnionUserSchemaTableName()
     {
         String suffix;
@@ -95,6 +98,7 @@ public class ListDefinition extends SkylineEntity
         return SkylineListSchema.UNION_PREFIX + suffix;
     }
 
+    /** Fetch and cache the columns for this list. Not a getter so as not to confuse reflection-based binding */
     public List<ListColumn> fetchColumns()
     {
         if (_columns == null)
@@ -110,6 +114,7 @@ public class ListDefinition extends SkylineEntity
         return Objects.hash(_runId, _name, _pkColumnIndex, _displayColumnIndex, _columns);
     }
 
+    /** @return true if the lists describe the same design - identical column lists, title, and key columns */
     public boolean matches(ListDefinition that)
     {
         if(Objects.equals(_name, that._name) &&

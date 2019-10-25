@@ -51,6 +51,9 @@ import java.util.stream.Collectors;
  * Optionally adds annotation-valued columns as if there were "real" columns. Can be conditionalized via the omitAnnotations
  * column to optimize for scenarios where they will never be used, such as when populating a Java bean with a fixed set
  * of get/set methods.
+ *
+ * Wires up lookups to Skyline lists when possible. {@link SkylineListUnionTable}
+ *
  * User: jeckels
  * Date: Jul 6, 2012
  */
@@ -115,12 +118,7 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
                 false,
                 true,
                 "'" + ANNOT_DELIMITER + "'"));
-        annotationsSQL.append(" FROM ");
-        annotationsSQL.append(annotationTableInfo, "a");
-        annotationsSQL.append(" WHERE a.");
-        annotationsSQL.append(annotationFKName);
-        annotationsSQL.append(" = ");
-        annotationsSQL.append(ExprColumn.STR_TABLE_ALIAS);
+        getAnnotationJoinSQL(annotationTableInfo, annotationFKName, annotationsSQL);
         annotationsSQL.append(".").append(pkColumnName).append(")");
         ExprColumn annotationsColumn = new ExprColumn(this, "Annotations", annotationsSQL, JdbcType.VARCHAR);
         annotationsColumn.setLabel(columnName);
@@ -137,15 +135,10 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
             {
                 continue;
             }
-            //build expr col sql to select value field from annotation table
+            // build expr col sql to select value field from annotation table
             SQLFragment annotationSQL = new SQLFragment("(SELECT ",annotationSetting.getName());
             DataSettings.AnnotationType annotationType = appendValueWithCast(annotationSetting, annotationSQL);
-            annotationSQL.append(" FROM ");
-            annotationSQL.append(annotationTableInfo, "a");
-            annotationSQL.append(" WHERE a.");
-            annotationSQL.append(annotationFKName);
-            annotationSQL.append(" = ");
-            annotationSQL.append(ExprColumn.STR_TABLE_ALIAS);
+            getAnnotationJoinSQL(annotationTableInfo, annotationFKName, annotationSQL);
             annotationSQL.append(".").append(pkColumnName).append(" AND a.name = ?)");
 
             // Create new column representing the annotation
@@ -156,7 +149,7 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
             annotationColumn.setMeasure(annotationType.isMeasure());
             annotationColumn.setDimension(annotationType.isDimension());
             
-            // Check if the annotation is a lookup and all of the definitions agree on what its target should be
+            // Check if the annotation is a lookup and all of the definitions agree on what its target list should be
             if (annotationSetting.getMaxLookup() != null && Objects.equals(annotationSetting.getMaxLookup(), annotationSetting.getMinLookup()))
             {
                 String lookup = annotationSetting.getMaxLookup();
@@ -166,7 +159,7 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
                 if (!listDefs.isEmpty())
                 {
                     ListDefinition listDef = listDefs.get(0);
-                    // Use the first one (the most recent import) as our FK to a unioned version of the table
+                    // Use the first one (the most recent import) as our FK to a UNION version of the table
                     LookupForeignKey fk = new LookupForeignKey()
                     {
                         @Override
@@ -183,7 +176,17 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
             addColumn(annotationColumn);
         }
 
-        annotationsColumn.setDisplayColumnFactory(colInfo -> new AnnotationsDisplayColumn(colInfo));
+        annotationsColumn.setDisplayColumnFactory(AnnotationsDisplayColumn::new);
+    }
+
+    private void getAnnotationJoinSQL(TableInfo annotationTableInfo, String annotationFKName, SQLFragment annotationSQL)
+    {
+        annotationSQL.append(" FROM ");
+        annotationSQL.append(annotationTableInfo, "a");
+        annotationSQL.append(" WHERE a.");
+        annotationSQL.append(annotationFKName);
+        annotationSQL.append(" = ");
+        annotationSQL.append(ExprColumn.STR_TABLE_ALIAS);
     }
 
     public static class AnnotationColumn extends ExprColumn
@@ -223,6 +226,8 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
     {
         SQLFragment annoSettingsSql = new SQLFragment();
         TableInfo annotationSettingsTI = TargetedMSManager.getTableInfoAnnotationSettings();
+        // We query for the min and max values to determine both what they're set to, and if they're all the same.
+        // If we have at least one value that's different in the column, the min and max will be different.
         annoSettingsSql.append("SELECT name," +
                 "max(Type) maxType, " +
                 "min(Type) minType, " +

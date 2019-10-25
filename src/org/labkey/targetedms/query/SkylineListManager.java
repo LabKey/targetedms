@@ -127,22 +127,6 @@ public class SkylineListManager
         return null;
     }
 
-    @Nullable
-    public static ListColumn getPKListColumn(ListDefinition listDefinition)
-    {
-        if (listDefinition.getPkColumnIndex() != null)
-        {
-            for (ListColumn listColumn : getListColumns(listDefinition))
-            {
-                if (listColumn.getColumnIndex() == listDefinition.getPkColumnIndex().intValue())
-                {
-                    return listColumn;
-                }
-            }
-        }
-        return null;
-    }
-
     @NotNull
     public static List<ListColumn> getListColumns(ListDefinition listDefinition)
     {
