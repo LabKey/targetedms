@@ -34,3 +34,5 @@ INSERT INTO targetedms.QCMetricConfiguration (Container, Name,Series1Label,Serie
   ((select theIdentity from rootIdentity), 'Isotopologue Regression RSquared', 'Coefficient', 'targetedms', 'QCMetric_IsotopologuePrecursorRSquared', NULL, NULL, NULL, TRUE, 'QCMetricEnabled_IsotopologuePrecursorRSquared', 'targetedms');
 
 UPDATE targetedms.QCMetricConfiguration SET EnabledQueryName = 'QCMetricEnabled_lhRatio', EnabledSchemaName ='targetedms' WHERE Series1QueryName = 'QCMetric_lhRatio';
+
+ALTER TABLE targetedms.runs ALTER COLUMN SoftwareVersion TYPE VARCHAR(200);
