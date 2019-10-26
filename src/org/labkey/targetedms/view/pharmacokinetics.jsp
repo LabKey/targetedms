@@ -343,7 +343,6 @@
                 return '';
             }
             return Number.parseFloat(value).toPrecision(4);
-            return LABKEY.Utils.roundNumber(value).toLocaleString(undefined, {maximumSignificantDigits: 4});
         }
 
         function getLinearRegression (y,x) {
