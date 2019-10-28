@@ -27,28 +27,31 @@ import org.labkey.test.categories.DailyB;
 import org.labkey.test.categories.MS2;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 @Category({DailyB.class, MS2.class})
 public class TargetedMSListTest extends TargetedMSTest
 {
-    private static final String SKY_FILE = "ListTest.sky.zip";
+    private static final String LIST_SKY_FILE_1 = "ListTest.sky.zip";
+    private static final String LIST_SKY_FILE_2 = "ListTestDiffValues.sky.zip";
+    private static final String LIST_SKY_FILE_3 = "ListTestDiffProps.sky.zip";
 
     @Test
     public void testSteps() throws IOException, CommandException
     {
         setupFolder(FolderType.Experiment);
-        importData(SKY_FILE);
+        importData(LIST_SKY_FILE_1);
 
         clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
-        clickAndWait(Locator.linkContainingText(SKY_FILE));
+        clickAndWait(Locator.linkContainingText(LIST_SKY_FILE_1));
         verifyRunSummaryCountsPep(2,4,0, 5,53, 1, 0, 6);
         clickAndWait(Locator.linkContainingText("6 lists"));
         assertTextPresent("DocumentProperties", "Lorem Ipsum", "Protein Descriptions");
@@ -58,16 +61,11 @@ public class TargetedMSListTest extends TargetedMSTest
         verifyRunSummaryCountsPep(2,4,0, 5,53, 1, 0, 6);
         assertTextPresent("ALBU_BOVIN", "main protein of plasma");
 
-        // Be sure data is exposed through query too
-        GetQueriesCommand command = new GetQueriesCommand("targetedmslists");
-        GetQueriesResponse queriesResponse = command.execute(createDefaultConnection(false), getCurrentContainerPath());
-        assertEquals("Wrong number of queries", 6, queriesResponse.getQueryNames().size());
-        Set<String> trimmedNames = queriesResponse.getQueryNames().stream().map((s) -> s.substring(s.indexOf("_") + 1)).collect(Collectors.toSet());
-        assertTrue("Missing 'DocumentProperties'", trimmedNames.contains("DocumentProperties"));
-        assertTrue("Missing 'Numbers'", trimmedNames.contains("Numbers"));
+        List<String> queryNames = validateSampleInfo(1, Set.of("Mickey"), 5, 12);
 
-        Optional<String> samplesName = queriesResponse.getQueryNames().stream().filter((s) -> s.endsWith("_Samples")).findFirst();
-        assertTrue("Missing '*_Samples' from: " + queriesResponse.getQueryNames(), samplesName.isPresent());
+        // Figure out the name of the list's query, which will include the RowId of its run
+        Optional<String> samplesName = queryNames.stream().filter((s) -> s.endsWith("_Samples")).findFirst();
+        assertTrue("Missing '*_Samples' from: " + queryNames, samplesName.isPresent());
 
         SelectRowsCommand rowsCommand = new SelectRowsCommand("targetedmslists", samplesName.get());
         rowsCommand.setRequiredVersion(9.1);
@@ -77,5 +75,41 @@ public class TargetedMSListTest extends TargetedMSTest
         Set<String> sampleNames = new HashSet<>();
         rowsResponse.getRowset().forEach((r) -> sampleNames.add((String)r.getValue("SampleName")));
         assertEquals("Wrong sample names", Set.of("Mickey", "Minnie", "Mighty", "Jerry", "Speedy"), sampleNames);
+
+
+        // Import a second Skyline document that shares a list design so we can check that rows get unioned
+        importData(LIST_SKY_FILE_2, 2);
+
+        validateSampleInfo(2, Set.of("Mickey", "Itchy"), 11, 18);
+
+        // Import a third Skyline document that has a different list design of the same name so we can check that it
+        // takes over
+        importData(LIST_SKY_FILE_3, 3);
+
+        validateSampleInfo(3, new HashSet<>(Arrays.asList(null, "Mickey")), 5, 24);
+    }
+
+    /** @return the list of queries in the targetedmslist schema */
+    private List<String> validateSampleInfo(int replicateRowCount, Set<String> expectedReplicateLookupValues, int sampleUnionRowCount, int listQueryCount) throws IOException, CommandException
+    {
+        SelectRowsCommand replicateRowsCommand = new SelectRowsCommand("targetedms", "replicate");
+        replicateRowsCommand.setRequiredVersion(9.1);
+        SelectRowsResponse replicateRowsUnionedResponse = replicateRowsCommand.execute(createDefaultConnection(false), getCurrentContainerPath());
+        assertEquals("Wrong number of replicate rows", replicateRowCount, replicateRowsUnionedResponse.getRowCount().intValue());
+        Set<String> replicateSampleLookupValues = new HashSet<>();
+        replicateRowsUnionedResponse.getRowset().forEach((r) -> replicateSampleLookupValues.add((String)r.getDisplayValue("Sample")));
+        assertEquals("Wrong sample names", expectedReplicateLookupValues, replicateSampleLookupValues);
+
+        SelectRowsCommand sampleRowsUnionedCommand = new SelectRowsCommand("targetedmslists", "All_Samples");
+        assertEquals("Wrong number of unioned sample list rows", sampleUnionRowCount, sampleRowsUnionedCommand.execute(createDefaultConnection(false), getCurrentContainerPath()).getRowCount().intValue());
+
+        GetQueriesCommand command = new GetQueriesCommand("targetedmslists");
+        GetQueriesResponse queriesResponse = command.execute(createDefaultConnection(false), getCurrentContainerPath());
+        assertEquals("Wrong number of queries", listQueryCount, queriesResponse.getQueryNames().size());
+        Set<String> trimmedNames = queriesResponse.getQueryNames().stream().filter((s) -> !s.startsWith("All_")).map((s) -> s.substring(s.indexOf("_") + 1)).collect(Collectors.toSet());
+        assertTrue("Missing 'DocumentProperties'", trimmedNames.contains("DocumentProperties"));
+        assertTrue("Missing 'Numbers'", trimmedNames.contains("Numbers"));
+
+        return queriesResponse.getQueryNames();
     }
 }

@@ -14,6 +14,7 @@ import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.parser.list.ListDefinition;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -100,7 +101,7 @@ public class SkylineListSchema extends UserSchema
     public Set<String> getTableNames()
     {
         List<ListDefinition> listDefs = getListDefinitions(null);
-        Set<String> result = new CaseInsensitiveHashSet();
+        Set<String> result = new HashSet<>();
         result.addAll(listDefs.stream().map(ListDefinition::getUserSchemaTableName).collect(Collectors.toSet()));
         result.addAll(listDefs.stream().map(ListDefinition::getUnionUserSchemaTableName).collect(Collectors.toSet()));
         return result;

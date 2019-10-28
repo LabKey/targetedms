@@ -88,8 +88,8 @@ public class ListDefinition extends SkylineEntity
         String suffix;
         if (getName().length() > 50)
         {
-            // List names can be very long, so truncate and include RowId to be sure it's unique
-            suffix = Math.abs(getName().hashCode()) + getName().substring(0, 50);
+            // List names can be very long, so truncate and include a hash to avoid collisions
+            suffix = SkylineListSchema.ID_SEPARATOR + Math.abs(getName().hashCode() % 10000) + getName().substring(0, 50);
         }
         else
         {
