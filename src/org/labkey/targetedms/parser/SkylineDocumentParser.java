@@ -2200,11 +2200,16 @@ public class SkylineDocumentParser implements AutoCloseable
         if(explicitCollisionEnergy != null)
             transition.setExplicitCollisionEnergy(Double.valueOf(explicitCollisionEnergy));
 
-        String sLens = reader.getAttributeValue(null, "s_lens");
+        String sLens = reader.getAttributeValue(null, "explicit_s_lens");
+        if (sLens == null)
+            // Fall back on older attribute name
+            sLens = reader.getAttributeValue(null, "s_lens");
         if(sLens != null)
             transition.setsLens(Double.valueOf(sLens));
 
-        String coneVoltage = reader.getAttributeValue(null, "cone_voltage");
+        String coneVoltage = reader.getAttributeValue(null, "explicit_cone_voltage");
+        if (coneVoltage == null)
+            coneVoltage = reader.getAttributeValue(null, "cone_voltage");
         if(coneVoltage != null)
             transition.setConeVoltage(Double.valueOf(coneVoltage));
 
