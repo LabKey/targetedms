@@ -2204,27 +2204,27 @@ public class SkylineDocumentParser implements AutoCloseable
 
         String sLens = reader.getAttributeValue(null, "s_lens");
         if(sLens != null)
-            transition.setExplicitCollisionEnergy(Double.valueOf(sLens));
+            transition.setsLens(Double.valueOf(sLens));
 
         String coneVoltage = reader.getAttributeValue(null, "cone_voltage");
         if(coneVoltage != null)
-            transition.setExplicitCollisionEnergy(Double.valueOf(coneVoltage));
+            transition.setConeVoltage(Double.valueOf(coneVoltage));
 
         String explicitCompensationVoltage = reader.getAttributeValue(null, "explicit_compensation_voltage");
         if(explicitCompensationVoltage != null)
-            transition.setExplicitCollisionEnergy(Double.valueOf(explicitCompensationVoltage));
+            transition.setExplicitCompensationVoltage(Double.valueOf(explicitCompensationVoltage));
 
         String explicitDeclusteringPotential = reader.getAttributeValue(null, "explicit_declustering_potential");
         if(explicitDeclusteringPotential != null)
-            transition.setExplicitCollisionEnergy(Double.valueOf(explicitDeclusteringPotential));
+            transition.setExplicitDeclusteringPotential(Double.valueOf(explicitDeclusteringPotential));
 
         String explicitDriftTimeMsec = reader.getAttributeValue(null, "explicit_drift_time_msec");
         if(explicitDriftTimeMsec != null)
-            transition.setExplicitCollisionEnergy(Double.valueOf(explicitDriftTimeMsec));
+            transition.setExplicitDriftTimeMSec(Double.valueOf(explicitDriftTimeMsec));
 
         String explicitDriftTimeHighEnergyOffsetMsec = reader.getAttributeValue(null, "explicit_drift_time_high_energy_offset_msec");
         if(explicitDriftTimeHighEnergyOffsetMsec != null)
-            transition.setExplicitCollisionEnergy(Double.valueOf(explicitDriftTimeHighEnergyOffsetMsec));
+            transition.setExplicitDriftTimeHighEnergyOffsetMSec(Double.valueOf(explicitDriftTimeHighEnergyOffsetMsec));
 
         _transitionCount++;
     }
