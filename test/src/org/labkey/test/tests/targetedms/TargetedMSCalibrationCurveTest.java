@@ -128,7 +128,7 @@ public class TargetedMSCalibrationCurveTest extends TargetedMSTest
     @Test
     public void testDilutionFactorScenario() throws Exception
     {
-        runScenario("DilutionFactorTest", "none", null);
+        runScenario("DilutionFactorTest", "1/(x*x)", null);
     }
 
     @Test
@@ -823,13 +823,12 @@ public class TargetedMSCalibrationCurveTest extends TargetedMSTest
             {
                 if (Double.isInfinite(expectedConcentration) || Double.isNaN(expectedConcentration))
                 {
-                    // TODO: do something
+                    assertTrue(actualConcentration == null || Double.isNaN(actualConcentration) || Double.isInfinite(actualConcentration));
                 }
                 else
                 {
                     assertNotNull(message, actualConcentration);
-                    // TODO (20181030): Figure out why this delta has to be multiplied by 10 in order to pass.
-                    assertEquals(message, expectedConcentration, actualConcentration, getDelta(expectedConcentration) * 10);
+                    assertEquals(message, expectedConcentration, actualConcentration, getDelta(expectedConcentration));
                 }
             }
             else
