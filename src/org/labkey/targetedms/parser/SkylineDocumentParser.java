@@ -2221,12 +2221,6 @@ public class SkylineDocumentParser implements AutoCloseable
         if(explicitDeclusteringPotential != null)
             transition.setExplicitDeclusteringPotential(Double.valueOf(explicitDeclusteringPotential));
 
-        String explicitDriftTimeMsec = reader.getAttributeValue(null, "explicit_ion_mobility_high_energy_offset");
-        if (explicitDriftTimeMsec == null)
-            explicitDriftTimeMsec = reader.getAttributeValue(null, "explicit_drift_time_msec");
-        if(explicitDriftTimeMsec != null)
-            transition.setExplicitDriftTimeMSec(Double.valueOf(explicitDriftTimeMsec));
-
         String explicitDriftTimeHighEnergyOffsetMsec = reader.getAttributeValue(null, "explicit_ion_mobility_high_energy_offset");
         if (explicitDriftTimeHighEnergyOffsetMsec == null)
             explicitDriftTimeHighEnergyOffsetMsec = reader.getAttributeValue(null, "explicit_drift_time_high_energy_offset_msec");
