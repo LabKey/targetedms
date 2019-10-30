@@ -25,6 +25,8 @@ import org.labkey.api.protein.ProteinService;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.QuerySettings;
 import org.labkey.api.query.QueryView;
+import org.labkey.api.targetedms.SearchResultColumnInfo;
+import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.view.ViewContext;
 import org.labkey.targetedms.TargetedMSModule;
 import org.labkey.targetedms.TargetedMSSchema;
@@ -80,6 +82,14 @@ public class TransitionPeptideSearchViewProvider implements ProteinService.Query
                 {
                     visibleColumns.add(FieldKey.fromParts("PeptideGroupId", "RunId", "Folder", "Path"));
                 }
+
+                List<SearchResultColumnInfo> _externalCols = TargetedMSService.get().getPeptideSearchResultColumns();
+                for(SearchResultColumnInfo colInfo : _externalCols)
+                {
+                    result.addColumn(colInfo.createColumn(result, getContainer()));
+                    visibleColumns.add(0, colInfo.getFieldKey());
+                }
+
                 result.setDefaultVisibleColumns(visibleColumns);
 
                 return result;

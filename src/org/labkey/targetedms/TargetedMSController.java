@@ -30,6 +30,7 @@ import org.labkey.api.action.*;
 import org.labkey.api.analytics.AnalyticsService;
 import org.labkey.api.pipeline.PipelineJob;
 import org.labkey.api.security.RequiresSiteAdmin;
+import org.labkey.api.targetedms.SearchResultColumnInfo;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.util.Button;
 import org.labkey.api.util.StringUtilsLabKey;
@@ -4949,6 +4950,14 @@ public class TargetedMSController extends SpringActionController
                     }
                     result.setDefaultVisibleColumns(visibleColumns);
                     result.setName("Precursor");
+
+                    List<SearchResultColumnInfo> _externalCols = TargetedMSService.get().getModificationSearchResultColumns();
+                    for(SearchResultColumnInfo colInfo : _externalCols)
+                    {
+                        result.addColumn(colInfo.createColumn(result, getContainer()));
+                        visibleColumns.add(0, colInfo.getFieldKey());
+                    }
+
                     return result;
                 }
             };
@@ -4978,7 +4987,7 @@ public class TargetedMSController extends SpringActionController
         private Double _deltaMass;
         private boolean _includeSubfolders;
         private String _modSearchPairsStr;
-        private boolean _journalSearch;
+        private boolean _hideIncludeSubfolders; // Hide or show the includeSubfolders checkbox
 
         public static ModificationSearchForm createDefault()
         {
@@ -5187,14 +5196,14 @@ public class TargetedMSController extends SpringActionController
             _modSearchPairsStr = modSearchPairsStr;
         }
 
-        public boolean isJournalSearch()
+        public boolean isHideIncludeSubfolders()
         {
-            return _journalSearch;
+            return _hideIncludeSubfolders;
         }
 
-        public void setJournalSearch(boolean journalSearch)
+        public void setHideIncludeSubfolders(boolean hideIncludeSubfolders)
         {
-            _journalSearch = journalSearch;
+            _hideIncludeSubfolders = hideIncludeSubfolders;
         }
     }
 

@@ -27,6 +27,8 @@ import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.QuerySettings;
 import org.labkey.api.query.QueryView;
+import org.labkey.api.targetedms.SearchResultColumnInfo;
+import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.view.ViewContext;
 import org.labkey.targetedms.TargetedMSModule;
 import org.labkey.targetedms.TargetedMSSchema;
@@ -110,6 +112,13 @@ public class TransitionProteinSearchViewProvider implements ProteinService.Query
                 if(form.isIncludeSubfolders())
                 {
                     visibleColumns.add(FieldKey.fromParts("RunId", "Folder", "Path"));
+                }
+
+                List<SearchResultColumnInfo> _externalCols = TargetedMSService.get().getProteinSearchResultColumns();
+                for(SearchResultColumnInfo colInfo : _externalCols)
+                {
+                    result.addColumn(colInfo.createColumn(result, getContainer()));
+                    visibleColumns.add(0, colInfo.getFieldKey());
                 }
 
                 result.setDefaultVisibleColumns(visibleColumns);

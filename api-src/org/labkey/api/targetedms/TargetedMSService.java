@@ -70,7 +70,17 @@ public interface TargetedMSService
     UserSchema getUserSchema( User user, Container c);
     TableInfo getTableInfoRuns();
     TableInfo getTableInfoPeptideGroup();
+    TableInfo getTableInfoGeneralMolecule();
     List<String> getSampleFilePaths(int runId);
     List<? extends IModification.IStructuralModification> getStructuralModificationsUsedInRun(int runId);
     List<? extends IModification.IIsotopeModification> getIsotopeModificationsUsedInRun(int runId);
+
+    // Additional columns to add to the protein / peptide / modification search results
+    void addProteinSearchResultColumn(SearchResultColumnInfo columnInfo);
+    List<SearchResultColumnInfo> getProteinSearchResultColumns();
+    void addPeptideSearchResultColumn(SearchResultColumnInfo columnInfo);
+    List<SearchResultColumnInfo> getPeptideSearchResultColumns();
+    void addModificationSearchResultColumn(SearchResultColumnInfo columnInfo);
+    List<SearchResultColumnInfo> getModificationSearchResultColumns();
+
 }

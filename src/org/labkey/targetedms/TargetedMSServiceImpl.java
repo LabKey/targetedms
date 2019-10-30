@@ -22,6 +22,7 @@ import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.targetedms.IModification;
 import org.labkey.api.targetedms.ITargetedMSRun;
+import org.labkey.api.targetedms.SearchResultColumnInfo;
 import org.labkey.api.targetedms.SkylineDocumentImportListener;
 import org.labkey.api.targetedms.SkylineAnnotation;
 import org.labkey.api.targetedms.TargetedMSFolderTypeListener;
@@ -32,6 +33,7 @@ import org.labkey.targetedms.query.ReplicateManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -44,6 +46,10 @@ public class TargetedMSServiceImpl implements TargetedMSService
 {
     private List<SkylineDocumentImportListener> _skylineDocumentImportListeners = new ArrayList<>();
     private List<TargetedMSFolderTypeListener> _targetedMsFolderTypeListeners = new ArrayList<>();
+
+    private List<SearchResultColumnInfo> _peptideSearchColumns;
+    private List<SearchResultColumnInfo> _proteinSearchColumns;
+    private List<SearchResultColumnInfo> _modificationSearchColumns;
 
     @Override
     public ITargetedMSRun getRun(int runId, Container container)
@@ -111,6 +117,12 @@ public class TargetedMSServiceImpl implements TargetedMSService
     }
 
     @Override
+    public TableInfo getTableInfoGeneralMolecule()
+    {
+        return TargetedMSManager.getTableInfoGeneralMolecule();
+    }
+
+    @Override
     public List<String> getSampleFilePaths(int runId)
     {
         return ReplicateManager.getSampleFilePaths(runId);
@@ -156,5 +168,56 @@ public class TargetedMSServiceImpl implements TargetedMSService
     public List<TargetedMSFolderTypeListener> getTargetedMSFolderTypeListeners()
     {
         return _targetedMsFolderTypeListeners;
+    }
+
+    @Override
+    public void addProteinSearchResultColumn(SearchResultColumnInfo columnInfo)
+    {
+        if(columnInfo == null) return;
+        if(_proteinSearchColumns == null)
+        {
+            _proteinSearchColumns = new ArrayList<>();
+        }
+        _proteinSearchColumns.add(columnInfo);
+    }
+
+    @Override
+    public List<SearchResultColumnInfo> getProteinSearchResultColumns()
+    {
+        return _proteinSearchColumns == null ? Collections.emptyList() : _proteinSearchColumns;
+    }
+
+    @Override
+    public void addPeptideSearchResultColumn(SearchResultColumnInfo columnInfo)
+    {
+        if(columnInfo == null) return;
+        if(_peptideSearchColumns == null)
+        {
+            _peptideSearchColumns = new ArrayList<>();
+        }
+        _peptideSearchColumns.add(columnInfo);
+    }
+
+    @Override
+    public List<SearchResultColumnInfo> getPeptideSearchResultColumns()
+    {
+        return _peptideSearchColumns == null ? Collections.emptyList() : _peptideSearchColumns;
+    }
+
+    @Override
+    public void addModificationSearchResultColumn(SearchResultColumnInfo columnInfo)
+    {
+        if(columnInfo == null) return;
+        if(_modificationSearchColumns == null)
+        {
+            _modificationSearchColumns = new ArrayList<>();
+        }
+        _modificationSearchColumns.add(columnInfo);
+    }
+
+    @Override
+    public List<SearchResultColumnInfo> getModificationSearchResultColumns()
+    {
+        return _modificationSearchColumns == null ? Collections.emptyList() : _modificationSearchColumns;
     }
 }
