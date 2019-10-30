@@ -33,5 +33,6 @@ public abstract class SearchResultColumnInfo
         return col;
     }
 
+    public abstract boolean showInContainer(Container container);
     public abstract void setupColumn(ExprColumn col, Container container);
 }

@@ -117,8 +117,11 @@ public class TransitionProteinSearchViewProvider implements ProteinService.Query
                 List<SearchResultColumnInfo> _externalCols = TargetedMSService.get().getProteinSearchResultColumns();
                 for(SearchResultColumnInfo colInfo : _externalCols)
                 {
-                    result.addColumn(colInfo.createColumn(result, getContainer()));
-                    visibleColumns.add(0, colInfo.getFieldKey());
+                    if(colInfo.showInContainer(getContainer()))
+                    {
+                        result.addColumn(colInfo.createColumn(result, getContainer()));
+                        visibleColumns.add(0, colInfo.getFieldKey());
+                    }
                 }
 
                 result.setDefaultVisibleColumns(visibleColumns);

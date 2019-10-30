@@ -86,8 +86,11 @@ public class TransitionPeptideSearchViewProvider implements ProteinService.Query
                 List<SearchResultColumnInfo> _externalCols = TargetedMSService.get().getPeptideSearchResultColumns();
                 for(SearchResultColumnInfo colInfo : _externalCols)
                 {
-                    result.addColumn(colInfo.createColumn(result, getContainer()));
-                    visibleColumns.add(0, colInfo.getFieldKey());
+                    if(colInfo.showInContainer(getContainer()))
+                    {
+                        result.addColumn(colInfo.createColumn(result, getContainer()));
+                        visibleColumns.add(0, colInfo.getFieldKey());
+                    }
                 }
 
                 result.setDefaultVisibleColumns(visibleColumns);
