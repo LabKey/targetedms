@@ -92,12 +92,13 @@ public class TargetedMSListTest extends TargetedMSTest
     /** @return the list of queries in the targetedmslist schema */
     private List<String> validateSampleInfo(int replicateRowCount, Set<String> expectedReplicateLookupValues, int sampleUnionRowCount, int listQueryCount) throws IOException, CommandException
     {
+        // Check that the targetedms.replicate table has the expected contents
         SelectRowsCommand replicateRowsCommand = new SelectRowsCommand("targetedms", "replicate");
         replicateRowsCommand.setRequiredVersion(9.1);
-        SelectRowsResponse replicateRowsUnionedResponse = replicateRowsCommand.execute(createDefaultConnection(false), getCurrentContainerPath());
-        assertEquals("Wrong number of replicate rows", replicateRowCount, replicateRowsUnionedResponse.getRowCount().intValue());
+        SelectRowsResponse replicateRowsResponse = replicateRowsCommand.execute(createDefaultConnection(false), getCurrentContainerPath());
+        assertEquals("Wrong number of replicate rows", replicateRowCount, replicateRowsResponse.getRowCount().intValue());
         Set<String> replicateSampleLookupValues = new HashSet<>();
-        replicateRowsUnionedResponse.getRowset().forEach((r) -> replicateSampleLookupValues.add((String)r.getDisplayValue("Sample")));
+        replicateRowsResponse.getRowset().forEach((r) -> replicateSampleLookupValues.add((String)r.getDisplayValue("Sample")));
         assertEquals("Wrong sample names", expectedReplicateLookupValues, replicateSampleLookupValues);
 
         SelectRowsCommand sampleRowsUnionedCommand = new SelectRowsCommand("targetedmslists", "All_Samples");
