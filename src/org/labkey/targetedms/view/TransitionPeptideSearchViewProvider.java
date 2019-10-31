@@ -84,8 +84,8 @@ public class TransitionPeptideSearchViewProvider implements ProteinService.Query
                 }
                 result.setDefaultVisibleColumns(visibleColumns);
 
-                List<TableCustomizer> _customizers = TargetedMSService.get().getPeptideSearchResultCustomizers();
-                for(TableCustomizer customizer : _customizers)
+                List<TableCustomizer> customizers = TargetedMSService.get().getPeptideSearchResultCustomizers();
+                for(TableCustomizer customizer : customizers)
                 {
                     customizer.customize(result);
                 }

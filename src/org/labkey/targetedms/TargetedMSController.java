@@ -4950,8 +4950,8 @@ public class TargetedMSController extends SpringActionController
                     result.setDefaultVisibleColumns(visibleColumns);
                     result.setName("Precursor");
 
-                    List<TableCustomizer> _customizers = TargetedMSService.get().getModificationSearchResultCustomizers();
-                    for(TableCustomizer customizer : _customizers)
+                    List<TableCustomizer> customizers = TargetedMSService.get().getModificationSearchResultCustomizers();
+                    for(TableCustomizer customizer : customizers)
                     {
                         customizer.customize(result);
                     }

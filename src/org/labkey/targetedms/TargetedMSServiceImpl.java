@@ -31,11 +31,11 @@ import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.targetedms.query.ModificationManager;
 import org.labkey.targetedms.query.ReplicateManager;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * User: vsharma
@@ -44,12 +44,14 @@ import java.util.Map;
  */
 public class TargetedMSServiceImpl implements TargetedMSService
 {
-    private List<SkylineDocumentImportListener> _skylineDocumentImportListeners = new ArrayList<>();
-    private List<TargetedMSFolderTypeListener> _targetedMsFolderTypeListeners = new ArrayList<>();
+    // CopyOnWriteArrayList is a thread-safe variant of ArrayList in which all mutative operations (add, set, and so on)
+    // are implemented by making a fresh copy of the underlying array.
+    private List<SkylineDocumentImportListener> _skylineDocumentImportListeners = new CopyOnWriteArrayList<>();
+    private List<TargetedMSFolderTypeListener> _targetedMsFolderTypeListeners = new CopyOnWriteArrayList<>();
 
-    private List<TableCustomizer> _peptideSearchCustomizers;
-    private List<TableCustomizer> _proteinSearchCustomizers;
-    private List<TableCustomizer> _modificationSearchCustomizers;
+    private List<TableCustomizer> _peptideSearchCustomizers = new CopyOnWriteArrayList<>();
+    private List<TableCustomizer> _proteinSearchCustomizers = new CopyOnWriteArrayList<>();
+    private List<TableCustomizer> _modificationSearchCustomizers = new CopyOnWriteArrayList<>();
 
     @Override
     public ITargetedMSRun getRun(int runId, Container container)
@@ -89,7 +91,7 @@ public class TargetedMSServiceImpl implements TargetedMSService
     @Override
     public List<SkylineDocumentImportListener> getSkylineDocumentImportListener()
     {
-        return _skylineDocumentImportListeners;
+        return Collections.unmodifiableList(_skylineDocumentImportListeners);
     }
 
     @Override
@@ -167,57 +169,45 @@ public class TargetedMSServiceImpl implements TargetedMSService
     @Override
     public List<TargetedMSFolderTypeListener> getTargetedMSFolderTypeListeners()
     {
-        return _targetedMsFolderTypeListeners;
+        return Collections.unmodifiableList(_targetedMsFolderTypeListeners);
     }
 
     @Override
     public void addProteinSearchResultCustomizer(TableCustomizer customizer)
     {
         if(customizer == null) return;
-        if(_proteinSearchCustomizers == null)
-        {
-            _proteinSearchCustomizers = new ArrayList<>();
-        }
         _proteinSearchCustomizers.add(customizer);
     }
 
     @Override
     public List<TableCustomizer> getProteinSearchResultCustomizer()
     {
-        return _proteinSearchCustomizers == null ? Collections.emptyList() : _proteinSearchCustomizers;
+        return Collections.unmodifiableList(_proteinSearchCustomizers);
     }
 
     @Override
     public void addPeptideSearchResultCustomizers(TableCustomizer customizer)
     {
         if(customizer == null) return;
-        if(_peptideSearchCustomizers == null)
-        {
-            _peptideSearchCustomizers = new ArrayList<>();
-        }
         _peptideSearchCustomizers.add(customizer);
     }
 
     @Override
     public List<TableCustomizer> getPeptideSearchResultCustomizers()
     {
-        return _peptideSearchCustomizers == null ? Collections.emptyList() : _peptideSearchCustomizers;
+        return Collections.unmodifiableList(_peptideSearchCustomizers);
     }
 
     @Override
     public void addModificationSearchResultCustomizer(TableCustomizer customizer)
     {
         if(customizer == null) return;
-        if(_modificationSearchCustomizers == null)
-        {
-            _modificationSearchCustomizers = new ArrayList<>();
-        }
         _modificationSearchCustomizers.add(customizer);
     }
 
     @Override
     public List<TableCustomizer> getModificationSearchResultCustomizers()
     {
-        return _modificationSearchCustomizers == null ? Collections.emptyList() : _modificationSearchCustomizers;
+        return Collections.unmodifiableList(_modificationSearchCustomizers);
     }
 }

@@ -116,8 +116,8 @@ public class TransitionProteinSearchViewProvider implements ProteinService.Query
 
                 result.setDefaultVisibleColumns(visibleColumns);
 
-                List<TableCustomizer> _customizers = TargetedMSService.get().getProteinSearchResultCustomizer();
-                for(TableCustomizer customizer : _customizers)
+                List<TableCustomizer> customizers = TargetedMSService.get().getProteinSearchResultCustomizer();
+                for(TableCustomizer customizer : customizers)
                 {
                     customizer.customize(result);
                 }
