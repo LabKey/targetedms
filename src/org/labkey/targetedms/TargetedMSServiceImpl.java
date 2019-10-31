@@ -16,13 +16,13 @@
 package org.labkey.targetedms;
 
 import org.labkey.api.data.Container;
+import org.labkey.api.data.TableCustomizer;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.exp.ExperimentRunType;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.targetedms.IModification;
 import org.labkey.api.targetedms.ITargetedMSRun;
-import org.labkey.api.targetedms.SearchResultColumnInfo;
 import org.labkey.api.targetedms.SkylineDocumentImportListener;
 import org.labkey.api.targetedms.SkylineAnnotation;
 import org.labkey.api.targetedms.TargetedMSFolderTypeListener;
@@ -47,9 +47,9 @@ public class TargetedMSServiceImpl implements TargetedMSService
     private List<SkylineDocumentImportListener> _skylineDocumentImportListeners = new ArrayList<>();
     private List<TargetedMSFolderTypeListener> _targetedMsFolderTypeListeners = new ArrayList<>();
 
-    private List<SearchResultColumnInfo> _peptideSearchColumns;
-    private List<SearchResultColumnInfo> _proteinSearchColumns;
-    private List<SearchResultColumnInfo> _modificationSearchColumns;
+    private List<TableCustomizer> _peptideSearchCustomizers;
+    private List<TableCustomizer> _proteinSearchCustomizers;
+    private List<TableCustomizer> _modificationSearchCustomizers;
 
     @Override
     public ITargetedMSRun getRun(int runId, Container container)
@@ -171,53 +171,53 @@ public class TargetedMSServiceImpl implements TargetedMSService
     }
 
     @Override
-    public void addProteinSearchResultColumn(SearchResultColumnInfo columnInfo)
+    public void addProteinSearchResultCustomizer(TableCustomizer customizer)
     {
-        if(columnInfo == null) return;
-        if(_proteinSearchColumns == null)
+        if(customizer == null) return;
+        if(_proteinSearchCustomizers == null)
         {
-            _proteinSearchColumns = new ArrayList<>();
+            _proteinSearchCustomizers = new ArrayList<>();
         }
-        _proteinSearchColumns.add(columnInfo);
+        _proteinSearchCustomizers.add(customizer);
     }
 
     @Override
-    public List<SearchResultColumnInfo> getProteinSearchResultColumns()
+    public List<TableCustomizer> getProteinSearchResultCustomizer()
     {
-        return _proteinSearchColumns == null ? Collections.emptyList() : _proteinSearchColumns;
+        return _proteinSearchCustomizers == null ? Collections.emptyList() : _proteinSearchCustomizers;
     }
 
     @Override
-    public void addPeptideSearchResultColumn(SearchResultColumnInfo columnInfo)
+    public void addPeptideSearchResultCustomizers(TableCustomizer customizer)
     {
-        if(columnInfo == null) return;
-        if(_peptideSearchColumns == null)
+        if(customizer == null) return;
+        if(_peptideSearchCustomizers == null)
         {
-            _peptideSearchColumns = new ArrayList<>();
+            _peptideSearchCustomizers = new ArrayList<>();
         }
-        _peptideSearchColumns.add(columnInfo);
+        _peptideSearchCustomizers.add(customizer);
     }
 
     @Override
-    public List<SearchResultColumnInfo> getPeptideSearchResultColumns()
+    public List<TableCustomizer> getPeptideSearchResultCustomizers()
     {
-        return _peptideSearchColumns == null ? Collections.emptyList() : _peptideSearchColumns;
+        return _peptideSearchCustomizers == null ? Collections.emptyList() : _peptideSearchCustomizers;
     }
 
     @Override
-    public void addModificationSearchResultColumn(SearchResultColumnInfo columnInfo)
+    public void addModificationSearchResultCustomizer(TableCustomizer customizer)
     {
-        if(columnInfo == null) return;
-        if(_modificationSearchColumns == null)
+        if(customizer == null) return;
+        if(_modificationSearchCustomizers == null)
         {
-            _modificationSearchColumns = new ArrayList<>();
+            _modificationSearchCustomizers = new ArrayList<>();
         }
-        _modificationSearchColumns.add(columnInfo);
+        _modificationSearchCustomizers.add(customizer);
     }
 
     @Override
-    public List<SearchResultColumnInfo> getModificationSearchResultColumns()
+    public List<TableCustomizer> getModificationSearchResultCustomizers()
     {
-        return _modificationSearchColumns == null ? Collections.emptyList() : _modificationSearchColumns;
+        return _modificationSearchCustomizers == null ? Collections.emptyList() : _modificationSearchCustomizers;
     }
 }

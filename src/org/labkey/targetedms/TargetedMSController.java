@@ -30,7 +30,6 @@ import org.labkey.api.action.*;
 import org.labkey.api.analytics.AnalyticsService;
 import org.labkey.api.pipeline.PipelineJob;
 import org.labkey.api.security.RequiresSiteAdmin;
-import org.labkey.api.targetedms.SearchResultColumnInfo;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.util.Button;
 import org.labkey.api.util.StringUtilsLabKey;
@@ -4951,14 +4950,10 @@ public class TargetedMSController extends SpringActionController
                     result.setDefaultVisibleColumns(visibleColumns);
                     result.setName("Precursor");
 
-                    List<SearchResultColumnInfo> _externalCols = TargetedMSService.get().getModificationSearchResultColumns();
-                    for(SearchResultColumnInfo colInfo : _externalCols)
+                    List<TableCustomizer> _customizers = TargetedMSService.get().getModificationSearchResultCustomizers();
+                    for(TableCustomizer customizer : _customizers)
                     {
-                        if(colInfo.showInContainer(getContainer()))
-                        {
-                            result.addColumn(colInfo.createColumn(result, getContainer()));
-                            visibleColumns.add(0, colInfo.getFieldKey());
-                        }
+                        customizer.customize(result);
                     }
 
                     return result;

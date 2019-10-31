@@ -19,13 +19,13 @@ import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Aggregate;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.SimpleFilter;
+import org.labkey.api.data.TableCustomizer;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.protein.ProteinService;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.QuerySettings;
 import org.labkey.api.query.QueryView;
-import org.labkey.api.targetedms.SearchResultColumnInfo;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.view.ViewContext;
 import org.labkey.targetedms.TargetedMSModule;
@@ -82,18 +82,13 @@ public class TransitionPeptideSearchViewProvider implements ProteinService.Query
                 {
                     visibleColumns.add(FieldKey.fromParts("PeptideGroupId", "RunId", "Folder", "Path"));
                 }
-
-                List<SearchResultColumnInfo> _externalCols = TargetedMSService.get().getPeptideSearchResultColumns();
-                for(SearchResultColumnInfo colInfo : _externalCols)
-                {
-                    if(colInfo.showInContainer(getContainer()))
-                    {
-                        result.addColumn(colInfo.createColumn(result, getContainer()));
-                        visibleColumns.add(0, colInfo.getFieldKey());
-                    }
-                }
-
                 result.setDefaultVisibleColumns(visibleColumns);
+
+                List<TableCustomizer> _customizers = TargetedMSService.get().getPeptideSearchResultCustomizers();
+                for(TableCustomizer customizer : _customizers)
+                {
+                    customizer.customize(result);
+                }
 
                 return result;
             }
