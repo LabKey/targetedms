@@ -217,10 +217,8 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         {
             assertElementPresent(Locator.linkContainingText(listCount + " list" + (listCount > 1 ? "s" : "")));
         }
-        else
-        {
-            assertElementNotPresent(Locator.linkContainingText(" lists"));
-        }
+        // At the moment, we use "list" to refer to both small molecule groups and Skyline lists, so don't explicitly
+        // check for absence here
     }
 
     @LogMethod
