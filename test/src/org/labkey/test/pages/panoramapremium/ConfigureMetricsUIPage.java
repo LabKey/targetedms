@@ -27,7 +27,9 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         series2Query,
         series1AxisLabel,
         series2AxisLabel,
-        metricType
+        metricType,
+        enabledSchema,
+        enabledQuery
     }
 
     public ConfigureMetricsUIPage(BaseWebDriverTest test)
@@ -37,13 +39,13 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
 
     public void enableMetric(String metric)
     {
-        checkCheckbox(Locator.checkboxByName(metric));
+        selectOptionByText(Locator.name(metric),"Enabled");
         click(Locator.buttonContainingText("Save"));
     }
 
     public void disableMetric(String metric)
     {
-        uncheckCheckbox(Locator.checkboxByName(metric));
+        selectOptionByText(Locator.name(metric),"Disabled");
         click(Locator.buttonContainingText("Save"));
     }
 
@@ -92,6 +94,15 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
             if("metricType".equals(prop.name()))
             {
                 _ext4Helper.selectComboBoxItem("Metric Type:", val);
+            }
+            if("enabledSchema".equals(prop.name()))
+            {
+                _ext4Helper.selectComboBoxItem("Enabled Schema:", val);
+            }
+
+            if("enabledQuery".equals(prop.name()))
+            {
+                _ext4Helper.selectComboBoxItem("Enabled Query:", val);
             }
         });
         Ext4Helper.Locators.ext4Button("Save").findElement(metricWindow).click();

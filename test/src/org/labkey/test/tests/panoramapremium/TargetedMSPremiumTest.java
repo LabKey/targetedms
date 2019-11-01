@@ -6,6 +6,10 @@ import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
 import org.labkey.test.tests.targetedms.TargetedMSTest;
 
+import java.util.List;
+
+import static org.junit.Assert.assertFalse;
+
 public class TargetedMSPremiumTest extends TargetedMSTest
 {
     public ConfigureMetricsUIPage goToConfigureMetricsUI()
@@ -16,4 +20,27 @@ public class TargetedMSPremiumTest extends TargetedMSTest
         waitForElement(Locator.tagWithText("button", "Add New Metric"));
         return new ConfigureMetricsUIPage(this);
     }
+
+    protected void verifyMetricNotPresent(QCPlotsWebPart qcPlotsWebPart, String metricName)
+    {
+        List<String> qcMetricOptions = qcPlotsWebPart.getMetricTypeOptions();
+
+        log("Verifying disabled metric not present in QC Plot dashboard dropdown");
+        qcMetricOptions.forEach(qcMetric -> assertFalse("Disabled QC Metric found - " + metricName, qcMetric.equalsIgnoreCase(metricName)));
+    }
+
+    protected boolean verifyMetricIsPresent(QCPlotsWebPart qcPlotsWebPart, String metricName)
+    {
+        boolean retVal = false;
+        List<String> qcMetricOptions = qcPlotsWebPart.getMetricTypeOptions();
+        for (String type : qcMetricOptions)
+        {
+            if (type.equalsIgnoreCase(metricName)) ;
+            retVal = true;
+        }
+
+        return retVal;
+
+    }
+
 }

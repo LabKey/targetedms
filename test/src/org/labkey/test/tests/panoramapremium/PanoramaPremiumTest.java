@@ -16,8 +16,6 @@ import org.labkey.test.categories.InDevelopment;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.*;
-
 @Category({InDevelopment.class})
 public class PanoramaPremiumTest extends BaseWebDriverTest
 {

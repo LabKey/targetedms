@@ -9,9 +9,8 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
     modal: true,
     closeAction: 'destroy',
     bodyStyle: 'padding: 10px;',
-    title: 'Add New Metric',
-    height: 600,
-    weight: 1200,
+    height: Ext4.max([Ext4.getBody().getHeight() * 0.3, 450]),
+    width: Ext4.max([Ext4.getBody().getWidth() * 0.2, 450]),
     autoScroll: true,
     border: false,
     update: 'update',
@@ -41,6 +40,12 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
                     scope.queries2Combo.bindStore(scope.getQueriesStore());
                 });
             }
+            if(this.metric.EnabledSchemaName) {
+                this.getQueriesForSchema(this.metric.EnabledSchemaName, function (queries, scope) {
+                    scope.enabledqueries = queries;
+                    scope.enabledQueriesCombo.bindStore(scope.getQueriesStore());
+                });
+            }
         }
 
     },
@@ -55,7 +60,10 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
                 this.getQueries2Combo(),
                 this.getSeries2AxisLabelField(),
                 this.getMetricTypeCombo(),
-                this.getQueryError()];
+                this.getEnabledSchemaCombo(),
+                this.getEnabledQueriesCombo(),
+            this.getQueryError(),
+        ];
     },
 
     getMetricNameField: function() {
@@ -75,10 +83,10 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
         return this.metricNameField;
     },
 
-    getSchemaConfig: function(schemaNumber) {
+    getSchemaConfig: function(label, name) {
         return {
-            fieldLabel: 'Series ' + schemaNumber +' Schema',
-            name: 'series' + schemaNumber +'Schema',
+            fieldLabel: label +' Schema',
+            name: name + 'Schema',
             store: this.schemas,
             labelWidth: 150,
             width: 400
@@ -87,7 +95,7 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
 
     getSchema1Combo: function() {
         if(!this.schema1Combo) {
-            var config = Ext4.apply(this.getSchemaConfig('1'), {
+            var config = Ext4.apply(this.getSchemaConfig('Series 1', 'series1'), {
                 listeners: {
                     scope: this,
                     select: function(combo, recs){
@@ -117,15 +125,15 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
         return this.schema1Combo;
     },
 
-    getQueriesConfig: function(schemaNumber) {
+    getQueriesConfig: function(label, name) {
         return {
-            fieldLabel: 'Series ' + schemaNumber +' Query',
-            name: 'series' + schemaNumber +'Query',
+            fieldLabel: label + ' Query',
+            name: name + 'Query',
             labelWidth: 150,
             width: 400,
             displayField : 'title',
             valueField : 'name',
-            emptyText: 'Please select Series ' + schemaNumber +' Schema..'
+            emptyText: 'Please select ' + label + ' Schema.'
         };
     },
 
@@ -145,12 +153,11 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
 
     getQueries1Combo: function() {
         if(!this.queries1Combo) {
-            var config = Ext4.apply(this.getQueriesConfig('1'), {
+            var config = Ext4.apply(this.getQueriesConfig('Series 1', 'series1'), {
                 listeners: {
                     scope: this,
                     expand: function (field, options) {
-                        if (!this.series1queries) {
-                        } else{
+                        if (this.series1queries) {
                             this.queries1Combo.bindStore(this.getQueriesStore());
                         }
                     },
@@ -205,7 +212,7 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
 
     getSchema2Combo: function() {
         if(!this.schema2Combo) {
-            var config = Ext4.apply(this.getSchemaConfig('2'), {
+            var config = Ext4.apply(this.getSchemaConfig('Series 2', 'series2'), {
                 listeners: {
                     scope: this,
                     select: function(combo, recs){
@@ -236,13 +243,11 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
 
     getQueries2Combo: function() {
         if(!this.queries2Combo) {
-            var config = Ext4.apply(this.getQueriesConfig('2'), {
+            var config = Ext4.apply(this.getQueriesConfig('Series 2', 'series2'), {
                 listeners: {
                     scope: this,
                     expand: function (field, options) {
-                        if (!this.series2queries) {
-                            // Ext4.Msg.alert("Please select a Schema from Series 1 Schema dropdown.")
-                        } else{
+                        if (this.series2queries) {
                             this.queries2Combo.bindStore(this.getQueriesStore());
                         }
                     },
@@ -259,6 +264,59 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
         }
 
         return this.queries2Combo;
+    },
+
+    getEnabledSchemaCombo: function() {
+        if(!this.enabledSchemaCombo) {
+            var config = Ext4.apply(this.getSchemaConfig('Enabled', 'enabled'), {
+                listeners: {
+                    scope: this,
+                    select: function(combo, recs){
+                        var rec = recs[0];
+                        this.enabledschema = rec.data.field1;
+                        this.enabledQueriesCombo.setValue(null);
+
+                        LABKEY.Query.getQueries({
+                            scope: this,
+                            schemaName: this.enabledschema,
+                            success: function(queriesInfo) {
+                                this.enabledqueries = queriesInfo.queries;
+                            }
+                        });
+                    }
+                }
+            });
+
+            this.enabledSchemaCombo = Ext4.create('Ext.form.field.ComboBox', config);
+
+            if(this.operation === this.update) {
+                this.enabledSchemaCombo.setValue(this.metric.EnabledSchemaName);
+            }
+        }
+
+        return this.enabledSchemaCombo;
+    },
+
+    getEnabledQueriesCombo: function() {
+        if(!this.enabledQueriesCombo) {
+            var config = Ext4.apply(this.getQueriesConfig('Enabled', 'enabled'), {
+                listeners: {
+                    scope: this,
+                    expand: function (field, options) {
+                        if (this.enabledqueries) {
+                            this.enabledQueriesCombo.bindStore(this.getQueriesStore());
+                        }
+                    }
+                }
+            });
+            this.enabledQueriesCombo = Ext4.create('Ext.form.field.ComboBox', config);
+
+            if(this.operation === this.update) {
+                this.enabledQueriesCombo.setValue(this.metric.EnabledQueryName);
+            }
+        }
+
+        return this.enabledQueriesCombo;
     },
 
     getMetricTypeCombo: function() {
@@ -417,22 +475,24 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
                 }
             }
         }
-        var columnsNotPresent=[];
+        var errorMessage = 'Query' + query + ' is missing required column(s): ';
 
+        var separator = '';
         Ext4.Array.forEach(requiredColumns, function (column) {
            if(!column.isPresent) {
-               columnsNotPresent.push(column.name);
+               errorMessage += separator + column.name;
+               separator = ', ';
                isValid = false;
            }
         });
 
         if(!isValid) {
-            this.queryError.setText('*' + query + " is missing required Columns - " + columnsNotPresent);
-            combo.setActiveError('Incorrect Query');
+            this.queryError.setText(errorMessage);
+            combo.setActiveError('Invalid query');
         }
         this.queryError.setVisible(!isValid);
     },
-    
+
     saveNewMetric: function () {
         var isValid = this.validateValues();
 
@@ -450,6 +510,11 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
                 newMetric.Series2SchemaName = this.schema2Combo.getValue();
                 newMetric.Series2QueryName = this.queries2Combo.getValue();
                 newMetric.Series2Label = this.series2AxisLabelField.getValue();
+            }
+
+            if(this.enabledSchemaCombo.getValue()) {
+                newMetric.EnabledSchemaName = this.enabledSchemaCombo.getValue();
+                newMetric.EnabledQueryName = this.enabledQueriesCombo.getValue();
             }
 
             if(this.operation === this.update) {

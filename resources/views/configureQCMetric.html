@@ -1,5 +1,6 @@
-<p>
-    Configure the metrics to be tracked for quality control and system suitability.
+<p style="width: 800px">
+    Configure the metrics to be tracked for quality control and system suitability. Metrics can be enabled and disabled
+    in each folder. Metrics set to "Auto" will automatically enable based on the available data in the current folder.
 </p>
 
 <div id="qcMetricsTable"></div>
@@ -18,7 +19,7 @@
             qcMetricsTable += '<form id="qcMetricsForm" >';
 
             qcMetricsTable += '<table class="labkey-data-region-legacy labkey-show-borders">' +
-                    '<tr><td class="labkey-column-header">Enabled</td><td class="labkey-column-header">Name</td><td class="labkey-column-header">Type</td></tr>';
+                    '<tr><td class="labkey-column-header">Status</td><td class="labkey-column-header">Name</td><td class="labkey-column-header">Type</td></tr>';
 
             jQuery.each(qcMetrics, function (index, row) {
                 var rowClass = index % 2 === 1 ? "labkey-row" : "labkey-alternate-row";
@@ -27,9 +28,14 @@
 
                 qcMetricsTable += '<tr class="' + rowClass + '">';
 
-                qcMetricsTable += '<td>' + '<input type="checkbox" ' + (row.Enabled ? checked="checked" : '') + ' name=\"' + LABKEY.Utils.encodeHtml(row.name) + '\" id=\"' +  "checkbox-"+ row.id  +  '\"></td>';
+                qcMetricsTable += '<td>' + '<select name=\"' + LABKEY.Utils.encodeHtml(row.name) + '\" id=\"' +  "select-"+ row.id  +  '\">' +
+                            '<option value="true" ' + (row.Enabled ? 'selected' : '') + '>Enabled</option>' +
+                            '<option value="" ' + (row.Enabled == null ? 'selected' : '') + '>Auto</option>' +
+                            '<option value="false" ' + (row.Enabled === false ? 'selected' : '') + '>Disabled</option>' +
+                        '</select>' +
+                        '</td>';
 
-                qcMetricsTable += '<td>' + (editLock ? '<a id="editLink" href="#">' : '' ) + LABKEY.Utils.encodeHtml(row.name) + '</td>' + (editLock ? '</a>' : '' );
+                qcMetricsTable += '<td>' + (editLock ? '<a id="editLink' + index + '" href="#">' : '' ) + LABKEY.Utils.encodeHtml(row.name) + '</td>' + (editLock ? '</a>' : '' );
                 qcMetricsTable += '<td>' + (row.PrecursorScoped ? 'Precursor' : 'Run') + '</td>' +
                         '</tr>';
 
@@ -43,11 +49,13 @@
 
             jQuery('#qcMetricsTable').html(qcMetricsTable);
 
-            jQuery('#editLink').click(function (e) {
-                e.preventDefault();
-                editMetric(jQuery('#editLink').text());
-                return false;
-            })
+            jQuery.each(qcMetrics, function (index, row) {
+                jQuery('#editLink' + index).click(function (e) {
+                    e.preventDefault();
+                    editMetric(jQuery('#editLink' + index).text());
+                    return false;
+                })
+            });
         }
 
         function editMetric(metricName) {
@@ -64,8 +72,6 @@
                 success: function (schemasInfo) {
                     Ext4.create('Panorama.Window.AddCustomMetricWindow', {
                         parent: this,
-                        height: Ext4.max([Ext4.getBody().getHeight() * 0.3, 350]),
-                        width: Ext4.max([Ext4.getBody().getWidth() * 0.2, 450]),
                         metric: clickedQcMetricConfig,
                         operation: 'update',
                         schemas: schemasInfo.schemas
@@ -121,8 +127,6 @@
                         success:  function(schemasInfo) {
                             Ext4.create('Panorama.Window.AddCustomMetricWindow', {
                                 parent: this,
-                                height: Ext4.max([Ext4.getBody().getHeight() * 0.3, 350]),
-                                width: Ext4.max([Ext4.getBody().getWidth() * 0.2, 450]),
                                 schemas: schemasInfo.schemas,
                                 operation: 'insert'
                             }).show();
@@ -137,23 +141,23 @@
 
                 LABKEY.internal.ConfigureQCMetrics.rowsBeforeSave.forEach(function (metricRow) {
 
-                    var isMetricChecked = jQuery('#checkbox-' + metricRow.metric).is(':checked');
-                    var wasMetricChecked = metricRow.Enabled;
-
+                    var stringValue = jQuery('#select-' + metricRow.metric)[0].value;
+                    var newValue;
+                    switch (stringValue) {
+                        case '' : newValue = null; break;
+                        case 'true' : newValue = true; break;
+                        case 'false' : newValue = false; break;
+                    }
                     if(metricRow.Inserted) {
                         //metric unchecked now
-                        if(wasMetricChecked && !isMetricChecked) {
-                            recordsToUpdate.push({metric: metricRow.metric, Enabled: isMetricChecked});
+                        if(newValue !== metricRow.Enabled) {
+                            recordsToUpdate.push({metric: metricRow.metric, Enabled: newValue});
                         }
 
-                        //metric checked now
-                        if(!wasMetricChecked && isMetricChecked) {
-                            recordsToUpdate.push({metric: metricRow.metric, Enabled: isMetricChecked});
-                        }
-                        metricRow.Enabled = isMetricChecked;
+                        metricRow.Enabled = newValue;
                     }
                     else {
-                        recordsToInsert.push({metric: metricRow.metric, Enabled: isMetricChecked});
+                        recordsToInsert.push({metric: metricRow.metric, Enabled: newValue});
                         metricRow.Inserted = true;
                     }
                 });

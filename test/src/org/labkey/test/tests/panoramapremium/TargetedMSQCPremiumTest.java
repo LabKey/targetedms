@@ -18,14 +18,12 @@ import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.components.targetedms.QCSummaryWebPart;
 import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
-import org.labkey.test.tests.targetedms.TargetedMSTest;
 import org.labkey.test.util.ApiPermissionsHelper;
 
 import org.openqa.selenium.NoSuchElementException;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -74,7 +72,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
 
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        verifyDisabledMetricNotPresent(qcPlotsWebPart, "Peak Area");
+        verifyMetricNotPresent(qcPlotsWebPart, "Peak Area");
 
         //re-enabling peak area metric
         goToConfigureMetricsUI();
@@ -119,6 +117,14 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         notifications.clickMessage(message);
         assertTextPresent("56 outliers"); //Total outliers
 
+        //Added additional verification as part of isotoplogue story
+        qcDashboard = goToDashboard();
+        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        verifyMetricNotPresent(qcPlotsWebPart,"Isotopologue Accuracy");
+        verifyMetricNotPresent(qcPlotsWebPart,"Isotopologue LOD");
+        verifyMetricNotPresent(qcPlotsWebPart,"Isotopologue LOQ");
+        verifyMetricNotPresent(qcPlotsWebPart,"Isotopologue Regression RSquared");
+
     }
 
     @Test
@@ -151,7 +157,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         goToConfigureMetricsUI();
         configureUI.disableMetric(metricName);
 
-        verifyDisabledMetricNotPresent(qcPlotsWebPart, metricName);
+        verifyMetricNotPresent(qcPlotsWebPart, metricName);
 
         configureUI = goToConfigureMetricsUI();
         metricProperties.clear();
@@ -164,11 +170,4 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         assertTextPresent(metricName + "-Edited");
     }
 
-    private void verifyDisabledMetricNotPresent(QCPlotsWebPart qcPlotsWebPart, String metricName)
-    {
-        List<String> qcMetricOptions = qcPlotsWebPart.getMetricTypeOptions();
-
-        log("Verifying disabled metric not present in QC Plot dashboard dropdown");
-        qcMetricOptions.forEach(qcMetric-> assertFalse("Disabled QC Metric found - " + metricName, qcMetric.equalsIgnoreCase(metricName)));
-    }
 }
