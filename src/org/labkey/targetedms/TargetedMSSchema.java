@@ -662,7 +662,7 @@ public class TargetedMSSchema extends UserSchema
                 result.addWrapColumn("Transitions", result.getRealTable().getColumn("TransitionCount"));
                 result.addWrapColumn("Replicates", result.getRealTable().getColumn("ReplicateCount"));
                 result.addWrapColumn("CalibrationCurves", result.getRealTable().getColumn("CalibrationCurveCount"));
-                result.addWrapColumn("Lists", result.getRealTable().getColumn("ListCount"));
+                result.addWrapColumn("SkylineLists", result.getRealTable().getColumn("ListCount"));
 
                 addVersionsColumn(result);
 
@@ -801,7 +801,7 @@ public class TargetedMSSchema extends UserSchema
                     }
                     if (TargetedMSManager.containerHasLists(getContainer()))
                     {
-                        _fieldKeys.add(FieldKey.fromParts("File", "Lists"));
+                        _fieldKeys.add(FieldKey.fromParts("File", "SkylineLists"));
                     }
                 }
                 return _fieldKeys;
