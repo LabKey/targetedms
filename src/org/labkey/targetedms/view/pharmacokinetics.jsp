@@ -797,22 +797,22 @@
         }
 
         function getCL_Zero_Inf(lr, subgroup){
-            // =B26/N23*1/60
+            // =B26/N23*1/60 - but represent in mL instead of L
             return (dose/getInfCumulativeCorrectPartAUC(lr, subgroup))/60 * 1000;
         }
 
         function getCL_Zero_T(subgroup){
-            // =B26/N21*1/60
+            // =B26/N21*1/60 - but represent in mL instead of L
             return (dose/getCumulativeCorrectPartAUC(timeRows[subgroup].length -1, subgroup))/60 * 1000;
         }
 
         function getVdss_Zero_Inf(lr, subgroup){
-            // =(P30*60/1000)*P28
+            // =(P30*60/1000)*P28 - but handle mL instead of L coming from getCL_Zero_Inf()
             return (getCL_Zero_Inf(lr, subgroup)*60)*getMrt_Zero_Inf(lr, subgroup);
         }
 
         function getVdss_Zero_T(lr, subgroup){
-            // =(P31*60/1000)*P29
+            // =(P31*60/1000)*P29 - but handle mL instead of L coming from getCL_Zero_T()
             return (getCL_Zero_T(subgroup)*60)*getMrt_Zero_T(subgroup);
         }
 
