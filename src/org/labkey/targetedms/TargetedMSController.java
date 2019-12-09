@@ -393,6 +393,12 @@ public class TargetedMSController extends SpringActionController
         {
             return getContainer().getStartURL(getUser());
         }
+
+        @Override
+        public NavTree appendNavTrail(NavTree root)
+        {
+            return root.addChild("Folder Setup");
+        }
     }
 
     private static class ChromatogramCrawlerForm
@@ -4122,7 +4128,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public NavTree appendNavTrail(NavTree root)
         {
-            return root;
+            return (null != getPageConfig().getTitle() ? root.addChild(getPageConfig().getTitle()) : root.addChild("Protein Conflicts"));
         }
     }
 
