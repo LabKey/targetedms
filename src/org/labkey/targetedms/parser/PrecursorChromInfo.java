@@ -445,9 +445,9 @@ public class PrecursorChromInfo extends ChromInfo<PrecursorChromInfoAnnotation>
 
             ChromatogramBinaryFormat binaryFormat = ChromatogramBinaryFormat.values()[getChromatogramFormat()];
 
-            Object[] compressedBytesAndStatus = getCompressedBytesAndStatus(run, loadFromSkyd);
-            byte[] compressedBytes = (byte[]) compressedBytesAndStatus[0];
-            Chromatogram.SourceStatus status = (Chromatogram.SourceStatus) compressedBytesAndStatus[1];
+            CompressedBytesAndStatus compressedBytesAndStatus = getCompressedBytesAndStatus(run, loadFromSkyd);
+            byte[] compressedBytes = compressedBytesAndStatus.getCompressedBytes();
+            Chromatogram.SourceStatus status = compressedBytesAndStatus.getStatus();
 
             if (compressedBytes == null)
             {
@@ -463,7 +463,7 @@ public class PrecursorChromInfo extends ChromInfo<PrecursorChromInfoAnnotation>
         }
     }
 
-    private Object[] getCompressedBytesAndStatus(TargetedMSRun run, boolean loadFromSkyd)
+    private CompressedBytesAndStatus getCompressedBytesAndStatus(TargetedMSRun run, boolean loadFromSkyd)
     {
         byte[] databaseBytes = getChromatogram();
         byte[] compressedBytes = databaseBytes;
@@ -517,14 +517,36 @@ public class PrecursorChromInfo extends ChromInfo<PrecursorChromInfoAnnotation>
         {
             status = Chromatogram.SourceStatus.dbOnly;
         }
-        return new Object[]{compressedBytes, status};
+        return new CompressedBytesAndStatus(compressedBytes, status);
+    }
+
+    private class CompressedBytesAndStatus
+    {
+        private final byte[] _compressedBytes;
+        private final Chromatogram.SourceStatus _status;
+
+        private CompressedBytesAndStatus(byte[] compressedBytes, Chromatogram.SourceStatus status)
+        {
+            _compressedBytes = compressedBytes;
+            _status = status;
+        }
+
+        public byte[] getCompressedBytes()
+        {
+            return _compressedBytes;
+        }
+
+        public Chromatogram.SourceStatus getStatus()
+        {
+            return _status;
+        }
     }
 
     @Nullable
     public byte[] getChromatogramBytes(TargetedMSRun run)
     {
         boolean loadFromSkyd = Boolean.parseBoolean(TargetedMSModule.PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY.getEffectiveValue(_container));
-        Object[] compressedBytesAndStatus = getCompressedBytesAndStatus(run, loadFromSkyd);
-        return (byte[])compressedBytesAndStatus[0];
+        CompressedBytesAndStatus compressedBytesAndStatus = getCompressedBytesAndStatus(run, loadFromSkyd);
+        return compressedBytesAndStatus.getCompressedBytes();
     }
 }
