@@ -394,11 +394,6 @@ public class TargetedMSController extends SpringActionController
             return getContainer().getStartURL(getUser());
         }
 
-        @Override
-        public NavTree appendNavTrail(NavTree root)
-        {
-            return root.addChild("Folder Setup");
-        }
     }
 
     private static class ChromatogramCrawlerForm
