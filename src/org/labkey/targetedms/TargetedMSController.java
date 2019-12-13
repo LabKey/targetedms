@@ -4123,7 +4123,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public NavTree appendNavTrail(NavTree root)
         {
-            return (null != getPageConfig().getTitle() ? root.addChild(getPageConfig().getTitle()) : root.addChild("Protein Conflicts"));
+            return root.addChild("Protein Conflicts");
         }
     }
 
