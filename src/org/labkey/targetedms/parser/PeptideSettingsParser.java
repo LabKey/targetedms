@@ -152,6 +152,7 @@ class PeptideSettingsParser
         enzyme.setNoCutC(StringUtils.trimToNull(reader.getAttributeValue(null, "no_cut_c")));
         enzyme.setCutN(StringUtils.trimToNull(reader.getAttributeValue(null, "cut_n")));
         enzyme.setNoCutN(StringUtils.trimToNull(reader.getAttributeValue(null, "no_cut_n")));
+        enzyme.setSemi(XmlUtil.readBooleanAttribute(reader, "semi"));
         return enzyme;
     }
 
@@ -346,6 +347,8 @@ class PeptideSettingsParser
         mod.setLabel18O(XmlUtil.readBooleanAttribute(reader, "label_18O"));
         mod.setLabel2H(XmlUtil.readBooleanAttribute(reader, "label_2H"));
         mod.setRelativeRt(reader.getAttributeValue(null, "relative_rt"));
+        mod.setLabel37Cl(XmlUtil.readBooleanAttribute(reader, "label_37Cl"));
+        mod.setLabel81Br(XmlUtil.readBooleanAttribute(reader, "label_81Br"));
 
         return mod;
     }
@@ -409,6 +412,7 @@ class PeptideSettingsParser
         library.setFileNameHint(XmlUtil.readAttribute(reader, FILE_NAME_HINT, null));
         library.setRevision(XmlUtil.readAttribute(reader, REVISION, null));
         library.setLibraryType(elementName.substring(0, elementName.indexOf("_library")));
+        library.setUseExplicitPeakBounds(XmlUtil.readBooleanAttribute(reader, "use_explicit_peak_bounds"));
 
         String skylineLibraryId;
         if(BIBLIOSPEC_LITE_LIB.equalsIgnoreCase(elementName))

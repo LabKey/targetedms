@@ -55,6 +55,8 @@
             <column columnName="AnalyteConcentration"/>
             <column columnName="SampleDilutionFactor"/>
             <column columnName="SampleType"/>
+            <column columnName="HasMidasSpectra"/>
+            <column columnName="BatchName"/>
         </columns>
     </table>
     <table tableName="ReplicateAnnotation" tableDbType="TABLE">
@@ -95,6 +97,8 @@
             <column columnName="SampleId">
                 <description>Extracted from raw data file, when available</description>
             </column>
+            <column columnName="ExplicitGlobalStandardArea"/>
+            <column columnName="IonMobilityType"/>
         </columns>
     </table>
     <table tableName="Runs" tableDbType="TABLE">
@@ -277,6 +281,7 @@
             <column columnName="NormalizationMethod"/>
             <column columnName="StandardType"/>
             <column columnName="AttributeGroupId"/>
+            <column columnName="ExplicitRetentionTimeWindow"/>
         </columns>
     </table>
     <table tableDbType="TABLE" tableName="Peptide">
@@ -324,6 +329,7 @@
             <column columnName="MassAverage">
                 <formatString>0.0000</formatString>
             </column>
+            <column columnName="MoleculeId" />
         </columns>
     </table>
     <table tableDbType="TABLE" tableName="GeneralMoleculeChromInfo">
@@ -349,6 +355,7 @@
                 <formatString>0.000</formatString>
             </column>
             <column columnName="ExcludeFromCalibration" />
+            <column columnName="PredictedRetentionTime" />
         </columns>
     </table>
     <table tableDbType="TABLE" tableName="GeneralPrecursor">
@@ -362,40 +369,35 @@
             <column columnName="Mz">
                 <columnTitle>Q1 m/z</columnTitle>
                 <formatString>0.0000</formatString>
-            </column>
+            </column> .
             <column columnName="Charge">
                 <columnTitle>Q1 Z</columnTitle>
                 <formatString>0+;0-</formatString>
-            </column>
+            </column> .
             <column columnName="CollisionEnergy">
                 <columnTitle>CE</columnTitle>
                 <description>Collision Energy</description>
                 <formatString>0.0000</formatString>
-            </column>
+            </column> .
             <column columnName="DeclusteringPotential">
                 <columnTitle>DP</columnTitle>
                 <description>Declustring Potential</description>
                 <formatString>0.0000</formatString>
-            </column>
-            <column columnName="Decoy"/>
+            </column> .
             <column columnName="Note"/>
-            <column columnName="Modified">
-                <formatString>DateTime</formatString>
-            </column>
             <column columnName="RepresentativeDataState">
                 <columnTitle>Library State</columnTitle>
             </column>
-            <column columnName="ExplicitCollisionEnergy">
-                <columnTitle>Explicit CE</columnTitle>
-                <description>Explicit Collision Energy</description>
-                <formatString>0.0000</formatString>
-            </column>
-            <column columnName="ExplicitDriftTimeMsec" />
-            <column columnName="ExplicitDriftTimeHighEnergyOffsetMsec" />
+            <column columnName="ExplicitIonMobility" /> .
             <column columnName="IsotopeLabelId">
                 <columnTitle>Label</columnTitle>
                 <inputType>text</inputType>
-            </column>
+            </column> .
+            <column columnName="Ccs"/> .
+            <column columnName="ExplicitIonMobilityUnits"/> .
+            <column columnName="ExplicitCcsSqa"/> .
+            <column columnName="ExplicitCompensationVoltage"/> .
+            <column columnName="PrecursorConcentration"/> .
         </columns>
     </table>
     <table tableDbType="TABLE" tableName="MoleculePrecursor">
@@ -413,6 +415,7 @@
             <column columnName="MassAverage">
                 <formatString>0.0000</formatString>
             </column>
+            <column columnName="MoleculePrecursorId"/>
         </columns>
     </table>
     <table tableDbType="TABLE" tableName="Precursor">
@@ -515,6 +518,14 @@
             </column>
             <column columnName="qvalue"/>
             <column columnName="zscore"/>
+            <column columnName="Ccs"/>
+            <column columnName="DriftTimeMs1"/>
+            <column columnName="DriftTimeFragment"/>
+            <column columnName="DriftTimeWindow"/>
+            <column columnName="IonMobilityMs1"/>
+            <column columnName="IonMobilityFragment"/>
+            <column columnName="IonMobilityWindow"/>
+            <column columnName="IonMobilityType"/>
         </columns>
     </table>
     <table tableDbType="TABLE" tableName="GeneralTransition">
@@ -539,16 +550,26 @@
             <column columnName="IsotopeDistIndex"/>
             <column columnName="IsotopeDistRank"/>
             <column columnName="IsotopeDistProportion"/>
-            <column columnName="Decoy"/>
             <column columnName="Note"/>
             <column columnName="MassIndex"/>
             <column columnName="ExplicitCollisionEnergy"/>
-            <column columnName="SLens"/>
-            <column columnName="ConeVoltage"/>
-            <column columnName="ExplicitCompensationVoltage"/>
+            <column columnName="Quantitative"/>
+            <column columnName="ExplicitSLens"/>
+            <column columnName="ExplicitConeVoltage"/>
             <column columnName="ExplicitDeclusteringPotential"/>
-            <column columnName="ExplicitDriftTimeMSec"/>
-            <column columnName="ExplicitDriftTimeHighEnergyOffsetMSec"/>
+            <column columnName="ExplicitIonMobilityHighEnergyOffset"/>
+            <column columnName="CollisionEnergy">
+                <columnTitle>CE</columnTitle>
+                <description>Collision Energy</description>
+                <formatString>0.0000</formatString>
+            </column>
+            <column columnName="DeclusteringPotential">
+                <columnTitle>DP</columnTitle>
+                <description>Declustring Potential</description>
+                <formatString>0.0000</formatString>
+            </column>
+            <column columnName="Rank"/>
+            <column columnName="Intensity"/>
         </columns>
     </table>
     <table tableDbType="TABLE" tableName="Transition">
@@ -568,8 +589,6 @@
             <column columnName="CleavageAa">
                 <columnTitle>Cleavage AA</columnTitle>
             </column>
-            <column columnName="LibraryRank"/>
-            <column columnName="LibraryIntensity"/>
             <column columnName="DecoyMassShift"/>
             <column columnName="MeasuredIonName"/>
         </columns>
@@ -589,6 +608,7 @@
             <column columnName="MassAverage">
                 <formatString>0.0000</formatString>
             </column>
+            <column columnName="MoleculeTransitionId"/>
         </columns>
     </table>
     <table tableDbType="TABLE" tableName="TransitionChromInfo">
@@ -641,6 +661,15 @@
             <column columnName="Note"/>
             <column columnName="MassErrorPPM"/>
             <column columnName="PointsAcrossPeak"/>
+            <column columnName="Ccs"/>
+            <column columnName="DriftTime"/>
+            <column columnName="DriftTimeWindow"/>
+            <column columnName="IonMobility"/>
+            <column columnName="IonMobilityWindow"/>
+            <column columnName="IonMobilityType"/>
+            <column columnName="Rank"/>
+            <column columnName="RankByLevel"/>
+            <column columnName="ForcedIntegration"/>
         </columns>
     </table>
     <table tableName="Enzyme" tableDbType="TABLE">
@@ -656,6 +685,7 @@
             <column columnName="NoCutC"/>
             <column columnName="CutN"/>
             <column columnName="NoCutN"/>
+            <column columnName="Semi"/>
         </columns>
     </table>
     <table tableName="Instrument" tableDbType="TABLE">
@@ -697,6 +727,12 @@
             <column columnName="Label18O"/>
             <column columnName="Label2H"/>
             <column columnName="UnimodId"/>
+            <column columnName="Label37Cl">
+                <description>This attribute is used only for isotope modifications</description>
+            </column>
+            <column columnName="Label81Br">
+                <description>This attribute is used only for isotope modifications</description>
+            </column>
         </columns>
     </table>
     <table tableName="LibrarySettings" tableDbType="TABLE">
@@ -898,6 +934,7 @@
             <column columnName="filenamehint"/>
             <column columnName="SkylineLibraryId"/>
             <column columnName="revision"/>
+            <column columnName="UseExplicitPeakBounds"/>
         </columns>
     </table>
     <table tableName="structuralmodification" tableDbType="TABLE">
@@ -1654,6 +1691,10 @@
             <column columnName="CaseValue"/>
             <column columnName="IdentityAnnotation"/>
             <column columnName="PerProtein"/>
+            <column columnName="AvgTechReplicates"/>
+            <column columnName="SumTransitions"/>
+            <column columnName="IncludeInteractionTransitions"/>
+            <column columnName="SummarizationMethod"/>
         </columns>
     </table>
     <table tableName="QuantificationSettings" tableDbType="TABLE">

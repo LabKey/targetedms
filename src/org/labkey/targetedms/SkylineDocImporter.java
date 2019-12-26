@@ -421,6 +421,7 @@ public class SkylineDocImporter
             replicate.setSampleType(skyReplicate.getSampleType());
             replicate.setAnalyteConcentration(skyReplicate.getAnalyteConcentration());
             replicate.setSampleDilutionFactor(skyReplicate.getSampleDilutionFactor());
+            replicate.setHasMidasSpectra(skyReplicate.hasMidasSpectra());
             replicate.setRunId(_runId);
 
             if(optimizationInfo._cePredictor != null && skyReplicate.getCePredictor() != null && optimizationInfo._cePredictor.equals(skyReplicate.getCePredictor()))
@@ -1392,12 +1393,13 @@ public class SkylineDocImporter
         gt.setIsotopeDistProportion(moleculeTransition.getIsotopeDistProportion());
         gt.setMassIndex(moleculeTransition.getMassIndex());
         gt.setExplicitCollisionEnergy(moleculeTransition.getExplicitCollisionEnergy());
-        gt.setsLens(moleculeTransition.getsLens());
-        gt.setConeVoltage(moleculeTransition.getConeVoltage());
-        gt.setExplicitCompensationVoltage(moleculeTransition.getExplicitCompensationVoltage());
+        gt.setExplicitSLens(moleculeTransition.getExplicitSLens());
+        gt.setExplicitConeVoltage(moleculeTransition.getExplicitConeVoltage());
+        gt.setQuantitative(moleculeTransition.getQuantitative());
+        gt.setExplicitIonMobilityHighEnergyOffset(moleculeTransition.getExplicitIonMobilityHighEnergyOffset());
         gt.setExplicitDeclusteringPotential(moleculeTransition.getExplicitDeclusteringPotential());
-        gt.setExplicitDriftTimeMSec(moleculeTransition.getExplicitDriftTimeMSec());
-        gt.setExplicitDriftTimeHighEnergyOffsetMSec(moleculeTransition.getExplicitDriftTimeHighEnergyOffsetMSec());
+        gt.setCollisionEnergy(moleculeTransition.getCollisionEnergy());
+        gt.setDeclusteringPotential(moleculeTransition.getDeclusteringPotential());
         gt = Table.insert(_user, TargetedMSManager.getTableInfoGeneralTransition(), gt);
 
         moleculeTransition.setTransitionId(gt.getId());
@@ -1487,11 +1489,13 @@ public class SkylineDocImporter
         gp.setCharge(precursor.getCharge());
         gp.setCollisionEnergy(precursor.getCollisionEnergy());
         gp.setDeclusteringPotential(precursor.getDeclusteringPotential());
-        gp.setDecoy(precursor.isDecoy());
         gp.setNote(precursor.getNote());
-        gp.setExplicitCollisionEnergy(precursor.getExplicitCollisionEnergy());
-        gp.setExplicitDriftTimeMsec(precursor.getExplicitDriftTimeMsec());
-        gp.setExplicitDriftTimeHighEnergyOffsetMsec(precursor.getExplicitDriftTimeHighEnergyOffsetMsec());
+        gp.setExplicitIonMobility(precursor.getExplicitIonMobility());
+        gp.setCcs(precursor.getCcs());
+        gp.setExplicitCcsSqa(precursor.getExplicitCcsSqa());
+        gp.setExplicitIonMobilityUnits(precursor.getExplicitIonMobilityUnits());
+        gp.setExplicitCompensationVoltage(precursor.getExplicitCompensationVoltage());
+        gp.setPrecursorConcentration(precursor.getPrecursorConcentration());
         gp.setIsotopeLabel(precursor.getIsotopeLabel());
         gp.setIsotopeLabelId(modInfo.isotopeLabelIdMap.get(precursor.getIsotopeLabel()));
         gp = Table.insert(_user, TargetedMSManager.getTableInfoGeneralPrecursor(), gp);
@@ -1514,12 +1518,15 @@ public class SkylineDocImporter
         gt.setIsotopeDistProportion(transition.getIsotopeDistProportion());
         gt.setMassIndex(transition.getMassIndex());
         gt.setExplicitCollisionEnergy(transition.getExplicitCollisionEnergy());
-        gt.setsLens(transition.getsLens());
-        gt.setConeVoltage(transition.getConeVoltage());
-        gt.setExplicitCompensationVoltage(transition.getExplicitCompensationVoltage());
+        gt.setExplicitSLens(transition.getExplicitSLens());
+        gt.setExplicitConeVoltage(transition.getExplicitConeVoltage());
+        gt.setQuantitative(transition.getQuantitative());
+        gt.setExplicitIonMobilityHighEnergyOffset(transition.getExplicitIonMobilityHighEnergyOffset());
         gt.setExplicitDeclusteringPotential(transition.getExplicitDeclusteringPotential());
-        gt.setExplicitDriftTimeMSec(transition.getExplicitDriftTimeMSec());
-        gt.setExplicitDriftTimeHighEnergyOffsetMSec(transition.getExplicitDriftTimeHighEnergyOffsetMSec());
+        gt.setCollisionEnergy(transition.getCollisionEnergy());
+        gt.setDeclusteringPotential(transition.getDeclusteringPotential());
+        gt.setRank(transition.getRank());
+        gt.setIntensity(transition.getIntensity());
         gt = Table.insert(_user, TargetedMSManager.getTableInfoGeneralTransition(), gt);
 
         transition.setId(gt.getId());
@@ -1844,6 +1851,15 @@ public class SkylineDocImporter
             _transitionChromInfoStmt.setString(index++, transChromInfo.getUserSet());
             _transitionChromInfoStmt.setString(index++, transChromInfo.getIdentified());
             setInteger(_transitionChromInfoStmt, index++, transChromInfo.getPointsAcrossPeak());
+            setDouble(_transitionChromInfoStmt, index++, transChromInfo.getCcs());
+            setDouble(_transitionChromInfoStmt, index++, transChromInfo.getDriftTime());
+            setDouble(_transitionChromInfoStmt, index++, transChromInfo.getDriftTimeWindow());
+            setDouble(_transitionChromInfoStmt, index++, transChromInfo.getIonMobility());
+            setDouble(_transitionChromInfoStmt, index++, transChromInfo.getIonMobilityWindow());
+            _transitionChromInfoStmt.setString(index++, transChromInfo.getIonMobilityType());
+            setInteger(_transitionChromInfoStmt, index++, transChromInfo.getRank());
+            setInteger(_transitionChromInfoStmt, index++, transChromInfo.getRankByLevel());
+            _transitionChromInfoStmt.setBoolean(index, transChromInfo.getForcedIntegration());
 
             insertAndUpdateId(transChromInfo, _transitionChromInfoStmt);
         }
@@ -1901,7 +1917,14 @@ public class SkylineDocImporter
             setInteger(_precursorChromInfoStmt, index++, preChromInfo.getChromatogramLength());
             setDouble(_precursorChromInfoStmt, index++, preChromInfo.getQvalue());
             setDouble(_precursorChromInfoStmt, index++, preChromInfo.getZscore());
-
+            setDouble(_precursorChromInfoStmt, index++, preChromInfo.getCcs());
+            setDouble(_precursorChromInfoStmt, index++, preChromInfo.getDriftTimeMs1());
+            setDouble(_precursorChromInfoStmt, index++, preChromInfo.getDriftTimeFragment());
+            setDouble(_precursorChromInfoStmt, index++, preChromInfo.getDriftTimeWindow());
+            setDouble(_precursorChromInfoStmt, index++, preChromInfo.getIonMobilityMs1());
+            setDouble(_precursorChromInfoStmt, index++, preChromInfo.getIonMobilityFragment());
+            setDouble(_precursorChromInfoStmt, index++, preChromInfo.getIonMobilityWindow());
+            _precursorChromInfoStmt.setString(index, preChromInfo.getIonMobilityType());
 
             try (ResultSet rs = TargetedMSManager.getSqlDialect().executeWithResults(_precursorChromInfoStmt))
             {
@@ -1992,6 +2015,8 @@ public class SkylineDocImporter
 
                 sampleFile.setInstrumentId(instrumentId);
             }
+
+
 
             sampleFile = Table.insert(_user, TargetedMSManager.getTableInfoSampleFile(), sampleFile);
 
