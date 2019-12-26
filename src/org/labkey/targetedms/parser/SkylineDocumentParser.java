@@ -2548,7 +2548,12 @@ public class SkylineDocumentParser implements AutoCloseable
     public List<SampleFileChromInfo> getSampleFileChromInfos(Map<String, SampleFile> pathToSampleFile)
     {
         List<SampleFileChromInfo> result = new ArrayList<>();
-        for (ChromGroupHeaderInfo chromatogram : _binaryParser.getChromatograms())
+        var chromatograms = _binaryParser.getChromatograms();
+        if (chromatograms == null)
+        {
+            return Collections.emptyList();
+        }
+        for (ChromGroupHeaderInfo chromatogram : chromatograms)
         {
             if (chromatogram.getPrecursorMz() == 0.0)
             {
