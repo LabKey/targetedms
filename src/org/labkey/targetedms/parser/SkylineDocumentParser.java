@@ -167,6 +167,8 @@ public class SkylineDocumentParser implements AutoCloseable
     private int _replicateCount;
     private int _listCount;
 
+    /** Null if we haven't found a SKYD to parse */
+    @Nullable
     private SkylineBinaryParser _binaryParser;
 
     private TransitionSettings _transitionSettings;
@@ -2548,12 +2550,11 @@ public class SkylineDocumentParser implements AutoCloseable
     public List<SampleFileChromInfo> getSampleFileChromInfos(Map<String, SampleFile> pathToSampleFile)
     {
         List<SampleFileChromInfo> result = new ArrayList<>();
-        var chromatograms = _binaryParser.getChromatograms();
-        if (chromatograms == null)
+        if (_binaryParser == null)
         {
             return Collections.emptyList();
         }
-        for (ChromGroupHeaderInfo chromatogram : chromatograms)
+        for (ChromGroupHeaderInfo chromatogram : _binaryParser.getChromatograms())
         {
             if (chromatogram.getPrecursorMz() == 0.0)
             {

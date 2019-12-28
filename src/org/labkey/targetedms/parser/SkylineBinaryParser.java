@@ -79,8 +79,6 @@ public class SkylineBinaryParser
         _log = log;
     }
 
-    /** @return null if no SKYD could be found during import */
-    @Nullable
     public ChromGroupHeaderInfo[] getChromatograms()
     {
         return _chromatograms;
