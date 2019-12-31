@@ -766,6 +766,7 @@ public class PeptideSettings
         private String _pick;  // One of 'library', 'filter', 'both', 'either'
         private String _rankType; // One of 'Picked intensity' or 'Spectrum count'
         private Integer _peptideCount;
+        private Double _ionMatchTolerance;
 
         private List<SpectrumLibrary> libraries;
 
@@ -807,6 +808,16 @@ public class PeptideSettings
         public void setPeptideCount(Integer peptideCount)
         {
             _peptideCount = peptideCount;
+        }
+
+        public Double getIonMatchTolerance()
+        {
+            return _ionMatchTolerance;
+        }
+
+        public void setIonMatchTolerance(Double ionMatchTolerance)
+        {
+            _ionMatchTolerance = ionMatchTolerance;
         }
 
         public List<SpectrumLibrary> getLibraries()

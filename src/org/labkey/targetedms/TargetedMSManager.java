@@ -74,6 +74,7 @@ import org.labkey.api.targetedms.model.LJOutlier;
 import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.util.FileUtil;
 import org.labkey.api.view.NotFoundException;
+import org.labkey.api.view.TabStripView;
 import org.labkey.api.view.UnauthorizedException;
 import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.targetedms.model.QCMetricConfiguration;
@@ -518,6 +519,31 @@ public class TargetedMSManager
 
     public static TableInfo getTableInfoListItemValue() {
         return getSchema().getTable(TargetedMSSchema.TABLE_LIST_ITEM_VALUE);
+    }
+
+    public static TableInfo getTableInfoBibliospec()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_BIBLIOSPEC_LIB_INFO);
+    }
+
+    public static TableInfo getTableInfoHunterLib()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_HUNTER_LIB_INFO);
+    }
+
+    public static TableInfo getTableInfoNistLib()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_NIST_LIB_INFO);
+    }
+
+    public static TableInfo getTableInfoSpectrastLib()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_SPECTRAST_LIB_INFO);
+    }
+
+    public static TableInfo getTableInfoChromatogramLib()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_CHROMATOGRAM_LIB_INFO);
     }
 
     public static Integer addRunToQueue(ViewBackgroundInfo info,

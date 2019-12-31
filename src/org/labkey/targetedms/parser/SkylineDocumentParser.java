@@ -75,6 +75,7 @@ public class SkylineDocumentParser implements AutoCloseable
     public static final float DEFAULT_TOLERANCE = 0.055f;
 
     private static final String SETTINGS_SUMMARY = "settings_summary";
+    private static final String TRANSITION_LIBRARIES = "transition_libraries";
     private static final String TRANSITION_SETTINGS = "transition_settings";
     private static final String TRANSITION_PREDICTION = "transition_prediction";
     private static final String PREDICT_COLLISION_ENERGY = "predict_collision_energy";
@@ -125,12 +126,16 @@ public class SkylineDocumentParser implements AutoCloseable
     private static final String HUNTER_SPECTRUM_INFO = "hunter_spectrum_info";
     private static final String NIST_SPECTRUM_INFO = "nist_spectrum_info";
     private static final String SPECTRAST_SPECTRUM_INFO = "spectrast_spectrum_info";
+    private static final String CHROMATOGRAM_LIBRARY_SPECTRUM_INFO = "chromatogram_library_spectrum_header_info";
     private static final String LIBRARY_NAME = "library_name";
     private static final String COUNT_MEASURED = "count_measured";
+    private static final String SCORE = "score";
+    private static final String SCORE_TYPE = "score_type";
     private static final String EXPECT = "expect";
     private static final String PROCESSED_INTENSITY =  "processed_intensity";
     private static final String TOTAL_INTENSITY = "total_intensity";
     private static final String TFRATIO = "tfratio";
+    private static final String PEAK_AREA = "peak_area";
     private static final String ISOLATION_SCHEME = "isolation_scheme";
     private static final String ISOLATION_WINDOW = "isolation_window";
     private static final String ION_FORMULA = "ion_formula";
@@ -1674,29 +1679,33 @@ public class SkylineDocumentParser implements AutoCloseable
         precursor.setExplicitCompensationVoltage(XmlUtil.readDoubleAttribute(reader, "explicit_compensation_voltage"));
         precursor.setPrecursorConcentration(XmlUtil.readDoubleAttribute(reader, "precursor_concentration"));
 
-        while(reader.hasNext()) {
+        while (reader.hasNext()) {
 
             int evtType = reader.next();
-            if(evtType == XMLStreamReader.END_ELEMENT &&
+            if (evtType == XMLStreamReader.END_ELEMENT &&
                PRECURSOR.equalsIgnoreCase(reader.getLocalName()))
             {
                 break;
             }
-            else if(XmlUtil.isStartElement(reader, evtType, BIBLIOSPEC_SPECTRUM_INFO))
+            else if (XmlUtil.isStartElement(reader, evtType, BIBLIOSPEC_SPECTRUM_INFO))
             {
-                precursor.setLibraryInfo(readBibliospecLibraryInfo(reader));
+                precursor.setBibliospecLibraryInfo(readBibliospecLibraryInfo(reader));
             }
-            else if(XmlUtil.isStartElement(reader, evtType, HUNTER_SPECTRUM_INFO))
+            else if (XmlUtil.isStartElement(reader, evtType, HUNTER_SPECTRUM_INFO))
             {
-                precursor.setLibraryInfo(readHunterLibraryInfo(reader));
+                precursor.setHunterLibraryInfo(readHunterLibraryInfo(reader));
             }
-            else if(XmlUtil.isStartElement(reader, evtType, NIST_SPECTRUM_INFO))
+            else if (XmlUtil.isStartElement(reader, evtType, NIST_SPECTRUM_INFO))
             {
-                precursor.setLibraryInfo(readNistLibraryInfo(reader));
+                precursor.setNistLibraryInfo(readNistLibraryInfo(reader));
             }
-            else if(XmlUtil.isStartElement(reader, evtType, SPECTRAST_SPECTRUM_INFO))
+            else if (XmlUtil.isStartElement(reader, evtType, SPECTRAST_SPECTRUM_INFO))
             {
-                precursor.setLibraryInfo(readSpectrastLibraryInfo(reader));
+                precursor.setSpectrastLibraryInfo(readSpectrastLibraryInfo(reader));
+            }
+            else if (XmlUtil.isStartElement(reader, evtType, CHROMATOGRAM_LIBRARY_SPECTRUM_INFO))
+            {
+                precursor.setChromatogramLibraryInfo(readChromatogramLibraryInfo(reader));
             }
             else if (XmlUtil.isStartElement(reader, evtType, TRANSITION))
             {
@@ -1705,7 +1714,7 @@ public class SkylineDocumentParser implements AutoCloseable
             else if (XmlUtil.isStartElement(reader, evtType, TRANSITION_DATA)) {
                 transitionList.addAll(readTransitionData(reader, this::transitionProtoToTransition));
             }
-            else if(XmlUtil.isStartElement(reader, evtType, PRECURSOR_PEAK))
+            else if (XmlUtil.isStartElement(reader, evtType, PRECURSOR_PEAK))
             {
                chromInfoList.add(readPrecursorChromInfo(reader));
             }
@@ -1911,45 +1920,55 @@ public class SkylineDocumentParser implements AutoCloseable
         }
     }
 
-    private Precursor.LibraryInfo readBibliospecLibraryInfo(XMLStreamReader reader)
+    private Precursor.BibliospecLibraryInfo readBibliospecLibraryInfo(XMLStreamReader reader)
     {
         // <bibliospec_spectrum_info library_name="Yeast_mini" count_measured="895" />
-        Precursor.LibraryInfo libInfo = new Precursor.LibraryInfo();
+        Precursor.BibliospecLibraryInfo libInfo = new Precursor.BibliospecLibraryInfo();
         libInfo.setLibraryName(XmlUtil.readRequiredAttribute(reader, LIBRARY_NAME, BIBLIOSPEC_SPECTRUM_INFO));
-        libInfo.setScore1(XmlUtil.readRequiredDoubleAttribute(reader, COUNT_MEASURED, BIBLIOSPEC_SPECTRUM_INFO));
+        libInfo.setCountMeasured(XmlUtil.readRequiredDoubleAttribute(reader, COUNT_MEASURED, BIBLIOSPEC_SPECTRUM_INFO));
+        libInfo.setScore(XmlUtil.readRequiredDoubleAttribute(reader, SCORE, BIBLIOSPEC_SPECTRUM_INFO));
+        libInfo.setScoreType(XmlUtil.readRequiredAttribute(reader, SCORE_TYPE, BIBLIOSPEC_SPECTRUM_INFO));
         return libInfo;
     }
 
-    private Precursor.LibraryInfo readHunterLibraryInfo(XMLStreamReader reader)
+    private Precursor.HunterLibraryInfo readHunterLibraryInfo(XMLStreamReader reader)
     {
         // <hunter_spectrum_info library_name="GPM_Hunter_yeast" expect="1.030315E-10" processed_intensity="213.6469" />
-        Precursor.LibraryInfo libInfo = new Precursor.LibraryInfo();
-        libInfo.setLibraryName(XmlUtil.readRequiredAttribute(reader, LIBRARY_NAME, HUNTER_SPECTRUM_INFO));
-        libInfo.setScore1(XmlUtil.readRequiredDoubleAttribute(reader, EXPECT, HUNTER_SPECTRUM_INFO));
-        libInfo.setScore2(XmlUtil.readRequiredDoubleAttribute(reader, PROCESSED_INTENSITY, HUNTER_SPECTRUM_INFO));
+        Precursor.HunterLibraryInfo libInfo = new Precursor.HunterLibraryInfo();
+        libInfo.setLibraryName(XmlUtil.readRequiredAttribute(reader, LIBRARY_NAME, BIBLIOSPEC_SPECTRUM_INFO));
+        libInfo.setExpect(XmlUtil.readRequiredDoubleAttribute(reader, EXPECT, HUNTER_SPECTRUM_INFO));
+        libInfo.setProcessedIntensity(XmlUtil.readRequiredDoubleAttribute(reader, PROCESSED_INTENSITY, HUNTER_SPECTRUM_INFO));
         return libInfo;
     }
 
-    private Precursor.LibraryInfo readNistLibraryInfo(XMLStreamReader reader)
+    private Precursor.NistLibraryInfo readNistLibraryInfo(XMLStreamReader reader)
     {
         // <nist_spectrum_info library_name="NIST_MSP_Yeast_qtof" count_measured="14" total_intensity="75798" tfratio="17000" />
-        Precursor.LibraryInfo libInfo = new Precursor.LibraryInfo();
-        libInfo.setLibraryName(XmlUtil.readRequiredAttribute(reader, LIBRARY_NAME, NIST_SPECTRUM_INFO));
-        libInfo.setScore1(XmlUtil.readRequiredIntegerAttribute(reader, COUNT_MEASURED, NIST_SPECTRUM_INFO));
-        libInfo.setScore2(XmlUtil.readRequiredDoubleAttribute(reader, TOTAL_INTENSITY, NIST_SPECTRUM_INFO));
-        libInfo.setScore3(XmlUtil.readRequiredDoubleAttribute(reader, TFRATIO, NIST_SPECTRUM_INFO));
+        Precursor.NistLibraryInfo libInfo = new Precursor.NistLibraryInfo();
+        libInfo.setLibraryName(XmlUtil.readRequiredAttribute(reader, LIBRARY_NAME, BIBLIOSPEC_SPECTRUM_INFO));
+        libInfo.setCountMeasured(XmlUtil.readRequiredDoubleAttribute(reader, COUNT_MEASURED, NIST_SPECTRUM_INFO));
+        libInfo.setTotalIntensity(XmlUtil.readRequiredDoubleAttribute(reader,TOTAL_INTENSITY, NIST_SPECTRUM_INFO ));
+        libInfo.setTfRatio(XmlUtil.readRequiredDoubleAttribute(reader, TFRATIO, NIST_SPECTRUM_INFO));
         return libInfo;
     }
 
-    private Precursor.LibraryInfo readSpectrastLibraryInfo(XMLStreamReader reader)
+    private Precursor.SpectrastLibraryInfo readSpectrastLibraryInfo(XMLStreamReader reader)
     {
         // <spectrast_spectrum_info library_name="ISB_SpectraST_yeast" count_measured="62" total_intensity="94691.2" tfratio="1000" />
         // <spectrast_spectrum_info library_name="NIST_SpectraST_Yeast_qtof" count_measured="14" total_intensity="75798" tfratio="17000" />
-        Precursor.LibraryInfo libInfo = new Precursor.LibraryInfo();
-        libInfo.setLibraryName(XmlUtil.readRequiredAttribute(reader, LIBRARY_NAME, SPECTRAST_SPECTRUM_INFO));
-        libInfo.setScore1(XmlUtil.readRequiredIntegerAttribute(reader, COUNT_MEASURED, SPECTRAST_SPECTRUM_INFO));
-        libInfo.setScore2(XmlUtil.readRequiredDoubleAttribute(reader, TOTAL_INTENSITY, SPECTRAST_SPECTRUM_INFO));
-        libInfo.setScore3(XmlUtil.readRequiredDoubleAttribute(reader, TFRATIO, SPECTRAST_SPECTRUM_INFO));
+        Precursor.SpectrastLibraryInfo libInfo = new Precursor.SpectrastLibraryInfo();
+        libInfo.setLibraryName(XmlUtil.readRequiredAttribute(reader, LIBRARY_NAME, BIBLIOSPEC_SPECTRUM_INFO));
+        libInfo.setCountMeasured(XmlUtil.readRequiredDoubleAttribute(reader, COUNT_MEASURED, SPECTRAST_SPECTRUM_INFO));
+        libInfo.setTotalIntensity(XmlUtil.readRequiredDoubleAttribute(reader, TOTAL_INTENSITY, SPECTRAST_SPECTRUM_INFO));
+        libInfo.setTfRatio(XmlUtil.readRequiredDoubleAttribute(reader, TFRATIO, SPECTRAST_SPECTRUM_INFO));
+        return libInfo;
+    }
+
+    private Precursor.ChromatogramLibraryInfo readChromatogramLibraryInfo(XMLStreamReader reader)
+    {
+        Precursor.ChromatogramLibraryInfo libInfo = new Precursor.ChromatogramLibraryInfo();
+        libInfo.setLibraryName(XmlUtil.readRequiredAttribute(reader, LIBRARY_NAME, BIBLIOSPEC_SPECTRUM_INFO));
+        libInfo.setPeakArea(XmlUtil.readRequiredDoubleAttribute(reader, PEAK_AREA, CHROMATOGRAM_LIBRARY_SPECTRUM_INFO ));
         return libInfo;
     }
 

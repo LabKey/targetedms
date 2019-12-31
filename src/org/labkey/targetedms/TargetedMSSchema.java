@@ -193,6 +193,11 @@ public class TargetedMSSchema extends UserSchema
     public static final String TABLE_LIST_ITEM = "ListItem";
     public static final String TABLE_LIST_ITEM_VALUE = "ListItemValue";
 
+    public static final String TABLE_BIBLIOSPEC_LIB_INFO = "BibliospecLibInfo";
+    public static final String TABLE_HUNTER_LIB_INFO = "BibliospecLibInfo";
+    public static final String TABLE_NIST_LIB_INFO = "NistLibInfo";
+    public static final String TABLE_SPECTRAST_LIB_INFO = "SpectrastLibInfo";
+    public static final String TABLE_CHROMATOGRAM_LIB_INFO = "SpectrastLibInfo";
 
     public static final String COL_PROTEIN = "Protein";
     public static final String COL_LIST = "List";
@@ -1414,6 +1419,11 @@ public class TargetedMSSchema extends UserSchema
         hs.add(TABLE_SKYLINE_AUDITLOG_ENTRY);
         hs.add(TABLE_SKYLINE_AUDITLOG_MESSAGE);
         hs.add(TABLE_LIST_DEFINITION);
+        hs.add(TABLE_BIBLIOSPEC_LIB_INFO);
+        hs.add(TABLE_HUNTER_LIB_INFO);
+        hs.add(TABLE_NIST_LIB_INFO);
+        hs.add(TABLE_SPECTRAST_LIB_INFO);
+        hs.add(TABLE_CHROMATOGRAM_LIB_INFO);
 
         return hs;
     }

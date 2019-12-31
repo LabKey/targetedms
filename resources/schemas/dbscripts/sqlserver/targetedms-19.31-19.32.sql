@@ -20,12 +20,18 @@ ALTER TABLE targetedms.GeneralPrecursor DROP COLUMN Decoy;
 ALTER TABLE targetedms.GeneralPrecursor DROP COLUMN Modified;
 
 --** changes to GeneralTransition **--
-ALTER TABLE targetedms.GeneralTransition ADD Rank INTEGER;
+ALTER TABLE targetedms.GeneralTransition ADD Rank INT;
+GO
+
 UPDATE targetedms.GeneralTransition
 SET Rank = (SELECT libraryRank FROM targetedms.Transition t WHERE t.id = targetedms.GeneralTransition.id);
+
 ALTER TABLE targetedms.GeneralTransition ADD Intensity DOUBLE PRECISION;
+Go
+
 UPDATE targetedms.GeneralTransition
 SET Intensity = (SELECT libraryIntensity FROM targetedms.Transition t WHERE t.id = targetedms.GeneralTransition.id);
+
 ALTER TABLE targetedms.GeneralTransition ADD Quantitative BIT;
 ALTER TABLE targetedms.GeneralTransition ADD CollisionEnergy DOUBLE PRECISION;
 ALTER TABLE targetedms.GeneralTransition ADD DeclusteringPotential DOUBLE PRECISION;
@@ -59,7 +65,7 @@ ALTER TABLE targetedms.TransitionChromInfo ADD DriftTimeWindow DOUBLE PRECISION;
 ALTER TABLE targetedms.TransitionChromInfo ADD IonMobility DOUBLE PRECISION;
 ALTER TABLE targetedms.TransitionChromInfo ADD IonMobilityWindow DOUBLE PRECISION;
 ALTER TABLE targetedms.TransitionChromInfo ADD IonMobilityType NVARCHAR(200);
-ALTER TABLE targetedms.TransitionChromInfo ADD Rank INTEGER;
+ALTER TABLE targetedms.TransitionChromInfo ADD Rank INT;
 ALTER TABLE targetedms.TransitionChromInfo ADD RankByLevel INTEGER;
 ALTER TABLE targetedms.TransitionChromInfo ADD ForcedIntegration BIT;
 

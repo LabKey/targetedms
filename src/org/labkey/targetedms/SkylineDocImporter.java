@@ -33,6 +33,7 @@ import org.labkey.api.data.Sort;
 import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.Table;
+import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.exp.XarContext;
 import org.labkey.api.exp.api.ExpData;
@@ -1450,25 +1451,11 @@ public class SkylineDocImporter
 
         insertPrecursorAnnotation(precursor.getAnnotations(), gp, precursor.getId());
 
-        Precursor.LibraryInfo libInfo = precursor.getLibraryInfo();
-        if(libInfo != null)
-        {
-            Integer specLibId = libraryNameIdMap.get(libInfo.getLibraryName());
-            if(specLibId == null)
-            {
-                // Skyline documents can end up in a state where a library name is associated with a precursor but the
-                // library was deselected in "Peptide Settings > Library tab" in Skyline and is no longer part of the
-                // <peptide_libraries> element of the .sky file.  We will ignore such library infos.
-                _log.info("'" + libInfo.getLibraryName() + "' library was not found in settings.");
-            }
-            else
-            {
-                libInfo.setPrecursorId(precursor.getId());
-                libInfo.setSpectrumLibraryId(specLibId);
-                libInfo.setGeneralPrecursorId(gp.getId());
-                Table.insert(_user, TargetedMSManager.getTableInfoPrecursorLibInfo(), libInfo);
-            }
-        }
+        insertLibInfo(precursor.getBibliospecLibraryInfo(), precursor, gp, libraryNameIdMap, TargetedMSManager.getTableInfoBibliospec());
+        insertLibInfo(precursor.getHunterLibraryInfo(), precursor, gp, libraryNameIdMap, TargetedMSManager.getTableInfoHunterLib());
+        insertLibInfo(precursor.getNistLibraryInfo(), precursor, gp, libraryNameIdMap, TargetedMSManager.getTableInfoNistLib());
+        insertLibInfo(precursor.getSpectrastLibraryInfo(), precursor, gp, libraryNameIdMap, TargetedMSManager.getTableInfoSpectrastLib());
+        insertLibInfo(precursor.getChromatogramLibraryInfo(), precursor, gp, libraryNameIdMap, TargetedMSManager.getTableInfoChromatogramLib());
 
         Map<SampleFileOptStepKey, Integer> sampleFilePrecursorChromInfoIdMap = insertPrecursorChromInfos(gp.getId(),
                 precursor.getModifiedSequence(), precursor.getChromInfoList(), skylineIdSampleFileIdMap, sampleFileIdGeneralMolChromInfoIdMap);
@@ -1477,6 +1464,28 @@ public class SkylineDocImporter
         for(Transition transition: precursor.getTransitionsList())
         {
             insertTransition(optimizationInfo, skylineIdSampleFileIdMap, modInfo, precursor, sampleFilePrecursorChromInfoIdMap, transition);
+        }
+    }
+
+    private void insertLibInfo(Precursor.LibraryInfo libraryInfo, Precursor precursor, GeneralPrecursor gp, Map<String, Integer> libraryNameIdMap, TableInfo tableInfo)
+    {
+        if(libraryInfo != null)
+        {
+            Integer specLibId = libraryNameIdMap.get(libraryInfo.getLibraryName());
+            if(specLibId == null)
+            {
+                // Skyline documents can end up in a state where a library name is associated with a precursor but the
+                // library was deselected in "Peptide Settings > Library tab" in Skyline and is no longer part of the
+                // <peptide_libraries> element of the .sky file.  We will ignore such library infos.
+                _log.info("'" + libraryInfo.getLibraryName() + "' library was not found in settings.");
+            }
+            else
+            {
+                libraryInfo.setPrecursorId(precursor.getId());
+                libraryInfo.setSpectrumLibraryId(specLibId);
+                libraryInfo.setGeneralPrecursorId(gp.getId());
+                Table.insert(_user, TargetedMSManager.getTableInfoBibliospec(), libraryInfo);
+            }
         }
     }
 
@@ -1827,7 +1836,7 @@ public class SkylineDocImporter
         try
         {
             _transitionChromInfoStmt = ensureStatement(_transitionChromInfoStmt,
-                    "INSERT INTO targetedms.transitionchrominfo(transitionid, samplefileid, precursorchrominfoid, retentiontime, starttime, endtime, height, area, background, fwhm, fwhmdegenerate, truncated, peakrank, optimizationstep, note, chromatogramindex, masserrorppm, userset, identified, pointsacrosspeak) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO targetedms.transitionchrominfo(transitionid, samplefileid, precursorchrominfoid, retentiontime, starttime, endtime, height, area, background, fwhm, fwhmdegenerate, truncated, peakrank, optimizationstep, note, chromatogramindex, masserrorppm, userset, identified, pointsacrosspeak, ccs, drifttime, drifttimewindow, ionmobility, ionmobilitywindow, ionmobilitytype, rank, rankbylevel, forcedintegration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     true);
 
             int index = 1;
@@ -1859,7 +1868,7 @@ public class SkylineDocImporter
             _transitionChromInfoStmt.setString(index++, transChromInfo.getIonMobilityType());
             setInteger(_transitionChromInfoStmt, index++, transChromInfo.getRank());
             setInteger(_transitionChromInfoStmt, index++, transChromInfo.getRankByLevel());
-            _transitionChromInfoStmt.setBoolean(index, transChromInfo.getForcedIntegration());
+            setBoolean(_transitionChromInfoStmt, index, transChromInfo.getForcedIntegration());
 
             insertAndUpdateId(transChromInfo, _transitionChromInfoStmt);
         }
@@ -1884,7 +1893,7 @@ public class SkylineDocImporter
         try
         {
             _precursorChromInfoStmt = ensureStatement(_precursorChromInfoStmt,
-                    "INSERT INTO targetedms.precursorchrominfo( precursorid, samplefileid, generalmoleculechrominfoid, bestretentiontime, minstarttime, maxendtime, totalarea, totalbackground, maxfwhm, peakcountratio, numtruncated, librarydotp, optimizationstep, note, chromatogram, numtransitions, numpoints, maxheight, isotopedotp, averagemasserrorppm, userset, uncompressedsize, identified, container, chromatogramformat, chromatogramoffset, chromatogramlength, qvalue, zscore) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO targetedms.precursorchrominfo( precursorid, samplefileid, generalmoleculechrominfoid, bestretentiontime, minstarttime, maxendtime, totalarea, totalbackground, maxfwhm, peakcountratio, numtruncated, librarydotp, optimizationstep, note, chromatogram, numtransitions, numpoints, maxheight, isotopedotp, averagemasserrorppm, userset, uncompressedsize, identified, container, chromatogramformat, chromatogramoffset, chromatogramlength, qvalue, zscore, ccs, drifttimems1, drifttimefragment, drifttimewindow, ionmobilityms1, ionmobilityfragment, ionmobilitywindow, ionmobilitytype) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     true);
 
             int index = 1;
