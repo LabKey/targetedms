@@ -16,6 +16,7 @@ ALTER TABLE targetedms.GeneralPrecursor ADD COLUMN ExplicitCompensationVoltage D
 ALTER TABLE targetedms.GeneralPrecursor ADD COLUMN PrecursorConcentration DOUBLE PRECISION;
 ALTER TABLE targetedms.GeneralPrecursor RENAME COLUMN ExplicitDriftTimeMsec TO ExplicitIonMobility;
 ALTER TABLE targetedms.GeneralPrecursor DROP COLUMN ExplicitCollisionEnergy;
+ALTER TABLE targetedms.GeneralPrecursor DROP COLUMN ExplicitDriftTimeHighEnergyOffsetMsec;
 ALTER TABLE targetedms.GeneralPrecursor DROP COLUMN Decoy;
 ALTER TABLE targetedms.GeneralPrecursor DROP COLUMN Modified;
 
@@ -34,6 +35,7 @@ ALTER TABLE targetedms.GeneralTransition RENAME COLUMN ConeVoltage TO ExplicitCo
 ALTER TABLE targetedms.GeneralTransition RENAME COLUMN ExplicitDriftTimeHighEnergyOffsetMSec TO ExplicitIonMobilityHighEnergyOffset;
 ALTER TABLE targetedms.GeneralTransition DROP COLUMN ExplicitCompensationVoltage;
 ALTER TABLE targetedms.GeneralTransition DROP COLUMN ExplicitDriftTimeMSec;
+ALTER TABLE targetedms.GeneralTransition DROP COLUMN Decoy;
 
 ALTER TABLE targetedms.Transition DROP COLUMN LibraryRank;
 ALTER TABLE targetedms.Transition DROP COLUMN LibraryIntensity;

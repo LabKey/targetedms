@@ -1793,4 +1793,43 @@
             <column columnName="NumericValue" />
         </columns>
     </table>
+    <table tableName="BibliospecLibInfo" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="PrecursorId"/>
+            <column columnName="SpectrumLibraryId"/>
+            <column columnName="CountMeasured"/>
+            <column columnName="Score"/>
+            <column columnName="ScoreType"/>
+        </columns>
+    </table>
+    <table tableName="HunterLibInfo" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="PrecursorId"/>
+            <column columnName="SpectrumLibraryId"/>
+            <column columnName="Expect"/>
+            <column columnName="ProcessedIntensity"/>
+        </columns>
+    </table>
+    <table tableName="NistLibInfo" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="PrecursorId"/>
+            <column columnName="SpectrumLibraryId"/>
+            <column columnName="CountMeasured"/>
+            <column columnName="TotalIntensity"/>
+            <column columnName="TFRatio"/>
+        </columns>
+    </table>
+    <table tableName="SpectrastLibInfo" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="PrecursorId"/>
+            <column columnName="SpectrumLibraryId"/>
+            <column columnName="CountMeasured"/>
+            <column columnName="TotalIntensity"/>
+            <column columnName="TFRatio"/>
+        </columns>
+    </table>
 </tables>
