@@ -1761,10 +1761,6 @@ public class SkylineDocumentParser implements AutoCloseable
         transition.setPrecursorMz(transitionProto.getPrecursorMz());
         transition.setCollisionEnergy(fromOptional(transitionProto.getCollisionEnergy()));
         transition.setDeclusteringPotential(fromOptional(transitionProto.getDeclusteringPotential()));
-        if (null != transitionProto.getLibInfo()) {
-//            transition.setLibraryRank(transitionProto.getLibInfo().getRank());
-//            transition.setLibraryIntensity((double) transitionProto.getLibInfo().getIntensity());
-        }
         for (SkylineDocument.SkylineDocumentProto.TransitionLoss transitionLossProto : transitionProto.getLossesList()) {
             transition.getNeutralLosses().add(toTransitionLoss(transitionLossProto));
         }
@@ -1935,7 +1931,7 @@ public class SkylineDocumentParser implements AutoCloseable
     {
         // <hunter_spectrum_info library_name="GPM_Hunter_yeast" expect="1.030315E-10" processed_intensity="213.6469" />
         Precursor.HunterLibraryInfo libInfo = new Precursor.HunterLibraryInfo();
-        libInfo.setLibraryName(XmlUtil.readRequiredAttribute(reader, LIBRARY_NAME, BIBLIOSPEC_SPECTRUM_INFO));
+        libInfo.setLibraryName(XmlUtil.readRequiredAttribute(reader, LIBRARY_NAME, HUNTER_SPECTRUM_INFO));
         libInfo.setExpect(XmlUtil.readRequiredDoubleAttribute(reader, EXPECT, HUNTER_SPECTRUM_INFO));
         libInfo.setProcessedIntensity(XmlUtil.readRequiredDoubleAttribute(reader, PROCESSED_INTENSITY, HUNTER_SPECTRUM_INFO));
         return libInfo;
@@ -1945,7 +1941,7 @@ public class SkylineDocumentParser implements AutoCloseable
     {
         // <nist_spectrum_info library_name="NIST_MSP_Yeast_qtof" count_measured="14" total_intensity="75798" tfratio="17000" />
         Precursor.NistLibraryInfo libInfo = new Precursor.NistLibraryInfo();
-        libInfo.setLibraryName(XmlUtil.readRequiredAttribute(reader, LIBRARY_NAME, BIBLIOSPEC_SPECTRUM_INFO));
+        libInfo.setLibraryName(XmlUtil.readRequiredAttribute(reader, LIBRARY_NAME, NIST_SPECTRUM_INFO));
         libInfo.setCountMeasured(XmlUtil.readRequiredDoubleAttribute(reader, COUNT_MEASURED, NIST_SPECTRUM_INFO));
         libInfo.setTotalIntensity(XmlUtil.readRequiredDoubleAttribute(reader,TOTAL_INTENSITY, NIST_SPECTRUM_INFO ));
         libInfo.setTfRatio(XmlUtil.readRequiredDoubleAttribute(reader, TFRATIO, NIST_SPECTRUM_INFO));
@@ -1957,7 +1953,7 @@ public class SkylineDocumentParser implements AutoCloseable
         // <spectrast_spectrum_info library_name="ISB_SpectraST_yeast" count_measured="62" total_intensity="94691.2" tfratio="1000" />
         // <spectrast_spectrum_info library_name="NIST_SpectraST_Yeast_qtof" count_measured="14" total_intensity="75798" tfratio="17000" />
         Precursor.SpectrastLibraryInfo libInfo = new Precursor.SpectrastLibraryInfo();
-        libInfo.setLibraryName(XmlUtil.readRequiredAttribute(reader, LIBRARY_NAME, BIBLIOSPEC_SPECTRUM_INFO));
+        libInfo.setLibraryName(XmlUtil.readRequiredAttribute(reader, LIBRARY_NAME, SPECTRAST_SPECTRUM_INFO));
         libInfo.setCountMeasured(XmlUtil.readRequiredDoubleAttribute(reader, COUNT_MEASURED, SPECTRAST_SPECTRUM_INFO));
         libInfo.setTotalIntensity(XmlUtil.readRequiredDoubleAttribute(reader, TOTAL_INTENSITY, SPECTRAST_SPECTRUM_INFO));
         libInfo.setTfRatio(XmlUtil.readRequiredDoubleAttribute(reader, TFRATIO, SPECTRAST_SPECTRUM_INFO));
@@ -1967,7 +1963,7 @@ public class SkylineDocumentParser implements AutoCloseable
     private Precursor.ChromatogramLibraryInfo readChromatogramLibraryInfo(XMLStreamReader reader)
     {
         Precursor.ChromatogramLibraryInfo libInfo = new Precursor.ChromatogramLibraryInfo();
-        libInfo.setLibraryName(XmlUtil.readRequiredAttribute(reader, LIBRARY_NAME, BIBLIOSPEC_SPECTRUM_INFO));
+        libInfo.setLibraryName(XmlUtil.readRequiredAttribute(reader, LIBRARY_NAME, CHROMATOGRAM_LIBRARY_SPECTRUM_INFO));
         libInfo.setPeakArea(XmlUtil.readRequiredDoubleAttribute(reader, PEAK_AREA, CHROMATOGRAM_LIBRARY_SPECTRUM_INFO ));
         return libInfo;
     }
@@ -2107,7 +2103,7 @@ public class SkylineDocumentParser implements AutoCloseable
             }
             else if (XmlUtil.isStartElement(reader, evtType, TRANSITION_LIB_INFO))
             {
-                transition.setRank(Integer.parseInt(reader.getAttributeValue(null, "rank")));
+                transition.setRank(XmlUtil.readIntegerAttribute(reader, "rank"));
                 transition.setIntensity(Double.parseDouble(reader.getAttributeValue(null, "intensity")));
                 reader.nextTag();
             }

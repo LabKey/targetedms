@@ -360,7 +360,7 @@
     </table>
     <table tableDbType="TABLE" tableName="GeneralPrecursor">
         <titleColumn>Mz</titleColumn>
-        <description>Parent table to Precursor, MoleculePrecursor, PrecursorChromInfo, PrecursorAnnotation, PrecursorLibInfo</description>
+        <description>Parent table to Precursor, MoleculePrecursor, PrecursorChromInfo, PrecursorAnnotation</description>
         <columns>
             <column columnName="Id">
                 <isHidden>true</isHidden>
@@ -369,35 +369,35 @@
             <column columnName="Mz">
                 <columnTitle>Q1 m/z</columnTitle>
                 <formatString>0.0000</formatString>
-            </column> .
+            </column>
             <column columnName="Charge">
                 <columnTitle>Q1 Z</columnTitle>
                 <formatString>0+;0-</formatString>
-            </column> .
+            </column>
             <column columnName="CollisionEnergy">
                 <columnTitle>CE</columnTitle>
                 <description>Collision Energy</description>
                 <formatString>0.0000</formatString>
-            </column> .
+            </column>
             <column columnName="DeclusteringPotential">
                 <columnTitle>DP</columnTitle>
                 <description>Declustring Potential</description>
                 <formatString>0.0000</formatString>
-            </column> .
+            </column>
             <column columnName="Note"/>
             <column columnName="RepresentativeDataState">
                 <columnTitle>Library State</columnTitle>
             </column>
-            <column columnName="ExplicitIonMobility" /> .
+            <column columnName="ExplicitIonMobility" />
             <column columnName="IsotopeLabelId">
                 <columnTitle>Label</columnTitle>
                 <inputType>text</inputType>
-            </column> .
-            <column columnName="Ccs"/> .
-            <column columnName="ExplicitIonMobilityUnits"/> .
-            <column columnName="ExplicitCcsSqa"/> .
-            <column columnName="ExplicitCompensationVoltage"/> .
-            <column columnName="PrecursorConcentration"/> .
+            </column>
+            <column columnName="Ccs"/>
+            <column columnName="ExplicitIonMobilityUnits"/>
+            <column columnName="ExplicitCcsSqa"/>
+            <column columnName="ExplicitCompensationVoltage"/>
+            <column columnName="PrecursorConcentration"/>
         </columns>
     </table>
     <table tableDbType="TABLE" tableName="MoleculePrecursor">
@@ -1062,17 +1062,6 @@
             <column columnName="Charge">
                 <columnTitle>FWHM</columnTitle>
             </column>
-        </columns>
-    </table>
-
-    <table tableName="PrecursorLibInfo" tableDbType="TABLE">
-        <columns>
-            <column columnName="Id"/>
-            <column columnName="PrecursorId"/>
-            <column columnName="SpectrumLibraryId"/>
-            <column columnName="Score1"/>
-            <column columnName="Score2"/>
-            <column columnName="Score3"/>
         </columns>
     </table>
 

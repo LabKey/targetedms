@@ -402,11 +402,6 @@ public class TargetedMSManager
         return getSchema().getTable(TargetedMSSchema.TABLE_LIBRARY_SOURCE);
     }
 
-    public static TableInfo getTableInfoPrecursorLibInfo()
-    {
-        return getSchema().getTable(TargetedMSSchema.TABLE_PRECURSOR_LIB_INFO);
-    }
-
     public static TableInfo getTableInfoAnnotationSettings()
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_ANNOTATION_SETTINGS);
@@ -1492,8 +1487,16 @@ public class TargetedMSManager
         deleteGeneralPrecursorDependent(getTableInfoPrecursorChromInfo(), "PrecursorId");
         // Delete from PrecursorAnnotation
         deleteGeneralPrecursorDependent(getTableInfoPrecursorAnnotation(), "PrecursorId");
-        // Delete from PrecursorLibInfo
-        deleteGeneralPrecursorDependent(getTableInfoPrecursorLibInfo(), "PrecursorId");
+        // Delete from BiblioSpecLibInfo
+        deleteGeneralPrecursorDependent(getTableInfoBibliospec(), "PrecursorId");
+        // Delete from HunterLibInfo
+        deleteGeneralPrecursorDependent(getTableInfoHunterLib(), "PrecursorId");
+        // Delete from NistLibInfo
+        deleteGeneralPrecursorDependent(getTableInfoNistLib(), "PrecursorId");
+        // Delete from SpectrastLibInfo
+        deleteGeneralPrecursorDependent(getTableInfoSpectrastLib(), "PrecursorId");
+        // Delete from ChromatogramLibInfo
+        deleteGeneralPrecursorDependent(getTableInfoChromatogramLib(), "PrecursorId");
         // Delete from Precursor
         deleteGeneralPrecursorDependent(getTableInfoPrecursor(), "Id");
         //Delete from MoleculePrecursor

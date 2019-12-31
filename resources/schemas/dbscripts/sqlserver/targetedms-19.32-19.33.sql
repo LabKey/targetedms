@@ -17,7 +17,7 @@ CREATE INDEX IX_BibliospecLibInfo_SpectrumLibraryId ON targetedms.BibliospecLibI
 INSERT INTO targetedms.BibliospecLibInfo (PrecursorId, SpectrumLibraryId, CountMeasured, Score, ScoreType)
 SELECT PrecursorId, SpectrumLibraryId, Score1, Score2, NULL
 FROM targetedms.PrecursorLibInfo pli
-INNER JOIN targetedms.SpectrumLibrary sl ON (sl.id = pli.SpectrumLibraryId AND (sl.libraryType='bibliospec' OR sl.libraryType='bibliospec')) ;
+INNER JOIN targetedms.SpectrumLibrary sl ON (sl.id = pli.SpectrumLibraryId AND (sl.libraryType='bibliospec' OR sl.libraryType='bibliospec_lite')) ;
 
 CREATE TABLE targetedms.HunterLibInfo
 (
@@ -94,3 +94,5 @@ CREATE TABLE targetedms.ChromatogramLibInfo
 );
 CREATE INDEX IX_ChromatogramLibInfo_PrecursorId ON targetedms.ChromatogramLibInfo(PrecursorId);
 CREATE INDEX IX_ChromatogramLibInfo_SpectrumLibraryId ON targetedms.ChromatogramLibInfo(SpectrumLibraryId);
+
+DROP TABLE targetedms.PrecursorLibInfo;
