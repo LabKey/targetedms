@@ -389,14 +389,14 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
 
             if (stats.getMean() != null)
             {
-                double delta = Math.abs(stats.getMean() * 0.00001);
+                double delta = Math.abs(stats.getMean() * 0.001);
                 double actual = ((Number) row.getValue("Mean")).doubleValue();
                 assertEquals("Unexpected guide set stats mean for " + stats.getMetricName(), stats.getMean(), actual, delta);
             }
 
             if (stats.getStdDev() != null)
             {
-                double delta = Math.abs(stats.getStdDev() * 0.00001);
+                double delta = Math.abs(stats.getStdDev() * 0.001);
                 double actual = ((Number)row.getValue("StandardDev")).doubleValue();
                 assertEquals("Unexpected guide set stats std dev for " + stats.getMetricName(), stats.getStdDev(), actual, delta);
             }
@@ -422,7 +422,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
     {
         gs.addStats(new GuideSetStats("retentionTime", 1, PRECURSORS[0], 14.8795, null));
         gs.addStats(new GuideSetStats("peakArea", 1, PRECURSORS[0], 1.1613580288E10, null));
-        gs.addStats(new GuideSetStats("fwhm", 1, PRECURSORS[0], 0.0962, null));
+        gs.addStats(new GuideSetStats("fwhm", 1, PRECURSORS[0], 0.0962294191122055, null));
         gs.addStats(new GuideSetStats("fwb", 1, PRECURSORS[0], 0.29160022735595703, null));
         gs.addStats(new GuideSetStats("lhRatio", 0));
         gs.addStats(new GuideSetStats("transitionPrecursorRatio", 1, PRECURSORS[0], 0.06410326063632965, null));
