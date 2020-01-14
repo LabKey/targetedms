@@ -476,14 +476,14 @@ public class SkylineDocImporter
 
     private void deleteOldSampleFiles(ReplicateInfo replicateInfo)
     {
-        int total = replicateInfo.oldSampleFileIdsToDelete.values().stream().mapToInt(Set::size).sum();
+        int total = replicateInfo.oldSamplesToDelete.values().stream().mapToInt(Set::size).sum();
         int s = 0;
         IProgressStatus status = _progressMonitor.getQcCleanupProgressTracker();
-        for(Map.Entry<String, Set<Integer>> entry: replicateInfo.oldSampleFileIdsToDelete.entrySet())
+        for(Map.Entry<String, Set<SampleFile>> entry: replicateInfo.oldSamplesToDelete.entrySet())
         {
-            for (Integer existingSampleFileId : entry.getValue())
+            for (SampleFile existingSample : entry.getValue())
             {
-                String srcFile = TargetedMSManager.deleteSampleFileAndDependencies(existingSampleFileId);
+                String srcFile = TargetedMSManager.deleteSampleFileAndDependencies(existingSample.getId());
                 _log.debug(String.format("Updating previously imported data for sample file " + entry.getKey() + " in QC folder. %d of %d", ++s, total));
 
                 if (null != srcFile)
@@ -531,18 +531,18 @@ public class SkylineDocImporter
         private final Set<URI> potentiallyUnusedFiles = new HashSet<>();
         // In QC folders any sample files from older documents that match a sample file in the current document
         // are deleted. We keep only the most current version of a sample file.
-        // Key in the map below is the sample file path in the current document; Value is a Set of sample file db Ids
+        // Key in the map below is the sample file path in the current document; Value is a Set of sample files
         // from older documents that match (same file name and acquisition time).
-        // Issue 39401 - Keep unique database Ids for sample files so that we don't try to delete the same file twice. 
-        private final Map<String, Set<Integer>> oldSampleFileIdsToDelete = new HashMap<>();
+        // Issue 39401 - Keep unique sample files so that we don't try to delete the same file twice.
+        private final Map<String, Set<SampleFile>> oldSamplesToDelete = new HashMap<>();
 
         public void addSampleToDelete(String currentSamplePath, SampleFile oldSampleFile)
         {
-            if(oldSampleFileIdsToDelete.get(currentSamplePath) == null)
+            if(oldSamplesToDelete.get(currentSamplePath) == null)
             {
-                oldSampleFileIdsToDelete.put(currentSamplePath, new HashSet());
+                oldSamplesToDelete.put(currentSamplePath, new HashSet<>());
             }
-            oldSampleFileIdsToDelete.get(currentSamplePath).add(oldSampleFile.getId());
+            oldSamplesToDelete.get(currentSamplePath).add(oldSampleFile);
         }
     }
 
