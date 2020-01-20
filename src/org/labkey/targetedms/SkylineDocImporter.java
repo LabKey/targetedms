@@ -428,6 +428,7 @@ public class SkylineDocImporter
             replicate.setAnalyteConcentration(skyReplicate.getAnalyteConcentration());
             replicate.setSampleDilutionFactor(skyReplicate.getSampleDilutionFactor());
             replicate.setHasMidasSpectra(skyReplicate.hasMidasSpectra());
+            replicate.setBatchName(skyReplicate.getBatchName());
             replicate.setRunId(_runId);
 
             if(optimizationInfo._cePredictor != null && skyReplicate.getCePredictor() != null && optimizationInfo._cePredictor.equals(skyReplicate.getCePredictor()))

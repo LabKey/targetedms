@@ -841,6 +841,7 @@ public class PeptideSettings
         private String _revision;
         private String _libraryType;
         private Boolean _useExplicitPeakBounds;
+        private String _panoramaServer;
 
         public int getRunId()
         {
@@ -920,6 +921,16 @@ public class PeptideSettings
         public void setUseExplicitPeakBounds(Boolean useExplicitPeakBounds)
         {
             _useExplicitPeakBounds = useExplicitPeakBounds;
+        }
+
+        public String getPanoramaServer()
+        {
+            return _panoramaServer;
+        }
+
+        public void setPanoramaServer(String panoramaServer)
+        {
+            _panoramaServer = panoramaServer;
         }
     }
 

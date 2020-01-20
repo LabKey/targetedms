@@ -16,6 +16,7 @@
 package org.labkey.targetedms.parser;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hamcrest.text.X;
 import org.labkey.targetedms.SkylineFileUtils;
 
 import javax.xml.stream.XMLStreamException;
@@ -55,10 +56,21 @@ class PeptideSettingsParser
     private static final String RANK_TYPE = "rank_type";
     private static final String PEPTIDE_COUNT = "peptide_count";
     private static final String BIBLIOSPEC_LITE_LIB = "bibliospec_lite_library";
+    private static final String BIBLIOSPEC_LITE_SPEC = "bibliospec_lite_spec";
     private static final String BIBLIOSPEC_LIB = "bibliospec_library";
+    private static final String BIBLIOSPEC_LIB_SPEC = "bibliospec_lib_spec";
+    private static final String CHROMATOGRAM_LIB = "chromatogram_library";
+    private static final String CHROMATOGRAM_SPEC = "chromatogram_lib_spec";
+    private static final String ELIB_LIB = "elib_library";
+    private static final String ELIB_SPEC = "elib_spec";
     private static final String HUNTER_LIB = "hunter_library";
+    private static final String HUNTER_SPEC = "hunter_lib_spec";
+    private static final String MIDAS_LIB = "midas_library";
+    private static final String MIDAS_SPEC = "midas_lib_spec";
     private static final String NIST_LIB = "nist_library";
+    private static final String NIST_SPEC = "nist_lib_spec";
     private static final String SPECTRAST_LIB = "spectrast_library";
+    private static final String SPECTRAST_SPEC = "spectrast_lib_spec";
     private static final String FILE_NAME_HINT = "file_name_hint";
     private static final String LSID = "lsid";
     private static final String ID = "id";
@@ -384,10 +396,21 @@ class PeptideSettingsParser
             if(XmlUtil.isStartElement(evtType))
             {
                 if(XmlUtil.isElement(reader, BIBLIOSPEC_LIB) ||
+                   XmlUtil.isElement(reader, BIBLIOSPEC_LIB_SPEC) ||
                    XmlUtil.isElement(reader, BIBLIOSPEC_LITE_LIB) ||
+                   XmlUtil.isElement(reader, BIBLIOSPEC_LITE_SPEC) ||
                    XmlUtil.isElement(reader, HUNTER_LIB) ||
+                   XmlUtil.isElement(reader, HUNTER_SPEC) ||
                    XmlUtil.isElement(reader, NIST_LIB) ||
-                   XmlUtil.isElement(reader, SPECTRAST_LIB))
+                   XmlUtil.isElement(reader, NIST_SPEC) ||
+                   XmlUtil.isElement(reader, SPECTRAST_LIB) ||
+                   XmlUtil.isElement(reader, SPECTRAST_SPEC) ||
+                   XmlUtil.isElement(reader, MIDAS_LIB) ||
+                   XmlUtil.isElement(reader, MIDAS_SPEC) ||
+                   XmlUtil.isElement(reader, ELIB_LIB) ||
+                   XmlUtil.isElement(reader, ELIB_SPEC) ||
+                   XmlUtil.isElement(reader, CHROMATOGRAM_LIB) ||
+                   XmlUtil.isElement(reader, CHROMATOGRAM_SPEC))
                 {
                     libraryList.add(readLibrary(reader, reader.getLocalName()));
                 }
@@ -413,8 +436,14 @@ class PeptideSettingsParser
         library.setName(XmlUtil.readRequiredAttribute(reader, NAME, elementName));
         library.setFileNameHint(XmlUtil.readAttribute(reader, FILE_NAME_HINT, null));
         library.setRevision(XmlUtil.readAttribute(reader, REVISION, null));
-        library.setLibraryType(elementName.substring(0, elementName.indexOf("_library")));
+        String libraryType;
+        if (elementName.contains("_library"))
+            libraryType = elementName.substring(0, elementName.indexOf("_library"));
+        else
+            libraryType = elementName.substring(0, elementName.indexOf("_spec"));
+        library.setLibraryType(libraryType);
         library.setUseExplicitPeakBounds(XmlUtil.readBooleanAttribute(reader, "use_explicit_peak_bounds"));
+        library.setPanoramaServer(XmlUtil.readAttribute(reader, "panorama_server"));
 
         String skylineLibraryId;
         if(BIBLIOSPEC_LITE_LIB.equalsIgnoreCase(elementName))
