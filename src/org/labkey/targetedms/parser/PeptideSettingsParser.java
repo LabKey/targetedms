@@ -16,7 +16,6 @@
 package org.labkey.targetedms.parser;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hamcrest.text.X;
 import org.labkey.targetedms.SkylineFileUtils;
 
 import javax.xml.stream.XMLStreamException;

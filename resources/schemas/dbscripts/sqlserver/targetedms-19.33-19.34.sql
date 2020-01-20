@@ -1,1 +1,1 @@
-ALTER TABLE targetedms.SpectrumLibrary ADD PanoramaServer VARCHAR(200);
+ALTER TABLE targetedms.SpectrumLibrary ADD PanoramaServer NVARCHAR(200);
