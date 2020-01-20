@@ -956,6 +956,7 @@
             <column columnName="SkylineLibraryId"/>
             <column columnName="revision"/>
             <column columnName="UseExplicitPeakBounds"/>
+            <column columnName="PanoramaServer"/>
         </columns>
     </table>
     <table tableName="structuralmodification" tableDbType="TABLE">
@@ -1840,6 +1841,14 @@
             <column columnName="CountMeasured"/>
             <column columnName="TotalIntensity"/>
             <column columnName="TFRatio"/>
+        </columns>
+    </table>
+    <table tableName="ChromatogramLibInfo" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="PrecursorId"/>
+            <column columnName="SpectrumLibraryId"/>
+            <column columnName="PeakArea"/>
         </columns>
     </table>
 </tables>
