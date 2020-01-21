@@ -274,7 +274,7 @@ public class PeptideManager
                     sql.append(", ");
                     sql.append(TargetedMSManager.getTableInfoGeneralMolecule(), "pep");
                     sql.append(" WHERE ");
-                    sql.append(" bib.SpectrumLibraryId = specLib.Id ");
+                    sql.append(" hun.SpectrumLibraryId = specLib.Id ");
                     sql.append(" AND ");
                     sql.append(" pre.GeneralMoleculeId = pep.Id ");
                     sql.append(" AND ");
@@ -296,7 +296,7 @@ public class PeptideManager
                     sql.append(" AND ");
                     sql.append(" pre.GeneralMoleculeId = pep.Id ");
                     sql.append(" AND ");
-                    sql.append(" hun.PrecursorId = pre.Id ");
+                    sql.append(" nis.PrecursorId = pre.Id ");
                     sql.append(" AND ");
                     sql.append(" specLib.RunId = ? ");
                     sql.add(Integer.valueOf(runId));
@@ -314,7 +314,7 @@ public class PeptideManager
                     sql.append(" AND ");
                     sql.append(" pre.GeneralMoleculeId = pep.Id ");
                     sql.append(" AND ");
-                    sql.append(" hun.PrecursorId = pre.Id ");
+                    sql.append(" sp.PrecursorId = pre.Id ");
                     sql.append(" AND ");
                     sql.append(" specLib.RunId = ? ");
                     sql.add(Integer.valueOf(runId));
@@ -328,7 +328,7 @@ public class PeptideManager
                     sql.append(", ");
                     sql.append(TargetedMSManager.getTableInfoGeneralMolecule(), "pep");
                     sql.append(" WHERE ");
-                    sql.append(" bib.SpectrumLibraryId = specLib.Id ");
+                    sql.append(" ch.SpectrumLibraryId = specLib.Id ");
                     sql.append(" AND ");
                     sql.append(" pre.GeneralMoleculeId = pep.Id ");
                     sql.append(" AND ");
