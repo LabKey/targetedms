@@ -344,6 +344,8 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         expected.add(" ");
         expected.add(" ");
         expected.add(" ");
+        expected.add(" ");
+        expected.add(" ");
         expected.add("Grouping: Group A\nignore_in_QC: true\nTime: 5");
         expected.add("Group A");
         expected.add("true");
