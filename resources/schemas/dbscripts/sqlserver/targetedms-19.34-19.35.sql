@@ -29,7 +29,7 @@ UPDATE targetedms.GeneralPrecursor SET IsotopeLabelId = (SELECT il.Id FROM
 )
 WHERE IsotopeLabelId IS NULL;
 
-DROP INDEX targetedms.generalprecursor.IX_Precursor_IsotopeLabelId;
+DROP INDEX targetedms.generalprecursor.IX_GeneralPrecursor_IsotopeLabelId;
 GO
 
 ALTER TABLE targetedms.GeneralPrecursor ALTER COLUMN IsotopeLabelId INT NOT NULL;
