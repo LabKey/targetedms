@@ -39,3 +39,5 @@ GO
 CREATE INDEX IX_GeneralPrecursor_IsotopeLabelId ON targetedms.GeneralPrecursor(IsotopeLabelId);
 
 GO
+
+ALTER TABLE targetedms.AuditLogMessage ALTER COLUMN messageType NVARCHAR(100);

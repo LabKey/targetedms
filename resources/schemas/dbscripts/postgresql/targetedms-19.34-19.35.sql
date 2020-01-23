@@ -30,3 +30,5 @@ UPDATE targetedms.GeneralPrecursor SET IsotopeLabelId = (SELECT il.Id FROM
 WHERE IsotopeLabelId IS NULL;
 
 ALTER TABLE targetedms.GeneralPrecursor ALTER COLUMN IsotopeLabelId SET NOT NULL;
+
+ALTER TABLE targetedms.AuditLogMessage ALTER COLUMN messageType TYPE VARCHAR(100);
