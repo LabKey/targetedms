@@ -128,7 +128,7 @@ public class PrecursorChromInfoTable extends AnnotatedTargetedMSTable
         proportionSQL.append(TargetedMSManager.getTableInfoMolecule(), "m2");
         proportionSQL.append(" ON gm2.Id = m2.Id WHERE gp2.Id = ").append(ExprColumn.STR_TABLE_ALIAS).append(".PrecursorId");
         proportionSQL.append(")) X )");
-        ExprColumn peptideModifiedAreaProportionCol = new ExprColumn(this, "PrecursorModifiedAreaProportion", proportionSQL, JdbcType.DOUBLE);
+        ExprColumn peptideModifiedAreaProportionCol = new ExprColumn(this, "PrecursorModifiedAreaProportionSlow", proportionSQL, JdbcType.DOUBLE);
         peptideModifiedAreaProportionCol.setFormat("##0.####%");
         addColumn(peptideModifiedAreaProportionCol);
     }

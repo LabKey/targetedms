@@ -388,6 +388,8 @@ public class SkylineDocImporter
                 }
             }
 
+            TargetedMSManager.updateModifiedAreaProportions(_log, run);
+
             if (_pipeRoot.isCloudRoot())
                 copyExtractedFilesToCloud(run);
         }

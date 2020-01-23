@@ -3495,14 +3495,14 @@ public class TargetedMSController extends SpringActionController
         @Override
         protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
         {
-            String queryName = "PTMPercents" + form.getId();
-            QuerySettings settings = new QuerySettings(getViewContext(), _dataRegionName, queryName)
+            QuerySettings settings = new QuerySettings(getViewContext(), _dataRegionName, "PTMPercents")
             {
                 @Override
                 protected QueryDefinition createQueryDef(UserSchema schema)
                 {
                     QueryDefinition queryDef = super.createQueryDef(schema);
 
+                    String queryName = "PTMPercents" + form.getId();
                     QueryDefinition tempDef = QueryService.get().createQueryDef(getUser(), getContainer(), schema.getSchemaPath(), queryName);
                     tempDef.setIsHidden(true);
                     tempDef.setIsTemporary(true);

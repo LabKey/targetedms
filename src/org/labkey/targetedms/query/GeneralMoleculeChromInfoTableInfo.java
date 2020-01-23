@@ -15,6 +15,7 @@
  */
 package org.labkey.targetedms.query;
 
+import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.SQLFragment;
@@ -68,7 +69,7 @@ public class GeneralMoleculeChromInfoTableInfo extends TargetedMSTable
         proportionSQL.append(".Id) / X.AreaInReplicate END AS FLOAT) FROM ");
         proportionSQL.append(" ( ");
         proportionSQL.append(" SELECT SUM(TotalArea) AS AreaInReplicate FROM ");
-        proportionSQL.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
+        proportionSQL.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci"); // areas instead
         proportionSQL.append(" INNER JOIN ");
         proportionSQL.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "gp");
         proportionSQL.append(" ON gp.Id = pci.PrecursorId INNER JOIN ");
@@ -91,9 +92,19 @@ public class GeneralMoleculeChromInfoTableInfo extends TargetedMSTable
         proportionSQL.append(" ON gm2.Id = m2.Id WHERE gp2.GeneralMoleculeId = ").append(ExprColumn.STR_TABLE_ALIAS).append(".GeneralMoleculeId");
 
         proportionSQL.append(")) X )");
-        ExprColumn peptideModifiedAreaProportionCol = new ExprColumn(this, "PeptideModifiedAreaProportion", proportionSQL, JdbcType.DOUBLE);
+        ExprColumn peptideModifiedAreaProportionCol = new ExprColumn(this, "PeptideModifiedAreaProportionSlow", proportionSQL, JdbcType.DOUBLE);
         peptideModifiedAreaProportionCol.setFormat("##0.####%");
         addColumn(peptideModifiedAreaProportionCol);
+    }
 
+    @Override
+    protected ColumnInfo resolveColumn(String name)
+    {
+        // Backwards compatibility with original column name
+        if ("PeptideModifiedAreaProportion".equalsIgnoreCase(name))
+        {
+            return getColumn("ModifiedAreaProportion");
+        }
+        return super.resolveColumn(name);
     }
 }
