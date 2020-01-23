@@ -33,6 +33,7 @@ import org.labkey.api.data.Sort;
 import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.Table;
+import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.exp.XarContext;
 import org.labkey.api.exp.api.ExpData;
@@ -352,6 +353,9 @@ public class SkylineDocImporter
 
             if (run.isRepresentative())
             {
+                // Persist the run so that the skydDataId is available when writing the updated chromatogram library.
+                // skydDataId is required to get to the skyd file for reading chromatograms when they are not saved in the db.
+                Table.update(_user, TargetedMSManager.getTableInfoRuns(), run, run.getId());
                 RepresentativeStateManager.setRepresentativeState(_user, _container, _localDirectory, run, run.getRepresentativeDataState());
             }
 
@@ -423,6 +427,8 @@ public class SkylineDocImporter
             replicate.setSampleType(skyReplicate.getSampleType());
             replicate.setAnalyteConcentration(skyReplicate.getAnalyteConcentration());
             replicate.setSampleDilutionFactor(skyReplicate.getSampleDilutionFactor());
+            replicate.setHasMidasSpectra(skyReplicate.hasMidasSpectra());
+            replicate.setBatchName(skyReplicate.getBatchName());
             replicate.setRunId(_runId);
 
             if(optimizationInfo._cePredictor != null && skyReplicate.getCePredictor() != null && optimizationInfo._cePredictor.equals(skyReplicate.getCePredictor()))
@@ -480,10 +486,10 @@ public class SkylineDocImporter
 
     private void deleteOldSampleFiles(ReplicateInfo replicateInfo)
     {
-        int total = replicateInfo.oldSamplesToDelete.values().stream().mapToInt(List::size).sum();
+        int total = replicateInfo.oldSamplesToDelete.values().stream().mapToInt(Set::size).sum();
         int s = 0;
         IProgressStatus status = _progressMonitor.getQcCleanupProgressTracker();
-        for(Map.Entry<String, List<SampleFile>> entry: replicateInfo.oldSamplesToDelete.entrySet())
+        for(Map.Entry<String, Set<SampleFile>> entry: replicateInfo.oldSamplesToDelete.entrySet())
         {
             for (SampleFile existingSample : entry.getValue())
             {
@@ -535,15 +541,16 @@ public class SkylineDocImporter
         private final Set<URI> potentiallyUnusedFiles = new HashSet<>();
         // In QC folders any sample files from older documents that match a sample file in the current document
         // are deleted. We keep only the most current version of a sample file.
-        // Key in the map below is the sample file path in the current document; Value is a list of sample files
+        // Key in the map below is the sample file path in the current document; Value is a Set of sample files
         // from older documents that match (same file name and acquisition time).
-        private final Map<String, List<SampleFile>> oldSamplesToDelete = new HashMap<>();
+        // Issue 39401 - Keep unique sample files so that we don't try to delete the same file twice.
+        private final Map<String, Set<SampleFile>> oldSamplesToDelete = new HashMap<>();
 
         public void addSampleToDelete(String currentSamplePath, SampleFile oldSampleFile)
         {
             if(oldSamplesToDelete.get(currentSamplePath) == null)
             {
-                oldSamplesToDelete.put(currentSamplePath, new ArrayList<>());
+                oldSamplesToDelete.put(currentSamplePath, new HashSet<>());
             }
             oldSamplesToDelete.get(currentSamplePath).add(oldSampleFile);
         }
@@ -1399,12 +1406,13 @@ public class SkylineDocImporter
         gt.setIsotopeDistProportion(moleculeTransition.getIsotopeDistProportion());
         gt.setMassIndex(moleculeTransition.getMassIndex());
         gt.setExplicitCollisionEnergy(moleculeTransition.getExplicitCollisionEnergy());
-        gt.setsLens(moleculeTransition.getsLens());
-        gt.setConeVoltage(moleculeTransition.getConeVoltage());
-        gt.setExplicitCompensationVoltage(moleculeTransition.getExplicitCompensationVoltage());
+        gt.setExplicitSLens(moleculeTransition.getExplicitSLens());
+        gt.setExplicitConeVoltage(moleculeTransition.getExplicitConeVoltage());
+        gt.setQuantitative(moleculeTransition.getQuantitative());
+        gt.setExplicitIonMobilityHighEnergyOffset(moleculeTransition.getExplicitIonMobilityHighEnergyOffset());
         gt.setExplicitDeclusteringPotential(moleculeTransition.getExplicitDeclusteringPotential());
-        gt.setExplicitDriftTimeMSec(moleculeTransition.getExplicitDriftTimeMSec());
-        gt.setExplicitDriftTimeHighEnergyOffsetMSec(moleculeTransition.getExplicitDriftTimeHighEnergyOffsetMSec());
+        gt.setCollisionEnergy(moleculeTransition.getCollisionEnergy());
+        gt.setDeclusteringPotential(moleculeTransition.getDeclusteringPotential());
         gt = Table.insert(_user, TargetedMSManager.getTableInfoGeneralTransition(), gt);
 
         moleculeTransition.setTransitionId(gt.getId());
@@ -1455,25 +1463,11 @@ public class SkylineDocImporter
 
         insertPrecursorAnnotation(precursor.getAnnotations(), gp, precursor.getId());
 
-        Precursor.LibraryInfo libInfo = precursor.getLibraryInfo();
-        if(libInfo != null)
-        {
-            Integer specLibId = libraryNameIdMap.get(libInfo.getLibraryName());
-            if(specLibId == null)
-            {
-                // Skyline documents can end up in a state where a library name is associated with a precursor but the
-                // library was deselected in "Peptide Settings > Library tab" in Skyline and is no longer part of the
-                // <peptide_libraries> element of the .sky file.  We will ignore such library infos.
-                _log.info("'" + libInfo.getLibraryName() + "' library was not found in settings.");
-            }
-            else
-            {
-                libInfo.setPrecursorId(precursor.getId());
-                libInfo.setSpectrumLibraryId(specLibId);
-                libInfo.setGeneralPrecursorId(gp.getId());
-                Table.insert(_user, TargetedMSManager.getTableInfoPrecursorLibInfo(), libInfo);
-            }
-        }
+        insertLibInfo(precursor.getBibliospecLibraryInfo(), precursor, gp, libraryNameIdMap, TargetedMSManager.getTableInfoBibliospec());
+        insertLibInfo(precursor.getHunterLibraryInfo(), precursor, gp, libraryNameIdMap, TargetedMSManager.getTableInfoHunterLib());
+        insertLibInfo(precursor.getNistLibraryInfo(), precursor, gp, libraryNameIdMap, TargetedMSManager.getTableInfoNistLib());
+        insertLibInfo(precursor.getSpectrastLibraryInfo(), precursor, gp, libraryNameIdMap, TargetedMSManager.getTableInfoSpectrastLib());
+        insertLibInfo(precursor.getChromatogramLibraryInfo(), precursor, gp, libraryNameIdMap, TargetedMSManager.getTableInfoChromatogramLib());
 
         Map<SampleFileOptStepKey, Integer> sampleFilePrecursorChromInfoIdMap = insertPrecursorChromInfos(gp.getId(),
                 precursor.getModifiedSequence(), precursor.getChromInfoList(), skylineIdSampleFileIdMap, sampleFileIdGeneralMolChromInfoIdMap);
@@ -1482,6 +1476,28 @@ public class SkylineDocImporter
         for(Transition transition: precursor.getTransitionsList())
         {
             insertTransition(optimizationInfo, skylineIdSampleFileIdMap, modInfo, precursor, sampleFilePrecursorChromInfoIdMap, transition);
+        }
+    }
+
+    private void insertLibInfo(Precursor.LibraryInfo libraryInfo, Precursor precursor, GeneralPrecursor gp, Map<String, Integer> libraryNameIdMap, TableInfo tableInfo)
+    {
+        if(libraryInfo != null)
+        {
+            Integer specLibId = libraryNameIdMap.get(libraryInfo.getLibraryName());
+            if(specLibId == null)
+            {
+                // Skyline documents can end up in a state where a library name is associated with a precursor but the
+                // library was deselected in "Peptide Settings > Library tab" in Skyline and is no longer part of the
+                // <peptide_libraries> element of the .sky file.  We will ignore such library infos.
+                _log.info("'" + libraryInfo.getLibraryName() + "' library was not found in settings.");
+            }
+            else
+            {
+                libraryInfo.setPrecursorId(precursor.getId());
+                libraryInfo.setSpectrumLibraryId(specLibId);
+                libraryInfo.setGeneralPrecursorId(gp.getId());
+                Table.insert(_user, TargetedMSManager.getTableInfoBibliospec(), libraryInfo);
+            }
         }
     }
 
@@ -1494,11 +1510,13 @@ public class SkylineDocImporter
         gp.setCharge(precursor.getCharge());
         gp.setCollisionEnergy(precursor.getCollisionEnergy());
         gp.setDeclusteringPotential(precursor.getDeclusteringPotential());
-        gp.setDecoy(precursor.isDecoy());
         gp.setNote(precursor.getNote());
-        gp.setExplicitCollisionEnergy(precursor.getExplicitCollisionEnergy());
-        gp.setExplicitDriftTimeMsec(precursor.getExplicitDriftTimeMsec());
-        gp.setExplicitDriftTimeHighEnergyOffsetMsec(precursor.getExplicitDriftTimeHighEnergyOffsetMsec());
+        gp.setExplicitIonMobility(precursor.getExplicitIonMobility());
+        gp.setCcs(precursor.getCcs());
+        gp.setExplicitCcsSqa(precursor.getExplicitCcsSqa());
+        gp.setExplicitIonMobilityUnits(precursor.getExplicitIonMobilityUnits());
+        gp.setExplicitCompensationVoltage(precursor.getExplicitCompensationVoltage());
+        gp.setPrecursorConcentration(precursor.getPrecursorConcentration());
         gp.setIsotopeLabel(precursor.getIsotopeLabel());
         gp.setIsotopeLabelId(modInfo.isotopeLabelIdMap.get(precursor.getIsotopeLabel()));
         gp = Table.insert(_user, TargetedMSManager.getTableInfoGeneralPrecursor(), gp);
@@ -1521,12 +1539,15 @@ public class SkylineDocImporter
         gt.setIsotopeDistProportion(transition.getIsotopeDistProportion());
         gt.setMassIndex(transition.getMassIndex());
         gt.setExplicitCollisionEnergy(transition.getExplicitCollisionEnergy());
-        gt.setsLens(transition.getsLens());
-        gt.setConeVoltage(transition.getConeVoltage());
-        gt.setExplicitCompensationVoltage(transition.getExplicitCompensationVoltage());
+        gt.setExplicitSLens(transition.getExplicitSLens());
+        gt.setExplicitConeVoltage(transition.getExplicitConeVoltage());
+        gt.setQuantitative(transition.getQuantitative());
+        gt.setExplicitIonMobilityHighEnergyOffset(transition.getExplicitIonMobilityHighEnergyOffset());
         gt.setExplicitDeclusteringPotential(transition.getExplicitDeclusteringPotential());
-        gt.setExplicitDriftTimeMSec(transition.getExplicitDriftTimeMSec());
-        gt.setExplicitDriftTimeHighEnergyOffsetMSec(transition.getExplicitDriftTimeHighEnergyOffsetMSec());
+        gt.setCollisionEnergy(transition.getCollisionEnergy());
+        gt.setDeclusteringPotential(transition.getDeclusteringPotential());
+        gt.setRank(transition.getRank());
+        gt.setIntensity(transition.getIntensity());
         gt = Table.insert(_user, TargetedMSManager.getTableInfoGeneralTransition(), gt);
 
         transition.setId(gt.getId());
@@ -1827,7 +1848,7 @@ public class SkylineDocImporter
         try
         {
             _transitionChromInfoStmt = ensureStatement(_transitionChromInfoStmt,
-                    "INSERT INTO targetedms.transitionchrominfo(transitionid, samplefileid, precursorchrominfoid, retentiontime, starttime, endtime, height, area, background, fwhm, fwhmdegenerate, truncated, peakrank, optimizationstep, note, chromatogramindex, masserrorppm, userset, identified, pointsacrosspeak) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO targetedms.transitionchrominfo(transitionid, samplefileid, precursorchrominfoid, retentiontime, starttime, endtime, height, area, background, fwhm, fwhmdegenerate, truncated, peakrank, optimizationstep, note, chromatogramindex, masserrorppm, userset, identified, pointsacrosspeak, ccs, drifttime, drifttimewindow, ionmobility, ionmobilitywindow, ionmobilitytype, rank, rankbylevel, forcedintegration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     true);
 
             int index = 1;
@@ -1851,6 +1872,15 @@ public class SkylineDocImporter
             _transitionChromInfoStmt.setString(index++, transChromInfo.getUserSet());
             _transitionChromInfoStmt.setString(index++, transChromInfo.getIdentified());
             setInteger(_transitionChromInfoStmt, index++, transChromInfo.getPointsAcrossPeak());
+            setDouble(_transitionChromInfoStmt, index++, transChromInfo.getCcs());
+            setDouble(_transitionChromInfoStmt, index++, transChromInfo.getDriftTime());
+            setDouble(_transitionChromInfoStmt, index++, transChromInfo.getDriftTimeWindow());
+            setDouble(_transitionChromInfoStmt, index++, transChromInfo.getIonMobility());
+            setDouble(_transitionChromInfoStmt, index++, transChromInfo.getIonMobilityWindow());
+            _transitionChromInfoStmt.setString(index++, transChromInfo.getIonMobilityType());
+            setInteger(_transitionChromInfoStmt, index++, transChromInfo.getRank());
+            setInteger(_transitionChromInfoStmt, index++, transChromInfo.getRankByLevel());
+            setBoolean(_transitionChromInfoStmt, index, transChromInfo.getForcedIntegration());
 
             insertAndUpdateId(transChromInfo, _transitionChromInfoStmt);
         }
@@ -1875,7 +1905,7 @@ public class SkylineDocImporter
         try
         {
             _precursorChromInfoStmt = ensureStatement(_precursorChromInfoStmt,
-                    "INSERT INTO targetedms.precursorchrominfo( precursorid, samplefileid, generalmoleculechrominfoid, bestretentiontime, minstarttime, maxendtime, totalarea, totalbackground, maxfwhm, peakcountratio, numtruncated, librarydotp, optimizationstep, note, chromatogram, numtransitions, numpoints, maxheight, isotopedotp, averagemasserrorppm, userset, uncompressedsize, identified, container, chromatogramformat, chromatogramoffset, chromatogramlength, qvalue, zscore) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO targetedms.precursorchrominfo( precursorid, samplefileid, generalmoleculechrominfoid, bestretentiontime, minstarttime, maxendtime, totalarea, totalbackground, maxfwhm, peakcountratio, numtruncated, librarydotp, optimizationstep, note, chromatogram, numtransitions, numpoints, maxheight, isotopedotp, averagemasserrorppm, userset, uncompressedsize, identified, container, chromatogramformat, chromatogramoffset, chromatogramlength, qvalue, zscore, ccs, drifttimems1, drifttimefragment, drifttimewindow, ionmobilityms1, ionmobilityfragment, ionmobilitywindow, ionmobilitytype) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     true);
 
             int index = 1;
@@ -1908,7 +1938,14 @@ public class SkylineDocImporter
             setInteger(_precursorChromInfoStmt, index++, preChromInfo.getChromatogramLength());
             setDouble(_precursorChromInfoStmt, index++, preChromInfo.getQvalue());
             setDouble(_precursorChromInfoStmt, index++, preChromInfo.getZscore());
-
+            setDouble(_precursorChromInfoStmt, index++, preChromInfo.getCcs());
+            setDouble(_precursorChromInfoStmt, index++, preChromInfo.getDriftTimeMs1());
+            setDouble(_precursorChromInfoStmt, index++, preChromInfo.getDriftTimeFragment());
+            setDouble(_precursorChromInfoStmt, index++, preChromInfo.getDriftTimeWindow());
+            setDouble(_precursorChromInfoStmt, index++, preChromInfo.getIonMobilityMs1());
+            setDouble(_precursorChromInfoStmt, index++, preChromInfo.getIonMobilityFragment());
+            setDouble(_precursorChromInfoStmt, index++, preChromInfo.getIonMobilityWindow());
+            _precursorChromInfoStmt.setString(index, preChromInfo.getIonMobilityType());
 
             try (ResultSet rs = TargetedMSManager.getSqlDialect().executeWithResults(_precursorChromInfoStmt))
             {
@@ -2000,6 +2037,8 @@ public class SkylineDocImporter
 
                 sampleFile.setInstrumentId(instrumentId);
             }
+
+
 
             sampleFile = Table.insert(_user, TargetedMSManager.getTableInfoSampleFile(), sampleFile);
 
