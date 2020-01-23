@@ -29,7 +29,7 @@ UPDATE targetedms.GeneralPrecursor SET IsotopeLabelId = (SELECT il.Id FROM
 )
 WHERE IsotopeLabelId IS NULL;
 
-SELECT core.fn_dropifexists('GeneralPrecursor', 'targetedms', 'INDEX', 'IX_Precursor_IsotopeLabelId');
+EXEC core.fn_dropifexists 'GeneralPrecursor', 'targetedms', 'INDEX', 'IX_Precursor_IsotopeLabelId';
 
 GO
 
