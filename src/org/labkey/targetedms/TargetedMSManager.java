@@ -75,6 +75,7 @@ import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.StringUtilsLabKey;
 import org.labkey.api.view.NotFoundException;
+import org.labkey.api.view.TabStripView;
 import org.labkey.api.view.UnauthorizedException;
 import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.targetedms.model.QCMetricConfiguration;
@@ -417,11 +418,6 @@ public class TargetedMSManager
         return getSchema().getTable(TargetedMSSchema.TABLE_LIBRARY_SOURCE);
     }
 
-    public static TableInfo getTableInfoPrecursorLibInfo()
-    {
-        return getSchema().getTable(TargetedMSSchema.TABLE_PRECURSOR_LIB_INFO);
-    }
-
     public static TableInfo getTableInfoAnnotationSettings()
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_ANNOTATION_SETTINGS);
@@ -534,6 +530,31 @@ public class TargetedMSManager
 
     public static TableInfo getTableInfoListItemValue() {
         return getSchema().getTable(TargetedMSSchema.TABLE_LIST_ITEM_VALUE);
+    }
+
+    public static TableInfo getTableInfoBibliospec()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_BIBLIOSPEC_LIB_INFO);
+    }
+
+    public static TableInfo getTableInfoHunterLib()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_HUNTER_LIB_INFO);
+    }
+
+    public static TableInfo getTableInfoNistLib()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_NIST_LIB_INFO);
+    }
+
+    public static TableInfo getTableInfoSpectrastLib()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_SPECTRAST_LIB_INFO);
+    }
+
+    public static TableInfo getTableInfoChromatogramLib()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_CHROMATOGRAM_LIB_INFO);
     }
 
     public static Integer addRunToQueue(ViewBackgroundInfo info,
@@ -1391,7 +1412,12 @@ public class TargetedMSManager
         sql.append(" WHERE rep.Id = sf.ReplicateId AND rep.RunId = r.Id AND d.RowId = r.DataId AND sf.Id = ? ");
         sql.add(sampleFileId);
 
-        String filePath = (String) new SqlSelector(getSchema(), sql).getMap().get("dataFileUrl");
+        var map = new SqlSelector(getSchema(), sql).getMap();
+        String filePath = null;
+        if(map != null)
+        {
+            filePath = (String) map.get("dataFileUrl");
+        }
         return filePath != null && !filePath.isEmpty() ? filePath : null;
     }
 
@@ -1485,8 +1511,16 @@ public class TargetedMSManager
         deleteGeneralPrecursorDependent(getTableInfoPrecursorChromInfo(), "PrecursorId");
         // Delete from PrecursorAnnotation
         deleteGeneralPrecursorDependent(getTableInfoPrecursorAnnotation(), "PrecursorId");
-        // Delete from PrecursorLibInfo
-        deleteGeneralPrecursorDependent(getTableInfoPrecursorLibInfo(), "PrecursorId");
+        // Delete from BiblioSpecLibInfo
+        deleteGeneralPrecursorDependent(getTableInfoBibliospec(), "PrecursorId");
+        // Delete from HunterLibInfo
+        deleteGeneralPrecursorDependent(getTableInfoHunterLib(), "PrecursorId");
+        // Delete from NistLibInfo
+        deleteGeneralPrecursorDependent(getTableInfoNistLib(), "PrecursorId");
+        // Delete from SpectrastLibInfo
+        deleteGeneralPrecursorDependent(getTableInfoSpectrastLib(), "PrecursorId");
+        // Delete from ChromatogramLibInfo
+        deleteGeneralPrecursorDependent(getTableInfoChromatogramLib(), "PrecursorId");
         // Delete from Precursor
         deleteGeneralPrecursorDependent(getTableInfoPrecursor(), "Id");
         //Delete from MoleculePrecursor
