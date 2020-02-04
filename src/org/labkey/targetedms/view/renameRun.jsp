@@ -25,7 +25,7 @@
 %>
 <labkey:form action="<%=buildURL(TargetedMSController.RenameRunAction.class)%>" method="post" layout="horizontal">
 <%=generateReturnUrlFormField(bean.returnURL)%>
-    <labkey:input type="hidden" name="run" value="<%=String.valueOf(bean.run.getRunId())%>"/>
+    <labkey:input type="hidden" name="run" value="<%=bean.run.getRunId()%>"/>
     <labkey:input type="text" size="70" name="description" id="description" label="Name" value="<%=bean.description%>"/>
     <%= button("Rename").submit(true) %> <%= button("Cancel").href(bean.returnURL) %>
 </labkey:form>
