@@ -15,13 +15,13 @@
  */
 
 -- Add the columns we need to populate
-ALTER TABLE targetedms.GeneralMoleculeChromInfo ADD COLUMN ModifiedAreaProportion REAL;
-ALTER TABLE targetedms.PrecursorChromInfo ADD COLUMN PrecursorModifiedAreaProportion REAL;
+ALTER TABLE targetedms.GeneralMoleculeChromInfo ADD ModifiedAreaProportion REAL;
+ALTER TABLE targetedms.PrecursorChromInfo ADD PrecursorModifiedAreaProportion REAL;
 
 -- Create temp tables for perf
-CREATE TABLE targetedms.PrecursorGroupings (Grouping VARCHAR(300), PrecursorId INT);
-CREATE TABLE targetedms.MoleculeGroupings (Grouping VARCHAR(300), GeneralMoleculeId INT);
-CREATE TABLE targetedms.areas (Grouping VARCHAR(300), SampleFileId INT, Area REAL);
+CREATE TABLE targetedms.PrecursorGroupings (Grouping NVARCHAR(300), PrecursorId INT);
+CREATE TABLE targetedms.MoleculeGroupings (Grouping NVARCHAR(300), GeneralMoleculeId INT);
+CREATE TABLE targetedms.areas (Grouping NVARCHAR(300), SampleFileId INT, Area REAL);
 
 -- Populate the temp tables
 INSERT INTO targetedms.PrecursorGroupings (Grouping, PrecursorId)
@@ -55,12 +55,6 @@ CREATE INDEX IX_PrecursorGroupings ON targetedms.PrecursorGroupings (PrecursorId
 CREATE INDEX IX_MoleculeGroupings ON targetedms.MoleculeGroupings (GeneralMoleculeId, Grouping);
 CREATE INDEX IX_areas ON targetedms.areas (Grouping, SampleFileId);
 
--- Analyze so that Postgres can choose a good plan
-ANALYZE targetedms.PrecursorGroupings;
-ANALYZE targetedms.MoleculeGroupings;
-ANALYZE targetedms.areas;
-
--- Populate with the real values
 UPDATE targetedms.PrecursorChromInfo SET PrecursorModifiedAreaProportion =
                                              (SELECT CASE WHEN X.PrecursorAreaInReplicate = 0 THEN NULL ELSE TotalArea / X.PrecursorAreaInReplicate END
                                               FROM

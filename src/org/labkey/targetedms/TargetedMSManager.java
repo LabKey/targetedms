@@ -2312,8 +2312,8 @@ public class TargetedMSManager
     public static void updateModifiedAreaProportions(Logger log, @NotNull TargetedMSRun run)
     {
         final String suffix = StringUtilsLabKey.getPaddedUniquifier(9);
-        final String precursorGroupingsTableName = getSqlDialect().getTempTablePrefix() +  "PrecursorGroupings" + suffix;
-        final String moleculeGroupingsTableName = getSqlDialect().getTempTablePrefix() +  "MoleculeGroupings" + suffix;
+        final String precursorGroupingsTableName = getSqlDialect().getTempTablePrefix() + "PrecursorGroupings" + suffix;
+        final String moleculeGroupingsTableName = getSqlDialect().getTempTablePrefix() + "MoleculeGroupings" + suffix;
         final String areasTableName = getSqlDialect().getTempTablePrefix() +  "Areas" + suffix;
 
         log.info("Creating and populating temp tables for Proportion values");
@@ -2354,12 +2354,9 @@ public class TargetedMSManager
                 .append("GROUP BY g.grouping, pci.SampleFileId"));
 
         // Add indices to temp tables to make them faster to use
-        executor.execute("CREATE INDEX IDX_" + precursorGroupingsTableName +
-                        " ON " + precursorGroupingsTableName + "(PrecursorId, Grouping)");
-        executor.execute("CREATE INDEX IDX_" + moleculeGroupingsTableName +
-                        " ON " + moleculeGroupingsTableName + "(GeneralMoleculeId, Grouping)");
-        executor.execute("CREATE INDEX IDX_" + areasTableName +
-                        " ON " + areasTableName + "(Grouping, SampleFileId)");
+        executor.execute("CREATE INDEX IDX_PrecursorGroupings  ON " + precursorGroupingsTableName + "(PrecursorId, Grouping)");
+        executor.execute("CREATE INDEX IDX_MoleculeGroupings ON " + moleculeGroupingsTableName + "(GeneralMoleculeId, Grouping)");
+        executor.execute("CREATE INDEX IDX_Areas ON " + areasTableName + "(Grouping, SampleFileId)");
 
         // Populate the permanent tables
         SQLFragment updatePrecursorSQL = new SQLFragment("UPDATE targetedms.precursorchrominfo SET PrecursorModifiedAreaProportion = \n")
