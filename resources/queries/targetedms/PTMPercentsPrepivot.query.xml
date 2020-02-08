@@ -3,7 +3,7 @@
         <tables xmlns="http://labkey.org/data/xml">
             <table tableName="PTMPercentsPrepivot" tableDbType="TABLE">
                 <columns>
-                    <column columnName="PeptideModifiedAreaProportion">
+                    <column columnName="ModifiedAreaProportion">
                         <formatString>0.00%</formatString>
                     </column>
                 </columns>

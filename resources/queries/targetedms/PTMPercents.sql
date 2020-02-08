@@ -1,7 +1,7 @@
 
 SELECT
   StructuralModId AS Modification,
-  SUM(PeptideModifiedAreaProportion) AS PercentModified,
+  SUM(ModifiedAreaProportion) AS PercentModified,
   MIN(Id) AS Id @hidden,
   Sequence,
   PreviousAA @hidden,

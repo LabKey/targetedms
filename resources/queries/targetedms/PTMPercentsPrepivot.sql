@@ -1,4 +1,4 @@
-SELECT ci.PeptideModifiedAreaProportion,
+SELECT ci.ModifiedAreaProportion,
        ci.PeptideId AS Id,
        ci.PeptideId.PeptideModifiedSequence,
        ci.PeptideId.Sequence,
