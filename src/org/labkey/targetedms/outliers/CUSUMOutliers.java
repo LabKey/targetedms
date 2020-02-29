@@ -66,7 +66,7 @@ public class CUSUMOutliers extends  Outliers
         StringBuilder sqlBuilder = new StringBuilder();
         String sep = "";
 
-        for(QCMetricConfiguration configuration: configurations)
+        for (QCMetricConfiguration configuration: configurations)
         {
             int id = configuration.getId();
             String schema1Name = configuration.getSeries1SchemaName();
@@ -110,7 +110,7 @@ public class CUSUMOutliers extends  Outliers
         String sep = "";
         String where ="";
 
-        for(QCMetricConfiguration configuration: configurations)
+        for (QCMetricConfiguration configuration: configurations)
         {
             int id = configuration.getId();
             String schema1Name = configuration.getSeries1SchemaName();
@@ -223,7 +223,7 @@ public class CUSUMOutliers extends  Outliers
     {
         Map<PlotData, List<Map<String, List<?>>>> plotDataMap = new LinkedHashMap<>();
 
-        if(plotDataRows.size() > 0)
+        if (plotDataRows.size() > 0)
         {
             plotDataRows.forEach(row-> {
                 PlotData plotData = new PlotData();
@@ -231,7 +231,7 @@ public class CUSUMOutliers extends  Outliers
                 plotData.setSeries("Series");
                 plotData.setSeriesType(row.getSeriesType());
 
-                if(plotDataMap.get(plotData) == null)
+                if (plotDataMap.get(plotData) == null)
                 {
                     List<Map<String, List<?>>> serTypeList = new ArrayList<>();
                     Map<String, List<?>> rowsMap = new LinkedHashMap<>();
@@ -262,7 +262,7 @@ public class CUSUMOutliers extends  Outliers
                 }
             });
 
-            if(hasMR || hasCUSUMm || hasCUSUMv)
+            if (hasMR || hasCUSUMm || hasCUSUMv)
             {
                 plotDataMap.forEach((plotData, seriesList) ->  {
                     List<?> metricValsList = seriesList.get(1).get("MetricValues");
@@ -273,25 +273,25 @@ public class CUSUMOutliers extends  Outliers
                     double[] positiveCUSUMv = new double[0];
                     double[] negativeCUSUMv = new double[0];
 
-                    if(hasMR)
+                    if (hasMR)
                     {
                         mRs = Stats.getMovingRanges(metricVals, isLogScale, null);
                     }
 
-                    if(hasCUSUMm)
+                    if (hasCUSUMm)
                     {
                         positiveCUSUMm = Stats.getCUSUMS(metricVals, false, false, isLogScale, null);
                         negativeCUSUMm = Stats.getCUSUMS(metricVals, true, false, isLogScale, null);
                     }
 
-                    if(hasCUSUMv)
+                    if (hasCUSUMv)
                     {
                         positiveCUSUMv = Stats.getCUSUMS(metricVals, false, true, isLogScale, null);
                         negativeCUSUMv = Stats.getCUSUMS(metricVals, true, true, isLogScale, null);
                     }
 
                     List<?> serTypeObjList =  seriesList.get(0).get("Rows");
-                    if(serTypeObjList.size() == positiveCUSUMm.length)
+                    if (serTypeObjList.size() == positiveCUSUMm.length)
                     {
                         for (int i = 0; i < serTypeObjList.size(); i++)
                         {
@@ -324,13 +324,13 @@ public class CUSUMOutliers extends  Outliers
     {
         Map<String, Map<Integer, List<RawMetricDataSet>>> metricDataSet = new LinkedHashMap<>();
         rawMetricDataSets.forEach(row-> {
-            if(metricDataSet.get(row.getMetricType()) == null)
+            if (metricDataSet.get(row.getMetricType()) == null)
             {
                 Map<Integer, List<RawMetricDataSet>> metTypeMap = new LinkedHashMap<>();
                 metricDataSet.put(row.getMetricType(), metTypeMap);
             }
 
-            if(metricDataSet.get(row.getMetricType()).get(row.getGuideSetId()) == null)
+            if (metricDataSet.get(row.getMetricType()).get(row.getGuideSetId()) == null)
             {
                 List<RawMetricDataSet> setList = new ArrayList<>();
 
@@ -346,7 +346,7 @@ public class CUSUMOutliers extends  Outliers
 
         Map<String, Map<Integer, Map<PlotData, List<Map<String, List<?>>>>>> processedMetricDataSet = new LinkedHashMap<>();
         metricDataSet.forEach((metric, guides) -> {
-            if(processedMetricDataSet.get(metric) == null)
+            if (processedMetricDataSet.get(metric) == null)
             {
                 Map<Integer, Map<PlotData, List<Map<String, List<?>>>>> metricMap = new LinkedHashMap<>();
                 processedMetricDataSet.put(metric, metricMap);
@@ -433,7 +433,7 @@ public class CUSUMOutliers extends  Outliers
                 plotOutlier.setTotalCount(totalCount);
 
                 peptides.forEach((plotData, plotDataList) -> {
-                    if(plotDataList == null)
+                    if (plotDataList == null)
                         return;
                     plotDataList.forEach((series) -> {
                         if(series == null)
@@ -441,19 +441,20 @@ public class CUSUMOutliers extends  Outliers
 
                         List<RawMetricDataSet> rows = (List<RawMetricDataSet>) series.get("Rows");
 
-                        if(rows != null)
+                        if (rows != null)
                         {
                             if (CUSUMm)
                             {
                                 rows.forEach(data -> {
                                     String sampleFile = data.getSampleFile();
+                                    String sampleFileString = sampleFile + "_" + data.getAcquiredTime();
                                     if (data.getcUSUMmN() != null && data.getcUSUMmN() > Stats.CUSUM_CONTROL_LIMIT)
                                     {
-                                        CUSUMmNmap.put("CUSUMmN", processEachOutlier(groupByGuideSet, countCUSUMmN, guideSetId, sampleFiles, sampleFile));
+                                        CUSUMmNmap.put("CUSUMmN", processEachOutlier(groupByGuideSet, countCUSUMmN, guideSetId, sampleFiles, sampleFile, sampleFileString));
                                     }
                                     if (data.getcUSUMmP() != null && data.getcUSUMmP() > Stats.CUSUM_CONTROL_LIMIT)
                                     {
-                                        CUSUMmPmap.put("CUSUMmP", processEachOutlier(groupByGuideSet, countCUSUMmP, guideSetId, sampleFiles, sampleFile));
+                                        CUSUMmPmap.put("CUSUMmP", processEachOutlier(groupByGuideSet, countCUSUMmP, guideSetId, sampleFiles, sampleFile, sampleFileString));
                                     }
                                 });
 
@@ -462,13 +463,14 @@ public class CUSUMOutliers extends  Outliers
                             {
                                 rows.forEach(data -> {
                                     String sampleFile = data.getSampleFile();
+                                    String sampleFileString = sampleFile + "_" + data.getAcquiredTime();
                                     if (data.getCUSUMvN() != null && data.getCUSUMvN() > Stats.CUSUM_CONTROL_LIMIT)
                                     {
-                                        CUSUMvNmap.put("CUSUMvN", processEachOutlier(groupByGuideSet, countCUSUMvN, guideSetId, sampleFiles, sampleFile));
+                                        CUSUMvNmap.put("CUSUMvN", processEachOutlier(groupByGuideSet, countCUSUMvN, guideSetId, sampleFiles, sampleFile, sampleFileString));
                                     }
                                     if (data.getCUSUMvP() != null && data.getCUSUMvP() > Stats.CUSUM_CONTROL_LIMIT)
                                     {
-                                        CUSUMvPmap.put("CUSUMvP", processEachOutlier(groupByGuideSet, countCUSUMvP, guideSetId, sampleFiles, sampleFile));
+                                        CUSUMvPmap.put("CUSUMvP", processEachOutlier(groupByGuideSet, countCUSUMvP, guideSetId, sampleFiles, sampleFile, sampleFileString));
                                     }
                                 });
 
@@ -490,7 +492,8 @@ public class CUSUMOutliers extends  Outliers
                                             if (row.getmR() != null && row.getmR() > Stats.MOVING_RANGE_UPPER_LIMIT_WEIGHT * controlRange)
                                             {
                                                 String sampleFile = row.getSampleFile();
-                                                mRmap.put("mR", processEachOutlier(groupByGuideSet, countMR, guideSetId, sampleFiles, sampleFile));
+                                                String sampleFileString = sampleFile + "_" + row.getAcquiredTime();
+                                                mRmap.put("mR", processEachOutlier(groupByGuideSet, countMR, guideSetId, sampleFiles, sampleFile, sampleFileString));
                                             }
                                         }
                                     }
@@ -517,16 +520,17 @@ public class CUSUMOutliers extends  Outliers
     }
 
 
-    private Map<String, Integer> processEachOutlier(boolean groupByGuideSet, Map<String, Integer> countObj, int guideSetId, Set<String> sampleFiles, String sampleFile)
+    private Map<String, Integer> processEachOutlier(boolean groupByGuideSet, Map<String, Integer> countObj, int guideSetId, Set<String> sampleFiles, String sampleFile, String sampleFileString)
     {
-        if(groupByGuideSet)
+        if (groupByGuideSet)
         {
             int count = countObj.get(String.valueOf(guideSetId)) != null ? countObj.get(String.valueOf(guideSetId)) : 0;
             countObj.put(String.valueOf(guideSetId), ++count);
-        }else if(sampleFiles.contains(sampleFile))
+        }
+        else if (sampleFiles.contains(sampleFileString))
         {
-            int count = countObj.get(sampleFile) != null ? countObj.get(sampleFile) : 0;
-            countObj.put(sampleFile, ++count);
+            int count = countObj.get(sampleFileString) != null ? countObj.get(sampleFileString) : 0;
+            countObj.put(sampleFileString, ++count);
         }
         return countObj;
     }
@@ -538,36 +542,32 @@ public class CUSUMOutliers extends  Outliers
             int totalCount = vals.getTotalCount();
             List<Map<String, Map<String, Integer>>> outliersList = vals.getOutliers();
 
-            outliersList.forEach(outlier -> {
-                outlier.forEach((type, groups) -> {
+            outliersList.forEach(outlier -> outlier.forEach((type, groups) -> {
 
-                    if(groups.size() > 0) {
-                        groups.forEach((group, count) -> {
-                            if(transformedOutliers.get(group) == null)
-                            {
-                                Map<String, Map<String, Integer>> groupMap = new LinkedHashMap<>();
-                                transformedOutliers.put(group, groupMap);
-                            }
-                            Map<String, Integer> metricMap = new LinkedHashMap<>();
+                if (groups.size() > 0) {
+                    groups.forEach((group, count) -> {
+                        if(transformedOutliers.get(group) == null)
+                        {
+                            Map<String, Map<String, Integer>> groupMap = new LinkedHashMap<>();
+                            transformedOutliers.put(group, groupMap);
+                        }
+                        Map<String, Integer> metricMap = new LinkedHashMap<>();
 
-                            outliersList.forEach( o ->{
-                                o.forEach((t, g) -> {
-                                    g.forEach((gp, ct) -> {
+                        outliersList.forEach( o -> o.forEach((t, g) -> {
+                            g.forEach((gp, ct) -> {
 
-                                        if(group.equalsIgnoreCase(gp))
-                                        {
-                                            metricMap.put("TotalCount", totalCount);
-                                            metricMap.put(t, ct);
-                                        }
-                                    });
-                                });
+                                if(group.equalsIgnoreCase(gp))
+                                {
+                                    metricMap.put("TotalCount", totalCount);
+                                    metricMap.put(t, ct);
+                                }
                             });
+                        }));
 
-                            transformedOutliers.get(group).put(metric, metricMap);
-                        });
-                    }
-                });
-            });
+                        transformedOutliers.get(group).put(metric, metricMap);
+                    });
+                }
+            }));
         });
         return transformedOutliers;
     }
@@ -596,13 +596,13 @@ public class CUSUMOutliers extends  Outliers
                 LJOutlier matchedItem = null;
                 for(LJOutlier item : sampleFileInfo.getItems())
                 {
-                    if(item.getMetricLabel() != null && item.getMetricLabel().equalsIgnoreCase(metric))
+                    if (item.getMetricLabel() != null && item.getMetricLabel().equalsIgnoreCase(metric))
                     {
                         matchedItem = item;
                     }
                 }
 
-                if(matchedItem != null)
+                if (matchedItem != null)
                 {
                     for(Map.Entry<String, Integer> outlier : outliers.entrySet())
                     {
@@ -669,10 +669,11 @@ public class CUSUMOutliers extends  Outliers
 
         for (LJOutlier ljOutlier : ljOutliers)
         {
-            if(sampleFileInfo == null || (!(ljOutlier.getSampleFile() != null && ljOutlier.getSampleFile().equals(sampleFileInfo.getSampleFile()))))
+            String sampleFileString = ljOutlier.getSampleFile() + "_" + ljOutlier.getAcquiredTime();
+            if (sampleFileInfo == null || (!(ljOutlier.getSampleFile() != null && sampleFileString.equals(sampleFileInfo.getSampleFile() + "_" + sampleFileInfo.getAcquiredTime()))))
             {
-                if(sampleFileInfo != null)
-                    sampleFiles.put(sampleFileInfo.getSampleFile(), sampleFileInfo);
+                if (sampleFileInfo != null)
+                    sampleFiles.put(sampleFileInfo.getSampleFile() + "_" + sampleFileInfo.getAcquiredTime(), sampleFileInfo);
                 sampleFileInfo = new SampleFileInfo();
                 sampleFileInfo.setIndex(index++);
                 sampleFileInfo.setSampleFile(ljOutlier.getSampleFile());
@@ -686,7 +687,8 @@ public class CUSUMOutliers extends  Outliers
             }
 
             sampleFileInfo.setIgnoreForAllMetric(ljOutlier.isIgnoreInQC() && sampleFileInfo.isIgnoreForAllMetric());
-            if(!ljOutlier.isIgnoreInQC()) {
+            if (!ljOutlier.isIgnoreInQC())
+            {
                 sampleFileInfo.setMetrics(sampleFileInfo.getMetrics() + 1);
                 sampleFileInfo.setNonConformers(sampleFileInfo.getNonConformers() + ljOutlier.getNonConformers());
                 sampleFileInfo.setTotalCount(sampleFileInfo.getTotalCount() + ljOutlier.getTotalCount());
@@ -695,7 +697,7 @@ public class CUSUMOutliers extends  Outliers
             sampleFileInfo.getItems().add(ljOutlier);
         }
         assert sampleFileInfo != null;
-        sampleFiles.put(sampleFileInfo.getSampleFile(), sampleFileInfo);
+        sampleFiles.put(sampleFileInfo.getSampleFile() + "_" + sampleFileInfo.getAcquiredTime(), sampleFileInfo);
 
         return sampleFiles;
     }
