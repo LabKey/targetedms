@@ -10,7 +10,6 @@ public class SampleFileInfo
 {
     int index;
     String sampleFile;
-    int _sampleFileId;
     Date acquiredTime;
     int metrics;
     int nonConformers;
@@ -50,16 +49,6 @@ public class SampleFileInfo
     public void setSampleFile(String sampleFile)
     {
         this.sampleFile = sampleFile;
-    }
-
-    public int getSampleFileId()
-    {
-        return _sampleFileId;
-    }
-
-    public void setSampleFileId(int sampleFileId)
-    {
-        _sampleFileId = sampleFileId;
     }
 
     public Date getAcquiredTime()
