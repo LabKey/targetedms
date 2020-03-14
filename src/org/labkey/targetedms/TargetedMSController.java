@@ -38,6 +38,7 @@ import org.labkey.api.query.QueryParseException;
 import org.labkey.api.query.QuerySchema;
 import org.labkey.api.query.SchemaKey;
 import org.labkey.api.query.ViewOptions;
+import org.labkey.api.security.AdminConsoleAction;
 import org.labkey.api.security.RequiresSiteAdmin;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.util.Button;
@@ -420,7 +421,7 @@ public class TargetedMSController extends SpringActionController
 
     }
 
-    @RequiresSiteAdmin
+    @AdminConsoleAction
     public class ChromatogramCrawlerAction extends FormViewAction<ChromatogramCrawlerForm>
     {
         @Override
@@ -432,9 +433,18 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(ChromatogramCrawlerForm form, boolean reshow, BindException errors) throws Exception
         {
-            return new HtmlView("Chromatogram Crawler", DIV("Crawl all containers under the parent " + getContainer().getPath(),
-                    FORM(at(method, "POST"),
-                    new Button.ButtonBuilder("Start Crawl").submit(true).build())));
+            DOM.Renderable dom;
+            if (!getContainer().hasPermission(getUser(), AdminPermission.class))
+            {
+                dom = DIV("You do not have permission to start the crawler");
+            }
+            else
+            {
+                dom = DIV("Crawl all containers under the parent " + getContainer().getPath(),
+                        FORM(at(method, "POST"),
+                                new Button.ButtonBuilder("Start Crawl").submit(true).build()));
+            }
+            return new HtmlView("Chromatogram Crawler", dom);
         }
 
         @Override
