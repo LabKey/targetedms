@@ -1,0 +1,17 @@
+<query xmlns="http://labkey.org/data/xml/query">
+    <metadata>
+        <tables xmlns="http://labkey.org/data/xml">
+            <table tableName="HCPPercents" tableDbType="TABLE">
+                <columns>
+                    <column columnName="Mass">
+                        <columnTitle>Predicted Mass</columnTitle>
+                        <formatString>0,000.000</formatString>
+                    </column>
+                    <column columnName="PeptideGroupId">
+                        <columnTitle>Protein Name</columnTitle>
+                    </column>
+                </columns>
+            </table>
+        </tables>
+    </metadata>
+</query>
