@@ -1839,3 +1839,11 @@ GO
 UPDATE targetedms.Runs SET ReplicateCount = (SELECT COUNT(r.id) FROM targetedms.Replicate r WHERE r.RunId = targetedms.Runs.Id);
 
 ALTER TABLE targetedms.TransitionChromInfo ADD PointsAcrossPeak INT;
+
+/* targetedms-17.30-18.10.sql */
+
+-- Commented out 2/26/18.  Upgrade code has been left in place.  May be used later, if required
+-- Add a "Raw Data" tab to all targetedms folders that don't already have it.
+-- EXEC core.executeJavaUpgradeCode 'addRawDataTab';
+
+ALTER TABLE targetedms.ReplicateAnnotation ALTER COLUMN Value NVARCHAR(500);
