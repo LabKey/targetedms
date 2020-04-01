@@ -1699,8 +1699,4 @@ ALTER TABLE targetedms.TransitionChromInfo ADD COLUMN PointsAcrossPeak INT;
 
 /* targetedms-17.30-18.10.sql */
 
--- Commented out 2/26/18.  Upgrade code has been left in place.  May be used later, if required
--- Add a "Raw Data" tab to all targetedms folders that don't already have it.
--- SELECT core.executeJavaUpgradeCode('addRawDataTab');
-
 ALTER TABLE targetedms.ReplicateAnnotation ALTER COLUMN Value TYPE VARCHAR(500);
