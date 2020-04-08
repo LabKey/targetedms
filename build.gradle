@@ -1,5 +1,9 @@
 import org.labkey.gradle.util.BuildUtils;
 
+plugins {
+   id "org.sonarqube" version "2.8"
+}
+
 dependencies
 {
    external 'com.google.protobuf:protobuf-java:3.2.0'
