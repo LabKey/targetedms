@@ -562,8 +562,12 @@ public class BlibSpectrumReader
                     {
                         String fileName = rs.getString(fileNameColumn);
                         String idFileName = idFileNameColumn >= 0 ? rs.getString(idFileNameColumn) : null;
+
+                        // Source spectrum file can be the same as the ID file if embedded spectra are used.
+                        // In this case, we only want it added once (as an ID file).
                         if (!StringUtils.isBlank(fileName) && !fileName.equalsIgnoreCase(idFileName))
                             sourceFiles.add(Paths.get(fileName).getFileName().toString());
+
                         if (!StringUtils.isBlank(idFileName))
                             idFiles.add(Paths.get(idFileName).getFileName().toString());
                     }
@@ -573,7 +577,7 @@ public class BlibSpectrumReader
             {
                 throw new RuntimeException(e);
             }
-            m.put(path.getFileName().toString(), new BlibSourceFiles(sourceFiles.toArray(new String[0]), idFiles.toArray(new String[0])));
+            m.put(path.getFileName().toString(), new BlibSourceFiles(new ArrayList<>(sourceFiles), new ArrayList<>(idFiles)));
         }
         return m;
     }

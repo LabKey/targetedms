@@ -1,22 +1,24 @@
 package org.labkey.api.targetedms;
 
+import java.util.List;
+
 public class BlibSourceFiles
 {
-    private String[] spectrumSourceFiles;
-    private String[] idFiles;
+    private List<String> spectrumSourceFiles;
+    private List<String> idFiles;
 
-    public BlibSourceFiles(String[] spectrumSourceFiles, String[] idFiles)
+    public BlibSourceFiles(List<String> spectrumSourceFiles, List<String> idFiles)
     {
         this.spectrumSourceFiles = spectrumSourceFiles;
         this.idFiles = idFiles;
     }
 
-    public String[] getSpectrumSourceFiles()
+    public List<String> getSpectrumSourceFiles()
     {
         return spectrumSourceFiles;
     }
 
-    public String[] getIdFiles()
+    public List<String> getIdFiles()
     {
         return idFiles;
     }
