@@ -1,6 +1,7 @@
 
 SELECT
        0 AS RowId,
-       CAST('01/01/1900' AS TIMESTAMP) AS TrainingStart,
-       curdate() AS TrainingEnd,
-       CAST(NULL AS TIMESTAMP) AS ReferenceEnd
+       MIN(AcquiredTime) AS TrainingStart,
+       MAX(AcquiredTime) AS TrainingEnd,
+       MAX(AcquiredTime) AS ReferenceEnd
+FROM targetedms.SampleFile WHERE AcquiredTime < (SELECT MIN(TrainingStart) FROM GuideSet)

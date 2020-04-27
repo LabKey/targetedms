@@ -39,17 +39,15 @@ import java.util.Set;
 public class CUSUMOutliers extends  Outliers
 {
 
-    private String metricGuideSetRawSql(int id, String schema1Name, String query1Name, String schema2Name, String query2Name, boolean includeAllValues, String series)
+    private String metricGuideSetRawSql(int id, String schema1Name, String query1Name, String series)
     {
-        boolean includeSeries2 = schema2Name != null && query2Name != null;
         String selectCols = "SampleFileId, SampleFileId.AcquiredTime, SeriesLabel, MetricValue";
-        String series1SQL = "SELECT \'" + (series != null ? series : "series1") + "\' AS SeriesType, " + selectCols + " FROM "+ schema1Name + "." + query1Name;
-        String series2SQL = !includeSeries2 ? "" : " UNION SELECT \'series2\' AS SeriesType, " + selectCols + " FROM "+ schema2Name + "." + query2Name;
+        String series1SQL = "SELECT '" + (series != null ? series : "series1") + "' AS SeriesType, " + selectCols + " FROM "+ schema1Name + "." + query1Name;
         String exclusionWhereSQL = getExclusionWhereSql(id);
 
         return "SELECT gs.RowId AS GuideSetId, gs.TrainingStart, gs.TrainingEnd, gs.ReferenceEnd, p.SeriesLabel, p.AcquiredTime, p.MetricValue, p.SeriesType, " +
                 "\nFROM GuideSetForOutliers gs" +
-                (includeAllValues ? "\nFULL" : "\nLEFT") + " JOIN (" + series1SQL + series2SQL + exclusionWhereSQL + ") as p"+
+                "\nLEFT JOIN (" + series1SQL + exclusionWhereSQL + ") as p"+
                 "\n  ON p.AcquiredTime >= gs.TrainingStart AND p.AcquiredTime <= gs.TrainingEnd" +
                 "\n ORDER BY GuideSetId, p.SeriesLabel, p.AcquiredTime";
     }
@@ -57,7 +55,7 @@ public class CUSUMOutliers extends  Outliers
     private String getSingleMetricGuideSetRawSql(int metricId, String metricType, String schemaName, String queryName, String series)
     {
         return  "SELECT s.*, g.Comment, " +  "(SELECT " + metricType + " FROM qcmetricconfiguration where id = " + metricId + ")" + " AS MetricType FROM (" +
-                metricGuideSetRawSql(metricId, schemaName, queryName, null, null, false, series) +
+                metricGuideSetRawSql(metricId, schemaName, queryName, series) +
                 ") s" +
                 " LEFT JOIN GuideSet g ON g.RowId = s.GuideSetId";
     }
@@ -86,10 +84,9 @@ public class CUSUMOutliers extends  Outliers
 
     private String getEachSeriesTypePlotDataSql(String type, int id, String schemaName, String queryName, String whereClause, String metricType)
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append("SELECT '").append(type).append("' AS SeriesType, X.SampleFile, ");
-        sb.append("(SELECT " + metricType + " FROM qcmetricconfiguration where id = " + id + ")").append(" AS MetricType, ");
-        sb.append("\nX.PrecursorId, X.PrecursorChromInfoId, X.SeriesLabel, X.DataType, X.mz, X.AcquiredTime,"
+        return "(SELECT '" + type + "' AS SeriesType, X.SampleFile, " +
+                "(SELECT " + metricType + " FROM qcmetricconfiguration where id = " + id + ")" + " AS MetricType, " +
+                "\nX.PrecursorId, X.PrecursorChromInfoId, X.SeriesLabel, X.DataType, X.mz, X.AcquiredTime,"
                 + "\nX.FilePath, X.MetricValue, x.ReplicateId, gs.RowId AS GuideSetId,"
                 + "\nCASE WHEN (exclusion.ReplicateId IS NOT NULL) THEN TRUE ELSE FALSE END AS IgnoreInQC,"
                 + "\nCASE WHEN (X.AcquiredTime >= gs.TrainingStart AND X.AcquiredTime <= gs.TrainingEnd) THEN TRUE ELSE FALSE END AS InGuideSetTrainingRange"
@@ -100,9 +97,7 @@ public class CUSUMOutliers extends  Outliers
                 + "\nON X.ReplicateId = exclusion.ReplicateId"
                 + "\nLEFT JOIN GuideSetForOutliers gs"
                 + "\nON ((X.AcquiredTime >= gs.TrainingStart AND X.AcquiredTime < gs.ReferenceEnd) OR (X.AcquiredTime >= gs.TrainingStart AND gs.ReferenceEnd IS NULL))"
-                + "\nORDER BY X.SeriesLabel, SeriesType, X.AcquiredTime");
-
-        return "(" + sb.toString() + ")";
+                + "\nORDER BY X.SeriesLabel, SeriesType, X.AcquiredTime)";
     }
 
     private String queryContainerSampleFileRawData(List<QCMetricConfiguration> configurations)
@@ -166,7 +161,7 @@ public class CUSUMOutliers extends  Outliers
         return processedMetricGuides;
     }
 
-    private class PlotData
+    private static class PlotData
     {
         String seriesLabel;
         String series;
@@ -180,11 +175,6 @@ public class CUSUMOutliers extends  Outliers
         public void setSeriesLabel(String seriesLabel)
         {
             this.seriesLabel = seriesLabel;
-        }
-
-        public String getSeries()
-        {
-            return series;
         }
 
         public void setSeries(String series)
@@ -220,7 +210,7 @@ public class CUSUMOutliers extends  Outliers
         }
     }
 
-    private Map<PlotData, List<Map<String, List<?>>>> preprocessPlotData(List<RawMetricDataSet> plotDataRows, boolean hasMR, boolean hasCUSUMm, boolean hasCUSUMv, boolean isLogScale)
+    private Map<PlotData, List<Map<String, List<?>>>> preprocessPlotData(List<RawMetricDataSet> plotDataRows)
     {
         Map<PlotData, List<Map<String, List<?>>>> plotDataMap = new LinkedHashMap<>();
 
@@ -263,59 +253,33 @@ public class CUSUMOutliers extends  Outliers
                 }
             });
 
-            if (hasMR || hasCUSUMm || hasCUSUMv)
-            {
-                plotDataMap.forEach((plotData, seriesList) ->  {
-                    List<?> metricValsList = seriesList.get(1).get("MetricValues");
-                    Double[] metricVals = metricValsList.toArray(new Double[0]);
-                    Double[] mRs = new Double[0];
-                    double[] positiveCUSUMm = new double[0];
-                    double[] negativeCUSUMm = new double[0];
-                    double[] positiveCUSUMv = new double[0];
-                    double[] negativeCUSUMv = new double[0];
+            plotDataMap.forEach((plotData, seriesList) ->  {
+                List<?> metricValsList = seriesList.get(1).get("MetricValues");
+                Double[] metricVals = metricValsList.toArray(new Double[0]);
 
-                    if (hasMR)
+                Double[] mRs = Stats.getMovingRanges(metricVals, false, null);
+
+                double[] positiveCUSUMm = Stats.getCUSUMS(metricVals, false, false, false, null);
+                double[] negativeCUSUMm = Stats.getCUSUMS(metricVals, true, false, false, null);
+
+                double[] positiveCUSUMv = Stats.getCUSUMS(metricVals, false, true, false, null);
+                double[] negativeCUSUMv = Stats.getCUSUMS(metricVals, true, true, false, null);
+
+                List<?> serTypeObjList =  seriesList.get(0).get("Rows");
+                if (serTypeObjList.size() == positiveCUSUMm.length)
+                {
+                    for (int i = 0; i < serTypeObjList.size(); i++)
                     {
-                        mRs = Stats.getMovingRanges(metricVals, isLogScale, null);
+                        RawMetricDataSet row = (RawMetricDataSet) serTypeObjList.get(i);
+                        row.setmR(mRs[i]);
+                        row.setcUSUMmP(positiveCUSUMm[i]);
+                        row.setcUSUMmN(negativeCUSUMm[i]);
+                        row.setCUSUMvP(positiveCUSUMv[i]);
+                        row.setCUSUMvN(negativeCUSUMv[i]);
                     }
+                }
 
-                    if (hasCUSUMm)
-                    {
-                        positiveCUSUMm = Stats.getCUSUMS(metricVals, false, false, isLogScale, null);
-                        negativeCUSUMm = Stats.getCUSUMS(metricVals, true, false, isLogScale, null);
-                    }
-
-                    if (hasCUSUMv)
-                    {
-                        positiveCUSUMv = Stats.getCUSUMS(metricVals, false, true, isLogScale, null);
-                        negativeCUSUMv = Stats.getCUSUMS(metricVals, true, true, isLogScale, null);
-                    }
-
-                    List<?> serTypeObjList =  seriesList.get(0).get("Rows");
-                    if (serTypeObjList.size() == positiveCUSUMm.length)
-                    {
-                        for (int i = 0; i < serTypeObjList.size(); i++)
-                        {
-                            RawMetricDataSet row = (RawMetricDataSet) serTypeObjList.get(i);
-                            if (hasMR)
-                            {
-                                row.setmR(mRs[i]);
-                            }
-                            if (hasCUSUMm)
-                            {
-                                row.setcUSUMmP(positiveCUSUMm[i]);
-                                row.setcUSUMmN(negativeCUSUMm[i]);
-                            }
-                            if (hasCUSUMv)
-                            {
-                                row.setCUSUMvP(positiveCUSUMv[i]);
-                                row.setCUSUMvN(negativeCUSUMv[i]);
-                            }
-                        }
-                    }
-
-                });
-            }
+            });
         }
 
         return plotDataMap;
@@ -352,9 +316,7 @@ public class CUSUMOutliers extends  Outliers
                 Map<Integer, Map<PlotData, List<Map<String, List<?>>>>> metricMap = new LinkedHashMap<>();
                 processedMetricDataSet.put(metric, metricMap);
             }
-            guides.forEach((guideId, guideset) -> {
-                processedMetricDataSet.get(metric).put(guideId, preprocessPlotData(guideset, true, true, true, false));
-            });
+            guides.forEach((guideId, guideset) -> processedMetricDataSet.get(metric).put(guideId, preprocessPlotData(guideset)));
         });
 
         return processedMetricDataSet;
@@ -599,8 +561,6 @@ public class CUSUMOutliers extends  Outliers
                         if(outlier.getKey().equalsIgnoreCase("CUSUMvN"))
                             matchedItem.setCUSUMvN(outlier.getValue());
                     }
-                    matchedItem.setCUSUMm(matchedItem.getCUSUMmP()+matchedItem.getCUSUMmN());
-                    matchedItem.setCUSUMv(matchedItem.getCUSUMvP()+matchedItem.getCUSUMvN());
                 }
             });
 
@@ -616,14 +576,11 @@ public class CUSUMOutliers extends  Outliers
                 CUSUMvN += item.getCUSUMvN();
                 mR += item.getmR();
             }
-            sample.setCUSUMm(CUSUMmN + CUSUMmP);
-            sample.setCUSUMv(CUSUMvN + CUSUMvP);
             sample.setCUSUMmP(CUSUMmP);
             sample.setCUSUMvP(CUSUMvP);
             sample.setCUSUMmN(CUSUMmN);
             sample.setCUSUMvN(CUSUMvN);
             sample.setmR(mR);
-            sample.setHasOutliers(!(sample.getNonConformers() == 0 && sample.getCUSUMm() == 0 && sample.getCUSUMv() == 0 && sample.getmR() == 0));
         });
         return sampleFiles;
     }
@@ -636,9 +593,7 @@ public class CUSUMOutliers extends  Outliers
     public JSONObject getSampleFilesJSON(Map<String, SampleFileInfo> sampleFiles)
     {
         JSONObject sampleFilesJSON = new JSONObject();
-        sampleFiles.forEach((name, sample) -> {
-            sampleFilesJSON.put(name, sample.toJSON());
-        });
+        sampleFiles.forEach((name, sample) -> sampleFilesJSON.put(name, sample.toJSON()));
 
         return sampleFilesJSON;
     }
@@ -660,11 +615,7 @@ public class CUSUMOutliers extends  Outliers
                 sampleFileInfo.setIndex(index++);
                 sampleFileInfo.setSampleFile(ljOutlier.getSampleFile());
                 sampleFileInfo.setAcquiredTime(ljOutlier.getAcquiredTime());
-                sampleFileInfo.setMetrics(0);
-                sampleFileInfo.setNonConformers(0);
-                sampleFileInfo.setTotalCount(0);
-                if(ljOutlier.getGuideSetId() != null)
-                    sampleFileInfo.setGuideSetId(ljOutlier.getGuideSetId());
+                sampleFileInfo.setGuideSetId(ljOutlier.getGuideSetId());
                 sampleFileInfo.setIgnoreForAllMetric(ljOutlier.isIgnoreInQC());
             }
 
@@ -672,7 +623,7 @@ public class CUSUMOutliers extends  Outliers
             if (!ljOutlier.isIgnoreInQC())
             {
                 sampleFileInfo.setMetrics(sampleFileInfo.getMetrics() + 1);
-                sampleFileInfo.setNonConformers(sampleFileInfo.getNonConformers() + ljOutlier.getNonConformers());
+                sampleFileInfo.setLeveyJennings(sampleFileInfo.getLeveyJennings() + ljOutlier.getLeveyJennings());
                 sampleFileInfo.setTotalCount(sampleFileInfo.getTotalCount() + ljOutlier.getTotalCount());
             }
             ljOutlier.setContainerPath(containerPath);

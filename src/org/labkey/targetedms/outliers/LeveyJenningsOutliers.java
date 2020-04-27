@@ -35,7 +35,7 @@ public class LeveyJenningsOutliers extends Outliers
 
     public static List<LJOutlier> getLJOutliers(List<QCMetricConfiguration> configurations, Container container, User user, @Nullable Integer sampleLimit)
     {
-        Set<String> columnNames = Set.of("guideSetId","metricId","metricName","metricLabel","sampleFile","acquiredTime","ignoreInQC","nonConformers","totalCount");
+        Set<String> columnNames = Set.of("guideSetId","metricId","metricName","metricLabel","sampleFile","acquiredTime","ignoreInQC","leveyJennings","totalCount");
         return executeQuery(container, user, queryContainerSampleFileStats(configurations, sampleLimit), columnNames, new Sort("-acquiredTime,metricLabel")).getArrayList(LJOutlier.class);
     }
 
@@ -47,8 +47,6 @@ public class LeveyJenningsOutliers extends Outliers
         for(QCMetricConfiguration qcMetricConfiguration :configurations)
         {
             int id = qcMetricConfiguration.getId();
-            String name = qcMetricConfiguration.getName();
-            String label = qcMetricConfiguration.getSeries1Label();
             String schema = qcMetricConfiguration.getSeries1SchemaName();
             String query = qcMetricConfiguration.getSeries1QueryName();
 
@@ -56,7 +54,6 @@ public class LeveyJenningsOutliers extends Outliers
             sep = "\nUNION\n";
 
             if(qcMetricConfiguration.getSeries2SchemaName() != null && qcMetricConfiguration.getSeries2QueryName() != null) {
-                label = qcMetricConfiguration.getSeries2Label();
                 schema = qcMetricConfiguration.getSeries2SchemaName();
                 query = qcMetricConfiguration.getSeries2QueryName();
 
@@ -105,7 +102,7 @@ public class LeveyJenningsOutliers extends Outliers
                 + "\nX.AcquiredTime,"
                 + "\nCASE WHEN (exclusion.ReplicateId IS NOT NULL) THEN TRUE ELSE FALSE END AS IgnoreInQC,"
                 + "\nSUM(CASE WHEN exclusion.ReplicateId IS NULL AND (X.MetricValue > (stats.Mean + (3 * (CASE WHEN stats.StandardDev IS NULL THEN 0 ELSE stats.StandardDev END)))"
-                + "\n   OR X.MetricValue < (stats.Mean - (3 * (CASE WHEN stats.StandardDev IS NULL THEN 0 ELSE stats.StandardDev END)))) THEN 1 ELSE 0 END) AS NonConformers,"
+                + "\n   OR X.MetricValue < (stats.Mean - (3 * (CASE WHEN stats.StandardDev IS NULL THEN 0 ELSE stats.StandardDev END)))) THEN 1 ELSE 0 END) AS LeveyJennings,"
                 + "\nCOUNT(*) AS TotalCount"
                 + "\nFROM (SELECT *, SampleFileId.AcquiredTime AS AcquiredTime, SampleFileId.SampleName AS SampleFile, SampleFileId.ReplicateId AS ReplicateId"
                 + "\n      FROM " + schema + "." + query
