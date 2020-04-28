@@ -222,7 +222,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                 success: function(response) {
                     var parsed = JSON.parse(response.responseText);
                     if(parsed.outliers) {
-                        this.newRenderContainerSampleFileStats({
+                        this.renderContainerSampleFileStats({
                             container: container,
                             dataRows: parsed.outliers,
                             limitedSampleFiles: true,
@@ -258,7 +258,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
         sampleFilesDiv.removeCls('sample-file-details-loading');
     },
 
-    newRenderContainerSampleFileStats: function (params) {
+    renderContainerSampleFileStats: function (params) {
         var container = params.container;
             var html = '<table class="table-condensed labkey-data-region-legacy labkey-show-borders"><thead><tr><td class="labkey-column-header">Sample Name</td><td class="labkey-column-header">Acquired</td><td class="labkey-column-header">Total outliers</td></tr></thead>';
             var sampleFiles = this.sortObjectOfObjects(params.sampleFiles, 'Index');

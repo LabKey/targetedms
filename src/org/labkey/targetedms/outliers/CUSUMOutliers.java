@@ -30,6 +30,7 @@ import org.labkey.targetedms.model.RawMetricDataSet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -497,7 +498,7 @@ public class CUSUMOutliers extends  Outliers
     public Map<String, SampleFileInfo> getSampleFiles(List<LJOutlier> ljOutliers, List<RawGuideSet> rawGuideSets, List<RawMetricDataSet> rawMetricDataSets, String containerPath)
     {
         Map<String, SampleFileInfo> sampleFiles = setSampleFiles(ljOutliers, containerPath);
-        List<Integer> validGuideSetIds = new ArrayList<>();
+        Set<Integer> validGuideSetIds = new HashSet<>();
         sampleFiles.forEach((key,val) -> validGuideSetIds.add(val.getGuideSetId()));
         Map<String, List<GuideSetAvgMR>> processedMetricGuides = getAllProcessedMetricGuideSets(rawGuideSets);
 

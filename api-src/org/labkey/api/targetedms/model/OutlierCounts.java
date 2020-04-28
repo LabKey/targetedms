@@ -19,7 +19,7 @@ public abstract class OutlierCounts
 
     public int getCUSUMv()
     {
-        return getCUSUMvP() + getCUSUMvP();
+        return getCUSUMvP() + getCUSUMvN();
     }
 
     public int getCUSUMmN()
