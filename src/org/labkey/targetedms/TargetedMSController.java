@@ -44,7 +44,6 @@ import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.RawGuideSet;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.outliers.CUSUMOutliers;
-import org.labkey.targetedms.outliers.LeveyJenningsOutliers;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.json.JSONArray;
@@ -110,6 +109,7 @@ import org.labkey.targetedms.conflict.ConflictPrecursor;
 import org.labkey.targetedms.conflict.ConflictProtein;
 import org.labkey.targetedms.conflict.ConflictTransition;
 import org.labkey.targetedms.model.QCMetricConfiguration;
+import org.labkey.targetedms.outliers.Outliers;
 import org.labkey.targetedms.parser.GeneralMolecule;
 import org.labkey.targetedms.parser.GeneralMoleculeChromInfo;
 import org.labkey.targetedms.parser.Molecule;
@@ -1028,7 +1028,7 @@ public class TargetedMSController extends SpringActionController
 
             CUSUMOutliers cusumOutliers = new CUSUMOutliers();
 
-            List<LJOutlier> ljOutliers = LeveyJenningsOutliers.getLJOutliers(enabledQCMetricConfigurations, getContainer(), getUser(), form.getSampleLimit());
+            List<LJOutlier> ljOutliers = Outliers.getLJOutliers(enabledQCMetricConfigurations, getContainer(), getUser(), form.getSampleLimit());
 
             List<RawGuideSet> rawGuideSets = cusumOutliers.getRawGuideSets(getContainer(), getUser(), enabledQCMetricConfigurations);
             List<RawMetricDataSet> rawMetricDataSets = cusumOutliers.getRawMetricDataSets(getContainer(), getUser(), enabledQCMetricConfigurations);

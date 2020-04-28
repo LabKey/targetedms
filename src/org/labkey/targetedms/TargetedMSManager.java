@@ -82,7 +82,7 @@ import org.labkey.targetedms.model.QCMetricConfiguration;
 import org.labkey.targetedms.model.RawGuideSet;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.outliers.CUSUMOutliers;
-import org.labkey.targetedms.outliers.LeveyJenningsOutliers;
+import org.labkey.targetedms.outliers.Outliers;
 import org.labkey.targetedms.parser.GeneralMolecule;
 import org.labkey.targetedms.parser.Replicate;
 import org.labkey.targetedms.parser.RepresentativeDataState;
@@ -2081,7 +2081,7 @@ public class TargetedMSManager
         {
             CUSUMOutliers cusumOutliers = new CUSUMOutliers();
 
-            List<LJOutlier> ljOutliers = LeveyJenningsOutliers.getLJOutliers(enabledQCMetricConfigurations, container, user, sampleFileLimit);
+            List<LJOutlier> ljOutliers = Outliers.getLJOutliers(enabledQCMetricConfigurations, container, user, sampleFileLimit);
             if (!ljOutliers.isEmpty())
             {
                 List<RawGuideSet> rawGuideSets = cusumOutliers.getRawGuideSets(container, user, enabledQCMetricConfigurations);
