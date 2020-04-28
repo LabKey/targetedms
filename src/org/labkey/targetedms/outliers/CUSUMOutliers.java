@@ -138,10 +138,10 @@ public class CUSUMOutliers extends  Outliers
         return executeQuery(container, user, queryContainerSampleFileRawData(configurations), columnNames, new Sort("seriesType,seriesLabel,acquiredTime")).getArrayList(RawMetricDataSet.class);
     }
 
-    private Map<String, Map<GuideSetAvgMR, List<Map<String, Double>>>> getAllProcessedMetricGuideSets(List<RawGuideSet> rawGuideSets)
+    private Map<String, List<GuideSetAvgMR>> getAllProcessedMetricGuideSets(List<RawGuideSet> rawGuideSets)
     {
         Map<String, List<RawGuideSet>> metricGuideSet = new LinkedHashMap<>();
-        Map<String, Map<GuideSetAvgMR, List<Map<String, Double>>>> processedMetricGuides = new LinkedHashMap<>();
+        Map<String, List<GuideSetAvgMR>> processedMetricGuides = new LinkedHashMap<>();
         MovingRangeOutliers mr = new MovingRangeOutliers();
 
         for (RawGuideSet row : rawGuideSets)
@@ -366,7 +366,7 @@ public class CUSUMOutliers extends  Outliers
         }
     }
 
-    private Map<String, PlotOutlier> getQCPlotMetricOutliers(Map<String, Map<GuideSetAvgMR, List<Map<String, Double>>>> processedMetricGuides, Map<String, Map<Integer, Map<PlotData, RowsAndMetricValues>>> processedMetricDataSet, Set<String> sampleFiles)
+    private Map<String, PlotOutlier> getQCPlotMetricOutliers(Map<String, List<GuideSetAvgMR>> processedMetricGuides, Map<String, Map<Integer, Map<PlotData, RowsAndMetricValues>>> processedMetricDataSet, Set<String> sampleFiles)
     {
         Map<String, PlotOutlier> plotOutliers = new LinkedHashMap<>();
         processedMetricDataSet.forEach((metric, metricVal) -> {
@@ -419,15 +419,12 @@ public class CUSUMOutliers extends  Outliers
                         }
                         if (processedMetricGuides.get(metric) != null)
                         {
-                            GuideSetAvgMR guideSetAvgMR = new GuideSetAvgMR();
-                            guideSetAvgMR.setGuideSetid(guideSetId);
-                            guideSetAvgMR.setSeriesLabel(plotData.getSeriesLabel());
-                            guideSetAvgMR.setSeriesType(plotData.getSeriesType());
-                            guideSetAvgMR.setSeries("Series");
-                            if (processedMetricGuides.get(metric).get(guideSetAvgMR) != null)
+                            List<GuideSetAvgMR> averages = processedMetricGuides.get(metric);
+                            int index = averages.indexOf(new GuideSetAvgMR(guideSetId, plotData.getSeriesLabel(), plotData.getSeriesType()));
+                            if (index >= 0)
                             {
-                                double controlRange = processedMetricGuides.get(metric).get(guideSetAvgMR).get(0).get("avgMR");
-                                if (data.getmR() != null && data.getmR() > Stats.MOVING_RANGE_UPPER_LIMIT_WEIGHT * controlRange)
+                                GuideSetAvgMR guideSetAvgMR = averages.get(index);
+                                if (data.getmR() != null && data.getmR() > Stats.MOVING_RANGE_UPPER_LIMIT_WEIGHT * guideSetAvgMR.getAverage())
                                 {
                                     processEachOutlier(countMR, sampleFiles, sampleFileString);
                                 }
@@ -502,7 +499,7 @@ public class CUSUMOutliers extends  Outliers
         Map<String, SampleFileInfo> sampleFiles = setSampleFiles(ljOutliers, containerPath);
         List<Integer> validGuideSetIds = new ArrayList<>();
         sampleFiles.forEach((key,val) -> validGuideSetIds.add(val.getGuideSetId()));
-        Map<String, Map<GuideSetAvgMR, List<Map<String, Double>>>> processedMetricGuides = getAllProcessedMetricGuideSets(rawGuideSets);
+        Map<String, List<GuideSetAvgMR>> processedMetricGuides = getAllProcessedMetricGuideSets(rawGuideSets);
 
         List<RawMetricDataSet> filteredRawMetricDataSets = new ArrayList<>();
 

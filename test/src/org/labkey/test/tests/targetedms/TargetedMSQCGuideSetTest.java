@@ -209,11 +209,11 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         ParetoPlotPage paretoPage = new ParetoPlotPage(getDriver());
         ParetoPlotsWebPart paretoPlotsWebPart = paretoPage.getParetoPlotsWebPart();
 
-        assertEquals("Wrong number of Pareto plots", 16, paretoPlotsWebPart.getNumOfParetoPlots());
+        assertEquals("Wrong number of Pareto plots", 20, paretoPlotsWebPart.getNumOfParetoPlots());
         verifyDownloadableParetoPlots(paretoPlotsWebPart.getNumOfParetoPlots());
 
         ParetoPlotsWebPart.ParetoPlotType plotType = ParetoPlotsWebPart.ParetoPlotType.LeveyJennings;
-        int guideSetId = 3;
+        int guideSetId = 4;
         log("Verifying Pareto Plots for " + plotType.getLabel());
         assertEquals("Wrong number of non-conformers for PA", 69, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 0));
         assertEquals("Wrong number of non-conformers for P Area", 64, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 1));

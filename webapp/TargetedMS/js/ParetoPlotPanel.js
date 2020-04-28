@@ -51,8 +51,8 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
                     CUSUMv: {count: 0, data: []},
                     CUSUMvN: {count: 0, data: []},
                     CUSUMvP: {count: 0, data: []},
-                    rM: {count: 0, data: []},
-                    LJ: {count: 0, data: []}
+                    movingRange: {count: 0, data: []},
+                    leveyJennings: {count: 0, data: []}
                 }
             };
         }
@@ -64,10 +64,10 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
 
             var guideSet = this.guideSetIdTrainingDatesMap[outlier.GuideSetId];
 
-            this.addOutlierToCounts(guideSet.stats.CUSUMm, 'CUSUMm', outlier, 'CUSUMm', true);
-            this.addOutlierToCounts(guideSet.stats.CUSUMv, 'CUSUMv', outlier, 'CUSUMv', true);
-            this.addOutlierToCounts(guideSet.stats.LJ, 'LeveyJennings', outlier, 'Levey-Jennings', false);
-            this.addOutlierToCounts(guideSet.stats.rM, 'mR', outlier, 'Moving Range', false);
+            this.addOutlierToCounts(guideSet.stats.CUSUMm, 'CUSUMm', outlier, 'CUSUMm', true, guideSet);
+            this.addOutlierToCounts(guideSet.stats.CUSUMv, 'CUSUMv', outlier, 'CUSUMv', true, guideSet);
+            this.addOutlierToCounts(guideSet.stats.leveyJennings, 'LeveyJennings', outlier, 'Levey-Jennings', false, guideSet);
+            this.addOutlierToCounts(guideSet.stats.movingRange, 'mR', outlier, 'Moving Range', false, guideSet);
         }
 
         var guideSetMap = this.guideSetIdTrainingDatesMap;
@@ -115,11 +115,11 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
             var title = "Training Start: " + guideSetData.trainingStart
                     + (guideSetData.referenceEnd ? " - Reference End: " + guideSetData.referenceEnd : " - Training End: " + guideSetData.trainingEnd);
 
-            var plotIdSuffix = '', plotType = "Levey-Jennings", plotWp = 'pareto-plot-wp', plotData = guideSetData.stats.LJ.data, plotMaxY = guideSetData.stats.LJ.maxOutliers;
+            var plotIdSuffix = '', plotType = "Levey-Jennings", plotWp = 'pareto-plot-wp', plotData = guideSetData.stats.leveyJennings.data, plotMaxY = guideSetData.stats.leveyJennings.maxOutliers;
             var webpartTitleBase = "Guide Set " + guideSetCount + ' ';
             this.addEachParetoPlot(id, webpartTitleBase, plotType, plotWp, title, "ParetoPlot-Guide Set "+guideSetCount + plotIdSuffix, plotData, plotMaxY);
 
-            plotIdSuffix = '_mR'; plotType = "Moving Range"; plotData = guideSetData.stats.rM.data; plotMaxY = guideSetData.stats.rM.maxOutliers;
+            plotIdSuffix = '_mR'; plotType = "Moving Range"; plotData = guideSetData.stats.movingRange.data; plotMaxY = guideSetData.stats.movingRange.maxOutliers;
             this.addEachParetoPlot(id + plotIdSuffix, webpartTitleBase, plotType, plotWp, title, "ParetoPlot-Guide Set "+guideSetCount + plotIdSuffix, plotData, plotMaxY);
 
             plotIdSuffix = '_CUSUMm'; plotType = "Mean CUSUM"; plotData = guideSetData.stats.CUSUMm.data; plotMaxY = guideSetData.stats.CUSUMm.maxOutliers;
@@ -132,7 +132,7 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
         }
     },
 
-    addOutlierToCounts: function(stat, outlierCountProperty, outlier, plotType, isCusum) {
+    addOutlierToCounts: function(stat, outlierCountProperty, outlier, plotType, isCusum, guideSet) {
         var dataElement;
         for (var i = 0; i < stat.data.length; i++) {
             if (outlier.MetricId === stat.data[i].metricId && outlier.MetricLabel === stat.data[i].metricLabel)
@@ -149,6 +149,8 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
                 metricLabel: outlier.MetricLabel,
                 metricName: outlier.MetricName,
                 guideSetId: outlier.GuideSetId,
+                trainingStart: guideSet.trainingStart,
+                referenceEnd: guideSet.referenceEnd,
                 plotType: plotType,
                 percent: 0
             };
@@ -176,6 +178,13 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
 
     plotPareto: function(id, data, title, yAxisMax, plotType)
     {
+        var tickValues;
+        if (yAxisMax < 10) {
+            tickValues = [];
+            for (var i = 0; i <= yAxisMax; i++) {
+                tickValues.push(i);
+            }
+        }
         var hoverFn = plotType.indexOf('CUSUM') > -1 ? this.plotBarHoverEvent : undefined;
         var barChart = new LABKEY.vis.Plot({
             renderTo: id,
@@ -214,7 +223,8 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
                     }
                 },
                 yLeft : {
-                    domain: [0, (yAxisMax==0 ? 1 : yAxisMax)]
+                    domain: [0, (yAxisMax==0 ? 1 : yAxisMax)],
+                    tickValues: tickValues
                 },
                 yRight : {
                     domain: [0, 100]
