@@ -35,6 +35,12 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
         Ext4.get(this.plotDivId).unmask();
 
         var parsed = JSON.parse(response.responseText);
+
+        if (Object.keys(parsed.sampleFiles).length === 0) {
+            Ext4.get(this.plotDivId).update('<div class="tiledPlotPanel">No sample files loaded yet. Import some via Skyline, AutoQC, or the Data Pipeline tab here in Panorama.</div>');
+            return;
+        }
+
         this.guideSetIdTrainingDatesMap = {};
 
         var guideSetDataRows = parsed.guideSets;

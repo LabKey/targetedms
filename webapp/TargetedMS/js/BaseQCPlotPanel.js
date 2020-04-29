@@ -374,7 +374,10 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
     failureHandler: function(response) {
         var plotDiv = Ext4.get(this.plotDivId);
         if (plotDiv) {
-            if (response.message) {
+            if (!response) {
+                plotDiv.update("<span>Failure loading data</span>");
+            }
+            else if (response.message) {
                 plotDiv.update("<span>" + Ext4.util.Format.htmlEncode(response.message) + "</span>");
             }
             else {

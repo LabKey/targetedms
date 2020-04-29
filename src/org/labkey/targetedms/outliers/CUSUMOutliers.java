@@ -29,6 +29,7 @@ import org.labkey.targetedms.model.RawGuideSet;
 import org.labkey.targetedms.model.RawMetricDataSet;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -579,6 +580,9 @@ public class CUSUMOutliers extends  Outliers
 
     private Map<String, SampleFileInfo> setSampleFiles(List<LJOutlier> ljOutliers, String containerPath)
     {
+        if (ljOutliers.isEmpty())
+            return Collections.emptyMap();
+
         int index = 1;
         SampleFileInfo sampleFileInfo = null;
         Map<String, SampleFileInfo> sampleFiles = new HashMap<>();
@@ -588,14 +592,13 @@ public class CUSUMOutliers extends  Outliers
             String sampleFileString = ljOutlier.getSampleFile() + "_" + ljOutlier.getAcquiredTime();
             if (sampleFileInfo == null || (!(ljOutlier.getSampleFile() != null && sampleFileString.equals(getUniqueSampleFile(sampleFileInfo)))))
             {
-                if (sampleFileInfo != null)
-                    sampleFiles.put(getUniqueSampleFile(sampleFileInfo), sampleFileInfo);
                 sampleFileInfo = new SampleFileInfo();
                 sampleFileInfo.setIndex(index++);
                 sampleFileInfo.setSampleFile(ljOutlier.getSampleFile());
                 sampleFileInfo.setAcquiredTime(ljOutlier.getAcquiredTime());
                 sampleFileInfo.setGuideSetId(ljOutlier.getGuideSetId());
                 sampleFileInfo.setIgnoreForAllMetric(ljOutlier.isIgnoreInQC());
+                sampleFiles.put(getUniqueSampleFile(sampleFileInfo), sampleFileInfo);
             }
 
             sampleFileInfo.setIgnoreForAllMetric(ljOutlier.isIgnoreInQC() && sampleFileInfo.isIgnoreForAllMetric());
@@ -608,8 +611,6 @@ public class CUSUMOutliers extends  Outliers
             ljOutlier.setContainerPath(containerPath);
             sampleFileInfo.getItems().add(ljOutlier);
         }
-        assert sampleFileInfo != null;
-        sampleFiles.put(getUniqueSampleFile(sampleFileInfo), sampleFileInfo);
 
         return sampleFiles;
     }
