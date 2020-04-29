@@ -2030,6 +2030,11 @@ public class TargetedMSManager
     public List<QCMetricConfiguration> getEnabledQCMetricConfigurations(Container container, User user)
     {
         QuerySchema targetedMSSchema = DefaultSchema.get(user, container).getSchema(TargetedMSSchema.SCHEMA_NAME);
+        if (targetedMSSchema == null)
+        {
+            // Module must not be enabled in this folder, so bail out
+            return Collections.emptyList();
+        }
         TableInfo metricsTable = targetedMSSchema.getTable("qcMetricsConfig", null);
         List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, new SimpleFilter(FieldKey.fromParts("Enabled"), false, CompareType.NEQ_OR_NULL), new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
         List<QCMetricConfiguration> result = new ArrayList<>();
