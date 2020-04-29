@@ -272,7 +272,7 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
         }
 
         // Do a case-insensitive sort since different DBs have different default collations
-        Collections.sort(annotationSettingForTypings, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+        annotationSettingForTypings.sort((a, b) -> a.getName().compareToIgnoreCase(b.getName()));
 
         return annotationSettingForTypings;
     }
