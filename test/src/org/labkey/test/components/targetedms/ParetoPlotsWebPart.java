@@ -173,6 +173,6 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
 
     protected class ElementCache extends BodyWebPart.ElementCache
     {
-        WebElement notFound = new LazyWebElement(Locator.tagWithClass("div", "tiledPlotPanel").startsWith("No sample files loaded yet."), this).withTimeout(1000);
+        WebElement notFound = new LazyWebElement(Locator.tagWithClass("div", "tiledPlotPanel").startsWith("No sample files loaded yet."), this).withTimeout(10000);
     }
 }
