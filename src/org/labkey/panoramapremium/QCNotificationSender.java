@@ -69,9 +69,9 @@ public class QCNotificationSender implements SkylineDocumentImportListener
                         sampleCount++;
                         SampleFileInfo sampleFileInfoDetails = entry.getValue();
 
-                        if (sampleFileInfoDetails.getNonConformers() > 0 || sampleFileInfoDetails.getmR() > 0 || sampleFileInfoDetails.getCUSUMm() > 0 || sampleFileInfoDetails.getCUSUMv() > 0)
+                        if (sampleFileInfoDetails.getLeveyJennings() > 0 || sampleFileInfoDetails.getmR() > 0 || sampleFileInfoDetails.getCUSUMm() > 0 || sampleFileInfoDetails.getCUSUMv() > 0)
                         {
-                            totalOutliers += sampleFileInfoDetails.getNonConformers() + sampleFileInfoDetails.getmR() + sampleFileInfoDetails.getCUSUMm() + sampleFileInfoDetails.getCUSUMv();
+                            totalOutliers += sampleFileInfoDetails.getLeveyJennings() + sampleFileInfoDetails.getmR() + sampleFileInfoDetails.getCUSUMm() + sampleFileInfoDetails.getCUSUMv();
                             outliersMap.put(entry.getKey(), entry.getValue());
                         }
 
@@ -151,7 +151,7 @@ public class QCNotificationSender implements SkylineDocumentImportListener
         for (Map.Entry<String, SampleFileInfo> entry : outliersMap.entrySet())
         {
             SampleFileInfo sampleFileInfoDetails = entry.getValue();
-            html.append("<h4>").append(PageFlowUtil.filter(entry.getKey())).append(" - ").append(sampleFileInfoDetails.getNonConformers() + sampleFileInfoDetails.getmR() + sampleFileInfoDetails.getCUSUMm() + sampleFileInfoDetails.getCUSUMv()).append(" total outliers</h4>");
+            html.append("<h4>").append(PageFlowUtil.filter(entry.getKey())).append(" - ").append(sampleFileInfoDetails.getLeveyJennings() + sampleFileInfoDetails.getmR() + sampleFileInfoDetails.getCUSUMm() + sampleFileInfoDetails.getCUSUMv()).append(" total outliers</h4>");
             html.append("<p>Acquired ").append(DateUtil.formatDateTime(container, sampleFileInfoDetails.getAcquiredTime())).append("</p>");
             html.append("<table style=\"border: 1px solid #d3d3d3;\"><thead><tr><td style=\"border: 1px solid #d3d3d3;\"></td><td  style=\"border: 1px solid #d3d3d3;\" colspan=\"7\" align=\"center\">Outliers</td></tr>")
                     .append("<tr>")
@@ -174,10 +174,10 @@ public class QCNotificationSender implements SkylineDocumentImportListener
             sampleFileInfoDetails.getItems().sort(Comparator.comparing(LJOutlier::getMetricLabel));
 
             sampleFileInfoDetails.getItems().forEach(outlier -> {
-                var outlierTotal = outlier.getNonConformers() + outlier.getmR() + outlier.getCUSUMmN() + outlier.getCUSUMmP() + outlier.getCUSUMvN() + outlier.getCUSUMvP();
+                var outlierTotal = outlier.getLeveyJennings() + outlier.getmR() + outlier.getCUSUMmN() + outlier.getCUSUMmP() + outlier.getCUSUMvN() + outlier.getCUSUMvP();
                 html.append("<tr>")
                         .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(PageFlowUtil.filter(outlier.getMetricLabel())).append("</td>")
-                        .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(outlier.getNonConformers() > 0 ? "<b>" : "").append(PageFlowUtil.filter(outlier.getNonConformers())).append("</td>").append(outlier.getNonConformers() > 0 ? "</b>" : "")
+                        .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(outlier.getLeveyJennings() > 0 ? "<b>" : "").append(PageFlowUtil.filter(outlier.getLeveyJennings())).append("</td>").append(outlier.getLeveyJennings() > 0 ? "</b>" : "")
                         .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(outlier.getmR() > 0 ? "<b>" : "").append(PageFlowUtil.filter(outlier.getmR())).append("</td>").append(outlier.getmR() > 0 ? "</b>" : "")
                         .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(outlier.getCUSUMmN() > 0 ? "<b>" : "").append(PageFlowUtil.filter(outlier.getCUSUMmN())).append("</td>").append(outlier.getCUSUMmN() > 0 ? "</b>" : "")
                         .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(outlier.getCUSUMmP() > 0 ? "<b>" : "").append(PageFlowUtil.filter(outlier.getCUSUMmP())).append("</td>").append(outlier.getCUSUMmP() > 0 ? "</b>" : "")
@@ -191,14 +191,14 @@ public class QCNotificationSender implements SkylineDocumentImportListener
             // Remember the total for the most recent import
             if (emailSubjectAndBody.getRecentOutliers() == 0)
             {
-                emailSubjectAndBody.setRecentOutliers(sampleFileInfoDetails.getNonConformers() + sampleFileInfoDetails.getmR() + sampleFileInfoDetails.getCUSUMmN() + sampleFileInfoDetails.getCUSUMmP() + sampleFileInfoDetails.getCUSUMvN() + sampleFileInfoDetails.getCUSUMvP());
+                emailSubjectAndBody.setRecentOutliers(sampleFileInfoDetails.getLeveyJennings() + sampleFileInfoDetails.getmR() + sampleFileInfoDetails.getCUSUMmN() + sampleFileInfoDetails.getCUSUMmP() + sampleFileInfoDetails.getCUSUMvN() + sampleFileInfoDetails.getCUSUMvP());
             }
 
-            var totalOutliers = sampleFileInfoDetails.getNonConformers() + sampleFileInfoDetails.getmR() + sampleFileInfoDetails.getCUSUMmN() + sampleFileInfoDetails.getCUSUMmP() + sampleFileInfoDetails.getCUSUMvN() + sampleFileInfoDetails.getCUSUMvP();
+            var totalOutliers = sampleFileInfoDetails.getLeveyJennings() + sampleFileInfoDetails.getmR() + sampleFileInfoDetails.getCUSUMmN() + sampleFileInfoDetails.getCUSUMmP() + sampleFileInfoDetails.getCUSUMvN() + sampleFileInfoDetails.getCUSUMvP();
 
             html.append("<tr>")
                     .append("<td style=\"border: 1px solid #d3d3d3;\"><b>Total</b></td>")
-                    .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(sampleFileInfoDetails.getNonConformers() > 0 ? "<b>" : "").append(PageFlowUtil.filter(sampleFileInfoDetails.getNonConformers())).append("</td>").append(sampleFileInfoDetails.getNonConformers() > 0 ? "</b>" : "")
+                    .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(sampleFileInfoDetails.getLeveyJennings() > 0 ? "<b>" : "").append(PageFlowUtil.filter(sampleFileInfoDetails.getLeveyJennings())).append("</td>").append(sampleFileInfoDetails.getLeveyJennings() > 0 ? "</b>" : "")
                     .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(sampleFileInfoDetails.getmR() > 0 ? "<b>" : "").append(PageFlowUtil.filter(sampleFileInfoDetails.getmR())).append("</td>").append(sampleFileInfoDetails.getmR() > 0 ? "</b>" : "")
                     .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(sampleFileInfoDetails.getCUSUMmN() > 0 ? "<b>" : "").append(PageFlowUtil.filter(sampleFileInfoDetails.getCUSUMmN())).append("</td>").append(sampleFileInfoDetails.getCUSUMmN() > 0 ? "</b>" : "")
                     .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(sampleFileInfoDetails.getCUSUMmP() > 0 ? "<b>" : "").append(PageFlowUtil.filter(sampleFileInfoDetails.getCUSUMmP())).append("</td>").append(sampleFileInfoDetails.getCUSUMmP() > 0 ? "</b>" : "")
