@@ -20,12 +20,12 @@ import org.json.JSONObject;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.Sort;
 import org.labkey.api.security.User;
+import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.QCMetricConfiguration;
 import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.visualization.Stats;
 import org.labkey.targetedms.model.GuideSetAvgMR;
 import org.labkey.api.targetedms.model.LJOutlier;
-import org.labkey.targetedms.model.RawGuideSet;
 import org.labkey.targetedms.model.RawMetricDataSet;
 
 import java.util.ArrayList;
@@ -37,52 +37,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 
 public class CUSUMOutliers extends  Outliers
 {
-
-    private String metricGuideSetRawSql(int id, String schema1Name, String query1Name, String series)
-    {
-        String selectCols = "SampleFileId, SampleFileId.AcquiredTime, SeriesLabel, MetricValue";
-        String series1SQL = "SELECT '" + (series != null ? series : "series1") + "' AS SeriesType, " + selectCols + " FROM "+ schema1Name + "." + query1Name;
-        String exclusionWhereSQL = getExclusionWhereSql(id);
-
-        return "SELECT gs.RowId AS GuideSetId, gs.TrainingStart, gs.TrainingEnd, gs.ReferenceEnd, p.SeriesLabel, p.AcquiredTime, p.MetricValue, p.SeriesType, " +
-                "\nFROM GuideSetForOutliers gs" +
-                "\nLEFT JOIN (" + series1SQL + exclusionWhereSQL + ") as p"+
-                "\n  ON p.AcquiredTime >= gs.TrainingStart AND p.AcquiredTime <= gs.TrainingEnd" +
-                "\n ORDER BY GuideSetId, p.SeriesLabel, p.AcquiredTime";
-    }
-
-    private String getSingleMetricGuideSetRawSql(int metricId, String metricType, String schemaName, String queryName, String series)
-    {
-        return  "SELECT s.*, g.Comment, " +  "(SELECT " + metricType + " FROM qcmetricconfiguration where id = " + metricId + ")" + " AS MetricType FROM (" +
-                metricGuideSetRawSql(metricId, schemaName, queryName, series) +
-                ") s" +
-                " LEFT JOIN GuideSet g ON g.RowId = s.GuideSetId";
-    }
-
-    private String queryContainerSampleFileRawGuideSetStats(List<QCMetricConfiguration> configurations)
-    {
-        StringBuilder sqlBuilder = new StringBuilder();
-        String sep = "";
-
-        for (QCMetricConfiguration configuration: configurations)
-        {
-            int id = configuration.getId();
-            String schema1Name = configuration.getSeries1SchemaName();
-            String query1Name = configuration.getSeries1QueryName();
-            sqlBuilder.append(sep).append("(").append(getSingleMetricGuideSetRawSql(id, "Series1Label", schema1Name, query1Name, "series1")).append(")");
-            sep = "\nUNION\n";
-
-            if(configuration.getSeries2SchemaName() != null && configuration.getSeries2QueryName() != null) {
-                String schema2Name = configuration.getSeries2SchemaName();
-                String query2Name = configuration.getSeries2QueryName();
-                sqlBuilder.append(sep).append("(").append(getSingleMetricGuideSetRawSql(id, "Series2Label", schema2Name, query2Name, "series2")).append(")");
-            }
-        }
-        return "SELECT * FROM (" + sqlBuilder.toString() + ") a"; //wrap unioned results in sql to support sorting
-    }
 
     private String getEachSeriesTypePlotDataSql(String type, int id, String schemaName, String queryName, String whereClause, String metricType)
     {
@@ -125,13 +83,6 @@ public class CUSUMOutliers extends  Outliers
         return "SELECT * FROM (" + sqlBuilder.toString() + ") a"; //wrap unioned results in sql to support sorting
     }
 
-    public List<RawGuideSet> getRawGuideSets(Container container, User user, List<QCMetricConfiguration> configurations)
-    {
-        Set<String> columnNames = Set.of("trainingStart","trainingEnd","seriesLabel","metricValue","metricType","acquiredTime","seriesType","comment","referenceEnd","guideSetId");
-
-        return executeQuery(container, user, queryContainerSampleFileRawGuideSetStats(configurations), columnNames, new Sort("guideSetId,seriesLabel,acquiredTime")).getArrayList(RawGuideSet.class);
-    }
-
     public List<RawMetricDataSet> getRawMetricDataSets(Container container, User user, List<QCMetricConfiguration> configurations)
     {
         Set<String> columnNames = Set.of("seriesType","sampleFile","metricType","precursorId","precursorChromInfoId","seriesLabel",
@@ -140,18 +91,19 @@ public class CUSUMOutliers extends  Outliers
         return executeQuery(container, user, queryContainerSampleFileRawData(configurations), columnNames, new Sort("seriesType,seriesLabel,acquiredTime")).getArrayList(RawMetricDataSet.class);
     }
 
-    private Map<String, List<GuideSetAvgMR>> getAllProcessedMetricGuideSets(List<RawGuideSet> rawGuideSets)
+    /** @return metric type -> calculated values per precursor/guide set combo */
+    private Map<String, List<GuideSetAvgMR>> getAllProcessedMetricGuideSets(List<RawMetricDataSet> rawMetricData)
     {
-        Map<String, List<RawGuideSet>> metricGuideSet = new LinkedHashMap<>();
-        Map<String, List<GuideSetAvgMR>> processedMetricGuides = new LinkedHashMap<>();
+        Map<String, List<RawMetricDataSet>> metricGuideSet = new TreeMap<>();
+        Map<String, List<GuideSetAvgMR>> processedMetricGuides = new TreeMap<>();
         MovingRangeOutliers mr = new MovingRangeOutliers();
 
-        for (RawGuideSet row : rawGuideSets)
+        for (RawMetricDataSet row : rawMetricData)
         {
             String metricType = row.getMetricType();
             if(metricGuideSet.get(metricType) == null) {
-                List<RawGuideSet> sets = new ArrayList<>();
-                rawGuideSets.forEach(gs->{
+                List<RawMetricDataSet> sets = new ArrayList<>();
+                rawMetricData.forEach(gs->{
                     if(gs.getMetricType() != null && gs.getMetricType().equals(metricType))
                         sets.add(gs);
                 });
@@ -306,7 +258,7 @@ public class CUSUMOutliers extends  Outliers
                 String metricType = row.getMetricType();
                 Integer guideId = row.getGuideSetId();
                 rawMetricDataSets.forEach(ds-> {
-                    if(ds.getMetricType().equalsIgnoreCase(metricType) && ds.getGuideSetId().equals(guideId))
+                    if(ds.getMetricType().equalsIgnoreCase(metricType) && guideId.equals(ds.getGuideSetId()))
                         setList.add(ds);
                 });
                 metricDataSet.get(row.getMetricType()).put(row.getGuideSetId(), setList);
@@ -496,12 +448,15 @@ public class CUSUMOutliers extends  Outliers
         return transformedOutliers;
     }
 
-    public Map<String, SampleFileInfo> getSampleFiles(List<LJOutlier> ljOutliers, List<RawGuideSet> rawGuideSets, List<RawMetricDataSet> rawMetricDataSets, String containerPath)
+    public Map<String, SampleFileInfo> getSampleFiles(List<LJOutlier> ljOutliers, List<RawMetricDataSet> rawMetricDataSets, List<GuideSet> guideSets)
     {
-        Map<String, SampleFileInfo> sampleFiles = setSampleFiles(ljOutliers, containerPath);
+        Map<String, SampleFileInfo> sampleFiles = setSampleFiles(ljOutliers);
         Set<Integer> validGuideSetIds = new HashSet<>();
         sampleFiles.forEach((key,val) -> validGuideSetIds.add(val.getGuideSetId()));
-        Map<String, List<GuideSetAvgMR>> processedMetricGuides = getAllProcessedMetricGuideSets(rawGuideSets);
+
+        List<RawMetricDataSet> trainingData = filterToTrainingData(rawMetricDataSets, guideSets);
+
+        Map<String, List<GuideSetAvgMR>> processedMetricGuides = getAllProcessedMetricGuideSets(trainingData);
 
         List<RawMetricDataSet> filteredRawMetricDataSets = new ArrayList<>();
 
@@ -565,9 +520,29 @@ public class CUSUMOutliers extends  Outliers
         return sampleFiles;
     }
 
-    public JSONObject getOtherQCSampleFileStats(List<LJOutlier> ljOutliers, List<RawGuideSet> rawGuideSets, List<RawMetricDataSet> rawMetricDataSets, String containerPath)
+    /** Subset the rows to just those that are part of a guide set */
+    private List<RawMetricDataSet> filterToTrainingData(List<RawMetricDataSet> rawRows, List<GuideSet> guideSets)
     {
-        return getSampleFilesJSON(getSampleFiles(ljOutliers, rawGuideSets, rawMetricDataSets, containerPath));
+        List<RawMetricDataSet> result = new ArrayList<>();
+        for (RawMetricDataSet raw : rawRows)
+        {
+            for (GuideSet guideSet : guideSets)
+            {
+                if (!raw.isIgnoreInQC() &&
+                        guideSet.getTrainingStart().compareTo(raw.getAcquiredTime()) <= 0 &&
+                        (guideSet.getTrainingEnd() == null || guideSet.getTrainingEnd().compareTo(raw.getAcquiredTime()) >= 0))
+                {
+                    result.add(raw);
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    public JSONObject getOtherQCSampleFileStats(List<LJOutlier> ljOutliers, List<RawMetricDataSet> rawMetricDataSets, List<GuideSet> guideSets)
+    {
+        return getSampleFilesJSON(getSampleFiles(ljOutliers, rawMetricDataSets, guideSets));
     }
 
     public JSONObject getSampleFilesJSON(Map<String, SampleFileInfo> sampleFiles)
@@ -578,7 +553,7 @@ public class CUSUMOutliers extends  Outliers
         return sampleFilesJSON;
     }
 
-    private Map<String, SampleFileInfo> setSampleFiles(List<LJOutlier> ljOutliers, String containerPath)
+    private Map<String, SampleFileInfo> setSampleFiles(List<LJOutlier> ljOutliers)
     {
         if (ljOutliers.isEmpty())
             return Collections.emptyMap();
@@ -608,7 +583,6 @@ public class CUSUMOutliers extends  Outliers
                 sampleFileInfo.setLeveyJennings(sampleFileInfo.getLeveyJennings() + ljOutlier.getLeveyJennings());
                 sampleFileInfo.setTotalCount(sampleFileInfo.getTotalCount() + ljOutlier.getTotalCount());
             }
-            ljOutlier.setContainerPath(containerPath);
             sampleFileInfo.getItems().add(ljOutlier);
         }
 

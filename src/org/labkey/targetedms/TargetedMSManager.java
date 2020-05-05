@@ -79,7 +79,6 @@ import org.labkey.api.view.UnauthorizedException;
 import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.QCMetricConfiguration;
-import org.labkey.targetedms.model.RawGuideSet;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.outliers.CUSUMOutliers;
 import org.labkey.targetedms.outliers.Outliers;
@@ -2089,9 +2088,8 @@ public class TargetedMSManager
             List<LJOutlier> ljOutliers = Outliers.getLJOutliers(enabledQCMetricConfigurations, container, user, sampleFileLimit);
             if (!ljOutliers.isEmpty())
             {
-                List<RawGuideSet> rawGuideSets = cusumOutliers.getRawGuideSets(container, user, enabledQCMetricConfigurations);
                 List<RawMetricDataSet> rawMetricDataSets = cusumOutliers.getRawMetricDataSets(container, user, enabledQCMetricConfigurations);
-                return cusumOutliers.getSampleFiles(ljOutliers,  rawGuideSets, rawMetricDataSets,container.getPath());
+                return cusumOutliers.getSampleFiles(ljOutliers, rawMetricDataSets, TargetedMSManager.getGuideSets(container, user));
             }
         }
         return null;

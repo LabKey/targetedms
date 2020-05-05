@@ -41,7 +41,6 @@ import org.labkey.api.view.*;
 import org.labkey.api.targetedms.model.LJOutlier;
 import org.labkey.api.view.PopupMenu;
 import org.labkey.targetedms.model.GuideSet;
-import org.labkey.targetedms.model.RawGuideSet;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.outliers.CUSUMOutliers;
 import org.jfree.chart.title.TextTitle;
@@ -1030,11 +1029,10 @@ public class TargetedMSController extends SpringActionController
 
             List<LJOutlier> ljOutliers = Outliers.getLJOutliers(enabledQCMetricConfigurations, getContainer(), getUser(), form.getSampleLimit());
 
-            List<RawGuideSet> rawGuideSets = cusumOutliers.getRawGuideSets(getContainer(), getUser(), enabledQCMetricConfigurations);
-            List<RawMetricDataSet> rawMetricDataSets = cusumOutliers.getRawMetricDataSets(getContainer(), getUser(), enabledQCMetricConfigurations);
-            JSONObject sampleFiles = cusumOutliers.getOtherQCSampleFileStats(ljOutliers, rawGuideSets, rawMetricDataSets, getContainer().getPath());
-
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
+
+            List<RawMetricDataSet> rawMetricDataSets = cusumOutliers.getRawMetricDataSets(getContainer(), getUser(), enabledQCMetricConfigurations);
+            JSONObject sampleFiles = cusumOutliers.getOtherQCSampleFileStats(ljOutliers, rawMetricDataSets, guideSets);
 
             response.put("outliers", ljOutliers.stream().map(LJOutlier::toJSON).collect(Collectors.toList()));
             response.put("sampleFiles", sampleFiles);

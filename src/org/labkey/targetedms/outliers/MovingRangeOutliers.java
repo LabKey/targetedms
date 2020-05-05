@@ -17,7 +17,7 @@ package org.labkey.targetedms.outliers;
 
 import org.labkey.api.visualization.Stats;
 import org.labkey.targetedms.model.GuideSetAvgMR;
-import org.labkey.targetedms.model.RawGuideSet;
+import org.labkey.targetedms.model.RawMetricDataSet;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -26,12 +26,12 @@ import java.util.Map;
 
 public class MovingRangeOutliers
 {
-    public List<GuideSetAvgMR> getGuideSetAvgMRs(List<RawGuideSet> rawGuideSet)
+    public List<GuideSetAvgMR> getGuideSetAvgMRs(List<RawMetricDataSet> rawGuideSet)
     {
         Map<GuideSetAvgMR, List<Double>> guideSetDataMap = new LinkedHashMap<>();
         List<GuideSetAvgMR> movingRangeMap = new ArrayList<>();
 
-        for (RawGuideSet row : rawGuideSet)
+        for (RawMetricDataSet row : rawGuideSet)
         {
             GuideSetAvgMR guideSetAvgMR = new GuideSetAvgMR(row.getGuideSetId(), row.getSeriesLabel(), row.getSeriesType());
 

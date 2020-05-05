@@ -31,7 +31,6 @@ public class LJOutlier extends OutlierCounts
     Date _acquiredTime;
     boolean _ignoreInQC;
     int _totalCount;
-    String _containerPath;
 
     @Nullable
     public Integer getGuideSetId()
@@ -119,17 +118,7 @@ public class LJOutlier extends OutlierCounts
         _totalCount = totalCount;
     }
 
-    @Nullable
-    public String getContainerPath()
-    {
-        return _containerPath;
-    }
-
-    public void setContainerPath(String containerPath)
-    {
-        _containerPath = containerPath;
-    }
-
+    @Override
     public JSONObject toJSON()
     {
         JSONObject jsonObject = super.toJSON();
@@ -142,7 +131,6 @@ public class LJOutlier extends OutlierCounts
         jsonObject.put("AcquiredTime", _acquiredTime);
         jsonObject.put("IgnoreInQC", _ignoreInQC);
         jsonObject.put("TotalCount", _totalCount);
-        jsonObject.put("ContainerPath", _containerPath);
 
         return jsonObject;
     }
