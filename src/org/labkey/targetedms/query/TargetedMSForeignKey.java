@@ -61,6 +61,7 @@ public class TargetedMSForeignKey extends LookupForeignKey
 
         public AnnotationsContainerFilter(ContainerFilter annotationContainerFilter)
         {
+            super(null,null);
             _annotationContainerFilter = annotationContainerFilter == null ? ContainerFilter.CURRENT : annotationContainerFilter;
         }
 
