@@ -24,7 +24,6 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
 
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetQCMetricOutliers.api'),
-            params: {sampleLimit: this.sampleLimit},
             success: this.processResponse,
             failure: LABKEY.Utils.getCallbackWrapper(this.failureHandler),
             scope: this

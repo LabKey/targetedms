@@ -1032,7 +1032,7 @@ public class TargetedMSController extends SpringActionController
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
 
             List<RawMetricDataSet> rawMetricDataSets = cusumOutliers.getRawMetricDataSets(getContainer(), getUser(), enabledQCMetricConfigurations);
-            JSONObject sampleFiles = cusumOutliers.getOtherQCSampleFileStats(ljOutliers, rawMetricDataSets, guideSets);
+            JSONObject sampleFiles = cusumOutliers.getOtherQCSampleFileStats(ljOutliers, rawMetricDataSets, guideSets, form.getSampleLimit());
 
             response.put("outliers", ljOutliers.stream().map(LJOutlier::toJSON).collect(Collectors.toList()));
             response.put("sampleFiles", sampleFiles);

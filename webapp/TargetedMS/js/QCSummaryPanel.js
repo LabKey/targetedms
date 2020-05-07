@@ -221,10 +221,9 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                 params: {sampleLimit: this.sampleLimit},
                 success: function(response) {
                     var parsed = JSON.parse(response.responseText);
-                    if(parsed.outliers) {
+                    if(parsed.sampleFiles) {
                         this.renderContainerSampleFileStats({
                             container: container,
-                            dataRows: parsed.outliers,
                             limitedSampleFiles: true,
                             sampleFiles: parsed.sampleFiles
                         })

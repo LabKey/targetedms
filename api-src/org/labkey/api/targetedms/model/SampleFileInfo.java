@@ -128,4 +128,14 @@ public class SampleFileInfo extends OutlierCounts
 
         return jsonObject;
     }
+
+    public static String getKey(String sampleName, Date acquiredTime)
+    {
+        return sampleName + "_" + acquiredTime;
+    }
+
+    public String getKey()
+    {
+        return getKey(sampleFile, acquiredTime);
+    }
 }

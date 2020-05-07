@@ -3,7 +3,7 @@ package org.labkey.api.targetedms.model;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
-public abstract class OutlierCounts
+public class OutlierCounts
 {
     private int _CUSUMmP;
     private int _CUSUMvP;
