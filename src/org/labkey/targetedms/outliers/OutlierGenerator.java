@@ -50,9 +50,6 @@ public class OutlierGenerator
 
     private String getEachSeriesTypePlotDataSql(int seriesIndex, int id, String schemaName, String queryName)
     {
-//        return "(SELECT PrecursorId, PrecursorChromInfoId, SampleFileId, SeriesLabel, DataType, MetricValue, MZ, "
-//                + "\n " + seriesIndex + " AS MetricSeriesIndex, " + id + " AS MetricId"
-//                + "\n FROM " + schemaName + '.' + queryName + ")";
         return "(SELECT PrecursorChromInfoId, SampleFileId, CAST(IFDEFINED(SeriesLabel) AS VARCHAR) AS SeriesLabel, "
                 + "\nMetricValue, " + seriesIndex + " AS MetricSeriesIndex, " + id + " AS MetricId"
                 + "\n FROM " + schemaName + '.' + queryName + ")";
@@ -116,7 +113,10 @@ public class OutlierGenerator
                 new Sort("MetricSeriesIndex,seriesLabel,acquiredTime")).getArrayList(RawMetricDataSet.class);
     }
 
-    /** Calculate guide set stats for Levey-Jennings and moving range comparisons */
+    /**
+     * Calculate guide set stats for Levey-Jennings and moving range comparisons.
+     * @param guideSets id to GuideSet
+     */
     public Map<GuideSetKey, GuideSetStats> getAllProcessedMetricGuideSets(List<RawMetricDataSet> rawMetricData, Map<Integer, GuideSet> guideSets)
     {
         Map<GuideSetKey, GuideSetStats> result = new HashMap<>();
@@ -132,6 +132,7 @@ public class OutlierGenerator
         return result;
     }
 
+    /** @param metrics id to QC metric */
     public List<SampleFileInfo> getSampleFiles(List<RawMetricDataSet> dataRows, Map<GuideSetKey, GuideSetStats> stats, Map<Integer, QCMetricConfiguration> metrics, Container container, Integer limit)
     {
         List<SampleFileInfo> result = TargetedMSManager.getSampleFiles(container, null).stream().map(SampleFile::toSampleFileInfo).collect(Collectors.toList());
@@ -147,6 +148,7 @@ public class OutlierGenerator
             dataRow.increment(info.getMetricCounts(metricLabel), stats.get(dataRow.getGuideSetKey()));
         }
 
+        // Order so most recent are at the top, and limit if requested
         result.sort(Comparator.comparing(SampleFileInfo::getAcquiredTime).reversed());
         if (limit != null && result.size() > limit.intValue())
         {
@@ -156,6 +158,7 @@ public class OutlierGenerator
         return result;
     }
 
+    /** @param metrics id to QC metric */
     public String getMetricLabel(Map<Integer, QCMetricConfiguration> metrics, RawMetricDataSet dataRow)
     {
         QCMetricConfiguration metric = metrics.get(dataRow.getMetricId());
