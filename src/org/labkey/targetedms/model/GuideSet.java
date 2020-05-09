@@ -18,6 +18,7 @@ package org.labkey.targetedms.model;
 import org.json.JSONObject;
 import org.labkey.api.data.Entity;
 import org.labkey.api.targetedms.model.OutlierCounts;
+import org.labkey.targetedms.outliers.OutlierGenerator;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -101,19 +102,7 @@ public class GuideSet extends Entity
         {
             if (dataRow.getGuideSetId() == getRowId())
             {
-                QCMetricConfiguration metric = metrics.get(dataRow.getMetricId());
-                String metricLabel;
-                switch (dataRow.getMetricSeriesIndex())
-                {
-                    case 1:
-                        metricLabel = metric.getSeries1Label();
-                        break;
-                    case 2:
-                        metricLabel = metric.getSeries2Label();
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unexpected metric series index: " + dataRow.getMetricSeriesIndex());
-                }
+                String metricLabel = OutlierGenerator.get().getMetricLabel(metrics, dataRow);
 
                 OutlierCounts counts = allMetricOutliers.computeIfAbsent(metricLabel, x -> new OutlierCounts());
                 GuideSetStats s = stats.get(dataRow.getGuideSetKey());

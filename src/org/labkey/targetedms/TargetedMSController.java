@@ -1027,21 +1027,16 @@ public class TargetedMSController extends SpringActionController
                 return response;
             }
 
-            OutlierGenerator outlierGenerator = new OutlierGenerator();
-
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
-
-            List<RawMetricDataSet> rawMetricDataSets = outlierGenerator.getRawMetricDataSets(getContainer(), getUser(), enabledQCMetricConfigurations);
-
-            List<RawMetricDataSet> trainingData = outlierGenerator.filterToTrainingData(rawMetricDataSets, guideSets);
-            Map<GuideSetKey, GuideSetStats> stats = outlierGenerator.getAllProcessedMetricGuideSets(trainingData);
-
-            outlierGenerator.calculateMovingRangeAndCUSUM(rawMetricDataSets);
             Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
 
-            List<SampleFileInfo> sampleFiles = outlierGenerator.getSampleFiles(rawMetricDataSets, stats, metricMap, getContainer());
+            List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(getContainer(), getUser(), enabledQCMetricConfigurations);
 
-            response.put("sampleFiles", outlierGenerator.getSampleFilesJSON(sampleFiles, form.getSampleLimit()));
+            Map<GuideSetKey, GuideSetStats> stats = OutlierGenerator.get().getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+
+            List<SampleFileInfo> sampleFiles = OutlierGenerator.get().getSampleFiles(rawMetricDataSets, stats, metricMap, getContainer(), form.getSampleLimit());
+
+            response.put("sampleFiles", sampleFiles.stream().map(sample -> sample.toJSON()).collect(Collectors.toList()));
             response.put("guideSets", guideSets.stream().map(x -> x.toJSON(rawMetricDataSets, metricMap, stats)).collect(Collectors.toList()));
 
             return response;

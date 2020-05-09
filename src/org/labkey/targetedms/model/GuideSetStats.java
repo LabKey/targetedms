@@ -17,50 +17,141 @@ package org.labkey.targetedms.model;
 
 import org.labkey.api.visualization.Stats;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GuideSetStats
 {
     private final GuideSetKey _key;
+    private final GuideSet _guideSet;
+
+    /** Rows that define the normal range for this guide set */
+    private final List<RawMetricDataSet> _trainingRows = new ArrayList<>();
+    /** Rows that reference the training values */
+    private final List<RawMetricDataSet> _referenceRows = new ArrayList<>();
 
     public GuideSetKey getKey()
     {
         return _key;
     }
 
-    private final double _standardDeviation;
-    private final double _average;
+    private double _standardDeviation;
+    private double _average;
 
-    private final double _movingRangeAverage;
-    private final double _movingRangeSD;
+    private double _movingRangeAverage;
 
-    public GuideSetStats(GuideSetKey key, Double[] values)
+    private boolean _locked = false;
+
+    public GuideSetStats(GuideSetKey key, GuideSet guideSet)
     {
         _key = key;
-
-        _average = Stats.getMean(values);
-        _standardDeviation = Stats.getStdDev(values, true);
-
-        Double[] movingRanges = Stats.getMovingRanges(values, false, null);
-        _movingRangeAverage = Stats.getMean(movingRanges);
-        _movingRangeSD = Stats.getStdDev(movingRanges, true);
+        _guideSet = guideSet;
     }
 
     public double getStandardDeviation()
     {
+        assertLocked();
         return _standardDeviation;
+    }
+
+    private void assertLocked()
+    {
+        if (!_locked)
+        {
+            throw new IllegalStateException("Stats have not yet been calculated");
+        }
     }
 
     public double getAverage()
     {
+        assertLocked();
         return _average;
     }
 
     public double getMovingRangeAverage()
     {
+        assertLocked();
         return _movingRangeAverage;
     }
 
-    public double getMovingRangeSD()
+    public void addRow(RawMetricDataSet row)
     {
-        return _movingRangeSD;
+        if (_locked)
+        {
+            throw new IllegalStateException("Stats have already been locked");
+        }
+        if (!row.isIgnoreInQC() &&
+                _guideSet.getTrainingStart().compareTo(row.getAcquiredTime()) <= 0 &&
+                (_guideSet.getTrainingEnd() == null || _guideSet.getTrainingEnd().compareTo(row.getAcquiredTime()) >= 0))
+        {
+            _trainingRows.add(row);
+        }
+        else
+        {
+            _referenceRows.add(row);
+        }
+    }
+
+    private Double[] getValues(List<RawMetricDataSet> rows, boolean transformNullsToZero, boolean roundValues)
+    {
+        List<Double> result = new ArrayList<>();
+        for (RawMetricDataSet row : rows)
+        {
+            Double value = row.getMetricValue();
+            if (value == null)
+            {
+                if (transformNullsToZero)
+                {
+                    result.add(0.0d);
+                }
+            }
+            else if (roundValues)
+            {
+                result.add((double) Math.round(value * 10000.0d) / 10000.0d);
+            }
+            else
+            {
+                result.add(value.doubleValue());
+            }
+        }
+
+        return result.toArray(new Double[0]);
+    }
+
+    public void calculateStats()
+    {
+        _locked = true;
+
+        Double[] trainingValues = getValues(_trainingRows, false, false);
+
+        _average = Stats.getMean(trainingValues);
+        _standardDeviation = Stats.getStdDev(trainingValues, true);
+
+        Double[] movingRanges = Stats.getMovingRanges(trainingValues, false, null);
+        _movingRangeAverage = Stats.getMean(movingRanges);
+
+        List<RawMetricDataSet> allRows = new ArrayList<>(_trainingRows.size() + _referenceRows.size());
+        allRows.addAll(_trainingRows);
+        allRows.addAll(_referenceRows);
+
+        Double[] metricVals = getValues(allRows, true, true);
+
+        Double[] mRs = Stats.getMovingRanges(metricVals, false, null);
+
+        double[] positiveCUSUMm = Stats.getCUSUMS(metricVals, false, false, false, null);
+        double[] negativeCUSUMm = Stats.getCUSUMS(metricVals, true, false, false, null);
+
+        double[] positiveCUSUMv = Stats.getCUSUMS(metricVals, false, true, false, null);
+        double[] negativeCUSUMv = Stats.getCUSUMS(metricVals, true, true, false, null);
+
+        for (int i = 0; i < allRows.size(); i++)
+        {
+            RawMetricDataSet row = allRows.get(i);
+            row.setmR(mRs[i]);
+            row.setCUSUMmP(positiveCUSUMm[i]);
+            row.setCUSUMmN(negativeCUSUMm[i]);
+            row.setCUSUMvP(positiveCUSUMv[i]);
+            row.setCUSUMvN(negativeCUSUMv[i]);
+        }
     }
 }

@@ -15,14 +15,12 @@
  */
 package org.labkey.targetedms.outliers;
 
-import org.json.JSONArray;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.Sort;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.query.QueryService;
 import org.labkey.api.security.User;
 import org.labkey.api.targetedms.model.SampleFileInfo;
-import org.labkey.api.visualization.Stats;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.model.GuideSet;
@@ -32,10 +30,8 @@ import org.labkey.targetedms.model.QCMetricConfiguration;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.parser.SampleFile;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -43,10 +39,22 @@ import java.util.stream.Collectors;
 
 public class OutlierGenerator
 {
+    private static final OutlierGenerator INSTANCE = new OutlierGenerator();
+
+    private OutlierGenerator() {}
+
+    public static OutlierGenerator get()
+    {
+        return INSTANCE;
+    }
+
     private String getEachSeriesTypePlotDataSql(int seriesIndex, int id, String schemaName, String queryName)
     {
-        return "(SELECT PrecursorId, PrecursorChromInfoId, SampleFileId, SeriesLabel, DataType, MetricValue, MZ, "
-                + "\n " + seriesIndex + " AS MetricSeriesIndex, " + id + " AS MetricId"
+//        return "(SELECT PrecursorId, PrecursorChromInfoId, SampleFileId, SeriesLabel, DataType, MetricValue, MZ, "
+//                + "\n " + seriesIndex + " AS MetricSeriesIndex, " + id + " AS MetricId"
+//                + "\n FROM " + schemaName + '.' + queryName + ")";
+        return "(SELECT PrecursorChromInfoId, SampleFileId, CAST(IFDEFINED(SeriesLabel) AS VARCHAR) AS SeriesLabel, "
+                + "\nMetricValue, " + seriesIndex + " AS MetricSeriesIndex, " + id + " AS MetricId"
                 + "\n FROM " + schemaName + '.' + queryName + ")";
     }
 
@@ -55,7 +63,14 @@ public class OutlierGenerator
         StringBuilder sql = new StringBuilder();
 
         sql.append("SELECT X.MetricSeriesIndex, X.MetricId, X.SampleFileId, ");
-        sql.append("\nX.PrecursorId, X.PrecursorChromInfoId, X.SeriesLabel, X.DataType, X.MZ, sf.AcquiredTime,");
+
+        sql.append("\nCOALESCE(pci.PrecursorId.Id, pci.MoleculePrecursorId.Id) AS PrecursorId,");
+        sql.append("\nCOALESCE(X.SeriesLabel, COALESCE(pci.PrecursorId.ModifiedSequence, pci.MoleculePrecursorId.CustomIonName, pci.MoleculePrecursorId.IonFormula) || (CASE WHEN COALESCE(pci.PrecursorId.Charge, pci.MoleculePrecursorId.Charge) > 0 THEN ' +' ELSE ' ' END) || CAST(COALESCE(pci.PrecursorId.Charge, pci.MoleculePrecursorId.Charge) AS VARCHAR)) AS SeriesLabel,");
+        // TODO - check when MoleculePrecursorId.Id is null too
+        sql.append("\nCASE WHEN pci.PrecursorId.Id IS NOT NULL THEN 'Peptide' ELSE 'Fragment' END AS DataType,");
+        sql.append("\nCOALESCE(pci.PrecursorId.Mz, pci.MoleculePrecursorId.Mz) AS MZ,");
+
+        sql.append("\nX.PrecursorChromInfoId, sf.AcquiredTime,");
         sql.append("\nX.MetricValue, gs.RowId AS GuideSetId,");
         sql.append("\nCASE WHEN (exclusion.ReplicateId IS NOT NULL) THEN TRUE ELSE FALSE END AS IgnoreInQC,");
         sql.append("\nCASE WHEN (sf.AcquiredTime >= gs.TrainingStart AND sf.AcquiredTime <= gs.TrainingEnd) THEN TRUE ELSE FALSE END AS InGuideSetTrainingRange");
@@ -80,6 +95,7 @@ public class OutlierGenerator
 
         sql.append(") X");
         sql.append("\nINNER JOIN SampleFile sf ON X.SampleFileId = sf.Id");
+        sql.append("\nLEFT JOIN PrecursorChromInfo pci ON pci.Id = X.PrecursorChromInfoId");
         sql.append("\nLEFT JOIN QCMetricExclusion exclusion");
         sql.append("\nON sf.ReplicateId = exclusion.ReplicateId AND (exclusion.MetricId IS NULL OR exclusion.MetricId = x.MetricId)");
         sql.append("\nLEFT JOIN GuideSetForOutliers gs");
@@ -101,106 +117,22 @@ public class OutlierGenerator
     }
 
     /** Calculate guide set stats for Levey-Jennings and moving range comparisons */
-    public Map<GuideSetKey, GuideSetStats> getAllProcessedMetricGuideSets(List<RawMetricDataSet> rawMetricData)
+    public Map<GuideSetKey, GuideSetStats> getAllProcessedMetricGuideSets(List<RawMetricDataSet> rawMetricData, Map<Integer, GuideSet> guideSets)
     {
-        Map<GuideSetKey, List<RawMetricDataSet>> metricGuideSet = new HashMap<>();
         Map<GuideSetKey, GuideSetStats> result = new HashMap<>();
 
         for (RawMetricDataSet row : rawMetricData)
         {
-            List<RawMetricDataSet> rowSubset = metricGuideSet.computeIfAbsent(row.getGuideSetKey(), x -> new ArrayList<>());
-            rowSubset.add(row);
-        }
-
-        metricGuideSet.forEach((metricType, val) -> result.putAll(getGuideSetAvgMRs(val)));
-        return result;
-    }
-
-
-    public Map<GuideSetKey, GuideSetStats> getGuideSetAvgMRs(List<RawMetricDataSet> rawGuideSet)
-    {
-        Map<GuideSetKey, List<Double>> guideSetDataMap = new LinkedHashMap<>();
-
-        // Bucket the values based on guide set, series, and metric type
-        for (RawMetricDataSet row : rawGuideSet)
-        {
             GuideSetKey key = row.getGuideSetKey();
-
-            List<Double> metricValues = guideSetDataMap.computeIfAbsent(key, x -> new ArrayList<>());
-            if (row.getMetricValue() != null)
-            {
-                metricValues.add(row.getMetricValue());
-            }
+            GuideSetStats stats = result.computeIfAbsent(row.getGuideSetKey(), x -> new GuideSetStats(key, guideSets.get(key.getGuideSetId())));
+            stats.addRow(row);
         }
 
-        Map<GuideSetKey, GuideSetStats> result = new HashMap<>();
-        guideSetDataMap.forEach((key, metricVals) ->
-        {
-            if (metricVals.size() == 0)
-                return;
-
-            Double[] values = metricVals.toArray(new Double[0]);
-
-            GuideSetStats stats = new GuideSetStats(key, values);
-            result.put(key, stats);
-        });
-
+        result.values().forEach(GuideSetStats::calculateStats);
         return result;
     }
 
-    private static class RowsAndMetricValues
-    {
-        private final List<RawMetricDataSet> rows = new ArrayList<>();
-        private final List<Double> values = new ArrayList<>();
-
-        public void append(RawMetricDataSet row)
-        {
-            rows.add(row);
-            if(row.getMetricValue() == null)
-                values.add(0.0d);
-            else
-                values.add((double) Math.round(row.getMetricValue() * 10000) / 10000.0);
-        }
-    }
-
-    public void calculateMovingRangeAndCUSUM(List<RawMetricDataSet> plotDataRows)
-    {
-        Map<GuideSetKey, RowsAndMetricValues> plotDataMap = new LinkedHashMap<>();
-
-        plotDataRows.forEach(row ->
-        {
-            RowsAndMetricValues values = plotDataMap.computeIfAbsent(row.getGuideSetKey(), x -> new RowsAndMetricValues());
-            values.append(row);
-        });
-
-        plotDataMap.forEach((plotData, values) ->
-        {
-            List<Double> metricValsList = values.values;
-            Double[] metricVals = metricValsList.toArray(new Double[0]);
-
-            Double[] mRs = Stats.getMovingRanges(metricVals, false, null);
-
-            double[] positiveCUSUMm = Stats.getCUSUMS(metricVals, false, false, false, null);
-            double[] negativeCUSUMm = Stats.getCUSUMS(metricVals, true, false, false, null);
-
-            double[] positiveCUSUMv = Stats.getCUSUMS(metricVals, false, true, false, null);
-            double[] negativeCUSUMv = Stats.getCUSUMS(metricVals, true, true, false, null);
-
-            List<RawMetricDataSet> serTypeObjList = values.rows;
-
-            for (int i = 0; i < serTypeObjList.size(); i++)
-            {
-                RawMetricDataSet row = serTypeObjList.get(i);
-                row.setmR(mRs[i]);
-                row.setCUSUMmP(positiveCUSUMm[i]);
-                row.setCUSUMmN(negativeCUSUMm[i]);
-                row.setCUSUMvP(positiveCUSUMv[i]);
-                row.setCUSUMvN(negativeCUSUMv[i]);
-            }
-        });
-    }
-
-    public List<SampleFileInfo> getSampleFiles(List<RawMetricDataSet> dataRows, Map<GuideSetKey, GuideSetStats> stats, Map<Integer, QCMetricConfiguration> metrics, Container container)
+    public List<SampleFileInfo> getSampleFiles(List<RawMetricDataSet> dataRows, Map<GuideSetKey, GuideSetStats> stats, Map<Integer, QCMetricConfiguration> metrics, Container container, Integer limit)
     {
         List<SampleFileInfo> result = TargetedMSManager.getSampleFiles(container, null).stream().map(SampleFile::toSampleFileInfo).collect(Collectors.toList());
         Map<Integer, SampleFileInfo> sampleFiles = result.stream().collect(Collectors.toMap(SampleFileInfo::getSampleId, Function.identity()));
@@ -210,58 +142,35 @@ public class OutlierGenerator
             SampleFileInfo info = sampleFiles.get(dataRow.getSampleFileId());
             dataRow.increment(info, stats.get(dataRow.getGuideSetKey()));
 
-            QCMetricConfiguration metric = metrics.get(dataRow.getMetricId());
-            String metricLabel;
-            switch (dataRow.getMetricSeriesIndex())
-            {
-                case 1:
-                    metricLabel = metric.getSeries1Label();
-                    break;
-                case 2:
-                    metricLabel = metric.getSeries2Label();
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unexpected metric series index: " + dataRow.getMetricSeriesIndex());
-            }
+            String metricLabel = getMetricLabel(metrics, dataRow);
 
             dataRow.increment(info.getMetricCounts(metricLabel), stats.get(dataRow.getGuideSetKey()));
         }
+
+        result.sort(Comparator.comparing(SampleFileInfo::getAcquiredTime).reversed());
+        if (limit != null && result.size() > limit.intValue())
+        {
+            result = result.subList(0, limit.intValue());
+        }
+
         return result;
     }
 
-    /** Subset the rows to just those that are part of a guide set */
-    public List<RawMetricDataSet> filterToTrainingData(List<RawMetricDataSet> rawRows, List<GuideSet> guideSets)
+    public String getMetricLabel(Map<Integer, QCMetricConfiguration> metrics, RawMetricDataSet dataRow)
     {
-        List<RawMetricDataSet> result = new ArrayList<>();
-        for (RawMetricDataSet raw : rawRows)
+        QCMetricConfiguration metric = metrics.get(dataRow.getMetricId());
+        String metricLabel;
+        switch (dataRow.getMetricSeriesIndex())
         {
-            for (GuideSet guideSet : guideSets)
-            {
-                if (!raw.isIgnoreInQC() &&
-                        guideSet.getTrainingStart().compareTo(raw.getAcquiredTime()) <= 0 &&
-                        (guideSet.getTrainingEnd() == null || guideSet.getTrainingEnd().compareTo(raw.getAcquiredTime()) >= 0))
-                {
-                    result.add(raw);
-                    break;
-                }
-            }
+            case 1:
+                metricLabel = metric.getSeries1Label();
+                break;
+            case 2:
+                metricLabel = metric.getSeries2Label();
+                break;
+            default:
+                throw new IllegalArgumentException("Unexpected metric series index: " + dataRow.getMetricSeriesIndex());
         }
-        return result;
-    }
-
-    public JSONArray getSampleFilesJSON(List<SampleFileInfo> files, Integer limit)
-    {
-        JSONArray result = new JSONArray();
-
-        files.sort(Comparator.comparing(SampleFileInfo::getAcquiredTime).reversed());
-
-        if (limit != null && files.size() > limit.intValue())
-        {
-            files = files.subList(0, limit.intValue() - 1);
-        }
-
-        files.forEach(sample -> result.put(sample.toJSON()));
-
-        return result;
+        return metricLabel;
     }
 }

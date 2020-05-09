@@ -2091,20 +2091,14 @@ public class TargetedMSManager
         List<QCMetricConfiguration> enabledQCMetricConfigurations = getEnabledQCMetricConfigurations(container, user);
         if(!enabledQCMetricConfigurations.isEmpty())
         {
-            OutlierGenerator outlierGenerator = new OutlierGenerator();
-
-            List<RawMetricDataSet> rawMetricDataSets = outlierGenerator.getRawMetricDataSets(container, user, enabledQCMetricConfigurations);
-
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(container, user);
-            List<RawMetricDataSet> trainingData = outlierGenerator.filterToTrainingData(rawMetricDataSets, guideSets);
-            Map<GuideSetKey, GuideSetStats> stats = outlierGenerator.getAllProcessedMetricGuideSets(trainingData);
-            outlierGenerator.calculateMovingRangeAndCUSUM(rawMetricDataSets);
-
-
             Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
 
+            List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(container, user, enabledQCMetricConfigurations);
 
-            return outlierGenerator.getSampleFiles(rawMetricDataSets, stats, metricMap, container);
+            Map<GuideSetKey, GuideSetStats> stats = OutlierGenerator.get().getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+
+            return OutlierGenerator.get().getSampleFiles(rawMetricDataSets, stats, metricMap, container, sampleFileLimit);
         }
         return null;
     }
