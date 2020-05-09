@@ -63,8 +63,7 @@ public class OutlierGenerator
 
         sql.append("\nCOALESCE(pci.PrecursorId.Id, pci.MoleculePrecursorId.Id) AS PrecursorId,");
         sql.append("\nCOALESCE(X.SeriesLabel, COALESCE(pci.PrecursorId.ModifiedSequence, pci.MoleculePrecursorId.CustomIonName, pci.MoleculePrecursorId.IonFormula) || (CASE WHEN COALESCE(pci.PrecursorId.Charge, pci.MoleculePrecursorId.Charge) > 0 THEN ' +' ELSE ' ' END) || CAST(COALESCE(pci.PrecursorId.Charge, pci.MoleculePrecursorId.Charge) AS VARCHAR)) AS SeriesLabel,");
-        // TODO - check when MoleculePrecursorId.Id is null too
-        sql.append("\nCASE WHEN pci.PrecursorId.Id IS NOT NULL THEN 'Peptide' ELSE 'Fragment' END AS DataType,");
+        sql.append("\nCASE WHEN pci.PrecursorId.Id IS NOT NULL THEN 'Peptide' WHEN pci.MoleculePrecursorId.Id IS NOT NULL THEN 'Fragment' ELSE 'Other' END AS DataType,");
         sql.append("\nCOALESCE(pci.PrecursorId.Mz, pci.MoleculePrecursorId.Mz) AS MZ,");
 
         sql.append("\nX.PrecursorChromInfoId, sf.AcquiredTime,");
@@ -132,7 +131,8 @@ public class OutlierGenerator
         return result;
     }
 
-    /** @param metrics id to QC metric */
+    /**
+     * @param metrics id to QC metric  */
     public List<SampleFileInfo> getSampleFiles(List<RawMetricDataSet> dataRows, Map<GuideSetKey, GuideSetStats> stats, Map<Integer, QCMetricConfiguration> metrics, Container container, Integer limit)
     {
         List<SampleFileInfo> result = TargetedMSManager.getSampleFiles(container, null).stream().map(SampleFile::toSampleFileInfo).collect(Collectors.toList());

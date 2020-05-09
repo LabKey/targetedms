@@ -16,16 +16,18 @@ public class SampleFileInfo extends OutlierCounts
     final int sampleId;
     final String sampleFile;
     final Date acquiredTime;
-    int guideSetId;
-    boolean ignoreForAllMetric;
+    final int guideSetId;
+    final boolean ignoreForAllMetric;
     /** Use a TreeMap to keep the metrics sorted by name */
     final Map<String, OutlierCounts> byMetric = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-    public SampleFileInfo(int sampleId, Date acquiredTime, String sampleFile)
+    public SampleFileInfo(int sampleId, Date acquiredTime, String sampleFile, int guideSetId, boolean ignoreForAllMetric)
     {
         this.sampleId = sampleId;
         this.acquiredTime = acquiredTime;
         this.sampleFile = sampleFile;
+        this.guideSetId = guideSetId;
+        this.ignoreForAllMetric = ignoreForAllMetric;
     }
 
     public String getSampleFile()
@@ -43,21 +45,9 @@ public class SampleFileInfo extends OutlierCounts
         return guideSetId;
     }
 
-    // TODO - set!
-    public void setGuideSetId(int guideSetId)
-    {
-        this.guideSetId = guideSetId;
-    }
-
     public boolean isIgnoreForAllMetric()
     {
         return ignoreForAllMetric;
-    }
-
-    // TODO - SET!
-    public void setIgnoreForAllMetric(boolean ignoreForAllMetric)
-    {
-        this.ignoreForAllMetric = ignoreForAllMetric;
     }
 
     public int getSampleId()
@@ -92,22 +82,12 @@ public class SampleFileInfo extends OutlierCounts
     {
         JSONObject jsonObject = super.toJSON();
 
-        jsonObject.put("SampleFile", sampleFile);
-        jsonObject.put("AcquiredTime", acquiredTime);
-        jsonObject.put("GuideSetId",  guideSetId);
-        jsonObject.put("IgnoreForAllMetric",  ignoreForAllMetric);
+        jsonObject.put("SampleFile", getSampleFile());
+        jsonObject.put("AcquiredTime", getAcquiredTime());
+        jsonObject.put("GuideSetId", getGuideSetId());
+        jsonObject.put("IgnoreForAllMetric", isIgnoreForAllMetric());
         jsonObject.put("Metrics", getMetricsJSON());
 
         return jsonObject;
-    }
-
-    public static String getKey(String sampleName, Date acquiredTime)
-    {
-        return sampleName + "_" + acquiredTime;
-    }
-
-    public String getKey()
-    {
-        return getKey(sampleFile, acquiredTime);
     }
 }

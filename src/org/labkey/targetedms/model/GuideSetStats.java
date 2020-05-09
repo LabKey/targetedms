@@ -147,11 +147,18 @@ public class GuideSetStats
         for (int i = 0; i < allRows.size(); i++)
         {
             RawMetricDataSet row = allRows.get(i);
-            row.setmR(mRs[i]);
-            row.setCUSUMmP(positiveCUSUMm[i]);
-            row.setCUSUMmN(negativeCUSUMm[i]);
-            row.setCUSUMvP(positiveCUSUMv[i]);
-            row.setCUSUMvN(negativeCUSUMv[i]);
+            // We may not have values if there aren't enough input values
+            if (mRs.length > 0)
+            {
+                row.setmR(mRs[i]);
+            }
+            if (positiveCUSUMm.length > 0)
+            {
+                row.setCUSUMmP(positiveCUSUMm[i]);
+                row.setCUSUMmN(negativeCUSUMm[i]);
+                row.setCUSUMvP(positiveCUSUMv[i]);
+                row.setCUSUMvN(negativeCUSUMv[i]);
+            }
         }
     }
 }

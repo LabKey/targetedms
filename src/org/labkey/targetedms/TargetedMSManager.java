@@ -89,6 +89,7 @@ import org.labkey.targetedms.parser.SampleFile;
 import org.labkey.targetedms.parser.SampleFileChromInfo;
 import org.labkey.targetedms.parser.skyaudit.AuditLogException;
 import org.labkey.targetedms.pipeline.TargetedMSImportPipelineJob;
+import org.labkey.targetedms.query.GuideSetTable;
 import org.labkey.targetedms.query.ModificationManager;
 import org.labkey.targetedms.query.PeptideManager;
 import org.labkey.targetedms.query.PrecursorManager;
@@ -1845,14 +1846,23 @@ public class TargetedMSManager
 
     public static List<SampleFile> getSampleFiles(Container container, @Nullable SQLFragment extraWhere)
     {
-        SQLFragment sql = new SQLFragment("SELECT sf.* FROM ");
+        SQLFragment sql = new SQLFragment("SELECT sf.*, x.Id IS NOT NULL AS IgnoreForAllMetric, COALESCE(gs.RowId, 0) AS GuideSetId  FROM ");
         sql.append(getTableInfoSampleFile(), "sf");
-        sql.append(", ");
+        sql.append("\n INNER JOIN  ");
         sql.append(getTableInfoReplicate(), "rep");
-        sql.append(", ");
+        sql.append("\n ON sf.ReplicateId = rep.Id INNER JOIN ");
         sql.append(getTableInfoRuns(), "r");
-        sql.append(" WHERE r.Id = rep.RunId AND rep.Id = sf.ReplicateId AND r.Container = ?");
+        sql.append("\n ON rep.RunId = r.Id AND r.Container = ? LEFT JOIN ");
         sql.add(container);
+        sql.append(getTableInfoQCMetricExclusion(), "x");
+        sql.append("\n ON x.MetricId IS NULL AND x.ReplicateId = rep.Id LEFT JOIN (SELECT g.*, ");
+        sql.append(GuideSetTable.getReferenceEndSql("g"));
+        sql.append(" AS ReferenceEnd FROM ");
+        sql.append(getTableInfoGuideSet(), "g");
+        sql.append(" WHERE g.Container = ?) gs ");
+        sql.add(container);
+        sql.append("\n ON ((sf.AcquiredTime >= gs.TrainingStart AND sf.AcquiredTime < gs.ReferenceEnd) OR (sf.AcquiredTime >= gs.TrainingStart AND gs.ReferenceEnd IS NULL))");
+
         if (extraWhere != null)
         {
             sql.append(extraWhere);
@@ -2086,7 +2096,7 @@ public class TargetedMSManager
         return result;
     }
 
-    public List<SampleFileInfo> getSampleFiles(Container container, User user, Integer sampleFileLimit)
+    public List<SampleFileInfo> getSampleFileInfos(Container container, User user, Integer sampleFileLimit)
     {
         List<QCMetricConfiguration> enabledQCMetricConfigurations = getEnabledQCMetricConfigurations(container, user);
         if(!enabledQCMetricConfigurations.isEmpty())

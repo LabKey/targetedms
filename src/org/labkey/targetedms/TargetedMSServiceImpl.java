@@ -34,7 +34,6 @@ import org.labkey.targetedms.query.ReplicateManager;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -97,7 +96,7 @@ public class TargetedMSServiceImpl implements TargetedMSService
     @Override
     public List<SampleFileInfo> getSampleFiles(Container container, User user, Integer sampleFileLimit)
     {
-        return TargetedMSManager.get().getSampleFiles(container, user, sampleFileLimit);
+        return TargetedMSManager.get().getSampleFileInfos(container, user, sampleFileLimit);
     }
 
     @Override
