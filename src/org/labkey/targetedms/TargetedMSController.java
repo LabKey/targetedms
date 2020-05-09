@@ -39,13 +39,12 @@ import org.labkey.api.util.DateUtil;
 import org.labkey.api.util.StringUtilsLabKey;
 import org.labkey.api.util.UnexpectedException;
 import org.labkey.api.view.*;
-import org.labkey.api.targetedms.model.LJOutlier;
 import org.labkey.api.view.PopupMenu;
 import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
 import org.labkey.targetedms.model.RawMetricDataSet;
-import org.labkey.targetedms.outliers.CUSUMOutliers;
+import org.labkey.targetedms.outliers.OutlierGenerator;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.json.JSONArray;
@@ -1028,21 +1027,21 @@ public class TargetedMSController extends SpringActionController
                 return response;
             }
 
-            CUSUMOutliers cusumOutliers = new CUSUMOutliers();
+            OutlierGenerator outlierGenerator = new OutlierGenerator();
 
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
 
-            List<RawMetricDataSet> rawMetricDataSets = cusumOutliers.getRawMetricDataSets(getContainer(), getUser(), enabledQCMetricConfigurations);
+            List<RawMetricDataSet> rawMetricDataSets = outlierGenerator.getRawMetricDataSets(getContainer(), getUser(), enabledQCMetricConfigurations);
 
-            List<RawMetricDataSet> trainingData = cusumOutliers.filterToTrainingData(rawMetricDataSets, guideSets);
-            Map<GuideSetKey, GuideSetStats> stats = cusumOutliers.getAllProcessedMetricGuideSets(trainingData);
+            List<RawMetricDataSet> trainingData = outlierGenerator.filterToTrainingData(rawMetricDataSets, guideSets);
+            Map<GuideSetKey, GuideSetStats> stats = outlierGenerator.getAllProcessedMetricGuideSets(trainingData);
 
-            cusumOutliers.calculateMovingRangeAndCUSUM(rawMetricDataSets);
+            outlierGenerator.calculateMovingRangeAndCUSUM(rawMetricDataSets);
             Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
 
-            List<SampleFileInfo> sampleFiles = cusumOutliers.getSampleFiles(rawMetricDataSets, stats, metricMap, getContainer());
+            List<SampleFileInfo> sampleFiles = outlierGenerator.getSampleFiles(rawMetricDataSets, stats, metricMap, getContainer());
 
-            response.put("sampleFiles", cusumOutliers.getSampleFilesJSON(sampleFiles, form.getSampleLimit()));
+            response.put("sampleFiles", outlierGenerator.getSampleFilesJSON(sampleFiles, form.getSampleLimit()));
             response.put("guideSets", guideSets.stream().map(x -> x.toJSON(rawMetricDataSets, metricMap, stats)).collect(Collectors.toList()));
 
             return response;

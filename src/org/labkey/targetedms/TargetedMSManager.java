@@ -81,7 +81,7 @@ import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
 import org.labkey.targetedms.model.QCMetricConfiguration;
 import org.labkey.targetedms.model.RawMetricDataSet;
-import org.labkey.targetedms.outliers.CUSUMOutliers;
+import org.labkey.targetedms.outliers.OutlierGenerator;
 import org.labkey.targetedms.parser.GeneralMolecule;
 import org.labkey.targetedms.parser.Replicate;
 import org.labkey.targetedms.parser.RepresentativeDataState;
@@ -2091,20 +2091,20 @@ public class TargetedMSManager
         List<QCMetricConfiguration> enabledQCMetricConfigurations = getEnabledQCMetricConfigurations(container, user);
         if(!enabledQCMetricConfigurations.isEmpty())
         {
-            CUSUMOutliers cusumOutliers = new CUSUMOutliers();
+            OutlierGenerator outlierGenerator = new OutlierGenerator();
 
-            List<RawMetricDataSet> rawMetricDataSets = cusumOutliers.getRawMetricDataSets(container, user, enabledQCMetricConfigurations);
+            List<RawMetricDataSet> rawMetricDataSets = outlierGenerator.getRawMetricDataSets(container, user, enabledQCMetricConfigurations);
 
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(container, user);
-            List<RawMetricDataSet> trainingData = cusumOutliers.filterToTrainingData(rawMetricDataSets, guideSets);
-            Map<GuideSetKey, GuideSetStats> stats = cusumOutliers.getAllProcessedMetricGuideSets(trainingData);
-            cusumOutliers.calculateMovingRangeAndCUSUM(rawMetricDataSets);
+            List<RawMetricDataSet> trainingData = outlierGenerator.filterToTrainingData(rawMetricDataSets, guideSets);
+            Map<GuideSetKey, GuideSetStats> stats = outlierGenerator.getAllProcessedMetricGuideSets(trainingData);
+            outlierGenerator.calculateMovingRangeAndCUSUM(rawMetricDataSets);
 
 
             Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
 
 
-            return cusumOutliers.getSampleFiles(rawMetricDataSets, stats, metricMap, container);
+            return outlierGenerator.getSampleFiles(rawMetricDataSets, stats, metricMap, container);
         }
         return null;
     }

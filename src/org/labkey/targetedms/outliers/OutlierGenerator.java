@@ -41,7 +41,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class CUSUMOutliers
+public class OutlierGenerator
 {
     private String getEachSeriesTypePlotDataSql(int seriesIndex, int id, String schemaName, String queryName)
     {
@@ -97,7 +97,6 @@ public class CUSUMOutliers
     {
         Map<GuideSetKey, List<RawMetricDataSet>> metricGuideSet = new HashMap<>();
         Map<GuideSetKey, GuideSetStats> result = new HashMap<>();
-        MovingRangeOutliers mr = new MovingRangeOutliers();
 
         for (RawMetricDataSet row : rawMetricData)
         {
@@ -105,7 +104,39 @@ public class CUSUMOutliers
             rowSubset.add(row);
         }
 
-        metricGuideSet.forEach((metricType, val) -> result.putAll(mr.getGuideSetAvgMRs(val)));
+        metricGuideSet.forEach((metricType, val) -> result.putAll(getGuideSetAvgMRs(val)));
+        return result;
+    }
+
+
+    public Map<GuideSetKey, GuideSetStats> getGuideSetAvgMRs(List<RawMetricDataSet> rawGuideSet)
+    {
+        Map<GuideSetKey, List<Double>> guideSetDataMap = new LinkedHashMap<>();
+
+        // Bucket the values based on guide set, series, and metric type
+        for (RawMetricDataSet row : rawGuideSet)
+        {
+            GuideSetKey key = row.getGuideSetKey();
+
+            List<Double> metricValues = guideSetDataMap.computeIfAbsent(key, x -> new ArrayList<>());
+            if (row.getMetricValue() != null)
+            {
+                metricValues.add(row.getMetricValue());
+            }
+        }
+
+        Map<GuideSetKey, GuideSetStats> result = new HashMap<>();
+        guideSetDataMap.forEach((key, metricVals) ->
+        {
+            if (metricVals.size() == 0)
+                return;
+
+            Double[] values = metricVals.toArray(new Double[0]);
+
+            GuideSetStats stats = new GuideSetStats(key, values);
+            result.put(key, stats);
+        });
+
         return result;
     }
 
