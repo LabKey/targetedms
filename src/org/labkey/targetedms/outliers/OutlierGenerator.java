@@ -45,39 +45,47 @@ public class OutlierGenerator
 {
     private String getEachSeriesTypePlotDataSql(int seriesIndex, int id, String schemaName, String queryName)
     {
-        return "(SELECT " + seriesIndex + " AS MetricSeriesIndex, " + id + " AS MetricId, X.SampleFileId, " +
-                "\nX.PrecursorId, X.PrecursorChromInfoId, X.SeriesLabel, X.DataType, X.mz, X.AcquiredTime,"
-                + "\nX.MetricValue, gs.RowId AS GuideSetId,"
-                + "\nCASE WHEN (exclusion.ReplicateId IS NOT NULL) THEN TRUE ELSE FALSE END AS IgnoreInQC,"
-                + "\nCASE WHEN (X.AcquiredTime >= gs.TrainingStart AND X.AcquiredTime <= gs.TrainingEnd) THEN TRUE ELSE FALSE END AS InGuideSetTrainingRange"
-                + "\nFROM (SELECT *, SampleFileId.AcquiredTime AS AcquiredTime, SampleFileId.ReplicateId AS ReplicateId"
-                + "\n      FROM " + schemaName + '.' + queryName + ") X "
-                + "\nLEFT JOIN (SELECT DISTINCT ReplicateId FROM QCMetricExclusion WHERE MetricId IS NULL OR MetricId = " + id + ") exclusion"
-                + "\nON X.ReplicateId = exclusion.ReplicateId"
-                + "\nLEFT JOIN GuideSetForOutliers gs"
-                + "\nON ((X.AcquiredTime >= gs.TrainingStart AND X.AcquiredTime < gs.ReferenceEnd) OR (X.AcquiredTime >= gs.TrainingStart AND gs.ReferenceEnd IS NULL)))";
+        return "(SELECT PrecursorId, PrecursorChromInfoId, SampleFileId, SeriesLabel, DataType, MetricValue, MZ, "
+                + "\n " + seriesIndex + " AS MetricSeriesIndex, " + id + " AS MetricId"
+                + "\n FROM " + schemaName + '.' + queryName + ")";
     }
 
     private String queryContainerSampleFileRawData(List<QCMetricConfiguration> configurations)
     {
-        StringBuilder sqlBuilder = new StringBuilder();
-        String sep = "";
+        StringBuilder sql = new StringBuilder();
 
+        sql.append("SELECT X.MetricSeriesIndex, X.MetricId, X.SampleFileId, ");
+        sql.append("\nX.PrecursorId, X.PrecursorChromInfoId, X.SeriesLabel, X.DataType, X.MZ, sf.AcquiredTime,");
+        sql.append("\nX.MetricValue, gs.RowId AS GuideSetId,");
+        sql.append("\nCASE WHEN (exclusion.ReplicateId IS NOT NULL) THEN TRUE ELSE FALSE END AS IgnoreInQC,");
+        sql.append("\nCASE WHEN (sf.AcquiredTime >= gs.TrainingStart AND sf.AcquiredTime <= gs.TrainingEnd) THEN TRUE ELSE FALSE END AS InGuideSetTrainingRange");
+        sql.append("\nFROM (");
+
+        String sep = "";
         for (QCMetricConfiguration configuration: configurations)
         {
             int id = configuration.getId();
             String schema1Name = configuration.getSeries1SchemaName();
             String query1Name = configuration.getSeries1QueryName();
-            sqlBuilder.append(sep).append("(").append(getEachSeriesTypePlotDataSql(1, id, schema1Name, query1Name)).append(")");
+            sql.append(sep).append(getEachSeriesTypePlotDataSql(1, id, schema1Name, query1Name));
             sep = "\nUNION\n";
 
-            if(configuration.getSeries2SchemaName() != null && configuration.getSeries2QueryName() != null) {
+            if (configuration.getSeries2SchemaName() != null && configuration.getSeries2QueryName() != null)
+            {
                 String schema2Name = configuration.getSeries2SchemaName();
                 String query2Name = configuration.getSeries2QueryName();
-                sqlBuilder.append(sep).append("(").append(getEachSeriesTypePlotDataSql(2, id, schema2Name, query2Name)).append(")");
+                sql.append(sep).append(getEachSeriesTypePlotDataSql(2, id, schema2Name, query2Name));
             }
         }
-        return "SELECT * FROM (" + sqlBuilder.toString() + ") a"; //wrap unioned results in sql to support sorting
+
+        sql.append(") X");
+        sql.append("\nINNER JOIN SampleFile sf ON X.SampleFileId = sf.Id");
+        sql.append("\nLEFT JOIN QCMetricExclusion exclusion");
+        sql.append("\nON sf.ReplicateId = exclusion.ReplicateId AND (exclusion.MetricId IS NULL OR exclusion.MetricId = x.MetricId)");
+        sql.append("\nLEFT JOIN GuideSetForOutliers gs");
+        sql.append("\nON ((sf.AcquiredTime >= gs.TrainingStart AND sf.AcquiredTime < gs.ReferenceEnd) OR (sf.AcquiredTime >= gs.TrainingStart AND gs.ReferenceEnd IS NULL))");
+
+        return sql.toString();
     }
 
     public List<RawMetricDataSet> getRawMetricDataSets(Container container, User user, List<QCMetricConfiguration> configurations)
