@@ -51,10 +51,10 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
             };
 
             Ext4.iterate(guideSet.MetricCounts, function(metricName, data) {
-                this.addOutlierToCounts(guideSet.stats, data, metricName,'CUSUMm', true);
-                this.addOutlierToCounts(guideSet.stats, data, metricName, 'CUSUMv', true);
-                this.addOutlierToCounts(guideSet.stats, data, metricName, 'mR', true);
-                this.addOutlierToCounts(guideSet.stats, data, metricName, 'LeveyJennings', true);
+                this.addOutlierToCounts(guideSet, data, metricName,'CUSUMm', 'CUSUMm', true);
+                this.addOutlierToCounts(guideSet, data, metricName, 'CUSUMv', 'CUSUMv', true);
+                this.addOutlierToCounts(guideSet, data, metricName, 'mR', 'mR', true);
+                this.addOutlierToCounts(guideSet, data, metricName, 'LeveyJennings', 'Levey-Jennings', true);
             }, this);
 
             Ext4.iterate(guideSet.stats, function(outlierType, data) {
@@ -114,16 +114,22 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
         }, this);
     },
 
-    addOutlierToCounts: function(tally, data, metricName, propertyName, isCusum) {
+    addOutlierToCounts: function(guideSet, data, metricName, propertyName, plotTypeParamValue, isCusum) {
         var count = data[propertyName];
-        tally[propertyName].count += count;
-        var newData = {metricLabel: metricName, count: count};
+        guideSet.stats[propertyName].count += count;
+        var newData = {
+            metricLabel: metricName,
+            count: count,
+            metricId: data.MetricId,
+            TrainingStart: guideSet.TrainingStart,
+            plotType: plotTypeParamValue
+        };
         if (isCusum) {
             newData.CUSUMNegative = data[propertyName + 'N'];
             newData.CUSUMPositive = data[propertyName + 'P'];
         }
 
-        tally[propertyName].data.push(newData);
+        guideSet.stats[propertyName].data.push(newData);
 
     },
 

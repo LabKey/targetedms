@@ -18,6 +18,7 @@ package org.labkey.targetedms.model;
 import org.json.JSONObject;
 import org.labkey.api.data.Entity;
 import org.labkey.api.targetedms.model.OutlierCounts;
+import org.labkey.api.util.Pair;
 import org.labkey.targetedms.outliers.OutlierGenerator;
 
 import java.util.Date;
@@ -96,7 +97,8 @@ public class GuideSet extends Entity
         jsonObject.put("TrainingEnd", getTrainingEnd());
         jsonObject.put("ReferenceEnd", getReferenceEnd());
 
-        Map<String, OutlierCounts> allMetricOutliers = new HashMap<>();
+        // Metric ID and label form the key
+        Map<Pair<Integer, String>, OutlierCounts> allMetricOutliers = new HashMap<>();
 
         for (RawMetricDataSet dataRow : dataRows)
         {
@@ -104,16 +106,18 @@ public class GuideSet extends Entity
             {
                 String metricLabel = OutlierGenerator.get().getMetricLabel(metrics, dataRow);
 
-                OutlierCounts counts = allMetricOutliers.computeIfAbsent(metricLabel, x -> new OutlierCounts());
+                OutlierCounts counts = allMetricOutliers.computeIfAbsent(new Pair<>(dataRow.getMetricId(), metricLabel), x -> new OutlierCounts());
                 GuideSetStats s = stats.get(dataRow.getGuideSetKey());
                 dataRow.increment(counts, s);
             }
         }
 
         JSONObject metricCounts = new JSONObject();
-        for (Map.Entry<String, OutlierCounts> entry : allMetricOutliers.entrySet())
+        for (Map.Entry<Pair<Integer, String>, OutlierCounts> entry : allMetricOutliers.entrySet())
         {
-            metricCounts.put(entry.getKey(), entry.getValue().toJSON());
+            JSONObject counts = entry.getValue().toJSON();
+            counts.put("MetricId", entry.getKey().first);
+            metricCounts.put(entry.getKey().second, counts);
         }
 
         jsonObject.put("MetricCounts", metricCounts);

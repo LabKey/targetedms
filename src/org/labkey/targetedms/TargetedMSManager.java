@@ -1836,7 +1836,7 @@ public class TargetedMSManager
     @Nullable
     public static SampleFile getSampleFile(int id, Container container)
     {
-        List<SampleFile> matches = getSampleFiles(container, new SQLFragment(" AND sf.Id = ?", id));
+        List<SampleFile> matches = getSampleFiles(container, new SQLFragment("sf.Id = ?", id));
         if (matches.size() > 1)
         {
             throw new IllegalStateException("More than one SampleFile for Id " + id);
@@ -1844,7 +1844,7 @@ public class TargetedMSManager
         return matches.isEmpty() ? null : matches.get(0);
     }
 
-    public static List<SampleFile> getSampleFiles(Container container, @Nullable SQLFragment extraWhere)
+    public static List<SampleFile> getSampleFiles(Container container, @Nullable SQLFragment whereClause)
     {
         SQLFragment sql = new SQLFragment("SELECT sf.*, x.Id IS NOT NULL AS IgnoreForAllMetric, COALESCE(gs.RowId, 0) AS GuideSetId  FROM ");
         sql.append(getTableInfoSampleFile(), "sf");
@@ -1863,9 +1863,10 @@ public class TargetedMSManager
         sql.add(container);
         sql.append("\n ON ((sf.AcquiredTime >= gs.TrainingStart AND sf.AcquiredTime < gs.ReferenceEnd) OR (sf.AcquiredTime >= gs.TrainingStart AND gs.ReferenceEnd IS NULL))");
 
-        if (extraWhere != null)
+        if (whereClause != null)
         {
-            sql.append(extraWhere);
+            sql.append("\nWHERE ");
+            sql.append(whereClause);
         }
         return new SqlSelector(getSchema(), sql).getArrayList(SampleFile.class);
     }
@@ -1899,19 +1900,19 @@ public class TargetedMSManager
         SQLFragment sql = new SQLFragment();
         if(fullPath)
         {
-            sql.append(" AND sf.FilePath = ? ");
+            sql.append(" sf.FilePath = ? ");
             sql.add(filePath);
         }
         else
         {
-            sql.append(" AND sf.FilePath LIKE ? ");
+            sql.append(" sf.FilePath LIKE ? ");
             sql.add("%" + getSqlDialect().encodeLikeOpSearchString(filePath));
         }
         if(acquiredTime == null)
-            sql.append("AND sf.AcquiredTime IS NULL");
+            sql.append(" AND sf.AcquiredTime IS NULL");
         else
         {
-            sql.append("AND sf.AcquiredTime = ?");
+            sql.append(" AND sf.AcquiredTime = ?");
             sql.add(acquiredTime);
         }
         return getSampleFiles(container, sql);
