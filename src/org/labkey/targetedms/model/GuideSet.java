@@ -17,8 +17,12 @@ package org.labkey.targetedms.model;
 
 import org.json.JSONObject;
 import org.labkey.api.data.Entity;
+import org.labkey.api.targetedms.model.OutlierCounts;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by cnathe on 4/9/2015.
@@ -82,7 +86,7 @@ public class GuideSet extends Entity
         _referenceEnd = referenceEnd;
     }
 
-    public JSONObject toJSON()
+    public JSONObject toJSON(List<RawMetricDataSet> dataRows, Map<Integer, QCMetricConfiguration> metrics, Map<GuideSetKey, GuideSetStats> stats)
     {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("RowId", getRowId());
@@ -90,6 +94,40 @@ public class GuideSet extends Entity
         jsonObject.put("TrainingStart", getTrainingStart());
         jsonObject.put("TrainingEnd", getTrainingEnd());
         jsonObject.put("ReferenceEnd", getReferenceEnd());
+
+        Map<String, OutlierCounts> allMetricOutliers = new HashMap<>();
+
+        for (RawMetricDataSet dataRow : dataRows)
+        {
+            if (dataRow.getGuideSetId() == getRowId())
+            {
+                QCMetricConfiguration metric = metrics.get(dataRow.getMetricId());
+                String metricLabel;
+                switch (dataRow.getMetricSeriesIndex())
+                {
+                    case 1:
+                        metricLabel = metric.getSeries1Label();
+                        break;
+                    case 2:
+                        metricLabel = metric.getSeries2Label();
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unexpected metric series index: " + dataRow.getMetricSeriesIndex());
+                }
+
+                OutlierCounts counts = allMetricOutliers.computeIfAbsent(metricLabel, x -> new OutlierCounts());
+                GuideSetStats s = stats.get(dataRow.getGuideSetKey());
+                dataRow.increment(counts, s);
+            }
+        }
+
+        JSONObject metricCounts = new JSONObject();
+        for (Map.Entry<String, OutlierCounts> entry : allMetricOutliers.entrySet())
+        {
+            metricCounts.put(entry.getKey(), entry.getValue().toJSON());
+        }
+
+        jsonObject.put("MetricCounts", metricCounts);
 
         return jsonObject;
     }

@@ -1,35 +1,31 @@
 package org.labkey.api.targetedms.model;
 
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class SampleFileInfo extends OutlierCounts
 {
-    int index;
-    String sampleFile;
-    Date acquiredTime;
-    int metrics;
-    int totalCount;
-    List<LJOutlier> items;
+    final int sampleId;
+    final String sampleFile;
+    final Date acquiredTime;
     int guideSetId;
     boolean ignoreForAllMetric;
+    /** Use a TreeMap to keep the metrics sorted by name */
+    final Map<String, OutlierCounts> byMetric = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-    public SampleFileInfo()
+    public SampleFileInfo(int sampleId, Date acquiredTime, String sampleFile)
     {
-        items = new ArrayList<>();
-    }
-
-    public int getIndex()
-    {
-        return index;
-    }
-
-    public void setIndex(int index)
-    {
-        this.index = index;
+        this.sampleId = sampleId;
+        this.acquiredTime = acquiredTime;
+        this.sampleFile = sampleFile;
     }
 
     public String getSampleFile()
@@ -37,39 +33,9 @@ public class SampleFileInfo extends OutlierCounts
         return sampleFile;
     }
 
-    public void setSampleFile(String sampleFile)
-    {
-        this.sampleFile = sampleFile;
-    }
-
     public Date getAcquiredTime()
     {
         return acquiredTime;
-    }
-
-    public void setAcquiredTime(Date acquiredTime)
-    {
-        this.acquiredTime = acquiredTime;
-    }
-
-    public int getMetrics()
-    {
-        return metrics;
-    }
-
-    public void setMetrics(int metrics)
-    {
-        this.metrics = metrics;
-    }
-
-    public int getTotalCount()
-    {
-        return totalCount;
-    }
-
-    public void setTotalCount(int totalCount)
-    {
-        this.totalCount = totalCount;
     }
 
     public int getGuideSetId()
@@ -77,6 +43,7 @@ public class SampleFileInfo extends OutlierCounts
         return guideSetId;
     }
 
+    // TODO - set!
     public void setGuideSetId(int guideSetId)
     {
         this.guideSetId = guideSetId;
@@ -87,44 +54,49 @@ public class SampleFileInfo extends OutlierCounts
         return ignoreForAllMetric;
     }
 
+    // TODO - SET!
     public void setIgnoreForAllMetric(boolean ignoreForAllMetric)
     {
         this.ignoreForAllMetric = ignoreForAllMetric;
     }
 
-    public List<LJOutlier> getItems()
+    public int getSampleId()
     {
-        return items;
+        return sampleId;
     }
 
-    public void setItems(List<LJOutlier> items)
+    public Map<String, OutlierCounts> getByMetric()
     {
-        this.items = items;
+        return byMetric;
     }
 
-    public List<JSONObject> getItemsJSON(List<LJOutlier> ljOutliers)
+    public JSONArray getMetricsJSON()
     {
-        List<JSONObject> jsonLJOutliers = new ArrayList<>();
-        for (LJOutlier ljOutlier : ljOutliers)
+        JSONArray result = new JSONArray();
+        for (Map.Entry<String, OutlierCounts> entry : byMetric.entrySet())
         {
-            jsonLJOutliers.add(ljOutlier.toJSON());
+            JSONObject metricCounts = entry.getValue().toJSON();
+            metricCounts.put("MetricLabel", entry.getKey());
+            result.put(metricCounts);
         }
-        return jsonLJOutliers;
+        return result;
     }
 
-    @Override
+    public OutlierCounts getMetricCounts(String metricLabel)
+    {
+        return byMetric.computeIfAbsent(metricLabel, x -> new OutlierCounts());
+    }
+
+    @Override @NotNull
     public JSONObject toJSON()
     {
         JSONObject jsonObject = super.toJSON();
 
-        jsonObject.put("Index", index);
         jsonObject.put("SampleFile", sampleFile);
         jsonObject.put("AcquiredTime", acquiredTime);
-        jsonObject.put("Metrics", metrics);
-        jsonObject.put("TotalCount",  totalCount);
         jsonObject.put("GuideSetId",  guideSetId);
         jsonObject.put("IgnoreForAllMetric",  ignoreForAllMetric);
-        jsonObject.put("Items", getItemsJSON(items));
+        jsonObject.put("Metrics", getMetricsJSON());
 
         return jsonObject;
     }

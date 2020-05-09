@@ -15,6 +15,8 @@
  */
 package org.labkey.targetedms.parser;
 
+import org.labkey.api.targetedms.model.SampleFileInfo;
+
 import java.util.Date;
 import java.util.List;
 
@@ -169,5 +171,10 @@ public class SampleFile extends SkylineEntity
     public void setIonMobilityType(String ionMobilityType)
     {
         _ionMobilityType = ionMobilityType;
+    }
+
+    public SampleFileInfo toSampleFileInfo()
+    {
+        return new SampleFileInfo(getId(), getAcquiredTime(), getSampleName());
     }
 }

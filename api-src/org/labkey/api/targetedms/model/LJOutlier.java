@@ -30,7 +30,6 @@ public class LJOutlier extends OutlierCounts
     String _sampleFile;
     Date _acquiredTime;
     boolean _ignoreInQC;
-    int _totalCount;
 
     @Nullable
     public Integer getGuideSetId()
@@ -108,16 +107,6 @@ public class LJOutlier extends OutlierCounts
         _ignoreInQC = ignoreInQC;
     }
 
-    public int getTotalCount()
-    {
-        return _totalCount;
-    }
-
-    public void setTotalCount(int totalCount)
-    {
-        _totalCount = totalCount;
-    }
-
     @Override
     public JSONObject toJSON()
     {
@@ -130,7 +119,6 @@ public class LJOutlier extends OutlierCounts
         jsonObject.put("SampleFile", _sampleFile);
         jsonObject.put("AcquiredTime", _acquiredTime);
         jsonObject.put("IgnoreInQC", _ignoreInQC);
-        jsonObject.put("TotalCount", _totalCount);
 
         return jsonObject;
     }

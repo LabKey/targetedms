@@ -15,70 +15,15 @@
  */
 package org.labkey.targetedms.model;
 
-import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.labkey.api.visualization.Stats;
-
-import java.util.Objects;
 
 public class GuideSetStats
 {
-    private final Key _key;
+    private final GuideSetKey _key;
 
-    public Key getKey()
+    public GuideSetKey getKey()
     {
         return _key;
-    }
-
-    public static class Key
-    {
-        private final int guideSetId;
-        private final String seriesLabel;
-        private final String seriesType;
-
-        public Key(int guideSetId, String seriesLabel, String seriesType)
-        {
-            this.guideSetId = guideSetId;
-            this.seriesLabel = seriesLabel;
-            this.seriesType = seriesType;
-        }
-
-        public int getGuideSetId()
-        {
-            return guideSetId;
-        }
-
-        public String getSeriesLabel()
-        {
-            return seriesLabel;
-        }
-
-        public String getSeriesType()
-        {
-            return seriesType;
-        }
-
-        @Override
-        public String toString()
-        {
-            return getGuideSetId() + ": " + seriesType + ": " + seriesLabel;
-        }
-
-        @Override
-        public boolean equals(Object o)
-        {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Key key = (Key) o;
-            return guideSetId == key.guideSetId &&
-                    Objects.equals(seriesLabel, key.seriesLabel) &&
-                    Objects.equals(seriesType, key.seriesType);
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return Objects.hash(guideSetId, seriesLabel, seriesType);
-        }
     }
 
     private final double _standardDeviation;
@@ -87,7 +32,7 @@ public class GuideSetStats
     private final double _movingRangeAverage;
     private final double _movingRangeSD;
 
-    public GuideSetStats(Key key, Double[] values)
+    public GuideSetStats(GuideSetKey key, Double[] values)
     {
         _key = key;
 

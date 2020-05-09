@@ -95,7 +95,7 @@ public class TargetedMSServiceImpl implements TargetedMSService
     }
 
     @Override
-    public Map<String, SampleFileInfo> getSampleFiles(Container container, User user, Integer sampleFileLimit)
+    public List<SampleFileInfo> getSampleFiles(Container container, User user, Integer sampleFileLimit)
     {
         return TargetedMSManager.get().getSampleFiles(container, user, sampleFileLimit);
     }

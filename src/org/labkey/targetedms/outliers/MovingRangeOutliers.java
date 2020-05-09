@@ -15,9 +15,7 @@
  */
 package org.labkey.targetedms.outliers;
 
-import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
-import org.apache.commons.math3.util.MathUtils;
-import org.labkey.api.visualization.Stats;
+import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
 import org.labkey.targetedms.model.RawMetricDataSet;
 
@@ -29,14 +27,14 @@ import java.util.Map;
 
 public class MovingRangeOutliers
 {
-    public Map<GuideSetStats.Key, GuideSetStats> getGuideSetAvgMRs(List<RawMetricDataSet> rawGuideSet)
+    public Map<GuideSetKey, GuideSetStats> getGuideSetAvgMRs(List<RawMetricDataSet> rawGuideSet)
     {
-        Map<GuideSetStats.Key, List<Double>> guideSetDataMap = new LinkedHashMap<>();
+        Map<GuideSetKey, List<Double>> guideSetDataMap = new LinkedHashMap<>();
 
         // Bucket the values based on guide set, series, and metric type
         for (RawMetricDataSet row : rawGuideSet)
         {
-            GuideSetStats.Key key = new GuideSetStats.Key(row.getGuideSetId(), row.getSeriesLabel(), row.getSeriesType());
+            GuideSetKey key = row.getGuideSetKey();
 
             List<Double> metricValues = guideSetDataMap.computeIfAbsent(key, x -> new ArrayList<>());
             if (row.getMetricValue() != null)
@@ -45,10 +43,10 @@ public class MovingRangeOutliers
             }
         }
 
-        Map<GuideSetStats.Key, GuideSetStats> result = new HashMap<>();
-
-        guideSetDataMap.forEach((key, metricVals) -> {
-            if (metricVals == null || metricVals.size() == 0)
+        Map<GuideSetKey, GuideSetStats> result = new HashMap<>();
+        guideSetDataMap.forEach((key, metricVals) ->
+        {
+            if (metricVals.size() == 0)
                 return;
 
             Double[] values = metricVals.toArray(new Double[0]);

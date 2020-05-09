@@ -70,7 +70,6 @@ import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.security.permissions.DeletePermission;
 import org.labkey.api.targetedms.TargetedMSService;
-import org.labkey.api.targetedms.model.LJOutlier;
 import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.StringUtilsLabKey;
@@ -78,10 +77,11 @@ import org.labkey.api.view.NotFoundException;
 import org.labkey.api.view.UnauthorizedException;
 import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.targetedms.model.GuideSet;
+import org.labkey.targetedms.model.GuideSetKey;
+import org.labkey.targetedms.model.GuideSetStats;
 import org.labkey.targetedms.model.QCMetricConfiguration;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.outliers.CUSUMOutliers;
-import org.labkey.targetedms.outliers.Outliers;
 import org.labkey.targetedms.parser.GeneralMolecule;
 import org.labkey.targetedms.parser.Replicate;
 import org.labkey.targetedms.parser.RepresentativeDataState;
@@ -112,9 +112,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import static org.labkey.api.targetedms.TargetedMSService.MODULE_NAME;
 import static org.labkey.api.targetedms.TargetedMSService.FOLDER_TYPE_PROP_NAME;
+import static org.labkey.api.targetedms.TargetedMSService.MODULE_NAME;
 
 public class TargetedMSManager
 {
@@ -1833,16 +1835,29 @@ public class TargetedMSManager
     @Nullable
     public static SampleFile getSampleFile(int id, Container container)
     {
+        List<SampleFile> matches = getSampleFiles(container, new SQLFragment(" AND sf.Id = ?", id));
+        if (matches.size() > 1)
+        {
+            throw new IllegalStateException("More than one SampleFile for Id " + id);
+        }
+        return matches.isEmpty() ? null : matches.get(0);
+    }
+
+    public static List<SampleFile> getSampleFiles(Container container, @Nullable SQLFragment extraWhere)
+    {
         SQLFragment sql = new SQLFragment("SELECT sf.* FROM ");
         sql.append(getTableInfoSampleFile(), "sf");
         sql.append(", ");
         sql.append(getTableInfoReplicate(), "rep");
         sql.append(", ");
         sql.append(getTableInfoRuns(), "r");
-        sql.append(" WHERE r.Id = rep.RunId AND rep.Id = sf.ReplicateId AND r.Container = ? AND sf.Id = ?");
+        sql.append(" WHERE r.Id = rep.RunId AND rep.Id = sf.ReplicateId AND r.Container = ?");
         sql.add(container);
-        sql.add(id);
-        return new SqlSelector(getSchema(), sql).getObject(SampleFile.class);
+        if (extraWhere != null)
+        {
+            sql.append(extraWhere);
+        }
+        return new SqlSelector(getSchema(), sql).getArrayList(SampleFile.class);
     }
 
     /**
@@ -1871,14 +1886,7 @@ public class TargetedMSManager
 
     private static List<SampleFile> getSampleFile(String filePath, Date acquiredTime, Container container, boolean fullPath)
     {
-        SQLFragment sql = new SQLFragment("SELECT sf.* FROM ");
-        sql.append(getTableInfoSampleFile(), "sf");
-        sql.append(", ");
-        sql.append(getTableInfoReplicate(), "rep");
-        sql.append(", ");
-        sql.append(getTableInfoRuns(), "r");
-        sql.append(" WHERE r.Id = rep.RunId AND rep.Id = sf.ReplicateId AND r.Container = ?");
-        sql.add(container);
+        SQLFragment sql = new SQLFragment();
         if(fullPath)
         {
             sql.append(" AND sf.FilePath = ? ");
@@ -1896,7 +1904,7 @@ public class TargetedMSManager
             sql.append("AND sf.AcquiredTime = ?");
             sql.add(acquiredTime);
         }
-        return new SqlSelector(getSchema(), sql).getArrayList(SampleFile.class);
+        return getSampleFiles(container, sql);
     }
 
     public Map<String, Object> getAutoQCPingMap(Container container)
@@ -2078,19 +2086,25 @@ public class TargetedMSManager
         return result;
     }
 
-    public Map<String, SampleFileInfo> getSampleFiles(Container container, User user, Integer sampleFileLimit)
+    public List<SampleFileInfo> getSampleFiles(Container container, User user, Integer sampleFileLimit)
     {
         List<QCMetricConfiguration> enabledQCMetricConfigurations = getEnabledQCMetricConfigurations(container, user);
         if(!enabledQCMetricConfigurations.isEmpty())
         {
             CUSUMOutliers cusumOutliers = new CUSUMOutliers();
 
-            List<LJOutlier> ljOutliers = Outliers.getLJOutliers(enabledQCMetricConfigurations, container, user, sampleFileLimit);
-            if (!ljOutliers.isEmpty())
-            {
-                List<RawMetricDataSet> rawMetricDataSets = cusumOutliers.getRawMetricDataSets(container, user, enabledQCMetricConfigurations);
-                return cusumOutliers.getSampleFiles(ljOutliers, rawMetricDataSets, TargetedMSManager.getGuideSets(container, user));
-            }
+            List<RawMetricDataSet> rawMetricDataSets = cusumOutliers.getRawMetricDataSets(container, user, enabledQCMetricConfigurations);
+
+            List<GuideSet> guideSets = TargetedMSManager.getGuideSets(container, user);
+            List<RawMetricDataSet> trainingData = cusumOutliers.filterToTrainingData(rawMetricDataSets, guideSets);
+            Map<GuideSetKey, GuideSetStats> stats = cusumOutliers.getAllProcessedMetricGuideSets(trainingData);
+            cusumOutliers.calculateMovingRangeAndCUSUM(rawMetricDataSets);
+
+
+            Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
+
+
+            return cusumOutliers.getSampleFiles(rawMetricDataSets, stats, metricMap, container);
         }
         return null;
     }
