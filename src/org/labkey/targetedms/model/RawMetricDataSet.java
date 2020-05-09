@@ -241,7 +241,7 @@ public class RawMetricDataSet
 
     public boolean isLeveyJenningsOutlier(GuideSetStats stat)
     {
-        if (ignoreInQC || metricValue == null)
+        if (ignoreInQC || metricValue == null || stat == null)
         {
             return false;
         }
@@ -254,7 +254,7 @@ public class RawMetricDataSet
 
     public boolean isMovingRangeOutlier(GuideSetStats stat)
     {
-        return mR != null && mR > Stats.MOVING_RANGE_UPPER_LIMIT_WEIGHT * stat.getMovingRangeAverage();
+        return stat != null && mR != null && mR > Stats.MOVING_RANGE_UPPER_LIMIT_WEIGHT * stat.getMovingRangeAverage();
     }
 
     private boolean isCUSUMOutlier(Double value)
