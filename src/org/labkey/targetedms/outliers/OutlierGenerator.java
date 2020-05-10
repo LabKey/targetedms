@@ -16,6 +16,7 @@
 package org.labkey.targetedms.outliers;
 
 import org.labkey.api.data.Container;
+import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.Sort;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.query.QueryService;
@@ -66,8 +67,7 @@ public class OutlierGenerator
         sql.append("\nCASE WHEN pci.PrecursorId.Id IS NOT NULL THEN 'Peptide' WHEN pci.MoleculePrecursorId.Id IS NOT NULL THEN 'Fragment' ELSE 'Other' END AS DataType,");
         sql.append("\nCOALESCE(pci.PrecursorId.Mz, pci.MoleculePrecursorId.Mz) AS MZ,");
 
-        sql.append("\nX.PrecursorChromInfoId, sf.AcquiredTime,");
-        sql.append("\nX.MetricValue, gs.RowId AS GuideSetId,");
+        sql.append("\nX.PrecursorChromInfoId, sf.AcquiredTime, X.MetricValue, gs.RowId AS GuideSetId,");
         sql.append("\nCASE WHEN (exclusion.ReplicateId IS NOT NULL) THEN TRUE ELSE FALSE END AS IgnoreInQC,");
         sql.append("\nCASE WHEN (sf.AcquiredTime >= gs.TrainingStart AND sf.AcquiredTime <= gs.TrainingEnd) THEN TRUE ELSE FALSE END AS InGuideSetTrainingRange");
         sql.append("\nFROM (");
@@ -96,6 +96,7 @@ public class OutlierGenerator
         sql.append("\nON sf.ReplicateId = exclusion.ReplicateId AND (exclusion.MetricId IS NULL OR exclusion.MetricId = x.MetricId)");
         sql.append("\nLEFT JOIN GuideSetForOutliers gs");
         sql.append("\nON ((sf.AcquiredTime >= gs.TrainingStart AND sf.AcquiredTime < gs.ReferenceEnd) OR (sf.AcquiredTime >= gs.TrainingStart AND gs.ReferenceEnd IS NULL))");
+        sql.append("\nWHERE sf.AcquiredTime IS NOT NULL");
 
         return sql.toString();
     }
@@ -135,7 +136,7 @@ public class OutlierGenerator
      * @param metrics id to QC metric  */
     public List<SampleFileInfo> getSampleFiles(List<RawMetricDataSet> dataRows, Map<GuideSetKey, GuideSetStats> stats, Map<Integer, QCMetricConfiguration> metrics, Container container, Integer limit)
     {
-        List<SampleFileInfo> result = TargetedMSManager.getSampleFiles(container, null).stream().map(SampleFile::toSampleFileInfo).collect(Collectors.toList());
+        List<SampleFileInfo> result = TargetedMSManager.getSampleFiles(container, new SQLFragment("sf.AcquiredTime IS NOT NULL")).stream().map(SampleFile::toSampleFileInfo).collect(Collectors.toList());
         Map<Integer, SampleFileInfo> sampleFiles = result.stream().collect(Collectors.toMap(SampleFileInfo::getSampleId, Function.identity()));
 
         for (RawMetricDataSet dataRow : dataRows)
