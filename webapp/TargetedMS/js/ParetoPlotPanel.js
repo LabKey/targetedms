@@ -53,7 +53,7 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
             Ext4.iterate(guideSet.MetricCounts, function(metricName, data) {
                 this.addOutlierToCounts(guideSet, data, metricName,'CUSUMm', 'CUSUMm', true);
                 this.addOutlierToCounts(guideSet, data, metricName, 'CUSUMv', 'CUSUMv', true);
-                this.addOutlierToCounts(guideSet, data, metricName, 'mR', 'mR', true);
+                this.addOutlierToCounts(guideSet, data, metricName, 'mR', 'Moving Range', true);
                 this.addOutlierToCounts(guideSet, data, metricName, 'LeveyJennings', 'Levey-Jennings', true);
             }, this);
 
@@ -122,6 +122,7 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
             count: count,
             metricId: data.MetricId,
             TrainingStart: guideSet.TrainingStart,
+            ReferenceEnd: guideSet.ReferenceEnd,
             plotType: plotTypeParamValue
         };
         if (isCusum) {

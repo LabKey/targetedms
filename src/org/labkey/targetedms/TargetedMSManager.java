@@ -1846,7 +1846,9 @@ public class TargetedMSManager
 
     public static List<SampleFile> getSampleFiles(Container container, @Nullable SQLFragment whereClause)
     {
-        SQLFragment sql = new SQLFragment("SELECT sf.*, x.Id IS NOT NULL AS IgnoreForAllMetric, COALESCE(gs.RowId, 0) AS GuideSetId  FROM ");
+        SQLFragment sql = new SQLFragment("SELECT sf.*, CASE WHEN x.Id IS NOT NULL THEN ? ELSE ? END AS IgnoreForAllMetric, COALESCE(gs.RowId, 0) AS GuideSetId  FROM ");
+        sql.add(true);
+        sql.add(false);
         sql.append(getTableInfoSampleFile(), "sf");
         sql.append("\n INNER JOIN  ");
         sql.append(getTableInfoReplicate(), "rep");
