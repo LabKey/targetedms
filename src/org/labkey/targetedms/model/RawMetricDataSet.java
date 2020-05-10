@@ -249,7 +249,7 @@ public class RawMetricDataSet
         double upperLimit = stat.getAverage() + stat.getStandardDeviation() * 3;
         double lowerLimit = stat.getAverage() - stat.getStandardDeviation() * 3;
 
-        return metricValue > upperLimit || metricValue < lowerLimit;
+        return metricValue > upperLimit || metricValue < lowerLimit || (Double.isNaN(stat.getStandardDeviation()) && metricValue != stat.getAverage());
     }
 
     public boolean isMovingRangeOutlier(GuideSetStats stat)
