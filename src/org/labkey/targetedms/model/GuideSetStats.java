@@ -17,8 +17,10 @@ package org.labkey.targetedms.model;
 
 import org.labkey.api.visualization.Stats;
 
+import java.rmi.server.RMIClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GuideSetStats
 {
@@ -122,7 +124,8 @@ public class GuideSetStats
     {
         _locked = true;
 
-        Double[] trainingValues = getValues(_trainingRows, false, false);
+        List<RawMetricDataSet> includedTrainingRows = _trainingRows.stream().filter(x -> !x.isIgnoreInQC()).collect(Collectors.toList());
+        Double[] trainingValues = getValues(includedTrainingRows, false, false);
 
         _average = Stats.getMean(trainingValues);
         _standardDeviation = Stats.getStdDev(trainingValues, true);
@@ -134,7 +137,9 @@ public class GuideSetStats
         allRows.addAll(_trainingRows);
         allRows.addAll(_referenceRows);
 
-        Double[] metricVals = getValues(allRows, true, true);
+        List<RawMetricDataSet> includedRows = allRows.stream().filter(x -> !x.isIgnoreInQC()).collect(Collectors.toList());
+
+        Double[] metricVals = getValues(includedRows, true, true);
 
         Double[] mRs = Stats.getMovingRanges(metricVals, false, null);
 
@@ -144,9 +149,9 @@ public class GuideSetStats
         double[] positiveCUSUMv = Stats.getCUSUMS(metricVals, false, true, false, null);
         double[] negativeCUSUMv = Stats.getCUSUMS(metricVals, true, true, false, null);
 
-        for (int i = 0; i < allRows.size(); i++)
+        for (int i = 0; i < includedRows.size(); i++)
         {
-            RawMetricDataSet row = allRows.get(i);
+            RawMetricDataSet row = includedRows.get(i);
             // We may not have values if there aren't enough input values
             if (mRs.length > 0)
             {
