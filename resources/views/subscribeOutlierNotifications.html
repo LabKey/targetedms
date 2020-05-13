@@ -18,18 +18,18 @@
 
             userSubscriptionHtml +=  '<p>'
                                   +     '<input type="radio" name="subscriptionType" ' + (userSubscription ? (!userSubscription.enabled ? "checked":"") :"" )  + '/> Do not email with notifications about newly imported data<br/>'
-                                  +     '<input type="radio" name="subscriptionType" id="enable" ' + (userSubscription ? (userSubscription.enabled ? "checked":"") :"" ) + '/> Email me when the'
+                                  +     '<input type="radio" name="subscriptionType" id="enable" ' + (userSubscription ? (userSubscription.enabled ? "checked":"") :"" ) + '/> Email me when the '
                                   +     '<select name="sampleCount">'
                                   +         '<option value="1" ' + (userSubscription ? (userSubscription.samples === 1 && userSubscription.enabled ? "selected":"") :"" ) + '>most</option>'
                                   +         '<option value="2" ' + (userSubscription ? (userSubscription.samples === 2 && userSubscription.enabled ? "selected":"") :"" ) + '>two most</option>'
                                   +         '<option value="3" ' + (userSubscription ? (userSubscription.samples === 3 && userSubscription.enabled ? "selected":"") :"" ) + '>three most</option>'
                                   +         '<option value="4" ' + (userSubscription ? (userSubscription.samples === 4 && userSubscription.enabled ? "selected":"") :"" ) + '>four most</option>'
                                   +         '<option value="5" ' + (userSubscription ? (userSubscription.samples === 5 && userSubscription.enabled ? "selected":"") :"" ) + '>five most</option>'
-                                  +     '</select>'
-                                  +     'recently imported samples each have at least'
+                                  +     '</select> '
+                                  +     'recently imported samples each have at least '
                                   +     '<input type="number" style="width: 3em" min="0" name="outlierCount"/> outliers'
                                   +  '</p>'
-                                  + '<input type="button" value="Save" class="labkey-button primary"  onclick="LABKEY.internal.SubscribeQCNotification.onSave()"/>'
+                                  + '<input type="button" value="Save" class="labkey-button primary"  onclick="LABKEY.internal.SubscribeQCNotification.onSave()"/> '
                                   + '<input type="button" value="Cancel" class="labkey-button" onclick="LABKEY.internal.SubscribeQCNotification.onCancel()" />' ;
 
             jQuery('#userSubscriptionDiv').html(userSubscriptionHtml);
