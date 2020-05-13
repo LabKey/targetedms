@@ -66,9 +66,9 @@ public class TargetedMSForeignKey extends LookupForeignKey
         }
 
         @Override
-        public @Nullable Collection<GUID> getIds(Container currentContainer)
+        public @Nullable Collection<GUID> getIds()
         {
-            return _annotationContainerFilter.getIds(currentContainer);
+            return _annotationContainerFilter.getIds();
         }
 
         @Override
