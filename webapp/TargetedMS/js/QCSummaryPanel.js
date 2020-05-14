@@ -220,16 +220,12 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                 url: LABKEY.ActionURL.buildURL('targetedms', 'GetQCMetricOutliers.api', container.path),
                 params: {sampleLimit: this.sampleLimit},
                 success: function(response) {
-                    this.data = JSON.parse(response.responseText).outliers;
-                    if(this.data) {
-                        this.sampleFiles = JSON.parse(response.responseText).sampleFiles;
-                        this.newRenderContainerSampleFileStats({
+                    var parsed = JSON.parse(response.responseText);
+                    if(parsed.sampleFiles) {
+                        this.renderContainerSampleFileStats({
                             container: container,
-                            dataRowsLJ: this.data.dataRowsLJ,
                             limitedSampleFiles: true,
-                            rawGuideSet: this.data.rawGuideSet,
-                            rawMetricDataSet: this.data.rawMetricDatSet,
-                            sampleFiles: this.sampleFiles
+                            sampleFiles: parsed.sampleFiles
                         })
                     } else {
                         this.removeSampleFilesDetailsDiv(container);
@@ -261,20 +257,21 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
         sampleFilesDiv.removeCls('sample-file-details-loading');
     },
 
-    newRenderContainerSampleFileStats: function (params) {
+    renderContainerSampleFileStats: function (params) {
         var container = params.container;
             var html = '<table class="table-condensed labkey-data-region-legacy labkey-show-borders"><thead><tr><td class="labkey-column-header">Sample Name</td><td class="labkey-column-header">Acquired</td><td class="labkey-column-header">Total outliers</td></tr></thead>';
-            var sampleFiles = this.sortObjectOfObjects(params.sampleFiles, 'Index');
+            var sampleFiles = params.sampleFiles;
             Ext4.iterate(sampleFiles, function (sampleFile)
             {
                 // create a new div id for each sampleFile to use for the hover details callout
                 sampleFile.calloutId = Ext4.id();
 
-                var iconCls = !sampleFile.IgnoreForAllMetric ? (!sampleFile.hasOutliers ? 'fa-file-o qc-correct' : 'fa-file qc-error') : 'fa-file-o qc-none';
+                var totalOutliers = sampleFile.LeveyJennings + sampleFile.mR + sampleFile.CUSUMm + sampleFile.CUSUMv;
+
+                var iconCls = !sampleFile.IgnoreForAllMetric ? (totalOutliers === 0 ? 'fa-file-o qc-correct' : 'fa-file qc-error') : 'fa-file-o qc-none';
                 html += '<tr id="' + sampleFile.calloutId + '"><td><div class="sample-file-item">'
                         + '<span class="fa ' + iconCls + '"></span> ' + Ext4.util.Format.htmlEncode(sampleFile.SampleFile) + '</div></td><td><div class="sample-file-item-acquired">' + Ext4.util.Format.date(Ext4.Date.parse(sampleFile.AcquiredTime, LABKEY.Utils.getDateTimeFormatWithMS()), LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s') + '</div></td>';
 
-                var totalOutliers = sampleFile.NonConformers + sampleFile.mR + sampleFile.CUSUMm + sampleFile.CUSUMv;
                 html += '<td style="text-align: right"><div class="sample-file-item-outliers">';
                 if (sampleFile.IgnoreForAllMetric) {
                     html += 'not included in QC';
@@ -314,7 +311,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
         if (sampleFile.IgnoreForAllMetric) {
             content += '<div>Not included in QC</div>';
         }
-        else if (!sampleFile.NonConformers && !sampleFile.mR && !sampleFile.CUSUMm && !sampleFile.CUSUMv) {
+        else if (!sampleFile.LeveyJennings && !sampleFile.mR && !sampleFile.CUSUMm && !sampleFile.CUSUMv) {
             content += '<div>No outliers</div>';
         }
         else {
@@ -337,17 +334,8 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                             '</tr>' +
                         '</thead><tbody>';
 
-            // sort by metric label, alphabetically
-            sampleFile.Items.sort(function(a, b) {
-                if (a.MetricLabel < b.MetricLabel)
-                    return -1;
-                if (a.MetricLabel > b.MetricLabel)
-                    return 1;
-                return 0;
-            });
-
             var rowCount = 0;
-            Ext4.each(sampleFile.Items, function (item)
+            Ext4.each(sampleFile.Metrics, function (item)
             {
                 var href = LABKEY.ActionURL.buildURL('project', 'begin', item.ContainerPath, {metric: item.MetricId});
                 content += '<tr class="' + (rowCount % 2 === 0 ? 'labkey-alternate-row' : 'labkey-row') + '">';
@@ -356,7 +344,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                     content += '<td align="center" colspan="6"><em>not included in QC</em></td>';
                 }
                 else {
-                    content += '<td align="right">' + this.getSampleDetailOutlierDisplayValue(item, 'NonConformers') + '</td>';
+                    content += '<td align="right">' + this.getSampleDetailOutlierDisplayValue(item, 'LeveyJennings') + '</td>';
                     content += '<td align="right">' + this.getSampleDetailOutlierDisplayValue(item, 'mR') + '</td>';
                     content += '<td align="right">' + this.getSampleDetailOutlierDisplayValue(item, 'CUSUMmN') + '</td>';
                     content += '<td align="right">' + this.getSampleDetailOutlierDisplayValue(item, 'CUSUMmP') + '</td>';
@@ -370,7 +358,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
 
             content += '<tr class="' + (rowCount % 2 === 0 ? 'labkey-alternate-row' : 'labkey-row') + '">';
             content += '<td class="outlier-metric-label"><b>Total</b></td>';
-            content += '<td align="right">' + this.getSampleDetailOutlierDisplayValue(sampleFile, 'NonConformers') + '</td>';
+            content += '<td align="right">' + this.getSampleDetailOutlierDisplayValue(sampleFile, 'LeveyJennings') + '</td>';
             content += '<td align="right">' + this.getSampleDetailOutlierDisplayValue(sampleFile, 'mR') + '</td>';
             content += '<td align="right">' + this.getSampleDetailOutlierDisplayValue(sampleFile, 'CUSUMmN') + '</td>';
             content += '<td align="right">' + this.getSampleDetailOutlierDisplayValue(sampleFile, 'CUSUMmP') + '</td>';
@@ -392,7 +380,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                     id: Ext4.id(),
                     target: el.dom,
                     placement: 'bottom',
-                    width: sampleFile.Items.length > 0 ? 720 : 300,
+                    width: sampleFile.Metrics.length > 0 ? 720 : 300,
                     title: 'Sample Details',
                     content: content,
                     onShow: this.attachHopscotchMouseClose
@@ -426,7 +414,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
     getSampleDetailOutlierDisplayValue : function(item, variable) {
         var value = item[variable];
         if ('Total' === variable) {
-            value = item['NonConformers'] + item['mR'] + item['CUSUMmN'] + item['CUSUMmP'] + item['CUSUMvN'] + item['CUSUMvP'];
+            value = item['LeveyJennings'] + item['mR'] + item['CUSUMmN'] + item['CUSUMmP'] + item['CUSUMvN'] + item['CUSUMvP'];
         }
         return value ? ('<b>' + value + '</b>') : 0
     },

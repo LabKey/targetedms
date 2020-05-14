@@ -29,34 +29,22 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.labkey.api.action.*;
 import org.labkey.api.analytics.AnalyticsService;
 import org.labkey.api.pipeline.PipelineJob;
-import org.labkey.api.query.CustomView;
-import org.labkey.api.query.QueryAction;
-import org.labkey.api.query.QueryChangeListener;
 import org.labkey.api.query.QueryDefinition;
-import org.labkey.api.query.QueryException;
-import org.labkey.api.query.QueryParseException;
-import org.labkey.api.query.QuerySchema;
-import org.labkey.api.query.SchemaKey;
-import org.labkey.api.query.ViewOptions;
-import org.labkey.api.security.AdminConsoleAction;
-import org.labkey.api.security.RequiresSiteAdmin;
 import org.labkey.api.security.permissions.ApplicationAdminPermission;
 import org.labkey.api.targetedms.TargetedMSService;
+import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.util.Button;
 import org.labkey.api.util.DOM;
 import org.labkey.api.util.DateUtil;
-import org.labkey.api.util.StringExpression;
 import org.labkey.api.util.StringUtilsLabKey;
 import org.labkey.api.util.UnexpectedException;
 import org.labkey.api.view.*;
-import org.labkey.api.targetedms.model.LJOutlier;
 import org.labkey.api.view.PopupMenu;
-import org.labkey.data.xml.TableType;
-import org.labkey.targetedms.model.Outlier;
-import org.labkey.targetedms.model.RawGuideSet;
+import org.labkey.targetedms.model.GuideSet;
+import org.labkey.targetedms.model.GuideSetKey;
+import org.labkey.targetedms.model.GuideSetStats;
 import org.labkey.targetedms.model.RawMetricDataSet;
-import org.labkey.targetedms.outliers.CUSUMOutliers;
-import org.labkey.targetedms.outliers.LeveyJenningsOutliers;
+import org.labkey.targetedms.outliers.OutlierGenerator;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.json.JSONArray;
@@ -170,7 +158,6 @@ import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
 
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -181,7 +168,6 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -199,6 +185,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.labkey.api.targetedms.TargetedMSService.MODULE_NAME;
 import static org.labkey.api.targetedms.TargetedMSService.RAW_FILES_TAB;
@@ -1030,7 +1018,6 @@ public class TargetedMSController extends SpringActionController
         public Object execute(QCMetricOutliersForm form, BindException errors)
         {
             ApiSimpleResponse response = new ApiSimpleResponse();
-            Outlier outlier = new Outlier();
 
             List<QCMetricConfiguration> enabledQCMetricConfigurations = TargetedMSManager.get().getEnabledQCMetricConfigurations(getContainer(), getUser());
 
@@ -1040,36 +1027,18 @@ public class TargetedMSController extends SpringActionController
                 return response;
             }
 
-            CUSUMOutliers cusumOutliers = new CUSUMOutliers();
+            List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
+            Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
 
-            List<LJOutlier> ljOutliers = LeveyJenningsOutliers.getLJOutliers(enabledQCMetricConfigurations, getContainer(), getUser(), form.getSampleLimit());
-            if(!ljOutliers.isEmpty())
-            {
-                List<RawGuideSet> rawGuideSets = cusumOutliers.getRawGuideSets(getContainer(), getUser(), enabledQCMetricConfigurations);
-                List<RawMetricDataSet> rawMetricDataSets = new CUSUMOutliers().getRawMetricDataSets(getContainer(), getUser(), enabledQCMetricConfigurations);
+            List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(getContainer(), getUser(), enabledQCMetricConfigurations);
 
-                JSONObject sampleFiles = cusumOutliers.getOtherQCSampleFileStats(ljOutliers, rawGuideSets, rawMetricDataSets, getContainer().getPath());
+            Map<GuideSetKey, GuideSetStats> stats = OutlierGenerator.get().getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
 
-                List<JSONObject> jsonLJOutliers = new ArrayList<>();
-                List<JSONObject> jsonRawGuideSets = new ArrayList<>();
-                List<JSONObject> jsonRawMetricDataSet = new ArrayList<>();
+            List<SampleFileInfo> sampleFiles = OutlierGenerator.get().getSampleFiles(rawMetricDataSets, stats, metricMap, getContainer(), form.getSampleLimit());
 
-                ljOutliers.forEach(ljOutlier -> jsonLJOutliers.add(ljOutlier.toJSON()));
-                outlier.setDataRowsLJ(jsonLJOutliers);
+            response.put("sampleFiles", sampleFiles.stream().map(sample -> sample.toJSON()).collect(Collectors.toList()));
+            response.put("guideSets", guideSets.stream().map(x -> x.toJSON(rawMetricDataSets, metricMap, stats)).collect(Collectors.toList()));
 
-                rawGuideSets.forEach(rawGuideSet -> jsonRawGuideSets.add(rawGuideSet.toJSON()));
-                outlier.setRawGuideSet(jsonRawGuideSets);
-
-                rawMetricDataSets.forEach(rawMetricDataSet -> jsonRawMetricDataSet.add(rawMetricDataSet.toJSON()));
-                outlier.setRawMetricDataSet(jsonRawMetricDataSet);
-
-                response.put("outliers", outlier.toJSON());
-                response.put("sampleFiles", sampleFiles);
-            }
-            else
-            {
-                response.put("outliers", null);
-            }
             return response;
         }
     }
