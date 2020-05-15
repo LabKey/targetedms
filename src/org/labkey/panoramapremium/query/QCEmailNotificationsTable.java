@@ -51,16 +51,16 @@ public class QCEmailNotificationsTable extends FilteredTable<PanoramaPremiumSche
     @Override
     protected void applyContainerFilter(ContainerFilter filter)
     {
-        if (filter.equals(ContainerFilter.CURRENT))
-            filter = getDefaultMetricContainerFilter(getUserSchema().getUser());
+        if (filter.getType().equals(ContainerFilter.Type.Current))
+            filter = getDefaultMetricContainerFilter(getUserSchema());
 
         super.applyContainerFilter(filter);
     }
 
-    public static ContainerFilter getDefaultMetricContainerFilter(User user)
+    public static ContainerFilter getDefaultMetricContainerFilter(PanoramaPremiumSchema schema)
     {
         // the base set of configuration live at the root container
-        return new ContainerFilter.CurrentPlusExtras(user, ContainerManager.getRoot());
+        return new ContainerFilter.CurrentPlusExtras(schema.getContainer(), schema.getUser(), ContainerManager.getRoot());
     }
 
     @Override
