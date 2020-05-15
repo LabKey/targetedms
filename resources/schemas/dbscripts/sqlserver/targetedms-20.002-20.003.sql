@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
--- Drop the FK constraint if it exists.  It may have been deleted on the server.
-IF OBJECTPROPERTY(OBJECT_ID('targetedms.fk_spectrumlibrary_librarysourceid'), 'IsConstraint') = 1
-    BEGIN
-EXEC('ALTER TABLE targetedms.spectrumlibrary DROP CONSTRAINT fk_spectrumlibrary_librarysourceid')
-END
-
+-- Drop the FK constraint
+ALTER TABLE targetedms.spectrumlibrary DROP CONSTRAINT fk_spectrumlibrary_librarysourceid;
 -- Drop the index before dropping the column
 DROP INDEX targetedms.spectrumlibrary.IX_SpectrumLibrary_LibrarySourceId;
 GO
