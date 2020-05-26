@@ -957,7 +957,8 @@ public final class RetentionTimeRegression
 		{
 			privateIndex = value;
 		}
-		public int compareTo(DeltaIndex other)
+		@Override
+        public int compareTo(DeltaIndex other)
 		{
 			if (getDelta() > other.getDelta())
 			{

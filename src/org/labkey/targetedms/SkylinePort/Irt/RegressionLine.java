@@ -72,7 +72,8 @@ public final class RegressionLine implements IRegressionFunction
 	 @param x Value in x dimension
 	 @return 
 	*/
-	public double GetY(double x)
+	@Override
+    public double GetY(double x)
 	{
 		return getSlope() * x + getIntercept();
 	}

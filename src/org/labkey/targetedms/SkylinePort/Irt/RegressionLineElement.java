@@ -59,7 +59,8 @@ public final class RegressionLineElement implements IRegressionFunction
 		return _regressionLine.getIntercept();
 	}
 
-	public double GetY(double x)
+	@Override
+    public double GetY(double x)
 	{
 		return _regressionLine.GetY(x);
 	}
