@@ -30,22 +30,22 @@ import java.util.ArrayList;
 
 public abstract class RetentionScoreCalculatorSpec implements IRetentionScoreCalculator
 {
-	@Override
+    @Override
     public abstract Double ScoreSequence(String sequence);
 
-	@Override
+    @Override
     public abstract double getUnknownScore();
 
-	@Override
+    @Override
     public abstract ArrayList<String> ChooseRegressionPeptides(Iterable<String> peptides);
 
-	@Override
+    @Override
     public abstract ArrayList<String> GetStandardPeptides(Iterable<String> peptides);
 
-	public boolean IsUsable()
-	{
-		return true;
-	}
+    public boolean IsUsable()
+    {
+        return true;
+    }
 
 //	public RetentionScoreCalculatorSpec Initialize(IProgressMonitor loadMonitor)
 //	{
