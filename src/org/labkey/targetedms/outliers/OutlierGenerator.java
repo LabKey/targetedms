@@ -67,10 +67,10 @@ public class OutlierGenerator
         sql.append("\nCOALESCE(X.SeriesLabel, COALESCE(pci.PrecursorId.ModifiedSequence,");
         sql.append("\n           ((CASE WHEN pci.MoleculePrecursorId.CustomIonName IS NULL THEN '' ELSE (pci.MoleculePrecursorId.CustomIonName || ', ') END)");
         sql.append("\n            || (CASE WHEN pci.MoleculePrecursorId.IonFormula IS NULL THEN '' ELSE (pci.MoleculePrecursorId.IonFormula || ', ') END)");
-        sql.append("\n            || ('[' || CAST (ROUND(pci.MoleculePrecursorId.massMonoisotopic, 4) AS NUMERIC) || '/'");
-        sql.append("\n            || CAST (ROUND(pci.MoleculePrecursorId.massAverage, 4) AS NUMERIC) || '] ')");
+        sql.append("\n            || ('[' || CAST (ROUND(pci.MoleculePrecursorId.massMonoisotopic, 4) AS VARCHAR) || '/'");
+        sql.append("\n            || CAST (ROUND(pci.MoleculePrecursorId.massAverage, 4) AS VARCHAR) || '] ')");
         sql.append("\n            ))");
-        sql.append("\n    || CAST (ROUND(COALESCE (pci.PrecursorId.Mz, pci.MoleculePrecursorId.Mz), 4) AS NUMERIC)");
+        sql.append("\n    || CAST (ROUND(COALESCE (pci.PrecursorId.Mz, pci.MoleculePrecursorId.Mz), 4) AS VARCHAR)");
         sql.append("\n    || (CASE WHEN COALESCE(pci.PrecursorId.Charge, pci.MoleculePrecursorId.Charge) > 0 THEN ' +' ELSE ' ' END)");
         sql.append("\n    || CAST(COALESCE(pci.PrecursorId.Charge, pci.MoleculePrecursorId.Charge) AS VARCHAR)) AS SeriesLabel,");
 
