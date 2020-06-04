@@ -1051,17 +1051,9 @@ public class TargetedMSController extends SpringActionController
                 JSONObject sampleFiles = cusumOutliers.getOtherQCSampleFileStats(ljOutliers, rawGuideSets, rawMetricDataSets, getContainer().getPath());
 
                 List<JSONObject> jsonLJOutliers = new ArrayList<>();
-                List<JSONObject> jsonRawGuideSets = new ArrayList<>();
-                List<JSONObject> jsonRawMetricDataSet = new ArrayList<>();
 
                 ljOutliers.forEach(ljOutlier -> jsonLJOutliers.add(ljOutlier.toJSON()));
                 outlier.setDataRowsLJ(jsonLJOutliers);
-
-                rawGuideSets.forEach(rawGuideSet -> jsonRawGuideSets.add(rawGuideSet.toJSON()));
-                outlier.setRawGuideSet(jsonRawGuideSets);
-
-                rawMetricDataSets.forEach(rawMetricDataSet -> jsonRawMetricDataSet.add(rawMetricDataSet.toJSON()));
-                outlier.setRawMetricDataSet(jsonRawMetricDataSet);
 
                 response.put("outliers", outlier.toJSON());
                 response.put("sampleFiles", sampleFiles);
@@ -3682,7 +3674,19 @@ public class TargetedMSController extends SpringActionController
     public static class RunDetailsForm extends QueryViewAction.QueryExportForm
     {
         private int _id = 0;
+        private String _fileName;
         private String _view;
+        private boolean _attemptedLookupByName;
+
+        public String getFileName()
+        {
+            return _fileName;
+        }
+
+        public void setFileName(String fileName)
+        {
+            _fileName = fileName;
+        }
 
         public void setId(int id)
         {
@@ -3691,11 +3695,21 @@ public class TargetedMSController extends SpringActionController
 
         public int getId()
         {
+            if (_id == 0 && _fileName != null && !_attemptedLookupByName)
+            {
+                // Support an alternative to the RowId-style parameter to look up by document name. See issue 40377
+                _attemptedLookupByName = true;
+                TargetedMSRun run = TargetedMSManager.getRunByFileName(_fileName, getContainer());
+                if (run != null)
+                {
+                    _id = run.getId();
+                }
+            }
             return _id;
         }
 
         public boolean hasRunId() {
-            return _id > 0;
+            return getId() > 0;
         }
 
         public String getView()
