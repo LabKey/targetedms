@@ -1,5 +1,6 @@
 package org.labkey.api.targetedms;
 
+import java.util.Collections;
 import java.util.List;
 
 public class BlibSourceFiles
@@ -15,11 +16,11 @@ public class BlibSourceFiles
 
     public List<String> getSpectrumSourceFiles()
     {
-        return spectrumSourceFiles;
+        return Collections.unmodifiableList(spectrumSourceFiles);
     }
 
     public List<String> getIdFiles()
     {
-        return idFiles;
+        return Collections.unmodifiableList(idFiles);
     }
 }
