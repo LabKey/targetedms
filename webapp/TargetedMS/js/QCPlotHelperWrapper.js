@@ -28,10 +28,16 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
     },
 
     prepareAndRenderQCPlot : function() {
-        // if (this.showLJPlot())
-        //     return this.getLJGuideSetData();
-        // return this.getRawGuideSetData(this.showMovingRangePlot());
-        this.newGetPlotData();
+        this.flipToNew = true;
+
+        if (!this.flipToNew) {
+            if (this.showLJPlot())
+                return this.getLJGuideSetData();
+            return this.getRawGuideSetData(this.showMovingRangePlot());
+        }
+        else {
+            return this.newGetPlotData();
+        }
     },
 
     addIndividualPrecursorPlots : function()
@@ -44,9 +50,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
 
         for (var i = 0; i < this.precursors.length; i++)
         {
-            // var precursorInfo = this.fragmentPlotData[this.precursors[i]];
-
-            var precursorInfo = this.newFragmentPlotData[this.precursors[i]];
+            var precursorInfo;
+            if (!this.flipToNew) {
+                precursorInfo = this.fragmentPlotData[this.precursors[i]];
+            }
+            else {
+                precursorInfo = this.newFragmentPlotData[this.precursors[i]];
+            }
 
             // We don't necessarily have info for all possible precursors, depending on the filters and plot type
             if (precursorInfo)

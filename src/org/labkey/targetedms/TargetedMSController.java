@@ -1053,6 +1053,10 @@ public class TargetedMSController extends SpringActionController
     public static class QCPlotsDataForm
     {
         private int _metricId;
+        private boolean _includeLJ;
+        private boolean _includeMR;
+        private boolean _includeMeanCusum;
+        private boolean _includeVariableCusum;
 
         public int getMetricId()
         {
@@ -1061,10 +1065,54 @@ public class TargetedMSController extends SpringActionController
 
         public void setMetricId(int metricId)
         {
-            _metricId = metricId;
+            this._metricId = metricId;
+        }
+
+        public boolean isIncludeLJ()
+        {
+            return _includeLJ;
+        }
+
+        public void setIncludeLJ(boolean includeLJ)
+        {
+            this._includeLJ = includeLJ;
+        }
+
+        public boolean isIncludeMR()
+        {
+            return _includeMR;
+        }
+
+        public void setIncludeMR(boolean includeMR)
+        {
+            this._includeMR = includeMR;
+        }
+
+        public boolean isIncludeMeanCusum()
+        {
+            return _includeMeanCusum;
+        }
+
+        public void setIncludeMeanCusum(boolean includeMeanCusum)
+        {
+            this._includeMeanCusum = includeMeanCusum;
+        }
+
+        public boolean isIncludeVariableCusum()
+        {
+            return _includeVariableCusum;
+        }
+
+        public void setIncludeVariableCusum(boolean includeVariableCusum)
+        {
+            this._includeVariableCusum = includeVariableCusum;
         }
     }
 
+    /**
+     * Action to get quality control plots data
+     * The returned data {@link QCPlotFragment} is separated by the peptide
+     * */
     @RequiresPermission(ReadPermission.class)
     public class GetQCPlotsDataAction extends ReadOnlyApiAction<QCPlotsDataForm>
     {
@@ -1090,7 +1138,10 @@ public class TargetedMSController extends SpringActionController
             List<QCPlotFragment> qcPlotFragments = OutlierGenerator.get().getQCPlotFragment(rawMetricDataSets, stats);
 
             response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toQCPlotJSON).collect(Collectors.toList()));
-            response.put("plotDataRows", qcPlotFragments.stream().map(QCPlotFragment::toJSON).collect(Collectors.toList()));
+            response.put("plotDataRows", qcPlotFragments
+                    .stream()
+                    .map(qcPlotFragment -> qcPlotFragment.toJSON(form.isIncludeLJ(), form.isIncludeMR(), form.isIncludeMeanCusum(), form.isIncludeVariableCusum()))
+                    .collect(Collectors.toList()));
             response.put("metricProps", metricMap.get(passedMetricId).toJSON());
 
             return response;

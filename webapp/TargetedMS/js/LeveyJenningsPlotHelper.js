@@ -88,7 +88,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
                     this.guideSetDataMap[guideSetId].Series[seriesLabel][seriesType] = {
                         NumRecords: guideSetStat['NumRecords'],
                         Mean: guideSetStat['LJMean'],
-                        StandardDev: guideSetStat['LJStdDev']
+                        StdDev: guideSetStat['LJStdDev']
                     };
                 }
                 else {
@@ -107,7 +107,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
                     this.defaultGuideSet[seriesLabel][seriesType].LJ = {
                         NumRecords: guideSetStat['NumRecords'],
                         Mean: guideSetStat['LJMean'],
-                        StandardDev: guideSetStat['LJStdDev']
+                        StdDev: guideSetStat['LJStdDev']
                     };
                 }
             }, this);

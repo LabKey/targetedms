@@ -184,7 +184,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 }
                 else {
                     if (!this.guideSetDataMap[guideSetId]) {
-                        this.guideSetDataMap[guideSetId] = this.getGuideSetDataObj(row);
+                        this.guideSetDataMap[guideSetId] = this.getGuideSetDataObj(guideSetStat);
                     }
                     if (!this.guideSetDataMap[guideSetId].Series[seriesLabel]) {
                         this.guideSetDataMap[guideSetId].Series[seriesLabel] = {};
@@ -274,15 +274,19 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     },
 
     newGetPlotData: function() {
-        var metric = {};
-        metric.metricId = this.metric;
+        var plotsConfig = {};
+        plotsConfig.metricId = this.metric;
+        plotsConfig.includeLJ = this.showLJPlot();
+        plotsConfig.includeMR = this.showMovingRangePlot();
+        plotsConfig.includeMeanCusum = this.showMeanCUSUMPlot();
+        plotsConfig.includeVariableCusum = this.showVariableCUSUMPlot();
 
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetQCPlotsData.api'),
             success: this.newProcessPlotData,
             failure: LABKEY.Utils.getCallbackWrapper(this.failureHandler),
             scope: this,
-            params: metric
+            params: plotsConfig
         });
     },
 
@@ -398,6 +402,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         // process the data to shape it for the JS LeveyJenningsPlot API call
         this.newFragmentPlotData = {};
 
+        if (this.showLJPlot()) {
+            this.newProcessLJGuideSetData(plotDataRows, seriesType);
+        }
+        else if (this.showMovingRangePlot() || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot()) {
+            this.newProcessRawGuideSetData(plotDataRows, seriesType);
+        }
+
         Ext4.iterate(plotDataRows, function(plotDataRow)
         {
             var fragment = plotDataRow.SeriesLabel;
@@ -489,14 +500,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 }
             }
         }
-        if (this.showLJPlot()) {
-            this.newProcessLJGuideSetData(plotDataRows, seriesType);
-        }
-        else if (this.showMovingRangePlot() || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot()) {
-            this.newProcessRawGuideSetData(plotDataRows, seriesType);
-        }
-
-        console.log("h");
 
         this.renderPlots();
     },

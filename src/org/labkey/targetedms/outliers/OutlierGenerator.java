@@ -199,9 +199,9 @@ public class OutlierGenerator
         }
         return metricLabel;
     }
-
-
-
+    /**
+     * returns the separated plots data per peptide
+     * */
     public List<QCPlotFragment> getQCPlotFragment(List<RawMetricDataSet> rawMetricData, Map<GuideSetKey, GuideSetStats> stats)
     {
         List<QCPlotFragment> qcPlotFragments = new ArrayList<>();

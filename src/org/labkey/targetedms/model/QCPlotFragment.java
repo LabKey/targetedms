@@ -88,7 +88,7 @@ public class QCPlotFragment
         this.guideSetStats = guideSetStats;
     }
 
-    public JSONObject toJSON()
+    public JSONObject toJSON(boolean includeLJ, boolean includeMR, boolean includeMeanCusum, boolean includeVariableCusum)
     {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("DataType", getDataType());
@@ -102,10 +102,16 @@ public class QCPlotFragment
         {
             JSONObject statsJSONObject = new JSONObject();
             statsJSONObject.put("GuideSetId", stats.getKey().getGuideSetId());
-            statsJSONObject.put("LJStdDev", stats.getStandardDeviation());
-            statsJSONObject.put("LJMean", stats.getAverage());
-            statsJSONObject.put("MRStdDev", stats.getMovingRangeStdDev());
-            statsJSONObject.put("MRMean", stats.getMovingRangeAverage());
+            if (includeLJ)
+            {
+                statsJSONObject.put("LJStdDev", stats.getStandardDeviation());
+                statsJSONObject.put("LJMean", stats.getAverage());
+            }
+            if (includeMR)
+            {
+                statsJSONObject.put("MRStdDev", stats.getMovingRangeStdDev());
+                statsJSONObject.put("MRMean", stats.getMovingRangeAverage());
+            }
             statsJSONObject.put("Comment", stats.getGuideSet().getComment());
             statsJSONObject.put("ReferenceEnd", stats.getGuideSet().getReferenceEnd());
             statsJSONObject.put("TrainingStart", stats.getGuideSet().getTrainingStart());
@@ -125,11 +131,20 @@ public class QCPlotFragment
             dataJsonObject.put("PrecursorChromInfoId", plotData.getPrecursorChromInfoId());
             dataJsonObject.put("InGuideSetTrainingRange", plotData.isInGuideSetTrainingRange());
             dataJsonObject.put("GuideSetId", plotData.getGuideSetId());
-            dataJsonObject.put("MR", plotData.getmR());
-            dataJsonObject.put("CUSUMmN", plotData.getCUSUMmN());
-            dataJsonObject.put("CUSUMmP", plotData.getCUSUMmP());
-            dataJsonObject.put("CUSUMvP", plotData.getmR());
-            dataJsonObject.put("CUSUMvN", plotData.getmR());
+            if (includeMR)
+            {
+                dataJsonObject.put("MR", plotData.getmR());
+            }
+            if (includeMeanCusum)
+            {
+                dataJsonObject.put("CUSUMmN", plotData.getCUSUMmN());
+                dataJsonObject.put("CUSUMmP", plotData.getCUSUMmP());
+            }
+            if (includeVariableCusum)
+            {
+                dataJsonObject.put("CUSUMvP", plotData.getCUSUMvP());
+                dataJsonObject.put("CUSUMvN", plotData.getCUSUMvN());
+            }
             dataJsonArray.put(dataJsonObject);
         }
 
