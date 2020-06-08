@@ -28,9 +28,10 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
     },
 
     prepareAndRenderQCPlot : function() {
-        if (this.showLJPlot())
-            return this.getLJGuideSetData();
-        return this.getRawGuideSetData(this.showMovingRangePlot());
+        // if (this.showLJPlot())
+        //     return this.getLJGuideSetData();
+        // return this.getRawGuideSetData(this.showMovingRangePlot());
+        this.newGetPlotData();
     },
 
     addIndividualPrecursorPlots : function()
@@ -43,7 +44,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
 
         for (var i = 0; i < this.precursors.length; i++)
         {
-            var precursorInfo = this.fragmentPlotData[this.precursors[i]];
+            // var precursorInfo = this.fragmentPlotData[this.precursors[i]];
+
+            var precursorInfo = this.newFragmentPlotData[this.precursors[i]];
 
             // We don't necessarily have info for all possible precursors, depending on the filters and plot type
             if (precursorInfo)
@@ -57,7 +60,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
                     ids.push(id + '_plotType_' + j);
                 }
 
-                precursorInfo.precursorScoped ?
+                metricProps.precursorScoped ?
                         this.addPlotsToPlotDiv(ids, this.precursors[i] + ", " + precursorInfo.mz, this.plotDivId, 'qc-plot-wp'):
                         this.addPlotsToPlotDiv(ids, this.precursors[i], this.plotDivId, 'qc-plot-wp');
 
@@ -232,6 +235,66 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
             Ext4.apply(plotData, this.getCUSUMInitFragmentPlotData(false));
         }
         return plotData;
+    },
+
+    newProcessPlotDataRow: function(row, plotDataRow, fragment, seriesType, metricProps)
+    {
+        var dataType = plotDataRow['DataType'];
+        var mz = Ext4.util.Format.number(plotDataRow['mz'], '0.0000');
+        if (!this.newFragmentPlotData[fragment])
+        {
+            this.newFragmentPlotData[fragment] = this.getInitFragmentPlotData(fragment, dataType, mz);
+        }
+
+        var data = {
+            type: 'data',
+            fragment: fragment,
+            mz: mz,
+            SampleFileId: row['SampleFileId'], // keep in data for click handler
+            ReplicateId: row['ReplicateId'], // keep in data for click handler
+            PrecursorId: plotDataRow['PrecursorId'], // keep in data for click handler
+            PrecursorChromInfoId: row['PrecursorChromInfoId'], // keep in data for click handler
+            FilePath: row['FilePath'], // keep in data for hover text display
+            IgnoreInQC: plotDataRow['IgnoreInQC'], // keep in data for hover text display
+            fullDate: row['AcquiredTime'] ? this.formatDate(Ext4.Date.parse(row['AcquiredTime'], LABKEY.Utils.getDateTimeFormatWithMS()), true) : null,
+            date: row['AcquiredTime'] ? this.formatDate(Ext4.Date.parse(row['AcquiredTime'], LABKEY.Utils.getDateTimeFormatWithMS())) : null,
+            groupedXTick: row['AcquiredTime'] ? this.formatDate(Ext4.Date.parse(row['AcquiredTime'], LABKEY.Utils.getDateTimeFormatWithMS())) : null,
+            dataType: dataType, //needed for plot point click handler
+            SeriesType: seriesType
+        };
+
+        // if a guideSetId is defined for this row, include the guide set stats values in the data object
+        if (Ext4.isDefined(row['GuideSetId']) && row['GuideSetId'] > 0)
+        {
+            var gs = this.guideSetDataMap[row['GuideSetId']];
+            if (Ext4.isDefined(gs) && gs.Series[fragment])
+            {
+                data['guideSetId'] = row['GuideSetId'];
+                data['inGuideSetTrainingRange'] = row['InGuideSetTrainingRange'];
+                data['groupedXTick'] = data['groupedXTick'] + '|'
+                        + (gs['TrainingStart'] ? gs['TrainingStart'] : '0') + '|'
+                        + (row['InGuideSetTrainingRange'] ? 'include' : 'notinclude');
+            }
+        }
+
+        if (this.showLJPlot())
+        {
+            Ext4.apply(data, this.newProcessLJPlotDataRow(row, fragment, seriesType, metricProps));
+        }
+        if (this.showMovingRangePlot())
+        {
+            Ext4.apply(data, this.processMRPlotDataRow(row, fragment, seriesType, metricProps));
+        }
+        if (this.showMeanCUSUMPlot())
+        {
+            Ext4.apply(data, this.processCUSUMPlotDataRow(row, fragment, seriesType, metricProps, true));
+        }
+        if (this.showVariableCUSUMPlot())
+        {
+            Ext4.apply(data, this.processCUSUMPlotDataRow(row, fragment, seriesType, metricProps, false));
+        }
+
+        return data;
     },
 
     processPlotDataRow: function(row, fragment, seriesType, metricProps)

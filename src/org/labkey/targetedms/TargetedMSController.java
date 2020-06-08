@@ -46,6 +46,7 @@ import org.labkey.api.view.template.ClientDependency;
 import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
+import org.labkey.targetedms.model.QCPlotFragment;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.outliers.OutlierGenerator;
 import org.jfree.chart.title.TextTitle;
@@ -1042,13 +1043,59 @@ public class TargetedMSController extends SpringActionController
 
             List<SampleFileInfo> sampleFiles = OutlierGenerator.get().getSampleFiles(rawMetricDataSets, stats, metricMap, getContainer(), form.getSampleLimit());
 
-            response.put("sampleFiles", sampleFiles.stream().map(sample -> sample.toJSON()).collect(Collectors.toList()));
+            response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toJSON).collect(Collectors.toList()));
             response.put("guideSets", guideSets.stream().map(x -> x.toJSON(rawMetricDataSets, metricMap, stats)).collect(Collectors.toList()));
 
             return response;
         }
     }
 
+    public static class QCPlotsDataForm
+    {
+        private int _metricId;
+
+        public int getMetricId()
+        {
+            return _metricId;
+        }
+
+        public void setMetricId(int metricId)
+        {
+            _metricId = metricId;
+        }
+    }
+
+    @RequiresPermission(ReadPermission.class)
+    public class GetQCPlotsDataAction extends ReadOnlyApiAction<QCPlotsDataForm>
+    {
+        @Override
+        public Object execute(QCPlotsDataForm form, BindException errors) throws Exception
+        {
+            ApiSimpleResponse response = new ApiSimpleResponse();
+            OutlierGenerator generator = OutlierGenerator.get();
+
+            int passedMetricId = form.getMetricId();
+
+            List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
+
+            List<QCMetricConfiguration> qcMetricConfigurations = TargetedMSManager.get()
+                    .getEnabledQCMetricConfigurations(getContainer(), getUser())
+                    .stream()
+                    .filter(qcMetricConfiguration -> qcMetricConfiguration.getId() == passedMetricId)
+                    .collect(Collectors.toList());
+            List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(getContainer(), getUser(), qcMetricConfigurations);
+            Map<GuideSetKey, GuideSetStats> stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+            Map<Integer, QCMetricConfiguration> metricMap = qcMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
+            List<SampleFileInfo> sampleFiles = OutlierGenerator.get().getSampleFiles(rawMetricDataSets, stats, metricMap, getContainer(), null);
+            List<QCPlotFragment> qcPlotFragments = OutlierGenerator.get().getQCPlotFragment(rawMetricDataSets, stats);
+
+            response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toQCPlotJSON).collect(Collectors.toList()));
+            response.put("plotDataRows", qcPlotFragments.stream().map(QCPlotFragment::toJSON).collect(Collectors.toList()));
+            response.put("metricProps", metricMap.get(passedMetricId).toJSON());
+
+            return response;
+        }
+    }
     // ------------------------------------------------------------------------
     // Action to show a list of chromatogram library archived revisions
     // ------------------------------------------------------------------------

@@ -28,9 +28,11 @@ import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
 import org.labkey.targetedms.model.QCMetricConfiguration;
+import org.labkey.targetedms.model.QCPlotFragment;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.parser.SampleFile;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +53,8 @@ public class OutlierGenerator
 
     private String getEachSeriesTypePlotDataSql(int seriesIndex, int id, String schemaName, String queryName)
     {
-        return "(SELECT PrecursorChromInfoId, SampleFileId, CAST(IFDEFINED(SeriesLabel) AS VARCHAR) AS SeriesLabel, "
+        return "(SELECT PrecursorChromInfoId, SampleFileId, SampleFileId.FilePath, SampleFileId.ReplicateId.Id AS ReplicateId ," +
+                " CAST(IFDEFINED(SeriesLabel) AS VARCHAR) AS SeriesLabel, "
                 + "\nMetricValue, " + seriesIndex + " AS MetricSeriesIndex, " + id + " AS MetricId"
                 + "\n FROM " + schemaName + '.' + queryName + ")";
     }
@@ -61,6 +64,8 @@ public class OutlierGenerator
         StringBuilder sql = new StringBuilder();
 
         sql.append("SELECT X.MetricSeriesIndex, X.MetricId, X.SampleFileId, ");
+
+        sql.append(" X.FilePath, X.ReplicateId, ");
 
         sql.append("\nCOALESCE(pci.PrecursorId.Id, pci.MoleculePrecursorId.Id) AS PrecursorId,");
 
@@ -193,5 +198,53 @@ public class OutlierGenerator
                 throw new IllegalArgumentException("Unexpected metric series index: " + dataRow.getMetricSeriesIndex());
         }
         return metricLabel;
+    }
+
+
+
+    public List<QCPlotFragment> getQCPlotFragment(List<RawMetricDataSet> rawMetricData, Map<GuideSetKey, GuideSetStats> stats)
+    {
+        List<QCPlotFragment> qcPlotFragments = new ArrayList<>();
+        Map<String, List<RawMetricDataSet>> rawMetricDataSetMapByLabel = new HashMap<>();
+        for (RawMetricDataSet rawMetricDataSet : rawMetricData)
+        {
+            if (null == rawMetricDataSetMapByLabel.get(rawMetricDataSet.getSeriesLabel()))
+            {
+                List<RawMetricDataSet> rawMetricDataSets = new ArrayList<>();
+                rawMetricDataSets.add(rawMetricDataSet);
+                rawMetricDataSetMapByLabel.put(rawMetricDataSet.getSeriesLabel(), rawMetricDataSets);
+            }
+            else
+            {
+                rawMetricDataSetMapByLabel.get(rawMetricDataSet.getSeriesLabel()).add(rawMetricDataSet);
+            }
+        }
+
+        for (Map.Entry<String, List<RawMetricDataSet>> entry : rawMetricDataSetMapByLabel.entrySet())
+        {
+            QCPlotFragment qcPlotFragment = new QCPlotFragment();
+            qcPlotFragment.setSeriesLabel(entry.getKey());
+
+            /* Common values for the whole peptide */
+            qcPlotFragment.setDataType(entry.getValue().get(0).getDataType());
+            qcPlotFragment.setIgnoreInQC(entry.getValue().get(0).isIgnoreInQC());
+            qcPlotFragment.setmZ(entry.getValue().get(0).getMz());
+            qcPlotFragment.setPrecursorId(entry.getValue().get(0).getPrecursorId());
+            qcPlotFragment.setQcPlotData(entry.getValue());
+
+            qcPlotFragments.add(qcPlotFragment);
+
+            List<GuideSetStats> guideSetStatsList = new ArrayList<>();
+            stats.forEach(((guideSetKey, guideSetStats) -> {
+                if (guideSetKey.getSeriesLabel().equalsIgnoreCase(qcPlotFragment.getSeriesLabel()))
+                {
+                    guideSetStatsList.add(guideSetStats);
+                }
+            }));
+            qcPlotFragment.setGuideSetStats(guideSetStatsList);
+        }
+
+
+        return qcPlotFragments;
     }
 }

@@ -41,6 +41,7 @@ public class GuideSetStats
     private double _average;
 
     private double _movingRangeAverage;
+    private double _movingRangeStdDev;
 
     private boolean _locked = false;
 
@@ -74,6 +75,22 @@ public class GuideSetStats
     {
         assertLocked();
         return _movingRangeAverage;
+    }
+
+    public double getMovingRangeStdDev()
+    {
+        assertLocked();
+        return _movingRangeStdDev;
+    }
+
+    public GuideSet getGuideSet()
+    {
+        return _guideSet;
+    }
+
+    public int getNumRecords()
+    {
+        return _trainingRows.size();
     }
 
     public void addRow(RawMetricDataSet row)
@@ -132,6 +149,7 @@ public class GuideSetStats
 
         Double[] movingRanges = Stats.getMovingRanges(trainingValues, false, null);
         _movingRangeAverage = Stats.getMean(movingRanges);
+        _movingRangeStdDev = Stats.getStdDev(movingRanges, false);
 
         List<RawMetricDataSet> allRows = new ArrayList<>(_trainingRows.size() + _referenceRows.size());
         allRows.addAll(_trainingRows);

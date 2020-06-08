@@ -67,6 +67,54 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
             this.getPlotData();
     },
 
+    newProcessLJGuideSetData : function(plotDataRows, seriesType)
+    {
+        this.guideSetDataMap = {};
+        this.defaultGuideSet = {};
+        Ext4.each(plotDataRows, function(plotDataRow) {
+            Ext4.each(plotDataRow.GuideSetStats, function(guideSetStat) {
+                var guideSetId = guideSetStat['GuideSetId'];
+                var seriesLabel = plotDataRow['SeriesLabel'];
+
+                if (guideSetId > 0) {
+                    if (!this.guideSetDataMap[guideSetId]) {
+                        this.guideSetDataMap[guideSetId] = this.getGuideSetDataObj(guideSetStat);
+                    }
+
+                    if (!this.guideSetDataMap[guideSetId].Series[seriesLabel]) {
+                        this.guideSetDataMap[guideSetId].Series[seriesLabel] = {};
+                    }
+
+                    this.guideSetDataMap[guideSetId].Series[seriesLabel][seriesType] = {
+                        NumRecords: guideSetStat['NumRecords'],
+                        Mean: guideSetStat['LJMean'],
+                        StandardDev: guideSetStat['LJStdDev']
+                    };
+                }
+                else {
+                    if (!this.defaultGuideSet) {
+                        this.defaultGuideSet = {};
+                    }
+
+                    if (!this.defaultGuideSet[seriesLabel]) {
+                        this.defaultGuideSet[seriesLabel] = {};
+                    }
+
+                    if (!this.defaultGuideSet[seriesLabel][seriesType]) {
+                        this.defaultGuideSet[seriesLabel][seriesType] = {};
+                    }
+
+                    this.defaultGuideSet[seriesLabel][seriesType].LJ = {
+                        NumRecords: guideSetStat['NumRecords'],
+                        Mean: guideSetStat['LJMean'],
+                        StandardDev: guideSetStat['LJStdDev']
+                    };
+                }
+            }, this);
+
+        }, this);
+    },
+
     setLJSeriesMinMax: function(dataObject, row) {
         // track the min and max data so we can get the range for including the QC annotations
         var val = row['value'];
@@ -176,6 +224,33 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         else
         {
             data['value'] = row['MetricValue'];
+        }
+        return data;
+
+    },
+
+    newProcessLJPlotDataRow: function(row, fragment, seriesType, metricProps)
+    {
+        var data = {};
+        // if a guideSetId is defined for this row, include the guide set stats values in the data object
+        if (Ext4.isDefined(row['GuideSetId']) && row['GuideSetId'] > 0)
+        {
+            var gs = this.guideSetDataMap[row['GuideSetId']];
+            if (Ext4.isDefined(gs) && gs.Series[fragment]&& gs.Series[fragment][seriesType])
+            {
+                data['mean'] = gs.Series[fragment][seriesType]['Mean'];
+                data['stdDev'] = gs.Series[fragment][seriesType]['StandardDev'];
+            }
+        }
+
+        if (this.isMultiSeries())
+        {
+            data['value_' + seriesType] = row['Value'];
+            data['value_' + seriesType + 'Title'] = metricProps[seriesType + 'Label'];
+        }
+        else
+        {
+            data['value'] = row['Value'];
         }
         return data;
 
