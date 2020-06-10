@@ -11,8 +11,6 @@ import java.util.List;
 public class QCPlotFragment
 {
     private String seriesLabel;
-    private boolean ignoreInQC;
-    private Integer precursorId;
     private String dataType;
     private Double mZ;
     private List<RawMetricDataSet> qcPlotData;
@@ -26,26 +24,6 @@ public class QCPlotFragment
     public void setSeriesLabel(String seriesLabel)
     {
         this.seriesLabel = seriesLabel;
-    }
-
-    public boolean isIgnoreInQC()
-    {
-        return ignoreInQC;
-    }
-
-    public void setIgnoreInQC(boolean ignoreInQC)
-    {
-        this.ignoreInQC = ignoreInQC;
-    }
-
-    public Integer getPrecursorId()
-    {
-        return precursorId;
-    }
-
-    public void setPrecursorId(Integer precursorId)
-    {
-        this.precursorId = precursorId;
     }
 
     public String getDataType()

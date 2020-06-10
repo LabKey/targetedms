@@ -263,9 +263,8 @@ public class OutlierGenerator
 
             /* Common values for the whole peptide */
             qcPlotFragment.setDataType(entry.getValue().get(0).getDataType());
-            qcPlotFragment.setIgnoreInQC(entry.getValue().get(0).isIgnoreInQC());
             qcPlotFragment.setmZ(entry.getValue().get(0).getMz());
-            qcPlotFragment.setPrecursorId(entry.getValue().get(0).getPrecursorId());
+
             qcPlotFragment.setQcPlotData(entry.getValue());
 
             qcPlotFragments.add(qcPlotFragment);
