@@ -93,8 +93,6 @@ public class QCPlotFragment
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("DataType", getDataType());
         jsonObject.put("SeriesLabel", getSeriesLabel());
-        jsonObject.put("IgnoreInQC", isIgnoreInQC());
-        jsonObject.put("PrecursorId", getPrecursorId());
         jsonObject.put("mz", getmZ());
 
         JSONArray guideSetArray = new JSONArray();
@@ -125,12 +123,13 @@ public class QCPlotFragment
         for (RawMetricDataSet plotData : getQcPlotData())
         {
             JSONObject dataJsonObject = new JSONObject();
-            dataJsonObject.put("AcquiredTime", plotData.getAcquiredTime());
             dataJsonObject.put("Value", plotData.getMetricValue());
             dataJsonObject.put("SampleFileId", plotData.getSampleFileId());
             dataJsonObject.put("PrecursorChromInfoId", plotData.getPrecursorChromInfoId());
             dataJsonObject.put("InGuideSetTrainingRange", plotData.isInGuideSetTrainingRange());
             dataJsonObject.put("GuideSetId", plotData.getGuideSetId());
+            dataJsonObject.put("IgnoreInQC", plotData.isIgnoreInQC());
+            dataJsonObject.put("PrecursorId", plotData.getPrecursorId());
             if (includeMR)
             {
                 dataJsonObject.put("MR", plotData.getmR());

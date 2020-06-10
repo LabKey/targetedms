@@ -1321,7 +1321,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }
 
             this.prepareAndRenderQCPlot();
-            // this.newGetPlotData();
         }
     },
 

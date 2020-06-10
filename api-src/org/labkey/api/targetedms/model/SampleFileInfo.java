@@ -113,6 +113,7 @@ public class SampleFileInfo extends OutlierCounts
         jsonObject.put("SampleId", getSampleId());
         jsonObject.put("ReplicateId", getReplicateId());
         jsonObject.put("FilePath", getFilePath());
+        jsonObject.put("AcquiredTime", getAcquiredTime());
 
         return jsonObject;
     }

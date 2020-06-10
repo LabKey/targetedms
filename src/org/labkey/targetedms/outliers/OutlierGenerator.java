@@ -15,6 +15,7 @@
  */
 package org.labkey.targetedms.outliers;
 
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.Sort;
@@ -51,15 +52,38 @@ public class OutlierGenerator
         return INSTANCE;
     }
 
-    private String getEachSeriesTypePlotDataSql(int seriesIndex, int id, String schemaName, String queryName)
+    private String getEachSeriesTypePlotDataSql(int seriesIndex, int id, String schemaName, String queryName, List<AnnotationGroup> annotationGroups)
     {
-        return "(SELECT PrecursorChromInfoId, SampleFileId, SampleFileId.FilePath, SampleFileId.ReplicateId.Id AS ReplicateId ," +
-                " CAST(IFDEFINED(SeriesLabel) AS VARCHAR) AS SeriesLabel, "
-                + "\nMetricValue, " + seriesIndex + " AS MetricSeriesIndex, " + id + " AS MetricId"
-                + "\n FROM " + schemaName + '.' + queryName + ")";
+        StringBuilder sql = new StringBuilder("(SELECT PrecursorChromInfoId, SampleFileId, SampleFileId.FilePath, SampleFileId.ReplicateId.Id AS ReplicateId ,");
+        sql.append(" CAST(IFDEFINED(SeriesLabel) AS VARCHAR) AS SeriesLabel, ");
+        sql.append("\nMetricValue, ").append(seriesIndex).append(" AS MetricSeriesIndex, ").append(id).append(" AS MetricId");
+        sql.append("\n FROM ").append(schemaName).append('.').append(queryName);
+        if (!annotationGroups.isEmpty())
+        {
+            sql.append(" WHERE ");
+            StringBuilder filterClause = new StringBuilder("SampleFileId.ReplicateId in (");
+            var intersect = "";
+            var selectSql = "(SELECT ReplicateId FROM targetedms.ReplicateAnnotation WHERE ";
+            for (AnnotationGroup annotation : annotationGroups)
+            {
+                filterClause.append(intersect).append(selectSql).append(" Name='").append(annotation.getName()).append("' AND ( ");
+                var or = "";
+                for (String value : annotation.getValues())
+                {
+                    filterClause.append(or).append("Value='").append(value).append("'");
+                    or = " OR ";
+                }
+                filterClause.append(" ) ) ");
+                intersect = " INTERSECT ";
+            }
+            filterClause.append(") ");
+            sql.append(filterClause.toString());
+        }
+        sql.append(")");
+        return sql.toString();
     }
 
-    private String queryContainerSampleFileRawData(List<QCMetricConfiguration> configurations)
+    private String queryContainerSampleFileRawData(List<QCMetricConfiguration> configurations, String startDate, String endDate, List<AnnotationGroup> annotationGroups)
     {
         StringBuilder sql = new StringBuilder();
 
@@ -88,19 +112,19 @@ public class OutlierGenerator
         sql.append("\nFROM (");
 
         String sep = "";
-        for (QCMetricConfiguration configuration: configurations)
+        for (QCMetricConfiguration configuration : configurations)
         {
             int id = configuration.getId();
             String schema1Name = configuration.getSeries1SchemaName();
             String query1Name = configuration.getSeries1QueryName();
-            sql.append(sep).append(getEachSeriesTypePlotDataSql(1, id, schema1Name, query1Name));
+            sql.append(sep).append(getEachSeriesTypePlotDataSql(1, id, schema1Name, query1Name, annotationGroups));
             sep = "\nUNION\n";
 
             if (configuration.getSeries2SchemaName() != null && configuration.getSeries2QueryName() != null)
             {
                 String schema2Name = configuration.getSeries2SchemaName();
                 String query2Name = configuration.getSeries2QueryName();
-                sql.append(sep).append(getEachSeriesTypePlotDataSql(2, id, schema2Name, query2Name));
+                sql.append(sep).append(getEachSeriesTypePlotDataSql(2, id, schema2Name, query2Name, annotationGroups));
             }
         }
 
@@ -111,14 +135,26 @@ public class OutlierGenerator
         sql.append("\nON sf.ReplicateId = exclusion.ReplicateId AND (exclusion.MetricId IS NULL OR exclusion.MetricId = x.MetricId)");
         sql.append("\nLEFT JOIN GuideSetForOutliers gs");
         sql.append("\nON ((sf.AcquiredTime >= gs.TrainingStart AND sf.AcquiredTime < gs.ReferenceEnd) OR (sf.AcquiredTime >= gs.TrainingStart AND gs.ReferenceEnd IS NULL))");
-        sql.append("\nWHERE sf.AcquiredTime IS NOT NULL");
+        if (null != startDate && null != endDate)
+        {
+            sql.append("\nWHERE sf.AcquiredTime >= '");
+            sql.append(startDate);
+            sql.append("' AND ");
+            sql.append("\n sf.AcquiredTime < TIMESTAMPADD('SQL_TSI_DAY', 1, CAST('");
+            sql.append(endDate);
+            sql.append("' AS TIMESTAMP))");
+        }
+        else
+        {
+            sql.append("\nWHERE sf.AcquiredTime IS NOT NULL");
+        }
 
         return sql.toString();
     }
 
-    public List<RawMetricDataSet> getRawMetricDataSets(Container container, User user, List<QCMetricConfiguration> configurations)
+    public List<RawMetricDataSet> getRawMetricDataSets(Container container, User user, List<QCMetricConfiguration> configurations, @Nullable String startDate, @Nullable String endDate, List<AnnotationGroup> annotationGroups)
     {
-        String labkeySQL = queryContainerSampleFileRawData(configurations);
+        String labkeySQL = queryContainerSampleFileRawData(configurations, startDate, endDate, annotationGroups);
 
         return QueryService.get().selector(
                 new TargetedMSSchema(user, container),
@@ -244,7 +280,32 @@ public class OutlierGenerator
             qcPlotFragment.setGuideSetStats(guideSetStatsList);
         }
 
-
         return qcPlotFragments;
+    }
+
+    public static class AnnotationGroup
+    {
+        private String name;
+        private List<String> values;
+
+        public String getName()
+        {
+            return name;
+        }
+
+        public void setName(String name)
+        {
+            this.name = name;
+        }
+
+        public List<String> getValues()
+        {
+            return values;
+        }
+
+        public void setValues(List<String> values)
+        {
+            this.values = values;
+        }
     }
 }

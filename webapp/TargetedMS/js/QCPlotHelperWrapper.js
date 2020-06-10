@@ -262,10 +262,10 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
             mz: mz,
             SampleFileId: row['SampleFileId'], // keep in data for click handler
             ReplicateId: row['ReplicateId'], // keep in data for click handler
-            PrecursorId: plotDataRow['PrecursorId'], // keep in data for click handler
+            PrecursorId: row['PrecursorId'], // keep in data for click handler
             PrecursorChromInfoId: row['PrecursorChromInfoId'], // keep in data for click handler
             FilePath: row['FilePath'], // keep in data for hover text display
-            IgnoreInQC: plotDataRow['IgnoreInQC'], // keep in data for hover text display
+            IgnoreInQC: row['IgnoreInQC'], // keep in data for hover text display
             fullDate: row['AcquiredTime'] ? this.formatDate(Ext4.Date.parse(row['AcquiredTime'], LABKEY.Utils.getDateTimeFormatWithMS()), true) : null,
             date: row['AcquiredTime'] ? this.formatDate(Ext4.Date.parse(row['AcquiredTime'], LABKEY.Utils.getDateTimeFormatWithMS())) : null,
             groupedXTick: row['AcquiredTime'] ? this.formatDate(Ext4.Date.parse(row['AcquiredTime'], LABKEY.Utils.getDateTimeFormatWithMS())) : null,

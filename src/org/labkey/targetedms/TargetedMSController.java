@@ -1037,7 +1037,7 @@ public class TargetedMSController extends SpringActionController
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
             Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
 
-            List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(getContainer(), getUser(), enabledQCMetricConfigurations);
+            List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(getContainer(), getUser(), enabledQCMetricConfigurations, null, null, Collections.emptyList());
 
             Map<GuideSetKey, GuideSetStats> stats = OutlierGenerator.get().getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
 
@@ -1057,6 +1057,9 @@ public class TargetedMSController extends SpringActionController
         private boolean _includeMR;
         private boolean _includeMeanCusum;
         private boolean _includeVariableCusum;
+        private String _startDate;
+        private String _endDate;
+        private List<OutlierGenerator.AnnotationGroup> _selectedAnnotations;
 
         public int getMetricId()
         {
@@ -1107,6 +1110,36 @@ public class TargetedMSController extends SpringActionController
         {
             this._includeVariableCusum = includeVariableCusum;
         }
+
+        public String getStartDate()
+        {
+            return _startDate;
+        }
+
+        public void setStartDate(String startDate)
+        {
+            _startDate = startDate;
+        }
+
+        public String getEndDate()
+        {
+            return _endDate;
+        }
+
+        public void setEndDate(String endDate)
+        {
+            _endDate = endDate;
+        }
+
+        public List<OutlierGenerator.AnnotationGroup> getSelectedAnnotations()
+        {
+            return _selectedAnnotations;
+        }
+
+        public void setSelectedAnnotations(List<OutlierGenerator.AnnotationGroup> selectedAnnotations)
+        {
+            _selectedAnnotations = selectedAnnotations;
+        }
     }
 
     /**
@@ -1114,6 +1147,7 @@ public class TargetedMSController extends SpringActionController
      * The returned data {@link QCPlotFragment} is separated by the peptide
      * */
     @RequiresPermission(ReadPermission.class)
+    @Marshal(Marshaller.Jackson)
     public class GetQCPlotsDataAction extends ReadOnlyApiAction<QCPlotsDataForm>
     {
         @Override
@@ -1131,7 +1165,7 @@ public class TargetedMSController extends SpringActionController
                     .stream()
                     .filter(qcMetricConfiguration -> qcMetricConfiguration.getId() == passedMetricId)
                     .collect(Collectors.toList());
-            List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(getContainer(), getUser(), qcMetricConfigurations);
+            List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(getContainer(), getUser(), qcMetricConfigurations, form.getStartDate(), form.getEndDate(), form.getSelectedAnnotations());
             Map<GuideSetKey, GuideSetStats> stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
             Map<Integer, QCMetricConfiguration> metricMap = qcMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
             List<SampleFileInfo> sampleFiles = OutlierGenerator.get().getSampleFiles(rawMetricDataSets, stats, metricMap, getContainer(), null);

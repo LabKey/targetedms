@@ -281,12 +281,29 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         plotsConfig.includeMeanCusum = this.showMeanCUSUMPlot();
         plotsConfig.includeVariableCusum = this.showVariableCUSUMPlot();
 
+        var config = this.getReportConfig()
+
+        if (this.selectedAnnotations) {
+            plotsConfig.selectedAnnotations = [];
+            Ext4.Object.each(this.selectedAnnotations, function (name, values) {
+                plotsConfig.selectedAnnotations.push({
+                    name: name,
+                    values: values
+                })
+            }, this);
+        }
+
+        if (config) {
+            plotsConfig.startDate = config.StartDate;
+            plotsConfig.endDate = config.EndDate;
+        }
+
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetQCPlotsData.api'),
             success: this.newProcessPlotData,
             failure: LABKEY.Utils.getCallbackWrapper(this.failureHandler),
             scope: this,
-            params: plotsConfig
+            jsonData: plotsConfig
         });
     },
 
@@ -418,6 +435,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     if (plotData['SampleFileId'] === sampleFile['SampleId']) {
                         plotData['FilePath'] = sampleFile['FilePath'];
                         plotData['ReplicateId'] = sampleFile['ReplicateId'];
+                        plotData['AcquiredTime'] = sampleFile['AcquiredTime'];
                     }
                 }, this);
 
