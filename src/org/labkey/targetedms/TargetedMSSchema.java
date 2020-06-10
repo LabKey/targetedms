@@ -1331,15 +1331,16 @@ public class TargetedMSSchema extends UserSchema
             return new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.PrecursorFK);
         }
 
-        if (TABLE_SKYLINE_AUDITLOG_ENTRY.equalsIgnoreCase(name))
-        {
-            return new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.RunVersionFK);
-        }
-
-        if (TABLE_SKYLINE_AUDITLOG_MESSAGE.equalsIgnoreCase(name))
-        {
-            return new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.EntryVersionFK);
-        }
+        // TODO - partial fix for 40235
+//        if (TABLE_SKYLINE_AUDITLOG_ENTRY.equalsIgnoreCase(name))
+//        {
+//            return new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.RunVersionFK);
+//        }
+//
+//        if (TABLE_SKYLINE_AUDITLOG_MESSAGE.equalsIgnoreCase(name))
+//        {
+//            return new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.EntryVersionFK);
+//        }
 
         if (getTableNames().contains(name))
         {
