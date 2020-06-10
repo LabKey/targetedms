@@ -12,62 +12,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         }
     },
 
-    getLJGuideSetData : function() {
-        this.getGuideSetData(false, false);
-    },
-
-    processLJGuideSetData : function(data)
-    {
-        this.guideSetDataMap = {};
-        this.defaultGuideSet = {};
-        Ext4.each(data.rows, function(row) {
-            var guideSetId = row['GuideSetId'];
-            var seriesLabel = row['SeriesLabel'];
-            var seriesType = row['SeriesType'];
-            if (guideSetId) {
-                if (!this.guideSetDataMap[guideSetId]) {
-                    this.guideSetDataMap[guideSetId] = this.getGuideSetDataObj(row);
-                    this.hasGuideSetData = true;
-                }
-
-                if (!this.guideSetDataMap[guideSetId].Series[seriesLabel]) {
-                    this.guideSetDataMap[guideSetId].Series[seriesLabel] = {};
-                }
-
-                this.guideSetDataMap[guideSetId].Series[seriesLabel][seriesType] = {
-                    NumRecords: row['NumRecords'],
-                    Mean: row['Mean'],
-                    StandardDev: row['StandardDev']
-                };
-            }
-            else {
-                if (!this.defaultGuideSet) {
-                    this.defaultGuideSet = {};
-                }
-
-                if (!this.defaultGuideSet[seriesLabel]) {
-                    this.defaultGuideSet[seriesLabel] = {};
-                }
-
-                if (!this.defaultGuideSet[seriesLabel][seriesType]) {
-                    this.defaultGuideSet[seriesLabel][seriesType] = {};
-                }
-
-                this.defaultGuideSet[seriesLabel][seriesType].LJ = {
-                    NumRecords: row['NumRecords'],
-                    Mean: row['Mean'],
-                    StdDev: row['StandardDev']
-                };
-            }
-        }, this);
-
-        if (this.showMovingRangePlot())
-            this.getRawGuideSetData(true);
-        else
-            this.getPlotData();
-    },
-
-    newProcessLJGuideSetData : function(plotDataRows, seriesType)
+    processLJGuideSetData : function(plotDataRows, seriesType)
     {
         this.guideSetDataMap = {};
         this.defaultGuideSet = {};
@@ -203,33 +148,6 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
     },
 
     processLJPlotDataRow: function(row, fragment, seriesType, metricProps)
-    {
-        var data = {};
-        // if a guideSetId is defined for this row, include the guide set stats values in the data object
-        if (Ext4.isDefined(row['GuideSetId']))
-        {
-            var gs = this.guideSetDataMap[row['GuideSetId']];
-            if (Ext4.isDefined(gs) && gs.Series[fragment]&& gs.Series[fragment][seriesType])
-            {
-                data['mean'] = gs.Series[fragment][seriesType]['Mean'];
-                data['stdDev'] = gs.Series[fragment][seriesType]['StandardDev'];
-            }
-        }
-
-        if (this.isMultiSeries())
-        {
-            data['value_' + seriesType] = row['MetricValue'];
-            data['value_' + seriesType + 'Title'] = metricProps[seriesType + 'Label'];
-        }
-        else
-        {
-            data['value'] = row['MetricValue'];
-        }
-        return data;
-
-    },
-
-    newProcessLJPlotDataRow: function(row, fragment, seriesType, metricProps)
     {
         var data = {};
         // if a guideSetId is defined for this row, include the guide set stats values in the data object

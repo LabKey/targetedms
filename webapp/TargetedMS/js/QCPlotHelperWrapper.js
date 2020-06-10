@@ -27,19 +27,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         }
     },
 
-    prepareAndRenderQCPlot : function() {
-        this.flipToNew = true;
-
-        if (!this.flipToNew) {
-            if (this.showLJPlot())
-                return this.getLJGuideSetData();
-            return this.getRawGuideSetData(this.showMovingRangePlot());
-        }
-        else {
-            return this.newGetPlotData();
-        }
-    },
-
     addIndividualPrecursorPlots : function()
     {
         var addedPlot = false,
@@ -50,13 +37,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
 
         for (var i = 0; i < this.precursors.length; i++)
         {
-            var precursorInfo;
-            if (!this.flipToNew) {
-                precursorInfo = this.fragmentPlotData[this.precursors[i]];
-            }
-            else {
-                precursorInfo = this.newFragmentPlotData[this.precursors[i]];
-            }
+            var precursorInfo = this.fragmentPlotData[this.precursors[i]];
 
             // We don't necessarily have info for all possible precursors, depending on the filters and plot type
             if (precursorInfo)
@@ -247,13 +228,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         return plotData;
     },
 
-    newProcessPlotDataRow: function(row, plotDataRow, fragment, seriesType, metricProps)
+    processPlotDataRow: function(row, plotDataRow, fragment, seriesType, metricProps)
     {
         var dataType = plotDataRow['DataType'];
         var mz = Ext4.util.Format.number(plotDataRow['mz'], '0.0000');
-        if (!this.newFragmentPlotData[fragment])
+        if (!this.fragmentPlotData[fragment])
         {
-            this.newFragmentPlotData[fragment] = this.getInitFragmentPlotData(fragment, dataType, mz);
+            this.fragmentPlotData[fragment] = this.getInitFragmentPlotData(fragment, dataType, mz);
         }
 
         var data = {
@@ -275,66 +256,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
 
         // if a guideSetId is defined for this row, include the guide set stats values in the data object
         if (Ext4.isDefined(row['GuideSetId']) && row['GuideSetId'] > 0)
-        {
-            var gs = this.guideSetDataMap[row['GuideSetId']];
-            if (Ext4.isDefined(gs) && gs.Series[fragment])
-            {
-                data['guideSetId'] = row['GuideSetId'];
-                data['inGuideSetTrainingRange'] = row['InGuideSetTrainingRange'];
-                data['groupedXTick'] = data['groupedXTick'] + '|'
-                        + (gs['TrainingStart'] ? gs['TrainingStart'] : '0') + '|'
-                        + (row['InGuideSetTrainingRange'] ? 'include' : 'notinclude');
-            }
-        }
-
-        if (this.showLJPlot())
-        {
-            Ext4.apply(data, this.newProcessLJPlotDataRow(row, fragment, seriesType, metricProps));
-        }
-        if (this.showMovingRangePlot())
-        {
-            Ext4.apply(data, this.processMRPlotDataRow(row, fragment, seriesType, metricProps));
-        }
-        if (this.showMeanCUSUMPlot())
-        {
-            Ext4.apply(data, this.processCUSUMPlotDataRow(row, fragment, seriesType, metricProps, true));
-        }
-        if (this.showVariableCUSUMPlot())
-        {
-            Ext4.apply(data, this.processCUSUMPlotDataRow(row, fragment, seriesType, metricProps, false));
-        }
-
-        return data;
-    },
-
-    processPlotDataRow: function(row, fragment, seriesType, metricProps)
-    {
-        var dataType = row['DataType'];
-        var mz = Ext4.util.Format.number(row['mz'], '0.0000');
-        if (!this.fragmentPlotData[fragment])
-        {
-            this.fragmentPlotData[fragment] = this.getInitFragmentPlotData(fragment, dataType, mz);
-        }
-
-        var data = {
-            type: 'data',
-            fragment: fragment,
-            mz: mz,
-            SampleFileId: row['SampleFileId'], // keep in data for click handler
-            ReplicateId: row['ReplicateId'], // keep in data for click handler
-            PrecursorId: row['PrecursorId'], // keep in data for click handler
-            PrecursorChromInfoId: row['PrecursorChromInfoId'], // keep in data for click handler
-            FilePath: row['FilePath'], // keep in data for hover text display
-            IgnoreInQC: row['IgnoreInQC'], // keep in data for hover text display
-            fullDate: row['AcquiredTime'] ? this.formatDate(Ext4.Date.parse(row['AcquiredTime'], LABKEY.Utils.getDateTimeFormatWithMS()), true) : null,
-            date: row['AcquiredTime'] ? this.formatDate(Ext4.Date.parse(row['AcquiredTime'], LABKEY.Utils.getDateTimeFormatWithMS())) : null,
-            groupedXTick: row['AcquiredTime'] ? this.formatDate(Ext4.Date.parse(row['AcquiredTime'], LABKEY.Utils.getDateTimeFormatWithMS())) : null,
-            dataType: dataType, //needed for plot point click handler
-            SeriesType: row['SeriesType']
-        };
-
-        // if a guideSetId is defined for this row, include the guide set stats values in the data object
-        if (Ext4.isDefined(row['GuideSetId']))
         {
             var gs = this.guideSetDataMap[row['GuideSetId']];
             if (Ext4.isDefined(gs) && gs.Series[fragment])

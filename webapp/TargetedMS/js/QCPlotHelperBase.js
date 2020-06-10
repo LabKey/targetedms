@@ -35,55 +35,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         return this.plotTypes.indexOf(plotType) > -1;
     },
 
-    getGuideSetData : function(useRaw, includeAllValues) {
-        var config = this.getReportConfig();
-        var metricProps = this.getMetricPropsById(this.metric);
-
-        var guideSetSql = "SELECT s.*, g.Comment FROM (";
-        if (useRaw) {
-            guideSetSql += this.metricGuideSetRawSql(metricProps.id, metricProps.series1SchemaName, metricProps.series1QueryName, metricProps.series2SchemaName, metricProps.series2QueryName, includeAllValues);
-        }
-        else {
-            guideSetSql += this.metricGuideSetSql(metricProps.id, metricProps.series1SchemaName, metricProps.series1QueryName, metricProps.series2SchemaName, metricProps.series2QueryName, true);
-        }
-            guideSetSql +=  ") s"
-                + " LEFT JOIN GuideSet g ON g.RowId = s.GuideSetId";
-
-        // Filter on start/end dates from the QC plot form
-        var separator = " WHERE ";
-        if (config.StartDate) {
-            guideSetSql += separator + "(s.ReferenceEnd >= '" + config.StartDate + "' OR s.ReferenceEnd IS NULL)";
-            separator = " AND ";
-        }
-        if (config.EndDate) {
-            var sub = separator + "(";
-            if (includeAllValues) {
-                sub += "s.TrainingStart IS NULL OR ";
-            }
-            guideSetSql += sub + "s.TrainingStart < TIMESTAMPADD('SQL_TSI_DAY', 1, CAST('" + config.EndDate + "' AS TIMESTAMP)))";
-
-            if (includeAllValues) {
-                guideSetSql += " AND s.AcquiredTime <= TIMESTAMPADD('SQL_TSI_DAY', 1, CAST('" + config.EndDate + "' AS TIMESTAMP)) AND s.AcquiredTime >= TIMESTAMPADD('SQL_TSI_DAY', 1, CAST('" + config.StartDate + "' AS TIMESTAMP))";
-            }
-        }
-
-        var sqlConfig = {
-            schemaName: 'targetedms',
-            sql: guideSetSql,
-            sort: 'GuideSetId, SeriesLabel, AcquiredTime', //it's important that record is sorted by AcquiredTime asc as ordering is critical in calculating mR and CUSUM
-            scope: this,
-            success: useRaw? this.processRawGuideSetData : this.processLJGuideSetData,
-            failure: this.failureHandler
-        };
-        if (!useRaw)
-            sqlConfig.sort = 'TrainingStart,SeriesLabel';
-        LABKEY.Query.executeSql(sqlConfig);
-    },
-
-    getRawGuideSetData : function(includeAllValues) {
-        this.getGuideSetData(true, includeAllValues);
-    },
-
     getGuideSetDataObj : function(row)
     {
         var guideSet = {
@@ -96,66 +47,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         return guideSet;
     },
 
-    processRawGuideSetData : function(data)
-    {
-        if(data) {
-            var guideSetAvgMRs = this.getGuideSetAvgMRs(data.rows, this.yAxisScale == 'log');
-            if (!this.guideSetDataMap)
-                this.guideSetDataMap = {};
-            Ext4.each(data.rows, function (row) {
-                var guideSetId = row['GuideSetId'];
-            if (!this.guideSetDataMap[guideSetId])
-            {
-                    this.guideSetDataMap[guideSetId] = this.getGuideSetDataObj(row);
-                    this.hasGuideSetData = true;
-                }
-
-                var seriesLabel = row['SeriesLabel'];
-                var seriesType = row['SeriesType'];
-                if (guideSetId == null) {
-
-                    if (!this.defaultGuideSet) {
-                        this.defaultGuideSet = {};
-                    }
-
-                    if (!this.defaultGuideSet[seriesLabel]) {
-                        this.defaultGuideSet[seriesLabel] = {};
-                    }
-
-                    if (!this.defaultGuideSet[seriesLabel][seriesType]) {
-                        this.defaultGuideSet[seriesLabel][seriesType] = {};
-                    }
-
-                    this.defaultGuideSet[seriesLabel][seriesType].MR =
-                            {
-                                Mean: guideSetAvgMRs[guideSetId].Series[seriesLabel][seriesType].avgMR,
-                                StdDev: guideSetAvgMRs[guideSetId].Series[seriesLabel][seriesType].stddevMR
-                            };
-
-                }
-                else {
-                    if (!this.guideSetDataMap[guideSetId].Series[seriesLabel]) {
-                        this.guideSetDataMap[guideSetId].Series[seriesLabel] = {};
-                    }
-
-                    if (!this.guideSetDataMap[guideSetId].Series[seriesLabel][seriesType]) {
-                        this.guideSetDataMap[guideSetId].Series[seriesLabel][seriesType] = {
-                            MeanMR: guideSetAvgMRs[guideSetId].Series[seriesLabel][seriesType].avgMR,
-                            StdDevMR: guideSetAvgMRs[guideSetId].Series[seriesLabel][seriesType].stddevMR
-                        };
-                    }
-                    else {
-                        this.guideSetDataMap[guideSetId].Series[seriesLabel][seriesType].MeanMR = guideSetAvgMRs[guideSetId].Series[seriesLabel][seriesType].avgMR;
-                        this.guideSetDataMap[guideSetId].Series[seriesLabel][seriesType].StdDevMR = guideSetAvgMRs[guideSetId].Series[seriesLabel][seriesType].stddevMR;
-                    }
-                }
-            }, this);
-
-            this.getPlotData();
-        }
-    },
-
-    newProcessRawGuideSetData: function (plotDataRows, seriesType) {
+    processRawGuideSetData: function (plotDataRows, seriesType) {
         if (!this.guideSetDataMap)
             this.guideSetDataMap = {};
 
@@ -207,73 +99,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
     },
 
-    getPlotData: function ()
-    {
-        var config = this.getReportConfig(),
-                metricProps = this.getMetricPropsById(this.metric);
-
-        // Filter on start/end dates, casting as DATE to ignore the time part
-        var whereClause = " WHERE ", sep = "";
-        if (config.StartDate)
-        {
-            whereClause += "CAST(SampleFileId.AcquiredTime AS DATE) >= '" + config.StartDate + "'";
-            sep = " AND ";
-        }
-        if (config.EndDate)
-        {
-            whereClause += sep + "CAST(SampleFileId.AcquiredTime AS DATE) <= '" + config.EndDate + "'";
-        }
-
-        if(Object.keys(this.selectedAnnotations).length > 0)
-        {
-            var filterClause = "SampleFileId.ReplicateId in (";
-            var intersect = "";
-            var selectSql = "(SELECT ReplicateId FROM targetedms.ReplicateAnnotation WHERE ";
-            Ext4.Object.each(this.selectedAnnotations, function(name, values)
-            {
-                filterClause += (intersect + selectSql + " Name='" + name + "' AND ( ");
-                var or = "";
-                for (var i = 0; i < values.length; i++)
-                {
-                    // Escape single quotes for SQL query
-                    var val = values[i].replace(/\'/g,"''");
-                    filterClause += (or + "Value='" + val + "'");
-                    or = " OR ";
-                }
-                filterClause += " ) ) ";
-                intersect = " INTERSECT ";
-            });
-            filterClause += ") ";
-            whereClause += sep + filterClause;
-        }
-
-        this.plotDataRows = [];
-        var seriesTypes = this.isMultiSeries() ? ['series1', 'series2'] : ['series1'];
-        var sql = this.getSeriesTypePlotDataSql(seriesTypes, metricProps, whereClause);
-
-        sql = "SELECT * FROM (" + sql + ") a"; //wrap unioned results in sql to support sorting
-
-        if (!this.showExcluded) {
-            sql += ' WHERE IgnoreInQC = false';
-        }
-
-        LABKEY.Query.executeSql({
-            schemaName: 'targetedms',
-            sql: sql,
-            scope: this,
-            sort: 'SeriesType, SeriesLabel, AcquiredTime', //it's important that record is sorted by AcquiredTime asc as ordering is critical in calculating mR and CUSUM
-            success: function (data) {
-                if(data) {
-                    this.plotDataRows = this.plotDataRows.concat(data.rows);
-
-                    this.processPlotData(this.plotDataRows);
-                }
-            },
-            failure: this.failureHandler
-        });
-    },
-
-    newGetPlotData: function() {
+    getPlotsData: function() {
         var plotsConfig = {};
         plotsConfig.metricId = this.metric;
         plotsConfig.includeLJ = this.showLJPlot();
@@ -300,36 +126,51 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetQCPlotsData.api'),
-            success: this.newProcessPlotData,
+            success: this.processPlotData,
             failure: LABKEY.Utils.getCallbackWrapper(this.failureHandler),
             scope: this,
             jsonData: plotsConfig
         });
     },
 
-    processPlotData: function(plotDataRows) {
-        var metricProps = this.getMetricPropsById(this.metric);
+    processPlotData: function(response) {
+        var parsed = JSON.parse(response.responseText);
+        var plotDataRows = parsed.plotDataRows;
+        var metricProps = parsed.metricProps;
+        var sampleFiles = parsed.sampleFiles;
+
         var allPlotDateValues = [];
-        
-        this.processedPlotData = this.preprocessPlotData(plotDataRows, this.showMovingRangePlot(), this.showMeanCUSUMPlot(), this.showVariableCUSUMPlot(), this.yAxisScale == 'log');
+        var seriesType = Ext4.isDefined(metricProps.series2SchemaName) || Ext4.isDefined(metricProps.series2QueryName) ? 'series2' : 'series1';
 
         // process the data to shape it for the JS LeveyJenningsPlot API call
         this.fragmentPlotData = {};
-        Ext4.iterate(this.processedPlotData, function(seriesLabel, seriesVal)
-        {
-            var fragment = seriesLabel;
-            Ext4.iterate(seriesVal.Series, function (seriesTypeKey, seriesTypeObj)
-            {
-                var seriesType = seriesTypeKey;
 
-                Ext4.each(seriesTypeObj.Rows, function(row)
-                {
-                    var data = this.processPlotDataRow(row, fragment, seriesType, metricProps);
-                    this.fragmentPlotData[fragment].data.push(data);
-                    this.fragmentPlotData[fragment].precursorScoped = metricProps.precursorScoped;
-                    this.setSeriesMinMax(this.fragmentPlotData[fragment], data);
-                    allPlotDateValues.push(data.fullDate);
+        if (this.showLJPlot()) {
+            this.processLJGuideSetData(plotDataRows, seriesType);
+        }
+        else if (this.showMovingRangePlot() || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot()) {
+            this.processRawGuideSetData(plotDataRows, seriesType);
+        }
+
+        Ext4.iterate(plotDataRows, function(plotDataRow)
+        {
+            var fragment = plotDataRow.SeriesLabel;
+            Ext4.iterate(plotDataRow.data, function (plotData)
+            {
+                Ext4.iterate(sampleFiles, function (sampleFile) {
+                    if (plotData['SampleFileId'] === sampleFile['SampleId']) {
+                        plotData['FilePath'] = sampleFile['FilePath'];
+                        plotData['ReplicateId'] = sampleFile['ReplicateId'];
+                        plotData['AcquiredTime'] = sampleFile['AcquiredTime'];
+                    }
                 }, this);
+
+                var data = this.processPlotDataRow(plotData, plotDataRow, fragment, seriesType, metricProps);
+                this.fragmentPlotData[fragment].data.push(data);
+                this.fragmentPlotData[fragment].precursorScoped = metricProps.precursorScoped;
+                this.setSeriesMinMax(this.fragmentPlotData[fragment], data);
+                allPlotDateValues.push(data.fullDate);
+
             }, this);
         }, this);
 
@@ -346,121 +187,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         for (var i = 0; i < this.precursors.length; i++)
         {
             var precursorInfo = this.fragmentPlotData[this.precursors[i]];
-
-            // We don't necessarily have info for all possible precursors, depending on the filters and plot type
-            if (precursorInfo)
-            {
-                // if the min and max are the same, or very close, increase the range
-                if (precursorInfo.max == null && precursorInfo.min == null) {
-                    precursorInfo.max = 1;
-                    precursorInfo.min = 0;
-                }
-                else if (precursorInfo.max - precursorInfo.min < 0.0001) {
-                    var factor = precursorInfo.max < 0.1 ? 0.1 : 1;
-                    precursorInfo.max += factor;
-                    precursorInfo.min -= factor;
-                }
-
-                // Issue 31678: add any missing dates from the other plots or from the annotations
-                var dateProp = this.groupedX ? "date" : "fullDate";
-                var precursorDates = Ext4.Array.pluck(precursorInfo.data, dateProp);
-                var datesToAdd = [];
-                for (var j = 0; j < allPlotDateValues.length; j++) {
-                    var dateVal = this.formatDate(allPlotDateValues[j], !this.groupedX);
-                    var dataIsMissingDate = precursorDates.indexOf(dateVal) == -1 && Ext4.Array.pluck(datesToAdd, dateProp).indexOf(dateVal) == -1;
-                    if (dataIsMissingDate) {
-                        datesToAdd.push({
-                            type: 'missing',
-                            fullDate: this.formatDate(allPlotDateValues[j], true),
-                            date: this.formatDate(allPlotDateValues[j]),
-                            groupedXTick: dateVal
-                        });
-                    }
-                }
-                if (datesToAdd.length > 0)
-                {
-                    var index = 0;
-                    for (var k = 0; k < datesToAdd.length; k++)
-                    {
-                        var added = false;
-                        for (var l = index; l < precursorInfo.data.length; l++)
-                        {
-                            if ((this.groupedX && precursorInfo.data[l].date > datesToAdd[k].date)
-                                    || (!this.groupedX && precursorInfo.data[l].fullDate > datesToAdd[k].fullDate))
-                            {
-                                precursorInfo.data.splice(l, 0, datesToAdd[k]);
-                                added = true;
-                                index = l;
-                                break;
-                            }
-                        }
-                        // tack on any remaining dates to the end
-                        if (!added)
-                        {
-                            precursorInfo.data.push(datesToAdd[k]);
-                        }
-                    }
-                }
-            }
-        }
-
-        this.renderPlots();
-    },
-
-    newProcessPlotData: function(response) {
-        var parsed = JSON.parse(response.responseText);
-        var plotDataRows = parsed.plotDataRows;
-        var metricProps = parsed.metricProps;
-        var sampleFiles = parsed.sampleFiles;
-
-        var allPlotDateValues = [];
-        var seriesType = Ext4.isDefined(metricProps.series2SchemaName) || Ext4.isDefined(metricProps.series2QueryName) ? 'series2' : 'series1';
-
-        // process the data to shape it for the JS LeveyJenningsPlot API call
-        this.newFragmentPlotData = {};
-
-        if (this.showLJPlot()) {
-            this.newProcessLJGuideSetData(plotDataRows, seriesType);
-        }
-        else if (this.showMovingRangePlot() || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot()) {
-            this.newProcessRawGuideSetData(plotDataRows, seriesType);
-        }
-
-        Ext4.iterate(plotDataRows, function(plotDataRow)
-        {
-            var fragment = plotDataRow.SeriesLabel;
-            Ext4.iterate(plotDataRow.data, function (plotData)
-            {
-                Ext4.iterate(sampleFiles, function (sampleFile) {
-                    if (plotData['SampleFileId'] === sampleFile['SampleId']) {
-                        plotData['FilePath'] = sampleFile['FilePath'];
-                        plotData['ReplicateId'] = sampleFile['ReplicateId'];
-                        plotData['AcquiredTime'] = sampleFile['AcquiredTime'];
-                    }
-                }, this);
-
-                var data = this.newProcessPlotDataRow(plotData, plotDataRow, fragment, seriesType, metricProps);
-                this.newFragmentPlotData[fragment].data.push(data);
-                this.newFragmentPlotData[fragment].precursorScoped = metricProps.precursorScoped;
-                this.setSeriesMinMax(this.newFragmentPlotData[fragment], data);
-                allPlotDateValues.push(data.fullDate);
-
-            }, this);
-        }, this);
-
-        // Issue 31678: get the full set of dates values from the precursor data and from the annotations
-        for (var j = 0; j < this.annotationData.length; j++) {
-            allPlotDateValues.push(this.formatDate(Ext4.Date.parse(this.annotationData[j].Date, LABKEY.Utils.getDateTimeFormatWithMS()), true));
-        }
-        allPlotDateValues = Ext4.Array.unique(allPlotDateValues).sort();
-
-        this.legendHelper = Ext4.create("LABKEY.targetedms.QCPlotLegendHelper");
-        this.legendHelper.setupLegendPrefixes(this.newFragmentPlotData, 3);
-
-        // merge in the annotation data to make room on the y axis
-        for (var i = 0; i < this.precursors.length; i++)
-        {
-            var precursorInfo = this.newFragmentPlotData[this.precursors[i]];
 
             // We don't necessarily have info for all possible precursors, depending on the filters and plot type
             if (precursorInfo)
@@ -973,25 +699,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             }
         });
         return empty;
-    },
-
-    getPeptidePlotCount: function()
-    {
-        if (this.peptidePlotCount)
-            return this.peptidePlotCount;
-        var count = 0;
-        for (var i = 0; i < this.precursors.length; i++)
-        {
-            var precursorInfo = this.fragmentPlotData[this.precursors[i]];
-
-            // We don't necessarily have info for all possible precursors, depending on the filters and plot type
-            if (precursorInfo)
-            {
-                count++;
-            }
-        }
-        this.peptidePlotCount = count;
-        return this.peptidePlotCount;
     },
 
     showInPlotLegends: function () {
