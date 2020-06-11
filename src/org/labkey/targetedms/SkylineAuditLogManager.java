@@ -231,6 +231,11 @@ public class SkylineAuditLogManager
                 }
             }
 
+            if (!expander.areAllMessagesExpanded())
+            {
+                _logger.warn("At least one audit log expansion token failed to expand. This is expected for old Skyline documents, but not for newer ones");
+            }
+
             if (hashValidationFailures > 0)
             {
                 _securityMgr.reportErrorForIntegrityLevel(
