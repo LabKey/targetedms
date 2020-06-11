@@ -31,7 +31,7 @@ public class TargetedMSAuditLogTest extends TargetedMSTest
     }
 
     private void doInit()
-    {
+    {showSkylineAuditLog
         setupFolder(FolderType.QC);
         _userHelper.createUser(USER);
         new ApiPermissionsHelper(this).setUserPermissions(USER, "Reader");
