@@ -4512,6 +4512,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void addNavTrail(NavTree root)
         {
+            root.addChild("Precursor Conflicts");
         }
     }
 
