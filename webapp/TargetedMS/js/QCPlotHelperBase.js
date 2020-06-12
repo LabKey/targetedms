@@ -70,8 +70,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     }
 
                     this.defaultGuideSet[seriesLabel][seriesType].MR = {
-                        Mean: guideSetStat['MRMean'],
-                        StdDev: guideSetStat['MRStdDev']
+                        Mean: guideSetStat['MeanMR'],
+                        StdDev: guideSetStat['StdDevMR']
                     };
                 }
                 else {
@@ -84,13 +84,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
                     if (!this.guideSetDataMap[guideSetId].Series[seriesLabel][seriesType]) {
                         this.guideSetDataMap[guideSetId].Series[seriesLabel][seriesType] = {
-                            MeanMR: guideSetStat['MRMean'],
-                            StdDevMR: guideSetStat['MRStdDev']
+                            MeanMR: guideSetStat['MeanMR'],
+                            StdDevMR: guideSetStat['StdDevMR']
                         };
                     }
                     else {
-                        this.guideSetDataMap[guideSetId].Series[seriesLabel][seriesType].MeanMR = guideSetStat['MRMean'];
-                        this.guideSetDataMap[guideSetId].Series[seriesLabel][seriesType].StdDevMR = guideSetStat['MRStdDev'];
+                        this.guideSetDataMap[guideSetId].Series[seriesLabel][seriesType].MeanMR = guideSetStat['MeanMR'];
+                        this.guideSetDataMap[guideSetId].Series[seriesLabel][seriesType].StdDevMR = guideSetStat['StdDevMR'];
                     }
                 }
             }, this);

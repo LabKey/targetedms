@@ -16,6 +16,8 @@
 
 package org.labkey.targetedms;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsonorg.JsonOrgModule;
 import com.keypoint.PngEncoder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -1057,8 +1059,8 @@ public class TargetedMSController extends SpringActionController
         private boolean _includeMR;
         private boolean _includeMeanCusum;
         private boolean _includeVariableCusum;
-        private String _startDate;
-        private String _endDate;
+        private java.sql.Date _startDate;
+        private java.sql.Date _endDate;
         private List<OutlierGenerator.AnnotationGroup> _selectedAnnotations;
 
         public int getMetricId()
@@ -1111,22 +1113,22 @@ public class TargetedMSController extends SpringActionController
             this._includeVariableCusum = includeVariableCusum;
         }
 
-        public String getStartDate()
+        public java.sql.Date getStartDate()
         {
             return _startDate;
         }
 
-        public void setStartDate(String startDate)
+        public void setStartDate(java.sql.Date startDate)
         {
             _startDate = startDate;
         }
 
-        public String getEndDate()
+        public java.sql.Date getEndDate()
         {
             return _endDate;
         }
 
-        public void setEndDate(String endDate)
+        public void setEndDate(java.sql.Date endDate)
         {
             _endDate = endDate;
         }
@@ -1150,6 +1152,16 @@ public class TargetedMSController extends SpringActionController
     @Marshal(Marshaller.Jackson)
     public class GetQCPlotsDataAction extends ReadOnlyApiAction<QCPlotsDataForm>
     {
+
+        @Override
+        protected ObjectMapper createRequestObjectMapper()
+        {
+            SimpleDateFormat df = new SimpleDateFormat("y-M-d");
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.setDateFormat(df);
+            return mapper;
+        }
+
         @Override
         public Object execute(QCPlotsDataForm form, BindException errors) throws Exception
         {

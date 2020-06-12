@@ -15,7 +15,6 @@
  */
 package org.labkey.targetedms.outliers;
 
-import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.Sort;
@@ -33,6 +32,7 @@ import org.labkey.targetedms.model.QCPlotFragment;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.parser.SampleFile;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -64,14 +64,31 @@ public class OutlierGenerator
             StringBuilder filterClause = new StringBuilder("SampleFileId.ReplicateId in (");
             var intersect = "";
             var selectSql = "(SELECT ReplicateId FROM targetedms.ReplicateAnnotation WHERE ";
+            var escapeQuote = "\'";
             for (AnnotationGroup annotation : annotationGroups)
             {
-                filterClause.append(intersect).append(selectSql).append(" Name='").append(annotation.getName()).append("' AND ( ");
-                var or = "";
-                for (String value : annotation.getValues())
+                filterClause.append(intersect)
+                        .append(selectSql)
+                        .append(" Name=")
+                        .append(escapeQuote)
+                        .append(annotation.getName())
+                        .append(escapeQuote);
+
+                var annotationValues = annotation.getValues();
+                if (!annotationValues.isEmpty())
                 {
-                    filterClause.append(or).append("Value='").append(value).append("'");
-                    or = " OR ";
+                    filterClause.append(" AND  Value IN (")
+                            .append(escapeQuote)
+                            .append(annotationValues.get(0))
+                            .append(escapeQuote);
+
+                    for (int i = 1; i < annotationValues.size(); i++)
+                    {
+                        filterClause.append(",")
+                                .append(escapeQuote)
+                                .append(annotationValues.get(i))
+                                .append(escapeQuote);
+                    }
                 }
                 filterClause.append(" ) ) ");
                 intersect = " INTERSECT ";
@@ -83,7 +100,7 @@ public class OutlierGenerator
         return sql.toString();
     }
 
-    private String queryContainerSampleFileRawData(List<QCMetricConfiguration> configurations, String startDate, String endDate, List<AnnotationGroup> annotationGroups)
+    private String queryContainerSampleFileRawData(List<QCMetricConfiguration> configurations, Date startDate, Date endDate, List<AnnotationGroup> annotationGroups)
     {
         StringBuilder sql = new StringBuilder();
 
@@ -135,14 +152,27 @@ public class OutlierGenerator
         sql.append("\nON sf.ReplicateId = exclusion.ReplicateId AND (exclusion.MetricId IS NULL OR exclusion.MetricId = x.MetricId)");
         sql.append("\nLEFT JOIN GuideSetForOutliers gs");
         sql.append("\nON ((sf.AcquiredTime >= gs.TrainingStart AND sf.AcquiredTime < gs.ReferenceEnd) OR (sf.AcquiredTime >= gs.TrainingStart AND gs.ReferenceEnd IS NULL))");
-        if (null != startDate && null != endDate)
+        if (null != startDate || null != endDate)
         {
-            sql.append("\nWHERE sf.AcquiredTime >= '");
-            sql.append(startDate);
-            sql.append("' AND ");
-            sql.append("\n sf.AcquiredTime < TIMESTAMPADD('SQL_TSI_DAY', 1, CAST('");
-            sql.append(endDate);
-            sql.append("' AS TIMESTAMP))");
+            sql.append("\nWHERE ");
+
+            if (null != startDate)
+            {
+                sql.append("sf.AcquiredTime >= '");
+                sql.append(startDate);
+                sql.append("' AND ");
+            }
+
+            if (null != endDate)
+            {
+                sql.append("\n sf.AcquiredTime < TIMESTAMPADD('SQL_TSI_DAY', 1, CAST('");
+                sql.append(endDate);
+                sql.append("' AS TIMESTAMP))");
+            }
+            else
+            {
+                sql.append("1=1");
+            }
         }
         else
         {
@@ -152,7 +182,7 @@ public class OutlierGenerator
         return sql.toString();
     }
 
-    public List<RawMetricDataSet> getRawMetricDataSets(Container container, User user, List<QCMetricConfiguration> configurations, @Nullable String startDate, @Nullable String endDate, List<AnnotationGroup> annotationGroups)
+    public List<RawMetricDataSet> getRawMetricDataSets(Container container, User user, List<QCMetricConfiguration> configurations, java.sql.Date startDate, Date endDate, List<AnnotationGroup> annotationGroups)
     {
         String labkeySQL = queryContainerSampleFileRawData(configurations, startDate, endDate, annotationGroups);
 
@@ -244,16 +274,9 @@ public class OutlierGenerator
         Map<String, List<RawMetricDataSet>> rawMetricDataSetMapByLabel = new HashMap<>();
         for (RawMetricDataSet rawMetricDataSet : rawMetricData)
         {
-            if (null == rawMetricDataSetMapByLabel.get(rawMetricDataSet.getSeriesLabel()))
-            {
-                List<RawMetricDataSet> rawMetricDataSets = new ArrayList<>();
-                rawMetricDataSets.add(rawMetricDataSet);
-                rawMetricDataSetMapByLabel.put(rawMetricDataSet.getSeriesLabel(), rawMetricDataSets);
-            }
-            else
-            {
-                rawMetricDataSetMapByLabel.get(rawMetricDataSet.getSeriesLabel()).add(rawMetricDataSet);
-            }
+            rawMetricDataSetMapByLabel.computeIfAbsent(rawMetricDataSet.getSeriesLabel(),label -> new ArrayList<>());
+            rawMetricDataSetMapByLabel.get(rawMetricDataSet.getSeriesLabel()).add(rawMetricDataSet);
+
         }
 
         for (Map.Entry<String, List<RawMetricDataSet>> entry : rawMetricDataSetMapByLabel.entrySet())

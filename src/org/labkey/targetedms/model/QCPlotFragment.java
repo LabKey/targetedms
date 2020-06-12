@@ -85,8 +85,8 @@ public class QCPlotFragment
             }
             if (includeMR)
             {
-                statsJSONObject.put("MRStdDev", stats.getMovingRangeStdDev());
-                statsJSONObject.put("MRMean", stats.getMovingRangeAverage());
+                statsJSONObject.put("StdDevMR", stats.getMovingRangeStdDev());
+                statsJSONObject.put("MeanMR", stats.getMovingRangeAverage());
             }
             statsJSONObject.put("Comment", stats.getGuideSet().getComment());
             statsJSONObject.put("ReferenceEnd", stats.getGuideSet().getReferenceEnd());
