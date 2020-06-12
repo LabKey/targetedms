@@ -78,15 +78,16 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
         // Verify the number of rows in the Peptides table
         verifyLibraryPeptideCount(totalPeptideCount);
 
-        // Verify one precursor from each protein in the library.  All are from SKY_FILE1 at this point.
+        // Verify one precursor from some of the proteins in the library.  All are from SKY_FILE1 at this point.
         Map<String, Pair<String, String>> precursorMap = new HashMap<>();
-        precursorMap.put("DPDYQPPAK",          new Pair(SKY_FILE1, "CTCF"));
-        precursorMap.put("EDSSLLNPAAK",        new Pair(SKY_FILE1, "TAF11"));
         precursorMap.put("AHHNALER",           new Pair(SKY_FILE1, "MAX"));
         precursorMap.put("ALDFAVGEYNK[+8.0]",  new Pair(SKY_FILE1, "QPrEST_CystC_HPRR5000001"));
         precursorMap.put("QFVYLESDYSK[+8.0]",  new Pair(SKY_FILE1, "HPRR1440042"));
-        precursorMap.put("GEPGEGAYVYR[+10.0]", new Pair(SKY_FILE1, "DifferentProteinSameLabel"));
         precursorMap.put("ADVTPADFSEWSK",      new Pair(SKY_FILE1, "iRT-C18 Standard Peptides"));
+        // The precursors below are only in SKY_FILE1 so will not result in a conflict. We can leave them out otherwise the test takes too long to run.
+        // precursorMap.put("DPDYQPPAK",          new Pair(SKY_FILE1, "CTCF"));
+        // precursorMap.put("EDSSLLNPAAK",        new Pair(SKY_FILE1, "TAF11"));
+        // precursorMap.put("GEPGEGAYVYR[+10.0]", new Pair(SKY_FILE1, "DifferentProteinSameLabel"));
 
         verifyLibraryPrecursors(precursorMap, totalPrecursorCount);
     }
@@ -141,21 +142,22 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
         // Verify the number of rows in the Peptides table
         verifyLibraryPeptideCount(totalPeptideCount);
 
-        // Verify one precursor from each protein in the library.
+        // Verify one precursor from some of the proteins in the library.
         // From SKY_FILE1
         Map<String, Pair<String, String>> precursorMap = new HashMap<>();
-        precursorMap.put("DPDYQPPAK",          new Pair(SKY_FILE1, "CTCF"));
-        precursorMap.put("EDSSLLNPAAK",        new Pair(SKY_FILE1, "TAF11"));
         precursorMap.put("AHHNALER",           new Pair(SKY_FILE1, "MAX")); // Conflicted in SKY_FILE2
-        precursorMap.put("MSDNDDIEVESDADK",    new Pair(SKY_FILE1, "MAX")); // Conflicted in SKY_FILE2
         precursorMap.put("ALDFAVGEYNK[+8.0]",  new Pair(SKY_FILE1, "QPrEST_CystC_HPRR5000001")); // Conflicted in SKY_FILE2
         precursorMap.put("QFVYLESDYSK[+8.0]",  new Pair(SKY_FILE1, "HPRR1440042")); // Conflicted in SKY_FILE2
-        precursorMap.put("GEPGEGAYVYR[+10.0]", new Pair(SKY_FILE1, "DifferentProteinSameLabel"));
 
 
+        // The precursors below are only in SKY_FILE2 so will not result in a conflict. We can leave them out otherwise the test takes too long to run.
         // FROM SKY_FILE2
-        precursorMap.put("FLVSLALR",           new Pair(SKY_FILE2, "DifferentProteinSameLabel"));
-        precursorMap.put("ALGSHHTASPWNLSPFSK", new Pair(SKY_FILE2, "GATA3"));
+        // precursorMap.put("FLVSLALR",           new Pair(SKY_FILE2, "DifferentProteinSameLabel"));
+        // precursorMap.put("ALGSHHTASPWNLSPFSK", new Pair(SKY_FILE2, "GATA3"));
+        // precursorMap.put("AGTLDLSLTVQGK",      new Pair(SKY_FILE2, "HPRR350065"));
+        // precursorMap.put("AHSSHLK",            new Pair(SKY_FILE2, "TP53"));
+
+        precursorMap.put("ADVTPADFSEWSK",      new Pair(SKY_FILE2, "iRT-C18 Standard Peptides")); // iRT peptide should always be from the new file
 
         // SKY_FILE2 has both the heavy and light versions of QFVYLESDYSK.
         // heavy version (QFVYLESDYSK[+8.0]) is conflicted as it also in SKY_FILE1
@@ -163,10 +165,6 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
         // QFVYLESDYSK -> QFVYLESDYSK[+8.0] -> heavy precursor from SKY_FILE1
         // QFVYLESDYSK -> QFVYLESDYSK       -> light precursor from SKY_FILE2
         precursorMap.put("QFVYLESDYSK",        new Pair(SKY_FILE2, "HPRR1440042"));
-
-        precursorMap.put("AGTLDLSLTVQGK",      new Pair(SKY_FILE2, "HPRR350065"));
-        precursorMap.put("AHSSHLK",            new Pair(SKY_FILE2, "TP53"));
-        precursorMap.put("ADVTPADFSEWSK",      new Pair(SKY_FILE2, "iRT-C18 Standard Peptides")); // iRT peptide should be from the new file
 
         verifyLibraryPrecursors(precursorMap, totalPrecursorCount);
     }
@@ -222,7 +220,7 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
 
     protected void verifyRevision3()
     {
-        log("Verifying expected counts in library revision 3 after uploading " + SKY_FILE2);
+        log("Verifying expected counts in library revision 3 after resolving conflicts. ");
 
         int totalPeptideCount = 93;
         int totalPrecursorCount = 103;
@@ -236,25 +234,17 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
         // Verify one precursor from each protein in the library.
         // FROM SKY_FILE1
         Map<String, Pair<String, String>> precursorMap = new HashMap<>();
-        precursorMap.put("DPDYQPPAK",          new Pair(SKY_FILE1, "CTCF"));
-        precursorMap.put("EDSSLLNPAAK",        new Pair(SKY_FILE1, "TAF11"));
-        precursorMap.put("GEPGEGAYVYR[+10.0]", new Pair(SKY_FILE1, "DifferentProteinSameLabel"));
 
-
-        // Changes after resolving conflicts
+        // After resolving conflicts
         precursorMap.put("AHHNALER",           new Pair(SKY_FILE2, "MAX"));         // Now from SKY_FILE2
         precursorMap.put("MSDNDDIEVESDADK",    new Pair(SKY_FILE2, "MAX"));         // Now from SKY_FILE2
+        // Both heavy and light precursors of the peptides ALDFAVGEYNK and QFVYLESDYSK are now from SKY_FILE2
         precursorMap.put("ALDFAVGEYNK[+8.0]",  new Pair(SKY_FILE2, "HPRR5000001")); // Now from SKY_FILE2
         precursorMap.put("ALDFAVGEYNK",        new Pair(SKY_FILE2, "HPRR5000001"));
         precursorMap.put("QFVYLESDYSK[+8.0]",  new Pair(SKY_FILE2, "HPRR1440042")); // Now from SKY_FILE2
         precursorMap.put("QFVYLESDYSK",        new Pair(SKY_FILE2, "HPRR1440042"));
 
-        // FROM SKY_FILE2
-        precursorMap.put("FLVSLALR",           new Pair(SKY_FILE2, "DifferentProteinSameLabel"));
-        precursorMap.put("ALGSHHTASPWNLSPFSK", new Pair(SKY_FILE2, "GATA3"));
-        precursorMap.put("AGTLDLSLTVQGK",      new Pair(SKY_FILE2, "HPRR350065"));
-        precursorMap.put("AHSSHLK",            new Pair(SKY_FILE2, "TP53"));
-        precursorMap.put("ADVTPADFSEWSK",      new Pair(SKY_FILE2, "iRT-C18 Standard Peptides"));
+        precursorMap.put("ADVTPADFSEWSK",      new Pair(SKY_FILE2, "iRT-C18 Standard Peptides")); // iRT peptide should always be from the new file
 
         verifyLibraryPrecursors(precursorMap, totalPrecursorCount);
     }
