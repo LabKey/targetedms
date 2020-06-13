@@ -17,7 +17,6 @@
 package org.labkey.targetedms;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsonorg.JsonOrgModule;
 import com.keypoint.PngEncoder;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -1059,8 +1058,8 @@ public class TargetedMSController extends SpringActionController
         private boolean _includeMR;
         private boolean _includeMeanCusum;
         private boolean _includeVariableCusum;
-        private java.sql.Date _startDate;
-        private java.sql.Date _endDate;
+        private Date _startDate;
+        private Date _endDate;
         private List<OutlierGenerator.AnnotationGroup> _selectedAnnotations;
 
         public int getMetricId()
@@ -1113,7 +1112,7 @@ public class TargetedMSController extends SpringActionController
             this._includeVariableCusum = includeVariableCusum;
         }
 
-        public java.sql.Date getStartDate()
+        public Date getStartDate()
         {
             return _startDate;
         }
@@ -1123,7 +1122,7 @@ public class TargetedMSController extends SpringActionController
             _startDate = startDate;
         }
 
-        public java.sql.Date getEndDate()
+        public Date getEndDate()
         {
             return _endDate;
         }

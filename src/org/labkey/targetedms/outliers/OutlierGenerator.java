@@ -15,6 +15,7 @@
  */
 package org.labkey.targetedms.outliers;
 
+import org.apache.commons.lang3.StringUtils;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.Sort;
@@ -32,9 +33,9 @@ import org.labkey.targetedms.model.QCPlotFragment;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.parser.SampleFile;
 
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,31 +65,21 @@ public class OutlierGenerator
             StringBuilder filterClause = new StringBuilder("SampleFileId.ReplicateId in (");
             var intersect = "";
             var selectSql = "(SELECT ReplicateId FROM targetedms.ReplicateAnnotation WHERE ";
-            var escapeQuote = "\'";
             for (AnnotationGroup annotation : annotationGroups)
             {
                 filterClause.append(intersect)
                         .append(selectSql)
-                        .append(" Name=")
-                        .append(escapeQuote)
-                        .append(annotation.getName())
-                        .append(escapeQuote);
+                        .append(" Name='")
+                        .append(annotation.getName().replace("'", "''"))
+                        .append("'");
+
 
                 var annotationValues = annotation.getValues();
                 if (!annotationValues.isEmpty())
                 {
-                    filterClause.append(" AND  Value IN (")
-                            .append(escapeQuote)
-                            .append(annotationValues.get(0))
-                            .append(escapeQuote);
-
-                    for (int i = 1; i < annotationValues.size(); i++)
-                    {
-                        filterClause.append(",")
-                                .append(escapeQuote)
-                                .append(annotationValues.get(i))
-                                .append(escapeQuote);
-                    }
+                    var quoteEscapedVals = annotationValues.stream().map(s -> s.replace("'", "''")).collect(Collectors.toList());
+                    var vals = "'" + StringUtils.join(quoteEscapedVals, "','") + "'";
+                    filterClause.append(" AND  Value IN (").append(vals);
                 }
                 filterClause.append(" ) ) ");
                 intersect = " INTERSECT ";
@@ -154,24 +145,23 @@ public class OutlierGenerator
         sql.append("\nON ((sf.AcquiredTime >= gs.TrainingStart AND sf.AcquiredTime < gs.ReferenceEnd) OR (sf.AcquiredTime >= gs.TrainingStart AND gs.ReferenceEnd IS NULL))");
         if (null != startDate || null != endDate)
         {
-            sql.append("\nWHERE ");
+            var sqlSeparator = "WHERE";
 
             if (null != startDate)
             {
-                sql.append("sf.AcquiredTime >= '");
+                sql.append("\n").append(sqlSeparator);
+                sql.append(" sf.AcquiredTime >= '");
                 sql.append(startDate);
-                sql.append("' AND ");
+                sql.append("' ");
+                sqlSeparator = "AND";
             }
 
             if (null != endDate)
             {
+                sql.append("\n").append(sqlSeparator);
                 sql.append("\n sf.AcquiredTime < TIMESTAMPADD('SQL_TSI_DAY', 1, CAST('");
                 sql.append(endDate);
                 sql.append("' AS TIMESTAMP))");
-            }
-            else
-            {
-                sql.append("1=1");
             }
         }
         else
@@ -182,7 +172,7 @@ public class OutlierGenerator
         return sql.toString();
     }
 
-    public List<RawMetricDataSet> getRawMetricDataSets(Container container, User user, List<QCMetricConfiguration> configurations, java.sql.Date startDate, Date endDate, List<AnnotationGroup> annotationGroups)
+    public List<RawMetricDataSet> getRawMetricDataSets(Container container, User user, List<QCMetricConfiguration> configurations, Date startDate, Date endDate, List<AnnotationGroup> annotationGroups)
     {
         String labkeySQL = queryContainerSampleFileRawData(configurations, startDate, endDate, annotationGroups);
 
