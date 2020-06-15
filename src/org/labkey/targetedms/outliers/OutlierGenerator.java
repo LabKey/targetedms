@@ -62,7 +62,7 @@ public class OutlierGenerator
         if (!annotationGroups.isEmpty())
         {
             sql.append(" WHERE ");
-            StringBuilder filterClause = new StringBuilder("SampleFileId.ReplicateId in (");
+            StringBuilder filterClause = new StringBuilder("SampleFileId.ReplicateId IN (");
             var intersect = "";
             var selectSql = "(SELECT ReplicateId FROM targetedms.ReplicateAnnotation WHERE ";
             for (AnnotationGroup annotation : annotationGroups)
@@ -79,9 +79,9 @@ public class OutlierGenerator
                 {
                     var quoteEscapedVals = annotationValues.stream().map(s -> s.replace("'", "''")).collect(Collectors.toList());
                     var vals = "'" + StringUtils.join(quoteEscapedVals, "','") + "'";
-                    filterClause.append(" AND  Value IN (").append(vals);
+                    filterClause.append(" AND  Value IN (").append(vals).append(" )");
                 }
-                filterClause.append(" ) ) ");
+                filterClause.append(" ) ");
                 intersect = " INTERSECT ";
             }
             filterClause.append(") ");
