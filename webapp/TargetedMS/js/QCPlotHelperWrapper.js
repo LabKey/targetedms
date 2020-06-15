@@ -228,7 +228,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         return plotData;
     },
 
-    processPlotDataRow: function(row, plotDataRow, fragment, seriesType, metricProps)
+    processPlotDataRow: function(row, plotDataRow, fragment, metricProps)
     {
         var dataType = plotDataRow['DataType'];
         var mz = Ext4.util.Format.number(plotDataRow['mz'], '0.0000');
@@ -236,6 +236,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         {
             this.fragmentPlotData[fragment] = this.getInitFragmentPlotData(fragment, dataType, mz);
         }
+
+        var seriesType = row['SeriesType'] === 2 ? 'series2' : 'series1';
 
         var data = {
             type: 'data',

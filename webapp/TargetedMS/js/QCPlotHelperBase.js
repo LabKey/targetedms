@@ -47,15 +47,16 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         return guideSet;
     },
 
-    processRawGuideSetData: function (plotDataRows, seriesType) {
+    processRawGuideSetData: function (plotDataRows) {
         if (!this.guideSetDataMap)
             this.guideSetDataMap = {};
 
         Ext4.each(plotDataRows, function (plotDataRow) {
             Ext4.each(plotDataRow.GuideSetStats, function (guideSetStat) {
                 var guideSetId = guideSetStat['GuideSetId'];
-
+                var seriesType = guideSetStat['SeriesType'] === 2 ? 'series2' : 'series1';
                 var seriesLabel = plotDataRow['SeriesLabel'];
+
                 if (guideSetId === 0) {
                     if (!this.defaultGuideSet) {
                         this.defaultGuideSet = {};
@@ -140,16 +141,15 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         var sampleFiles = parsed.sampleFiles;
 
         var allPlotDateValues = [];
-        var seriesType = Ext4.isDefined(metricProps.series2SchemaName) || Ext4.isDefined(metricProps.series2QueryName) ? 'series2' : 'series1';
 
         // process the data to shape it for the JS LeveyJenningsPlot API call
         this.fragmentPlotData = {};
 
         if (this.showLJPlot()) {
-            this.processLJGuideSetData(plotDataRows, seriesType);
+            this.processLJGuideSetData(plotDataRows);
         }
         else if (this.showMovingRangePlot() || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot()) {
-            this.processRawGuideSetData(plotDataRows, seriesType);
+            this.processRawGuideSetData(plotDataRows);
         }
 
         Ext4.iterate(plotDataRows, function(plotDataRow)
@@ -165,7 +165,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     }
                 }, this);
 
-                var data = this.processPlotDataRow(plotData, plotDataRow, fragment, seriesType, metricProps);
+                var data = this.processPlotDataRow(plotData, plotDataRow, fragment, metricProps);
                 this.fragmentPlotData[fragment].data.push(data);
                 this.fragmentPlotData[fragment].precursorScoped = metricProps.precursorScoped;
                 this.setSeriesMinMax(this.fragmentPlotData[fragment], data);

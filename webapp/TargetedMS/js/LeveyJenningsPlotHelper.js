@@ -12,7 +12,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         }
     },
 
-    processLJGuideSetData : function(plotDataRows, seriesType)
+    processLJGuideSetData : function(plotDataRows)
     {
         this.guideSetDataMap = {};
         this.defaultGuideSet = {};
@@ -20,6 +20,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
             Ext4.each(plotDataRow.GuideSetStats, function(guideSetStat) {
                 var guideSetId = guideSetStat['GuideSetId'];
                 var seriesLabel = plotDataRow['SeriesLabel'];
+                var seriesType = guideSetStat['SeriesType'] === 2 ? 'series2' : 'series1';
 
                 if (guideSetId > 0) {
                     if (!this.guideSetDataMap[guideSetId]) {

@@ -78,6 +78,7 @@ public class QCPlotFragment
         {
             JSONObject statsJSONObject = new JSONObject();
             statsJSONObject.put("GuideSetId", stats.getKey().getGuideSetId());
+            statsJSONObject.put("SeriesType", stats.getKey().getMetricSeriesIndex());
             if (includeLJ)
             {
                 statsJSONObject.put("LJStdDev", stats.getStandardDeviation());
@@ -108,6 +109,7 @@ public class QCPlotFragment
             dataJsonObject.put("GuideSetId", plotData.getGuideSetId());
             dataJsonObject.put("IgnoreInQC", plotData.isIgnoreInQC());
             dataJsonObject.put("PrecursorId", plotData.getPrecursorId());
+            dataJsonObject.put("SeriesType", plotData.getMetricSeriesIndex());
             if (includeMR)
             {
                 dataJsonObject.put("MR", plotData.getmR());
