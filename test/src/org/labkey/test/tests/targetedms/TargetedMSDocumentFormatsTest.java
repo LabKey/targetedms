@@ -32,7 +32,9 @@ public class TargetedMSDocumentFormatsTest extends TargetedMSTest
     public static final List<String> skyZipFileNames = Arrays.asList(
             "DocumentSerializerTest_36",
             "DocumentSerializerTest",
-            "DocumentSerializerTest_compact");
+            "DocumentSerializerTest_compact",
+            "CrosslinkingExample",
+            "CrosslinkingExample_compact");
 
     @Test
     public void testDocumentSerialization()
