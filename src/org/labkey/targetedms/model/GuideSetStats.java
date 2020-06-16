@@ -99,7 +99,7 @@ public class GuideSetStats
         {
             throw new IllegalStateException("Stats have already been locked");
         }
-        if (!row.isIgnoreInQC() &&
+        if (!row.isIgnoreInQC() && null != row.getAcquiredTime() &&
                 _guideSet.getTrainingStart().compareTo(row.getAcquiredTime()) <= 0 &&
                 (_guideSet.getTrainingEnd() == null || _guideSet.getTrainingEnd().compareTo(row.getAcquiredTime()) >= 0))
         {
