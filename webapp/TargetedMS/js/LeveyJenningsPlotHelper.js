@@ -158,7 +158,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
             if (Ext4.isDefined(gs) && gs.Series[fragment]&& gs.Series[fragment][seriesType])
             {
                 data['mean'] = gs.Series[fragment][seriesType]['Mean'];
-                data['stdDev'] = gs.Series[fragment][seriesType]['StandardDev'];
+                data['stdDev'] = gs.Series[fragment][seriesType]['StdDev'];
             }
         }
 
