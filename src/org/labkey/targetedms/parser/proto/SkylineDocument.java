@@ -17236,30 +17236,6 @@ public final class SkylineDocument {
           int index);
 
       /**
-       * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-       */
-      java.util.List<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss> 
-          getLossesList();
-      /**
-       * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-       */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss getLosses(int index);
-      /**
-       * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-       */
-      int getLossesCount();
-      /**
-       * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-       */
-      java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLossOrBuilder> 
-          getLossesOrBuilderList();
-      /**
-       * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-       */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLossOrBuilder getLossesOrBuilder(
-          int index);
-
-      /**
        * <code>bool orphan = 7;</code>
        * @return The orphan.
        */
@@ -17281,7 +17257,6 @@ public final class SkylineDocument {
         ionType_ = 0;
         modificationName_ = "";
         children_ = java.util.Collections.emptyList();
-        losses_ = java.util.Collections.emptyList();
       }
 
       @java.lang.Override
@@ -17346,15 +17321,6 @@ public final class SkylineDocument {
                     input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon.parser(), extensionRegistry));
                 break;
               }
-              case 50: {
-                if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                  losses_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss>();
-                  mutable_bitField0_ |= 0x00000002;
-                }
-                losses_.add(
-                    input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.parser(), extensionRegistry));
-                break;
-              }
               case 56: {
 
                 orphan_ = input.readBool();
@@ -17377,9 +17343,6 @@ public final class SkylineDocument {
         } finally {
           if (((mutable_bitField0_ & 0x00000001) != 0)) {
             children_ = java.util.Collections.unmodifiableList(children_);
-          }
-          if (((mutable_bitField0_ & 0x00000002) != 0)) {
-            losses_ = java.util.Collections.unmodifiableList(losses_);
           }
           this.unknownFields = unknownFields.build();
           makeExtensionsImmutable();
@@ -17517,46 +17480,6 @@ public final class SkylineDocument {
         return children_.get(index);
       }
 
-      public static final int LOSSES_FIELD_NUMBER = 6;
-      private java.util.List<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss> losses_;
-      /**
-       * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-       */
-      @java.lang.Override
-      public java.util.List<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss> getLossesList() {
-        return losses_;
-      }
-      /**
-       * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-       */
-      @java.lang.Override
-      public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLossOrBuilder> 
-          getLossesOrBuilderList() {
-        return losses_;
-      }
-      /**
-       * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-       */
-      @java.lang.Override
-      public int getLossesCount() {
-        return losses_.size();
-      }
-      /**
-       * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-       */
-      @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss getLosses(int index) {
-        return losses_.get(index);
-      }
-      /**
-       * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-       */
-      @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLossOrBuilder getLossesOrBuilder(
-          int index) {
-        return losses_.get(index);
-      }
-
       public static final int ORPHAN_FIELD_NUMBER = 7;
       private boolean orphan_;
       /**
@@ -17597,9 +17520,6 @@ public final class SkylineDocument {
         for (int i = 0; i < children_.size(); i++) {
           output.writeMessage(5, children_.get(i));
         }
-        for (int i = 0; i < losses_.size(); i++) {
-          output.writeMessage(6, losses_.get(i));
-        }
         if (orphan_ != false) {
           output.writeBool(7, orphan_);
         }
@@ -17631,10 +17551,6 @@ public final class SkylineDocument {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(5, children_.get(i));
         }
-        for (int i = 0; i < losses_.size(); i++) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeMessageSize(6, losses_.get(i));
-        }
         if (orphan_ != false) {
           size += com.google.protobuf.CodedOutputStream
             .computeBoolSize(7, orphan_);
@@ -17663,8 +17579,6 @@ public final class SkylineDocument {
             .equals(other.getModificationName())) return false;
         if (!getChildrenList()
             .equals(other.getChildrenList())) return false;
-        if (!getLossesList()
-            .equals(other.getLossesList())) return false;
         if (getOrphan()
             != other.getOrphan()) return false;
         if (!unknownFields.equals(other.unknownFields)) return false;
@@ -17689,10 +17603,6 @@ public final class SkylineDocument {
         if (getChildrenCount() > 0) {
           hash = (37 * hash) + CHILDREN_FIELD_NUMBER;
           hash = (53 * hash) + getChildrenList().hashCode();
-        }
-        if (getLossesCount() > 0) {
-          hash = (37 * hash) + LOSSES_FIELD_NUMBER;
-          hash = (53 * hash) + getLossesList().hashCode();
         }
         hash = (37 * hash) + ORPHAN_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
@@ -17826,7 +17736,6 @@ public final class SkylineDocument {
           if (com.google.protobuf.GeneratedMessageV3
                   .alwaysUseFieldBuilders) {
             getChildrenFieldBuilder();
-            getLossesFieldBuilder();
           }
         }
         @java.lang.Override
@@ -17845,12 +17754,6 @@ public final class SkylineDocument {
             bitField0_ = (bitField0_ & ~0x00000001);
           } else {
             childrenBuilder_.clear();
-          }
-          if (lossesBuilder_ == null) {
-            losses_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000002);
-          } else {
-            lossesBuilder_.clear();
           }
           orphan_ = false;
 
@@ -17893,15 +17796,6 @@ public final class SkylineDocument {
             result.children_ = children_;
           } else {
             result.children_ = childrenBuilder_.build();
-          }
-          if (lossesBuilder_ == null) {
-            if (((bitField0_ & 0x00000002) != 0)) {
-              losses_ = java.util.Collections.unmodifiableList(losses_);
-              bitField0_ = (bitField0_ & ~0x00000002);
-            }
-            result.losses_ = losses_;
-          } else {
-            result.losses_ = lossesBuilder_.build();
           }
           result.orphan_ = orphan_;
           onBuilt();
@@ -17988,32 +17882,6 @@ public final class SkylineDocument {
                      getChildrenFieldBuilder() : null;
               } else {
                 childrenBuilder_.addAllMessages(other.children_);
-              }
-            }
-          }
-          if (lossesBuilder_ == null) {
-            if (!other.losses_.isEmpty()) {
-              if (losses_.isEmpty()) {
-                losses_ = other.losses_;
-                bitField0_ = (bitField0_ & ~0x00000002);
-              } else {
-                ensureLossesIsMutable();
-                losses_.addAll(other.losses_);
-              }
-              onChanged();
-            }
-          } else {
-            if (!other.losses_.isEmpty()) {
-              if (lossesBuilder_.isEmpty()) {
-                lossesBuilder_.dispose();
-                lossesBuilder_ = null;
-                losses_ = other.losses_;
-                bitField0_ = (bitField0_ & ~0x00000002);
-                lossesBuilder_ = 
-                  com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                     getLossesFieldBuilder() : null;
-              } else {
-                lossesBuilder_.addAllMessages(other.losses_);
               }
             }
           }
@@ -18480,246 +18348,6 @@ public final class SkylineDocument {
             children_ = null;
           }
           return childrenBuilder_;
-        }
-
-        private java.util.List<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss> losses_ =
-          java.util.Collections.emptyList();
-        private void ensureLossesIsMutable() {
-          if (!((bitField0_ & 0x00000002) != 0)) {
-            losses_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss>(losses_);
-            bitField0_ |= 0x00000002;
-           }
-        }
-
-        private com.google.protobuf.RepeatedFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLossOrBuilder> lossesBuilder_;
-
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public java.util.List<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss> getLossesList() {
-          if (lossesBuilder_ == null) {
-            return java.util.Collections.unmodifiableList(losses_);
-          } else {
-            return lossesBuilder_.getMessageList();
-          }
-        }
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public int getLossesCount() {
-          if (lossesBuilder_ == null) {
-            return losses_.size();
-          } else {
-            return lossesBuilder_.getCount();
-          }
-        }
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss getLosses(int index) {
-          if (lossesBuilder_ == null) {
-            return losses_.get(index);
-          } else {
-            return lossesBuilder_.getMessage(index);
-          }
-        }
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public Builder setLosses(
-            int index, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss value) {
-          if (lossesBuilder_ == null) {
-            if (value == null) {
-              throw new NullPointerException();
-            }
-            ensureLossesIsMutable();
-            losses_.set(index, value);
-            onChanged();
-          } else {
-            lossesBuilder_.setMessage(index, value);
-          }
-          return this;
-        }
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public Builder setLosses(
-            int index, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.Builder builderForValue) {
-          if (lossesBuilder_ == null) {
-            ensureLossesIsMutable();
-            losses_.set(index, builderForValue.build());
-            onChanged();
-          } else {
-            lossesBuilder_.setMessage(index, builderForValue.build());
-          }
-          return this;
-        }
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public Builder addLosses(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss value) {
-          if (lossesBuilder_ == null) {
-            if (value == null) {
-              throw new NullPointerException();
-            }
-            ensureLossesIsMutable();
-            losses_.add(value);
-            onChanged();
-          } else {
-            lossesBuilder_.addMessage(value);
-          }
-          return this;
-        }
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public Builder addLosses(
-            int index, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss value) {
-          if (lossesBuilder_ == null) {
-            if (value == null) {
-              throw new NullPointerException();
-            }
-            ensureLossesIsMutable();
-            losses_.add(index, value);
-            onChanged();
-          } else {
-            lossesBuilder_.addMessage(index, value);
-          }
-          return this;
-        }
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public Builder addLosses(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.Builder builderForValue) {
-          if (lossesBuilder_ == null) {
-            ensureLossesIsMutable();
-            losses_.add(builderForValue.build());
-            onChanged();
-          } else {
-            lossesBuilder_.addMessage(builderForValue.build());
-          }
-          return this;
-        }
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public Builder addLosses(
-            int index, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.Builder builderForValue) {
-          if (lossesBuilder_ == null) {
-            ensureLossesIsMutable();
-            losses_.add(index, builderForValue.build());
-            onChanged();
-          } else {
-            lossesBuilder_.addMessage(index, builderForValue.build());
-          }
-          return this;
-        }
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public Builder addAllLosses(
-            java.lang.Iterable<? extends org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss> values) {
-          if (lossesBuilder_ == null) {
-            ensureLossesIsMutable();
-            com.google.protobuf.AbstractMessageLite.Builder.addAll(
-                values, losses_);
-            onChanged();
-          } else {
-            lossesBuilder_.addAllMessages(values);
-          }
-          return this;
-        }
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public Builder clearLosses() {
-          if (lossesBuilder_ == null) {
-            losses_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000002);
-            onChanged();
-          } else {
-            lossesBuilder_.clear();
-          }
-          return this;
-        }
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public Builder removeLosses(int index) {
-          if (lossesBuilder_ == null) {
-            ensureLossesIsMutable();
-            losses_.remove(index);
-            onChanged();
-          } else {
-            lossesBuilder_.remove(index);
-          }
-          return this;
-        }
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.Builder getLossesBuilder(
-            int index) {
-          return getLossesFieldBuilder().getBuilder(index);
-        }
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLossOrBuilder getLossesOrBuilder(
-            int index) {
-          if (lossesBuilder_ == null) {
-            return losses_.get(index);  } else {
-            return lossesBuilder_.getMessageOrBuilder(index);
-          }
-        }
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLossOrBuilder> 
-             getLossesOrBuilderList() {
-          if (lossesBuilder_ != null) {
-            return lossesBuilder_.getMessageOrBuilderList();
-          } else {
-            return java.util.Collections.unmodifiableList(losses_);
-          }
-        }
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.Builder addLossesBuilder() {
-          return getLossesFieldBuilder().addBuilder(
-              org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.getDefaultInstance());
-        }
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.Builder addLossesBuilder(
-            int index) {
-          return getLossesFieldBuilder().addBuilder(
-              index, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.getDefaultInstance());
-        }
-        /**
-         * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 6;</code>
-         */
-        public java.util.List<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.Builder> 
-             getLossesBuilderList() {
-          return getLossesFieldBuilder().getBuilderList();
-        }
-        private com.google.protobuf.RepeatedFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLossOrBuilder> 
-            getLossesFieldBuilder() {
-          if (lossesBuilder_ == null) {
-            lossesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLossOrBuilder>(
-                    losses_,
-                    ((bitField0_ & 0x00000002) != 0),
-                    getParentForChildren(),
-                    isClean());
-            losses_ = null;
-          }
-          return lossesBuilder_;
         }
 
         private boolean orphan_ ;
@@ -23151,7 +22779,7 @@ public final class SkylineDocument {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\025SkylineDocument.proto\"\365\037\n\024SkylineDocum" +
+      "\n\025SkylineDocument.proto\"\277\037\n\024SkylineDocum" +
       "entProto\032a\n\013Annotations\022\014\n\004note\030\001 \001(\t\022\r\n" +
       "\005color\030\002 \001(\005\0225\n\006values\030\003 \003(\0132%.SkylineDo" +
       "cumentProto.AnnotationValue\0322\n\017Annotatio" +
@@ -23233,42 +22861,41 @@ public final class SkylineDocument {
       "\006charge\030\007 \001(\005\0324\n\021TransitionLibInfo\022\014\n\004ra" +
       "nk\030\001 \001(\005\022\021\n\tintensity\030\002 \001(\002\032G\n\016Transitio" +
       "nData\0225\n\013transitions\030\001 \003(\0132 .SkylineDocu" +
-      "mentProto.Transition\032\372\001\n\tLinkedIon\022.\n\007io" +
+      "mentProto.Transition\032\304\001\n\tLinkedIon\022.\n\007io" +
       "nType\030\001 \001(\0162\035.SkylineDocumentProto.IonTy" +
       "pe\022\017\n\007ordinal\030\002 \001(\005\022\031\n\021modificationIndex" +
       "\030\003 \001(\005\022\030\n\020modificationName\030\004 \001(\t\0221\n\010chil" +
       "dren\030\005 \003(\0132\037.SkylineDocumentProto.Linked" +
-      "Ion\0224\n\006losses\030\006 \003(\0132$.SkylineDocumentPro" +
-      "to.TransitionLoss\022\016\n\006orphan\030\007 \001(\010\"x\n\007Use" +
-      "rSet\022\022\n\016USER_SET_FALSE\020\000\022\021\n\rUSER_SET_TRU" +
-      "E\020\001\022\025\n\021USER_SET_IMPORTED\020\002\022\031\n\025USER_SET_R" +
-      "EINTEGRATED\020\003\022\024\n\020USER_SET_MATCHED\020\004\"Z\n\014O" +
-      "ptionalBool\022\031\n\025OPTIONAL_BOOL_MISSING\020\000\022\026" +
-      "\n\022OPTIONAL_BOOL_TRUE\020\001\022\027\n\023OPTIONAL_BOOL_" +
-      "FALSE\020\002\"r\n\022PeakIdentification\022\035\n\031PEAK_ID" +
-      "ENTIFICATION_FALSE\020\000\022\034\n\030PEAK_IDENTIFICAT" +
-      "ION_TRUE\020\001\022\037\n\033PEAK_IDENTIFICATION_ALIGNE" +
-      "D\020\002\"\254\001\n\007IonType\022\024\n\020ION_TYPE_unknown\020\000\022\016\n" +
-      "\nION_TYPE_a\020\001\022\016\n\nION_TYPE_b\020\002\022\016\n\nION_TYP" +
-      "E_c\020\003\022\016\n\nION_TYPE_x\020\004\022\016\n\nION_TYPE_y\020\005\022\016\n" +
-      "\nION_TYPE_z\020\006\022\026\n\022ION_TYPE_precursor\020\007\022\023\n" +
-      "\017ION_TYPE_custom\020\010\"3\n\rLossInclusion\022\013\n\007L" +
-      "ibrary\020\000\022\t\n\005Never\020\001\022\n\n\006Always\020\002\"\200\004\n\017Libr" +
-      "aryKeyProto\022)\n\007keyType\030\001 \001(\0162\030.LibraryKe" +
-      "yProto.KeyType\022\030\n\020modifiedSequence\030\002 \001(\t" +
-      "\022\016\n\006charge\030\003 \001(\005\022\024\n\014moleculeName\030\004 \001(\t\022\027" +
-      "\n\017chemicalFormula\030\005 \001(\t\022\020\n\010inChiKey\030\006 \001(" +
-      "\t\022\021\n\totherKeys\030\007 \001(\t\022\016\n\006adduct\030\010 \001(\t\022\023\n\013" +
-      "precursorMz\030\t \001(\001\022\025\n\rretentionTime\030\n \001(\001" +
-      "\022\034\n\024crosslinkedSequences\030\013 \003(\t\0222\n\014crossl" +
-      "inkers\030\014 \003(\0132\034.LibraryKeyProto.Crosslink" +
-      "er\032J\n\013Crosslinker\022\014\n\004name\030\001 \001(\t\022-\n\tposit" +
-      "ions\030\002 \003(\0132\032.LibraryKeyProto.Positions\032\035" +
-      "\n\tPositions\022\020\n\010position\030\001 \003(\005\"K\n\007KeyType" +
-      "\022\013\n\007peptide\020\000\022\022\n\016small_molecule\020\001\022\020\n\014pre" +
-      "cursor_mz\020\002\022\r\n\tcrosslink\020\003BG\n\"org.labkey" +
-      ".targetedms.parser.proto\252\002 pwiz.Skyline." +
-      "Model.Serializationb\006proto3"
+      "Ion\022\016\n\006orphan\030\007 \001(\010\"x\n\007UserSet\022\022\n\016USER_S" +
+      "ET_FALSE\020\000\022\021\n\rUSER_SET_TRUE\020\001\022\025\n\021USER_SE" +
+      "T_IMPORTED\020\002\022\031\n\025USER_SET_REINTEGRATED\020\003\022" +
+      "\024\n\020USER_SET_MATCHED\020\004\"Z\n\014OptionalBool\022\031\n" +
+      "\025OPTIONAL_BOOL_MISSING\020\000\022\026\n\022OPTIONAL_BOO" +
+      "L_TRUE\020\001\022\027\n\023OPTIONAL_BOOL_FALSE\020\002\"r\n\022Pea" +
+      "kIdentification\022\035\n\031PEAK_IDENTIFICATION_F" +
+      "ALSE\020\000\022\034\n\030PEAK_IDENTIFICATION_TRUE\020\001\022\037\n\033" +
+      "PEAK_IDENTIFICATION_ALIGNED\020\002\"\254\001\n\007IonTyp" +
+      "e\022\024\n\020ION_TYPE_unknown\020\000\022\016\n\nION_TYPE_a\020\001\022" +
+      "\016\n\nION_TYPE_b\020\002\022\016\n\nION_TYPE_c\020\003\022\016\n\nION_T" +
+      "YPE_x\020\004\022\016\n\nION_TYPE_y\020\005\022\016\n\nION_TYPE_z\020\006\022" +
+      "\026\n\022ION_TYPE_precursor\020\007\022\023\n\017ION_TYPE_cust" +
+      "om\020\010\"3\n\rLossInclusion\022\013\n\007Library\020\000\022\t\n\005Ne" +
+      "ver\020\001\022\n\n\006Always\020\002\"\200\004\n\017LibraryKeyProto\022)\n" +
+      "\007keyType\030\001 \001(\0162\030.LibraryKeyProto.KeyType" +
+      "\022\030\n\020modifiedSequence\030\002 \001(\t\022\016\n\006charge\030\003 \001" +
+      "(\005\022\024\n\014moleculeName\030\004 \001(\t\022\027\n\017chemicalForm" +
+      "ula\030\005 \001(\t\022\020\n\010inChiKey\030\006 \001(\t\022\021\n\totherKeys" +
+      "\030\007 \001(\t\022\016\n\006adduct\030\010 \001(\t\022\023\n\013precursorMz\030\t " +
+      "\001(\001\022\025\n\rretentionTime\030\n \001(\001\022\034\n\024crosslinke" +
+      "dSequences\030\013 \003(\t\0222\n\014crosslinkers\030\014 \003(\0132\034" +
+      ".LibraryKeyProto.Crosslinker\032J\n\013Crosslin" +
+      "ker\022\014\n\004name\030\001 \001(\t\022-\n\tpositions\030\002 \003(\0132\032.L" +
+      "ibraryKeyProto.Positions\032\035\n\tPositions\022\020\n" +
+      "\010position\030\001 \003(\005\"K\n\007KeyType\022\013\n\007peptide\020\000\022" +
+      "\022\n\016small_molecule\020\001\022\020\n\014precursor_mz\020\002\022\r\n" +
+      "\tcrosslink\020\003BG\n\"org.labkey.targetedms.pa" +
+      "rser.proto\252\002 pwiz.Skyline.Model.Serializ" +
+      "ationb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -23357,7 +22984,7 @@ public final class SkylineDocument {
     internal_static_SkylineDocumentProto_LinkedIon_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SkylineDocumentProto_LinkedIon_descriptor,
-        new java.lang.String[] { "IonType", "Ordinal", "ModificationIndex", "ModificationName", "Children", "Losses", "Orphan", });
+        new java.lang.String[] { "IonType", "Ordinal", "ModificationIndex", "ModificationName", "Children", "Orphan", });
     internal_static_LibraryKeyProto_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_LibraryKeyProto_fieldAccessorTable = new

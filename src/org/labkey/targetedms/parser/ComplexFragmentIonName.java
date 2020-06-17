@@ -26,7 +26,6 @@ public class ComplexFragmentIonName
     private final String _ionType;
     private final int _ordinal;
     private final List<Pair<ModificationSite, ComplexFragmentIonName>> _children = new ArrayList<>();
-    private final List<Pair<ModificationSite, String>> _losses = new ArrayList<>();
     public ComplexFragmentIonName(String ionType, Integer ionOrdinal)
     {
         _ionType = ionType;
@@ -68,11 +67,6 @@ public class ComplexFragmentIonName
         _children.add(child);
     }
 
-    public void addLoss(int aaIndex, String modificationName, String description)
-    {
-        _losses.add(Pair.of(new ModificationSite(aaIndex, modificationName), description));
-    }
-
     @Override
     public String toString()
     {
@@ -92,15 +86,6 @@ public class ComplexFragmentIonName
                 stringBuilder.append(_ordinal);
             }
         }
-        for (Pair<ModificationSite, String> loss : _losses)
-        {
-            stringBuilder.append("(");
-            stringBuilder.append(loss.first);
-            stringBuilder.append("[");
-            stringBuilder.append(loss.second);
-            stringBuilder.append("])");
-        }
-
         if (!_children.isEmpty()){
             stringBuilder.append("-");
             if (_children.size() != 1) {
