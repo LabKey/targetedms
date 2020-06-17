@@ -1146,66 +1146,36 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         var metricProps = this.getMetricPropsById(this.metric);
 
         if(metricProps) {
-            var series1Sql = "SELECT SeriesLabel FROM " + metricProps.series1SchemaName + "." + metricProps.series1QueryName,
-                    series2Sql = this.isMultiSeries() ? " UNION SELECT SeriesLabel FROM " + metricProps.series2SchemaName + "." + metricProps.series2QueryName : '',
-                    separator = ' WHERE ';
-
-            // CAST as DATE to ignore time portion of value
-            if (this.startDate) {
-                series1Sql += separator + "CAST(SampleFileId.AcquiredTime AS DATE) >= '" + this.startDate + "'";
-                if (series2Sql.length > 0)
-                    series2Sql += separator + "CAST(SampleFileId.AcquiredTime AS DATE) >= '" + this.startDate + "'";
-
-                separator = " AND ";
-            }
-            if (this.endDate) {
-                series1Sql += separator + "CAST(SampleFileId.AcquiredTime AS DATE) <= '" + this.endDate + "'";
-                if (series2Sql.length > 0)
-                    series2Sql += separator + "CAST(SampleFileId.AcquiredTime AS DATE) <= '" + this.endDate + "'";
-            }
-
-            var sql = "SELECT DISTINCT SeriesLabel FROM (\n" + series1Sql + series2Sql + "\n) X ORDER BY SeriesLabel";
-
-            LABKEY.Query.executeSql({
-                schemaName: 'targetedms',
-                sql: sql,
-                sort: 'SeriesLabel',
-                scope: this,
-                success: function (data) {
-                    this.pagingStartIndex = 0;
-                    this.pagingEndIndex = this.maxCount;
-
-                    // stash the set of precursor series labels for use with the plot rendering
-                    this.allPrecursors = Ext4.Array.pluck(data.rows, 'SeriesLabel');
-                    this.setPrecursorsForPage();
-                    this.getAnnotationData();
-                },
-                failure: this.failureHandler
-            });
+            this.getAnnotationData();
         }
         else {
             Ext4.get(this.plotDivId).update("There are no enabled QC Metric Configurations.");
         }
     },
 
-    setPrecursorsForPage: function() {
+    setPrecursorsForPage: function(plotDataRows) {
         if (Ext4.isNumeric(LABKEY.ActionURL.getParameter('qcPlots.offset')))
             this.pagingStartIndex = parseInt(LABKEY.ActionURL.getParameter('qcPlots.offset'));
 
         if (this.pagingStartIndex < 0)
             this.pagingStartIndex = 0;
-        else if (this.pagingStartIndex > this.allPrecursors.length)
-            this.pagingStartIndex = this.allPrecursors.length - this.maxCount;
+        else if (this.pagingStartIndex > plotDataRows.length)
+            this.pagingStartIndex = plotDataRows.length - this.maxCount;
 
-        this.pagingEndIndex = Math.min(this.pagingStartIndex + this.maxCount, this.allPrecursors.length);
+        this.pagingEndIndex = Math.min(this.pagingStartIndex + this.maxCount, plotDataRows.length);
 
-        this.precursors = Ext4.Array.slice(this.allPrecursors, this.pagingStartIndex, this.pagingEndIndex);
+        this.precursors = [];
 
-        this.updatePaginationDiv();
+        Ext4.iterate(plotDataRows, function(plotDataRow) {
+            this.precursors.push(plotDataRow['SeriesLabel']);
+        }, this);
+
+        // this.precursors = Ext4.Array.slice(this.allPrecursors, this.pagingStartIndex, this.pagingEndIndex);
+        this.updatePaginationDiv(plotDataRows.length);
     },
 
-    updatePaginationDiv: function() {
-        var exceedsPageLimit = this.allPrecursors.length > this.maxCount;
+    updatePaginationDiv: function(numOfPrecursors) {
+        var exceedsPageLimit = numOfPrecursors > this.maxCount;
 
         var displayHtml = "", sep = "";
         if (exceedsPageLimit) {

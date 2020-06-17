@@ -142,6 +142,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         var allPlotDateValues = [];
 
+        this.setPrecursorsForPage(plotDataRows);
+
         // process the data to shape it for the JS LeveyJenningsPlot API call
         this.fragmentPlotData = {};
 
