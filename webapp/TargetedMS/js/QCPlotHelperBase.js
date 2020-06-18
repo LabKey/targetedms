@@ -627,11 +627,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         var mainTitle = LABKEY.targetedms.QCPlotHelperWrapper.getQCPlotTypeLabel(plotType, isCUSUMMean);
 
+        var leftMargin = 75;
+
         var basePlotConfig = this.getBasePlotConfig(id, precursorInfo.data, plotLegendData);
         var plotConfig = Ext4.apply(basePlotConfig, {
             margins : {
                 top: 65 + this.getMaxStackedAnnotations() * 12,
-                left: 75,
+                left: leftMargin + this.getYAxisLeftMarginOffset(precursorInfo),
                 bottom: 75,
                 right: (this.showInPlotLegends() ? 0 : 30) // if in plot, set to 0 to auto calculate margin; otherwise, set to small value to cut off legend
             },
@@ -645,7 +647,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 },
                 yLeft: {
                     value: this.getYScaleLabel(plotType, trendLineProps.valueConversion, metricProps.series1Label),
-                    color: this.isMultiSeries() ? this.getColorRange()[0] : undefined
+                    color: this.isMultiSeries() ? this.getColorRange()[0] : undefined,
+                    position: this.getYAxisPosition(precursorInfo, leftMargin)
                 },
                 yRight: {
                     value: this.isMultiSeries() ? metricProps.series2Label : undefined,
@@ -686,6 +689,33 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         var extraMargin = this.showInPlotLegends() ? 0 : 10 * this.longestLegendText;
         this.attachPlotExportIcons(id, mainTitle + '-' + this.precursors[precursorIndex] + '-' + this.getMetricPropsById(this.metric).series1Label, plotIndex, this.getPlotWidth(), extraMargin);
+    },
+
+    getYAxisPosition: function(precursorInfo, leftMargin)
+    {
+        var offset = 15;
+
+        return this.getYAxisLeftMarginOffset(precursorInfo) > 0 ?
+                (leftMargin + this.getYAxisLeftMarginOffset(precursorInfo)) - offset :
+                undefined
+    },
+
+    getYAxisLeftMarginOffset: function(precursorInfo)
+    {
+        var maxLength = precursorInfo.min.toString().length;
+
+        if (maxLength < precursorInfo.max.toString().length) {
+            maxLength = precursorInfo.max.toString().length;
+        }
+
+        // maxLength of yAxis value
+        // if less than 10 then the current left margin works fine
+        // else add 2 pixels per digit/character
+        if (maxLength < 10) {
+            return 0;
+        } else {
+            return (maxLength - 10) * 2;
+        }
     },
 
     // empty legend to reserve plot space for plot alignment
