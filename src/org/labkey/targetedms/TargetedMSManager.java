@@ -507,6 +507,12 @@ public class TargetedMSManager
         return getSchema().getTable(TargetedMSSchema.TABLE_SKYLINE_AUDITLOG_ENTRY);
     }
 
+    /** View that's a CTE to pull in the RunId */
+    public static TableInfo getTableInfoSkylineAuditLog()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_SKYLINE_AUDITLOG);
+    }
+
     public static TableInfo getTableInfoSkylineAuditLogMessage()
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_SKYLINE_AUDITLOG_MESSAGE);
@@ -2111,7 +2117,7 @@ public class TargetedMSManager
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(container, user);
             Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
 
-            List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(container, user, enabledQCMetricConfigurations);
+            List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(container, user, enabledQCMetricConfigurations, null, null, Collections.emptyList());
 
             Map<GuideSetKey, GuideSetStats> stats = OutlierGenerator.get().getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
 
