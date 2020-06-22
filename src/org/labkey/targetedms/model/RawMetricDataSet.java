@@ -47,6 +47,10 @@ public class RawMetricDataSet
     String filePath;
     int replicateId;
 
+    Double massMonoisotopic;
+    Double massAverage;
+    String precursorCharge;
+
     @Nullable
     public String getSeriesLabel()
     {
@@ -261,6 +265,66 @@ public class RawMetricDataSet
     public void setReplicateId(int replicateId)
     {
         this.replicateId = replicateId;
+    }
+
+    public Double getMassMonoisotopic()
+    {
+        return massMonoisotopic;
+    }
+
+    public void setMassMonoisotopic(Double massMonoisotopic)
+    {
+        this.massMonoisotopic = massMonoisotopic;
+    }
+
+    public Double getMassAverage()
+    {
+        return massAverage;
+    }
+
+    public void setMassAverage(Double massAverage)
+    {
+        this.massAverage = massAverage;
+    }
+
+    public String getPrecursorCharge()
+    {
+        return precursorCharge;
+    }
+
+    public void setPrecursorCharge(String precursorCharge)
+    {
+        this.precursorCharge = precursorCharge;
+    }
+
+    public void buildSeriesLabel()
+    {
+        StringBuilder modifiedSL = new StringBuilder();
+
+        String sl = this.seriesLabel;
+        // means seriesLabel and modifiedSequence were null
+        if (sl.endsWith(","))
+        {
+            modifiedSL.append(sl);
+
+            if (null != this.massMonoisotopic && null != this.massAverage)
+            {
+                double scale = Math.pow(10, 4);
+                modifiedSL.append(" [");
+                modifiedSL.append(Math.round(this.massMonoisotopic * scale) / scale);
+                modifiedSL.append("/");
+                modifiedSL.append(Math.round(this.massAverage * scale) / scale);
+                modifiedSL.append("]");
+            }
+
+            if (null != this.precursorCharge)
+            {
+                modifiedSL.append(" ");
+                modifiedSL.append(this.precursorCharge);
+            }
+
+            this.setSeriesLabel(modifiedSL.toString());
+        }
     }
 
     public boolean isLeveyJenningsOutlier(GuideSetStats stat)
