@@ -101,10 +101,11 @@ public class OutlierGenerator
 
         sql.append("\nCOALESCE(pci.PrecursorId.Id, pci.MoleculePrecursorId.Id) AS PrecursorId,");
 
-        sql.append("\nCOALESCE(X.SeriesLabel, COALESCE(pci.PrecursorId.ModifiedSequence,");
-        sql.append("\n           (CASE WHEN pci.MoleculePrecursorId.CustomIonName IS NULL THEN '' ELSE (pci.MoleculePrecursorId.CustomIonName || ', ') END)");
-        sql.append("\n            || (CASE WHEN pci.MoleculePrecursorId.IonFormula IS NULL THEN '' ELSE (pci.MoleculePrecursorId.IonFormula || ',') END)");
-        sql.append("\n    )) AS SeriesLabel,");
+        sql.append("\nX.SeriesLabel,");
+
+        sql.append("\npci.PrecursorId.ModifiedSequence,");
+        sql.append("\npci.MoleculePrecursorId.CustomIonName,");
+        sql.append("\npci.MoleculePrecursorId.IonFormula,");
 
         sql.append("\npci.MoleculePrecursorId.massMonoisotopic,");
         sql.append("\npci.MoleculePrecursorId.massAverage,");

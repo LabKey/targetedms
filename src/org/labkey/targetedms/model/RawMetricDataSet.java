@@ -47,6 +47,9 @@ public class RawMetricDataSet
     String filePath;
     int replicateId;
 
+    String modifiedSequence;
+    String customIonName;
+    String ionFormula;
     Double massMonoisotopic;
     Double massAverage;
     String precursorCharge;
@@ -54,7 +57,51 @@ public class RawMetricDataSet
     @Nullable
     public String getSeriesLabel()
     {
-        return seriesLabel;
+        if (null != seriesLabel)
+        {
+            return seriesLabel;
+        }
+        else if (null != modifiedSequence)
+        {
+            return modifiedSequence;
+        }
+        else
+        {
+            StringBuilder modifiedSL = new StringBuilder();
+
+            if (null != customIonName)
+            {
+                modifiedSL.append(" ");
+                modifiedSL.append(customIonName);
+                modifiedSL.append(",");
+            }
+
+            if (null != ionFormula)
+            {
+                modifiedSL.append(" ");
+                modifiedSL.append(ionFormula);
+                modifiedSL.append(",");
+            }
+
+            if (null != this.massMonoisotopic && null != this.massAverage)
+            {
+                double scale = Math.pow(10, 4);
+                modifiedSL.append(" [");
+                modifiedSL.append(Math.round(this.massMonoisotopic * scale) / scale);
+                modifiedSL.append("/");
+                modifiedSL.append(Math.round(this.massAverage * scale) / scale);
+                modifiedSL.append("]");
+            }
+
+            if (null != this.precursorCharge)
+            {
+                modifiedSL.append(" ");
+                modifiedSL.append(this.precursorCharge);
+            }
+
+                return modifiedSL.toString();
+
+        }
     }
 
     public void setSeriesLabel(String seriesLabel)
@@ -267,6 +314,36 @@ public class RawMetricDataSet
         this.replicateId = replicateId;
     }
 
+    public String getModifiedSequence()
+    {
+        return modifiedSequence;
+    }
+
+    public void setModifiedSequence(String modifiedSequence)
+    {
+        this.modifiedSequence = modifiedSequence;
+    }
+
+    public String getCustomIonName()
+    {
+        return customIonName;
+    }
+
+    public void setCustomIonName(String customIonName)
+    {
+        this.customIonName = customIonName;
+    }
+
+    public String getIonFormula()
+    {
+        return ionFormula;
+    }
+
+    public void setIonFormula(String ionFormula)
+    {
+        this.ionFormula = ionFormula;
+    }
+
     public Double getMassMonoisotopic()
     {
         return massMonoisotopic;
@@ -295,36 +372,6 @@ public class RawMetricDataSet
     public void setPrecursorCharge(String precursorCharge)
     {
         this.precursorCharge = precursorCharge;
-    }
-
-    public void buildSeriesLabel()
-    {
-        StringBuilder modifiedSL = new StringBuilder();
-
-        String sl = this.seriesLabel;
-        // means seriesLabel and modifiedSequence were null
-        if (sl.endsWith(","))
-        {
-            modifiedSL.append(sl);
-
-            if (null != this.massMonoisotopic && null != this.massAverage)
-            {
-                double scale = Math.pow(10, 4);
-                modifiedSL.append(" [");
-                modifiedSL.append(Math.round(this.massMonoisotopic * scale) / scale);
-                modifiedSL.append("/");
-                modifiedSL.append(Math.round(this.massAverage * scale) / scale);
-                modifiedSL.append("]");
-            }
-
-            if (null != this.precursorCharge)
-            {
-                modifiedSL.append(" ");
-                modifiedSL.append(this.precursorCharge);
-            }
-
-            this.setSeriesLabel(modifiedSL.toString());
-        }
     }
 
     public boolean isLeveyJenningsOutlier(GuideSetStats stat)
