@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import org.labkey.api.targetedms.model.OutlierCounts;
 import org.labkey.api.visualization.Stats;
 
+import java.text.DecimalFormat;
 import java.util.Date;
 
 public class RawMetricDataSet
@@ -63,7 +64,8 @@ public class RawMetricDataSet
         }
         else
         {
-            double scale = Math.pow(10, 4);
+            DecimalFormat df = new DecimalFormat();
+            df.setMaximumFractionDigits(4);
             StringBuilder modifiedSL = new StringBuilder();
 
             if (null != modifiedSequence)
@@ -87,16 +89,16 @@ public class RawMetricDataSet
                 if (null != massMonoisotopic && null != massAverage)
                 {
                     modifiedSL.append(" [");
-                    modifiedSL.append(Math.round(massMonoisotopic * scale) / scale);
+                    modifiedSL.append(df.format(massMonoisotopic));
                     modifiedSL.append("/");
-                    modifiedSL.append(Math.round(massAverage * scale) / scale);
+                    modifiedSL.append(df.format(massAverage));
                     modifiedSL.append("] ");
                 }
             }
 
-            if (null != massAverage)
+            if (null != mz)
             {
-                modifiedSL.append(Math.round(massAverage * scale) / scale);
+                modifiedSL.append(df.format(mz));
             }
 
             if (null != precursorCharge)
