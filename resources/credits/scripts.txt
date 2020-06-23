@@ -1,4 +1,5 @@
 {table}
 Library|Version|Source|License|LabKey Dev|Purpose
 Data Tables|1.10.13|https://datatables.net/|{link:MIT License|https://datatables.net/license/mit}|vsharma|Used for conflict resolution tables in Library folders
+JQuery|3.5.1|http://jquery.com/|{link:MIT License|http://jquery.org/license}|ankurj|Dependency of Lorikeet
 {table}
