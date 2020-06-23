@@ -99,10 +99,10 @@ public class RawMetricDataSet
                 modifiedSL.append(Math.round(massAverage * scale) / scale);
             }
 
-            if (null != this.precursorCharge)
+            if (null != precursorCharge)
             {
                 modifiedSL.append(" ");
-                modifiedSL.append(this.precursorCharge);
+                modifiedSL.append(precursorCharge);
             }
 
                 return modifiedSL.toString();
