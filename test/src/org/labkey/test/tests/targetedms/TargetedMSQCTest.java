@@ -76,10 +76,10 @@ public class TargetedMSQCTest extends TargetedMSTest
             "ATEEQLK +2, 409.7163",
             "FFVAPFPEVFGK +2, 692.8686",
             "GASIVEDK +2, 409.7163",
-            "LVNELTEFAK +2, 582.3190",
+            "LVNELTEFAK +2, 582.319",
             "VLDALDSIK +2, 487.2819",
-            "VLVLDTDYK +2, 533.2950",
-            "VYVEELKPTPEGDLEILLQK +2, 1157.1330"};
+            "VLVLDTDYK +2, 533.295",
+            "VYVEELKPTPEGDLEILLQK +2, 1,157.133"};
 
     private static final String QCREPLICATE_1 = "25fmol_Pepmix_spike_SRM_1601_01";
     private static final String QCREPLICATE_2 = "25fmol_Pepmix_spike_SRM_1601_02";

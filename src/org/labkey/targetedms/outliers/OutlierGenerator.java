@@ -293,6 +293,7 @@ public class OutlierGenerator
             qcPlotFragment.setGuideSetStats(guideSetStatsList);
         }
 
+        qcPlotFragments.sort(Comparator.comparing(QCPlotFragment::getSeriesLabel));
         return qcPlotFragments;
     }
 

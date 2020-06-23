@@ -96,19 +96,19 @@ public class RawMetricDataSet
                 }
             }
 
-            if (null != mz)
-            {
-                modifiedSL.append(df.format(mz));
-            }
-
             if (null != precursorCharge)
             {
                 modifiedSL.append(" ");
                 modifiedSL.append(precursorCharge);
             }
 
-                return modifiedSL.toString();
+            if (null != mz)
+            {
+                modifiedSL.append(", ");
+                modifiedSL.append(df.format(mz));
+            }
 
+            return modifiedSL.toString();
         }
     }
 
