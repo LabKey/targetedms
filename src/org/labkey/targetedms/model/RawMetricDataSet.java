@@ -61,36 +61,42 @@ public class RawMetricDataSet
         {
             return seriesLabel;
         }
-        else if (null != modifiedSequence)
-        {
-            return modifiedSequence;
-        }
         else
         {
+            double scale = Math.pow(10, 4);
             StringBuilder modifiedSL = new StringBuilder();
 
-            if (null != customIonName)
+            if (null != modifiedSequence)
             {
-                modifiedSL.append(" ");
-                modifiedSL.append(customIonName);
-                modifiedSL.append(",");
+                modifiedSL.append(modifiedSequence);
+            }
+            else
+            {
+                if (null != customIonName)
+                {
+                    modifiedSL.append(customIonName);
+                    modifiedSL.append(", ");
+                }
+
+                if (null != ionFormula)
+                {
+                    modifiedSL.append(ionFormula);
+                    modifiedSL.append(",");
+                }
+
+                if (null != massMonoisotopic && null != massAverage)
+                {
+                    modifiedSL.append(" [");
+                    modifiedSL.append(Math.round(massMonoisotopic * scale) / scale);
+                    modifiedSL.append("/");
+                    modifiedSL.append(Math.round(massAverage * scale) / scale);
+                    modifiedSL.append("] ");
+                }
             }
 
-            if (null != ionFormula)
+            if (null != massAverage)
             {
-                modifiedSL.append(" ");
-                modifiedSL.append(ionFormula);
-                modifiedSL.append(",");
-            }
-
-            if (null != this.massMonoisotopic && null != this.massAverage)
-            {
-                double scale = Math.pow(10, 4);
-                modifiedSL.append(" [");
-                modifiedSL.append(Math.round(this.massMonoisotopic * scale) / scale);
-                modifiedSL.append("/");
-                modifiedSL.append(Math.round(this.massAverage * scale) / scale);
-                modifiedSL.append("]");
+                modifiedSL.append(Math.round(massAverage * scale) / scale);
             }
 
             if (null != this.precursorCharge)
