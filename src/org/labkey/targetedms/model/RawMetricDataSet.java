@@ -65,7 +65,7 @@ public class RawMetricDataSet
         else
         {
             DecimalFormat df = new DecimalFormat();
-            df.setMaximumFractionDigits(4);
+            df.setMinimumFractionDigits(4);
             StringBuilder modifiedSL = new StringBuilder();
 
             if (null != modifiedSequence)
