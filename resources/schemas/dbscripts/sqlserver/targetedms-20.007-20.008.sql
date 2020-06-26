@@ -1,7 +1,1 @@
-ALTER TABLE targetedms.transition add complexFragmentIon NTEXT;
-
-
-
-
-
-
+ALTER TABLE targetedms.transition add complexFragmentIon NVARCHAR(MAX);
