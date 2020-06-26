@@ -86,7 +86,7 @@ public class TargetedMSDocumentFormatsTest extends TargetedMSTest
     public void testCrosslinkingCompactDocument() throws IOException, CommandException
     {
         goToProjectHome(getProjectName());
-        String fileName = "CrosslinkingExample_compact.sky.zip";
+        String fileName = "CrosslinkingExample_Compact.sky.zip";
         importData(SAMPLEDATA_FOLDER + fileName, ++JOB_COUNT);
 
         validateCrossLinked("CrosslinkingExample_compact.sky.zip",
