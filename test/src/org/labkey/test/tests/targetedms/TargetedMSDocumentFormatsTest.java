@@ -89,7 +89,7 @@ public class TargetedMSDocumentFormatsTest extends TargetedMSTest
         String fileName = "CrosslinkingExample_Compact.sky.zip";
         importData(SAMPLEDATA_FOLDER + fileName, ++JOB_COUNT);
 
-        validateCrossLinked("CrosslinkingExample_compact.sky.zip",
+        validateCrossLinked(fileName,
                 596,
                 "C[+57.021464]C[+57.021464]TKPESER-EKVLTSSAR-[+138.06808@4,2]",
                 "-{4:DSS:p}",
