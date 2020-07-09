@@ -18,9 +18,9 @@
 <%@ page import="org.labkey.api.util.PageFlowUtil"%>
 <%@ page import="org.labkey.api.view.HttpView"%>
 <%@ page import="org.labkey.api.view.JspView"%>
-<%@ page import="org.labkey.targetedms.view.spectrum.LibrarySpectrumMatch" %>
 <%@ page import="org.labkey.api.view.template.ClientDependencies" %>
 <%@ page import="org.labkey.targetedms.parser.PeptideSettings" %>
+<%@ page import="org.labkey.targetedms.view.spectrum.LibrarySpectrumMatch" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 
 <%!
