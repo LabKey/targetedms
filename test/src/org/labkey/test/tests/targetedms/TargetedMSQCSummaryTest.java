@@ -228,7 +228,7 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         // Set the time out length.
         setAutoQCPingTimeOut(QCPING_TIMEOUT);
 
-        waitForElements(Locator.tagWithClass("div", "sample-file-item"), 6);
+        new QCSummaryWebPart(getDriver()).waitForRecentSampleFiles(6);
         tempStringList01.put("Q_Exactive_08_23_2013_JGB_58", "27");
         tempStringList01.put("Q_Exactive_08_23_2013_JGB_51", "26");
         tempStringList01.put("Q_Exactive_08_23_2013_JGB_37", "31");
@@ -254,7 +254,7 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
 
         log("Need to refresh the page to see the updated status.");
         refresh();
-        waitForElements(Locator.tagWithClass("div", "sample-file-item"), 6);
+        new QCSummaryWebPart(getDriver()).waitForRecentSampleFiles(6);
 
         validateAutoQCStatus(MAIN_SUMMARY, Arrays.asList("qc-correct", "fa-check-circle"), "Was pinged recently on " + mainFolderLastPingDate);
         validateAutoQCStatus(SUB_FOLDER02, Arrays.asList("qc-correct", "fa-check-circle"), "Was pinged recently on " + subfolder2LastPingDate);
