@@ -804,7 +804,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         verifyQcSummary(1, 3, 2);
 
         //confirm 3 exclusions
-        DataRegionTable drt = getSchemaBrowserDataView("targetedms", "qcmetricexclusion");
+        DataRegionTable drt = getSchemaBrowserDataView("targetedms", "QCMetricExclusion");
         assertEquals("Wrong count", 3,drt.getDataRowCount());
         assertEquals("Wrong metric", " ", drt.getRowDataAsText(0,"MetricId").get(0));
         assertEquals("Wrong metric", " ", drt.getRowDataAsText(1,"MetricId").get(0));
