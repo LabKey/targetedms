@@ -585,7 +585,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         verifyRow(drt, 3, QCREPLICATE_4, QC_2_FILE);
 
         goToSchemaBrowser();
-        selectQuery("targetedms", "replicateannotation");
+        selectQuery("targetedms", "replicateannotation", "ReplicateAnnotation");
         waitAndClickAndWait(Locator.linkWithText("view data"));
 
         // Ensure samples from QC-1 that exist in QC-2 have been overwritten
@@ -604,7 +604,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         // Ensure QC-2 samples have been overwritten by QC-4
         goToSchemaBrowser();
-        selectQuery("targetedms", "precursorchrominfo");
+        selectQuery("targetedms", "precursorchrominfo", "PrecursorChromInfo");
         waitAndClickAndWait(Locator.linkWithText("view data"));
         assertTextPresent("42.2525");
         assertTextNotPresent("42.4541");
@@ -619,6 +619,12 @@ public class TargetedMSQCTest extends TargetedMSTest
     {
         goToSchemaBrowser();
         return viewQueryData(schemaName, queryName);
+    }
+
+    private DataRegionTable getSchemaBrowserDataView(String schemaName, String queryName, String publicName)
+    {
+        goToSchemaBrowser();
+        return viewQueryData(schemaName, queryName, null, publicName);
     }
 
     private void verifyCombinedLegend()
@@ -804,7 +810,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         verifyQcSummary(1, 3, 2);
 
         //confirm 3 exclusions
-        DataRegionTable drt = getSchemaBrowserDataView("targetedms", "QCMetricExclusion");
+        DataRegionTable drt = getSchemaBrowserDataView("targetedms", "qcmetricexclusion", "QCMetricExclusion");
         assertEquals("Wrong count", 3,drt.getDataRowCount());
         assertEquals("Wrong metric", " ", drt.getRowDataAsText(0,"MetricId").get(0));
         assertEquals("Wrong metric", " ", drt.getRowDataAsText(1,"MetricId").get(0));
@@ -814,7 +820,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         clickFolder(subFolderName);
         verifyQcSummary(1, 3, 2);
 
-        drt = getSchemaBrowserDataView("targetedms", "qcmetricexclusion");
+        drt = getSchemaBrowserDataView("targetedms", "qcmetricexclusion", "QCMetricExclusion");
         assertEquals("Wrong count", 3,drt.getDataRowCount());
         assertEquals("Wrong metric", " ", drt.getRowDataAsText(0,"MetricId").get(0));
         assertEquals("Wrong metric", " ", drt.getRowDataAsText(1,"MetricId").get(0));
