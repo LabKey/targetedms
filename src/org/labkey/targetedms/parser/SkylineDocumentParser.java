@@ -2772,7 +2772,7 @@ public class SkylineDocumentParser implements AutoCloseable
                 // Issue 40959 - Try stripping off the URI parameters if we don't have a match
                 if (sampleFile == null)
                 {
-                    int queryParamIdx = path.indexOf('?');
+                    int queryParamIdx = path.lastIndexOf('?');
                     if (queryParamIdx != -1)
                     {
                         sampleFile = pathToSampleFile.get(path.substring(0, queryParamIdx));

@@ -150,6 +150,8 @@ public class SkylineDocImporter
 
     private boolean _importTransitionChromInfos = true;
 
+    private Set<String> _missingLibraries = new HashSet<>();
+
     @JsonCreator
     private SkylineDocImporter(@JsonProperty("_expData") ExpData expData, @JsonProperty("_context") XarContext context,
                                @JsonProperty("_representative") TargetedMSRun.RepresentativeDataState representative,
@@ -1493,7 +1495,11 @@ public class SkylineDocImporter
                 // Skyline documents can end up in a state where a library name is associated with a precursor but the
                 // library was deselected in "Peptide Settings > Library tab" in Skyline and is no longer part of the
                 // <peptide_libraries> element of the .sky file.  We will ignore such library infos.
-                _log.info("'" + libraryInfo.getLibraryName() + "' library was not found in settings.");
+                if (_missingLibraries.add(libraryInfo.getLibraryName()))
+                {
+                    // Only log the first time
+                    _log.warn("'" + libraryInfo.getLibraryName() + "' library was not found in settings.");
+                }
             }
             else
             {
