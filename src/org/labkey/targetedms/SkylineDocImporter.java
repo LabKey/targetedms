@@ -58,7 +58,6 @@ import org.labkey.targetedms.calculations.quantification.RegressionFit;
 import org.labkey.targetedms.parser.*;
 import org.labkey.targetedms.parser.list.ListData;
 import org.labkey.targetedms.parser.skyaudit.AuditLogException;
-import org.labkey.targetedms.query.LibraryManager;
 import org.labkey.targetedms.query.ReplicateManager;
 import org.labkey.targetedms.query.RepresentativeStateManager;
 import org.labkey.targetedms.query.SkylineListManager;
@@ -404,6 +403,8 @@ public class SkylineDocImporter
                     _log.info(msg);
                 }
             }
+
+            parser.logMissingChromatogramCounts();
 
             TargetedMSManager.updateModifiedAreaProportions(_log, run);
 
