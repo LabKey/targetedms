@@ -202,6 +202,9 @@ public class TargetedMSSchema extends UserSchema
     public static final String TABLE_SPECTRAST_LIB_INFO = "SpectrastLibInfo";
     public static final String TABLE_CHROMATOGRAM_LIB_INFO = "ChromatogramLibInfo";
 
+    public static final String TABLE_KEYWORD_CATEGORIES = "keywordcategories";
+    public static final String TABLE_KEYWORDS = "keywords";
+
     public static final String COL_PROTEIN = "Protein";
     public static final String COL_LIST = "List";
 
@@ -1346,6 +1349,12 @@ public class TargetedMSSchema extends UserSchema
             return new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.PrecursorFK);
         }
 
+        if (TABLE_KEYWORD_CATEGORIES.equalsIgnoreCase(name) ||
+                TABLE_KEYWORDS.equalsIgnoreCase(name))
+        {
+            return new TargetedMSTable(getSchema().getTable(name), this, cf, null);
+        }
+
         // TODO - partial fix for 40235
 //        if (TABLE_SKYLINE_AUDITLOG_ENTRY.equalsIgnoreCase(name))
 //        {
@@ -1519,6 +1528,8 @@ public class TargetedMSSchema extends UserSchema
         hs.add(TABLE_SPECTRAST_LIB_INFO);
         hs.add(TABLE_CHROMATOGRAM_LIB_INFO);
         hs.add(TABLE_SAMPLE_FILE_CHROM_INFO);
+        hs.add(TABLE_KEYWORDS);
+        hs.add(TABLE_KEYWORD_CATEGORIES);
 
         return hs;
     }
