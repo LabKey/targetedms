@@ -47,15 +47,8 @@ public class IProtein
     public void setFeatures(IFeature[] features)
     {
         List<IFeature> f = Arrays.asList(features);
-        Collections.sort(f, new Comparator<IFeature>()
-        {
-            @Override
-            public int compare(IFeature o1, IFeature o2)
-            {
-                return o1.getStartIndex() - o2.getStartIndex();
-            }
-        });
-        this.features = f.toArray(new IFeature[f.size()]);
+        f.sort(Comparator.comparingInt(IFeature::getStartIndex));
+        this.features = f.toArray(new IFeature[0]);
     }
 
     public IProject[] getProjects()
@@ -301,18 +294,18 @@ public class IProtein
                 str[f.getStartIndex()-1] = aa;
             }
         }
-        String currentStr = "";
+        StringBuilder currentStr = new StringBuilder();
         int counter = 1;
         for(int i = 0; i < str.length; i++) {
-            currentStr+= str[i];
+            currentStr.append(str[i]);
             if(counter == 10 || i == str.length-1) {
-                groups.add(currentStr);
-                currentStr = "";
+                groups.add(currentStr.toString());
+                currentStr = new StringBuilder();
                 counter = 0;
             }
             counter++;
         }
-        return groups.toArray(new String[groups.size()]);
+        return groups.toArray(new String[0]);
     }
     @Override
     public boolean equals(Object o) {

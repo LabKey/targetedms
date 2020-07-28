@@ -386,6 +386,18 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
             }
         };
 
+        BaseWebPartFactory passportFactory = new BaseWebPartFactory("Passport")
+        {
+            @Override
+            public WebPartView getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
+            {
+                QueryView v =  ProteinListView.createView(portalCtx);
+                v.setTitle("Passport");
+                v.setFrame(WebPartView.FrameType.PORTAL);
+                return v;
+            }
+        };
+
         List<WebPartFactory> webpartFactoryList = new ArrayList<>();
         webpartFactoryList.add(setupFactory);
         webpartFactoryList.add(chromatogramLibraryDownload);
