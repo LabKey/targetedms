@@ -323,7 +323,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         setupSubfolder(getProjectName(), folderName, FolderType.QC);
         importData(SProCoP_FILE_ANNOTATED);
         goToSchemaBrowser();
-        selectQuery("targetedms", "replicate");
+        selectQuery("targetedms", "Replicate");
         //confirm table columns are present and of correct type representing replicate annotations:
         GetQueryDetailsCommand queryDetailsCommand = new GetQueryDetailsCommand("targetedms", "replicate");
         GetQueryDetailsResponse queryDetailsResponse = queryDetailsCommand.execute(createDefaultConnection(true),getProjectName() + "/" + folderName);

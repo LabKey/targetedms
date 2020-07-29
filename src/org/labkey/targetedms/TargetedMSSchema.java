@@ -83,6 +83,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1439,7 +1440,7 @@ public class TargetedMSSchema extends UserSchema
     @Override
     public Set<String> getTableNames()
     {
-        CaseInsensitiveHashSet hs = new CaseInsensitiveHashSet();
+        HashSet hs = new HashSet();
         hs.add(TABLE_TARGETED_MS_RUNS);
         hs.add(TABLE_ENZYME);
         hs.add(TABLE_RUN_ENZYME);
