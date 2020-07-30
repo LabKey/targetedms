@@ -1031,7 +1031,7 @@ public class TargetedMSSchema extends UserSchema
 
         if (TABLE_REPLICATE.equalsIgnoreCase(name))
         {
-            return new AnnotatedTargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.RunFK, TargetedMSManager.getTableInfoReplicateAnnotation(), "ReplicateId", "Replicate Annotations", "replicate", false);
+            return new AnnotatedTargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.RunFK, TargetedMSManager.getTableInfoReplicateAnnotation(), "ReplicateId", "Replicate Annotations", "Replicate", false);
         }
 
         // Tables that have a FK to targetedms.Runs

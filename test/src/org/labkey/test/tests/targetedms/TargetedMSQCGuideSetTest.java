@@ -325,7 +325,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         goToSchemaBrowser();
         selectQuery("targetedms", "Replicate");
         //confirm table columns are present and of correct type representing replicate annotations:
-        GetQueryDetailsCommand queryDetailsCommand = new GetQueryDetailsCommand("targetedms", "replicate");
+        GetQueryDetailsCommand queryDetailsCommand = new GetQueryDetailsCommand("targetedms", "Replicate");
         GetQueryDetailsResponse queryDetailsResponse = queryDetailsCommand.execute(createDefaultConnection(true),getProjectName() + "/" + folderName);
         List<GetQueryDetailsResponse.Column> columns = queryDetailsResponse.getColumns();
 

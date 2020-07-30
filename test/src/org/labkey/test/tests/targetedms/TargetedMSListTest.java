@@ -93,7 +93,7 @@ public class TargetedMSListTest extends TargetedMSTest
     private List<String> validateSampleInfo(int replicateRowCount, Set<String> expectedReplicateLookupValues, int sampleUnionRowCount, int listQueryCount) throws IOException, CommandException
     {
         // Check that the targetedms.replicate table has the expected rows and points to the right lookup values
-        SelectRowsCommand replicateRowsCommand = new SelectRowsCommand("targetedms", "replicate");
+        SelectRowsCommand replicateRowsCommand = new SelectRowsCommand("targetedms", "Replicate");
         replicateRowsCommand.setRequiredVersion(9.1);
         SelectRowsResponse replicateRowsResponse = replicateRowsCommand.execute(createDefaultConnection(false), getCurrentContainerPath());
         assertEquals("Wrong number of replicate rows", replicateRowCount, replicateRowsResponse.getRowCount().intValue());
