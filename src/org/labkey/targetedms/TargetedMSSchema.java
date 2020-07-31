@@ -1414,10 +1414,10 @@ public class TargetedMSSchema extends UserSchema
         return super.createView(context, settings, errors);
     }
 
-    @Override
-    public Set<String> getTableNames()
+    private Set<String> getAllTableNames(boolean caseInsensitive)
     {
-        HashSet hs = new HashSet();
+        HashSet<String> hs = caseInsensitive ? new CaseInsensitiveHashSet() : new HashSet<>();
+
         hs.add(TABLE_TARGETED_MS_RUNS);
         hs.add(TABLE_ENZYME);
         hs.add(TABLE_RUN_ENZYME);
@@ -1499,6 +1499,18 @@ public class TargetedMSSchema extends UserSchema
         hs.add(TABLE_SAMPLE_FILE_CHROM_INFO);
 
         return hs;
+    }
+
+    @Override
+    public Set<String> getVisibleTableNames()
+    {
+        return getAllTableNames(false);
+    }
+
+    @Override
+    public Set<String> getTableNames()
+    {
+        return getAllTableNames(true);
     }
 
     public static class ChromatogramDisplayColumn extends DataColumn
