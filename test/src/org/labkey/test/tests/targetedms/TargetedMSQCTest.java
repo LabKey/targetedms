@@ -786,7 +786,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         verifyDownloadablePlotIcons(1);
 
         Locator bubbleClose = Locator.byClass("hopscotch-bubble-close");
-        if (isElementVisible(bubbleClose))
+        if (isElementPresent(bubbleClose) && isElementVisible(bubbleClose))
             click(bubbleClose);
 
         //deselect "Show All Peptides in Single Plot"
