@@ -32,7 +32,7 @@ protein =
             },
 
             initialize: function() {
-                if(protein.features == null || protein.features.length == 0)
+                if(protein.features == null || protein.features.length === 0)
                     return;
                 var allColors = ["#e6194b","#3cb44b","#ffe119","#0082c8","#f58231","#911eb4","#46f0f0","#f032e6","#d2f53c","#fabebe",
                     "#008080","#e6beff","#aa6e28","#fffac8","#800000","#aaffc3","#808000","#ffd8b1","#000080","#000000"];
@@ -79,7 +79,7 @@ protein =
                     var checkbox = document.createElement('input');
                     checkbox.type = "checkbox";
                     checkbox.name = type;
-                    checkbox.value = featureId;
+                    checkbox.value = LABKEY.Utils.encodeHtml(featureId);
                     checkbox.id = featureId+"-checkbox";
                     checkbox.className = "featureCheckboxItem";
                     checkbox.setAttribute("color", protein.UI.features.colors[featureId]);
@@ -103,7 +103,7 @@ protein =
                     if(this.checked) {
                         protein.settings.addFeatureVisible(this.value);
                         // if all are manually checked
-                        if ($('.featureCheckboxItem:checked').length == $('.featureCheckboxItem').length) {
+                        if ($('.featureCheckboxItem:checked').length === $('.featureCheckboxItem').length) {
                             $("#showFeatures").prop('checked', true);
                         }
                     } else {
@@ -133,11 +133,11 @@ protein =
                             var ptm = protein.features[element.attr( "index" )];
                             if(ptm.variation != null) {
                                 var text = element.text() + " > "+ptm.variation.toString();
-                                if(ptm.description != "")
-                                    return text + "<br /><span style='color:#a6a6a6;'>" + ptm.description + "</span>";
+                                if(ptm.description !== "")
+                                    return text + "<br /><span style='color:#a6a6a6;'>" + LABKEY.Utils.encodeHtml(ptm.description) + "</span>";
                             }
 
-                            return ptm.type[0].toUpperCase() + ptm.type.slice(1) + "<br /><span style='color:#a6a6a6;'>" + ptm.description + "</span>";
+                            return ptm.type[0].toUpperCase() + ptm.type.slice(1) + "<br /><span style='color:#a6a6a6;'>" + LABKEY.Utils.encodeHtml(ptm.description) + "</span>";
                         }
                     }
                 }).data("tooltipset", true);
@@ -178,10 +178,10 @@ protein =
         // sets basic peptide info (Seq, location, length, etc..
         $('#peptideinfo').empty();
         var totalPeakAreaWithCommas = protein.selectedPeptide["Before Incubation"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        $('#peptideinfo').append('<span style="font-weight:600">Sequence:</span> <span style="font-family: monospace;">' + protein.selectedPeptide.Sequence + "</span><br />" +
-                '<span style="font-weight:600">Location:</span> <span style="font-family: monospace;">[' + protein.selectedPeptide.StartIndex +","+ protein.selectedPeptide.EndIndex + "]</span> <br />" +
-                '<span style="font-weight:600">Length:</span> <span style="font-family: monospace;">' + protein.selectedPeptide.Sequence.length+ "</span> <br />" +
-                '<span style="font-weight:600">Total Peak Area:</span> <span style="font-family: monospace;">' + totalPeakAreaWithCommas + "</span> ");
+        $('#peptideinfo').append('<span style="font-weight:600">Sequence:</span> <span style="font-family: monospace;">' + LABKEY.Utils.encodeHtml(protein.selectedPeptide.Sequence) + "</span><br />" +
+                '<span style="font-weight:600">Location:</span> <span style="font-family: monospace;">[' + LABKEY.Utils.encodeHtml(protein.selectedPeptide.StartIndex) +","+ LABKEY.Utils.encodeHtml(protein.selectedPeptide.EndIndex) + "]</span> <br />" +
+                '<span style="font-weight:600">Length:</span> <span style="font-family: monospace;">' + LABKEY.Utils.encodeHtml(protein.selectedPeptide.Sequence.length)+ "</span> <br />" +
+                '<span style="font-weight:600">Total Peak Area:</span> <span style="font-family: monospace;">' + LABKEY.Utils.encodeHtml(totalPeakAreaWithCommas) + "</span> ");
 
         // scroll in ul
         var liIndex = $("li").index($('.'+protein.selectedPeptide.Sequence+'-text'));
@@ -207,12 +207,12 @@ protein =
         protein.sequence = proteinJSON.sequence;
 
         var peptides = protein.peptides;
-        for(var i = 0; i < peptides.length; i++) {
+        for (var i = 0; i < peptides.length; i++) {
             var totalBeforeArea = 0;
             var totalAfterArea = 0;
-            if(peptides[i].beforeintensity != null)
+            if (peptides[i].beforeintensity != null)
                 totalBeforeArea = peptides[i].beforeintensity;
-            if(peptides[i].normalizedafterintensity != null)
+            if (peptides[i].normalizedafterintensity != null)
                 totalAfterArea = peptides[i].normalizedafterintensity;
             barChartData.push({"Sequence":peptides[i].sequence, "Before Incubation": totalBeforeArea, "After Incubation": totalAfterArea, "StartIndex":peptides[i].startindex,"EndIndex":peptides[i].endindex,
                 "Enabled": true, "ChromatogramBeforeId": peptides[i].panoramaprecursorbeforeid, "ChromatogramAfterId": peptides[i].panoramaprecursorafterid, "PeptideId":peptides[i].panoramapeptideid })
@@ -231,25 +231,25 @@ protein =
                     peptide["Enabled"] = false;
                     continue;
                 }
-                if(peptide["Before Incubation"] == 0 || peptide["After Incubation"] == 0)
+                if(peptide["Before Incubation"] === 0 || peptide["After Incubation"] === 0)
                     continue;
 
                 // peptide degradation
                 var peptideDegradation = (peptide["Before Incubation"] - peptide["After Incubation"]) / peptide["Before Incubation"] * 100;
                 var bounds = protein.settings.getDegradation();
-                if((peptideDegradation > bounds.start && peptideDegradation < bounds.end) || peptideDegradation < 0) {
+                if ((peptideDegradation > bounds.start && peptideDegradation < bounds.end) || peptideDegradation < 0) {
                     peptide["Enabled"] = true;
                 } else {
                     peptide["Enabled"] = false;
                 }
             }
             var sortBy = protein.settings.getSortBy();
-            if(sortBy=="Sequence Location") {
+            if (sortBy === "Sequence Location") {
                 barChartData.sort(function(a, b) {
                     return a["StartIndex"] - b["StartIndex"];
                 });
             }
-            if(sortBy=="Intensity"){
+            if (sortBy === "Intensity") {
                 barChartData.sort(function(a, b) {
                     return b["Before Incubation"] -a["Before Incubation"];
                 });
@@ -258,11 +258,11 @@ protein =
             var clipboardPeptides = [];
             barChartData.forEach(function(a) {
                 if(a["Enabled"]) {
-                    $("#livepeptidelist").append('<li class="'+ a.Sequence+'-text"><span style="color:#A6B890;">&block;&nbsp;</span>'+ a.Sequence+ '</li>');
+                    $("#livepeptidelist").append('<li class="'+ a.Sequence+'-text"><span style="color:#A6B890;">&block;&nbsp;</span>'+ LABKEY.Utils.encodeHtml(a.Sequence)+ '</li>');
                     clipboardPeptides.push(a.Sequence) // add to copey clipboard feature
                 }
                 else
-                    $("#livepeptidelist").append('<li class="'+ a.Sequence+'-text"><span style="color:#B9485A;">&block;&nbsp;</span>'+ a.Sequence+ '</li>');
+                    $("#livepeptidelist").append('<li class="'+ a.Sequence+'-text"><span style="color:#B9485A;">&block;&nbsp;</span>'+ LABKEY.Utils.encodeHtml(a.Sequence)+ '</li>');
             });
             $("#copytoclipboard").attr("clipboard", clipboardPeptides.join("\r"));
 

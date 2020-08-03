@@ -2,8 +2,8 @@ package org.labkey.targetedms.model.passport;
 
 public class IFeature
 {
-    int StartIndex;
-    int EndIndex;
+    int startIndex;
+    int endIndex;
     String type;
     String description;
     String original;
@@ -15,8 +15,8 @@ public class IFeature
 
     public IFeature(int startIndex, int endIndex, String type, String original, String variation, String description)
     {
-        StartIndex = startIndex;
-        EndIndex = endIndex;
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
         this.type = type;
         this.original = original;
         this.variation = variation;
@@ -34,22 +34,22 @@ public class IFeature
 
     public int getStartIndex()
     {
-        return StartIndex;
+        return startIndex;
     }
 
     public void setStartIndex(int startIndex)
     {
-        StartIndex = startIndex;
+        this.startIndex = startIndex;
     }
 
     public int getEndIndex()
     {
-        return EndIndex;
+        return endIndex;
     }
 
     public void setEndIndex(int endIndex)
     {
-        EndIndex = endIndex;
+        this.endIndex = endIndex;
     }
 
     public String getType()
@@ -82,6 +82,6 @@ public class IFeature
         this.variation = variation;
     }
     public boolean isVariation() {
-        return type.equals("sequence variant");
+        return "sequence variant".equals(type);
     }
 }

@@ -57,7 +57,7 @@ public class PassportTest  extends PassportTestPart implements PostgresOnlyTest
 
     private void testNormalStuff()
     {
-        // assert side bar and pipeline tab not visible... only passport tab should be seen by any user
+        // assert side bar and pipeline tab not visible... only passport tab should be seen by anproteiny user
         assertElementNotPresent(Locator.xpath("//a[@id='PipelineTab']"));
         assertTextNotPresent("Pages");
         // enter Haptoglobin

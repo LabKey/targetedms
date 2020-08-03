@@ -62,7 +62,7 @@
     <div id="basicproteininfo">
         <h2 id="proteinName"><%=h(protein.getName())%>
             <a href="<%=h(new ActionURL(TargetedMSController.DownloadDocumentAction.class, getContainer()))%>id=<%=h(protein.getFile().getRunId())%>">
-                <img src="<%=h(contextPath)%>/passport/img/download.png" style="width:30x; height:30px; margin-left:5px;" alt="Download Skyline dataset" title="Download Skyline dataset from PanoramaWeb.org">
+                <img src="<%=h(contextPath)%>/passport/img/download.png" style="width:30x; height:30px; margin-left:5px;" alt="Download Skyline dataset" title="Download Skyline dataset">
             </a><sub title="month/day/year" id="dataUploaded">Data Uploaded: <%=h(new SimpleDateFormat("MM-dd-yyyy").format(protein.getFile().getCreatedDate()))%></sub>
         </h2>
         <p id="apiLinks">Sources:&nbsp;<a href="<%=h(new ActionURL(TargetedMSController.ShowProteinAction.class, getContainer()))%>id=<%=h(protein.getPepGroupId())%>">Panorama</a> &#8759; <a href="https://www.uniprot.org/uniprot/<%=h(protein.getAccession())%>">Uniprot</a></p>
@@ -76,7 +76,7 @@
             <%
                 List<IKeyword> molecularFunctions = new ArrayList<>();
                 List<IKeyword> biologicalProcesses = new ArrayList<>();
-                IKeyword[] keywords = protein.getKeywords();
+                List<IKeyword> keywords = protein.getKeywords();
                 for (IKeyword keyword : keywords)
                 {
                     if (keyword.categoryId.equals("KW-9999"))
@@ -147,14 +147,14 @@
             </ul>
         </div>
     <!-- PROTEIN INFO HEADER END -->
-    <%if(protein.getPep() != null && protein.getPep().length != 0) {%>
+    <%if(protein.getPep() != null && protein.getPep().size() != 0) {%>
     <!-- FILTER OPTIONS START -->
         <div id="filterContainer"><img src="<%=h(contextPath)%>/passport/img/filtericon.png" id="filtericon"/>
             <h1>Filter Options</h1>
             <div class="filterBox">
                 <h2>Peptides:&nbsp;
                     <span id="filteredPeptideCount">
-                        <green><%=h(protein.getPep().length)%></green>/<%=h(protein.getPep().length)%>
+                        <green><%=h(protein.getPep().size())%></green>/<%=h(protein.getPep().size())%>
                     </span>
                     <span id="copytoclipboard" clipboard="" style="color:rgb(85, 26, 139); cursor:pointer;" title="Copy filtered peptide list to clipboard">  Copy</span>
                 </h2>
@@ -179,7 +179,7 @@
             <div id="pepListBox">
                 <ul id="livepeptidelist"></ul>
             </div>
-            <%if(protein.getFeatures() != null && protein.getFeatures().length > 0) {%>
+            <%if(protein.getFeatures() != null && protein.getFeatures().size() > 0) {%>
                 <div class="filterBox" style="margin-left:10px; padding-left:20px;">
                     <h2>Features:</h2>
                     <input id="showFeatures" type="checkbox" name="showFeatures" readonly="readonly" style="border:0; color:#A01C00; font-weight:bold;"/>

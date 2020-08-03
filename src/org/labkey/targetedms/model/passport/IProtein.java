@@ -2,6 +2,7 @@ package org.labkey.targetedms.model.passport;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.labkey.api.util.PageFlowUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,52 +33,51 @@ public class IProtein
     private String label;
     private String description;
     private String sequence;
-    IPeptide[] pep;
-    IKeyword[] keywords;
-    IFeature[] features;
-    IProject[] projects;
+    List<IPeptide> pep;
+    List<IKeyword> keywords;
+    List<IFeature> features;
+    List<IProject> projects;
     int length;
     IFile file;
 
-    public IFeature[] getFeatures()
+    public List<IFeature> getFeatures()
     {
         return features;
     }
 
-    public void setFeatures(IFeature[] features)
+    public void setFeatures(List<IFeature> features)
     {
-        List<IFeature> f = Arrays.asList(features);
-        f.sort(Comparator.comparingInt(IFeature::getStartIndex));
-        this.features = f.toArray(new IFeature[0]);
+        features.sort(Comparator.comparingInt(IFeature::getStartIndex));
+        this.features = features;
     }
 
-    public IProject[] getProjects()
+    public List<IProject> getProjects()
     {
         return projects;
     }
 
-    public void setProjects(IProject[] projects)
+    public void setProjects(List<IProject> projects)
     {
         this.projects = projects;
     }
 
-    public IKeyword[] getKeywords()
+    public List<IKeyword> getKeywords()
     {
         return keywords;
     }
 
-    public void setKeywords(IKeyword[] keywords)
+    public void setKeywords(List<IKeyword> keywords)
     {
         this.keywords = keywords;
     }
 
 
-    public IPeptide[] getPep()
+    public List<IPeptide> getPep()
     {
         return pep;
     }
 
-    public void setPep(IPeptide[] pep)
+    public void setPep(List<IPeptide> pep)
     {
         this.pep = pep;
     }
@@ -97,7 +97,10 @@ public class IProtein
         return sequence;
     }
 
-    public void setSequence(String sequence) { this.sequence = sequence; }
+    public void setSequence(String sequence)
+    {
+        this.sequence = sequence;
+    }
 
 
     public String getLabel()
@@ -139,9 +142,10 @@ public class IProtein
     public String getName()
     {
         String name = getPreferredname();
-        if(getDescription() != null) {
+        if (getDescription() != null)
+        {
             String[] nameSplit = getDescription().split("\\(");
-            if(nameSplit.length == 1)
+            if (nameSplit.length == 1)
                 nameSplit = getDescription().split("OS");
             name = nameSplit[0];
         }
@@ -202,7 +206,9 @@ public class IProtein
     {
         this.description = description;
     }
-    public JSONObject getJSON() {
+
+    public JSONObject getJSON()
+    {
         JSONObject protJSON = new JSONObject();
         protJSON.put("id", getPepGroupId());
         protJSON.put("datecreated", getFile().getCreatedDate());
@@ -213,9 +219,9 @@ public class IProtein
         protJSON.put("prefferredname", getName());
         protJSON.put("sequence", getSequence());
         JSONArray pepJSON = new JSONArray();
-        IPeptide[] peps = getPep();
-        for(int i = 0; i < pep.length; i++) {
-            IPeptide pep = peps[i];
+        List<IPeptide> peps = getPep();
+        for (IPeptide pep : peps)
+        {
             JSONObject p = new JSONObject();
             p.put("beforeintensity", pep.getBeforeIntensity());
             p.put("normalizedafterintensity", pep.getAfterIntensity());
@@ -228,9 +234,10 @@ public class IProtein
             pepJSON.put(p);
         }
         JSONArray featJSON = new JSONArray();
-        if(features != null) {
-            for(int i = 0; i < features.length; i++) {
-                IFeature feature = features[i];
+        if (features != null)
+        {
+            for (IFeature feature : features)
+            {
                 JSONObject f = new JSONObject();
                 f.put("startindex", feature.getStartIndex());
                 f.put("endindex", feature.getEndIndex());
@@ -242,8 +249,10 @@ public class IProtein
             }
         }
         JSONArray projectsJSON = new JSONArray();
-        if(projects != null) {
-            for (IProject p : projects) {
+        if (projects != null)
+        {
+            for (IProject p : projects)
+            {
                 JSONObject pObj = new JSONObject();
                 pObj.put("runId", p.getRunId());
                 pObj.put("pepGroupId", p.getPeptideGroupId());
@@ -259,7 +268,8 @@ public class IProtein
                     }
                 });
                 JSONArray peptidesJSON = new JSONArray();
-                for(IPeptide pep: peptides) {
+                for (IPeptide pep : peptides)
+                {
                     JSONObject pepObj = new JSONObject();
                     pepObj.put("startindex", pep.getStartIndex());
                     pepObj.put("endindex", pep.getEndIndex());
@@ -277,28 +287,28 @@ public class IProtein
         return protJSON;
     }
 
-    public String[] getProtSeqHTML() {
+    public String[] getProtSeqHTML()
+    {
         String[] str = getSequence().split("");
         List<String> groups = new ArrayList<>();
-        if(features != null && features[features.length-1].getEndIndex() < str.length) {
-            for(int i = 0; i < features.length; i++) {
-                IFeature f = features[i];
-                String aa = str[f.getStartIndex()-1]; // -1 because uniprot starts at 1
-//                if(f.isVariation()) {
-//                    aa = "<span class=\"ptm-text\" index=\""+i+"\">" + aa + "</span>";
-//                } else if(f.getStartIndex() == f.getEndIndex()) {
-//                    aa = "<span class=\"ptm-text non-variation\" index=\""+i+"\">" + aa + "</span>";
-//                }
-                aa = "<span class=\"feature-aa feature-"+f.type.replaceAll(" ", "")+"\" index=\""+i+"\">" + aa + "</span>";
+        if (features != null && features.get(features.size() - 1).getEndIndex() < str.length)
+        {
+            for (int i = 0; i < features.size(); i++)
+            {
+                IFeature f = features.get(i);
+                String aa = str[f.getStartIndex() - 1];
+                aa = "<span class=\"feature-aa feature-" + PageFlowUtil.filter(f.type).replaceAll(" ", "") + "\" index=\"" + i + "\">" + aa + "</span>";
 
-                str[f.getStartIndex()-1] = aa;
+                str[f.getStartIndex() - 1] = aa;
             }
         }
         StringBuilder currentStr = new StringBuilder();
         int counter = 1;
-        for(int i = 0; i < str.length; i++) {
+        for (int i = 0; i < str.length; i++)
+        {
             currentStr.append(str[i]);
-            if(counter == 10 || i == str.length-1) {
+            if (counter == 10 || i == str.length - 1)
+            {
                 groups.add(currentStr.toString());
                 currentStr = new StringBuilder();
                 counter = 0;
@@ -307,19 +317,24 @@ public class IProtein
         }
         return groups.toArray(new String[0]);
     }
+
     @Override
-    public boolean equals(Object o) {
-        if (o == null) {
+    public boolean equals(Object o)
+    {
+        if (o == null)
+        {
             return false;
         }
-        if (!IProtein.class.isAssignableFrom(o.getClass())) {
+        if (!IProtein.class.isAssignableFrom(o.getClass()))
+        {
             return false;
         }
         final IProtein other = (IProtein) o;
         return this.accession.equals(other.getAccession());
     }
 
-    public int hashCode() {
+    public int hashCode()
+    {
         return accession.hashCode();
     }
 

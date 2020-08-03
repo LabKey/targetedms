@@ -16,6 +16,8 @@
 
 package org.labkey.targetedms.passport;
 
+import org.apache.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.action.SimpleViewAction;
 import org.labkey.api.action.SpringActionController;
 import org.labkey.api.data.BaseColumnInfo;
@@ -28,10 +30,12 @@ import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.query.QueryService;
 import org.labkey.api.query.UserSchema;
+import org.labkey.api.reader.Readers;
 import org.labkey.api.security.RequiresPermission;
 import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.view.JspView;
 import org.labkey.api.view.NavTree;
+import org.labkey.api.view.NotFoundException;
 import org.labkey.api.view.VBox;
 import org.labkey.api.view.ViewContext;
 import org.labkey.targetedms.model.passport.IFeature;
@@ -56,6 +60,8 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -64,6 +70,7 @@ import java.util.Map;
 public class PassportController extends SpringActionController
 {
     private static final DefaultActionResolver _actionResolver = new DefaultActionResolver(PassportController.class);
+    private static Logger LOG = Logger.getLogger(PassportController.class);
 
     public PassportController()
     {
@@ -71,14 +78,14 @@ public class PassportController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-        public class BeginAction extends SimpleViewAction
+    public class BeginAction extends SimpleViewAction
+    {
+        @Override
+        public ModelAndView getView(Object o, BindException errors) throws Exception
         {
-            @Override
-            public ModelAndView getView(Object o, BindException errors) throws Exception
-            {
-                ProteinListView runListView = ProteinListView.createView(getViewContext());
-                VBox vbox = new VBox();
-                vbox.addView(runListView);
+            ProteinListView runListView = ProteinListView.createView(getViewContext());
+            VBox vbox = new VBox();
+            vbox.addView(runListView);
             return vbox;
         }
 
@@ -97,18 +104,27 @@ public class PassportController extends SpringActionController
             ViewContext viewContext = getViewContext();
             String accession = viewContext.getRequest().getParameter("accession");
             IProtein protein = getProtein(accession);
-            return new JspView<>("/org/labkey/targetedms/view/passport/ProteinWebPart.jsp", protein);
+
+            if (null != protein)
+            {
+                return new JspView<>("/org/labkey/targetedms/view/passport/ProteinWebPart.jsp", protein);
+            }
+            else
+            {
+                throw  new NotFoundException("Protein not found for accession: " + accession);
+            }
         }
 
         @Override
         public void addNavTrail(NavTree root)
         {
+            root.addChild("Passport Protein View");
         }
     }
 
     private void populateUniprotData(IProtein p)
     {
-        String url = "https://www.uniprot.org/uniprot/?query=accession:"+p.getAccession()+"&format=xml";
+        String url = "https://www.uniprot.org/uniprot/?query=accession:" + p.getAccession() + "&format=xml";
         List<IFeature> features = new ArrayList<>();
         try
         {
@@ -116,12 +132,14 @@ public class PassportController extends SpringActionController
             HttpURLConnection con = (HttpURLConnection) obj.openConnection();
             con.setRequestMethod("GET");
             int responseCode = con.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) { // success
-                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            if (responseCode == HttpURLConnection.HTTP_OK)
+            { // success
+                BufferedReader in = Readers.getReader(con.getInputStream());
                 String inputLine;
                 StringBuffer response = new StringBuffer();
 
-                while ((inputLine = in.readLine()) != null) {
+                while ((inputLine = in.readLine()) != null)
+                {
                     response.append(inputLine);
                 }
                 in.close();
@@ -136,74 +154,92 @@ public class PassportController extends SpringActionController
                 doc.getFirstChild();
                 Element entry = (Element) doc.getFirstChild().getFirstChild();
                 NodeList featureElements = entry.getElementsByTagName("feature");
-                for(int i = 0; i < featureElements.getLength(); i++) {
-                    try {
+                for (int i = 0; i < featureElements.getLength(); i++)
+                {
+                    try
+                    {
                         Element feature = (Element) featureElements.item(i);
                         IFeature f = new IFeature();
                         f.setType(feature.getAttribute("type"));
                         f.setDescription(feature.getAttribute("description"));
                         Element location = (Element) feature.getElementsByTagName("location").item(0);
-                        if(f.isVariation()) {
-                            if(location.getChildNodes().getLength() == 1) {
-                                Integer loc =Integer.parseInt(((Element) location.getElementsByTagName("position").item(0)).getAttribute("position"));
-                                if(loc == null)
-                                    continue;
+                        if (f.isVariation())
+                        {
+                            if (location.getChildNodes().getLength() == 1)
+                            {
+                                Integer loc = Integer.parseInt(((Element) location.getElementsByTagName("position").item(0)).getAttribute("position"));
                                 f.setStartIndex(loc);
                                 f.setEndIndex(loc);
-                                if(feature.getElementsByTagName("original").getLength() == 0 || feature.getElementsByTagName("variation").getLength() == 0) {
+                                if (feature.getElementsByTagName("original").getLength() == 0 || feature.getElementsByTagName("variation").getLength() == 0)
+                                {
                                     continue;
                                 }
                                 String original = feature.getElementsByTagName("original").item(0).getFirstChild().getNodeValue();
                                 String variation = feature.getElementsByTagName("variation").item(0).getFirstChild().getNodeValue();
                                 f.setOriginal(original);
                                 f.setVariation(variation);
-                            } else if(location.getChildNodes().getLength() == 2) {
+                            }
+                            else if (location.getChildNodes().getLength() == 2)
+                            {
                                 f = getPosition(f, location);
-                                if(f == null)
+                                if (f == null)
                                     continue;
                             }
 
-                        } else {
-                           f = getPosition(f, location);
-                           if(f == null)
-                               continue;
+                        }
+                        else
+                        {
+                            f = getPosition(f, location);
+                            if (f == null)
+                                continue;
                         }
                         features.add(f);
-                    } catch(Exception e) {
+                    }
+                    catch (Exception e)
+                    {
                         // we don't really care at the moment but exception is likely if xml is formatted differently than expected or given in the spec which happens sometimes
                         continue;
                     }
                 }
-                p.setFeatures(features.toArray(new IFeature[features.size()]));
-            } else {
-                System.out.println("GET request did not work");
+                p.setFeatures(features);
             }
-          }
+            else
+            {
+                LOG.info("GET request did not work");
+            }
+        }
         catch (Exception e)
         {
-            p.setFeatures(features.toArray(new IFeature[features.size()]));
-            e.printStackTrace();
+            p.setFeatures(features);
+            LOG.error("Error populating uniprot data ", e);
+            throw new RuntimeException(e);
         }
     }
 
-    private IFeature getPosition(IFeature f, Element location) {
-        if(location.getElementsByTagName("begin").getLength() == 1) {
-            Integer begin =Integer.parseInt(((Element) location.getElementsByTagName("begin").item(0)).getAttribute("position"));
-            Integer end =Integer.parseInt(((Element) location.getElementsByTagName("end").item(0)).getAttribute("position"));
-            if(begin == null || end == null)
+    private IFeature getPosition(IFeature f, Element location)
+    {
+        if (location.getElementsByTagName("begin").getLength() == 1)
+        {
+            Integer begin = Integer.parseInt(((Element) location.getElementsByTagName("begin").item(0)).getAttribute("position"));
+            Integer end = Integer.parseInt(((Element) location.getElementsByTagName("end").item(0)).getAttribute("position"));
+            if (begin == null || end == null)
                 return null;
             f.setStartIndex(begin);
             f.setEndIndex(end);
-        } else {
-            Integer loc =Integer.parseInt(((Element) location.getElementsByTagName("position").item(0)).getAttribute("position"));
-            if(loc == null)
+        }
+        else
+        {
+            Integer loc = Integer.parseInt(((Element) location.getElementsByTagName("position").item(0)).getAttribute("position"));
+            if (loc == null)
                 return null;
             f.setStartIndex(loc);
             f.setEndIndex(loc);
         }
         return f;
     }
+
     // returns null if no protein found
+    @Nullable
     private IProtein getProtein(String accession)
     {
         SQLFragment targetedMSProteinQuery = new SQLFragment();
@@ -216,11 +252,12 @@ public class PassportController extends SpringActionController
         targetedMSProteinQuery.add(getContainer().getId());
         targetedMSProteinQuery.add(accession);
         UserSchema schema = QueryService.get().getUserSchema(getUser(), getContainer(), "targetedms");
-        try {
+        try
+        {
             Map<String, Object> map = new SqlSelector(schema.getDbSchema(), targetedMSProteinQuery).getMap();
 
             IProtein p = new IProtein();
-            if(map == null)
+            if (map == null)
                 return null;
             p.setLabel((String) map.get("label"));
             p.setGene((String) map.get("bestgenename"));
@@ -247,16 +284,18 @@ public class PassportController extends SpringActionController
 //            populateProjects(p); TODO: project stuff needs more work - will happen next update
             return p;
         }
-        catch(Exception e) {
-            return null;
+        catch (Exception e)
+        {
+            LOG.error("Error populating keywords ", e);
+            throw new RuntimeException(e);
         }
 
     }
 
     private void populateProjects(IProtein p)
     {
-        String qs = "SELECT r.id, r.filename, r.container, pg.id as pgid, p.startindex, p.endindex, p.sequence, p.peptidemodifiedsequence, p.id as pepid FROM "+
-        "( SELECT pg.sequenceid, r.container FROM targetedms.peptidegroup pg, targetedms.runs r " +
+        String qs = "SELECT r.id, r.filename, r.container, pg.id as pgid, p.startindex, p.endindex, p.sequence, p.peptidemodifiedsequence, p.id as pepid FROM " +
+                "( SELECT pg.sequenceid, r.container FROM targetedms.peptidegroup pg, targetedms.runs r " +
                 "WHERE r.id = pg.runid AND r.container = ? AND pg.accession = ?) a, " +
                 "targetedms.peptidegroup pg, targetedms.runs r, targetedms.peptide p, targetedms.generalmolecule gm " +
                 "WHERE pg.sequenceid = a.sequenceid AND r.id = pg.runid AND gm.peptidegroupid = pg.id AND p.id = gm.id " +
@@ -273,21 +312,25 @@ public class PassportController extends SpringActionController
         String localfolder = "31df7149-20d7-1036-9f4d-73a96a275a08";
         String livefolder = "b5d567d5-849e-1032-b843-3013bb9b1d5e";
         Container panoramaPublic = ContainerManager.getForId(localfolder);
-        if(panoramaPublic == null)
+        if (panoramaPublic == null)
             return;
         List<Container> children = ContainerManager.getAllChildren(panoramaPublic, getUser());
         Map<Integer, IProject> projects = new HashMap<>();
-        try{
+        try
+        {
             sqlSelectorProjects.forEach(peptide -> {
-                int projId =peptide.getInt("id");
-                if(!projects.containsKey(projId)) {
+                int projId = peptide.getInt("id");
+                if (!projects.containsKey(projId))
+                {
                     IProject proj = new IProject();
                     proj.setRunId(peptide.getInt("id"));
                     proj.setPeptideGroupId(peptide.getInt("pgid"));
                     proj.setFileName(peptide.getString("filename"));
                     proj.setContainer(ContainerManager.getForId(peptide.getString("container")));
-                    for(int i = 0; i < children.size(); i++) {
-                        if(children.get(i).equals(proj.getContainer())) {
+                    for (int i = 0; i < children.size(); i++)
+                    {
+                        if (children.get(i).equals(proj.getContainer()))
+                        {
                             projects.put(projId, proj);
                             break;
                         }
@@ -302,14 +345,17 @@ public class PassportController extends SpringActionController
                 projects.get(projId).addPeptide(pep);
 
             });
-        } catch(Exception e) {
-            System.out.print("ERROR GETTING PROJECTS");
-            System.out.print(e.getStackTrace());
         }
-        p.setProjects(projects.values().toArray(new IProject[projects.size()]));
+        catch (Exception e)
+        {
+            LOG.error("ERROR GETTING PROJECTS ", e);
+            throw new RuntimeException(e);
+        }
+        p.setProjects((List<IProject>) projects.values());
     }
 
-    private void populateProteinKeywords(IProtein p) {
+    private void populateProteinKeywords(IProtein p)
+    {
         String qs = "SELECT kw.keywordid, kw.keyword, kw.category, kc.label " +
                 "FROM prot.sequences p, prot.annotations a, prot.identifiers pi, targetedms.keywords kw, targetedms.keywordcategories kc " +
                 "WHERE p.seqid = ? AND a.seqid = p.seqid AND pi.identid = a.annotident AND kw.keywordid = pi.identifier AND kc.categoryid = kw.category";
@@ -320,23 +366,25 @@ public class PassportController extends SpringActionController
 
         SqlSelector sqlSelector = new SqlSelector(schema.getDbSchema(), keywordQuery);
         List<IKeyword> keywords = new ArrayList<>();
-        try {sqlSelector.forEach(prot -> {
-            keywords.add(new IKeyword(prot.getString("keywordid"),
+        try
+        {
+            sqlSelector.forEach(prot -> keywords.add(new IKeyword(prot.getString("keywordid"),
                     prot.getString("category"),
                     prot.getString("keyword"),
-                    prot.getString("label")));
-        });
-        }catch(Exception e){
-            System.out.print("Error populating keywords");
-            e.printStackTrace();
-            p.setKeywords(new IKeyword[0]);
-            return;
+                    prot.getString("label"))));
         }
-        p.setKeywords(keywords.toArray(new IKeyword[keywords.size()]));
+        catch (Exception e)
+        {
+            LOG.error("Error populating keywords ", e);
+            p.setKeywords(keywords);
+            throw new RuntimeException(e);
+        }
+        p.setKeywords(keywords);
     }
 
-    private void populatePeptides(IProtein p) {
-        if(p == null)
+    private void populatePeptides(IProtein p)
+    {
+        if (p == null)
             return;
 
         Map<Integer, IPeptide> peptideMap = new HashMap<>();
@@ -347,12 +395,13 @@ public class PassportController extends SpringActionController
         SimpleFilter sf = new SimpleFilter();
         sf.addCondition(new BaseColumnInfo("PepGroupId"), p.getPepGroupId());
 
-        try{
-            new TableSelector(tinfo,sf, null).forEachResults(pep -> {
-                int peptideId =
-                        pep.getInt("peptideid");
+        try
+        {
+            new TableSelector(tinfo, sf, null).forEachResults(pep -> {
+                int peptideId = pep.getInt("peptideid");
                 IPeptide peptide = peptideMap.get(peptideId);
-                if(peptide == null) {
+                if (peptide == null)
+                {
                     peptide = new IPeptide();
                     peptide.setSequence(pep.getString("peptidesequence"));
                     peptide.setStartIndex(pep.getInt("startindex"));
@@ -362,34 +411,39 @@ public class PassportController extends SpringActionController
                 }
                 long totalArea = pep.getLong("totalarea");
                 String replicateName = pep.getString("replicate");
-                if(replicateName.equals("BeforeIncubation")) {
+                if ("BeforeIncubation".equals(replicateName))
+                {
                     peptide.setBeforeTotalArea(totalArea);
                     peptide.setPrecursorbeforeid(pep.getInt("panoramaprecursorid"));
                     peptide.setBeforeSumArea(pep.getInt("sumarea"));
-                } else if(replicateName.equals("AfterIncubation")) {
+                }
+                else if (replicateName.equals("AfterIncubation"))
+                {
                     peptide.setAfterTotalArea(totalArea);
                     peptide.setPrecursorafterid(pep.getInt("panoramaprecursorid"));
                     peptide.setAfterSumArea(pep.getInt("sumarea"));
                 }
                 peptideMap.put(peptide.getPanoramaPeptideId(), peptide);
             });
-        } catch(Exception e) {
-            System.out.print("Error populating peptides");
-            e.printStackTrace();
-            p.setPep(new IPeptide[0]);
-            return;
         }
-        IPeptide[] peptides = peptideMap.values().toArray(new IPeptide[peptideMap.size()]);
-        for(int i = 0; i < peptides.length; i++) {
-            IPeptide peptide = peptides[i];
-                // Normalize AfterIncubation TotalArea to global standards from Panorama
-                double afterRatioToGlobalStandards  = peptide.getAfterTotalArea() / peptide.getAfterSumArea();
-                double beforeRatioToGlobalStandards  = peptide.getBeforeTotalArea() / peptide.getBeforeSumArea();
-                double afterToBeforeRatio = afterRatioToGlobalStandards / beforeRatioToGlobalStandards;
-                double normalizedAfterTotalArea = peptide.getBeforeTotalArea() * afterToBeforeRatio;
-                peptide.setBeforeIntensity(peptide.getBeforeTotalArea());
-                peptide.setAfterIntensity(normalizedAfterTotalArea);
-    }
+        catch (Exception e)
+        {
+            LOG.error("Error populating peptides ", e);
+            p.setPep(Collections.emptyList());
+            throw new RuntimeException(e);
+        }
+        List<IPeptide> peptides = new ArrayList<>();
+        for (IPeptide peptide : peptideMap.values())
+        {
+            // Normalize AfterIncubation TotalArea to global standards from Panorama
+            double afterRatioToGlobalStandards = peptide.getAfterTotalArea() / peptide.getAfterSumArea();
+            double beforeRatioToGlobalStandards = peptide.getBeforeTotalArea() / peptide.getBeforeSumArea();
+            double afterToBeforeRatio = afterRatioToGlobalStandards / beforeRatioToGlobalStandards;
+            double normalizedAfterTotalArea = peptide.getBeforeTotalArea() * afterToBeforeRatio;
+            peptide.setBeforeIntensity(peptide.getBeforeTotalArea());
+            peptide.setAfterIntensity(normalizedAfterTotalArea);
+            peptides.add(peptide);
+        }
         p.setPep(peptides);
     }
 }
