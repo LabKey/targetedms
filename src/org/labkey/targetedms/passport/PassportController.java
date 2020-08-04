@@ -23,6 +23,7 @@ import org.labkey.api.action.SpringActionController;
 import org.labkey.api.data.BaseColumnInfo;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerManager;
+import org.labkey.api.data.DbSchema;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.SqlSelector;
@@ -38,6 +39,7 @@ import org.labkey.api.view.NavTree;
 import org.labkey.api.view.NotFoundException;
 import org.labkey.api.view.VBox;
 import org.labkey.api.view.ViewContext;
+import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.model.passport.IFeature;
 import org.labkey.targetedms.model.passport.IFile;
 import org.labkey.targetedms.model.passport.IKeyword;
@@ -66,6 +68,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.labkey.targetedms.TargetedMSManager.getSqlDialect;
 
 public class PassportController extends SpringActionController
 {
@@ -167,7 +171,7 @@ public class PassportController extends SpringActionController
                         {
                             if (location.getChildNodes().getLength() == 1)
                             {
-                                Integer loc = Integer.parseInt(((Element) location.getElementsByTagName("position").item(0)).getAttribute("position"));
+                                int loc = Integer.parseInt(((Element) location.getElementsByTagName("position").item(0)).getAttribute("position"));
                                 f.setStartIndex(loc);
                                 f.setEndIndex(loc);
                                 if (feature.getElementsByTagName("original").getLength() == 0 || feature.getElementsByTagName("variation").getLength() == 0)
@@ -182,16 +186,12 @@ public class PassportController extends SpringActionController
                             else if (location.getChildNodes().getLength() == 2)
                             {
                                 f = getPosition(f, location);
-                                if (f == null)
-                                    continue;
                             }
 
                         }
                         else
                         {
                             f = getPosition(f, location);
-                            if (f == null)
-                                continue;
                         }
                         features.add(f);
                     }
@@ -220,18 +220,14 @@ public class PassportController extends SpringActionController
     {
         if (location.getElementsByTagName("begin").getLength() == 1)
         {
-            Integer begin = Integer.parseInt(((Element) location.getElementsByTagName("begin").item(0)).getAttribute("position"));
-            Integer end = Integer.parseInt(((Element) location.getElementsByTagName("end").item(0)).getAttribute("position"));
-            if (begin == null || end == null)
-                return null;
+            int begin = Integer.parseInt(((Element) location.getElementsByTagName("begin").item(0)).getAttribute("position"));
+            int end = Integer.parseInt(((Element) location.getElementsByTagName("end").item(0)).getAttribute("position"));
             f.setStartIndex(begin);
             f.setEndIndex(end);
         }
         else
         {
-            Integer loc = Integer.parseInt(((Element) location.getElementsByTagName("position").item(0)).getAttribute("position"));
-            if (loc == null)
-                return null;
+            int loc = Integer.parseInt(((Element) location.getElementsByTagName("position").item(0)).getAttribute("position"));
             f.setStartIndex(loc);
             f.setEndIndex(loc);
         }
@@ -248,13 +244,14 @@ public class PassportController extends SpringActionController
                 "r.dataid, r.filename, r.created, r.modified, r.formatversion " +
                 "FROM targetedms.peptidegroup pg, targetedms.runs r, prot.sequences ps " +
                 "WHERE r.id = pg.runid AND r.container = ? AND ps.seqid = pg.sequenceid " +
-                "AND pg.accession = ? LIMIT 1;");
+                "AND pg.accession = ? ");
+        getSqlDialect().limitRows(targetedMSProteinQuery, 1);
         targetedMSProteinQuery.add(getContainer().getId());
         targetedMSProteinQuery.add(accession);
-        UserSchema schema = QueryService.get().getUserSchema(getUser(), getContainer(), "targetedms");
+        DbSchema schema = TargetedMSManager.getSchema();
         try
         {
-            Map<String, Object> map = new SqlSelector(schema.getDbSchema(), targetedMSProteinQuery).getMap();
+            Map<String, Object> map = new SqlSelector(schema, targetedMSProteinQuery).getMap();
 
             IProtein p = new IProtein();
             if (map == null)
@@ -290,68 +287,6 @@ public class PassportController extends SpringActionController
             throw new RuntimeException(e);
         }
 
-    }
-
-    private void populateProjects(IProtein p)
-    {
-        String qs = "SELECT r.id, r.filename, r.container, pg.id as pgid, p.startindex, p.endindex, p.sequence, p.peptidemodifiedsequence, p.id as pepid FROM " +
-                "( SELECT pg.sequenceid, r.container FROM targetedms.peptidegroup pg, targetedms.runs r " +
-                "WHERE r.id = pg.runid AND r.container = ? AND pg.accession = ?) a, " +
-                "targetedms.peptidegroup pg, targetedms.runs r, targetedms.peptide p, targetedms.generalmolecule gm " +
-                "WHERE pg.sequenceid = a.sequenceid AND r.id = pg.runid AND gm.peptidegroupid = pg.id AND p.id = gm.id " +
-                "AND r.container != ?";
-        SQLFragment projectsQuery = new SQLFragment();
-        projectsQuery.append(qs);
-        projectsQuery.add(getContainer());
-        projectsQuery.add(p.getAccession());
-        projectsQuery.add(getContainer());
-
-        UserSchema schema = QueryService.get().getUserSchema(getUser(), getContainer(), "targetedms");
-        SqlSelector sqlSelectorProjects = new SqlSelector(schema.getDbSchema(), projectsQuery);
-
-        String localfolder = "31df7149-20d7-1036-9f4d-73a96a275a08";
-        String livefolder = "b5d567d5-849e-1032-b843-3013bb9b1d5e";
-        Container panoramaPublic = ContainerManager.getForId(localfolder);
-        if (panoramaPublic == null)
-            return;
-        List<Container> children = ContainerManager.getAllChildren(panoramaPublic, getUser());
-        Map<Integer, IProject> projects = new HashMap<>();
-        try
-        {
-            sqlSelectorProjects.forEach(peptide -> {
-                int projId = peptide.getInt("id");
-                if (!projects.containsKey(projId))
-                {
-                    IProject proj = new IProject();
-                    proj.setRunId(peptide.getInt("id"));
-                    proj.setPeptideGroupId(peptide.getInt("pgid"));
-                    proj.setFileName(peptide.getString("filename"));
-                    proj.setContainer(ContainerManager.getForId(peptide.getString("container")));
-                    for (int i = 0; i < children.size(); i++)
-                    {
-                        if (children.get(i).equals(proj.getContainer()))
-                        {
-                            projects.put(projId, proj);
-                            break;
-                        }
-                    }
-                }
-                IPeptide pep = new IPeptide();
-                pep.setStartIndex(peptide.getInt("startindex"));
-                pep.setEndIndex(peptide.getInt("endindex"));
-                pep.setSequence(peptide.getString("sequence"));
-                pep.setPeptideModifiedSequence(peptide.getString("peptidemodifiedsequence"));
-                pep.setPanoramaPeptideId(peptide.getInt("pepid"));
-                projects.get(projId).addPeptide(pep);
-
-            });
-        }
-        catch (Exception e)
-        {
-            LOG.error("ERROR GETTING PROJECTS ", e);
-            throw new RuntimeException(e);
-        }
-        p.setProjects((List<IProject>) projects.values());
     }
 
     private void populateProteinKeywords(IProtein p)

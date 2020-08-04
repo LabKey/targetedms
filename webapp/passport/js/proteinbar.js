@@ -49,7 +49,7 @@ function ProteinBar(project) {
                 .attr("x",xProtein(peptide.startindex))
                 .attr("width", function(d) { return xProtein(peptide.endindex - peptide.startindex); })
                 .attr("y", yRelative(2))
-                .attr("title", peptide.sequence)
+                .attr("title", LABKEY.Utils.encodeHtml(peptide.sequence))
                 .attr("height", 15);
         //
         // sequence_group.append("text")

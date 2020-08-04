@@ -25,7 +25,7 @@
     @Override
     public void addClientDependencies(ClientDependencies dependencies)
     {
-        dependencies.add("passport/js/d3.v3.js");
+        dependencies.add("vis/lib/d3-3.5.17.min.js");
         dependencies.add("passport/js/util.js");
         dependencies.add("passport/js/settings.js");
         dependencies.add("passport/js/protein.js");
