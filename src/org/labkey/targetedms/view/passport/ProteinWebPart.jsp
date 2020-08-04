@@ -14,8 +14,12 @@
 
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 
-<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js" type="text/javascript"></script>
+<%
+    final String contextPath = AppProps.getInstance().getContextPath();
+%>
+
+<link rel="stylesheet" href="<%=unsafe(contextPath)%>/passport/jQuery/jquery-ui.min.css">
+<script src="<%=unsafe(contextPath)%>/passport/jQuery/jquery-ui.min.js" type="text/javascript"></script>
 
 <%!
     @Override
@@ -36,7 +40,6 @@
 <%
     JspView<?> me = (JspView<?>) HttpView.currentView();
     IProtein protein = (IProtein)me.getModelBean();
-    final String contextPath = AppProps.getInstance().getContextPath();
     if(protein == null) {%>
         Sorry the page you are looking for could not be found.
     <%} else {%>
