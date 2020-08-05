@@ -1,6 +1,7 @@
 package org.labkey.panoramapremium;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.labkey.api.data.DbSchema;
 import org.labkey.api.data.DbSchemaType;
 import org.labkey.api.data.TableInfo;
@@ -10,7 +11,7 @@ public class PanoramaPremiumManager
 {
     private static final PanoramaPremiumManager _instance = new PanoramaPremiumManager();
 
-    private static Logger _log = Logger.getLogger(PanoramaPremiumManager.class);
+    private static Logger _log = LogManager.getLogger(PanoramaPremiumManager.class);
 
     private PanoramaPremiumManager()
     {
