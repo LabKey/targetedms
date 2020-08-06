@@ -18,9 +18,6 @@
     final String contextPath = AppProps.getInstance().getContextPath();
 %>
 
-<link rel="stylesheet" href="<%=unsafe(contextPath)%>/passport/jQuery/jquery-ui.min.css">
-<script src="<%=unsafe(contextPath)%>/passport/jQuery/jquery-ui.min.js" type="text/javascript"></script>
-
 <%!
     @Override
     public void addClientDependencies(ClientDependencies dependencies)
@@ -33,6 +30,8 @@
         dependencies.add("passport/js/project.js");
         dependencies.add("passport/js/proteinbar.js");
         dependencies.add("internal/jQuery");
+        dependencies.add("passport/jQuery/jquery-ui.min.css");
+        dependencies.add("passport/jQuery/jquery-ui.min.js");
 
     }
 %>
