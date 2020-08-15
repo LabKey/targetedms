@@ -7,7 +7,7 @@ public class IPeptide
     private int startIndex;
     private int endIndex;
     private int proteinId;
-    private int panoramaPeptideId;
+    private long panoramaPeptideId;
     private double beforeIntensity;
     private double beforeTotalArea;
     private double afterIntensity;
@@ -129,12 +129,12 @@ public class IPeptide
         this.proteinId = proteinId;
     }
 
-    public int getPanoramaPeptideId()
+    public long getPanoramaPeptideId()
     {
         return panoramaPeptideId;
     }
 
-    public void setPanoramaPeptideId(int panoramaPeptideId)
+    public void setPanoramaPeptideId(long panoramaPeptideId)
     {
         this.panoramaPeptideId = panoramaPeptideId;
     }
@@ -172,6 +172,6 @@ public class IPeptide
     }
 
     public int hashCode() {
-        return getPanoramaPeptideId();
+        return Math.toIntExact(getPanoramaPeptideId());
     }
 }

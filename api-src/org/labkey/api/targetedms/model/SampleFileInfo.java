@@ -13,17 +13,17 @@ import java.util.TreeMap;
 
 public class SampleFileInfo extends OutlierCounts
 {
-    final int sampleId;
+    final long sampleId;
     final String sampleFile;
     final Date acquiredTime;
     final int guideSetId;
     final boolean ignoreForAllMetric;
     final String filePath;
-    final int replicateId;
+    final long replicateId;
     /** Use a TreeMap to keep the metrics sorted by name */
     final Map<String, OutlierCounts> byMetric = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
-    public SampleFileInfo(int sampleId, Date acquiredTime, String sampleFile, int guideSetId, boolean ignoreForAllMetric, String filePath, Integer replicateId)
+    public SampleFileInfo(long sampleId, Date acquiredTime, String sampleFile, int guideSetId, boolean ignoreForAllMetric, String filePath, Long replicateId)
     {
         this.sampleId = sampleId;
         this.acquiredTime = acquiredTime;
@@ -54,7 +54,7 @@ public class SampleFileInfo extends OutlierCounts
         return ignoreForAllMetric;
     }
 
-    public int getSampleId()
+    public long getSampleId()
     {
         return sampleId;
     }
@@ -69,7 +69,7 @@ public class SampleFileInfo extends OutlierCounts
         return filePath;
     }
 
-    public int getReplicateId()
+    public long getReplicateId()
     {
         return replicateId;
     }

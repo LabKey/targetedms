@@ -81,7 +81,7 @@ public class PeptideManager
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(GeneralMoleculeChromInfo.class);
     }
 
-    public static Collection<Peptide> getPeptidesForGroup(int peptideGroupId, TargetedMSSchema schema)
+    public static Collection<Peptide> getPeptidesForGroup(long peptideGroupId, TargetedMSSchema schema)
     {
         SQLFragment sql = new SQLFragment("SELECT gm.id, gm.id, gm.peptidegroupid, gm.rtcalculatorscore, gm.predictedretentiontime, ");
         sql.append("gm.avgmeasuredretentiontime, gm.note, gm.explicitretentiontime, ");
@@ -95,7 +95,7 @@ public class PeptideManager
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getCollection(Peptide.class);
     }
 
-    public static Double getMinRetentionTime(int peptideId)
+    public static Double getMinRetentionTime(long peptideId)
     {
         SQLFragment sql = new SQLFragment("SELECT MIN(preci.MinStartTime) FROM ");
         sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "preci");
@@ -110,7 +110,7 @@ public class PeptideManager
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Double.class);
     }
 
-    public static Double getMaxRetentionTime(int peptideId)
+    public static Double getMaxRetentionTime(long peptideId)
     {
         SQLFragment sql = new SQLFragment("SELECT MAX(preci.MaxEndTime) FROM ");
         sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "preci");
@@ -125,7 +125,7 @@ public class PeptideManager
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Double.class);
     }
 
-    public static Double getMinRetentionTime(int peptideId, int sampleFileId)
+    public static Double getMinRetentionTime(long peptideId, long sampleFileId)
     {
         SQLFragment sql = new SQLFragment("SELECT MIN(preci.MinStartTime) FROM ");
         sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "preci");
@@ -143,7 +143,7 @@ public class PeptideManager
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Double.class);
     }
 
-    public static Double getMaxRetentionTime(int peptideId, int sampleFileId)
+    public static Double getMaxRetentionTime(long peptideId, long sampleFileId)
     {
         SQLFragment sql = new SQLFragment("SELECT MAX(preci.MaxEndTime) FROM ");
         sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "preci");
@@ -161,7 +161,7 @@ public class PeptideManager
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Double.class);
     }
 
-    public static boolean hasSpectrumLibraryInformation(int peptideId, Integer runId)
+    public static boolean hasSpectrumLibraryInformation(long peptideId, Long runId)
     {
         if(runId == null)
         {

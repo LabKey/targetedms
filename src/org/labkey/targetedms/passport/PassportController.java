@@ -322,7 +322,7 @@ public class PassportController extends SpringActionController
         if (p == null)
             return;
 
-        Map<Integer, IPeptide> peptideMap = new HashMap<>();
+        Map<Long, IPeptide> peptideMap = new HashMap<>();
 
         UserSchema schema = QueryService.get().getUserSchema(getUser(), getContainer(), "targetedms");
         TableInfo tinfo = schema.getTable("Passport_TotalPrecursorArea");
@@ -333,7 +333,7 @@ public class PassportController extends SpringActionController
         try
         {
             new TableSelector(tinfo, sf, null).forEachResults(pep -> {
-                int peptideId = pep.getInt("peptideid");
+                long peptideId = pep.getInt("peptideid");
                 IPeptide peptide = peptideMap.get(peptideId);
                 if (peptide == null)
                 {

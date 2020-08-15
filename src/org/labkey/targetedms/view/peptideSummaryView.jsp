@@ -31,7 +31,7 @@
 <%
     JspView<TargetedMSController.PeptideChromatogramsViewBean> me = (JspView<TargetedMSController.PeptideChromatogramsViewBean>) HttpView.currentView();
     TargetedMSController.PeptideChromatogramsViewBean bean = me.getModelBean();
-    Map<Integer, String> labelIdMap = new HashMap<>();
+    Map<Long, String> labelIdMap = new HashMap<>();
     for(PeptideSettings.IsotopeLabel label: bean.getLabels())
     {
         labelIdMap.put(label.getId(), label.getName());
@@ -100,8 +100,8 @@
                      )%>
 
                      <% String imgUrl = IconFactory.getPrecursorIconPath(precursor.getId(), bean.getPeptide().isDecoyPeptide()); %>
-                     <a href="<%=precursorDetailsUrl+"id="+precursor.getId()%>">
-                        <img src="<%=imgUrl%>" alt="Click to view details"/>
+                     <a href="<%=h(precursorDetailsUrl)+"id="+h(precursor.getId())%>">
+                        <img src="<%=h(imgUrl)%>" alt="Click to view details"/>
                      </a>
 
                  </div>

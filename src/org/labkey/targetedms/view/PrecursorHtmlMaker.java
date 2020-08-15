@@ -31,7 +31,7 @@ public class PrecursorHtmlMaker
 {
     private PrecursorHtmlMaker() {}
 
-    public static String getHtml(Peptide peptide, Precursor precursor, String isotopeLabel, int runId)
+    public static String getHtml(Peptide peptide, Precursor precursor, String isotopeLabel, long runId)
     {
         StringBuilder html = new StringBuilder();
         html.append(new ModifiedPeptideHtmlMaker().getPrecursorHtml(peptide, precursor, runId));
@@ -48,7 +48,7 @@ public class PrecursorHtmlMaker
     }
 
     public static String getModSeqChargeHtml(ModifiedPeptideHtmlMaker modifiedPeptideHtmlMaker, Precursor precursor,
-                                             int runId, TargetedMSSchema schema)
+                                             long runId, TargetedMSSchema schema)
     {
         StringBuilder html = new StringBuilder();
         html.append(modifiedPeptideHtmlMaker.getPrecursorHtml(precursor, runId, schema));

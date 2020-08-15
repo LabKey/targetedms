@@ -76,18 +76,18 @@ public class ChartColors
     // Colors for isotope labels
     private static final Color[] ISOTOPES = PRECURSORS;
 
-    public static Color getTransitionColor(int index)
+    public static Color getTransitionColor(long index)
     {
-        return TRANSITIONS[index % TRANSITIONS.length];
+        return TRANSITIONS[Math.toIntExact(index % TRANSITIONS.length)];
     }
 
-    public static Color getPrecursorColor(int index)
+    public static Color getPrecursorColor(long index)
     {
-        return PRECURSORS[index % PRECURSORS.length];
+        return PRECURSORS[Math.toIntExact(index % PRECURSORS.length)];
     }
 
-    public static Color getIsotopeColor(int index)
+    public static Color getIsotopeColor(long index)
     {
-        return ISOTOPES[index % ISOTOPES.length];
+        return ISOTOPES[Math.toIntExact(index % ISOTOPES.length)];
     }
 }
