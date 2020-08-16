@@ -236,6 +236,7 @@ DROP INDEX targetedms.TransitionAreaRatio.IX_TransitionAreaRatio_IsotopeLabelStd
 GO
 
 -- Drop Constraints
+ALTER TABLE targetedms.FoldChange DROP CONSTRAINT FK_FoldChange_IsotopeLabel;
 ALTER TABLE targetedms.GeneralPrecursor DROP CONSTRAINT FK_GeneralPrecursor_IsotopeLabel;
 ALTER TABLE targetedms.PeptideAreaRatio DROP CONSTRAINT FK_PeptideAreaRatio_IsotopeLabelId;
 ALTER TABLE targetedms.PeptideAreaRatio DROP CONSTRAINT FK_PeptideAreaRatio_IsotopeLabelStdId;
