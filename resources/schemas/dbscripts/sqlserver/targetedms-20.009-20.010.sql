@@ -61,37 +61,37 @@ GO
 --------------------- Runs -----------------------------
 ALTER TABLE targetedms.Runs DROP CONSTRAINT PK_Runs;
 GO
-ALTER TABLE targetedms.Runs ALTER COLUMN Id bigint;
+ALTER TABLE targetedms.Runs ALTER COLUMN Id bigint NOT NULL;
 GO
 ALTER TABLE targetedms.Runs ADD CONSTRAINT PK_Runs PRIMARY KEY (Id);
 GO
 ---------------------------------------------------------
 
 --- Changing
-ALTER TABLE targetedms.AnnotationSettings ALTER COLUMN RunId bigint;
-ALTER TABLE targetedms.CalibrationCurve ALTER COLUMN RunId bigint;
-ALTER TABLE targetedms.DriftTimePredictionSettings ALTER COLUMN RunId bigint;
-ALTER TABLE targetedms.IsolationScheme ALTER COLUMN RunId bigint;
-ALTER TABLE targetedms.FoldChange ALTER COLUMN RunId bigint;
-ALTER TABLE targetedms.GroupComparisonSettings ALTER COLUMN RunId bigint;
-ALTER TABLE targetedms.Instrument ALTER COLUMN RunId bigint;
-ALTER TABLE targetedms.IsotopeEnrichment ALTER COLUMN RunId bigint;
-ALTER TABLE targetedms.IsotopeLabel ALTER COLUMN RunId bigint;
+ALTER TABLE targetedms.AnnotationSettings ALTER COLUMN RunId bigint NOT NULL;
+ALTER TABLE targetedms.CalibrationCurve ALTER COLUMN RunId bigint NOT NULL;
+ALTER TABLE targetedms.DriftTimePredictionSettings ALTER COLUMN RunId bigint NOT NULL;
+ALTER TABLE targetedms.IsolationScheme ALTER COLUMN RunId bigint NOT NULL;
+ALTER TABLE targetedms.FoldChange ALTER COLUMN RunId bigint NOT NULL;
+ALTER TABLE targetedms.GroupComparisonSettings ALTER COLUMN RunId bigint NOT NULL;
+ALTER TABLE targetedms.Instrument ALTER COLUMN RunId bigint NOT NULL;
+ALTER TABLE targetedms.IsotopeEnrichment ALTER COLUMN RunId bigint NOT NULL;
+ALTER TABLE targetedms.IsotopeLabel ALTER COLUMN RunId bigint NOT NULL;
 ALTER TABLE targetedms.LibrarySettings ALTER COLUMN RunId bigint NOT NULL;
-ALTER TABLE targetedms.ListDefinition ALTER COLUMN RunId bigint;
+ALTER TABLE targetedms.ListDefinition ALTER COLUMN RunId bigint NOT NULL;
 ALTER TABLE targetedms.ModificationSettings ALTER COLUMN RunId bigint NOT NULL;
-ALTER TABLE targetedms.PeptideGroup ALTER COLUMN RunId bigint;
-ALTER TABLE targetedms.Replicate ALTER COLUMN RunId bigint;
+ALTER TABLE targetedms.PeptideGroup ALTER COLUMN RunId bigint NOT NULL;
+ALTER TABLE targetedms.Replicate ALTER COLUMN RunId bigint NOT NULL;
 ALTER TABLE targetedms.RetentionTimePredictionSettings ALTER COLUMN RunId bigint NOT NULL;
 ALTER TABLE targetedms.RunEnzyme ALTER COLUMN RunId bigint NOT NULL;
 ALTER TABLE targetedms.RunIsotopeModification ALTER COLUMN RunId bigint NOT NULL ;
 ALTER TABLE targetedms.RunStructuralModification ALTER COLUMN RunId bigint NOT NULL ;
-ALTER TABLE targetedms.SpectrumLibrary ALTER COLUMN RunId bigint;
+ALTER TABLE targetedms.SpectrumLibrary ALTER COLUMN RunId bigint NOT NULL;
 ALTER TABLE targetedms.TransitionFullScanSettings ALTER COLUMN RunId bigint NOT NULL ;
 ALTER TABLE targetedms.TransitionInstrumentSettings ALTER COLUMN RunId bigint NOT NULL ;
 ALTER TABLE targetedms.TransitionPredictionSettings ALTER COLUMN RunId bigint NOT NULL ;
 ALTER TABLE targetedms.AuditLogEntry ALTER COLUMN versionId bigint;
-ALTER TABLE targetedms.QuantificationSettings ALTER COLUMN RunId bigint;
+ALTER TABLE targetedms.QuantificationSettings ALTER COLUMN RunId bigint NOT NULL;
 GO
 
 --- Adding back FK Constraints on Runs

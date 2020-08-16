@@ -38,13 +38,13 @@ GO
 -- change columns
 ALTER TABLE targetedms.CalibrationCurve ALTER COLUMN GeneralMoleculeId bigint;
 ALTER TABLE targetedms.FoldChange ALTER COLUMN GeneralMoleculeId bigint;
-ALTER TABLE targetedms.GeneralMoleculeAnnotation ALTER COLUMN GeneralMoleculeId bigint;
-ALTER TABLE targetedms.GeneralMoleculeChromInfo ALTER COLUMN GeneralMoleculeId BIGINT;
-ALTER TABLE targetedms.GeneralPrecursor ALTER COLUMN GeneralMoleculeId bigint;
+ALTER TABLE targetedms.GeneralMoleculeAnnotation ALTER COLUMN GeneralMoleculeId bigint NOT NULL;
+ALTER TABLE targetedms.GeneralMoleculeChromInfo ALTER COLUMN GeneralMoleculeId BIGINT NOT NULL;
+ALTER TABLE targetedms.GeneralPrecursor ALTER COLUMN GeneralMoleculeId bigint NOT NULL;
 ALTER TABLE targetedms.Molecule ALTER COLUMN Id bigint NOT NULL;
 ALTER TABLE targetedms.Peptide ALTER COLUMN Id bigint NOT NULL;
-ALTER TABLE targetedms.PeptideIsotopeModification ALTER COLUMN PeptideId bigint;
-ALTER TABLE targetedms.PeptideStructuralModification ALTER COLUMN PeptideId bigint;
+ALTER TABLE targetedms.PeptideIsotopeModification ALTER COLUMN PeptideId bigint NOT NULL;
+ALTER TABLE targetedms.PeptideStructuralModification ALTER COLUMN PeptideId bigint NOT NULL;
 GO
 
 -- Add back FK constraints to GMId in tables

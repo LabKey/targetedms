@@ -4,13 +4,20 @@
 -- Drop Indexes
 DROP INDEX targetedms.TransitionAreaRatio.IX_TransitionAreaRatio_TransitionChromInfoId;
 DROP INDEX targetedms.TransitionAreaRatio.IX_TransitionAreaRatio_TransitionChromInfoStdId;
+DROP INDEX targetedms.TransitionChromInfoAnnotation.IX_TransitionChromInfoAnnotation_TransitionChromInfoId;
+GO
 
 -- Drop Constraints
 ALTER TABLE targetedms.TransitionAreaRatio DROP CONSTRAINT FK_TransitionAreaRatio_TransitionChromInfoId;
+ALTER TABLE targetedms.TransitionAreaRatio DROP CONSTRAINT FK_TransitionAreaRatio_TransitionChromInfoStdId;
+ALTER TABLE targetedms.TransitionChromInfoAnnotation DROP CONSTRAINT FK_TransitionChromInfoAnnotation_TransitionChromInfo;
+ALTER TABLE targetedms.TransitionChromInfoAnnotation DROP CONSTRAINT UQ_TransitionChromInfoAnnotation_Name_TransitionChromInfo;
+GO
 
 -- Change SampleFileId
+ALTER TABLE targetedms.TransitionChromInfo DROP CONSTRAINT PK_TransitionChromInfo;
+GO
 ALTER TABLE targetedms.TransitionChromInfo ALTER COLUMN Id bigint NOT NULL;
-
 GO
 ALTER TABLE targetedms.TransitionChromInfo ADD CONSTRAINT PK_TransitionChromInfo PRIMARY KEY (Id);
 
@@ -28,6 +35,7 @@ ALTER TABLE targetedms.TransitionChromInfoAnnotation ADD CONSTRAINT UQ_Transitio
 GO
 
 -- Add back Indexes
+CREATE INDEX IX_TransitionChromInfoAnnotation_TransitionChromInfoId ON targetedms.TransitionChromInfoAnnotation(TransitionChromInfoId);
 CREATE INDEX IX_TransitionAreaRatio_TransitionChromInfoId ON targetedms.TransitionAreaRatio (TransitionChromInfoId);
 CREATE INDEX IX_TransitionAreaRatio_TransitionChromInfoStdId ON targetedms.TransitionAreaRatio (TransitionChromInfoStdId);
 GO
@@ -114,6 +122,7 @@ GO
 ALTER TABLE targetedms.PeptideStructuralModification DROP CONSTRAINT FK_PeptideStructuralModification_StructuralModification;
 ALTER TABLE targetedms.RunStructuralModification DROP CONSTRAINT FK_RunStructuralModification_StructuralModification;
 ALTER TABLE targetedms.StructuralModLoss DROP CONSTRAINT FK_StructuralModLoss_StructuralModification;
+ALTER TABLE targetedms.RunStructuralModification DROP CONSTRAINT PK_RunStructuralModification;
 GO
 
 -- Change StructuralModId
@@ -134,7 +143,8 @@ GO
 ALTER TABLE targetedms.PeptideStructuralModification  ADD CONSTRAINT FK_PeptideStructuralModification_StructuralModification FOREIGN KEY (StructuralModId) REFERENCES targetedms.StructuralModification(Id);
 ALTER TABLE targetedms.RunStructuralModification ADD CONSTRAINT FK_RunStructuralModification_StructuralModification FOREIGN KEY (StructuralModId) REFERENCES targetedms.StructuralModification(Id);
 ALTER TABLE targetedms.StructuralModLoss ADD CONSTRAINT FK_StructuralModLoss_StructuralModification FOREIGN KEY (StructuralModId) REFERENCES targetedms.StructuralModification(Id);
-GO
+ALTER TABLE targetedms.RunStructuralModification ADD CONSTRAINT PK_RunStructuralModification PRIMARY KEY (StructuralModId, RunId)
+    GO
 
 -- Add back Indexes
 CREATE INDEX IX_PeptideStructuralModification_StructuralModId ON targetedms.PeptideStructuralModification (StructuralModId);
@@ -197,7 +207,7 @@ ALTER TABLE targetedms.FoldChange ALTER COLUMN GroupComparisonSettingsId bigint 
 GO
 
 -- Add back Constraints
-ALTER TABLE targetedms.FoldChange CONSTRAINT FK_FoldChange_GroupComparisonSettings FOREIGN KEY (GroupComparisonSettingsId) REFERENCES targetedms.GroupComparisonSettings(Id);
+ALTER TABLE targetedms.FoldChange ADD CONSTRAINT FK_FoldChange_GroupComparisonSettings FOREIGN KEY (GroupComparisonSettingsId) REFERENCES targetedms.GroupComparisonSettings(Id);
 GO
 
 -- Add back Indexes
@@ -255,6 +265,7 @@ GO
 
 -- Change Columns
 ALTER TABLE targetedms.ListColumnDefinition ALTER COLUMN ListDefinitionId bigint NOT NULL;
+ALTER TABLE targetedms.ListItem ALTER COLUMN ListDefinitionId bigint NOT NULL;
 GO
 
 -- Add back Constraints
@@ -313,9 +324,11 @@ GO
 
 -- Change Columns
 ALTER TABLE targetedms.MeasuredDriftTime ALTER COLUMN DriftTimePredictionSettingsId bigint;
+GO
 
 -- Add back Constraints
 ALTER TABLE targetedms.MeasuredDriftTime ADD CONSTRAINT FK_MeasuredDriftTime_DriftTimePredictionSettings FOREIGN KEY (DriftTimePredictionSettingsId) REFERENCES targetedms.DriftTimePredictionSettings(Id);
+GO
 
 -- Add back Indexes
 CREATE INDEX IX_MeasuredDriftTime_DriftTimePredictionSettingsId ON targetedms.MeasuredDriftTime(DriftTimePredictionSettingsId);
@@ -332,6 +345,8 @@ GO
 -- Drop Constraints
 ALTER TABLE targetedms.Replicate DROP CONSTRAINT FK_Replicate_PredictorCe;
 ALTER TABLE targetedms.Replicate DROP CONSTRAINT FK_Replicate_PredictorDp;
+ALTER TABLE targetedms.PredictorSettings DROP CONSTRAINT FK_PredictorSettings_PredictorId;
+ALTER TABLE targetedms.PredictorSettings DROP CONSTRAINT UQ_PredictorSettings;
 GO
 
 -- Change PredictorId
@@ -347,11 +362,14 @@ GO
 -- Change Columns
 ALTER TABLE targetedms.Replicate ALTER COLUMN CePredictorId bigint;
 ALTER TABLE targetedms.Replicate ALTER COLUMN DpPredictorId bigint;
+ALTER TABLE targetedms.PredictorSettings ALTER COLUMN PredictorId bigint NOT NULL;
 GO
 
 -- Add back Constraints
 ALTER TABLE targetedms.Replicate ADD CONSTRAINT FK_Replicate_PredictorCe FOREIGN KEY (CePredictorId) REFERENCES targetedms.Predictor(Id);
 ALTER TABLE targetedms.Replicate ADD CONSTRAINT FK_Replicate_PredictorDp FOREIGN KEY (DpPredictorId) REFERENCES targetedms.Predictor(Id);
+ALTER TABLE targetedms.PredictorSettings ADD CONSTRAINT UQ_PredictorSettings UNIQUE (PredictorId, Charge);
+ALTER TABLE targetedms.PredictorSettings ADD CONSTRAINT FK_PredictorSettings_PredictorId FOREIGN KEY (PredictorId) REFERENCES targetedms.Predictor(Id);
 GO
 
 -- Add back Indexes

@@ -24,9 +24,9 @@ ALTER TABLE targetedms.Replicate ADD CONSTRAINT PK_Replicate PRIMARY KEY (Id);
 GO
 
 -- Change Columns
-ALTER TABLE targetedms.ReplicateAnnotation ALTER COLUMN ReplicateId bigint;
-ALTER TABLE targetedms.SampleFile ALTER COLUMN ReplicateId bigint;
-ALTER TABLE targetedms.QCMetricExclusion ALTER COLUMN ReplicateId bigint;
+ALTER TABLE targetedms.ReplicateAnnotation ALTER COLUMN ReplicateId bigint NOT NULL;
+ALTER TABLE targetedms.SampleFile ALTER COLUMN ReplicateId bigint NOT NULL;
+ALTER TABLE targetedms.QCMetricExclusion ALTER COLUMN ReplicateId bigint NOT NULL;
 
 -- Add back Constraints
 ALTER TABLE targetedms.QCMetricExclusion ADD CONSTRAINT FK_QCMetricExclusion_ReplicateId FOREIGN KEY (ReplicateId) REFERENCES targetedms.Replicate (Id);
@@ -67,10 +67,10 @@ ALTER TABLE targetedms.SampleFile ADD CONSTRAINT PK_SampleFile PRIMARY KEY (Id);
 GO
 
 -- Change Columns
-ALTER TABLE targetedms.TransitionChromInfo ALTER COLUMN SampleFileId bigint;
-ALTER TABLE targetedms.GeneralMoleculeChromInfo ALTER COLUMN SampleFileId BIGINT;
-ALTER TABLE targetedms.PrecursorChromInfo ALTER COLUMN SampleFileId bigint;
-ALTER TABLE targetedms.SampleFileChromInfo ALTER COLUMN SampleFileId bigint;
+ALTER TABLE targetedms.TransitionChromInfo ALTER COLUMN SampleFileId bigint NOT NULL;
+ALTER TABLE targetedms.GeneralMoleculeChromInfo ALTER COLUMN SampleFileId BIGINT NOT NULL;
+ALTER TABLE targetedms.PrecursorChromInfo ALTER COLUMN SampleFileId bigint NOT NULL;
+ALTER TABLE targetedms.SampleFileChromInfo ALTER COLUMN SampleFileId bigint NOT NULL;
 GO
 
 -- Add back Constraints
@@ -115,11 +115,11 @@ ALTER TABLE targetedms.SpectrumLibrary ADD CONSTRAINT PK_SpectrumLibrary PRIMARY
 GO
 
 -- Change Columns
-ALTER TABLE targetedms.BibliospecLibInfo ALTER COLUMN SpectrumLibraryId bigint;
-ALTER TABLE targetedms.ChromatogramLibInfo ALTER COLUMN SpectrumLibraryId bigint;
-ALTER TABLE targetedms.HunterLibInfo ALTER COLUMN SpectrumLibraryId bigint;
-ALTER TABLE targetedms.NistLibInfo ALTER COLUMN SpectrumLibraryId bigint;
-ALTER TABLE targetedms.SpectrastLibInfo ALTER COLUMN SpectrumLibraryId bigint;
+ALTER TABLE targetedms.BibliospecLibInfo ALTER COLUMN SpectrumLibraryId bigint NOT NULL;
+ALTER TABLE targetedms.ChromatogramLibInfo ALTER COLUMN SpectrumLibraryId bigint NOT NULL;
+ALTER TABLE targetedms.HunterLibInfo ALTER COLUMN SpectrumLibraryId bigint NOT NULL;
+ALTER TABLE targetedms.NistLibInfo ALTER COLUMN SpectrumLibraryId bigint NOT NULL;
+ALTER TABLE targetedms.SpectrastLibInfo ALTER COLUMN SpectrumLibraryId bigint NOT NULL;
 GO
 
 -- Add back Constraints
@@ -181,12 +181,14 @@ DROP INDEX targetedms.PrecursorAreaRatio.IX_PrecursorAreaRatio_PrecursorChromInf
 DROP INDEX targetedms.PrecursorAreaRatio.IX_PrecursorAreaRatio_PrecursorChromInfoStdId;
 DROP INDEX targetedms.PrecursorChromInfoAnnotation.IX_PrecursorChromInfoAnnotation_PrecursorChromInfoId;
 DROP INDEX targetedms.TransitionChromInfo.IX_TransitionChromInfo_PrecursorChromInfoId;
+DROP INDEX targetedms.PrecursorChromInfo.idx_precursorchrominfo_container;
 GO
 
 -- Drop Constraints
 ALTER TABLE targetedms.PrecursorAreaRatio DROP CONSTRAINT FK_PrecursorAreaRatio_PrecursorChromInfoId;
 ALTER TABLE targetedms.PrecursorAreaRatio DROP CONSTRAINT FK_PrecursorAreaRatio_PrecursorChromInfoStdId;
 ALTER TABLE targetedms.PrecursorChromInfoAnnotation DROP CONSTRAINT FK_PrecursorChromInfoAnnotation_PrecursorChromInfo;
+ALTER TABLE targetedms.PrecursorChromInfoAnnotation DROP CONSTRAINT UQ_PrecursorChromInfoAnnotation_Name_PrecursorChromInfo
 ALTER TABLE targetedms.TransitionChromInfo DROP CONSTRAINT FK_TransitionChromInfo_PrecursorChromInfo;
 GO
 
@@ -209,6 +211,7 @@ GO
 ALTER TABLE targetedms.PrecursorAreaRatio ADD CONSTRAINT FK_PrecursorAreaRatio_PrecursorChromInfoId FOREIGN KEY (PrecursorChromInfoId) REFERENCES targetedms.PrecursorChromInfo(Id);
 ALTER TABLE targetedms.PrecursorAreaRatio ADD CONSTRAINT FK_PrecursorAreaRatio_PrecursorChromInfoStdId FOREIGN KEY (PrecursorChromInfoStdId) REFERENCES targetedms.PrecursorChromInfo(Id);
 ALTER TABLE targetedms.PrecursorChromInfoAnnotation ADD CONSTRAINT FK_PrecursorChromInfoAnnotation_PrecursorChromInfo FOREIGN KEY (PrecursorChromInfoId) REFERENCES targetedms.PrecursorChromInfo(Id);
+ALTER TABLE targetedms.PrecursorChromInfoAnnotation ADD CONSTRAINT UQ_PrecursorChromInfoAnnotation_Name_PrecursorChromInfo UNIQUE (Name, PrecursorChromInfoId);
 ALTER TABLE targetedms.TransitionChromInfo ADD CONSTRAINT FK_TransitionChromInfo_PrecursorChromInfo FOREIGN KEY (PrecursorChromInfoId) REFERENCES targetedms.PrecursorChromInfo(Id);
 GO
 
@@ -217,8 +220,8 @@ CREATE INDEX IX_PrecursorAreaRatio_PrecursorChromInfoId ON targetedms.PrecursorA
 CREATE INDEX IX_PrecursorAreaRatio_PrecursorChromInfoStdId ON targetedms.PrecursorAreaRatio (PrecursorChromInfoStdId);
 CREATE INDEX IX_PrecursorChromInfoAnnotation_PrecursorChromInfoId ON targetedms.PrecursorChromInfoAnnotation(PrecursorChromInfoId);
 CREATE INDEX IX_TransitionChromInfo_PrecursorChromInfoId ON targetedms.TransitionChromInfo(PrecursorChromInfoId);
+CREATE INDEX idx_precursorchrominfo_container ON targetedms.precursorchrominfo (container, id);
 GO
-
 
 ------------------ IsotopeLabelId ---------------------
 -------------------------------------------------------
@@ -250,7 +253,7 @@ ALTER TABLE targetedms.TransitionAreaRatio DROP CONSTRAINT FK_TransitionAreaRati
 -- Change IsotopeLabelId
 ALTER TABLE targetedms.IsotopeLabel DROP CONSTRAINT PK_IsotopeLabel;
 GO
-ALTER TABLE targetedms.IsotopeLabel ALTER COLUMN Id bigint;
+ALTER TABLE targetedms.IsotopeLabel ALTER COLUMN Id bigint NOT NULL;
 GO
 ALTER TABLE targetedms.IsotopeLabel ADD CONSTRAINT PK_IsotopeLabel PRIMARY KEY (Id);
 GO
@@ -260,7 +263,7 @@ ALTER TABLE targetedms.FoldChange ALTER COLUMN IsotopeLabelId bigint;
 ALTER TABLE targetedms.GeneralPrecursor ALTER COLUMN IsotopeLabelId bigint;
 ALTER TABLE targetedms.PeptideAreaRatio ALTER COLUMN IsotopeLabelId bigint NOT NULL;
 ALTER TABLE targetedms.PeptideAreaRatio ALTER COLUMN IsotopeLabelStdId bigint NOT NULL;
-ALTER TABLE targetedms.PrecursorAreaRatio ALTER COLUMN IsotopeLabelStdId bigint NOT NULL;
+ALTER TABLE targetedms.PrecursorAreaRatio ALTER COLUMN IsotopeLabelId bigint NOT NULL;
 ALTER TABLE targetedms.PrecursorAreaRatio ALTER COLUMN IsotopeLabelStdId bigint NOT NULL;
 ALTER TABLE targetedms.RunIsotopeModification ALTER COLUMN IsotopeLabelId bigint NOT NULL;
 ALTER TABLE targetedms.TransitionAreaRatio ALTER COLUMN IsotopeLabelId bigint NOT NULL;
@@ -268,7 +271,7 @@ ALTER TABLE targetedms.TransitionAreaRatio ALTER COLUMN IsotopeLabelStdId bigint
 GO
 
 -- Add back Constraints
-ALTER TABLE targetedms.FoldChange CONSTRAINT FK_FoldChange_IsotopeLabel FOREIGN KEY (IsotopeLabelId) REFERENCES targetedms.IsotopeLabel(Id);
+ALTER TABLE targetedms.FoldChange ADD CONSTRAINT FK_FoldChange_IsotopeLabel FOREIGN KEY (IsotopeLabelId) REFERENCES targetedms.IsotopeLabel(Id);
 ALTER TABLE targetedms.GeneralPrecursor ADD CONSTRAINT FK_GeneralPrecursor_IsotopeLabel FOREIGN KEY (IsotopeLabelId) REFERENCES targetedms.IsotopeLabel(Id);
 ALTER TABLE targetedms.PeptideAreaRatio ADD CONSTRAINT FK_PeptideAreaRatio_IsotopeLabelId FOREIGN KEY (IsotopeLabelId) REFERENCES targetedms.IsotopeLabel(Id);
 ALTER TABLE targetedms.PeptideAreaRatio ADD CONSTRAINT FK_PeptideAreaRatio_IsotopeLabelStdId FOREIGN KEY (IsotopeLabelStdId) REFERENCES targetedms.IsotopeLabel(Id);

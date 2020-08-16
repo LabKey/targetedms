@@ -27,11 +27,11 @@ ALTER TABLE targetedms.Precursor ADD CONSTRAINT PK_Precursor_Id PRIMARY KEY (Id)
 GO
 
 -- Change columns
-ALTER TABLE targetedms.BibliospecLibInfo ALTER COLUMN PrecursorId bigint;
-ALTER TABLE targetedms.ChromatogramLibInfo ALTER COLUMN PrecursorId bigint;
-ALTER TABLE targetedms.HunterLibInfo ALTER COLUMN PrecursorId bigint;
-ALTER TABLE targetedms.NistLibInfo ALTER COLUMN PrecursorId bigint;
-ALTER TABLE targetedms.SpectrastLibInfo ALTER COLUMN PrecursorId bigint;
+ALTER TABLE targetedms.BibliospecLibInfo ALTER COLUMN PrecursorId bigint NOT NULL;
+ALTER TABLE targetedms.ChromatogramLibInfo ALTER COLUMN PrecursorId bigint NOT NULL;
+ALTER TABLE targetedms.HunterLibInfo ALTER COLUMN PrecursorId bigint NOT NULL;
+ALTER TABLE targetedms.NistLibInfo ALTER COLUMN PrecursorId bigint NOT NULL;
+ALTER TABLE targetedms.SpectrastLibInfo ALTER COLUMN PrecursorId bigint NOT NULL;
 GO
 
 -- Add back Constraints
@@ -80,9 +80,9 @@ ALTER TABLE targetedms.GeneralPrecursor ADD CONSTRAINT PK_Precursor PRIMARY KEY 
 GO
 
 -- change Columns
-ALTER TABLE targetedms.GeneralTransition ALTER COLUMN GeneralPrecursorId bigint;
-ALTER TABLE targetedms.PrecursorAnnotation ALTER COLUMN PrecursorId bigint;
-ALTER TABLE targetedms.PrecursorChromInfo ALTER COLUMN PrecursorId bigint;
+ALTER TABLE targetedms.GeneralTransition ALTER COLUMN GeneralPrecursorId bigint NOT NULL;
+ALTER TABLE targetedms.PrecursorAnnotation ALTER COLUMN PrecursorId bigint NOT NULL;
+ALTER TABLE targetedms.PrecursorChromInfo ALTER COLUMN PrecursorId bigint NOT NULL;
 ALTER TABLE targetedms.MoleculePrecursor ALTER COLUMN Id bigint NOT NULL;
 GO
 
@@ -137,10 +137,10 @@ GO
 -- Change Columns
 ALTER TABLE targetedms.MoleculeTransition ALTER COLUMN TransitionId bigint NOT NULL;
 ALTER TABLE targetedms.Transition ALTER COLUMN Id bigint NOT NULL;
-ALTER TABLE targetedms.TransitionAnnotation ALTER COLUMN TransitionId bigint;
-ALTER TABLE targetedms.TransitionChromInfo ALTER COLUMN TransitionId bigint;
-ALTER TABLE targetedms.TransitionLoss ALTER COLUMN TransitionId bigint;
-ALTER TABLE targetedms.TransitionOptimization ALTER COLUMN TransitionId bigint;
+ALTER TABLE targetedms.TransitionAnnotation ALTER COLUMN TransitionId bigint NOT NULL;
+ALTER TABLE targetedms.TransitionChromInfo ALTER COLUMN TransitionId bigint NOT NULL;
+ALTER TABLE targetedms.TransitionLoss ALTER COLUMN TransitionId bigint NOT NULL;
+ALTER TABLE targetedms.TransitionOptimization ALTER COLUMN TransitionId bigint NOT NULL;
 GO
 
 -- Add back Constraints

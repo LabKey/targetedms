@@ -17,17 +17,17 @@ ALTER TABLE targetedms.PeptideGroupAnnotation DROP CONSTRAINT PK_PeptideGroupAnn
 ---- Alter PeptideGroup PK
 ALTER TABLE targetedms.PeptideGroup DROP CONSTRAINT PK_PeptideGroup;
 GO
-ALTER TABLE targetedms.PeptideGroup ALTER COLUMN Id bigint;
+ALTER TABLE targetedms.PeptideGroup ALTER COLUMN Id bigint NOT NULL;
 GO
 ALTER TABLE targetedms.PeptideGroup ADD CONSTRAINT PK_PeptideGroup PRIMARY KEY (Id);
 GO
 
 -- Change Columns
 ALTER TABLE targetedms.FoldChange ALTER COLUMN PeptideGroupId bigint;
-ALTER TABLE targetedms.PeptideGroupAnnotation ALTER COLUMN PeptideGroupId bigint;
-ALTER TABLE targetedms.PeptideGroupAnnotation ALTER COLUMN Id bigint;
-ALTER TABLE targetedms.GeneralMolecule ALTER COLUMN PeptideGroupId bigint;
-ALTER TABLE targetedms.Protein ALTER COLUMN PeptideGroupId bigint;
+ALTER TABLE targetedms.PeptideGroupAnnotation ALTER COLUMN PeptideGroupId bigint NOT NULL;
+ALTER TABLE targetedms.PeptideGroupAnnotation ALTER COLUMN Id bigint NOT NULL;
+ALTER TABLE targetedms.GeneralMolecule ALTER COLUMN PeptideGroupId bigint NOT NULL;
+ALTER TABLE targetedms.Protein ALTER COLUMN PeptideGroupId bigint NOT NULL;
 
 -- Add back DK constraints PeptideGroup PK
 ALTER TABLE targetedms.FoldChange ADD CONSTRAINT FK_FoldChange_PeptideGroup FOREIGN KEY (PeptideGroupId) REFERENCES targetedms.PeptideGroup(Id);
