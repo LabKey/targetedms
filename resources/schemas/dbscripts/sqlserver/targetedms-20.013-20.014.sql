@@ -109,7 +109,7 @@ GO
 -- Change SLId
 ALTER TABLE targetedms.SpectrumLibrary DROP CONSTRAINT PK_SpectrumLibrary;
 GO
-ALTER TABLE targetedms.SpectrumLibrary ALTER COLUMN Id bigint;
+ALTER TABLE targetedms.SpectrumLibrary ALTER COLUMN Id bigint NOT NULL;
 GO
 ALTER TABLE targetedms.SpectrumLibrary ADD CONSTRAINT PK_SpectrumLibrary PRIMARY KEY (Id);
 GO

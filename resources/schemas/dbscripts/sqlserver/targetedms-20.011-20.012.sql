@@ -7,7 +7,7 @@ DROP INDEX targetedms.FoldChange.IX_FoldChange_GeneralMoleculeId;
 DROP INDEX targetedms.GeneralMoleculeAnnotation.IX_GeneralMoleculeAnnotation_GeneralMoleculeId;
 DROP INDEX targetedms.GeneralMoleculeChromInfo.IX_GeneralMoleculeChromInfo_GMId;
 DROP INDEX targetedms.GeneralPrecursor.IX_Precursor_GMId;
--- DROP INDEX targetedms.GeneralPrecursor.IX_Precursor_PeptideId; -- Redundant Index with IX_Precursor_GMId
+DROP INDEX targetedms.GeneralPrecursor.IX_Precursor_PeptideId; -- Duplicate Index with IX_Precursor_GMId
 DROP INDEX targetedms.PeptideIsotopeModification.IX_PeptideIsotopeModification_PeptideId;
 DROP INDEX targetedms.PeptideStructuralModification.IX_PeptideStructuralModification_PeptideId;
 GO
