@@ -47,7 +47,7 @@ GO
 -- Drop Indexes
 DROP INDEX targetedms.GeneralMoleculeChromInfo.IX_GMChromInfo_SampleFileId;
 DROP INDEX targetedms.PrecursorChromInfo.IX_PrecursorChromInfo_SampleFileId;
-DROP INDEX targetedms.SampleFileChromInfo.IX_SampleFileChromInfo_SampleFileId;
+DROP INDEX targetedms.SampleFileChromInfo.IDX_SampleFileChromInfo_SampleFileId;
 DROP INDEX targetedms.TransitionChromInfo.IX_TransitionChromInfo_SampleFileId;
 GO
 
@@ -83,7 +83,7 @@ GO
 -- Add back Indexes
 CREATE INDEX IX_GMChromInfo_SampleFileId ON targetedms.GeneralMoleculeChromInfo(samplefileid);
 CREATE INDEX IX_PrecursorChromInfo_SampleFileId ON targetedms.PrecursorChromInfo(SampleFileId);
-CREATE INDEX IX_SampleFileChromInfo_SampleFileId ON targetedms.SampleFileChromInfo(samplefileid);
+CREATE INDEX IDX_SampleFileChromInfo_SampleFileId ON targetedms.SampleFileChromInfo(samplefileid);
 CREATE INDEX IX_TransitionChromInfo_SampleFileId ON targetedms.TransitionChromInfo(SampleFileId);
 GO
 

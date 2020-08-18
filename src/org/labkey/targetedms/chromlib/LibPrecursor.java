@@ -273,7 +273,7 @@ public class LibPrecursor implements ObjectWithId
     @Override
     public int hashCode()
     {
-        int result = Math.toIntExact(_peptideId);
+        int result = (int) _peptideId;
         result = 31 * result + _isotopeLabel.hashCode();
         result = 31 * result + _mz.hashCode();
         result = 31 * result + _charge.hashCode();
@@ -285,7 +285,7 @@ public class LibPrecursor implements ObjectWithId
         result = 31 * result + (_averageMassErrorPPM != null ? _averageMassErrorPPM.hashCode() : 0);
         result = 31 * result + (_numPoints != null ? _numPoints.hashCode() : 0);
         result = 31 * result + (_numTransitions != null ? _numTransitions.hashCode() : 0);
-        result = Math.toIntExact(31 * result + _sampleFileId);
+        result = (int) (31 * result + _sampleFileId);
         result = 31 * result + (_chromatogram != null ? Arrays.hashCode(_chromatogram) : 0);
         result = 31 * result + (_transitions != null ? _transitions.hashCode() : 0);
         result = 31 * result + (_retentionTimes != null ? _retentionTimes.hashCode() : 0);

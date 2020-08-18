@@ -98,7 +98,7 @@ public class LibPrecursorIsotopeModification implements ObjectWithId
     @Override
     public int hashCode()
     {
-        int result = Math.toIntExact(_precursorId);
+        int result = (int) _precursorId;
         result = 31 * result + _isotopeModificationId;
         result = 31 * result + _indexAa.hashCode();
         result = 31 * result + _massDiff.hashCode();

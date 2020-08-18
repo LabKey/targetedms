@@ -98,8 +98,8 @@ public class LibPeptideStructuralModification implements ObjectWithId
     @Override
     public int hashCode()
     {
-        int result = Math.toIntExact(_peptideId);
-        result = Math.toIntExact(31 * result + _structuralModificationId);
+        int result = (int) _peptideId;
+        result = (int) (31 * result + _structuralModificationId);
         result = 31 * result + _indexAa.hashCode();
         result = 31 * result + _massDiff.hashCode();
         return result;

@@ -320,7 +320,7 @@ public class LibrarySpectrumMatchGetter
         public int hashCode()
         {
             int result = _modifiedSequence.hashCode();
-            result = Math.toIntExact(31 * result + _generalMoleculeId);
+            result = (int) (31 * result + _generalMoleculeId);
             return result;
         }
     }

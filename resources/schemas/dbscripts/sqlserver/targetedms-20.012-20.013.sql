@@ -1,3 +1,53 @@
+------------------ GeneralPrecursorID ---------------
+-----------------------------------------------------
+
+-- Drop Indexes
+DROP INDEX targetedms.GeneralTransition.IX_Transition_PrecursorId;
+DROP INDEX targetedms.PrecursorAnnotation.IX_PrecursorAnnotation_PrecursorId;
+DROP INDEX targetedms.PrecursorChromInfo.IX_PrecursorChromInfo_PrecursorId;
+GO
+
+-- Drop Constraints
+ALTER TABLE targetedms.GeneralTransition DROP CONSTRAINT FK_GeneralTransition_GPId;
+ALTER TABLE targetedms.Precursor DROP CONSTRAINT FK_Precursor_Id;
+ALTER TABLE targetedms.PrecursorAnnotation DROP CONSTRAINT FK_PrecursorAnnotation_PrecursorId;
+ALTER TABLE targetedms.PrecursorAnnotation DROP CONSTRAINT UQ_PrecursorAnnotation_Name_Precursor;
+ALTER TABLE targetedms.PrecursorChromInfo DROP CONSTRAINT FK_PrecursorChromInfo_PrecursorId;
+ALTER TABLE targetedms.MoleculePrecursor DROP CONSTRAINT FK_Id;
+ALTER TABLE targetedms.MoleculePrecursor DROP CONSTRAINT PK_MoleculePrecursorId;
+GO
+
+-- GeneralPrecursor -- change Id
+ALTER TABLE targetedms.GeneralPrecursor DROP CONSTRAINT PK_Precursor;
+GO
+ALTER TABLE targetedms.GeneralPrecursor ALTER COLUMN Id bigint NOT NULL;
+GO
+ALTER TABLE targetedms.GeneralPrecursor ADD CONSTRAINT PK_Precursor PRIMARY KEY (Id);
+GO
+
+-- change Columns
+ALTER TABLE targetedms.GeneralTransition ALTER COLUMN GeneralPrecursorId bigint NOT NULL;
+ALTER TABLE targetedms.PrecursorAnnotation ALTER COLUMN PrecursorId bigint NOT NULL;
+ALTER TABLE targetedms.PrecursorChromInfo ALTER COLUMN PrecursorId bigint NOT NULL;
+ALTER TABLE targetedms.MoleculePrecursor ALTER COLUMN Id bigint NOT NULL;
+GO
+
+-- Add back constraints
+ALTER TABLE targetedms.GeneralTransition ADD CONSTRAINT FK_GeneralTransition_GPId FOREIGN KEY (GeneralPrecursorId) REFERENCES targetedms.GeneralPrecursor(Id);
+ALTER TABLE targetedms.PrecursorAnnotation  ADD CONSTRAINT FK_PrecursorAnnotation_PrecursorId FOREIGN KEY (PrecursorId) REFERENCES targetedms.GeneralPrecursor(Id)
+ALTER TABLE targetedms.PrecursorAnnotation  ADD CONSTRAINT UQ_PrecursorAnnotation_Name_Precursor UNIQUE (Name, PrecursorId);
+ALTER TABLE targetedms.PrecursorChromInfo ADD CONSTRAINT FK_PrecursorChromInfo_PrecursorId FOREIGN KEY (PrecursorId) REFERENCES targetedms.GeneralPrecursor(Id);
+ALTER TABLE targetedms.MoleculePrecursor ADD CONSTRAINT FK_Id FOREIGN KEY (Id) REFERENCES targetedms.GeneralPrecursor (Id);
+ALTER TABLE targetedms.MoleculePrecursor ADD CONSTRAINT PK_MoleculePrecursorId PRIMARY KEY (Id);
+GO
+
+-- Add back Indexes
+CREATE INDEX IX_Transition_PrecursorId ON targetedms.GeneralTransition(GeneralPrecursorId);
+CREATE INDEX IX_PrecursorAnnotation_PrecursorId ON targetedms.PrecursorAnnotation(PrecursorId);
+CREATE INDEX IX_PrecursorChromInfo_PrecursorId ON targetedms.PrecursorChromInfo(PrecursorId);
+GO
+
+
 ------------------ PrecursorID ------------------
 -------------------------------------------------
 
@@ -40,6 +90,7 @@ ALTER TABLE targetedms.ChromatogramLibInfo ADD CONSTRAINT FK_ChromatogramLibInfo
 ALTER TABLE targetedms.HunterLibInfo ADD CONSTRAINT FK_HunterLibInfo_Precursor FOREIGN KEY (PrecursorId) REFERENCES targetedms.Precursor(Id);
 ALTER TABLE targetedms.NistLibInfo ADD CONSTRAINT FK_NistLibInfo_Precursor FOREIGN KEY (PrecursorId) REFERENCES targetedms.Precursor(Id);
 ALTER TABLE targetedms.SpectrastLibInfo ADD CONSTRAINT FK_SpectrastLibInfo_Precursor FOREIGN KEY (PrecursorId) REFERENCES targetedms.Precursor(Id);
+ALTER TABLE targetedms.Precursor ADD CONSTRAINT FK_Precursor_Id FOREIGN KEY (Id) REFERENCES targetedms.GeneralPrecursor(Id);
 GO
 
 -- Add back Indexes
@@ -49,57 +100,6 @@ CREATE INDEX IX_HunterLibInfo_PrecursorId ON targetedms.HunterLibInfo(PrecursorI
 CREATE INDEX IX_NistLibInfo_PrecursorId ON targetedms.NistLibInfo(PrecursorId);
 CREATE INDEX IX_SpectrastLibInfo_PrecursorId ON targetedms.SpectrastLibInfo(PrecursorId);
 CREATE INDEX IX_Precursor_Id ON targetedms.Precursor(Id);
-GO
-
-
------------------- GeneralPrecursorID ---------------
------------------------------------------------------
-
--- Drop Indexes
-DROP INDEX targetedms.GeneralTransition.IX_Transition_PrecursorId;
-DROP INDEX targetedms.PrecursorAnnotation.IX_PrecursorAnnotation_PrecursorId;
-DROP INDEX targetedms.PrecursorChromInfo.IX_PrecursorChromInfo_PrecursorId;
-GO
-
--- Drop Constraints
-ALTER TABLE targetedms.GeneralTransition DROP CONSTRAINT FK_GeneralTransition_GPId;
-ALTER TABLE targetedms.Precursor DROP CONSTRAINT FK_Precursor_Id;
-ALTER TABLE targetedms.PrecursorAnnotation DROP CONSTRAINT FK_PrecursorAnnotation_PrecursorId;
-ALTER TABLE targetedms.PrecursorAnnotation DROP CONSTRAINT UQ_PrecursorAnnotation_Name_Precursor;
-ALTER TABLE targetedms.PrecursorChromInfo DROP CONSTRAINT FK_PrecursorChromInfo_PrecursorId;
-ALTER TABLE targetedms.MoleculePrecursor DROP CONSTRAINT FK_Id;
-ALTER TABLE targetedms.MoleculePrecursor DROP CONSTRAINT PK_MoleculePrecursorId;
-GO
-
--- GeneralPrecursor -- change Id
-ALTER TABLE targetedms.GeneralPrecursor DROP CONSTRAINT PK_Precursor;
-GO
-ALTER TABLE targetedms.GeneralPrecursor ALTER COLUMN Id bigint NOT NULL;
-GO
-ALTER TABLE targetedms.GeneralPrecursor ADD CONSTRAINT PK_Precursor PRIMARY KEY (Id);
-GO
-
--- change Columns
-ALTER TABLE targetedms.GeneralTransition ALTER COLUMN GeneralPrecursorId bigint NOT NULL;
-ALTER TABLE targetedms.PrecursorAnnotation ALTER COLUMN PrecursorId bigint NOT NULL;
-ALTER TABLE targetedms.PrecursorChromInfo ALTER COLUMN PrecursorId bigint NOT NULL;
-ALTER TABLE targetedms.MoleculePrecursor ALTER COLUMN Id bigint NOT NULL;
-GO
-
--- Add back constraints
-ALTER TABLE targetedms.GeneralTransition ADD CONSTRAINT FK_GeneralTransition_GPId FOREIGN KEY (GeneralPrecursorId) REFERENCES targetedms.GeneralPrecursor(Id);
-ALTER TABLE targetedms.Precursor ADD CONSTRAINT FK_Precursor_Id FOREIGN KEY (Id) REFERENCES targetedms.GeneralPrecursor(Id);
-ALTER TABLE targetedms.PrecursorAnnotation  ADD CONSTRAINT FK_PrecursorAnnotation_PrecursorId FOREIGN KEY (PrecursorId) REFERENCES targetedms.GeneralPrecursor(Id)
-ALTER TABLE targetedms.PrecursorAnnotation  ADD CONSTRAINT UQ_PrecursorAnnotation_Name_Precursor UNIQUE (Name, PrecursorId);
-ALTER TABLE targetedms.PrecursorChromInfo ADD CONSTRAINT FK_PrecursorChromInfo_PrecursorId FOREIGN KEY (PrecursorId) REFERENCES targetedms.GeneralPrecursor(Id);
-ALTER TABLE targetedms.MoleculePrecursor ADD CONSTRAINT FK_Id FOREIGN KEY (Id) REFERENCES targetedms.GeneralPrecursor (Id);
-ALTER TABLE targetedms.MoleculePrecursor ADD CONSTRAINT PK_MoleculePrecursorId PRIMARY KEY (Id);
-GO
-
--- Add back Indexes
-CREATE INDEX IX_Transition_PrecursorId ON targetedms.GeneralTransition(GeneralPrecursorId);
-CREATE INDEX IX_PrecursorAnnotation_PrecursorId ON targetedms.PrecursorAnnotation(PrecursorId);
-CREATE INDEX IX_PrecursorChromInfo_PrecursorId ON targetedms.PrecursorChromInfo(PrecursorId);
 GO
 
 
@@ -129,7 +129,7 @@ GO
 -- Change GTId
 ALTER TABLE targetedms.GeneralTransition DROP CONSTRAINT PK_Transition;
 GO
-ALTER TABLE targetedms.GeneralTransition ALTER COLUMN Id bigint;
+ALTER TABLE targetedms.GeneralTransition ALTER COLUMN Id bigint NOT NULL;
 GO
 ALTER TABLE targetedms.GeneralTransition ADD CONSTRAINT PK_Transition PRIMARY KEY (Id);
 GO

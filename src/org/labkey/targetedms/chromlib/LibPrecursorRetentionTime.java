@@ -112,8 +112,8 @@ public class LibPrecursorRetentionTime implements ObjectWithId
     @Override
     public int hashCode()
     {
-        int result = Math.toIntExact(_precursorId);
-        result = Math.toIntExact(31 * result + _sampleFileId);
+        int result = (int) _precursorId;
+        result = (int) (31 * result + _sampleFileId);
         result = 31 * result + (_retentionTime != null ? _retentionTime.hashCode() : 0);
         result = 31 * result + (_startTime != null ? _startTime.hashCode() : 0);
         result = 31 * result + (_endTime != null ? _endTime.hashCode() : 0);

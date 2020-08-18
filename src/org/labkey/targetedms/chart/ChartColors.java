@@ -78,16 +78,16 @@ public class ChartColors
 
     public static Color getTransitionColor(long index)
     {
-        return TRANSITIONS[Math.toIntExact(index % TRANSITIONS.length)];
+        return TRANSITIONS[(int) (index % TRANSITIONS.length)];
     }
 
     public static Color getPrecursorColor(long index)
     {
-        return PRECURSORS[Math.toIntExact(index % PRECURSORS.length)];
+        return PRECURSORS[(int) (index % PRECURSORS.length)];
     }
 
     public static Color getIsotopeColor(long index)
     {
-        return ISOTOPES[Math.toIntExact(index % ISOTOPES.length)];
+        return ISOTOPES[(int) (index % ISOTOPES.length)];
     }
 }

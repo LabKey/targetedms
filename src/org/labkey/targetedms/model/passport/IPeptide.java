@@ -172,6 +172,6 @@ public class IPeptide
     }
 
     public int hashCode() {
-        return Math.toIntExact(getPanoramaPeptideId());
+        return (int) getPanoramaPeptideId();
     }
 }

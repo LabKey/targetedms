@@ -199,7 +199,7 @@ public class LibTransition implements ObjectWithId
     @Override
     public int hashCode()
     {
-        int result = Math.toIntExact(_precursorId);
+        int result = (int) _precursorId;
         result = 31 * result + (_mz != null ? _mz.hashCode() : 0);
         result = 31 * result + (_charge != null ? _charge.hashCode() : 0);
         result = 31 * result + (_neutralMass != null ? _neutralMass.hashCode() : 0);
