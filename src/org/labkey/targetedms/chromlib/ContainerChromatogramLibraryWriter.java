@@ -89,7 +89,7 @@ public class ContainerChromatogramLibraryWriter
     private ProteinService _proteinService;
 
     private TargetedMSRun.RepresentativeDataState _libraryType = null;
-    private Integer _bestReplicateIdForCurrentPeptideGroup;
+    private Long _bestReplicateIdForCurrentPeptideGroup;
 
     private User _user;
 

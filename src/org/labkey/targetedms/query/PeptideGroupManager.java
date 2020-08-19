@@ -235,7 +235,7 @@ public class PeptideGroupManager
         return count != null && count == uniqueIds.size();
     }
 
-    public static Integer getBestReplicateId(PeptideGroup peptideGroup)
+    public static Long getBestReplicateId(PeptideGroup peptideGroup)
     {
         if(peptideGroup == null)
             return null;
@@ -273,7 +273,7 @@ public class PeptideGroupManager
         Map<String, Object>[] mapArray = new SqlSelector(TargetedMSManager.getSchema(), sql).getMapArray();
         if(mapArray != null && mapArray.length > 0)
         {
-            return (Integer) mapArray[0].get("ReplicateId");
+            return (Long) mapArray[0].get("ReplicateId");
         }
         return null;
     }
