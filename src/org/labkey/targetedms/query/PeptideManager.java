@@ -343,9 +343,9 @@ public class PeptideManager
         }
     }
 
-    public static void removeRunCachedResults(List<Integer> deletedRunIds)
+    public static void removeRunCachedResults(List<Long> deletedRunIds)
     {
-        for(Integer runId: deletedRunIds)
+        for(Long runId: deletedRunIds)
         {
             _peptideIdsWithSpectra.remove(String.valueOf(runId));
         }

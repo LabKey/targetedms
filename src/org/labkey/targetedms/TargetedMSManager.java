@@ -1600,7 +1600,7 @@ public class TargetedMSManager
     {
         // Get a list of deleted runs
         SQLFragment sql = new SQLFragment("SELECT Id FROM " + getTableInfoRuns() + " WHERE Deleted =  ?", true);
-        List<Integer> deletedRunIds = new SqlSelector(getSchema(), sql).getArrayList(Integer.class);
+        List<Long> deletedRunIds = new SqlSelector(getSchema(), sql).getArrayList(Long.class);
         if(deletedRunIds.size() > 0)
         {
             ModificationManager.removeRunCachedResults(deletedRunIds);

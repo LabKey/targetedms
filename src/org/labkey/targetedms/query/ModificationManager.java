@@ -306,7 +306,7 @@ public class ModificationManager
      * @param runId
      * @return  PeptideId/IsotopeLabelId -> Set of indexes where the PeptideId/IsotopeLabelId has a isotope modification
      */
-    private static Map<Pair<Integer,Integer>, Set<Integer>> getPeptideIsotopeModIndexMap(long runId)
+    private static Map<Pair<Long,Long>, Set<Integer>> getPeptideIsotopeModIndexMap(long runId)
     {
         SQLFragment sql = new SQLFragment();
         sql.append(" SELECT mod.PeptideId AS peptideId, rmod.isotopeLabelId AS isotopeLabelId, mod.IndexAA AS indexAA ");
@@ -329,24 +329,14 @@ public class ModificationManager
         sql.append(" AND ");
         sql.append(" mod.isotopeModId = rmod.isotopeModId ");
 
-        final Map<Pair<Integer, Integer>, Set<Integer>> peptideModIndexMap = new HashMap<>();
+        final Map<Pair<Long, Long>, Set<Integer>> peptideModIndexMap = new HashMap<>();
 
-        new SqlSelector(getSchema(), sql).forEach(new Selector.ForEachBlock<ResultSet>()
-        {
-            @Override
-            public void exec(ResultSet rs) throws SQLException
-            {
-                Pair<Integer, Integer> key = new Pair<>(rs.getInt("peptideId"), rs.getInt("isotopeLabelId"));
-                int index = rs.getInt("indexAa");
+        new SqlSelector(getSchema(), sql).forEach(rs -> {
+            Pair<Long, Long> key = new Pair<>(rs.getLong("peptideId"), rs.getLong("isotopeLabelId"));
+            int index = rs.getInt("indexAa");
 
-                Set<Integer> modIndexes = peptideModIndexMap.get(key);
-                if(modIndexes == null)
-                {
-                    modIndexes = new HashSet<>();
-                    peptideModIndexMap.put(key, modIndexes);
-                }
-                modIndexes.add(index);
-            }
+            Set<Integer> modIndexes = peptideModIndexMap.computeIfAbsent(key, k -> new HashSet<>());
+            modIndexes.add(index);
         });
 
         return Collections.unmodifiableMap(peptideModIndexMap);
@@ -376,32 +366,26 @@ public class ModificationManager
         }
         else
         {
-            Map<Pair<Integer,Integer>, Set<Integer>> modIndexesForRun = _peptideIsotopeModIndexes.get(String.valueOf(runId), null,
-                    new CacheLoader<String, Map<Pair<Integer,Integer>, Set<Integer>>>(){
-                        @Override
-                        public Map<Pair<Integer, Integer>, Set<Integer>> load(String runId, @Nullable Object argument)
-                        {
-                            return getPeptideIsotopeModIndexMap(Integer.valueOf(runId));
-                        }
-                    });
+            Map<Pair<Long,Long>, Set<Integer>> modIndexesForRun = _peptideIsotopeModIndexes.get(String.valueOf(runId), null,
+                    (runId1, argument) -> getPeptideIsotopeModIndexMap(Long.valueOf(runId1)));
 
             return modIndexesForRun.get(new Pair<>(peptideId, isotopeLabelId));
         }
     }
 
-    public static void removeRunCachedResults(List<Integer> deletedRunIds)
+    public static void removeRunCachedResults(List<Long> deletedRunIds)
     {
         if(deletedRunIds == null)
             return;
 
-        for(Integer runId: deletedRunIds)
+        for(Long runId: deletedRunIds)
         {
             _peptideIsotopeModIndexes.remove(String.valueOf(runId));
             _peptideStrModIndexes.remove(String.valueOf(runId));
         }
     }
 
-    private static class PeptideIsotopeModIndexes extends DatabaseCache<String, Map<Pair<Integer,Integer>, Set<Integer>>>
+    private static class PeptideIsotopeModIndexes extends DatabaseCache<String, Map<Pair<Long,Long>, Set<Integer>>>
     {
         public PeptideIsotopeModIndexes()
         {

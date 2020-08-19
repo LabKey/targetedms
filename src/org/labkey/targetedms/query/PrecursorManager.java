@@ -760,9 +760,9 @@ public class PrecursorManager
         }
     }
 
-    public static void removeRunCachedResults(List<Integer> deletedRunIds)
+    public static void removeRunCachedResults(List<Long> deletedRunIds)
     {
-        for(Integer runId: deletedRunIds)
+        for(Long runId: deletedRunIds)
         {
             _precursorIdsWithChromatograms.remove(String.valueOf(runId));
             _precursorIdsWithSpectra.remove(String.valueOf(runId));
