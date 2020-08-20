@@ -363,6 +363,8 @@ GO
 ALTER TABLE targetedms.Replicate ALTER COLUMN CePredictorId bigint;
 ALTER TABLE targetedms.Replicate ALTER COLUMN DpPredictorId bigint;
 ALTER TABLE targetedms.PredictorSettings ALTER COLUMN PredictorId bigint NOT NULL;
+ALTER TABLE targetedms.transitionpredictionsettings ALTER COLUMN CePredictorId bigint;
+ALTER TABLE targetedms.transitionpredictionsettings ALTER COLUMN DpPredictorId bigint;
 GO
 
 -- Add back Constraints

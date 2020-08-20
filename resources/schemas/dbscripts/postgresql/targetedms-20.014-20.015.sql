@@ -72,5 +72,7 @@ ALTER TABLE targetedms.Predictor ALTER COLUMN Id TYPE bigint;
 ALTER TABLE targetedms.Replicate ALTER COLUMN CePredictorId TYPE bigint;
 ALTER TABLE targetedms.Replicate ALTER COLUMN DpPredictorId TYPE bigint;
 ALTER TABLE targetedms.PredictorSettings ALTER COLUMN PredictorId TYPE bigint;
+ALTER TABLE targetedms.transitionpredictionsettings ALTER COLUMN CePredictorId TYPE bigint;
+ALTER TABLE targetedms.transitionpredictionsettings ALTER COLUMN DpPredictorId TYPE bigint;
 
 
