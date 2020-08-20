@@ -256,7 +256,7 @@ public class PassportController extends SpringActionController
             p.setSpecies((String) map.get("species"));
             p.setPreferredname((String) map.get("preferredname"));
             p.setPepGroupId((Long) map.get("pgid"));
-            p.setSequenceId((Long) map.get("seqid"));
+            p.setSequenceId((Integer) map.get("seqid"));
             p.setDescription((String) map.get("description"));
             p.setSequence((String) map.get("protsequence"));
             p.setLength((Integer) map.get("length"));
@@ -266,7 +266,7 @@ public class PassportController extends SpringActionController
             f.setSoftwareVersion((String) map.get("softwareversion"));
             f.setCreatedDate((Date) map.get("created"));
             f.setModifiedDate((Date) map.get("modified"));
-            f.setRunId((Integer) map.get("runid"));
+            f.setRunId((Long) map.get("runid"));
 
             p.setFile(f);
             p.setAccession(accession);
