@@ -22,7 +22,7 @@ package org.labkey.targetedms.parser;
  */
 public class Instrument
 {
-    private int id;
+    private long id;
     private long runId;
 
     private String model;
@@ -40,12 +40,12 @@ public class Instrument
         this.runId = runId;
     }
 
-    public int getId()
+    public long getId()
     {
         return id;
     }
 
-    public void setId(int id)
+    public void setId(long id)
     {
         this.id = id;
     }

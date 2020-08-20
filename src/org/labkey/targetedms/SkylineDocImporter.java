@@ -437,7 +437,7 @@ public class SkylineDocImporter
     {
         ReplicateInfo replicateInfo = new ReplicateInfo();
 
-        Map<Instrument, Integer> instrumentIdMap = new HashMap<>();
+        Map<Instrument, Long> instrumentIdMap = new HashMap<>();
 
         Map<String, SampleFile> pathToSampleFile = new HashMap<>();
         for(SkylineReplicate skyReplicate: parser.getReplicates())
@@ -1970,7 +1970,7 @@ public class SkylineDocImporter
             try (ResultSet rs = TargetedMSManager.getSqlDialect().executeWithResults(_precursorChromInfoStmt))
             {
                 rs.next();
-                preChromInfo.setId(rs.getInt(1));
+                preChromInfo.setId(rs.getLong(1));
             }
         }
         catch (SQLException e)
@@ -2029,7 +2029,7 @@ public class SkylineDocImporter
     }
 
 
-    private void insertSampleFiles(ReplicateInfo replicateInfo, Map<Instrument, Integer> instrumentIdMap, Replicate replicate, Map<String, SampleFile> pathToSampleFile)
+    private void insertSampleFiles(ReplicateInfo replicateInfo, Map<Instrument, Long> instrumentIdMap, Replicate replicate, Map<String, SampleFile> pathToSampleFile)
     {
         for(SampleFile sampleFile: replicate.getSampleFileList())
         {
@@ -2046,7 +2046,7 @@ public class SkylineDocImporter
             {
                 Instrument instrument = combineInstrumentInfos(instrumentInfoList);
 
-                Integer instrumentId = instrumentIdMap.get(instrument);
+                Long instrumentId = instrumentIdMap.get(instrument);
                 if (instrumentId == null)
                 {
                     instrument.setRunId(_runId);

@@ -89,11 +89,43 @@ ALTER TABLE targetedms.MeasuredDriftTime ADD CONSTRAINT PK_MeasuredDriftTime PRI
 GO
 
 --------------------------------------------------------------------------------------------------
+ALTER TABLE targetedms.BibliospecLibInfo DROP CONSTRAINT pk_bibliospeclibinfo;
+GO
+ALTER TABLE targetedms.BibliospecLibInfo ALTER COLUMN Id bigint NOT NULL;
+GO
+ALTER TABLE targetedms.BibliospecLibInfo ADD CONSTRAINT pk_bibliospeclibinfo PRIMARY KEY (Id);
+GO
+
+--------------------------------------------------------------------------------------------------
+ALTER TABLE targetedms.ChromatogramLibInfo DROP CONSTRAINT PK_ChromatogramLibInfo;
+GO
+ALTER TABLE targetedms.ChromatogramLibInfo ALTER COLUMN Id bigint NOT NULL;
+GO
+ALTER TABLE targetedms.ChromatogramLibInfo ADD CONSTRAINT PK_ChromatogramLibInfo PRIMARY KEY (Id);
+GO
+
+--------------------------------------------------------------------------------------------------
+ALTER TABLE targetedms.HunterLibInfo DROP CONSTRAINT pk_hunterlibinfo;
+GO
+ALTER TABLE targetedms.HunterLibInfo ALTER COLUMN Id bigint NOT NULL;
+GO
+ALTER TABLE targetedms.HunterLibInfo ADD CONSTRAINT pk_hunterlibinfo PRIMARY KEY (Id);
+GO
+
+--------------------------------------------------------------------------------------------------
 ALTER TABLE targetedms.NistLibInfo DROP CONSTRAINT PK_NistLibInfo;
 GO
 ALTER TABLE targetedms.NistLibInfo ALTER COLUMN Id bigint NOT NULL;
 GO
 ALTER TABLE targetedms.NistLibInfo ADD CONSTRAINT PK_NistLibInfo PRIMARY KEY (Id);
+GO
+
+--------------------------------------------------------------------------------------------------
+ALTER TABLE targetedms.SpectrastLibInfo DROP CONSTRAINT PK_SpectrastLibInfo;
+GO
+ALTER TABLE targetedms.SpectrastLibInfo ALTER COLUMN Id bigint NOT NULL;
+GO
+ALTER TABLE targetedms.SpectrastLibInfo ADD CONSTRAINT PK_SpectrastLibInfo PRIMARY KEY (Id);
 GO
 
 --------------------------------------------------------------------------------------------------

@@ -2320,11 +2320,11 @@ public class TargetedMSManager
         // Create temp tables to help make the rollups efficient
         SqlExecutor executor = new SqlExecutor(getSchema());
         executor.execute("CREATE " + getSqlDialect().getTempTableKeyword() + " TABLE " +
-                precursorGroupingsTableName + "(Grouping " + (getSqlDialect().isSqlServer() ? "NVARCHAR" : "VARCHAR") + "(300), PrecursorId INT)");
+                precursorGroupingsTableName + "(Grouping " + (getSqlDialect().isSqlServer() ? "NVARCHAR" : "VARCHAR") + "(300), PrecursorId BIGINT)");
         executor.execute("CREATE " + getSqlDialect().getTempTableKeyword() + " TABLE " +
-                moleculeGroupingsTableName + "(Grouping " + (getSqlDialect().isSqlServer() ? "NVARCHAR" : "VARCHAR") + "(300), GeneralMoleculeId INT)");
+                moleculeGroupingsTableName + "(Grouping " + (getSqlDialect().isSqlServer() ? "NVARCHAR" : "VARCHAR") + "(300), GeneralMoleculeId BIGINT)");
         executor.execute("CREATE " + getSqlDialect().getTempTableKeyword() + " TABLE " +
-                areasTableName + "(Grouping " + (getSqlDialect().isSqlServer() ? "NVARCHAR" : "VARCHAR") + "(300), SampleFileId INT, Area REAL);");
+                areasTableName + "(Grouping " + (getSqlDialect().isSqlServer() ? "NVARCHAR" : "VARCHAR") + "(300), SampleFileId BIGINT, Area REAL);");
 
         // Populate the temp tables
         // TODO - filter based on run

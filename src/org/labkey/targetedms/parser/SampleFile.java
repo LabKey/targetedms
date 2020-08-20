@@ -27,7 +27,7 @@ import java.util.List;
 public class SampleFile extends SkylineEntity
 {
     private long _replicateId;
-    private Integer _instrumentId;
+    private Long _instrumentId;
     private String _filePath;
     /** User-specified in Skyline */
     private String _sampleName;
@@ -97,12 +97,12 @@ public class SampleFile extends SkylineEntity
         _modifiedTime = modifiedTime;
     }
 
-    public Integer getInstrumentId()
+    public Long getInstrumentId()
     {
         return _instrumentId;
     }
 
-    public void setInstrumentId(Integer instrumentId)
+    public void setInstrumentId(Long instrumentId)
     {
         _instrumentId = instrumentId;
     }

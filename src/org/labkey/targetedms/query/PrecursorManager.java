@@ -656,7 +656,7 @@ public class PrecursorManager
                     sql.append(" gm.PeptideGroupId = pg.Id ");
                     sql.append(" AND ");
                     sql.append("pg.RunId = ?");
-                    sql.add(Integer.valueOf(runId));
+                    sql.add(Long.valueOf(runId));
                     return Collections.unmodifiableSet(new HashSet<>(new SqlSelector(TargetedMSManager.getSchema(), sql).getCollection(Integer.class)));
                 }
             });
@@ -712,7 +712,7 @@ public class PrecursorManager
                 sql.append("bib.SpectrumLibraryId = specLib.Id");
                 sql.append(" AND ");
                 sql.append("specLib.RunId = ?");
-                sql.add(Integer.valueOf(runId1));
+                sql.add(Long.valueOf(runId1));
                 sql.append(" UNION ");
                 sql.append("SELECT DISTINCT hun.PrecursorId FROM ");
                 sql.append(TargetedMSManager.getTableInfoHunterLib(), "hun");
@@ -722,7 +722,7 @@ public class PrecursorManager
                 sql.append("hun.SpectrumLibraryId = specLib.Id");
                 sql.append(" AND ");
                 sql.append("specLib.RunId = ?");
-                sql.add(Integer.valueOf(runId1));
+                sql.add(Long.valueOf(runId1));
                 sql.append(" UNION ");
                 sql.append("SELECT DISTINCT nis.PrecursorId FROM ");
                 sql.append(TargetedMSManager.getTableInfoNistLib(), "nis");
@@ -732,7 +732,7 @@ public class PrecursorManager
                 sql.append("nis.SpectrumLibraryId = specLib.Id");
                 sql.append(" AND ");
                 sql.append("specLib.RunId = ?");
-                sql.add(Integer.valueOf(runId1));
+                sql.add(Long.valueOf(runId1));
                 sql.append(" UNION ");
                 sql.append("SELECT DISTINCT sp.PrecursorId FROM ");
                 sql.append(TargetedMSManager.getTableInfoSpectrastLib(), "sp");
@@ -742,7 +742,7 @@ public class PrecursorManager
                 sql.append("sp.SpectrumLibraryId = specLib.Id");
                 sql.append(" AND ");
                 sql.append("specLib.RunId = ?");
-                sql.add(Integer.valueOf(runId1));
+                sql.add(Long.valueOf(runId1));
                 sql.append(" UNION ");
                 sql.append("SELECT DISTINCT ch.PrecursorId FROM ");
                 sql.append(TargetedMSManager.getTableInfoChromatogramLib(), "ch");
@@ -752,7 +752,7 @@ public class PrecursorManager
                 sql.append("ch.SpectrumLibraryId = specLib.Id");
                 sql.append(" AND ");
                 sql.append("specLib.RunId = ?");
-                sql.add(Integer.valueOf(runId1));
+                sql.add(Long.valueOf(runId1));
                 return Set.copyOf(new SqlSelector(TargetedMSManager.getSchema(), sql).getCollection(Integer.class));
             });
 
