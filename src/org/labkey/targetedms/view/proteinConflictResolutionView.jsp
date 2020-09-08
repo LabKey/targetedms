@@ -128,7 +128,7 @@ $(document).ready(function () {
 
         if(!srcTd.hasClass('content_loaded'))
         {
-            var url = <%=q(conflictPeptidesUrl.toString())%> // +'newProteinId='+newProteinId+"&oldProteinId="+oldProteinId;
+            var url = <%=q(conflictPeptidesUrl)%> // +'newProteinId='+newProteinId+"&oldProteinId="+oldProteinId;
             var url;
             // alert(url);
 

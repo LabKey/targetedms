@@ -65,7 +65,7 @@
         <%= h(ChromatogramLibraryUtils.getDownloadFileName(c, currentRevision)) %>
     <%= h(Files.exists(archiveFile) ? "(" + FileUtils.byteCountToDisplaySize(Files.size(archiveFile)) + ")" : "") %>
     <br/>
-    Revision <%= h(currentRevision)%><br/>
+    Revision <%=currentRevision%><br/>
     <br/>
 <%= link("Archived Revisions", new ActionURL(TargetedMSController.ArchivedRevisionsAction.class, c))%>
 </tr>
