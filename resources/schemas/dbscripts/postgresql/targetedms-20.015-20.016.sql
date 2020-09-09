@@ -65,7 +65,8 @@ BEGIN
         SELECT CAST(current_setting('server_version_num') as INT) >= 100000
        )
     THEN
-        ALTER SEQUENCE targetedms.runs_id_seq as bigint;
+        EXECUTE
+        'ALTER SEQUENCE targetedms.runs_id_seq as bigint;
         ALTER SEQUENCE targetedms.predictor_id_seq as bigint;
         ALTER SEQUENCE targetedms.peptide_id_seq as bigint;
         ALTER SEQUENCE targetedms.instrument_id_seq as bigint;
@@ -107,7 +108,7 @@ BEGIN
         ALTER SEQUENCE targetedms.nistlibinfo_id_seq as bigint;
         ALTER SEQUENCE targetedms.spectrastlibinfo_id_seq as bigint;
         ALTER SEQUENCE targetedms.chromatogramlibinfo_id_seq as bigint;
-        ALTER SEQUENCE targetedms.hunterlibinfo_id_seq as bigint;
+        ALTER SEQUENCE targetedms.hunterlibinfo_id_seq as bigint;';
     END IF;
 END;
 $$ LANGUAGE plpgsql;
