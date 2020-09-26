@@ -53,8 +53,8 @@
     document.addEventListener("DOMContentLoaded", function() {
         protein.initialize();
     });
-    var chomatogramUrl = "<%=h(new ActionURL(TargetedMSController.PrecursorChromatogramChartAction.class, getContainer()))%>";
-    var showPeptideUrl = "<%=h(new ActionURL(TargetedMSController.ShowPeptideAction.class, getContainer()))%>";
+    var chomatogramUrl = "<%=h(urlFor(TargetedMSController.PrecursorChromatogramChartAction.class))%>";
+    var showPeptideUrl = "<%=h(urlFor(TargetedMSController.ShowPeptideAction.class))%>";
 </script>
 <!--END IMPORTS-->
 
@@ -63,11 +63,11 @@
 <div id="passportContainer">
     <div id="basicproteininfo">
         <h2 id="proteinName"><%=h(protein.getName())%>
-            <a href="<%=h(new ActionURL(TargetedMSController.DownloadDocumentAction.class, getContainer()).addParameter("id", protein.getFile().getRunId()))%>">
+            <a href="<%=h(urlFor(TargetedMSController.DownloadDocumentAction.class).addParameter("id", protein.getFile().getRunId()))%>">
                 <img src="<%=h(contextPath)%>/passport/img/download.png" style="width:30x; height:30px; margin-left:5px;" alt="Download Skyline dataset" title="Download Skyline dataset">
             </a><sub title="month/day/year" id="dataUploaded">Data Uploaded: <%=h(new SimpleDateFormat("MM-dd-yyyy").format(protein.getFile().getCreatedDate()))%></sub>
         </h2>
-        <p id="apiLinks">Sources:&nbsp;<a href="<%=h(new ActionURL(TargetedMSController.ShowProteinAction.class, getContainer()).addParameter("id", protein.getPepGroupId()))%>">Panorama</a> &#8759; <a href="https://www.uniprot.org/uniprot/<%=h(protein.getAccession())%>">Uniprot</a></p>
+        <p id="apiLinks">Sources:&nbsp;<a href="<%=h(urlFor(TargetedMSController.ShowProteinAction.class).addParameter("id", protein.getPepGroupId()))%>">Panorama</a> &#8759; <a href="https://www.uniprot.org/uniprot/<%=h(protein.getAccession())%>">Uniprot</a></p>
         <ul style="max-width:300px;"><!-- Color Scheme: http://paletton.com/#uid=72X0X0kCyk3sipxvvmIKxgXRodf-->
             <li style="border-left: 6px solid #A01C00">
                 <span>Protein:&nbsp;</span><%=h(protein.getPreferredname())%></li>
