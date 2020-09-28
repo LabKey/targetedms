@@ -105,6 +105,17 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
     @Override
     protected void doCleanup(boolean afterTest) throws TestTimeoutException
     {
+        // Wait for active requests to finish processing into an attempt to avoid a SQL Server deadlock exception between
+        // the request and the delete
+        beginAt("/admin-memTracker.view");
+        int waits = 0;
+        while(waits < 20 && isRequestThreadActive())
+        {
+            waits++;
+            try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+            refresh();
+        }
+
         _containerHelper.deleteProject(getProjectName(), afterTest);
     }
 
