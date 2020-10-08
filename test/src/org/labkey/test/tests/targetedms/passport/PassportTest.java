@@ -28,7 +28,7 @@ import org.labkey.test.util.UIContainerHelper;
 import java.util.List;
 
 @Category({External.class, MS2.class})
-public class PassportTest  extends PassportTestPart implements PostgresOnlyTest
+public class PassportTest  extends PassportTestPart
 {
     public PassportTest()
     {
