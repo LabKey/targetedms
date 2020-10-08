@@ -140,12 +140,13 @@ public class PassportController extends SpringActionController
         {
             return;
         }
-        String url = "https://www.uniprot.org/uniprot/?query=accession:" + p.getAccession() + "&format=xml";
+        String url = "https://www.ebi.ac.uk/proteins/api/features/" + p.getAccession();
         List<IFeature> features = new ArrayList<>();
         try
         {
             URL obj = new URL(url);
             HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+            con.setRequestProperty("Accept", "application/xml");
             con.setRequestMethod("GET");
             int responseCode = con.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK)
@@ -168,8 +169,7 @@ public class PassportController extends SpringActionController
                 is.setCharacterStream(new StringReader(response.toString()));
 
                 Document doc = db.parse(is);
-                doc.getFirstChild();
-                Element entry = (Element) doc.getFirstChild().getFirstChild();
+                Element entry = (Element) doc.getFirstChild();
                 NodeList featureElements = entry.getElementsByTagName("feature");
                 for (int i = 0; i < featureElements.getLength(); i++)
                 {
