@@ -115,6 +115,10 @@ public class PassportController extends SpringActionController
         @Override
         public ModelAndView getView(ProteinForm form, BindException errors)
         {
+            if (form.getProteinId() == null)
+            {
+                throw new NotFoundException("No valid protein ID specified");
+            }
             IProtein protein = getProtein(form.getProteinId());
 
             if (null != protein)
