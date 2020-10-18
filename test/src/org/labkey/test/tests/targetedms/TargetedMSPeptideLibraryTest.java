@@ -26,6 +26,7 @@ import org.labkey.test.components.CustomizeView;
 import org.labkey.test.components.targetedms.TargetedMSRunsTable;
 import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.LogMethod;
+import org.labkey.test.util.PipelineStatusTable;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,6 +43,7 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
 {
     private static final String SKY_FILE1 = "Stergachis-SupplementaryData_2_a.sky.zip";
     private static final String SKY_FILE2 = "Stergachis-SupplementaryData_2_b.sky.zip";
+    private static final String SKY_FILE3 = "MRMer_renamed_protein.zip";
 
     @Test
     public void testSteps()
@@ -50,11 +52,31 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
         importData(SKY_FILE1);
         verifyRevision1();
         importData(SKY_FILE2, 2);
+        testImportFailAfterConflict();
         verifyRevision2();
         verifyAndResolveConflicts();
         verifyRevision3();
         deleteSkyFile(SKY_FILE2);
         verifyRevision4();
+        testImportSucceedAfterConflictResolved();
+    }
+
+    private void testImportFailAfterConflict()
+    {
+        // Imports in a library folder with conflicts should fail
+        importData(SKY_FILE3, 3, true);
+        PipelineStatusTable statusTable = new PipelineStatusTable(getDriver());
+        var status = statusTable.clickStatusLink("Skyline document import - MRMer_renamed_protein.zip");
+        status.assertLogTextContains("The library folder has conflicts.", "New Skyline documents can be added to the folder after the conflicts have been resolved");
+
+        checkExpectedErrors(1); // Clear the error to keep the test from failing
+    }
+
+    private void testImportSucceedAfterConflictResolved()
+    {
+        // Delete the failed job first otherwise the test fails
+        deletePipelineJob("Skyline document import - MRMer_renamed_protein.zip", false);
+        importData(SKY_FILE3, 3);
     }
 
     @Override
@@ -137,7 +159,9 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
         int totalPrecursorCount = 103;
 
         // Download link, library statistics and revision in the ChromatogramLibraryDownloadWebpart
-        verifyChromatogramLibraryDownloadWebPart(totalPeptideCount, 615, 2);
+        // The folder has conflicts so the download link and the numbers should be for the last stable library built
+        // before conflicts, which is revision 1.
+        verifyChromatogramLibraryDownloadWebPart(55, 343, 1, true);
 
         // Verify the number of rows in the Peptides table
         verifyLibraryPeptideCount(totalPeptideCount);
@@ -171,8 +195,22 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
 
     private void verifyChromatogramLibraryDownloadWebPart(int peptideCount, int transitionCount, int revision)
     {
+        verifyChromatogramLibraryDownloadWebPart(peptideCount, transitionCount, revision, false);
+    }
+
+    private void verifyChromatogramLibraryDownloadWebPart(int peptideCount, int transitionCount, int revision, boolean hasConflict)
+    {
         clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
-        assertElementPresent(Locator.xpath("//img[contains(@src, 'graphLibraryStatistics.view')]"));
+        if(!hasConflict)
+        {
+            assertElementPresent(Locator.xpath("//img[contains(@src, 'graphLibraryStatistics.view')]"));
+        }
+        else
+        {
+            // The library stats graph is not displayed if the folder has conflicts.
+            assertElementNotPresent(Locator.xpath("//img[contains(@src, 'graphLibraryStatistics.view')]"));
+            assertTextPresent("The library cannot be extended until the conflicts are resolved. The download link below is for the last stable version of the library");
+        }
         assertTextPresent(
                 peptideCount + " peptides",
                 transitionCount + " ranked transitions");
@@ -184,9 +222,10 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
     private void verifyAndResolveConflicts()
     {
         log("Verifying that expected conflicts exist");
-        assertElementPresent(Locator.xpath("//div[contains(text(), \"There are 10 conflicting peptides in this folder.\") and contains(@style, \"color:red; font-weight:bold\")]"));
-        assertElementPresent(Locator.xpath("//tr[td[div[a[contains(@style,'color:red; text-decoration:underline;') and text()='Resolve conflicts']]]]"));
-        clickAndWait(Locator.linkContainingText("Resolve conflicts"));
+        assertElementPresent(Locator.xpath("//div[contains(text(), \"The library folder has 10 conflicting peptides.\") and contains(@style, \"color:red; font-weight:bold\")]"));
+        var resolveConflictsLink = Locator.linkWithText("Resolve conflicts");
+        assertElementPresent(resolveConflictsLink);
+        clickAndWait(resolveConflictsLink);
         assertTextPresent(
                 "Conflicting Peptides in Document",
                 "Current Library Peptides",
@@ -251,6 +290,7 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
 
     private void deleteSkyFile(String skyFile)
     {
+        clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
         TargetedMSRunsTable runsTable = new TargetedMSRunsTable(this);
         runsTable.deleteRun(SKY_FILE2);
     }
