@@ -213,9 +213,15 @@ public class TargetedMSLibraryTest extends TargetedMSTest
     private void verifyAndResolveConflicts()
     {
         log("Verifying that expected conflicts exist");
-        assertElementPresent(Locator.xpath("//div[contains(text(), \"The library folder has 4 conflicting proteins.\") and contains(@style, \"color:red; font-weight:bold\")]"));
-        var resolveConflictsLink = Locator.linkWithText("Resolve conflicts");
+        String[] conflictText = new String[] {"The last Skyline document imported in this folder had 4 proteins that were already a part of the library",
+                "Please click the link below to resolve conflicts and choose the version of each protein that should be included in the library",
+                "The library cannot be extended until the conflicts are resolved. The download link below is for the last stable version of the library"};
+        assertTextPresent(conflictText);
+        var resolveConflictsLink = Locator.linkWithText("RESOLVE CONFLICTS");
         assertElementPresent(resolveConflictsLink);
+
+        verifyConflictsAsReadOnlyUser();
+
         clickAndWait(resolveConflictsLink);
         assertTextPresent(
                 "Conflicting Proteins in Document",
@@ -244,6 +250,15 @@ public class TargetedMSLibraryTest extends TargetedMSTest
         }
 
         clickButton("Apply Changes");
+    }
+
+    private void verifyConflictsAsReadOnlyUser()
+    {
+        impersonateRole("Reader");
+        String conflictText = "The chromatogram library in this folder is in a conflicted state and is awaiting action from a folder administrator to resolve the conflicts. " +
+                "The download link below is for the last stable version of the library.";
+        assertTextPresent(conflictText);
+        stopImpersonating(false);
     }
 
     @LogMethod

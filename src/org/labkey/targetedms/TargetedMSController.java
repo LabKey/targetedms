@@ -5972,7 +5972,7 @@ public class TargetedMSController extends SpringActionController
             }
             catch (IOException | SQLException e)
             {
-                LOG.error("Error reading from chromatogram library file for revision " + libRevision, e);
+                LOG.error("Error reading from chromatogram library file for revision " + libRevision + " in container " + container.getPath(), e);
                 return null;
             }
         }

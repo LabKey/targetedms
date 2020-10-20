@@ -52,31 +52,11 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
         importData(SKY_FILE1);
         verifyRevision1();
         importData(SKY_FILE2, 2);
-        testImportFailAfterConflict();
         verifyRevision2();
         verifyAndResolveConflicts();
         verifyRevision3();
         deleteSkyFile(SKY_FILE2);
         verifyRevision4();
-        testImportSucceedAfterConflictResolved();
-    }
-
-    private void testImportFailAfterConflict()
-    {
-        // Imports in a library folder with conflicts should fail
-        importData(SKY_FILE3, 3, true);
-        PipelineStatusTable statusTable = new PipelineStatusTable(getDriver());
-        var status = statusTable.clickStatusLink("Skyline document import - MRMer_renamed_protein.zip");
-        status.assertLogTextContains("The library folder has conflicts.", "New Skyline documents can be added to the folder after the conflicts have been resolved");
-
-        checkExpectedErrors(1); // Clear the error to keep the test from failing
-    }
-
-    private void testImportSucceedAfterConflictResolved()
-    {
-        // Delete the failed job first otherwise the test fails
-        deletePipelineJob("Skyline document import - MRMer_renamed_protein.zip", false);
-        importData(SKY_FILE3, 3);
     }
 
     @Override
@@ -222,8 +202,11 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
     private void verifyAndResolveConflicts()
     {
         log("Verifying that expected conflicts exist");
-        assertElementPresent(Locator.xpath("//div[contains(text(), \"The library folder has 10 conflicting peptides.\") and contains(@style, \"color:red; font-weight:bold\")]"));
-        var resolveConflictsLink = Locator.linkWithText("Resolve conflicts");
+        String[] conflictText = new String[] {"The last Skyline document imported in this folder had 10 peptides that were already a part of the library",
+                "Please click the link below to resolve conflicts and choose the version of each peptide that should be included in the library",
+                "The library cannot be extended until the conflicts are resolved. The download link below is for the last stable version of the library"};
+        assertTextPresent(conflictText);
+        var resolveConflictsLink = Locator.linkWithText("RESOLVE CONFLICTS");
         assertElementPresent(resolveConflictsLink);
         clickAndWait(resolveConflictsLink);
         assertTextPresent(

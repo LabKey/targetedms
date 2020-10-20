@@ -19,7 +19,6 @@ import org.labkey.api.data.Container;
 import org.labkey.api.data.DbSchema;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SimpleFilter;
-import org.labkey.api.data.SqlExecutingSelector;
 import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.TableSelector;
@@ -481,11 +480,6 @@ public class ConflictResultsManager
        return conflictCount;
     }
 
-    public static boolean hasConflicts(User user, Container container)
-    {
-        return getConflictCount(user, container) != 0;
-    }
-
     public static TargetedMSRun getOldestRunWithConflicts(Container container)
     {
         Integer runId = getOldestConflictRunId(container);
@@ -517,19 +511,5 @@ public class ConflictResultsManager
 
         DbSchema schema = TargetedMSManager.getSchema();
         return new SqlSelector(schema, schema.getSqlDialect().limitRows(sqlFragment, 1)).getObject(Integer.class);
-    }
-
-    public static TargetedMSRun getLastStableLibraryRun(Container container)
-    {
-        Integer runId = getOldestConflictRunId(container);
-
-        SQLFragment sql = new SQLFragment("SELECT MAX(id) FROM ").append(TargetedMSManager.getTableInfoRuns(), "r");
-        if(runId != null)
-        {
-            sql.append(" WHERE id < ?").add(runId);
-        }
-        Integer lastStableLibRunId = new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Integer.class);
-
-        return lastStableLibRunId != null ? TargetedMSManager.getRun(lastStableLibRunId) : null;
     }
 }

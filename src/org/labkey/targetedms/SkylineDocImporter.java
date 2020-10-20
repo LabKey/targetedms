@@ -214,7 +214,7 @@ public class SkylineDocImporter
         if(_isProteinLibraryDoc || _isPeptideLibraryDoc)
         {
             var conflictCount = ConflictResultsManager.getConflictCount(_user, _container);
-            if(conflictCount != 0)
+            if(conflictCount > 0)
             {
                 var conflictTarget = _isProteinLibraryDoc ? "protein" : "peptide";
                 throw new PipelineJobException("The library folder has conflicts." +

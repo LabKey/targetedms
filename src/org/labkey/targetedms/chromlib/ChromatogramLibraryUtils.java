@@ -15,6 +15,7 @@
  */
 package org.labkey.targetedms.chromlib;
 
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.PropertyManager;
 import org.labkey.api.pipeline.LocalDirectory;
@@ -83,13 +84,21 @@ public class ChromatogramLibraryUtils
         }
         else
         {
-            // Return the library version that was created just before the oldest run with conflicts.
+            // Return the library revision that was created just before the oldest run with conflicts.
             // This should be the last revision that was built with no conflicts.
             for(int i = currentRevision - 1; i > 0; i--)
             {
                 Path clibFile = getChromLibFile(container, i);
-                if (Files.exists(clibFile) && !Files.isDirectory(clibFile)
-                        && run.getCreated().after(new Date(Files.getLastModifiedTime(clibFile).toMillis())))
+                if(!Files.exists(clibFile))
+                {
+                    // If a .clib file does not exist it may be because the user deleted it.  In this case
+                    // we cannot be sure that the last stable .clib is still on the server. If, for example, the last
+                    // stable version was deleted we do not want the user to download an older library that may have been
+                    // built when the folder had conflicts.
+                    // Return a revision only if the revision chain is intact.
+                    return NO_LIB_REVISION;
+                }
+                else if (run.getCreated().after(new Date(Files.getLastModifiedTime(clibFile).toMillis())))
                 {
                     return i;
                 }
@@ -198,6 +207,7 @@ public class ChromatogramLibraryUtils
         }
     }
 
+    @Nullable
     public static TargetedMSController.ChromLibAnalyteCounts getLibraryAnalyteCounts(Container container, int libRevision) throws IOException, SQLException
     {
         Path archiveFile = ChromatogramLibraryUtils.getChromLibFile(container, libRevision);

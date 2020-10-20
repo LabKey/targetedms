@@ -54,7 +54,7 @@
                                            new ActionURL(TargetedMSController.ShowProteinConflictUiAction.class, c) :
                                            new ActionURL(TargetedMSController.ShowPrecursorConflictUiAction.class, c);
 
-    boolean readOnlyUser = !getContainer().hasPermission(getUser(), InsertPermission.class);
+    boolean readOnlyUser = !getContainer().hasPermission(getUser(), InsertPermission.class); // Importing a document and resolving conflicts require Insert permissions.
 
     String conflictMessage = "";
     String analyteType = folderType == TargetedMSService.FolderType.LibraryProtein ? "protein" : "peptide";
@@ -62,10 +62,10 @@
     if(hasConflicts)
     {
         String stableLibFileText = libFileExists ? "The download link below is for the last stable version of the library."
-                : "The last stable version of the library could not be found on the server"; // In case the file has been deleted from the server.
+                : "The last stable version of the library could not be found on the server."; // In case the file has been deleted from the server.
         conflictMessage = readOnlyUser ? "The chromatogram library in this folder is in a conflicted state and is awaiting action from a folder administrator to resolve the conflicts. " +
                 stableLibFileText
-                : "The last Skyline document imported in this folder had " + StringUtilsLabKey.pluralize(conflictCount, analyteType) + " that were already a part of the library.  " +
+                : "The last Skyline document imported in this folder had " + StringUtilsLabKey.pluralize(conflictCount, analyteType) + " that were already a part of the library. " +
                 "Please click the link below to resolve conflicts and choose the version of each " + analyteType + " that should be included in the library. " +
                 "The library cannot be extended until the conflicts are resolved. " + stableLibFileText;
     }
@@ -76,9 +76,8 @@
 <% if(hasConflicts) { %>
     <div style="color:red; margin-top:10px;"><%= h(conflictMessage) %></div>
     <% if(!readOnlyUser) { %>
-      <div style="color:red; font-weight:bold;">
-      The library folder has <%= h(StringUtilsLabKey.pluralize(conflictCount, "conflicting " + analyteType)) %>.&nbsp;
-      <a style="color:red; text-decoration:underline;" href="<%= h(conflictViewUrl) %>">Resolve conflicts </a>
+      <div style="color:red; font-weight:bold;font-style:italic;margin-top:5px; margin-bottom:5px;">
+      <a style="color:red; text-decoration:underline;" href="<%= h(conflictViewUrl) %>">RESOLVE CONFLICTS</a>
       </div>
     <% } %>
 <% } %>
@@ -109,7 +108,7 @@
     <br/>
     Revision <%=libRevision%><br/>
     <br/>
-<% } else { %>
+<% } else if(libRevision != ChromatogramLibraryUtils.NO_LIB_REVISION) { %>
     <p>Library file <%= h(ChromatogramLibraryUtils.getDownloadFileName(c, libRevision)) %> does not exist on the server.</p>
 <% } %>
 <%= link("Archived Revisions", new ActionURL(TargetedMSController.ArchivedRevisionsAction.class, c))%>
