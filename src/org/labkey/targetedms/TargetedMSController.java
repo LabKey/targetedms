@@ -5955,7 +5955,6 @@ public class TargetedMSController extends SpringActionController
         return newMap;
     }
 
-    @Nullable
     public static ChromLibAnalyteCounts getChromLibAnalyteCounts(User user, Container container, int libRevision)
     {
         int currentLibRevision = ChromatogramLibraryUtils.getCurrentRevision(container, user);
@@ -5965,16 +5964,18 @@ public class TargetedMSController extends SpringActionController
         }
         else
         {
+            ChromLibAnalyteCounts counts = null;
             // Read the counts from the .clib file on the filesystem
             try
             {
-                return ChromatogramLibraryUtils.getLibraryAnalyteCounts(container, libRevision);
+                counts = ChromatogramLibraryUtils.getLibraryAnalyteCounts(container, libRevision);
             }
             catch (IOException | SQLException e)
             {
-                LOG.error("Error reading from chromatogram library file for revision " + libRevision + " in container " + container.getPath(), e);
-                return null;
+                LOG.error("Error reading from chromatogram library file " + ChromatogramLibraryUtils.getDownloadFileName(container, libRevision)
+                        + " in container " + container.getPath(), e);
             }
+            return counts == null ? ChromLibAnalyteCounts.NOT_EXISTS : counts;
         }
     }
 
@@ -5992,6 +5993,17 @@ public class TargetedMSController extends SpringActionController
         private int _peptideGroupCount;
         private int _peptideCount;
         private int _transitionCount;
+
+        public static ChromLibAnalyteCounts NOT_EXISTS = new ChromLibAnalyteCounts(-1, -1, -1);
+
+        public ChromLibAnalyteCounts() {}
+
+        private ChromLibAnalyteCounts(int peptideGroupCount, int peptideCount, int transitionCount)
+        {
+            _peptideGroupCount = peptideGroupCount;
+            _peptideCount = peptideCount;
+            _transitionCount = transitionCount;
+        }
 
         public int getPeptideGroupCount()
         {
@@ -6021,6 +6033,11 @@ public class TargetedMSController extends SpringActionController
         public void setTransitionCount(int transitionCount)
         {
             _transitionCount = transitionCount;
+        }
+
+        public boolean exists()
+        {
+            return _peptideGroupCount != -1 && _peptideCount != -1 && _transitionCount != -1;
         }
     }
 

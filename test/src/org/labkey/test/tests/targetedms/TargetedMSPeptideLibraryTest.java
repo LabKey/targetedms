@@ -206,7 +206,7 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
                 "Please click the link below to resolve conflicts and choose the version of each peptide that should be included in the library",
                 "The library cannot be extended until the conflicts are resolved. The download link below is for the last stable version of the library"};
         assertTextPresent(conflictText);
-        var resolveConflictsLink = Locator.linkWithText("RESOLVE CONFLICTS");
+        var resolveConflictsLink = Locator.tagWithClass("div", "labkey-download").descendant(Locator.linkWithText("RESOLVE CONFLICTS"));
         assertElementPresent(resolveConflictsLink);
         clickAndWait(resolveConflictsLink);
         assertTextPresent(

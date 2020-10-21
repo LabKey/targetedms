@@ -112,11 +112,11 @@ public class TargetedMSLibraryIrtTest extends TargetedMSIrtTest
     {
         log("Resolving conflicts");
         goToDashboard();
-        var resolveConflictsLink = Locator.linkWithText("RESOLVE CONFLICTS");
+
+        var resolveConflictsLink = Locator.tagWithClass("div", "labkey-download").descendant(Locator.linkWithText("RESOLVE CONFLICTS"));
         assertElementPresent(resolveConflictsLink);
         clickAndWait(resolveConflictsLink);
-        WebElement selectAllOldTargets = Locator.id("selectAllOld").findElement(this.getDriver());
-        selectAllOldTargets.click();
+        click(Locator.tagWithId("span", "selectAllOld"));
         clickButton("Apply Changes");
         libRevision++;
     }

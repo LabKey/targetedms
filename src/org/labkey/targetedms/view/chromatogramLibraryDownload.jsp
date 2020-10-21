@@ -42,9 +42,9 @@
     int libRevision = hasConflicts ? ChromatogramLibraryUtils.getLastStableLibRevision(c, user) : currentRevision;
 
     TargetedMSController.ChromLibAnalyteCounts chromLibAnalyteCounts = TargetedMSController.getChromLibAnalyteCounts(user, c, libRevision);
-    long peptideGroupCount = chromLibAnalyteCounts != null ? chromLibAnalyteCounts.getPeptideGroupCount() : 0;
-    long peptideCount = chromLibAnalyteCounts != null ? chromLibAnalyteCounts.getPeptideCount() : 0;
-    long transitionCount = chromLibAnalyteCounts != null ? chromLibAnalyteCounts.getTransitionCount() : 0;
+    long peptideGroupCount = chromLibAnalyteCounts.getPeptideGroupCount();
+    long peptideCount = chromLibAnalyteCounts.getPeptideCount();
+    long transitionCount = chromLibAnalyteCounts.getTransitionCount();
 
     DecimalFormat format = new DecimalFormat("#,###");
 
@@ -116,7 +116,7 @@
 </table>
 </div>
 
-<% if(chromLibAnalyteCounts != null) { %>
+<% if(chromLibAnalyteCounts.exists()) { %>
 <table width="100%">
 <tr>
 
