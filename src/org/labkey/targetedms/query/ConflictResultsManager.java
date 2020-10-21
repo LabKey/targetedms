@@ -489,7 +489,7 @@ public class ConflictResultsManager
     private static Integer getOldestConflictRunId(Container container)
     {
         SQLFragment sqlFragment = new SQLFragment();
-        sqlFragment.append(" SELECT r.id FROM ");
+        sqlFragment.append("SELECT r.id FROM ");
         sqlFragment.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "p");
         sqlFragment.append(" INNER JOIN ");
         sqlFragment.append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm");

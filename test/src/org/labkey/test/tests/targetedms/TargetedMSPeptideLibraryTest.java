@@ -189,7 +189,7 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
         {
             // The library stats graph is not displayed if the folder has conflicts.
             assertElementNotPresent(Locator.xpath("//img[contains(@src, 'graphLibraryStatistics.view')]"));
-            assertTextPresent("The library cannot be extended until the conflicts are resolved. The download link below is for the last stable version of the library");
+            assertTextPresent("The library cannot be extended until the conflicts are resolved", "The download link below is for the last stable version of the library");
         }
         assertTextPresent(
                 peptideCount + " peptides",

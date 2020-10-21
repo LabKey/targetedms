@@ -175,7 +175,7 @@ public class TargetedMSLibraryTest extends TargetedMSTest
         {
             // The library stats graph is not displayed if the folder has conflicts.
             assertElementNotPresent(Locator.xpath("//img[contains(@src, 'graphLibraryStatistics.view')]"));
-            assertTextPresent("The library cannot be extended until the conflicts are resolved. The download link below is for the last stable version of the library");
+            assertTextPresent("The library cannot be extended until the conflicts are resolved", "The download link below is for the last stable version of the library");
         }
         assertTextPresent(
                 proteinCount + " proteins", peptideCount + " ranked peptides",
@@ -255,8 +255,8 @@ public class TargetedMSLibraryTest extends TargetedMSTest
     private void verifyConflictsAsReadOnlyUser()
     {
         impersonateRole("Reader");
-        String conflictText = "The chromatogram library in this folder is in a conflicted state and is awaiting action from a folder administrator to resolve the conflicts. " +
-                "The download link below is for the last stable version of the library.";
+        String[] conflictText = new String[] {"The chromatogram library in this folder is in a conflicted state and is awaiting action from a folder administrator to resolve the conflicts",
+                "The download link below is for the last stable version of the library."};
         assertTextPresent(conflictText);
         stopImpersonating(false);
     }
