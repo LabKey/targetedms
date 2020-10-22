@@ -314,8 +314,12 @@ public class PrecursorManager
 
     public static List<PrecursorChromInfoPlus> getPrecursorChromInfosForPeptide(int peptideId, int sampleFileId, User user, Container container)
     {
+        SQLFragment quantitativeSql = new SQLFragment("(SELECT EXISTS (SELECT 1 FROM targetedms.generaltransition where (quantitative is NULL OR quantitative=true) AND generalprecursorid = pci.precursorid)) ");
+        quantitativeSql = TargetedMSManager.getSchema().getSqlDialect().wrapExistsExpression(quantitativeSql);
+
         SQLFragment sql = new SQLFragment("SELECT ");
         sql.append("pci.* , pg.Label AS groupName, pep.Sequence, pep.PeptideModifiedSequence, prec.ModifiedSequence, prec.Charge, label.Name AS isotopeLabel, label.Id AS isotopeLabelId");
+        sql.append(", ").append(quantitativeSql).append(" AS quantitative ");
         sql.append(" FROM ");
         joinTablesForPrecursorChromInfo(sql, user, container);
         sql.append(" WHERE ");
@@ -807,6 +811,36 @@ public class PrecursorManager
         sql.append(" AND ");
         sql.append(" gm.Id = " + peptideId);
         return new SqlSelector(TargetedMSManager.getSchema(), sql).exists();
+    }
+
+    @Nullable
+    public static Double getMinPrecursorPeakRt(PrecursorChromInfo pci)
+    {
+        if(pci == null)
+        {
+            return null;
+        }
+        if(pci.getMinStartTime() != null)
+        {
+            return pci.getMinStartTime();
+        }
+
+        return TransitionManager.getMinPrecursorPeakRt(pci.getId());
+    }
+
+    @Nullable
+    public static Double getMaxPrecursorPeakRt(PrecursorChromInfo pci)
+    {
+        if(pci == null)
+        {
+            return null;
+        }
+        if(pci.getMaxEndTime() != null)
+        {
+            return pci.getMaxEndTime();
+        }
+
+        return TransitionManager.getMaxPrecursorPeakRt(pci.getId());
     }
 
     private static class PrecursorIdsWithSpectra extends DatabaseCache<String, Set<Integer>>

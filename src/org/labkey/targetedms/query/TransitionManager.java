@@ -174,4 +174,68 @@ public class TransitionManager
         return new TableSelector(TargetedMSManager.getTableInfoTransitionChromInfo(),
                                  new SimpleFilter(FieldKey.fromParts("TransitionId"), transitionId), null).getCollection(TransitionChromInfo.class);
     }
+
+    public static Double getMinPrecursorPeakRt(int precursorChromInfoId)
+    {
+        SQLFragment sql = new SQLFragment("SELECT MIN(startTime) FROM ");
+        sql.append(TargetedMSManager.getTableInfoTransitionChromInfo(), "tci");
+        sql.append(" WHERE precursorChromInfoId=?").add(precursorChromInfoId);
+
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Double.class);
+    }
+
+    public static Double getMaxPrecursorPeakRt(int precursorChromInfoId)
+    {
+        SQLFragment sql = new SQLFragment("SELECT MAX(endTime) FROM ");
+        sql.append(TargetedMSManager.getTableInfoTransitionChromInfo(), "tci");
+        sql.append(" WHERE precursorChromInfoId=?").add(precursorChromInfoId);
+
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Double.class);
+    }
+
+    public static Double getMinGeneralMoleculeRt(int generalMoleculeId)
+    {
+        return getSummaryGeneralMoleculeRt(generalMoleculeId,"MIN", "startTime");
+    }
+
+    public static Double getMaxGeneralMoleculeRt(int generalMoleculeId)
+    {
+        return getSummaryGeneralMoleculeRt(generalMoleculeId, "MAX", "endTime");
+    }
+
+    private static Double getSummaryGeneralMoleculeRt(int generalMoleculeId, String function, String columnName)
+    {
+        return getSummaryTransitionRetentionTime(generalMoleculeId, null, function, columnName);
+    }
+
+    public static Double getMinGeneralMoleculeSampleRt(int generalMoleculeId, int sampleFileId)
+    {
+        return getSummaryTransitionRetentionTime(generalMoleculeId, sampleFileId, "MIN", "startTime");
+    }
+
+    public static Double getMaxGeneralMoleculeSampleRt(int generalMoleculeId, int sampleFileId)
+    {
+        return getSummaryTransitionRetentionTime(generalMoleculeId, sampleFileId, "MAX", "endTime");
+    }
+
+    private static Double getSummaryTransitionRetentionTime(int generalMoleculeId, Integer sampleFileId, String function, String columnName)
+    {
+        SQLFragment sql = new SQLFragment("SELECT ").append(function).append("(tci.").append(columnName).append(") FROM ");
+        sql.append(TargetedMSManager.getTableInfoTransitionChromInfo(), "tci");
+        sql.append(" INNER JOIN ");
+        sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
+        sql.append(" ON pci.id = tci.precursorChrominfoId ");
+        sql.append(" INNER JOIN ");
+        sql.append(TargetedMSManager.getTableInfoGeneralMoleculeChromInfo(), "gmci");
+        sql.append(" ON gmci.Id=pci.GeneralMoleculeChromInfoId");
+        sql.append(" WHERE ");
+        sql.append("gmci.GeneralMoleculeId=?").add(generalMoleculeId);
+        if(sampleFileId != null)
+        {
+            sql.append(" AND ");
+            sql.append("pci.SampleFileId = ?").add(sampleFileId);
+        }
+
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Double.class);
+    }
 }

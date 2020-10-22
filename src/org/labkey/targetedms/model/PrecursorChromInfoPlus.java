@@ -16,8 +16,7 @@
 package org.labkey.targetedms.model;
 
 import org.labkey.targetedms.parser.PrecursorChromInfo;
-
-import java.util.Comparator;
+import org.labkey.targetedms.query.PrecursorManager;
 
 /**
  * User: vsharma
@@ -34,6 +33,10 @@ public class PrecursorChromInfoPlus extends PrecursorChromInfo implements Precur
     private String _isotopeLabel;
 
     private int _isotopeLabelId;
+
+    private Double _minPeakRt;
+    private Double _maxPeakRt;
+    private boolean _quantitative;
 
     public String getGroupName()
     {
@@ -105,5 +108,36 @@ public class PrecursorChromInfoPlus extends PrecursorChromInfo implements Precur
     public void setIsotopeLabelId(int isotopeLabelId)
     {
         _isotopeLabelId = isotopeLabelId;
+    }
+
+    public Double getMinPeakRt()
+    {
+        if(_minPeakRt == null)
+        {
+            // min peak start and max peak end times were null for all the precursor chrom infos. This can happen if none of the
+            // transitions for this peptide / molecule were quantitative. We will get the min start and max end retention times
+            // from the transition chrom infos instead.
+            _minPeakRt = PrecursorManager.getMinPrecursorPeakRt(this);
+        }
+        return _minPeakRt == null ? 0 : _minPeakRt;
+    }
+
+    public Double getMaxPeakRt()
+    {
+        if(_maxPeakRt == null)
+        {
+            _maxPeakRt = PrecursorManager.getMaxPrecursorPeakRt(this);
+        }
+        return _maxPeakRt == null ? 0 : _maxPeakRt;
+    }
+
+    public boolean isQuantitative()
+    {
+        return _quantitative;
+    }
+
+    public void setQuantitative(boolean quantitative)
+    {
+        _quantitative = quantitative;
     }
 }

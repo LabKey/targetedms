@@ -135,8 +135,12 @@ public class MoleculePrecursorManager
 
     public static List<PrecursorChromInfoPlus> getPrecursorChromInfosForMolecule(int moleduleId, int sampleFileId, User user, Container container)
     {
+        SQLFragment quantitativeSql = new SQLFragment("(SELECT EXISTS (SELECT 1 FROM targetedms.generaltransition where (quantitative is NULL OR quantitative=true) AND generalprecursorid = pci.precursorid)) ");
+        quantitativeSql = TargetedMSManager.getSchema().getSqlDialect().wrapExistsExpression(quantitativeSql);
+
         SQLFragment sql = new SQLFragment("SELECT ");
         sql.append("pci.* , pg.Label AS groupName, mol.customIonName, prec.Charge");
+        sql.append(", ").append(quantitativeSql).append(" AS quantitative ");
         sql.append(" FROM ");
         joinTablesForMoleculePrecursorChromInfo(sql, user, container);
         sql.append(" WHERE ");
