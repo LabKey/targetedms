@@ -177,6 +177,7 @@ public class TransitionManager
 
     public static Double getMinPrecursorPeakRt(int precursorChromInfoId)
     {
+        // Get the min start time from the transition peaks
         SQLFragment sql = new SQLFragment("SELECT MIN(startTime) FROM ");
         sql.append(TargetedMSManager.getTableInfoTransitionChromInfo(), "tci");
         sql.append(" WHERE precursorChromInfoId=?").add(precursorChromInfoId);
@@ -186,6 +187,7 @@ public class TransitionManager
 
     public static Double getMaxPrecursorPeakRt(int precursorChromInfoId)
     {
+        // Get the max end time from the transition peaks
         SQLFragment sql = new SQLFragment("SELECT MAX(endTime) FROM ");
         sql.append(TargetedMSManager.getTableInfoTransitionChromInfo(), "tci");
         sql.append(" WHERE precursorChromInfoId=?").add(precursorChromInfoId);
@@ -195,30 +197,38 @@ public class TransitionManager
 
     public static Double getMinGeneralMoleculeRt(int generalMoleculeId)
     {
+        // Get the min start time across all the samples for the given general molecule id.
+        // Use the the start time set on the transition peaks to get the min RT.
         return getSummaryGeneralMoleculeRt(generalMoleculeId,"MIN", "startTime");
     }
 
     public static Double getMaxGeneralMoleculeRt(int generalMoleculeId)
     {
+        // Get the max end time across all the samples for the given general molecule id.
+        // Use the the end time set on the transition peaks to get the min RT.
         return getSummaryGeneralMoleculeRt(generalMoleculeId, "MAX", "endTime");
     }
 
     private static Double getSummaryGeneralMoleculeRt(int generalMoleculeId, String function, String columnName)
     {
-        return getSummaryTransitionRetentionTime(generalMoleculeId, null, function, columnName);
+        return getSummaryGeneralMoleculeSampleRt(generalMoleculeId, null, function, columnName);
     }
 
     public static Double getMinGeneralMoleculeSampleRt(int generalMoleculeId, int sampleFileId)
     {
-        return getSummaryTransitionRetentionTime(generalMoleculeId, sampleFileId, "MIN", "startTime");
+        // Get the min start time for the given general molecule id in the given sample
+        // Use the the start time set on the transition peaks to get the min RT.
+        return getSummaryGeneralMoleculeSampleRt(generalMoleculeId, sampleFileId, "MIN", "startTime");
     }
 
     public static Double getMaxGeneralMoleculeSampleRt(int generalMoleculeId, int sampleFileId)
     {
-        return getSummaryTransitionRetentionTime(generalMoleculeId, sampleFileId, "MAX", "endTime");
+        // Get the max end time for the given general molecule id in the given sample
+        // Use the the end time set on the transition peaks to get the min RT.
+        return getSummaryGeneralMoleculeSampleRt(generalMoleculeId, sampleFileId, "MAX", "endTime");
     }
 
-    private static Double getSummaryTransitionRetentionTime(int generalMoleculeId, Integer sampleFileId, String function, String columnName)
+    private static Double getSummaryGeneralMoleculeSampleRt(int generalMoleculeId, Integer sampleFileId, String function, String columnName)
     {
         SQLFragment sql = new SQLFragment("SELECT ").append(function).append("(tci.").append(columnName).append(") FROM ");
         sql.append(TargetedMSManager.getTableInfoTransitionChromInfo(), "tci");

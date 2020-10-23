@@ -314,12 +314,9 @@ public class PrecursorManager
 
     public static List<PrecursorChromInfoPlus> getPrecursorChromInfosForPeptide(int peptideId, int sampleFileId, User user, Container container)
     {
-        SQLFragment quantitativeSql = new SQLFragment("(SELECT EXISTS (SELECT 1 FROM targetedms.generaltransition where (quantitative is NULL OR quantitative=true) AND generalprecursorid = pci.precursorid)) ");
-        quantitativeSql = TargetedMSManager.getSchema().getSqlDialect().wrapExistsExpression(quantitativeSql);
-
         SQLFragment sql = new SQLFragment("SELECT ");
         sql.append("pci.* , pg.Label AS groupName, pep.Sequence, pep.PeptideModifiedSequence, prec.ModifiedSequence, prec.Charge, label.Name AS isotopeLabel, label.Id AS isotopeLabelId");
-        sql.append(", ").append(quantitativeSql).append(" AS quantitative ");
+        sql.append(", ").append(getIsQuantitativeSql()).append(" AS quantitative ");
         sql.append(" FROM ");
         joinTablesForPrecursorChromInfo(sql, user, container);
         sql.append(" WHERE ");
@@ -334,6 +331,15 @@ public class PrecursorManager
         }
 
         return  new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PrecursorChromInfoPlus.class);
+    }
+
+    static SQLFragment getIsQuantitativeSql()
+    {
+        SQLFragment quantitativeSql = new SQLFragment("(SELECT EXISTS (SELECT 1 FROM ")
+        .append(TargetedMSManager.getTableInfoGeneralTransition(), "gt")
+        .append(" WHERE (quantitative is NULL OR quantitative=true) AND generalprecursorid = pci.precursorid)) ");
+
+        return TargetedMSManager.getSchema().getSqlDialect().wrapExistsExpression(quantitativeSql);
     }
 
     public static List<PrecursorChromInfoPlus> getPrecursorChromInfosForGeneralMoleculeChromInfo(int gmChromInfoId, int precursorId,
@@ -825,6 +831,10 @@ public class PrecursorManager
             return pci.getMinStartTime();
         }
 
+        // Issue 41617: Chtomatograms are not displayed for precursors that do not have any quantitative transitions
+        // min peak start and max peak end times for a precursor chrom info can be null if none of the
+        // transitions for the precursor are quantitative. We will try to get the min start and max end
+        // retention times from the transition chrom infos instead.
         return TransitionManager.getMinPrecursorPeakRt(pci.getId());
     }
 
@@ -840,6 +850,10 @@ public class PrecursorManager
             return pci.getMaxEndTime();
         }
 
+        // Issue 41617: Chtomatograms are not displayed for precursors that do not have any quantitative transitions
+        // min peak start and max peak end times for a precursor chrom info can be null if none of the
+        // transitions for the precursor are quantitative. We will try to get the min start and max end
+        // retention times from the transition chrom infos instead.
         return TransitionManager.getMaxPrecursorPeakRt(pci.getId());
     }
 

@@ -110,19 +110,16 @@ public class PrecursorChromInfoPlus extends PrecursorChromInfo implements Precur
         _isotopeLabelId = isotopeLabelId;
     }
 
-    public Double getMinPeakRt()
+    public double getMinPeakRt()
     {
         if(_minPeakRt == null)
         {
-            // min peak start and max peak end times were null for all the precursor chrom infos. This can happen if none of the
-            // transitions for this peptide / molecule were quantitative. We will get the min start and max end retention times
-            // from the transition chrom infos instead.
             _minPeakRt = PrecursorManager.getMinPrecursorPeakRt(this);
         }
         return _minPeakRt == null ? 0 : _minPeakRt;
     }
 
-    public Double getMaxPeakRt()
+    public double getMaxPeakRt()
     {
         if(_maxPeakRt == null)
         {
