@@ -75,6 +75,8 @@ class Constants
         Peptides("INTEGER NOT NULL"),
         Precursors("INTEGER NOT NULL"),
         Transitions("INTEGER NOT NULL"),
+        MoleculeLists("INTEGER NOT NULL"),
+        Molecules("INTEGER NOT NULL"),
 
         FilePath("VARCHAR(500) NOT NULL"),
         SampleName("VARCHAR(300) NOT NULL"),
@@ -105,7 +107,7 @@ class Constants
         Description("TEXT"),
         Sequence,
 
-        ProteinId("INTEGER NOT NULL", Table.Protein, Id),
+        ProteinId("INTEGER", Table.Protein, Id),
         StartIndex("INTEGER"),
         EndIndex("INTEGER"),
         PreviousAa("CHAR(1)"),
@@ -113,7 +115,7 @@ class Constants
         CalcNeutralMass("DOUBLE NOT NULL"),
         NumMissedCleavages("INTEGER NOT NULL"),
 
-        MoleculeListId("INTEGER NOT NULL", Table.MoleculeList, Id),
+        MoleculeListId("INTEGER", Table.MoleculeList, Id),
         IonFormula("VARCHAR(100)"),
         CustomIonName("VARCHAR(100)"),
         MassMonoisotopic("DOUBLE"),
@@ -197,11 +199,6 @@ class Constants
             }
         }
 
-        public String getDefinition()
-        {
-            return definition;
-        }
-
         public Table getFkTable()
         {
             return _fkTable;
@@ -229,7 +226,9 @@ class Constants
         Proteins(Column.Proteins),
         Peptides(Column.Peptides),
         Precursors(Column.Precursors),
-        Transitions(Column.Transitions);
+        Transitions(Column.Transitions),
+        MoleculeLists(Column.MoleculeLists),
+        Molecules(Column.Molecules);
 
         private final Column _column;
 
@@ -725,6 +724,8 @@ class Constants
         UncompressedSize(Column.UncompressedSize),
         ChromatogramFormat(Column.ChromatogramFormat),
         ExplicitIonMobility(Column.ExplicitIonMobility),
+        MassMonoisotopic(Column.MassMonoisotopic),
+        MassAverage(Column.MassAverage),
         CCS(Column.CCS),
         IonMobilityMS1(Column.IonMobilityMS1),
         IonMobilityFragment(Column.IonMobilityFragment),
@@ -845,11 +846,6 @@ class Constants
         {
             _column = column;
             _definition = column.definition;
-        }
-        IrtLibraryColumn(Column column, String definition)
-        {
-            _column = column;
-            _definition = definition;
         }
 
         @Override

@@ -36,6 +36,7 @@ import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.model.PrecursorChromInfoLitePlus;
 import org.labkey.targetedms.model.PrecursorChromInfoPlus;
+import org.labkey.targetedms.parser.MoleculePrecursor;
 import org.labkey.targetedms.parser.Precursor;
 import org.labkey.targetedms.parser.PrecursorChromInfo;
 import org.labkey.targetedms.parser.RepresentativeDataState;
@@ -440,6 +441,33 @@ public class PrecursorManager
 
         Precursor[] reprPrecursors = new SqlSelector(TargetedMSManager.getSchema(), sql).getArray(Precursor.class);
         return Arrays.asList(reprPrecursors);
+    }
+
+    public static List<MoleculePrecursor> getRepresentativeMoleculePrecursors(long runId)
+    {
+        SQLFragment sql = new SQLFragment();
+        sql.append("SELECT gp.*, prec.* FROM ");
+        sql.append(TargetedMSManager.getTableInfoMoleculePrecursor(), "prec");
+        sql.append(", ");
+        sql.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "gp");
+        sql.append(", ");
+        sql.append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm");
+        sql.append(", ");
+        sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
+        sql.append(" WHERE");
+        sql.append(" prec.Id = gp.Id");
+        sql.append(" AND");
+        sql.append(" gp.GeneralMoleculeId = gm.Id");
+        sql.append(" AND");
+        sql.append(" gm.PeptideGroupId = pg.Id");
+        sql.append(" AND");
+        sql.append(" pg.RunId = ?");
+        sql.add(runId);
+        sql.append(" AND");
+        sql.append(" gp.RepresentativeDataState = ?");
+        sql.add(RepresentativeDataState.Representative.ordinal());
+
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(MoleculePrecursor.class);
     }
 
     public static Precursor getLastDeprecatedPrecursor(Precursor prec, Container container)

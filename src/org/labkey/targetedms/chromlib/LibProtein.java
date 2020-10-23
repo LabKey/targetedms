@@ -24,45 +24,9 @@ import java.util.List;
  * Date: 12/31/12
  * Time: 9:22 AM
  */
-public class LibProtein implements ObjectWithId
+public class LibProtein extends AbstractLibMoleculeList<LibPeptide>
 {
-    private int _id;
-    private String _name;
-    private String _description;
     private String _sequence;
-
-    private List<LibPeptide> _peptides;
-
-    public int getId()
-    {
-        return _id;
-    }
-
-    @Override
-    public void setId(int id)
-    {
-        _id = id;
-    }
-
-    public String getName()
-    {
-        return _name;
-    }
-
-    public void setName(String name)
-    {
-        _name = name;
-    }
-
-    public String getDescription()
-    {
-        return _description;
-    }
-
-    public void setDescription(String description)
-    {
-        _description = description;
-    }
 
     public String getSequence()
     {
@@ -72,22 +36,5 @@ public class LibProtein implements ObjectWithId
     public void setSequence(String sequence)
     {
         _sequence = sequence;
-    }
-
-    public void addPeptide(LibPeptide peptide)
-    {
-        if(_peptides == null)
-        {
-            _peptides = new ArrayList<>();
-        }
-        _peptides.add(peptide);
-    }
-
-    List<LibPeptide> getPeptides()
-    {
-        if(_peptides == null)
-            return Collections.emptyList();
-       else
-            return Collections.unmodifiableList(_peptides);
     }
 }

@@ -15,12 +15,15 @@
  */
 package org.labkey.targetedms.chromlib;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * User: vsharma
- * Date: 1/6/13
- * Time: 7:49 PM
+ * Date: 12/31/12
+ * Time: 9:22 AM
  */
-public interface ObjectWithId
+public class LibMoleculeList extends AbstractLibMoleculeList<LibMolecule>
 {
-    public void setId(int id);
 }
