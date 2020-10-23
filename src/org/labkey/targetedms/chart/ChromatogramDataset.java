@@ -961,8 +961,9 @@ public abstract class ChromatogramDataset
             Double tciRt = tci.getRetentionTime();
             double diff = Double.MAX_VALUE;
 
-            double minPeakRt = tci.getStartTime() != null ? tci.getStartTime() : 0.0; // _pChromInfo.getMinStartTime() != null ? _pChromInfo.getMinStartTime() : 0;
-            double maxPeakRt = tci.getEndTime() != null ? tci.getEndTime() : 0.0; // _pChromInfo.getMaxEndTime() != null ? _pChromInfo.getMaxEndTime() : 0;
+            // The peak apex annotation will be added between minPeakRt and maxPeakRt.
+            double minPeakRt = tci.getStartTime() != null ? tci.getStartTime() : 0.0;
+            double maxPeakRt = tci.getEndTime() != null ? tci.getEndTime() : 0.0;
             double intensityAtPrecursorBestRt = 0;
             for (int i = 0; i < times.length; i++)
             {

@@ -114,18 +114,20 @@ public class PrecursorChromInfoPlus extends PrecursorChromInfo implements Precur
     {
         if(_minPeakRt == null)
         {
-            _minPeakRt = PrecursorManager.getMinPrecursorPeakRt(this);
+            Double minRt = PrecursorManager.getMinPrecursorPeakRt(this);
+            _minPeakRt = minRt == null ? 0 : minRt;
         }
-        return _minPeakRt == null ? 0 : _minPeakRt;
+        return _minPeakRt;
     }
 
     public double getMaxPeakRt()
     {
         if(_maxPeakRt == null)
         {
-            _maxPeakRt = PrecursorManager.getMaxPrecursorPeakRt(this);
+            Double maxRt = PrecursorManager.getMaxPrecursorPeakRt(this);
+            _maxPeakRt = maxRt == null ? 0 : maxRt;
         }
-        return _maxPeakRt == null ? 0 : _maxPeakRt;
+        return _maxPeakRt;
     }
 
     public boolean isQuantitative()

@@ -29,6 +29,7 @@ import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.TableResultSet;
 import org.labkey.api.data.TableSelector;
+import org.labkey.api.data.dialect.SqlDialect;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.security.User;
 import org.labkey.api.view.NotFoundException;
@@ -316,7 +317,7 @@ public class PrecursorManager
     {
         SQLFragment sql = new SQLFragment("SELECT ");
         sql.append("pci.* , pg.Label AS groupName, pep.Sequence, pep.PeptideModifiedSequence, prec.ModifiedSequence, prec.Charge, label.Name AS isotopeLabel, label.Id AS isotopeLabelId");
-        sql.append(", ").append(getIsQuantitativeSql()).append(" AS quantitative ");
+        sql.append(", (SELECT ").append(getIsQuantitativeSql()).append(") AS quantitative ");
         sql.append(" FROM ");
         joinTablesForPrecursorChromInfo(sql, user, container);
         sql.append(" WHERE ");
@@ -335,11 +336,12 @@ public class PrecursorManager
 
     static SQLFragment getIsQuantitativeSql()
     {
-        SQLFragment quantitativeSql = new SQLFragment("(SELECT EXISTS (SELECT 1 FROM ")
-        .append(TargetedMSManager.getTableInfoGeneralTransition(), "gt")
-        .append(" WHERE (quantitative is NULL OR quantitative=true) AND generalprecursorid = pci.precursorid)) ");
+        SqlDialect sqlDialect = TargetedMSManager.getSchema().getSqlDialect();
+        SQLFragment quantitativeSql = new SQLFragment("EXISTS (SELECT 1 FROM ")
+                .append(TargetedMSManager.getTableInfoGeneralTransition(), "gt")
+                .append(" WHERE (quantitative is NULL OR quantitative=" + sqlDialect.getBooleanTRUE() + ") AND generalprecursorid = pci.precursorid) ");
 
-        return TargetedMSManager.getSchema().getSqlDialect().wrapExistsExpression(quantitativeSql);
+        return sqlDialect.wrapExistsExpression(quantitativeSql);
     }
 
     public static List<PrecursorChromInfoPlus> getPrecursorChromInfosForGeneralMoleculeChromInfo(int gmChromInfoId, int precursorId,
