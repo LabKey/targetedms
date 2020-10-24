@@ -95,60 +95,59 @@ public class ConflictResultsManager
     public static List<ConflictPrecursor> getConflictedPrecursors(Container container)
     {
         // Get a list of conflicted precursors in the given container
-        SQLFragment getConflictPrecursorsSql = new SQLFragment("SELECT ");
-        getConflictPrecursorsSql.append("prec.Id AS newPrecursorId, ");
-        getConflictPrecursorsSql.append("r.Id AS newPrecursorRunId, ");
-        getConflictPrecursorsSql.append("r.filename AS newRunFile, ");
-        getConflictPrecursorsSql.append("prec2.Id AS oldPrecursorId, ");
-        getConflictPrecursorsSql.append("r2.Id AS oldPrecursorRunId, ");
-        getConflictPrecursorsSql.append("r2.filename AS oldRunFile ");
-        getConflictPrecursorsSql.append("FROM ");
-        getConflictPrecursorsSql.append("targetedms.runs r ");
-        getConflictPrecursorsSql.append("INNER JOIN ");
-        getConflictPrecursorsSql.append("targetedms.peptidegroup pg ");
-        getConflictPrecursorsSql.append("ON r.Id = pg.RunId ");
-        getConflictPrecursorsSql.append("INNER JOIN ");
-        getConflictPrecursorsSql.append("targetedms.generalmolecule gm ");
-        getConflictPrecursorsSql.append("ON pg.Id = gm.PeptideGroupId ");
-        getConflictPrecursorsSql.append("INNER JOIN ");
-        getConflictPrecursorsSql.append("targetedms.peptide pep ");
-        getConflictPrecursorsSql.append("ON gm.Id = pep.Id ");
-        getConflictPrecursorsSql.append("INNER JOIN ");
-        getConflictPrecursorsSql.append("targetedms.generalprecursor gp ");
-        getConflictPrecursorsSql.append("ON pep.Id = gp.GeneralMoleculeId ");
-        getConflictPrecursorsSql.append("INNER JOIN ");
-        getConflictPrecursorsSql.append("targetedms.precursor prec ");
-        getConflictPrecursorsSql.append("ON gp.Id = prec.Id ");
-        getConflictPrecursorsSql.append("INNER JOIN ");
-        getConflictPrecursorsSql.append("targetedms.precursor prec2 ");
-        getConflictPrecursorsSql.append("ON prec.ModifiedSequence = prec2.ModifiedSequence ");
-        getConflictPrecursorsSql.append("INNER JOIN targetedms.generalprecursor gp2 ");
-        getConflictPrecursorsSql.append("ON (gp2.Id = prec2.Id AND gp.Charge = gp2.Charge) ");
-        getConflictPrecursorsSql.append("INNER JOIN ");
-        getConflictPrecursorsSql.append("targetedms.peptide pep2 ");
-        getConflictPrecursorsSql.append("ON gp2.generalMoleculeId = pep2.Id ");
-        getConflictPrecursorsSql.append("INNER JOIN ");
-        getConflictPrecursorsSql.append("targetedms.generalmolecule gm2 ");
-        getConflictPrecursorsSql.append("ON gm2.Id = pep2.Id ");
-        getConflictPrecursorsSql.append("INNER JOIN ");
-        getConflictPrecursorsSql.append("targetedms.peptidegroup pg2 ");
-        getConflictPrecursorsSql.append("ON pg2.Id = gm2.PeptideGroupId ");
-        getConflictPrecursorsSql.append("INNER JOIN ");
-        getConflictPrecursorsSql.append("targetedms.runs r2 ");
-        getConflictPrecursorsSql.append("ON r2.Id = pg2.RunId ");
-        getConflictPrecursorsSql.append(" WHERE ");
-        getConflictPrecursorsSql.append(" r.Container=? " );
-        getConflictPrecursorsSql.append(" AND r2.Container=? ");
-        getConflictPrecursorsSql.append(" AND gp.RepresentativeDataState=? ");
-        getConflictPrecursorsSql.append(" AND gp2.RepresentativeDataState=? ");
-        getConflictPrecursorsSql.add(container);
-        getConflictPrecursorsSql.add(container);
-        getConflictPrecursorsSql.add(RepresentativeDataState.Conflicted.ordinal());
-        getConflictPrecursorsSql.add(RepresentativeDataState.Representative.ordinal());
-        getConflictPrecursorsSql.append(" ORDER BY gm.Id");
+        SQLFragment sql = new SQLFragment("SELECT ");
+        sql.append("prec.Id AS newPrecursorId, ");
+        sql.append("r.Id AS newPrecursorRunId, ");
+        sql.append("r.filename AS newRunFile, ");
+        sql.append("prec2.Id AS oldPrecursorId, ");
+        sql.append("r2.Id AS oldPrecursorRunId, ");
+        sql.append("r2.filename AS oldRunFile ");
+        sql.append("FROM ");
+        sql.append("targetedms.runs r ");
+        sql.append("INNER JOIN ");
+        sql.append("targetedms.peptidegroup pg ");
+        sql.append("ON r.Id = pg.RunId ");
+        sql.append("INNER JOIN ");
+        sql.append("targetedms.generalmolecule gm ");
+        sql.append("ON pg.Id = gm.PeptideGroupId ");
+        sql.append("INNER JOIN ");
+        sql.append("targetedms.peptide pep ");
+        sql.append("ON gm.Id = pep.Id ");
+        sql.append("INNER JOIN ");
+        sql.append("targetedms.generalprecursor gp ");
+        sql.append("ON pep.Id = gp.GeneralMoleculeId ");
+        sql.append("INNER JOIN ");
+        sql.append("targetedms.precursor prec ");
+        sql.append("ON gp.Id = prec.Id ");
+        sql.append("INNER JOIN ");
+        sql.append("targetedms.precursor prec2 ");
+        sql.append("ON prec.ModifiedSequence = prec2.ModifiedSequence ");
+        sql.append("INNER JOIN targetedms.generalprecursor gp2 ");
+        sql.append("ON (gp2.Id = prec2.Id AND gp.Charge = gp2.Charge) ");
+        sql.append("INNER JOIN ");
+        sql.append("targetedms.peptide pep2 ");
+        sql.append("ON gp2.generalMoleculeId = pep2.Id ");
+        sql.append("INNER JOIN ");
+        sql.append("targetedms.generalmolecule gm2 ");
+        sql.append("ON gm2.Id = pep2.Id ");
+        sql.append("INNER JOIN ");
+        sql.append("targetedms.peptidegroup pg2 ");
+        sql.append("ON pg2.Id = gm2.PeptideGroupId ");
+        sql.append("INNER JOIN ");
+        sql.append("targetedms.runs r2 ");
+        sql.append("ON r2.Id = pg2.RunId ");
+        sql.append(" WHERE ");
+        sql.append(" r.Container=? " );
+        sql.append(" AND r2.Container=? ");
+        sql.append(" AND gp.RepresentativeDataState=? ");
+        sql.append(" AND gp2.RepresentativeDataState=? ");
+        sql.add(container);
+        sql.add(container);
+        sql.add(RepresentativeDataState.Conflicted.ordinal());
+        sql.add(RepresentativeDataState.Representative.ordinal());
+        sql.append(" ORDER BY gm.Id");
 
-        ConflictPrecursor[] precursors = new SqlSelector(TargetedMSManager.getSchema(), getConflictPrecursorsSql).getArray(ConflictPrecursor.class);
-        return Arrays.asList(precursors);
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(ConflictPrecursor.class);
     }
 
 
@@ -425,7 +424,7 @@ public class ConflictResultsManager
         }
     }
 
-        private static long getProteinConflictCount(User user, Container container)
+    private static long getProteinConflictCount(User user, Container container)
     {
         TargetedMSSchema schema = new TargetedMSSchema(user, container);
         TableInfo PepGrpTable = schema.getTable(TargetedMSSchema.TABLE_PEPTIDE_GROUP);
@@ -433,12 +432,10 @@ public class ConflictResultsManager
         return new TableSelector(PepGrpTable, representativeStateFilter, null).getRowCount();
     }
 
-    private static long getPeptideConflictCount(User user, Container container)
+    private static long getGeneralMoleculeConflictCount(Container container)
     {
         SQLFragment sqlFragment = new SQLFragment();
-        sqlFragment.append("SELECT DISTINCT(p.Id) FROM ");
-        sqlFragment.append(TargetedMSManager.getTableInfoPeptide(), "p");
-        sqlFragment.append(", ");
+        sqlFragment.append("SELECT DISTINCT(gm.Id) FROM ");
         sqlFragment.append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm");
         sqlFragment.append(", ");
         sqlFragment.append(TargetedMSManager.getTableInfoRuns(), "r");
@@ -447,10 +444,9 @@ public class ConflictResultsManager
         sqlFragment.append(", ");
         sqlFragment.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "pc");
         sqlFragment.append(" WHERE ");
-        sqlFragment.append("p.Id = gm.Id AND ");
         sqlFragment.append("gm.PeptideGroupId = pg.Id AND ");
         sqlFragment.append("pg.RunId = r.Id AND ");
-        sqlFragment.append("pc.GeneralMoleculeId = p.Id  AND ");
+        sqlFragment.append("pc.GeneralMoleculeId = gm.Id  AND ");
         sqlFragment.append("r.Deleted = ? AND r.Container = ? ");
         sqlFragment.append("AND pc.RepresentativeDataState = ? ");
 
@@ -474,7 +470,7 @@ public class ConflictResultsManager
         }
         else if(folderType == TargetedMSService.FolderType.Library)
         {
-            conflictCount = getPeptideConflictCount(user, container);
+            conflictCount = getGeneralMoleculeConflictCount(container);
         }
 
        return conflictCount;

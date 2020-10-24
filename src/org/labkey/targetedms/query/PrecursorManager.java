@@ -590,27 +590,13 @@ public class PrecursorManager
         new SqlExecutor(TargetedMSManager.getSchema()).execute(sql);
     }
 
-    public static boolean ensureContainerMembership(int[] precursorIds, Container container)
+    public static boolean ensureContainerMembership(List<Integer> precursorIds, Container container)
     {
-        if(precursorIds == null || precursorIds.length == 0)
+        if(precursorIds == null || precursorIds.isEmpty())
             return false;
+        // Dedupe
+        Set<Integer> ids = new HashSet<>(precursorIds);
 
-        StringBuilder precIds = new StringBuilder();
-        Arrays.sort(precursorIds);
-        int lastPrecursorId = 0;
-        long precursorIdCount = 0;
-        for(int id: precursorIds)
-        {
-            // Ignore duplicates
-            if( id != lastPrecursorId)
-            {
-                precIds.append(",").append(id);
-                precursorIdCount++;
-            }
-            lastPrecursorId = id;
-        }
-        if(precIds.length() > 0)
-            precIds.deleteCharAt(0);
         SQLFragment sql = new SQLFragment("SELECT COUNT(pg.Id) FROM ");
         sql.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "gp");
         sql.append(", ");
@@ -620,11 +606,13 @@ public class PrecursorManager
         sql.append(", ");
         sql.append(TargetedMSManager.getTableInfoRuns(), "r");
         sql.append(" WHERE gp.GeneralMoleculeId = gm.Id AND ");
-        sql.append("gm.PeptideGroupId = pg.Id AND pg.RunId = r.Id AND r.Container = ? AND gp.Id IN ("+precIds+")");
+        sql.append("gm.PeptideGroupId = pg.Id AND pg.RunId = r.Id AND r.Container = ? AND gp.Id IN (");
+        sql.append(StringUtils.join(ids, ","));
+        sql.append(")");
         sql.add(container.getId());
 
         Integer count = new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Integer.class);
-        return count != null && count == precursorIdCount;
+        return count != null && count.intValue() == ids.size() ;
     }
 
     public static double getMaxPrecursorIntensity(long generalMoleculeId)

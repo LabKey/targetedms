@@ -118,7 +118,6 @@ public class LibMoleculePrecursorDao extends BaseDaoImpl<LibMoleculePrecursor>
         {
             super.saveAll(precursors, connection);
 
-            List<LibPrecursorIsotopeModification> precIsotopeMods = new ArrayList<>();
             List<LibPrecursorRetentionTime> precRetentionTimes = new ArrayList<>();
             List<LibMoleculeTransition> transitions = new ArrayList<>();
 

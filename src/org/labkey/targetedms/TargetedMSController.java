@@ -4867,16 +4867,16 @@ public class TargetedMSController extends SpringActionController
                 return false;
             }
 
-            int[] selectedIds = resolveConflictForm.getSelectedIds();
-            int[] deselectIds = resolveConflictForm.getDeselectedIds();
+            List<Integer> selectedIds = resolveConflictForm.getSelectedIds();
+            List<Integer> deselectIds = resolveConflictForm.getDeselectedIds();
 
-            if (selectedIds == null || selectedIds.length == 0)
+            if (selectedIds == null || selectedIds.isEmpty())
             {
                 errors.reject(ERROR_MSG, "No IDs were found to be marked as representative.");
                 return false;
             }
 
-            if (deselectIds == null || deselectIds.length == 0)
+            if (deselectIds == null || deselectIds.isEmpty())
             {
                 errors.reject(ERROR_MSG, "No IDs were found to be marked as deprecated.");
                 return false;
@@ -4975,8 +4975,8 @@ public class TargetedMSController extends SpringActionController
     {
         public String _conflictLevel; // Either 'peptide' or 'protein'
         public String _selectedInputValues;
-        private int[] _selectedIds;
-        private int[] _deselectedIds;
+        private List<Integer> _selectedIds;
+        private List<Integer> _deselectedIds;
 
         public String getConflictLevel()
         {
@@ -4999,10 +4999,9 @@ public class TargetedMSController extends SpringActionController
             if(!StringUtils.isBlank(selectedInputValues))
             {
                 String[] vals = selectedInputValues.split(",");
-                _selectedIds = new int[vals.length];
-                _deselectedIds = new int[vals.length];
+                _selectedIds = new ArrayList<>(vals.length);
+                _deselectedIds = new ArrayList<>(vals.length);
 
-                int count = 0;
                 for(String value: vals)
                 {
                     int idx = value.indexOf('_');
@@ -5010,20 +5009,19 @@ public class TargetedMSController extends SpringActionController
                     {
                         int selected = Integer.parseInt(value.substring(0, idx));
                         int deselected = Integer.parseInt(value.substring(idx+1));
-                        _selectedIds[count] = selected;
-                        _deselectedIds[count] = deselected;
-                        count++;
+                        _selectedIds.add(selected);
+                        _deselectedIds.add(deselected);
                     }
                 }
             }
         }
 
-        public int[] getSelectedIds()
+        public List<Integer> getSelectedIds()
         {
             return _selectedIds;
         }
 
-        public int[] getDeselectedIds()
+        public List<Integer> getDeselectedIds()
         {
             return _deselectedIds;
         }
@@ -5828,29 +5826,21 @@ public class TargetedMSController extends SpringActionController
             // determine the folder type
             final FolderType folderType = TargetedMSManager.getFolderType(getContainer());
 
-            final String proteinLabel = "Proteins";
-            final String peptideLabel = "Peptides";
-
             SQLFragment sqlFragment = new SQLFragment();
-            sqlFragment.append("SELECT COALESCE(x.RunDate,y.RunDate) AS RunDate, ProteinCount, PeptideCount FROM ");
-            sqlFragment.append("(SELECT pepCount.RunDate, COUNT(DISTINCT pepCount.Id) AS PeptideCount ");
+            sqlFragment.append("SELECT COALESCE(x.RunDate,y.RunDate) AS RunDate, ProteinCount, PeptideCount, MoleculeCount FROM ");
+            sqlFragment.append("(SELECT pepCount.RunDate, COUNT(DISTINCT pepCount.PeptideId) AS PeptideCount, COUNT(DISTINCT pepCount.MoleculeId) AS MoleculeCount ");
             sqlFragment.append("FROM   ( SELECT ");
             sqlFragment.append("r.Created as RunDate, ");
-            sqlFragment.append("p.Id ");
+            sqlFragment.append("p.Id AS PeptideId, ");
+            sqlFragment.append("m.Id AS MoleculeId ");
             sqlFragment.append("FROM ");
-            sqlFragment.append("targetedms.peptide AS p, ");
-            sqlFragment.append("targetedms.GeneralMolecule AS gm, ");
-            sqlFragment.append("targetedms.Runs AS r, ");
-            sqlFragment.append("targetedms.PeptideGroup AS pg, ");
-            sqlFragment.append("targetedms.Precursor AS pc, ");
-            sqlFragment.append("targetedms.GeneralPrecursor AS gp ");
-            sqlFragment.append("WHERE  ");
-            sqlFragment.append("p.Id = gm.Id AND ");
-            sqlFragment.append("gm.PeptideGroupId = pg.Id AND ");
-            sqlFragment.append("pg.RunId = r.Id AND ");
-            sqlFragment.append("pc.Id = gp.Id AND ");
-            sqlFragment.append("gp.GeneralMoleculeId = gm.Id AND ");
-            sqlFragment.append("r.Deleted = ? AND r.Container = ? ");
+            sqlFragment.append("\ttargetedms.Runs AS r INNER JOIN \n");
+            sqlFragment.append("\ttargetedms.PeptideGroup AS pg ON r.Id = pg.RunId INNER JOIN\n");
+            sqlFragment.append("\ttargetedms.GeneralMolecule AS gm ON gm.PeptideGroupId = pg.Id INNER JOIN\n");
+            sqlFragment.append("\ttargetedms.GeneralPrecursor AS gp ON gp.GeneralMoleculeId = gm.Id LEFT OUTER JOIN\n");
+            sqlFragment.append("\ttargetedms.peptide AS p ON p.Id = gm.Id LEFT OUTER JOIN\n");
+            sqlFragment.append("\ttargetedms.molecule AS m ON m.Id = gm.Id\n");
+            sqlFragment.append("WHERE r.Deleted = ? AND r.Container = ? ");
             // Only proteins (PeptideGroup) are marked as representative in "LibraryProtein" folder types. Get the Ids
             // of all the peptides of representative proteins.
             if(folderType == FolderType.LibraryProtein)
@@ -5887,29 +5877,35 @@ public class TargetedMSController extends SpringActionController
             // build HashMap of values for binning purposes
             final LinkedHashMap<Date, Integer> protMap = new LinkedHashMap<>();
             final LinkedHashMap<Date, Integer> pepMap = new LinkedHashMap<>();
+            final LinkedHashMap<Date, Integer> moleculeMap = new LinkedHashMap<>();
 
             // add data to maps - binning by the date specified in simpleDateFormat
             sqlSelector.forEach(rs -> {
                 Date runDate = rs.getDate("runDate");
-                int protCount = protMap.containsKey(runDate) ? protMap.get(runDate) : 0;
+                int protCount = protMap.getOrDefault(runDate, 0);
                 protMap.put(runDate, protCount + rs.getInt("ProteinCount"));
-                int pepCount = pepMap.containsKey(runDate) ? pepMap.get(runDate) : 0;
+                int pepCount = pepMap.getOrDefault(runDate, 0);
                 pepMap.put(runDate, pepCount + rs.getInt("PeptideCount"));
+                int moleculeCount = moleculeMap.getOrDefault(runDate, 0);
+                moleculeMap.put(runDate, moleculeCount + rs.getInt("MoleculeCount"));
             });
 
             LinkedHashMap<Date, Integer> binnedProtMap = binDateHashMap(protMap, 0);
             LinkedHashMap<Date, Integer> binnedPepMap = binDateHashMap(pepMap, 0);
+            LinkedHashMap<Date, Integer> binnedMoleculeMap = binDateHashMap(moleculeMap, 0);
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("M/d");
 
             if (protMap.size() > 10) // if more than 2 weeks, bin by week
             {
                 binnedProtMap = binDateHashMap(protMap, Calendar.DAY_OF_WEEK);
                 binnedPepMap = binDateHashMap(pepMap, Calendar.DAY_OF_WEEK);
+                binnedMoleculeMap = binDateHashMap(moleculeMap, Calendar.DAY_OF_WEEK);
             }
-            if (binnedProtMap.size() > 10 )
+            if (binnedProtMap.size() > 10)
             {
                 binnedProtMap = binDateHashMap(protMap, Calendar.DAY_OF_MONTH);
                 binnedPepMap = binDateHashMap(pepMap, Calendar.DAY_OF_MONTH);
+                binnedMoleculeMap = binDateHashMap(moleculeMap, Calendar.DAY_OF_MONTH);
                 simpleDateFormat = new SimpleDateFormat("MMM yy");
             }
             // put all data from maps into dataset
@@ -5917,8 +5913,9 @@ public class TargetedMSController extends SpringActionController
             {
                 Date key = entry.getKey();
                 if (folderType == FolderType.LibraryProtein)
-                    dataset.addValue(entry.getValue(), proteinLabel, simpleDateFormat.format(key));
-                dataset.addValue( binnedPepMap.get(key), peptideLabel, simpleDateFormat.format(key));
+                    dataset.addValue(entry.getValue(), "Proteins", simpleDateFormat.format(key));
+                dataset.addValue(binnedPepMap.get(key), "Peptides", simpleDateFormat.format(key));
+                dataset.addValue(binnedMoleculeMap.get(key), "Molecules", simpleDateFormat.format(key));
             }
 
             return dataset;
@@ -5948,7 +5945,7 @@ public class TargetedMSController extends SpringActionController
                 calendar.set(mode, 1);
             Date newDate = calendar.getTime();
 
-            int count = newMap.containsKey(keyDate) ? newMap.get(keyDate) : 0;
+            int count = newMap.getOrDefault(keyDate, 0);
             newMap.put(newDate, count + hashMap.get(keyDate));
         }
 
@@ -5985,6 +5982,7 @@ public class TargetedMSController extends SpringActionController
         clibAnalyteCounts.setPeptideGroupCount((int) getNumRepresentativeProteins(user, container));
         clibAnalyteCounts.setPeptideCount((int)getNumRepresentativePeptides(container));
         clibAnalyteCounts.setTransitionCount((int)getNumRankedTransitions(container));
+        clibAnalyteCounts.setMoleculeCount((int)getNumRepresentativeMolecules(container));
         return clibAnalyteCounts;
     }
 
@@ -5993,15 +5991,17 @@ public class TargetedMSController extends SpringActionController
         private int _peptideGroupCount;
         private int _peptideCount;
         private int _transitionCount;
+        private int _moleculeCount;
 
-        public static ChromLibAnalyteCounts NOT_EXISTS = new ChromLibAnalyteCounts(-1, -1, -1);
+        public static final ChromLibAnalyteCounts NOT_EXISTS = new ChromLibAnalyteCounts(-1, -1, -1, -1);
 
         public ChromLibAnalyteCounts() {}
 
-        private ChromLibAnalyteCounts(int peptideGroupCount, int peptideCount, int transitionCount)
+        private ChromLibAnalyteCounts(int peptideGroupCount, int peptideCount, int moleculeCount, int transitionCount)
         {
             _peptideGroupCount = peptideGroupCount;
             _peptideCount = peptideCount;
+            _moleculeCount = moleculeCount;
             _transitionCount = transitionCount;
         }
 
@@ -6035,9 +6035,19 @@ public class TargetedMSController extends SpringActionController
             _transitionCount = transitionCount;
         }
 
+        public int getMoleculeCount()
+        {
+            return _moleculeCount;
+        }
+
+        public void setMoleculeCount(int moleculeCount)
+        {
+            _moleculeCount = moleculeCount;
+        }
+
         public boolean exists()
         {
-            return _peptideGroupCount != -1 && _peptideCount != -1 && _transitionCount != -1;
+            return _peptideGroupCount != -1 && _peptideCount != -1 && _moleculeCount != -1 && _transitionCount != -1;
         }
     }
 

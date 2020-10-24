@@ -153,7 +153,7 @@ class Constants
 
         MoleculePrecursorId("INTEGER NOT NULL", Table.MoleculePrecursor, Id),
 
-        SampleFileId("INTEGER NOT NULL", Table.SampleFile, Id),
+        SampleFileId("INTEGER", Table.SampleFile, Id),
         RetentionTime("DOUBLE"),
         StartTime("DOUBLE"),
         EndTime("DOUBLE"),
