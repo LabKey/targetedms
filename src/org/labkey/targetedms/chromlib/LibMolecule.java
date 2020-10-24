@@ -2,21 +2,10 @@ package org.labkey.targetedms.chromlib;
 
 public class LibMolecule extends AbstractLibMolecule<LibMoleculePrecursor>
 {
-    private Integer _moleculeListId;
     private String _ionFormula;
     private String _customIonName;
     private double _massMonoisotopic;
     private double _massAverage;
-
-    public Integer getMoleculeListId()
-    {
-        return _moleculeListId;
-    }
-
-    public void setMoleculeListId(Integer moleculeListId)
-    {
-        _moleculeListId = moleculeListId;
-    }
 
     public String getIonFormula()
     {

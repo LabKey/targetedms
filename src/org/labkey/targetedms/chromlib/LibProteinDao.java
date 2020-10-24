@@ -47,11 +47,11 @@ public class LibProteinDao extends BaseDaoImpl<LibProtein>
 
             if(_peptideDao != null)
             {
-                for(LibPeptide peptide: protein.getChildren())
+                for(LibPeptide peptide: protein.getPeptides())
                 {
                     peptide.setProteinId(protein.getId());
                 }
-                _peptideDao.saveAll(protein.getChildren(), connection);
+                _peptideDao.saveAll(protein.getPeptides(), connection);
             }
         }
     }
@@ -90,7 +90,7 @@ public class LibProteinDao extends BaseDaoImpl<LibProtein>
             {
                 for(LibProtein protein: proteins)
                 {
-                    for(LibPeptide peptide: protein.getChildren())
+                    for(LibPeptide peptide: protein.getPeptides())
                     {
                         peptide.setProteinId(protein.getId());
                         peptideList.add(peptide);
@@ -129,7 +129,7 @@ public class LibProteinDao extends BaseDaoImpl<LibProtein>
         List<LibPeptide> peptides = _peptideDao.queryForForeignKey(Constants.PeptideColumn.ProteinId.baseColumn().name(), protein.getId(), connection);
         for(LibPeptide peptide: peptides)
         {
-            protein.addChild(peptide);
+            protein.addPeptide(peptide);
         }
     }
 }

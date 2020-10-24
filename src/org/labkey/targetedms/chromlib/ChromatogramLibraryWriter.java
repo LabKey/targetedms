@@ -46,13 +46,11 @@ public class ChromatogramLibraryWriter
     private Dao<LibIrtLibrary> _irtLibraryDao;
 
     // Small molecule
-    private Dao<LibMoleculeList> _moleculeListDao;
     private Dao<LibMolecule> _moleculeDao;
 
     private final List<LibPeptide> _libPeptideCache = new ArrayList<>();
     private final List<LibProtein> _libProteinCache = new ArrayList<>();
     private final List<LibMolecule> _libMoleculeCache = new ArrayList<>();
-    private final List<LibMoleculeList> _libMoleculeListCache = new ArrayList<>();
     private int _cacheSize = 0;
 
     private int _maxCacheSize = 1000;
@@ -103,7 +101,6 @@ public class ChromatogramLibraryWriter
                 new LibPrecursorRetentionTimeDao(Constants.Column.MoleculePrecursorId),
                 new LibMoleculeTransitionDao());
         _moleculeDao = new LibMoleculeDao(moleculePrecursorDao);
-        _moleculeListDao = new LibMoleculeListDao(_moleculeDao);
 
         _irtLibraryDao = new LibIrtLibraryDao();
     }
@@ -131,7 +128,6 @@ public class ChromatogramLibraryWriter
         flushList(_peptideDao, _libPeptideCache);
         flushList(_proteinDao, _libProteinCache);
         flushList(_moleculeDao, _libMoleculeCache);
-        flushList(_moleculeListDao, _libMoleculeListCache);
 
         _cacheSize = 0;
     }
@@ -174,11 +170,6 @@ public class ChromatogramLibraryWriter
     public void writeMolecule(LibMolecule molecule) throws SQLException
     {
         addToCache(molecule, _libMoleculeCache);
-    }
-
-    public void writeMoleculeList(LibMoleculeList moleculeList) throws SQLException
-    {
-        addToCache(moleculeList, _libMoleculeListCache);
     }
 
     private <T extends AbstractLibEntity> void addToCache(T entity, List<T> cache) throws SQLException

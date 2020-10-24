@@ -4666,7 +4666,7 @@ public class TargetedMSController extends SpringActionController
             List<ConflictPrecursor> conflictPrecursorList = ConflictResultsManager.getConflictedPrecursors(getContainer());
             if(conflictPrecursorList.size() == 0)
             {
-                errors.reject(ERROR_MSG, "Library folder "+getContainer().getPath()+" does not contain any conflicting peptides.");
+                errors.reject(ERROR_MSG, "Library folder "+getContainer().getPath()+" does not contain any conflicting data.");
                 return new SimpleErrorView(errors, true);
             }
 
@@ -4780,12 +4780,14 @@ public class TargetedMSController extends SpringActionController
             ApiSimpleResponse response = new ApiSimpleResponse();
 
             int newPrecursorId = conflictPrecursorsForm.getNewPrecursorId();
-            if(PrecursorManager.getPrecursor(getContainer(), newPrecursorId, getUser()) == null)
+            if(PrecursorManager.getPrecursor(getContainer(), newPrecursorId, getUser()) == null &&
+               MoleculePrecursorManager.getPrecursor(getContainer(), newPrecursorId, getUser()) == null)
             {
                 throw new NotFoundException("Precursor with ID "+newPrecursorId+" was not found in the container.");
             }
             int oldPrecursorId = conflictPrecursorsForm.getOldPrecursorId();
-            if(PrecursorManager.getPrecursor(getContainer(), oldPrecursorId, getUser()) == null)
+            if(PrecursorManager.getPrecursor(getContainer(), oldPrecursorId, getUser()) == null &&
+                MoleculePrecursorManager.getPrecursor(getContainer(), oldPrecursorId, getUser()) == null)
             {
                 throw new NotFoundException("Precursor with ID "+oldPrecursorId+" was not found in the container.");
             }
@@ -6063,11 +6065,23 @@ public class TargetedMSController extends SpringActionController
         return peptideGroupCount;
     }
 
-    public static long getNumRepresentativePeptides(Container container) {
+    public static long getNumRepresentativePeptides(Container container)
+    {
+        return getNumRepresentativeGeneralMolecules(container, TargetedMSManager.getTableInfoPeptide());
+    }
 
+    public static long getNumRepresentativeMolecules(Container container)
+    {
+        return getNumRepresentativeGeneralMolecules(container, TargetedMSManager.getTableInfoMolecule());
+    }
+
+    private static long getNumRepresentativeGeneralMolecules(Container container, TableInfo moleculeTypeTable)
+    {
         SQLFragment sqlFragment = new SQLFragment();
         sqlFragment.append("SELECT DISTINCT(p.Id) FROM ");
         sqlFragment.append(TargetedMSManager.getTableInfoGeneralMolecule(), "p");
+        sqlFragment.append(", ");
+        sqlFragment.append(moleculeTypeTable, "mt");
         sqlFragment.append(", ");
         sqlFragment.append(TargetedMSManager.getTableInfoRuns(), "r");
         sqlFragment.append(", ");
@@ -6075,7 +6089,8 @@ public class TargetedMSController extends SpringActionController
         sqlFragment.append(", ");
         sqlFragment.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "pc");
         sqlFragment.append(" WHERE ");
-        sqlFragment.append("p.PeptideGroupId = pg.Id AND pg.RunId = r.Id AND pc.GeneralMoleculeId = p.Id  AND r.Deleted = ? AND r.Container = ? ");
+        sqlFragment.append(" p.PeptideGroupId = pg.Id AND pg.RunId = r.Id AND pc.GeneralMoleculeId = p.Id AND mt.Id = p.Id ");
+        sqlFragment.append(" AND r.Deleted = ? AND r.Container = ? ");
         sqlFragment.append("AND pc.RepresentativeDataState = ? ");
 
         // add variables

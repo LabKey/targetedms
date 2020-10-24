@@ -53,7 +53,6 @@ class Constants
         Transition,
 
         // Small molecule
-        MoleculeList,
         Molecule,
         MoleculePrecursor,
         MoleculePrecursorRetentionTime,
@@ -75,7 +74,6 @@ class Constants
         Peptides("INTEGER NOT NULL"),
         Precursors("INTEGER NOT NULL"),
         Transitions("INTEGER NOT NULL"),
-        MoleculeLists("INTEGER NOT NULL"),
         Molecules("INTEGER NOT NULL"),
 
         FilePath("VARCHAR(500) NOT NULL"),
@@ -115,7 +113,6 @@ class Constants
         CalcNeutralMass("DOUBLE NOT NULL"),
         NumMissedCleavages("INTEGER NOT NULL"),
 
-        MoleculeListId("INTEGER", Table.MoleculeList, Id),
         IonFormula("VARCHAR(100)"),
         CustomIonName("VARCHAR(100)"),
         MassMonoisotopic("DOUBLE"),
@@ -125,7 +122,7 @@ class Constants
         IndexAa("INTEGER NOT NULL"),
         MassDiff("DOUBLE NOT NULL"),
 
-        MoleculeId("INTEGER NOT NULL", Table.MoleculeList, Id),
+        MoleculeId("INTEGER NOT NULL", Table.Molecule, Id),
         Molecule("VARCHAR(500)"),
 
         Mz,
@@ -227,7 +224,6 @@ class Constants
         Peptides(Column.Peptides),
         Precursors(Column.Precursors),
         Transitions(Column.Transitions),
-        MoleculeLists(Column.MoleculeLists),
         Molecules(Column.Molecules);
 
         private final Column _column;
@@ -643,42 +639,9 @@ class Constants
         }
     }
 
-    public enum MoleculeListColumn implements ColumnDef
-    {
-        Id(Column.Id),
-        Name(Column.Name, "VARCHAR(250) NOT NULL"),
-        Description(Column.Description);
-
-        private final Column _column;
-        private final String _definition;
-
-        MoleculeListColumn(Column column)
-        {
-            _column = column;
-            _definition = column.definition;
-        }
-        MoleculeListColumn(Column column, String definition)
-        {
-            _column = column;
-            _definition = definition;
-        }
-        @Override
-        public Column baseColumn()
-        {
-            return _column;
-        }
-
-        @Override
-        public String definition()
-        {
-            return _definition;
-        }
-    }
-
     public enum MoleculeColumn implements ColumnDef
     {
         Id(Column.Id),
-        MoleculeListId(Column.MoleculeListId),
         IonFormula(Column.IonFormula),
         CustomIonName(Column.CustomIonName),
         MassMonoisotopic(Column.MassMonoisotopic),

@@ -62,7 +62,6 @@ public class LibMoleculeDao extends BaseDaoImpl<LibMolecule>
     protected void setValuesInStatement(LibMolecule molecule, PreparedStatement stmt) throws SQLException
     {
         int colIndex = 1;
-        stmt.setObject(colIndex++, molecule.getMoleculeListId(), Types.INTEGER);
         stmt.setObject(colIndex++, molecule.getIonFormula(), Types.VARCHAR);
         stmt.setObject(colIndex++, molecule.getCustomIonName(), Types.VARCHAR);
         stmt.setObject(colIndex++, molecule.getMassMonoisotopic(), Types.DOUBLE);
@@ -120,7 +119,6 @@ public class LibMoleculeDao extends BaseDaoImpl<LibMolecule>
         {
             LibMolecule molecule = new LibMolecule();
             molecule.setId(rs.getInt(PeptideColumn.Id.baseColumn().name()));
-            molecule.setMoleculeListId(readInteger(rs, Constants.MoleculeColumn.MoleculeListId.baseColumn().name()));
             molecule.setIonFormula(rs.getString(Constants.MoleculeColumn.IonFormula.baseColumn().name()));
             molecule.setCustomIonName(rs.getString(Constants.MoleculeColumn.CustomIonName.baseColumn().name()));
             molecule.setMassMonoisotopic(readDouble(rs, Constants.MoleculeColumn.MassMonoisotopic.baseColumn().name()));

@@ -33,15 +33,14 @@ import org.labkey.targetedms.conflict.ConflictPeptide;
 import org.labkey.targetedms.conflict.ConflictPrecursor;
 import org.labkey.targetedms.conflict.ConflictProtein;
 import org.labkey.targetedms.conflict.ConflictTransition;
+import org.labkey.targetedms.parser.GeneralTransition;
 import org.labkey.targetedms.parser.Peptide;
 import org.labkey.targetedms.parser.Precursor;
 import org.labkey.targetedms.parser.PrecursorChromInfo;
 import org.labkey.targetedms.parser.RepresentativeDataState;
-import org.labkey.targetedms.parser.Transition;
 import org.labkey.targetedms.parser.TransitionChromInfo;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -88,20 +87,30 @@ public class ConflictResultsManager
         getConflictProteinsSql.add(RepresentativeDataState.Conflicted.ordinal());
         getConflictProteinsSql.add(RepresentativeDataState.Representative.ordinal());
 
-        ConflictProtein[] pepGroups = new SqlSelector(TargetedMSManager.getSchema(), getConflictProteinsSql).getArray(ConflictProtein.class);
-        return Arrays.asList(pepGroups);
+        return new SqlSelector(TargetedMSManager.getSchema(), getConflictProteinsSql).getArrayList(ConflictProtein.class);
     }
 
     public static List<ConflictPrecursor> getConflictedPrecursors(Container container)
     {
+        List<ConflictPrecursor> result = new ArrayList<>();
+        result.addAll(getConflictedPrecursors(container, TargetedMSManager.getTableInfoPeptide(), TargetedMSManager.getTableInfoPrecursor(), "ModifiedSequence", new SQLFragment("prec.ModifiedSequence"),true));
+        result.addAll(getConflictedPrecursors(container, TargetedMSManager.getTableInfoMolecule(), TargetedMSManager.getTableInfoMoleculePrecursor(), "IonFormula", new SQLFragment("COALESCE(prec.CustomIonName, prec.IonFormula)"), false));
+        return result;
+    }
+
+    private static List<ConflictPrecursor> getConflictedPrecursors(Container container, TableInfo moleculeTable, TableInfo precursorTable, String joinColumn, SQLFragment displaySQL, boolean peptide)
+    {
         // Get a list of conflicted precursors in the given container
-        SQLFragment sql = new SQLFragment("SELECT ");
+        SQLFragment sql = new SQLFragment("SELECT ? AS Peptide, ");
+        sql.add(peptide);
         sql.append("prec.Id AS newPrecursorId, ");
+        sql.append(displaySQL);
+        sql.append(" AS MoleculeName, ");
         sql.append("r.Id AS newPrecursorRunId, ");
         sql.append("r.filename AS newRunFile, ");
         sql.append("prec2.Id AS oldPrecursorId, ");
         sql.append("r2.Id AS oldPrecursorRunId, ");
-        sql.append("r2.filename AS oldRunFile ");
+        sql.append("r2.filename AS oldRunFile\n");
         sql.append("FROM ");
         sql.append("targetedms.runs r ");
         sql.append("INNER JOIN ");
@@ -111,25 +120,25 @@ public class ConflictResultsManager
         sql.append("targetedms.generalmolecule gm ");
         sql.append("ON pg.Id = gm.PeptideGroupId ");
         sql.append("INNER JOIN ");
-        sql.append("targetedms.peptide pep ");
-        sql.append("ON gm.Id = pep.Id ");
+        sql.append(moleculeTable, "m");
+        sql.append(" ON gm.Id = m.Id ");
         sql.append("INNER JOIN ");
         sql.append("targetedms.generalprecursor gp ");
-        sql.append("ON pep.Id = gp.GeneralMoleculeId ");
+        sql.append("ON m.Id = gp.GeneralMoleculeId ");
         sql.append("INNER JOIN ");
-        sql.append("targetedms.precursor prec ");
-        sql.append("ON gp.Id = prec.Id ");
+        sql.append(precursorTable, "prec");
+        sql.append(" ON gp.Id = prec.Id ");
         sql.append("INNER JOIN ");
-        sql.append("targetedms.precursor prec2 ");
-        sql.append("ON prec.ModifiedSequence = prec2.ModifiedSequence ");
-        sql.append("INNER JOIN targetedms.generalprecursor gp2 ");
+        sql.append(precursorTable, "prec2");
+        sql.append(" ON prec." + joinColumn + " = prec2." + joinColumn);
+        sql.append(" INNER JOIN targetedms.generalprecursor gp2 ");
         sql.append("ON (gp2.Id = prec2.Id AND gp.Charge = gp2.Charge) ");
         sql.append("INNER JOIN ");
-        sql.append("targetedms.peptide pep2 ");
-        sql.append("ON gp2.generalMoleculeId = pep2.Id ");
+        sql.append(moleculeTable, "m2");
+        sql.append(" ON gp2.generalMoleculeId = m2.Id ");
         sql.append("INNER JOIN ");
         sql.append("targetedms.generalmolecule gm2 ");
-        sql.append("ON gm2.Id = pep2.Id ");
+        sql.append("ON gm2.Id = m2.Id ");
         sql.append("INNER JOIN ");
         sql.append("targetedms.peptidegroup pg2 ");
         sql.append("ON pg2.Id = gm2.PeptideGroupId ");
@@ -353,12 +362,16 @@ public class ConflictResultsManager
 
     public static List<TransitionWithAreaAndRank> getRankedTransitionsForPrecursor(long precursorId, User user, Container container)
     {
-        Collection<Transition> transitions = TransitionManager.getTransitionsForPrecursor(precursorId, user, container);
+        Collection<? extends GeneralTransition> transitions = TransitionManager.getTransitionsForPrecursor(precursorId, user, container);
+        if (transitions.isEmpty())
+        {
+            transitions = MoleculeTransitionManager.getTransitionsForPrecursor(precursorId, user, container);
+        }
 
         // Each transition may have been measured in more than one replicate. We need to get the
         // the average area for each transition across all replicates
         List<TransitionWithAreaAndRank> transWithRankList = new ArrayList<>(transitions.size());
-        for(Transition transition: transitions)
+        for(GeneralTransition transition: transitions)
         {
             Collection<TransitionChromInfo> transChromInfoList = TransitionManager.getTransitionChromInfoListForTransition(transition.getId());
             double totalArea = 0.0;
@@ -389,16 +402,16 @@ public class ConflictResultsManager
 
     private static class TransitionWithAreaAndRank
     {
-        private Transition _transition;
+        private GeneralTransition _transition;
         private double _avgArea;
         private int _rank;
 
-        public Transition getTransition()
+        public GeneralTransition getTransition()
         {
             return _transition;
         }
 
-        public void setTransition(Transition transition)
+        public void setTransition(GeneralTransition transition)
         {
             _transition = transition;
         }

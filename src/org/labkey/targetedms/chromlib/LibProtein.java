@@ -24,9 +24,12 @@ import java.util.List;
  * Date: 12/31/12
  * Time: 9:22 AM
  */
-public class LibProtein extends AbstractLibMoleculeList<LibPeptide>
+public class LibProtein extends AbstractLibEntity
 {
     private String _sequence;
+    private String _name;
+    private String _description;
+    private List<LibPeptide> _peptides = new ArrayList<>();
 
     public String getSequence()
     {
@@ -36,5 +39,41 @@ public class LibProtein extends AbstractLibMoleculeList<LibPeptide>
     public void setSequence(String sequence)
     {
         _sequence = sequence;
+    }
+
+    public String getName()
+    {
+        return _name;
+    }
+
+    public void setName(String name)
+    {
+        _name = name;
+    }
+
+    public String getDescription()
+    {
+        return _description;
+    }
+
+    public void setDescription(String description)
+    {
+        _description = description;
+    }
+
+    public void addPeptide(LibPeptide child)
+    {
+        _peptides.add(child);
+    }
+
+    List<LibPeptide> getPeptides()
+    {
+        return Collections.unmodifiableList(_peptides);
+    }
+
+    @Override
+    public int getCacheSize()
+    {
+        return super.getCacheSize() + getPeptides().stream().mapToInt(AbstractLibEntity::getCacheSize).sum();
     }
 }

@@ -81,7 +81,6 @@ public class ContainerChromatogramLibraryWriter
     private int _proteinCount = 0;
     private int _peptideCount = 0;
     private int _moleculeCount = 0;
-    private int _moleculeListCount = 0;
     private int _precursorCount = 0;
     private int _transitionCount = 0;
 
@@ -174,7 +173,6 @@ public class ContainerChromatogramLibraryWriter
         libInfo.setPrecursors(_precursorCount);
         libInfo.setTransitions(_transitionCount);
         libInfo.setMolecules(_moleculeCount);
-        libInfo.setMoleculeLists(_moleculeListCount);
         _libWriter.writeLibInfo(libInfo);
     }
 
@@ -445,7 +443,7 @@ public class ContainerChromatogramLibraryWriter
             List<Precursor> precursors = PrecursorManager.getPrecursorsForPeptide(peptide.getId(), schema);
 
             LibPeptide libPeptide = makeLibPeptide(peptide, precursors, run);
-            protein.addChild(libPeptide);
+            protein.addPeptide(libPeptide);
         }
     }
 
