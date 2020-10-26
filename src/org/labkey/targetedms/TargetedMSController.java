@@ -272,7 +272,9 @@ import static org.labkey.api.util.DOM.at;
 import static org.labkey.api.util.DOM.cl;
 import static org.labkey.targetedms.TargetedMSModule.EXPERIMENT_FOLDER_WEB_PARTS;
 import static org.labkey.targetedms.TargetedMSModule.LIBRARY_FOLDER_WEB_PARTS;
-import static org.labkey.targetedms.TargetedMSModule.PROTEIN_LIBRARY_FOLDER_WEB_PARTS;
+import static org.labkey.targetedms.TargetedMSModule.PEPTIDE_TAB_WEB_PARTS;
+import static org.labkey.targetedms.TargetedMSModule.PROTEIN_TAB_NAME;
+import static org.labkey.targetedms.TargetedMSModule.PROTEIN_TAB_WEB_PARTS;
 import static org.labkey.targetedms.TargetedMSModule.QC_FOLDER_WEB_PARTS;
 
 public class TargetedMSController extends SpringActionController
@@ -364,7 +366,7 @@ public class TargetedMSController extends SpringActionController
                 moduleProperty.saveValue(getUser(), c, FolderType.Experiment.toString());
 
                 // setup the EXPERIMENTAL_DATA default webparts
-                addDashboardTab(c, EXPERIMENT_FOLDER_WEB_PARTS);
+                addDashboardTab(DefaultFolderType.DEFAULT_DASHBOARD, c, EXPERIMENT_FOLDER_WEB_PARTS);
             }
             else if (FolderType.Library.toString().equals(folderSetupForm.getFolderType()))
             {
@@ -379,20 +381,18 @@ public class TargetedMSController extends SpringActionController
                 }
 
 
+                addDashboardTab(DefaultFolderType.DEFAULT_DASHBOARD, c, LIBRARY_FOLDER_WEB_PARTS);
                 // Add the appropriate web parts to the page
                 if(folderSetupForm.isPrecursorNormalized())
                 {
-                    addDashboardTab(c, PROTEIN_LIBRARY_FOLDER_WEB_PARTS);
-                }
-                else
-                {
-                    addDashboardTab(c, LIBRARY_FOLDER_WEB_PARTS);
+                    addDashboardTab(PROTEIN_TAB_NAME, c, PROTEIN_TAB_WEB_PARTS);
+                    addDashboardTab(TargetedMSModule.PEPTIDE_TAB_NAME, c, PEPTIDE_TAB_WEB_PARTS);
                 }
             }
             else if (FolderType.QC.toString().equals(folderSetupForm.getFolderType()))
             {
                 moduleProperty.saveValue(getUser(), c, FolderType.QC.toString());
-                addDashboardTab(c, QC_FOLDER_WEB_PARTS);
+                addDashboardTab(DefaultFolderType.DEFAULT_DASHBOARD, c, QC_FOLDER_WEB_PARTS);
 
                 ArrayList<Portal.WebPart> runsTab = new ArrayList<>();
                 runsTab.add(Portal.getPortalPart(TargetedMSModule.TARGETED_MS_RUNS_WEBPART_NAME).createWebPart());
@@ -440,23 +440,6 @@ public class TargetedMSController extends SpringActionController
             return true;
         }
 
-        private void addDashboardTab(Container c, String[] includeWebParts)
-        {
-            ArrayList<Portal.WebPart> newWebParts = new ArrayList<>();
-            for(String name: includeWebParts)
-            {
-                Portal.WebPart webPart = Portal.getPortalPart(name).createWebPart();
-                newWebParts.add(webPart);
-            }
-
-            // Save webparts to both pages, otherwise the TARGETED_MS_SETUP webpart gets copied over from
-            // portal.default to DefaultDashboard
-            Portal.saveParts(c, DefaultFolderType.DEFAULT_DASHBOARD, newWebParts);
-            Portal.saveParts(c, Portal.DEFAULT_PORTAL_PAGE_ID, newWebParts); // this will remove the TARGETED_MS_SETUP
-            // webpart added to portal.default during
-            // the initial folder creation.
-        }
-
         private void addDataPipelineTab(Container c)
         {
             List<Portal.WebPart> tab = new ArrayList<>();
@@ -472,6 +455,28 @@ public class TargetedMSController extends SpringActionController
             return getContainer().getStartURL(getUser());
         }
 
+    }
+
+    public static void addDashboardTab(String tab, Container c, String[] includeWebParts)
+    {
+        ArrayList<Portal.WebPart> newWebParts = new ArrayList<>();
+        for(String name: includeWebParts)
+        {
+            Portal.WebPart webPart = Portal.getPortalPart(name).createWebPart();
+            newWebParts.add(webPart);
+        }
+
+        Portal.saveParts(c, tab, newWebParts);
+        if (DefaultFolderType.DEFAULT_DASHBOARD.equals(tab))
+        {
+            // Save webparts to both pages, otherwise the TARGETED_MS_SETUP webpart gets copied over from
+            // portal.default to DefaultDashboard
+            Portal.saveParts(c, Portal.DEFAULT_PORTAL_PAGE_ID, newWebParts); // this will remove the TARGETED_MS_SETUP
+        }
+        else
+        {
+            Portal.addProperty(c, tab, Portal.PROP_CUSTOMTAB);
+        }
     }
 
     private static class ChromatogramCrawlerForm
