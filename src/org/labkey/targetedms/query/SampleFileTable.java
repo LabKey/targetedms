@@ -15,14 +15,25 @@
  */
 package org.labkey.targetedms.query;
 
+import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Aggregate;
+import org.labkey.api.data.ColumnInfo;
+import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
+import org.labkey.api.data.DataColumn;
+import org.labkey.api.data.DisplayColumn;
+import org.labkey.api.data.DisplayColumnFactory;
 import org.labkey.api.data.JdbcType;
+import org.labkey.api.data.RenderContext;
 import org.labkey.api.data.SQLFragment;
+import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.TableSelector;
+import org.labkey.api.data.dialect.SqlDialect;
+import org.labkey.api.exp.api.ExperimentService;
+import org.labkey.api.files.FileContentService;
 import org.labkey.api.query.DefaultQueryUpdateService;
 import org.labkey.api.query.DetailsURL;
 import org.labkey.api.query.ExprColumn;
@@ -35,19 +46,31 @@ import org.labkey.api.security.UserPrincipal;
 import org.labkey.api.security.permissions.DeletePermission;
 import org.labkey.api.security.permissions.Permission;
 import org.labkey.api.security.permissions.ReadPermission;
+import org.labkey.api.targetedms.ITargetedMSRun;
 import org.labkey.api.targetedms.TargetedMSService;
+import org.labkey.api.util.FileUtil;
+import org.labkey.api.util.Link;
 import org.labkey.api.view.ActionURL;
+import org.labkey.api.view.PopupMenu;
+import org.labkey.api.view.template.ClientDependency;
 import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSRun;
 import org.labkey.targetedms.TargetedMSSchema;
+import org.labkey.targetedms.parser.SampleFile;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class SampleFileTable extends TargetedMSTable
 {
@@ -90,6 +113,69 @@ public class SampleFileTable extends TargetedMSTable
         DetailsURL detailsURL = new DetailsURL(url, urlParams);
         setDetailsURL(detailsURL);
         getMutableColumn("ReplicateId").setURL(detailsURL);
+
+        SqlDialect dialect = TargetedMSManager.getSqlDialect();
+        SQLFragment filePathColSql = new SQLFragment(ExprColumn.STR_TABLE_ALIAS + ".FilePath");
+
+        SQLFragment filePathLengthSql = new SQLFragment(dialect.getVarcharLengthFunction()).append("(").append(filePathColSql).append(")");
+        SQLFragment fileNameSql = new SQLFragment("CASE")
+                .append(" WHEN ").append(filePathColSql).append(" IS NOT NULL AND ").append(dialect.getStringIndexOfFunction(new SQLFragment("'\\'"), filePathColSql)).append(" > 0")
+                .append(" THEN ").append(dialect.getSubstringFunction(
+                                                filePathColSql,
+                                                new SQLFragment(filePathLengthSql).append(" - ")
+                                                               .append(dialect.getStringIndexOfFunction(new SQLFragment("'\\'"), new SQLFragment(" REVERSE(").append(filePathColSql)).append(") + 2 ")),
+                                                filePathLengthSql))
+                .append(" ELSE ").append(filePathColSql).append(" END");
+        ExprColumn fileNameCol = new ExprColumn(this, "File", fileNameSql, JdbcType.VARCHAR);
+        addColumn(fileNameCol);
+
+        var downloadCol = addWrapColumn("Download", getRealTable().getColumn("Id"));
+        downloadCol.setKeyField(false);
+        downloadCol.setTextAlign("left");
+        downloadCol.setDisplayColumnFactory(new DisplayColumnFactory()
+        {
+            @Override
+            public DisplayColumn createRenderer(ColumnInfo colInfo)
+            {
+                return new DataColumn(colInfo)
+                {
+                    @Override
+                    public void renderGridCellContents(RenderContext ctx, Writer out) throws IOException
+                    {
+                        Long sampleFileId = ctx.get(this.getColumnInfo().getFieldKey(), Long.class);
+                        if (sampleFileId != null)
+                        {
+                            SampleFile sampleFile = ReplicateManager.getSampleFile(sampleFileId);
+
+                            if(sampleFile != null)
+                            {
+//                                String webdavUrl = fileAvailable(sampleFile);
+//                                if(webdavUrl != null)
+//                                {
+//                                    out.write("<nobr>&nbsp;");
+//                                    out.write(new Link.LinkBuilder("Download").iconCls("fa fa-download").href(webdavUrl).toString());
+//                                    out.write("&nbsp;");
+//                                    out.write("</nobr>");
+//                                    return;
+//                                }
+                            }
+                            out.write("<em>Not available</em>");
+                        }
+                    }
+
+                    @Override
+                    public void addQueryFieldKeys(Set<FieldKey> keys)
+                    {
+//                        FieldKey parentFK = this.getColumnInfo().getFieldKey().getParent();
+//                        keys.add(new FieldKey(parentFK, "ExperimentRunLSID"));
+//                        keys.add(FieldKey.fromParts("Folder"));
+                        super.addQueryFieldKeys(keys);
+                    }
+                };
+            }
+        });
+
+
     }
 
     @Override
@@ -100,7 +186,9 @@ public class SampleFileTable extends TargetedMSTable
             // Always include these columns
             List<FieldKey> defaultCols = new ArrayList<>(Arrays.asList(
                     FieldKey.fromParts("ReplicateId"),
-                    FieldKey.fromParts("FilePath"),
+                    FieldKey.fromParts("File"),
+                    FieldKey.fromParts("Download"),
+                    // FieldKey.fromParts("FilePath"),
                     FieldKey.fromParts("AcquiredTime")));
 
             // Find the columns that have values for the run of interest, and include them in the set of columns in the default
@@ -170,5 +258,84 @@ public class SampleFileTable extends TargetedMSTable
                 return super.deleteRow(user, container, oldRowMap);
             }
         };
+    }
+
+//    private String fileAvailable(SampleFile sampleFile)
+//    {
+//        String filePath = sampleFile.getFilePath();
+//        String fileName = FilenameUtils.getName(filePath);
+//        TargetedMSRun
+//        if(hasEx)
+//    }
+
+//    private static void checkExists(String filePath)
+//    {
+//        String fileName = FilenameUtils.getName(filePath);
+//        if (!hasExpData(fileName, run.getContainer(), rawFilesDir, expSvc, false))
+//        {
+//            // If no matching row was found in exp.data and this is NOT a cloud container check for the file on the file system.
+//            if(!FileContentService.get().isCloudRoot(rootExpContainer))
+//            {
+//                if (Files.exists(rawFilesDir) && findInDirectoryTree(rawFilesDir, fileName, rootExpContainer))
+//                {
+//                    existingRawFiles.add(filePath);
+//                    return;
+//                }
+//            }
+//            missingFiles.add(filePath);
+//        }
+//        else
+//        {
+//            existingRawFiles.add(filePath);
+//        }
+//    }
+
+    private static boolean hasExpData(String sampleFileName, Container container, Path rawFilesDir, ExperimentService svc, boolean allowBasenameOnly)
+    {
+        if(svc == null)
+        {
+            return false;
+        }
+
+        String nameNoExt = FileUtil.getBaseName(sampleFileName);
+
+        SimpleFilter filter = SimpleFilter.createContainerFilter(container);
+        // Look for files that start with the base filename of the sample file.
+        filter.addCondition(FieldKey.fromParts("Name"), nameNoExt, CompareType.STARTS_WITH);
+        // Look for data under @files/RawFiles.
+        // Use FileUtil.pathToString(); this will remove the access ID is this is a S3 path
+        String prefix = FileUtil.pathToString(rawFilesDir);
+        if (!prefix.endsWith("/"))
+        {
+            prefix = prefix + "/";
+        }
+        filter.addCondition(FieldKey.fromParts("datafileurl"), prefix, CompareType.STARTS_WITH);
+
+        List<String> files = new TableSelector(svc.getTinfoData(), Collections.singleton("Name"), filter, null).getArrayList(String.class);
+
+        for (String expDataFile: files)
+        {
+            if(accept(sampleFileName, expDataFile, allowBasenameOnly))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean accept(String sampleFileName, String uploadedFileName)
+    {
+        return accept(sampleFileName, uploadedFileName, false);
+    }
+
+    private static boolean accept(String sampleFileName, String uploadedFileName, boolean allowBasenameOnly)
+    {
+        // Accept QC_10.9.17.raw OR for QC_10.9.17.raw.zip OR QC_10.9.17.zip
+        // 170428_DBS_cal_7a.d OR 170428_DBS_cal_7a.d.zip OR 170428_DBS_cal_7a.zip
+        String nameNoExt = FileUtil.getBaseName(sampleFileName);
+        return sampleFileName.equalsIgnoreCase(uploadedFileName)
+                || (sampleFileName + ".zip").equalsIgnoreCase(uploadedFileName)
+                || (nameNoExt + ".zip").equalsIgnoreCase(uploadedFileName)
+                || (allowBasenameOnly && nameNoExt.equalsIgnoreCase(FileUtil.getBaseName(uploadedFileName)));
     }
 }
