@@ -95,7 +95,7 @@ public abstract class ChromatogramDataset
     public Stroke getSeriesStroke(int seriesIndex)
     {
         // Default to solid line if the array is not initialized or we can't index into the array
-        boolean isQuantitative = (_quantative != null && _quantative.length > seriesIndex) ? _quantative[seriesIndex] : true;
+        boolean isQuantitative = (_quantative == null || _quantative.length <= seriesIndex) || _quantative[seriesIndex];
         return isQuantitative ? LINE : DASH_LINE;
     }
 
@@ -185,12 +185,12 @@ public abstract class ChromatogramDataset
         }
     }
 
-    class RtRange
+    public static class RtRange
     {
         private final double _minRt;
         private final double _maxRt;
 
-        RtRange(double minRt, double maxRt)
+        public RtRange(double minRt, double maxRt)
         {
             _minRt = minRt;
             _maxRt = maxRt;
@@ -204,6 +204,11 @@ public abstract class ChromatogramDataset
         public double getMaxRt()
         {
             return _maxRt;
+        }
+
+        public boolean isEmpty()
+        {
+            return _minRt == 0 && _maxRt == 0;
         }
     }
 
@@ -484,11 +489,9 @@ public abstract class ChromatogramDataset
             if(_syncRt){
                 // Get the min and max retention times of the precursors for this peptide, over all replicates.
                 // TODO: filter this to currently selected replicates
-                _minDisplayRt = TransitionManager.getMinGeneralMoleculeRt(_generalMoleculeId);
-                _maxDisplayRt = TransitionManager.getMaxGeneralMoleculeRt(_generalMoleculeId);
-
-                if(_minDisplayRt == null) _minDisplayRt = 0.0;
-                if(_maxDisplayRt == null) _maxDisplayRt = 0.0;
+                RtRange peakRtSummary = TransitionManager.getGeneralMoleculeRtRange(_generalMoleculeId);
+                _minDisplayRt = peakRtSummary.getMinRt();
+                _maxDisplayRt = peakRtSummary.getMaxRt();
 
                 margin = (_maxDisplayRt - _minDisplayRt) * 0.15;
             }
@@ -897,47 +900,32 @@ public abstract class ChromatogramDataset
 
         private RtRange getChromatogramRange(int generalMoleculeId, PrecursorChromInfo pChromInfo)
         {
-            double margin = 0;
+            RtRange peakRtSummary;
             if(_syncRt)
             {
                 // Get the minimum and maximum RT for the peptide over all the replicates
-                _minDisplayRt = TransitionManager.getMinGeneralMoleculeRt(generalMoleculeId);
-                _maxDisplayRt = TransitionManager.getMaxGeneralMoleculeRt(generalMoleculeId);
-                if(_minDisplayRt == null) _minDisplayRt = 0.0;
-                if(_maxDisplayRt == null) _maxDisplayRt = 0.0;
-                margin = (_maxDisplayRt - _minDisplayRt) * 0.15;
+                peakRtSummary = TransitionManager.getGeneralMoleculeRtRange(generalMoleculeId);
             }
             else
             {
-                Double pciMinStartTime = PrecursorManager.getMinPrecursorPeakRt(pChromInfo);
-                Double pciMaxEndTime = PrecursorManager.getMaxPrecursorPeakRt(pChromInfo);
-                // If this precursorChromInfo does not have a minStartTime and maxEndTime,
-                // get the minimum minStartTime and maximum maxEndTime for all precursors of this peptide in this replicate.
-                if (pciMinStartTime == null)
+                peakRtSummary = PrecursorManager.getPrecursorPeakRtRange(pChromInfo);
+                if(peakRtSummary.isEmpty())
                 {
-                    pciMinStartTime = TransitionManager.getMinGeneralMoleculeSampleRt(generalMoleculeId, pChromInfo.getSampleFileId());
-                }
-                if (pciMaxEndTime == null)
-                {
-                    pciMaxEndTime = TransitionManager.getMaxGeneralMoleculeSampleRt(generalMoleculeId, pChromInfo.getSampleFileId());
-                }
-                if(pciMinStartTime != null && pciMaxEndTime != null)
-                {
-                    _minDisplayRt = pciMinStartTime;
-                    _maxDisplayRt = pciMaxEndTime;
-                    margin = _maxDisplayRt - _minDisplayRt;
+                    // If this precursorChromInfo does not have a minStartTime and maxEndTime AND the startTime and endTime is not set on
+                    // any of its transition peaks, then get the minimum minStartTime and maximum maxEndTime across all precursors of this
+                    // peptide in this replicate. This scenario should not be common.
+                    peakRtSummary = TransitionManager.getGeneralMoleculeSampleRtRange(generalMoleculeId, pChromInfo.getSampleFileId());
                 }
             }
-            if(_minDisplayRt != null && _maxDisplayRt != null)
+
+            double margin = peakRtSummary.getMaxRt() - peakRtSummary.getMinRt();
+            if(_syncRt)
             {
-                _minDisplayRt -= margin;
-                _maxDisplayRt += margin;
-                return new RtRange(_minDisplayRt, _maxDisplayRt);
+                margin *= 0.15;
             }
-            else
-            {
-                return new RtRange(0.0, 0.0);
-            }
+            _minDisplayRt = peakRtSummary.getMinRt() - margin;
+            _maxDisplayRt = peakRtSummary.getMaxRt() + margin;
+            return new RtRange(_minDisplayRt, _maxDisplayRt);
         }
 
         // Adds a transition peak to the dataset and returns a max intensity in the displayed trace as well as the peak
@@ -1168,26 +1156,24 @@ public abstract class ChromatogramDataset
     static abstract class TransitionChromInfoPlusGeneralTransition <T extends GeneralTransition>
     {
         TransitionChromInfo _transChromInfo;
+        T _transition;
+
         public TransitionChromInfo getTransChromInfo()
         {
             return _transChromInfo;
         }
-        public abstract T getTransition();
+        public T getTransition()
+        {
+            return _transition;
+        }
     }
 
     static class TransChromInfoPlusTransition extends TransitionChromInfoPlusGeneralTransition<Transition>
     {
-        private Transition _transition;
-
         public TransChromInfoPlusTransition(TransitionChromInfo transChromInfo, Transition transition)
         {
             _transChromInfo = transChromInfo;
             _transition = transition;
-        }
-
-        public Transition getTransition()
-        {
-            return _transition;
         }
     }
 
@@ -1208,17 +1194,10 @@ public abstract class ChromatogramDataset
 
     static class MoleculeTransChromInfoPlusTransition extends TransitionChromInfoPlusGeneralTransition<MoleculeTransition>
     {
-        private MoleculeTransition _transition;
-
         public MoleculeTransChromInfoPlusTransition(TransitionChromInfo transChromInfo, MoleculeTransition transition)
         {
             _transChromInfo = transChromInfo;
             _transition = transition;
-        }
-
-        public MoleculeTransition getTransition()
-        {
-            return _transition;
         }
     }
 

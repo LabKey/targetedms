@@ -15,6 +15,7 @@
 
 package org.labkey.targetedms.model;
 
+import org.labkey.targetedms.chart.ChromatogramDataset;
 import org.labkey.targetedms.parser.PrecursorChromInfo;
 import org.labkey.targetedms.query.PrecursorManager;
 
@@ -114,8 +115,7 @@ public class PrecursorChromInfoPlus extends PrecursorChromInfo implements Precur
     {
         if(_minPeakRt == null)
         {
-            Double minRt = PrecursorManager.getMinPrecursorPeakRt(this);
-            _minPeakRt = minRt == null ? 0 : minRt;
+            initPeakRtRange();
         }
         return _minPeakRt;
     }
@@ -124,10 +124,16 @@ public class PrecursorChromInfoPlus extends PrecursorChromInfo implements Precur
     {
         if(_maxPeakRt == null)
         {
-            Double maxRt = PrecursorManager.getMaxPrecursorPeakRt(this);
-            _maxPeakRt = maxRt == null ? 0 : maxRt;
+            initPeakRtRange();
         }
         return _maxPeakRt;
+    }
+
+    private void initPeakRtRange()
+    {
+        ChromatogramDataset.RtRange peakRt = PrecursorManager.getPrecursorPeakRtRange(this);
+        _minPeakRt = peakRt.getMinRt();
+        _maxPeakRt = peakRt.getMaxRt();
     }
 
     public boolean isQuantitative()

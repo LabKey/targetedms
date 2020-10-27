@@ -35,6 +35,7 @@ import org.labkey.api.security.User;
 import org.labkey.api.view.NotFoundException;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
+import org.labkey.targetedms.chart.ChromatogramDataset.RtRange;
 import org.labkey.targetedms.model.PrecursorChromInfoLitePlus;
 import org.labkey.targetedms.model.PrecursorChromInfoPlus;
 import org.labkey.targetedms.parser.Precursor;
@@ -821,42 +822,20 @@ public class PrecursorManager
         return new SqlSelector(TargetedMSManager.getSchema(), sql).exists();
     }
 
-    @Nullable
-    public static Double getMinPrecursorPeakRt(PrecursorChromInfo pci)
+    public static RtRange getPrecursorPeakRtRange(@NotNull PrecursorChromInfo pci)
     {
-        if(pci == null)
+        if(pci.getMinStartTime() != null && pci.getMaxEndTime() != null)
         {
-            return null;
+            return new RtRange(pci.getMinStartTime(), pci.getMaxEndTime());
         }
-        if(pci.getMinStartTime() != null)
+        else
         {
-            return pci.getMinStartTime();
+            // Issue 41617: Chromatograms are not displayed for precursors that do not have any quantitative transitions.
+            // Min peak start and max peak end times for a precursor chrom info can be null if none of the
+            // transitions for the precursor are quantitative. We will try to get the min start and max end
+            // retention times from the transition chrom infos instead.
+            return TransitionManager.getPrecursorPeakRtRange(pci.getId());
         }
-
-        // Issue 41617: Chtomatograms are not displayed for precursors that do not have any quantitative transitions
-        // min peak start and max peak end times for a precursor chrom info can be null if none of the
-        // transitions for the precursor are quantitative. We will try to get the min start and max end
-        // retention times from the transition chrom infos instead.
-        return TransitionManager.getMinPrecursorPeakRt(pci.getId());
-    }
-
-    @Nullable
-    public static Double getMaxPrecursorPeakRt(PrecursorChromInfo pci)
-    {
-        if(pci == null)
-        {
-            return null;
-        }
-        if(pci.getMaxEndTime() != null)
-        {
-            return pci.getMaxEndTime();
-        }
-
-        // Issue 41617: Chtomatograms are not displayed for precursors that do not have any quantitative transitions
-        // min peak start and max peak end times for a precursor chrom info can be null if none of the
-        // transitions for the precursor are quantitative. We will try to get the min start and max end
-        // retention times from the transition chrom infos instead.
-        return TransitionManager.getMaxPrecursorPeakRt(pci.getId());
     }
 
     private static class PrecursorIdsWithSpectra extends DatabaseCache<String, Set<Integer>>
