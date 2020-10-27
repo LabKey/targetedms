@@ -225,7 +225,7 @@ function toggleCheckboxSelection(element)
     </div>
 <%}%>
 
-<div style="margin-bottom:10px;">Check the peptides that you would like to include in the library.</div>
+<div style="margin-bottom:10px;">Choose which variant you would like to include in the library.</div>
 
 <%if(bean.getConflictRunFileName() != null) {%>
     <div style="color:red; margin-bottom:10px;">
@@ -240,8 +240,8 @@ function toggleCheckboxSelection(element)
 <table class="labkey-data-region-legacy labkey-show-borders myTable" id="dataTable">
     <thead>
        <tr>
-            <th colspan="<%=colspan%>"><div class="labkey-button-bar" style="width:98%">Conflicting Peptides in Document</div></th>
-            <th colspan="<%=colspan%>"><div class="labkey-button-bar" style="width:98%">Current Library Peptides</div></th>
+            <th colspan="<%=colspan%>"><div class="labkey-button-bar" style="width:98%">Newly Imported Data</div></th>
+            <th colspan="<%=colspan%>"><div class="labkey-button-bar" style="width:98%">Current Library Data</div></th>
         </tr>
        <tr>
            <th class="labkey-column-header"></th>

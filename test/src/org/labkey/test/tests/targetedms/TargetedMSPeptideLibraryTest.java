@@ -22,11 +22,15 @@ import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.categories.DailyB;
 import org.labkey.test.categories.MS2;
+import org.labkey.test.components.CustomizeView;
 import org.labkey.test.components.targetedms.TargetedMSRunsTable;
+import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.LogMethod;
+import org.labkey.test.util.PipelineStatusTable;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,11 +39,10 @@ import static org.junit.Assert.assertTrue;
 
 @Category({DailyB.class, MS2.class})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
-public class TargetedMSPeptideLibraryTest extends TargetedMSPrecursorLibraryTest
+public class TargetedMSPeptideLibraryTest extends TargetedMSTest
 {
     private static final String SKY_FILE1 = "Stergachis-SupplementaryData_2_a.sky.zip";
     private static final String SKY_FILE2 = "Stergachis-SupplementaryData_2_b.sky.zip";
-    private static final String SKY_FILE3 = "MRMer_renamed_protein.zip";
 
     @Test
     public void testSteps()
@@ -55,6 +58,14 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSPrecursorLibraryTest
         verifyRevision4();
     }
 
+    @Override
+    protected void selectFolderType(FolderType folderType)
+    {
+        // Make sure that we're still in the wizard UI
+        assertTextPresent("Create Project", "Users / Permissions");
+        super.selectFolderType(folderType);
+    }
+
     @LogMethod
     protected void verifyRevision1()
     {
@@ -66,7 +77,7 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSPrecursorLibraryTest
         verifyChromatogramLibraryDownloadWebPart(totalPeptideCount, 343, 1);
 
         // Verify the number of rows in the Peptides table
-        verifyLibraryTableRowCount(totalPeptideCount);
+        verifyLibraryPeptideCount(totalPeptideCount);
 
         // Verify one precursor from some of the proteins in the library.  All are from SKY_FILE1 at this point.
         Map<String, Pair<String, String>> precursorMap = new HashMap<>();
@@ -80,6 +91,43 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSPrecursorLibraryTest
         // precursorMap.put("GEPGEGAYVYR[+10.0]", new Pair(SKY_FILE1, "DifferentProteinSameLabel"));
 
         verifyLibraryPrecursors(precursorMap, totalPrecursorCount);
+    }
+
+    private void verifyLibraryPeptideCount(int totalPeptideCount)
+    {
+        clickTab("Peptides");
+        log("Verify peptide count in the library");
+        DataRegionTable peptidesTable = new DataRegionTable("Peptide",getDriver());
+        assertEquals("Unexpected number of rows in peptides table", totalPeptideCount, peptidesTable.getDataRowCount());
+    }
+
+    private void verifyLibraryPrecursors(Map<String, Pair<String, String>> precursorMap, int totalPrecursorCount)
+    {
+        log("Verify precursors in the library");
+
+        DataRegionTable precursorTable = new DataRegionTable("LibraryPrecursor",getDriver());
+        CustomizeView customizeView = precursorTable.openCustomizeGrid();
+        customizeView.addColumn("ModifiedSequence");
+        customizeView.applyCustomView();
+        if(totalPrecursorCount > 100)
+        {
+            precursorTable.getPagingWidget().setPageSize(250, true);
+        }
+
+        List<String> colNames = precursorTable.getColumnNames();
+        String x = colNames.get(0);
+        assertEquals("Unexpected number of rows in precursors table", totalPrecursorCount, precursorTable.getDataRowCount());
+
+        for(Map.Entry<String, Pair<String, String>> entry: precursorMap.entrySet())
+        {
+            String precursor = entry.getKey();
+            int idx = precursorTable.getRowIndex("Modified Precursor", precursor);
+            assertTrue("Expected precursor " + precursor + " not found in table", idx != -1);
+            List<String>fileNameAndProtein = precursorTable.getRowDataAsText(idx, "File", "Protein / Label");
+            assertEquals(2, fileNameAndProtein.size());
+            assertEquals("Unexpected file name for " + precursor, entry.getValue().first, fileNameAndProtein.get(0));
+            assertEquals("Unexpected protein name for " + precursor, entry.getValue().second, fileNameAndProtein.get(1));
+        }
     }
 
     @LogMethod
@@ -96,7 +144,7 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSPrecursorLibraryTest
         verifyChromatogramLibraryDownloadWebPart(55, 343, 1, true);
 
         // Verify the number of rows in the Peptides table
-        verifyLibraryTableRowCount(totalPeptideCount);
+        verifyLibraryPeptideCount(totalPeptideCount);
 
         // Verify one precursor from some of the proteins in the library.
         // From SKY_FILE1
@@ -125,9 +173,35 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSPrecursorLibraryTest
         verifyLibraryPrecursors(precursorMap, totalPrecursorCount);
     }
 
+    private void verifyChromatogramLibraryDownloadWebPart(int peptideCount, int transitionCount, int revision)
+    {
+        verifyChromatogramLibraryDownloadWebPart(peptideCount, transitionCount, revision, false);
+    }
+
+    private void verifyChromatogramLibraryDownloadWebPart(int peptideCount, int transitionCount, int revision, boolean hasConflict)
+    {
+        clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
+        if(!hasConflict)
+        {
+            assertElementPresent(Locator.xpath("//img[contains(@src, 'graphLibraryStatistics.view')]"));
+        }
+        else
+        {
+            // The library stats graph is not displayed if the folder has conflicts.
+            assertElementNotPresent(Locator.xpath("//img[contains(@src, 'graphLibraryStatistics.view')]"));
+            assertTextPresent("The library cannot be extended until the conflicts are resolved", "The download link below is for the last stable version of the library");
+        }
+        assertTextPresent(
+                peptideCount + " peptides",
+                transitionCount + " ranked transitions");
+        assertElementPresent(Locator.lkButton("Download"));
+        assertTextPresent("Revision " + revision);
+    }
+
     @LogMethod
     private void verifyAndResolveConflicts()
     {
+        clickTab("Panorama Dashboard");
         log("Verifying that expected conflicts exist");
         String[] conflictText = new String[] {"The last Skyline document imported in this folder had 10 peptides that were already a part of the library",
                 "Please click the link below to resolve conflicts and choose the version of each peptide that should be included in the library",
@@ -137,8 +211,8 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSPrecursorLibraryTest
         assertElementPresent(resolveConflictsLink);
         clickAndWait(resolveConflictsLink);
         assertTextPresent(
-                "Conflicting Peptides in Document",
-                "Current Library Peptides",
+                "Newly Imported Data",
+                "Current Library Data",
                 "Resolve conflicts for " + SKY_FILE2 + ".");
 
         int expectedConflictCount = 10;
@@ -178,7 +252,7 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSPrecursorLibraryTest
         verifyChromatogramLibraryDownloadWebPart(totalPeptideCount, 607, 3);
 
         // Verify the number of rows in the Peptides table
-        verifyLibraryTableRowCount(totalPeptideCount);
+        verifyLibraryPeptideCount(totalPeptideCount);
 
         // Verify one precursor from each protein in the library.
         // FROM SKY_FILE1
@@ -215,7 +289,7 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSPrecursorLibraryTest
         verifyChromatogramLibraryDownloadWebPart(totalPeptideCount, 343, 4);
 
         // Verify the number of rows in the Peptides table
-        verifyLibraryTableRowCount(totalPeptideCount);
+        verifyLibraryPeptideCount(totalPeptideCount);
 
         // All are from SKY_FILE1 after deleting SKY_FILE2.
         Map<String, Pair<String, String>> precursorMap = new HashMap<>();

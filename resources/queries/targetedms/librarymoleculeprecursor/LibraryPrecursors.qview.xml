@@ -1,7 +1,8 @@
 <customView xmlns="http://labkey.org/data/xml/queryCustomView" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         label="Library Precursors">
     <columns>
-        <column name="PeptideId/PeptideGroupId/RunId/File" />
+        <column name="MoleculeId/PeptideGroupId/RunId/File" />
+        <column name="MoleculeId/MoleculeName" />
         <column name="IonFormula" />
         <column name="CustomIonName" />
         <column name="Charge" />

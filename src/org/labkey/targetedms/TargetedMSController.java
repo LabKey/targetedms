@@ -4727,7 +4727,7 @@ public class TargetedMSController extends SpringActionController
 
             JspView<PrecursorConflictBean> conflictInfo = new JspView<>("/org/labkey/targetedms/view/precursorConflictResolutionView.jsp", bean);
             conflictInfo.setFrame(WebPartView.FrameType.PORTAL);
-            conflictInfo.setTitle("Library Peptide Conflicts");
+            conflictInfo.setTitle("Library Conflicts");
 
             return conflictInfo;
         }

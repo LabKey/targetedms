@@ -54,7 +54,6 @@ public class MoleculePrecursorTableInfo extends AbstractGeneralPrecursorTableInf
 
         var customIonName = getMutableColumn("CustomIonName");
         customIonName.setURL(getDetailsURL(null, null));
-        customIonName.setLabel("Precursor");
 
         ArrayList<FieldKey> visibleColumns = new ArrayList<>();
         visibleColumns.add(FieldKey.fromParts("MoleculeId", "PeptideGroupId", "Label"));

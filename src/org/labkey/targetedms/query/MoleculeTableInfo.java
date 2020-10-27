@@ -58,6 +58,8 @@ public class MoleculeTableInfo extends AbstractGeneralMoleculeTableInfo
         molExprCol.setHidden(true);
         addColumn(molExprCol);
 
+        setTitleColumn(molExprCol.getColumnName());
+
         WrappedColumn moleculeCol = new WrappedColumn(getColumn("MoleculeName"), "Molecule");
         moleculeCol.setLabel("Molecule");
         moleculeCol.setDescription("Custom Ion Name");

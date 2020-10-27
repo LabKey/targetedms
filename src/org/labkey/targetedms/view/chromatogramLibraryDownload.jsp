@@ -130,7 +130,7 @@
 %>
         The library contains <%= h(peptideCount > 0 ? (format.format(peptideCount) + " peptides") : "")%>
         <%= h(peptideCount > 0 && moleculeCount > 0 ? "and" : "")%>
-        <%= h(moleculeCount > 0 ? (format.format(moleculeCount) + " small molecules") : "")%>
+        <%= h(moleculeCount > 0 ? (format.format(moleculeCount) + " molecules") : "")%>
         with <%= h(format.format(transitionCount))%> ranked transitions.
 <%
             }
