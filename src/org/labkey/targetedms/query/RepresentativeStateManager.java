@@ -29,12 +29,15 @@ import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSRun;
 import org.labkey.targetedms.TargetedMsRepresentativeStateAuditProvider;
 import org.labkey.targetedms.chromlib.ChromatogramLibraryUtils;
+import org.labkey.targetedms.parser.MoleculePrecursor;
 import org.labkey.targetedms.parser.PeptideGroup;
 import org.labkey.targetedms.parser.Precursor;
 import org.labkey.targetedms.parser.RepresentativeDataState;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * User: vsharma
@@ -59,10 +62,16 @@ public class RepresentativeStateManager
             {
                 conflictCount = resolveRepresentativeState(container, run, TargetedMSManager.getTableInfoPeptide(),
                         TargetedMSManager.getTableInfoPrecursor(),
-                        new SQLFragment(" AND (m.Decoy IS NULL OR m.Decoy = ?)", false), "ModifiedSequence");
+                        new SQLFragment(" AND (m.Decoy IS NULL OR m.Decoy = ?)", false), (p, gp) -> p + ".ModifiedSequence");
                 conflictCount += resolveRepresentativeState(container, run, TargetedMSManager.getTableInfoMolecule(),
                         TargetedMSManager.getTableInfoMoleculePrecursor(),
-                        new SQLFragment(), "IonFormula");
+                        new SQLFragment(), (p, gp) ->
+                                TargetedMSManager.getSqlDialect().concatenate(
+                                        "COALESCE(" + p + ".IonFormula, '')",
+                                        "' '",
+                                        "COALESCE(" + p + ".CustomIonName, '')",
+                                        "' - '",
+                                        "CAST(" + gp + ".mz AS VARCHAR)"));;
             }
             else if(state == TargetedMSRun.RepresentativeDataState.NotRepresentative)
             {
@@ -74,6 +83,11 @@ public class RepresentativeStateManager
                 else if(currentState == TargetedMSRun.RepresentativeDataState.Representative_Peptide)
                 {
                     revertPeptideRepresentativeState(user, container, run);
+                    revertMoleculeRepresentativeState(user, container, run);
+
+                    // Mark all precursors in this run as not representative
+                    PrecursorManager.setRepresentativeState(run.getId(), RepresentativeDataState.NotRepresentative);
+
                 }
             }
             else
@@ -144,9 +158,25 @@ public class RepresentativeStateManager
                 Table.update(user, TargetedMSManager.getTableInfoGeneralPrecursor(), lastDeprecatedPrec, lastDeprecatedPrec.getId());
             }
         }
+    }
 
-        // Mark all precursors in this run as not representative
-        PrecursorManager.setRepresentativeState(run.getId(), RepresentativeDataState.NotRepresentative);
+    private static void revertMoleculeRepresentativeState(User user, Container container, TargetedMSRun run)
+    {
+        // Get a list of precursors in this run that are marked as representative.
+        List<MoleculePrecursor> representativePrecursors = MoleculePrecursorManager.getRepresentativeMoleculePrecursors(run.getRunId());
+
+        // Roll back representative state to the most recently deprecated precursors in other runs
+        // in this container(folder).
+        for(MoleculePrecursor prec: representativePrecursors)
+        {
+            MoleculePrecursor lastDeprecatedPrec = MoleculePrecursorManager.getLastDeprecatedMoleculePrecursor(prec, container);
+            if(lastDeprecatedPrec != null)
+            {
+                // Mark the last deprecated precursor as representative
+                lastDeprecatedPrec.setRepresentativeDataState(RepresentativeDataState.Representative);
+                Table.update(user, TargetedMSManager.getTableInfoGeneralPrecursor(), lastDeprecatedPrec, lastDeprecatedPrec.getId());
+            }
+        }
     }
 
     private static int resolveRepresentativeProteinState(Container container, TargetedMSRun run)
@@ -340,7 +370,7 @@ public class RepresentativeStateManager
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(Integer.class);
     }
 
-    private static List<Integer> getCurrentStandardPrecursorIds(Container container, List<Integer> stdPrecursorIdsInRun, TableInfo precursorTable, String moleculeName)
+    private static List<Integer> getCurrentStandardPrecursorIds(Container container, List<Integer> stdPrecursorIdsInRun, TableInfo precursorTable, BiFunction<String, String, String> joinValue)
     {
         if(stdPrecursorIdsInRun == null || stdPrecursorIdsInRun.size() == 0)
         {
@@ -357,9 +387,9 @@ public class RepresentativeStateManager
         sql.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "gp2");
         sql.append(" ON pre2.Id = gp2.Id)");
         sql.append(" ON ((");
-        sql.append(TargetedMSManager.getSqlDialect().concatenate("pre1." + moleculeName, "CAST(gp1.Charge AS varchar)"));
+        sql.append(TargetedMSManager.getSqlDialect().concatenate(joinValue.apply("pre1", "gp1"), "CAST(gp1.Charge AS varchar)"));
         sql.append(") = (");
-        sql.append(TargetedMSManager.getSqlDialect().concatenate("pre2." + moleculeName, "CAST(gp2.Charge AS varchar)"));
+        sql.append(TargetedMSManager.getSqlDialect().concatenate(joinValue.apply("pre2", "gp2"), "CAST(gp2.Charge AS varchar)"));
         sql.append("))");
         sql.append(" INNER JOIN ");
         sql.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "gp");
@@ -417,7 +447,7 @@ public class RepresentativeStateManager
 
     private static int resolveRepresentativeState(Container container, TargetedMSRun run, TableInfo moleculeTable,
                                                   TableInfo precursorTable,
-                                                  SQLFragment moleculeFilterSQL, String moleculeNameColumn)
+                                                  SQLFragment moleculeFilterSQL, BiFunction<String, String, String> joinValue)
     {
         // Mark everything in this run that doesn't already have representative data in this container as being representative
         SQLFragment makeActiveSQL = new SQLFragment("UPDATE " + TargetedMSManager.getTableInfoGeneralPrecursor());
@@ -438,9 +468,9 @@ public class RepresentativeStateManager
         makeActiveSQL.append(" AND gm.StandardType IS NULL");
         makeActiveSQL.append(moleculeFilterSQL);
         makeActiveSQL.append(" AND ");
-        makeActiveSQL.append(TargetedMSManager.getSqlDialect().concatenate("pre." +  moleculeNameColumn, "CAST(Charge AS varchar)"));
+        makeActiveSQL.append(TargetedMSManager.getSqlDialect().concatenate(joinValue.apply("pre", TargetedMSManager.getTableInfoGeneralPrecursor().toString()), "CAST(Charge AS varchar)", "CAST(mz AS VARCHAR)"));
         makeActiveSQL.append(" NOT IN (SELECT ");
-        makeActiveSQL.append(TargetedMSManager.getSqlDialect().concatenate("precur1." + moleculeNameColumn, "CAST(Charge AS varchar)"));
+        makeActiveSQL.append(TargetedMSManager.getSqlDialect().concatenate(joinValue.apply("precur1", "prec1"), "CAST(Charge AS varchar)", "CAST(mz AS VARCHAR)"));
         makeActiveSQL.append(" FROM ");
         makeActiveSQL.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "prec1").append(", ");
         makeActiveSQL.append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm1").append(", ");
@@ -492,7 +522,7 @@ public class RepresentativeStateManager
         {
             // Get a list of current representative precursors in the folder that have the same identifier and charge
             // as the standard precursors in the run.
-            List<Integer> currentRepStdPrecursorIds = getCurrentStandardPrecursorIds(container, stdPrecursorIdsInRun, precursorTable, moleculeNameColumn);
+            List<Integer> currentRepStdPrecursorIds = getCurrentStandardPrecursorIds(container, stdPrecursorIdsInRun, precursorTable, joinValue);
 
             PrecursorManager.updateRepresentativeStatus(stdPrecursorIdsInRun, RepresentativeDataState.Representative);
             PrecursorManager.updateStatusToDeprecatedOrNotRepresentative(currentRepStdPrecursorIds);

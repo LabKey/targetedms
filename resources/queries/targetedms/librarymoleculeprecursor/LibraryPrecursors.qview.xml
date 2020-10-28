@@ -1,5 +1,5 @@
 <customView xmlns="http://labkey.org/data/xml/queryCustomView" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        label="Library Precursors">
+        label="Library Precursors" canOverride="true">
     <columns>
         <column name="MoleculeId/PeptideGroupId/RunId/File" />
         <column name="MoleculeId/MoleculeName" />
@@ -20,6 +20,7 @@
     </filters>
 
     <sorts>
+        <sort column="MoleculeId/MoleculeName" />
         <sort column="IonFormula" />
         <sort column="CustomIonName" />
         <sort column="MoleculeId/PeptideGroupId/RunId/File" />

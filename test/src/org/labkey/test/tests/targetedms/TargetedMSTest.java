@@ -15,6 +15,7 @@
  */
 package org.labkey.test.tests.targetedms;
 
+import org.apache.tika.utils.SystemUtils;
 import org.junit.BeforeClass;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
@@ -24,6 +25,7 @@ import org.labkey.test.TestTimeoutException;
 import org.labkey.test.components.targetedms.GuideSet;
 import org.labkey.test.components.targetedms.GuideSetWebPart;
 import org.labkey.test.components.targetedms.QCSummaryWebPart;
+import org.labkey.test.components.targetedms.TargetedMSRunsTable;
 import org.labkey.test.pages.targetedms.GuideSetPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
 import org.labkey.test.util.APIContainerHelper;
@@ -91,6 +93,15 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
     @Override
     protected String getProjectName()
     {
+        // The SQLite driver for the Chromatogram library code chokes on paths with certain characters on OSX. We don't have
+        // any real deployments on OSX, so just avoid using those characters on dev machines and rely on TeamCity
+        // to keep things happy on the platforms we actually use on production
+        String osName = System.getProperty("os.name").toLowerCase();
+        boolean isMacOs = osName.startsWith("mac os x");
+        if (isMacOs)
+        {
+            return "TargetedMSProject";
+        }
         return "TargetedMSProject" + TRICKY_CHARACTERS_FOR_PROJECT_NAMES;
     }
 
@@ -143,6 +154,13 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
     {
         _containerHelper.createSubfolder(projectName, parentFolderName, folderName, "Panorama", null, false);
         selectFolderType(folderType);
+    }
+
+    protected void deleteSkyFile(String skyFile)
+    {
+        clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
+        TargetedMSRunsTable runsTable = new TargetedMSRunsTable(this);
+        runsTable.deleteRun(skyFile);
     }
 
     protected void importData(String file)

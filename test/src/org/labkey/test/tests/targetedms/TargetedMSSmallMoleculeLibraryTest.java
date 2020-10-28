@@ -46,11 +46,13 @@ public class TargetedMSSmallMoleculeLibraryTest extends TargetedMSTest
     {
         setupFolder(FolderType.Library); // Library folder
         importData(SKY_FILE1);
-        verifyRevision1();
+        verifySingleFileLibrary(1);
         importData(SKY_FILE2, 2);
         verifyRevision2();
         verifyAndResolveConflicts();
         verifyRevision3();
+        deleteSkyFile(SKY_FILE2);
+        verifySingleFileLibrary(4);
     }
 
     @Override
@@ -62,20 +64,20 @@ public class TargetedMSSmallMoleculeLibraryTest extends TargetedMSTest
     }
 
     @LogMethod
-    protected void verifyRevision1()
+    protected void verifySingleFileLibrary(int revision)
     {
         log("Verifying expected counts in library revision 1 after uploading " + SKY_FILE1);
 
         // Download link, library statistics and revision in the ChromatogramLibraryDownloadWebpart
-        verifyChromatogramLibraryDownloadWebPart(2, 8, 1, false);
+        verifyChromatogramLibraryDownloadWebPart(2, 8, revision, false);
 
         verifyLibraryMoleculeCount(2);
 
         // Verify one precursor from some of the molecules in the library.  All are from SKY_FILE1 at this point.
         Map<String, List<String>> precursorMap = new HashMap<>();
-        precursorMap.put("C4H9NO3[M+H]", Arrays.asList("C4H9NO3", SKY_FILE1, "120.0655"));
-        precursorMap.put("C4H9NO3[M4C13+H]", Arrays.asList("C4H9NO3", SKY_FILE1, "124.0789"));
-        precursorMap.put("[M+]", Arrays.asList("NICOTINATE", SKY_FILE1, "124.0393"));
+        precursorMap.put("120.0655", Arrays.asList("C4H9NO3", SKY_FILE1, "C4H9NO3[M+H]"));
+        precursorMap.put("124.0789", Arrays.asList("C4H9NO3", SKY_FILE1, "C4H9NO3[M4C13+H]"));
+        precursorMap.put("124.0393", Arrays.asList("NICOTINATE", SKY_FILE1, "[M+]"));
 
         verifyLibraryPrecursors(precursorMap, 4);
     }
@@ -121,18 +123,20 @@ public class TargetedMSSmallMoleculeLibraryTest extends TargetedMSTest
 
         verifyLibraryMoleculeCount(3);
 
-        // Verify one precursor from some of the molecules in the library.
-        // From SKY_FILE1
+        // Verify one precursors from some of the molecules in the library.
         Map<String,List<String>> precursorMap = new HashMap<>();
         // Conflicted
-        precursorMap.put("C4H9NO3[M+H]", Arrays.asList("C4H9NO3", SKY_FILE1, "120.0655"));
-        precursorMap.put("C4H9NO3[M4C13+H]", Arrays.asList("C4H9NO3", SKY_FILE1, "124.0789"));
-        precursorMap.put("[M+]", Arrays.asList("NICOTINATE", SKY_FILE1, "124.0393"));
+        precursorMap.put("120.0655", Arrays.asList("C4H9NO3", SKY_FILE1, "C4H9NO3[M+H]"));
+        precursorMap.put("124.0789", Arrays.asList("C4H9NO3", SKY_FILE1, "C4H9NO3[M4C13+H]"));
 
         // The precursors below are only in SKY_FILE2 so will not result in a conflict.
-        precursorMap.put("[M3.01007+]", Arrays.asList("CYSTEINE", SKY_FILE2, "125.0371"));
+        precursorMap.put("122.0270", Arrays.asList("CYSTEINE", SKY_FILE2, "[M+]"));
+        precursorMap.put("125.0371", Arrays.asList("CYSTEINE", SKY_FILE2, "[M3.01007+]"));
 
-        verifyLibraryPrecursors(precursorMap, 5);
+        // Only in SKY_FILE1
+        precursorMap.put("124.0393", Arrays.asList("NICOTINATE", SKY_FILE1, "[M+]"));
+
+        verifyLibraryPrecursors(precursorMap, 6);
     }
 
     private void verifyLibraryPrecursors(Map<String, List<String>> precursorMap, int totalPrecursorCount)
@@ -149,10 +153,10 @@ public class TargetedMSSmallMoleculeLibraryTest extends TargetedMSTest
 
         for(Map.Entry<String, List<String>> entry: precursorMap.entrySet())
         {
-            String precursor = entry.getKey();
-            int idx = precursorTable.getRowIndex("Ion Formula", precursor);
-            assertTrue("Expected precursor " + precursor + " not found in table", idx != -1);
-            List<String> rowValues = precursorTable.getRowDataAsText(idx, "Molecule Name", "File", "Q1 m/z");
+            String mz = entry.getKey();
+            int idx = precursorTable.getRowIndex("Q1 m/z", mz);
+            assertTrue("Expected precursor with mz " + mz + " not found in table", idx != -1);
+            List<String> rowValues = precursorTable.getRowDataAsText(idx, "Molecule Name", "File", "Ion Formula");
             assertEquals("Wrong data for row", entry.getValue(), rowValues);
         }
     }
@@ -163,7 +167,7 @@ public class TargetedMSSmallMoleculeLibraryTest extends TargetedMSTest
     {
         clickTab("Panorama Dashboard");
         log("Verifying that expected conflicts exist");
-        String[] conflictText = new String[] {"The last Skyline document imported in this folder had 2 molecules that were already a part of the library",
+        String[] conflictText = new String[] {"The last Skyline document imported in this folder had 1 molecule that were already a part of the library",
                 "Please click the link below to resolve conflicts and choose the version of each molecule that should be included in the library",
                 "The library cannot be extended until the conflicts are resolved. The download link below is for the last stable version of the library"};
         assertTextPresent(conflictText);
@@ -175,13 +179,12 @@ public class TargetedMSSmallMoleculeLibraryTest extends TargetedMSTest
                 "Current Library Data",
                 "Resolve conflicts for " + SKY_FILE2 + ".");
 
-        int expectedConflictCount = 3;
+        int expectedConflictCount = 2;
         assertEquals(expectedConflictCount + 2 /*add header rows*/, getTableRowCount("dataTable"));
 
         Set<String> expectedConflicts = new HashSet<>();
-        expectedConflicts.add("C4H9NO3[M+H]");
-        expectedConflicts.add("C4H9NO3[M4C13+H]");
-        expectedConflicts.add("CYSTEINE");
+        expectedConflicts.add("C4H9NO3[M+H] - 120.0655");
+        expectedConflicts.add("C4H9NO3[M4C13+H] - 124.0789");
 
         // Verify rows in the conflicts table
         Locator.XPathLocator table = Locator.id("dataTable");
@@ -199,17 +202,17 @@ public class TargetedMSSmallMoleculeLibraryTest extends TargetedMSTest
         log("Verifying expected counts in library revision 3 after resolving conflicts. ");
 
         // Download link, library statistics and revision in the ChromatogramLibraryDownloadWebpart
-        verifyChromatogramLibraryDownloadWebPart(3, 10, 3, false);
+        verifyChromatogramLibraryDownloadWebPart(3, 12, 3, false);
 
         verifyLibraryMoleculeCount(3);
 
         Map<String, List<String>> precursorMap = new HashMap<>();
-        precursorMap.put("C4H9NO3[M+H]", Arrays.asList("C4H9NO3", SKY_FILE2, "120.0655"));
-        precursorMap.put("C4H9NO3[M4C13+H]", Arrays.asList("C4H9NO3", SKY_FILE2, "124.0789"));
-        precursorMap.put("[M+]", Arrays.asList("CYSTEINE", SKY_FILE2, "122.0270"));
-        precursorMap.put("[M3.01007+]", Arrays.asList("CYSTEINE", SKY_FILE2, "125.0371"));
-        precursorMap.put("[M6.02013+]", Arrays.asList("NICOTINATE", SKY_FILE1, "130.0594"));
+        precursorMap.put("120.0655", Arrays.asList("C4H9NO3", SKY_FILE2, "C4H9NO3[M+H]"));
+        precursorMap.put("124.0789", Arrays.asList("C4H9NO3", SKY_FILE2, "C4H9NO3[M4C13+H]"));
+        precursorMap.put("122.0270", Arrays.asList("CYSTEINE", SKY_FILE2, "[M+]"));
+        precursorMap.put("125.0371", Arrays.asList("CYSTEINE", SKY_FILE2, "[M3.01007+]"));
+        precursorMap.put("130.0594", Arrays.asList("NICOTINATE", SKY_FILE1, "[M6.02013+]"));
 
-        verifyLibraryPrecursors(precursorMap, 5);
+        verifyLibraryPrecursors(precursorMap, 6);
     }
 }

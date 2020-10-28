@@ -1,5 +1,5 @@
 <customView xmlns="http://labkey.org/data/xml/queryCustomView" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        label="Library Precursors">
+        label="Library Precursors" canOverride="true">
     <columns>
         <column name="PeptideId/PeptideGroupId/RunId/File" />
         <column name="PeptideId/PeptideGroupId/Label" />

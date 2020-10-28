@@ -23,10 +23,8 @@ import org.labkey.test.Locator;
 import org.labkey.test.categories.DailyB;
 import org.labkey.test.categories.MS2;
 import org.labkey.test.components.CustomizeView;
-import org.labkey.test.components.targetedms.TargetedMSRunsTable;
 import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.LogMethod;
-import org.labkey.test.util.PipelineStatusTable;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -270,13 +268,6 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
         precursorMap.put("ADVTPADFSEWSK",      new Pair(SKY_FILE2, "iRT-C18 Standard Peptides")); // iRT peptide should always be from the new file
 
         verifyLibraryPrecursors(precursorMap, totalPrecursorCount);
-    }
-
-    private void deleteSkyFile(String skyFile)
-    {
-        clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
-        TargetedMSRunsTable runsTable = new TargetedMSRunsTable(this);
-        runsTable.deleteRun(SKY_FILE2);
     }
 
     protected void verifyRevision4()

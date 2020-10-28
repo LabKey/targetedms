@@ -45,6 +45,7 @@ import org.labkey.targetedms.query.InstrumentManager;
 import org.labkey.targetedms.query.IsotopeLabelManager;
 import org.labkey.targetedms.query.ModificationManager;
 import org.labkey.targetedms.query.MoleculeManager;
+import org.labkey.targetedms.query.MoleculePrecursorManager;
 import org.labkey.targetedms.query.MoleculeTransitionManager;
 import org.labkey.targetedms.query.PeptideGroupManager;
 import org.labkey.targetedms.query.PeptideManager;
@@ -375,7 +376,7 @@ public class ContainerChromatogramLibraryWriter
 
     private void saveMoleculePrecursors(TargetedMSRun run) throws SQLException
     {
-        List<MoleculePrecursor> precursors = PrecursorManager.getRepresentativeMoleculePrecursors(run.getId());
+        List<MoleculePrecursor> precursors = MoleculePrecursorManager.getRepresentativeMoleculePrecursors(run.getId());
         // Sort by id
         precursors.sort(Comparator.comparingLong(MoleculePrecursor::getGeneralMoleculeId));
 

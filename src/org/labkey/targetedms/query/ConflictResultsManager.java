@@ -93,12 +93,12 @@ public class ConflictResultsManager
     public static List<ConflictPrecursor> getConflictedPrecursors(Container container)
     {
         List<ConflictPrecursor> result = new ArrayList<>();
-        result.addAll(getConflictedPrecursors(container, TargetedMSManager.getTableInfoPeptide(), TargetedMSManager.getTableInfoPrecursor(), "ModifiedSequence", new SQLFragment("prec.ModifiedSequence"),true));
-        result.addAll(getConflictedPrecursors(container, TargetedMSManager.getTableInfoMolecule(), TargetedMSManager.getTableInfoMoleculePrecursor(), "IonFormula", new SQLFragment("COALESCE(prec.CustomIonName, prec.IonFormula)"), false));
+        result.addAll(getConflictedPrecursors(container, TargetedMSManager.getTableInfoPeptide(), TargetedMSManager.getTableInfoPrecursor(), "ModifiedSequence","prec.ModifiedSequence",true));
+        result.addAll(getConflictedPrecursors(container, TargetedMSManager.getTableInfoMolecule(), TargetedMSManager.getTableInfoMoleculePrecursor(), "IonFormula", TargetedMSManager.getSqlDialect().concatenate("COALESCE(prec.IonFormula, '')", "' '", "COALESCE(prec.CustomIonName, '')", "' - '", "CAST(CAST(gp.mz AS DECIMAL(10, 4)) AS VARCHAR)"), false));
         return result;
     }
 
-    private static List<ConflictPrecursor> getConflictedPrecursors(Container container, TableInfo moleculeTable, TableInfo precursorTable, String joinColumn, SQLFragment displaySQL, boolean peptide)
+    private static List<ConflictPrecursor> getConflictedPrecursors(Container container, TableInfo moleculeTable, TableInfo precursorTable, String joinColumn, String displaySQL, boolean peptide)
     {
         // Get a list of conflicted precursors in the given container
         SQLFragment sql = new SQLFragment("SELECT ? AS Peptide, ");
@@ -132,7 +132,7 @@ public class ConflictResultsManager
         sql.append(precursorTable, "prec2");
         sql.append(" ON prec." + joinColumn + " = prec2." + joinColumn);
         sql.append(" INNER JOIN targetedms.generalprecursor gp2 ");
-        sql.append("ON (gp2.Id = prec2.Id AND gp.Charge = gp2.Charge) ");
+        sql.append("ON (gp2.Id = prec2.Id AND gp.Charge = gp2.Charge AND gp.mz = gp2.mz) ");
         sql.append("INNER JOIN ");
         sql.append(moleculeTable, "m2");
         sql.append(" ON gp2.generalMoleculeId = m2.Id ");

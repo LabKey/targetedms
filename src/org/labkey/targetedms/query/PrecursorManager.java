@@ -439,35 +439,7 @@ public class PrecursorManager
         sql.append(" gp.RepresentativeDataState = ?");
         sql.add(RepresentativeDataState.Representative.ordinal());
 
-        Precursor[] reprPrecursors = new SqlSelector(TargetedMSManager.getSchema(), sql).getArray(Precursor.class);
-        return Arrays.asList(reprPrecursors);
-    }
-
-    public static List<MoleculePrecursor> getRepresentativeMoleculePrecursors(long runId)
-    {
-        SQLFragment sql = new SQLFragment();
-        sql.append("SELECT gp.*, prec.* FROM ");
-        sql.append(TargetedMSManager.getTableInfoMoleculePrecursor(), "prec");
-        sql.append(", ");
-        sql.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "gp");
-        sql.append(", ");
-        sql.append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm");
-        sql.append(", ");
-        sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
-        sql.append(" WHERE");
-        sql.append(" prec.Id = gp.Id");
-        sql.append(" AND");
-        sql.append(" gp.GeneralMoleculeId = gm.Id");
-        sql.append(" AND");
-        sql.append(" gm.PeptideGroupId = pg.Id");
-        sql.append(" AND");
-        sql.append(" pg.RunId = ?");
-        sql.add(runId);
-        sql.append(" AND");
-        sql.append(" gp.RepresentativeDataState = ?");
-        sql.add(RepresentativeDataState.Representative.ordinal());
-
-        return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(MoleculePrecursor.class);
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(Precursor.class);
     }
 
     public static Precursor getLastDeprecatedPrecursor(Precursor prec, Container container)
@@ -502,14 +474,10 @@ public class PrecursorManager
         sql.add(prec.getModifiedSequence());
         sql.append(" ORDER BY gp.Modified DESC ");
 
-        Precursor[] deprecatedPrecursors = new SqlSelector(TargetedMSManager.getSchema(), sql).getArray(Precursor.class);
-        if (deprecatedPrecursors.length == 0)
-        {
-            return null;
-        }
-        return deprecatedPrecursors[0];
+        return new SqlSelector(TargetedMSManager.getSchema(), TargetedMSManager.getSqlDialect().limitRows(sql, 1)).getObject(Precursor.class);
     }
 
+    /** Handles both peptide and molecule variants */
     public static int setRepresentativeState(long runId, RepresentativeDataState state)
     {
         SQLFragment sql = new SQLFragment();
@@ -526,19 +494,6 @@ public class PrecursorManager
         sql.append(TargetedMSManager.getTableInfoPeptideGroup()+".RunId = ?");
         sql.add(runId);
         return new SqlExecutor(TargetedMSManager.getSchema()).execute(sql);
-    }
-
-    public static void updateRepresentativeStatus(int[] precursorIds, RepresentativeDataState representativeState)
-    {
-        if(precursorIds == null || precursorIds.length == 0)
-            return;
-
-        List<Integer> precursorIdList = new ArrayList<>(precursorIds.length);
-        for(int i = 0; i < precursorIds.length; i++)
-        {
-            precursorIdList.add(precursorIds[i]);
-        }
-       updateRepresentativeStatus(precursorIdList, representativeState);
     }
 
     public static void updateRepresentativeStatus(List<Integer> precursorIds, RepresentativeDataState representativeState)
