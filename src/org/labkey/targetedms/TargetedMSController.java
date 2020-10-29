@@ -4136,15 +4136,16 @@ public class TargetedMSController extends SpringActionController
 
             Integer peptideCount = TargetedMSManager.getPeptideGroupPeptideCount(_run, group.getId());
             Integer moleculeCount = TargetedMSManager.getPeptideGroupMoleculeCount(_run, group.getId());
+            boolean proteomics = peptideCount != null && peptideCount.intValue() > 0;
 
             // Peptide group details
             DataRegion groupDetails = new DataRegion();
             TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
-            TableInfo tableInfo = schema.getTable(TargetedMSSchema.TABLE_PEPTIDE_GROUP);
+            TableInfo tableInfo = schema.getTable(proteomics ? TargetedMSSchema.TABLE_PEPTIDE_GROUP : TargetedMSSchema.TABLE_MOLECULE_GROUP);
             groupDetails.setColumns(tableInfo.getColumns("Label", "Description", "Decoy", "Note", "RunId"));
             groupDetails.setButtonBar(new ButtonBar());
             DetailsView groupDetailsView = new DetailsView(groupDetails, form.getId());
-            groupDetailsView.setTitle(peptideCount != null && peptideCount > 0 ? "Protein" : "Molecule Group");
+            groupDetailsView.setTitle(proteomics ? "Protein" : "Molecule List");
 
             VBox result = new VBox(groupDetailsView);
 
@@ -4183,6 +4184,7 @@ public class TargetedMSController extends SpringActionController
             if (moleculeCount != null && moleculeCount > 0)
             {
                 List<FieldKey> baseVisibleColumns = new ArrayList<>();
+                baseVisibleColumns.add(FieldKey.fromParts("Molecule"));
                 baseVisibleColumns.add(FieldKey.fromParts("CustomIonName"));
                 baseVisibleColumns.add(FieldKey.fromParts("IonFormula"));
                 baseVisibleColumns.add(FieldKey.fromParts("MassAverage"));

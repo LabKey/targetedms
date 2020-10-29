@@ -208,7 +208,7 @@ public class TargetedMSSchema extends UserSchema
     public static final String TABLE_KEYWORDS = "keywords";
 
     public static final String COL_PROTEIN = "Protein";
-    public static final String COL_LIST = "List";
+    public static final String COL_LIST = "Molecule List";
 
     /** Prefix for a run-specific table name, customized based on the data present within that run */
     public static final String SAMPLE_FILE_RUN_PREFIX = "samplefile_run";
@@ -951,7 +951,7 @@ public class TargetedMSSchema extends UserSchema
                                                                   ContainerJoinType.RunFK,
                                                                   TargetedMSManager.getTableInfoPeptideGroupAnnotation(),
                                                                   "PeptideGroupId",
-                                                                  "Protein Annotations",
+                                                                  proteomics ? "Protein Annotations" : "Molecule List Annotations",
                                                                   "protein", false) // This may change as more small molecule work is done in Skyline.
             {
                 @Override
