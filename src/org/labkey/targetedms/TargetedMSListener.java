@@ -19,19 +19,23 @@ import org.jetbrains.annotations.NotNull;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerManager;
 import org.labkey.api.data.SqlExecutor;
+import org.labkey.api.exp.api.ExpData;
+import org.labkey.api.exp.api.ExperimentListener;
 import org.labkey.api.security.User;
 import org.labkey.targetedms.parser.blib.BlibSpectrumReader;
+import org.labkey.targetedms.query.ReplicateManager;
 
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * User: vsharma
  * Date: 8/22/2014
  * Time: 3:22 PM
  */
-public class TargetedMSListener implements ContainerManager.ContainerListener
+public class TargetedMSListener implements ContainerManager.ContainerListener, ExperimentListener
 {
     @Override
     public void containerCreated(Container c, User user)
@@ -83,5 +87,10 @@ public class TargetedMSListener implements ContainerManager.ContainerListener
     @Override
     public void propertyChange(PropertyChangeEvent evt)
     {
+    }
+
+    public void beforeDataDelete(Container c, User user, List<? extends ExpData> datas)
+    {
+        ReplicateManager.unlinkSampleFilesFromRawData(datas);
     }
 }

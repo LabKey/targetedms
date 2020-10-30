@@ -25,6 +25,7 @@ import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.targetedms.BlibSourceFile;
 import org.labkey.api.targetedms.IModification;
+import org.labkey.api.targetedms.ISampleFile;
 import org.labkey.api.targetedms.ITargetedMSRun;
 import org.labkey.api.targetedms.SkylineAnnotation;
 import org.labkey.api.targetedms.SkylineDocumentImportListener;
@@ -32,6 +33,8 @@ import org.labkey.api.targetedms.TargetedMSFolderTypeListener;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.view.ViewBackgroundInfo;
+import org.labkey.targetedms.parser.Replicate;
+import org.labkey.targetedms.parser.SampleFile;
 import org.labkey.targetedms.parser.blib.BlibSpectrumReader;
 import org.labkey.targetedms.query.ModificationManager;
 import org.labkey.targetedms.query.ReplicateManager;
@@ -134,6 +137,12 @@ public class TargetedMSServiceImpl implements TargetedMSService
     public List<String> getSampleFilePaths(long runId)
     {
         return ReplicateManager.getSampleFilePaths(runId);
+    }
+
+    @Override
+    public List<SampleFile> getSampleFiles(long runId)
+    {
+        return ReplicateManager.getSampleFiles(runId);
     }
 
     @Override

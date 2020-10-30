@@ -77,6 +77,7 @@ public interface TargetedMSService
     TableInfo getTableInfoPeptideGroup();
     TableInfo getTableInfoGeneralMolecule();
     List<String> getSampleFilePaths(long runId);
+    List<? extends ISampleFile> getSampleFiles(long runId);
     List<? extends IModification.IStructuralModification> getStructuralModificationsUsedInRun(long runId);
     List<? extends IModification.IIsotopeModification> getIsotopeModificationsUsedInRun(long runId);
     Map<String, List<BlibSourceFile>> getBlibSourceFiles(ITargetedMSRun run);

@@ -15,6 +15,7 @@
  */
 package org.labkey.targetedms.parser;
 
+import org.labkey.api.targetedms.ISampleFile;
 import org.labkey.api.targetedms.model.SampleFileInfo;
 
 import java.util.Date;
@@ -24,7 +25,7 @@ import java.util.List;
  * User: jeckels
  * Date: Apr 18, 2012
  */
-public class SampleFile extends SkylineEntity
+public class SampleFile extends SkylineEntity implements ISampleFile
 {
     private long _replicateId;
     private Long _instrumentId;
@@ -44,6 +45,9 @@ public class SampleFile extends SkylineEntity
     // Calculated values loaded via TargetedMSManager.getSampleFiles()
     private Integer _guideSetId;
     private boolean _ignoreForAllMetric;
+
+    private Integer _rawDataId;
+    private Long _rawDataSize;
 
     private List<Instrument> _instrumentInfoList;
 
@@ -200,5 +204,25 @@ public class SampleFile extends SkylineEntity
     public SampleFileInfo toSampleFileInfo()
     {
         return new SampleFileInfo(getId(), getAcquiredTime(), getSampleName(), _guideSetId, _ignoreForAllMetric, getFilePath(), getReplicateId());
+    }
+
+    public Integer getRawDataId()
+    {
+        return _rawDataId;
+    }
+
+    public void setRawDataId(Integer rawDataId)
+    {
+        _rawDataId = rawDataId;
+    }
+
+    public Long getRawDataSize()
+    {
+        return _rawDataSize;
+    }
+
+    public void setRawDataSize(Long rawDataSize)
+    {
+        _rawDataSize = rawDataSize;
     }
 }

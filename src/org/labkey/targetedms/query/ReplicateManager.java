@@ -15,26 +15,34 @@
 
 package org.labkey.targetedms.query;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SimpleFilter;
+import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.Table;
 import org.labkey.api.data.TableSelector;
+import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.security.User;
+import org.labkey.api.util.StringUtilsLabKey;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.model.QCMetricExclusion;
+import org.labkey.targetedms.parser.Instrument;
 import org.labkey.targetedms.parser.Replicate;
 import org.labkey.targetedms.parser.ReplicateAnnotation;
 import org.labkey.targetedms.parser.SampleFile;
+import org.springframework.test.context.jdbc.Sql;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * User: vsharma
@@ -154,6 +162,18 @@ public class ReplicateManager
         return new ArrayList<>(new SqlSelector(TargetedMSManager.getSchema(), sf).getCollection(String.class));
     }
 
+    public static List<SampleFile> getSampleFiles(long runId)
+    {
+        SQLFragment sql = new SQLFragment("SELECT sf.* FROM")
+                .append(TargetedMSManager.getTableInfoSampleFileChromInfo(), "sf")
+                .append(" INNER JOIN ")
+                .append(TargetedMSManager.getTableInfoReplicate(), "rep")
+                .append(" ON sf.ReplicateId = rep.Id")
+                .append(" AND rep.RunId = ?").add(runId);
+
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(SampleFile.class);
+    }
+
     public static List<Replicate> getReplicatesForRun(long runId)
     {
         return new ArrayList<>(
@@ -243,5 +263,29 @@ public class ReplicateManager
         sql.append(" ORDER BY Name, Value");
 
         return new ArrayList<>(new SqlSelector(TargetedMSManager.getSchema(), sql).getCollection(ReplicateAnnotation.class));
+    }
+
+    public static Instrument getInstrument(long instrumentId)
+    {
+        return new TableSelector(TargetedMSManager.getTableInfoInstrument()).getObject(instrumentId, Instrument.class);
+    }
+
+    public static void updateSampleFile(SampleFile sampleFile)
+    {
+        Table.update(null, TargetedMSManager.getTableInfoSampleFile(), sampleFile, sampleFile.getId());
+    }
+
+    public static void unlinkSampleFilesFromRawData(List<? extends ExpData> datas)
+    {
+        if(!datas.isEmpty())
+        {
+            Set<Integer> dataIds = datas.stream().map(ExpData::getRowId).collect(Collectors.toSet());
+            SQLFragment sql = new SQLFragment("UPDATE")
+                    .append(TargetedMSManager.getTableInfoSampleFile(), "sf")
+                    .append(" SET rawDataId = NULL, rawDataSize = NULL ")
+                    .append(" WHERE id IN (").append(StringUtils.join(dataIds, ",")).append(")");
+
+            new SqlExecutor(TargetedMSManager.getSchema()).execute(sql);
+        }
     }
 }
