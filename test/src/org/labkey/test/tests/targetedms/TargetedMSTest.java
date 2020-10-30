@@ -195,7 +195,7 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
 
     protected void verifyRunSummaryCountsSmallMol(int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
     {
-        verifyRunSummaryCounts(proteinCount, peptideCount, moleculeCount, precursorCount, transitionCount, replicateCount, calibrationCount, listCount, "lists");
+        verifyRunSummaryCounts(proteinCount, peptideCount, moleculeCount, precursorCount, transitionCount, replicateCount, calibrationCount, listCount, "molecule lists");
     }
 
     protected void verifyRunSummaryCountsPep(int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
