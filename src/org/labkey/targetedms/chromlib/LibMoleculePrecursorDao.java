@@ -77,6 +77,7 @@ public class LibMoleculePrecursorDao extends BaseDaoImpl<LibMoleculePrecursor>
         stmt.setString(colIndex++, precursor.getIsotopeLabel());
         stmt.setDouble(colIndex++, precursor.getMz());
         stmt.setInt(colIndex++, precursor.getCharge());
+        stmt.setString(colIndex++, precursor.getMolecule());
         stmt.setObject(colIndex++, precursor.getCollisionEnergy(), Types.DOUBLE);
         stmt.setObject(colIndex++, precursor.getDeclusteringPotential(), Types.DOUBLE);
         stmt.setObject(colIndex++, precursor.getTotalArea(), Types.DOUBLE);
@@ -95,8 +96,6 @@ public class LibMoleculePrecursorDao extends BaseDaoImpl<LibMoleculePrecursor>
         stmt.setObject(colIndex++, precursor.getIonMobilityMS1(), Types.DOUBLE);
         stmt.setObject(colIndex++, precursor.getIonMobilityFragment(), Types.DOUBLE);
         stmt.setString(colIndex++, precursor.getIonMobilityType());
-
-        stmt.setString(colIndex++, precursor.getMolecule());
     }
 
     @Override
