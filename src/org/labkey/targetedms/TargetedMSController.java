@@ -1457,25 +1457,26 @@ public class TargetedMSController extends SpringActionController
     {
         private TargetedMSRun _run; // save for use in appendNavTrail
         private long _peptideId; // save for use in appendNavTrail
+        private Precursor _precursor;
 
         @Override
         public ModelAndView getView(ChromatogramForm form, BindException errors)
         {
             long precursorId = form.getId();
-            Precursor precursor = PrecursorManager.getPrecursor(getContainer(), precursorId, getUser());
-            if (precursor == null)
+            _precursor = PrecursorManager.getPrecursor(getContainer(), precursorId, getUser());
+            if (_precursor == null)
             {
                 throw new NotFoundException("No such Precursor found in this folder: " + precursorId);
             }
 
             _run = TargetedMSManager.getRunForPrecursor(precursorId);
-            _peptideId = precursor.getGeneralMoleculeId();
+            _peptideId = _precursor.getGeneralMoleculeId();
 
-            Peptide peptide = PeptideManager.getPeptide(getContainer(), precursor.getGeneralMoleculeId());
+            Peptide peptide = PeptideManager.getPeptide(getContainer(), _precursor.getGeneralMoleculeId());
 
             PeptideGroup pepGroup = PeptideGroupManager.get(peptide.getPeptideGroupId());
 
-            PeptideSettings.IsotopeLabel label = IsotopeLabelManager.getIsotopeLabel(precursor.getIsotopeLabelId());
+            PeptideSettings.IsotopeLabel label = IsotopeLabelManager.getIsotopeLabel(_precursor.getIsotopeLabelId());
 
             PrecursorChromatogramsViewBean bean = new PrecursorChromatogramsViewBean(
                     new ActionURL(PrecursorAllChromatogramsChartAction.class, getContainer()).getLocalURIString()
@@ -1485,7 +1486,7 @@ public class TargetedMSController extends SpringActionController
             form.setDefaultChartHeight(ChromatogramDisplayColumnFactory.calculateChartHeight(maxTransitions));
 
             bean.setForm(form);
-            bean.setPrecursor(precursor);
+            bean.setPrecursor(_precursor);
             bean.setPeptide(peptide);
             bean.setPeptideGroup(pepGroup);
             bean.setIsotopeLabel(label);
@@ -1512,8 +1513,8 @@ public class TargetedMSController extends SpringActionController
 
             // Summary charts for the precursor
             SummaryChartBean summaryChartBean = new SummaryChartBean();
-            summaryChartBean.setPeptideId(precursor.getGeneralMoleculeId());
-            summaryChartBean.setPrecursorId(precursor.getId());
+            summaryChartBean.setPeptideId(_precursor.getGeneralMoleculeId());
+            summaryChartBean.setPrecursorId(_precursor.getId());
             summaryChartBean.setReplicateAnnotationNameList(ReplicateManager.getReplicateAnnotationNamesForRun(_run.getId()));
             summaryChartBean.setReplicateAnnotationValueList(ReplicateManager.getUniqueSortedAnnotationNameValue(_run.getId()));
 
@@ -1525,7 +1526,7 @@ public class TargetedMSController extends SpringActionController
             vbox.addView(summaryChartView);
 
             // library spectrum
-            addSpectrumViews(_run, vbox, precursor, errors);
+            addSpectrumViews(_run, vbox, _precursor, errors);
             return vbox;
         }
 
@@ -1542,7 +1543,7 @@ public class TargetedMSController extends SpringActionController
                 pepDetailsUrl.addParameter("id", String.valueOf(_peptideId));
                 root.addChild("Peptide Details", pepDetailsUrl);
 
-                root.addChild("Precursor Chromatograms");
+                root.addChild("Precursor Chromatograms: " + _precursor.getModifiedSequence());
             }
         }
     }
@@ -1552,32 +1553,32 @@ public class TargetedMSController extends SpringActionController
     {
         private TargetedMSRun _run; // save for use in appendNavTrail
         private long _moleculeId; // save for use in appendNavTrail
+        private MoleculePrecursor _precursor;
 
         @Override
         public ModelAndView getView(ChromatogramForm form, BindException errors)
         {
             long precursorId = form.getId();
-            MoleculePrecursor precursor = MoleculePrecursorManager.getPrecursor(getContainer(), precursorId, getUser());
-            if (precursor == null)
+            _precursor = MoleculePrecursorManager.getPrecursor(getContainer(), precursorId, getUser());
+            if (_precursor == null)
             {
                 throw new NotFoundException("No such MoleculePrecursor found in this folder: " + precursorId);
             }
 
             _run = TargetedMSManager.getRunForPrecursor(precursorId);
-            _moleculeId = precursor.getGeneralMoleculeId();
+            _moleculeId = _precursor.getGeneralMoleculeId();
 
-            Molecule molecule = MoleculeManager.getMolecule(getContainer(), precursor.getGeneralMoleculeId());
+            Molecule molecule = MoleculeManager.getMolecule(getContainer(), _precursor.getGeneralMoleculeId());
             PeptideGroup pepGroup = PeptideGroupManager.get(molecule.getPeptideGroupId());
 
             MoleculePrecursorChromatogramsViewBean bean = new MoleculePrecursorChromatogramsViewBean(
                     new ActionURL(MoleculePrecursorAllChromatogramsChartAction.class, getContainer()).getLocalURIString()
             );
             bean.setForm(form);
-            bean.setPrecursor(precursor);
+            bean.setPrecursor(_precursor);
             bean.setMolecule(molecule);
             bean.setPeptideGroup(pepGroup);
             bean.setRun(_run);
-            bean.setTargetedMSSchema(new TargetedMSSchema(getUser(), getContainer()));
 
             JspView<MoleculePrecursorChromatogramsViewBean> precursorInfo = new JspView<>("/org/labkey/targetedms/view/moleculePrecursorChromatogramsView.jsp", bean);
             precursorInfo.setFrame(WebPartView.FrameType.PORTAL);
@@ -1595,8 +1596,8 @@ public class TargetedMSController extends SpringActionController
 
             // Summary charts for the molecule precursor
             SummaryChartBean summaryChartBean = new SummaryChartBean();
-            summaryChartBean.setMoleculeId(precursor.getGeneralMoleculeId());
-            summaryChartBean.setMoleculePrecursorId(precursor.getId());
+            summaryChartBean.setMoleculeId(_precursor.getGeneralMoleculeId());
+            summaryChartBean.setMoleculePrecursorId(_precursor.getId());
             summaryChartBean.setReplicateAnnotationNameList(ReplicateManager.getReplicateAnnotationNamesForRun(_run.getId()));
             summaryChartBean.setReplicateAnnotationValueList(ReplicateManager.getUniqueSortedAnnotationNameValue(_run.getId()));
 
@@ -1624,7 +1625,7 @@ public class TargetedMSController extends SpringActionController
                 molDetailsUrl.addParameter("id", String.valueOf(_moleculeId));
                 root.addChild("Molecule Details", molDetailsUrl);
 
-                root.addChild("Molecule Precursor Chromatograms");
+                root.addChild("Molecule Precursor Chromatograms: " + _precursor.toString());
             }
         }
     }
@@ -1694,7 +1695,6 @@ public class TargetedMSController extends SpringActionController
     public static class MoleculePrecursorChromatogramsViewBean extends MoleculeChromatogramsViewBean
     {
         private MoleculePrecursor _precursor;
-        private TargetedMSSchema _targetedMSSchema;
 
         public MoleculePrecursorChromatogramsViewBean(String resultsUri)
         {
@@ -1714,16 +1714,6 @@ public class TargetedMSController extends SpringActionController
         public void setPrecursor(MoleculePrecursor precursor)
         {
             _precursor = precursor;
-        }
-
-        public void setTargetedMSSchema(TargetedMSSchema s)
-        {
-            _targetedMSSchema = s;
-        }
-
-        public TargetedMSSchema getTargetedMSSchema()
-        {
-            return _targetedMSSchema;
         }
     }
 
@@ -1766,11 +1756,6 @@ public class TargetedMSController extends SpringActionController
         public void setTargetedMSSchema(TargetedMSSchema s)
         {
             _targetedMSSchema = s;
-        }
-
-        public TargetedMSSchema getTargetedMSSchema()
-        {
-            return _targetedMSSchema;
         }
     }
 
