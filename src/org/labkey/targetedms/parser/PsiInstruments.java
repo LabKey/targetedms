@@ -40,22 +40,22 @@ import java.util.Map;
 
 public class PsiInstruments
 {
-    private static Map<String, PsiInstrument> _instruments;
+    private static Map<String, PsiInstrument> _instruments = new HashMap<>();
 
     private static final Logger LOG = Logger.getLogger(PsiInstruments.class);
 
+    static
+    {
+        List<PsiInstrument> allInstruments = getInstruments();
+
+        for(PsiInstrument instrument: allInstruments)
+        {
+            _instruments.put(instrument.getName(), instrument);
+        }
+    }
+    
     public static PsiInstrument getInstrument(String instrumentName)
     {
-        if(_instruments == null)
-        {
-            _instruments = new HashMap<>();
-            List<PsiInstrument> allInstruments = getInstruments();
-
-            for(PsiInstrument instrument: allInstruments)
-            {
-               _instruments.put(instrument.getName(), instrument);
-            }
-        }
         return _instruments.get(instrumentName);
     }
 

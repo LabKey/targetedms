@@ -46,9 +46,6 @@ public class SampleFile extends SkylineEntity implements ISampleFile
     private Integer _guideSetId;
     private boolean _ignoreForAllMetric;
 
-    private Integer _rawDataId;
-    private Long _rawDataSize;
-
     private List<Instrument> _instrumentInfoList;
 
     public long getReplicateId()
@@ -204,25 +201,5 @@ public class SampleFile extends SkylineEntity implements ISampleFile
     public SampleFileInfo toSampleFileInfo()
     {
         return new SampleFileInfo(getId(), getAcquiredTime(), getSampleName(), _guideSetId, _ignoreForAllMetric, getFilePath(), getReplicateId());
-    }
-
-    public Integer getRawDataId()
-    {
-        return _rawDataId;
-    }
-
-    public void setRawDataId(Integer rawDataId)
-    {
-        _rawDataId = rawDataId;
-    }
-
-    public Long getRawDataSize()
-    {
-        return _rawDataSize;
-    }
-
-    public void setRawDataSize(Long rawDataSize)
-    {
-        _rawDataSize = rawDataSize;
     }
 }

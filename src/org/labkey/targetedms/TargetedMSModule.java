@@ -42,7 +42,7 @@ import org.labkey.api.protein.ProteomicsModule;
 import org.labkey.api.query.QueryView;
 import org.labkey.api.security.permissions.ApplicationAdminPermission;
 import org.labkey.api.settings.AdminConsole;
-import org.labkey.api.targetedms.RawDataService;
+import org.labkey.api.targetedms.MsDataSourceService;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.usageMetrics.UsageMetricsService;
 import org.labkey.api.util.PageFlowUtil;
@@ -438,7 +438,6 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
             });
         }
         TargetedMSService.setInstance(new TargetedMSServiceImpl());
-        RawDataService.setInstance(new RawDataUtil());
     }
 
     @Override

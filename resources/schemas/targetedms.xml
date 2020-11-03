@@ -98,8 +98,6 @@
             </column>
             <column columnName="ExplicitGlobalStandardArea"/>
             <column columnName="IonMobilityType"/>
-            <column columnName="RawDataId"/>
-            <column columnName="RawDataSize"/>
         </columns>
     </table>
     <table tableName="Runs" tableDbType="TABLE">

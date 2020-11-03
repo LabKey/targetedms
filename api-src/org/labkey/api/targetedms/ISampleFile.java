@@ -16,6 +16,4 @@ public interface ISampleFile
     String getSampleId();
     Double getExplicitGlobalStandardArea();
     String getIonMobilityType();
-    Integer getRawDataId();
-    Long getRawDataSize();
 }

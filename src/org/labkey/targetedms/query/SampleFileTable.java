@@ -16,12 +16,10 @@
 package org.labkey.targetedms.query;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Aggregate;
 import org.labkey.api.data.ColumnInfo;
-import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.DataColumn;
@@ -30,12 +28,9 @@ import org.labkey.api.data.DisplayColumnFactory;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.RenderContext;
 import org.labkey.api.data.SQLFragment;
-import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.data.dialect.SqlDialect;
 import org.labkey.api.exp.api.ExpData;
-import org.labkey.api.exp.api.ExperimentService;
-import org.labkey.api.files.FileContentService;
 import org.labkey.api.pipeline.PipeRoot;
 import org.labkey.api.pipeline.PipelineService;
 import org.labkey.api.query.DefaultQueryUpdateService;
@@ -51,17 +46,11 @@ import org.labkey.api.security.permissions.DeletePermission;
 import org.labkey.api.security.permissions.Permission;
 import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.settings.AppProps;
-import org.labkey.api.targetedms.ITargetedMSRun;
-import org.labkey.api.targetedms.RawDataService;
 import org.labkey.api.targetedms.TargetedMSService;
-import org.labkey.api.util.FileUtil;
-import org.labkey.api.util.Link;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.util.Pair;
 import org.labkey.api.view.ActionURL;
-import org.labkey.api.view.PopupMenu;
-import org.labkey.api.view.template.ClientDependency;
-import org.labkey.targetedms.RawDataUtil;
+import org.labkey.targetedms.MsDataSourceUtil;
 import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSRun;
@@ -75,7 +64,6 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -143,6 +131,7 @@ public class SampleFileTable extends TargetedMSTable
         downloadCol.setTextAlign("left");
         downloadCol.setDisplayColumnFactory(new DisplayColumnFactory()
         {
+            private FieldKey _containerFieldKey = FieldKey.fromParts("ReplicateId", "RunId", "Container");
             @Override
             public DisplayColumn createRenderer(ColumnInfo colInfo)
             {
@@ -152,24 +141,23 @@ public class SampleFileTable extends TargetedMSTable
                     public void renderGridCellContents(RenderContext ctx, Writer out) throws IOException
                     {
                         Long sampleFileId = ctx.get(this.getColumnInfo().getFieldKey(), Long.class);
-                        Container container = ctx.get(FieldKey.fromParts("ReplicateId", "RunId", "Container"), Container.class);
+                        Container container = ctx.get(_containerFieldKey, Container.class);
                         if (sampleFileId != null && container != null)
                         {
                             SampleFile sampleFile = ReplicateManager.getSampleFile(sampleFileId);
 
                             if(sampleFile != null)
                             {
-                                Pair<ExpData, Long> downloadInfo = new RawDataUtil().getDownloadInfo(sampleFile, container);
+                                Pair<ExpData, Long> downloadInfo = MsDataSourceUtil.getInstance().getDownloadInfo(sampleFile, container);
                                 if(downloadInfo.first != null)
                                 {
                                     String size = downloadInfo.second != null ? FileUtils.byteCountToDisplaySize(downloadInfo.second) : "";
                                     ExpData expData = downloadInfo.first;
-                                    PipeRoot root = PipelineService.get().findPipelineRoot(container);
-                                    Path p = root.resolveToNioPathFromUrl(expData.getDataFileUrl());
-//                                    Path p = expData.getFilePath();
+                                    Path p = expData.getFilePath();
                                     String url = null;
                                     if(Files.isDirectory(p))
                                     {
+                                        PipeRoot root = PipelineService.get().findPipelineRoot(container);
                                         Path parent = p.getParent();
                                         String relPath = root.relativePath(parent);
 
@@ -181,12 +169,9 @@ public class SampleFileTable extends TargetedMSTable
                                         url = expData.getWebDavURL(ExpData.PathType.full);
                                     }
 
-                                    out.write("<nobr>");
-                                    // out.write("<script type=\"text/javascript\"> function() {console.log(" + sampleFileId + ");}
-                                    out.write(new Link.LinkBuilder("Download").iconCls("fa fa-download").href(url).toString());
+                                    out.write(PageFlowUtil.iconLink("fa fa-download", null).href(url).toString());
                                     out.write("&nbsp;");
                                     out.write(PageFlowUtil.filter(size));
-                                    out.write("</nobr>");
                                     return;
                                 }
                             }
@@ -197,9 +182,8 @@ public class SampleFileTable extends TargetedMSTable
                     @Override
                     public void addQueryFieldKeys(Set<FieldKey> keys)
                     {
-                        keys.add(FieldKey.fromParts("ReplicateId", "RunId", "Container"));
-//                        keys.add(FieldKey.fromParts("Folder"));
                         super.addQueryFieldKeys(keys);
+                        keys.add(_containerFieldKey);
                     }
                 };
             }

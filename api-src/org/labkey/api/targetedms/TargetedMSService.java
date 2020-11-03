@@ -92,4 +92,6 @@ public interface TargetedMSService
 
     /** @return rowId for pipeline job that will perform the import asynchronously */
     Integer importSkylineDocument(ViewBackgroundInfo info, Path skylinePath) throws XarFormatException, PipelineValidationException;
+
+    List<? extends ISampleFile> hasData(List<? extends ISampleFile> sampleFiles, Container container);
 }

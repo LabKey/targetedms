@@ -237,4 +237,10 @@ public class TargetedMSServiceImpl implements TargetedMSService
     {
         return TargetedMSManager.addRunToQueue(info, skylinePath);
     }
+
+    @Override
+    public List<? extends ISampleFile> hasData(List<? extends ISampleFile> sampleFiles, Container container)
+    {
+        return MsDataSourceUtil.getInstance().hasData(sampleFiles, container);
+    }
 }
