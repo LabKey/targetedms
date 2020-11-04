@@ -42,7 +42,6 @@ import org.labkey.api.protein.ProteomicsModule;
 import org.labkey.api.query.QueryView;
 import org.labkey.api.security.permissions.ApplicationAdminPermission;
 import org.labkey.api.settings.AdminConsole;
-import org.labkey.api.targetedms.MsDataSourceService;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.usageMetrics.UsageMetricsService;
 import org.labkey.api.util.PageFlowUtil;
@@ -475,6 +474,9 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
 
         TargetedMSListener listener = new TargetedMSListener();
         ContainerManager.addContainerListener(listener);
+        MsDataSourceListener dataSourceListener = new MsDataSourceListener();
+        ExperimentService.get().addExperimentListener(dataSourceListener);
+        FileContentService.get().addFileListener(dataSourceListener);
 
 		ActionURL chromatogramURL = new ActionURL(TargetedMSController.ChromatogramCrawlerAction.class, ContainerManager.getRoot());
         AdminConsole.addLink(AdminConsole.SettingsLinkType.Configuration, "Targeted MS Chromatogram Crawler", chromatogramURL, ApplicationAdminPermission.class);

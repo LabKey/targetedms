@@ -77,6 +77,7 @@ import org.labkey.api.util.StringUtilsLabKey;
 import org.labkey.api.view.NotFoundException;
 import org.labkey.api.view.UnauthorizedException;
 import org.labkey.api.view.ViewBackgroundInfo;
+import org.labkey.targetedms.model.DataSource;
 import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
@@ -559,6 +560,11 @@ public class TargetedMSManager
     public static TableInfo getTableInfoChromatogramLib()
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_CHROMATOGRAM_LIB_INFO);
+    }
+
+    public static TableInfo getTableInfoDataSource()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_DATA_SOURCE);
     }
 
     /** @return rowId for pipeline job that will perform the import asynchronously */
@@ -2410,5 +2416,24 @@ public class TargetedMSManager
         executor.execute("DROP TABLE " + precursorGroupingsTableName);
         executor.execute("DROP TABLE " + moleculeGroupingsTableName);
         executor.execute("DROP TABLE " + areasTableName);
+    }
+
+    public static void removeFromMsDataSource(List<? extends ExpData> datas)
+    {
+        if(!datas.isEmpty())
+        {
+            Set<Integer> dataIds = datas.stream().map(ExpData::getRowId).collect(Collectors.toSet());
+            Table.delete(TargetedMSManager.getTableInfoDataSource(), new SimpleFilter().addInClause(FieldKey.fromParts("DataId"), dataIds));
+        }
+    }
+
+    public static void addIfDataSource(@NotNull ExpData expData, User user, Container container)
+    {
+        DataSource dataSource = MsDataSourceUtil.getInstance().createDataSource(expData, container);
+        if(dataSource != null)
+        {
+            // TODO: check first if a row for the dataId already exists?
+            Table.insert(user, TargetedMSManager.getTableInfoDataSource(), dataSource);
+        }
     }
 }

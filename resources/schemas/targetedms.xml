@@ -1679,4 +1679,35 @@
             <column columnName="label"/>
         </columns>
     </table>
+    <table tableDbType="TABLE" tableName="DataSource">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="Container">
+                <isHidden>true</isHidden>
+                <fk>
+                    <fkColumnName>EntityId</fkColumnName>
+                    <fkDbSchema>core</fkDbSchema>
+                    <fkTable>containers</fkTable>
+                </fk>
+            </column>
+            <column columnName="Created"/>
+            <column columnName="CreatedBy">
+                <fk>
+                    <fkColumnName>UserId</fkColumnName>
+                    <fkDbSchema>core</fkDbSchema>
+                    <fkTable>Users</fkTable>
+                </fk>
+            </column>
+            <column columnName="DataId">
+                <fk>
+                    <fkColumnName>rowId</fkColumnName>
+                    <fkDbSchema>exp</fkDbSchema>
+                    <fkTable>Data</fkTable>
+                </fk>
+            </column>
+            <column columnName="Name"/>
+            <column columnName="Size"/>
+            <column columnName="InstrumentType"/>
+        </columns>
+    </table>
 </tables>

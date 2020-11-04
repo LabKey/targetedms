@@ -20,6 +20,7 @@ import org.labkey.api.targetedms.MsDataSourceService;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.Pair;
+import org.labkey.targetedms.model.DataSource;
 import org.labkey.targetedms.parser.Instrument;
 import org.labkey.targetedms.parser.PsiInstruments;
 import org.labkey.targetedms.parser.SampleFile;
@@ -60,8 +61,11 @@ public class MsDataSourceUtil implements MsDataSourceService
             Path filePath = expData.getFilePath();
             if(filePath != null && Files.exists(filePath))
             {
-                File f = filePath.toFile();
-                size = Files.isDirectory(filePath) ? FileUtils.sizeOfDirectory(f) : FileUtils.sizeOf(f);
+                try
+                {
+                    size = getSize(filePath);
+                }
+                catch (IOException ignored){}
             }
 
         }
@@ -379,12 +383,48 @@ public class MsDataSourceUtil implements MsDataSourceService
     private static MsDataSource[] sourceTypes = new MsDataSource[]{THERMO, SCIEX, SHIMADZU, WATERS, AGILENT, BRUKER, CONVERTED_DATA_SOURCE};
     private static final String EXT_ZIP = ".zip";
 
+    public DataSource createDataSource(ExpData expData, Container container)
+    {
+        String fileName = expData.getName();
+        List<MsDataSource> sourceTypes = getSourceForName(fileName);
+        if(sourceTypes.isEmpty())
+        {
+            return null;
+        }
+        Path path = expData.getFilePath();
+        if(path == null)
+        {
+            return null;
+        }
+
+        for(MsDataSource sourceType: sourceTypes)
+        {
+            if(sourceType.isSource(path))
+            {
+                try
+                {
+                    long size = getSize(path);
+                    DataSource source = new DataSource(container, expData.getRowId(), size, sourceType.getInstrumentVendor());
+                    return source;
+                }
+                catch (IOException ignored) {}
+            }
+        }
+        return null;
+    }
+
+    private long getSize(Path path) throws IOException
+    {
+        File f = path.toFile(); // TODO: Cloud path??
+        return Files.isDirectory(path) ? FileUtils.sizeOfDirectory(f) : Files.size(path);
+    }
+
     private abstract static class MsDataSource
     {
         private List<String> _extensions;
         private List<String> _instrumentVendors;
 
-        private MsDataSource(List<String> instrumentVendors, List<String> extensions)
+        private MsDataSource(@NotNull List<String> instrumentVendors, @NotNull List<String> extensions)
         {
             _instrumentVendors = instrumentVendors;
             _extensions = extensions;
@@ -409,6 +449,11 @@ public class MsDataSourceUtil implements MsDataSourceService
                 return _instrumentVendors.stream().anyMatch(instrumentLc::contains);
             }
             return false;
+        }
+
+        public String getInstrumentVendor()
+        {
+            return _instrumentVendors.isEmpty() ? null : _instrumentVendors.get(0); // Only SCIEX has two names for instrument vendor
         }
 
         abstract boolean isFileSource();

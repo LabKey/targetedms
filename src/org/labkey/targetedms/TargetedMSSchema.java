@@ -206,6 +206,8 @@ public class TargetedMSSchema extends UserSchema
     public static final String TABLE_KEYWORD_CATEGORIES = "keywordcategories";
     public static final String TABLE_KEYWORDS = "keywords";
 
+    public static final String TABLE_DATA_SOURCE = "DataSource";
+
     public static final String COL_PROTEIN = "Protein";
     public static final String COL_LIST = "List";
 
@@ -1336,6 +1338,11 @@ public class TargetedMSSchema extends UserSchema
             return result;
         }
 
+        if (TABLE_DATA_SOURCE.equalsIgnoreCase(name))
+        {
+            return new DataSourceTable(this, cf);
+        }
+
         if (getTableNames().contains(name))
         {
             FilteredTable<TargetedMSSchema> result = new FilteredTable<>(getSchema().getTable(name), this, cf);
@@ -1500,6 +1507,7 @@ public class TargetedMSSchema extends UserSchema
         hs.add(TABLE_SAMPLE_FILE_CHROM_INFO);
         hs.add(TABLE_KEYWORDS);
         hs.add(TABLE_KEYWORD_CATEGORIES);
+        hs.add(TABLE_DATA_SOURCE);
 
         return hs;
     }
