@@ -27,6 +27,7 @@ import org.labkey.api.security.User;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.model.QCMetricExclusion;
+import org.labkey.targetedms.parser.Instrument;
 import org.labkey.targetedms.parser.Replicate;
 import org.labkey.targetedms.parser.ReplicateAnnotation;
 import org.labkey.targetedms.parser.SampleFile;
@@ -128,6 +129,18 @@ public class ReplicateManager
         return new ArrayList<>(new SqlSelector(TargetedMSManager.getSchema(), sf).getCollection(String.class));
     }
 
+    public static List<SampleFile> getSampleFiles(long runId)
+    {
+        SQLFragment sql = new SQLFragment("SELECT sf.* FROM")
+                .append(TargetedMSManager.getTableInfoSampleFileChromInfo(), "sf")
+                .append(" INNER JOIN ")
+                .append(TargetedMSManager.getTableInfoReplicate(), "rep")
+                .append(" ON sf.ReplicateId = rep.Id")
+                .append(" AND rep.RunId = ?").add(runId);
+
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(SampleFile.class);
+    }
+
     public static List<Replicate> getReplicatesForRun(long runId)
     {
         return new ArrayList<>(
@@ -217,5 +230,15 @@ public class ReplicateManager
         sql.append(" ORDER BY Name, Value");
 
         return new ArrayList<>(new SqlSelector(TargetedMSManager.getSchema(), sql).getCollection(ReplicateAnnotation.class));
+    }
+
+    public static Instrument getInstrument(long instrumentId)
+    {
+        return new TableSelector(TargetedMSManager.getTableInfoInstrument()).getObject(instrumentId, Instrument.class);
+    }
+
+    public static void updateSampleFile(SampleFile sampleFile)
+    {
+        Table.update(null, TargetedMSManager.getTableInfoSampleFile(), sampleFile, sampleFile.getId());
     }
 }
