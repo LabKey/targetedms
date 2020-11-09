@@ -91,6 +91,9 @@ public class LibMoleculePrecursorDao extends BaseDaoImpl<LibMoleculePrecursor>
         stmt.setObject(colIndex++, precursor.getExplicitIonMobility(), Types.DOUBLE);
         stmt.setObject(colIndex++, precursor.getMassMonoisotopic(), Types.DOUBLE);
         stmt.setObject(colIndex++, precursor.getMassAverage(), Types.DOUBLE);
+        stmt.setString(colIndex++, precursor.getIonFormula());
+        stmt.setString(colIndex++, precursor.getCustomIonName());
+
         stmt.setObject(colIndex++, precursor.getCcs(), Types.DOUBLE);
         stmt.setObject(colIndex++, precursor.getIonMobilityMS1(), Types.DOUBLE);
         stmt.setObject(colIndex++, precursor.getIonMobilityFragment(), Types.DOUBLE);
@@ -169,6 +172,8 @@ public class LibMoleculePrecursorDao extends BaseDaoImpl<LibMoleculePrecursor>
             precursor.setExplicitIonMobility(readDouble(rs, Constants.MoleculePrecursorColumn.ExplicitIonMobility.baseColumn().name()));
             precursor.setMassMonoisotopic(readDouble(rs, Constants.MoleculePrecursorColumn.MassMonoisotopic.baseColumn().name()));
             precursor.setMassAverage(readDouble(rs, Constants.MoleculePrecursorColumn.MassAverage.baseColumn().name()));
+            precursor.setIonFormula(rs.getString(Constants.MoleculePrecursorColumn.IonFormula.baseColumn().name()));
+            precursor.setCustomIonName(rs.getString(Constants.MoleculePrecursorColumn.CustomIonName.baseColumn().name()));
             precursor.setCcs(readDouble(rs, Constants.MoleculePrecursorColumn.CCS.baseColumn().name()));
             precursor.setIonMobilityMS1(readDouble(rs, Constants.MoleculePrecursorColumn.IonMobilityMS1.baseColumn().name()));
             precursor.setIonMobilityFragment(readDouble(rs, Constants.MoleculePrecursorColumn.IonMobilityFragment.baseColumn().name()));

@@ -12,6 +12,8 @@ public class LibMoleculePrecursor extends AbstractLibPrecursor<LibMoleculeTransi
 
     private Double _massMonoisotopic;
     private Double _massAverage;
+    private String _ionFormula;
+    private String _customIonName;
 
     public LibMoleculePrecursor() {}
 
@@ -19,6 +21,10 @@ public class LibMoleculePrecursor extends AbstractLibPrecursor<LibMoleculeTransi
                                 TargetedMSRun run, Map<Long, Integer> sampleFileIdMap)
     {
         super(p, isotopeLabelMap, chromInfo, run, sampleFileIdMap);
+        setIonFormula(p.getIonFormula());
+        setCustomIonName(p.getCustomIonName());
+        setMassMonoisotopic(p.getMassMonoisotopic());
+        setMassAverage(p.getMassAverage());
     }
 
     public long getMoleculeId()
@@ -49,5 +55,25 @@ public class LibMoleculePrecursor extends AbstractLibPrecursor<LibMoleculeTransi
     public void setMassAverage(Double massAverage)
     {
         _massAverage = massAverage;
+    }
+
+    public String getIonFormula()
+    {
+        return _ionFormula;
+    }
+
+    public void setIonFormula(String ionFormula)
+    {
+        _ionFormula = ionFormula;
+    }
+
+    public String getCustomIonName()
+    {
+        return _customIonName;
+    }
+
+    public void setCustomIonName(String customIonName)
+    {
+        _customIonName = customIonName;
     }
 }

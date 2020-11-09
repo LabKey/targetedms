@@ -726,6 +726,8 @@ class Constants
         ExplicitIonMobility(Column.ExplicitIonMobility),
         MassMonoisotopic(Column.MassMonoisotopic),
         MassAverage(Column.MassAverage),
+        IonFormula(Column.IonFormula),
+        CustomIonName(Column.CustomIonName),
         CCS(Column.CCS),
         IonMobilityMS1(Column.IonMobilityMS1),
         IonMobilityFragment(Column.IonMobilityFragment),
