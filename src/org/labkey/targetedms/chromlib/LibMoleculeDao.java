@@ -67,7 +67,7 @@ public class LibMoleculeDao extends BaseDaoImpl<LibMolecule>
         stmt.setObject(colIndex++, molecule.getIonFormula(), Types.VARCHAR);
         stmt.setObject(colIndex++, molecule.getCustomIonName(), Types.VARCHAR);
         stmt.setObject(colIndex++, molecule.getMassMonoisotopic(), Types.DOUBLE);
-        stmt.setObject(colIndex, molecule.getMassAverage(), Types.DOUBLE);
+        stmt.setObject(colIndex++, molecule.getMassAverage(), Types.DOUBLE);
         stmt.setString(colIndex, molecule.getMoleculeAccession());
     }
 

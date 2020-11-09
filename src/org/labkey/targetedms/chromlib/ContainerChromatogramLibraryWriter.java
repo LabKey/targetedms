@@ -525,6 +525,7 @@ public class ContainerChromatogramLibraryWriter
         libMolecule.setCustomIonName(molecule.getCustomIonName());
         libMolecule.setMassMonoisotopic(molecule.getMassMonoisotopic());
         libMolecule.setMassAverage(molecule.getMassAverage());
+        libMolecule.setMoleculeAccession(molecule.getMoleculeId());
         return libMolecule;
     }
 
