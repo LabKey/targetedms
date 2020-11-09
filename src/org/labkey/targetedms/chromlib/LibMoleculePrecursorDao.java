@@ -15,7 +15,6 @@
  */
 package org.labkey.targetedms.chromlib;
 
-import org.labkey.targetedms.chromlib.Constants.PrecursorColumn;
 import org.labkey.targetedms.chromlib.Constants.Table;
 
 import java.sql.Connection;
@@ -24,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -77,7 +77,6 @@ public class LibMoleculePrecursorDao extends BaseDaoImpl<LibMoleculePrecursor>
         stmt.setString(colIndex++, precursor.getIsotopeLabel());
         stmt.setDouble(colIndex++, precursor.getMz());
         stmt.setInt(colIndex++, precursor.getCharge());
-        stmt.setString(colIndex++, precursor.getMolecule());
         stmt.setObject(colIndex++, precursor.getCollisionEnergy(), Types.DOUBLE);
         stmt.setObject(colIndex++, precursor.getDeclusteringPotential(), Types.DOUBLE);
         stmt.setObject(colIndex++, precursor.getTotalArea(), Types.DOUBLE);
@@ -111,7 +110,7 @@ public class LibMoleculePrecursorDao extends BaseDaoImpl<LibMoleculePrecursor>
     }
 
     @Override
-    public void saveAll(List<LibMoleculePrecursor> precursors, Connection connection) throws SQLException
+    public void saveAll(Collection<LibMoleculePrecursor> precursors, Connection connection) throws SQLException
     {
         if(precursors.size() > 0)
         {
@@ -175,7 +174,6 @@ public class LibMoleculePrecursorDao extends BaseDaoImpl<LibMoleculePrecursor>
             precursor.setIonMobilityFragment(readDouble(rs, Constants.MoleculePrecursorColumn.IonMobilityFragment.baseColumn().name()));
             precursor.setIonMobilityWindow(readDouble(rs, Constants.MoleculePrecursorColumn.IonMobilityWindow.baseColumn().name()));
             precursor.setIonMobilityType(rs.getString(Constants.MoleculePrecursorColumn.IonMobilityType.baseColumn().name()));
-            precursor.setMolecule(rs.getString(Constants.MoleculePrecursorColumn.Molecule.baseColumn().name()));
 
             precursors.add(precursor);
         }

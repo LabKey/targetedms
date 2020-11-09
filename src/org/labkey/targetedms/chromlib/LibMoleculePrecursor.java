@@ -12,7 +12,6 @@ public class LibMoleculePrecursor extends AbstractLibPrecursor<LibMoleculeTransi
 
     private Double _massMonoisotopic;
     private Double _massAverage;
-    private String _molecule;
 
     public LibMoleculePrecursor() {}
 
@@ -50,16 +49,5 @@ public class LibMoleculePrecursor extends AbstractLibPrecursor<LibMoleculeTransi
     public void setMassAverage(Double massAverage)
     {
         _massAverage = massAverage;
-    }
-
-    /** “id” from the <molecule> elements in Skyline XML files, but Id is our RowId value in all of these tables */
-    public String getMolecule()
-    {
-        return _molecule;
-    }
-
-    public void setMolecule(String molecule)
-    {
-        _molecule = molecule;
     }
 }
