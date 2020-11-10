@@ -53,7 +53,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * User: vsharma
@@ -521,25 +520,31 @@ public abstract class ChromatogramDataset
             double minTime = chromatogramRtRange.getMinRt();
             double maxTime = chromatogramRtRange.getMaxRt();
 
-            Set<Integer> transitionChromIndexes = TransitionManager.getTransitionChromatogramIndexes(pChromInfo.getId());
+            Map<Integer, Boolean> transitionChromIndexes = TransitionManager.getTransitionChromatogramIndexes(pChromInfo.getId());
+
+            // If none of the transitions are quantitative we will add them all.  Otherwise add only quantitative transitions.
+            boolean addAll = !transitionChromIndexes.entrySet().stream().anyMatch(k -> !Boolean.FALSE.equals(k.getValue()));
 
             // sum up the intensities of all transitions of this precursor
             double[] totalIntensities = new double[times.length];
             for(int i = 0; i < chromatogram.getTransitionsCount(); i++)
             {
-                if(!transitionChromIndexes.contains(i))
+                if(!transitionChromIndexes.containsKey(i))
                     continue;
 
-                float[] transitionIntensities = chromatogram.getIntensities(i);
-                assert times.length == transitionIntensities.length : "Length of times and intensities don't match";
-
-                for (int j = 0; j < times.length; j++)
+                if(addAll || !Boolean.FALSE.equals(transitionChromIndexes.get(i)))
                 {
-                    if(times[j] < minTime)
-                        continue;
-                    if(times[j] > maxTime)
-                        break;
-                    totalIntensities[j] += transitionIntensities[j];
+                    float[] transitionIntensities = chromatogram.getIntensities(i);
+                    assert times.length == transitionIntensities.length : "Length of times and intensities don't match";
+
+                    for (int j = 0; j < times.length; j++)
+                    {
+                        if (times[j] < minTime)
+                            continue;
+                        if (times[j] > maxTime)
+                            break;
+                        totalIntensities[j] += transitionIntensities[j];
+                    }
                 }
             }
 

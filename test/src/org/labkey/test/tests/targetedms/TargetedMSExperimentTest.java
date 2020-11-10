@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.labkey.test.util.DataRegionTable.DataRegion;
 
 @Category({DailyB.class, MS2.class})
@@ -52,6 +53,8 @@ public class TargetedMSExperimentTest extends TargetedMSTest
 
     private static final String SKY_FILE_SMALLMOL_PEP = "smallmol_plus_peptides.sky.zip";
     private static final String SKY_FILE_SKYD_14 = "SampleIdTest.sky.zip";
+
+    private static final String SKY_FILE_AREA_RATIOS = "AreaRatioTestDoc.sky.zip";
 
     @Test
     public void testSteps() throws IOException, CommandException
@@ -72,6 +75,10 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         // SKYD version 14
         importData(SKY_FILE_SKYD_14, 4);
         verifyInstrumentSerialNumber();
+
+        // Test peak area ratio calculation
+        importData(SKY_FILE_AREA_RATIOS, 5);
+        verifyAreaRatios();
     }
 
     @LogMethod
@@ -525,5 +532,33 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         assertEquals(query.getDataAsText(0, "Sequence1"), query.getDataAsText(0, "Sequence1"));
         assertEquals(query.getDataAsText(0, "Protein1"), query.getDataAsText(0, "Protein2"));
         query.clearFilter("Protein1");
+    }
+
+    @LogMethod
+    protected void verifyAreaRatios()
+    {
+        clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
+        goToSchemaBrowser();
+        DataRegionTable drt = viewQueryData("targetedms", "PeptideAreaRatio");
+        _customizeViewsHelper.openCustomizeViewPanel();
+        _customizeViewsHelper.addColumn("PeptideChromInfoId/SampleFileId/ReplicateId/RunId");
+        _customizeViewsHelper.addColumn("PeptideChromInfoId/PeptideId");
+        _customizeViewsHelper.addColumn("PeptideChromInfoId/SampleFileId");
+        _customizeViewsHelper.saveCustomView();
+
+        String peptide = "ALGS[+79.966331]PTKQLLPC[+57.021464]EMAC[+57.021464]NEK";
+        String msg = "Could not find a row for ";
+        int rowIndex = drt.getRowIndex("Peptide Id", peptide);
+        assertNotEquals(msg + peptide, -1, rowIndex);
+        assertEquals("CN20180928_P100_Tsai_AD_Lines_NPC_Astrocyte_P-0070_A01_acq_01", drt.getDataAsText(rowIndex, "Sample File"));
+        assertEquals(SKY_FILE_AREA_RATIOS, drt.getDataAsText(rowIndex, "File"));
+        assertEquals("0.9462725", drt.getDataAsText(rowIndex, "Area Ratio"));
+
+        peptide = "VSMPDVELNLKS[+79.966331]PK";
+        rowIndex = drt.getRowIndex("Peptide Id", peptide);
+        assertNotEquals(msg + peptide, -1, rowIndex);
+        assertEquals("CN20180928_P100_Tsai_AD_Lines_NPC_Astrocyte_P-0070_A01_acq_01", drt.getDataAsText(rowIndex, "Sample File"));
+        assertEquals(SKY_FILE_AREA_RATIOS, drt.getDataAsText(rowIndex, "File"));
+        assertEquals("0.03584785", drt.getDataAsText(rowIndex, "Area Ratio"));
     }
 }
