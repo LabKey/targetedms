@@ -539,7 +539,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
     {
         clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
         goToSchemaBrowser();
-        DataRegionTable drt = viewQueryData("targetedms", "PeptideAreaRatio");
+        DataRegionTable drt = viewQueryData("targetedms", "peptidearearatio");
         _customizeViewsHelper.openCustomizeViewPanel();
         _customizeViewsHelper.addColumn("PeptideChromInfoId/SampleFileId/ReplicateId/RunId");
         _customizeViewsHelper.addColumn("PeptideChromInfoId/PeptideId");

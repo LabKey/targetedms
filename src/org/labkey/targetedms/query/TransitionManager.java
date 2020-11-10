@@ -150,6 +150,14 @@ public class TransitionManager
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Double.class);
     }
 
+
+    /**
+     * @param precursorChromInfoId id of a precursor peak in the PrecursorChromInfo table
+     * @return a map where the keys are the index for a transition peak (TransitionChromInfo) into the RT and intensity arrays
+     * for the precursor peak (stored in the "chromatogram" column of PrecursorChromInfo or read from the skyd file).
+     * Values are the value in the "quantitative" column for the corresponding transition. This value will be null if the
+     * transition is quantitative.
+     */
     @NotNull
     public static Map<Integer, Boolean> getTransitionChromatogramIndexes(long precursorChromInfoId)
     {

@@ -520,10 +520,14 @@ public abstract class ChromatogramDataset
             double minTime = chromatogramRtRange.getMinRt();
             double maxTime = chromatogramRtRange.getMaxRt();
 
+            // Each key in the map is the index for a transition peak (TransitionChromInfo) into the RT and intensity arrays
+            // Value is the value in the "quantitative" column for the corresponding transition.
+            // This value will be null if the transition is quantitative.
             Map<Integer, Boolean> transitionChromIndexes = TransitionManager.getTransitionChromatogramIndexes(pChromInfo.getId());
 
-            // If none of the transitions are quantitative we will add them all.  Otherwise add only quantitative transitions.
-            boolean addAll = !transitionChromIndexes.entrySet().stream().anyMatch(k -> !Boolean.FALSE.equals(k.getValue()));
+            // We will consider the precursor peak to be "quantitative" if any of its transition peaks are quantitative.
+            // The value in the transitionChromIndexes map for a quantitative transition peak  will be null.
+            boolean isQuantitativePrecursor = transitionChromIndexes.values().stream().anyMatch(v -> v == null || v.booleanValue());
 
             // sum up the intensities of all transitions of this precursor
             double[] totalIntensities = new double[times.length];
@@ -532,7 +536,10 @@ public abstract class ChromatogramDataset
                 if(!transitionChromIndexes.containsKey(i))
                     continue;
 
-                if(addAll || !Boolean.FALSE.equals(transitionChromIndexes.get(i)))
+                // Add to the total intensities if the transition peak is quantitative OR if none of the
+                // transition peaks for the precursor are quantitative.
+                Boolean quantitative = transitionChromIndexes.get(i);
+                if(!isQuantitativePrecursor || (quantitative == null || quantitative.booleanValue()))
                 {
                     float[] transitionIntensities = chromatogram.getIntensities(i);
                     assert times.length == transitionIntensities.length : "Length of times and intensities don't match";
