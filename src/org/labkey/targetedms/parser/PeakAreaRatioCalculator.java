@@ -73,6 +73,11 @@ public class PeakAreaRatioCalculator
 
             for(Transition transition: precursor.getTransitionsList())
             {
+                // Issue 41788: Exclude non-quantitative transitions from peak area ratio calculations
+                if(!transition.isQuantitativeTransition())
+                {
+                    continue;
+                }
                 for(TransitionChromInfo transitionChromInfo: transition.getChromInfoList())
                 {
                     if(transitionChromInfo.isOptimizationPeak())
@@ -244,10 +249,7 @@ public class PeakAreaRatioCalculator
                 // For transition group (precursor) area ratio calculation in Skyline look at
                 // PeptideChromInfoCalculator.CalcTransitionGroupRatio. This function calculates
                     // peptide area ratio as well when precursorCharge == -1.
-                if(na == null || na == 0.0)
-                    continue;
-
-                if(da == null || da == 0.0)
+                if(na == null || da == null)
                     continue;
 
                 areas.addNumeratorArea(na);

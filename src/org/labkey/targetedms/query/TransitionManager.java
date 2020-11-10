@@ -154,14 +154,16 @@ public class TransitionManager
     }
 
     @NotNull
-    public static Set<Integer> getTransitionChromatogramIndexes(long precursorChromInfoId)
+    public static Map<Integer, Boolean> getTransitionChromatogramIndexes(long precursorChromInfoId)
     {
-        TableInfo tinfo = TargetedMSManager.getTableInfoTransitionChromInfo();
-        Collection<Integer> tranChromIndexes = new TableSelector(tinfo.getColumn("ChromatogramIndex"),
-                                                        new SimpleFilter(FieldKey.fromParts("PrecursorChromInfoId"), precursorChromInfoId),
-                                                        null
-                                                        ).getCollection(Integer.class);
-        return new HashSet<>(tranChromIndexes);
+        SQLFragment sql = new SQLFragment("SELECT tci.ChromatogramIndex, gt.Quantitative FROM ")
+                .append(TargetedMSManager.getTableInfoTransitionChromInfo(), "tci")
+                .append(" INNER JOIN ")
+                .append(TargetedMSManager.getTableInfoGeneralTransition(), "gt")
+                .append(" ON gt.id = tci.transitionId ")
+                .append(" WHERE tci.PrecursorChromInfoId = ?").add(precursorChromInfoId);
+
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getValueMap();
     }
 
     @NotNull
