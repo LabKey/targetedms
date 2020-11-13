@@ -864,7 +864,7 @@ public abstract class ChromatogramDataset
             int i = 0;
             for(TransitionChromInfoPlusGeneralTransition tci: chromInfoList)
             {
-                _quantative[i++] = tci.getTransition().isQuantitativeTransition();
+                _quantative[i++] = tci.getTransition().explicitQuantitative();
             }
         }
 

@@ -15,7 +15,6 @@
  */
 package org.labkey.targetedms.parser;
 
-import org.apache.log4j.Logger;
 import org.labkey.targetedms.SkylineDocImporter;
 import org.labkey.targetedms.query.IsotopeLabelManager;
 import org.labkey.targetedms.query.ReplicateManager;
@@ -33,13 +32,13 @@ public class PeakAreaRatioCalculator
 {
     private final Peptide _peptide;
     private Map<Integer, PeptideAreaRatioCalculator> _peptideAreaRatioCalculatorMap;
-
-    private static Logger _log = Logger.getLogger(SkylineDocImporter.class);
+    private final TransitionSettings _transitionSettings;
 
     // All the precursors and transitions and chrom infos for this peptide must already have database IDs.
-    public PeakAreaRatioCalculator(Peptide peptide)
+    public PeakAreaRatioCalculator(Peptide peptide, TransitionSettings transitionSettings)
     {
         _peptide = peptide;
+        _transitionSettings = transitionSettings;
 
         _peptideAreaRatioCalculatorMap = new HashMap<>();
     }
@@ -73,7 +72,7 @@ public class PeakAreaRatioCalculator
             for(Transition transition: precursor.getTransitionsList())
             {
                 // Issue 41788: Exclude non-quantitative transitions from peak area ratio calculations
-                if(!transition.isQuantitativeTransition())
+                if(!transition.isQuantitative(_transitionSettings.getFullScanSettings()))
                 {
                     continue;
                 }
