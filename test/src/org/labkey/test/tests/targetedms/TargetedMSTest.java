@@ -100,7 +100,7 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
                     @Override
                     public void chooseFolderType(TargetedMSTest test)
                     {
-
+                        test.click(Locator.radioButtonById("chromatogramLibrary")); // click the 3rd radio button - Library
                     }
                 }, LibraryProtein
                 {
