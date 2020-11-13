@@ -1,34 +1,53 @@
 SELECT
-   PrecursorId.PeptideId.PeptideGroupId @hidden,
+   PeptideGroupId @hidden,
    ROUND(AVG(BestRetentionTime), 1) AS RetentionTime,
-   MIN((PrecursorId.mz - 1.00727647) * PrecursorId.Charge * (1 + (pci.AverageMassErrorPPM / 1000000 ))) AS MinObservedPeptideMass,
-   MAX((PrecursorId.mz - 1.00727647) * PrecursorId.Charge * (1 + (pci.AverageMassErrorPPM / 1000000 ))) AS MaxObservedPeptideMass,
-   PrecursorId.NeutralMass AS ExpectedPeptideMass,
-   -- Concatenate the empty string so that the protein DisplayColumn doesn't get propagated too
-   PrecursorId.PeptideId.PeptideGroupId.Label || '' AS Chain,
-   (PrecursorId.PeptideId.StartIndex + 1) || '-' || (PrecursorId.PeptideId.EndIndex) AS PeptideLocation,
-   PrecursorId.PeptideId.Sequence,
-   PrecursorId.PeptideId.NextAA @hidden,
-   PrecursorId.PeptideId.PreviousAA @hidden,
-   PrecursorId.ModifiedSequence AS PeptideModifiedSequence @hidden,
-   PrecursorId.PeptideId AS Id @hidden,
+   MIN((mz - 1.00727647) * Charge * (1 + (AverageMassErrorPPM / 1000000 ))) AS MinObservedPeptideMass,
+   MAX((mz - 1.00727647) * Charge * (1 + (AverageMassErrorPPM / 1000000 ))) AS MaxObservedPeptideMass,
+   NeutralMass AS ExpectedPeptideMass,
+   Chain,
+   (StartIndex + 1) || '-' || (EndIndex) AS PeptideLocation,
+   Sequence,
+   NextAA @hidden,
+   PreviousAA @hidden,
+   ModifiedSequence AS PeptideModifiedSequence @hidden,
+   PeptideId AS Id @hidden,
    -- Show the modifications and their locations
-   (SELECT GROUP_CONCAT((StructuralModId.Name ||
-                         ' @ ' ||
-                         SUBSTRING(PrecursorId.PeptideId.Sequence, IndexAA + 1, 1) ||
-                         CAST(IndexAA + PrecursorId.PeptideId.StartIndex AS VARCHAR)),
+   GROUP_CONCAT(
+       (StructuralModName || ' @ ' || SUBSTRING(Sequence, ModIndexAA + 1, 1) || CAST(ModIndexAA + StartIndex AS VARCHAR)),
        (', ' || CHR(10)))
-   FROM targetedms.PeptideStructuralModification psm WHERE psm.PeptideId = pci.PrecursorId.PeptideId) AS Modification
-FROM
-     targetedms.precursorchrominfo pci
+   AS Modification
+FROM (
+    SELECT
+        pci.PrecursorId.PeptideId.PeptideGroupId,
+        pci.BestRetentionTime,
+        pci.PrecursorId.mz,
+        pci.PrecursorId.Charge,
+        pci.AverageMassErrorPPM,
+        pci.PrecursorId.NeutralMass,
+        -- Concatenate the empty string so that the protein DisplayColumn doesn't get propagated too
+        pci.PrecursorId.PeptideId || '' AS Chain,
+        pci.PrecursorId.PeptideId,
+        pci.PrecursorId.PeptideId.StartIndex,
+        pci.PrecursorId.PeptideId.EndIndex,
+        pci.PrecursorId.PeptideId.Sequence,
+        pci.PrecursorId.PeptideId.NextAA,
+        pci.PrecursorId.PeptideId.PreviousAA,
+        pci.PrecursorId.ModifiedSequence,
+        psm.StructuralModId.Name AS StructuralModName,
+        psm.IndexAA AS ModIndexAA
+    FROM
+         targetedms.precursorchrominfo pci
+     LEFT OUTER JOIN
+         targetedms.PeptideStructuralModification psm ON psm.PeptideId = pci.PrecursorId.PeptideId
+    ) x
 GROUP BY
-   PrecursorId.ModifiedSequence,
-   PrecursorId.NeutralMass,
-   PrecursorId.PeptideId,
-   PrecursorId.PeptideId.PeptideGroupId,
-   PrecursorId.PeptideId.PeptideGroupId.Label,
-   PrecursorId.PeptideId.Sequence,
-   PrecursorId.PeptideId.NextAA,
-   PrecursorId.PeptideId.PreviousAA,
-   PrecursorId.PeptideId.StartIndex,
-   PrecursorId.PeptideId.EndIndex
+   ModifiedSequence,
+   NeutralMass,
+   PeptideId,
+   PeptideGroupId,
+   Chain,
+   Sequence,
+   NextAA,
+   PreviousAA,
+   StartIndex,
+   EndIndex
