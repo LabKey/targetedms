@@ -6,7 +6,7 @@ SELECT
    PrecursorId.NeutralMass AS ExpectedPeptideMass,
    -- Concatenate the empty string so that the protein DisplayColumn doesn't get propagated too
    PrecursorId.PeptideId.PeptideGroupId.Label || '' AS Chain,
-   (PrecursorId.PeptideId.StartIndex + 1) || '-' || (PrecursorId.PeptideId.EndIndex) AS PeptideLocation,
+   CAST(PrecursorId.PeptideId.StartIndex + 1 AS VARCHAR) || '-' || CAST(PrecursorId.PeptideId.EndIndex AS VARCHAR) AS PeptideLocation,
    PrecursorId.PeptideId.Sequence,
    PrecursorId.PeptideId.NextAA @hidden,
    PrecursorId.PeptideId.PreviousAA @hidden,
