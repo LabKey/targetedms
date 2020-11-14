@@ -231,14 +231,4 @@ public class ReplicateManager
 
         return new ArrayList<>(new SqlSelector(TargetedMSManager.getSchema(), sql).getCollection(ReplicateAnnotation.class));
     }
-
-    public static Instrument getInstrument(long instrumentId)
-    {
-        return new TableSelector(TargetedMSManager.getTableInfoInstrument()).getObject(instrumentId, Instrument.class);
-    }
-
-    public static void updateSampleFile(SampleFile sampleFile)
-    {
-        Table.update(null, TargetedMSManager.getTableInfoSampleFile(), sampleFile, sampleFile.getId());
-    }
 }

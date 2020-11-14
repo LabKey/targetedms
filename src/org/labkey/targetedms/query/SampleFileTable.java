@@ -188,8 +188,6 @@ public class SampleFileTable extends TargetedMSTable
                 };
             }
         });
-
-
     }
 
     @Override
