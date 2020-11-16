@@ -1,0 +1,11 @@
+[CONTEXT SENSITIVE]
+Project=
+Customer=UC Davis
+Sample ID=DK0034-G10
+Operator=Dietmar
+Instrument Type=Waters ACQUITY UPLC;Waters ACQUITY UPLC;Waters ACQUITY UPLC;micrOTOF series;
+Instrument ID=impact-00067
+Lab=Kültz Lab.
+
+[GENERIC]
+USER=

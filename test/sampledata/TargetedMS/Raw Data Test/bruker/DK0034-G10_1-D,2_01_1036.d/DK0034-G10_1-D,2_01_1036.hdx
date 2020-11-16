@@ -1,0 +1,18 @@
+! HyStarNT V 4.0.10.0
+!
+! IndexFile
+
+! Pathes:
+HOST.1	 =	"\\impact-00067\"
+PATH.1	 =	"D:\Data\dietmar\msdata\DK0034-G10_1-D,2_01_1036.d\"
+PATH.2	 =	"D:\Data\dietmar\msdata"
+
+! file definitions:
+CHROMATOGRAM	 =	"HOST.1 PATH.1 DK0034-G10_1-D,2_01_1036.unt"
+CHROMATOGRAM.STAMP	 =	"03/07/15 13:44:56"
+UV.START	 =	"0.0 min"
+MS.START	 =	"0.0 min"
+MS.SERIES	 =	"HOST.1 PATH.2 DK0034-G10_1-D,2_01_1036.d\Analysis.ascii"
+MS.SERIES.STAMP	 =	"03/07/15 13:44:56"
+
+! events:

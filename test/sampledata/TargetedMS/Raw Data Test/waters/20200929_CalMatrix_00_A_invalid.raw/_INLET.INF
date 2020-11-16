@@ -1,0 +1,110 @@
+
+ACE Experimental Record
+
+
+Inlet Method File: c:\masslynx\jennyh.pro\acqudb\id_fastpep_10min_45c_600ul
+
+---------------------   Run method parameters   ----------------
+
+-- PUMP --
+
+Waters Acquity SDS
+
+-- END PUMP --
+
+-- AUTOSAMPLER --
+
+Waters Acquity AutoSampler 
+ Run Time: 10.00 min
+ Comment:  
+ Load Ahead: Disabled 
+ Injection Mode: Partial Loop 
+ LoopOffline: Disable 
+ Weak Wash Solvent Name: Water + 0.1%TFA 
+ Weak Wash Volume: 1500 uL
+ Strong Wash Solvent Name: H2O:ACN:MeOH:IPA 1:1:1:1 
+ Strong Wash Volume: 1000 uL
+ Target Column Temperature: 45.0 C
+ Column Temperature Alarm Band: 5.0 C
+ Target Sample Temperature: 10.0 C
+ Sample Temperature Alarm Band: 5 C
+ Full Loop Overfill Factor: Automatic 
+ Syringe Draw Rate: Automatic 
+ Needle Placement: 0.2 
+ Pre-Aspirate Air Gap: Automatic 
+ Post-Aspirate Air Gap: Automatic 
+ Column Temperature Data Channel: Yes 
+ Ambient Temperature Data Channel: Yes 
+ Sample Temperature Data Channel: Yes 
+ Sample Organizer Temperature Data Channel: No 
+ Sample Pressure Data Channel: No 
+ Switch 1: No Change 
+ Switch 2: No Change 
+ Switch 3: No Change 
+ Switch 4: No Change 
+ Chart Out: Sample Pressure 
+ Sample Temp Alarm: Enabled 
+ Column Temp Alarm: Enabled 
+ Run Events: Yes 
+ Needle Overfill Flush: Automatic 
+ NoInjection: false 
+ PreheaterTemperatureDataEnable: false 
+ Active Preheater: Use Console Configuration 
+
+
+Sample Run Injection Parameter
+
+Injection Volume (ul)   -   5.00
+-- END AUTOSAMPLER --
+
+----------------------------  oOo  -----------------------------
+
+
+End of experimental record.
+
+------------------- Waters Acquity SM Postrun Report  ---------------
+
+
+
+ Software Version: 1.67.3298 
+ Firmware Version: 1.65.375 (Mar 26 2015) 
+ Checksum: 0x42c0e8cb 
+ Serial Number: L10UPA231M 
+ Sample Syringe Size: 250.0 
+ Sample Loop Size: 50.0 
+ Needle Size: 30.0 
+ Column Type: CORTECS® UPLC® C18 1.6 µm 
+ Column Serial Number: 01293620715315 
+ Total Injections on Column: 1902 
+ Minimum Sample Temperature: 10.0 
+ Maximum Sample Temperature: 10.0 
+ Average Sample Temperature: 10.0 
+ Minimum Column Temperature: 45.0 
+ Maximum Column Temperature: 45.0 
+ Average Column Temperature: 45.0 
+ Measured Loop Volume: 0.000 
+ Measured Loop Volume No Pressure: 0.000 
+
+----------------------------  oOo  -----------------------------
+
+
+
+
+
+------------------- Waters Acquity SDS Postrun Report  ---------------
+
+
+
+ IcsVersion: 1.67.2193 
+ FirmwareVersion: 1.65.273 (Feb 27 2015) 
+ Checksum: 0x3462a3f3 
+ SerialNumber: K10UPB185A 
+ Minimum System Pressure: 5238.5 
+ Maximum System Pressure: 8461.1 
+ Average System Pressure: 7931.5 
+ Minimum Degasser Pressure: 0.5 
+ Maximum Degasser Pressure: 0.5 
+ Average Degasser Pressure: 0.5 
+
+----------------------------  oOo  -----------------------------
+

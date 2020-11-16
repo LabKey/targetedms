@@ -65,11 +65,25 @@ public class MsDataSourceUtil implements MsDataSourceService
     }
 
     /**
-     * @return Pair of ExpData for the given sample file and the file size on the filesystem
+     * @return Pair of ExpData for the given SampleFile and the size of the file / directory.  ExpData and/or size can be null
      */
-    public Pair<ExpData, Long> getDownloadInfo(SampleFile sampleFile, Container container)
+    public Pair<ExpData, Long> getDownloadInfo(@NotNull SampleFile sampleFile, @NotNull Container container)
     {
-        ExpData expData = getDataForSampleFile(sampleFile, container);
+        ExperimentService expSvc = ExperimentService.get();
+        if(expSvc == null)
+        {
+            return null;
+        }
+
+        // We will look for raw data files only in @files/RawFiles
+        Path rawFilesDir = getRawFilesDir(container);
+        if(rawFilesDir == null)
+        {
+            return null;
+        }
+
+        ExpData expData = getDataForSampleFile(sampleFile, container, rawFilesDir, expSvc, false);
+
         Long size = null;
         if(expData != null)
         {
@@ -97,16 +111,18 @@ public class MsDataSourceUtil implements MsDataSourceService
         return new Pair<>(expData, size);
     }
 
-    private ExpData getDataForSampleFile(SampleFile sampleFile, Container container)
+    private Path getRawFilesDir(Container c)
     {
-        ExperimentService expSvc = ExperimentService.get();
-        if(expSvc == null)
+        FileContentService fcs = FileContentService.get();
+        if(fcs != null)
         {
-            return null;
+            Path fileRoot = fcs.getFileRootPath(c, FileContentService.ContentType.files);
+            if (fileRoot != null)
+            {
+                return fileRoot.resolve(TargetedMSService.RAW_FILES_DIR);
+            }
         }
-        // We will look for raw data files only in @files/RawFiles
-        Path rawFilesDir = getRawFilesDir(container);
-        return getDataForSampleFile(sampleFile, container, rawFilesDir, expSvc, false);
+        return null;
     }
 
     private ExpData getDataForSampleFile(SampleFile sampleFile, Container container, Path rawFilesDir, ExperimentService expSvc, boolean validateZip)
@@ -163,30 +179,27 @@ public class MsDataSourceUtil implements MsDataSourceService
     @NotNull
     private List<? extends ExpData> getExpData(String fileName, Container container, Path pathPrefix, ExperimentService expSvc)
     {
-        // Look for the file and file.zip (e.g. sample_1.raw and sample_1.raw.zip)
-        String[] fileNames = new String[] {fileName, fileName + EXT_ZIP};
-
-        SimpleFilter.OrClause orClause = new SimpleFilter.OrClause();
-        for(String name: fileNames)
-        {
-            // TODO: Is this a case insensitive comparision??
-            orClause.addClause(new CompareType.EqualsCompareClause(FieldKey.fromParts("Name"), CompareType.EQUAL, name));
-        }
-
         String pathPrefixString = FileUtil.pathToString(pathPrefix); // Encoded URI string
+
         TableInfo expDataTInfo = expSvc.getTinfoData();
-        ArrayList<Integer> expDataIds = new TableSelector(expDataTInfo,
-                expDataTInfo.getColumns("RowId"), getExpDataFilter(container, pathPrefixString, orClause), null).getArrayList(Integer.class);
+        SimpleFilter filter = getExpDataFilter(container, pathPrefixString);
+        filter.addCondition(FieldKey.fromParts("name"), fileName, CompareType.STARTS_WITH);
+
+        Map<Integer, String> expDatas = new TableSelector(expDataTInfo,
+                expDataTInfo.getColumns("RowId", "Name"), filter, null).getValueMap();
+
+        List<Integer> expDataIds = new ArrayList<>();
+        // Look for the file and file.zip (e.g. sample_1.raw and sample_1.raw.zip)
+        expDatas.entrySet().stream()
+                           .filter(e -> fileName.equals(e.getValue()) || (isZip(e.getValue()) && fileName.equals(FileUtil.getBaseName(e.getValue()))))
+                           .forEach(e -> expDataIds.add(e.getKey()));
+
         return expSvc.getExpDatas(expDataIds);
     }
 
-    private static SimpleFilter getExpDataFilter(Container container, String pathPrefix, SimpleFilter.FilterClause filterClause)
+    private static SimpleFilter getExpDataFilter(Container container, String pathPrefix)
     {
         SimpleFilter filter = SimpleFilter.createContainerFilter(container);
-        if(filterClause != null)
-        {
-            filter.addClause(filterClause);
-        }
         if (!pathPrefix.endsWith("/"))
         {
             pathPrefix = pathPrefix + "/";
@@ -230,20 +243,6 @@ public class MsDataSourceUtil implements MsDataSourceService
         }
 
         return sourceTypes.size() > 0 ? sourceTypes.get(0) : null;
-    }
-
-    private Path getRawFilesDir(Container c)
-    {
-        FileContentService fcs = FileContentService.get();
-        if(fcs != null)
-        {
-            Path fileRoot = fcs.getFileRootPath(c, FileContentService.ContentType.files);
-            if (fileRoot != null)
-            {
-                return fileRoot.resolve(TargetedMSService.RAW_FILES_DIR);
-            }
-        }
-        return null;
     }
 
     /**
@@ -568,7 +567,7 @@ public class MsDataSourceUtil implements MsDataSourceService
             String pathPrefix = data.getDataFileUrl();
             TableInfo expDataTInfo = expSvc.getTinfoData();
             return !(new TableSelector(expDataTInfo, expDataTInfo.getColumns("RowId"),
-                    MsDataSourceUtil.getExpDataFilter(data.getContainer(), pathPrefix, null), null).exists());
+                    MsDataSourceUtil.getExpDataFilter(data.getContainer(), pathPrefix), null).exists());
         }
 
         private boolean zipMatches(@NotNull Path path)
@@ -697,7 +696,7 @@ public class MsDataSourceUtil implements MsDataSourceService
                 String pathPrefix = expData.getDataFileUrl();
                 TableInfo expDataTInfo = expSvc.getTinfoData();
                 return !(new TableSelector(expDataTInfo, expDataTInfo.getColumns("RowId"),
-                        MsDataSourceUtil.getExpDataFilter(expData.getContainer(), pathPrefix, null), null).exists());
+                        MsDataSourceUtil.getExpDataFilter(expData.getContainer(), pathPrefix), null).exists());
             }
             else
             {
@@ -839,7 +838,8 @@ public class MsDataSourceUtil implements MsDataSourceService
     public static class TestCase extends Assert
     {
         private static final String FOLDER_NAME = "TargetedMSDataSourceTest";
-        private static final String _fileName = "msdatasourcetest_9ab4da773526.sky.zip";
+        private static final String SKY_FILE_NAME = "msdatasourcetest_9ab4da773526.sky.zip";
+        private static final String TEST_DATA_FOLDER = "TargetedMS/Raw Data Test";
         private static User _user;
         private static Container _container;
         private static TargetedMSRun _run;
@@ -853,8 +853,9 @@ public class MsDataSourceUtil implements MsDataSourceService
 
         private static MsDataSourceUtil _util;
 
+        private static final String[] thermoFiles = new String[] {"5Aug2017-FU2-PDK4-PRM2-2_1-01.raw", "5Aug2017-FU2-PDK4-PRM2-4_1-01.raw"};
         private static final String[] sciexFiles = new String [] {"20140807_nsSRM_01.wiff", "20140807_nsSRM_02.wiff"};
-        private static final String[] watersData = new String[] {"20200929_CalMatrix_00_A.raw", "20200929_CalMatrix_01_A.raw", "20200929_CalMatrix_01_A_nestedzip.raw"};
+        private static final String[] watersData = new String[] {"20200929_CalMatrix_00_A.raw", "20200929_CalMatrix_00_A_flatzip.raw", "20200929_CalMatrix_00_A_nestedzip.raw"};
         private static final String[] brukerData = new String[] {"DK0034-G10_1-D,2_01_1036.d", "DK0034-G10_1-D,2_01_1036_flatzip.d", "DK0034-G10_1-D,2_01_1036_nestedzip.d"};
         private static final String[] agilentData = new String[] {"pTE219_0 hr_R2.d", "pTE219_0 hr_R2_flatzip.d", "pTE219_0 hr_R2_nestedzip.d"};
 
@@ -867,13 +868,13 @@ public class MsDataSourceUtil implements MsDataSourceService
             }
             catch (ExperimentException e)
             {
-                fail("Failed to clean up database after before running tests. Error was: " + e.getMessage());
+                fail("Failed to clean up database before running tests. Error was: " + e.getMessage());
             }
 
             _user = TestContext.get().getUser();
             _container = ContainerManager.ensureContainer(JunitUtil.getTestContainer(), FOLDER_NAME);
 
-            // Create an entry in targetedms.runs table
+            // Create an entry in the targetedms.runs table
             _run = createRun();
 
             // Create instruments
@@ -886,15 +887,15 @@ public class MsDataSourceUtil implements MsDataSourceService
             _unknown = createInstrument("UWPR instrument model");
 
             _util = new MsDataSourceUtil();
-
         }
 
         private static TargetedMSRun createRun()
         {
             TargetedMSRun run = new TargetedMSRun();
             run.setContainer(_container);
-            run.setFileName(_fileName);
+            run.setFileName(SKY_FILE_NAME);
             Table.insert(_user, TargetedMSManager.getTableInfoRuns(), run);
+            assertNotEquals("Id for saved run should not be 0", 0, run.getId());
             return run;
         }
 
@@ -904,15 +905,16 @@ public class MsDataSourceUtil implements MsDataSourceService
             instrument.setRunId(_run.getId());
             instrument.setModel(model);
             Table.insert(_user, TargetedMSManager.getTableInfoInstrument(), instrument);
+            assertNotEquals("Id for saved instrument should not be 0", 0, instrument.getId());
             return instrument;
         }
 
         @Test
         public void testDataExists() throws IOException
         {
-            Path rawDataDir = JunitUtil.getSampleData(ModuleLoader.getInstance().getModule(TargetedMSModule.class), "TargetedMS/RawDataTest").toPath();
-            ExperimentService expSvc = ExperimentService.get();
+            Path rawDataDir = JunitUtil.getSampleData(ModuleLoader.getInstance().getModule(TargetedMSModule.class), TEST_DATA_FOLDER).toPath();
 
+            testDataExists(thermoFiles, THERMO, rawDataDir);
             testDataExists(sciexFiles, SCIEX, rawDataDir);
             testDataExists(watersData, WATERS, rawDataDir);
             testDataExists(brukerData, BRUKER, rawDataDir);
@@ -922,7 +924,7 @@ public class MsDataSourceUtil implements MsDataSourceService
             testDataNotExists(agilentData, WATERS, rawDataDir);
             testDataNotExists(watersData, THERMO, rawDataDir);
             // This will fail because MsDataSourceUtil.dataExists() does not validate that the filename matches
-            // the given datasource.  It only validates zip contents and contents of directory bases sources
+            // the given datasource.  It only validates zip contents and contents of directory based sources
             // testDataNotExists(sciexFiles, THERMO, rawDataDir);
         }
 
@@ -939,7 +941,6 @@ public class MsDataSourceUtil implements MsDataSourceService
         {
             for(String file: files)
             {
-                // test private boolean hasData(String fileName, MsDataSource dataSource, Container container, Path rawFilesDir, ExperimentService expSvc)
                 assertFalse("Unexpected data for " + file, _util.dataExists(file, sourceType, dataDir));
             }
         }
@@ -947,36 +948,146 @@ public class MsDataSourceUtil implements MsDataSourceService
         @Test
         public void testGetDataForSampleFile() throws IOException
         {
-            Path rawDataDir = JunitUtil.getSampleData(ModuleLoader.getInstance().getModule(TargetedMSModule.class), "TargetedMS/RawDataTest").toPath();
+            Path rawDataDir = JunitUtil.getSampleData(ModuleLoader.getInstance().getModule(TargetedMSModule.class), TEST_DATA_FOLDER).toPath();
             ExperimentService expSvc = ExperimentService.get();
 
-            // Create some rows in exp.data
-            for(String fileName: sciexFiles)
+            testGetDataForFileBasedSampleFiles(thermoFiles, _thermo, THERMO.name(), rawDataDir, expSvc);
+            testGetDataForFileBasedSampleFiles(sciexFiles, _sciex, SCIEX.name(), rawDataDir, expSvc);
+            testGetDataForWatersSampleFiles(rawDataDir, expSvc);
+            testGetDataForAgilentSampleFiles(rawDataDir, expSvc);
+            testGetDataForBrukerSampleFiles(rawDataDir, expSvc);
+        }
+
+        private void testGetDataForFileBasedSampleFiles(String[] files, Instrument instrument, String instrumentDataDirName,
+                                                        Path rawDataDir, ExperimentService expSvc)
+        {
+            for(String fileName: files)
             {
-                addData(fileName, rawDataDir, SCIEX.name());
+                // Rows have not been created in exp.data. Should not find any matching rows.
+                testNoDataForSampleFile(fileName, instrument, rawDataDir, expSvc);
             }
-            for(String fileName: watersData)
+            // Create rows in exp.data
+            for(String fileName: files)
             {
-                ExpData saved = addData(fileName, rawDataDir, WATERS.name());
-                addData("_FUNC001.DAT", saved.getFilePath(), "");
+                addData(fileName, rawDataDir, instrumentDataDirName);
             }
-            for(String fileName: agilentData)
+            for(String fileName: files)
             {
-                ExpData saved = addData(fileName, rawDataDir, AGILENT.name());
-                addData(AGILENT_ACQ_DATA, saved.getFilePath(), "");
+                // We should find matching rows in exp.data
+                testGetDataForSampleFile(fileName, instrument, rawDataDir, expSvc);
             }
-            for(String fileName: brukerData)
+        }
+
+        private void testGetDataForWatersSampleFiles(Path rawDataDir, ExperimentService expSvc)
+        {
+            testGetDataForDirBasedSampleFiles(
+                    "20200929_CalMatrix_00_A.raw", // For testing VALID unzipped directory
+                    "20200929_CalMatrix_00_A_invalid.raw", // For testing INVALID unzipped directory
+                    "20200929_CalMatrix_00_A_flatzip.raw", // For testing VALID ZIP
+                    "20200929_CalMatrix_00_A_invalidzip.raw", // For testing INVALID ZIP
+                    "_FUNC001.DAT", // Required content in directory
+                    _waters, WATERS.name(),
+                    rawDataDir, expSvc);
+        }
+
+        private void testGetDataForAgilentSampleFiles(Path rawDataDir, ExperimentService expSvc)
+        {
+            testGetDataForDirBasedSampleFiles(
+                    "pTE219_0 hr_R2.d", // For testing VALID unzipped directory
+                    "pTE219_0 hr_R2_invalid.d", // For testing INVALID unzipped directory
+                    "pTE219_0 hr_R2_flatzip.d", // For testing VALID ZIP
+                    "pTE219_0 hr_R2_invalidzip.d", // For testing INVALID ZIP
+                    AGILENT_ACQ_DATA, // Required content in directory
+                    _agilent, AGILENT.name(),
+                    rawDataDir, expSvc);
+        }
+
+        private void testGetDataForBrukerSampleFiles(Path rawDataDir, ExperimentService expSvc)
+        {
+            testGetDataForDirBasedSampleFiles(
+                    "DK0034-G10_1-D,2_01_1036.d", // For testing VALID unzipped directory
+                    "DK0034-G10_1-D,2_01_1036_invalid.d", // For testing INVALID unzipped directory
+                    "DK0034-G10_1-D,2_01_1036_flatzip.d", // For testing VALID ZIP
+                    "DK0034-G10_1-D,2_01_1036_invalidzip.d", // For testing INVALID ZIP
+                    BRUKER_ANALYSIS_BAF, // Required content in directory
+                    _bruker, BRUKER.name(),
+                    rawDataDir, expSvc);
+        }
+
+        private void testGetDataForDirBasedSampleFiles(String validDirName, String invalidDirName,
+                                                       String validZipName, String invalidZipName,
+                                                       String dirContentNameForValidDir, Instrument instrument, String instrumentDataDirName,
+                                                       Path rawDataDir, ExperimentService expSvc)
+        {
+            String files[] = new String[] {validDirName, invalidDirName, validZipName, invalidZipName};
+            for(String fileName: files)
             {
-                ExpData saved = addData(fileName, rawDataDir, BRUKER.name());
-                addData(BRUKER_ANALYSIS_BAF, saved.getFilePath(), "");
+                // Rows have not yet been created in exp.data. Should not find any matching rows.
+                testNoDataForSampleFile(fileName, instrument, rawDataDir, expSvc);
             }
 
+            // Test valid data directory
+            String name = validDirName;
+            ExpData saved = addData(name, rawDataDir, instrumentDataDirName);
+            testNoDataForSampleFile(name, instrument, rawDataDir, expSvc); // No rows created yet for the required directory content. Should not find any matches
+            addData(dirContentNameForValidDir, saved.getFilePath(), "");
+            testGetDataForSampleFile(name, instrument, rawDataDir, expSvc); // Should find a match
 
-            testGetDataForSampleFiles(sciexFiles, _sciex, rawDataDir, expSvc);
-            testGetDataForSampleFiles(watersData, _waters, rawDataDir, expSvc);
-            testGetDataForSampleFiles(brukerData, _bruker, rawDataDir, expSvc);
-            testGetDataForSampleFiles(agilentData, _agilent, rawDataDir, expSvc);
+            // Test invalid data directory
+            name = invalidDirName;
+            saved = addData(name, rawDataDir, instrumentDataDirName);
+            testNoDataForSampleFile(name, instrument, rawDataDir, expSvc); // No rows created yet for the required directory content. Should not find any matches
+            addData("invalid_" + dirContentNameForValidDir, saved.getFilePath(), "");
+            testNoDataForSampleFile(name, instrument, rawDataDir, expSvc); // Invalid directory. Should not find a match
 
+            // Test valid zip
+            name = validZipName;
+            addData(name + ".ZIP", rawDataDir, instrumentDataDirName);
+            testGetDataForSampleFile(name, instrument, rawDataDir, expSvc); // Should find a match
+            testGetDataForSampleFileValidateZip(name, instrument, rawDataDir, expSvc); // Should find a match and zip validation should pass
+
+            // Test invalid zip
+            name = invalidZipName;
+            addData(name + ".zip", rawDataDir, instrumentDataDirName);
+            testGetDataForSampleFile(name, instrument, rawDataDir, expSvc); // Should find a match since we are not validating the zip file
+            testNoDataForSampleFileValidateZip(name, instrument, rawDataDir, expSvc); // Should NOT find a match since zip validation will fail
+        }
+
+        private void testGetDataForSampleFile(String file, Instrument instrument, Path dataDir, ExperimentService expSvc)
+        {
+            testGetDataForSampleFile(file, instrument, dataDir, expSvc, true, false);
+        }
+
+        private void testNoDataForSampleFile(String file, Instrument instrument, Path dataDir, ExperimentService expSvc)
+        {
+            testGetDataForSampleFile(file, instrument, dataDir, expSvc, false, false);
+        }
+
+        private void testGetDataForSampleFileValidateZip(String file, Instrument instrument, Path dataDir, ExperimentService expSvc)
+        {
+            testGetDataForSampleFile(file, instrument, dataDir, expSvc, true, true);
+        }
+
+        private void testNoDataForSampleFileValidateZip(String file, Instrument instrument, Path dataDir, ExperimentService expSvc)
+        {
+            testGetDataForSampleFile(file, instrument, dataDir, expSvc, false, true);
+        }
+
+        private void testGetDataForSampleFile(String file, Instrument instrument, Path dataDir, ExperimentService expSvc, boolean hasExpData, boolean validateZip)
+        {
+            SampleFile sf = new SampleFile();
+            sf.setFilePath("C:\\rawfiles\\" + file);
+            sf.setInstrumentId(instrument.getId());
+            if(hasExpData)
+            {
+                String message = "Expected row in exp.data for " + file + (validateZip ? " with zip validation." : "");
+                assertNotNull(message, _util.getDataForSampleFile(sf, _container, dataDir, expSvc, validateZip));
+            }
+            else
+            {
+                String message = "Unxpected row in exp.data for " + file + (validateZip ? " with zip validation." : "");
+                assertNull(message, _util.getDataForSampleFile(sf, _container, dataDir, expSvc, validateZip));
+            }
         }
 
         private ExpData addData(String fileName, Path rawDataDir, String subfolder)
@@ -988,17 +1099,6 @@ public class MsDataSourceUtil implements MsDataSourceService
             data.setDataFileURI(rawDataDir.resolve(subfolder).resolve(fileName).toUri());
             data.save(_user);
             return data;
-        }
-
-        private void testGetDataForSampleFiles(String[] files, Instrument instrument, Path dataDir, ExperimentService expSvc)
-        {
-            for(String file: files)
-            {
-                SampleFile sf = new SampleFile();
-                sf.setFilePath("C:\\rawfiles\\" + file);
-                sf.setInstrumentId(instrument.getId());
-                assertNotNull("Expected row in exp.data for " + file, _util.getDataForSampleFile(sf, _container, dataDir, expSvc, false));
-            }
         }
 
         @Test
@@ -1130,7 +1230,7 @@ public class MsDataSourceUtil implements MsDataSourceService
         {
             TableInfo runsTable = TargetedMSManager.getTableInfoRuns();
             Integer runId = new TableSelector(TargetedMSManager.getTableInfoRuns(), Collections.singletonList(runsTable.getColumn("id")),
-                    new SimpleFilter().addCondition(runsTable.getColumn("filename"), _fileName, CompareType.EQUAL), null).getObject(Integer.class);
+                    new SimpleFilter().addCondition(runsTable.getColumn("filename"), SKY_FILE_NAME, CompareType.EQUAL), null).getObject(Integer.class);
             if(runId != null)
             {
                 Table.delete(TargetedMSManager.getTableInfoInstrument(),

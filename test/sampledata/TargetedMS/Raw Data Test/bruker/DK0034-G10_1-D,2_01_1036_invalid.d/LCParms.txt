@@ -1,0 +1,133 @@
+
+
+
+
+[Method Information]
+LC Method
+
+General Information:
+Author: Dietmar
+Description:
+Optimized LCMSn for complex mixtures
+
+
+LC Parameters (acquisition starting conditions)
+
+Acquisition Parameters:
+
+Runtime:      169.52 min
+Slice Width:  1000.0  points/s
+
+[Pump]
+Additional Pump and Oven Parameters:
+
+pump settings
+ Nr. RunTime  Flow Rate     Min/Max           Solvents
+      (min)   (ml/min)      Press(bar)
+   1  169.50   0.30000         0/1034
+
+LC Column:     
+
+
+
+[Pump]
+LC Timetable
+
+  Time  Function                 Value         A(%)  B(%)  C(%)  D(%)
+  0.00  Flow Rate                0.30000                  
+  0.00  Solvent Mix                            100.0 0.0   0.0   0.0  
+
+
+[Detector]
+Detector Settings
+Detector1 : Waters ACQUITY UPLC
+Offset: 0.00, InvertSignal: 0, Slicewidth: 0.00(points/sec)
+Autozero: no, Spec Start: 190.00, Spec End: 200.00, Start Delay: 0
+Data Channel: 1, DoReference: no, ReferenceStart: 254.00, ReferenceWidth: 10.00
+DoSaveSpectra: no, SaveInterval: 1, SaveType: 1
+
+
+Data Acquisition - Signals
+
+SIGNAL          Source          Parameters                          Autodetection Parameters
+   No.                                             
+    1   Waters ACQUITY UPLC Wavelength: 214           
+                                                           Slope(mAU/s):  20.00 Peak Par.: 5
+                                                                   Threshold: 0 Smoothing: 2 
+
+
+Methods
+
+Method: D:\Data\Dietmar\Methods-Win7\HS-DIA-25Feb15.m
+
+HyStar_LC: LC-27Oct14.m
+
+HyStar_Autosampler: Standard
+
+microTOFQImpactControl: MS-DIA-24Feb15-QIE4-CEmin80-LM300-QuadBias35to25.m
+
+
+
+
+Hardware Setup
+
+Hardware Setup used: "nanoacquity_impacthd_win7"
+
+General Information:
+Author: Dietmar 
+Description:
+nanoAcquity 
+maXis impactHD
+
+
+[System Information]
+System included components:
+
+Pumps
+Pump 1 : Waters ACQUITY UPLC
+conneced via System
+
+AutoSamplers
+AutoSampler 1 : Waters ACQUITY UPLC
+conneced via System
+
+Detectors
+Detector 1 : Waters ACQUITY UPLC
+conneced via System
+
+Systems
+System 1 : Waters ACQUITY UPLC
+connected via LAN
+
+MSs
+MS 1 : micrOTOF series
+
+
+System times with 1 ml/min flow (in sec):
+
+Do Acquisition times:
+From Zero Point = LC 1 Detector to:
+Bruker Peak Sampling Unit    :  12.00
+NMR Spectrometer             :  15.00
+Fraction Collector (via NMR) :  100.00
+Fraction Collector (direct)  :  40.00
+
+Time offset to System Zero Point for:
+LC 2  Detector    :  0.00
+LC 3  Detector    :  10.00
+Mass Spectrometer :  0.00
+SPE Cartridge :  0.00
+
+Elution volume  between SPE Cartridge and NMR :  290.00
+
+Flow Injection times:
+Times from Bruker Peak Sampling Unit to:
+NMR Spectrometer             :  23.00
+Mass Spectrometer            :  23.00
+Fraction Collector (via NMR) :  110.00
+Divert Valve(via NMR) :  3.00
+
+Times from Autosampler to:
+NMR Spectrometer  :  30.00
+Mass Spectrometer :  30.00
+
