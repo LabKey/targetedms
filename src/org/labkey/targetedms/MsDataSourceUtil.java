@@ -17,6 +17,9 @@ import org.labkey.api.data.Table;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.data.dialect.SqlDialect;
+import org.labkey.api.exp.ExperimentException;
+import org.labkey.api.exp.Lsid;
+import org.labkey.api.exp.api.DataType;
 import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.files.FileContentService;
@@ -35,7 +38,6 @@ import org.labkey.targetedms.parser.PsiInstruments;
 import org.labkey.targetedms.parser.SampleFile;
 import org.labkey.targetedms.query.InstrumentManager;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -47,8 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.hasItem;
 
@@ -69,7 +69,7 @@ public class MsDataSourceUtil implements MsDataSourceService
      */
     public Pair<ExpData, Long> getDownloadInfo(SampleFile sampleFile, Container container)
     {
-        ExpData expData = getDataFor(sampleFile, container);
+        ExpData expData = getDataForSampleFile(sampleFile, container);
         Long size = null;
         if(expData != null)
         {
@@ -97,45 +97,62 @@ public class MsDataSourceUtil implements MsDataSourceService
         return new Pair<>(expData, size);
     }
 
-    private ExpData getDataFor(SampleFile sampleFile, Container container)
+    private ExpData getDataForSampleFile(SampleFile sampleFile, Container container)
     {
         ExperimentService expSvc = ExperimentService.get();
         if(expSvc == null)
         {
             return null;
         }
-
         // We will look for raw data files only in @files/RawFiles
         Path rawFilesDir = getRawFilesDir(container);
+        return getDataForSampleFile(sampleFile, container, rawFilesDir, expSvc, false);
+    }
 
-        // Look for the file and file.zip (e.g. sample_1.raw and sample_1.raw.zip)
-        String[] fileNames = new String[] {sampleFile.getFileName(), sampleFile.getFileName() + EXT_ZIP};
-        List<? extends ExpData> expDatas = getExpData(fileNames, container, rawFilesDir, expSvc);
+    private ExpData getDataForSampleFile(SampleFile sampleFile, Container container, Path rawFilesDir, ExperimentService expSvc, boolean validateZip)
+    {
+        List<? extends ExpData> expDatas = getExpData(sampleFile.getFileName(), container, rawFilesDir, expSvc);
 
         if(expDatas.size() == 0)
         {
             return null;
         }
 
-        // If one of the returned ExpDatas is a zip file we will return that.  We are not going to check the contents
-        // of the zip file.
-        for(ExpData data: expDatas)
-        {
-            if(isZip(data.getName()) && data.isFileOnDisk())
-            {
-                return data;
-            }
-        }
-
-        // Get the source type file from the file extension and (if required) the instrument associated with the sample file
-        MsDataSource sourceType = getMsDataSource(sampleFile);
-        if(sourceType != null)
+        if(!validateZip)
         {
             for(ExpData data: expDatas)
             {
-                if(sourceType.isSource(data, expSvc))
+                // Prefer to return a zip source if we found one
+                if(isZip(data.getName()))
+                {
+                    return  data;
+                }
+            }
+            // Get the source type file from the file extension and (if required) the instrument associated with the sample file
+            MsDataSource sourceType = getMsDataSource(sampleFile);
+            for(ExpData data: expDatas)
+            {
+                if(sourceType.isValidSource(data, expSvc))
                 {
                     return data;
+                }
+            }
+
+        }
+        else
+        {
+            // Get the source type file from the file extension and (if required) the instrument associated with the sample file
+            MsDataSource sourceType = getMsDataSource(sampleFile);
+            if(sourceType != null)
+            {
+                for(ExpData data: expDatas)
+                {
+                    boolean isZip = isZip(data.getName());
+                    boolean isValid = isZip ? sourceType.isValidSource(data.getFilePath()) : sourceType.isValidSource(data, expSvc);
+                    if(isValid)
+                    {
+                        return data;
+                    }
                 }
             }
         }
@@ -144,12 +161,16 @@ public class MsDataSourceUtil implements MsDataSourceService
     }
 
     @NotNull
-    private List<? extends ExpData> getExpData(String[] fileNames, Container container, Path pathPrefix, ExperimentService expSvc)
+    private List<? extends ExpData> getExpData(String fileName, Container container, Path pathPrefix, ExperimentService expSvc)
     {
+        // Look for the file and file.zip (e.g. sample_1.raw and sample_1.raw.zip)
+        String[] fileNames = new String[] {fileName, fileName + EXT_ZIP};
+
         SimpleFilter.OrClause orClause = new SimpleFilter.OrClause();
-        for(String fileName: fileNames)
+        for(String name: fileNames)
         {
-            orClause.addClause(new CompareType.EqualsCompareClause(FieldKey.fromParts("Name"), CompareType.EQUAL, fileName));
+            // TODO: Is this a case insensitive comparision??
+            orClause.addClause(new CompareType.EqualsCompareClause(FieldKey.fromParts("Name"), CompareType.EQUAL, name));
         }
 
         String pathPrefixString = FileUtil.pathToString(pathPrefix); // Encoded URI string
@@ -159,10 +180,13 @@ public class MsDataSourceUtil implements MsDataSourceService
         return expSvc.getExpDatas(expDataIds);
     }
 
-    private SimpleFilter getExpDataFilter(Container container, String pathPrefix, SimpleFilter.FilterClause filterClause)
+    private static SimpleFilter getExpDataFilter(Container container, String pathPrefix, SimpleFilter.FilterClause filterClause)
     {
         SimpleFilter filter = SimpleFilter.createContainerFilter(container);
-        filter.addClause(filterClause);
+        if(filterClause != null)
+        {
+            filter.addClause(filterClause);
+        }
         if (!pathPrefix.endsWith("/"))
         {
             pathPrefix = pathPrefix + "/";
@@ -173,9 +197,9 @@ public class MsDataSourceUtil implements MsDataSourceService
         return filter;
     }
 
-    private static boolean isZip(String fileName)
+    private static boolean isZip(@NotNull String fileName)
     {
-        return fileName != null && fileName.toLowerCase().endsWith(EXT_ZIP);
+        return fileName.toLowerCase().endsWith(EXT_ZIP);
     }
 
     private MsDataSource getMsDataSource(ISampleFile sampleFile)
@@ -260,15 +284,13 @@ public class MsDataSourceUtil implements MsDataSourceService
 
     private boolean hasData(String fileName, MsDataSource dataSource, Container container, Path rawFilesDir, ExperimentService expSvc)
     {
-        // Look for the file and file.zip (e.g. sample_1.raw and sample_1.raw.zip)
-        String[] fileNames = new String[] {fileName, fileName + EXT_ZIP};
-        List<? extends ExpData> expDatas = getExpData(fileNames, container, rawFilesDir, expSvc);
+        List<? extends ExpData> expDatas = getExpData(fileName, container, rawFilesDir, expSvc);
 
         if(expDatas.size() > 0)
         {
             for (ExpData data : expDatas)
             {
-                if (dataSource.isSource(data, expSvc))
+                if (dataSource.isValidNameAndSource(data, expSvc))
                 {
                    return true;
                 }
@@ -287,21 +309,9 @@ public class MsDataSourceUtil implements MsDataSourceService
 
     private boolean dataExists(String fileName, MsDataSource sourceType, Path rawFilesDir)
     {
-        if(dataExists(fileName, rawFilesDir, sourceType))
+        try
         {
-            return true;
-        }
-
-        // Look in subdirectories
-        try (Stream<Path> list = Files.walk(rawFilesDir).filter(p -> Files.isDirectory(p)))
-        {
-            for (Path subDir : list.collect(Collectors.toList()))
-            {
-                if (dataExists(fileName, subDir, sourceType))
-                {
-                    return true;
-                }
-            }
+            return Files.walk(rawFilesDir).anyMatch(p -> isSourceMatch(p, fileName, sourceType));
         }
         catch (IOException e)
         {
@@ -311,10 +321,14 @@ public class MsDataSourceUtil implements MsDataSourceService
         return false;
     }
 
-    private boolean dataExists(String fileName, Path dir, MsDataSource sourceType)
+    private boolean isSourceMatch(Path path, String fileName, MsDataSource sourceType)
     {
-        Path filePath = dir.resolve(fileName);
-        return sourceType.isSource(filePath) || (sourceType.isSource(dir.resolve(fileName + EXT_ZIP)));
+        String pathFileName = FileUtil.getFileName(path);
+        if(fileName.equals(pathFileName) || (isZip(pathFileName) && fileName.equals(FileUtil.getBaseName(pathFileName))))
+        {
+           return sourceType.isValidSource(path);
+        }
+        return false;
     }
 
     private List<MsDataSource> getSourceForName(String name)
@@ -385,35 +399,38 @@ public class MsDataSourceUtil implements MsDataSourceService
         }
     };
 
+    private static final String AGILENT_ACQ_DATA = "AcqData";
     private static final MsDataDirSource AGILENT = new MsDataDirSource("agilent", ".d")
     {
         @Override
         public Predicate<Path> getDirContentCondition()
         {
-            return f -> Files.isDirectory(f) && FileUtil.getFileName(f).equals("AcqData");
+            return f -> Files.isDirectory(f) && FileUtil.getFileName(f).equals(AGILENT_ACQ_DATA);
         }
 
         @Override
         public SimpleFilter.FilterClause getDirContentsFilterClause()
         {
-            return new CompareType.CompareClause(FieldKey.fromParts("Name"), CompareType.EQUAL, "AcqData");
+            return new CompareType.CompareClause(FieldKey.fromParts("Name"), CompareType.EQUAL, AGILENT_ACQ_DATA);
         }
     };
 
+    private static final String BRUKER_ANALYSIS_BAF = "analysis.baf";
+    private static final String BRUKER_ANALYSIS_TDF = "analysis.tdf";
     private static final MsDataDirSource BRUKER = new MsDataDirSource("bruker", ".d")
     {
         @Override
         public Predicate<Path> getDirContentCondition()
         {
-            return f -> !Files.isDirectory(f) && (FileUtil.getFileName(f).equals("analysis.baf") || FileUtil.getFileName(f).equals("analysis.tdf"));
+            return f -> !Files.isDirectory(f) && (FileUtil.getFileName(f).equals(BRUKER_ANALYSIS_BAF) || FileUtil.getFileName(f).equals(BRUKER_ANALYSIS_TDF));
         }
 
         @Override
         public SimpleFilter.FilterClause getDirContentsFilterClause()
         {
             return new SimpleFilter.OrClause(
-                    new CompareType.CompareClause(FieldKey.fromParts("Name"), CompareType.EQUAL, "analysis.baf"),
-                    new CompareType.CompareClause(FieldKey.fromParts("Name"), CompareType.EQUAL, "analysis.tdf")
+                    new CompareType.CompareClause(FieldKey.fromParts("Name"), CompareType.EQUAL, BRUKER_ANALYSIS_BAF),
+                    new CompareType.CompareClause(FieldKey.fromParts("Name"), CompareType.EQUAL, BRUKER_ANALYSIS_TDF)
             );
         }
     };
@@ -449,9 +466,9 @@ public class MsDataSourceUtil implements MsDataSourceService
 
         private MsDataSource() {}
 
-        private MsDataSource(@NotNull String instrumentVendors, @NotNull List<String> extensions)
+        private MsDataSource(@NotNull String instrumentVendor, @NotNull List<String> extensions)
         {
-            _instrumentVendor = instrumentVendors;
+            _instrumentVendor = instrumentVendor;
             _extensions = extensions;
         }
 
@@ -466,6 +483,11 @@ public class MsDataSourceUtil implements MsDataSourceService
                     {
                         return true;
                     }
+                }
+
+                if(isZipSourceName(name))
+                {
+                    return true;
                 }
             }
             return false;
@@ -482,12 +504,19 @@ public class MsDataSourceUtil implements MsDataSourceService
             return instrument != null && instrument.toLowerCase().contains(_instrumentVendor);
         }
 
-        abstract boolean isSource(@NotNull Path path);
-        abstract boolean isZipSource(@NotNull Path path);
-        abstract boolean isSource(@NotNull ExpData data, @NotNull ExperimentService expSvc);
-        abstract boolean isZipSource(@NotNull ExpData data, @NotNull ExperimentService expSvc, boolean validateZip);
+        abstract boolean isValidNameAndSource(@NotNull Path path);
+        abstract boolean isValidSource(@NotNull Path path);
+        abstract boolean isValidNameAndSource(@NotNull ExpData data, @NotNull ExperimentService expSvc);
+        abstract boolean isValidSource(@NotNull ExpData data, ExperimentService expSvc);
+
+        // abstract boolean isZipSource(@NotNull Path path);
+        // abstract boolean isZipSource(@NotNull ExpData data, @NotNull ExperimentService expSvc, boolean validateZip);
 
         public String toString()
+        {
+            return name();
+        }
+        public String name()
         {
             return _instrumentVendor;
         }
@@ -511,36 +540,57 @@ public class MsDataSourceUtil implements MsDataSourceService
         }
 
         @Override
-        boolean isSource(Path path)
+        boolean isValidNameAndSource(@NotNull Path path)
         {
-            return path != null && isSourceName(FileUtil.getFileName(path)) && Files.exists(path) && !Files.isDirectory(path);
+            String name = FileUtil.getFileName(path);
+            return isSourceName(name) && isValidSource(path);
         }
 
         @Override
-        boolean isZipSource(Path path)
+        boolean isValidSource(@NotNull Path path)
         {
-            if(path != null)
+            if(Files.exists(path) && !Files.isDirectory(path))
             {
-                if(isZipSourceName(FileUtil.getFileName(path)))
-                {
-                    // No zip validation for file sources
-                    return Files.exists(path) && !Files.isDirectory(path);
-                }
+                return MsDataSourceUtil.isZip(FileUtil.getFileName(path)) ? zipMatches(path) : true;
             }
             return false;
         }
 
         @Override
-        boolean isSource(ExpData data, ExperimentService expSvc)
+        boolean isValidNameAndSource(ExpData data, ExperimentService expSvc)
         {
-            return isSourceName(data.getName()) && data.isFileOnDisk(); // TODO: remove file check?
+            return isSourceName(data.getName()) && isValidSource(data, expSvc);
         }
 
         @Override
-        boolean isZipSource(ExpData data, ExperimentService expSvc, boolean validateZip)
+        boolean isValidSource(@NotNull ExpData data, ExperimentService expSvc)
         {
-            // No zip validation for file sources
-            return isZipSourceName(data.getName()) && data.isFileOnDisk(); // TODO: remove file check?
+            String pathPrefix = data.getDataFileUrl();
+            TableInfo expDataTInfo = expSvc.getTinfoData();
+            return !(new TableSelector(expDataTInfo, expDataTInfo.getColumns("RowId"),
+                    MsDataSourceUtil.getExpDataFilter(data.getContainer(), pathPrefix, null), null).exists());
+        }
+
+        private boolean zipMatches(@NotNull Path path)
+        {
+            try
+            {
+                for (Path root : FileSystems.newFileSystem(path, Collections.emptyMap())
+                        .getRootDirectories())
+                {
+                    String basename = FileUtil.getBaseName(FileUtil.getFileName(path));  // Name minus the .zip
+                    Path file = root.resolve(basename);
+                    if(Files.exists(file) && !Files.isDirectory(file))
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (IOException e)
+            {
+                LOG.debug("Error validating zip source " + path, e);
+            }
+            return false;
         }
     }
 
@@ -560,21 +610,25 @@ public class MsDataSourceUtil implements MsDataSourceService
         }
 
         @Override
-        public boolean isSource(@NotNull Path path)
+        public boolean isValidNameAndSource(@NotNull Path path)
         {
-            if(path != null && Files.exists(path))
-            {
-                String fileName = FileUtil.getFileName(path);
-                return Files.isDirectory(path) && isSourceName(fileName) && matchDirContents(path);
-            }
-            return false;
+            return isSourceName(FileUtil.getFileName(path)) && isValidSource(path);
         }
 
-        public boolean isZipSource(Path path)
+        @Override
+        public boolean isValidSource(@NotNull Path path)
         {
-            if(path != null && Files.exists(path))
+            if(Files.exists(path))
             {
-                return isZipSourceName(FileUtil.getFileName(path)) && zipMatches(path);
+                String fileName = FileUtil.getFileName(path);
+                if(MsDataSourceUtil.isZip(fileName))
+                {
+                    return !Files.isDirectory(path) && zipMatches(path);
+                }
+                else
+                {
+                    return Files.isDirectory(path) && matchDirContents(path);
+                }
             }
             return false;
         }
@@ -606,13 +660,18 @@ public class MsDataSourceUtil implements MsDataSourceService
                     }
                     else
                     {
-                        String subdir = FileUtil.getBaseName(FileUtil.getFileName(path));  // Name minus the .zip
+                        String subdirName = FileUtil.getBaseName(FileUtil.getFileName(path));  // Name minus the .zip
                         // Look for match in the subdirectory
-                        Path subDir = Files.list(root).filter(p -> Files.isDirectory(p) && subdir.equals(FileUtil.getFileName(p))).findFirst().orElse(null);
-                        if (subDir != null)
+                        Path subDir = root.resolve(subdirName);
+                        if(Files.exists(subDir) && matchDirContents(subDir))
                         {
-                            return matchDirContents(subDir);
+                            return true;
                         }
+//                        Path subDir = Files.list(root).filter(p -> Files.isDirectory(p) && subdir.equals(FileUtil.getFileName(p))).findFirst().orElse(null);
+//                        if (subDir != null)
+//                        {
+//                            return matchDirContents(subDir);
+//                        }
                     }
                 }
             }
@@ -624,25 +683,28 @@ public class MsDataSourceUtil implements MsDataSourceService
         }
 
         @Override
-        boolean isSource(ExpData expData, ExperimentService expSvc)
+        boolean isValidNameAndSource(ExpData expData, ExperimentService expSvc)
         {
-            if(isSourceName(expData.getName()))
+            return isSourceName(expData.getName()) && isValidSource(expData, expSvc);
+        }
+
+        @Override
+        boolean isValidSource(@NotNull ExpData expData, ExperimentService expSvc)
+        {
+            String fileName = expData.getName();
+            if(MsDataSourceUtil.isZip(fileName))
+            {
+                String pathPrefix = expData.getDataFileUrl();
+                TableInfo expDataTInfo = expSvc.getTinfoData();
+                return !(new TableSelector(expDataTInfo, expDataTInfo.getColumns("RowId"),
+                        MsDataSourceUtil.getExpDataFilter(expData.getContainer(), pathPrefix, null), null).exists());
+            }
+            else
             {
                 // This is a directory source. Check for rows in exp.data for the expected directory contents.
                 TableInfo expDataTInfo = expSvc.getTinfoData();
                 return new TableSelector(expDataTInfo, expDataTInfo.getColumns("RowId"), getExpDataFilter(expData, getDirContentsFilterClause()), null).exists();
             }
-            return false;
-        }
-
-        @Override
-        boolean isZipSource(ExpData expData, ExperimentService expSvc, boolean validateZip)
-        {
-            if(isZipSourceName(expData.getName()))
-            {
-                return validateZip ? zipMatches(expData.getFilePath()) : true;
-            }
-            return false;
         }
 
         private SimpleFilter getExpDataFilter(ExpData expData, SimpleFilter.FilterClause filterClause)
@@ -686,24 +748,12 @@ public class MsDataSourceUtil implements MsDataSourceService
         }
 
         @Override
-        boolean isSource(Path path)
-        {
-            return false;
-        }
-
-        @Override
-        boolean isZipSource(@NotNull Path path)
-        {
-            return false;
-        }
-
-        @Override
-        boolean isSource(ExpData data, ExperimentService expSvc)
+        boolean isValidNameAndSource(Path path)
         {
             // Check directory sources
             for(MsDataDirSource sourceType: _dirSources)
             {
-                if(sourceType.isSource(data, expSvc))
+                if(sourceType.isValidNameAndSource(path))
                 {
                     return true;
                 }
@@ -711,7 +761,7 @@ public class MsDataSourceUtil implements MsDataSourceService
             // Check file sources
             for(MsDataFileSource sourceType: _fileSources)
             {
-                if(sourceType.isSource(data, expSvc))
+                if(sourceType.isValidNameAndSource(path))
                 {
                     return true;
                 }
@@ -720,12 +770,12 @@ public class MsDataSourceUtil implements MsDataSourceService
         }
 
         @Override
-        boolean isZipSource(@NotNull ExpData data, @NotNull ExperimentService expSvc, boolean validateZip)
+        boolean isValidSource(@NotNull Path path)
         {
-            // Check directory sources first
+            // Check directory sources
             for(MsDataDirSource sourceType: _dirSources)
             {
-                if(sourceType.isZipSource(data, expSvc, validateZip))
+                if(sourceType.isValidSource(path))
                 {
                     return true;
                 }
@@ -733,7 +783,51 @@ public class MsDataSourceUtil implements MsDataSourceService
             // Check file sources
             for(MsDataFileSource sourceType: _fileSources)
             {
-                if(sourceType.isZipSource(data, expSvc, validateZip))
+                if(sourceType.isValidSource(path))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        boolean isValidNameAndSource(ExpData data, ExperimentService expSvc)
+        {
+            // Check directory sources
+            for(MsDataDirSource sourceType: _dirSources)
+            {
+                if(sourceType.isValidNameAndSource(data, expSvc))
+                {
+                    return true;
+                }
+            }
+            // Check file sources
+            for(MsDataFileSource sourceType: _fileSources)
+            {
+                if(sourceType.isValidNameAndSource(data, expSvc))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        boolean isValidSource(ExpData data, ExperimentService expSvc)
+        {
+            // Check directory sources
+            for(MsDataDirSource sourceType: _dirSources)
+            {
+                if(sourceType.isValidSource(data, expSvc))
+                {
+                    return true;
+                }
+            }
+            // Check file sources
+            for(MsDataFileSource sourceType: _fileSources)
+            {
+                if(sourceType.isValidSource(data, expSvc))
                 {
                     return true;
                 }
@@ -757,10 +851,24 @@ public class MsDataSourceUtil implements MsDataSourceService
         private static Instrument _bruker;
         private static Instrument _unknown;
 
+        private static MsDataSourceUtil _util;
+
+        private static final String[] sciexFiles = new String [] {"20140807_nsSRM_01.wiff", "20140807_nsSRM_02.wiff"};
+        private static final String[] watersData = new String[] {"20200929_CalMatrix_00_A.raw", "20200929_CalMatrix_01_A.raw", "20200929_CalMatrix_01_A_nestedzip.raw"};
+        private static final String[] brukerData = new String[] {"DK0034-G10_1-D,2_01_1036.d", "DK0034-G10_1-D,2_01_1036_flatzip.d", "DK0034-G10_1-D,2_01_1036_nestedzip.d"};
+        private static final String[] agilentData = new String[] {"pTE219_0 hr_R2.d", "pTE219_0 hr_R2_flatzip.d", "pTE219_0 hr_R2_nestedzip.d"};
+
         @BeforeClass
         public static void setup()
         {
-            cleanDatabase();
+            try
+            {
+                cleanDatabase();
+            }
+            catch (ExperimentException e)
+            {
+                fail("Failed to clean up database after before running tests. Error was: " + e.getMessage());
+            }
 
             _user = TestContext.get().getUser();
             _container = ContainerManager.ensureContainer(JunitUtil.getTestContainer(), FOLDER_NAME);
@@ -776,6 +884,8 @@ public class MsDataSourceUtil implements MsDataSourceService
             _bruker = createInstrument("Bruker instrument model");
             _agilent = createInstrument("Agilent instrument model");
             _unknown = createInstrument("UWPR instrument model");
+
+            _util = new MsDataSourceUtil();
 
         }
 
@@ -798,16 +908,98 @@ public class MsDataSourceUtil implements MsDataSourceService
         }
 
         @Test
-        public void testHasData() throws IOException
+        public void testDataExists() throws IOException
         {
-            File rawDataDir = JunitUtil.getSampleData(ModuleLoader.getInstance().getModule(TargetedMSModule.class), "TargetedMS/RawDataTest");
+            Path rawDataDir = JunitUtil.getSampleData(ModuleLoader.getInstance().getModule(TargetedMSModule.class), "TargetedMS/RawDataTest").toPath();
             ExperimentService expSvc = ExperimentService.get();
-            // test private boolean hasData(String fileName, MsDataSource dataSource, Container container, Path rawFilesDir, ExperimentService expSvc)
-            MsDataSourceUtil util = new MsDataSourceUtil();
-            String file = "20140807_Tomato_Trichome_nsSRM_01.wiff";
-            assertTrue(util.hasData(file, SCIEX, _container, rawDataDir.toPath(), expSvc));
+
+            testDataExists(sciexFiles, SCIEX, rawDataDir);
+            testDataExists(watersData, WATERS, rawDataDir);
+            testDataExists(brukerData, BRUKER, rawDataDir);
+            testDataExists(agilentData, AGILENT, rawDataDir);
+
+            testDataNotExists(agilentData, BRUKER, rawDataDir);
+            testDataNotExists(agilentData, WATERS, rawDataDir);
+            testDataNotExists(watersData, THERMO, rawDataDir);
+            // This will fail because MsDataSourceUtil.dataExists() does not validate that the filename matches
+            // the given datasource.  It only validates zip contents and contents of directory bases sources
+            // testDataNotExists(sciexFiles, THERMO, rawDataDir);
         }
 
+        private void testDataExists(String[] files, MsDataSource sourceType, Path dataDir)
+        {
+            for(String file: files)
+            {
+                // test private boolean hasData(String fileName, MsDataSource dataSource, Container container, Path rawFilesDir, ExperimentService expSvc)
+                assertTrue("Expected data for " + file, _util.dataExists(file, sourceType, dataDir));
+            }
+        }
+
+        private void testDataNotExists(String[] files, MsDataSource sourceType, Path dataDir)
+        {
+            for(String file: files)
+            {
+                // test private boolean hasData(String fileName, MsDataSource dataSource, Container container, Path rawFilesDir, ExperimentService expSvc)
+                assertFalse("Unexpected data for " + file, _util.dataExists(file, sourceType, dataDir));
+            }
+        }
+
+        @Test
+        public void testGetDataForSampleFile() throws IOException
+        {
+            Path rawDataDir = JunitUtil.getSampleData(ModuleLoader.getInstance().getModule(TargetedMSModule.class), "TargetedMS/RawDataTest").toPath();
+            ExperimentService expSvc = ExperimentService.get();
+
+            // Create some rows in exp.data
+            for(String fileName: sciexFiles)
+            {
+                addData(fileName, rawDataDir, SCIEX.name());
+            }
+            for(String fileName: watersData)
+            {
+                ExpData saved = addData(fileName, rawDataDir, WATERS.name());
+                addData("_FUNC001.DAT", saved.getFilePath(), "");
+            }
+            for(String fileName: agilentData)
+            {
+                ExpData saved = addData(fileName, rawDataDir, AGILENT.name());
+                addData(AGILENT_ACQ_DATA, saved.getFilePath(), "");
+            }
+            for(String fileName: brukerData)
+            {
+                ExpData saved = addData(fileName, rawDataDir, BRUKER.name());
+                addData(BRUKER_ANALYSIS_BAF, saved.getFilePath(), "");
+            }
+
+
+            testGetDataForSampleFiles(sciexFiles, _sciex, rawDataDir, expSvc);
+            testGetDataForSampleFiles(watersData, _waters, rawDataDir, expSvc);
+            testGetDataForSampleFiles(brukerData, _bruker, rawDataDir, expSvc);
+            testGetDataForSampleFiles(agilentData, _agilent, rawDataDir, expSvc);
+
+        }
+
+        private ExpData addData(String fileName, Path rawDataDir, String subfolder)
+        {
+            Lsid lsid = new Lsid(ExperimentService.get().generateGuidLSID(_container, new DataType("UploadedFile")));
+            ExpData data = ExperimentService.get().createData(_container, fileName, lsid.toString());
+
+            data.setContainer(_container);
+            data.setDataFileURI(rawDataDir.resolve(subfolder).resolve(fileName).toUri());
+            data.save(_user);
+            return data;
+        }
+
+        private void testGetDataForSampleFiles(String[] files, Instrument instrument, Path dataDir, ExperimentService expSvc)
+        {
+            for(String file: files)
+            {
+                SampleFile sf = new SampleFile();
+                sf.setFilePath("C:\\rawfiles\\" + file);
+                sf.setInstrumentId(instrument.getId());
+                assertNotNull("Expected row in exp.data for " + file, _util.getDataForSampleFile(sf, _container, dataDir, expSvc, false));
+            }
+        }
 
         @Test
         public void testGetMsDataSource()
@@ -934,7 +1126,7 @@ public class MsDataSourceUtil implements MsDataSourceService
             assertTrue(".zip".equals(extension("QC_10.9.17.d.ZIP")));
         }
 
-        private static void cleanDatabase()
+        private static void cleanDatabase() throws ExperimentException
         {
             TableInfo runsTable = TargetedMSManager.getTableInfoRuns();
             Integer runId = new TableSelector(TargetedMSManager.getTableInfoRuns(), Collections.singletonList(runsTable.getColumn("id")),
@@ -945,12 +1137,22 @@ public class MsDataSourceUtil implements MsDataSourceService
                         new SimpleFilter(new CompareType.CompareClause(FieldKey.fromParts("runId"), CompareType.EQUAL, runId)));
                 Table.delete(TargetedMSManager.getTableInfoRuns(), runId);
             }
+
+            // TableInfo expDataTable = ExperimentService.get().getTinfoData();
+            ExperimentService.get().deleteAllExpObjInContainer(_container, _user);
         }
 
         @AfterClass
         public static void cleanup()
         {
-            cleanDatabase();
+            try
+            {
+                cleanDatabase();
+            }
+            catch (ExperimentException e)
+            {
+                fail("Failed to clean up database after running tests. Error was: " + e.getMessage());
+            }
         }
     }
 }
