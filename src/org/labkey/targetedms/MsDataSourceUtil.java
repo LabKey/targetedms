@@ -522,6 +522,7 @@ public class MsDataSourceUtil implements MsDataSourceService
 
         abstract boolean isValidPath(@NotNull Path path);
         abstract boolean isValidData(@NotNull ExpData data, ExperimentService expSvc);
+        abstract boolean isFileSource();
     }
 
     private static class MsDataFileSource extends MsDataSource
@@ -539,6 +540,12 @@ public class MsDataSourceUtil implements MsDataSourceService
         public MsDataFileSource(List<String> extensions)
         {
             super("Unknown", extensions);
+        }
+
+        @Override
+        public boolean isFileSource()
+        {
+            return true;
         }
 
         @Override
@@ -601,6 +608,12 @@ public class MsDataSourceUtil implements MsDataSourceService
         private MsDataDirSource(String instrumentVendor, String extension)
         {
             super(instrumentVendor, Collections.singletonList(extension));
+        }
+
+        @Override
+        public boolean isFileSource()
+        {
+            return false;
         }
 
         @Override
@@ -734,6 +747,12 @@ public class MsDataSourceUtil implements MsDataSourceService
         }
 
         @Override
+        public boolean isFileSource()
+        {
+            return _dirSources.isEmpty();
+        }
+
+        @Override
         public boolean isValidNameAndPath(Path path)
         {
             return _dirSources.stream().anyMatch(s -> s.isValidNameAndPath(path)) ||
@@ -772,7 +791,6 @@ public class MsDataSourceUtil implements MsDataSourceService
         private static TargetedMSRun _run;
         private static Instrument _thermo;
         private static Instrument _sciex;
-        private static Instrument _shimadzu;
         private static Instrument _waters;
         private static Instrument _agilent;
         private static Instrument _bruker;
@@ -807,7 +825,6 @@ public class MsDataSourceUtil implements MsDataSourceService
             // Create instruments
             _thermo = createInstrument("TSQ Altis");
             _sciex = createInstrument("Triple Quad 6500");
-            _shimadzu = createInstrument("Shimadzu instrument model");
             _waters = createInstrument("Waters instrument model");
             _bruker = createInstrument("Bruker instrument model");
             _agilent = createInstrument("Agilent instrument model");
@@ -847,28 +864,29 @@ public class MsDataSourceUtil implements MsDataSourceService
             testDataExists(brukerData, BRUKER, rawDataDir);
             testDataExists(agilentData, AGILENT, rawDataDir);
 
-            testDataNotExists(agilentData, BRUKER, rawDataDir);
-            testDataNotExists(agilentData, WATERS, rawDataDir);
-            testDataNotExists(watersData, THERMO, rawDataDir);
+            testDataNotExists(agilentData, BRUKER, rawDataDir); // Agilent data should not validate for Bruker
+            testDataNotExists(agilentData, WATERS, rawDataDir); // Agilent data should not validate for Waters
+            testDataNotExists(watersData, THERMO, rawDataDir);  // Waters data shold not validate for Thermo
             // This will fail because MsDataSourceUtil.dataExists() does not validate that the filename matches
-            // the given datasource.  It only validates zip contents and contents of directory based sources
+            // the given datasource.  It only validates contents of directory based sources.
             // testDataNotExists(sciexFiles, THERMO, rawDataDir);
         }
 
         private void testDataExists(String[] files, MsDataSource sourceType, Path dataDir)
         {
+            String message = "Expected " + (sourceType.isFileSource() ? "file or zip for " : "directory or zip for ") + sourceType.name() + ". File: ";
             for(String file: files)
             {
-                // test private boolean hasData(String fileName, MsDataSource dataSource, Container container, Path rawFilesDir, ExperimentService expSvc)
-                assertTrue("Expected data for " + file, _util.dataExists(file, sourceType, dataDir));
+                assertTrue(message + file, _util.dataExists(file, sourceType, dataDir));
             }
         }
 
         private void testDataNotExists(String[] files, MsDataSource sourceType, Path dataDir)
         {
+            String message = "Unxpected " + (sourceType.isFileSource() ? "file or zip for " : "directory or zip for ") + sourceType.name() + ". File: ";
             for(String file: files)
             {
-                assertFalse("Unexpected data for " + file, _util.dataExists(file, sourceType, dataDir));
+                assertFalse(message + file, _util.dataExists(file, sourceType, dataDir));
             }
         }
 
