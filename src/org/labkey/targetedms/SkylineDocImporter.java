@@ -284,11 +284,13 @@ public class SkylineDocImporter
 
         TargetedMSService.FolderType folderType = TargetedMSManager.getFolderType(run.getContainer());
 
-        final String suffix = StringUtilsLabKey.getPaddedUniquifier(9);
-        final String precursorChromInfoIndicesTempTableName = TargetedMSManager.getSqlDialect().getTempTablePrefix() +  "PrecursorChromInfoIndices" + suffix;
-
         try (SkylineDocumentParser parser = new SkylineDocumentParser(f, _log, run.getContainer(), _progressMonitor.getParserProgressTracker()))
         {
+            // Persist all of the indices into the chromatograms from the SKYD file separately. We need to retain it
+            // at the PrecursorChromInfo level if we end up not storing the TransitionChromInfos. We will update the
+            // PrecursorChromInfo to include the data if we end up needing it.
+            final String suffix = StringUtilsLabKey.getPaddedUniquifier(9);
+            final String precursorChromInfoIndicesTempTableName = TargetedMSManager.getSqlDialect().getTempTablePrefix() +  "PrecursorChromInfoIndices" + suffix;
             new SqlExecutor(TargetedMSSchema.getSchema()).execute("CREATE " +
                     TargetedMSManager.getSqlDialect().getTempTableKeyword() + " TABLE " + precursorChromInfoIndicesTempTableName + " ( " +
                     "\tPrecursorChromInfoId BIGINT NOT NULL PRIMARY KEY,\n" +
@@ -379,12 +381,15 @@ public class SkylineDocImporter
                 TargetedMSManager.deleteTransitionChromInfoDependent(TargetedMSManager.getTableInfoTransitionAreaRatio(), whereClause);
                 TargetedMSManager.deleteGeneralTransitionDependent(getTableInfoTransitionChromInfo(), "TransitionId", whereClause);
 
+                // Since we don't have the TransitionChromInfos to use for the indices, copy them from the temp table
+                // into PrecursorChromInfo
                 int updated = new SqlExecutor(TargetedMSSchema.getSchema()).execute("UPDATE " + getTableInfoPrecursorChromInfo() + " " +
                             "SET TransitionChromatogramIndices = (SELECT Indices FROM " + precursorChromInfoIndicesTempTableName +
                         " WHERE Id = PrecursorChromInfoId)");
                 _log.info("Updated " + updated + " PrecursorChromInfos with transition chromatogram index information");
             }
 
+            // We're done with this table now, used or not
             new SqlExecutor(TargetedMSSchema.getSchema()).execute("DROP TABLE " + precursorChromInfoIndicesTempTableName);
 
             // Done parsing document
@@ -1782,6 +1787,7 @@ public class SkylineDocImporter
     {
         if (!parser.shouldSaveTransitionChromInfos())
         {
+            // Bail out and don't persist to the DB
             return;
         }
 
@@ -2037,6 +2043,9 @@ public class SkylineDocImporter
                 preChromInfo.setId(rs.getLong(1));
             }
 
+            // Persist all of the indices into the chromatograms from the SKYD file separately. We need to retain it
+            // at the PrecursorChromInfo level if we end up not storing the TransitionChromInfos. We will update the
+            // PrecursorChromInfo to include the data if we end up needing it.
             byte[] indices = preChromInfo.getTransitionChromatogramIndices();
             if (indices != null)
             {
