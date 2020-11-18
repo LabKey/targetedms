@@ -15,10 +15,25 @@
 
 package org.labkey.targetedms.parser;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
+import org.labkey.api.util.UnexpectedException;
+import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.TargetedMSModule;
 import org.labkey.targetedms.TargetedMSRun;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * User: vsharma
@@ -27,6 +42,8 @@ import org.labkey.targetedms.TargetedMSRun;
  */
 public class PrecursorChromInfo extends AbstractChromInfo
 {
+    private static final Logger LOG = LogManager.getLogger(PrecursorChromInfo.class);
+
     private long _precursorId;
     private long _generalMoleculeChromInfoId;
 
@@ -62,6 +79,7 @@ public class PrecursorChromInfo extends AbstractChromInfo
     private Double _ionMobilityWindow;
     private String _ionMobilityType;
 
+    private List<Integer> _transitionChromatogramIndices;
 
     public PrecursorChromInfo()
     {
@@ -412,5 +430,76 @@ public class PrecursorChromInfo extends AbstractChromInfo
     public String toString()
     {
         return "PrecursorChromInfo" + _generalMoleculeChromInfoId;
+    }
+
+    @Nullable
+    public List<Integer> getTransitionChromatogramIndicesList()
+    {
+        return _transitionChromatogramIndices;
+    }
+
+    public byte[] getTransitionChromatogramIndices()
+    {
+        if (_transitionChromatogramIndices == null)
+        {
+            return null;
+        }
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream(_transitionChromatogramIndices.size() * 2 + 2);
+        try (DataOutputStream dOut = new DataOutputStream(bOut))
+        {
+            dOut.writeShort(_transitionChromatogramIndices.size());
+            for (Integer i : _transitionChromatogramIndices)
+            {
+                dOut.writeShort(i);
+            }
+        }
+        catch (IOException e)
+        {
+            throw new UnexpectedException(e);
+        }
+        return bOut.toByteArray();
+    }
+
+    public void setTransitionChromatogramIndices(byte[] bytes)
+    {
+        if (bytes == null)
+        {
+            _transitionChromatogramIndices = null;
+        }
+        else
+        {
+            try(DataInputStream in = new DataInputStream(new ByteArrayInputStream(bytes)))
+            {
+                _transitionChromatogramIndices = new ArrayList<>();
+                int count = in.readUnsignedShort();
+                for (int i = 0; i < count; i++)
+                {
+                    _transitionChromatogramIndices.add(in.readUnsignedShort());
+                }
+            }
+            catch (IOException e)
+            {
+                LOG.error("Unable to read " + bytes.length + " of transition chromatogram indices");
+            }
+
+        }
+    }
+
+    public TransitionChromInfo makeDummyTransitionChromInfo(int index)
+    {
+        TransitionChromInfo dummy = new TransitionChromInfo();
+        dummy.setStartTime(getMinStartTime());
+        dummy.setEndTime(getMaxEndTime());
+        dummy.setChromatogramIndex(getTransitionChromatogramIndicesList().get(index));
+        return dummy;
+    }
+
+    public void addTransitionChromatogramIndex(int matchIndex)
+    {
+        if (_transitionChromatogramIndices == null)
+        {
+            _transitionChromatogramIndices = new ArrayList<>();
+        }
+        _transitionChromatogramIndices.add(matchIndex);
     }
 }

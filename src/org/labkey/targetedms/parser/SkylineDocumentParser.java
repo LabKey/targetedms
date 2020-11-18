@@ -154,7 +154,7 @@ public class SkylineDocumentParser implements AutoCloseable
     private static final String LINKED_FRAGMENT_ION = "linked_fragment_ion";
 
     private static final double MIN_SUPPORTED_VERSION = 1.2;
-    public static final double MAX_SUPPORTED_VERSION = 4.1;
+    public static final double MAX_SUPPORTED_VERSION = 20.2;
 
     private static final Pattern XML_ID_REGEX = Pattern.compile("\"/^[:_A-Za-z][-.:_A-Za-z0-9]*$/\"");
     private static final String XML_ID_FIRST_CHARS = ":_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -181,7 +181,8 @@ public class SkylineDocumentParser implements AutoCloseable
      * To prevent giant DIA documents from overwhelming the DB, we skip importing TransitionChromInfos if the document
      * has more than 100,000
      */
-    public static final int MAX_TRANSITION_CHROM_INFOS = 100_000;
+//    public static final int MAX_TRANSITION_CHROM_INFOS = 100_000;
+    public static final int MAX_TRANSITION_CHROM_INFOS = 10;
 
     /** Null if we haven't found a SKYD to parse */
     @Nullable
@@ -198,24 +199,24 @@ public class SkylineDocumentParser implements AutoCloseable
     // that do not have the "file" attribute.  The "file" attribute is missing only if the replicate has a single
     // sample file.
     private Map<String, String> _replicateSampleFileIdMap;
-    private List<IrtPeptide> _iRTScaleSettings;
+    private final List<IrtPeptide> _iRTScaleSettings;
 
     private double _matchTolerance = DEFAULT_TOLERANCE;
 
     private final XMLStreamReader _reader;
-    private ProgressInputStream _inputStream;
+    private final ProgressInputStream _inputStream;
     private final File _file;
     private final Container _container;
-    private Logger _log;
+    private final Logger _log;
 
     private String _formatVersion;
     private String _softwareVersion;
     private GUID _documentGUID;
 
-    private long _fileSize;
-    private IProgressStatus _progressStatus;
+    private final long _fileSize;
+    private final IProgressStatus _progressStatus;
 
-    private Map<String, AtomicInteger> _missingChromatograms = new HashMap<>();
+    private final Map<String, AtomicInteger> _missingChromatograms = new HashMap<>();
 
     public SkylineDocumentParser(File file, Logger log, Container container, IProgressStatus progressStatus) throws XMLStreamException, IOException
     {
@@ -229,6 +230,11 @@ public class SkylineDocumentParser implements AutoCloseable
         _log = log;
         _iRTScaleSettings = new ArrayList<>();
         readDocumentVersion(_reader);
+    }
+
+    public boolean shouldSaveTransitionChromInfos()
+    {
+        return _transitionChromInfoCount < MAX_TRANSITION_CHROM_INFOS;
     }
 
     @Override
@@ -290,6 +296,7 @@ public class SkylineDocumentParser implements AutoCloseable
             {
                 try
                 {
+                    @SuppressWarnings("SqlResolve")
                     String sql = "SELECT * FROM IrtLibrary";
                     try (ConnectionSource cs = new ConnectionSource(iRTFile.getAbsolutePath());
                          Connection conn = cs.getConnection();
@@ -374,7 +381,7 @@ public class SkylineDocumentParser implements AutoCloseable
             int evtType = reader.next();
             if(XmlUtil.isStartElement(reader, evtType, "srm_settings")) {
 
-                Double version = XmlUtil.readRequiredDoubleAttribute(reader, "format_version", "srm_settings");
+                double version = XmlUtil.readRequiredDoubleAttribute(reader, "format_version", "srm_settings");
                 if(version < MIN_SUPPORTED_VERSION)
                 {
                     throw new IllegalStateException("The version of this Skyline document is " +
@@ -607,7 +614,7 @@ public class SkylineDocumentParser implements AutoCloseable
         }
         catch (IOException ioException)
         {
-            throw new UnexpectedException(ioException);
+            throw UnexpectedException.wrap(ioException);
         }
     }
 
@@ -1892,7 +1899,7 @@ public class SkylineDocumentParser implements AutoCloseable
             _transitionCount += list.size();
             return list;
         } catch (Exception e) {
-            throw new UnexpectedException(e);
+            throw UnexpectedException.wrap(e);
         }
     }
 
@@ -1930,12 +1937,14 @@ public class SkylineDocumentParser implements AutoCloseable
             filePathChromatogramMap.put(_binaryParser.getFilePath(chromatogram), chromatogram);
         }
 
+        Map<String, PrecursorChromInfo> pciBySkylineSampleFileId = new HashMap<>();
+
         for(Iterator<PrecursorChromInfo> i = precursor.getChromInfoList().iterator(); i.hasNext(); )
         {
             PrecursorChromInfo chromInfo = i.next();
             String filePath = _sampleFileIdToFilePathMap.get(chromInfo.getSkylineSampleFileId());
             ChromGroupHeaderInfo chromatogram = getChromGroupHeaderInfoForFile(filePathChromatogramMap, i, filePath);
-
+            pciBySkylineSampleFileId.put(chromInfo.getSkylineSampleFileId(), chromInfo);
             if (chromatogram != null)
             {
                 // Read it out of the file on-demand, so we only load the subset that we need
@@ -1998,7 +2007,11 @@ public class SkylineDocumentParser implements AutoCloseable
                     {
                         _log.warn("Unable to find a matching chromatogram for file path " + filePath + ". SKYD file may be out of sync with primary Skyline document. Transition " + transition.toString() + ", " + precursor.toString() + ", " +precursor.getCharge());
                     }
-
+                    else
+                    {
+                        PrecursorChromInfo pci = pciBySkylineSampleFileId.get(transChromInfo.getSkylineSampleFileId());
+                        pci.addTransitionChromatogramIndex(matchIndex);
+                    }
                     transChromInfo.setChromatogramIndex(matchIndex);
                 }
             }
@@ -2228,7 +2241,8 @@ public class SkylineDocumentParser implements AutoCloseable
             else if(XmlUtil.isStartElement(reader, evtType, TRANSITION_PEAK))
             {
                 TransitionChromInfo chromInfo = readTransitionChromInfo(reader);
-                if (++_transitionChromInfoCount <= MAX_TRANSITION_CHROM_INFOS && !decoy)
+                _transitionChromInfoCount++;
+                if (!decoy)
                 {
                     chromInfoList.add(chromInfo);
                 }
@@ -2342,7 +2356,8 @@ public class SkylineDocumentParser implements AutoCloseable
             else if(XmlUtil.isStartElement(reader, evtType, TRANSITION_PEAK))
             {
                 TransitionChromInfo chromInfo = readTransitionChromInfo(reader);
-                if (++_transitionChromInfoCount <= MAX_TRANSITION_CHROM_INFOS && !decoy)
+                _transitionChromInfoCount++;
+                if (!decoy)
                 {
                     chromInfoList.add(chromInfo);
                 }
@@ -2579,7 +2594,7 @@ public class SkylineDocumentParser implements AutoCloseable
             return makeTransitionChromInfos(transitionResults);
         }
         catch (Exception e) {
-            throw new UnexpectedException(e);
+            throw UnexpectedException.wrap(e);
         }
     }
 
@@ -2589,12 +2604,7 @@ public class SkylineDocumentParser implements AutoCloseable
 
         for (SkylineDocument.SkylineDocumentProto.TransitionPeak transitionPeak : transitionResults.getPeaksList()) {
             TransitionChromInfo chromInfo = new TransitionChromInfo();
-
-            if (++_transitionChromInfoCount > MAX_TRANSITION_CHROM_INFOS)
-            {
-                // Bail out, though previously parsed records will still be in memory
-                return Collections.emptyList();
-            }
+            _transitionChromInfoCount++;
 
             List<TransitionChromInfoAnnotation> annotations = new ArrayList<>();
             chromInfo.setAnnotations(annotations);
@@ -2827,7 +2837,7 @@ public class SkylineDocumentParser implements AutoCloseable
     private List<ChromGroupHeaderInfo> tryLoadChromatogram(
             List<? extends GeneralTransition> transitions,
             GeneralMolecule molecule,
-            GeneralPrecursor precursor,
+            GeneralPrecursor<?> precursor,
             double tolerance)
     {
         // Add precursor matches to a list, if they match at least 1 transition
@@ -2875,15 +2885,11 @@ public class SkylineDocumentParser implements AutoCloseable
             // the number of maximum transition matches for each replicate.
             // MeasuredResults.TryLoadChromatogram in Skyline reads and returns chromatograms for a single replicate.
             int[] maxTranMatches = new int[_binaryParser.getCacheFileSize()];
-            for(int m = 0; m < maxTranMatches.length; m++) maxTranMatches[m] = 0;
 
             ChromGroupHeaderInfo[] chromArray = new ChromGroupHeaderInfo[_binaryParser.getCacheFileSize()];
 
             for (ChromGroupHeaderInfo chromInfo : listChromatograms)
             {
-//                if (containsInfo(chromatogram, chromInfo))
-//                    continue;
-
                 // If the chromatogram set has an optimization function then the number
                 // of matching chromatograms per transition is a reflection of better
                 // matching.  Otherwise, we only expect one match per transition.
@@ -2988,7 +2994,7 @@ public class SkylineDocumentParser implements AutoCloseable
         }
     }
 
-    private class ProgressInputStream extends FilterInputStream
+    private static class ProgressInputStream extends FilterInputStream
     {
         private long _bytesRead = 0;
 
