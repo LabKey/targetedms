@@ -382,10 +382,10 @@ public class SkylineDocImporter
                 TargetedMSManager.deleteGeneralTransitionDependent(getTableInfoTransitionChromInfo(), "TransitionId", whereClause);
 
                 // Since we don't have the TransitionChromInfos to use for the indices, copy them from the temp table
-                // into PrecursorChromInfo
+                // into PrecursorChromInfo (but filter to only touch the rows where we have matches in the temp table)
                 int updated = new SqlExecutor(TargetedMSSchema.getSchema()).execute("UPDATE " + getTableInfoPrecursorChromInfo() + " " +
                             "SET TransitionChromatogramIndices = (SELECT Indices FROM " + precursorChromInfoIndicesTempTableName +
-                        " WHERE Id = PrecursorChromInfoId)");
+                        " WHERE Id = PrecursorChromInfoId) WHERE Id IN (SELECT PrecursorChromInfoId FROM " + precursorChromInfoIndicesTempTableName + ")");
                 _log.info("Updated " + updated + " PrecursorChromInfos with transition chromatogram index information");
             }
 
