@@ -1,1 +1,1 @@
-ALTER TABLE targetedms.PrecursorChromInfo ADD COLUMN TransitionChromatogramIndices IMAGE;
+ALTER TABLE targetedms.PrecursorChromInfo ADD TransitionChromatogramIndices IMAGE;
