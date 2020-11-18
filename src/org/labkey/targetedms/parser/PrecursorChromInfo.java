@@ -21,7 +21,6 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.util.UnexpectedException;
-import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.TargetedMSModule;
 import org.labkey.targetedms.TargetedMSRun;
 
@@ -29,11 +28,8 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * User: vsharma
@@ -51,7 +47,6 @@ public class PrecursorChromInfo extends AbstractChromInfo
     private Double _minStartTime;
     private Double _maxEndTime;
     private Double _totalArea;
-    private Double _totalAreaNormalized;
     private Double _totalBackground;
     private Double _maxFwhm;
     private Double _maxHeight;
@@ -148,16 +143,6 @@ public class PrecursorChromInfo extends AbstractChromInfo
     public void setTotalArea(Double totalArea)
     {
         _totalArea = totalArea;
-    }
-
-    public Double getTotalAreaNormalized()
-    {
-        return _totalAreaNormalized;
-    }
-
-    public void setTotalAreaNormalized(Double totalAreaNormalized)
-    {
-        _totalAreaNormalized = totalAreaNormalized;
     }
 
     public Double getTotalBackground()
@@ -438,6 +423,11 @@ public class PrecursorChromInfo extends AbstractChromInfo
         return _transitionChromatogramIndices;
     }
 
+    /**
+     * When we don't have the TransitionChromInfos in the DB, we store the indices into the transition chromatogram.
+     * It's not needed in SQL queries, so we pack it into a byte array. The first two bytes are a 16-bit integer
+     * representing the number of indices included, followed by two bytes for each 16-bit integer index.
+     */
     public byte[] getTransitionChromatogramIndices()
     {
         if (_transitionChromatogramIndices == null)
@@ -455,7 +445,7 @@ public class PrecursorChromInfo extends AbstractChromInfo
         }
         catch (IOException e)
         {
-            throw new UnexpectedException(e);
+            throw UnexpectedException.wrap(e);
         }
         return bOut.toByteArray();
     }
@@ -485,6 +475,7 @@ public class PrecursorChromInfo extends AbstractChromInfo
         }
     }
 
+    /** Fake up enough of a TransitionChromInfo to enable most of the transition chromatogram plotting */
     public TransitionChromInfo makeDummyTransitionChromInfo(int index)
     {
         TransitionChromInfo dummy = new TransitionChromInfo();

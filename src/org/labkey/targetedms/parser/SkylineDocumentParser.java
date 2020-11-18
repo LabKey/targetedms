@@ -175,14 +175,15 @@ public class SkylineDocumentParser implements AutoCloseable
     private int _transitionCount;
     private int _replicateCount;
     private int _listCount;
+
+    /** Tally the transition/replicate combinations so that we can avoid storing huge DIA-type runs in the DB */
     private int _transitionChromInfoCount;
 
     /**
      * To prevent giant DIA documents from overwhelming the DB, we skip importing TransitionChromInfos if the document
      * has more than 100,000
      */
-//    public static final int MAX_TRANSITION_CHROM_INFOS = 100_000;
-    public static final int MAX_TRANSITION_CHROM_INFOS = 10;
+    public static final int MAX_TRANSITION_CHROM_INFOS = 100_000;
 
     /** Null if we haven't found a SKYD to parse */
     @Nullable
@@ -232,6 +233,7 @@ public class SkylineDocumentParser implements AutoCloseable
         readDocumentVersion(_reader);
     }
 
+    /** @return if we've exceeded the maximum count of TransitionChromInfos that we want to store for a run */
     public boolean shouldSaveTransitionChromInfos()
     {
         return _transitionChromInfoCount < MAX_TRANSITION_CHROM_INFOS;
