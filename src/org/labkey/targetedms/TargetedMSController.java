@@ -3692,6 +3692,7 @@ public class TargetedMSController extends SpringActionController
             // run anyway
             settings.setContainerFilterName(null);
             settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("PeptideGroupId", "RunId"), form.getId()));
+            settings.setBaseSort(new Sort("Sequence"));
             TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
             return schema.createView(getViewContext(), settings, errors);
         }
