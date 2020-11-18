@@ -103,7 +103,6 @@ public class MsDataSourceUtil
                     LOG.debug("Error getting size of " + dataPath, e);
                 }
             }
-
         }
         return null;
     }
@@ -140,7 +139,7 @@ public class MsDataSourceUtil
             {
                 if(validateZip && sourceType == null)
                 {
-                    // We will need the source type to validate the zip. Get the source type file from the file extension
+                    // We will need the source type to validate the zip. Get the source type from the file extension
                     // and (if required) the instrument associated with the sample file
                     sourceType = getMsDataSource(sampleFile);
                 }
@@ -915,10 +914,10 @@ public class MsDataSourceUtil
 
             testDataNotExists(agilentData, BRUKER, rawDataDir); // Agilent data should not validate for Bruker
             testDataNotExists(agilentData, WATERS, rawDataDir); // Agilent data should not validate for Waters
-            testDataNotExists(watersData, THERMO, rawDataDir);  // Waters data shold not validate for Thermo
+            testDataNotExists(watersData, THERMO, rawDataDir);  // Waters data should not validate for Thermo
 
             // The test below fail because MsDataSourceUtil.dataExists() does not validate that the filename matches
-            // the given datasource.  It only validates contents of directory based sources.
+            // the given datasource.  It only validates contents of directory based sources, and THERMO is a file-based source.
             // testDataNotExists(sciexFiles, THERMO, rawDataDir);
         }
 
