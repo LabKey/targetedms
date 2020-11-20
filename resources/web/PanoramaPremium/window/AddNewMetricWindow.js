@@ -9,8 +9,6 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
     modal: true,
     closeAction: 'destroy',
     bodyStyle: 'padding: 10px;',
-    height: Ext4.max([Ext4.getBody().getHeight() * 0.3, 450]),
-    width: Ext4.max([Ext4.getBody().getWidth() * 0.2, 450]),
     autoScroll: true,
     border: false,
     update: 'update',
@@ -19,6 +17,8 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
     initComponent: function() {
         var title = this.operation === this.insert ? 'Add New Metric' : 'Edit Metric';
         this.setTitle(title);
+        this.height = Ext4.max([Ext4.getBody().getHeight() * 0.3, 450]);
+        this.width = Ext4.max([Ext4.getBody().getWidth() * 0.2, 450]);
         this.items = this.getItems();
         this.buttons = [this.getSaveButton()];
         if(this.operation === this.update) {
