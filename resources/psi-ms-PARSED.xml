@@ -17,6 +17,8 @@
     <instrument id="MS:1000695" name="apex ultra" vendor="Bruker Daltonics apex series" description="Bruker Daltonics' apex ultra: ESI, MALDI, Nanospray, APCI, APPI, Qh-FT_ICR."/>
     <instrument id="MS:1000142" name="apex Q" vendor="Bruker Daltonics apex series" description="Bruker Daltonics' apex Q: ESI, MALDI, Nanospray, APCI, APPI, Qh-FT_ICR."/>
     <instrument id="MS:1000141" name="apex IV" vendor="Bruker Daltonics apex series" description="Bruker Daltonics' apex IV: ESI, MALDI, Nanospray, APCI, APPI, Qh-FT_ICR."/>
+    <instrument id="MS:1003124" name="timsTOF fleX" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF fleX"/>
+    <instrument id="MS:1003005" name="timsTOF Pro" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF Pro."/>
     <instrument id="MS:1002279" name="maXis 4G" vendor="Bruker Daltonics maXis series" description="Bruker Daltonics' maXis 4G: ESI Q-TOF, Nanospray, APCI, APPI, GC-APCI, CaptiveSpray."/>
     <instrument id="MS:1001541" name="maXis" vendor="Bruker Daltonics maXis series" description="Bruker Daltonics' maXis: ESI Q-TOF, Nanospray, APCI, APPI."/>
     <instrument id="MS:1003004" name="maXis II" vendor="Bruker Daltonics maXis series" description="Bruker Daltonics' maXis II."/>
@@ -48,6 +50,7 @@
     <instrument id="MS:1000177" name="microflex" vendor="Bruker Daltonics flex series" description="Bruker Daltonics' microflex: MALDI TOF."/>
     <instrument id="MS:1000183" name="OmniFlex" vendor="Bruker Daltonics flex series" description="Bruker Daltonics' OmniFlex: MALDI TOF."/>
     <instrument id="MS:1000696" name="autoflex III smartbeam" vendor="Bruker Daltonics flex series" description="Bruker Daltonics' autoflex III smartbeam: MALDI TOF."/>
+    <instrument id="MS:1003122" name="rapifleX" vendor="Bruker Daltonics flex series" description="Bruker Daltonics' rapiflex: MALDI TOF/TOF."/>
     <instrument id="MS:1000201" name="ultraflex" vendor="Bruker Daltonics flex series" description="Bruker Daltonics' ultraflex: MALDI TOF."/>
     <instrument id="MS:1000202" name="ultraflex TOF/TOF" vendor="Bruker Daltonics flex series" description="Bruker Daltonics' ultraflex TOF/TOF: MALDI TOF."/>
     <instrument id="MS:1000157" name="esquire 6000" vendor="Bruker Daltonics esquire series" description="Bruker Daltonics' esquire 6000: linear ion trap, ESI, MALDI, Nanospray, APCI, APPI."/>
@@ -65,7 +68,6 @@
     <instrument id="MS:1001546" name="amaZon X" vendor="Bruker Daltonics amaZon series" description="Bruker Daltonics' amaZon X: ESI quadrupole ion trap, APCI, APPI, ETD, PTR."/>
     <instrument id="MS:1002301" name="amaZon Speed" vendor="Bruker Daltonics amaZon series" description="Bruker Daltonics' amaZon ETD: ESI quadrupole ion trap, Nanospray, APCI, APPI, GC-APCI, CaptiveSpray."/>
     <instrument id="MS:1001542" name="amaZon ETD" vendor="Bruker Daltonics amaZon series" description="Bruker Daltonics' amaZon ETD: ESI quadrupole ion trap, Nanospray, APCI, APPI, ETD, PTR."/>
-    <instrument id="MS:1003005" name="timsTOF Pro" vendor="Bruker Daltonics" description="Bruker Daltonics' timsTOF Pro."/>
     <instrument id="MS:1000195" name="SymBiot XVI" vendor="SCIEX" description="Applied Biosystems/MDS SCIEX SymBiot XVI MS."/>
     <instrument id="MS:1002587" name="API 165" vendor="SCIEX" description="Applied Biosystems/MDS SCIEX API 165 MS."/>
     <instrument id="MS:1002586" name="API 100LC" vendor="SCIEX" description="Applied Biosystems/MDS SCIEX API 100LC MS."/>
@@ -97,6 +99,7 @@
     <instrument id="MS:1002595" name="Triple Quad 6500+" vendor="SCIEX" description="SCIEX Triple Quad 6500+."/>
     <instrument id="MS:1000186" name="proteomics solution 1" vendor="SCIEX" description="Applied Biosystems/MDS SCIEX Proteomics Solution 1 MS."/>
     <instrument id="MS:1000187" name="Q TRAP" vendor="SCIEX" description="Applied Biosystems/MDS SCIEX Q TRAP MS."/>
+    <instrument id="MS:1003144" name="Triple Quad 7500" vendor="SCIEX" description="SCIEX Triple Quad 7500."/>
     <instrument id="MS:1002591" name="Triple Quad 3500" vendor="SCIEX" description="SCIEX Triple Quad 3500."/>
     <instrument id="MS:1002592" name="Triple Quad 4500" vendor="SCIEX" description="SCIEX Triple Quad 4500."/>
     <instrument id="MS:1002590" name="API 365" vendor="SCIEX" description="Applied Biosystems/MDS SCIEX API 365 MS."/>
@@ -200,8 +203,11 @@
     <instrument id="MS:1000447" name="LTQ" vendor="Thermo Scientific" description="Finnigan LTQ MS."/>
     <instrument id="MS:1002835" name="LTQ Orbitrap Classic" vendor="Thermo Scientific" description="Thermo Fisher Scientific LTQ Orbitrap Classic."/>
     <instrument id="MS:1001908" name="ISQ" vendor="Thermo Scientific" description="Thermo Scientific ISQ single quadrupole MS with the ExtractraBrite source."/>
+    <instrument id="MS:1003094" name="Orbitrap Exploris 240" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Exploris 240 Quadrupole Orbitrap MS."/>
     <instrument id="MS:1001909" name="Velos Plus" vendor="Thermo Scientific" description="Thermo Scientific second generation Velos."/>
+    <instrument id="MS:1003095" name="Orbitrap Exploris 120" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Exploris 120 Quadrupole Orbitrap MS."/>
     <instrument id="MS:1001742" name="LTQ Orbitrap Velos" vendor="Thermo Scientific" description="Finnigan LTQ Orbitrap Velos MS."/>
+    <instrument id="MS:1003096" name="LTQ Orbitrap Velos Pro" vendor="Thermo Scientific" description="Thermo Scientific LTQ Orbitrap Velos Pro, often just referred to as the Orbitrap Velos Pro."/>
     <instrument id="MS:1000648" name="GC IsoLink" vendor="Thermo Scientific" description="Thermo Scientific GC IsoLink Isotope Ratio MS."/>
     <instrument id="MS:1002876" name="TSQ 9000" vendor="Thermo Scientific" description="Thermo Scientific TSQ 9000 Triple Quadrupole MS."/>
     <instrument id="MS:1000649" name="Exactive" vendor="Thermo Scientific" description="Thermo Scientific Exactive MS."/>
@@ -224,8 +230,9 @@
     <instrument id="MS:1000751" name="TSQ Quantum Ultra" vendor="Thermo Scientific" description="Thermo Scientific TSQ Quantum Ultra."/>
     <instrument id="MS:1000639" name="LTQ Orbitrap XL ETD" vendor="Thermo Scientific" description="Thermo Scientific LTQ Orbitrap XL MS with ETD."/>
     <instrument id="MS:1002634" name="Q Exactive Plus" vendor="Thermo Scientific" description="Thermo Scientific Q Exactive Plus."/>
+    <instrument id="MS:1003112" name="Orbitrap ID-X" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap ID-X mass spectrometer with Tribrid architecture consisting of quadrupole mass filter, linear ion trap and Orbitrap mass analyzers."/>
     <instrument id="MS:1001510" name="TSQ Vantage" vendor="Thermo Scientific" description="TSQ Vantage."/>
-    <instrument id="MS:1001910" name="LTQ Orbitrap Elite" vendor="Thermo Scientific" description="Thermo Scientific second generation Velos and Orbitrap."/>
+    <instrument id="MS:1001910" name="LTQ Orbitrap Elite" vendor="Thermo Scientific" description="Thermo Scientific LTQ Orbitrap Elite, often just referred to as the Orbitrap Elite."/>
     <instrument id="MS:1000555" name="LTQ Orbitrap Discovery" vendor="Thermo Scientific" description="LTQ Orbitrap Discovery."/>
     <instrument id="MS:1001911" name="Q Exactive" vendor="Thermo Scientific" description="Thermo Scientific Q Exactive."/>
     <instrument id="MS:1000557" name="LTQ FT Ultra" vendor="Thermo Scientific" description="LTQ FT Ultra."/>

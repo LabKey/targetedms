@@ -33,7 +33,7 @@ import org.labkey.api.targetedms.TargetedMSFolderTypeListener;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.view.ViewBackgroundInfo;
-import org.labkey.targetedms.parser.Replicate;
+import org.labkey.targetedms.datasource.MsDataSourceUtil;
 import org.labkey.targetedms.parser.SampleFile;
 import org.labkey.targetedms.parser.blib.BlibSpectrumReader;
 import org.labkey.targetedms.query.ModificationManager;
@@ -239,8 +239,8 @@ public class TargetedMSServiceImpl implements TargetedMSService
     }
 
     @Override
-    public List<? extends ISampleFile> hasData(List<? extends ISampleFile> sampleFiles, Container container)
+    public List<? extends ISampleFile> getSampleFilesWithData(List<? extends ISampleFile> sampleFiles, Container container)
     {
-        return MsDataSourceUtil.getInstance().hasData(sampleFiles, container);
+        return MsDataSourceUtil.getInstance().getSampleFilesWithData(sampleFiles, container);
     }
 }

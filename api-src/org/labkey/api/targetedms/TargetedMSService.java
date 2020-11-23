@@ -98,5 +98,5 @@ public interface TargetedMSService
      * @param container container where we should look for the data
      * @return list of sample files for which data was found
      */
-    List<? extends ISampleFile> hasData(List<? extends ISampleFile> sampleFiles, Container container);
+    List<? extends ISampleFile> getSampleFilesWithData(List<? extends ISampleFile> sampleFiles, Container container);
 }

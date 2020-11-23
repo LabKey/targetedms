@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.labkey.targetedms.parser;
+package org.labkey.targetedms.datasource;
 
 import org.apache.log4j.Logger;
 import org.labkey.api.module.Module;

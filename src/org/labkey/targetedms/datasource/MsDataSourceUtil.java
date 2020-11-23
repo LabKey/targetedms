@@ -1,22 +1,18 @@
-package org.labkey.targetedms;
+package org.labkey.targetedms.datasource;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerManager;
-import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.Table;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.TableSelector;
-import org.labkey.api.data.dialect.SqlDialect;
 import org.labkey.api.exp.ExperimentException;
 import org.labkey.api.exp.Lsid;
 import org.labkey.api.exp.api.DataType;
@@ -31,29 +27,29 @@ import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.JunitUtil;
 import org.labkey.api.util.TestContext;
+import org.labkey.api.util.UnexpectedException;
+import org.labkey.targetedms.TargetedMSManager;
+import org.labkey.targetedms.TargetedMSModule;
+import org.labkey.targetedms.TargetedMSRun;
 import org.labkey.targetedms.parser.Instrument;
-import org.labkey.targetedms.parser.PsiInstruments;
 import org.labkey.targetedms.parser.SampleFile;
 import org.labkey.targetedms.query.InstrumentManager;
 
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.labkey.targetedms.datasource.MsDataSource.isZip;
 
 public class MsDataSourceUtil
 {
     private static final MsDataSourceUtil instance = new MsDataSourceUtil();
-    private static final Logger LOG = Logger.getLogger(MsDataSourceUtil.class);
 
     private MsDataSourceUtil() {}
 
@@ -79,7 +75,7 @@ public class MsDataSourceUtil
 
         ExpData expData = getDataForSampleFile(sampleFile, container, rawFilesDir, expSvc, false);
 
-        Long size;
+        Long size = null;
         if(expData != null)
         {
             Path dataPath = expData.getFilePath();
@@ -94,13 +90,17 @@ public class MsDataSourceUtil
                     }
                     else
                     {
-                        size = FileUtil.hasCloudScheme(dataPath) ? null : FileUtils.sizeOfDirectory(dataPath.toFile());
+                        if(!FileUtil.hasCloudScheme(dataPath))
+                        {
+                            // Displayed size will be bigger than the size of the downloaded zip
+                            size = FileUtils.sizeOfDirectory(dataPath.toFile());
+                        }
                         return new RawDataInfo(expData, size, false);
                     }
                 }
                 catch (IOException e)
                 {
-                    LOG.debug("Error getting size of " + dataPath, e);
+                    throw UnexpectedException.wrap(e, "Error getting size of " + dataPath);
                 }
             }
         }
@@ -175,7 +175,7 @@ public class MsDataSourceUtil
         String pathPrefixString = FileUtil.pathToString(pathPrefix); // Encoded URI string
 
         TableInfo expDataTInfo = expSvc.getTinfoData();
-        SimpleFilter filter = getExpDataFilter(container, pathPrefixString);
+        SimpleFilter filter = MsDataSource.getExpDataFilter(container, pathPrefixString);
         filter.addCondition(FieldKey.fromParts("name"), fileName, CompareType.STARTS_WITH);
 
         // Get the rowId and name of matching rows.
@@ -191,28 +191,10 @@ public class MsDataSourceUtil
         return expSvc.getExpDatas(expDataIds);
     }
 
-    private static SimpleFilter getExpDataFilter(Container container, String pathPrefix)
-    {
-        SimpleFilter filter = SimpleFilter.createContainerFilter(container);
-        if (!pathPrefix.endsWith("/"))
-        {
-            pathPrefix = pathPrefix + "/";
-        }
-        // StartsWithClause is not public.  And CompareClause with CompareType.STARTS_WITH is not the same thing as StartWithClause
-        // Use addCondition() instead.
-        filter.addCondition(FieldKey.fromParts("datafileurl"), pathPrefix, CompareType.STARTS_WITH);
-        return filter;
-    }
-
-    private static boolean isZip(@NotNull String fileName)
-    {
-        return fileName.toLowerCase().endsWith(EXT_ZIP);
-    }
-
     @NotNull
     private MsDataSource getMsDataSource(ISampleFile sampleFile)
     {
-        List<MsDataSource> sourceTypes = getSourceForName(sampleFile.getFileName());
+        List<MsDataSource> sourceTypes = MsDataSourceTypes.getSourceForName(sampleFile.getFileName());
         if(sourceTypes.size() == 1)
         {
             return sourceTypes.get(0);
@@ -241,7 +223,7 @@ public class MsDataSourceUtil
                 return multiSource;
             }
         }
-        return new UnknownDataSource();
+        return MsDataSourceTypes.UNKNOWN;
     }
 
     /**
@@ -251,7 +233,7 @@ public class MsDataSourceUtil
      * @return list of sample files for which data was found
      */
     @NotNull
-    public List<? extends ISampleFile> hasData(@NotNull List<? extends ISampleFile> sampleFiles, @NotNull Container container)
+    public List<? extends ISampleFile> getSampleFilesWithData(@NotNull List<? extends ISampleFile> sampleFiles, @NotNull Container container)
     {
         List<ISampleFile> dataFound = new ArrayList<>();
 
@@ -314,10 +296,8 @@ public class MsDataSourceUtil
         }
         catch (IOException e)
         {
-            LOG.debug("Error checking for data in sub-directories of " + rawFilesDir, e);
+            throw UnexpectedException.wrap(e,"Error checking for data in sub-directories of " + rawFilesDir);
         }
-
-        return false;
     }
 
     private boolean isSourceMatch(Path path, String fileName, MsDataSource sourceType)
@@ -330,24 +310,6 @@ public class MsDataSourceUtil
         return false;
     }
 
-    private List<MsDataSource> getSourceForName(String name)
-    {
-        // Can return more than one data source type. For example, Bruker and Waters both have .d extension;
-        // Thermo and Waters both have .raw extension
-        var sources = EXTENSION_SOURCE_MAP.get(extension(name));
-        return sources != null ? sources : Collections.emptyList();
-    }
-
-    private static String extension(String name)
-    {
-        if(name != null)
-        {
-            int idx = name.lastIndexOf('.');
-            return idx != -1 ? name.substring(idx).toLowerCase() : EXT_EMPTY;
-        }
-        return EXT_EMPTY;
-    }
-
     private MsDataSource getSourceForInstrument(Instrument instrument)
     {
         // Try to find an instrument from the PSI-MS instrument list that matches the instrument model.
@@ -357,447 +319,7 @@ public class MsDataSourceUtil
         //    This is generally seen in Skyline documents for data from instruments other than Thermo and SCIEX.
         PsiInstruments.PsiInstrument psiInstrument = PsiInstruments.getInstrument(instrument.getModel());
         String vendorOrModel = psiInstrument != null ? psiInstrument.getVendor() : instrument.getModel();
-        return Arrays.stream(sourceTypes).filter(s -> s.isInstrumentSource(vendorOrModel)).findFirst().orElse(null);
-    }
-
-    private static final MsDataSource CONVERTED_DATA_SOURCE = new MsDataFileSource(Arrays.asList(".mzxml", ".mzml", ".mz5", ".mzdata"));
-    private static final MsDataSource THERMO = new MsDataFileSource("thermo", ".raw");
-    private static final MsDataSource SCIEX = new MsDataFileSource("sciex", Arrays.asList(".wiff", ".wiff2", ".wiff.scan", ".wiff2.scan"))
-    {
-        @Override
-        public boolean isInstrumentSource(String instrument)
-        {
-            return super.isInstrumentSource(instrument) || (instrument != null && instrument.toLowerCase().contains("applied biosystems"));
-        }
-    };
-    private static final MsDataSource SHIMADZU = new MsDataFileSource("shimadzu", ".lcd");
-    private static final MsDataDirSource WATERS = new MsDataDirSource("waters", ".raw")
-    {
-        @Override
-        public boolean isExpectedDirContent(Path p)
-        {
-            return !Files.isDirectory(p) && FileUtil.getFileName(p).matches("^_FUNC.*\\.DAT$");
-        }
-
-        @Override
-        public SimpleFilter.FilterClause getDirContentsFilterClause()
-        {
-            return new CompareType.ContainsClause(FieldKey.fromParts("Name"), "")
-            {
-                @Override
-                public SQLFragment toSQLFragment(Map<FieldKey, ? extends ColumnInfo> columnMap, SqlDialect dialect)
-                {
-                    ColumnInfo colInfo = columnMap != null ? columnMap.get(getFieldKey()) : null;
-                    String alias = colInfo != null ? colInfo.getAlias() : getFieldKey().getName();
-                    return new SQLFragment(dialect.getColumnSelectName(alias))
-                            .append(" ").append(dialect.getCaseInsensitiveLikeOperator()).append(" ? ")
-                            .append(sqlEscape())
-                            .add(escapeLikePattern("_") + "FUNC%.DAT");
-                }
-            };
-        }
-    };
-
-    private static final String AGILENT_ACQ_DATA = "AcqData";
-    private static final MsDataDirSource AGILENT = new MsDataDirSource("agilent", ".d")
-    {
-        @Override
-        public boolean isExpectedDirContent(Path p)
-        {
-            return Files.isDirectory(p) && FileUtil.getFileName(p).equals(AGILENT_ACQ_DATA);
-        }
-
-        @Override
-        public SimpleFilter.FilterClause getDirContentsFilterClause()
-        {
-            return new CompareType.CompareClause(FieldKey.fromParts("Name"), CompareType.EQUAL, AGILENT_ACQ_DATA);
-        }
-    };
-
-    private static final String BRUKER_ANALYSIS_BAF = "analysis.baf";
-    private static final String BRUKER_ANALYSIS_TDF = "analysis.tdf";
-    private static final MsDataDirSource BRUKER = new MsDataDirSource("bruker", ".d")
-    {
-        @Override
-        public boolean isExpectedDirContent(Path p)
-        {
-            return !Files.isDirectory(p) && (FileUtil.getFileName(p).equals(BRUKER_ANALYSIS_BAF) || FileUtil.getFileName(p).equals(BRUKER_ANALYSIS_TDF));
-        }
-
-        @Override
-        public SimpleFilter.FilterClause getDirContentsFilterClause()
-        {
-            return new SimpleFilter.OrClause(
-                    new CompareType.CompareClause(FieldKey.fromParts("Name"), CompareType.EQUAL, BRUKER_ANALYSIS_BAF),
-                    new CompareType.CompareClause(FieldKey.fromParts("Name"), CompareType.EQUAL, BRUKER_ANALYSIS_TDF)
-            );
-        }
-    };
-
-    private static MsDataSource[] sourceTypes = new MsDataSource[]{THERMO, SCIEX, SHIMADZU, WATERS, AGILENT, BRUKER, CONVERTED_DATA_SOURCE};
-    private static final String EXT_ZIP = ".zip";
-    private static final String EXT_EMPTY = "";
-
-
-    private static Map<String, List<MsDataSource>> EXTENSION_SOURCE_MAP = new HashMap<>();
-    static
-    {
-        for (MsDataSource s : sourceTypes)
-        {
-            for(String ext: s._extensions)
-            {
-                List<MsDataSource> sources = EXTENSION_SOURCE_MAP.computeIfAbsent(ext, k -> new ArrayList<>());
-                sources.add(s);
-            }
-        }
-    }
-
-
-    private abstract static class MsDataSource
-    {
-        private final List<String> _extensions;
-        private final String _instrumentVendor;
-
-        private MsDataSource(@NotNull String instrumentVendor, @NotNull List<String> extensions)
-        {
-            _instrumentVendor = instrumentVendor;
-            _extensions = extensions;
-        }
-
-        public boolean isValidName(String name)
-        {
-            if(name != null)
-            {
-                String nameLc = name.toLowerCase();
-                for(String ext: _extensions)
-                {
-                    if(nameLc.endsWith(ext))
-                    {
-                        return true;
-                    }
-                }
-
-                return isValidZipName(name);
-            }
-            return false;
-        }
-
-        boolean isValidZipName(String fileName)
-        {
-            return MsDataSourceUtil.isZip(fileName) && isValidName(FileUtil.getBaseName(fileName));
-        }
-
-        /* instrument can be the instrument model (saved in targetedms.instrument) or vendor name from the PSI-MS instrument list */
-        public boolean isInstrumentSource(String instrument)
-        {
-            return instrument != null && instrument.toLowerCase().contains(_instrumentVendor);
-        }
-
-        public String toString()
-        {
-            return name();
-        }
-
-        public String name()
-        {
-            return _instrumentVendor;
-        }
-
-        public boolean isValidNameAndPath(@NotNull Path path)
-        {
-            return isValidName(FileUtil.getFileName(path)) && isValidPath(path);
-        }
-
-        public boolean isValidNameAndData(@NotNull ExpData expData, @NotNull ExperimentService expSvc)
-        {
-            return isValidName(expData.getName()) && isValidData(expData, expSvc);
-        }
-
-        abstract boolean isValidPath(@NotNull Path path);
-        abstract boolean isValidData(@NotNull ExpData data, ExperimentService expSvc);
-        abstract boolean isFileSource();
-    }
-
-    private static class MsDataFileSource extends MsDataSource
-    {
-        private MsDataFileSource(String instrument, List<String> extensions)
-        {
-            super(instrument, extensions);
-        }
-
-        private MsDataFileSource(String instrument, String extension)
-        {
-            super(instrument, Collections.singletonList(extension));
-        }
-
-        public MsDataFileSource(List<String> extensions)
-        {
-            super("Unknown", extensions);
-        }
-
-        @Override
-        public boolean isFileSource()
-        {
-            return true;
-        }
-
-        @Override
-        boolean isValidPath(@NotNull Path path)
-        {
-            if(Files.exists(path) && !Files.isDirectory(path))
-            {
-                return !MsDataSourceUtil.isZip(FileUtil.getFileName(path)) || validZip(path);
-            }
-            return false;
-        }
-
-        private boolean validZip(@NotNull Path path)
-        {
-            try
-            {
-                for (Path root : FileSystems.newFileSystem(path, Collections.emptyMap())
-                        .getRootDirectories())
-                {
-                    String basename = FileUtil.getBaseName(FileUtil.getFileName(path));  // Name minus the .zip
-                    Path file = root.resolve(basename);
-                    // Make sure that a file with the name exists in the zip archive
-                    if(Files.exists(file) && !Files.isDirectory(file))
-                    {
-                        return true;
-                    }
-                }
-            }
-            catch (IOException e)
-            {
-                LOG.debug("Error validating zip source for " + name() + ". Path: " + path, e);
-            }
-            return false;
-        }
-
-        @Override
-        boolean isValidData(@NotNull ExpData expData, ExperimentService expSvc)
-        {
-            String pathPrefix = expData.getDataFileUrl();
-            TableInfo expDataTInfo = expSvc.getTinfoData();
-            // We are not going to do a !Files.isDirectory() check.
-            // Instead, we will look for any rows in exp.data where the dataFileUrl starts with the pathPrefix
-            // Example: if dataFileUrl for given ExpData is file://folder/exp_data_name.raw
-            //          we shouldn't find any rows where the dataFileUrl is like file://folder/exp_data_name.raw/file.raw
-            return !(new TableSelector(expDataTInfo, expDataTInfo.getColumns("RowId"),
-                    MsDataSourceUtil.getExpDataFilter(expData.getContainer(), pathPrefix), null).exists());
-        }
-    }
-
-    private static abstract class MsDataDirSource extends MsDataSource
-    {
-        // Condition for validating directory-based raw data
-        abstract boolean isExpectedDirContent(Path p);
-
-        // Filter for validating a directory source by finding rows for expected directory contents in the exp.data table.
-        // Used only if the source directory was uploaded without auto-zipping (e.g. when the directory was uploaded to
-        // a network drive mapped to a LabKey folder)
-        abstract SimpleFilter.FilterClause getDirContentsFilterClause();
-
-        private MsDataDirSource(String instrumentVendor, String extension)
-        {
-            super(instrumentVendor, Collections.singletonList(extension));
-        }
-
-        @Override
-        public boolean isFileSource()
-        {
-            return false;
-        }
-
-        @Override
-        public boolean isValidPath(@NotNull Path path)
-        {
-            if(Files.exists(path))
-            {
-                if(MsDataSourceUtil.isZip(FileUtil.getFileName(path)))
-                {
-                    return !Files.isDirectory(path) && validZip(path);
-                }
-                else
-                {
-                    return Files.isDirectory(path) && hasExpectedDirContents(path);
-                }
-            }
-            return false;
-        }
-
-        private boolean hasExpectedDirContents(@NotNull Path path)
-        {
-            try
-            {
-                return Files.list(path).anyMatch(this::isExpectedDirContent);
-            }
-            catch (IOException e)
-            {
-                LOG.debug("Error validating directory source for " + name() + ". Path: " + path, e);
-            }
-            return false;
-        }
-
-        private boolean validZip(@NotNull Path path)
-        {
-            try
-            {
-                for (Path root : FileSystems.newFileSystem(path, Collections.emptyMap())
-                        .getRootDirectories())
-                {
-                    boolean dataInRoot = hasExpectedDirContents(root);
-                    if (dataInRoot)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        String subdirName = FileUtil.getBaseName(FileUtil.getFileName(path));  // Name minus the .zip
-                        // Look for match in the subdirectory. The zip may look like this (Waters example):
-                        // datasouce.raw.zip
-                        // -- datasource.raw
-                        //    -- _FUNC001.DAT
-                        Path subDir = root.resolve(subdirName);
-                        if(Files.exists(subDir) && hasExpectedDirContents(subDir))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-            catch (IOException e)
-            {
-                LOG.debug("Error validating zip source for " + name() + ". Path: " + path, e);
-            }
-            return false;
-        }
-
-        @Override
-        boolean isValidData(@NotNull ExpData expData, ExperimentService expSvc)
-        {
-            String fileName = expData.getName();
-            if(MsDataSourceUtil.isZip(fileName))
-            {
-                String pathPrefix = expData.getDataFileUrl();
-                TableInfo expDataTInfo = expSvc.getTinfoData();
-                // We are not going to do a !Files.isDirectory() check.
-                // Instead, we will look for any rows in exp.data where the dataFileUrl starts with the pathPrefix
-                // Example: if dataFileUrl for given ExpData is file://folder/exp_data_name.raw.zip
-                //          we shouldn't find any rows where the dataFileUrl is like file://folder/exp_data_name.raw.zip/file.raw
-                return !(new TableSelector(expDataTInfo, expDataTInfo.getColumns("RowId"),
-                        MsDataSourceUtil.getExpDataFilter(expData.getContainer(), pathPrefix), null).exists());
-            }
-            else
-            {
-                // This is a directory source. Check for rows in exp.data for the expected directory contents.
-                TableInfo expDataTInfo = expSvc.getTinfoData();
-                return new TableSelector(expDataTInfo, expDataTInfo.getColumns("RowId"), getExpDataFilter(expData, getDirContentsFilterClause()), null).exists();
-            }
-        }
-
-        private SimpleFilter getExpDataFilter(ExpData expData, SimpleFilter.FilterClause filterClause)
-        {
-            SimpleFilter filter = SimpleFilter.createContainerFilter(expData.getContainer());
-
-            String pathPrefix = expData.getDataFileUrl();
-            filter.addClause(filterClause);
-            if (!pathPrefix.endsWith("/"))
-            {
-                pathPrefix = pathPrefix + "/";
-            }
-
-            // StartsWithClause is not public.  And CompareClause with CompareType.STARTS_WITH is not the same thing as StartWithClause
-            // Use addCondition() instead.
-            filter.addCondition(FieldKey.fromParts("datafileurl"), pathPrefix, CompareType.STARTS_WITH);
-
-            return filter;
-        }
-    }
-
-    private static class MsMultiDataSource extends MsDataSource
-    {
-        private List<MsDataDirSource> _dirSources;
-        private List<MsDataFileSource> _fileSources;
-
-        private MsMultiDataSource()
-        {
-            super("unknown", Collections.emptyList());
-            _fileSources = new ArrayList<>();
-            _dirSources = new ArrayList<>();
-        }
-
-        private void addSource(MsDataSource source)
-        {
-            if(source instanceof MsDataFileSource)
-            {
-                _fileSources.add((MsDataFileSource) source);
-            }
-            else if(source instanceof  MsDataDirSource)
-            {
-                _dirSources.add((MsDataDirSource) source);
-            }
-        }
-
-        @Override
-        public boolean isFileSource()
-        {
-            return _dirSources.isEmpty();
-        }
-
-        @Override
-        public boolean isValidNameAndPath(@NotNull Path path)
-        {
-            return _dirSources.stream().anyMatch(s -> s.isValidNameAndPath(path)) ||
-                    _fileSources.stream().anyMatch(s -> s.isValidNameAndPath(path));
-        }
-
-        @Override
-        boolean isValidPath(@NotNull Path path)
-        {
-            return _dirSources.stream().anyMatch(s -> s.isValidPath(path)) ||
-                    _fileSources.stream().anyMatch(s -> s.isValidPath(path));
-        }
-
-        @Override
-        public boolean isValidNameAndData(@NotNull ExpData data, @NotNull ExperimentService expSvc)
-        {
-            return _dirSources.stream().anyMatch(s -> s.isValidNameAndData(data, expSvc)) ||
-                    _fileSources.stream().anyMatch(s -> s.isValidNameAndData(data, expSvc));
-        }
-
-        @Override
-        boolean isValidData(@NotNull ExpData data, ExperimentService expSvc)
-        {
-            return _dirSources.stream().anyMatch(s -> s.isValidData(data, expSvc)) ||
-                    _fileSources.stream().anyMatch(s -> s.isValidData(data, expSvc));
-        }
-    }
-
-    private static class UnknownDataSource extends MsDataSource
-    {
-        private UnknownDataSource()
-        {
-            super("unknown", Collections.emptyList());
-        }
-
-        @Override
-        boolean isValidPath(@NotNull Path path)
-        {
-            return false;
-        }
-
-        @Override
-        boolean isValidData(@NotNull ExpData data, ExperimentService expSvc)
-        {
-            return false;
-        }
-
-        @Override
-        boolean isFileSource()
-        {
-            return false;
-        }
+        return MsDataSourceTypes.getSourceForInstrument(vendorOrModel);
     }
 
     public static class RawDataInfo
@@ -906,15 +428,15 @@ public class MsDataSourceUtil
         {
             Path rawDataDir = JunitUtil.getSampleData(ModuleLoader.getInstance().getModule(TargetedMSModule.class), TEST_DATA_FOLDER).toPath();
 
-            testDataExists(thermoFiles, THERMO, rawDataDir);
-            testDataExists(sciexFiles, SCIEX, rawDataDir);
-            testDataExists(watersData, WATERS, rawDataDir);
-            testDataExists(brukerData, BRUKER, rawDataDir);
-            testDataExists(agilentData, AGILENT, rawDataDir);
+            testDataExists(thermoFiles, MsDataSourceTypes.THERMO, rawDataDir);
+            testDataExists(sciexFiles, MsDataSourceTypes.SCIEX, rawDataDir);
+            testDataExists(watersData, MsDataSourceTypes.WATERS, rawDataDir);
+            testDataExists(brukerData, MsDataSourceTypes.BRUKER, rawDataDir);
+            testDataExists(agilentData, MsDataSourceTypes.AGILENT, rawDataDir);
 
-            testDataNotExists(agilentData, BRUKER, rawDataDir); // Agilent data should not validate for Bruker
-            testDataNotExists(agilentData, WATERS, rawDataDir); // Agilent data should not validate for Waters
-            testDataNotExists(watersData, THERMO, rawDataDir);  // Waters data should not validate for Thermo
+            testDataNotExists(agilentData, MsDataSourceTypes.BRUKER, rawDataDir); // Agilent data should not validate for Bruker
+            testDataNotExists(agilentData, MsDataSourceTypes.WATERS, rawDataDir); // Agilent data should not validate for Waters
+            testDataNotExists(watersData, MsDataSourceTypes.THERMO, rawDataDir);  // Waters data should not validate for Thermo
 
             // The test below fail because MsDataSourceUtil.dataExists() does not validate that the filename matches
             // the given datasource.  It only validates contents of directory based sources, and THERMO is a file-based source.
@@ -945,8 +467,8 @@ public class MsDataSourceUtil
             Path rawDataDir = JunitUtil.getSampleData(ModuleLoader.getInstance().getModule(TargetedMSModule.class), TEST_DATA_FOLDER).toPath();
             ExperimentService expSvc = ExperimentService.get();
 
-            testGetDataForFileBasedSampleFiles(thermoFiles, _thermo, THERMO.name(), rawDataDir, expSvc);
-            testGetDataForFileBasedSampleFiles(sciexFiles, _sciex, SCIEX.name(), rawDataDir, expSvc);
+            testGetDataForFileBasedSampleFiles(thermoFiles, _thermo, MsDataSourceTypes.THERMO.name(), rawDataDir, expSvc);
+            testGetDataForFileBasedSampleFiles(sciexFiles, _sciex, MsDataSourceTypes.SCIEX.name(), rawDataDir, expSvc);
             testGetDataForWatersSampleFiles(rawDataDir, expSvc);
             testGetDataForAgilentSampleFiles(rawDataDir, expSvc);
             testGetDataForBrukerSampleFiles(rawDataDir, expSvc);
@@ -980,7 +502,7 @@ public class MsDataSourceUtil
                     "20200929_CalMatrix_00_A_flatzip.raw", // For testing VALID ZIP
                     "20200929_CalMatrix_00_A_invalidzip.raw", // For testing INVALID ZIP
                     "_FUNC001.DAT", // Required content in directory
-                    _waters, WATERS.name(),
+                    _waters, MsDataSourceTypes.WATERS.name(),
                     rawDataDir, expSvc);
         }
 
@@ -991,8 +513,8 @@ public class MsDataSourceUtil
                     "pTE219_0 hr_R2_invalid.d", // For testing INVALID unzipped directory
                     "pTE219_0 hr_R2_flatzip.d", // For testing VALID ZIP
                     "pTE219_0 hr_R2_invalidzip.d", // For testing INVALID ZIP
-                    AGILENT_ACQ_DATA, // Required content in directory
-                    _agilent, AGILENT.name(),
+                    MsDataSourceTypes.AGILENT_ACQ_DATA, // Required content in directory
+                    _agilent, MsDataSourceTypes.AGILENT.name(),
                     rawDataDir, expSvc);
         }
 
@@ -1003,8 +525,8 @@ public class MsDataSourceUtil
                     "DK0034-G10_1-D,2_01_1036_invalid.d", // For testing INVALID unzipped directory
                     "DK0034-G10_1-D,2_01_1036_flatzip.d", // For testing VALID ZIP
                     "DK0034-G10_1-D,2_01_1036_invalidzip.d", // For testing INVALID ZIP
-                    BRUKER_ANALYSIS_BAF, // Required content in directory
-                    _bruker, BRUKER.name(),
+                    MsDataSourceTypes.BRUKER_ANALYSIS_BAF, // Required content in directory
+                    _bruker, MsDataSourceTypes.BRUKER.name(),
                     rawDataDir, expSvc);
         }
 
@@ -1103,27 +625,27 @@ public class MsDataSourceUtil
 
             // The following file extensions are unambiguous. Will not need an instrument model to resolve to a single data source
             sampleFile.setFilePath("C:\\RawData\\file.mzML");
-            assertEquals(CONVERTED_DATA_SOURCE, dataSourceUtil.getMsDataSource(sampleFile));
+            assertEquals(MsDataSourceTypes.CONVERTED_DATA_SOURCE, dataSourceUtil.getMsDataSource(sampleFile));
             sampleFile.setFilePath("C:\\RawData\\file.mzXML");
-            assertEquals(CONVERTED_DATA_SOURCE, dataSourceUtil.getMsDataSource(sampleFile));
+            assertEquals(MsDataSourceTypes.CONVERTED_DATA_SOURCE, dataSourceUtil.getMsDataSource(sampleFile));
             sampleFile.setFilePath("C:\\RawData\\Site54_190909_Study9S_PHASE-1.wiff|Site54_STUDY9S_PHASE1_6ProtMix_QC_03|2");
-            assertEquals(SCIEX, dataSourceUtil.getMsDataSource(sampleFile));
+            assertEquals(MsDataSourceTypes.SCIEX, dataSourceUtil.getMsDataSource(sampleFile));
             sampleFile.setFilePath("C:\\RawData\\file.lcd");
-            assertEquals(SHIMADZU, dataSourceUtil.getMsDataSource(sampleFile));
+            assertEquals(MsDataSourceTypes.SHIMADZU, dataSourceUtil.getMsDataSource(sampleFile));
 
             // Ambiguous extensions. Need an instrument model to resolve data source
             // .raw
             sampleFile.setFilePath("C:\\RawData\\file.raw?centroid_ms1=true&centroid_ms2=true");
             sampleFile.setInstrumentId(_thermo.getId());
-            assertEquals(THERMO, dataSourceUtil.getMsDataSource(sampleFile));
+            assertEquals(MsDataSourceTypes.THERMO, dataSourceUtil.getMsDataSource(sampleFile));
             sampleFile.setInstrumentId(_waters.getId());
-            assertEquals(WATERS, dataSourceUtil.getMsDataSource(sampleFile));
+            assertEquals(MsDataSourceTypes.WATERS, dataSourceUtil.getMsDataSource(sampleFile));
             // .d
             sampleFile.setFilePath("C:\\RawData\\file.d");
             sampleFile.setInstrumentId(_agilent.getId());
-            assertEquals(AGILENT, dataSourceUtil.getMsDataSource(sampleFile));
+            assertEquals(MsDataSourceTypes.AGILENT, dataSourceUtil.getMsDataSource(sampleFile));
             sampleFile.setInstrumentId(_bruker.getId());
-            assertEquals(BRUKER, dataSourceUtil.getMsDataSource(sampleFile));
+            assertEquals(MsDataSourceTypes.BRUKER, dataSourceUtil.getMsDataSource(sampleFile));
 
 
             // With an unknown instrument model we will not be able to resolve the .raw and .d data sources to a single data source type
@@ -1134,25 +656,25 @@ public class MsDataSourceUtil
             sourceType = dataSourceUtil.getMsDataSource(sampleFile);
             assertTrue(sourceType instanceof MsMultiDataSource);
             MsMultiDataSource multiSourceType = (MsMultiDataSource) sourceType;
-            assertEquals("Expected one directory source", 1, multiSourceType._dirSources.size());
-            assertEquals("Expected Waters source", WATERS, multiSourceType._dirSources.get(0));
-            assertEquals("Expected one file source", 1, multiSourceType._fileSources.size());
-            assertEquals("Expected Thermo source", THERMO, multiSourceType._fileSources.get(0));
+            assertEquals("Expected one directory source", 1, multiSourceType.getDirSources().size());
+            assertEquals("Expected Waters source", MsDataSourceTypes.WATERS, multiSourceType.getDirSources().get(0));
+            assertEquals("Expected one file source", 1, multiSourceType.getFileSources().size());
+            assertEquals("Expected Thermo source", MsDataSourceTypes.THERMO, multiSourceType.getFileSources().get(0));
 
             // .d
             sampleFile.setFilePath("C:\\RawData\\file.d");
             sourceType = dataSourceUtil.getMsDataSource(sampleFile);
             assertTrue(sourceType instanceof MsMultiDataSource);
             multiSourceType = (MsMultiDataSource) sourceType;
-            assertEquals("Expected 2 directory sources", 2, multiSourceType._dirSources.size());
-            assertThat(multiSourceType._dirSources, hasItem(AGILENT));
-            assertThat(multiSourceType._dirSources, hasItem(BRUKER));
-            assertEquals("Expected 0 file source", 0, multiSourceType._fileSources.size());
+            assertEquals("Expected 2 directory sources", 2, multiSourceType.getDirSources().size());
+            assertThat(multiSourceType.getDirSources(), hasItem(MsDataSourceTypes.AGILENT));
+            assertThat(multiSourceType.getDirSources(), hasItem(MsDataSourceTypes.BRUKER));
+            assertEquals("Expected 0 file source", 0, multiSourceType.getFileSources().size());
 
 
             sampleFile.setFilePath("C:\\RawData\\unknowntype");
             sourceType = dataSourceUtil.getMsDataSource(sampleFile);
-            assertTrue("Expected UnknownDataSource", sourceType instanceof UnknownDataSource);
+            assertEquals("Expected Unknown datasource", MsDataSourceTypes.UNKNOWN, sourceType);
         }
 
         @Test
@@ -1166,49 +688,49 @@ public class MsDataSourceUtil
             // Specific model names are only available for Thermo and SCIEX instruments.
 
             instrument.setModel("Thermo Electron instrument model");
-            assertEquals(THERMO, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.THERMO, dataSourceUtil.getSourceForInstrument(instrument));
             instrument.setModel("Orbitrap Exploris 480");
-            assertEquals(THERMO, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.THERMO, dataSourceUtil.getSourceForInstrument(instrument));
             instrument.setModel("TSQ Altis");
-            assertEquals(THERMO, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.THERMO, dataSourceUtil.getSourceForInstrument(instrument));
             instrument.setModel("TSQ Quantum Ultra AM");
-            assertEquals(THERMO, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.THERMO, dataSourceUtil.getSourceForInstrument(instrument));
             instrument.setModel("ITQ 1100");
-            assertEquals(THERMO, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.THERMO, dataSourceUtil.getSourceForInstrument(instrument));
 
 
             instrument.setModel("AB SCIEX instrument model");
-            assertEquals(SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
             instrument.setModel("SCIEX instrument model");
-            assertEquals(SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
             instrument.setModel("Applied Biosystems instrument model");
-            assertEquals(SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
             instrument.setModel("4000 QTRAP");
-            assertEquals(SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
             instrument.setModel("QTRAP 5500");
-            assertEquals(SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
             instrument.setModel("QSTAR Elite");
-            assertEquals(SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
             instrument.setModel("TripleTOF 5600");
-            assertEquals(SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
             instrument.setModel("TripleTOF 6600");
-            assertEquals(SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
             instrument.setModel("Triple Quad 4500");
-            assertEquals(SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
             instrument.setModel("Triple Quad 6500");
-            assertEquals(SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.SCIEX, dataSourceUtil.getSourceForInstrument(instrument));
 
             instrument.setModel("Bruker Daltonics maXis series");
-            assertEquals(BRUKER, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.BRUKER, dataSourceUtil.getSourceForInstrument(instrument));
 
             instrument.setModel("Waters instrument model");
-            assertEquals(WATERS, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.WATERS, dataSourceUtil.getSourceForInstrument(instrument));
 
             instrument.setModel("Agilent instrument model");
-            assertEquals(AGILENT, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.AGILENT, dataSourceUtil.getSourceForInstrument(instrument));
 
             instrument.setModel("Shimadzu instrument model");
-            assertEquals(SHIMADZU, dataSourceUtil.getSourceForInstrument(instrument));
+            assertEquals(MsDataSourceTypes.SHIMADZU, dataSourceUtil.getSourceForInstrument(instrument));
         }
 
         private static void cleanDatabase() throws ExperimentException
