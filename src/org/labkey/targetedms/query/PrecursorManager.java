@@ -29,7 +29,6 @@ import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.TableResultSet;
 import org.labkey.api.data.TableSelector;
-import org.labkey.api.data.dialect.SqlDialect;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.security.User;
 import org.labkey.api.view.NotFoundException;
@@ -38,14 +37,12 @@ import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.chart.ChromatogramDataset.RtRange;
 import org.labkey.targetedms.model.PrecursorChromInfoLitePlus;
 import org.labkey.targetedms.model.PrecursorChromInfoPlus;
-import org.labkey.targetedms.parser.MoleculePrecursor;
 import org.labkey.targetedms.parser.Precursor;
 import org.labkey.targetedms.parser.PrecursorChromInfo;
 import org.labkey.targetedms.parser.RepresentativeDataState;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -319,7 +316,6 @@ public class PrecursorManager
     {
         SQLFragment sql = new SQLFragment("SELECT ");
         sql.append("pci.* , pg.Label AS groupName, pep.Sequence, pep.PeptideModifiedSequence, prec.ModifiedSequence, prec.Charge, label.Name AS isotopeLabel, label.Id AS isotopeLabelId");
-        sql.append(", (SELECT ").append(getIsQuantitativeSql()).append(") AS quantitative ");
         sql.append(" FROM ");
         joinTablesForPrecursorChromInfo(sql, user, container);
         sql.append(" WHERE ");
@@ -334,16 +330,6 @@ public class PrecursorManager
         }
 
         return  new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PrecursorChromInfoPlus.class);
-    }
-
-    static SQLFragment getIsQuantitativeSql()
-    {
-        SqlDialect sqlDialect = TargetedMSManager.getSchema().getSqlDialect();
-        SQLFragment quantitativeSql = new SQLFragment("EXISTS (SELECT 1 FROM ")
-                .append(TargetedMSManager.getTableInfoGeneralTransition(), "gt")
-                .append(" WHERE (quantitative is NULL OR quantitative=" + sqlDialect.getBooleanTRUE() + ") AND generalprecursorid = pci.precursorid) ");
-
-        return sqlDialect.wrapExistsExpression(quantitativeSql);
     }
 
     public static List<PrecursorChromInfoPlus> getPrecursorChromInfosForGeneralMoleculeChromInfo(long gmChromInfoId, long precursorId,

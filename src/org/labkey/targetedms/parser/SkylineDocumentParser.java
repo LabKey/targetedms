@@ -1676,7 +1676,65 @@ public class SkylineDocumentParser implements AutoCloseable
 
         _precursorCount++;
 
+        updatePrecursorChromInfos(moleculePrecursor);
+
         return moleculePrecursor;
+    }
+
+    private <T extends GeneralTransition> void updatePrecursorChromInfos(GeneralPrecursor<T> precursor)
+    {
+        Map<String, List<TransitionChromInfo>> replicateToTciListMap = new HashMap<>();
+        for (GeneralTransition transition : precursor.getTransitionsList())
+        {
+            List<TransitionChromInfo> tciList = transition.getChromInfoList();
+            for(TransitionChromInfo tci: tciList)
+            {
+                List<TransitionChromInfo> tcisForReplicate = replicateToTciListMap.computeIfAbsent(tci.getReplicateName(), list -> new ArrayList<>());
+                tcisForReplicate.add(tci);
+            }
+        }
+
+        List<PrecursorChromInfo> pciList = precursor.getChromInfoList();
+        for(PrecursorChromInfo pci: pciList)
+        {
+            List<TransitionChromInfo> tciList = replicateToTciListMap.get(pci.getReplicateName());
+            if(tciList != null && !tciList.isEmpty())
+            {
+                Double maxHeight = 0.0;
+                Double bestMassError = null;
+                Double minStartTime = null;
+                Double maxEndTime = null;
+                for(TransitionChromInfo tci: tciList)
+                {
+                    Double height = tci.getHeight();
+                    if(height != null && height > maxHeight)
+                    {
+                        maxHeight = tci.getHeight();
+                        bestMassError = tci.getMassErrorPPM();
+                    }
+                    Double startTime = tci.getStartTime();
+                    Double endTime = tci.getEndTime();
+                    if(startTime != null)
+                    {
+                        minStartTime = minStartTime == null ? startTime : Math.min(minStartTime, startTime);
+                    }
+                    if(endTime != null)
+                    {
+                        maxEndTime = maxEndTime == null ? endTime : Math.max(maxEndTime, endTime);
+                    }
+                }
+                pci.setBestMassErrorPPM(bestMassError);
+                if(pci.getMinStartTime() == null && pci.getMaxEndTime() == null)
+                {
+                    pci.setMinStartTime(minStartTime);
+                    pci.setMaxEndTime(maxEndTime);
+                    if(pci.getMaxHeight() == null || pci.getMaxHeight() == 0)
+                    {
+                        pci.setMaxHeight(maxHeight);
+                    }
+                }
+            }
+        }
     }
 
     private Precursor readPrecursor(XMLStreamReader reader, Peptide peptide, boolean decoy) throws XMLStreamException, IOException
@@ -1797,6 +1855,8 @@ public class SkylineDocumentParser implements AutoCloseable
         populateChromInfoChromatograms(precursor, chromatograms);
 
         _precursorCount++;
+
+        updatePrecursorChromInfos(precursor);
         return precursor;
     }
     private Transition transitionProtoToTransition(SkylineDocument.SkylineDocumentProto.Transition transitionProto) {
