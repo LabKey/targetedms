@@ -78,7 +78,7 @@ class ChromatogramChartMaker
 
     public JFreeChart make(final ChromatogramDataset chromatogramDataset)
     {
-        return make(chromatogramDataset, "Retention Time", "Intensity " + getIntensityScaleString(chromatogramDataset), true);
+        return make(chromatogramDataset, "Retention Time", "Intensity", true);
     }
 
     public JFreeChart make(final ChromatogramDataset chromatogramDataset, String xLabel, String yLabel, boolean legend)
@@ -121,12 +121,14 @@ class ChromatogramChartMaker
                 isMulitLineAnnotation = true;
         }
 
-        // Limit labels to one decimal place on the x-axis (retention time).
+        // Limit labels to one or two decimal place on the x-axis (retention time).
         NumberAxis xAxis = (NumberAxis)chart.getXYPlot().getDomainAxis();
-        xAxis.setNumberFormatOverride(new DecimalFormat("#,##0.0"));
+        xAxis.setNumberFormatOverride(new DecimalFormat("#,##0.0#"));
 
         // Display scaled values in the y-axis tick labels.  The scaling factor is displayed in the axis label.
         NumberAxis yAxis = (NumberAxis)chart.getXYPlot().getRangeAxis();
+        // Calculate the scaling factor AFTER the plot data has been populated
+        yAxis.setLabel(yLabel + " " + getIntensityScaleString(chromatogramDataset));
         yAxis.setNumberFormatOverride(new NumberFormat(){
             @Override
             public StringBuffer format(double number, StringBuffer toAppendTo, FieldPosition pos)

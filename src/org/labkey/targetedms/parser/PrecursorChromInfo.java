@@ -196,11 +196,6 @@ public class PrecursorChromInfo extends AbstractChromInfo
         _bestMassErrorPPM = bestMassErrorPPM;
     }
 
-    public Double getBestOrAvgMassError()
-    {
-        return _bestMassErrorPPM != null ? _bestMassErrorPPM : _averageMassErrorPPM;
-    }
-
     public Double getPeakCountRatio()
     {
         return _peakCountRatio;
@@ -497,7 +492,6 @@ public class PrecursorChromInfo extends AbstractChromInfo
         TransitionChromInfo dummy = new TransitionChromInfo();
         dummy.setStartTime(getMinStartTime());
         dummy.setEndTime(getMaxEndTime());
-        dummy.setRetentionTime(getBestRetentionTime());
         dummy.setMassErrorPPM(getBestMassErrorPPM());
         dummy.setChromatogramIndex(getTransitionChromatogramIndicesList().get(index));
         return dummy;

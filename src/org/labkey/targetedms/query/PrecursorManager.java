@@ -569,7 +569,7 @@ public class PrecursorManager
         return count != null && count.intValue() == ids.size() ;
     }
 
-    public static double getMaxPrecursorIntensity(long generalMoleculeId)
+    public static Double getMaxPrecursorIntensity(long generalMoleculeId)
     {
         SQLFragment sql = new SQLFragment("SELECT MAX(precHeight) FROM (");
         sql.append("SELECT SUM(tci.Height) AS precHeight FROM ");
@@ -791,7 +791,7 @@ public class PrecursorManager
             // Min peak start and max peak end times for a precursor chrom info can be null if none of the
             // transitions for the precursor are quantitative. We will try to get the min start and max end
             // retention times from the transition chrom infos instead.
-            return TransitionManager.getPrecursorPeakRtRange(pci.getId());
+            return TransitionManager.getTransitionPeakRtRange(pci.getId());
         }
     }
 

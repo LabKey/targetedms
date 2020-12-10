@@ -1683,56 +1683,43 @@ public class SkylineDocumentParser implements AutoCloseable
 
     private <T extends GeneralTransition> void updatePrecursorChromInfos(GeneralPrecursor<T> precursor)
     {
-        Map<String, List<TransitionChromInfo>> replicateToTciListMap = new HashMap<>();
+        TransitionSettings.FullScanSettings fullScanSettings = _transitionSettings == null ? null : _transitionSettings.getFullScanSettings();
+
+        // Key is the replicate name
+        // Value is a List where each member is a Pair of TransitionChromInfo and a Boolean value indicating if the transition is quantitative
+        Map<String, List<Pair<TransitionChromInfo, Boolean>>> replicateToTciListMap = new HashMap<>();
+
         for (GeneralTransition transition : precursor.getTransitionsList())
         {
             List<TransitionChromInfo> tciList = transition.getChromInfoList();
+            Boolean quantitative = transition.isQuantitative(fullScanSettings);
             for(TransitionChromInfo tci: tciList)
             {
-                List<TransitionChromInfo> tcisForReplicate = replicateToTciListMap.computeIfAbsent(tci.getReplicateName(), list -> new ArrayList<>());
-                tcisForReplicate.add(tci);
+                List<Pair<TransitionChromInfo, Boolean>> tcisForReplicate = replicateToTciListMap.computeIfAbsent(tci.getReplicateName(), list -> new ArrayList<>());
+                tcisForReplicate.add(new Pair(tci, quantitative));
             }
         }
 
-        List<PrecursorChromInfo> pciList = precursor.getChromInfoList();
-        for(PrecursorChromInfo pci: pciList)
+        for(PrecursorChromInfo pci: precursor.getChromInfoList())
         {
-            List<TransitionChromInfo> tciList = replicateToTciListMap.get(pci.getReplicateName());
+            List<Pair<TransitionChromInfo, Boolean>> tciList = replicateToTciListMap.get(pci.getReplicateName());
             if(tciList != null && !tciList.isEmpty())
             {
-                Double maxHeight = 0.0;
+                double maxHeight = 0.0;
                 Double bestMassError = null;
-                Double minStartTime = null;
-                Double maxEndTime = null;
-                for(TransitionChromInfo tci: tciList)
+                for(Pair<TransitionChromInfo, Boolean> tciInfo: tciList)
                 {
+                    TransitionChromInfo tci = tciInfo.first;
+                    Boolean quantitative = tciInfo.second;
+
                     Double height = tci.getHeight();
-                    if(height != null && height > maxHeight)
+                    if(quantitative && height != null && height > maxHeight)
                     {
                         maxHeight = tci.getHeight();
                         bestMassError = tci.getMassErrorPPM();
                     }
-                    Double startTime = tci.getStartTime();
-                    Double endTime = tci.getEndTime();
-                    if(startTime != null)
-                    {
-                        minStartTime = minStartTime == null ? startTime : Math.min(minStartTime, startTime);
-                    }
-                    if(endTime != null)
-                    {
-                        maxEndTime = maxEndTime == null ? endTime : Math.max(maxEndTime, endTime);
-                    }
                 }
                 pci.setBestMassErrorPPM(bestMassError);
-                if(pci.getMinStartTime() == null && pci.getMaxEndTime() == null)
-                {
-                    pci.setMinStartTime(minStartTime);
-                    pci.setMaxEndTime(maxEndTime);
-                    if(pci.getMaxHeight() == null || pci.getMaxHeight() == 0)
-                    {
-                        pci.setMaxHeight(maxHeight);
-                    }
-                }
             }
         }
     }

@@ -39,11 +39,13 @@ import org.labkey.targetedms.parser.SampleFile;
 import org.labkey.targetedms.parser.SampleFileChromInfo;
 import org.labkey.targetedms.parser.Transition;
 import org.labkey.targetedms.parser.TransitionChromInfo;
+import org.labkey.targetedms.parser.TransitionSettings;
 import org.labkey.targetedms.query.MoleculePrecursorManager;
 import org.labkey.targetedms.query.MoleculeTransitionManager;
 import org.labkey.targetedms.query.PrecursorManager;
 import org.labkey.targetedms.query.ReplicateManager;
 import org.labkey.targetedms.query.TransitionManager;
+import org.labkey.targetedms.query.TransitionManager.TransitionChromInfoAndQuantitative;
 import org.labkey.targetedms.view.spectrum.LibrarySpectrumMatchGetter;
 
 import java.awt.*;
@@ -53,6 +55,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * User: vsharma
@@ -69,6 +73,7 @@ public abstract class ChromatogramDataset
     boolean _syncIntensity;
     double _maxDatasetIntensity; // max intensity across all the traces in the displayed range
     protected TargetedMSRun _run;
+    protected TransitionSettings.FullScanSettings _fullScanSettings;
 
     private Integer _intensityScale;
 
@@ -134,15 +139,15 @@ public abstract class ChromatogramDataset
         return _maxDisplayRt;
     }
 
-    ChromatogramDataset.ChartAnnotation makePeakApexAnnotation(double retentionTime, Double averageMassErrorPPM,
+    ChromatogramDataset.ChartAnnotation makePeakApexAnnotation(double retentionTime, Double massErrorPpm,
                                                                double intensity, int seriesIndex)
     {
         String label = Formats.f1.format(retentionTime);
 
         List<String> labels = new ArrayList<>();
         labels.add(label);
-        if (averageMassErrorPPM != null)
-            labels.add(Formats.f1.format(averageMassErrorPPM) + " ppm");
+        if (massErrorPpm != null)
+            labels.add(Formats.f1.format(massErrorPpm) + " ppm");
         return new ChartAnnotation(retentionTime, intensity,
                 labels, getSeriesColor(seriesIndex));
     }
@@ -199,7 +204,7 @@ public abstract class ChromatogramDataset
         {
             if(addMargin && minRt > 0 && maxRt > 0)
             {
-                // Margin added on both sides of the peak boundary.
+                // Margin added on both sides of the peak boundary. Smaller margin if syncing retention time for all the plots.
                 double margin = (maxRt - minRt) * (forRtSync ? 0.15 : 1);
                 minRt -= margin;
                 maxRt += margin;
@@ -235,7 +240,7 @@ public abstract class ChromatogramDataset
 
         boolean contains(double rt)
         {
-            return !(isAfter(rt) || isBefore(rt));
+            return !isEmpty() && rt >= _minRt && rt <= _maxRt;
         }
     }
 
@@ -409,6 +414,8 @@ public abstract class ChromatogramDataset
             _run = TargetedMSManager.getRunForGeneralMolecule(_generalMoleculeId);
             _user = user;
             _container = container;
+
+            _fullScanSettings = TargetedMSManager.getTransitionFullScanSettings(_run.getId());
         }
 
         abstract String getLabel(PrecursorChromInfo pChromInfo);
@@ -440,7 +447,10 @@ public abstract class ChromatogramDataset
 
             _jfreeDataset = new XYSeriesCollection();
 
-            initQuantitativeSeriesArray(precursorChromInfoList);
+            if(precursorChromInfoList != null)
+            {
+                _quantative = new boolean[precursorChromInfoList.size()];
+            }
 
             for(int i = 0; i < precursorChromInfoList.size(); i++)
             {
@@ -462,22 +472,16 @@ public abstract class ChromatogramDataset
             }
         }
 
-        private void initQuantitativeSeriesArray(List<PrecursorChromInfoPlus> precursorChromInfoList)
-        {
-            if(precursorChromInfoList == null)
-            {
-                return;
-            }
-            _quantative = new boolean[precursorChromInfoList.size()];
-        }
-
         protected void addAnnotation(PrecursorChromInfo pChromInfo, PeakInChart peakInChart, int index)
         {
-            _annotations.add(makePeakApexAnnotation(
-                    peakInChart.getPeakRt(),
-                    pChromInfo.getBestOrAvgMassError(),
-                    peakInChart.getPeakIntensity(),
-                    index));
+            if(peakInChart.getPeakIntensity() > 0)
+            {
+                _annotations.add(makePeakApexAnnotation(
+                        peakInChart.getPeakRt(),
+                        peakInChart.getMassErrorPpm(),
+                        peakInChart.getPeakIntensity(),
+                        index));
+            }
         }
 
         protected List<PrecursorChromInfoPlus> getPrecursorChromInfos()
@@ -518,13 +522,15 @@ public abstract class ChromatogramDataset
             if(_syncRt){
                 // Get the min and max retention times of the precursors for this peptide, over all replicates.
                 // TODO: filter this to currently selected replicates
-                // TODO: this will not work without TransitionChromInfos
                 RtRange peakRtSummary = TransitionManager.getGeneralMoleculeRtRange(_generalMoleculeId);
                 displayRange = new RtRange(peakRtSummary.getMinRt(), peakRtSummary.getMaxRt(), true, _syncRt);
             }
-            _minDisplayRt = displayRange.getMinRt();
-            _maxDisplayRt = displayRange.getMaxRt();
 
+            if(!displayRange.isEmpty())
+            {
+                _minDisplayRt = displayRange.getMinRt();
+                _maxDisplayRt = displayRange.getMaxRt();
+            }
             return displayRange;
         }
 
@@ -537,14 +543,13 @@ public abstract class ChromatogramDataset
 
             XYSeries series = new XYSeries(label);
 
-            // Each key in the map is the index for a transition peak (TransitionChromInfo) into the RT and intensity arrays
-            // Value is the value in the "quantitative" column for the corresponding transition.
-            // This value will be null if the transition is quantitative.
-            Map<Integer, Boolean> transitionChromIndexes = TransitionManager.getTransitionChromatogramIndexes(pChromInfo, _user, _container);
+            List<TransitionChromInfoAndQuantitative> chromInfoList = TransitionManager.getTransitionChromInfoAndQuantitative(pChromInfo, _fullScanSettings);
+            // Key in the map is the chromatogram index; used to index into the RT and intensity arrays of the chromatogram
+            Map<Integer, TransitionChromInfoAndQuantitative> transitionChromIndexMap = chromInfoList.stream().collect(Collectors.toMap(TransitionChromInfoAndQuantitative::getChromatogramIndex,
+                    Function.identity()));
 
             // We will consider the precursor peak to be "quantitative" if any of its transition peaks are quantitative.
-            // The value in the transitionChromIndexes map for a quantitative transition peak  will be null.
-            boolean isQuantitativePrecursor = transitionChromIndexes.values().stream().anyMatch(v -> v == null || v.booleanValue());
+            boolean isQuantitativePrecursor = chromInfoList.stream().anyMatch(TransitionChromInfoAndQuantitative::isQuantitative);
             _quantative[seriesIndex] = isQuantitativePrecursor;
 
             // sum up the intensities of all transitions of this precursor
@@ -552,13 +557,12 @@ public abstract class ChromatogramDataset
 
             for(int i = 0; i < chromatogram.getTransitionsCount(); i++)
             {
-                if(!transitionChromIndexes.containsKey(i))
+                if(!transitionChromIndexMap.containsKey(i))
                     continue;
 
                 // Add to the total intensities if the transition peak is quantitative OR if none of the
                 // transition peaks for the precursor are quantitative.
-                Boolean quantitative = transitionChromIndexes.get(i);
-                if(!isQuantitativePrecursor || (quantitative == null || quantitative.booleanValue()))
+                if(!isQuantitativePrecursor || transitionChromIndexMap.get(i).isQuantitative())
                 {
                     float[] transitionIntensities = chromatogram.getIntensities(i);
                     assert times.length == transitionIntensities.length : "Length of times and intensities don't match";
@@ -577,6 +581,15 @@ public abstract class ChromatogramDataset
             double maxTraceIntensity = 0;
             double maxPeakIntensity = 0;
             double rtAtPeakApex = 0;
+            Double bestMassErrorPpm = pChromInfo.getBestMassErrorPPM();
+            if(bestMassErrorPpm == null)
+            {
+                // If bestMassErrorPpm is not set on the PrecursorChromInfo, try to get it from the quantitative TransitionChromInfos
+                TransitionChromInfoAndQuantitative tci = chromInfoList.stream().filter(TransitionChromInfoAndQuantitative::hasHeightAndIsQuantitative)
+                                                                               .max(Comparator.comparing(TransitionChromInfoAndQuantitative::getHeight))
+                                                                               .orElse(null);
+                bestMassErrorPpm = tci != null ? tci.getMassErrorPpm() : null;
+            }
 
             for (int i = 0; i < times.length; i++)
             {
@@ -597,7 +610,7 @@ public abstract class ChromatogramDataset
 
             _seriesColors.put(seriesIndex, getSeriesColor(pChromInfo, seriesIndex));
 
-            return new PeakInChart(maxPeakIntensity, rtAtPeakApex, maxTraceIntensity);
+            return new PeakInChart(maxPeakIntensity, rtAtPeakApex, maxTraceIntensity, bestMassErrorPpm);
         }
 
         @Override
@@ -631,12 +644,14 @@ public abstract class ChromatogramDataset
         private final double _peakRt;        // RT at peak apex (within the peak integration boundary)
         private final double _maxTraceIntensity; // Max intensity in the displayed chromatogram trace.  This
         // may be higher than the max intensity within peak integration boundary.
+        private final Double _massErrorPpm;
 
-        private PeakInChart(double peakIntensity, double peakRt, double maxTraceIntensity)
+        private PeakInChart(double peakIntensity, double peakRt, double maxTraceIntensity, Double massErrorPpm)
         {
             _peakRt = peakRt;
             _peakIntensity = peakIntensity;
             _maxTraceIntensity = maxTraceIntensity;
+            _massErrorPpm = massErrorPpm;
         }
 
         public double getPeakRt()
@@ -652,6 +667,11 @@ public abstract class ChromatogramDataset
         public double getMaxTraceIntensity()
         {
             return _maxTraceIntensity;
+        }
+
+        public Double getMassErrorPpm()
+        {
+            return _massErrorPpm;
         }
     }
 
@@ -760,12 +780,14 @@ public abstract class ChromatogramDataset
         private Precursor _precursor;
         private List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> _peptideIdRetentionTimes;
 
-        // The best transition is determined as the transition with the max intensity at the
-        // bestRetentionTime set on the PrecursorChromInfo (_pChromInfo)
+        // The best transition is determined as the quantitative transition with the max intensity
+        // within the peak boundary
         protected double _bestTransitionPeakIntensity;
         protected double _bestTransitionRt;
         protected int _bestTransitionSeriesIndex;
         protected Double _bestTransitionPpm;
+        private double _bestTransitionPeakHeight; // best height from TransitionChromInfo.getHeight() method
+        boolean _dummyTransitionChromInfos = false;
         protected Container _container;
         protected User _user;
 
@@ -777,6 +799,8 @@ public abstract class ChromatogramDataset
             _syncIntensity = syncIntensity;
             _user = user;
             _container = container;
+
+            _fullScanSettings = TargetedMSManager.getTransitionFullScanSettings(_run.getId());
         }
 
         protected long getGeneralMoleculeId()
@@ -864,6 +888,7 @@ public abstract class ChromatogramDataset
                     }
                     index++;
                 }
+                _dummyTransitionChromInfos = true;
             }
 
             // Sort according to the ion order used in Skyline
@@ -877,13 +902,9 @@ public abstract class ChromatogramDataset
             for(TransChromInfoPlusTransition chromInfoPlusTransition: tciList)
             {
                 setDatasetValues(chromInfoPlusTransition.getTransChromInfo(), chromatogram, chromatogramRtRange, seriesIndex,
-                        LabelFactory.transitionLabel(chromInfoPlusTransition.getTransition()));
+                        LabelFactory.transitionLabel(chromInfoPlusTransition.getTransition()),
+                        chromInfoPlusTransition.getTransition().isQuantitative(_fullScanSettings));
                 seriesIndex++;
-            }
-
-            if(_bestTransitionPpm == null)
-            {
-                _bestTransitionPpm = _pChromInfo.getAverageMassErrorPPM();
             }
 
             initQuantitativeSeriesArray(tciList);
@@ -899,25 +920,42 @@ public abstract class ChromatogramDataset
             int i = 0;
             for(TransitionChromInfoPlusGeneralTransition tci: chromInfoList)
             {
-                _quantative[i++] = tci.getTransition().explicitQuantitative();
+                _quantative[i++] = tci.getTransition().isQuantitative(_fullScanSettings);
             }
         }
 
         protected void setDatasetValues(TransitionChromInfo transitionChromInfo, Chromatogram chromatogram,
-                                        RtRange chromatogramRtRange, int seriesIndex, String label)
+                                        RtRange chromatogramRtRange, int seriesIndex, String label, boolean quantitative)
         {
             PeakInChart tciPeak = addTransitionAsSeries(_jfreeDataset, chromatogram,
                     chromatogramRtRange, transitionChromInfo, label);
 
             _maxDatasetIntensity = Math.max(_maxDatasetIntensity, tciPeak.getMaxTraceIntensity()); // Max trace intensity in the displayed range
 
-            double peakHeight = tciPeak.getPeakIntensity();
-            if(peakHeight > _bestTransitionPeakIntensity)
+            boolean isMoreIntense = false;
+            if(_dummyTransitionChromInfos)
             {
-                _bestTransitionPeakIntensity = peakHeight;
-                _bestTransitionRt = tciPeak.getPeakRt(); // getRetentionTime on TransitionChromInfo does not always correspond to the max intensity in .sky file
+                // If we are using dummy TransitionChromInfos then use the raw peak height since height is not set on a dummy TransitionChromInfo
+                // If the data is bad we may end up picking up a different transition to label than Skyline since the most intense transition based
+                // on raw data may be different from the most intense point based on the interpolated value from TransitionChromInfo.getHeight()
+                isMoreIntense = tciPeak.getPeakIntensity() > _bestTransitionPeakIntensity;
+            }
+            else if(transitionChromInfo.getHeight() != null)
+            {
+                // Use TransitionChromInfo.getHeight() to determine the most intense transition so that we are consistent with Skyline.
+                isMoreIntense = transitionChromInfo.getHeight() > _bestTransitionPeakHeight;
+            }
+            if(quantitative && isMoreIntense)
+            {
+                // Note: Use the intensity and RT values from the raw data points for plotting.  Don't use getRetentionTime()
+                // or getHeight() of the TransitionChromInfo as those values are calculated using interpolated chromatogram numbers.
+                // The are close to the raw values but can result in the annotations being a little off.
+                _bestTransitionPeakIntensity = tciPeak.getPeakIntensity();
+                _bestTransitionRt = tciPeak.getPeakRt();
                 _bestTransitionSeriesIndex = seriesIndex;
-                _bestTransitionPpm = transitionChromInfo.getMassErrorPPM();
+                _bestTransitionPpm = tciPeak.getMassErrorPpm();
+
+                _bestTransitionPeakHeight = transitionChromInfo.getHeight();
             }
         }
 
@@ -929,7 +967,8 @@ public abstract class ChromatogramDataset
                 // If we are synchronizing the intensity axis, get the maximum intensity for a transition
                 // (of the given type - PRECURSOR, PRODUCT or ALL) over all replicates.
                 // TODO: Filter to the currently selected replicates.
-                // TODO: This will not work when we don't have TransitionChromInfos
+                // Note: If we are not storing TransitionChromInfos we will not be able to sync the intensity axis for
+                // all the plots.
                 _maxDisplayIntensity = TransitionManager.getMaxTransitionIntensity(generalMoleculeId, getTransitionType());
             }
         }
@@ -959,14 +998,17 @@ public abstract class ChromatogramDataset
                 {
                     // If this precursorChromInfo does not have a minStartTime and maxEndTime AND the startTime and endTime is not set on
                     // any of its transition peaks, then get the minimum minStartTime and maximum maxEndTime across all precursors of this
-                    // peptide in this replicate. This scenario should not be common.
+                    // peptide in this replicate so that we can zoom in the general range where we expect to see the peak.
                     peakRtSummary = TransitionManager.getGeneralMoleculeSampleRtRange(generalMoleculeId, pChromInfo.getSampleFileId());
                 }
             }
 
             RtRange displayRange = new RtRange(peakRtSummary.getMinRt(), peakRtSummary.getMaxRt(), true, _syncRt);
-            _minDisplayRt = displayRange.getMinRt();
-            _maxDisplayRt = displayRange.getMaxRt();
+            if(!displayRange.isEmpty())
+            {
+                _minDisplayRt = displayRange.getMinRt();
+                _maxDisplayRt = displayRange.getMaxRt();
+            }
             return displayRange;
         }
 
@@ -1003,13 +1045,15 @@ public abstract class ChromatogramDataset
 
                 if(peakBoundary.contains(times[i]) && intensities[i] > intensityAtPrecursorBestRt)
                 {
+                    // Do not try to find a point closest to the RT set on the TransitionChromInfo.  That value is based on
+                    // interpolated chromatogram numbers. We are plotting the raw data points.
                     intensityAtPrecursorBestRt = intensities[i];
                     bestRt = times[i];
                 }
             }
             dataset.addSeries(series);
 
-            return new PeakInChart(intensityAtPrecursorBestRt, bestRt, maxTraceIntensity);
+            return new PeakInChart(intensityAtPrecursorBestRt, bestRt, maxTraceIntensity, tci.getMassErrorPPM());
         }
 
         @Override
@@ -1130,6 +1174,7 @@ public abstract class ChromatogramDataset
                         tciList.add(new MoleculeTransChromInfoPlusTransition(_pChromInfo.makeDummyTransitionChromInfo(index++), transition));
                     }
                 }
+                _dummyTransitionChromInfos = true;
             }
 
             tciList.sort(new MoleculeTransChromInfoPlusTransitionComparator());
@@ -1142,13 +1187,9 @@ public abstract class ChromatogramDataset
             for(MoleculeTransChromInfoPlusTransition chromInfoPlusTransition: tciList)
             {
                 setDatasetValues(chromInfoPlusTransition.getTransChromInfo(), chromatogram, chromatogramRtRange, seriesIndex,
-                        LabelFactory.transitionLabel(chromInfoPlusTransition.getTransition()));
+                        LabelFactory.transitionLabel(chromInfoPlusTransition.getTransition()),
+                        chromInfoPlusTransition.getTransition().isQuantitative(_fullScanSettings));
                 seriesIndex++;
-            }
-
-            if(_bestTransitionPpm == null)
-            {
-                _bestTransitionPpm = _pChromInfo.getAverageMassErrorPPM();
             }
 
             initQuantitativeSeriesArray(tciList);
@@ -1309,7 +1350,7 @@ public abstract class ChromatogramDataset
                 {
                     // Marker for retention time
                     _annotation = makePeakApexAnnotation(tciPeak.getPeakRt(),
-                            _tChromInfo.getMassErrorPPM(),
+                            tciPeak.getMassErrorPpm(),
                             tciPeak.getPeakIntensity(), // max intensity at peak RT
                             0);
                 }
