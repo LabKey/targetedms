@@ -944,6 +944,10 @@ public abstract class ChromatogramDataset
             {
                 // Use TransitionChromInfo.getHeight() to determine the most intense transition so that we are consistent with Skyline.
                 isMoreIntense = transitionChromInfo.getHeight() > _bestTransitionPeakHeight;
+                if(quantitative && isMoreIntense)
+                {
+                    _bestTransitionPeakHeight = transitionChromInfo.getHeight();
+                }
             }
             if(quantitative && isMoreIntense)
             {
@@ -954,8 +958,6 @@ public abstract class ChromatogramDataset
                 _bestTransitionRt = tciPeak.getPeakRt();
                 _bestTransitionSeriesIndex = seriesIndex;
                 _bestTransitionPpm = tciPeak.getMassErrorPpm();
-
-                _bestTransitionPeakHeight = transitionChromInfo.getHeight();
             }
         }
 

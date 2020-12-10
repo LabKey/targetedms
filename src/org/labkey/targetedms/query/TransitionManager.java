@@ -168,19 +168,15 @@ public class TransitionManager
 
         if (pci.getTransitionChromatogramIndicesList() != null)
         {
-            List<Integer> chromatogramIndexList = pci.getTransitionChromatogramIndicesList();
-
-            if (transitions.size() != chromatogramIndexList.size())
+            if (transitions.size() != pci.getTransitionChromatogramIndicesList().size())
             {
-                throw new IllegalStateException("Mismatch in transitions and indices lengths: " + transitions.size() + " vs " + chromatogramIndexList.size());
+                throw new IllegalStateException("Mismatch in transitions and indices lengths: " + transitions.size() + " vs " + pci.getTransitionChromatogramIndicesList().size());
             }
-            int i = 0;
-            for (Integer index : chromatogramIndexList)
+            for (int i = 0; i < pci.getTransitionChromatogramIndicesList().size(); i++)
             {
                 // Transition list is sorted by the 'Id' column so should be in the same order as the chromatogram indices list
                 GeneralTransition transition = transitions.get(i);
-                result.add(new TransitionChromInfoAndQuantitative(pci.makeDummyTransitionChromInfo(index), transition.isQuantitative(fullScanSettings)));
-                i++;
+                result.add(new TransitionChromInfoAndQuantitative(pci.makeDummyTransitionChromInfo(i), transition.isQuantitative(fullScanSettings)));
             }
         }
         else
