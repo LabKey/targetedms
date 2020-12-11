@@ -569,7 +569,17 @@ public class PrecursorManager
         return count != null && count.intValue() == ids.size() ;
     }
 
-    public static Double getMaxPrecursorIntensity(long generalMoleculeId)
+    /**
+     * Sum up the value of Height for each TransitionChromInfo for a precursor peak, and return the max sum.
+     * This can be used for estimating the height of the tallest precursor peak for a peptide (generalMolecule)
+     * over all the replicates when we are synchronizing the intensity axis for precursor peak chromatograms.
+     * Getting the actual max intensity would require summing up the intensities across the points of each peak. But this
+     * method should give us a value that is at least as much as the max intensity since we are summing up the tallest
+     * point of each transition.
+     * @param generalMoleculeId
+     * @return
+     */
+    public static Double getMaxPrecursorIntensityEstimate(long generalMoleculeId)
     {
         SQLFragment sql = new SQLFragment("SELECT MAX(precHeight) FROM (");
         sql.append("SELECT SUM(tci.Height) AS precHeight FROM ");
@@ -587,6 +597,28 @@ public class PrecursorManager
         sql.add(generalMoleculeId);
         sql.append(" GROUP BY tci.PrecursorChromInfoId");
         sql.append(" ) a");
+
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Double.class);
+    }
+
+    /**
+     * Returns the maximum value of MaxHeight for the Precursors of a peptide (generalMolecule) over all the replicates.
+     * MaxHeight of a PrecursorChromInfo is the height of the tallest transition peak for the precursor in a replicate.
+     * This can be used for getting the height of the tallest transition peak for a peptide over all the replicates
+     * when we are synchronizing the intensity axis for transition peak chromatograms.
+     * @param generalMoleculeId
+     * @return
+     */
+    public static Double getMaxPrecursorMaxHeight(long generalMoleculeId)
+    {
+        SQLFragment sql = new SQLFragment("SELECT MAX(pci.maxHeight) FROM ");
+        sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
+        sql.append(" INNER JOIN ");
+        sql.append(TargetedMSManager.getTableInfoGeneralMoleculeChromInfo(), "gmci");
+        sql.append(" ON pci.GeneralMoleculeChromInfoId = gmci.Id");
+        sql.append(" WHERE");
+        sql.append(" gmci.GeneralMoleculeId=?");
+        sql.add(generalMoleculeId);
 
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Double.class);
     }

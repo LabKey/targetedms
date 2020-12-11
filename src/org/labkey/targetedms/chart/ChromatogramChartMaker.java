@@ -121,7 +121,9 @@ class ChromatogramChartMaker
                 isMulitLineAnnotation = true;
         }
 
-        // Limit labels to one or two decimal place on the x-axis (retention time).
+        // Limit labels to one or two decimal place on the x-axis (retention time). Added second decimal place to
+        // avoid repeated tick labels when the displayed RT range is small.
+        // TODO: There is probably a better way to avoid repeated tick labels.
         NumberAxis xAxis = (NumberAxis)chart.getXYPlot().getDomainAxis();
         xAxis.setNumberFormatOverride(new DecimalFormat("#,##0.0#"));
 

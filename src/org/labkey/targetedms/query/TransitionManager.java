@@ -128,7 +128,7 @@ public class TransitionManager
         if(fragmentType != Transition.Type.ALL)
         {
             sql.append(", ");
-            sql.append(TargetedMSManager.getTableInfoTransition(), "tran");
+            sql.append(TargetedMSManager.getTableInfoGeneralTransition(), "tran");
         }
         sql.append(" WHERE ");
         sql.append("gmci.Id = preci.GeneralMoleculeChromInfoId ");

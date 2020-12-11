@@ -424,11 +424,6 @@ public abstract class ChromatogramDataset
 
         abstract Color getSeriesColor(PrecursorChromInfo pChromInfo, int seriesIndex);
 
-        Double getMaxPrecursorIntensity()
-        {
-            return PrecursorManager.getMaxPrecursorIntensity(_generalMoleculeId);
-        }
-
         @Override
         public void build()
         {
@@ -442,7 +437,10 @@ public abstract class ChromatogramDataset
             {
                 // Get the height of the tallest precursor for this peptide/molecule over all replicates
                 // TODO: filter this to currently selected replicates
-                _maxDisplayIntensity = getMaxPrecursorIntensity();
+                // Note: If we are not storing TransitionChromInfos we will not be able to sync the intensity axis for
+                // all the plots. MaxHeight for a PrecursorChromInfo is the height of the tallest fragment peak, not the
+                // precursor peak which is calculated by summing up the transition peak intensities.
+                _maxDisplayIntensity = PrecursorManager.getMaxPrecursorIntensityEstimate(_generalMoleculeId);
             }
 
             _jfreeDataset = new XYSeriesCollection();
@@ -786,8 +784,6 @@ public abstract class ChromatogramDataset
         protected double _bestTransitionRt;
         protected int _bestTransitionSeriesIndex;
         protected Double _bestTransitionPpm;
-        private double _bestTransitionPeakHeight; // best height from TransitionChromInfo.getHeight() method
-        boolean _dummyTransitionChromInfos = false;
         protected Container _container;
         protected User _user;
 
@@ -888,7 +884,6 @@ public abstract class ChromatogramDataset
                     }
                     index++;
                 }
-                _dummyTransitionChromInfos = true;
             }
 
             // Sort according to the ion order used in Skyline
@@ -932,28 +927,13 @@ public abstract class ChromatogramDataset
 
             _maxDatasetIntensity = Math.max(_maxDatasetIntensity, tciPeak.getMaxTraceIntensity()); // Max trace intensity in the displayed range
 
-            boolean isMoreIntense = false;
-            if(_dummyTransitionChromInfos)
-            {
-                // If we are using dummy TransitionChromInfos then use the raw peak height since height is not set on a dummy TransitionChromInfo
-                // If the data is bad we may end up picking up a different transition to label than Skyline since the most intense transition based
-                // on raw data may be different from the most intense point based on the interpolated value from TransitionChromInfo.getHeight()
-                isMoreIntense = tciPeak.getPeakIntensity() > _bestTransitionPeakIntensity;
-            }
-            else if(transitionChromInfo.getHeight() != null)
-            {
-                // Use TransitionChromInfo.getHeight() to determine the most intense transition so that we are consistent with Skyline.
-                isMoreIntense = transitionChromInfo.getHeight() > _bestTransitionPeakHeight;
-                if(quantitative && isMoreIntense)
-                {
-                    _bestTransitionPeakHeight = transitionChromInfo.getHeight();
-                }
-            }
-            if(quantitative && isMoreIntense)
+            if(quantitative && tciPeak.getPeakIntensity() > _bestTransitionPeakIntensity)
             {
                 // Note: Use the intensity and RT values from the raw data points for plotting.  Don't use getRetentionTime()
                 // or getHeight() of the TransitionChromInfo as those values are calculated using interpolated chromatogram numbers.
-                // The are close to the raw values but can result in the annotations being a little off.
+                // They are close to the raw values but can result in the peak labels being a little off.  An example can be seen
+                // in the AreaRatioTestDoc.sky.zip in sampledata. For the peptide ALGSPTKQLLPCEMACNEK the label would be
+                // drawn closer to the second most intense point on the peak rather than the most intense point.
                 _bestTransitionPeakIntensity = tciPeak.getPeakIntensity();
                 _bestTransitionRt = tciPeak.getPeakRt();
                 _bestTransitionSeriesIndex = seriesIndex;
@@ -969,9 +949,15 @@ public abstract class ChromatogramDataset
                 // If we are synchronizing the intensity axis, get the maximum intensity for a transition
                 // (of the given type - PRECURSOR, PRODUCT or ALL) over all replicates.
                 // TODO: Filter to the currently selected replicates.
-                // Note: If we are not storing TransitionChromInfos we will not be able to sync the intensity axis for
-                // all the plots.
                 _maxDisplayIntensity = TransitionManager.getMaxTransitionIntensity(generalMoleculeId, getTransitionType());
+                if(_maxDisplayIntensity == null)
+                {
+                    // If we are not saving TransitionChromInfos then get the max value of the MaxHeight on PrecursorChromInfos
+                    // This will not take into account the transition type (e.g. "precursor", "product") so is not ideal when
+                    // we are showing "split" graphs - separate graphs for "precursor" and "product" fragments. "Precursor"
+                    // ions are typically more intense that "product" ions so the axis range for the "product" ion plots wouldb be too large.
+                    _maxDisplayIntensity = PrecursorManager.getMaxPrecursorMaxHeight(generalMoleculeId);
+                }
             }
         }
 
@@ -1176,7 +1162,6 @@ public abstract class ChromatogramDataset
                         tciList.add(new MoleculeTransChromInfoPlusTransition(_pChromInfo.makeDummyTransitionChromInfo(index++), transition));
                     }
                 }
-                _dummyTransitionChromInfos = true;
             }
 
             tciList.sort(new MoleculeTransChromInfoPlusTransitionComparator());
