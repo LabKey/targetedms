@@ -1676,12 +1676,17 @@ public class SkylineDocumentParser implements AutoCloseable
 
         _precursorCount++;
 
-        updatePrecursorChromInfos(moleculePrecursor);
+        setBestMassErrorPpm(moleculePrecursor);
 
         return moleculePrecursor;
     }
 
-    private <T extends GeneralTransition> void updatePrecursorChromInfos(GeneralPrecursor<T> precursor)
+    // Issue 41973: Populate additional information for rendering chromatograms
+    // Set the BestMassErrorPpm for each PrecursorChromInfo of the given precursor. This is the mass error of the most intense
+    // transition peak in a replicate. Skyline does not give us this value but we need it to label the precursor peaks in
+    // chromatogram charts. We can query it from TransitionChromInfos but we are saving it with the PrecursorChromInfo
+    // because TransitionChromInfos do not get saved for large documents.
+    private void setBestMassErrorPpm(GeneralPrecursor<?> precursor)
     {
         TransitionSettings.FullScanSettings fullScanSettings = _transitionSettings == null ? null : _transitionSettings.getFullScanSettings();
 
@@ -1843,7 +1848,7 @@ public class SkylineDocumentParser implements AutoCloseable
 
         _precursorCount++;
 
-        updatePrecursorChromInfos(precursor);
+        setBestMassErrorPpm(precursor);
         return precursor;
     }
     private Transition transitionProtoToTransition(SkylineDocument.SkylineDocumentProto.Transition transitionProto) {

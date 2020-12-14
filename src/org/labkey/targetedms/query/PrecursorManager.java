@@ -576,8 +576,6 @@ public class PrecursorManager
      * Getting the actual max intensity would require summing up the intensities across the points of each peak. But this
      * method should give us a value that is at least as much as the max intensity since we are summing up the tallest
      * point of each transition.
-     * @param generalMoleculeId
-     * @return
      */
     public static Double getMaxPrecursorIntensityEstimate(long generalMoleculeId)
     {
@@ -606,8 +604,6 @@ public class PrecursorManager
      * MaxHeight of a PrecursorChromInfo is the height of the tallest transition peak for the precursor in a replicate.
      * This can be used for getting the height of the tallest transition peak for a peptide over all the replicates
      * when we are synchronizing the intensity axis for transition peak chromatograms.
-     * @param generalMoleculeId
-     * @return
      */
     public static Double getMaxPrecursorMaxHeight(long generalMoleculeId)
     {
