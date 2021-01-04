@@ -57,6 +57,7 @@ public class ChromLibSqliteSchemaCreator
         createPrecursorIsotopeModificationTable(conn);
         createPrecursorRetentionTimeTable(conn);
         createTransitionTable(conn);
+        createTransitionOptimizationTable(conn);
 
         // Small molecule
         createMoleculeListTable(conn);
@@ -64,6 +65,7 @@ public class ChromLibSqliteSchemaCreator
         createMoleculePrecursorTable(conn);
         createMoleculePrecursorRetentionTimeTable(conn);
         createMoleculeTransitionTable(conn);
+        createMoleculeTransitionOptimizationTable(conn);
 
         createIrtLibraryTable(conn);
     }
@@ -156,6 +158,16 @@ public class ChromLibSqliteSchemaCreator
     private void createIrtLibraryTable(Connection conn) throws SQLException
     {
         createTable(conn, Table.IrtLibrary, Constants.IrtLibraryColumn.values());
+    }
+
+    private void createTransitionOptimizationTable(Connection conn) throws SQLException
+    {
+        createTable(conn, Table.TransitionOptimization, Constants.TransitionOptimizationColumn.values());
+    }
+
+    private void createMoleculeTransitionOptimizationTable(Connection conn) throws SQLException
+    {
+        createTable(conn, Table.MoleculeTransitionOptimization, Constants.MoleculeTransitionOptimization.values());
     }
 
     private String getColumnSql(Constants.ColumnDef[] columns)

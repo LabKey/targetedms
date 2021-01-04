@@ -51,6 +51,7 @@ class Constants
         PrecursorIsotopeModification,
         PrecursorRetentionTime,
         Transition,
+        TransitionOptimization,
 
         // Small molecule
         MoleculeList,
@@ -58,6 +59,7 @@ class Constants
         MoleculePrecursor,
         MoleculePrecursorRetentionTime,
         MoleculeTransition,
+        MoleculeTransitionOptimization,
 
         IrtLibrary
     }
@@ -172,7 +174,11 @@ class Constants
         PeptideModSeq("TEXT NOT NULL"),
         Irt("DOUBLE"),
         Standard("BOOL"),
-        TimeSource("INT");
+        TimeSource("INT"),
+
+        TransitionId("INTEGER NOT NULL", Table.Transition, Id),
+        OptimizationType("TEXT NOT NULL"),
+        OptimizationValue("DOUBLE NOT NULL");
 
         private final String definition;
         private final Table _fkTable;
@@ -831,8 +837,6 @@ class Constants
         }
     }
 
-
-
     public enum IrtLibraryColumn implements ColumnDef
     {
         Id(Column.Id),
@@ -849,6 +853,65 @@ class Constants
             _column = column;
             _definition = column.definition;
         }
+
+        @Override
+        public Column baseColumn()
+        {
+            return _column;
+        }
+
+        @Override
+        public String definition()
+        {
+            return _definition;
+        }
+    }
+
+    public enum TransitionOptimizationColumn implements ColumnDef
+    {
+        Id(Column.Id),
+        TransitionId(Column.TransitionId),
+        OptimizationType(Column.OptimizationType),
+        OptimizationValue(Column.OptimizationValue);
+
+        private final Column _column;
+        private final String _definition;
+
+        TransitionOptimizationColumn(Column column)
+        {
+            _column = column;
+            _definition = column.definition;
+        }
+
+        @Override
+        public Column baseColumn()
+        {
+            return _column;
+        }
+
+        @Override
+        public String definition()
+        {
+            return _definition;
+        }
+    }
+
+    public enum MoleculeTransitionOptimization implements ColumnDef
+    {
+        Id(Column.Id),
+        TransitionId(Column.TransitionId),
+        OptimizationType(Column.OptimizationType),
+        OptimizationValue(Column.OptimizationValue);
+
+        private final Column _column;
+        private final String _definition;
+
+        MoleculeTransitionOptimization(Column column)
+        {
+            _column = column;
+            _definition = column.definition;
+        }
+
 
         @Override
         public Column baseColumn()
