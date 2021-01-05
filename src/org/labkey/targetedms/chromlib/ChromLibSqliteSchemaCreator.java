@@ -68,6 +68,8 @@ public class ChromLibSqliteSchemaCreator
         createMoleculeTransitionOptimizationTable(conn);
 
         createIrtLibraryTable(conn);
+
+        createPredictorTable(conn);
     }
 
     private void createLibInfoTable(Connection conn) throws SQLException
@@ -168,6 +170,11 @@ public class ChromLibSqliteSchemaCreator
     private void createMoleculeTransitionOptimizationTable(Connection conn) throws SQLException
     {
         createTable(conn, Table.MoleculeTransitionOptimization, Constants.MoleculeTransitionOptimizationColumn.values());
+    }
+
+    private void createPredictorTable(Connection conn) throws SQLException
+    {
+        createTable(conn, Table.Predictor, Constants.PredictorColumn.values());
     }
 
     private String getColumnSql(Constants.ColumnDef[] columns)
