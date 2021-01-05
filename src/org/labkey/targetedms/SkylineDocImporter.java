@@ -1639,7 +1639,7 @@ public class SkylineDocImporter
         insertTransitionAnnotation(transition.getAnnotations(), transition.getId());
 
         // Insert appropriate CE and DP transition optimizations
-        if (transition.getCollisionEnergy() != null)
+        if (optimizationInfo._insertCEOptmizations && transition.getCollisionEnergy() != null)
         {
             TransitionOptimization ceOpt = new TransitionOptimization();
             ceOpt.setTransitionId(transition.getId());
