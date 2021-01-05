@@ -61,7 +61,9 @@ class Constants
         MoleculeTransition,
         MoleculeTransitionOptimization,
 
-        IrtLibrary
+        IrtLibrary,
+
+        Predictor
     }
 
     public enum Column
@@ -178,7 +180,11 @@ class Constants
 
         TransitionId("INTEGER NOT NULL", Table.Transition, Id),
         OptimizationType("TEXT NOT NULL"),
-        OptimizationValue("DOUBLE NOT NULL");
+        OptimizationValue("DOUBLE NOT NULL"),
+        OptimizationStep("INTEGER"),
+
+        StepSize("DOUBLE"),
+        StepCount("INTEGER");
 
         private final String definition;
         private final Table _fkTable;
@@ -617,7 +623,8 @@ class Constants
         SampleFileId(Column.SampleFileId),
         RetentionTime(Column.RetentionTime),
         StartTime(Column.StartTime),
-        EndTime(Column.EndTime);
+        EndTime(Column.EndTime),
+        OptimizationStep(Column.OptimizationStep);
 
         private final Column _column;
 
@@ -774,7 +781,8 @@ class Constants
         SampleFileId(Column.SampleFileId),
         RetentionTime(Column.RetentionTime),
         StartTime(Column.StartTime),
-        EndTime(Column.EndTime);
+        EndTime(Column.EndTime),
+        OptimizationStep(Column.OptimizationStep);
 
         private final Column _column;
 
@@ -896,7 +904,7 @@ class Constants
         }
     }
 
-    public enum MoleculeTransitionOptimization implements ColumnDef
+    public enum MoleculeTransitionOptimizationColumn implements ColumnDef
     {
         Id(Column.Id),
         TransitionId(Column.TransitionId),
@@ -906,12 +914,42 @@ class Constants
         private final Column _column;
         private final String _definition;
 
-        MoleculeTransitionOptimization(Column column)
+        MoleculeTransitionOptimizationColumn(Column column)
         {
             _column = column;
             _definition = column.definition;
         }
 
+
+        @Override
+        public Column baseColumn()
+        {
+            return _column;
+        }
+
+        @Override
+        public String definition()
+        {
+            return _definition;
+        }
+    }
+
+    public enum PredictorColumn implements ColumnDef
+    {
+        Id(Column.Id),
+        Name(Column.Name),
+        StepSize(Column.StepSize),
+        StepCount(Column.StepCount),
+        SampleFileId(Column.SampleFileId);
+
+        private final Column _column;
+        private final String _definition;
+
+        PredictorColumn(Column column)
+        {
+            _column = column;
+            _definition = column.definition;
+        }
 
         @Override
         public Column baseColumn()

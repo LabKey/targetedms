@@ -31,6 +31,7 @@ public class LibSampleFile extends AbstractLibEntity
     private String _instrumentIonizationType;
     private String _instrumentAnalyzer;
     private String _instrumentDetector;
+    //
 
     public String getFilePath()
     {

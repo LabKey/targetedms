@@ -167,7 +167,7 @@ public class ChromLibSqliteSchemaCreator
 
     private void createMoleculeTransitionOptimizationTable(Connection conn) throws SQLException
     {
-        createTable(conn, Table.MoleculeTransitionOptimization, Constants.MoleculeTransitionOptimization.values());
+        createTable(conn, Table.MoleculeTransitionOptimization, Constants.MoleculeTransitionOptimizationColumn.values());
     }
 
     private String getColumnSql(Constants.ColumnDef[] columns)

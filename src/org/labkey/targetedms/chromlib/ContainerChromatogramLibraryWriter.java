@@ -20,7 +20,6 @@ import org.labkey.api.data.Container;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.pipeline.LocalDirectory;
-import org.labkey.api.protein.ProteinService;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.security.User;
 import org.labkey.api.util.FileUtil;
@@ -607,6 +606,7 @@ public class ContainerChromatogramLibraryWriter
             precRetTime.setRetentionTime(chromInfo.getBestRetentionTime());
             precRetTime.setStartTime(chromInfo.getMinStartTime());
             precRetTime.setEndTime(chromInfo.getMaxEndTime());
+            precRetTime.setOptimizationStep(chromInfo.getOptimizationStep());
 
             libPrecursor.addRetentionTime(precRetTime);
         }
