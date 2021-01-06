@@ -54,6 +54,9 @@ public class ChromatogramLibraryWriter
     private Dao<LibMoleculeList> _moleculeListDao;
     private Dao<LibMolecule> _moleculeDao;
 
+    //Predictor
+    private Dao<LibPredictor> _predictorDao;
+
     // Maps are keyed with the Panorama DB rowId values
     private final Map<Long, LibProtein> _libProteinCache = new LinkedHashMap<>();
     private final Map<Long, LibMoleculeList> _libMoleculeListCache = new LinkedHashMap<>();
@@ -105,6 +108,8 @@ public class ChromatogramLibraryWriter
         _moleculeListDao = new LibMoleculeListDao(_moleculeDao);
 
         _irtLibraryDao = new LibIrtLibraryDao();
+
+        _predictorDao = new LibPredictorDao();
     }
 
     private Connection getConnection() throws SQLException
@@ -174,6 +179,11 @@ public class ChromatogramLibraryWriter
                 new LibMoleculeList(PeptideGroupManager.get(id)));
         _moleculeCount++;
         moleculeList.addChild(libMolecule);
+    }
+
+    public void writePredictor(LibPredictor predictor) throws SQLException
+    {
+        saveEntry(_predictorDao, predictor);
     }
 
     public int getProteinCount()

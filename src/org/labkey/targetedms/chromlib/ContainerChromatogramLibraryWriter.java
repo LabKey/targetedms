@@ -37,9 +37,11 @@ import org.labkey.targetedms.parser.PeptideGroup;
 import org.labkey.targetedms.parser.PeptideSettings;
 import org.labkey.targetedms.parser.Precursor;
 import org.labkey.targetedms.parser.PrecursorChromInfo;
+import org.labkey.targetedms.parser.Replicate;
 import org.labkey.targetedms.parser.SampleFile;
 import org.labkey.targetedms.parser.Transition;
 import org.labkey.targetedms.parser.TransitionChromInfo;
+import org.labkey.targetedms.parser.TransitionSettings;
 import org.labkey.targetedms.query.InstrumentManager;
 import org.labkey.targetedms.query.IsotopeLabelManager;
 import org.labkey.targetedms.query.ModificationManager;
@@ -325,9 +327,37 @@ public class ContainerChromatogramLibraryWriter
                 libSampleFile.setInstrumentDetector(instrument.getDetector());
             }
 
+            savePredictor(sampleFile);
+
             _libWriter.writeSampleFile(libSampleFile);
 
             _sampleFileIdMap.put(sampleFile.getId(), libSampleFile.getId());
+        }
+    }
+
+    private void savePredictor(SampleFile sampleFile) throws SQLException
+    {
+        Replicate replicate = ReplicateManager.getReplicate(sampleFile.getReplicateId());
+        if (null != replicate.getCePredictorId())
+        {
+            TransitionSettings.Predictor cePredictor = ReplicateManager.getReplicatePredictor(replicate.getCePredictorId());
+            LibPredictor libPredictor = new LibPredictor();
+            libPredictor.setName(cePredictor.getName());
+            libPredictor.setStepCount(cePredictor.getStepCount());
+            libPredictor.setStepSize(cePredictor.getStepSize());
+
+            _libWriter.writePredictor(libPredictor);
+        }
+
+        if (null != replicate.getDpPredictorId())
+        {
+            TransitionSettings.Predictor dpPredictor = ReplicateManager.getReplicatePredictor(replicate.getDpPredictorId());
+            LibPredictor libPredictor = new LibPredictor();
+            libPredictor.setName(dpPredictor.getName());
+            libPredictor.setStepCount(dpPredictor.getStepCount());
+            libPredictor.setStepSize(dpPredictor.getStepSize());
+
+            _libWriter.writePredictor(libPredictor);
         }
     }
 

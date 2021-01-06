@@ -863,7 +863,7 @@ public class SkylineDocumentParser implements AutoCloseable
         String stepSize = reader.getAttributeValue(null, "step_size");
         if (stepSize != null)
         {
-            predictor.setStepSize(Float.parseFloat(stepSize));
+            predictor.setStepSize(Double.parseDouble(stepSize));
         }
         String stepCount = reader.getAttributeValue(null, "step_count");
         if (stepCount != null)

@@ -95,6 +95,7 @@ import org.labkey.targetedms.query.GuideSetTable;
 import org.labkey.targetedms.query.ModificationManager;
 import org.labkey.targetedms.query.PeptideManager;
 import org.labkey.targetedms.query.PrecursorManager;
+import org.labkey.targetedms.query.ReplicateManager;
 import org.labkey.targetedms.query.RepresentativeStateManager;
 
 import java.io.File;
@@ -1559,8 +1560,6 @@ public class TargetedMSManager
         // This has to be done BEFORE deleting from TransitionPredictionSettings and
         // AFTER deleting from Replicate (
         deleteTransitionPredictionSettingsDependent();
-        // Delete from TransitionPredictionSettings
-        deleteRunDependent(getTableInfoTransitionPredictionSettings());
 
         // Delete from TransitionFullScanSettings
         deleteRunDependent(getTableInfoTransitionFullScanSettings());
@@ -1712,10 +1711,18 @@ public class TargetedMSManager
                 "OR Id IN (SELECT DpPredictorId FROM " + getTableInfoTransitionPredictionSettings() + " tps, " + getTableInfoRuns() + " r WHERE r.Id = tps.RunId AND r.Deleted = ?))"
                 , true, true);
 
-        execute("DELETE FROM " + getTableInfoPredictor() + " WHERE " +
-                "Id IN (SELECT CePredictorId FROM " + getTableInfoTransitionPredictionSettings() + " tps, " + getTableInfoRuns() + " r WHERE r.Id = tps.RunId AND r.Deleted = ?)" +
-                "OR Id IN (SELECT DpPredictorId FROM " + getTableInfoTransitionPredictionSettings() + " tps, " + getTableInfoRuns() + " r WHERE r.Id = tps.RunId AND r.Deleted = ?)"
-                , true, true);
+        List<Integer> predictorsToDelete = getPredictorsToDelete();
+
+        // Delete from TransitionPredictionSettings
+        deleteRunDependent(getTableInfoTransitionPredictionSettings());
+
+        if (!predictorsToDelete.isEmpty())
+        {
+            // Delete predictors
+            execute("DELETE FROM " + getTableInfoPredictor() + " WHERE " +
+                    "Id IN (" + predictorsToDelete.stream().map(String::valueOf).collect(Collectors.joining(",")) + " )"
+            );
+        }
     }
 
     private static void deleteIsolationSchemeDependent(TableInfo tableInfo)
@@ -2426,5 +2433,39 @@ public class TargetedMSManager
         return new TableSelector(TargetedMSManager.getTableInfoTransitionFullScanSettings(),
                 new SimpleFilter(FieldKey.fromParts("runId"), runId), null)
                 .getObject(TransitionSettings.FullScanSettings.class);
+    }
+
+    public static TransitionSettings.Predictor getReplicatePredictors(long predictorId)
+    {
+        return new TableSelector(TargetedMSManager.getTableInfoTransitionFullScanSettings(),
+                new SimpleFilter(FieldKey.fromParts("Id"), predictorId), null)
+                .getObject(TransitionSettings.Predictor.class);
+    }
+
+    public static List<TransitionSettings.Predictor> getPredictors(long runId)
+    {
+        List<TransitionSettings.Predictor> predictors = new ArrayList<>();
+        List<Replicate> replicates = ReplicateManager.getReplicatesForRun(runId);
+        replicates.forEach(replicate -> {
+            if (null != replicate.getCePredictorId())
+            {
+                predictors.add(getReplicatePredictors(replicate.getCePredictorId()));
+            }
+
+            if (null != replicate.getDpPredictorId())
+            {
+                predictors.add(getReplicatePredictors(replicate.getDpPredictorId()));
+            }
+        });
+        return predictors;
+    }
+
+    private static List<Integer> getPredictorsToDelete()
+    {
+        var sql = "Select Id FROM " + getTableInfoPredictor() + " WHERE " +
+                "Id IN (SELECT CePredictorId FROM " + getTableInfoTransitionPredictionSettings() + " tps, " + getTableInfoRuns() + " r WHERE r.Id = tps.RunId AND r.Deleted = true)" +
+                "OR Id IN (SELECT DpPredictorId FROM " + getTableInfoTransitionPredictionSettings() + " tps, " + getTableInfoRuns() + " r WHERE r.Id = tps.RunId AND r.Deleted = true)";
+
+        return new SqlSelector(getSchema(), sql).getArrayList(Integer.class);
     }
 }

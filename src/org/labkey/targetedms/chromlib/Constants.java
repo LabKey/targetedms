@@ -939,8 +939,7 @@ class Constants
         Id(Column.Id),
         Name(Column.Name),
         StepSize(Column.StepSize),
-        StepCount(Column.StepCount),
-        SampleFileId(Column.SampleFileId);
+        StepCount(Column.StepCount);
 
         private final Column _column;
         private final String _definition;
