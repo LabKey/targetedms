@@ -42,6 +42,7 @@ public class ChromLibSqliteSchemaCreator
     private void createTables(Connection conn) throws SQLException
     {
         createLibInfoTable(conn);
+        createPredictorTable(conn);
         createSampleFileTable(conn);
 
         // Proteomics modifications
@@ -68,8 +69,6 @@ public class ChromLibSqliteSchemaCreator
         createMoleculeTransitionOptimizationTable(conn);
 
         createIrtLibraryTable(conn);
-
-        createPredictorTable(conn);
     }
 
     private void createLibInfoTable(Connection conn) throws SQLException

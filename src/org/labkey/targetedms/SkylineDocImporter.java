@@ -263,6 +263,7 @@ public class SkylineDocImporter
         }
         catch (IOException | XMLStreamException | RuntimeException | PipelineJobException | AuditLogException e)
         {
+            _log.error("Import failed", e);
             updateRunStatus("Import failed (see pipeline log)", STATUS_FAILED);
             throw e;
         }

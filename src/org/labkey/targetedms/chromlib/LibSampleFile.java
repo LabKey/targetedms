@@ -32,7 +32,8 @@ public class LibSampleFile extends AbstractLibEntity
     private String _instrumentIonizationType;
     private String _instrumentAnalyzer;
     private String _instrumentDetector;
-    private Long _predictorId;
+    private Integer _cePredictorId;
+    private Integer _dpPredictorId;
 
     public String getFilePath()
     {
@@ -104,14 +105,24 @@ public class LibSampleFile extends AbstractLibEntity
         _instrumentDetector = instrumentDetector;
     }
 
-    public Long getPredictorId()
+    public Integer getCePredictorId()
     {
-        return _predictorId;
+        return _cePredictorId;
     }
 
-    public void setPredictorId(Long predictorId)
+    public void setCePredictorId(Integer cePredictorId)
     {
-        _predictorId = predictorId;
+        _cePredictorId = cePredictorId;
+    }
+
+    public Integer getDpPredictorId()
+    {
+        return _dpPredictorId;
+    }
+
+    public void setDpPredictorId(Integer dpPredictorId)
+    {
+        _dpPredictorId = dpPredictorId;
     }
 
     @Override
@@ -120,12 +131,20 @@ public class LibSampleFile extends AbstractLibEntity
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         LibSampleFile that = (LibSampleFile) o;
-        return Objects.equals(_filePath, that._filePath) && Objects.equals(_sampleName, that._sampleName) && Objects.equals(_acquiredTime, that._acquiredTime) && Objects.equals(_modifiedTime, that._modifiedTime) && Objects.equals(_instrumentIonizationType, that._instrumentIonizationType) && Objects.equals(_instrumentAnalyzer, that._instrumentAnalyzer) && Objects.equals(_instrumentDetector, that._instrumentDetector) && Objects.equals(_predictorId, that._predictorId);
+        return Objects.equals(_filePath, that._filePath) &&
+                Objects.equals(_sampleName, that._sampleName) &&
+                Objects.equals(_acquiredTime, that._acquiredTime) &&
+                Objects.equals(_modifiedTime, that._modifiedTime) &&
+                Objects.equals(_instrumentIonizationType, that._instrumentIonizationType) &&
+                Objects.equals(_instrumentAnalyzer, that._instrumentAnalyzer) &&
+                Objects.equals(_instrumentDetector, that._instrumentDetector) &&
+                Objects.equals(_cePredictorId, that._cePredictorId) &&
+                Objects.equals(_dpPredictorId, that._dpPredictorId);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(_filePath, _sampleName, _acquiredTime, _modifiedTime, _instrumentIonizationType, _instrumentAnalyzer, _instrumentDetector, _predictorId);
+        return Objects.hash(_filePath, _sampleName, _acquiredTime, _modifiedTime, _instrumentIonizationType, _instrumentAnalyzer, _instrumentDetector, _cePredictorId, _dpPredictorId);
     }
 }

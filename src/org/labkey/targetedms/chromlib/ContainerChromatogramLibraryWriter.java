@@ -93,6 +93,8 @@ public class ContainerChromatogramLibraryWriter
     private Map<Long, Long> _isotopeModificationAndLabelMap;
     // ModificationId(Panorama) -> ModificationId(SQLite Library)
     private Map<Long, Integer> _structuralModificationMap;
+    // PredictorId(Panorama) -> PredictorId(SQLite Library)
+    private Map<Long, Integer> _predictorIdMap;
 
     private TargetedMSRun.RepresentativeDataState _libraryType = null;
     private Long _bestReplicateIdForCurrentPeptideGroup;
@@ -121,6 +123,7 @@ public class ContainerChromatogramLibraryWriter
             _isotopeModificationMap = new HashMap<>();
             _isotopeModificationAndLabelMap = new HashMap<>();
             _structuralModificationMap = new HashMap<>();
+            _predictorIdMap = new HashMap<>();
 
             for(Integer runId: _representativeRunIds)
             {
@@ -327,7 +330,7 @@ public class ContainerChromatogramLibraryWriter
                 libSampleFile.setInstrumentDetector(instrument.getDetector());
             }
 
-            savePredictor(sampleFile);
+            savePredictor(sampleFile, libSampleFile);
 
             _libWriter.writeSampleFile(libSampleFile);
 
@@ -335,11 +338,17 @@ public class ContainerChromatogramLibraryWriter
         }
     }
 
-    private void savePredictor(SampleFile sampleFile) throws SQLException
+    private void savePredictor(SampleFile sampleFile, LibSampleFile libSampleFile) throws SQLException
     {
         Replicate replicate = ReplicateManager.getReplicate(sampleFile.getReplicateId());
         if (null != replicate.getCePredictorId())
         {
+            // if we have already saved this cePredictorId, don't save it again
+            if (_predictorIdMap.containsKey(replicate.getCePredictorId()))
+            {
+                libSampleFile.setCePredictorId(_predictorIdMap.get(replicate.getCePredictorId()));
+                return;
+            }
             TransitionSettings.Predictor cePredictor = ReplicateManager.getReplicatePredictor(replicate.getCePredictorId());
             LibPredictor libPredictor = new LibPredictor();
             libPredictor.setName(cePredictor.getName());
@@ -347,10 +356,18 @@ public class ContainerChromatogramLibraryWriter
             libPredictor.setStepSize(cePredictor.getStepSize());
 
             _libWriter.writePredictor(libPredictor);
+            _predictorIdMap.put(replicate.getCePredictorId(), libPredictor.getId());
+            libSampleFile.setCePredictorId(libPredictor.getId());
         }
 
         if (null != replicate.getDpPredictorId())
         {
+            // if we have already saved this dpPredictorId, don't save it again
+            if (_predictorIdMap.containsKey(replicate.getDpPredictorId()))
+            {
+                libSampleFile.setDpPredictorId(_predictorIdMap.get(replicate.getDpPredictorId()));
+                return;
+            }
             TransitionSettings.Predictor dpPredictor = ReplicateManager.getReplicatePredictor(replicate.getDpPredictorId());
             LibPredictor libPredictor = new LibPredictor();
             libPredictor.setName(dpPredictor.getName());
@@ -358,6 +375,8 @@ public class ContainerChromatogramLibraryWriter
             libPredictor.setStepSize(dpPredictor.getStepSize());
 
             _libWriter.writePredictor(libPredictor);
+            _predictorIdMap.put(replicate.getDpPredictorId(), libPredictor.getId());
+            libSampleFile.setDpPredictorId(libPredictor.getId());
         }
     }
 

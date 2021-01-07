@@ -39,6 +39,7 @@ class Constants
     {
         LibInfo,
         IsotopeModification,
+        Predictor,
         SampleFile,
 
         // Proteomics
@@ -61,9 +62,7 @@ class Constants
         MoleculeTransition,
         MoleculeTransitionOptimization,
 
-        IrtLibrary,
-
-        Predictor
+        IrtLibrary
     }
 
     public enum Column
@@ -89,6 +88,9 @@ class Constants
         InstrumentIonizationType("VARCHAR(100)"),
         InstrumentAnalyzer("VARCHAR(100)"),
         InstrumentDetector("VARCHAR(100)"),
+
+        CePredictorId("INTEGER", Table.Predictor, Id),
+        DpPredictorId("INTEGER", Table.Predictor, Id),
 
         Name,
         AminoAcid,
@@ -271,7 +273,9 @@ class Constants
         ModifiedTime(Column.ModifiedTime),
         InstrumentIonizationType(Column.InstrumentIonizationType),
         InstrumentAnalyzer(Column.InstrumentAnalyzer),
-        InstrumentDetector(Column.InstrumentDetector);
+        InstrumentDetector(Column.InstrumentDetector),
+        CePredictorId(Column.CePredictorId),
+        DpPredictorId(Column.DpPredictorId);
 
         private final Column _column;
 

@@ -60,7 +60,15 @@ public class LibSampleFileDao extends BaseDaoImpl<LibSampleFile>
         }
         stmt.setString(colIndex++, sampleFile.getInstrumentIonizationType());
         stmt.setString(colIndex++, sampleFile.getInstrumentAnalyzer());
-        stmt.setString(colIndex, sampleFile.getInstrumentDetector());
+        stmt.setString(colIndex++, sampleFile.getInstrumentDetector());
+        if (sampleFile.getCePredictorId() != null)
+        {
+            stmt.setInt(colIndex++, sampleFile.getCePredictorId());
+        }
+        if (sampleFile.getDpPredictorId() != null)
+        {
+            stmt.setInt(colIndex, sampleFile.getDpPredictorId());
+        }
     }
 
     @Override
@@ -120,6 +128,8 @@ public class LibSampleFileDao extends BaseDaoImpl<LibSampleFile>
             sampleFile.setInstrumentIonizationType(rs.getString(SampleFileColumn.InstrumentIonizationType.baseColumn().name()));
             sampleFile.setInstrumentAnalyzer(rs.getString(SampleFileColumn.InstrumentAnalyzer.baseColumn().name()));
             sampleFile.setInstrumentDetector(rs.getString(SampleFileColumn.InstrumentDetector.baseColumn().name()));
+            sampleFile.setCePredictorId(rs.getInt(SampleFileColumn.CePredictorId.baseColumn().name()));
+            sampleFile.setDpPredictorId(rs.getInt(SampleFileColumn.DpPredictorId.baseColumn().name()));
             sampleFiles.add(sampleFile);
         }
         return sampleFiles;
