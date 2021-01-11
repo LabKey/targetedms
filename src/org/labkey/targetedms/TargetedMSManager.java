@@ -2435,7 +2435,7 @@ public class TargetedMSManager
                 .getObject(TransitionSettings.FullScanSettings.class);
     }
 
-    public static TransitionSettings.Predictor getReplicatePredictors(long predictorId)
+    public static TransitionSettings.Predictor getReplicatePredictor(long predictorId)
     {
         return new TableSelector(TargetedMSManager.getTableInfoTransitionFullScanSettings(),
                 new SimpleFilter(FieldKey.fromParts("Id"), predictorId), null)
@@ -2449,12 +2449,12 @@ public class TargetedMSManager
         replicates.forEach(replicate -> {
             if (null != replicate.getCePredictorId())
             {
-                predictors.add(getReplicatePredictors(replicate.getCePredictorId()));
+                predictors.add(getReplicatePredictor(replicate.getCePredictorId()));
             }
 
             if (null != replicate.getDpPredictorId())
             {
-                predictors.add(getReplicatePredictors(replicate.getDpPredictorId()));
+                predictors.add(getReplicatePredictor(replicate.getDpPredictorId()));
             }
         });
         return predictors;

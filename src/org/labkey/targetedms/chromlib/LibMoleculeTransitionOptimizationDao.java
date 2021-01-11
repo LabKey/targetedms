@@ -3,6 +3,7 @@ package org.labkey.targetedms.chromlib;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class LibMoleculeTransitionOptimizationDao extends BaseDaoImpl<LibMolecul
         {
             LibMoleculeTransitionOptimization moleculeTransitionOptimization = new LibMoleculeTransitionOptimization();
             moleculeTransitionOptimization.setTransitionId(rs.getInt(Constants.TransitionOptimizationColumn.TransitionId.name()));
-            moleculeTransitionOptimization.setOptimizationValue(rs.getDouble(Constants.TransitionOptimizationColumn.OptimizationValue.name()));
+            moleculeTransitionOptimization.setOptimizationValue(readDouble(rs, Constants.TransitionOptimizationColumn.OptimizationValue.name()));
             moleculeTransitionOptimization.setOptimizationType(rs.getString(Constants.TransitionOptimizationColumn.OptimizationType.name()));
 
             moleculeTransitionOptimizations.add(moleculeTransitionOptimization);
@@ -30,7 +31,7 @@ public class LibMoleculeTransitionOptimizationDao extends BaseDaoImpl<LibMolecul
         int colIndex = 1;
         stmt.setInt(colIndex++, libMoleculeTransitionOptimization.getTransitionId());
         stmt.setString(colIndex++, libMoleculeTransitionOptimization.getOptimizationType());
-        stmt.setDouble(colIndex, libMoleculeTransitionOptimization.getOptimizationValue());
+        stmt.setObject(colIndex, libMoleculeTransitionOptimization.getOptimizationValue(), Types.DOUBLE);
     }
 
     @Override

@@ -4,16 +4,16 @@ import java.util.Objects;
 
 public abstract class AbstractLibTransitionOptimization extends AbstractLibEntity
 {
-    protected Integer _transitionId;
+    protected int _transitionId;
     protected String _optimizationType;
     protected Double _optimizationValue;
 
-    public Integer getTransitionId()
+    public int getTransitionId()
     {
         return _transitionId;
     }
 
-    public void setTransitionId(Integer transitionId)
+    public void setTransitionId(int transitionId)
     {
         _transitionId = transitionId;
     }

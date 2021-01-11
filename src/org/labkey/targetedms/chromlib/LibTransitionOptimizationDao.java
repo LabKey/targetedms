@@ -16,7 +16,7 @@ public class LibTransitionOptimizationDao extends BaseDaoImpl<LibTransitionOptim
         {
             LibTransitionOptimization transitionOptimization = new LibTransitionOptimization();
             transitionOptimization.setTransitionId(rs.getInt(Constants.TransitionOptimizationColumn.TransitionId.name()));
-            transitionOptimization.setOptimizationValue(rs.getDouble(Constants.TransitionOptimizationColumn.OptimizationValue.name()));
+            transitionOptimization.setOptimizationValue(readDouble(rs, Constants.TransitionOptimizationColumn.OptimizationValue.name()));
             transitionOptimization.setOptimizationType(rs.getString(Constants.TransitionOptimizationColumn.OptimizationType.name()));
 
             transitionOptimizations.add(transitionOptimization);

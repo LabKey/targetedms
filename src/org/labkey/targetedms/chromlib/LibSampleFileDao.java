@@ -61,14 +61,9 @@ public class LibSampleFileDao extends BaseDaoImpl<LibSampleFile>
         stmt.setString(colIndex++, sampleFile.getInstrumentIonizationType());
         stmt.setString(colIndex++, sampleFile.getInstrumentAnalyzer());
         stmt.setString(colIndex++, sampleFile.getInstrumentDetector());
-        if (sampleFile.getCePredictorId() != null)
-        {
-            stmt.setInt(colIndex++, sampleFile.getCePredictorId());
-        }
-        if (sampleFile.getDpPredictorId() != null)
-        {
-            stmt.setInt(colIndex, sampleFile.getDpPredictorId());
-        }
+
+        stmt.setObject(colIndex++, sampleFile.getCePredictorId(), Types.INTEGER);
+        stmt.setObject(colIndex, sampleFile.getDpPredictorId(), Types.INTEGER);
     }
 
     @Override
