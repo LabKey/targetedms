@@ -879,7 +879,7 @@ public class TargetedMSManager
 
     public static void markRunsNotRepresentative(Container container, TargetedMSRun.RepresentativeDataState representativeState)
     {
-        Collection<Integer> representativeRunIds = null;
+        Collection<Long> representativeRunIds = null;
 
         if(representativeState == TargetedMSRun.RepresentativeDataState.Representative_Protein)
         {
@@ -913,9 +913,9 @@ public class TargetedMSManager
         new SqlExecutor(TargetedMSManager.getSchema()).execute(updateSql);
     }
 
-    public static List<Integer> getCurrentRepresentativeRunIds(Container container)
+    public static List<Long> getCurrentRepresentativeRunIds(Container container)
     {
-        List<Integer> representativeRunIds = null;
+        List<Long> representativeRunIds = null;
         if(getFolderType(container) == TargetedMSService.FolderType.LibraryProtein)
         {
             representativeRunIds = getCurrentProteinRepresentativeRunIds(container);
@@ -928,19 +928,19 @@ public class TargetedMSManager
         return representativeRunIds != null ? representativeRunIds : Collections.emptyList();
     }
 
-    private static List<Integer> getCurrentProteinRepresentativeRunIds(Container container)
+    private static List<Long> getCurrentProteinRepresentativeRunIds(Container container)
     {
         return getProteinRepresentativeRunIds(container, RepresentativeDataState.Representative.ordinal());
     }
 
-    private static List<Integer> getProteinRepresentativeRunIds(Container container)
+    private static List<Long> getProteinRepresentativeRunIds(Container container)
     {
         return getProteinRepresentativeRunIds(container, RepresentativeDataState.Representative.ordinal(),
                                                          RepresentativeDataState.Deprecated.ordinal(),
                                                          RepresentativeDataState.Conflicted.ordinal());
     }
 
-    private static List<Integer> getProteinRepresentativeRunIds(Container container, int... stateArray)
+    private static List<Long> getProteinRepresentativeRunIds(Container container, int... stateArray)
     {
         SQLFragment reprRunIdSql = new SQLFragment();
         reprRunIdSql.append("SELECT DISTINCT (RunId) FROM ");
@@ -954,22 +954,22 @@ public class TargetedMSManager
         reprRunIdSql.add(container);
         reprRunIdSql.append(" AND runs.Id = pepgrp.RunId");
 
-        return new SqlSelector(TargetedMSManager.getSchema(), reprRunIdSql).getArrayList(Integer.class);
+        return new SqlSelector(TargetedMSManager.getSchema(), reprRunIdSql).getArrayList(Long.class);
     }
 
-    private static List<Integer> getCurrentPeptideRepresentativeRunIds(Container container)
+    private static List<Long> getCurrentPeptideRepresentativeRunIds(Container container)
     {
         return getPeptideRepresentativeRunIds(container, RepresentativeDataState.Representative.ordinal());
     }
 
-    private static List<Integer> getPeptideRepresentativeRunIds(Container container)
+    private static List<Long> getPeptideRepresentativeRunIds(Container container)
     {
         return getPeptideRepresentativeRunIds(container, RepresentativeDataState.Representative.ordinal(),
                                                          RepresentativeDataState.Deprecated.ordinal(),
                                                          RepresentativeDataState.Conflicted.ordinal());
     }
 
-    private static List<Integer> getPeptideRepresentativeRunIds(Container container, int... stateArray)
+    private static List<Long> getPeptideRepresentativeRunIds(Container container, int... stateArray)
     {
         // Get a list of runIds that have proteins that are either representative, deprecated or conflicted.
         SQLFragment reprRunIdSql = new SQLFragment();
@@ -991,7 +991,7 @@ public class TargetedMSManager
         reprRunIdSql.add(container);
         reprRunIdSql.append(" AND runs.Id = pepgrp.RunId");
 
-        return new SqlSelector(TargetedMSManager.getSchema(), reprRunIdSql).getArrayList(Integer.class);
+        return new SqlSelector(TargetedMSManager.getSchema(), reprRunIdSql).getArrayList(Long.class);
     }
 
     public static void updateRun(TargetedMSRun run, User user)
@@ -1711,7 +1711,7 @@ public class TargetedMSManager
                 "OR Id IN (SELECT DpPredictorId FROM " + getTableInfoTransitionPredictionSettings() + " tps, " + getTableInfoRuns() + " r WHERE r.Id = tps.RunId AND r.Deleted = ?))"
                 , true, true);
 
-        List<Integer> predictorsToDelete = getPredictorsToDelete();
+        List<Long> predictorsToDelete = getPredictorsToDelete();
 
         // Delete from TransitionPredictionSettings
         deleteRunDependent(getTableInfoTransitionPredictionSettings());
@@ -1978,7 +1978,7 @@ public class TargetedMSManager
         return timeoutValue;
     }
 
-    public static Map<String, Map<String, Double>> getClustergrammerQuery(User user, Container container, Integer[] rowIds)
+    public static Map<String, Map<String, Double>> getClustergrammerQuery(User user, Container container, Long[] rowIds)
     {
         //Set column names
         String intensityColumnName = "Area";
@@ -2460,12 +2460,12 @@ public class TargetedMSManager
         return predictors;
     }
 
-    private static List<Integer> getPredictorsToDelete()
+    private static List<Long> getPredictorsToDelete()
     {
-        var sql = "Select Id FROM " + getTableInfoPredictor() + " WHERE " +
-                "Id IN (SELECT CePredictorId FROM " + getTableInfoTransitionPredictionSettings() + " tps, " + getTableInfoRuns() + " r WHERE r.Id = tps.RunId AND r.Deleted = true)" +
-                "OR Id IN (SELECT DpPredictorId FROM " + getTableInfoTransitionPredictionSettings() + " tps, " + getTableInfoRuns() + " r WHERE r.Id = tps.RunId AND r.Deleted = true)";
+        SQLFragment sql = new SQLFragment("Select Id FROM " + getTableInfoPredictor() + " WHERE " +
+                "Id IN (SELECT tps.CePredictorId FROM " + getTableInfoTransitionPredictionSettings() + " tps, " + getTableInfoRuns() + " r WHERE r.Id = tps.RunId AND r.Deleted = ?) " +
+                " OR Id IN (SELECT tps.DpPredictorId FROM " + getTableInfoTransitionPredictionSettings() + " tps, " + getTableInfoRuns() + " r WHERE r.Id = tps.RunId AND r.Deleted = ?)").add(true).add(true);
 
-        return new SqlSelector(getSchema(), sql).getArrayList(Integer.class);
+        return new SqlSelector(getSchema(), sql).getArrayList(Long.class);
     }
 }

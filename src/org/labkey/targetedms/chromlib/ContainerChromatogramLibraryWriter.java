@@ -77,7 +77,7 @@ public class ContainerChromatogramLibraryWriter
 {
     private final String _panoramaServer;
     private final Container _container;
-    private final List<Integer> _representativeRunIds;
+    private final List<Long> _representativeRunIds;
     private ChromatogramLibraryWriter _libWriter;
 
     private int _precursorCount = 0;
@@ -101,7 +101,7 @@ public class ContainerChromatogramLibraryWriter
 
     private final User _user;
 
-    public ContainerChromatogramLibraryWriter(String panoramaServer, Container container, List<Integer> representativeRunIds, User user)
+    public ContainerChromatogramLibraryWriter(String panoramaServer, Container container, List<Long> representativeRunIds, User user)
     {
         _panoramaServer = panoramaServer;
         _container = container;
@@ -125,7 +125,7 @@ public class ContainerChromatogramLibraryWriter
             _structuralModificationMap = new HashMap<>();
             _predictorIdMap = new HashMap<>();
 
-            for(Integer runId: _representativeRunIds)
+            for(Long runId: _representativeRunIds)
             {
                 writeRepresentativeDataInRun(runId);
             }
@@ -178,7 +178,7 @@ public class ContainerChromatogramLibraryWriter
         _libWriter.writeLibInfo(libInfo);
     }
 
-    private void writeRepresentativeDataInRun(Integer runId) throws SQLException
+    private void writeRepresentativeDataInRun(Long runId) throws SQLException
     {
         // Write the replicates and sample files for this run.
         saveSampleFiles(runId);
@@ -242,7 +242,7 @@ public class ContainerChromatogramLibraryWriter
         _libWriter.writeIrtLibrary(irtPeptides);
     }
 
-    private void saveRunIsotopeModifications(Integer runId) throws SQLException
+    private void saveRunIsotopeModifications(Long runId) throws SQLException
     {
         List<PeptideSettings.RunIsotopeModification> isotopeMods = ModificationManager.getIsotopeModificationsForRun(runId);
         for(PeptideSettings.RunIsotopeModification mod: isotopeMods)
@@ -275,7 +275,7 @@ public class ContainerChromatogramLibraryWriter
         }
     }
 
-    private void saveRunStructuralModifications(Integer runId) throws SQLException
+    private void saveRunStructuralModifications(Long runId) throws SQLException
     {
         List<PeptideSettings.RunStructuralModification> structuralMods = ModificationManager.getStructuralModificationsForRun(runId);
         for(PeptideSettings.RunStructuralModification mod: structuralMods)
@@ -311,7 +311,7 @@ public class ContainerChromatogramLibraryWriter
         }
     }
 
-    private void saveSampleFiles(Integer runId) throws SQLException
+    private void saveSampleFiles(Long runId) throws SQLException
     {
         List<SampleFile> sampleFiles = ReplicateManager.getSampleFilesForRun(runId);
         for(SampleFile sampleFile: sampleFiles)
