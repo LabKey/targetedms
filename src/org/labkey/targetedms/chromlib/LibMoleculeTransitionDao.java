@@ -105,11 +105,23 @@ public class LibMoleculeTransitionDao extends BaseDaoImpl<LibMoleculeTransition>
             if (_moleculeTransitionOptimizationDao != null)
             {
                 transitions.forEach(transition -> {
-                    LibMoleculeTransitionOptimization moleculeTransitionOptimization = new LibMoleculeTransitionOptimization();
-                    moleculeTransitionOptimization.setTransitionId(transition.getId());
-                    moleculeTransitionOptimization.setOptimizationType(transition.getOptimizationType());
-                    moleculeTransitionOptimization.setOptimizationValue(transition.getOptimizationValue());
-                    moleculeTransitionOptimizations.add(moleculeTransitionOptimization);
+
+                    if (null != transition.getCollisionEnergy())
+                    {
+                        LibMoleculeTransitionOptimization moleculeTransitionOptimization = new LibMoleculeTransitionOptimization();
+                        moleculeTransitionOptimization.setTransitionId(transition.getId());
+                        moleculeTransitionOptimization.setOptimizationType("ce");
+                        moleculeTransitionOptimization.setOptimizationValue(transition.getCollisionEnergy());
+                        moleculeTransitionOptimizations.add(moleculeTransitionOptimization);
+                    }
+                    if (null != transition.getDeclusteringPotential())
+                    {
+                        LibMoleculeTransitionOptimization moleculeTransitionOptimization = new LibMoleculeTransitionOptimization();
+                        moleculeTransitionOptimization.setTransitionId(transition.getId());
+                        moleculeTransitionOptimization.setOptimizationType("dp");
+                        moleculeTransitionOptimization.setOptimizationValue(transition.getDeclusteringPotential());
+                        moleculeTransitionOptimizations.add(moleculeTransitionOptimization);
+                    }
                 });
 
                 _moleculeTransitionOptimizationDao.saveAll(moleculeTransitionOptimizations, connection);

@@ -2292,6 +2292,14 @@ public class SkylineDocumentParser implements AutoCloseable
                 }
                 // Should we blow up if productMz was null?
             }
+            else if (XmlUtil.isStartElement(reader, evtType, COLLISION_ENERGY))
+            {
+                transition.setCollisionEnergy(XmlUtil.readDouble(reader, COLLISION_ENERGY));
+            }
+            else if (XmlUtil.isStartElement(reader, evtType, DECLUSTERING_POTENTIAL))
+            {
+                transition.setDeclusteringPotential(Double.parseDouble(reader.getElementText()));
+            }
             else if(XmlUtil.isStartElement(reader, evtType, TRANSITION_PEAK))
             {
                 TransitionChromInfo chromInfo = readTransitionChromInfo(reader);

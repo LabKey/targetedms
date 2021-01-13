@@ -16,8 +16,8 @@ public abstract class AbstractLibTransition extends AbstractLibEntity
     protected Integer _chromatogramIndex;
     protected Double _massErrorPPM;
 
-    private Double _optimizationValue;
-    private String _optimizationType;
+    private Double _collisionEnergy;
+    private Double _declusteringPotential;
 
     public AbstractLibTransition() {}
 
@@ -45,13 +45,11 @@ public abstract class AbstractLibTransition extends AbstractLibEntity
 
         if (transition.getCollisionEnergy() != null)
         {
-            setOptimizationValue(transition.getCollisionEnergy());
-            setOptimizationType("ce");
+            setCollisionEnergy(transition.getCollisionEnergy());
         }
         if (transition.getDeclusteringPotential() != null)
         {
-            setOptimizationValue(transition.getDeclusteringPotential());
-            setOptimizationType("dp");
+            setDeclusteringPotential(transition.getDeclusteringPotential());
         }
 
     }
@@ -146,23 +144,23 @@ public abstract class AbstractLibTransition extends AbstractLibEntity
         return _massErrorPPM;
     }
 
-    public Double getOptimizationValue()
+    public Double getCollisionEnergy()
     {
-        return _optimizationValue;
+        return _collisionEnergy;
     }
 
-    public void setOptimizationValue(Double optimizationValue)
+    public void setCollisionEnergy(Double collisionEnergy)
     {
-        _optimizationValue = optimizationValue;
+        _collisionEnergy = collisionEnergy;
     }
 
-    public String getOptimizationType()
+    public Double getDeclusteringPotential()
     {
-        return _optimizationType;
+        return _declusteringPotential;
     }
 
-    public void setOptimizationType(String optimizationType)
+    public void setDeclusteringPotential(Double declusteringPotential)
     {
-        _optimizationType = optimizationType;
+        _declusteringPotential = declusteringPotential;
     }
 }

@@ -6,3 +6,10 @@ ALTER TABLE targetedms.transitionpredictionsettings ADD CONSTRAINT FK_Transition
 
 CREATE INDEX IX_TransitionPredictionSettings_CePredictorId ON targetedms.transitionpredictionsettings(CePredictorId);
 CREATE INDEX IX_TransitionPredictionSettings_DpPredictorId ON targetedms.transitionpredictionsettings(DpPredictorId);
+
+DROP INDEX targetedms.IX_TransitionOptimization_TransitionId;
+
+ALTER TABLE targetedms.TransitionOptimization DROP CONSTRAINT FK_TransitionOptimization_TransitionId;
+ALTER TABLE targetedms.TransitionOptimization ADD CONSTRAINT FK_TransitionOptimization_TransitionId FOREIGN KEY (TransitionId) REFERENCES targetedms.GeneralTransition(Id);
+
+CREATE INDEX IX_TransitionOptimization_TransitionId ON targetedms.TransitionOptimization (TransitionId);

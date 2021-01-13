@@ -131,7 +131,7 @@ public class ChromatogramLibraryWriter
 
     private void flushCache() throws SQLException
     {
-        if (null != _predictorDao && null != _moleculeListDao)
+        if (null != _proteinDao && null != _moleculeListDao)
         {
             flush(_proteinDao, _libProteinCache.values());
             flush(_moleculeListDao, _libMoleculeListCache.values());

@@ -111,11 +111,22 @@ public class LibTransitionDao extends BaseDaoImpl<LibTransition>
             if (_transitionOptimizationDao != null)
             {
                 transitions.forEach(transition -> {
-                    LibTransitionOptimization transitionOptimization = new LibTransitionOptimization();
-                    transitionOptimization.setTransitionId(transition.getId());
-                    transitionOptimization.setOptimizationType(transition.getOptimizationType());
-                    transitionOptimization.setOptimizationValue(transition.getOptimizationValue());
-                    transitionOptimizationList.add(transitionOptimization);
+                    if (null != transition.getCollisionEnergy())
+                    {
+                        LibTransitionOptimization libTransitionOptimization = new LibTransitionOptimization();
+                        libTransitionOptimization.setTransitionId(transition.getId());
+                        libTransitionOptimization.setOptimizationType("ce");
+                        libTransitionOptimization.setOptimizationValue(transition.getCollisionEnergy());
+                        transitionOptimizationList.add(libTransitionOptimization);
+                    }
+                    if (null != transition.getDeclusteringPotential())
+                    {
+                        LibTransitionOptimization libTransitionOptimization = new LibTransitionOptimization();
+                        libTransitionOptimization.setTransitionId(transition.getId());
+                        libTransitionOptimization.setOptimizationType("dp");
+                        libTransitionOptimization.setOptimizationValue(transition.getDeclusteringPotential());
+                        transitionOptimizationList.add(libTransitionOptimization);
+                    }
                 });
 
                 _transitionOptimizationDao.saveAll(transitionOptimizationList, connection);
