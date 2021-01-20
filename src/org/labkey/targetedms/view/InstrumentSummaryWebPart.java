@@ -11,12 +11,13 @@ public class InstrumentSummaryWebPart extends QueryView
     public InstrumentSummaryWebPart (ViewContext viewContext)
     {
         super(new TargetedMSSchema(viewContext.getUser(), viewContext.getContainer()));
-        setSettings(new QuerySettings(getViewContext(), "InstrumentSummary", "InstrumentSummaryByFolder"));
+        setSettings(new QuerySettings(getViewContext(), "InstrumentSummary", "QCInstrumentSummary"));
         setTitle("Instruments Summary");
         setShowDetailsColumn(false);
 
         setShowBorders(true);
         setShadeAlternatingRows(true);
+        setContainerFilter(null);
     }
 
 }

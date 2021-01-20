@@ -3,7 +3,8 @@ SELECT
     sf.InstrumentSerialNumber AS SerialNumber,
     MIN(sf.AcquiredTime) AS StartDate,
     MAX(sf.AcquiredTime) AS EndDate,
-    COUNT(DISTINCT sf.ReplicateId) AS NoOfReplicates
+    COUNT(DISTINCT sf.ReplicateId) AS NoOfReplicates,
+    null AS QCFolders
 FROM targetedms.SampleFile sf
 WHERE
     sf.InstrumentSerialNumber IS NOT NULL
