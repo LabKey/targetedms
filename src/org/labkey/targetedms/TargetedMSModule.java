@@ -415,7 +415,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
                 }
             },
 
-            new BaseWebPartFactory(TARGETED_MS_RUNS_WEBPART_NAME)
+            new BaseWebPartFactory(TARGETED_MS_INSTRUMENT_SUMMARY)
             {
                 @Override
                 public WebPartView<?> getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)

@@ -4,10 +4,8 @@ SELECT
     MIN(sf.AcquiredTime) AS StartDate,
     MAX(sf.AcquiredTime) AS EndDate,
     COUNT(DISTINCT sf.ReplicateId) AS NoOfReplicates,
-    null AS QCFolders
+    sf.InstrumentSerialNumber AS QCFolders
 FROM targetedms.SampleFile sf
-WHERE
-    sf.InstrumentSerialNumber IS NOT NULL
 GROUP BY
          sf.InstrumentSerialNumber,
          sf.InstrumentId.model

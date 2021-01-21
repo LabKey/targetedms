@@ -16,9 +16,9 @@ import org.labkey.targetedms.TargetedMSRun;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public class QCFolderDisplayColumnFactory implements DisplayColumnFactory
 {
@@ -35,9 +35,9 @@ public class QCFolderDisplayColumnFactory implements DisplayColumnFactory
             public void renderGridCellContents(RenderContext ctx, Writer out) throws IOException
             {
                 final User user = ctx.getViewContext().getUser();
-                String serialNumber = String.valueOf(ctx.get("SerialNumber"));
+                String serialNumber = String.valueOf(getBoundColumn().getValue(ctx));
                 var instrumentRunIds = TargetedMSManager.getRunIdsByInstrument(serialNumber);
-                List<Container> qcContainers = new ArrayList<>();
+                Set<Container> qcContainers = new HashSet<>();
                 instrumentRunIds.forEach(runId -> {
                     TargetedMSRun run = TargetedMSManager.getRun(runId);
                     if (null != run && Objects.equals(TargetedMSModule.getFolderType(run.getContainer()), TargetedMSService.FolderType.QC))
@@ -52,7 +52,7 @@ public class QCFolderDisplayColumnFactory implements DisplayColumnFactory
                 qcContainers.forEach(qcContainer -> {
                     var url = qcContainer.getStartURL(user);
                     sb.append("<div><a href=\"")
-                            .append(url)
+                            .append(PageFlowUtil.filter(url))
                             .append("\"")
                             .append("target=\"_blank\">")
                             .append(PageFlowUtil.filter(qcContainer.getName()))

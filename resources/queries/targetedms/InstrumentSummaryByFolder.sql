@@ -6,8 +6,6 @@ SELECT
        ReplicateId.RunId.Container,
        InstrumentSerialNumber
 FROM targetedms.SampleFile
-WHERE
-      InstrumentSerialNumber IS NOT NULL
 GROUP BY
          ReplicateId.RunId.Container,
          InstrumentSerialNumber
