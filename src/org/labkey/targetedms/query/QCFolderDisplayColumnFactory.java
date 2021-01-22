@@ -16,9 +16,9 @@ import org.labkey.targetedms.TargetedMSRun;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 
 public class QCFolderDisplayColumnFactory implements DisplayColumnFactory
 {
@@ -37,7 +37,7 @@ public class QCFolderDisplayColumnFactory implements DisplayColumnFactory
                 final User user = ctx.getViewContext().getUser();
                 String serialNumber = String.valueOf(getBoundColumn().getValue(ctx));
                 var instrumentRunIds = TargetedMSManager.getRunIdsByInstrument(serialNumber);
-                Set<Container> qcContainers = new HashSet<>();
+                Set<Container> qcContainers = new TreeSet<>();
                 instrumentRunIds.forEach(runId -> {
                     TargetedMSRun run = TargetedMSManager.getRun(runId);
                     if (null != run && Objects.equals(TargetedMSModule.getFolderType(run.getContainer()), TargetedMSService.FolderType.QC))
