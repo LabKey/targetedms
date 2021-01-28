@@ -53,6 +53,7 @@ import org.labkey.api.action.ReturnUrlForm;
 import org.labkey.api.action.SimpleErrorView;
 import org.labkey.api.action.SimpleViewAction;
 import org.labkey.api.action.SpringActionController;
+import org.labkey.api.admin.AdminUrls;
 import org.labkey.api.analytics.AnalyticsService;
 import org.labkey.api.data.ButtonBar;
 import org.labkey.api.data.CompareType;
@@ -496,7 +497,6 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void validateCommand(ChromatogramCrawlerForm target, Errors errors)
         {
-
         }
 
         @Override
@@ -524,7 +524,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void addNavTrail(NavTree root)
         {
-            root.addChild("Chromatogram Crawler");
+            urlProvider(AdminUrls.class).addAdminNavTrail(root, "Chromatogram Crawler", new ActionURL(getClass(), getContainer()));
         }
     }
 
