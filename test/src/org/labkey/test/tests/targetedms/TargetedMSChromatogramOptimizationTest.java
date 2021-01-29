@@ -19,7 +19,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-@Category({DailyB.class, MS2.class})
+@Category({DailyB.class})
 @BaseWebDriverTest.ClassTimeout(minutes = 6)
 public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
 {
@@ -47,9 +47,8 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
         File downloadedClibFile = doAndWaitForDownload(() -> clickButton("Download", 0));
 
         goToProjectHome();
-        String queryURL = "query-executeQuery.view?schemaName=targetedms&query.queryName=TransitionOptimization";
-        goToURL(new URL(WebTestHelper.getBaseURL() + getCurrentContainerPath() + "/" + queryURL), 60000);
-        DataRegionTable table = new DataRegionTable("query",getDriver());
+        goToSchemaBrowser();
+        DataRegionTable table = viewQueryData("targetedms", "TransitionOptimization");
         table.rowSelector().showAll();
 
         checker().verifyEquals("Invalid number of rows in transition optimization", table.getDataRowCount(),
@@ -63,9 +62,9 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
 
         log("Verifying the SampleFile modifications");
         checker().verifyTrue("Sample File does not have CePredictorId",
-                columnExists(downloadedClibFile,"SampleFile","CePredictorId"));
+                columnExists(downloadedClibFile, "SampleFile", "CePredictorId"));
         checker().verifyTrue("Sample File does not have DpPredictorId",
-                columnExists(downloadedClibFile,"SampleFile","DpPredictorId"));
+                columnExists(downloadedClibFile, "SampleFile", "DpPredictorId"));
 
     }
 
@@ -75,28 +74,25 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
         int cnt = 0;
         @SuppressWarnings("SqlResolve")
         String sql = "SELECT * FROM " + name;
-        ConnectionSource cs = new ConnectionSource(clibFile.getAbsolutePath());
-        Connection conn = null;
-        try
+        try (
+                Connection conn = ConnectionSource.getConnection(clibFile.getAbsolutePath()))
         {
-            conn = cs.getConnection();
             ResultSet rs = conn.createStatement().executeQuery(sql);
             while (rs.next())
                 cnt++;
         }
         catch (SQLException e)
         {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         return cnt;
     }
 
     private boolean tableExists(File clibFile, String tableName)
     {
-        ConnectionSource cs = new ConnectionSource(clibFile.getAbsolutePath());
-        try
+        try (
+                Connection conn = ConnectionSource.getConnection(clibFile.getAbsolutePath()))
         {
-            Connection conn = cs.getConnection();
             DatabaseMetaData md = conn.getMetaData();
             ResultSet rs = md.getTables(null, null, tableName, null);
             if (rs.next())
@@ -106,17 +102,15 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
         }
         catch (SQLException e)
         {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return false;
     }
 
     private boolean columnExists(File clibFile, String tableName, String columnName)
     {
-        ConnectionSource cs = new ConnectionSource(clibFile.getAbsolutePath());
-        try
+        try (
+                Connection conn = ConnectionSource.getConnection(clibFile.getAbsolutePath()))
         {
-            Connection conn = cs.getConnection();
             DatabaseMetaData md = conn.getMetaData();
             ResultSet rs = md.getColumns(null, null, tableName, columnName);
             if (rs.next())
@@ -126,8 +120,7 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
         }
         catch (SQLException e)
         {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return false;
     }
 }
