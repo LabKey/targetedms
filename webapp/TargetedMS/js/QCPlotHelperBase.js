@@ -247,7 +247,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             }
         }
 
-        this.renderPlots();
+        var urlParams = LABKEY.ActionURL.getParameters();
+
+        urlParams['RunId'] !== undefined ? this.getExperimentRunDetails(urlParams['RunId']) : this.renderPlots();
     },
 
     renderPlots: function()
@@ -295,6 +297,32 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     {
         var width = this.plotWidth - 30;
         return !this.largePlot && this.plotTypes.length > 1 ? width / 2 : width;
+    },
+
+    getExperimentRunDetails: function (runId) {
+        var sql = "Select MIN(sf.AcquiredTime) AS StartDate,\n" +
+                "       MAX(sf.AcquiredTime) AS EndDate,\n" +
+                "       r.FileName\n" +
+                "FROM targetedms.Replicate rep\n" +
+                "INNER JOIN targetedms.SampleFile sf ON rep.Id = sf.ReplicateId\n" +
+                "INNER JOIN targetedms.Runs r on r.Id = rep.RunId\n" +
+                "where rep.RunId ='" + runId + "'\n" +
+                "GROUP BY r.FileName";
+
+        LABKEY.Query.executeSql({
+            schemaName: 'targetedms',
+            sql: sql,
+            containerFilter: LABKEY.Query.containerFilter.allFolders,
+            scope: this,
+            success: function (response) {
+                // response has startDate and endDate for exp range
+                console.log("success -" , response);
+                // fragmentPlotData has plot data separated by series labels
+                // determine the start index and end index for exp region to be highlighted
+                this.renderPlots();
+            },
+            failure: this.failureHandler
+        });
     },
 
     // TODO: Move this to tests
