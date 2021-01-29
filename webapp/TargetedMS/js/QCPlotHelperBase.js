@@ -315,14 +315,54 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             containerFilter: LABKEY.Query.containerFilter.allFolders,
             scope: this,
             success: function (response) {
-                // response has startDate and endDate for exp range
-                console.log("success -" , response);
-                // fragmentPlotData has plot data separated by series labels
+
+                var runDetails = response.rows[0];
                 // determine the start index and end index for exp region to be highlighted
+                this.calculatePlotIndicesBetweenDates(new Date(runDetails.StartDate), new Date(runDetails.EndDate));
                 this.renderPlots();
             },
             failure: this.failureHandler
         });
+    },
+
+    calculatePlotIndicesBetweenDates: function (startDate, endDate) {
+        this.expRangeIndices = {};
+        var startIndex;
+        var endIndex;
+
+        if (this.fragmentPlotData) {
+            // fragmentPlotData has plot data separated by series labels
+            var data = this.fragmentPlotData;
+
+            for (var seriesLabel in data) {
+                var pointsData = data[seriesLabel].data;
+                for (var index = 0; index < pointsData.length; index++) {
+                    var pointDate = new Date(pointsData[index].fullDate)
+                    if (pointDate >= startDate && pointDate < endDate) {
+                        if (startIndex === undefined) {
+                            startIndex = index;
+                        }
+                    }
+
+                    if (pointDate >= endDate) {
+                        if (!endIndex) {
+                            endIndex = index;
+                        }
+                    }
+
+                    var foundIndices = startIndex !== undefined && endIndex !== undefined;
+
+                    if (foundIndices) {
+                        break;
+                    }
+                }
+                if (foundIndices) {
+                    this.expRangeIndices['startIndex'] = startIndex;
+                    this.expRangeIndices['endIndex'] = endIndex;
+                    break;
+                }
+            }
+        }
     },
 
     // TODO: Move this to tests
