@@ -775,7 +775,7 @@ public class TargetedMSSchema extends UserSchema
                             @Override
                             public String renderURL(RenderContext ctx)
                             {
-                                Integer runId = ctx.get(FieldKey.fromParts("File", "Id"), Integer.class);
+                                Long runId = ctx.get(FieldKey.fromParts("File", "Id"), Long.class);
                                 if (runId == null)
                                     return null;
 

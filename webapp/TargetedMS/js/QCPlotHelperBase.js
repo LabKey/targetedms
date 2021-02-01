@@ -302,12 +302,14 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     getExperimentRunDetails: function (runId) {
         var sql = "Select MIN(sf.AcquiredTime) AS StartDate,\n" +
                 "       MAX(sf.AcquiredTime) AS EndDate,\n" +
-                "       r.FileName\n" +
+                "       r.FileName,\n" +
+                "       sf.InstrumentSerialNumber,\n" +
+                "       sf.InstrumentId.model\n" +
                 "FROM targetedms.Replicate rep\n" +
                 "INNER JOIN targetedms.SampleFile sf ON rep.Id = sf.ReplicateId\n" +
                 "INNER JOIN targetedms.Runs r on r.Id = rep.RunId\n" +
                 "where rep.RunId ='" + runId + "'\n" +
-                "GROUP BY r.FileName";
+                "GROUP BY r.FileName, sf.InstrumentSerialNumber, sf.InstrumentId.model";
 
         LABKEY.Query.executeSql({
             schemaName: 'targetedms',
@@ -317,16 +319,23 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             success: function (response) {
 
                 var runDetails = response.rows[0];
+                this.expRunDetails = {};
+                this.expRunDetails['instrumentName'] = runDetails.model;
+                this.expRunDetails['serialNumber'] = runDetails.InstrumentSerialNumber;
+                this.expRunDetails['fileName'] = runDetails.FileName;
+                this.expRunDetails['startDate'] = runDetails.StartDate;
+                this.expRunDetails['endDate'] = runDetails.EndDate;
                 // determine the start index and end index for exp region to be highlighted
-                this.calculatePlotIndicesBetweenDates(new Date(runDetails.StartDate), new Date(runDetails.EndDate));
+                this.calculatePlotIndicesBetweenDates();
                 this.renderPlots();
             },
             failure: this.failureHandler
         });
     },
 
-    calculatePlotIndicesBetweenDates: function (startDate, endDate) {
-        this.expRangeIndices = {};
+    calculatePlotIndicesBetweenDates: function () {
+        var startDate = new Date(this.expRunDetails.startDate);
+        var endDate = new Date(this.expRunDetails.endDate);
         var startIndex;
         var endIndex;
 
@@ -357,8 +366,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     }
                 }
                 if (foundIndices) {
-                    this.expRangeIndices['startIndex'] = startIndex;
-                    this.expRangeIndices['endIndex'] = endIndex;
+                    this.expRunDetails['startIndex'] = startIndex;
+                    this.expRunDetails['endIndex'] = endIndex;
                     break;
                 }
             }

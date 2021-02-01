@@ -1529,20 +1529,59 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }
         }, this);
 
+        var binWidth = (plot.grid.rightEdge - plot.grid.leftEdge) / (plot.scales.x.scale.domain().length);
+        var yRange = plot.scales.yLeft.range;
+
+        var xAcc = function (d) {
+            return plot.scales.x.scale(d.StartIndex) - (binWidth/2);
+        };
+
+        var widthAcc = function (d) {
+            return plot.scales.x.scale(d.EndIndex) - plot.scales.x.scale(d.StartIndex) + binWidth;
+        };
+
+        if (this.expRunDetails && this.expRunDetails.startIndex !== undefined && this.expRunDetails.endIndex !== undefined) {
+            var startIndex = this.expRunDetails.startIndex;
+            var endIndex = this.expRunDetails.endIndex;
+            var pointsData = precursorInfo.data;
+            var expDataArr = [];
+
+            for (var i = startIndex; i <= endIndex; i++) {
+                expDataArr.push(pointsData[i].value);
+            }
+
+            var expMean = me.formatNumeric(LABKEY.vis.Stat.getMean(expDataArr));
+            var expStdDev = me.formatNumeric(LABKEY.vis.Stat.getStdDev(expDataArr));
+            var expPercentCV = me.formatNumeric((expStdDev / expMean) * 100);
+
+            var expRangeData = [];
+            expRangeData.push({
+                'EndIndex': endIndex,
+                'StartIndex': startIndex
+            })
+            var expRange = me.getSvgElForPlot(plot).selectAll("rect.expRange").data(expRangeData)
+                    .enter().append("rect").attr("class", "expRange")
+                    .attr('x', xAcc).attr('y', yRange[1])
+                    .attr('width', widthAcc).attr('height', yRange[0] - yRange[1])
+                    .attr('stroke', '#69a3b2').attr('stroke-opacity', 0.1)
+                    .attr('fill', '#69a3b2').attr('fill-opacity', 0.1);
+
+            expRange.append("title").text(function (d) {
+                return "Instrument Name: " + me.expRunDetails.instrumentName
+                        + ", \nSerial No: " + me.expRunDetails.serialNumber
+                        + ", \nSkyline File: " + me.expRunDetails.fileName
+                        + ", \nStart: " + me.formatDate(Ext4.Date.parse(me.expRunDetails.startDate, LABKEY.Utils.getDateTimeFormatWithMS()), true)
+                        + ", \nEnd: " + me.formatDate(Ext4.Date.parse(me.expRunDetails.endDate, LABKEY.Utils.getDateTimeFormatWithMS()), true)
+                        + ", \nMean: " + expMean
+                        + ", \nStd Dev: " + expStdDev
+                        + ", \n%CV: " + expPercentCV;
+            });
+
+        }
+
+        // add a "shaded" rect to indicate which points in the plot are part of the guide set training range
         if (guideSetTrainingData.length > 0)
         {
-            // add a "shaded" rect to indicate which points in the plot are part of the guide set training range
-            var binWidth = (plot.grid.rightEdge - plot.grid.leftEdge) / (plot.scales.x.scale.domain().length);
-            var yRange = plot.scales.yLeft.range;
-
-            var xAcc = function (d) {
-                return plot.scales.x.scale(d.StartIndex) - (binWidth/2);
-            };
-
-            var widthAcc = function (d) {
-                return plot.scales.x.scale(d.EndIndex) - plot.scales.x.scale(d.StartIndex) + binWidth;
-            };
-
             var guideSetTrainingRange = this.getSvgElForPlot(plot).selectAll("rect.training").data(guideSetTrainingData)
                 .enter().append("rect").attr("class", "training")
                 .attr('x', xAcc).attr('y', yRange[1])
@@ -1560,7 +1599,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 if (showGuideSetStats)
                 {
                     mean = me.formatNumeric(seriesGuideSetInfo.Mean);
-                    stdDev = me.formatNumeric(seriesGuideSetInfo.StandardDev);
+                    stdDev = me.formatNumeric(seriesGuideSetInfo.StdDev);
                     percentCV = me.formatNumeric((stdDev / mean) * 100);
                 }
 
