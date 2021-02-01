@@ -18,6 +18,7 @@ package org.labkey.targetedms.parser.skyaudit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.labkey.api.module.Module;
@@ -43,6 +44,7 @@ import java.io.FileInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -56,7 +58,7 @@ import java.util.List;
 public class SkylineAuditLogParser
 {
     //------ log root
-    //public static final String AUDIT_LOG_ROOT = "audit_log_root";
+    public static final String AUDIT_LOG_ROOT = "audit_log_root";
     public static final String FORMAT_VERSION = "format_version";
     public static final String DOCUMENT_HASH = "document_hash";
     public static final String EN_ROOT_HASH = "root_hash";
@@ -89,7 +91,7 @@ public class SkylineAuditLogParser
 
     private String _documentHash;
     private String _enRootHash;
-
+    private BigDecimal _formatVersion;
 
     public SkylineAuditLogParser(File logFile, Logger logger)  throws AuditLogException{
 
@@ -156,6 +158,18 @@ public class SkylineAuditLogParser
         //Skipping most XML structure validation since the file passed the schema validation
         int evtType = _stream.nextTag();     //log root element read
 
+        if (evtType != XMLStreamReader.START_ELEMENT || !_stream.getLocalName().equals(AUDIT_LOG_ROOT))
+        {
+            throw new IllegalStateException("Root element was not " + AUDIT_LOG_ROOT);
+        }
+
+        String formatVersion = _stream.getAttributeValue(null, FORMAT_VERSION);
+        if (formatVersion == null)
+        {
+            throw new IllegalStateException("Could not find " + FORMAT_VERSION + " attribute on " + AUDIT_LOG_ROOT);
+        }
+        _formatVersion = new BigDecimal(formatVersion);
+
         while(_stream.hasNext()){
             evtType = _stream.nextTag();
             if(evtType == XMLStreamReader.START_ELEMENT){
@@ -181,7 +195,7 @@ public class SkylineAuditLogParser
         assert (_stream.getLocalName().equals(AUDIT_LOG_ENTRY) && _stream.getEventType() == XMLStreamReader.START_ELEMENT) :
                     "Parser is at a wrong position to parse a log entry";
 
-        AuditLogEntry result = new AuditLogEntry();
+        AuditLogEntry result = new AuditLogEntry(_formatVersion);
 
         result.setFormatVersion(_stream.getAttributeValue(null, SKYLINE_VERSION));
 
@@ -299,16 +313,15 @@ public class SkylineAuditLogParser
 
         private File _logFile;
         private SkylineAuditLogParser _parser;
-        private static Logger _logger;
+        private static final Logger _logger = LogManager.getLogger(TestCase.class);
         public final static String SYS_PROPERTY_CWD = "user.dir";
         public final static String SKYLINE_LOG_EXTENSION = "skyl";
 
-        private static GUID _docGUID = new GUID("add8ea9c-0b32-1037-a00c-1e459cb1acac");
+        private static final GUID _docGUID = new GUID("add8ea9c-0b32-1037-a00c-1e459cb1acac");
 
-        @BeforeClass
-        public static void getTestFile(){
-
-            _logger = LogManager.getLogger(TestCase.class.getPackageName() + ".test");
+        @Before
+        public void init()
+        {
             UnitTestUtil.cleanupDatabase(_docGUID);
         }
 
@@ -344,31 +357,28 @@ public class SkylineAuditLogParser
                 }
                 prevEntry = ent;
             }
-//            Assert.assertEquals("Settings > Peptide Settings -- Library > Libraries : Settings > Peptide Settings -- Library > Libraries",
-//                    entries.get(1).getAllInfoMessage().get(2).getExpandedText());
-
 
             Assert.assertTrue(expander.areAllMessagesExpanded());
             Assert.assertTrue(expander.areResourcesReady());
             Assert.assertNotNull(entries.get(2).getExtraInfo());
             Assert.assertNull(entries.get(1).getExtraInfo());
-//
+
             Assert.assertEquals(11, entries.size());
             Assert.assertEquals(6, entries.get(5).getAllInfoMessage().size());
             Assert.assertTrue(entries.get(0).canBeHashed(expander));
         }
 
         @Test
-        public void testInvalidXmlFile() {
+        public void testInvalidXmlFile() throws IOException
+        {
             try
             {
                 File logFile = UnitTestUtil.getSampleDataFile("AuditLogFiles/InvalidSchemaTest.skyl");
                 SkylineAuditLogParser parser = new SkylineAuditLogParser(logFile, _logger);
                 Assert.fail("Expected file validation failure but it succeeded.");
             }
-            catch(Exception  e) {
-                Assert.assertTrue(true);
-                _logger.info(e.toString());
+            catch (AuditLogException ignored)
+            {
             }
         }
 

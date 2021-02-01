@@ -17,8 +17,10 @@ package org.labkey.targetedms;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.labkey.api.data.BaseSelector;
@@ -48,17 +50,20 @@ import org.labkey.targetedms.parser.skyaudit.SkylineAuditLogSecurityManager;
 import org.labkey.targetedms.parser.skyaudit.TestRun;
 import org.labkey.targetedms.parser.skyaudit.UnitTestUtil;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -67,9 +72,8 @@ import java.util.stream.Collectors;
 
 public class SkylineAuditLogManager
 {
-
-    private Logger _logger;
-    private SkylineAuditLogSecurityManager _securityMgr;
+    private static final Logger _logger = LogManager.getLogger(SkylineAuditLogManager.class);
+    private final SkylineAuditLogSecurityManager _securityMgr;
 
     private class AuditLogImportContext{
         File _logFile;
@@ -80,9 +84,9 @@ public class SkylineAuditLogManager
         MessageDigest _rootHash = null;
     }
 
-    public SkylineAuditLogManager(@NotNull Container pContainer, @NotNull User pUser) throws AuditLogException{
-        _logger = LogManager.getLogger(this.getClass());
-        _securityMgr = new SkylineAuditLogSecurityManager(pContainer, pUser);
+    public SkylineAuditLogManager(@NotNull Container pContainer, @Nullable Logger jobLogger) throws AuditLogException
+    {
+        _securityMgr = new SkylineAuditLogSecurityManager(pContainer, jobLogger);
     }
 
 
@@ -193,8 +197,9 @@ public class SkylineAuditLogManager
             AuditLogMessageExpander expander = new AuditLogMessageExpander(_logger);
             //since entries in the log file are in reverse chronological order we have to
             //read them in the list and then reverse it before the tree processing
-            List<AuditLogEntry> entries = new ArrayList<>();
+            List<AuditLogEntry> entries = new LinkedList<>();
             int hashValidationFailures = 0;
+            AuditLogEntry previousEntry = null;
             //while next entry is not null
             while (pContext._parser.hasNextEntry())
             {
@@ -202,31 +207,17 @@ public class SkylineAuditLogManager
                 {
                     AuditLogEntry ent = pContext._parser.parseLogEntry();
                     ent.expandEntry(expander);
-                    //throw or log the results based on the integrity level setting
-                    if (!ent.verifyHash())
-                    {
-                        if (hashValidationFailures == 0)
-                        {
-                            _securityMgr.reportErrorForIntegrityLevel(
-                                    String.format("Hash value verification failed for the log entry timestamped with %s. This is expected for older Skyline documents with audit logs that do not contain hashes. Suppressing warning for remainder of file", ent.getOffsetCreateTimestamp().toString()),
-                                    SkylineAuditLogSecurityManager.INTEGRITY_LEVEL.ANY);
-                        }
-                        hashValidationFailures++;
-                    }
                     ent.setDocumentGUID(pContext._documentGUID);
-                    entries.add(ent);
-                    pContext._rootHash.update(ent.getHashString().getBytes(Charset.forName("UTF8")));
+                    pContext._rootHash.update(ent.getEntryHash().getBytes(StandardCharsets.UTF_8));
+                    // Insert at the beginning of the list so we can quickly iterate in reverse order for validation
+                    entries.add(0, ent);
                 }
                 catch (XMLStreamException e)
                 {
                     throw new AuditLogException("Error when parsing the audit log file.", e);
                 }
-                catch(NoSuchAlgorithmException e) {
-                    _securityMgr.reportErrorForIntegrityLevel(
-                            "Cannot verify entry hash because SHA1 algorithm is not available.",
-                            SkylineAuditLogSecurityManager.INTEGRITY_LEVEL.ANY);
-                }
-                catch(AuditLogParsingException e){
+                catch(AuditLogParsingException e)
+                {
                     _securityMgr.reportErrorForIntegrityLevel(
                             "Error when parsing audit log file.",
                             SkylineAuditLogSecurityManager.INTEGRITY_LEVEL.ANY, e);
@@ -236,6 +227,27 @@ public class SkylineAuditLogManager
             if (!expander.areAllMessagesExpanded())
             {
                 _logger.warn("At least one audit log expansion token failed to expand. This is expected for old Skyline documents, but not for newer ones");
+            }
+
+            for (AuditLogEntry ent : entries)
+            {
+                if (previousEntry != null)
+                {
+                    ent.setParentEntryHash(previousEntry.getEntryHash());
+                }
+
+                //throw or log the results based on the integrity level setting
+                if (!ent.verifyHash())
+                {
+                    if (hashValidationFailures == 0)
+                    {
+                        _securityMgr.reportErrorForIntegrityLevel(
+                                String.format("Hash value verification failed for the log entry timestamped with %s. This is expected for older Skyline documents with audit logs that do not contain hashes. Suppressing warning for remainder of file", ent.getOffsetCreateTimestamp().toString()),
+                                SkylineAuditLogSecurityManager.INTEGRITY_LEVEL.ANY);
+                    }
+                    hashValidationFailures++;
+                }
+                previousEntry = ent;
             }
 
             if (hashValidationFailures > 0)
@@ -252,9 +264,8 @@ public class SkylineAuditLogManager
             }
 
             if(pContext._runId != null)       //set the document version id on the chronologically last log entry.
-                entries.get(0).setVersionId(pContext._runId);
+                entries.get(entries.size() - 1).setVersionId(pContext._runId);
 
-            Collections.reverse(entries);
             AuditLogTree treePointer = pContext._logTree;
             int persistedEntriesCount = 0;
             for(AuditLogEntry ent : entries)
@@ -442,29 +453,30 @@ public class SkylineAuditLogManager
     {
         private static final String FOLDER_NAME = "TargetedMSAuditLogImportFolder";
         private static final GUID _docGUID = new GUID("50323e78-0e2b-4764-b979-9b71559bbf9f");
-        private static Logger _logger;
+        private static final Logger _logger = LogManager.getLogger(SkylineAuditLogManager.TestCase.class);
         private static User _user;
         private static Container _container;
 
-        @BeforeClass
-        public static void InitTest(){
-
-            _logger = LogManager.getLogger(SkylineAuditLogManager.TestCase.class.getPackageName() + ".test");
+        @Before
+        public void initTest()
+        {
             UnitTestUtil.cleanupDatabase(_docGUID);
             _user = TestContext.get().getUser();
             _container = ContainerManager.ensureContainer(JunitUtil.getTestContainer(), FOLDER_NAME);
         }
 
-        private AuditLogTree persistALogFile(String filePath, Integer runId) throws IOException, AuditLogException{
+        private AuditLogTree persistALogFile(String filePath, Integer runId) throws IOException, AuditLogException
+        {
             File fZip = UnitTestUtil.getSampleDataFile(filePath);
             File logFile = UnitTestUtil.extractLogFromZip(fZip, _logger);
-            SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, _user);
+            SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, null);
 
             importer.importAuditLogFile(logFile, _docGUID, runId);
             return importer.buildLogTree(_docGUID);
         }
 
-        private int getNewRunId(GUID pDocumentGUID){
+        private int getNewRunId(GUID pDocumentGUID)
+        {
             TestRun run = new TestRun();
             run._container = _container.getEntityId();
             run._documentGUID = pDocumentGUID;
@@ -473,24 +485,23 @@ public class SkylineAuditLogManager
             return run._id;
         }
 
-        //@Test
-        public void BuildTreeTest() throws IOException, AuditLogException
+        @Test
+        public void buildTreeTest() throws IOException, AuditLogException
         {
-
             File fZip = UnitTestUtil.getSampleDataFile("AuditLogFiles/MethodEdit_v1.zip");
             File logFile = UnitTestUtil.extractLogFromZip(fZip, _logger);
 
-            SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, _user);
+            SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, null);
 
             importer.importAuditLogFile( logFile, _docGUID, getNewRunId(_docGUID));
 
             AuditLogTree tree = importer.buildLogTree(_docGUID);
             assertNotNull(tree);
-            assertEquals(5, tree.getTreeSize());
+            assertEquals(4, tree.getTreeSize());
         }
 
         @Test
-        public void AddAVersionTest() throws IOException, AuditLogException
+        public void addAVersionTest() throws IOException, AuditLogException
         {
             Stack<Integer> runIds = new Stack<>();
             List<String> testFileNames = new ArrayList<>(
@@ -499,7 +510,8 @@ public class SkylineAuditLogManager
 
             AuditLogTree tree = null;
 
-            for(String fileName : testFileNames){
+            for(String fileName : testFileNames)
+            {
                 _logger.info("AuditLogFiles/" + fileName);
                 runIds.push(getNewRunId(_docGUID));
                 tree = persistALogFile("AuditLogFiles/" + fileName, runIds.peek());
@@ -508,7 +520,7 @@ public class SkylineAuditLogManager
             assertNotNull(tree);
             assertEquals(14, tree.getTreeSize());
 
-            SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, _user);
+            SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, null);
             importer.deleteDocumentVersionLog(runIds.pop());
             tree = importer.buildLogTree(_docGUID);
             assertEquals(13, tree.getTreeSize());
@@ -521,13 +533,12 @@ public class SkylineAuditLogManager
             importer.deleteDocumentVersionLog(runIds.pop());
             tree = importer.buildLogTree(_docGUID);
             assertEquals(11, tree.getTreeSize());
-
         }
 
         @Test
-        public void TestEntryRetrieval() throws AuditLogException
+        public void testEntryRetrieval() throws AuditLogException
         {
-            AuditLogTree node = new SkylineAuditLogManager(_container, _user).buildLogTree(_docGUID);
+            AuditLogTree node = new SkylineAuditLogManager(_container, null).buildLogTree(_docGUID);
             ViewContext vc = new ViewContext();
             vc.setContainer(_container);
             vc.setUser(_user);
@@ -537,11 +548,10 @@ public class SkylineAuditLogManager
             }
         }
 
-        @AfterClass
-        public static void cleanup()
+        @After
+        public void cleanup()
         {
             UnitTestUtil.cleanupDatabase(_docGUID);
         }
-
     }
 }

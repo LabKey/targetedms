@@ -421,7 +421,7 @@ public class SkylineDocImporter
 
             int calCurvesCount = quantifyRun(run, pepSettings, groupComparisons);
 
-            SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, _user);
+            SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, _log);
             int auditLogEntriesCount = importer.importAuditLogFile(_auditLogFile, parser.getDocumentGUID(), run.getRunId());
 
             run.setAuditLogEntriesCount(auditLogEntriesCount);
@@ -919,6 +919,18 @@ public class SkylineDocImporter
                 throw new IOException("zip file " + f + " does not contain a .sky file");
             }
             f = skyFile;
+        }
+        else
+        {
+            ext = FileUtil.getExtension(f.getName());
+            if (SkylineFileUtils.EXT_SKY.equalsIgnoreCase(ext))
+            {
+                File possibleAuditFile = new File(f.getParent(), FileUtil.getBaseName(f) + "." + SkylineFileUtils.EXT_SKY_LOG);
+                if (possibleAuditFile.isFile())
+                {
+                    _auditLogFile = possibleAuditFile;
+                }
+            }
         }
         return f;
     }
