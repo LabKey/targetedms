@@ -47,7 +47,6 @@ import org.labkey.targetedms.parser.skyaudit.AuditLogParsingException;
 import org.labkey.targetedms.parser.skyaudit.AuditLogTree;
 import org.labkey.targetedms.parser.skyaudit.SkylineAuditLogParser;
 import org.labkey.targetedms.parser.skyaudit.SkylineAuditLogSecurityManager;
-import org.labkey.targetedms.parser.skyaudit.TestRun;
 import org.labkey.targetedms.parser.skyaudit.UnitTestUtil;
 
 import javax.annotation.Nullable;
@@ -88,12 +87,12 @@ public class SkylineAuditLogManager
     }
 
 
-    public int importAuditLogFile(@NotNull File pAuditLogFile, @NotNull GUID pDocumentGUID, long pRunId) throws AuditLogException
+    public int importAuditLogFile(@NotNull File pAuditLogFile, @NotNull GUID pDocumentGUID, TargetedMSRun run) throws AuditLogException
     {
         AuditLogImportContext context = new AuditLogImportContext();
         context._logFile = pAuditLogFile;
         context._documentGUID = pDocumentGUID;
-        context._runId = pRunId;
+        context._runId = run.getId();
         try
         {
             context._rootHash = MessageDigest.getInstance("SHA1");
@@ -454,24 +453,24 @@ public class SkylineAuditLogManager
             _container = ContainerManager.ensureContainer(JunitUtil.getTestContainer(), FOLDER_NAME);
         }
 
-        private AuditLogTree persistALogFile(String filePath, Integer runId) throws IOException, AuditLogException
+        private AuditLogTree persistALogFile(String filePath, TargetedMSRun run) throws IOException, AuditLogException
         {
             File fZip = UnitTestUtil.getSampleDataFile(filePath);
             File logFile = UnitTestUtil.extractLogFromZip(fZip, _logger);
             SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, null);
 
-            importer.importAuditLogFile(logFile, _docGUID, runId);
+            importer.importAuditLogFile(logFile, _docGUID, run);
             return importer.buildLogTree(_docGUID);
         }
 
-        private int getNewRunId(GUID pDocumentGUID)
+        private TargetedMSRun getNewRun(GUID pDocumentGUID)
         {
-            TestRun run = new TestRun();
-            run._container = _container.getEntityId();
-            run._documentGUID = pDocumentGUID;
+            TargetedMSRun run = new TargetedMSRun();
+            run.setContainer(_container);
+            run.setDocumentGUID(pDocumentGUID);
             Table.insert(_user, TargetedMSManager.getTableInfoRuns(), run);
-            _logger.info(String.format("new run is inserted with id %d", run._id));
-            return run._id;
+            _logger.info(String.format("new run is inserted with id %d", run.getId()));
+            return run;
         }
 
         @Test
@@ -491,7 +490,7 @@ public class SkylineAuditLogManager
             enableHashValidation();
             File logFile = UnitTestUtil.extractLogFromZip(UnitTestUtil.getSampleDataFile(fileName), _logger);
             SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, null);
-            importer.importAuditLogFile(logFile, _docGUID, getNewRunId(_docGUID));
+            importer.importAuditLogFile(logFile, _docGUID, getNewRun(_docGUID));
             AuditLogTree tree = importer.buildLogTree(_docGUID);
             assertNotNull(tree);
             assertEquals(4, tree.getTreeSize());
@@ -529,7 +528,7 @@ public class SkylineAuditLogManager
         @Test
         public void addAVersionTest() throws IOException, AuditLogException
         {
-            Stack<Integer> runIds = new Stack<>();
+            Stack<TargetedMSRun> runs = new Stack<>();
             List<String> testFileNames = new ArrayList<>(
                     List.of("MethodEdit_v2.zip", "MethodEdit_v3.zip", "MethodEdit_v3.zip", "MethodEdit_v4.zip",
                             "MethodEdit_v5.1.zip", "MethodEdit_v5.2.zip", "MethodEdit_v6.2.zip"));
@@ -539,24 +538,24 @@ public class SkylineAuditLogManager
             for(String fileName : testFileNames)
             {
                 _logger.info("AuditLogFiles/" + fileName);
-                runIds.push(getNewRunId(_docGUID));
-                tree = persistALogFile("AuditLogFiles/" + fileName, runIds.peek());
+                runs.push(getNewRun(_docGUID));
+                tree = persistALogFile("AuditLogFiles/" + fileName, runs.peek());
             }
 
             assertNotNull(tree);
             assertEquals(14, tree.getTreeSize());
 
             SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, null);
-            importer.deleteDocumentVersionLog(runIds.pop());
+            importer.deleteDocumentVersionLog(runs.pop().getId());
             tree = importer.buildLogTree(_docGUID);
             assertEquals(13, tree.getTreeSize());
 
-            importer.deleteDocumentVersionLog(runIds.pop());
+            importer.deleteDocumentVersionLog(runs.pop().getId());
             tree = importer.buildLogTree(_docGUID);
             assertEquals(11, tree.getTreeSize());
 
-            runIds.pop();
-            importer.deleteDocumentVersionLog(runIds.pop());
+            runs.pop();
+            importer.deleteDocumentVersionLog(runs.pop().getId());
             tree = importer.buildLogTree(_docGUID);
             assertEquals(11, tree.getTreeSize());
         }
