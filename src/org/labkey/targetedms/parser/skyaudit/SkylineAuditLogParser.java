@@ -17,6 +17,7 @@ package org.labkey.targetedms.parser.skyaudit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -41,9 +42,11 @@ import javax.xml.validation.Validator;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
@@ -55,7 +58,7 @@ import java.util.List;
  * Reads the audit log file, validates it and converts into a sequence
  * of AuditLogEntry instances that can be persisted into the database
  */
-public class SkylineAuditLogParser
+public class SkylineAuditLogParser implements AutoCloseable
 {
     //------ log root
     public static final String AUDIT_LOG_ROOT = "audit_log_root";
@@ -84,8 +87,8 @@ public class SkylineAuditLogParser
 
     private static final String SCHEMA_FILE = "schemas/Skyl.xsd";
 
-    private File _file;
-    private Logger _logger;
+    private final File _file;
+    private final Logger _logger;
     private XMLStreamReader _stream;
     private FileInputStream _fileStream;
 
@@ -109,11 +112,23 @@ public class SkylineAuditLogParser
     }
 
 
-    private void validateXml() throws IOException, SAXException, AuditLogParsingException {
+    private void validateXml() throws IOException, SAXException, AuditLogParsingException
+    {
+        try (InputStream schemaStream = new BufferedInputStream(openSchemaInputStream());
+             InputStream auditLogStream = new BufferedInputStream(new FileInputStream(_file)))
+            {
+                //prepare validator
+                SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                Schema schema = schemaFactory.newSchema(new StreamSource(schemaStream));
+                Validator validator = schema.newValidator();
+                validator.validate(new StreamSource(auditLogStream));
+            }
+    }
 
-        //retrieve schema file
-        FileInputStream schemaStream;
-        if(ModuleLoader.getInstance() != null)
+    @NotNull
+    private InputStream openSchemaInputStream() throws AuditLogParsingException, FileNotFoundException, UnsupportedEncodingException
+    {
+        if (ModuleLoader.getInstance() != null)
         {   //if we are running web test
             Module module = ModuleLoader.getInstance().getModule(TargetedMSModule.class);
             FileResource schemaResource = (FileResource) module.getModuleResolver().lookup(Path.parse(SCHEMA_FILE));
@@ -121,33 +136,16 @@ public class SkylineAuditLogParser
             {
                 throw new AuditLogParsingException("Schema file not found in the module resources.");
             }
-            schemaStream = new FileInputStream(schemaResource.getFile());
+            return new FileInputStream(schemaResource.getFile());
         }
-        else //this is for unit testing
-            schemaStream = new FileInputStream(UnitTestUtil.getResourcesFile(SCHEMA_FILE));
 
-        //prepare validator
-        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        Schema schema = schemaFactory.newSchema(new StreamSource(schemaStream));
-        Validator validator = schema.newValidator();
-
-        InputStream auditLogStream = new FileInputStream(_file);
-        auditLogStream = new FilterInputStream(new BufferedInputStream(auditLogStream)) {
-            @Override
-            public void close() {
-                try{ super.close();} catch(IOException e){}
-            }
-        };
-        validator.validate(new StreamSource(auditLogStream));
-        schemaStream.close();
-        auditLogStream.close();
+        //this is for unit testing
+        return new FileInputStream(UnitTestUtil.getResourcesFile(SCHEMA_FILE));
     }
 
     /***
      * This method parses the beginning of the log: the hashes and audit_log tag and stops at
      * the first log entry, ready to proceed with read/save loop
-     * @throws IOException
-     * @throws XMLStreamException
      */
     private void parseLogHeader() throws IOException, XMLStreamException
     {
@@ -247,12 +245,9 @@ public class SkylineAuditLogParser
         throw new AuditLogParsingException("Element end expected.");
     }
 
-    public boolean hasNextEntry(){
-        if(XmlUtil.isEndElement(_stream, XMLStreamReader.END_ELEMENT, AUDIT_LOG)){
-            this.abortParsing();
-            return false;
-        }
-        return true;
+    public boolean hasNextEntry()
+    {
+        return !XmlUtil.isEndElement(_stream, XMLStreamReader.END_ELEMENT, AUDIT_LOG);
     }
 
     private AuditLogMessage parseAuditLogMessage() throws XMLStreamException, AuditLogParsingException{
@@ -286,8 +281,9 @@ public class SkylineAuditLogParser
 
     }
 
+    @Override
     //cleanup method to use in exception handlers
-    public void abortParsing(){
+    public void close(){
         try {
             _stream.close();
             _fileStream.close();

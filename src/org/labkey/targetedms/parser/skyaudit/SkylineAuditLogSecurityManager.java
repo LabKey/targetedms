@@ -20,6 +20,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.labkey.api.data.Container;
 import org.labkey.api.module.Module;
+import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.module.ModuleProperty;
 import org.labkey.targetedms.TargetedMSModule;
 
@@ -46,22 +47,11 @@ public class SkylineAuditLogSecurityManager
     private static final Logger LOG = LogManager.getLogger(SkylineAuditLogSecurityManager.class);
     private final Logger _jobLogger;
 
-    public SkylineAuditLogSecurityManager(Container container, @Nullable Logger jobLogger) throws AuditLogException
+    public SkylineAuditLogSecurityManager(Container container, @Nullable Logger jobLogger)
     {
         _jobLogger = jobLogger;
 
-        TargetedMSModule targetedMSModule = null;
-        for (Module m : container.getActiveModules())
-        {
-            if (m instanceof TargetedMSModule)
-            {
-                targetedMSModule = (TargetedMSModule) m;
-            }
-        }
-        if (targetedMSModule == null)
-        {
-            throw new AuditLogException("Cannot upload into a non-Panorama container"); // theoretically this should never happen.
-        }
+        TargetedMSModule targetedMSModule = ModuleLoader.getInstance().getModule(TargetedMSModule.class);
         ModuleProperty logLevelProperty = targetedMSModule.getModuleProperties().get(TargetedMSModule.SKYLINE_AUDIT_LEVEL);
         int propIndex = Integer.parseInt(logLevelProperty.getEffectiveValue(container));
         _verificationLevel = INTEGRITY_LEVEL.values()[propIndex];
