@@ -255,7 +255,7 @@ public class SkylineAuditLogManager
             return 0;
         }
 
-        if(pContext._runId != null)       //set the document version id on the chronologically last log entry.
+        if (pContext._runId != null)       //set the document version id on the chronologically last log entry.
             entries.get(entries.size() - 1).setVersionId(pContext._runId);
 
         AuditLogTree treePointer = pContext._logTree;
