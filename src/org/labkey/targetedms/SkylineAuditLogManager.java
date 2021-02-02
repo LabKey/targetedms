@@ -260,7 +260,7 @@ public class SkylineAuditLogManager
 
         AuditLogTree treePointer = pContext._logTree;
         int persistedEntriesCount = 0;
-        for(AuditLogEntry ent : entries)
+        for (AuditLogEntry ent : entries)
         {
             //if log tree has the hash
             if (treePointer.hasChild(ent.getEntryHash()))
