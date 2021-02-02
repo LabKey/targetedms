@@ -247,9 +247,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             }
         }
 
-        var urlParams = LABKEY.ActionURL.getParameters();
-
-        urlParams['RunId'] !== undefined ? this.getExperimentRunDetails(urlParams['RunId']) : this.renderPlots();
+        this.renderPlots();
     },
 
     renderPlots: function()
@@ -325,9 +323,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 this.expRunDetails['fileName'] = runDetails.FileName;
                 this.expRunDetails['startDate'] = runDetails.StartDate;
                 this.expRunDetails['endDate'] = runDetails.EndDate;
-                // determine the start index and end index for exp region to be highlighted
-                this.calculatePlotIndicesBetweenDates();
-                this.renderPlots();
+                // initialize the form panel toolbars and display the plot
+                this.add(this.initPlotFormToolbars());
+                this.displayTrendPlot();
             },
             failure: this.failureHandler
         });

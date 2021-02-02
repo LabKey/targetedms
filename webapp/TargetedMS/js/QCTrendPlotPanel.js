@@ -184,10 +184,21 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             this.endDate = this.formatDate(this.calculateEndDateByOffset());
         }
 
-        // initialize the form panel toolbars and display the plot
-        this.add(this.initPlotFormToolbars());
+        this.getExpRunRangeDetails();
+    },
 
-        this.displayTrendPlot();
+    getExpRunRangeDetails: function() {
+        var urlParams = LABKEY.ActionURL.getParameters();
+        this.showExpRunRange = urlParams['RunId'] !== undefined;
+
+        if (this.showExpRunRange) {
+            this.getExperimentRunDetails(urlParams['RunId'])
+        }
+        else {
+            // initialize the form panel toolbars and display the plot
+            this.add(this.initPlotFormToolbars());
+            this.displayTrendPlot();
+        }
     },
 
     initPlotFormToolbars : function()
@@ -198,7 +209,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             { tbar: this.getFirstPlotOptionsToolbar() },
             { tbar: this.getSecondPlotOptionsToolbar() },
             { tbar: this.getThirdPlotOptionsToolbar() },
-            { tbar: this.getGuideSetMessageToolbar() }
+            { tbar: this.getGuideSetMessageToolbar() },
+            { tbar: this.getExperimentRunDateRangeToolbar() }
         ];
 
         if(this.replicateAnnotationsNodes.length > 0)
@@ -541,6 +553,30 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }
 
         return this.guideSetMessageToolbar;
+    },
+
+    getExperimentRunDateRangeToolbar : function()
+    {
+        if (!this.experimentRunDateRangeToolbar)
+        {
+            var hidden = !this.showExpRunRange;
+            var htmlStr = this.showExpRunRange
+                    ? this.expRunDetails.fileName + " : " + this.formatDate(this.expRunDetails.startDate) + " through " + this.formatDate(this.expRunDetails.endDate)
+                    : '';
+            this.experimentRunDateRangeToolbar = Ext4.create('Ext.toolbar.Toolbar', {
+                ui: 'footer',
+                cls: 'expDateRange-toolbar-msg x4-box-item',
+                hidden: hidden,
+                layout: { pack: 'center' },
+                items: [{
+                    xtype: 'box',
+                    itemId: 'ExpreimentRunDateRangeToolBar',
+                    html: htmlStr
+                }]
+            });
+        }
+
+        return this.experimentRunDateRangeToolbar;
     },
 
     isValidQCPlotType: function(plotType)
@@ -1540,42 +1576,47 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             return plot.scales.x.scale(d.EndIndex) - plot.scales.x.scale(d.StartIndex) + binWidth;
         };
 
-        if (this.expRunDetails && this.expRunDetails.startIndex !== undefined && this.expRunDetails.endIndex !== undefined) {
-            var startIndex = this.expRunDetails.startIndex;
-            var endIndex = this.expRunDetails.endIndex;
-            var pointsData = precursorInfo.data;
-            var expDataArr = [];
+        if (this.showExpRunRange) {
+            // determine the start index and end index for exp region to be highlighted
+            this.calculatePlotIndicesBetweenDates();
 
-            for (var i = startIndex; i <= endIndex; i++) {
-                expDataArr.push(pointsData[i].value);
+            if (this.expRunDetails && this.expRunDetails.startIndex !== undefined && this.expRunDetails.endIndex !== undefined) {
+                var startIndex = this.expRunDetails.startIndex;
+                var endIndex = this.expRunDetails.endIndex;
+                var pointsData = precursorInfo.data;
+                var expDataArr = [];
+
+                for (var i = startIndex; i <= endIndex; i++) {
+                    expDataArr.push(pointsData[i].value);
+                }
+
+                var expMean = me.formatNumeric(LABKEY.vis.Stat.getMean(expDataArr));
+                var expStdDev = me.formatNumeric(LABKEY.vis.Stat.getStdDev(expDataArr));
+                var expPercentCV = me.formatNumeric((expStdDev / expMean) * 100);
+
+                var expRangeData = [];
+                expRangeData.push({
+                    'EndIndex': endIndex,
+                    'StartIndex': startIndex
+                })
+                var expRange = me.getSvgElForPlot(plot).selectAll("rect.expRange").data(expRangeData)
+                        .enter().append("rect").attr("class", "expRange")
+                        .attr('x', xAcc).attr('y', yRange[1])
+                        .attr('width', widthAcc).attr('height', yRange[0] - yRange[1])
+                        .attr('stroke', '#69a3b2').attr('stroke-opacity', 0.1)
+                        .attr('fill', '#69a3b2').attr('fill-opacity', 0.1);
+
+                expRange.append("title").text(function (d) {
+                    return "Instrument Name: " + me.expRunDetails.instrumentName
+                            + ", \nSerial No: " + me.expRunDetails.serialNumber
+                            + ", \nSkyline File: " + me.expRunDetails.fileName
+                            + ", \nStart: " + me.formatDate(Ext4.Date.parse(me.expRunDetails.startDate, LABKEY.Utils.getDateTimeFormatWithMS()), true)
+                            + ", \nEnd: " + me.formatDate(Ext4.Date.parse(me.expRunDetails.endDate, LABKEY.Utils.getDateTimeFormatWithMS()), true)
+                            + ", \nMean: " + expMean
+                            + ", \nStd Dev: " + expStdDev
+                            + ", \n%CV: " + expPercentCV;
+                });
             }
-
-            var expMean = me.formatNumeric(LABKEY.vis.Stat.getMean(expDataArr));
-            var expStdDev = me.formatNumeric(LABKEY.vis.Stat.getStdDev(expDataArr));
-            var expPercentCV = me.formatNumeric((expStdDev / expMean) * 100);
-
-            var expRangeData = [];
-            expRangeData.push({
-                'EndIndex': endIndex,
-                'StartIndex': startIndex
-            })
-            var expRange = me.getSvgElForPlot(plot).selectAll("rect.expRange").data(expRangeData)
-                    .enter().append("rect").attr("class", "expRange")
-                    .attr('x', xAcc).attr('y', yRange[1])
-                    .attr('width', widthAcc).attr('height', yRange[0] - yRange[1])
-                    .attr('stroke', '#69a3b2').attr('stroke-opacity', 0.1)
-                    .attr('fill', '#69a3b2').attr('fill-opacity', 0.1);
-
-            expRange.append("title").text(function (d) {
-                return "Instrument Name: " + me.expRunDetails.instrumentName
-                        + ", \nSerial No: " + me.expRunDetails.serialNumber
-                        + ", \nSkyline File: " + me.expRunDetails.fileName
-                        + ", \nStart: " + me.formatDate(Ext4.Date.parse(me.expRunDetails.startDate, LABKEY.Utils.getDateTimeFormatWithMS()), true)
-                        + ", \nEnd: " + me.formatDate(Ext4.Date.parse(me.expRunDetails.endDate, LABKEY.Utils.getDateTimeFormatWithMS()), true)
-                        + ", \nMean: " + expMean
-                        + ", \nStd Dev: " + expStdDev
-                        + ", \n%CV: " + expPercentCV;
-            });
 
         }
 
