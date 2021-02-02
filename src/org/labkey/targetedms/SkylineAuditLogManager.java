@@ -285,7 +285,7 @@ public class SkylineAuditLogManager
                 treePointer = newTreeEntry;
             }
         }
-        if(persistedEntriesCount == 0)      //if no entries were actually saved into the database we are uploading an earlier document version
+        if (persistedEntriesCount == 0)      //if no entries were actually saved into the database we are uploading an earlier document version
             entries.get(entries.size() - 1).updateVersionId(pContext._runId);   //and still need to update the terminal entry with the versionId.
 
         return entries.size();
