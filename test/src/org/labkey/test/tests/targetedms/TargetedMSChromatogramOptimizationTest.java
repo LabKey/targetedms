@@ -90,13 +90,16 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
 
     private boolean columnExists(File clibFile, String tableName, String columnName) throws SQLException
     {
-        Connection conn = ConnectionSource.getConnection(clibFile.getAbsolutePath());
-        DatabaseMetaData md = conn.getMetaData();
-        ResultSet rs = md.getColumns(null, null, tableName, columnName);
-        if (rs.next())
-            return true; //Table exists
-        else
-            return false;
-
+        try (Connection conn = ConnectionSource.getConnection(clibFile.getAbsolutePath()))
+        {
+            DatabaseMetaData md = conn.getMetaData();
+            try (ResultSet rs = md.getColumns(null, null, tableName, columnName))
+            {
+                if (rs.next())
+                    return true; //Table exists
+                else
+                    return false;
+            }
+        }
     }
 }
