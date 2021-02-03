@@ -3140,8 +3140,6 @@ public class TargetedMSController extends SpringActionController
         return runSummaryView;
     }
 
-    //
-
     @RequiresPermission(ReadPermission.class)
     public class ShowVersionsAction extends SimpleViewAction<RunDetailsForm>
     {
@@ -3411,7 +3409,6 @@ public class TargetedMSController extends SpringActionController
         {
             VBox vBox = new VBox();
             vBox.addView(getSummaryView(form, _run));
-            vBox.addView(new InstrumentSummaryWebPart(form.getViewContext()));
 
             VIEWTYPE view;
 
@@ -3697,6 +3694,14 @@ public class TargetedMSController extends SpringActionController
             settings.setBaseSort(new Sort(FieldKey.fromParts("ReplicateId", "Name")));
             TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
             return schema.createView(getViewContext(), settings, errors);
+        }
+
+        @Override
+        protected ModelAndView getHtmlView(RunDetailsForm form, BindException errors) throws Exception
+        {
+            VBox vBox = (VBox) super.getHtmlView(form, errors);
+            vBox.addView(new InstrumentSummaryWebPart(form.getViewContext()), 1);
+            return vBox;
         }
     }
 

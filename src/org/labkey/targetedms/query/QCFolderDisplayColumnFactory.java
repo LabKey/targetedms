@@ -16,9 +16,9 @@ import org.labkey.targetedms.TargetedMSRun;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class QCFolderDisplayColumnFactory implements DisplayColumnFactory
 {
@@ -36,26 +36,28 @@ public class QCFolderDisplayColumnFactory implements DisplayColumnFactory
             {
                 final User user = ctx.getViewContext().getUser();
                 String serialNumber = String.valueOf(getBoundColumn().getValue(ctx));
+                String currentRunId = String.valueOf(ctx.get("runId"));
                 var instrumentRunIds = TargetedMSManager.getRunIdsByInstrument(serialNumber);
-                Map<Long, Container> qcContainers = new LinkedHashMap<>();
+                Set<Container> qcContainers = new TreeSet<>();
                 instrumentRunIds.forEach(runId -> {
                     TargetedMSRun run = TargetedMSManager.getRun(runId);
                     if (null != run && Objects.equals(TargetedMSModule.getFolderType(run.getContainer()), TargetedMSService.FolderType.QC))
                     {
                         if (run.getContainer().hasPermission(user, ReadPermission.class))
                         {
-                            qcContainers.put(runId, run.getContainer());
+                            qcContainers.add(run.getContainer());
                         }
                     }
                 });
                 StringBuilder sb = new StringBuilder();
-                qcContainers.forEach( (runId, qcContainer) -> {
+                qcContainers.forEach(qcContainer -> {
                     var url = qcContainer.getStartURL(user);
-                    url.addParameter("RunId", runId);
+                    url.addParameter("RunId", currentRunId);
+                    url.addReturnURL(ctx.getViewContext().getActionURL());
                     sb.append("<div><a href=\"")
                             .append(PageFlowUtil.filter(url))
                             .append("\"")
-                            .append("target=\"_blank\">")
+                            .append(">")
                             .append(PageFlowUtil.filter(qcContainer.getName()))
                             .append("</a></div>");
                 });

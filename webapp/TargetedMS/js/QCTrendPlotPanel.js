@@ -560,12 +560,17 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (!this.experimentRunDateRangeToolbar)
         {
             var hidden = !this.showExpRunRange;
+            var returnUrl = LABKEY.ActionURL.getReturnUrl();
             var htmlStr = this.showExpRunRange
-                    ? this.expRunDetails.fileName + " : " + this.formatDate(this.expRunDetails.startDate) + " through " + this.formatDate(this.expRunDetails.endDate)
-                    : '';
+                    ? "<a href=" + returnUrl +  ">"
+                    + this.expRunDetails.fileName + " : "
+                    + this.formatDate(this.expRunDetails.startDate) + " through "
+                    + this.formatDate(this.expRunDetails.endDate)
+                    + "</a>"
+                    : "";
             this.experimentRunDateRangeToolbar = Ext4.create('Ext.toolbar.Toolbar', {
                 ui: 'footer',
-                cls: 'expDateRange-toolbar-msg x4-box-item',
+                cls: 'expDateRange-toolbar-msg',
                 hidden: hidden,
                 layout: { pack: 'center' },
                 items: [{
@@ -1603,13 +1608,14 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         .enter().append("rect").attr("class", "expRange")
                         .attr('x', xAcc).attr('y', yRange[1])
                         .attr('width', widthAcc).attr('height', yRange[0] - yRange[1])
-                        .attr('stroke', '#69a3b2').attr('stroke-opacity', 0.1)
-                        .attr('fill', '#69a3b2').attr('fill-opacity', 0.1);
+                        .attr('stroke', '#557098').attr('stroke-opacity', 0.1)
+                        .attr('fill', '#557098').attr('fill-opacity', 0.1);
 
+                // TODO: look into setting background color of title tooltip
                 expRange.append("title").text(function (d) {
-                    return "Instrument Name: " + me.expRunDetails.instrumentName
+                    return "Skyline File: " + me.expRunDetails.fileName
                             + ", \nSerial No: " + me.expRunDetails.serialNumber
-                            + ", \nSkyline File: " + me.expRunDetails.fileName
+                            + ", \nInstrument Name: " + me.expRunDetails.instrumentName
                             + ", \nStart: " + me.formatDate(Ext4.Date.parse(me.expRunDetails.startDate, LABKEY.Utils.getDateTimeFormatWithMS()), true)
                             + ", \nEnd: " + me.formatDate(Ext4.Date.parse(me.expRunDetails.endDate, LABKEY.Utils.getDateTimeFormatWithMS()), true)
                             + ", \nMean: " + expMean

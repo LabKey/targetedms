@@ -1324,7 +1324,7 @@ public class TargetedMSSchema extends UserSchema
         {
             try
             {
-                TargetedMSRun run = TargetedMSManager.getRun(Integer.parseInt(name.substring(SAMPLE_FILE_RUN_PREFIX.length())));
+                TargetedMSRun run = TargetedMSManager.getRun(Long.parseLong(name.substring(SAMPLE_FILE_RUN_PREFIX.length())));
                 // If we can't find the run or it's not in the current container, just act like the table doesn't exist
                 if (run != null && run.getContainer().equals(getContainer()))
                 {
