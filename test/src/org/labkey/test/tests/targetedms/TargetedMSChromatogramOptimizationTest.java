@@ -9,12 +9,17 @@ import org.labkey.test.Locator;
 import org.labkey.test.categories.DailyB;
 import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.targetedms.ConnectionSource;
+import org.openqa.selenium.NoSuchElementException;
 
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 @Category({DailyB.class})
 @BaseWebDriverTest.ClassTimeout(minutes = 3)
@@ -43,16 +48,11 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
         clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
         File downloadedClibFile = doAndWaitForDownload(() -> clickButton("Download", 0));
 
-        goToProjectHome();
-        goToSchemaBrowser();
-        DataRegionTable table = viewQueryData("targetedms", "TransitionOptimization");
-        table.rowSelector().showAll();
-
-        log("Verifying the new tables added");
-        checker().verifyTrue("TransitionOptimization table is not present in the SQLITE file",
-                tableExists(downloadedClibFile, "TransitionOptimization"));
-        checker().verifyTrue("MoleculeTransitionOptimization table is not present in SQLITE file",
-                tableExists(downloadedClibFile, "MoleculeTransitionOptimization"));
+        log("Verifying table exists");
+        List<String> tablesToVerify = new LinkedList<String>(Arrays.asList("TransitionOptimization", "MoleculeTransitionOptimization", "Molecule", "MoleculeList", "MoleculePrecursor", "MoleculePrecursorRetentionTime"));
+        List<String> tablesNotPresent = tableExists(tablesToVerify, downloadedClibFile);
+        if (tablesNotPresent.size() != 0)
+            checker().verifyTrue("Some of the tables do not exists in SQLITE file" + Arrays.toString(tablesNotPresent.toArray()), false);
 
         log("Verifying the SampleFile modifications");
         checker().verifyTrue("Sample File does not have CePredictorId",
@@ -60,9 +60,38 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
         checker().verifyTrue("Sample File does not have DpPredictorId",
                 columnExists(downloadedClibFile, "SampleFile", "DpPredictorId"));
 
-        checker().verifyEquals("Invalid number of rows in transition optimization", table.getDataRowCount(),
+        log("Verifying the rows counts");
+        checker().verifyEquals("Invalid number of rows in transition optimization", getServerTableRowCount("TransitionOptimization"),
                 sizeOfTable(downloadedClibFile, "MoleculeTransitionOptimization"));
+        checker().verifyEquals("Invalid number of rows in Molecule", getServerTableRowCount("Molecule"),
+                sizeOfTable(downloadedClibFile, "Molecule"));
+        checker().verifyEquals("Invalid number of rows in MoleculePrecursor", getServerTableRowCount("MoleculePrecursor"),
+                sizeOfTable(downloadedClibFile, "MoleculePrecursor"));
 
+
+//        checker().verifyEquals("Invalid number of rows in MoleculePrecursorRetentionTime", getServerTableRowCount("MoleculePrecursorRetentionTime"),
+//                sizeOfTable(downloadedClibFile, "MoleculePrecursorRetentionTime"));
+//        checker().verifyEquals("Invalid number of rows in MoleculeList", getServerTableRowCount("MoleculeList"),
+//                sizeOfTable(downloadedClibFile, "MoleculeList"));
+
+
+    }
+
+    private int getServerTableRowCount(String tableName)
+    {
+        goToSchemaBrowser();
+        DataRegionTable table = viewQueryData("targetedms", tableName);
+        table.rowSelector().showAll();
+        try
+        {
+            table.goToView("LibraryMolecules");
+        }
+        catch (NoSuchElementException e)
+        {
+            return table.getDataRowCount(); // Default view count.
+        }
+
+        return table.getDataRowCount(); // Returns Library Molecules view count.
     }
 
     private int sizeOfTable(File clibFile, String name) throws SQLException
@@ -70,22 +99,13 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
         int cnt = 0;
         @SuppressWarnings("SqlResolve")
         String sql = "SELECT * FROM " + name;
-        Connection conn = ConnectionSource.getConnection(clibFile.getAbsolutePath());
-        ResultSet rs = conn.createStatement().executeQuery(sql);
-        while (rs.next())
-            cnt++;
+        try (Connection conn = ConnectionSource.getConnection(clibFile.getAbsolutePath()))
+        {
+            ResultSet rs = conn.createStatement().executeQuery(sql);
+            while (rs.next())
+                cnt++;
+        }
         return cnt;
-    }
-
-    private boolean tableExists(File clibFile, String tableName) throws SQLException
-    {
-        Connection conn = ConnectionSource.getConnection(clibFile.getAbsolutePath());
-        DatabaseMetaData md = conn.getMetaData();
-        ResultSet rs = md.getTables(null, null, tableName, null);
-        if (rs.next())
-            return true; //Table exists
-        else
-            return false;
     }
 
     private boolean columnExists(File clibFile, String tableName, String columnName) throws SQLException
@@ -93,13 +113,28 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
         try (Connection conn = ConnectionSource.getConnection(clibFile.getAbsolutePath()))
         {
             DatabaseMetaData md = conn.getMetaData();
-            try (ResultSet rs = md.getColumns(null, null, tableName, columnName))
-            {
-                if (rs.next())
-                    return true; //Table exists
-                else
-                    return false;
-            }
+            ResultSet rs = md.getColumns(null, null, tableName, columnName);
+            if (rs.next())
+                return true; //Table exists
+            else
+                return false;
         }
+    }
+
+    private List<String> tableExists(List<String> tables, File clibFile) throws SQLException
+    {
+        try (Connection conn = ConnectionSource.getConnection(clibFile.getAbsolutePath()))
+        {
+            DatabaseMetaData md = conn.getMetaData();
+            for (Iterator<String> i = tables.iterator(); i.hasNext(); )
+            {
+                String tableName = i.next();
+                ResultSet rs = md.getTables(null, null, tableName, null);
+                if (rs.next())
+                    i.remove();
+            }
+
+        }
+        return tables;
     }
 }
