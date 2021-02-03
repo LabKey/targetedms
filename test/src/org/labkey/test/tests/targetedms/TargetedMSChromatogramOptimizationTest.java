@@ -1,6 +1,7 @@
 package org.labkey.test.tests.targetedms;
 
 
+import org.jetbrains.annotations.Nullable;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -61,37 +62,23 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
                 columnExists(downloadedClibFile, "SampleFile", "DpPredictorId"));
 
         log("Verifying the rows counts");
-        checker().verifyEquals("Invalid number of rows in transition optimization", getServerTableRowCount("TransitionOptimization"),
+        checker().verifyEquals("Invalid number of rows in transition optimization", getServerTableRowCount("TransitionOptimization",null ),
                 sizeOfTable(downloadedClibFile, "MoleculeTransitionOptimization"));
-        checker().verifyEquals("Invalid number of rows in Molecule", getServerTableRowCount("Molecule"),
+        checker().verifyEquals("Invalid number of rows in Molecule", getServerTableRowCount("Molecule", "Library Molecules"),
                 sizeOfTable(downloadedClibFile, "Molecule"));
-        checker().verifyEquals("Invalid number of rows in MoleculePrecursor", getServerTableRowCount("MoleculePrecursor"),
+        checker().verifyEquals("Invalid number of rows in MoleculePrecursor", getServerTableRowCount("MoleculePrecursor", null),
                 sizeOfTable(downloadedClibFile, "MoleculePrecursor"));
-
-
-//        checker().verifyEquals("Invalid number of rows in MoleculePrecursorRetentionTime", getServerTableRowCount("MoleculePrecursorRetentionTime"),
-//                sizeOfTable(downloadedClibFile, "MoleculePrecursorRetentionTime"));
-//        checker().verifyEquals("Invalid number of rows in MoleculeList", getServerTableRowCount("MoleculeList"),
-//                sizeOfTable(downloadedClibFile, "MoleculeList"));
-
 
     }
 
-    private int getServerTableRowCount(String tableName)
+    private int getServerTableRowCount(String tableName, @Nullable String viewName)
     {
         goToSchemaBrowser();
         DataRegionTable table = viewQueryData("targetedms", tableName);
         table.rowSelector().showAll();
-        try
-        {
-            table.goToView("LibraryMolecules");
-        }
-        catch (NoSuchElementException e)
-        {
-            return table.getDataRowCount(); // Default view count.
-        }
-
-        return table.getDataRowCount(); // Returns Library Molecules view count.
+        if(viewName != null)
+            table.goToView(viewName);
+        return table.getDataRowCount();
     }
 
     private int sizeOfTable(File clibFile, String name) throws SQLException
@@ -101,9 +88,11 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
         String sql = "SELECT * FROM " + name;
         try (Connection conn = ConnectionSource.getConnection(clibFile.getAbsolutePath()))
         {
-            ResultSet rs = conn.createStatement().executeQuery(sql);
-            while (rs.next())
-                cnt++;
+            try(ResultSet rs = conn.createStatement().executeQuery(sql))
+            {
+                while (rs.next())
+                    cnt++;
+            }
         }
         return cnt;
     }
@@ -113,11 +102,13 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
         try (Connection conn = ConnectionSource.getConnection(clibFile.getAbsolutePath()))
         {
             DatabaseMetaData md = conn.getMetaData();
-            ResultSet rs = md.getColumns(null, null, tableName, columnName);
-            if (rs.next())
-                return true; //Table exists
-            else
-                return false;
+            try(ResultSet rs = md.getColumns(null, null, tableName, columnName))
+            {
+                if (rs.next())
+                    return true; //Table exists
+                else
+                    return false;
+            }
         }
     }
 
@@ -129,9 +120,11 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
             for (Iterator<String> i = tables.iterator(); i.hasNext(); )
             {
                 String tableName = i.next();
-                ResultSet rs = md.getTables(null, null, tableName, null);
-                if (rs.next())
-                    i.remove();
+                try(ResultSet rs = md.getTables(null, null, tableName, null))
+                {
+                    if (rs.next())
+                        i.remove();
+                }
             }
 
         }
