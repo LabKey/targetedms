@@ -347,13 +347,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     var pointDate = new Date(pointsData[index].fullDate)
                     if (pointDate >= startDate && pointDate < endDate) {
                         if (startIndex === undefined) {
-                            startIndex = index;
+                            startIndex = pointsData[index].seqValue;
                         }
                     }
 
                     if (pointDate >= endDate) {
                         if (!endIndex) {
-                            endIndex = index;
+                            endIndex = pointsData[index].seqValue;
                         }
                     }
 
