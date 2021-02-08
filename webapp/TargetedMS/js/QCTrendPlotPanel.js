@@ -563,9 +563,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             var returnUrl = LABKEY.ActionURL.getReturnUrl();
             var htmlStr = this.showExpRunRange
                     ? "<a href=" + returnUrl +  ">"
-                    + this.expRunDetails.fileName + " : "
-                    + this.formatDate(this.expRunDetails.startDate) + " through "
-                    + this.formatDate(this.expRunDetails.endDate)
+                    + Ext4.String.htmlEncode(this.expRunDetails.fileName) + " : "
+                    + Ext4.String.htmlEncode(this.formatDate(this.expRunDetails.startDate)) + " through "
+                    + Ext4.String.htmlEncode(this.formatDate(this.expRunDetails.endDate))
                     + "</a>"
                     : "";
             this.experimentRunDateRangeToolbar = Ext4.create('Ext.toolbar.Toolbar', {
@@ -1613,14 +1613,14 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
                 // TODO: look into setting background color of title tooltip
                 expRange.append("title").text(function (d) {
-                    return "Skyline File: " + me.expRunDetails.fileName
-                            + ", \nSerial No: " + me.expRunDetails.serialNumber
-                            + ", \nInstrument Name: " + me.expRunDetails.instrumentName
-                            + ", \nStart: " + me.formatDate(Ext4.Date.parse(me.expRunDetails.startDate, LABKEY.Utils.getDateTimeFormatWithMS()), true)
-                            + ", \nEnd: " + me.formatDate(Ext4.Date.parse(me.expRunDetails.endDate, LABKEY.Utils.getDateTimeFormatWithMS()), true)
-                            + ", \nMean: " + expMean
-                            + ", \nStd Dev: " + expStdDev
-                            + ", \n%CV: " + expPercentCV;
+                    return "Skyline File: " + Ext4.String.htmlEncode(me.expRunDetails.fileName)
+                            + ", \nSerial No: " + Ext4.String.htmlEncode(me.expRunDetails.serialNumber)
+                            + ", \nInstrument Name: " + Ext4.String.htmlEncode(me.expRunDetails.instrumentName)
+                            + ", \nStart: " + Ext4.String.htmlEncode(me.formatDate(Ext4.Date.parse(me.expRunDetails.startDate, LABKEY.Utils.getDateTimeFormatWithMS()), true))
+                            + ", \nEnd: " + Ext4.String.htmlEncode(me.formatDate(Ext4.Date.parse(me.expRunDetails.endDate, LABKEY.Utils.getDateTimeFormatWithMS()), true))
+                            + ", \nMean: " + Ext4.String.htmlEncode(expMean)
+                            + ", \nStd Dev: " + Ext4.String.htmlEncode(expStdDev)
+                            + ", \n%CV: " + Ext4.String.htmlEncode(expPercentCV);
                 });
             }
 
@@ -1650,14 +1650,14 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     percentCV = me.formatNumeric((stdDev / mean) * 100);
                 }
 
-                return "Guide Set ID: " + d.GuideSetId + ","
-                    + "\nStart: " + me.formatDate(Ext4.Date.parse(guideSetInfo.TrainingStart, LABKEY.Utils.getDateTimeFormatWithMS()), true)
-                    + ",\nEnd: " + me.formatDate(Ext4.Date.parse(guideSetInfo.TrainingEnd, LABKEY.Utils.getDateTimeFormatWithMS()), true)
-                    + (showGuideSetStats ? ",\n# Runs: " + numRecs : "")
-                    + (showGuideSetStats ? ",\nMean: " + mean : "")
-                    + (showGuideSetStats ? ",\nStd Dev: " + stdDev : "")
-                    + (showGuideSetStats ? ",\n%CV: " + percentCV : "")
-                    + (guideSetInfo.Comment ? (",\nComment: " + guideSetInfo.Comment) : "");
+                return "Guide Set ID: " + Ext4.String.htmlEncode(d.GuideSetId) + ","
+                    + "\nStart: " + Ext4.String.htmlEncode(me.formatDate(Ext4.Date.parse(guideSetInfo.TrainingStart, LABKEY.Utils.getDateTimeFormatWithMS()), true))
+                    + ",\nEnd: " + Ext4.String.htmlEncode(me.formatDate(Ext4.Date.parse(guideSetInfo.TrainingEnd, LABKEY.Utils.getDateTimeFormatWithMS()), true))
+                    + (showGuideSetStats ? ",\n# Runs: " + Ext4.String.htmlEncode(numRecs) : "")
+                    + (showGuideSetStats ? ",\nMean: " + Ext4.String.htmlEncode(mean) : "")
+                    + (showGuideSetStats ? ",\nStd Dev: " + Ext4.String.htmlEncode(stdDev) : "")
+                    + (showGuideSetStats ? ",\n%CV: " + Ext4.String.htmlEncode(percentCV) : "")
+                    + (guideSetInfo.Comment ? (",\nComment: " + Ext4.String.htmlEncode(guideSetInfo.Comment)) : "");
             });
         }
 
