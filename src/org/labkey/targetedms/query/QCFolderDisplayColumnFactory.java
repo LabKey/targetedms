@@ -52,7 +52,10 @@ public class QCFolderDisplayColumnFactory implements DisplayColumnFactory
                 StringBuilder sb = new StringBuilder();
                 qcContainers.forEach(qcContainer -> {
                     var url = qcContainer.getStartURL(user);
-                    url.addParameter("RunId", currentRunId);
+                    if (!"null".equals(currentRunId))
+                    {
+                        url.addParameter("RunId", currentRunId);
+                    }
                     url.addReturnURL(ctx.getViewContext().getActionURL());
                     sb.append("<div><a href=\"")
                             .append(PageFlowUtil.filter(url))
