@@ -2204,7 +2204,7 @@ public class SkylineDocumentParser implements AutoCloseable
         if (driftTimeMs1 != null || driftTimeWindow != null || driftTimeFragment != null)
         {
             chromInfo.setIonMobilityMs1(driftTimeMs1);
-            chromInfo.setIonMobilityMs1(driftTimeFragment);
+            chromInfo.setIonMobilityFragment(driftTimeFragment);
             chromInfo.setIonMobilityWindow(driftTimeWindow);
             chromInfo.setIonMobilityType("drift_time_ms");
         }
