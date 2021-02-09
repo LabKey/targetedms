@@ -35,4 +35,27 @@ public abstract class AnnotatedEntity<AnnotationType extends AbstractAnnotation>
     {
         _annotations = Collections.unmodifiableList(annotations);
     }
+
+    /** Utility for small molecules to separate adducts from the rest of the formula */
+    protected String extractAdduct(String ionFormula)
+    {
+        if (ionFormula == null || !ionFormula.contains("[") || !ionFormula.endsWith("]"))
+        {
+            throw new IllegalStateException("Invalid ion formula: " + ionFormula);
+        }
+        // Pull out the text between the brackets at the end
+        String adduct = ionFormula.substring(ionFormula.lastIndexOf("[") + 1);
+        return adduct.substring(0, adduct.length() - 1);
+    }
+
+    /** Utilities for small molecules to drop the adducts from the rest of the formula */
+    protected String stripAdduct(String ionFormula)
+    {
+        if (ionFormula == null || !ionFormula.contains("[") || !ionFormula.endsWith("]"))
+        {
+            throw new IllegalStateException("Invalid ion formula: " + ionFormula);
+        }
+        // Pull out the text before the last bracket
+        return ionFormula.substring(0, ionFormula.lastIndexOf("["));
+    }
 }

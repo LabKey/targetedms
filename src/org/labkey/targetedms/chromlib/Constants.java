@@ -178,6 +178,7 @@ class Constants
         Fwhm("DOUBLE"),
         MassErrorPPM("DOUBLE"),
         ChromatogramIndex("INTEGER"),
+        FragmentName("VARCHAR(100)"),
 
         IrtLibraryId("INTEGER NOT NULL", Table.IrtLibrary, Id),
         PeptideModSeq("TEXT NOT NULL"),
@@ -186,6 +187,7 @@ class Constants
         TimeSource("INT"),
 
         TransitionId("INTEGER NOT NULL", Table.Transition, Id),
+        MoleculeTransitionId("INTEGER NOT NULL", Table.MoleculeTransition, Id),
         OptimizationType("TEXT NOT NULL"),
         OptimizationValue("DOUBLE NOT NULL"),
         OptimizationStep("INTEGER"),
@@ -824,8 +826,9 @@ class Constants
     {
         Id(Column.Id),
         MoleculePrecursorId(Column.MoleculePrecursorId),
-        MoleculeName(Column.MoleculeName),
+        FragmentName(Column.MoleculeName),
         ChemicalFormula(Column.ChemicalFormula),
+        Adduct(Column.Adduct),
         Mz(Column.Mz, "DOUBLE"),
         Charge(Column.Charge, "INTEGER"),
         FragmentType(Column.FragmentType),
@@ -925,7 +928,7 @@ class Constants
     public enum MoleculeTransitionOptimizationColumn implements ColumnDef
     {
         Id(Column.Id),
-        TransitionId(Column.TransitionId),
+        MoleculeTransitionId(Column.MoleculeTransitionId),
         OptimizationType(Column.OptimizationType),
         OptimizationValue(Column.OptimizationValue);
 
