@@ -16,8 +16,11 @@ public class InstrumentSummaryWebPart extends QueryView
         var propertyValues = getBindPropertyValues();
         if (null != propertyValues)
         {
-            var runId = propertyValues.getPropertyValue("id").getValue().toString();
-            instrumentSummaryQS.setBaseFilter(new SimpleFilter(FieldKey.fromString("runId"), Long.valueOf(runId)));
+            var runId = propertyValues.getPropertyValue("id");
+            if (null != runId)
+            {
+                instrumentSummaryQS.setBaseFilter(new SimpleFilter(FieldKey.fromString("runId"), Long.valueOf(runId.getValue().toString())));
+            }
         }
         setSettings(instrumentSummaryQS);
         setTitle("Instruments Summary");
