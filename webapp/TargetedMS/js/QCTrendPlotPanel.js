@@ -562,7 +562,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             var hidden = !this.showExpRunRange;
             var returnUrl = LABKEY.ActionURL.getReturnUrl();
             var htmlStr = this.showExpRunRange
-                    ? "<a href=" + returnUrl +  ">"
+                    ? "<a href=" + Ext4.String.htmlEncode(returnUrl) +  ">"
                     + Ext4.String.htmlEncode(this.expRunDetails.fileName) + " : "
                     + Ext4.String.htmlEncode(this.formatDate(this.expRunDetails.startDate)) + " through "
                     + Ext4.String.htmlEncode(this.formatDate(this.expRunDetails.endDate))
