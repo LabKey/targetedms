@@ -26,7 +26,7 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
         setupFolder(FolderType.Experiment);
         importData(SKY_FILE);
 
-        log("Creating two test QC folder with same data");
+        log("Creating one test QC folder with same data");
         setUpFolder(QC_FOLDER_1, FolderType.QC);
         importData(SKY_FILE);
     }
@@ -69,6 +69,13 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
         table = new DataRegionTable("InstrumentSummary", getDriver());
         checker().verifyEquals("Invalid QC Folder Name ", QC_FOLDER_1 + "\n" + QC_FOLDER_2,
                 table.getDataAsText(0, "QCFolders"));
+
+        clickAndWait(Locator.linkWithText(QC_FOLDER_1));
+        checker().verifyEquals("Did not navigate to QC folder ", QC_FOLDER_1,getCurrentContainer());
+        goBack();
+
+        clickAndWait(Locator.linkWithText(QC_FOLDER_2));
+        checker().verifyEquals("Did not navigate to QC folder ", QC_FOLDER_2,getCurrentContainer());
 
     }
 
