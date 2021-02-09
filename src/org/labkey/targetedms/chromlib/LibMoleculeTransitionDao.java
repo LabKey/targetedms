@@ -46,6 +46,8 @@ public class LibMoleculeTransitionDao extends BaseDaoImpl<LibMoleculeTransition>
     {
         int colIndex = 1;
         stmt.setLong(colIndex++, transition.getMoleculePrecursorId());
+        stmt.setString(colIndex++, transition.getMoleculeName());
+        stmt.setString(colIndex++, transition.getChemicalFormula());
         stmt.setObject(colIndex++, transition.getMz(), Types.DOUBLE);
         stmt.setObject(colIndex++, transition.getCharge(), Types.INTEGER);
         stmt.setString(colIndex++, transition.getFragmentType());
@@ -78,6 +80,8 @@ public class LibMoleculeTransitionDao extends BaseDaoImpl<LibMoleculeTransition>
             LibMoleculeTransition transition = new LibMoleculeTransition();
             transition.setId(rs.getInt(Constants.MoleculeTransitionColumn.Id.baseColumn().name()));
             transition.setMoleculePrecursorId(rs.getInt(Constants.MoleculeTransitionColumn.MoleculePrecursorId.baseColumn().name()));
+            transition.setMoleculeName(rs.getString(Constants.MoleculeTransitionColumn.MoleculeName.baseColumn().name()));
+            transition.setChemicalFormula(rs.getString(Constants.MoleculeTransitionColumn.ChemicalFormula.baseColumn().name()));
             transition.setMz(readDouble(rs, Constants.MoleculeTransitionColumn.Mz.baseColumn().name()));
             transition.setCharge(readInteger(rs, Constants.MoleculeTransitionColumn.Charge.baseColumn().name()));
             transition.setFragmentType(rs.getString(Constants.MoleculeTransitionColumn.FragmentType.baseColumn().name()));

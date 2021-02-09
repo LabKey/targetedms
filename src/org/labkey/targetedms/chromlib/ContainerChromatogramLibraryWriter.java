@@ -569,8 +569,8 @@ public class ContainerChromatogramLibraryWriter
     private LibMolecule makeLibMolecule(Molecule molecule)
     {
         LibMolecule libMolecule = new LibMolecule();
-        libMolecule.setIonFormula(molecule.getIonFormula());
-        libMolecule.setCustomIonName(molecule.getCustomIonName());
+        libMolecule.setChemicalFormula(molecule.getIonFormula());
+        libMolecule.setMoleculeName(molecule.getCustomIonName());
         libMolecule.setMassMonoisotopic(molecule.getMassMonoisotopic());
         libMolecule.setMassAverage(molecule.getMassAverage());
         libMolecule.setMoleculeAccession(molecule.getMoleculeId());

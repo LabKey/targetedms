@@ -71,6 +71,17 @@ public class MoleculePrecursor extends GeneralPrecursor<MoleculeTransition>
         _massAverage = massAverage;
     }
 
+    public String getAdduct()
+    {
+        if (_ionFormula == null || !_ionFormula.contains("[") || !_ionFormula.endsWith("]"))
+        {
+            throw new IllegalStateException("Invalid ion formula: " + _ionFormula);
+        }
+        // Pull out the text between the brackets at the end
+        String adduct = _ionFormula.substring(_ionFormula.lastIndexOf("[") + 1);
+        return adduct.substring(0, adduct.length() - 1);
+    }
+
     @Override
     public String toString()
     {

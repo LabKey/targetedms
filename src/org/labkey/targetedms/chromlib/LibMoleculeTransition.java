@@ -27,12 +27,16 @@ import org.labkey.targetedms.parser.TransitionChromInfo;
 public class LibMoleculeTransition extends AbstractLibTransition
 {
     private long _moleculePrecursorId;
+    private String _moleculeName;
+    private String _chemicalFormula;
 
     public LibMoleculeTransition() {}
 
     public LibMoleculeTransition(MoleculeTransition transition, TransitionChromInfo tci)
     {
         super(transition, tci);
+        setMoleculeName(transition.getCustomIonName());
+        setChemicalFormula(transition.getIonFormula());
     }
 
     public long getMoleculePrecursorId()
@@ -43,6 +47,26 @@ public class LibMoleculeTransition extends AbstractLibTransition
     public void setMoleculePrecursorId(long moleculePrecursorId)
     {
         _moleculePrecursorId = moleculePrecursorId;
+    }
+
+    public String getMoleculeName()
+    {
+        return _moleculeName;
+    }
+
+    public void setMoleculeName(String moleculeName)
+    {
+        _moleculeName = moleculeName;
+    }
+
+    public String getChemicalFormula()
+    {
+        return _chemicalFormula;
+    }
+
+    public void setChemicalFormula(String chemicalFormula)
+    {
+        _chemicalFormula = chemicalFormula;
     }
 
     @Override
@@ -66,6 +90,8 @@ public class LibMoleculeTransition extends AbstractLibTransition
         if (_massIndex != null ? !_massIndex.equals(that._massIndex) : that._massIndex != null) return false;
         if (_mz != null ? !_mz.equals(that._mz) : that._mz != null) return false;
         if (_massErrorPPM != null ? !_massErrorPPM.equals(that._massErrorPPM) : that._massErrorPPM != null) return false;
+        if (_chemicalFormula != null ? !_chemicalFormula.equals(that._chemicalFormula) : that._chemicalFormula != null) return false;
+        if (_moleculeName != null ? !_moleculeName.equals(that._moleculeName) : that._moleculeName != null) return false;
 
         return true;
     }
@@ -84,6 +110,8 @@ public class LibMoleculeTransition extends AbstractLibTransition
         result = 31 * result + _fwhm.hashCode();
         result = 31 * result + (_chromatogramIndex != null ? _chromatogramIndex.hashCode() : 0);
         result = 31 * result + (_massErrorPPM != null ? _massErrorPPM.hashCode() : 0);
+        result = 31 * result + (_chemicalFormula != null ? _chemicalFormula.hashCode() : 0);
+        result = 31 * result + (_moleculeName != null ? _moleculeName.hashCode() : 0);
         return result;
     }
 }
