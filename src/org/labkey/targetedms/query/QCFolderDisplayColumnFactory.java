@@ -36,7 +36,7 @@ public class QCFolderDisplayColumnFactory implements DisplayColumnFactory
             {
                 final User user = ctx.getViewContext().getUser();
                 String serialNumber = String.valueOf(getBoundColumn().getValue(ctx));
-                String currentRunId = String.valueOf(ctx.get("runId"));
+                var currentRunId = ctx.get("runId");
                 var instrumentRunIds = TargetedMSManager.getRunIdsByInstrument(serialNumber);
                 Set<Container> qcContainers = new TreeSet<>();
                 instrumentRunIds.forEach(runId -> {
@@ -52,9 +52,9 @@ public class QCFolderDisplayColumnFactory implements DisplayColumnFactory
                 StringBuilder sb = new StringBuilder();
                 qcContainers.forEach(qcContainer -> {
                     var url = qcContainer.getStartURL(user);
-                    if (!"null".equals(currentRunId))
+                    if (null != currentRunId)
                     {
-                        url.addParameter("RunId", currentRunId);
+                        url.addParameter("RunId", currentRunId.toString());
                     }
                     url.addReturnURL(ctx.getViewContext().getActionURL());
                     sb.append("<div><a href=\"")

@@ -189,7 +189,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     getExpRunRangeDetails: function() {
         var urlParams = LABKEY.ActionURL.getParameters();
-        this.showExpRunRange = urlParams['RunId'] !== undefined && urlParams['RunId'] !== "null" && urlParams['RunId'] !== "";
+        this.showExpRunRange = urlParams['RunId'] !== undefined && urlParams['RunId'] !== "";
 
         if (this.showExpRunRange) {
             this.getExperimentRunDetails(urlParams['RunId'])
