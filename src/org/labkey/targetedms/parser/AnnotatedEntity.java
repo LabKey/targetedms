@@ -15,6 +15,8 @@
  */
 package org.labkey.targetedms.parser;
 
+import org.apache.commons.lang3.StringUtils;
+
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +43,7 @@ public abstract class AnnotatedEntity<AnnotationType extends AbstractAnnotation>
     @Nullable
     protected String extractAdduct(String ionFormula)
     {
-        if (ionFormula == null)
+        if (StringUtils.stripToNull(ionFormula) == null)
         {
             return null;
         }
@@ -58,7 +60,7 @@ public abstract class AnnotatedEntity<AnnotationType extends AbstractAnnotation>
     @Nullable
     protected String stripAdduct(String ionFormula)
     {
-        if (ionFormula == null)
+        if (StringUtils.stripToNull(ionFormula) == null)
         {
             return null;
         }
