@@ -1583,7 +1583,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         if (this.showExpRunRange) {
             // determine the start index and end index for exp region to be highlighted
-            this.calculatePlotIndicesBetweenDates();
+            this.calculatePlotIndicesBetweenDates(precursorInfo);
 
             if (this.expRunDetails && this.expRunDetails.startIndex !== undefined && this.expRunDetails.endIndex !== undefined) {
                 var startIndex = this.expRunDetails.startIndex;
@@ -1810,6 +1810,16 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
             this.setBrushingEnabled(false);
             this.displayTrendPlot();
+
+            // reset expRunDetails highlighted region startIndex and endIndex
+            if (this.showExpRunRange && this.expRunDetails) {
+                if (this.expRunDetails.startIndex) {
+                    this.expRunDetails.startIndex = undefined;
+                }
+                if (this.expRunDetails.endIndex) {
+                    this.expRunDetails.endIndex = undefined;
+                }
+            }
         }
     },
 

@@ -331,44 +331,43 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         });
     },
 
-    calculatePlotIndicesBetweenDates: function () {
+    calculatePlotIndicesBetweenDates: function (precursorInfo) {
         var startDate = new Date(this.expRunDetails.startDate);
         var endDate = new Date(this.expRunDetails.endDate);
         var startIndex;
         var endIndex;
 
-        if (this.fragmentPlotData) {
+        if (precursorInfo) {
             // fragmentPlotData has plot data separated by series labels
-            var data = this.fragmentPlotData;
+            var data = precursorInfo.data;
 
-            for (var seriesLabel in data) {
-                var pointsData = data[seriesLabel].data;
-                for (var index = 0; index < pointsData.length; index++) {
-                    var pointDate = new Date(pointsData[index].fullDate)
-                    if (pointDate >= startDate && pointDate < endDate) {
-                        if (startIndex === undefined) {
-                            startIndex = pointsData[index].seqValue;
-                        }
-                    }
-
-                    if (pointDate >= endDate) {
-                        if (!endIndex) {
-                            endIndex = pointsData[index].seqValue;
-                        }
-                    }
-
-                    var foundIndices = startIndex !== undefined && endIndex !== undefined;
-
-                    if (foundIndices) {
-                        break;
+            for (var index = 0; index < data.length; index++) {
+                var pointDate = new Date(data[index].fullDate)
+                if (pointDate >= startDate && pointDate < endDate) {
+                    if (startIndex === undefined) {
+                        startIndex = data[index].seqValue;
                     }
                 }
+
+                if (pointDate >= endDate) {
+                    if (!endIndex) {
+                        endIndex = data[index].seqValue;
+                    }
+                }
+                // this happens for custom date range shorter than exp date range
+                else if (index === data.length - 1 && endIndex === undefined && startIndex !== undefined) {
+                    endIndex = data[data.length - 1].seqValue;
+                }
+
+                var foundIndices = startIndex !== undefined && endIndex !== undefined;
+
                 if (foundIndices) {
                     this.expRunDetails['startIndex'] = startIndex;
                     this.expRunDetails['endIndex'] = endIndex;
                     break;
                 }
             }
+
         }
     },
 
