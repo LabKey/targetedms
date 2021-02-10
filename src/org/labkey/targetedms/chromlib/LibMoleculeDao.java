@@ -122,8 +122,8 @@ public class LibMoleculeDao extends BaseDaoImpl<LibMolecule>
         {
             LibMolecule molecule = new LibMolecule();
             molecule.setId(rs.getInt(PeptideColumn.Id.baseColumn().name()));
-            molecule.setChemicalFormula(rs.getString(Constants.MoleculeColumn.IonFormula.baseColumn().name()));
-            molecule.setMoleculeName(rs.getString(Constants.MoleculeColumn.CustomIonName.baseColumn().name()));
+            molecule.setChemicalFormula(rs.getString(Constants.MoleculeColumn.ChemicalFormula.baseColumn().name()));
+            molecule.setMoleculeName(rs.getString(Constants.MoleculeColumn.MoleculeName.baseColumn().name()));
             molecule.setMassMonoisotopic(readDouble(rs, Constants.MoleculeColumn.MassMonoisotopic.baseColumn().name()));
             molecule.setMassAverage(readDouble(rs, Constants.MoleculeColumn.MassAverage.baseColumn().name()));
             molecule.setMoleculeAccession(rs.getString(Constants.MoleculeColumn.MoleculeAccession.baseColumn().name()));

@@ -707,8 +707,8 @@ class Constants
     {
         Id(Column.Id),
         MoleculeListId(Column.MoleculeListId),
-        IonFormula(Column.ChemicalFormula),
-        CustomIonName(Column.MoleculeName),
+        ChemicalFormula(Column.ChemicalFormula),
+        MoleculeName(Column.MoleculeName),
         MassMonoisotopic(Column.MassMonoisotopic),
         MassAverage(Column.MassAverage),
         MoleculeAccession(Column.MoleculeAccession);
@@ -826,7 +826,7 @@ class Constants
     {
         Id(Column.Id),
         MoleculePrecursorId(Column.MoleculePrecursorId),
-        FragmentName(Column.MoleculeName),
+        FragmentName(Column.FragmentName),
         ChemicalFormula(Column.ChemicalFormula),
         Adduct(Column.Adduct),
         Mz(Column.Mz, "DOUBLE"),
