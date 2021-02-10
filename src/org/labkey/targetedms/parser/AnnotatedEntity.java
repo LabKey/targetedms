@@ -15,6 +15,7 @@
  */
 package org.labkey.targetedms.parser;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 
@@ -37,9 +38,14 @@ public abstract class AnnotatedEntity<AnnotationType extends AbstractAnnotation>
     }
 
     /** Utility for small molecules to separate adducts from the rest of the formula */
+    @Nullable
     protected String extractAdduct(String ionFormula)
     {
-        if (ionFormula == null || !ionFormula.contains("[") || !ionFormula.endsWith("]"))
+        if (ionFormula == null)
+        {
+            return null;
+        }
+        if (!ionFormula.contains("[") || !ionFormula.endsWith("]"))
         {
             throw new IllegalStateException("Invalid ion formula: " + ionFormula);
         }
@@ -49,9 +55,14 @@ public abstract class AnnotatedEntity<AnnotationType extends AbstractAnnotation>
     }
 
     /** Utilities for small molecules to drop the adducts from the rest of the formula */
+    @Nullable
     protected String stripAdduct(String ionFormula)
     {
-        if (ionFormula == null || !ionFormula.contains("[") || !ionFormula.endsWith("]"))
+        if (ionFormula == null)
+        {
+            return null;
+        }
+        if (!ionFormula.contains("[") || !ionFormula.endsWith("]"))
         {
             throw new IllegalStateException("Invalid ion formula: " + ionFormula);
         }
