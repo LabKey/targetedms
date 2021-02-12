@@ -1270,7 +1270,11 @@ public class TargetedMSController extends SpringActionController
             GuideSet closestOutOfRangeGuideSet = null;
             if (form.isShowOutOfRangeGS() && !guideSets.isEmpty())
             {
-                closestOutOfRangeGuideSet = TargetedMSManager.getClosestPastGuideSet(guideSets, form.getStartDate());
+                closestOutOfRangeGuideSet = getClosestPastGuideSet(guideSets, form.getStartDate());
+                if (null != closestOutOfRangeGuideSet)
+                {
+                    form.setStartDate(new java.sql.Date(closestOutOfRangeGuideSet.getTrainingStart().getTime()));
+                }
             }
 
             List<QCMetricConfiguration> qcMetricConfigurations = TargetedMSManager.get()
@@ -1284,11 +1288,6 @@ public class TargetedMSController extends SpringActionController
             List<SampleFileInfo> sampleFiles = OutlierGenerator.get().getSampleFiles(rawMetricDataSets, stats, metricMap, getContainer(), null);
             List<QCPlotFragment> qcPlotFragments = OutlierGenerator.get().getQCPlotFragment(rawMetricDataSets, stats);
 
-            if (null != closestOutOfRangeGuideSet)
-            {
-                // filter data points
-            }
-
             response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toQCPlotJSON).collect(Collectors.toList()));
             response.put("plotDataRows", qcPlotFragments
                     .stream()
@@ -1297,6 +1296,27 @@ public class TargetedMSController extends SpringActionController
             response.put("metricProps", metricMap.get(passedMetricId).toJSON());
 
             return response;
+        }
+
+        private GuideSet getClosestPastGuideSet(List<GuideSet> guideSets, Date startDate)
+        {
+            GuideSet gs = null;
+            for (GuideSet guideSet : guideSets)
+            {
+                if (guideSet.getTrainingEnd().before(startDate))
+                {
+                    if (null == gs)
+                    {
+                        gs = guideSet;
+                    }
+                    else if (guideSet.getTrainingEnd().after(gs.getTrainingEnd()))
+                    {
+                        gs = guideSet;
+                    }
+                }
+            }
+
+            return gs;
         }
     }
     // ------------------------------------------------------------------------

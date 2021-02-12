@@ -2480,25 +2480,4 @@ public class TargetedMSManager
 
         return new SqlSelector(getSchema(), sql).getArrayList(Long.class);
     }
-
-    public static GuideSet getClosestPastGuideSet(List<GuideSet> guideSets, Date startDate)
-    {
-        GuideSet gs = null;
-        for (GuideSet guideSet : guideSets )
-        {
-            if (guideSet.getTrainingEnd().before(startDate))
-            {
-                if (null == gs)
-                {
-                    gs = guideSet;
-                }
-                else if (guideSet.getTrainingEnd().after(gs.getTrainingEnd()))
-                {
-                    gs = guideSet;
-                }
-            }
-        }
-
-        return gs;
-    }
 }
