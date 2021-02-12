@@ -1137,6 +1137,7 @@ public class TargetedMSController extends SpringActionController
         private Date _endDate;
         private List<OutlierGenerator.AnnotationGroup> _selectedAnnotations;
         private boolean _showExcluded;
+        private boolean _showOutOfRangeGS;
 
         public int getMetricId()
         {
@@ -1227,6 +1228,16 @@ public class TargetedMSController extends SpringActionController
         {
             _showExcluded = showExcluded;
         }
+
+        public boolean isShowOutOfRangeGS()
+        {
+            return _showOutOfRangeGS;
+        }
+
+        public void setShowOutOfRangeGS(boolean showOutOfRangeGS)
+        {
+            _showOutOfRangeGS = showOutOfRangeGS;
+        }
     }
 
     /**
@@ -1256,6 +1267,11 @@ public class TargetedMSController extends SpringActionController
             int passedMetricId = form.getMetricId();
 
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
+            GuideSet closestOutOfRangeGuideSet = null;
+            if (form.isShowOutOfRangeGS() && !guideSets.isEmpty())
+            {
+                closestOutOfRangeGuideSet = TargetedMSManager.getClosestPastGuideSet(guideSets, form.getStartDate());
+            }
 
             List<QCMetricConfiguration> qcMetricConfigurations = TargetedMSManager.get()
                     .getEnabledQCMetricConfigurations(getContainer(), getUser())
@@ -1267,6 +1283,11 @@ public class TargetedMSController extends SpringActionController
             Map<Integer, QCMetricConfiguration> metricMap = qcMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
             List<SampleFileInfo> sampleFiles = OutlierGenerator.get().getSampleFiles(rawMetricDataSets, stats, metricMap, getContainer(), null);
             List<QCPlotFragment> qcPlotFragments = OutlierGenerator.get().getQCPlotFragment(rawMetricDataSets, stats);
+
+            if (null != closestOutOfRangeGuideSet)
+            {
+                // filter data points
+            }
 
             response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toQCPlotJSON).collect(Collectors.toList()));
             response.put("plotDataRows", qcPlotFragments
