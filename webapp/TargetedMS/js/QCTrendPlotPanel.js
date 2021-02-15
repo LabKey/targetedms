@@ -968,8 +968,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 checked: this.groupedX,
                 listeners: {
                     scope: this,
-                    change: function(cb, newValue, oldValue)
-                    {
+                    change: function(cb, newValue, oldValue) {
                         this.groupedX = newValue;
                         this.havePlotOptionsChanged = true;
 
@@ -1061,7 +1060,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             this.createGuideSetToggleButton = Ext4.create('Ext.button.Button', {
                 text: 'Create Guide Set',
                 tooltip: 'Enable/disable guide set creation mode',
-                disabled: this.groupedX || this.singlePlot || this.isMultiSeries(),
+                disabled: this.groupedX || this.singlePlot || this.isMultiSeries() || this.showExpRunRange,
                 enableToggle: true,
                 handler: function(btn) {
                     this.setBrushingEnabled(btn.pressed);
@@ -1145,8 +1144,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     setBrushingEnabled : function(enabled) {
-        // we don't currently allow creation of guide sets in single plot mode, grouped x-axis mode, or multi series mode
-        this.getGuideSetCreateButton().setDisabled(this.groupedX || this.singlePlot || this.isMultiSeries());
+        // we don't currently allow creation of guide sets in single plot mode, grouped x-axis mode, multi series mode or when showingExpRunRange
+        this.getGuideSetCreateButton().setDisabled(this.groupedX || this.singlePlot || this.isMultiSeries() || this.showExpRunRange);
 
         this.enableBrushing = enabled;
         this.clearPlotBrush();
@@ -1524,7 +1523,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         Ext4.Object.each(this.guideSetDataMap, function(guideSetId, guideSetData)
         {
             // only compare guide set info for matching precursor fragment
-            if (!this.singlePlot && guideSetData.Series[precursorInfo.fragment] == undefined) {
+            if (!this.singlePlot && guideSetData.Series[precursorInfo.fragment] === undefined) {
                 return true; // continue
             }
 
@@ -1613,8 +1612,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }
 
         // add a "shaded" rect to indicate which points in the plot are part of the guide set training range
-        if (guideSetTrainingData.length > 0)
-        {
+        if (guideSetTrainingData.length > 0) {
             var guideSetTrainingRange = this.getSvgElForPlot(plot).selectAll("rect.training").data(guideSetTrainingData)
                 .enter().append("rect").attr("class", "training")
                 .attr('x', xAcc).attr('y', yRange[1])
@@ -1645,6 +1643,21 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     + (showGuideSetStats ? ",\n%CV: " + Ext4.String.htmlEncode(percentCV) : "")
                     + (guideSetInfo.Comment ? (",\nComment: " + Ext4.String.htmlEncode(guideSetInfo.Comment)) : "");
             });
+        }
+
+        if (this.filterQCPoints && !this.groupedX) {
+            var hiddenRegion = [];
+            hiddenRegion.push({
+                'EndIndex': this.outOfRangeGSLastIndex,
+                'StartIndex': this.outOfRangeGSFirstIndex
+            })
+
+            me.getSvgElForPlot(plot).selectAll("rect.hiddenRegionRange").data(hiddenRegion)
+                    .enter().append("rect").attr("class", "hiddenRegionRange")
+                    .attr('x', xAcc).attr('y', yRange[1])
+                    .attr('width', widthAcc).attr('height', yRange[0] - yRange[1])
+                    .attr('stroke', '#ffffff').attr('stroke-opacity', 1)
+                    .attr('fill', '#ffffff').attr('fill-opacity', 1);
         }
 
         // Issue 32277: need to move the data points in front of the guide set range display

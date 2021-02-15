@@ -1265,15 +1265,17 @@ public class TargetedMSController extends SpringActionController
             OutlierGenerator generator = OutlierGenerator.get();
 
             int passedMetricId = form.getMetricId();
+            boolean filterQCPoints = false;
 
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
-            GuideSet closestOutOfRangeGuideSet = null;
+            GuideSet closestOutOfRangeGuideSet;
             if (form.isShowOutOfRangeGS() && !guideSets.isEmpty())
             {
                 closestOutOfRangeGuideSet = getClosestPastGuideSet(guideSets, form.getStartDate());
                 if (null != closestOutOfRangeGuideSet)
                 {
                     form.setStartDate(new java.sql.Date(closestOutOfRangeGuideSet.getTrainingStart().getTime()));
+                    filterQCPoints = true;
                 }
             }
 
@@ -1294,6 +1296,7 @@ public class TargetedMSController extends SpringActionController
                     .map(qcPlotFragment -> qcPlotFragment.toJSON(form.isIncludeLJ(), form.isIncludeMR(), form.isIncludeMeanCusum(), form.isIncludeVariableCusum()))
                     .collect(Collectors.toList()));
             response.put("metricProps", metricMap.get(passedMetricId).toJSON());
+            response.put("filterQCPoints", filterQCPoints);
 
             return response;
         }
