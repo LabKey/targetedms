@@ -109,7 +109,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         plotsConfig.includeVariableCusum = this.showVariableCUSUMPlot();
         plotsConfig.showExcluded = this.showExcluded;
         // show out of range guide set for custom date range or exp run range date range
-        plotsConfig.showOutOfRangeGS = this.showOutOfRangeGS && (this.dateRangeOffset !== 0 || this.showExpRunRange);
+        plotsConfig.showOutOfRangeGS = this.showOutOfRangeGS && this.dateRangeOffset !== 0;
 
         var config = this.getReportConfig()
 
@@ -306,18 +306,19 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     truncateOutOfRangeQCPoints: function() {
         Ext4.Object.each(this.fragmentPlotData, function(label, fragmentData) {
             // traverse plotData backwards from firstIndex to lastIndex and
-            // mark them to reduce the opacity in addEachCombinedPrecusorPlot and addEachIndividualPrecusorPlot
+            // remove them from the array
             if (this.filterQCPoints && this.outOfRangeGSFirstIndex && this.outOfRangeGSLastIndex) {
                 for (var i = this.outOfRangeGSLastIndex; i >= this.outOfRangeGSFirstIndex; i--) {
                     this.fragmentPlotData[label].data.splice(i, 1);
                 }
 
+                // ReferenceRangeSeries is used to separate series
                 for (var i = 0; i < this.outOfRangeGSFirstIndex; i++) {
-                    fragmentData.data[i]['OutOfRangeSeries'] = "GuideSet";
+                    fragmentData.data[i]['ReferenceRangeSeries'] = "GuideSet";
                 }
 
                 for (var i = this.outOfRangeGSFirstIndex; i < fragmentData.data.length; i++) {
-                    fragmentData.data[i]['OutOfRangeSeries'] = "InRange";
+                    fragmentData.data[i]['ReferenceRangeSeries'] = "InRange";
                 }
             }
         }, this);
@@ -640,16 +641,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             groupBy: 'fragment',
             color: 'fragment',
             defaultGuideSetLabel: 'fragment',
-            pointOpacityFn: function (row) {
-                var pointOpacity = 1;
-                if (scope.filterQCPoints && row.hideInQC && !this.groupedX) {
-                    pointOpacity = 0;
-                }
-                else if (row.IgnoreInQC) {
-                    pointOpacity = 0.4;
-                }
-                return pointOpacity;
-            },
+            pointOpacityFn: function(row) { return row.IgnoreInQC ? 0.4 : 1; },
             showTrendLine: true,
             showDataPoints: true,
             mouseOverFn: this.plotPointHover,
@@ -722,16 +714,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             valueConversion: (this.yAxisScale === 'percentDeviation' || this.yAxisScale === 'standardDeviation' ? this.yAxisScale : undefined),
             shape: 'guideSetId',
             combined: false,
-            pointOpacityFn: function(row) {
-                var pointOpacity = 1;
-                if (scope.filterQCPoints && row.hideInQC && !this.groupedX) {
-                    pointOpacity = 0;
-                }
-                else if (row.IgnoreInQC) {
-                    pointOpacity = 0.4;
-                }
-                return pointOpacity;
-            },
+            pointOpacityFn: function(row) { return row.IgnoreInQC ? 0.4 : 1; },
             pointIdAttr: function(row) { return row['fullDate']; },
             showTrendLine: true,
             showDataPoints: true,
@@ -745,7 +728,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         if (this.filterQCPoints) {
             trendLineProps.lineColor = '#000000';
-            trendLineProps.groupBy = "OutOfRangeSeries";
+            trendLineProps.groupBy = "ReferenceRangeSeries";
         }
 
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(precursorInfo, plotType, isCUSUMMean));
