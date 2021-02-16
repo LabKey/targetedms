@@ -1269,12 +1269,13 @@ public class TargetedMSController extends SpringActionController
 
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
             GuideSet closestOutOfRangeGuideSet;
+            var rangeStartDate = form.getStartDate();
             if (form.isShowOutOfRangeGS() && !guideSets.isEmpty())
             {
                 closestOutOfRangeGuideSet = getClosestPastGuideSet(guideSets, form.getStartDate());
                 if (null != closestOutOfRangeGuideSet)
                 {
-                    form.setStartDate(new java.sql.Date(closestOutOfRangeGuideSet.getTrainingStart().getTime()));
+                    rangeStartDate = closestOutOfRangeGuideSet.getTrainingStart();
                     filterQCPoints = true;
                 }
             }
@@ -1284,7 +1285,7 @@ public class TargetedMSController extends SpringActionController
                     .stream()
                     .filter(qcMetricConfiguration -> qcMetricConfiguration.getId() == passedMetricId)
                     .collect(Collectors.toList());
-            List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(getContainer(), getUser(), qcMetricConfigurations, form.getStartDate(), form.getEndDate(), form.getSelectedAnnotations(), form.isShowExcluded());
+            List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(getContainer(), getUser(), qcMetricConfigurations, rangeStartDate, form.getEndDate(), form.getSelectedAnnotations(), form.isShowExcluded());
             Map<GuideSetKey, GuideSetStats> stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
             Map<Integer, QCMetricConfiguration> metricMap = qcMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
             List<SampleFileInfo> sampleFiles = OutlierGenerator.get().getSampleFiles(rawMetricDataSets, stats, metricMap, getContainer(), null);

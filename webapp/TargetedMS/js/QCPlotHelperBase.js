@@ -192,7 +192,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     }
 
                     Ext4.Object.each(this.guideSetDataMap, function(guideSetId, guideSetData) {
-                        // for truncating out of range guideset data  find last index of plotDate ending at guideset.trainingEnd
+                        // for truncating out of range guideset data  find first index of plotDate ending at guideset.trainingEnd
                         if (plotData.GuideSetId == guideSetId && plotData.InGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {
                             this.outOfRangeGSFirstIndex = j + 1;
                         }
