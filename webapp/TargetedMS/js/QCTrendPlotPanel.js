@@ -408,6 +408,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             var location = toolbarItems.push(this.getSinglePlotCheckbox());
             toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
             toolbarItems.push(this.getShowExcludedCheckbox());
+            toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
             toolbarItems.push(this.getShowOutOfRangeGSCheckbox());
             // toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
             // toolbarItems.push(this.getShowPlotLegendButton());
@@ -1036,7 +1037,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (!this.showOutOfRangeGSCheckbox) {
             this.showOutOfRangeGSCheckbox = Ext4.create('Ext.form.field.Checkbox', {
                 id: 'show-oorange-gs',
-                boxLabel: 'Show Out-of-Range Guide Set',
+                boxLabel: 'Show Reference Guide Set',
                 checked: this.showOutOfRangeGS,
                 listeners: {
                     scope: this,
