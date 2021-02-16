@@ -309,7 +309,15 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             // mark them to reduce the opacity in addEachCombinedPrecusorPlot and addEachIndividualPrecusorPlot
             if (this.filterQCPoints && this.outOfRangeGSFirstIndex && this.outOfRangeGSLastIndex) {
                 for (var i = this.outOfRangeGSLastIndex; i >= this.outOfRangeGSFirstIndex; i--) {
-                    this.fragmentPlotData[label].data[i]['hideInQC'] = true;
+                    this.fragmentPlotData[label].data.splice(i, 1);
+                }
+
+                for (var i = 0; i < this.outOfRangeGSFirstIndex; i++) {
+                    fragmentData.data[i]['OutOfRangeSeries'] = "GuideSet";
+                }
+
+                for (var i = this.outOfRangeGSFirstIndex; i < fragmentData.data.length; i++) {
+                    fragmentData.data[i]['OutOfRangeSeries'] = "InRange";
                 }
             }
         }, this);
@@ -632,7 +640,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             groupBy: 'fragment',
             color: 'fragment',
             defaultGuideSetLabel: 'fragment',
-            pointOpacityFn: function(row) {
+            pointOpacityFn: function (row) {
                 var pointOpacity = 1;
                 if (scope.filterQCPoints && row.hideInQC && !this.groupedX) {
                     pointOpacity = 0;
@@ -734,6 +742,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             position: this.groupedX ? 'jitter' : undefined,
             disableRangeDisplay: this.isMultiSeries()
         };
+
+        if (this.filterQCPoints) {
+            trendLineProps.lineColor = '#000000';
+            trendLineProps.groupBy = "OutOfRangeSeries";
+        }
 
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(precursorInfo, plotType, isCUSUMMean));
 

@@ -1645,20 +1645,20 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             });
         }
 
-        if (this.filterQCPoints && !this.groupedX) {
-            var hiddenRegion = [];
-            hiddenRegion.push({
-                'EndIndex': this.outOfRangeGSLastIndex,
-                'StartIndex': this.outOfRangeGSFirstIndex
-            })
-
-            me.getSvgElForPlot(plot).selectAll("rect.hiddenRegionRange").data(hiddenRegion)
-                    .enter().append("rect").attr("class", "hiddenRegionRange")
-                    .attr('x', xAcc).attr('y', yRange[1])
-                    .attr('width', widthAcc).attr('height', yRange[0] - yRange[1])
-                    .attr('stroke', '#ffffff').attr('stroke-opacity', 1)
-                    .attr('fill', '#ffffff').attr('fill-opacity', 1);
-        }
+        // if (this.filterQCPoints && !this.groupedX) {
+        //     var hiddenRegion = [];
+        //     hiddenRegion.push({
+        //         'EndIndex': this.outOfRangeGSLastIndex,
+        //         'StartIndex': this.outOfRangeGSFirstIndex
+        //     })
+        //
+        //     me.getSvgElForPlot(plot).selectAll("rect.hiddenRegionRange").data(hiddenRegion)
+        //             .enter().append("rect").attr("class", "hiddenRegionRange")
+        //             .attr('x', xAcc).attr('y', yRange[1])
+        //             .attr('width', widthAcc).attr('height', yRange[0] - yRange[1])
+        //             .attr('stroke', '#ffffff').attr('stroke-opacity', 1)
+        //             .attr('fill', '#ffffff').attr('fill-opacity', 1);
+        // }
 
         // Issue 32277: need to move the data points in front of the guide set range display
         // so that points can be interacted with (i.e. hover to exclude, see details, etc.)
