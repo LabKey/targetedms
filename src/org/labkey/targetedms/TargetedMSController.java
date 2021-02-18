@@ -1137,7 +1137,7 @@ public class TargetedMSController extends SpringActionController
         private Date _endDate;
         private List<OutlierGenerator.AnnotationGroup> _selectedAnnotations;
         private boolean _showExcluded;
-        private boolean _showOutOfRangeGS;
+        private boolean _showReferenceGS;
 
         public int getMetricId()
         {
@@ -1229,14 +1229,14 @@ public class TargetedMSController extends SpringActionController
             _showExcluded = showExcluded;
         }
 
-        public boolean isShowOutOfRangeGS()
+        public boolean isShowReferenceGS()
         {
-            return _showOutOfRangeGS;
+            return _showReferenceGS;
         }
 
-        public void setShowOutOfRangeGS(boolean showOutOfRangeGS)
+        public void setShowReferenceGS(boolean showReferenceGS)
         {
-            _showOutOfRangeGS = showOutOfRangeGS;
+            _showReferenceGS = showReferenceGS;
         }
     }
 
@@ -1270,7 +1270,7 @@ public class TargetedMSController extends SpringActionController
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
             GuideSet closestOutOfRangeGuideSet;
             var rangeStartDate = form.getStartDate();
-            if (form.isShowOutOfRangeGS() && !guideSets.isEmpty())
+            if (form.isShowReferenceGS() && !guideSets.isEmpty())
             {
                 closestOutOfRangeGuideSet = getClosestPastGuideSet(guideSets, form.getStartDate());
                 if (null != closestOutOfRangeGuideSet)

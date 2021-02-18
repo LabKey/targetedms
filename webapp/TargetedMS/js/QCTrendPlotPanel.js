@@ -34,7 +34,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     groupedX: false,
     singlePlot: false,
     showExcluded: false,
-    showOutOfRangeGS: true,
+    showReferenceGS: true,
     plotWidth: null,
     enableBrushing: false,
     havePlotOptionsChanged: false,
@@ -409,7 +409,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
             toolbarItems.push(this.getShowExcludedCheckbox());
             toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
-            toolbarItems.push(this.getShowOutOfRangeGSCheckbox());
+            toolbarItems.push(this.getShowReferenceCheckbox());
             // toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
             // toolbarItems.push(this.getShowPlotLegendButton());
 
@@ -1033,16 +1033,16 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return this.showExcludedPointsCheckbox;
     },
 
-    getShowOutOfRangeGSCheckbox : function() {
-        if (!this.showOutOfRangeGSCheckbox) {
-            this.showOutOfRangeGSCheckbox = Ext4.create('Ext.form.field.Checkbox', {
+    getShowReferenceCheckbox : function() {
+        if (!this.showReferenceGS) {
+            this.showReferenceGS = Ext4.create('Ext.form.field.Checkbox', {
                 id: 'show-oorange-gs',
                 boxLabel: 'Show Reference Guide Set',
-                checked: this.showOutOfRangeGS,
+                checked: this.showReferenceGS,
                 listeners: {
                     scope: this,
                     change: function(cb, newValue, oldValue) {
-                        this.showOutOfRangeGS = newValue;
+                        this.showReferenceGS = newValue;
                         this.havePlotOptionsChanged = true;
 
                         this.setLoadingMsg();
@@ -1052,7 +1052,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             });
         }
 
-        return this.showOutOfRangeGSCheckbox;
+        return this.showReferenceGS;
     },
 
     getGuideSetCreateButton : function() {
@@ -1567,6 +1567,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             return plot.scales.x.scale(d.EndIndex) - plot.scales.x.scale(d.StartIndex) + binWidth;
         };
 
+        var xSep = function (d) {
+            return (plot.scales.x.scale(d.StartIndex) - (binWidth/2)) + 5;
+        };
+
         if (this.showExpRunRange) {
             // determine the start index and end index for exp region to be highlighted
             this.calculatePlotIndicesBetweenDates(precursorInfo);
@@ -1644,6 +1648,15 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     + (showGuideSetStats ? ",\n%CV: " + Ext4.String.htmlEncode(percentCV) : "")
                     + (guideSetInfo.Comment ? (",\nComment: " + Ext4.String.htmlEncode(guideSetInfo.Comment)) : "");
             });
+
+            if (this.filterQCPoints) {
+                var guideSetEndIndex = guideSetTrainingData[0]['EndIndex'];
+                this.getSvgElForPlot(plot).selectAll("line.separator").data([{'StartIndex': guideSetEndIndex + 1, 'EndIndex': guideSetEndIndex + 1}])
+                        .enter().append("line").attr("class", "separator")
+                        .attr('x1', xSep).attr('y1', yRange[0]).attr('x2', xSep).attr('y2', (yRange[0] - yRange[1]) - 110)
+                        .attr('stroke', '#000000').attr('stroke-opacity', 1)
+                        .attr('fill', '#000000').attr('fill-opacity', 1);
+            }
         }
 
         // Issue 32277: need to move the data points in front of the guide set range display

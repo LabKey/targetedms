@@ -108,8 +108,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         plotsConfig.includeMeanCusum = this.showMeanCUSUMPlot();
         plotsConfig.includeVariableCusum = this.showVariableCUSUMPlot();
         plotsConfig.showExcluded = this.showExcluded;
-        // show out of range guide set for custom date range or exp run range date range
-        plotsConfig.showOutOfRangeGS = this.showOutOfRangeGS && this.dateRangeOffset !== 0;
+        // show reference guide set for custom date range
+        plotsConfig.showReferenceGS = this.showReferenceGS && this.dateRangeOffset !== 0;
 
         var config = this.getReportConfig()
 
