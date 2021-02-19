@@ -1034,8 +1034,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     getShowReferenceCheckbox : function() {
-        if (!this.showReferenceGS) {
-            this.showReferenceGS = Ext4.create('Ext.form.field.Checkbox', {
+        if (!this.showReferenceGSCheckBox) {
+            this.showReferenceGSCheckBox = Ext4.create('Ext.form.field.Checkbox', {
                 id: 'show-oorange-gs',
                 boxLabel: 'Show Reference Guide Set',
                 checked: this.showReferenceGS,
@@ -1052,7 +1052,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             });
         }
 
-        return this.showReferenceGS;
+        return this.showReferenceGSCheckBox;
     },
 
     getGuideSetCreateButton : function() {
