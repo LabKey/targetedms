@@ -17,7 +17,7 @@ package org.labkey.targetedms.view.spectrum;
 
 import org.labkey.targetedms.parser.Peptide;
 import org.labkey.targetedms.parser.PeptideSettings;
-import org.labkey.targetedms.parser.blib.BlibSpectrum;
+import org.labkey.targetedms.parser.speclib.BlibSpectrum;
 
 import java.util.ArrayList;
 import java.util.HashMap;

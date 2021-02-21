@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package org.labkey.targetedms.parser.blib;
+package org.labkey.targetedms.parser.speclib;
 
 import org.apache.commons.io.FilenameUtils;
 import org.labkey.api.util.Formats;

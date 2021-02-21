@@ -20,7 +20,7 @@ import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerManager;
 import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.security.User;
-import org.labkey.targetedms.parser.blib.BlibSpectrumReader;
+import org.labkey.targetedms.parser.speclib.BlibSpectrumReader;
 
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;

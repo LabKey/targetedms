@@ -13,9 +13,8 @@
  * limitations under the License.
  */
 
-package org.labkey.targetedms.parser.blib;
+package org.labkey.targetedms.parser.speclib;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -32,7 +31,7 @@ import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.Pair;
 import org.labkey.targetedms.parser.Peptide;
 import org.labkey.targetedms.parser.PeptideSettings;
-import org.labkey.targetedms.parser.blib.BlibSpectrum.RedundantSpectrum;
+import org.labkey.targetedms.parser.speclib.BlibSpectrum.RedundantSpectrum;
 import org.labkey.targetedms.query.LibraryManager;
 import org.labkey.targetedms.view.spectrum.LibrarySpectrumMatchGetter;
 import org.sqlite.SQLiteConfig;
