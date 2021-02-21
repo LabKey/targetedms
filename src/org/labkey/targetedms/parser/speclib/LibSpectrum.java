@@ -27,7 +27,7 @@ import java.util.List;
  * Date: 5/5/12
  * Time: 10:46 PM
  */
-public class BlibSpectrum
+public class LibSpectrum
 {
     // Columns in RefSpectra table of .blib files
     // id|peptideSeq|peptideModSeq|precursorCharge|precursorMZ|prevAA|nextAA|copies|numPeaks

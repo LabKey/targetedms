@@ -184,7 +184,7 @@ import org.labkey.targetedms.parser.SkylineDocumentParser;
 import org.labkey.targetedms.parser.TransitionChromInfo;
 import org.labkey.targetedms.parser.list.ListDefinition;
 import org.labkey.targetedms.parser.skyaudit.AuditLogEntry;
-import org.labkey.targetedms.parser.speclib.BlibSpectrumReader;
+import org.labkey.targetedms.parser.speclib.LibSpectrumReader;
 import org.labkey.targetedms.pipeline.ChromatogramCrawlerJob;
 import org.labkey.targetedms.query.ChromatogramDisplayColumnFactory;
 import org.labkey.targetedms.query.ConflictResultsManager;
@@ -2433,7 +2433,7 @@ public class TargetedMSController extends SpringActionController
             Path blibFilePath = LibraryManager.getLibraryFilePath(run.getId(), library);
             if(form.getRedundantRefSpectrumId() != 0)
             {
-                blibFilePath = BlibSpectrumReader.redundantBlibPath(blibFilePath);
+                blibFilePath = LibSpectrumReader.redundantBlibPath(blibFilePath);
             }
 
             if (!Files.exists(blibFilePath))

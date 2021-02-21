@@ -17,7 +17,7 @@ package org.labkey.targetedms.view.spectrum;
 
 import org.labkey.targetedms.parser.Peptide;
 import org.labkey.targetedms.parser.PeptideSettings;
-import org.labkey.targetedms.parser.speclib.BlibSpectrum;
+import org.labkey.targetedms.parser.speclib.LibSpectrum;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 public class LibrarySpectrumMatch
 {
     private long _precursorId;
-    private BlibSpectrum _spectrum;
+    private LibSpectrum _spectrum;
     private String _peptide;
     private String _modifiedSequence;
     private int _charge;
@@ -103,12 +103,12 @@ public class LibrarySpectrumMatch
         _isotopeLabel = isotopeLabel;
     }
 
-    public BlibSpectrum getSpectrum()
+    public LibSpectrum getSpectrum()
     {
         return _spectrum;
     }
 
-    public void setSpectrum(BlibSpectrum spectrum)
+    public void setSpectrum(LibSpectrum spectrum)
     {
         _spectrum = spectrum;
     }
@@ -167,12 +167,12 @@ public class LibrarySpectrumMatch
         if(getSpectrum() == null)
             return "[]";
 
-        List<BlibSpectrum.Peak> peakList = getSpectrum().getPeaks();
+        List<LibSpectrum.Peak> peakList = getSpectrum().getPeaks();
 
         StringBuilder peaks = new StringBuilder();
         peaks.append("[\n");
         boolean firstPeak = true;
-        for (BlibSpectrum.Peak peak: peakList)
+        for (LibSpectrum.Peak peak: peakList)
         {
             if(!firstPeak)
                 peaks.append(",");
@@ -528,7 +528,7 @@ public class LibrarySpectrumMatch
         StringBuilder spectraList = new StringBuilder();
         spectraList.append("[");
         int index = 0;
-        for(BlibSpectrum.RedundantSpectrum spectrum: getSpectrum().getRedundantSpectrumList())
+        for(LibSpectrum.RedundantSpectrum spectrum: getSpectrum().getRedundantSpectrumList())
         {
             if(index++ > 0)
                 spectraList.append(", ");

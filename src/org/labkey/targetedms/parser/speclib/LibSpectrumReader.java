@@ -31,7 +31,7 @@ import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.Pair;
 import org.labkey.targetedms.parser.Peptide;
 import org.labkey.targetedms.parser.PeptideSettings;
-import org.labkey.targetedms.parser.speclib.BlibSpectrum.RedundantSpectrum;
+import org.labkey.targetedms.parser.speclib.LibSpectrum.RedundantSpectrum;
 import org.labkey.targetedms.query.LibraryManager;
 import org.labkey.targetedms.view.spectrum.LibrarySpectrumMatchGetter;
 import org.sqlite.SQLiteConfig;
@@ -65,9 +65,9 @@ import java.util.zip.Inflater;
  * Date: 5/6/12
  * Time: 11:36 AM
  */
-public class BlibSpectrumReader
+public class LibSpectrumReader
 {
-    private BlibSpectrumReader() {}
+    private LibSpectrumReader() {}
 
     static
     {
@@ -80,10 +80,10 @@ public class BlibSpectrumReader
         }
     }
 
-    private static final Logger LOG = LogManager.getLogger(BlibSpectrumReader.class);
+    private static final Logger LOG = LogManager.getLogger(LibSpectrumReader.class);
 
     @Nullable
-    public static BlibSpectrum getSpectrum(Container container, Path blibPath,
+    public static LibSpectrum getSpectrum(Container container, Path blibPath,
                                            String modifiedPeptide, int charge)
     {
         String blibFilePath = getLocalBlibPath(container, blibPath);
@@ -97,7 +97,7 @@ public class BlibSpectrumReader
 
         try (Connection conn = getBlibConnection(blibFilePath))
         {
-            BlibSpectrum spectrum = readSpectrum(conn, modifiedPeptide, charge);
+            LibSpectrum spectrum = readSpectrum(conn, modifiedPeptide, charge);
             if(spectrum == null)
                 return null;
             readSpectrumPeaks(conn, spectrum);
@@ -211,7 +211,7 @@ public class BlibSpectrumReader
     }
 
     @Nullable
-    private static BlibSpectrum readSpectrum(Connection conn, String modifiedPeptide, int charge) throws SQLException
+    private static LibSpectrum readSpectrum(Connection conn, String modifiedPeptide, int charge) throws SQLException
     {
         String blibPeptide = makePeptideBlibFormat(modifiedPeptide);
         blibPeptide = findMatchingModifiedSequence(conn, blibPeptide);
@@ -238,10 +238,10 @@ public class BlibSpectrumReader
             // Columns in RefSpectra table: id|peptideSeq|peptideModSeq|precursorCharge|precursorMZ|prevAA|nextAA|copies|numPeaks
             // Columns queried from RetentionTimes table (when present): retentionTime, SpectrumSourceId
             // Columns queried from SpectrumSourceFiles table (when present): fileName
-            BlibSpectrum spectrum = null;
+            LibSpectrum spectrum = null;
             if(rs.next())
             {
-                spectrum = new BlibSpectrum();
+                spectrum = new LibSpectrum();
                 spectrum.setBlibId(rs.getInt("id"));
                 spectrum.setPeptideSeq(rs.getString("peptideSeq"));
                 spectrum.setPeptideModSeq(modifiedPeptide);
@@ -349,7 +349,7 @@ public class BlibSpectrumReader
         return modifiedPeptide.replaceAll("\\[([+|-])(\\d+)\\]", "\\[$1$2\\.0\\]");
     }
 
-    private static void readSpectrumPeaks(Connection conn, BlibSpectrum spectrum) throws SQLException
+    private static void readSpectrumPeaks(Connection conn, LibSpectrum spectrum) throws SQLException
     {
         try (Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM RefSpectraPeaks WHERE RefSpectraId="+spectrum.getBlibId()))
@@ -427,7 +427,7 @@ public class BlibSpectrumReader
         return uncompressed;
     }
 
-    private static void addRedundantSpectrumInfo(Connection conn, BlibSpectrum spectrum)
+    private static void addRedundantSpectrumInfo(Connection conn, LibSpectrum spectrum)
     {
         StringBuilder sql = new StringBuilder("SELECT rt.*, sf.fileName ");
         sql.append("FROM RetentionTimes AS rt INNER JOIN SpectrumSourceFiles AS sf ON rt.spectrumSourceID = sf.id ");
@@ -464,7 +464,7 @@ public class BlibSpectrumReader
         }
     }
 
-    public static BlibSpectrum getRedundantSpectrum(Container container, Path redundantBlibPath, int redundantRefSpectrumId)
+    public static LibSpectrum getRedundantSpectrum(Container container, Path redundantBlibPath, int redundantRefSpectrumId)
     {
         String redundantBlibFilePath = getLocalBlibPath(container, redundantBlibPath);
 
@@ -473,7 +473,7 @@ public class BlibSpectrumReader
 
         try (Connection conn = getBlibConnection(redundantBlibFilePath))
         {
-            BlibSpectrum spectrum = readRedundantSpectrum(conn, redundantRefSpectrumId);
+            LibSpectrum spectrum = readRedundantSpectrum(conn, redundantRefSpectrumId);
             if(spectrum == null)
                 return null;
             readSpectrumPeaks(conn, spectrum);
@@ -486,7 +486,7 @@ public class BlibSpectrumReader
         }
     }
 
-    private static BlibSpectrum readRedundantSpectrum(Connection conn, int redundantRefSpectrumid) throws SQLException
+    private static LibSpectrum readRedundantSpectrum(Connection conn, int redundantRefSpectrumid) throws SQLException
     {
         StringBuilder sql = new StringBuilder("SELECT rf.*, ssf.fileName FROM RefSpectra AS rf ");
         sql.append("LEFT JOIN SpectrumSourceFiles AS ssf ON rf.FileID = ssf.id ");
@@ -494,11 +494,11 @@ public class BlibSpectrumReader
 
         try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql.toString()))
         {
-            BlibSpectrum spectrum = null;
+            LibSpectrum spectrum = null;
 
             if (rs.next())
             {
-                spectrum = new BlibSpectrum();
+                spectrum = new LibSpectrum();
                 spectrum.setBlibId(rs.getInt("id"));
                 spectrum.setPeptideSeq(rs.getString("peptideSeq"));
                 spectrum.setPeptideModSeq("peptideModSeq");

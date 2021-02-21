@@ -30,8 +30,8 @@ import org.labkey.targetedms.parser.Peptide;
 import org.labkey.targetedms.parser.PeptideSettings;
 import org.labkey.targetedms.parser.Precursor;
 import org.labkey.targetedms.parser.SampleFile;
-import org.labkey.targetedms.parser.speclib.BlibSpectrum;
-import org.labkey.targetedms.parser.speclib.BlibSpectrumReader;
+import org.labkey.targetedms.parser.speclib.LibSpectrum;
+import org.labkey.targetedms.parser.speclib.LibSpectrumReader;
 import org.labkey.targetedms.query.IsotopeLabelManager;
 import org.labkey.targetedms.query.LibraryManager;
 import org.labkey.targetedms.query.ModificationManager;
@@ -73,7 +73,7 @@ public class LibrarySpectrumMatchGetter
 
                     for(PeptideSettings.SpectrumLibrary library: libraryFilePathsMap.keySet())
                     {
-                        List<PeptideIdRtInfo> rtInfos = BlibSpectrumReader.getRetentionTimes((Container)argument,
+                        List<PeptideIdRtInfo> rtInfos = LibSpectrumReader.getRetentionTimes((Container)argument,
                                 libraryFilePathsMap.get(library), precursor.getModifiedSequence());
 
                         if(rtInfos.size() > 0)
@@ -158,7 +158,7 @@ public class LibrarySpectrumMatchGetter
                 continue;
             }
 
-            BlibSpectrum spectrum = BlibSpectrumReader.getSpectrum(container, libraryFilePathsMap.get(library),
+            LibSpectrum spectrum = LibSpectrumReader.getSpectrum(container, libraryFilePathsMap.get(library),
                     precursor.getModifiedSequence(),
                     precursor.getCharge());
 
@@ -179,7 +179,7 @@ public class LibrarySpectrumMatchGetter
     public static LibrarySpectrumMatch getSpectrumMatch(TargetedMSRun run, Peptide peptide, Precursor precursor,
                                                               PeptideSettings.SpectrumLibrary library, Path libFilePath, Container container)
     {
-        BlibSpectrum spectrum = BlibSpectrumReader.getSpectrum(container, libFilePath,
+        LibSpectrum spectrum = LibSpectrumReader.getSpectrum(container, libFilePath,
                 precursor.getModifiedSequence(),
                 precursor.getCharge());
 
@@ -190,12 +190,12 @@ public class LibrarySpectrumMatchGetter
                                                                  PeptideSettings.SpectrumLibrary library, Path redundantLibPath,
                                                                  Container container, int redundantRefSpecId)
     {
-        BlibSpectrum spectrum = BlibSpectrumReader.getRedundantSpectrum(container, redundantLibPath, redundantRefSpecId);
+        LibSpectrum spectrum = LibSpectrumReader.getRedundantSpectrum(container, redundantLibPath, redundantRefSpecId);
 
         return makeLibrarySpectrumMatch(spectrum, run, peptide, precursor, library);
     }
 
-    private static LibrarySpectrumMatch makeLibrarySpectrumMatch(BlibSpectrum spectrum, TargetedMSRun run, Peptide peptide, Precursor precursor,
+    private static LibrarySpectrumMatch makeLibrarySpectrumMatch(LibSpectrum spectrum, TargetedMSRun run, Peptide peptide, Precursor precursor,
                                                                  PeptideSettings.SpectrumLibrary library)
     {
         List<Peptide.StructuralModification> structuralModifications = ModificationManager.getPeptideStructuralModifications(precursor.getGeneralMoleculeId());
@@ -219,7 +219,7 @@ public class LibrarySpectrumMatchGetter
     }
 
     @NotNull
-    private static LibrarySpectrumMatch makeLibrarySpectrumMatch(BlibSpectrum spectrum, Peptide peptide, Precursor precursor, PeptideSettings.SpectrumLibrary library,
+    private static LibrarySpectrumMatch makeLibrarySpectrumMatch(LibSpectrum spectrum, Peptide peptide, Precursor precursor, PeptideSettings.SpectrumLibrary library,
                                                                  List<Peptide.StructuralModification> structuralModifications, List<PeptideSettings.RunStructuralModification> runStrMods,
                                                                  Map<Long, List<PeptideSettings.PotentialLoss>> potentialLossMap)
     {
