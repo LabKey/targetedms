@@ -1,0 +1,560 @@
+/*
+ * Copyright (c) 2012-2019 LabKey Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.labkey.targetedms.parser.speclib;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.labkey.api.data.Container;
+import org.labkey.api.targetedms.BlibSourceFile;
+import org.labkey.api.targetedms.ITargetedMSRun;
+import org.labkey.api.util.FileUtil;
+import org.labkey.api.util.Pair;
+import org.labkey.targetedms.parser.Peptide;
+import org.labkey.targetedms.parser.PeptideSettings;
+import org.labkey.targetedms.parser.speclib.LibSpectrum.RedundantSpectrum;
+import org.labkey.targetedms.query.LibraryManager;
+import org.labkey.targetedms.view.spectrum.LibrarySpectrumMatchGetter;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.zip.DataFormatException;
+import java.util.zip.Inflater;
+
+/**
+ * User: vsharma
+ * Date: 5/6/12
+ * Time: 11:36 AM
+ */
+public class BlibSpectrumReader extends LibSpectrumReader
+{
+    private static final Logger LOG = LogManager.getLogger(BlibSpectrumReader.class);
+
+    @Override
+    protected BlibSpectrum readSpectrum(Connection conn, String modifiedPeptide, int charge, Path blibPath) throws DataFormatException, SQLException
+    {
+        try
+        {
+            BlibSpectrum spectrum = readBlibSpectrum(conn, modifiedPeptide, charge);
+            if(spectrum == null)
+                return null;
+            // Make sure that the Bibliospec spectrum has peaks.  Minimized libraries in Skyline can have
+            // library entries with no spectrum peaks.  This should be fixed in Skyline.
+            if(spectrum.getNumPeaks() == 0)
+            {
+                return null;
+            }
+
+            readSpectrumPeaks(conn, spectrum);
+
+            if(spectrum.getRetentionTime() != null // retentionTime will be null if RetentionTimes table does not exist.
+                    && redundantBlibExists(blibPath))
+            {
+                // Get the redundant spectra IDs
+                addRedundantSpectrumInfo(conn, spectrum);
+            }
+
+            return spectrum;
+
+        }
+        catch(SQLException e)
+        {
+            // Malformed blib file?
+            if (malformedBlibFileError(FileUtil.getFileName(blibPath), e))
+            {
+                return null;
+            }
+            throw e;
+        }
+    }
+
+    private static boolean malformedBlibFileError(String blibFilePath, SQLException e)
+    {
+        if(e.getMessage().contains("no such table") || e.getMessage().contains("no such column") || e.getMessage().contains("File opened that is not a database file"))
+        {
+            LOG.error("Malformed .blib file " + blibFilePath + ". Error was: " + e.getMessage());
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean redundantBlibExists(Path blibPath)
+    {
+        Path redundantBlibFilePath = redundantBlibPath(blibPath);
+        return redundantBlibFilePath != null && Files.exists(redundantBlibFilePath);
+    }
+
+    public static Path redundantBlibPath(@Nullable Path blibPath)
+    {
+        if (null != blibPath)
+        {
+            String filename = blibPath.getFileName().toString();
+            int idx = filename.indexOf(".blib");
+            if (idx != -1)
+            {
+                Path parent = blibPath.getParent();
+                return parent.resolve(filename.substring(0, idx) + ".redundant.blib");
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    @Override
+    protected List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> readRetentionTimes(Connection conn, String modifiedPeptide, String blibFilePath) throws SQLException
+    {
+        String blibPeptide = makePeptideBlibFormat(modifiedPeptide);
+
+        try
+        {
+            if(!hasValidRtTable(conn))
+            {
+                return Collections.emptyList();
+            }
+
+            blibPeptide = findMatchingModifiedSequence(conn, blibPeptide);
+
+            StringBuilder sql = new StringBuilder("SELECT rt.retentionTime, rt.bestSpectrum, rs.peptideModSeq, rs.precursorCharge, ssf.fileName from RetentionTimes AS rt ");
+            sql.append(" INNER JOIN RefSpectra AS rs ON (rt.RefSpectraID = rs.id)");
+            sql.append(" INNER JOIN SpectrumSourceFiles ssf ON (rt.SpectrumSourceID = ssf.id)");
+            sql.append(" WHERE rs.peptideModSeq='").append(blibPeptide).append("'");
+
+            try(Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(sql.toString()))
+            {
+                List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> retentionTimes = new ArrayList<>();
+                while (rs.next())
+                {
+                    LibrarySpectrumMatchGetter.PeptideIdRtInfo rtInfo = new LibrarySpectrumMatchGetter.PeptideIdRtInfo(rs.getString("fileName"),
+                            modifiedPeptide,
+                            rs.getInt("precursorCharge"),
+                            rs.getDouble("retentionTime"),
+                            rs.getBoolean("bestSpectrum"));
+                    retentionTimes.add(rtInfo);
+                }
+                return Collections.unmodifiableList(retentionTimes);
+            }
+        }
+        catch(SQLException e)
+        {
+            if (malformedBlibFileError(blibFilePath, e))
+            {
+                return Collections.emptyList();
+            }
+            throw e;
+        }
+    }
+
+    @Nullable
+    private BlibSpectrum readBlibSpectrum(Connection conn, String modifiedPeptide, int charge) throws SQLException
+    {
+        String blibPeptide = makePeptideBlibFormat(modifiedPeptide);
+        blibPeptide = findMatchingModifiedSequence(conn, blibPeptide);
+        boolean validRtTable = hasValidRtTable(conn);
+        StringBuilder sql;
+        if(validRtTable)
+        {
+            sql = new StringBuilder("SELECT rf.*, ssf.fileName");
+            sql.append(", rt.retentionTime AS RT"); // Need an alias since RefSpectra table in non-minimized .blib files have a retentionTime column too.
+            sql.append(", rt.SpectrumSourceId FROM RefSpectra AS rf ");
+            sql.append("LEFT JOIN RetentionTimes AS rt ON (rt.RefSpectraId = rf.id AND rt.bestSpectrum = 1) ");
+            sql.append("LEFT JOIN SpectrumSourceFiles AS ssf ON rt.SpectrumSourceId = ssf.id ");
+            sql.append(" WHERE rf.peptideModSeq='").append(blibPeptide).append("'");
+            sql.append(" AND rf.precursorCharge=").append(charge);
+        }
+        else
+        {
+            sql = new StringBuilder("SELECT * from RefSpectra WHERE peptideModSeq='").append(blibPeptide).append("' AND precursorCharge=").append(charge);
+        }
+
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql.toString()))
+        {
+            // Columns in RefSpectra table: id|peptideSeq|peptideModSeq|precursorCharge|precursorMZ|prevAA|nextAA|copies|numPeaks
+            // Columns queried from RetentionTimes table (when present): retentionTime, SpectrumSourceId
+            // Columns queried from SpectrumSourceFiles table (when present): fileName
+            BlibSpectrum spectrum = null;
+            if(rs.next())
+            {
+                spectrum = new BlibSpectrum();
+                spectrum.setBlibId(rs.getInt("id"));
+                spectrum.setPeptideSeq(rs.getString("peptideSeq"));
+                spectrum.setPeptideModSeq(modifiedPeptide);
+                spectrum.setPrecursorCharge(rs.getInt("precursorCharge"));
+                spectrum.setPrecursorMz(rs.getDouble("precursorMZ"));
+                spectrum.setPrevAa(rs.getString("prevAA"));
+                spectrum.setNextAa(rs.getString("nextAA"));
+                spectrum.setCopies(rs.getInt("copies"));
+                spectrum.setNumPeaks(rs.getInt("numPeaks"));
+                if (validRtTable)
+                {
+                    spectrum.setRetentionTime(rs.getDouble("RT"));
+                    spectrum.setFileId(rs.getInt("SpectrumSourceId"));
+                    spectrum.setSourceFile(rs.getString("fileName"));
+                }
+            }
+            return spectrum;
+        }
+    }
+
+    private static String findMatchingModifiedSequence(Connection conn, String modifiedSequence) throws SQLException
+    {
+        List<Pair<Integer, String>> mods = new ArrayList<>();
+        String unmodifiedSequence = Peptide.stripModifications(modifiedSequence, mods);
+        if (mods.size() == 0) {
+            return modifiedSequence;
+        }
+        String sql = "SELECT peptideModSeq FROM RefSpectra WHERE peptideSeq = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, unmodifiedSequence);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next())
+                {
+                    String modSeqCompare = rs.getString(1);
+                    if (Peptide.modifiedSequencesMatch(modifiedSequence, modSeqCompare)) {
+                        return modSeqCompare;
+                    }
+                }
+            }
+        }
+        return modifiedSequence;
+    }
+
+    private static boolean hasTable(Connection conn, String tableName) throws SQLException
+    {
+        String tableCheckStmt = "SELECT name FROM sqlite_master WHERE type='table' AND name='" + tableName + "'";
+
+        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(tableCheckStmt))
+        {
+            if (rs.next())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasValidRtTable(Connection conn) throws SQLException
+    {
+        if(!hasTable(conn, "RetentionTimes"))
+        {
+            return false;
+        }
+
+        // Check if the RetentionTimes table has all the required columns. Some older versions of .blib
+        // files have a RetentionTimes table but not the other columns needed to join with the SpectrumSourceFiles table.
+        String tableCheckStmt = "PRAGMA table_info('RetentionTimes')"; // returns one row per column in the table, if it exists
+
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(tableCheckStmt))
+        {
+            int foundColumns = 0;
+            while (rs.next())
+            {
+                String name = rs.getString("name");
+                if (name.toLowerCase().equals("retentiontime"))
+                {
+                    foundColumns++;
+                }
+                else if (name.toLowerCase().equals("spectrumsourceid"))
+                {
+                    foundColumns++;
+                }
+                else if (name.toLowerCase().equals("refspectraid"))
+                {
+                    foundColumns++;
+                }
+                else if (name.toLowerCase().equals("bestspectrum"))
+                {
+                    foundColumns++;
+                }
+            }
+
+            return foundColumns == 4;
+        }
+    }
+
+    private static String makePeptideBlibFormat(String modifiedPeptide)
+    {
+        // Modified peptide in Bibliospec always has a decimal point in the modification mass.
+        // Example: SSQPLASK[+42.0]QEK
+        // Skyline represents this as SSQPLASK[+42]QEK
+
+        return modifiedPeptide.replaceAll("\\[([+|-])(\\d+)\\]", "\\[$1$2\\.0\\]");
+    }
+
+    private static void readSpectrumPeaks(Connection conn, BlibSpectrum spectrum) throws SQLException, DataFormatException
+    {
+        try (Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM RefSpectraPeaks WHERE RefSpectraId="+spectrum.getBlibId()))
+        {
+            if(rs.next())
+            {
+                byte[] mzsCompressed = rs.getBytes(2);
+                byte[] intensCompressed = rs.getBytes(3);
+
+                double[] peakMzs = uncompressPeakMz(mzsCompressed, spectrum.getNumPeaks());
+                float[] peakIntensities = uncompressPeakIntensities(intensCompressed, spectrum.getNumPeaks());
+
+                spectrum.setMzAndIntensity(peakMzs, peakIntensities);
+            }
+        }
+    }
+
+    private static double[] uncompressPeakMz(byte[] compressed, int peakCount) throws DataFormatException
+    {
+        int sizeOfMz = Double.SIZE / 8;
+
+        int uncompressedLength = peakCount * sizeOfMz;
+        byte[] uncompressed;
+        uncompressed = getBytes(compressed, uncompressedLength);
+
+        ByteBuffer bbuf = ByteBuffer.wrap(uncompressed);
+        bbuf = bbuf.order(ByteOrder.LITTLE_ENDIAN);
+        double[] mzs = new double[peakCount];
+        for(int i = 0; i < mzs.length; i++)
+        {
+            mzs[i] = bbuf.getDouble(i * sizeOfMz);
+        }
+        return mzs;
+    }
+
+    private static float[] uncompressPeakIntensities(byte[] compressed, int peakCount) throws DataFormatException
+    {
+        int sizeOfInten = Float.SIZE / 8;
+
+        int uncompressedLength = peakCount * sizeOfInten;
+        byte[] uncompressed;
+
+        uncompressed = getBytes(compressed, uncompressedLength);
+
+        ByteBuffer bbuf = ByteBuffer.wrap(uncompressed);
+        bbuf = bbuf.order(ByteOrder.LITTLE_ENDIAN);
+        float[] intensities = new float[peakCount];
+        for(int i = 0; i < intensities.length; i++)
+        {
+            intensities[i] = bbuf.getFloat(i * sizeOfInten);
+        }
+        return intensities;
+    }
+
+    private static byte[] getBytes(byte[] compressed, int uncompressedLength) throws DataFormatException
+    {
+        byte[] uncompressed;
+        if(uncompressedLength == compressed.length)
+        {
+            uncompressed = compressed;
+        }
+        else
+        {
+            uncompressed = new byte[uncompressedLength];
+
+            Inflater inflater = new Inflater();
+            inflater.setInput(compressed, 0, compressed.length);
+            inflater.inflate(uncompressed);
+            inflater.end();
+        }
+        return uncompressed;
+    }
+
+    private static void addRedundantSpectrumInfo(Connection conn, BlibSpectrum spectrum) throws SQLException
+    {
+        StringBuilder sql = new StringBuilder("SELECT rt.*, sf.fileName ");
+        sql.append("FROM RetentionTimes AS rt INNER JOIN SpectrumSourceFiles AS sf ON rt.spectrumSourceID = sf.id ");
+        sql.append("WHERE RefSpectraID=").append(spectrum.getBlibId());
+
+        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql.toString()))
+        {
+            List<RedundantSpectrum> redundantSpectra = new ArrayList<>();
+
+            while (rs.next())
+            {
+                RedundantSpectrum rSpec = new RedundantSpectrum();
+                rSpec.setRedundantRefSpectrumId(rs.getInt("RedundantRefSpectraID"));
+                rSpec.setRetentionTime(rs.getDouble("retentionTime"));
+                rSpec.setSourceFile(rs.getString("fileName"));
+                rSpec.setBestSpectrum(rs.getBoolean("bestSpectrum"));
+
+                if (rSpec.isBestSpectrum())
+                {
+                    // If this is the reference spectrum keep it in front of the list.
+                    redundantSpectra.add(0, rSpec);
+                }
+                else
+                {
+                    redundantSpectra.add(rSpec);
+                }
+            }
+
+            spectrum.setRedundantSpectrumList(redundantSpectra);
+        }
+    }
+
+    /**
+     *
+     * @param container
+     * @param libPath path to the non-redundant Bibliospec library (.blib)
+     * @param redundantRefSpectrumId SQLite database id of the redundant spectrum match in .redundant.blib
+     * @return a BlibSpectrum from the redundant library (.redundant.blib)
+     * @throws SQLException
+     * @throws DataFormatException if there is an error uncompressing the stored peak (m/z, intensity) information
+     */
+    @Nullable
+    public BlibSpectrum getRedundantSpectrum(Container container, Path libPath, int redundantRefSpectrumId) throws SQLException, DataFormatException
+    {
+        Path redundantBlibPath = BlibSpectrumReader.redundantBlibPath(libPath);
+        if(null == redundantBlibPath)
+        {
+            return null;
+        }
+        String redundantBlibFilePath = getLocalLibPath(container, redundantBlibPath);
+
+        if (null == redundantBlibFilePath)
+            return null;
+
+        try (Connection conn = getLibConnection(redundantBlibFilePath))
+        {
+            BlibSpectrum spectrum = readRedundantSpectrum(conn, redundantRefSpectrumId);
+            if(spectrum == null)
+                return null;
+            readSpectrumPeaks(conn, spectrum);
+
+            return spectrum;
+        }
+    }
+
+    private static BlibSpectrum readRedundantSpectrum(Connection conn, int redundantRefSpectrumid) throws SQLException
+    {
+        StringBuilder sql = new StringBuilder("SELECT rf.*, ssf.fileName FROM RefSpectra AS rf ");
+        sql.append("LEFT JOIN SpectrumSourceFiles AS ssf ON rf.FileID = ssf.id ");
+        sql.append(" WHERE rf.id=").append(redundantRefSpectrumid);
+
+        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql.toString()))
+        {
+            BlibSpectrum spectrum = null;
+
+            if (rs.next())
+            {
+                spectrum = new BlibSpectrum();
+                spectrum.setBlibId(rs.getInt("id"));
+                spectrum.setPeptideSeq(rs.getString("peptideSeq"));
+                spectrum.setPeptideModSeq("peptideModSeq");
+                spectrum.setPrecursorCharge(rs.getInt("precursorCharge"));
+                spectrum.setPrecursorMz(rs.getDouble("precursorMZ"));
+                spectrum.setPrevAa(rs.getString("prevAA"));
+                spectrum.setNextAa(rs.getString("nextAA"));
+                spectrum.setCopies(rs.getInt("copies"));
+                spectrum.setNumPeaks(rs.getInt("numPeaks"));
+                spectrum.setRetentionTime(rs.getDouble("retentionTime"));
+                spectrum.setFileId(rs.getInt("fileID"));
+                spectrum.setSourceFile(rs.getString("fileName"));
+            }
+
+            return spectrum;
+        }
+    }
+
+    // Return a map of blib file -> BlibSourceFiles
+    public static Map<String, List<BlibSourceFile>> readBlibSourceFiles(ITargetedMSRun run)
+    {
+        Map<PeptideSettings.SpectrumLibrary, Path> libs = LibraryManager.getLibraryFilePaths(run.getId());
+
+        Map<String, List<BlibSourceFile>> m = new TreeMap<>();
+        for (Map.Entry<PeptideSettings.SpectrumLibrary, Path> entry : libs.entrySet())
+        {
+            if (!entry.getKey().getLibraryType().contains("bibliospec_lite"))
+                continue;
+
+            Path path = entry.getValue();
+            String blibFilePath = getLocalLibPath(run.getContainer(), path);
+            if (null == blibFilePath)
+                continue;
+
+            List<BlibSourceFile> blibSourceFiles = new ArrayList<>();
+            try (Connection conn = getLibConnection(blibFilePath))
+            {
+                if (!hasTable(conn, "SpectrumSourceFiles"))
+                {
+                    continue;
+                }
+                Map<Integer, Set<String>> scoreTypes = new HashMap<>(); // file id -> score types
+                try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT DISTINCT r.fileID, s.scoreType FROM RefSpectra as r JOIN ScoreTypes s ON r.scoreType = s.id"))
+                {
+                    while (rs.next())
+                    {
+                        int fileId = rs.getInt(1);
+                        String scoreType = rs.getString(2);
+                        scoreTypes.putIfAbsent(fileId, new HashSet<>());
+                        scoreTypes.get(fileId).add(scoreType);
+                    }
+                }
+                try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM SpectrumSourceFiles"))
+                {
+                    int idColumn = -1;
+                    int fileNameColumn = -1;
+                    int idFileNameColumn = -1;
+                    ResultSetMetaData metadata = rs.getMetaData();
+                    for (int i = 1; i <= metadata.getColumnCount(); i++)
+                    {
+                        switch (metadata.getColumnName(i).toLowerCase())
+                        {
+                            case "id":
+                                idColumn = i;
+                                break;
+                            case "filename":
+                                fileNameColumn = i;
+                                break;
+                            case "idfilename":
+                                idFileNameColumn = i;
+                                break;
+                        }
+                    }
+                    while (rs.next())
+                    {
+                        Integer id = rs.getInt(idColumn);
+                        String fileName = rs.getString(fileNameColumn);
+                        String idFileName = idFileNameColumn >= 0 ? rs.getString(idFileNameColumn) : null;
+                        blibSourceFiles.add(new BlibSourceFile(fileName, idFileName, scoreTypes.getOrDefault(id, null)));
+                    }
+                }
+            }
+            catch (SQLException e)
+            {
+                throw new RuntimeException(e);
+            }
+            m.put(path.getFileName().toString(), blibSourceFiles);
+        }
+        return m;
+    }
+}

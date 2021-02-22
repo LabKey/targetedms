@@ -18,6 +18,7 @@ package org.labkey.targetedms.view.spectrum;
 import org.labkey.targetedms.parser.Peptide;
 import org.labkey.targetedms.parser.PeptideSettings;
 import org.labkey.targetedms.parser.speclib.LibSpectrum;
+import org.labkey.targetedms.parser.speclib.LibSpectrum.RedundantSpectrum;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -528,7 +529,7 @@ public class LibrarySpectrumMatch
         StringBuilder spectraList = new StringBuilder();
         spectraList.append("[");
         int index = 0;
-        for(LibSpectrum.RedundantSpectrum spectrum: getSpectrum().getRedundantSpectrumList())
+        for(RedundantSpectrum spectrum: getSpectrum().getRedundantSpectrumList())
         {
             if(index++ > 0)
                 spectraList.append(", ");

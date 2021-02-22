@@ -230,7 +230,8 @@ Ext4.define('LABKEY.targetedms.LorikeetOptions', {
                             params: {
                                 libraryName: selectedLib,
                                 redundantRefSpectrumId: record.get('redundantSpectrumId'),
-                                precursorId: wrapper.precursorId
+                                precursorId: wrapper.precursorId,
+                                sourceFile: record.get('fileName')
                             },
                             callback: function(options, success, response) {
                                 wrapper.refreshSpectrum(success, response, record.get('isReference'), false);

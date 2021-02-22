@@ -25,50 +25,29 @@ import org.labkey.api.cache.CacheManager;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.RuntimeSQLException;
 import org.labkey.api.pipeline.LocalDirectory;
-import org.labkey.api.targetedms.BlibSourceFile;
-import org.labkey.api.targetedms.ITargetedMSRun;
 import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.Pair;
-import org.labkey.targetedms.parser.Peptide;
-import org.labkey.targetedms.parser.PeptideSettings;
-import org.labkey.targetedms.parser.speclib.LibSpectrum.RedundantSpectrum;
-import org.labkey.targetedms.query.LibraryManager;
 import org.labkey.targetedms.view.spectrum.LibrarySpectrumMatchGetter;
 import org.sqlite.SQLiteConfig;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
 import java.util.zip.DataFormatException;
-import java.util.zip.Inflater;
 
 /**
  * User: vsharma
  * Date: 5/6/12
  * Time: 11:36 AM
  */
-public class LibSpectrumReader
+public abstract class LibSpectrumReader
 {
-    private LibSpectrumReader() {}
-
     static
     {
         try {
@@ -83,523 +62,69 @@ public class LibSpectrumReader
     private static final Logger LOG = LogManager.getLogger(LibSpectrumReader.class);
 
     @Nullable
-    public static LibSpectrum getSpectrum(Container container, Path blibPath,
-                                           String modifiedPeptide, int charge)
+    public LibSpectrum getLibSpectrum(Container container, Path libPath,
+                                      String modifiedPeptide, int charge) throws SpeclibReaderException
     {
-        String blibFilePath = getLocalBlibPath(container, blibPath);
-        if (null == blibFilePath)
+        String localLibPath = getLocalLibPath(container, libPath);
+        if (null == localLibPath)
             return null;
 
-        // CONSIDER: we are reading directly from Bibliospec SQLite file. Should we store library information in the schema?
-        // We know it's local file and string may need encoding to convert to Path
-        if(!(new File(blibFilePath).exists()))
+        if(!(new File(localLibPath).exists()))
             return null;
 
-        try (Connection conn = getBlibConnection(blibFilePath))
+        try (Connection conn = getLibConnection(localLibPath))
         {
-            LibSpectrum spectrum = readSpectrum(conn, modifiedPeptide, charge);
-            if(spectrum == null)
-                return null;
-            readSpectrumPeaks(conn, spectrum);
-
-            if(spectrum.getRetentionTime() != null // retentionTime will be null if RetentionTimes table does not exist.
-                    && redundantBlibExists(blibPath))
-            {
-                // Get the redundant spectra IDs
-                addRedundantSpectrumInfo(conn, spectrum);
-            }
-
-            return spectrum;
-
+            return readSpectrum(conn, modifiedPeptide, charge, libPath);
         }
-        catch(SQLException e)
+        catch (SQLException e)
         {
-            // Malformed blib file?
-            if (malformedBlibFileError(blibFilePath, e))
-            {
-                return null;
-            }
-            throw new RuntimeSQLException(e);
-        }
-    }
-
-    private static boolean malformedBlibFileError(String blibFilePath, SQLException e)
-    {
-        if(e.getMessage().contains("no such table") || e.getMessage().contains("no such column") || e.getMessage().contains("File opened that is not a database file"))
-        {
-            LOG.error("Malformed .blib file " + blibFilePath + ". Error was: " + e.getMessage());
-            return true;
-        }
-        return false;
-    }
-
-    private static boolean redundantBlibExists(Path blibPath)
-    {
-        Path redundantBlibFilePath = redundantBlibPath(blibPath);
-        return redundantBlibFilePath != null && Files.exists(redundantBlibFilePath);
-    }
-
-    public static Path redundantBlibPath(@Nullable Path blibPath)
-    {
-        if (null != blibPath)
-        {
-            String filename = blibPath.getFileName().toString();
-            int idx = filename.indexOf(".blib");
-            if (idx != -1)
-            {
-                Path parent = blibPath.getParent();
-                return parent.resolve(filename.substring(0, idx) + ".redundant.blib");
-            }
-        }
-        return null;
-    }
-
-    @NotNull
-    public static List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> getRetentionTimes(Container container, Path blibPath, String modifiedPeptide)
-    {
-        String blibFilePath = getLocalBlibPath(container, blibPath);
-        if (null == blibFilePath)
-            return Collections.emptyList();
-
-        // We know it's local file and string may need encoding to convert to Path
-        if(!(new File(blibFilePath).exists()))
-        {
-            LOG.debug("File not found: " + blibFilePath + ", referenced from container " + container.getPath());
-            return Collections.emptyList();
-        }
-
-        String blibPeptide = makePeptideBlibFormat(modifiedPeptide);
-
-        try (Connection conn = getBlibConnection(blibFilePath))
-        {
-            if(!hasValidRtTable(conn))
-            {
-                return Collections.emptyList();
-            }
-
-            blibPeptide = findMatchingModifiedSequence(conn, blibPeptide);
-
-            StringBuilder sql = new StringBuilder("SELECT rt.retentionTime, rt.bestSpectrum, rs.peptideModSeq, rs.precursorCharge, ssf.fileName from RetentionTimes AS rt ");
-            sql.append(" INNER JOIN RefSpectra AS rs ON (rt.RefSpectraID = rs.id)");
-            sql.append(" INNER JOIN SpectrumSourceFiles ssf ON (rt.SpectrumSourceID = ssf.id)");
-            sql.append(" WHERE rs.peptideModSeq='"+blibPeptide+"'");
-
-            try(Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(sql.toString()))
-            {
-                List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> retentionTimes = new ArrayList<>();
-                while (rs.next())
-                {
-                    LibrarySpectrumMatchGetter.PeptideIdRtInfo rtInfo = new LibrarySpectrumMatchGetter.PeptideIdRtInfo(rs.getString("fileName"),
-                            modifiedPeptide,
-                            rs.getInt("precursorCharge"),
-                            rs.getDouble("retentionTime"),
-                            rs.getBoolean("bestSpectrum"));
-                    retentionTimes.add(rtInfo);
-                }
-                return Collections.unmodifiableList(retentionTimes);
-            }
-        }
-        catch(SQLException e)
-        {
-            if (malformedBlibFileError(blibFilePath, e))
-            {
-                return Collections.emptyList();
-            }
-            throw new RuntimeSQLException(e);
-        }
-    }
-
-    @Nullable
-    private static LibSpectrum readSpectrum(Connection conn, String modifiedPeptide, int charge) throws SQLException
-    {
-        String blibPeptide = makePeptideBlibFormat(modifiedPeptide);
-        blibPeptide = findMatchingModifiedSequence(conn, blibPeptide);
-        boolean validRtTable = hasValidRtTable(conn);
-        StringBuilder sql;
-        if(validRtTable)
-        {
-            sql = new StringBuilder("SELECT rf.*, ssf.fileName");
-            sql.append(", rt.retentionTime AS RT"); // Need an alias since RefSpectra table in non-minimized .blib files have a retentionTime column too.
-            sql.append(", rt.SpectrumSourceId FROM RefSpectra AS rf ");
-            sql.append("LEFT JOIN RetentionTimes AS rt ON (rt.RefSpectraId = rf.id AND rt.bestSpectrum = 1) ");
-            sql.append("LEFT JOIN SpectrumSourceFiles AS ssf ON rt.SpectrumSourceId = ssf.id ");
-            sql.append(" WHERE rf.peptideModSeq='").append(blibPeptide).append("'");
-            sql.append(" AND rf.precursorCharge=").append(charge);
-        }
-        else
-        {
-            sql = new StringBuilder("SELECT * from RefSpectra WHERE peptideModSeq='").append(blibPeptide).append("' AND precursorCharge=").append(charge);
-        }
-
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql.toString()))
-        {
-            // Columns in RefSpectra table: id|peptideSeq|peptideModSeq|precursorCharge|precursorMZ|prevAA|nextAA|copies|numPeaks
-            // Columns queried from RetentionTimes table (when present): retentionTime, SpectrumSourceId
-            // Columns queried from SpectrumSourceFiles table (when present): fileName
-            LibSpectrum spectrum = null;
-            if(rs.next())
-            {
-                spectrum = new LibSpectrum();
-                spectrum.setBlibId(rs.getInt("id"));
-                spectrum.setPeptideSeq(rs.getString("peptideSeq"));
-                spectrum.setPeptideModSeq(modifiedPeptide);
-                spectrum.setPrecursorCharge(rs.getInt("precursorCharge"));
-                spectrum.setPrecursorMz(rs.getDouble("precursorMZ"));
-                spectrum.setPrevAa(rs.getString("prevAA"));
-                spectrum.setNextAa(rs.getString("nextAA"));
-                spectrum.setCopies(rs.getInt("copies"));
-                spectrum.setNumPeaks(rs.getInt("numPeaks"));
-                if (validRtTable)
-                {
-                    spectrum.setRetentionTime(rs.getDouble("RT"));
-                    spectrum.setFileId(rs.getInt("SpectrumSourceId"));
-                    spectrum.setSourceFile(rs.getString("fileName"));
-                }
-            }
-            return spectrum;
-        }
-    }
-
-    private static String findMatchingModifiedSequence(Connection conn, String modifiedSequence) throws SQLException
-    {
-        List<Pair<Integer, String>> mods = new ArrayList<>();
-        String unmodifiedSequence = Peptide.stripModifications(modifiedSequence, mods);
-        if (mods.size() == 0) {
-            return modifiedSequence;
-        }
-        String sql = "SELECT peptideModSeq FROM RefSpectra WHERE peptideSeq = ?";
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, unmodifiedSequence);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next())
-                {
-                    String modSeqCompare = rs.getString(1);
-                    if (Peptide.modifiedSequencesMatch(modifiedSequence, modSeqCompare)) {
-                        return modSeqCompare;
-                    }
-                }
-            }
-        }
-        return modifiedSequence;
-    }
-
-    private static boolean hasTable(Connection conn, String tableName) throws SQLException
-    {
-        String tableCheckStmt = "SELECT name FROM sqlite_master WHERE type='table' AND name='" + tableName + "'";
-
-        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(tableCheckStmt))
-        {
-            if (rs.next())
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean hasValidRtTable(Connection conn) throws SQLException
-    {
-        if(!hasTable(conn, "RetentionTimes"))
-        {
-            return false;
-        }
-
-        // Check if the RetentionTimes table has all the required columns. Some older versions of .blib
-        // files have a RetentionTimes table but not the other columns needed to join with the SpectrumSourceFiles table.
-        String tableCheckStmt = "PRAGMA table_info('RetentionTimes')"; // returns one row per column in the table, if it exists
-
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(tableCheckStmt))
-        {
-            int foundColumns = 0;
-            while (rs.next())
-            {
-                String name = rs.getString("name");
-                if (name.toLowerCase().equals("retentiontime"))
-                {
-                    foundColumns++;
-                }
-                else if (name.toLowerCase().equals("spectrumsourceid"))
-                {
-                    foundColumns++;
-                }
-                else if (name.toLowerCase().equals("refspectraid"))
-                {
-                    foundColumns++;
-                }
-                else if (name.toLowerCase().equals("bestspectrum"))
-                {
-                    foundColumns++;
-                }
-            }
-
-            return foundColumns == 4;
-        }
-    }
-
-    private static String makePeptideBlibFormat(String modifiedPeptide)
-    {
-        // Modified peptide in Bibliospec always has a decimal point in the modification mass.
-        // Example: SSQPLASK[+42.0]QEK
-        // Skyline represents this as SSQPLASK[+42]QEK
-
-        return modifiedPeptide.replaceAll("\\[([+|-])(\\d+)\\]", "\\[$1$2\\.0\\]");
-    }
-
-    private static void readSpectrumPeaks(Connection conn, LibSpectrum spectrum) throws SQLException
-    {
-        try (Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM RefSpectraPeaks WHERE RefSpectraId="+spectrum.getBlibId()))
-        {
-            if(rs.next())
-            {
-                byte[] mzsCompressed = rs.getBytes(2);
-                byte[] intensCompressed = rs.getBytes(3);
-
-                double[] peakMzs = uncompressPeakMz(mzsCompressed, spectrum.getNumPeaks());
-                float[] peakIntensities = uncompressPeakIntensities(intensCompressed, spectrum.getNumPeaks());
-
-                spectrum.setMzAndIntensity(peakMzs, peakIntensities);
-            }
+            throw new SpeclibReaderException("Error reading from spectrum library file " + libPath.getFileName().toString(), e);
         }
         catch (DataFormatException e)
         {
-            throw new IllegalStateException("Error uncompressing peaks for spectrum");
+            throw new SpeclibReaderException("Error reading peak data from spectrum library file " + libPath.getFileName().toString(), e);
         }
     }
 
-    private static double[] uncompressPeakMz(byte[] compressed, int peakCount) throws DataFormatException
+    @NotNull
+    public List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> getRetentionTimes(Container container, Path libPath, String modifiedPeptide)
     {
-        int sizeOfMz = Double.SIZE / 8;
+        String libFilePath = getLocalLibPath(container, libPath);
+        if (null == libFilePath)
+            return Collections.emptyList();
 
-        int uncompressedLength = peakCount * sizeOfMz;
-        byte[] uncompressed;
-        uncompressed = getBytes(compressed, uncompressedLength);
-
-        ByteBuffer bbuf = ByteBuffer.wrap(uncompressed);
-        bbuf = bbuf.order(ByteOrder.LITTLE_ENDIAN);
-        double[] mzs = new double[peakCount];
-        for(int i = 0; i < mzs.length; i++)
+        // We know it's local file and string may need encoding to convert to Path
+        if(!(new File(libFilePath).exists()))
         {
-            mzs[i] = bbuf.getDouble(i * sizeOfMz);
+            LOG.debug("File not found: " + libFilePath + ", referenced from container " + container.getPath());
+            return Collections.emptyList();
         }
-        return mzs;
-    }
 
-    private static float[] uncompressPeakIntensities(byte[] compressed, int peakCount) throws DataFormatException
-    {
-        int sizeOfInten = Float.SIZE / 8;
-
-        int uncompressedLength = peakCount * sizeOfInten;
-        byte[] uncompressed;
-
-        uncompressed = getBytes(compressed, uncompressedLength);
-
-        ByteBuffer bbuf = ByteBuffer.wrap(uncompressed);
-        bbuf = bbuf.order(ByteOrder.LITTLE_ENDIAN);
-        float[] intensities = new float[peakCount];
-        for(int i = 0; i < intensities.length; i++)
+        try (Connection conn = getLibConnection(libFilePath))
         {
-            intensities[i] = bbuf.getFloat(i * sizeOfInten);
-        }
-        return intensities;
-    }
-
-    private static byte[] getBytes(byte[] compressed, int uncompressedLength) throws DataFormatException
-    {
-        byte[] uncompressed;
-        if(uncompressedLength == compressed.length)
-        {
-            uncompressed = compressed;
-        }
-        else
-        {
-            uncompressed = new byte[uncompressedLength];
-
-            Inflater inflater = new Inflater();
-            inflater.setInput(compressed, 0, compressed.length);
-            inflater.inflate(uncompressed);
-            inflater.end();
-        }
-        return uncompressed;
-    }
-
-    private static void addRedundantSpectrumInfo(Connection conn, LibSpectrum spectrum)
-    {
-        StringBuilder sql = new StringBuilder("SELECT rt.*, sf.fileName ");
-        sql.append("FROM RetentionTimes AS rt INNER JOIN SpectrumSourceFiles AS sf ON rt.spectrumSourceID = sf.id ");
-        sql.append("WHERE RefSpectraID=").append(spectrum.getBlibId());
-
-        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql.toString()))
-        {
-            List<RedundantSpectrum> redundantSpectra = new ArrayList<>();
-
-            while (rs.next())
-            {
-                RedundantSpectrum rSpec = new RedundantSpectrum();
-                rSpec.setRedundantRefSpectrumId(rs.getInt("RedundantRefSpectraID"));
-                rSpec.setRetentionTime(rs.getDouble("retentionTime"));
-                rSpec.setSourceFile(rs.getString("fileName"));
-                rSpec.setBestSpectrum(rs.getBoolean("bestSpectrum"));
-
-                if (rSpec.isBestSpectrum())
-                {
-                    // If this is the reference spectrum keep it in front of the list.
-                    redundantSpectra.add(0, rSpec);
-                }
-                else
-                {
-                    redundantSpectra.add(rSpec);
-                }
-            }
-
-            spectrum.setRedundantSpectrumList(redundantSpectra);
+            return readRetentionTimes(conn, modifiedPeptide, libFilePath);
         }
         catch(SQLException e)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeSQLException(e);
         }
     }
 
-    public static LibSpectrum getRedundantSpectrum(Container container, Path redundantBlibPath, int redundantRefSpectrumId)
-    {
-        String redundantBlibFilePath = getLocalBlibPath(container, redundantBlibPath);
+    protected abstract LibSpectrum readSpectrum(Connection conn, String modifiedPeptide, int charge, Path libPath) throws DataFormatException, SQLException;
 
-        if (null == redundantBlibFilePath)
-            return null;
-
-        try (Connection conn = getBlibConnection(redundantBlibFilePath))
-        {
-            LibSpectrum spectrum = readRedundantSpectrum(conn, redundantRefSpectrumId);
-            if(spectrum == null)
-                return null;
-            readSpectrumPeaks(conn, spectrum);
-
-            return spectrum;
-        }
-        catch(SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static LibSpectrum readRedundantSpectrum(Connection conn, int redundantRefSpectrumid) throws SQLException
-    {
-        StringBuilder sql = new StringBuilder("SELECT rf.*, ssf.fileName FROM RefSpectra AS rf ");
-        sql.append("LEFT JOIN SpectrumSourceFiles AS ssf ON rf.FileID = ssf.id ");
-        sql.append(" WHERE rf.id=").append(redundantRefSpectrumid);
-
-        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql.toString()))
-        {
-            LibSpectrum spectrum = null;
-
-            if (rs.next())
-            {
-                spectrum = new LibSpectrum();
-                spectrum.setBlibId(rs.getInt("id"));
-                spectrum.setPeptideSeq(rs.getString("peptideSeq"));
-                spectrum.setPeptideModSeq("peptideModSeq");
-                spectrum.setPrecursorCharge(rs.getInt("precursorCharge"));
-                spectrum.setPrecursorMz(rs.getDouble("precursorMZ"));
-                spectrum.setPrevAa(rs.getString("prevAA"));
-                spectrum.setNextAa(rs.getString("nextAA"));
-                spectrum.setCopies(rs.getInt("copies"));
-                spectrum.setNumPeaks(rs.getInt("numPeaks"));
-                spectrum.setRetentionTime(rs.getDouble("retentionTime"));
-                spectrum.setFileId(rs.getInt("fileID"));
-                spectrum.setSourceFile(rs.getString("fileName"));
-            }
-
-            return spectrum;
-        }
-    }
-
-    // Return a map of blib file -> BlibSourceFiles
-    public static Map<String, List<BlibSourceFile>> readBlibSourceFiles(ITargetedMSRun run)
-    {
-        Map<PeptideSettings.SpectrumLibrary, Path> libs = LibraryManager.getLibraryFilePaths(run.getId());
-
-        Map<String, List<BlibSourceFile>> m = new TreeMap<>();
-        for (Map.Entry<PeptideSettings.SpectrumLibrary, Path> entry : libs.entrySet())
-        {
-            if (!entry.getKey().getLibraryType().contains("bibliospec_lite"))
-                continue;
-
-            Path path = entry.getValue();
-            String blibFilePath = getLocalBlibPath(run.getContainer(), path);
-            if (null == blibFilePath)
-                continue;
-
-            List<BlibSourceFile> blibSourceFiles = new ArrayList<>();
-            try (Connection conn = getBlibConnection(blibFilePath))
-            {
-                if (!hasTable(conn, "SpectrumSourceFiles"))
-                {
-                    continue;
-                }
-                Map<Integer, Set<String>> scoreTypes = new HashMap<>(); // file id -> score types
-                try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT DISTINCT r.fileID, s.scoreType FROM RefSpectra as r JOIN ScoreTypes s ON r.scoreType = s.id"))
-                {
-                    while (rs.next())
-                    {
-                        int fileId = rs.getInt(1);
-                        String scoreType = rs.getString(2);
-                        scoreTypes.putIfAbsent(fileId, new HashSet<>());
-                        scoreTypes.get(fileId).add(scoreType);
-                    }
-                }
-                try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery("SELECT * FROM SpectrumSourceFiles"))
-                {
-                    int idColumn = -1;
-                    int fileNameColumn = -1;
-                    int idFileNameColumn = -1;
-                    ResultSetMetaData metadata = rs.getMetaData();
-                    for (int i = 1; i <= metadata.getColumnCount(); i++)
-                    {
-                        switch (metadata.getColumnName(i).toLowerCase())
-                        {
-                            case "id":
-                                idColumn = i;
-                                break;
-                            case "filename":
-                                fileNameColumn = i;
-                                break;
-                            case "idfilename":
-                                idFileNameColumn = i;
-                                break;
-                        }
-                    }
-                    while (rs.next())
-                    {
-                        Integer id = rs.getInt(idColumn);
-                        String fileName = rs.getString(fileNameColumn);
-                        String idFileName = idFileNameColumn >= 0 ? rs.getString(idFileNameColumn) : null;
-                        blibSourceFiles.add(new BlibSourceFile(fileName, idFileName, scoreTypes.getOrDefault(id, null)));
-                    }
-                }
-            }
-            catch (SQLException e)
-            {
-                throw new RuntimeException(e);
-            }
-            m.put(path.getFileName().toString(), blibSourceFiles);
-        }
-        return m;
-    }
+    @NotNull
+    protected abstract List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> readRetentionTimes(Connection conn, String modifiedPeptide, String libPath) throws SQLException;
 
 
-    private static final int BLIBCACHE_LIMIT = 1000;
-    private static final long BLIBCACHE_LIFETIME = CacheManager.DAY;
+    private static final int LIBCACHE_LIMIT = 1000;
+    private static final long LIBCACHE_LIFETIME = CacheManager.DAY;
 
-    private static String getBlibCacheKey(@NotNull Container container, String pathStr)
+    private static String getLibCacheKey(@NotNull Container container, String pathStr)
     {
         return container.getId() + "::" + pathStr;
     }
 
-    private static final CacheLoader<String, String> _blibCacheLoader = (key, arg) ->
+    private static final CacheLoader<String, String> _libCacheLoader = (key, arg) ->
     {
         if (null != arg)
         {
@@ -616,67 +141,68 @@ public class LibSpectrumReader
         return null;
     };
 
-    private static final BlockingCache<String, String> _blibCache =
-        new BlockingCache<>(CacheManager.getStringKeyCache(BLIBCACHE_LIMIT, BLIBCACHE_LIFETIME, "BlibCache"), _blibCacheLoader)
-        {
-            @Override
-            public void remove(@NotNull String key)
+    private static final BlockingCache<String, String> _libCache =
+            new BlockingCache<>(CacheManager.getStringKeyCache(LIBCACHE_LIMIT, LIBCACHE_LIFETIME, "" +
+                    "SpeclibCache"), _libCacheLoader)
             {
-                deleteTempFile(key);
-                super.remove(key);
-            }
-
-            @Override
-            public void clear()
-            {
-                getKeys().forEach(this::deleteTempFile);
-                super.clear();
-            }
-
-            private void deleteTempFile(String key)
-            {
-                try
+                @Override
+                public void remove(@NotNull String key)
                 {
-                    String filePathStr = get(key);
-                    if (null != filePathStr)
-                        Files.deleteIfExists(new File(filePathStr).toPath());
+                    deleteTempFile(key);
+                    super.remove(key);
                 }
-                catch (IOException e)
+
+                @Override
+                public void clear()
                 {
-                    LOG.error("Temp Blib file not removed", e);
+                    getKeys().forEach(this::deleteTempFile);
+                    super.clear();
                 }
-            }
-        };
+
+                private void deleteTempFile(String key)
+                {
+                    try
+                    {
+                        String filePathStr = get(key);
+                        if (null != filePathStr)
+                            Files.deleteIfExists(new File(filePathStr).toPath());
+                    }
+                    catch (IOException e)
+                    {
+                        LOG.error("Temp spectrum library file not removed", e);
+                    }
+                }
+            };
 
     @Nullable
-    private static String getLocalBlibPath(Container container, Path blibPath)
+    static String getLocalLibPath(Container container, Path libPath)
     {
-        // If blib is in cloud, copy it locally to read
-        if (FileUtil.hasCloudScheme(blibPath))
+        // If lib is in cloud, copy it locally to read
+        if (FileUtil.hasCloudScheme(libPath))
         {
-            String localFilePathStr = _blibCache.get(getBlibCacheKey(container, FileUtil.getAbsolutePath(blibPath)), new Pair<>(container, blibPath));
+            String localFilePathStr = _libCache.get(getLibCacheKey(container, FileUtil.getAbsolutePath(libPath)), new Pair<>(container, libPath));
             if (null != localFilePathStr)
             {
                 return localFilePathStr;
             }
             else
             {
-                LOG.debug("Unable to copy " + blibPath + " to local file, referenced from " + container.getPath());
+                LOG.debug("Unable to copy " + libPath + " to local file, referenced from " + container.getPath());
                 return null;
             }
         }
-        return FileUtil.getAbsolutePath(blibPath);
+        return FileUtil.getAbsolutePath(libPath);
     }
 
-    public static void clearBlibCache(Container container)
+    public static void clearLibCache(Container container)
     {
-        _blibCache.clear();     // TODO: we could clear only keys from this container
+        _libCache.clear();     // TODO: we could clear only keys from this container
     }
 
-    private static Connection getBlibConnection(String blibFilePath) throws SQLException
+    static Connection getLibConnection(String libFilePath) throws SQLException
     {
         SQLiteConfig config = new SQLiteConfig();
         config.setReadOnly(true);
-        return DriverManager.getConnection("jdbc:sqlite:/" + blibFilePath, config.toProperties());
+        return DriverManager.getConnection("jdbc:sqlite:/" + libFilePath, config.toProperties());
     }
 }

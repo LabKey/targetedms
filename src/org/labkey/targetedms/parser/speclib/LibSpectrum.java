@@ -29,34 +29,16 @@ import java.util.List;
  */
 public class LibSpectrum
 {
-    // Columns in RefSpectra table of .blib files
-    // id|peptideSeq|peptideModSeq|precursorCharge|precursorMZ|prevAA|nextAA|copies|numPeaks
-    private int _blibId;
     private String _peptideSeq;
     private String _peptideModSeq;
     private int _precursorCharge;
     private double _precursorMz;
-    private String _prevAa;
-    private String _nextAa;
-    private int _copies;
-    private int _numPeaks;
     private Double _retentionTime;
-    private Integer _fileId;
     private String _sourceFile;
 
     private List<Peak> _peakList;
 
     private List<RedundantSpectrum> _redundantSpectrumList;
-
-    public int getBlibId()
-    {
-        return _blibId;
-    }
-
-    public void setBlibId(int blibId)
-    {
-        _blibId = blibId;
-    }
 
     public String getPeptideSeq()
     {
@@ -98,46 +80,6 @@ public class LibSpectrum
         _precursorMz = precursorMz;
     }
 
-    public String getPrevAa()
-    {
-        return _prevAa;
-    }
-
-    public void setPrevAa(String prevAa)
-    {
-        _prevAa = prevAa;
-    }
-
-    public String getNextAa()
-    {
-        return _nextAa;
-    }
-
-    public void setNextAa(String nextAa)
-    {
-        _nextAa = nextAa;
-    }
-
-    public int getCopies()
-    {
-        return _copies;
-    }
-
-    public void setCopies(int copies)
-    {
-        _copies = copies;
-    }
-
-    public int getNumPeaks()
-    {
-        return _numPeaks;
-    }
-
-    public void setNumPeaks(int numPeaks)
-    {
-        _numPeaks = numPeaks;
-    }
-
     public Double getRetentionTime()
     {
         return _retentionTime;
@@ -151,16 +93,6 @@ public class LibSpectrum
     public void setRetentionTime(Double retentionTime)
     {
         _retentionTime = retentionTime;
-    }
-
-    public Integer getFileId()
-    {
-        return _fileId;
-    }
-
-    public void setFileId(Integer fileId)
-    {
-        _fileId = fileId;
     }
 
     public String getSourceFile()
@@ -231,7 +163,7 @@ public class LibSpectrum
         @Override
         public int compareTo(Peak o)
         {
-            return Double.valueOf(this.getMz()).compareTo(o.getMz());
+            return Double.compare(this.getMz(), o.getMz());
         }
     }
 

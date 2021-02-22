@@ -185,6 +185,7 @@ import org.labkey.targetedms.parser.TransitionChromInfo;
 import org.labkey.targetedms.parser.list.ListDefinition;
 import org.labkey.targetedms.parser.skyaudit.AuditLogEntry;
 import org.labkey.targetedms.parser.speclib.LibSpectrumReader;
+import org.labkey.targetedms.parser.speclib.SpeclibReaderException;
 import org.labkey.targetedms.pipeline.ChromatogramCrawlerJob;
 import org.labkey.targetedms.query.ChromatogramDisplayColumnFactory;
 import org.labkey.targetedms.query.ConflictResultsManager;
@@ -268,6 +269,7 @@ import static org.labkey.api.targetedms.TargetedMSService.RAW_FILES_TAB;
 import static org.labkey.api.util.DOM.Attribute.height;
 import static org.labkey.api.util.DOM.Attribute.method;
 import static org.labkey.api.util.DOM.Attribute.src;
+import static org.labkey.api.util.DOM.Attribute.style;
 import static org.labkey.api.util.DOM.Attribute.width;
 import static org.labkey.api.util.DOM.DIV;
 import static org.labkey.api.util.DOM.TD;
@@ -2336,8 +2338,13 @@ public class TargetedMSController extends SpringActionController
         PipeRoot root = PipelineService.get().getPipelineRootSetting(getContainer());
         if (null != root)
         {
+            List<SpeclibReaderException> specLibErrors = new ArrayList<>();
+            List<LibrarySpectrumMatch> matches = LibrarySpectrumMatchGetter.getMatches(precursor, root.getContainer(), specLibErrors);
             addSpectrumViews(run, vbox,
-                    LibrarySpectrumMatchGetter.getMatches(precursor, root.getContainer()), errors);
+                    matches,
+                    LibrarySpectrumMatchGetter.getUnsupportedLibraries(run),
+                    specLibErrors,
+                    errors);
         }
         else
         {
@@ -2353,8 +2360,13 @@ public class TargetedMSController extends SpringActionController
             LocalDirectory localDirectory = LocalDirectory.create(root, MODULE_NAME);
             try
             {
+                List<SpeclibReaderException> specLibErrors = new ArrayList<>();
+                List<LibrarySpectrumMatch> matches = LibrarySpectrumMatchGetter.getMatches(peptide, getUser(), getContainer(), root.getContainer(), specLibErrors);
                 addSpectrumViews(run, vbox,
-                        LibrarySpectrumMatchGetter.getMatches(peptide, getUser(), getContainer(), root.getContainer()), errors);
+                        matches,
+                        LibrarySpectrumMatchGetter.getUnsupportedLibraries(run),
+                        specLibErrors,
+                        errors);
             }
             finally
             {
@@ -2367,7 +2379,8 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
-    private void addSpectrumViews(TargetedMSRun run, VBox vbox, List<LibrarySpectrumMatch> libSpectraMatchList, BindException errors)
+    private void addSpectrumViews(TargetedMSRun run, VBox vbox, List<LibrarySpectrumMatch> libSpectraMatchList, List<String> unsupportedLibraries,
+                                  List<SpeclibReaderException> specLibErrors, BindException errors)
     {
         PeptideSettings.ModificationSettings modSettings = ModificationManager.getSettings(run.getRunId());
         int idx = 0;
@@ -2384,7 +2397,26 @@ public class TargetedMSController extends SpringActionController
 
             idx++;
         }
-
+        for(String unsupported: unsupportedLibraries)
+        {
+            HtmlView view = new HtmlView(DIV(at(style, "color:red;font-weight:bold;"),
+                    unsupported + " is not a supported spectrum library. Annotated spectra from this library cannot be displayed."));
+            // view.setFrame(WebPartView.FrameType.TITLE);
+            view.setTitle("Unsupported Spectrum Library");
+            vbox.addView(view);
+        }
+        if(specLibErrors.size() > 0)
+        {
+            for(SpeclibReaderException ex: specLibErrors)
+            {
+                LOG.debug(ex.getMessage(), ex);
+                errors.addError(new LabKeyError(ex.getMessage()));
+            }
+        }
+        if(errors.hasErrors())
+        {
+            vbox.addView(new SimpleErrorView(errors, false));
+        }
     }
 
     @RequiresPermission(ReadPermission.class)
@@ -2430,32 +2462,21 @@ public class TargetedMSController extends SpringActionController
                 return response;
             }
 
-            Path blibFilePath = LibraryManager.getLibraryFilePath(run.getId(), library);
-            if(form.getRedundantRefSpectrumId() != 0)
-            {
-                blibFilePath = LibSpectrumReader.redundantBlibPath(blibFilePath);
-            }
-
-            if (!Files.exists(blibFilePath))
-            {
-                response.put("error", "Library file " + blibFilePath + " does not exist.");
-                return response;
-            }
-
+            Path libFilePath = LibraryManager.getLibraryFilePath(run.getId(), library);
             PipeRoot root = PipelineService.get().getPipelineRootSetting(getContainer());
             if (null != root)
             {
                 LibrarySpectrumMatch spectrumMatch = null;
-                if(form.getRedundantRefSpectrumId() == 0)
+                try
                 {
                     spectrumMatch = LibrarySpectrumMatchGetter.getSpectrumMatch(run, peptide, precursor, library,
-                            blibFilePath, root.getContainer());
+                            libFilePath, root.getContainer(), form.getRedundantRefSpectrumId(), form.getSourceFile());
                 }
-                else
+                catch (SpeclibReaderException e)
                 {
-                    spectrumMatch = LibrarySpectrumMatchGetter.getRedundantSpectrumMatch(run, peptide, precursor, library,
-                            blibFilePath, root.getContainer(),
-                            form.getRedundantRefSpectrumId());
+                    LOG.debug(e.getMessage(), e);
+                    response.put("error", e.getMessage());
+                    return response;
                 }
 
                 if (spectrumMatch == null)
@@ -2490,6 +2511,7 @@ public class TargetedMSController extends SpringActionController
         private String _libraryName;
         private int _redundantRefSpectrumId;
         private long _precursorId;
+        private String _sourceFile;
 
         public String getLibraryName()
         {
@@ -2519,6 +2541,16 @@ public class TargetedMSController extends SpringActionController
         public void setPrecursorId(long precursorId)
         {
             _precursorId = precursorId;
+        }
+
+        public String getSourceFile()
+        {
+            return _sourceFile;
+        }
+
+        public void setSourceFile(String sourceFile)
+        {
+            _sourceFile = sourceFile;
         }
     }
 
