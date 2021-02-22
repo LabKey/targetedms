@@ -183,20 +183,25 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 for (var j = 0; j < plotDataRow.data.length; j++) {
                     var plotData = plotDataRow.data[j];
 
-                    // for truncating out of range guideset data find last index of plotData starting from this.startDate
-                    if (plotData.AcquiredTime >= this.startDate) {
-                        if (!this.outOfRangeGSLastIndex) {
-                            // skip 5 points
-                            this.outOfRangeGSLastIndex = j - 5;
-                        }
-                    }
-
                     Ext4.Object.each(this.guideSetDataMap, function(guideSetId, guideSetData) {
                         // for truncating out of range guideset data  find first index of plotDate ending at guideset.trainingEnd
                         if (plotData.GuideSetId == guideSetId && plotData.InGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {
-                            this.outOfRangeGSFirstIndex = j + 1;
+                            this.filterPointsFirstIndex = j + 1;
                         }
                     }, this);
+
+                    // for truncating out of range guideset data find last index of plotData starting from this.startDate
+                    if (plotData.AcquiredTime >= this.startDate) {
+                        if (!this.filterPointsLastIndex) {
+                            // skip 5 points
+                            this.filterPointsLastIndex = j - 6;
+                        }
+                    }
+
+                    // no need to filter if less than 6 data points are present between reference end of guideset and startdate
+                    if (this.filterPointsLastIndex - this.filterPointsFirstIndex < 6) {
+                        this.filterQCPoints = false;
+                    }
                 }
             }
         }
@@ -307,17 +312,17 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         Ext4.Object.each(this.fragmentPlotData, function(label, fragmentData) {
             // traverse plotData backwards from firstIndex to lastIndex and
             // remove them from the array
-            if (this.filterQCPoints && this.outOfRangeGSFirstIndex && this.outOfRangeGSLastIndex) {
-                for (var i = this.outOfRangeGSLastIndex; i >= this.outOfRangeGSFirstIndex; i--) {
+            if (this.filterQCPoints && this.filterPointsFirstIndex && this.filterPointsLastIndex) {
+                for (var i = this.filterPointsLastIndex; i >= this.filterPointsFirstIndex; i--) {
                     this.fragmentPlotData[label].data.splice(i, 1);
                 }
 
                 // ReferenceRangeSeries is used to separate series
-                for (var i = 0; i < this.outOfRangeGSFirstIndex; i++) {
+                for (var i = 0; i < this.filterPointsFirstIndex; i++) {
                     fragmentData.data[i]['ReferenceRangeSeries'] = "GuideSet";
                 }
 
-                for (var i = this.outOfRangeGSFirstIndex; i < fragmentData.data.length; i++) {
+                for (var i = this.filterPointsFirstIndex; i < fragmentData.data.length; i++) {
                     fragmentData.data[i]['ReferenceRangeSeries'] = "InRange";
                 }
             }

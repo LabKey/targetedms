@@ -1818,6 +1818,14 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     this.expRunDetails.endIndex = undefined;
                 }
             }
+
+            // reset reference guideset indices
+            if (this.filterPointsFirstIndex) {
+                this.filterPointsFirstIndex = undefined;
+            }
+            if (this.filterPointsLastIndex) {
+                this.filterPointsLastIndex = undefined;
+            }
         }
     },
 
