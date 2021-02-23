@@ -18,6 +18,7 @@ package org.labkey.targetedms.parser;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.labkey.api.exp.api.DataType;
+import org.labkey.api.pipeline.PipelineJobException;
 import org.labkey.targetedms.parser.skyd.CacheFormat;
 import org.labkey.targetedms.parser.skyd.CacheFormatVersion;
 import org.labkey.targetedms.parser.skyd.CacheHeaderStruct;
@@ -60,7 +61,6 @@ public class SkylineBinaryParser
     private CacheHeaderStruct _cacheHeaderStruct;
 
     private ChromGroupHeaderInfo[] _chromatograms;
-    private ChromTransition[] _transitions;
     private float[] _allPeaksRt;
     private byte[] _seqBytes;
 
@@ -118,7 +118,6 @@ public class SkylineBinaryParser
 
         parseFiles();
         parsePeaks();
-        parseTransitions();
         _log.debug("Starting to load chromatogram headers");
         parseChromatograms();
         _log.debug("Done loading chromatogram headers");
@@ -211,11 +210,11 @@ public class SkylineBinaryParser
         }
     }
 
-    private void parseTransitions() throws IOException
+    private ChromTransition[] parseTransitions(long position, int count) throws IOException
     {
-        _channel.position(_cacheHeaderStruct.getLocationTransitions());
-        _transitions =_cacheFormat.chromTransitionSerializer()
-                .readArray(Channels.newInputStream(_channel), _cacheHeaderStruct.getNumTransitions());
+        _channel.position(position);
+        return _cacheFormat.chromTransitionSerializer()
+                .readArray(Channels.newInputStream(_channel), count);
     }
 
     private void parseChromatograms() throws IOException
@@ -254,26 +253,43 @@ public class SkylineBinaryParser
                 return match;
         }
 
-        for (GeneralTransition transition : transitions)
+        var start = header.getStartTransitionIndex();
+        var end = start + header.getNumTransitions();
+        var numChromTransitions = end - start + 1;
+        var chromTransitionPosition = _cacheHeaderStruct.getLocationTransitions() + ((long) _cacheHeaderStruct.getChromTransitionSize() * start);
+        ChromTransition[] chromTransitions;
+
+        try
         {
-            int start = header.getStartTransitionIndex();
-            int end = start + header.getNumTransitions();
-            for (int i = start; i < end; i++)
+            _channel.position(_cacheHeaderStruct.getLocationTransitions() + ((long) _cacheHeaderStruct.getChromTransitionSize() * start));
+             chromTransitions = parseTransitions(chromTransitionPosition, numChromTransitions);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        if (null != chromTransitions)
+        {
+            for (GeneralTransition transition : transitions)
             {
-                // Do we need to look through all of the transitions from the .skyd file?
-                if (header.toSignedMz(transition.getMz()).compareTolerant(_transitions[i].getProduct(header), tolerance) == 0)
+                for (int i = 0; i < numChromTransitions; i++)
                 {
-                    if (explicitRt == null)
+                    // Do we need to look through all of the transitions from the .skyd file?
+                    if (header.toSignedMz(transition.getMz()).compareTolerant(chromTransitions[i].getProduct(header), tolerance) == 0)
                     {
-                        match++;
-                        if (!multiMatch)
+                        if (explicitRt == null)
                         {
-                            break;  // only one match per transition
+                            match++;
+                            if (!multiMatch)
+                            {
+                                break;  // only one match per transition
+                            }
                         }
-                    }
-                    else
-                    {
-                        match = multiMatch ? match + 1 : 1; // Examine all RT values even if we're not multimatch
+                        else
+                        {
+                            match = multiMatch ? match + 1 : 1; // Examine all RT values even if we're not multimatch
+                        }
                     }
                 }
             }
@@ -323,12 +339,15 @@ public class SkylineBinaryParser
 
     public ChromTransition[] getTransitions(ChromGroupHeaderInfo chromGroupHeaderInfo)
     {
-        ChromTransition[] transitions = new ChromTransition[chromGroupHeaderInfo.getNumTransitions()];
-        for (int i = 0; i < transitions.length; i++)
+        var chromTransitionPosition = _cacheHeaderStruct.getLocationTransitions() + ((long) _cacheHeaderStruct.getChromTransitionSize() * chromGroupHeaderInfo.getStartTransitionIndex());
+        try
         {
-            transitions[i] = _transitions[i + chromGroupHeaderInfo.getStartTransitionIndex()];
+            return parseTransitions(chromTransitionPosition, chromGroupHeaderInfo.getNumTransitions());
         }
-        return transitions;
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     public String getTextId(ChromGroupHeaderInfo chromGroupHeaderInfo) {
