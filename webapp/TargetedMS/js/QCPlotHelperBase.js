@@ -732,7 +732,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         };
 
         if (this.filterQCPoints) {
-            trendLineProps.lineColor = '#000000';
+            trendLineProps.lineColor = '#ab0d0d';
             trendLineProps.groupBy = "ReferenceRangeSeries";
         }
 
