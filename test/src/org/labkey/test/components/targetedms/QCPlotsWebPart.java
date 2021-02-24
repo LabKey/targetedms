@@ -362,6 +362,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         elementCache().showExcludedCheckbox.set(check);
     }
 
+    public void setShowReferenceGuideSet(boolean check)
+    {
+        elementCache().showReferenceGuideSet.set(check);
+    }
+
     public boolean isShowAllPeptidesInSinglePlotChecked()
     {
         return elementCache().singlePlotCheckbox.isChecked();
@@ -749,6 +754,9 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
                 .findWhenNeeded( this).withTimeout(WAIT_FOR_JAVASCRIPT));
         Checkbox showExcludedCheckbox = new Checkbox(Locator.css("#show-excluded-points input")
                 .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
+        Checkbox showReferenceGuideSet = new Checkbox(Locator.css("#show-oorange-gs input")
+                .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
+
 
         WebElement plotPanel = new LazyWebElement(Locator.css("div.tiledPlotPanel"), this);
         WebElement paginationPanel = new LazyWebElement(Locator.css("div.plotPaginationHeaderPanel"), this);
