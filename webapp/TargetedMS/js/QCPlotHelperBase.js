@@ -161,8 +161,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         for (var i = this.pagingStartIndex; i < this.pagingEndIndex; i++) {
             var plotDataRow = plotDataRows[i];
             var fragment = plotDataRow.SeriesLabel;
-            Ext4.iterate(plotDataRow.data, function (plotData)
-            {
+            Ext4.iterate(plotDataRow.data, function (plotData) {
                 Ext4.iterate(sampleFiles, function (sampleFile) {
                     if (plotData['SampleFileId'] === sampleFile['SampleId']) {
                         plotData['FilePath'] = sampleFile['FilePath'];
@@ -194,16 +193,19 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     if (plotData.AcquiredTime >= this.startDate) {
                         if (!this.filterPointsLastIndex) {
                             // skip 5 points
-                            this.filterPointsLastIndex = j - 6;
+                            this.filterPointsLastIndex = j;
                         }
-                    }
-
-                    // no need to filter if less than 6 data points are present between reference end of guideset and startdate
-                    if (this.filterPointsLastIndex - this.filterPointsFirstIndex < 6) {
-                        this.filterQCPoints = false;
                     }
                 }
             }
+        }
+
+        // no need to filter if less than 6 data points are present between reference end of guideset and startdate
+        if (this.filterPointsLastIndex - this.filterPointsFirstIndex < 6) {
+            this.filterQCPoints = false;
+        }
+        else {
+            this.filterPointsLastIndex = this.filterPointsLastIndex - 6;
         }
 
         // Issue 31678: get the full set of dates values from the precursor data and from the annotations
