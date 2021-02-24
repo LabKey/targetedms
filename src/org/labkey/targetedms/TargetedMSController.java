@@ -184,7 +184,6 @@ import org.labkey.targetedms.parser.SkylineDocumentParser;
 import org.labkey.targetedms.parser.TransitionChromInfo;
 import org.labkey.targetedms.parser.list.ListDefinition;
 import org.labkey.targetedms.parser.skyaudit.AuditLogEntry;
-import org.labkey.targetedms.parser.speclib.LibSpectrumReader;
 import org.labkey.targetedms.parser.speclib.SpeclibReaderException;
 import org.labkey.targetedms.pipeline.ChromatogramCrawlerJob;
 import org.labkey.targetedms.query.ChromatogramDisplayColumnFactory;
@@ -269,11 +268,12 @@ import static org.labkey.api.targetedms.TargetedMSService.RAW_FILES_TAB;
 import static org.labkey.api.util.DOM.Attribute.height;
 import static org.labkey.api.util.DOM.Attribute.method;
 import static org.labkey.api.util.DOM.Attribute.src;
-import static org.labkey.api.util.DOM.Attribute.style;
 import static org.labkey.api.util.DOM.Attribute.width;
 import static org.labkey.api.util.DOM.DIV;
+import static org.labkey.api.util.DOM.SPAN;
 import static org.labkey.api.util.DOM.TD;
 import static org.labkey.api.util.DOM.TR;
+import static org.labkey.api.util.DOM.UL;
 import static org.labkey.api.util.DOM.X.FORM;
 import static org.labkey.api.util.DOM.at;
 import static org.labkey.api.util.DOM.cl;
@@ -2343,8 +2343,7 @@ public class TargetedMSController extends SpringActionController
             addSpectrumViews(run, vbox,
                     matches,
                     LibrarySpectrumMatchGetter.getUnsupportedLibraries(run),
-                    specLibErrors,
-                    errors);
+                    specLibErrors);
         }
         else
         {
@@ -2365,8 +2364,7 @@ public class TargetedMSController extends SpringActionController
                 addSpectrumViews(run, vbox,
                         matches,
                         LibrarySpectrumMatchGetter.getUnsupportedLibraries(run),
-                        specLibErrors,
-                        errors);
+                        specLibErrors);
             }
             finally
             {
@@ -2380,7 +2378,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     private void addSpectrumViews(TargetedMSRun run, VBox vbox, List<LibrarySpectrumMatch> libSpectraMatchList, List<String> unsupportedLibraries,
-                                  List<SpeclibReaderException> specLibErrors, BindException errors)
+                                  List<SpeclibReaderException> specLibErrors)
     {
         PeptideSettings.ModificationSettings modSettings = ModificationManager.getSettings(run.getRunId());
         int idx = 0;
@@ -2391,31 +2389,30 @@ public class TargetedMSController extends SpringActionController
             {
                 libSpecMatch.setMaxNeutralLosses(modSettings.getMaxNeutralLosses());
             }
-            PeptideSpectrumView spectrumView = new PeptideSpectrumView(libSpecMatch, errors);
+            PeptideSpectrumView spectrumView = new PeptideSpectrumView(libSpecMatch);
             spectrumView.enableExpandCollapse("PeptideSpectrumView_" + idx, false);
             vbox.addView(spectrumView);
 
             idx++;
         }
-        for(String unsupported: unsupportedLibraries)
+        if(unsupportedLibraries.size() > 0)
         {
-            HtmlView view = new HtmlView(DIV(at(style, "color:red;font-weight:bold;"),
-                    unsupported + " is not a supported spectrum library. Annotated spectra from this library cannot be displayed."));
-            // view.setFrame(WebPartView.FrameType.TITLE);
-            view.setTitle("Unsupported Spectrum Library");
+            HtmlView view = new HtmlView(DIV("Annotated spectra cannot be displayed from the following unsupported "
+                            + (unsupportedLibraries.size() == 1 ? "library" : "libraries") + ": ",
+                    (unsupportedLibraries.size() == 1 ?
+                            SPAN(cl("labkey-error"), unsupportedLibraries.get(0))
+                            : DIV(cl("labkey-error"), UL(unsupportedLibraries.stream().map(DOM::LI)))
+                    )
+            ));
+            view.setTitle("Unsupported Spectrum " + (unsupportedLibraries.size() == 1 ? "Library" : "Libraries"));
             vbox.addView(view);
         }
         if(specLibErrors.size() > 0)
         {
-            for(SpeclibReaderException ex: specLibErrors)
-            {
-                LOG.debug(ex.getMessage(), ex);
-                errors.addError(new LabKeyError(ex.getMessage()));
-            }
-        }
-        if(errors.hasErrors())
-        {
-            vbox.addView(new SimpleErrorView(errors, false));
+            HtmlView view = new HtmlView(DOM.LK.ERRORS(specLibErrors.stream().map(e -> new LabKeyError(e.getMessage())).collect(Collectors.toList())));
+            view.setTitle("Spectrum Library Errors");
+            vbox.addView(view);
+            specLibErrors.forEach(e -> LOG.info(e.getMessage(), e));
         }
     }
 
@@ -2466,7 +2463,7 @@ public class TargetedMSController extends SpringActionController
             PipeRoot root = PipelineService.get().getPipelineRootSetting(getContainer());
             if (null != root)
             {
-                LibrarySpectrumMatch spectrumMatch = null;
+                LibrarySpectrumMatch spectrumMatch;
                 try
                 {
                     spectrumMatch = LibrarySpectrumMatchGetter.getSpectrumMatch(run, peptide, precursor, library,
@@ -2474,7 +2471,7 @@ public class TargetedMSController extends SpringActionController
                 }
                 catch (SpeclibReaderException e)
                 {
-                    LOG.debug(e.getMessage(), e);
+                    LOG.info(e.getMessage(), e);
                     response.put("error", e.getMessage());
                     return response;
                 }

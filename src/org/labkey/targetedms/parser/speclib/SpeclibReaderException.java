@@ -16,10 +16,33 @@
 
 package org.labkey.targetedms.parser.speclib;
 
+import org.jetbrains.annotations.NotNull;
+import org.labkey.api.util.FileUtil;
+import org.labkey.targetedms.parser.PeptideSettings;
+
+import java.nio.file.Path;
+
 public class SpeclibReaderException extends Exception
 {
-    public SpeclibReaderException(String message, Throwable cause)
+    public SpeclibReaderException(@NotNull Throwable cause, @NotNull PeptideSettings.SpectrumLibrary library, @NotNull Path libFilePath)
     {
-        super(message, cause);
+        super(buildMessage(cause, library, libFilePath), cause);
+    }
+
+    private static String buildMessage(@NotNull Throwable cause, @NotNull PeptideSettings.SpectrumLibrary library, @NotNull Path libFilePath)
+    {
+        String libName = library.getName();
+        String libFileName = FileUtil.getFileName(libFilePath);
+        StringBuilder err = new StringBuilder("Error reading from spectrum library").append(" ").append(libFileName);
+        if(!FileUtil.getBaseName(libFileName).equals(libName))
+        {
+            // Append the library name if it is different from the base library file name
+            err.append(" (").append(libName).append(")");
+        }
+        if(cause.getMessage() != null)
+        {
+            err.append(". Error was: ").append(cause.getMessage());
+        }
+        return err.toString();
     }
 }

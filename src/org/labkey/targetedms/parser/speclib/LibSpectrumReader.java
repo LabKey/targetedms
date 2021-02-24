@@ -63,7 +63,7 @@ public abstract class LibSpectrumReader
 
     @Nullable
     public LibSpectrum getLibSpectrum(Container container, Path libPath,
-                                      String modifiedPeptide, int charge) throws SpeclibReaderException
+                                      String modifiedPeptide, int charge) throws SQLException, DataFormatException
     {
         String localLibPath = getLocalLibPath(container, libPath);
         if (null == localLibPath)
@@ -75,14 +75,6 @@ public abstract class LibSpectrumReader
         try (Connection conn = getLibConnection(localLibPath))
         {
             return readSpectrum(conn, modifiedPeptide, charge, libPath);
-        }
-        catch (SQLException e)
-        {
-            throw new SpeclibReaderException("Error reading from spectrum library file " + libPath.getFileName().toString(), e);
-        }
-        catch (DataFormatException e)
-        {
-            throw new SpeclibReaderException("Error reading peak data from spectrum library file " + libPath.getFileName().toString(), e);
         }
     }
 

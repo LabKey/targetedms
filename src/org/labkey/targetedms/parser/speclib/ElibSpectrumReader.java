@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
+// EncyclopeDIA file format documentation: https://bitbucket.org/searleb/encyclopedia/wiki/EncyclopeDIA%20File%20Formats
 public class ElibSpectrumReader extends LibSpectrumReader
 {
     @Override
@@ -66,7 +67,7 @@ public class ElibSpectrumReader extends LibSpectrumReader
 
     private ElibSpectrum readElibSpectrum(Connection conn, String modifiedPeptide, int charge, String sourceFile, boolean getRedundant) throws SQLException, DataFormatException
     {
-        StringBuilder sql = new StringBuilder("SELECT PeptideModSeq, PeptideSeq, PrecursorCharge, PrecursorMz, SourceFile, RTInSeconds, Score FROM entries");
+        StringBuilder sql = new StringBuilder("SELECT PeptideModSeq, PrecursorCharge, PrecursorMz, SourceFile, RTInSeconds, Score FROM entries");
             sql.append(" WHERE PeptideModSeq = '").append(modifiedPeptide).append("'");
             sql.append(" AND PrecursorCharge = ").append(charge);
             if(!StringUtils.isBlank(sourceFile))
@@ -144,6 +145,7 @@ public class ElibSpectrumReader extends LibSpectrumReader
 
     private static double[] extractMassArray(byte[] compressedData, int uncompressedLength) throws DataFormatException
     {
+        // Based on the code provided on the EncyclopeDIA documentation page: https://bitbucket.org/searleb/encyclopedia/wiki/EncyclopeDIA%20File%20Formats
         byte[] uncompressedData = uncompress(compressedData, uncompressedLength);
         double[] mzArray = new double[uncompressedData.length / 8];
         ByteBuffer bb = ByteBuffer.wrap(uncompressedData);
@@ -155,6 +157,7 @@ public class ElibSpectrumReader extends LibSpectrumReader
 
     private static float[] extractIntensityArray(byte[] compressedData, int uncompressedLength) throws DataFormatException
     {
+        // Based on the code provided on the EncyclopeDIA documentation page: https://bitbucket.org/searleb/encyclopedia/wiki/EncyclopeDIA%20File%20Formats
         byte[] uncompressedData = uncompress(compressedData, uncompressedLength);
         float[] intensities = new float[uncompressedData.length / 4];
         ByteBuffer bb = ByteBuffer.wrap(uncompressedData);
@@ -208,13 +211,16 @@ public class ElibSpectrumReader extends LibSpectrumReader
             }
         }
 
+        // Sort the spectra by charge and then by spectrum score (best to worst)
         sortElibSpectra(spectra);
         List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> retentionTimes = new ArrayList<>();
         int lastCharge = Integer.MAX_VALUE;
         for(var spectrum: spectra)
         {
             LibrarySpectrumMatchGetter.PeptideIdRtInfo rtInfo = new LibrarySpectrumMatchGetter.PeptideIdRtInfo(spectrum.getSourceFileName(), spectrum.getPeptideModSeq(),
-                    spectrum.getPrecursorCharge(), spectrum.getRetentionTime(), spectrum.getPrecursorCharge() != lastCharge);
+                    spectrum.getPrecursorCharge(), spectrum.getRetentionTime(),
+                    spectrum.getPrecursorCharge() != lastCharge // First spectrum for a charge will be the best spectrum for the modified sequence + charge combo
+            );
             retentionTimes.add(rtInfo);
             lastCharge = spectrum.getPrecursorCharge();
         }

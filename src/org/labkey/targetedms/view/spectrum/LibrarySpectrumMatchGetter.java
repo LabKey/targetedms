@@ -76,12 +76,11 @@ public class LibrarySpectrumMatchGetter
                         for(PeptideSettings.SpectrumLibrary library: libraryFilePathsMap.keySet())
                         {
                             Path libPath = libraryFilePathsMap.get(library);
-                            String fileName = FileUtil.getFileName(libPath);
-                            var reader = getReaderForLibrary(fileName);
+                            var reader = getReaderForLibrary(FileUtil.getFileName(libPath));
                             if(reader != null)
                             {
                                 List<PeptideIdRtInfo> rtInfos = reader.getRetentionTimes((Container) argument,
-                                        libraryFilePathsMap.get(library), precursor.getModifiedSequence());
+                                        libPath, precursor.getModifiedSequence());
 
                                 if (rtInfos.size() > 0)
                                 {
@@ -141,22 +140,25 @@ public class LibrarySpectrumMatchGetter
 
         for(PeptideSettings.SpectrumLibrary library: libraryFilePathsMap.keySet())
         {
-            if(libraryFilePathsMap.get(library) == null)
+            Path libFilePath = libraryFilePathsMap.get(library);
+            if(libFilePath == null)
             {
                 continue;
             }
 
-            LibSpectrum spectrum;
-            try
+            LibSpectrum spectrum = null;
+            LibSpectrumReader reader = getReaderForLibrary(FileUtil.getFileName(libFilePath));
+            if(reader != null)
             {
-                spectrum = getSpectrum(container, libraryFilePathsMap.get(library),
-                            precursor.getModifiedSequence(),
-                            precursor.getCharge());
-            }
-            catch (SpeclibReaderException e)
-            {
-                errors.add(e);
-                continue;
+                try
+                {
+                    spectrum = reader.getLibSpectrum(container, libFilePath, precursor.getModifiedSequence(), precursor.getCharge());
+                }
+                catch (SQLException | DataFormatException e)
+                {
+                    errors.add(new SpeclibReaderException(e, library, libFilePath));
+                    continue;
+                }
             }
 
             if(spectrum != null)
@@ -186,25 +188,21 @@ public class LibrarySpectrumMatchGetter
                 if (reader instanceof BlibSpectrumReader)
                 {
                     spectrum = redundantRefSpectrumId != 0 ? ((BlibSpectrumReader) reader).getRedundantSpectrum(container, libFilePath, redundantRefSpectrumId)
-                            : getSpectrum(container, libFilePath, precursor.getModifiedSequence(), precursor.getCharge());
+                            : reader.getLibSpectrum(container, libFilePath, precursor.getModifiedSequence(), precursor.getCharge());
                 }
                 else if (reader instanceof ElibSpectrumReader)
                 {
                     spectrum = !StringUtils.isBlank(sourceFile) ? ((ElibSpectrumReader) reader).getSpectrumForSourceFile(container, libFilePath, precursor.getModifiedSequence(), precursor.getCharge(), sourceFile)
-                            : getSpectrum(container, libFilePath, precursor.getModifiedSequence(), precursor.getCharge());
+                            : reader.getLibSpectrum(container, libFilePath, precursor.getModifiedSequence(), precursor.getCharge());
                 }
                 if(spectrum != null)
                 {
                     return makeLibrarySpectrumMatch(spectrum, run, peptide, precursor, library);
                 }
             }
-            catch (SQLException e)
+            catch (SQLException | DataFormatException e)
             {
-                throw new SpeclibReaderException("Error reading spectrum library file " + fileName, e);
-            }
-            catch (DataFormatException e)
-            {
-                throw new SpeclibReaderException("Error reading spectrum peaks from library file " + fileName, e);
+                throw new SpeclibReaderException(e, library, libFilePath);
             }
         }
         return null;
@@ -277,18 +275,6 @@ public class LibrarySpectrumMatchGetter
         }
 
         return rts;
-    }
-
-    @Nullable
-    private static LibSpectrum getSpectrum(Container container, Path libPath, String modifiedPeptide, int charge) throws SpeclibReaderException
-    {
-        String fileName = FileUtil.getFileName(libPath);
-        LibSpectrumReader reader = getReaderForLibrary(fileName);
-        if(reader != null)
-        {
-            return reader.getLibSpectrum(container, libPath, modifiedPeptide, charge);
-        }
-        return null;
     }
 
     @Nullable

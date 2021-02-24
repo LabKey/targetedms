@@ -174,6 +174,11 @@ public class LibSpectrum
         private Double _retentionTime;
         private boolean _bestSpectrum;
 
+        /*
+        For Bibliospec libraries this is the database id for a spectrum from the .redundant.blib SQLite file,
+        and can be used for querying a redundant spectrum. For EncyclopeDIA libraries (.elib), this is set in order of
+        the spectrum score (best to worst); it is not a database id that can be used for querying from the SQLite file.
+         */
         public int getRedundantRefSpectrumId()
         {
             return _redundantRefSpectrumId;
