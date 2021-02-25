@@ -230,14 +230,13 @@ public class ChromGroupHeaderInfo
     @Nullable
     public Float getStartTime()
     {
-        //
-        return startTime;
+        return startTime == Float.MIN_VALUE ? null : startTime;
     }
 
     @Nullable
     public Float getEndTime()
     {
-        return endTime;
+        return endTime == Float.MIN_VALUE ? null : endTime;
     }
 
     public SignedMz getPrecursor() {
