@@ -256,8 +256,8 @@ public class SkylineBinaryParser
         }
 
         var start = header.getStartTransitionIndex();
-        var end = start + header.getNumTransitions();
-        var numChromTransitions = end - start + 1;
+        var numChromTransitions = header.getNumTransitions();
+        var end = start + numChromTransitions;
         var chromTransitionPosition = _cacheHeaderStruct.getLocationTransitions() + ((long) _cacheHeaderStruct.getChromTransitionSize() * start);
         ChromTransition[] chromTransitions;
 
