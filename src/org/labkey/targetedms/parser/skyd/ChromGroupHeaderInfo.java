@@ -26,33 +26,36 @@ import java.util.EnumSet;
  */
 public class ChromGroupHeaderInfo
 {
+    // using this in the constructor for floats to avoid using non-primitive Float objects to reduce memory footprint
+    private static final float NULL_PLACEHOLDER = Float.NEGATIVE_INFINITY;
+
+    // For reducing memory usage, following instance variables are commented out because of the
+    // absence of accessors and reading from inputStream is left to correctly advance the size of the fields
     private int textIdIndex;
     private int startTransitionIndex;
-    private int startPeakIndex;
-    private int startScoreIndex;
+//    private int startPeakIndex;
+//    private int startScoreIndex;
     private int numPoints;
     private int compressedSize;
     private short flagBits;
     private short fileIndex;
     private short textIdLen;
     private short numTransitions;
-    private byte numPeaks;
-    private byte maxPeakIndex;
-    private byte isProcessedScans;
-    private byte align1;
-    private short statusId;
-    private short statusRank;
+//    private byte numPeaks;
+//    private byte maxPeakIndex;
+//    private byte isProcessedScans;
+//    private byte align1;
+//    private short statusId;
+//    private short statusRank;
     private double precursor;
     private long locationPoints;
     private int uncompressedSize;
     private float startTime;
     private float endTime;
-    private float collisionalCrossSection;
+//    private float collisionalCrossSection;
 
     public ChromGroupHeaderInfo(CacheFormatVersion cacheFormatVersion, LittleEndianInput dataInputStream)
     {
-        // For reducing memory usage, following assignments to the above instance variables are commented out because of
-        // absence of accessors and reading from inputStream is left to correctly advance the size of the fields
         if (cacheFormatVersion.compareTo(CacheFormatVersion.Five) < 0) {
             precursor = Float.intBitsToFloat(dataInputStream.readInt());
             fileIndex = checkUShort(dataInputStream.readInt());
@@ -88,8 +91,8 @@ public class ChromGroupHeaderInfo
         }
         if (cacheFormatVersion.compareTo(CacheFormatVersion.Eleven) < 0) {
             uncompressedSize = -1;
-            startTime = Float.MIN_VALUE;
-            endTime = Float.MIN_VALUE;
+            startTime = NULL_PLACEHOLDER;
+            endTime = NULL_PLACEHOLDER;
         } else {
             uncompressedSize = dataInputStream.readInt();
             startTime = Float.intBitsToFloat(dataInputStream.readInt());
@@ -230,13 +233,13 @@ public class ChromGroupHeaderInfo
     @Nullable
     public Float getStartTime()
     {
-        return startTime == Float.MIN_VALUE ? null : startTime;
+        return startTime == NULL_PLACEHOLDER ? null : startTime;
     }
 
     @Nullable
     public Float getEndTime()
     {
-        return endTime == Float.MIN_VALUE ? null : endTime;
+        return endTime == NULL_PLACEHOLDER ? null : endTime;
     }
 
     public SignedMz getPrecursor() {
@@ -259,6 +262,9 @@ public class ChromGroupHeaderInfo
     }
 
     public boolean excludesTime(double time) {
+        if (NULL_PLACEHOLDER == startTime || NULL_PLACEHOLDER == endTime) {
+            return false;
+        }
         return startTime > time || endTime < time;
     }
 

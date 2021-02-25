@@ -17,6 +17,7 @@ package org.labkey.targetedms.parser;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.labkey.api.exp.api.DataType;
 import org.labkey.api.pipeline.PipelineJobException;
 import org.labkey.targetedms.parser.skyd.CacheFormat;
@@ -210,6 +211,7 @@ public class SkylineBinaryParser
         }
     }
 
+    @NotNull
     private ChromTransition[] parseTransitions(long position, int count) throws IOException
     {
         _channel.position(position);
@@ -269,31 +271,29 @@ public class SkylineBinaryParser
             throw new RuntimeException(e);
         }
 
-        if (null != chromTransitions)
+        for (GeneralTransition transition : transitions)
         {
-            for (GeneralTransition transition : transitions)
+            for (int i = 0; i < numChromTransitions; i++)
             {
-                for (int i = 0; i < numChromTransitions; i++)
+                // Do we need to look through all of the transitions from the .skyd file?
+                if (header.toSignedMz(transition.getMz()).compareTolerant(chromTransitions[i].getProduct(header), tolerance) == 0)
                 {
-                    // Do we need to look through all of the transitions from the .skyd file?
-                    if (header.toSignedMz(transition.getMz()).compareTolerant(chromTransitions[i].getProduct(header), tolerance) == 0)
+                    if (explicitRt == null)
                     {
-                        if (explicitRt == null)
+                        match++;
+                        if (!multiMatch)
                         {
-                            match++;
-                            if (!multiMatch)
-                            {
-                                break;  // only one match per transition
-                            }
+                            break;  // only one match per transition
                         }
-                        else
-                        {
-                            match = multiMatch ? match + 1 : 1; // Examine all RT values even if we're not multimatch
-                        }
+                    }
+                    else
+                    {
+                        match = multiMatch ? match + 1 : 1; // Examine all RT values even if we're not multimatch
                     }
                 }
             }
         }
+
         return match;
     }
 
