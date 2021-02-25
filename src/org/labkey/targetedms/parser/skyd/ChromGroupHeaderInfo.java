@@ -45,21 +45,23 @@ public class ChromGroupHeaderInfo
     private double precursor;
     private long locationPoints;
     private int uncompressedSize;
-    private Float startTime;
-    private Float endTime;
+    private float startTime;
+    private float endTime;
     private float collisionalCrossSection;
 
     public ChromGroupHeaderInfo(CacheFormatVersion cacheFormatVersion, LittleEndianInput dataInputStream)
     {
+        // For reducing memory usage, following assignments to the above instance variables are commented out because of
+        // absence of accessors and reading from inputStream is left to correctly advance the size of the fields
         if (cacheFormatVersion.compareTo(CacheFormatVersion.Five) < 0) {
             precursor = Float.intBitsToFloat(dataInputStream.readInt());
             fileIndex = checkUShort(dataInputStream.readInt());
             numTransitions = checkUShort(dataInputStream.readInt());
             startTransitionIndex = dataInputStream.readInt();
-            numPeaks = checkByte(dataInputStream.readInt());
-            startPeakIndex = dataInputStream.readInt();
-            int maxPeakIndexInt = dataInputStream.readInt();
-            maxPeakIndex = maxPeakIndexInt == -1 ? (byte) 0xff : checkByte(maxPeakIndexInt);
+            /*numPeaks =*/ checkByte(dataInputStream.readInt());
+            /*startPeakIndex =*/ dataInputStream.readInt();
+            /*int maxPeakIndexInt = */dataInputStream.readInt();
+            /*maxPeakIndex = maxPeakIndexInt == -1 ? (byte) 0xff : checkByte(maxPeakIndexInt);*/
             numPoints = dataInputStream.readInt();
             compressedSize = dataInputStream.readInt();
             dataInputStream.readInt(); // ignore these four bytes
@@ -67,30 +69,32 @@ public class ChromGroupHeaderInfo
         } else {
             textIdIndex = dataInputStream.readInt();
             startTransitionIndex = dataInputStream.readInt();
-            startPeakIndex = dataInputStream.readInt();
-            startScoreIndex = dataInputStream.readInt();
+            /*startPeakIndex =*/ dataInputStream.readInt();
+            /*startScoreIndex =*/ dataInputStream.readInt();
             numPoints = dataInputStream.readInt();
             compressedSize = dataInputStream.readInt();
             flagBits = dataInputStream.readShort();
             fileIndex = dataInputStream.readShort();
             textIdLen = dataInputStream.readShort();
             numTransitions = dataInputStream.readShort();
-            numPeaks = dataInputStream.readByte();
-            maxPeakIndex = dataInputStream.readByte();
-            isProcessedScans = dataInputStream.readByte();
-            align1 = dataInputStream.readByte();
-            statusId = dataInputStream.readShort();
-            statusRank = dataInputStream.readShort();
+            /*numPeaks =*/ dataInputStream.readByte();
+            /*maxPeakIndex =*/ dataInputStream.readByte();
+            /*isProcessedScans =*/ dataInputStream.readByte();
+            /*align1 =*/ dataInputStream.readByte();
+            /*statusId =*/ dataInputStream.readShort();
+            /*statusRank =*/ dataInputStream.readShort();
             precursor = dataInputStream.readDouble();
             locationPoints = dataInputStream.readLong();
         }
         if (cacheFormatVersion.compareTo(CacheFormatVersion.Eleven) < 0) {
             uncompressedSize = -1;
+            startTime = Float.MIN_VALUE;
+            endTime = Float.MIN_VALUE;
         } else {
             uncompressedSize = dataInputStream.readInt();
             startTime = Float.intBitsToFloat(dataInputStream.readInt());
             endTime = Float.intBitsToFloat(dataInputStream.readInt());
-            collisionalCrossSection = Float.intBitsToFloat(dataInputStream.readInt());
+            /*collisionalCrossSection =*/ Float.intBitsToFloat(dataInputStream.readInt());
         }
     }
 
@@ -149,6 +153,9 @@ public class ChromGroupHeaderInfo
         return startTransitionIndex;
     }
 
+    // leaving commented out as these getters are not being accessed and for future usage
+/*
+
     public int getStartPeakIndex()
     {
         return startPeakIndex;
@@ -158,6 +165,7 @@ public class ChromGroupHeaderInfo
     {
         return startScoreIndex;
     }
+*/
 
     public int getNumPoints()
     {
@@ -178,11 +186,13 @@ public class ChromGroupHeaderInfo
     {
         return numTransitions;
     }
+/*
 
     public byte getNumPeaks()
     {
         return numPeaks;
     }
+*/
 
     public long getLocationPoints()
     {
@@ -209,15 +219,18 @@ public class ChromGroupHeaderInfo
         return sizeTotal;
 
     }
+/*
 
     public byte getMaxPeakIndex()
     {
         return maxPeakIndex;
     }
+*/
 
     @Nullable
     public Float getStartTime()
     {
+        //
         return startTime;
     }
 
@@ -247,9 +260,6 @@ public class ChromGroupHeaderInfo
     }
 
     public boolean excludesTime(double time) {
-        if (null == startTime || null == endTime) {
-            return false;
-        }
         return startTime > time || endTime < time;
     }
 

@@ -23,7 +23,11 @@ import org.labkey.targetedms.parser.SignedMz;
 public class ChromTransition
 {
     double _product;
+    private float _extractionWidth;
+    private float _driftTime;
+    private float _driftTimeExtractionWidth;
     private short _flagBits;
+    private short _align1;
 
     public ChromTransition(CacheFormatVersion cacheFormatVersion, LittleEndianInput dataInputStream)
     {
@@ -31,10 +35,16 @@ public class ChromTransition
             _product = Float.intBitsToFloat(dataInputStream.readInt());
         } else if (cacheFormatVersion.compareTo(CacheFormatVersion.Six) <= 0) {
             _product = dataInputStream.readDouble();
+            _extractionWidth = Float.intBitsToFloat(dataInputStream.readInt());
             _flagBits = dataInputStream.readShort();
+            _align1 = dataInputStream.readShort();
         } else {
             _product = dataInputStream.readDouble();
+            _extractionWidth = Float.intBitsToFloat(dataInputStream.readInt());
+            _driftTime = Float.intBitsToFloat(dataInputStream.readInt());
+            _driftTimeExtractionWidth = Float.intBitsToFloat(dataInputStream.readInt());
             _flagBits = dataInputStream.readShort();
+            _align1 = dataInputStream.readShort();
         }
     }
 
