@@ -16,6 +16,7 @@
 package org.labkey.targetedms.parser.speclib;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.labkey.api.util.Formats;
 
 import java.util.ArrayList;
@@ -227,6 +228,57 @@ public class LibSpectrum
         public void setBestSpectrum(boolean bestSpectrum)
         {
             _bestSpectrum = bestSpectrum;
+        }
+    }
+
+    static class SpectrumKey
+    {
+        private final int _redundantRefSpectrumId;
+        private final String _sourceFile;
+        private final int _charge;
+        private final String _modifiedPeptide;
+
+        public SpectrumKey(String modifiedPeptide, int charge)
+        {
+            this(modifiedPeptide, charge, null, 0);
+        }
+
+        public SpectrumKey(String modifiedPeptide, int charge, String sourceFile, int redundantRefSpectrumId)
+        {
+            _modifiedPeptide = modifiedPeptide;
+            _charge = charge;
+            _sourceFile = sourceFile;
+            _redundantRefSpectrumId = redundantRefSpectrumId;
+        }
+
+        public int getRedundantRefSpectrumId()
+        {
+            return _redundantRefSpectrumId;
+        }
+
+        public String getSourceFile()
+        {
+            return _sourceFile;
+        }
+
+        public int getCharge()
+        {
+            return _charge;
+        }
+
+        public String getModifiedPeptide()
+        {
+            return _modifiedPeptide;
+        }
+
+        public boolean forRedundantSpectrum()
+        {
+            return _redundantRefSpectrumId != 0 || hasSourceFile();
+        }
+
+        public boolean hasSourceFile()
+        {
+            return !StringUtils.isBlank(_sourceFile);
         }
     }
 }

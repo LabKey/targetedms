@@ -16,7 +16,6 @@
 package org.labkey.targetedms.view.spectrum;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.cache.BlockingCache;
@@ -182,19 +181,11 @@ public class LibrarySpectrumMatchGetter
         LibSpectrumReader reader = getReaderForLibrary(fileName);
         if(reader != null)
         {
-            LibSpectrum spectrum = null;
+            LibSpectrum spectrum;
             try
             {
-                if (reader instanceof BlibSpectrumReader)
-                {
-                    spectrum = redundantRefSpectrumId != 0 ? ((BlibSpectrumReader) reader).getRedundantSpectrum(container, libFilePath, redundantRefSpectrumId)
-                            : reader.getLibSpectrum(container, libFilePath, precursor.getModifiedSequence(), precursor.getCharge());
-                }
-                else if (reader instanceof ElibSpectrumReader)
-                {
-                    spectrum = !StringUtils.isBlank(sourceFile) ? ((ElibSpectrumReader) reader).getSpectrumForSourceFile(container, libFilePath, precursor.getModifiedSequence(), precursor.getCharge(), sourceFile)
-                            : reader.getLibSpectrum(container, libFilePath, precursor.getModifiedSequence(), precursor.getCharge());
-                }
+                spectrum = reader.getLibSpectrum(container, libFilePath, precursor.getModifiedSequence(), precursor.getCharge(), redundantRefSpectrumId, sourceFile);
+
                 if(spectrum != null)
                 {
                     return makeLibrarySpectrumMatch(spectrum, run, peptide, precursor, library);

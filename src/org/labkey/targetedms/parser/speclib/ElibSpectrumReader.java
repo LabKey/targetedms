@@ -15,23 +15,22 @@
 
 package org.labkey.targetedms.parser.speclib;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.targetedms.parser.speclib.LibSpectrum.RedundantSpectrum;
+import org.labkey.targetedms.parser.speclib.LibSpectrum.SpectrumKey;
 import org.labkey.targetedms.view.spectrum.LibrarySpectrumMatchGetter;
 
-import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -42,54 +41,59 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 // EncyclopeDIA file format documentation: https://bitbucket.org/searleb/encyclopedia/wiki/EncyclopeDIA%20File%20Formats
+@SuppressWarnings("SqlResolve")
 public class ElibSpectrumReader extends LibSpectrumReader
 {
     @Override
-    protected ElibSpectrum readSpectrum(Connection conn, String modifiedPeptide, int charge, Path libPath) throws DataFormatException, SQLException
+    protected @Nullable ElibSpectrum readSpectrum(Connection conn, SpectrumKey spectrumKey, Path libPath) throws DataFormatException, SQLException
     {
-        return readElibSpectrum(conn, modifiedPeptide, charge, null, true);
+        return readElibSpectrum(conn, spectrumKey, true);
     }
 
-    @Nullable
-    public ElibSpectrum getSpectrumForSourceFile(Container container, Path libPath, String modifiedPeptide, int charge, String sourceFile) throws SQLException, DataFormatException
+    @Override
+    protected @Nullable String getRedundantLibPath(Container container, Path libPath)
     {
-        String localLibPath = getLocalLibPath(container, libPath);
-
-        if(localLibPath != null && new File(localLibPath).exists())
-        {
-            try (Connection conn = getLibConnection(localLibPath))
-            {
-                return readElibSpectrum(conn, modifiedPeptide, charge, sourceFile, false);
-            }
-        }
-        return null;
+        return getLocalLibPath(container, libPath);
     }
 
-    private ElibSpectrum readElibSpectrum(Connection conn, String modifiedPeptide, int charge, String sourceFile, boolean getRedundant) throws SQLException, DataFormatException
+    @Override
+    public @Nullable ElibSpectrum readRedundantSpectrum(Connection conn, SpectrumKey spectrumKey) throws SQLException, DataFormatException
     {
-        StringBuilder sql = new StringBuilder("SELECT PeptideModSeq, PrecursorCharge, PrecursorMz, SourceFile, RTInSeconds, Score FROM entries");
-            sql.append(" WHERE PeptideModSeq = '").append(modifiedPeptide).append("'");
-            sql.append(" AND PrecursorCharge = ").append(charge);
-            if(!StringUtils.isBlank(sourceFile))
+        return readElibSpectrum(conn, spectrumKey, false);
+    }
+
+    private ElibSpectrum readElibSpectrum(Connection conn, SpectrumKey spectrumKey, boolean getRedundant) throws SQLException, DataFormatException
+    {
+        StringBuilder sql = new StringBuilder("SELECT PeptideModSeq, PrecursorCharge, PrecursorMz, SourceFile, RTInSeconds, Score FROM entries")
+                         .append(" WHERE PeptideModSeq = ?").append(" AND PrecursorCharge = ?");
+            if(spectrumKey.hasSourceFile())
             {
-                sql.append(" AND SourceFile = '").append(sourceFile).append("'");
+                sql.append(" AND SourceFile = ?");
             }
 
         List<ElibSpectrum> spectra = new ArrayList<>();
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql.toString()))
+        try (PreparedStatement stmt = conn.prepareStatement(sql.toString()))
         {
-            while(rs.next())
+            stmt.setString(1, spectrumKey.getModifiedPeptide());
+            stmt.setInt(2, spectrumKey.getCharge());
+            if(spectrumKey.hasSourceFile())
             {
-                ElibSpectrum spectrum = new ElibSpectrum();
-                spectrum.setPeptideModSeq(modifiedPeptide);
-                spectrum.setPrecursorCharge(rs.getInt("PrecursorCharge"));
-                spectrum.setPrecursorMz(rs.getDouble("PrecursorMz"));
-                double rt = rs.getDouble("RTInSeconds");
-                spectrum.setRetentionTime(rt / 60.0);
-                spectrum.setSourceFile(rs.getString("SourceFile"));
-                spectrum.setScore(rs.getDouble("Score"));
-                spectra.add(spectrum);
+                stmt.setString(3, spectrumKey.getSourceFile());
+            }
+            try (ResultSet rs = stmt.executeQuery())
+            {
+                while (rs.next())
+                {
+                    ElibSpectrum spectrum = new ElibSpectrum();
+                    spectrum.setPeptideModSeq(spectrumKey.getModifiedPeptide());
+                    spectrum.setPrecursorCharge(rs.getInt("PrecursorCharge"));
+                    spectrum.setPrecursorMz(rs.getDouble("PrecursorMz"));
+                    double rt = rs.getDouble("RTInSeconds");
+                    spectrum.setRetentionTime(rt / 60.0);
+                    spectrum.setSourceFile(rs.getString("SourceFile"));
+                    spectrum.setScore(rs.getDouble("Score"));
+                    spectra.add(spectrum);
+                }
             }
         }
 
@@ -122,23 +126,24 @@ public class ElibSpectrumReader extends LibSpectrumReader
 
     private void readPeaks(Connection conn, ElibSpectrum spectrum) throws SQLException, DataFormatException
     {
-        StringBuilder sql = new StringBuilder("SELECT MassEncodedLength, MassArray, IntensityEncodedLength, IntensityArray FROM entries WHERE ");
-        sql.append(" PrecursorCharge = ").append(spectrum.getPrecursorCharge());
-        sql.append(" AND PeptideModSeq = '").append(spectrum.getPeptideModSeq()).append("'");
-        sql.append(" AND SourceFile = '").append(spectrum.getSourceFile()).append("'");
-
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql.toString()))
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT MassEncodedLength, MassArray, IntensityEncodedLength, IntensityArray FROM entries " +
+                "WHERE PrecursorCharge = ? AND PeptideModSeq = ? AND SourceFile = ?"))
         {
-            if(rs.next())
+            stmt.setInt(1, spectrum.getPrecursorCharge());
+            stmt.setString(2, spectrum.getPeptideModSeq());
+            stmt.setString(3, spectrum.getSourceFile());
+            try(ResultSet rs = stmt.executeQuery())
             {
-                byte[] mzArray = rs.getBytes("MassArray");
-                byte[] intensityArray = rs.getBytes("IntensityArray");
+                if (rs.next())
+                {
+                    byte[] mzArray = rs.getBytes("MassArray");
+                    byte[] intensityArray = rs.getBytes("IntensityArray");
 
-                double[] peakMzs = extractMassArray(mzArray, rs.getInt("MassEncodedLength"));
-                float[] peakIntensities = extractIntensityArray(intensityArray, rs.getInt("IntensityEncodedLength"));
+                    double[] peakMzs = extractMassArray(mzArray, rs.getInt("MassEncodedLength"));
+                    float[] peakIntensities = extractIntensityArray(intensityArray, rs.getInt("IntensityEncodedLength"));
 
-                spectrum.setMzAndIntensity(peakMzs, peakIntensities);
+                    spectrum.setMzAndIntensity(peakMzs, peakIntensities);
+                }
             }
         }
     }
@@ -190,24 +195,24 @@ public class ElibSpectrumReader extends LibSpectrumReader
     @Override
     protected @NotNull List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> readRetentionTimes(Connection conn, String modifiedPeptide, String libPath) throws SQLException
     {
-        StringBuilder sql = new StringBuilder("SELECT PeptideModSeq, PrecursorCharge, RTInSeconds, SourceFile, Score FROM entries");
-        sql.append(" WHERE PeptideModSeq = '").append(modifiedPeptide).append("'");
-
         List<ElibSpectrum> spectra = new ArrayList<>();
 
-        try(Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql.toString()))
+        try(PreparedStatement stmt = conn.prepareStatement("SELECT PeptideModSeq, PrecursorCharge, RTInSeconds, SourceFile, Score FROM entries WHERE PeptideModSeq = ?"))
         {
-            while (rs.next())
+            stmt.setString(1, modifiedPeptide);
+            try(ResultSet rs = stmt.executeQuery())
             {
-                ElibSpectrum spectrum = new ElibSpectrum();
-                spectrum.setPeptideModSeq(rs.getString("PeptideModSeq"));
-                spectrum.setPrecursorCharge(rs.getInt("PrecursorCharge"));
-                spectrum.setSourceFile(rs.getString("SourceFile"));
-                double rt = rs.getDouble("RTInSeconds");
-                spectrum.setRetentionTime(rt / 60.0);
-                spectrum.setScore(rs.getDouble("Score"));
-                spectra.add(spectrum);
+                while (rs.next())
+                {
+                    ElibSpectrum spectrum = new ElibSpectrum();
+                    spectrum.setPeptideModSeq(rs.getString("PeptideModSeq"));
+                    spectrum.setPrecursorCharge(rs.getInt("PrecursorCharge"));
+                    spectrum.setSourceFile(rs.getString("SourceFile"));
+                    double rt = rs.getDouble("RTInSeconds");
+                    spectrum.setRetentionTime(rt / 60.0);
+                    spectrum.setScore(rs.getDouble("Score"));
+                    spectra.add(spectrum);
+                }
             }
         }
 

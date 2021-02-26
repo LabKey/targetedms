@@ -319,7 +319,7 @@ Ext4.define('LABKEY.targetedms.LorikeetOptions', {
     },
     onError: function (message)
     {
-        this.getComponent(this.details_panel_id).getComponent(this.refspec_span_id).update("");
+        this.getComponent(this.details_panel_id).update("");
         $('#'+this.lorikeetId).html('<div style="margin:20px;color:red;">' + message + '</div>');
     }
 });

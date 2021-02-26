@@ -41,6 +41,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.zip.DataFormatException;
 
+import static org.labkey.targetedms.parser.speclib.LibSpectrum.*;
+
 /**
  * User: vsharma
  * Date: 5/6/12
@@ -63,7 +65,30 @@ public abstract class LibSpectrumReader
 
     @Nullable
     public LibSpectrum getLibSpectrum(Container container, Path libPath,
+                                      String modifiedPeptide, int charge,
+                                      int redundantRefSpectrumId, String sourceFile) throws SQLException, DataFormatException
+    {
+        SpectrumKey key = new SpectrumKey(modifiedPeptide, charge, sourceFile, redundantRefSpectrumId);
+
+        if(key.forRedundantSpectrum())
+        {
+            return getRedundantLibSpectrum(container, libPath, key);
+        }
+        else
+        {
+            return getLibSpectrum(container, libPath, key);
+        }
+    }
+
+    @Nullable
+    public LibSpectrum getLibSpectrum(Container container, Path libPath,
                                       String modifiedPeptide, int charge) throws SQLException, DataFormatException
+    {
+        return getLibSpectrum(container, libPath, new SpectrumKey(modifiedPeptide, charge));
+    }
+
+    @Nullable
+    private LibSpectrum getLibSpectrum(Container container, Path libPath, SpectrumKey key) throws SQLException, DataFormatException
     {
         String localLibPath = getLocalLibPath(container, libPath);
         if (null == localLibPath)
@@ -74,7 +99,23 @@ public abstract class LibSpectrumReader
 
         try (Connection conn = getLibConnection(localLibPath))
         {
-            return readSpectrum(conn, modifiedPeptide, charge, libPath);
+            return readSpectrum(conn, key, libPath);
+        }
+    }
+
+    @Nullable
+    private LibSpectrum getRedundantLibSpectrum(Container container, Path libPath, SpectrumKey key) throws SQLException, DataFormatException
+    {
+        String localLibPath = getRedundantLibPath(container, libPath);
+        if (null == localLibPath)
+            return null;
+
+        if(!(new File(localLibPath).exists()))
+            return null;
+
+        try (Connection conn = getLibConnection(localLibPath))
+        {
+            return readRedundantSpectrum(conn, key);
         }
     }
 
@@ -102,7 +143,14 @@ public abstract class LibSpectrumReader
         }
     }
 
-    protected abstract LibSpectrum readSpectrum(Connection conn, String modifiedPeptide, int charge, Path libPath) throws DataFormatException, SQLException;
+    @Nullable
+    protected abstract LibSpectrum readSpectrum(Connection conn, SpectrumKey spectrumKey, Path libPath) throws DataFormatException, SQLException;
+
+    @Nullable
+    protected abstract String getRedundantLibPath(Container container, Path libPath);
+
+    @Nullable
+    protected abstract LibSpectrum readRedundantSpectrum(Connection conn, SpectrumKey spectrumKey) throws DataFormatException, SQLException;
 
     @NotNull
     protected abstract List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> readRetentionTimes(Connection conn, String modifiedPeptide, String libPath) throws SQLException;
@@ -134,7 +182,7 @@ public abstract class LibSpectrumReader
     };
 
     private static final BlockingCache<String, String> _libCache =
-            new BlockingCache<>(CacheManager.getStringKeyCache(LIBCACHE_LIMIT, LIBCACHE_LIFETIME, "" +
+            new BlockingCache<>(CacheManager.getStringKeyCache(LIBCACHE_LIMIT, LIBCACHE_LIFETIME,
                     "SpeclibCache"), _libCacheLoader)
             {
                 @Override
