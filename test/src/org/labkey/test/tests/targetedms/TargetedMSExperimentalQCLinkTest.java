@@ -3,8 +3,12 @@ package org.labkey.test.tests.targetedms;
 import org.jetbrains.annotations.Nullable;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestTimeoutException;
+import org.labkey.test.categories.DailyB;
+import org.labkey.test.categories.MS2;
 import org.labkey.test.components.CustomizeView;
 import org.labkey.test.components.targetedms.GuideSet;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
@@ -14,6 +18,8 @@ import org.labkey.test.util.DataRegionTable;
 import java.util.Arrays;
 import java.util.List;
 
+@Category({DailyB.class, MS2.class})
+@BaseWebDriverTest.ClassTimeout(minutes = 2)
 public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
 {
     private static final String SKY_FILE_EXPERIMENT = "SProCoPTutorial-ExperimentalFolderData.zip";
