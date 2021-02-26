@@ -20,7 +20,7 @@ if (!LABKEY.targetedms.SVGChart) {
                     var parsedResponse = JSON.parse(xhr.responseText);
 
                     var plotAndTitleHtml = '<div style="text-align: center">' +
-                            LABKEY.Utils.encodeHtml(parsedResponse.title).replaceAll('\n', '<br/>') + ' ' +
+                            LABKEY.Utils.encodeHtml(parsedResponse.title).split('\n').join('<br>') + ' ' +
                             this.createExportIcon(targetElement.id, 'fa-file-pdf-o', 'Export to PDF', originalUrl + '&format=pdf') + ' ' +
                             this.createExportIcon(targetElement.id, 'fa-file-image-o', 'Export to PNG', originalUrl + '&format=pngDownload') +
                             '</div>';
