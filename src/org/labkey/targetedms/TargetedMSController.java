@@ -1425,7 +1425,7 @@ public class TargetedMSController extends SpringActionController
             {
                 List<Map<String, Object>> series = new ArrayList<>();
                 XYPlot plot = chart.getXYPlot();
-                XYDataset dataset = chart.getXYPlot().getDataset();
+                XYDataset dataset = plot.getDataset();
                 for (int i = 0; i < dataset.getSeriesCount(); i++)
                 {
                     Map<String, Object> info = new HashMap<>();
