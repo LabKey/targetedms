@@ -401,7 +401,7 @@
                 chartHeight: chartHeightTb.getValue()
             };
 
-            var pearAreaUrl =  LABKEY.ActionURL.buildURL(
+            var peakAreaUrl =  LABKEY.ActionURL.buildURL(
                     'targetedms',  // controller
                     'showPeakAreas', // action
                     LABKEY.ActionURL.getContainer(),
@@ -421,9 +421,9 @@
 
             // change the src of the image
             var areaElement = document.getElementById('peakAreasGraph');
-            requestAndRenderSVG(pearAreaUrl, areaElement);
+            LABKEY.targetedms.SVGChart.requestAndRenderSVG(peakAreaUrl, areaElement, null, document.getElementById('peakAreasGraphLabel'));
             var timeElement = document.getElementById('retentionTimesGraph');
-            requestAndRenderSVG(retentionTimesUrl, timeElement);
+            LABKEY.targetedms.SVGChart.requestAndRenderSVG(retentionTimesUrl, timeElement, null, document.getElementById('retentionTimesGraphLabel'));
             areaElement.style.width = parseInt(chartWidthTb.getValue());
             areaElement.style.height = parseInt(chartHeightTb.getValue());
             timeElement.style.width = parseInt(chartWidthTb.getValue());

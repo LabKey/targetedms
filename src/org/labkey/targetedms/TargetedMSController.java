@@ -1455,7 +1455,8 @@ public class TargetedMSController extends SpringActionController
             {
                 jsonPayload.put("xLabel", xLabel);
             }
-            jsonPayload.put("title", chart.getTitle().getText());
+            TextTitle title = chart.getTitle();
+            jsonPayload.put("title", title == null ? null : title.getText());
             // Null out the title so that it's not part of the SVG and let the client render it as text via the DOM
             chart.setTitle((String)null);
             jsonPayload.put("svg", renderSVG(form, chart));
