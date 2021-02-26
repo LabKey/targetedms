@@ -286,15 +286,13 @@ protein =
                 var cvBarLayer = new LABKEY.vis.Layer({
                     geom: new LABKEY.vis.Geom.BarPlot({
                         opacity: 0.2,
-                        hoverText: function (x, stats) {
-                            console.log('hover');
-                            return 'test';
+                        hoverFn: function (row) {
+                            return 'Peptide: ' + row.x + '\nCV: ' + (row.cv * 100).toFixed(2) + '%';
                         }
                     }),
                     aes: {
                         x: 'x',
-                        yRight: 'cv',
-
+                        yRight: 'cv'
                     },
                     data: cvLineData
                 });
@@ -327,9 +325,6 @@ protein =
                                     '\nMean: ' + stats.Q2.toExponential(3) +
                                     '\nStd dev: ' + sd.toExponential(3) +
                                     '\n%CV: ' + (stats.Q2 ? ((sd / stats.Q2) * 100).toFixed(1) : 'N/A');
-                        },
-                        clickFn: function (event, data) {
-                            console.log(data);
                         }
                     }
                 });
