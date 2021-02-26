@@ -5,12 +5,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.labkey.test.Locator;
 import org.labkey.test.TestTimeoutException;
+import org.labkey.test.components.CustomizeView;
 import org.labkey.test.components.targetedms.GuideSet;
-import org.labkey.test.components.targetedms.GuideSetWebPart;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
-import org.labkey.test.pages.targetedms.GuideSetPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
 import org.labkey.test.util.DataRegionTable;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
 {
@@ -90,37 +92,86 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
     @Test
     public void testLinkExperimentalQC()
     {
+        String expRange = "Skyline File: SProCoPTutorial-ExperimentalFolderData.zip, " +
+                "Serial No: Exactive Series slot #2384, " +
+                "Instrument Name: Q Exactive, " +
+                "Start: 2013-08-09 11:39:00, " +
+                "End: 2013-08-27 14:45:49, " +
+                "Mean: 14.669, Std Dev: 0.501, " +
+                "%CV: 3.415";
+
         goToProjectHome(QC_FOLDER_1);
-        createGuideSetFromTable(new GuideSet("2013/08/03", "2013/08/09", null));
-        createGuideSetFromTable(new GuideSet("2013/08/19", "2013/08/21", null));
+        createGuideSetFromTable(new GuideSet("2013/08/03 00:00", "2013/08/09 23:59", "First"));
+        createGuideSetFromTable(new GuideSet("2013/08/19 00:00", "2013/08/21 23:59", "Second"));
+
+        List<String> guideSetTitle = Arrays.asList("Guide Set ID: " + getGuideSetRowId("First") + ", " +
+                        "Start: 2013-08-03 00:00:00, " +
+                        "End: 2013-08-09 23:59:00, " +
+                        "# Runs: 5, " +
+                        "Mean: 15.427, " +
+                        "Std Dev: 0.973, " +
+                        "%CV: 6.307",
+                "Guide Set ID: " + getGuideSetRowId("Second") + ", " +
+                        "Start: 2013-08-19 00:00:00, " +
+                        "End: 2013-08-21 23:59:00, " +
+                        "# Runs: 17, " +
+                        "Mean: 14.687, " +
+                        "Std Dev: 0.588, " +
+                        "%CV: 4.004");
 
         goToProjectHome();
         DataRegionTable table = new DataRegionTable("TargetedMSRuns", getDriver());
         clickAndWait(table.link(0, "Replicates"));
-
         clickAndWait(Locator.linkWithText(QC_FOLDER_1));
-        checker().verifyTrue("Experiment date range toolbar is not present",
-                isElementPresent(Locator.linkContainingText(SKY_FILE_EXPERIMENT)));
-        clickAndWait(Locator.linkContainingText(SKY_FILE_EXPERIMENT));
-        checker().verifyEquals("Did not navigate to experimental folder", getProjectName(),getCurrentContainer());
-        goBack();
 
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+
+        log("Verify show reference guide set is selected by default");
+        checker().verifyTrue("Show reference guide set is not checked", qcPlotsWebPart.isShowReferenceGuideSetChecked());
+
+        log("Verify experiment toolbar is present");
+        checker().verifyTrue("Experiment date range toolbar is not present",
+                isElementPresent(Locator.linkContainingText(SKY_FILE_EXPERIMENT)));
+        clickAndWait(Locator.linkContainingText(SKY_FILE_EXPERIMENT));
+        checker().verifyEquals("Did not navigate to experimental folder", getProjectName(), getCurrentContainer());
+        goBack();
+
+        qcDashboard = new PanoramaDashboard(this);
+        qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+
+        checker().verifyEquals("Incorrect expRange information", expRange, qcPlotsWebPart.getExperimentRangeRectTitle());
+        checker().verifyEquals("Incorrect guideSet information", guideSetTitle, qcPlotsWebPart.getGuideSetTrainingRectTitle(2));
+
         String testStartDate = "2013-08-19";
         String testEndDate = "2013-08-27";
         qcPlotsWebPart.filterQCPlots(testStartDate, testEndDate, 7);
 
+        checker().verifyTrue("The graph is not divided by line separator",
+                isElementPresent(Locator.tagWithAttribute("line", "class", "separator")));
+        checker().verifyTrue("One of the 5 points to left of start is missing",
+                isElementPresent(Locator.tagWithAttributeContaining("a", "id", "2013-08-18 11:28:48")));
+        checker().verifyTrue("One of the 5 points to left of start is missing",
+                isElementPresent(Locator.tagWithAttributeContaining("a", "id", "2013-08-17 16:01:37")));
+        checker().verifyTrue("One of the 5 points to left of start is missing",
+                isElementPresent(Locator.tagWithAttributeContaining("a", "id", "2013-08-17 06:10:02")));
+        checker().verifyTrue("One of the 5 points to left of start is missing",
+                isElementPresent(Locator.tagWithAttributeContaining("a", "id", "2013-08-16 20:26:28")));
+        checker().verifyTrue("One of the 5 points to left of start is missing",
+                isElementPresent(Locator.tagWithAttributeContaining("a", "id", "2013-08-16 10:38:57")));
     }
 
-    protected void createGuideSetFromTable(GuideSet guideSet)
+    public String getGuideSetRowId(String comment)
     {
-        if (!"Guide Sets".equals(getUrlParam("pageId", true)))
-            clickTab("Guide Sets");
+        goToProjectHome(QC_FOLDER_1);
+        goToSchemaBrowser();
+        DataRegionTable gsTable = viewQueryData("targetedms", "GuideSet");
+        CustomizeView view = gsTable.openCustomizeGrid();
+        view.showHiddenItems();
+        view.addColumn("RowId");
+        view.applyCustomView();
 
-        GuideSetWebPart guideSetWebPart = new GuideSetWebPart(this, getProjectName());
-        GuideSetPage guideSetPage = guideSetWebPart.startInsert();
-        guideSetPage.insert(guideSet, null);
+        gsTable.setFilter("Comment", "Equals", comment);
+        return gsTable.getDataAsText(0, "RowId");
     }
-
 }
