@@ -32,7 +32,7 @@ if (!LABKEY.targetedms.SVGChart) {
                             labelElement.innerText = parsedResponse.xLabel;
                         }
                         else {
-                            plotAndTitleHtml += '<div style="text-align: center">' + LABKEY.Utils.encodeHtml(parsedResponse.xLabel).replaceAll('\n', '<br/>') + '</div>';
+                            plotAndTitleHtml += '<div style="text-align: center">' + LABKEY.Utils.encodeHtml(parsedResponse.xLabel).split('\n').join('<br>') + '</div>';
                         }
                     }
 
