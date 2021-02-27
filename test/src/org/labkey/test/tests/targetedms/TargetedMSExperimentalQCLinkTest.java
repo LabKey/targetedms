@@ -48,7 +48,7 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
     @Override
     protected void doCleanup(boolean afterTest) throws TestTimeoutException
     {
-        super.doCleanup(afterTest);
+        _containerHelper.deleteProject(getProjectName(), afterTest);
         _containerHelper.deleteProject(QC_FOLDER_1, afterTest);
         _containerHelper.deleteProject(QC_FOLDER_2, afterTest);
     }
