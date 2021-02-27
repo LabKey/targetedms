@@ -16,6 +16,7 @@
 package org.labkey.targetedms.outliers;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.Sort;
@@ -201,6 +202,11 @@ public class OutlierGenerator
         {
             GuideSetKey key = row.getGuideSetKey();
             GuideSetStats stats = result.computeIfAbsent(row.getGuideSetKey(), x -> new GuideSetStats(key, guideSets.get(key.getGuideSetId())));
+            // TODO: for debugging
+            if (guideSets.get(key.getGuideSetId()) == null)
+            {
+                LogManager.getLogger(OutlierGenerator.class).error("logging error for NPE - guidesetID " + key.getGuideSetId());
+            }
             stats.addRow(row);
         }
 
