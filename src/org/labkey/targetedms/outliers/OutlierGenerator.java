@@ -205,6 +205,13 @@ public class OutlierGenerator
             // TODO: for debugging
             if (guideSets.get(key.getGuideSetId()) == null)
             {
+                guideSets.forEach((id, gs) -> {
+                    LogManager.getLogger(OutlierGenerator.class).error("logging error for NPE gs id- " + gs.getRowId());
+                    LogManager.getLogger(OutlierGenerator.class).error("logging error for NPE gs comment- " + gs.getComment());
+                    LogManager.getLogger(OutlierGenerator.class).error("logging error for NPE gs training strt- " + gs.getTrainingStart());
+                    LogManager.getLogger(OutlierGenerator.class).error("logging error for NPE gs training end- " + gs.getTrainingEnd());
+                });
+
                 LogManager.getLogger(OutlierGenerator.class).error("logging error for NPE - guidesetID " + key.getGuideSetId());
             }
             stats.addRow(row);
