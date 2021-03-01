@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Category({DailyB.class, MS2.class})
-@BaseWebDriverTest.ClassTimeout(minutes = 8)
+@BaseWebDriverTest.ClassTimeout(minutes = 2)
 public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
 {
     private static final String SKY_FILE_EXPERIMENT = "SProCoPTutorial-ExperimentalFolderData.zip";
@@ -107,6 +107,8 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
                 "%CV: 3.415";
 
         goToProjectHome(QC_FOLDER_1);
+        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+
         createGuideSetFromTable(new GuideSet("2013/08/03 00:00", "2013/08/09 23:59", "First"));
         createGuideSetFromTable(new GuideSet("2013/08/19 00:00", "2013/08/21 23:59", "Second"));
 
@@ -130,7 +132,7 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
         clickAndWait(table.link(0, "Replicates"));
         clickAndWait(Locator.linkWithText(QC_FOLDER_1));
 
-        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+        qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
 
         log("Verify show reference guide set is selected by default");
