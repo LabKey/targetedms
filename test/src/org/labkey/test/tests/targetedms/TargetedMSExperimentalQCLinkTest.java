@@ -108,6 +108,7 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
 
         goToProjectHome(QC_FOLDER_1);
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+        qcDashboard.getQcPlotsWebPart(); // this causes the next line to wait till the sample files are loaded
 
         createGuideSetFromTable(new GuideSet("2013/08/03 00:00", "2013/08/09 23:59", "First"));
         createGuideSetFromTable(new GuideSet("2013/08/19 00:00", "2013/08/21 23:59", "Second"));
