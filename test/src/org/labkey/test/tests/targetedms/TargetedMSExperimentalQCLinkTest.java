@@ -173,6 +173,8 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
     public String getGuideSetRowId(String comment)
     {
         goToProjectHome(QC_FOLDER_1);
+        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+        qcDashboard.getQcPlotsWebPart(); // this causes the next line to wait till the sample files are loaded
         goToSchemaBrowser();
         DataRegionTable gsTable = viewQueryData("targetedms", "GuideSet");
         CustomizeView view = gsTable.openCustomizeGrid();
