@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Category({DailyB.class, MS2.class})
-@BaseWebDriverTest.ClassTimeout(minutes = 2)
+@BaseWebDriverTest.ClassTimeout(minutes = 4)
 public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
 {
     private static final String SKY_FILE_EXPERIMENT = "SProCoPTutorial-ExperimentalFolderData.zip";
