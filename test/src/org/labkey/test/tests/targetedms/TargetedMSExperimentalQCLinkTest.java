@@ -13,6 +13,7 @@ import org.labkey.test.components.CustomizeView;
 import org.labkey.test.components.targetedms.GuideSet;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
+import org.labkey.test.util.APIContainerHelper;
 import org.labkey.test.util.DataRegionTable;
 
 import java.util.Arrays;
@@ -48,9 +49,11 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
     @Override
     protected void doCleanup(boolean afterTest) throws TestTimeoutException
     {
-        _containerHelper.deleteProject(getProjectName(), afterTest);
-        _containerHelper.deleteProject(QC_FOLDER_1, afterTest);
-        _containerHelper.deleteProject(QC_FOLDER_2, afterTest);
+        // these tests use the UIContainerHelper for project creation, but we can use the APIContainerHelper for deletion
+        APIContainerHelper apiContainerHelper = new APIContainerHelper(this);
+        apiContainerHelper.deleteProject(getProjectName(), afterTest);
+        apiContainerHelper.deleteProject(QC_FOLDER_1, afterTest);
+        apiContainerHelper.deleteProject(QC_FOLDER_2, afterTest);
     }
 
     @Override
