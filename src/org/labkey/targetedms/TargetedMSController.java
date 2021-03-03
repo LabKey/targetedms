@@ -18,23 +18,31 @@ package org.labkey.targetedms;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keypoint.PngEncoder;
+import org.apache.batik.dom.GenericDOMImplementation;
+import org.apache.batik.svggen.SVGGraphics2D;
+import org.apache.batik.svggen.SVGGraphics2DIOException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jfree.chart.ChartColor;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.xy.XYDataset;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
+import org.labkey.api.action.ApiJsonWriter;
 import org.labkey.api.action.ApiResponse;
 import org.labkey.api.action.ApiSimpleResponse;
 import org.labkey.api.action.ApiUsageException;
@@ -148,6 +156,7 @@ import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.WebPartView;
 import org.labkey.api.view.template.ClientDependency;
 import org.labkey.api.view.template.PageConfig;
+import org.labkey.api.visualization.VisualizationService;
 import org.labkey.targetedms.chart.ChromatogramChartMakerFactory;
 import org.labkey.targetedms.chart.ComparisonChartMaker;
 import org.labkey.targetedms.chromlib.ChromatogramLibraryUtils;
@@ -228,6 +237,8 @@ import org.labkey.targetedms.view.spectrum.PeptideSpectrumView;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
 
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
@@ -236,6 +247,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -1412,7 +1424,7 @@ public class TargetedMSController extends SpringActionController
                 throw new NotFoundException("No Precursor or MoleculePrecursor found in this folder for id: " + pci.getPrecursorId());
             }
 
-            writePNG(form, response, chart);
+            writeChart(form, response, chart);
         }
     }
 
@@ -1433,6 +1445,7 @@ public class TargetedMSController extends SpringActionController
             factory.setSyncRt(form.isSyncX());
             factory.setSplitGraph(form.isSplitGraph());
             factory.setShowOptimizationPeaks(form.isShowOptimizationPeaks());
+            factory.setLegend(form.isLegend());
 
             JFreeChart chart;
             if (PrecursorManager.getPrecursor(getContainer(), pChromInfo.getPrecursorId(), getUser()) != null)
@@ -1448,35 +1461,122 @@ public class TargetedMSController extends SpringActionController
                 throw new NotFoundException("No Precursor or MoleculePrecursor found in this folder for id: " + pChromInfo.getPrecursorId());
             }
 
-            writePNG(form, response, chart);
+            writeChart(form, response, chart);
         }
     }
 
-    private void writePNG(AbstractChartForm form, HttpServletResponse response, JFreeChart chart)
-            throws IOException
+    private void writeChart(AbstractChartForm form, HttpServletResponse response, JFreeChart chart)
+            throws Exception
     {
-        response.setContentType("image/png");
-
-        if(!form.hasDpi())
+        if ("json".equals(form.getFormat()))
         {
-            ChartUtilities.writeChartAsPNG(response.getOutputStream(), chart, form.getChartWidth(), form.getChartHeight());
+            Map<String, Object> jsonPayload = new HashMap<>();
+
+            String xLabel = null;
+            if (chart.getPlot() instanceof XYPlot)
+            {
+                List<Map<String, Object>> series = new ArrayList<>();
+                XYPlot plot = chart.getXYPlot();
+                XYDataset dataset = plot.getDataset();
+                for (int i = 0; i < dataset.getSeriesCount(); i++)
+                {
+                    Map<String, Object> info = new HashMap<>();
+                    info.put("label", dataset.getSeriesKey(i));
+                    ChartColor color = (ChartColor) plot.getRenderer().getSeriesPaint(i);
+                    info.put("color", String.format("%02X%02X%02X", color.getRed(), color.getGreen(), color.getBlue()));
+                    series.add(info);
+                }
+                jsonPayload.put("series", series);
+
+                if (plot.getDomainAxisCount() > 0)
+                {
+                    xLabel = plot.getDomainAxis().getLabel();
+                    plot.getDomainAxis().setLabel(null);
+                }
+            }
+            if (chart.getPlot() instanceof CategoryPlot)
+            {
+                CategoryPlot plot = chart.getCategoryPlot();
+                if (plot.getDomainAxisCount() > 0)
+                {
+                    xLabel = plot.getDomainAxis().getLabel();
+                    plot.getDomainAxis().setLabel(null);
+                }
+            }
+            if (xLabel != null)
+            {
+                jsonPayload.put("xLabel", xLabel);
+            }
+            TextTitle title = chart.getTitle();
+            jsonPayload.put("title", title == null ? null : title.getText());
+            // Null out the title so that it's not part of the SVG and let the client render it as text via the DOM
+            chart.setTitle((String)null);
+            jsonPayload.put("svg", renderSVG(form, chart));
+            new ApiSimpleResponse(jsonPayload).render(new ApiJsonWriter(response));
+        }
+        else if ("svg".equalsIgnoreCase(form.getFormat()))
+        {
+            response.setContentType("image/svg+xml");
+            response.getWriter().write(renderSVG(form, chart));
+        }
+        else if ("pdf".equalsIgnoreCase(form.getFormat()))
+        {
+            VisualizationService.get().renderSvgAsPdf(renderSVG(form, chart), "PanoramaPlot.pdf", getViewContext().getResponse());
         }
         else
         {
-            int dpi = form.getDpi();
-            double scaleFactor = (double)dpi/(double)AbstractChartForm.SCREEN_RES;
-            int w = form.getChartWidth();
-            int h = form.getChartHeight();
-            int desiredWidth = (int) (w * scaleFactor);
-            int desiredHeight = (int) (h * scaleFactor);
+            response.setContentType("image/png");
 
-            BufferedImage image = chart.createBufferedImage(desiredWidth, desiredHeight, w, h, null);
+            if ("pngDownload".equalsIgnoreCase(form.getFormat()))
+            {
+                String filename = "PanoramaPlot.png";
+                response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+            }
 
-            PngEncoder encoder = new PngEncoder(image);
-            encoder.setDpi(dpi, dpi);
-            byte[] bytes = encoder.pngEncode();
-            response.getOutputStream().write(bytes);
+            if (!form.hasDpi())
+            {
+                ChartUtilities.writeChartAsPNG(response.getOutputStream(), chart, form.getChartWidth(), form.getChartHeight(), false, 5);
+            }
+            else
+            {
+                int dpi = form.getDpi();
+                double scaleFactor = (double) dpi / (double) AbstractChartForm.SCREEN_RES;
+                int w = form.getChartWidth();
+                int h = form.getChartHeight();
+                int desiredWidth = (int) (w * scaleFactor);
+                int desiredHeight = (int) (h * scaleFactor);
+
+                BufferedImage image = chart.createBufferedImage(desiredWidth, desiredHeight, w, h, null);
+                PngEncoder encoder = new PngEncoder(image);
+                encoder.setDpi(dpi, dpi);
+                encoder.setCompressionLevel(5);
+                byte[] bytes = encoder.pngEncode();
+                response.getOutputStream().write(bytes);
+            }
         }
+    }
+
+    @NotNull
+    private String renderSVG(AbstractChartForm form, JFreeChart chart) throws SVGGraphics2DIOException
+    {
+        DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
+
+        // Create an instance of org.w3c.dom.Document.
+        String svgNS = "http://www.w3.org/2000/svg";
+        Document document = domImpl.createDocument(svgNS, "svg", null);
+
+        // Create an instance of the SVG Generator from Batik
+        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+        Dimension dim = new Dimension(form.getChartWidth(), form.getChartHeight());
+        svgGenerator.setSVGCanvasSize(dim);
+        Rectangle r = new Rectangle(dim);
+
+        chart.draw(svgGenerator, r);
+
+        // Render SVG to a string
+        StringWriter out = new StringWriter();
+        svgGenerator.stream(out, true); // Use CSS style attributes
+        return out.toString();
     }
 
     @RequiresPermission(ReadPermission.class)
@@ -1511,7 +1611,7 @@ public class TargetedMSController extends SpringActionController
                 throw new NotFoundException("No Peptide or Molecule found in this folder for id: " + gmChromInfo.getGeneralMoleculeId());
             }
 
-            writePNG(form, response, chart);
+            writeChart(form, response, chart);
         }
     }
 
@@ -1576,7 +1676,7 @@ public class TargetedMSController extends SpringActionController
             vbox.addView(gridView);
 
             // Summary charts for the precursor
-            SummaryChartBean summaryChartBean = new SummaryChartBean();
+            SummaryChartBean summaryChartBean = new SummaryChartBean(_run);
             summaryChartBean.setPeptideId(_precursor.getGeneralMoleculeId());
             summaryChartBean.setPrecursorId(_precursor.getId());
             summaryChartBean.setReplicateAnnotationNameList(ReplicateManager.getReplicateAnnotationNamesForRun(_run.getId()));
@@ -1659,7 +1759,7 @@ public class TargetedMSController extends SpringActionController
             gridView.setTitle("Chromatograms");
 
             // Summary charts for the molecule precursor
-            SummaryChartBean summaryChartBean = new SummaryChartBean();
+            SummaryChartBean summaryChartBean = new SummaryChartBean(_run);
             summaryChartBean.setMoleculeId(_precursor.getGeneralMoleculeId());
             summaryChartBean.setMoleculePrecursorId(_precursor.getId());
             summaryChartBean.setReplicateAnnotationNameList(ReplicateManager.getReplicateAnnotationNamesForRun(_run.getId()));
@@ -2225,7 +2325,7 @@ public class TargetedMSController extends SpringActionController
             vbox.addView(chromatogramsBox);
 
             // Summary charts for the peptide
-            SummaryChartBean summaryChartBean = new SummaryChartBean();
+            SummaryChartBean summaryChartBean = new SummaryChartBean(_run);
             summaryChartBean.setPeptideId(peptideId);
             summaryChartBean.setReplicateAnnotationNameList(ReplicateManager.getReplicateAnnotationNamesForRun(_run.getId()));
             summaryChartBean.setReplicateAnnotationValueList(ReplicateManager.getUniqueSortedAnnotationNameValue(_run.getId()));
@@ -2323,7 +2423,7 @@ public class TargetedMSController extends SpringActionController
             vbox.addView(chromatogramsBox);
 
             // Summary charts for the molecule
-            SummaryChartBean summaryChartBean = new SummaryChartBean();
+            SummaryChartBean summaryChartBean = new SummaryChartBean(_run);
             summaryChartBean.setMoleculeId(moleculeId);
             summaryChartBean.setReplicateAnnotationNameList(ReplicateManager.getReplicateAnnotationNamesForRun(_run.getId()));
             summaryChartBean.setReplicateAnnotationValueList(ReplicateManager.getUniqueSortedAnnotationNameValue(_run.getId()));
@@ -2767,7 +2867,7 @@ public class TargetedMSController extends SpringActionController
                 form.setChartWidth(300);
             }
 
-            writePNG(form, response, chart);
+            writeChart(form, response, chart);
         }
     }
 
@@ -2826,7 +2926,7 @@ public class TargetedMSController extends SpringActionController
                 form.setChartWidth(300);
             }
 
-            writePNG(form, response, chart);
+            writeChart(form, response, chart);
         }
     }
 
@@ -2841,6 +2941,9 @@ public class TargetedMSController extends SpringActionController
         private Integer _chartWidth = null;
         private Integer _chartHeight = null;
         private int _dpi = 144;
+
+        private String _format = "png";
+        private boolean _legend = true;
 
         public int getChartWidth()
         {
@@ -2891,6 +2994,26 @@ public class TargetedMSController extends SpringActionController
         public boolean hasDpi()
         {
             return _dpi > SCREEN_RES;
+        }
+
+        public String getFormat()
+        {
+            return _format;
+        }
+
+        public void setFormat(String format)
+        {
+            _format = format;
+        }
+
+        public boolean isLegend()
+        {
+            return _legend;
+        }
+
+        public void setLegend(boolean legend)
+        {
+            _legend = legend;
         }
     }
 
@@ -4282,7 +4405,7 @@ public class TargetedMSController extends SpringActionController
             ChromatogramChartMakerFactory factory = new ChromatogramChartMakerFactory();
             JFreeChart chart = factory.createSampleFileChromChart(chromInfo, getUser(), getContainer());
 
-            writePNG(form, response, chart);
+            writeChart(form, response, chart);
         }
     }
 
@@ -4365,7 +4488,7 @@ public class TargetedMSController extends SpringActionController
                 result.addView(getGeneralMoleculeQueryView(form, schema, errors, "Small Molecules", "Molecule", baseVisibleColumns));
             }
 
-            SummaryChartBean summaryChartBean = new SummaryChartBean();
+            SummaryChartBean summaryChartBean = new SummaryChartBean(_run);
             summaryChartBean.setPeptideGroupId(form.getId());
             summaryChartBean.setReplicateList(ReplicateManager.getReplicatesForRun(group.getRunId()));
             summaryChartBean.setReplicateAnnotationNameList(ReplicateManager.getReplicateAnnotationNamesForRun(group.getRunId()));
@@ -4460,6 +4583,13 @@ public class TargetedMSController extends SpringActionController
         private long _moleculeId;
         private long _moleculePrecursorId;
         private List<Molecule> _moleculeList;
+
+        private final TargetedMSRun _run;
+
+        private SummaryChartBean(TargetedMSRun run)
+        {
+            _run = run;
+        }
 
         public boolean isShowControls()
         {
@@ -4589,6 +4719,11 @@ public class TargetedMSController extends SpringActionController
         public void setMoleculeList(List<Molecule> moleculeList)
         {
             _moleculeList = moleculeList;
+        }
+
+        public TargetedMSRun getRun()
+        {
+            return _run;
         }
     }
 
@@ -7116,7 +7251,7 @@ public class TargetedMSController extends SpringActionController
             curvePlotView.setTitle("Calibration Curve");
 
             // Summary charts for the precursor
-            SummaryChartBean summaryChartBean = new SummaryChartBean();
+            SummaryChartBean summaryChartBean = new SummaryChartBean(_run);
             summaryChartBean.setShowControls(false);
             summaryChartBean.setInitialHeight(300);
             summaryChartBean.setInitialWidth(1200);
