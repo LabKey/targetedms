@@ -23,7 +23,7 @@ import java.util.List;
 @BaseWebDriverTest.ClassTimeout(minutes = 4)
 public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
 {
-    private static final String SKY_FILE_EXPERIMENT = "SProCoPTutorial-ExperimentalFolderData.zip";
+    private static final String SKY_FILE_EXPERIMENT = "SProCoPTutorial.zip";
     private static final String SKY_FILE_QC = "SProCoPTutorial-QCFolderData.zip";
     private static final String QC_FOLDER_1 = "Test Project QC Folder 1";
     private static final String QC_FOLDER_2 = "Test Project QC Folder 2";
