@@ -101,7 +101,7 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
     @Test
     public void testLinkExperimentalQC()
     {
-        String expRange = "Skyline File: SProCoPTutorial-ExperimentalFolderData.zip, " +
+        String expRange = "Skyline File: " + SKY_FILE_EXPERIMENT + ", " +
                 "Serial No: Exactive Series slot #2384, " +
                 "Instrument Name: Q Exactive, " +
                 "Start: 2013-08-09 11:39:00, " +
