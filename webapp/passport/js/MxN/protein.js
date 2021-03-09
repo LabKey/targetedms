@@ -284,8 +284,6 @@ protein =
             }
 
             var seq = precursorRows[0].PeptideSequence;
-            var charge = precursorRows[0].Charge;
-            var mz = precursorRows[0].Mz;
             var precursor = {
                 peptideSequence: seq,
                 modifiedSequence: precursorRows[0].ModifiedSequence,
