@@ -19,8 +19,8 @@ protein =
             colors: {},
             updateUI: function () {
                 if( $('.feature-aa').tooltip().data("tooltipset")) {
-                    var visibleFeatures = protein.settings.getVisibleFeatures();
                     $('.feature-aa').tooltip('disable');
+                    var visibleFeatures = protein.settings.getVisibleFeatures();
                     $('.feature-aa').css('background-color', '#FFF');
                     visibleFeatures.forEach(function(type){
                         $("."+type).tooltip('enable');
@@ -153,6 +153,7 @@ protein =
         LABKEY.targetedms.SVGChart.requestAndRenderSVG(chromatogramUrl + "id=" + chromId + "&syncY=true&syncX=false&chartWidth=250&chartHeight=400", parentElement[0], $('#seriesLegend')[0])
     },
 
+    /** precursorChromInfoId can be false to indicate the UI shouldn't scroll, true to scroll to the first chromatogram, or a specific id to scroll to it */
     selectPrecursor: function(precursorId, precursorChromInfoId) {
         if(precursorId == null)
             return;
@@ -184,8 +185,13 @@ protein =
 
         $('#selectedPeptideLink').attr("href", showPeptideUrl + "id=" + protein.selectedPrecursor.peptideId);
 
-        // Scroll to either the selected or first chromatogram plot
-        window.location.hash = "#chrom" + (precursorChromInfoId || protein.selectedPrecursor.replicateInfo[0].PrecursorChromInfoId);
+        if (precursorChromInfoId) {
+            if (precursorChromInfoId === true) {
+                precursorChromInfoId = protein.selectedPrecursor.replicateInfo[0].PrecursorChromInfoId;
+            }
+            // Scroll to the chromatogram plot
+            window.location.hash = "#chrom" + precursorChromInfoId;
+        }
     },
 
     calcStats: function(rows) {
@@ -228,26 +234,6 @@ protein =
         for (var peptideId in peptideGrouped) {
             var peptideRows = peptideGrouped[peptideId];
 
-            var peptide = {
-                sequence: peptideRows[0].PeptideSequence,
-                replicateInfo: peptideRows
-            }
-
-            var totalArea = 0;
-            for (var i = 0; i < peptideRows.length; i++) {
-                totalArea += peptideRows[i].TotalArea;
-            }
-
-            barChartData.push({
-                "Sequence": peptide.sequence,
-                "Total Area": totalArea,
-                "StartIndex": peptideRows[0].StartIndex,
-                "EndIndex": peptideRows[0].EndIndex,
-                "Enabled": true,
-                "PrecursorId": peptideRows[0].PrecursorId,
-                "ChromatogramId": peptideRows[0].PrecursorChromInfoId,
-                "PeptideId": peptideRows[0].PeptideId
-            });
 
             protein.peptides.push(peptide);
         }
@@ -259,6 +245,30 @@ protein =
         for (var precursorId in precursorGrouped) {
 
             var precursorRows = precursorGrouped[precursorId];
+
+            var charge = precursorRows[0].Charge;
+            var mz = precursorRows[0].Mz;
+
+            var precursor = {
+                sequence: precursorRows[0].PeptideSequence + ' ' + (charge >= 0 ? '+' : '') + charge + ' ' + mz.toFixed(2),
+                replicateInfo: precursorRows
+            }
+
+            var totalArea = 0;
+            for (var i = 0; i < precursorRows.length; i++) {
+                totalArea += precursorRows[i].TotalArea;
+            }
+
+            barChartData.push({
+                "Sequence": precursor.sequence,
+                "Total Area": totalArea,
+                "StartIndex": precursorRows[0].StartIndex,
+                "EndIndex": precursorRows[0].EndIndex,
+                "Enabled": true,
+                "PrecursorId": precursorRows[0].PrecursorId,
+                "ChromatogramId": precursorRows[0].PrecursorChromInfoId,
+                "PeptideId": precursorRows[0].PeptideId
+            });
 
             var timepointGrouped = LABKEY.vis.groupData(precursorRows, function (row) {
                 return row.Timepoint;
@@ -365,7 +375,7 @@ protein =
         proteinBarDiv = document.getElementById("protein"); // initial set
         if(protein != null && data.rows.length > 0) {
             $(window).resize(function() { protein.updateUI() });
-            protein.selectPrecursor(barChartData[0].PrecursorId);
+            protein.selectPrecursor(barChartData[0].PrecursorId, false);
         }
     },
 
@@ -432,7 +442,7 @@ protein =
                 cvs[precursorId] = totalCV;
 
                 tableHTML += '<tr>' +
-                        '<td><a href="#chrom' + row.precursorChromInfoId + '" onclick="protein.selectPrecursor(' + precursorId + ')">' + LABKEY.Utils.encodeHtml(row.sequence) + '</a></td>' +
+                        '<td><a href="#chrom' + row.precursorChromInfoId + '" onclick="protein.selectPrecursor(' + precursorId + ', true)">' + LABKEY.Utils.encodeHtml(row.sequence) + '</a></td>' +
                         '<td>' + LABKEY.Utils.encodeHtml((row.charge >= 0 ? '+' : '') + row.charge) + '</td>' +
                         '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.mz.toFixed(2)) + '</td>' +
                         '<td style="text-align: right">' + LABKEY.Utils.encodeHtml((groupingCV * 100).toFixed(1)) + '%</td>' +
@@ -494,7 +504,7 @@ protein =
                     clickFn: function(event, row) {
                         for (var i = 0; i < protein.precursors.length; i++) {
                             if (protein.precursors[i].abbreviated === row.name) {
-                                s.selectPrecursor(protein.precursors[i].precursorId);
+                                s.selectPrecursor(protein.precursors[i].precursorId, true);
                             }
                         }
                     }
@@ -563,7 +573,7 @@ protein =
                     clickFn: function(event, row) {
                         for (var i = 0; i < protein.precursors.length; i++) {
                             if (protein.precursors[i].abbreviated === row.subLabel) {
-                                s.selectPrecursor(protein.precursors[i].precursorId);
+                                s.selectPrecursor(protein.precursors[i].precursorId, true);
                             }
                         }
                     }

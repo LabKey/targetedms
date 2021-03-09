@@ -161,7 +161,7 @@
         <div id="filterContainer"><img src="<%=h(contextPath)%>/passport/img/filtericon.png" id="filtericon"/>
             <h1>Filter Options</h1>
             <div class="filterBox">
-                <h2>Peptides:&nbsp;
+                <h2>Precursors:&nbsp;
                     <span id="filteredPeptideCount">
                         <green><%=protein.getPep().size()%></green>/<%=protein.getPep().size()%>
                     </span>
