@@ -447,13 +447,9 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
 
     validateQCMetricQuery: function(query, queries, combo) {
         var requiredColumns = [
-                {name: 'MetricValue',isPresent: false},
-                {name: 'SampleFileId',isPresent: false},
-                {name: 'SeriesLabel',isPresent: false},
-                {name: 'DataType',isPresent: false},
-                {name: 'PrecursorId' ,isPresent: false},
-                {name: 'PrecursorChromInfoId',isPresent: false},
-                {name: 'mz',isPresent: false}
+                {name: 'MetricValue', isPresent: false},
+                {name: 'SampleFileId', isPresent: false},
+                {name: 'PrecursorChromInfoId', isPresent: false},
                 ];
         var queryConfig;
         var isValid = true;
@@ -475,7 +471,7 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
                 }
             }
         }
-        var errorMessage = 'Query' + query + ' is missing required column(s): ';
+        var errorMessage = 'Query ' + query + ' is missing required column(s): ';
 
         var separator = '';
         Ext4.Array.forEach(requiredColumns, function (column) {
