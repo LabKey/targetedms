@@ -1,11 +1,10 @@
 SELECT PrecursorId.Id,
   SampleFileId.ReplicateId.Name AS Replicate,
   SampleFileId.AcquiredTime AS AcquiredTime,
-  COALESCE(ifdefined(SampleFileId.ReplicateId.Day),
-      ifdefined(SampleFileId.ReplicateId.SampleGroup),
-      YEAR(SampleFileId.AcquiredTime) || '-' || MONTH(SampleFileId.AcquiredTime) || '-' || DAYOFMONTH(SampleFileId.AcquiredTime))
+  COALESCE(CAST(ifdefined(SampleFileId.ReplicateId.Day) AS VARCHAR),
+      CAST(YEAR(SampleFileId.AcquiredTime) AS VARCHAR) || '-' || (CASE WHEN MONTH(SampleFileId.AcquiredTime) < 10 THEN '0' ELSE '' END) || CAST(MONTH(SampleFileId.AcquiredTime) AS VARCHAR) || '-' || (CASE WHEN DAYOFMONTH(SampleFileId.AcquiredTime) < 10 THEN '0' ELSE '' END) || CAST(DAYOFMONTH(SampleFileId.AcquiredTime) AS VARCHAR))
       AS Timepoint,
-  COALESCE(ifdefined(SampleFileId.ReplicateId.SampleGroup2)) AS Grouping,
+  ifdefined(SampleFileId.ReplicateId.SampleGroup) AS Grouping,
   PrecursorId.PeptideId.PeptideGroupId.Label AS ProteinName,
   PrecursorId.PeptideId.PeptideGroupId.SequenceId.SeqId AS seq,
   PrecursorId.PeptideId.Sequence AS PeptideSequence,
