@@ -1,7 +1,11 @@
 ALTER TABLE targetedms.QCMetricConfiguration ADD TraceValue REAL;
 ALTER TABLE targetedms.QCMetricConfiguration ADD TimeValue REAL;
-ALTER TABLE targetedms.QCMetricConfiguration ADD Trace VARCHAR(300);
+ALTER TABLE targetedms.QCMetricConfiguration ADD Trace INT;
 ALTER TABLE targetedms.QCMetricConfiguration ADD YAxisLabel VARCHAR(200);
+
+ALTER TABLE targetedms.QCMetricConfiguration
+    ADD CONSTRAINT FK_QCMetricConfiguration_Trace
+        FOREIGN KEY (Trace) REFERENCES targetedms.SampleFileChromInfo(Id)
 GO
 
 CREATE TABLE targetedms.QCTraceMetricValues

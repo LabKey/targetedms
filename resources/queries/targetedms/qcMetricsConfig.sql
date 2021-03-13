@@ -29,7 +29,11 @@ SELECT
        qmc.EnabledSchemaName,
        qem.Enabled,
        CASE WHEN qem.metric IS NULL THEN FALSE
-            ELSE TRUE END AS Inserted
+            ELSE TRUE END AS Inserted,
+       qmc.TraceValue,
+       qmc.TimeValue,
+       qmc.Trace,
+       qmc.YAxisLabel
 FROM
       qcmetricconfiguration qmc
 FULL JOIN   qcenabledmetrics qem
