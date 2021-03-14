@@ -506,6 +506,11 @@ public class TargetedMSManager
         return getSchema().getTable(TargetedMSSchema.TABLE_QC_ENABLED_METRICS);
     }
 
+    public static TableInfo getTableQCTraceMetricValues()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_QC_TRACE_METRIC_VALUES);
+    }
+
     public static TableInfo getTableInfoSkylineAuditLogEntry()
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_SKYLINE_AUDITLOG_ENTRY);
@@ -2480,4 +2485,6 @@ public class TargetedMSManager
 
         return new SqlSelector(getSchema(), sql).getArrayList(Long.class);
     }
+
+//    public static
 }

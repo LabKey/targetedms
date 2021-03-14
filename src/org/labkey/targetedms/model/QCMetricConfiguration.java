@@ -31,6 +31,10 @@ public class QCMetricConfiguration
     private String _enabledQueryName;
     private String _enabledSchemaName;
     private Boolean _enabled;
+    private Integer _trace;
+    private Double _timeValue;
+    private Double _traceValue;
+    private String _yAxisLabel;
 
     public int getId()
     {
@@ -151,6 +155,46 @@ public class QCMetricConfiguration
         _enabledSchemaName = enabledSchemaName;
     }
 
+    public Integer getTrace()
+    {
+        return _trace;
+    }
+
+    public void setTrace(Integer trace)
+    {
+        _trace = trace;
+    }
+
+    public Double getTimeValue()
+    {
+        return _timeValue;
+    }
+
+    public void setTimeValue(Double timeValue)
+    {
+        _timeValue = timeValue;
+    }
+
+    public Double getTraceValue()
+    {
+        return _traceValue;
+    }
+
+    public void setTraceValue(Double traceValue)
+    {
+        _traceValue = traceValue;
+    }
+
+    public String getyAxisLabel()
+    {
+        return _yAxisLabel;
+    }
+
+    public void setyAxisLabel(String yAxisLabel)
+    {
+        _yAxisLabel = yAxisLabel;
+    }
+
     public JSONObject toJSON(){
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("id", _id);
@@ -159,20 +203,32 @@ public class QCMetricConfiguration
         jsonObject.put("series1SchemaName", _series1SchemaName);
         jsonObject.put("series1QueryName",  _series1QueryName);
         jsonObject.put("precursorScoped",  _precursorScoped);
-        if(_series2Label != null){
+        if (_series2Label != null) {
             jsonObject.put("series2Label",      _series2Label);
         }
-        if(_series2SchemaName != null){
+        if (_series2SchemaName != null) {
             jsonObject.put("series2SchemaName", _series2SchemaName);
         }
-        if(_series2QueryName != null){
+        if (_series2QueryName != null) {
             jsonObject.put("series2QueryName",  _series2QueryName);
         }
-        if(_enabledQueryName != null){
+        if (_enabledQueryName != null) {
             jsonObject.put("enabledQueryName", _enabledQueryName);
         }
-        if(_enabledQueryName != null){
+        if (_enabledQueryName != null) {
             jsonObject.put("enabledSchemaName", _enabledSchemaName);
+        }
+        if (_trace != null) {
+            jsonObject.put("trace", _trace);
+        }
+        if (_traceValue != null) {
+            jsonObject.put("traceValue", _traceValue);
+        }
+        if (_timeValue != null) {
+            jsonObject.put("timeValue", _timeValue);
+        }
+        if (_yAxisLabel != null) {
+            jsonObject.put("yAxisLabel" , _yAxisLabel);
         }
         return jsonObject;
     }
