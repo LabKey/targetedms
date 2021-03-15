@@ -1,9 +1,20 @@
 package org.labkey.targetedms.chromlib;
 
+import org.labkey.targetedms.parser.TransitionOptimization;
+
 import java.util.Objects;
 
 public class LibMoleculeTransitionOptimization extends AbstractLibTransitionOptimization
 {
+    public LibMoleculeTransitionOptimization()
+    {
+    }
+
+    public LibMoleculeTransitionOptimization(TransitionOptimization optimization)
+    {
+        super(optimization);
+    }
+
     @Override
     public boolean equals(Object o)
     {

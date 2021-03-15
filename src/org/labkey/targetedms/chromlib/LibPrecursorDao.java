@@ -17,6 +17,7 @@ package org.labkey.targetedms.chromlib;
 
 import org.labkey.targetedms.chromlib.Constants.PrecursorColumn;
 import org.labkey.targetedms.chromlib.Constants.Table;
+import org.labkey.targetedms.query.TransitionManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

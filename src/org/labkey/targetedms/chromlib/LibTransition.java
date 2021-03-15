@@ -18,13 +18,16 @@ package org.labkey.targetedms.chromlib;
 import org.labkey.targetedms.parser.Precursor;
 import org.labkey.targetedms.parser.Transition;
 import org.labkey.targetedms.parser.TransitionChromInfo;
+import org.labkey.targetedms.parser.TransitionOptimization;
+
+import java.util.List;
 
 /**
  * User: vsharma
  * Date: 12/31/12
  * Time: 9:25 AM
  */
-public class LibTransition extends AbstractLibTransition
+public class LibTransition extends AbstractLibTransition<LibTransitionOptimization>
 {
     private long _precursorId;
     private Integer _fragmentOrdinal;
@@ -33,12 +36,18 @@ public class LibTransition extends AbstractLibTransition
 
     public LibTransition() {}
 
-    public LibTransition(Transition transition, TransitionChromInfo transitionChromInfo, Precursor precursor)
+    public LibTransition(Transition transition, TransitionChromInfo transitionChromInfo, Precursor precursor, List<TransitionOptimization> optimizations)
     {
-        super(transition, transitionChromInfo, precursor);
+        super(transition, transitionChromInfo, precursor, optimizations);
         setNeutralMass(transition.getNeutralMass());
         setNeutralLossMass(transition.getNeutralLossMass());
         setFragmentOrdinal(transition.getFragmentOrdinal());
+    }
+
+    @Override
+    protected LibTransitionOptimization createOptimization(TransitionOptimization optimization)
+    {
+        return new LibTransitionOptimization(optimization);
     }
 
     public long getPrecursorId()

@@ -3,8 +3,13 @@ package org.labkey.targetedms.chromlib;
 import org.labkey.targetedms.parser.GeneralPrecursor;
 import org.labkey.targetedms.parser.GeneralTransition;
 import org.labkey.targetedms.parser.TransitionChromInfo;
+import org.labkey.targetedms.parser.TransitionOptimization;
 
-public abstract class AbstractLibTransition extends AbstractLibEntity
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public abstract class AbstractLibTransition<OptType extends AbstractLibTransitionOptimization> extends AbstractLibEntity
 {
     protected Double _mz;
     protected Integer _charge;
@@ -20,9 +25,11 @@ public abstract class AbstractLibTransition extends AbstractLibEntity
     private Double _collisionEnergy;
     private Double _declusteringPotential;
 
+    private List<OptType> _optimizations = new ArrayList<>();
+
     public AbstractLibTransition() {}
 
-    public AbstractLibTransition(GeneralTransition transition, TransitionChromInfo tci, GeneralPrecursor<?> precursor)
+    public AbstractLibTransition(GeneralTransition transition, TransitionChromInfo tci, GeneralPrecursor<?> precursor, List<TransitionOptimization> optimizations)
     {
         setMz(transition.getMz());
         if (transition.getCharge() == null)
@@ -60,7 +67,13 @@ public abstract class AbstractLibTransition extends AbstractLibEntity
             setDeclusteringPotential(transition.getDeclusteringPotential());
         }
 
+        for (TransitionOptimization optimization : optimizations)
+        {
+            _optimizations.add(createOptimization(optimization));
+        }
     }
+
+    protected abstract OptType createOptimization(TransitionOptimization optimization);
 
     public Double getMz()
     {
@@ -170,5 +183,10 @@ public abstract class AbstractLibTransition extends AbstractLibEntity
     public void setDeclusteringPotential(Double declusteringPotential)
     {
         _declusteringPotential = declusteringPotential;
+    }
+
+    public List<OptType> getOptimizations()
+    {
+        return Collections.unmodifiableList(_optimizations);
     }
 }

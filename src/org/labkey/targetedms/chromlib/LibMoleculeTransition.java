@@ -18,13 +18,16 @@ package org.labkey.targetedms.chromlib;
 import org.labkey.targetedms.parser.MoleculePrecursor;
 import org.labkey.targetedms.parser.MoleculeTransition;
 import org.labkey.targetedms.parser.TransitionChromInfo;
+import org.labkey.targetedms.parser.TransitionOptimization;
+
+import java.util.List;
 
 /**
  * User: vsharma
  * Date: 12/31/12
  * Time: 9:25 AM
  */
-public class LibMoleculeTransition extends AbstractLibTransition
+public class LibMoleculeTransition extends AbstractLibTransition<LibMoleculeTransitionOptimization>
 {
     private long _moleculePrecursorId;
     private String _fragmentName;
@@ -33,12 +36,18 @@ public class LibMoleculeTransition extends AbstractLibTransition
 
     public LibMoleculeTransition() {}
 
-    public LibMoleculeTransition(MoleculeTransition transition, TransitionChromInfo tci, MoleculePrecursor precursor)
+    public LibMoleculeTransition(MoleculeTransition transition, TransitionChromInfo tci, MoleculePrecursor precursor, List<TransitionOptimization> optimizations)
     {
-        super(transition, tci, precursor);
+        super(transition, tci, precursor, optimizations);
         setFragmentName(transition.getCustomIonName());
         setChemicalFormula(transition.getChemicalFormula());
         setAdduct(transition.getAdduct());
+    }
+
+    @Override
+    protected LibMoleculeTransitionOptimization createOptimization(TransitionOptimization optimization)
+    {
+        return new LibMoleculeTransitionOptimization(optimization);
     }
 
     public long getMoleculePrecursorId()

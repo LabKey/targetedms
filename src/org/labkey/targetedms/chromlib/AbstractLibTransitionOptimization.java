@@ -1,12 +1,22 @@
 package org.labkey.targetedms.chromlib;
 
+import org.labkey.targetedms.parser.TransitionOptimization;
+
 import java.util.Objects;
 
 public abstract class AbstractLibTransitionOptimization extends AbstractLibEntity
 {
     protected int _transitionId;
     protected String _optimizationType;
-    protected Double _optimizationValue;
+    protected double _optimizationValue;
+
+    public AbstractLibTransitionOptimization() {}
+
+    public AbstractLibTransitionOptimization(TransitionOptimization optimization)
+    {
+        _optimizationType = optimization.getOptimizationType();
+        _optimizationValue = optimization.getOptValue();
+    }
 
     public int getTransitionId()
     {
@@ -28,12 +38,12 @@ public abstract class AbstractLibTransitionOptimization extends AbstractLibEntit
         _optimizationType = optimizationType;
     }
 
-    public Double getOptimizationValue()
+    public double getOptimizationValue()
     {
         return _optimizationValue;
     }
 
-    public void setOptimizationValue(Double optimizationValue)
+    public void setOptimizationValue(double optimizationValue)
     {
         _optimizationValue = optimizationValue;
     }
