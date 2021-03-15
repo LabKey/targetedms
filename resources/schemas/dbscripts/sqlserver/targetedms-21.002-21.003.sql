@@ -1,6 +1,6 @@
 ALTER TABLE targetedms.QCMetricConfiguration ADD TraceValue REAL;
 ALTER TABLE targetedms.QCMetricConfiguration ADD TimeValue REAL;
-ALTER TABLE targetedms.QCMetricConfiguration ADD Trace INT;
+ALTER TABLE targetedms.QCMetricConfiguration ADD Trace BIGINT;
 ALTER TABLE targetedms.QCMetricConfiguration ADD YAxisLabel VARCHAR(200);
 
 ALTER TABLE targetedms.QCMetricConfiguration
@@ -10,10 +10,10 @@ GO
 
 CREATE TABLE targetedms.QCTraceMetricValues
 (
-    Id              SERIAL NOT NULL ,
+    Id              INT IDENTITY(1, 1) NOT NULL ,
     metric          INT,
     value           REAL,
-    sampleFile      INT,
+    sampleFile      BIGINT,
 
     CONSTRAINT PK_QCTraceMetricValues PRIMARY KEY (Id),
     CONSTRAINT FK_QCTraceMetricValues_Metric FOREIGN KEY (metric) REFERENCES targetedms.QCMetricConfiguration(Id),
