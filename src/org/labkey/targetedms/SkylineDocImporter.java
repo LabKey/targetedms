@@ -2880,30 +2880,12 @@ public class SkylineDocImporter
 
     public void insertTraceCalculations(TargetedMSRun run)
     {
-        List<QCMetricConfiguration> qcMetricConfigurations = TargetedMSManager.get()
-                .getEnabledQCMetricConfigurations(_container, _user)
-                .stream()
-                .filter(qcMetricConfiguration -> qcMetricConfiguration.getTrace() != null)
-                .collect(Collectors.toList());
+        List<QCMetricConfiguration> qcMetricConfigurations = TargetedMSManager.getTraceMetricConfigurations(_container, _user);
 
         if (!qcMetricConfigurations.isEmpty())
         {
-            List<SampleFile> sampleFiles = TargetedMSManager.getSampleFiles(_container, null);
-
-            for (SampleFile sampleFile : sampleFiles)
-            {
-                List<SampleFileChromInfo> sampleFileChromInfos = TargetedMSManager.getSampleFileChromInfos(sampleFile);
-                for (SampleFileChromInfo sampleFileChromInfo : sampleFileChromInfos)
-                {
-                    Chromatogram chromatogram = sampleFileChromInfo.createChromatogram(run);
-                    if (null != chromatogram)
-                    {
-                        float[] times = chromatogram.getTimes();
-                        float[] values = chromatogram.getIntensities(0);
-                    }
-                }
-            }
+            var qcTraceMetricValues = TargetedMSManager.calculateTraceMetricValues(qcMetricConfigurations, run, _user, _container);
+            qcTraceMetricValues.forEach(qcTraceMetricValue -> Table.insert(_user, TargetedMSManager.getTableQCTraceMetricValues(), qcTraceMetricValue));
         }
-
     }
 }

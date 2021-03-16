@@ -81,8 +81,10 @@ import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
 import org.labkey.targetedms.model.QCMetricConfiguration;
+import org.labkey.targetedms.model.QCTraceMetricValues;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.outliers.OutlierGenerator;
+import org.labkey.targetedms.parser.Chromatogram;
 import org.labkey.targetedms.parser.GeneralMolecule;
 import org.labkey.targetedms.parser.Replicate;
 import org.labkey.targetedms.parser.RepresentativeDataState;
@@ -2105,7 +2107,7 @@ public class TargetedMSManager
         return Math.log(value.doubleValue()) / Math.log(2);
     }
 
-    public List<QCMetricConfiguration> getEnabledQCMetricConfigurations(Container container, User user)
+    public static List<QCMetricConfiguration> getEnabledQCMetricConfigurations(Container container, User user)
     {
         QuerySchema targetedMSSchema = DefaultSchema.get(user, container).getSchema(TargetedMSSchema.SCHEMA_NAME);
         if (targetedMSSchema == null)
@@ -2486,5 +2488,92 @@ public class TargetedMSManager
         return new SqlSelector(getSchema(), sql).getArrayList(Long.class);
     }
 
-//    public static
+    public static List<QCTraceMetricValues> calculateTraceMetricValues(List<QCMetricConfiguration> qcMetricConfigurations, TargetedMSRun run, User user, Container container)
+    {
+        List<QCTraceMetricValues> qcTraceMetricValuesList = new ArrayList<>();
+        if (!qcMetricConfigurations.isEmpty())
+        {
+            List<SampleFile> sampleFiles = TargetedMSManager.getSampleFiles(container, null);
+            Map<QCMetricConfiguration, Map<Float,Float>> metricTracePairs = new HashMap<>();
+            Map<QCMetricConfiguration, SampleFile> qcMetricConfigurationSampleFileMap = new HashMap<>();
+
+            for (SampleFile sampleFile : sampleFiles)
+            {
+                List<SampleFileChromInfo> sampleFileChromInfos = TargetedMSManager.getSampleFileChromInfos(sampleFile);
+                Map<QCMetricConfiguration, SampleFileChromInfo> tSampleFileChromInfos = new HashMap<>();
+
+                for (SampleFileChromInfo sampleFileChromInfo : sampleFileChromInfos)
+                {
+                    for (QCMetricConfiguration qcMetricConfiguration : qcMetricConfigurations)
+                    {
+                        if (qcMetricConfiguration.getTrace() == sampleFileChromInfo.getId())
+                        {
+                            tSampleFileChromInfos.put(qcMetricConfiguration, sampleFileChromInfo);
+                            qcMetricConfigurationSampleFileMap.put(qcMetricConfiguration, sampleFile);
+                        }
+                    }
+                }
+
+                for (Map.Entry<QCMetricConfiguration, SampleFileChromInfo> entry : tSampleFileChromInfos.entrySet())
+                {
+                    Chromatogram chromatogram = entry.getValue().createChromatogram(run);
+                    if (null != chromatogram)
+                    {
+                        float[] times = chromatogram.getTimes();
+                        float[] values = chromatogram.getIntensities(0);
+
+                        Map<Float,Float> tracePair  = new HashMap<>();
+                        for (int i = 0; i < times.length; i++)
+                        {
+                            Double timeValue = entry.getKey().getTimeValue();
+                            Double traceValue = entry.getKey().getTraceValue();
+                            if (timeValue != null && times[i] == (float) (entry.getKey().getTimeValue() / 100))
+                            {
+                                tracePair.put(times[i], values[i]);
+                            }
+                            else if (traceValue != null && values[i] == (float) (entry.getKey().getTraceValue() / 100))
+                            {
+                                tracePair.put(times[i], values[i]);
+                            }
+
+                        }
+
+                        if (!tracePair.isEmpty())
+                        {
+                            metricTracePairs.put(entry.getKey(), tracePair);
+                        }
+                    }
+                }
+            }
+
+            metricTracePairs.forEach((key,val) -> {
+                for (Map.Entry<Float, Float> entry : val.entrySet())
+                {
+                    QCTraceMetricValues qcTraceMetricValues = new QCTraceMetricValues();
+                    qcTraceMetricValues.setMetric(key.getId());
+                    qcTraceMetricValues.setSampleFile(qcMetricConfigurationSampleFileMap.get(key).getId());
+
+                    if (key.getTimeValue() != null)
+                    {
+                        qcTraceMetricValues.setValue(entry.getValue());
+                    }
+                    else
+                    {
+                        qcTraceMetricValues.setValue(entry.getKey());
+                    }
+
+                    qcTraceMetricValuesList.add(qcTraceMetricValues);
+                }
+            });
+        }
+        return qcTraceMetricValuesList;
+    }
+
+    public static List<QCMetricConfiguration> getTraceMetricConfigurations(Container container, User user)
+    {
+        return getEnabledQCMetricConfigurations(container, user)
+                .stream()
+                .filter(qcMetricConfiguration -> qcMetricConfiguration.getTrace() != null)
+                .collect(Collectors.toList());
+    }
 }
