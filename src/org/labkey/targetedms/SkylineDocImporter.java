@@ -1512,7 +1512,7 @@ public class SkylineDocImporter
         insertTransitionAnnotation(moleculeTransition.getAnnotations(), moleculeTransition.getId()); //adding small molecule transition annotation in TransitionAnnotation table. We might need to change this if we decide to have a separate MoleculeTransitionAnnotation table in the future.
 
         // Insert appropriate CE and DP transition optimizations
-        insertTransitionOptimization(optimizationInfo, moleculeTransition);
+//        insertTransitionOptimization(optimizationInfo, moleculeTransition);
 
         insertTransitionChromInfos(gt.getId(), moleculeTransition.getChromInfoList(), skylineIdSampleFileIdMap, sampleFilePrecursorChromInfoIdMap, parser);
     }
@@ -1654,8 +1654,20 @@ public class SkylineDocImporter
         // transition annotations
         insertTransitionAnnotation(transition.getAnnotations(), transition.getId());
 
-        // Insert appropriate CE and DP transition optimizations
-        insertTransitionOptimization(optimizationInfo, transition);
+        for (org.labkey.targetedms.parser.OptimizationInfo info : parser.getOptimizationInfos())
+        {
+            if (info.getProductCharge() == transition.getCharge() &&
+                    info.getFragmentIon().equalsIgnoreCase(transition.getFragmentType() + transition.getFragmentOrdinal()) &&
+                    info.getCharge() == precursor.getCharge() &&
+                    info.getPeptideModSeq().equalsIgnoreCase(precursor.getModifiedSequence()))
+            {
+                TransitionOptimization opt = new TransitionOptimization();
+                opt.setTransitionId(transition.getId());
+                opt.setOptValue(info.getValue());
+                opt.setOptimizationType(info.getType());
+                Table.insert(_user, TargetedMSManager.getTableInfoTransitionOptimization(), opt);
+            }
+        }
 
         // transition results
         insertTransitionChromInfos(gt.getId(), transition.getChromInfoList(), skylineIdSampleFileIdMap, sampleFilePrecursorChromInfoIdMap, parser);
@@ -1709,26 +1721,6 @@ public class SkylineDocImporter
                                                 +"; Transition: "+transition.toString()
                                                 +"; Precursor: "+precursor.getModifiedSequence());
             }
-        }
-    }
-
-    private void insertTransitionOptimization(OptimizationInfo optimizationInfo, GeneralTransition transition)
-    {
-        if (optimizationInfo._insertCEOptmizations && transition.getCollisionEnergy() != null)
-        {
-            TransitionOptimization ceOpt = new TransitionOptimization();
-            ceOpt.setTransitionId(transition.getId());
-            ceOpt.setOptValue(transition.getCollisionEnergy());
-            ceOpt.setOptimizationType("ce");
-            Table.insert(_user, TargetedMSManager.getTableInfoTransitionOptimization(), ceOpt);
-        }
-        if (optimizationInfo._insertDPOptmizations && transition.getDeclusteringPotential() != null)
-        {
-            TransitionOptimization dpOpt = new TransitionOptimization();
-            dpOpt.setTransitionId(transition.getId());
-            dpOpt.setOptValue(transition.getDeclusteringPotential());
-            dpOpt.setOptimizationType("dp");
-            Table.insert(_user, TargetedMSManager.getTableInfoTransitionOptimization(), dpOpt);
         }
     }
 
@@ -2660,15 +2652,15 @@ public class SkylineDocImporter
 
     private static class OptimizationInfo
     {
-        private final boolean _insertCEOptmizations;
-        private final boolean _insertDPOptmizations;
+        private final boolean _insertCEOptimizations;
+        private final boolean _insertDPOptimizations;
         private final TransitionSettings.Predictor _cePredictor;
         private final TransitionSettings.Predictor _dpPredictor;
 
-        public OptimizationInfo(boolean insertCEOptmizations, boolean insertDPOptmizations, TransitionSettings.Predictor cePredictor, TransitionSettings.Predictor dpPredictor)
+        public OptimizationInfo(boolean insertCEOptimizations, boolean insertDPOptimizations, TransitionSettings.Predictor cePredictor, TransitionSettings.Predictor dpPredictor)
         {
-            _insertCEOptmizations = insertCEOptmizations;
-            _insertDPOptmizations = insertDPOptmizations;
+            _insertCEOptimizations = insertCEOptimizations;
+            _insertDPOptimizations = insertDPOptimizations;
             _cePredictor = cePredictor;
             _dpPredictor = dpPredictor;
         }
