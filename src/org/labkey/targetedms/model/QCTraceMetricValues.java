@@ -5,7 +5,7 @@ public class QCTraceMetricValues
     private int _id;
     private int _metric;
     private float _value;
-    private long _sampleFile;
+    private long _sampleFileId;
 
     public int getId()
     {
@@ -37,13 +37,13 @@ public class QCTraceMetricValues
         _value = value;
     }
 
-    public long getSampleFile()
+    public long getSampleFileId()
     {
-        return _sampleFile;
+        return _sampleFileId;
     }
 
-    public void setSampleFile(long sampleFile)
+    public void setSampleFileId(long sampleFileId)
     {
-        _sampleFile = sampleFile;
+        _sampleFileId = sampleFileId;
     }
 }
