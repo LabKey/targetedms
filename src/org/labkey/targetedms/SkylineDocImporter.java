@@ -363,7 +363,7 @@ public class SkylineDocImporter
             {
                 // TODO: bulk insert of precursor, transition, chrom info etc.
                 PeptideGroup pepGroup = parser.nextPeptideGroup();
-                insertPeptideGroup(proteinService, optimizationInfo, replicateInfo.skylineIdSampleFileIdMap,
+                insertPeptideGroup(proteinService, replicateInfo.skylineIdSampleFileIdMap,
                         modInfo, libraryNameIdMap, pepGroup, parser, peptides, smallMolecules, parser.getTransitionSettings());
                 if (++peptideGroupCount % 100 == 0)
                 {
@@ -1123,7 +1123,7 @@ public class SkylineDocImporter
         return instrument;
     }
 
-    private void insertPeptideGroup(ProteinService proteinService, OptimizationInfo optimizationInfo, Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
+    private void insertPeptideGroup(ProteinService proteinService, Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
                                     ModificationInfo modInfo,
                                     Map<String, Long> libraryNameIdMap, PeptideGroup pepGroup, SkylineDocumentParser parser, Set<String> peptides, Set<String> smallMolecules,
                                     TransitionSettings transitionSettings)
@@ -1247,7 +1247,7 @@ public class SkylineDocImporter
                     break;
             }
 
-            insertPeptideOrSmallMolecule(optimizationInfo, skylineIdSampleFileIdMap, modInfo,
+            insertPeptideOrSmallMolecule(skylineIdSampleFileIdMap, modInfo,
                     libraryNameIdMap, pepGroup, generalMolecule, transitionSettings, parser);
         }
         if(peptideCount > 0)
@@ -1298,8 +1298,7 @@ public class SkylineDocImporter
         return identifierMap;
     }
 
-    private void insertPeptideOrSmallMolecule(OptimizationInfo optimizationInfo,
-                                              Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
+    private void insertPeptideOrSmallMolecule(Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
                                               ModificationInfo modInfo,
                                               Map<String, Long> libraryNameIdMap,
                                               PeptideGroup pepGroup,
@@ -1339,7 +1338,7 @@ public class SkylineDocImporter
 
             for (MoleculePrecursor moleculePrecursor : molecule.getMoleculePrecursorsList())
             {
-                insertMoleculePrecursor(optimizationInfo, molecule, moleculePrecursor, skylineIdSampleFileIdMap, modInfo, sampleFileIdGeneralMolChromInfoIdMap, parser);
+                insertMoleculePrecursor(molecule, moleculePrecursor, skylineIdSampleFileIdMap, modInfo, sampleFileIdGeneralMolChromInfoIdMap, parser);
             }
         }
 
@@ -1367,7 +1366,7 @@ public class SkylineDocImporter
             // 3. precursor
             for (Precursor precursor : peptide.getPrecursorList())
             {
-                insertPrecursor(optimizationInfo,
+                insertPrecursor(
                         skylineIdSampleFileIdMap,
                         modInfo,
                         libraryNameIdMap,
@@ -1448,7 +1447,7 @@ public class SkylineDocImporter
         Table.insert(_user, TargetedMSManager.getTableInfoPeptideStructuralModification(), mod);
     }
 
-    private void insertMoleculePrecursor(OptimizationInfo optimizationInfo, Molecule molecule,
+    private void insertMoleculePrecursor(Molecule molecule,
                                          MoleculePrecursor moleculePrecursor, Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
                                          ModificationInfo modInfo,
                                          Map<Long, Long> sampleFileIdGeneralMolChromInfoIdMap, SkylineDocumentParser parser)
@@ -1468,7 +1467,7 @@ public class SkylineDocImporter
 
         for(MoleculeTransition moleculeTransition: moleculePrecursor.getTransitionsList())
         {
-            insertMoleculeTransition(optimizationInfo, moleculePrecursor, moleculeTransition, skylineIdSampleFileIdMap, sampleFilePrecursorChromInfoIdMap, parser);
+            insertMoleculeTransition(molecule, moleculePrecursor, moleculeTransition, skylineIdSampleFileIdMap, sampleFilePrecursorChromInfoIdMap, parser);
         }
     }
 
@@ -1482,7 +1481,7 @@ public class SkylineDocImporter
         }
     }
 
-    private void insertMoleculeTransition(OptimizationInfo optimizationInfo, MoleculePrecursor moleculePrecursor,
+    private void insertMoleculeTransition(Molecule molecule, MoleculePrecursor moleculePrecursor,
                                           MoleculeTransition moleculeTransition, Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
                                           Map<SampleFileOptStepKey, Long> sampleFilePrecursorChromInfoIdMap,
                                           SkylineDocumentParser parser)
@@ -1511,8 +1510,16 @@ public class SkylineDocImporter
         //small molecule transition annotations
         insertTransitionAnnotation(moleculeTransition.getAnnotations(), moleculeTransition.getId()); //adding small molecule transition annotation in TransitionAnnotation table. We might need to change this if we decide to have a separate MoleculeTransitionAnnotation table in the future.
 
-        // Insert appropriate CE and DP transition optimizations
-//        insertTransitionOptimization(optimizationInfo, moleculeTransition);
+        for (Iterator<OptimizationDBRow> i = parser.getOptimizationInfos().iterator(); i.hasNext();)
+        {
+            OptimizationDBRow info = i.next();
+            if (info.matches(moleculeTransition, moleculePrecursor, molecule))
+            {
+                // Remove it from the list to make subsequent matches faster
+                i.remove();
+                insertOptimization(info, moleculeTransition);
+            }
+        }
 
         insertTransitionChromInfos(gt.getId(), moleculeTransition.getChromInfoList(), skylineIdSampleFileIdMap, sampleFilePrecursorChromInfoIdMap, parser);
     }
@@ -1526,8 +1533,7 @@ public class SkylineDocImporter
         }
     }
 
-    private void insertPrecursor(OptimizationInfo optimizationInfo,
-                                 Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
+    private void insertPrecursor(Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
                                  ModificationInfo modInfo,
                                  Map<String, Long> libraryNameIdMap,
                                  Peptide peptide,
@@ -1569,7 +1575,7 @@ public class SkylineDocImporter
         // 4. transition
         for(Transition transition: precursor.getTransitionsList())
         {
-            insertTransition(optimizationInfo, skylineIdSampleFileIdMap, modInfo, precursor, sampleFilePrecursorChromInfoIdMap, transition, parser);
+            insertTransition(skylineIdSampleFileIdMap, modInfo, precursor, sampleFilePrecursorChromInfoIdMap, transition, parser);
         }
     }
 
@@ -1621,8 +1627,7 @@ public class SkylineDocImporter
         return gp;
     }
 
-    private void insertTransition(OptimizationInfo optimizationInfo,
-                                  Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
+    private void insertTransition(Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
                                   ModificationInfo modInfo,
                                   Precursor precursor,
                                   Map<SampleFileOptStepKey, Long> sampleFilePrecursorChromInfoIdMap,
@@ -1654,18 +1659,14 @@ public class SkylineDocImporter
         // transition annotations
         insertTransitionAnnotation(transition.getAnnotations(), transition.getId());
 
-        for (org.labkey.targetedms.parser.OptimizationInfo info : parser.getOptimizationInfos())
+        for (Iterator<OptimizationDBRow> i = parser.getOptimizationInfos().iterator(); i.hasNext();)
         {
-            if (info.getProductCharge() == transition.getCharge() &&
-                    info.getFragmentIon().equalsIgnoreCase(transition.getFragmentType() + transition.getFragmentOrdinal()) &&
-                    info.getCharge() == precursor.getCharge() &&
-                    info.getPeptideModSeq().equalsIgnoreCase(precursor.getModifiedSequence()))
+            OptimizationDBRow info = i.next();
+            if (info.matches(transition, precursor))
             {
-                TransitionOptimization opt = new TransitionOptimization();
-                opt.setTransitionId(transition.getId());
-                opt.setOptValue(info.getValue());
-                opt.setOptimizationType(info.getType());
-                Table.insert(_user, TargetedMSManager.getTableInfoTransitionOptimization(), opt);
+                // Remove it from the list to make subsequent matches faster
+                i.remove();
+                insertOptimization(info, transition);
             }
         }
 
@@ -1722,6 +1723,15 @@ public class SkylineDocImporter
                                                 +"; Precursor: "+precursor.getModifiedSequence());
             }
         }
+    }
+
+    private void insertOptimization(OptimizationDBRow info, GeneralTransition transition)
+    {
+        TransitionOptimization opt = new TransitionOptimization();
+        opt.setTransitionId(transition.getId());
+        opt.setOptValue(info.getValue());
+        opt.setOptimizationType(info.getType());
+        Table.insert(_user, TargetedMSManager.getTableInfoTransitionOptimization(), opt);
     }
 
     private Map<Long, Long> insertGeneralMoleculeChromInfos(long gmId, List<GeneralMoleculeChromInfo> generalMoleculeChromInfos,

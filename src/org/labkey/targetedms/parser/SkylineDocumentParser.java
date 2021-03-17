@@ -59,6 +59,7 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -203,7 +204,7 @@ public class SkylineDocumentParser implements AutoCloseable
     private Map<String, String> _replicateSampleFileIdMap;
     private final List<IrtPeptide> _iRTScaleSettings;
 
-    private final List<OptimizationInfo> _optimizationInfos = new ArrayList<>();
+    private final List<OptimizationDBRow> _optimizationDBRows = new LinkedList<>();
 
     private double _matchTolerance = DEFAULT_TOLERANCE;
 
@@ -321,12 +322,11 @@ public class SkylineDocumentParser implements AutoCloseable
                         {
                             while (rs.next())
                             {
-                                OptimizationInfo info = new OptimizationInfo();
+                                OptimizationDBRow info = new OptimizationDBRow();
                                 info.setPeptideModSeq(rs.getString("PeptideModSeq"));
-                                // TODO handle strings
-                                info.setCharge(rs.getInt("Charge"));
+                                info.setCharge(rs.getString("Charge"));
                                 info.setFragmentIon(rs.getString("FragmentIon"));
-                                info.setProductCharge(rs.getInt("ProductCharge"));
+                                info.setProductCharge(rs.getString("ProductCharge"));
                                 info.setValue(rs.getDouble("Value"));
                                 info.setType(switch (rs.getInt("Type"))
                                 {
@@ -338,7 +338,7 @@ public class SkylineDocumentParser implements AutoCloseable
                                     default -> throw new IllegalArgumentException("Unrecognized optimization type " + rs.getInt("Type") + " in " + optDbFileName);
                                 });
 
-                                _optimizationInfos.add(info);
+                                _optimizationDBRows.add(info);
                             }
                         }
                     }
@@ -1332,9 +1332,9 @@ public class SkylineDocumentParser implements AutoCloseable
         }
     }
 
-    public List<OptimizationInfo> getOptimizationInfos()
+    public List<OptimizationDBRow> getOptimizationInfos()
     {
-        return _optimizationInfos;
+        return _optimizationDBRows;
     }
 
     public enum MoleculeType
