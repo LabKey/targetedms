@@ -208,7 +208,7 @@ public class QCMetricConfiguration
             jsonObject.put("enabledSchemaName", _enabledSchemaName);
         }
         if (_traceName != null) {
-            jsonObject.put("trace", _traceName);
+            jsonObject.put("traceName", _traceName);
         }
         if (_traceValue != null) {
             jsonObject.put("traceValue", _traceValue);
