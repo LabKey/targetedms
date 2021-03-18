@@ -1461,22 +1461,6 @@ public class TargetedMSManager
         // Delete from QCTraceMetricValues
         execute("DELETE FROM " + getTableQCTraceMetricValues() + " WHERE SampleFileId = ?", sampleFileId);
 
-        // Delete from QCEnabledMetrics
-        execute("DELETE FROM " + getTableInfoQCEnabledMetrics() + " WHERE metric IN ( " +
-                "SELECT qc.Id FROM " + getTableInfoQCMetricConfiguration() + " qc " +
-                "INNER JOIN " + getTableInfoSampleFileChromInfo() + " sfi ON sfi.id = qc.Trace " +
-                "INNER JOIN " + getTableInfoSampleFile() + " sf ON sf.id = sfi.SampleFileId " +
-                "WHERE sf.id = ? " +
-                ")", sampleFileId);
-
-        // Delete from QCMetricConfiguration
-        execute("DELETE FROM " + getTableInfoQCMetricConfiguration() + " WHERE Id IN ( " +
-                "SELECT qc.Id FROM " + getTableInfoQCMetricConfiguration() + " qc " +
-                "INNER JOIN " + getTableInfoSampleFileChromInfo() + " sfi ON sfi.id = qc.Trace " +
-                "INNER JOIN " + getTableInfoSampleFile() + " sf ON sf.id = sfi.SampleFileId " +
-                "WHERE sf.id = ? " +
-                ")", sampleFileId);
-
         // Delete from SampleFileChromInfo
         execute("DELETE FROM " + getTableInfoSampleFileChromInfo() + " WHERE SampleFileId = ?", sampleFileId);
     }
@@ -1568,9 +1552,6 @@ public class TargetedMSManager
 
         // Delete from QCTraceMetricValues
         deleteSampleFileDependent(getTableQCTraceMetricValues());
-
-        // Delete from QCEnabledMetrics and QCMetricConfiguration
-        deleteQCMetricConfiguration();
 
         // Delete from SampleFileChromInfo
         deleteSampleFileDependent(getTableInfoSampleFileChromInfo());
@@ -1742,30 +1723,9 @@ public class TargetedMSManager
     {
         execute(" DELETE FROM " + tableInfo +
                 " WHERE SampleFileId IN (SELECT sf.Id FROM " + getTableInfoSampleFile() + " sf " +
-                makeSampleFileAndRunsJoinSql() +
+                " INNER JOIN " + getTableInfoReplicate() + " rep ON rep.Id = sf.ReplicateId "+
+                " INNER JOIN " + getTableInfoRuns() + " r ON rep.RunId = r.Id " +
                 " WHERE r.Deleted = ?)", true);
-    }
-
-    private static void deleteQCMetricConfiguration()
-    {
-        execute("DELETE FROM " + getTableInfoQCEnabledMetrics() + " WHERE metric IN (" +
-                " SELECT qc.Id FROM " + getTableInfoQCMetricConfiguration() + " qc" +
-                " INNER JOIN " + getTableInfoSampleFileChromInfo() + " sfi ON sfi.id = qc.Trace" +
-                " INNER JOIN " + getTableInfoSampleFile() + " sf ON sf.id = sfi.SampleFileId" +
-                makeSampleFileAndRunsJoinSql() +
-                " WHERE r.Deleted = ?) ", true);
-
-        execute(" DELETE FROM " + getTableInfoQCMetricConfiguration() + " WHERE Trace IN ("+
-                " SELECT sfi.Id FROM " + getTableInfoSampleFileChromInfo() + " sfi " +
-                " INNER JOIN " + getTableInfoSampleFile() + " sf ON sf.id = sfi.SampleFileId " +
-                makeSampleFileAndRunsJoinSql() +
-                " WHERE r.Deleted = ?)", true);
-    }
-
-    private static String makeSampleFileAndRunsJoinSql()
-    {
-        return " INNER JOIN " + getTableInfoReplicate() + " rep ON rep.Id = sf.ReplicateId " +
-                " INNER JOIN " + getTableInfoRuns() + " r ON rep.RunId = r.Id";
     }
 
     private static void deleteTransitionPredictionSettingsDependent()
@@ -2534,7 +2494,7 @@ public class TargetedMSManager
         return new SqlSelector(getSchema(), sql).getArrayList(Long.class);
     }
 
-    private static List<SampleFileChromInfo> getSampleFileChromInfosByName(int traceId, long runId)
+    private static List<SampleFileChromInfo> getSampleFileChromInfosByName(String traceName, long runId)
     {
         var sql = new SQLFragment(" SELECT sfi.Id, sfi.SampleFileId, sfi.StartTime, sfi.EndTime, sfi.NumPoints," +
                 " sfi.UncompressedSize, sfi.ChromatogramFormat, sfi.ChromatogramOffset, sfi.ChromatogramLength, sfi.TextId" +
@@ -2542,21 +2502,19 @@ public class TargetedMSManager
                 " INNER JOIN " + getTableInfoSampleFile() + " sf ON sf.Id = sfi.SampleFileId" +
                 " INNER JOIN " + getTableInfoReplicate() + " r ON r.Id = sf.ReplicateId" +
                 " INNER JOIN " + getTableInfoRuns() + " rn ON rn.Id = r.RunId" +
-                " WHERE TextId IN (" +
-                " SELECT TextId FROM " + getTableInfoSampleFileChromInfo() +
-                " WHERE Id = ?" +
-                " ) AND rn.ID = ? ").add(traceId).add(runId);
+                " WHERE TextId = ?" +
+                " AND rn.ID = ? ").add(traceName).add(runId);
         return new SqlSelector(getSchema(), sql).getArrayList(SampleFileChromInfo.class);
     }
 
-    public static List<QCTraceMetricValues> calculateTraceMetricValues(List<QCMetricConfiguration> qcMetricConfigurations, TargetedMSRun run, User user, Container container)
+    public static List<QCTraceMetricValues> calculateTraceMetricValues(List<QCMetricConfiguration> qcMetricConfigurations, TargetedMSRun run)
     {
         List<QCTraceMetricValues> qcTraceMetricValuesList = new ArrayList<>();
         if (!qcMetricConfigurations.isEmpty())
         {
             for (QCMetricConfiguration qcMetricConfiguration : qcMetricConfigurations)
             {
-                List<SampleFileChromInfo> sampleFileChromInfos = getSampleFileChromInfosByName(qcMetricConfiguration.getTrace(), run.getRunId());
+                List<SampleFileChromInfo> sampleFileChromInfos = getSampleFileChromInfosByName(qcMetricConfiguration.getTraceName(), run.getRunId());
                 Map<SampleFileChromInfo, Float> valuesToStore = new HashMap<>();
 
                 for (SampleFileChromInfo sampleFileChromInfo : sampleFileChromInfos)
@@ -2610,7 +2568,7 @@ public class TargetedMSManager
     {
         return getEnabledQCMetricConfigurations(container, user)
                 .stream()
-                .filter(qcMetricConfiguration -> qcMetricConfiguration.getTrace() != null)
+                .filter(qcMetricConfiguration -> qcMetricConfiguration.getTraceName() != null)
                 .collect(Collectors.toList());
     }
 }

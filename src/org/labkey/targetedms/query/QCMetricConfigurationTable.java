@@ -100,12 +100,6 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
         }
 
         @Override
-        protected Map<String, Object> getRow(User user, Container container, Map<String, Object> keys) throws InvalidKeyException, QueryUpdateServiceException, SQLException
-        {
-            return super.getRow(user, container, keys);
-        }
-
-        @Override
         protected Map<String, Object> insertRow(User user, Container container, Map<String, Object> row) throws DuplicateKeyException, ValidationException, QueryUpdateServiceException, SQLException
         {
             var insertedRow = super.insertRow(user, container, row);
@@ -114,17 +108,11 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
         }
 
         @Override
-        public List<Map<String, Object>> insertRows(User user, Container container, List<Map<String, Object>> rows, BatchValidationException errors, @Nullable Map<Enum, Object> configParameters, Map<String, Object> extraScriptContext) throws DuplicateKeyException, QueryUpdateServiceException, SQLException
-        {
-            return super.insertRows(user, container, rows, errors, configParameters, extraScriptContext);
-        }
-
-        @Override
         protected Map<String, Object> updateRow(User user, Container container, Map<String, Object> row, @NotNull Map<String, Object> oldRow) throws InvalidKeyException, ValidationException, QueryUpdateServiceException, SQLException
         {
             var updatedRow = super.updateRow(user, container, row, oldRow);
             var metricId = (int) updatedRow.get("Id");
-            deleteTraceValueForMetric(metricId);
+            deleteTraceValueForMetric(metricId, container);
             calculateAndInsertTraceValuesForMetric(metricId, container, user);
             return updatedRow;
         }
@@ -132,20 +120,19 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
         @Override
         protected Map<String, Object> deleteRow(User user, Container container, Map<String, Object> oldRow) throws InvalidKeyException, QueryUpdateServiceException, SQLException
         {
-            deleteTraceValueForMetric((Integer) oldRow.get("id"));
+            deleteTraceValueForMetric((Integer) oldRow.get("id"), container);
             return super.deleteRow(user, container, oldRow);
         }
 
-        @Override
-        public List<Map<String, Object>> deleteRows(User user, Container container, List<Map<String, Object>> keys, @Nullable Map<Enum, Object> configParameters, @Nullable Map<String, Object> extraScriptContext) throws InvalidKeyException, BatchValidationException, QueryUpdateServiceException, SQLException
+        private void deleteTraceValueForMetric(int metricId, Container container)
         {
-            return super.deleteRows(user, container, keys, configParameters, extraScriptContext);
-        }
-
-        private void deleteTraceValueForMetric(int metricId)
-        {
-            var sql = new SQLFragment("DELETE FROM " + TargetedMSManager.getTableQCTraceMetricValues() +
-                    " WHERE metric = ?").add(metricId);
+            var sql = new SQLFragment(" DELETE FROM " + TargetedMSManager.getTableQCTraceMetricValues() + " WHERE metric IN ("+
+                    " SELECT qc.Id FROM " + TargetedMSManager.getTableInfoQCMetricConfiguration() + " qc" +
+                    " INNER JOIN " + TargetedMSManager.getTableInfoSampleFileChromInfo() + " sfi ON sfi.TextId = qc.TraceName" +
+                    " INNER JOIN " + TargetedMSManager.getTableInfoSampleFile() + " sf ON sf.id = sfi.SampleFileId" +
+                    " INNER JOIN " + TargetedMSManager.getTableInfoReplicate() + " rep ON rep.Id = sf.ReplicateId" +
+                    " INNER JOIN " + TargetedMSManager.getTableInfoRuns() + " r ON rep.RunId = r.Id" +
+                    " WHERE qc.Id = ? AND r.container = ? ) ").add(metricId).add(container.getId());
             new SqlExecutor(TargetedMSManager.getSchema()).execute(sql);
         }
 
@@ -160,7 +147,7 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
 
             for (TargetedMSRun run : runsInContainer)
             {
-                var qcTraceMetricValues = TargetedMSManager.calculateTraceMetricValues(qcMetricConfigurations, run, user, container);
+                var qcTraceMetricValues = TargetedMSManager.calculateTraceMetricValues(qcMetricConfigurations, run);
                 qcTraceMetricValues.forEach(qcTraceMetricValue -> Table.insert(user, TargetedMSManager.getTableQCTraceMetricValues(), qcTraceMetricValue));
             }
         }

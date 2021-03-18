@@ -1315,7 +1315,7 @@
             <column columnName="EnabledSchemaName"/>
             <column columnName="TraceValue"/>
             <column columnName="TimeValue"/>
-            <column columnName="Trace"/>
+            <column columnName="TraceName"/>
             <column columnName="YAxisLabel"/>
         </columns>
     </table>
@@ -1685,7 +1685,7 @@
             <column columnName="Id"/>
             <column columnName="metric"/>
             <column columnName="value"/>
-            <column columnName="sampleFile"/>
+            <column columnName="sampleFileId"/>
         </columns>
     </table>
 </tables>

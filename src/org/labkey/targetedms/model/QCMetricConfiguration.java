@@ -31,10 +31,9 @@ public class QCMetricConfiguration
     private String _enabledQueryName;
     private String _enabledSchemaName;
     private Boolean _enabled;
-    private Integer _trace;
+    private String _traceName;
     private Double _timeValue;
     private Double _traceValue;
-    private String _yAxisLabel;
 
     public int getId()
     {
@@ -155,14 +154,14 @@ public class QCMetricConfiguration
         _enabledSchemaName = enabledSchemaName;
     }
 
-    public Integer getTrace()
+    public String getTraceName()
     {
-        return _trace;
+        return _traceName;
     }
 
-    public void setTrace(Integer trace)
+    public void setTraceName(String traceName)
     {
-        _trace = trace;
+        _traceName = traceName;
     }
 
     public Double getTimeValue()
@@ -183,16 +182,6 @@ public class QCMetricConfiguration
     public void setTraceValue(Double traceValue)
     {
         _traceValue = traceValue;
-    }
-
-    public String getyAxisLabel()
-    {
-        return _yAxisLabel;
-    }
-
-    public void setyAxisLabel(String yAxisLabel)
-    {
-        _yAxisLabel = yAxisLabel;
     }
 
     public JSONObject toJSON(){
@@ -218,8 +207,8 @@ public class QCMetricConfiguration
         if (_enabledQueryName != null) {
             jsonObject.put("enabledSchemaName", _enabledSchemaName);
         }
-        if (_trace != null) {
-            jsonObject.put("trace", _trace);
+        if (_traceName != null) {
+            jsonObject.put("trace", _traceName);
         }
         if (_traceValue != null) {
             jsonObject.put("traceValue", _traceValue);
@@ -227,9 +216,7 @@ public class QCMetricConfiguration
         if (_timeValue != null) {
             jsonObject.put("timeValue", _timeValue);
         }
-        if (_yAxisLabel != null) {
-            jsonObject.put("yAxisLabel" , _yAxisLabel);
-        }
+
         return jsonObject;
     }
 }

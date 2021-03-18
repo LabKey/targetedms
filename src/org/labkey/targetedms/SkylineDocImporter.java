@@ -2884,7 +2884,7 @@ public class SkylineDocImporter
 
         if (!qcMetricConfigurations.isEmpty())
         {
-            var qcTraceMetricValues = TargetedMSManager.calculateTraceMetricValues(qcMetricConfigurations, run, _user, _container);
+            var qcTraceMetricValues = TargetedMSManager.calculateTraceMetricValues(qcMetricConfigurations, run);
             qcTraceMetricValues.forEach(qcTraceMetricValue -> Table.insert(_user, TargetedMSManager.getTableQCTraceMetricValues(), qcTraceMetricValue));
         }
     }
