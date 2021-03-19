@@ -1,6 +1,6 @@
 ALTER TABLE targetedms.QCMetricConfiguration ADD TraceValue REAL;
 ALTER TABLE targetedms.QCMetricConfiguration ADD TimeValue REAL;
-ALTER TABLE targetedms.QCMetricConfiguration ADD TraceName VARCHAR(200);
+ALTER TABLE targetedms.QCMetricConfiguration ADD TraceName NVARCHAR(200);
 GO
 
 CREATE TABLE targetedms.QCTraceMetricValues
