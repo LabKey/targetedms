@@ -9,6 +9,5 @@ public class QCTraceMetricValuesTable extends TargetedMSTable
     {
         super(TargetedMSSchema.getSchema().getTable(TargetedMSSchema.TABLE_QC_TRACE_METRIC_VALUES), schema, cf, TargetedMSSchema.ContainerJoinType.SampleFileFK);
         TargetedMSTable.fixupLookups(this);
-        wrapAllColumns(true);
     }
 }
