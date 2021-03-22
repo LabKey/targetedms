@@ -54,11 +54,23 @@ public class OutlierGenerator
         return INSTANCE;
     }
 
-    private String getEachSeriesTypePlotDataSql(int seriesIndex, int id, String schemaName, String queryName, List<AnnotationGroup> annotationGroups)
+    private String getEachSeriesTypePlotDataSql(int seriesIndex, QCMetricConfiguration configuration, List<AnnotationGroup> annotationGroups)
     {
+        String schemaName;
+        String queryName;
+        if (seriesIndex == 1)
+        {
+            schemaName = configuration.getSeries1SchemaName();
+            queryName = configuration.getSeries1QueryName();
+        }
+        else
+        {
+            schemaName = configuration.getSeries2SchemaName();
+            queryName = configuration.getSeries2QueryName();
+        }
         StringBuilder sql = new StringBuilder("(SELECT PrecursorChromInfoId, SampleFileId, SampleFileId.FilePath, SampleFileId.ReplicateId.Id AS ReplicateId ,");
         sql.append(" CAST(IFDEFINED(SeriesLabel) AS VARCHAR) AS SeriesLabel, ");
-        sql.append("\nMetricValue, ").append(seriesIndex).append(" AS MetricSeriesIndex, ").append(id).append(" AS MetricId");
+        sql.append("\nMetricValue, ").append(seriesIndex).append(" AS MetricSeriesIndex, ").append(configuration.getId()).append(" AS MetricId");
         sql.append("\n FROM ").append(schemaName).append('.').append(queryName);
         if (!annotationGroups.isEmpty())
         {
@@ -87,6 +99,10 @@ public class OutlierGenerator
             }
             filterClause.append(") ");
             sql.append(filterClause.toString());
+        }
+        if (configuration.getTraceName() != null)
+        {
+            sql.append(" WHERE metric = ").append(configuration.getId());
         }
         sql.append(")");
         return sql.toString();
@@ -124,17 +140,11 @@ public class OutlierGenerator
         String sep = "";
         for (QCMetricConfiguration configuration : configurations)
         {
-            int id = configuration.getId();
-            String schema1Name = configuration.getSeries1SchemaName();
-            String query1Name = configuration.getSeries1QueryName();
-            sql.append(sep).append(getEachSeriesTypePlotDataSql(1, id, schema1Name, query1Name, annotationGroups));
+            sql.append(sep).append(getEachSeriesTypePlotDataSql(1, configuration, annotationGroups));
             sep = "\nUNION\n";
-
             if (configuration.getSeries2SchemaName() != null && configuration.getSeries2QueryName() != null)
             {
-                String schema2Name = configuration.getSeries2SchemaName();
-                String query2Name = configuration.getSeries2QueryName();
-                sql.append(sep).append(getEachSeriesTypePlotDataSql(2, id, schema2Name, query2Name, annotationGroups));
+                sql.append(sep).append(getEachSeriesTypePlotDataSql(2, configuration, annotationGroups));
             }
         }
 
@@ -247,19 +257,20 @@ public class OutlierGenerator
     public String getMetricLabel(Map<Integer, QCMetricConfiguration> metrics, RawMetricDataSet dataRow)
     {
         QCMetricConfiguration metric = metrics.get(dataRow.getMetricId());
-        String metricLabel;
-        switch (dataRow.getMetricSeriesIndex())
+
+        if (metric.getTraceName() != null)
         {
-            case 1:
-                metricLabel = metric.getSeries1Label();
-                break;
-            case 2:
-                metricLabel = metric.getSeries2Label();
-                break;
-            default:
-                throw new IllegalArgumentException("Unexpected metric series index: " + dataRow.getMetricSeriesIndex());
+            return metric.getName();
         }
-        return metricLabel;
+        else
+        {
+            return switch (dataRow.getMetricSeriesIndex())
+                    {
+                        case 1 -> metric.getSeries1Label();
+                        case 2 -> metric.getSeries2Label();
+                        default -> throw new IllegalArgumentException("Unexpected metric series index: " + dataRow.getMetricSeriesIndex());
+                    };
+        }
     }
     /**
      * returns the separated plots data per peptide
