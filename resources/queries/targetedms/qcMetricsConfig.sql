@@ -32,7 +32,9 @@ SELECT
             ELSE TRUE END AS Inserted,
        qmc.TraceValue,
        qmc.TimeValue,
-       qmc.TraceName
+       qmc.TraceName,
+       qmc.YAxisLabel1,
+       qmc.YAxisLabel2
 FROM
       qcmetricconfiguration qmc
 FULL JOIN   qcenabledmetrics qem

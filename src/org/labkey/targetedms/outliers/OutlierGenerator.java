@@ -68,43 +68,58 @@ public class OutlierGenerator
             schemaName = configuration.getSeries2SchemaName();
             queryName = configuration.getSeries2QueryName();
         }
-        StringBuilder sql = new StringBuilder("(SELECT PrecursorChromInfoId, SampleFileId, SampleFileId.FilePath, SampleFileId.ReplicateId.Id AS ReplicateId ,");
-        sql.append(" CAST(IFDEFINED(SeriesLabel) AS VARCHAR) AS SeriesLabel, ");
-        sql.append("\nMetricValue, ").append(seriesIndex).append(" AS MetricSeriesIndex, ").append(configuration.getId()).append(" AS MetricId");
-        sql.append("\n FROM ").append(schemaName).append('.').append(queryName);
-        if (!annotationGroups.isEmpty())
-        {
-            sql.append(" WHERE ");
-            StringBuilder filterClause = new StringBuilder("SampleFileId.ReplicateId IN (");
-            var intersect = "";
-            var selectSql = "(SELECT ReplicateId FROM targetedms.ReplicateAnnotation WHERE ";
-            for (AnnotationGroup annotation : annotationGroups)
-            {
-                filterClause.append(intersect)
-                        .append(selectSql)
-                        .append(" Name='")
-                        .append(annotation.getName().replace("'", "''"))
-                        .append("'");
+        StringBuilder sql = new StringBuilder();
 
-
-                var annotationValues = annotation.getValues();
-                if (!annotationValues.isEmpty())
-                {
-                    var quoteEscapedVals = annotationValues.stream().map(s -> s.replace("'", "''")).collect(Collectors.toList());
-                    var vals = "'" + StringUtils.join(quoteEscapedVals, "','") + "'";
-                    filterClause.append(" AND  Value IN (").append(vals).append(" )");
-                }
-                filterClause.append(" ) ");
-                intersect = " INTERSECT ";
-            }
-            filterClause.append(") ");
-            sql.append(filterClause.toString());
-        }
+        // handle trace metrics
         if (configuration.getTraceName() != null)
         {
+            sql.append("(SELECT 0 AS PrecursorChromInfoId, SampleFileId, SampleFileId.FilePath, SampleFileId.ReplicateId.Id AS ReplicateId ,");
+            sql.append(" metric.Name AS SeriesLabel, ");
+            sql.append("\nvalue as MetricValue, metric, ").append(seriesIndex).append(" AS MetricSeriesIndex, ").append(configuration.getId()).append(" AS MetricId");
+            sql.append("\n FROM ").append(schemaName).append('.').append(TargetedMSManager.getTableQCTraceMetricValues().getName());
             sql.append(" WHERE metric = ").append(configuration.getId());
+            sql.append(")");
         }
-        sql.append(")");
+        else
+        {
+            sql.append("(SELECT PrecursorChromInfoId, SampleFileId, SampleFileId.FilePath, SampleFileId.ReplicateId.Id AS ReplicateId ,");
+            sql.append(" CAST(IFDEFINED(SeriesLabel) AS VARCHAR) AS SeriesLabel, ");
+            sql.append("\nMetricValue, 0 as metric, ").append(seriesIndex).append(" AS MetricSeriesIndex, ").append(configuration.getId()).append(" AS MetricId");
+            sql.append("\n FROM ").append(schemaName).append('.').append(queryName);
+            if (!annotationGroups.isEmpty())
+            {
+                sql.append(" WHERE ");
+                StringBuilder filterClause = new StringBuilder("SampleFileId.ReplicateId IN (");
+                var intersect = "";
+                var selectSql = "(SELECT ReplicateId FROM targetedms.ReplicateAnnotation WHERE ";
+                for (AnnotationGroup annotation : annotationGroups)
+                {
+                    filterClause.append(intersect)
+                            .append(selectSql)
+                            .append(" Name='")
+                            .append(annotation.getName().replace("'", "''"))
+                            .append("'");
+
+
+                    var annotationValues = annotation.getValues();
+                    if (!annotationValues.isEmpty())
+                    {
+                        var quoteEscapedVals = annotationValues.stream().map(s -> s.replace("'", "''")).collect(Collectors.toList());
+                        var vals = "'" + StringUtils.join(quoteEscapedVals, "','") + "'";
+                        filterClause.append(" AND  Value IN (").append(vals).append(" )");
+                    }
+                    filterClause.append(" ) ");
+                    intersect = " INTERSECT ";
+                }
+                filterClause.append(") ");
+                sql.append(filterClause.toString());
+            }
+            if (configuration.getTraceName() != null)
+            {
+                sql.append(" WHERE metric = ").append(configuration.getId());
+            }
+            sql.append(")");
+        }
         return sql.toString();
     }
 
@@ -257,20 +272,12 @@ public class OutlierGenerator
     public String getMetricLabel(Map<Integer, QCMetricConfiguration> metrics, RawMetricDataSet dataRow)
     {
         QCMetricConfiguration metric = metrics.get(dataRow.getMetricId());
-
-        if (metric.getTraceName() != null)
-        {
-            return metric.getName();
-        }
-        else
-        {
-            return switch (dataRow.getMetricSeriesIndex())
-                    {
-                        case 1 -> metric.getSeries1Label();
-                        case 2 -> metric.getSeries2Label();
-                        default -> throw new IllegalArgumentException("Unexpected metric series index: " + dataRow.getMetricSeriesIndex());
-                    };
-        }
+        return switch (dataRow.getMetricSeriesIndex())
+                {
+                    case 1 -> metric.getSeries1Label();
+                    case 2 -> metric.getSeries2Label();
+                    default -> throw new IllegalArgumentException("Unexpected metric series index: " + dataRow.getMetricSeriesIndex());
+                };
     }
     /**
      * returns the separated plots data per peptide

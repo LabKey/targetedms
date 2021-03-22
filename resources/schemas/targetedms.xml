@@ -1316,6 +1316,8 @@
             <column columnName="TraceValue"/>
             <column columnName="TimeValue"/>
             <column columnName="TraceName"/>
+            <column columnName="YAxisLabel1"/>
+            <column columnName="YAxisLabel2"/>
         </columns>
     </table>
     <table tableName="QCMetricExclusion" tableDbType="TABLE">

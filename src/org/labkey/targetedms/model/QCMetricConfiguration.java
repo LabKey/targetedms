@@ -34,6 +34,8 @@ public class QCMetricConfiguration
     private String _traceName;
     private Double _timeValue;
     private Double _traceValue;
+    private String _yAxisLabel1;
+    private String _yAxisLabel2;
 
     public int getId()
     {
@@ -184,6 +186,26 @@ public class QCMetricConfiguration
         _traceValue = traceValue;
     }
 
+    public String getyAxisLabel1()
+    {
+        return _yAxisLabel1;
+    }
+
+    public void setyAxisLabel1(String yAxisLabel1)
+    {
+        _yAxisLabel1 = yAxisLabel1;
+    }
+
+    public String getyAxisLabel2()
+    {
+        return _yAxisLabel2;
+    }
+
+    public void setyAxisLabel2(String yAxisLabel2)
+    {
+        _yAxisLabel2 = yAxisLabel2;
+    }
+
     public JSONObject toJSON(){
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("id", _id);
@@ -215,6 +237,12 @@ public class QCMetricConfiguration
         }
         if (_timeValue != null) {
             jsonObject.put("timeValue", _timeValue);
+        }
+        if (_yAxisLabel1 != null) {
+            jsonObject.put("yAxisLabel1", _yAxisLabel1);
+        }
+        if (_yAxisLabel2 != null) {
+            jsonObject.put("yAxisLabel2", _yAxisLabel2);
         }
 
         return jsonObject;
