@@ -41,8 +41,8 @@ public class LibPeptide extends AbstractLibEntity
     // Small molecule-only fields
     private String _chemicalFormula;
     private String _moleculeName;
-    private double _massMonoisotopic;
-    private double _massAverage;
+    private Double _massMonoisotopic;
+    private Double _massAverage;
     private String _moleculeAccession;
 
     public String getChemicalFormula()
@@ -65,22 +65,22 @@ public class LibPeptide extends AbstractLibEntity
         _moleculeName = moleculeName;
     }
 
-    public double getMassMonoisotopic()
+    public Double getMassMonoisotopic()
     {
         return _massMonoisotopic;
     }
 
-    public void setMassMonoisotopic(double massMonoisotopic)
+    public void setMassMonoisotopic(Double massMonoisotopic)
     {
         _massMonoisotopic = massMonoisotopic;
     }
 
-    public double getMassAverage()
+    public Double getMassAverage()
     {
         return _massAverage;
     }
 
-    public void setMassAverage(double massAverage)
+    public void setMassAverage(Double massAverage)
     {
         _massAverage = massAverage;
     }

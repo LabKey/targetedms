@@ -50,7 +50,7 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
         File downloadedClibFile = doAndWaitForDownload(() -> clickButton("Download", 0));
 
         log("Verifying table exists");
-        List<String> tablesToVerify = new LinkedList<String>(Arrays.asList("TransitionOptimization", "MoleculeTransitionOptimization", "Molecule", "MoleculeList", "MoleculePrecursor", "MoleculePrecursorRetentionTime"));
+        List<String> tablesToVerify = new LinkedList<String>(Arrays.asList("TransitionOptimization", "Transition", "Peptide", "Protein", "Precursor", "PrecursorRetentionTime"));
         List<String> tablesNotPresent = tableExists(tablesToVerify, downloadedClibFile);
         if (tablesNotPresent.size() != 0)
             checker().verifyTrue("Some of the tables do not exists in SQLITE file" + Arrays.toString(tablesNotPresent.toArray()), false);
@@ -63,11 +63,13 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
 
         log("Verifying the rows counts");
         checker().verifyEquals("Invalid number of rows in transition optimization", getServerTableRowCount("TransitionOptimization",null ),
-                sizeOfTable(downloadedClibFile, "MoleculeTransitionOptimization"));
-        checker().verifyEquals("Invalid number of rows in Molecule", getServerTableRowCount("Molecule", "Library Molecules"),
-                sizeOfTable(downloadedClibFile, "Molecule"));
-        checker().verifyEquals("Invalid number of rows in MoleculePrecursor", getServerTableRowCount("MoleculePrecursor", null),
-                sizeOfTable(downloadedClibFile, "MoleculePrecursor"));
+                sizeOfTable(downloadedClibFile, "TransitionOptimization"));
+        checker().verifyEquals("Invalid number of rows in Peptide", getServerTableRowCount("Molecule", "Library Molecules"),
+                sizeOfTable(downloadedClibFile, "Peptide"));
+        checker().verifyEquals("Invalid number of rows in Precursor", getServerTableRowCount("MoleculePrecursor", null),
+                sizeOfTable(downloadedClibFile, "Precursor"));
+        checker().verifyEquals("Invalid number of rows in Transition", getServerTableRowCount("MoleculeTransition", null),
+                sizeOfTable(downloadedClibFile, "Transition"));
 
     }
 

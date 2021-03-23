@@ -166,6 +166,7 @@ public class ChromatogramLibraryWriter
     {
         LibProtein moleculeList = _libProteinCache.computeIfAbsent(molecule.getPeptideGroupId(), (id) ->
                 new LibProtein(PeptideGroupManager.get(id)));
+        _peptideCount++;
         moleculeList.addChild(libMolecule);
     }
 
