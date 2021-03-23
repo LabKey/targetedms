@@ -57,7 +57,11 @@ public class LibTransitionDao extends BaseDaoImpl<LibTransition>
         stmt.setObject(colIndex++, transition.getHeight(), Types.DOUBLE);
         stmt.setObject(colIndex++, transition.getFwhm(), Types.DOUBLE);
         stmt.setObject(colIndex++, transition.getMassErrorPPM(), Types.DOUBLE);
-        stmt.setObject(colIndex, transition.getChromatogramIndex(), Types.INTEGER);
+        stmt.setObject(colIndex++, transition.getChromatogramIndex(), Types.INTEGER);
+
+        stmt.setString(colIndex++, transition.getFragmentName());
+        stmt.setString(colIndex++, transition.getChemicalFormula());
+        stmt.setString(colIndex++, transition.getAdduct());
     }
 
     @Override
@@ -93,6 +97,10 @@ public class LibTransitionDao extends BaseDaoImpl<LibTransition>
             transition.setFwhm(rs.getDouble(TransitionColumn.Fwhm.baseColumn().name()));
             transition.setMassErrorPPM(rs.getDouble(TransitionColumn.MassErrorPPM.baseColumn().name()));
             transition.setChromatogramIndex(readInteger(rs, TransitionColumn.ChromatogramIndex.baseColumn().name()));
+
+            transition.setFragmentName(rs.getString(TransitionColumn.FragmentName.baseColumn().name()));
+            transition.setChemicalFormula(rs.getString(TransitionColumn.ChemicalFormula.baseColumn().name()));
+            transition.setAdduct(rs.getString(TransitionColumn.Adduct.baseColumn().name()));
 
             transitions.add(transition);
         }

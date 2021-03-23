@@ -4,7 +4,7 @@ import org.labkey.targetedms.parser.TransitionOptimization;
 
 import java.util.Objects;
 
-public class LibTransitionOptimization extends AbstractLibTransitionOptimization
+public class LibTransitionOptimization extends AbstractLibEntity
 {
     public LibTransitionOptimization()
     {
@@ -12,7 +12,42 @@ public class LibTransitionOptimization extends AbstractLibTransitionOptimization
 
     public LibTransitionOptimization(TransitionOptimization optimization)
     {
-        super(optimization);
+       _optimizationType = optimization.getOptimizationType();
+       _optimizationValue = optimization.getOptValue();
+    }
+
+    protected int _transitionId;
+    protected String _optimizationType;
+    protected Double _optimizationValue;
+
+    public int getTransitionId()
+    {
+        return _transitionId;
+    }
+
+    public void setTransitionId(int transitionId)
+    {
+        _transitionId = transitionId;
+    }
+
+    public String getOptimizationType()
+    {
+        return _optimizationType;
+    }
+
+    public void setOptimizationType(String optimizationType)
+    {
+        _optimizationType = optimizationType;
+    }
+
+    public Double getOptimizationValue()
+    {
+        return _optimizationValue;
+    }
+
+    public void setOptimizationValue(Double optimizationValue)
+    {
+        _optimizationValue = optimizationValue;
     }
 
     @Override
@@ -24,5 +59,11 @@ public class LibTransitionOptimization extends AbstractLibTransitionOptimization
         return Objects.equals(_transitionId, that._transitionId) &&
                 Objects.equals(_optimizationType, that._optimizationType) &&
                 Objects.equals(_optimizationValue, that._optimizationValue);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(_transitionId, _optimizationType, _optimizationValue);
     }
 }
