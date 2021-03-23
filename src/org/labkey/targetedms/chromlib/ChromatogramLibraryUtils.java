@@ -222,8 +222,8 @@ public class ChromatogramLibraryUtils
         {
             TargetedMSController.ChromLibAnalyteCounts analyteCountsInLib = new TargetedMSController.ChromLibAnalyteCounts();
             analyteCountsInLib.setPeptideGroupCount(getCountsIn(Constants.Table.Protein, conn, null));
-            analyteCountsInLib.setPeptideCount(getCountsIn(Constants.Table.Peptide, conn, "ModifiedSequence IS NOT NULL"));
-            analyteCountsInLib.setMoleculeCount(getCountsIn(Constants.Table.Peptide, conn, "ModifiedSequence IS NULL"));
+            analyteCountsInLib.setPeptideCount(getCountsIn(Constants.Table.Peptide, conn, "Sequence IS NOT NULL"));
+            analyteCountsInLib.setMoleculeCount(getCountsIn(Constants.Table.Peptide, conn, "Sequence IS NULL"));
             analyteCountsInLib.setTransitionCount(getCountsIn(Constants.Table.Transition, conn, null));
             return analyteCountsInLib;
         }
