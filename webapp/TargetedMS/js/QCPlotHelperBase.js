@@ -651,7 +651,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     value: this.getYScaleLabel(plotType, trendLineProps.valueConversion, metricProps.yAxisLabel1)
                 },
                 yRight: {
-                    value: this.isMultiSeries() ? metricProps.series2Label : undefined,
+                    value: this.isMultiSeries() ? metricProps.yAxisLabel2 : undefined,
                     visibility: this.isMultiSeries() ? undefined : 'hidden'
                 }
             },
@@ -755,7 +755,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     position: leftMarginOffset > 0 ? leftMarginOffset - 15 : undefined
                 },
                 yRight: {
-                    value: this.isMultiSeries() ? metricProps.series2Label : undefined,
+                    value: this.isMultiSeries() ? metricProps.yAxisLabel2 : undefined,
                     visibility: this.isMultiSeries() ? undefined : 'hidden',
                     color: this.isMultiSeries() ? this.getColorRange()[1] : undefined
                 }
