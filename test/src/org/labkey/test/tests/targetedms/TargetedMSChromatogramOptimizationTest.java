@@ -27,6 +27,7 @@ import java.util.List;
 public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
 {
     private static final String SKY_FILE = "SmallMoleculeLibrary3.sky.zip";
+    private static final String SKY_FILE2 = "EnergyMet.sky.zip";
 
     @BeforeClass
     public static void setupProject()
@@ -62,7 +63,7 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
                 columnExists(downloadedClibFile, "SampleFile", "DpPredictorId"));
 
         log("Verifying the rows counts");
-        checker().verifyEquals("Invalid number of rows in transition optimization", getServerTableRowCount("TransitionOptimization",null ),
+        checker().verifyEquals("Invalid number of rows in transition optimization", 0,
                 sizeOfTable(downloadedClibFile, "TransitionOptimization"));
         checker().verifyEquals("Invalid number of rows in Peptide", getServerTableRowCount("Molecule", "Library Molecules"),
                 sizeOfTable(downloadedClibFile, "Peptide"));
@@ -71,6 +72,17 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
         checker().verifyEquals("Invalid number of rows in Transition", getServerTableRowCount("MoleculeTransition", null),
                 sizeOfTable(downloadedClibFile, "Transition"));
 
+        // Import a file that includes optimization info
+        importData(SKY_FILE2, 2);
+        clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
+        File downloadedClibFile2 = doAndWaitForDownload(() -> clickButton("Download", 0));
+
+        checker().verifyEquals("Invalid number of rows in Peptide", getServerTableRowCount("Molecule", "Library Molecules"),
+                sizeOfTable(downloadedClibFile2, "Peptide"));
+        checker().verifyEquals("Invalid number of rows in TransitionOptimization", getServerTableRowCount("TransitionOptimization", null),
+                sizeOfTable(downloadedClibFile2, "TransitionOptimization"));
+        checker().verifyEquals("Invalid number of rows in TransitionOptimization", 28,
+                sizeOfTable(downloadedClibFile2, "TransitionOptimization"));
     }
 
     private int getServerTableRowCount(String tableName, @Nullable String viewName)
