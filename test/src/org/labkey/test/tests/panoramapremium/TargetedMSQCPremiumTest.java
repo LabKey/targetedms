@@ -11,15 +11,19 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import org.labkey.test.Locator;
+import org.labkey.test.TestTimeoutException;
 import org.labkey.test.categories.Git;
 import org.labkey.test.components.dumbster.EmailRecordTable;
 import org.labkey.test.components.html.BootstrapMenu;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.components.targetedms.QCSummaryWebPart;
+import org.labkey.test.components.targetedms.TargetedMSRunsTable;
 import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
-import org.labkey.test.util.ApiPermissionsHelper;
+import org.labkey.test.util.APIContainerHelper;
 
+import org.labkey.test.util.ApiPermissionsHelper;
+import org.labkey.test.util.DataRegionTable;
 import org.openqa.selenium.NoSuchElementException;
 
 import java.util.Arrays;
@@ -28,6 +32,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @Category(Git.class)
 public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
@@ -61,6 +66,15 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
     public void preTest()
     {
         goToProjectHome();
+    }
+
+    @Override
+    protected void doCleanup(boolean afterTest) throws TestTimeoutException
+    {
+        // these tests use the UIContainerHelper for project creation, but we can use the APIContainerHelper for deletion
+        APIContainerHelper apiContainerHelper = new APIContainerHelper(this);
+        apiContainerHelper.deleteProject(getProjectName(), afterTest);
+        apiContainerHelper.deleteProject("PressureTraceQC", afterTest);
     }
 
     @Test
@@ -136,15 +150,15 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
 
         log("Adding new test custom metric");
         //need to preserve the insertion order
-        Map<ConfigureMetricsUIPage.MetricProperties , String > metricProperties = new LinkedHashMap<>();
-        metricProperties.put(ConfigureMetricsUIPage.MetricProperties.metricName, metricName);
-        metricProperties.put(ConfigureMetricsUIPage.MetricProperties.series1Schema, schema1Name);
-        metricProperties.put(ConfigureMetricsUIPage.MetricProperties.series1Query, series1Query);
-        metricProperties.put(ConfigureMetricsUIPage.MetricProperties.series1AxisLabel, metricName);
-        metricProperties.put(ConfigureMetricsUIPage.MetricProperties.metricType, ConfigureMetricsUIPage.MetricType.Precursor.name());
+        Map<ConfigureMetricsUIPage.CustomMetricProperties, String > metricProperties = new LinkedHashMap<>();
+        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.metricName, metricName);
+        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.series1Schema, schema1Name);
+        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.series1Query, series1Query);
+        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.series1AxisLabel, metricName);
+        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.metricType, ConfigureMetricsUIPage.MetricType.Precursor.name());
 
         ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
-        configureUI.addNewMetric(metricProperties);
+        configureUI.addNewCustomMetric(metricProperties);
 
         log("Verifying new metric got added");
         goToConfigureMetricsUI();
@@ -161,13 +175,76 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
 
         configureUI = goToConfigureMetricsUI();
         metricProperties.clear();
-        metricProperties.put(ConfigureMetricsUIPage.MetricProperties.metricName, metricName+"-Edited");
+        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.metricName, metricName+"-Edited");
         configureUI.editMetric(metricName, metricProperties);
 
         log("Verifying new metric got edited");
         qcPlotsWebPart.clickMenuItem("Configure QC Metrics");
         waitForElement(Locator.linkWithText(metricName + "-Edited"));
         assertTextPresent(metricName + "-Edited");
+    }
+
+    @Test
+    public void testTraceMetric()
+    {
+        String projectName = "PressureTraceQC";
+        String metricName = "Pressure At 5";
+        String traceName = "ColumnOven_FC_BridgeFlow (channel 5)";
+        String yAxisLabel = "psi";
+        String timeValue = "5";
+        String skyFile = "SampleFileChromInfo.sky.zip";
+
+        setUpFolder(projectName, FolderType.QC);
+        importData(skyFile);
+
+        log("Add new test trace metric");
+        Map<ConfigureMetricsUIPage.TraceMetricProperties, String> metricProperties = new LinkedHashMap<>();
+        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.metricName, metricName);
+        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.traceName, traceName);
+        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.yAxisLabel, yAxisLabel);
+        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.timeValue, timeValue);
+
+        ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
+        configureUI.addNewTraceMetric(metricProperties);
+
+        log("Verify new trace metric got added");
+        goToConfigureMetricsUI();
+        waitForElement(Locator.linkWithText(metricName));
+        assertTextPresent(metricName);
+
+        log("Verify trace values after metric addition");
+        goToSchemaBrowser();
+        DataRegionTable traceValuesTable = viewQueryData("targetedms", "QCTraceMetricValues");
+        assertTrue("Trace values are not present", traceValuesTable.getDataRowCount() > 0);
+
+        log("Verify qc plots");
+        var firstTraceValue = traceValuesTable.getRowDataAsMap("sampleFileId", "Site95_STUDY9S_PHASEI_6ProtMix_QC_01");
+        goToProjectHome(projectName);
+        PanoramaDashboard dashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = dashboard.getQcPlotsWebPart();
+        _ext4Helper.selectComboBoxItem(Locator.id("metric-type-field"), metricName);
+        qcPlotsWebPart.waitForPlots(1, true);
+        String pressurePlotSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+        assertFalse("Pressure trace plot is not present", pressurePlotSVGText.isEmpty());
+        assertTrue("Y axis label is not correct or present", pressurePlotSVGText.contains(yAxisLabel));
+        mouseOver(qcPlotsWebPart.getPointByAcquiredDate("2009-11-03 19:37:28"));
+        waitForElement(qcPlotsWebPart.getBubble());
+        String pressureTracehoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
+        assertTrue("Wrong value present", pressureTracehoverText.contains(firstTraceValue.get("value")));
+
+        log("Delete run and verify trace metric values are deleted");
+        clickTab("Runs");
+        TargetedMSRunsTable runsTable = new TargetedMSRunsTable(this);
+        runsTable.deleteRun(skyFile);
+        goToSchemaBrowser();
+        traceValuesTable = viewQueryData("targetedms", "QCTraceMetricValues");
+        assertEquals("Values in QCTraceMetricValues are not deleted on deleting run", 0, traceValuesTable.getDataRowCount());
+
+        log("Reimport run and verify QCTraceMetricValues has values after import");
+        importData(skyFile, 2);
+        goToSchemaBrowser();
+        traceValuesTable = viewQueryData("targetedms", "QCTraceMetricValues");
+        assertTrue("Trace values after import are not present", traceValuesTable.getDataRowCount() > 0);
     }
 
 }

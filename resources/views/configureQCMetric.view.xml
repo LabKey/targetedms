@@ -6,5 +6,6 @@
         <dependency path="internal/jQuery"/>
         <dependency path="Ext4"/>
         <dependency path="PanoramaPremium/window/AddNewMetricWindow.js"/>
+        <dependency path="PanoramaPremium/window/AddNewTraceMetricWindow.js"/>
     </dependencies>
 </view>

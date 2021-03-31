@@ -64,7 +64,7 @@ public class TargetedMSIsotopologueTest extends TargetedMSPremiumTest
         assertTextPresent("Isotopologue Accuracy", "Isotopologue LOD", "Isotopologue LOQ", "Isotopologue Regression RSquared");
 
         log("Verifying that two new metric properties are added");
-        clickButton("Add New Metric", 0);
+        clickButton("Add New Custom Metric", 0);
         Window metricWindow = new Window.WindowFinder(getDriver()).withTitle("Add New Metric").waitFor();
         assertElementPresent(Locator.name("enabledSchema"));
         assertElementPresent(Locator.name("enabledQuery"));

@@ -18,7 +18,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         Run
     }
 
-    public enum MetricProperties
+    public enum CustomMetricProperties
     {
         metricName,
         series1Schema,
@@ -30,6 +30,15 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         metricType,
         enabledSchema,
         enabledQuery
+    }
+
+    public enum TraceMetricProperties
+    {
+        metricName,
+        traceName,
+        yAxisLabel,
+        timeValue,
+        traceValue
     }
 
     public ConfigureMetricsUIPage(BaseWebDriverTest test)
@@ -49,23 +58,31 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         click(Locator.buttonContainingText("Save"));
     }
 
-    public void addNewMetric(Map<MetricProperties, String> metricProperties)
+    public void addNewCustomMetric(Map<CustomMetricProperties, String> metricProperties)
     {
-        click(Locator.tagWithText("button", "Add New Metric"));
+        click(Locator.tagWithText("button", "Add New Custom Metric"));
         waitForElement(Ext4Helper.Locators.window("Add New Metric"));
         Window metricWindow = new Window.WindowFinder(getDriver()).withTitle("Add New Metric").waitFor();
-        editMetricValues(metricWindow, metricProperties);
+        editCustomMetricValues(metricWindow, metricProperties);
     }
 
-    public void editMetric(String metric, Map<MetricProperties, String> metricProperties)
+    public void addNewTraceMetric(Map<TraceMetricProperties, String> traceProperties)
+    {
+        click(Locator.tagWithText("button", "Add New Trace Metric"));
+        waitForElement(Ext4Helper.Locators.window("Add New Trace Metric"));
+        Window metricWindow = new Window.WindowFinder(getDriver()).withTitle("Add New Trace Metric").waitFor();
+        editTraceMetricValues(metricWindow, traceProperties);
+    }
+
+    public void editMetric(String metric, Map<CustomMetricProperties, String> metricProperties)
     {
         waitAndClick(Locator.linkWithText(metric));
         waitForElement(Ext4Helper.Locators.window("Edit Metric"));
         Window metricWindow = new Window.WindowFinder(getDriver()).withTitle("Edit Metric").waitFor();
-        editMetricValues(metricWindow, metricProperties);
+        editCustomMetricValues(metricWindow, metricProperties);
     }
 
-    private void editMetricValues(Window metricWindow, Map<MetricProperties, String> metricProperties)
+    private void editCustomMetricValues(Window metricWindow, Map<CustomMetricProperties, String> metricProperties)
     {
         metricProperties.forEach((prop, val) -> {
             if("metricName".equals(prop.name()) || "series1AxisLabel".equals(prop.name()) || "series2AxisLabel".equals(prop.name()))
@@ -106,6 +123,26 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
             }
         });
         Ext4Helper.Locators.ext4Button("Save").findElement(metricWindow).click();
+    }
+
+    private void editTraceMetricValues(Window metricWindow, Map<TraceMetricProperties, String> metricProperties)
+    {
+        metricProperties.forEach((prop, val) -> {
+            if("metricName".equals(prop.name()) || "yAxisLabel".equals(prop.name()))
+            {
+                setFormElement(Locator.name(prop.name()), val);
+            }
+            if("traceName".equals(prop.name()))
+            {
+                _ext4Helper.selectComboBoxItem("Use Trace:", val);
+            }
+            if("timeValue".equals(prop.name()) || "traceValue".equals(prop.name()))
+            {
+                setFormElement(Locator.name(prop.name()), val);
+            }
+        });
+        Ext4Helper.Locators.ext4Button("Save").findElement(metricWindow).click();
+        waitForText("QC Plots");
     }
 
 }
