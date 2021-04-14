@@ -31,25 +31,25 @@ import java.util.Date;
  */
 public class TargetedMSRun implements Serializable, ITargetedMSRun
 {
-    /** Don't change the ordering of these enum values without updating the values in targetedms.runs.representativedatastate */
-    public enum RepresentativeDataState
-    {
-        NotRepresentative(""),
-        Representative_Protein("R - Protein"),
-        Representative_Peptide("R - Peptide");
-
-        private String _label;
-
-        private RepresentativeDataState(String label)
-        {
-            _label = label;
-        }
-
-        public String getLabel()
-        {
-            return _label;
-        }
-    }
+//    /** Don't change the ordering of these enum values without updating the values in targetedms.runs.representativedatastate */
+//    public enum RepresentativeDataState
+//    {
+//        NotRepresentative(""),
+//        Representative_Protein("R - Protein"),
+//        Representative_Peptide("R - Peptide");
+//
+//        private String _label;
+//
+//        private RepresentativeDataState(String label)
+//        {
+//            _label = label;
+//        }
+//
+//        public String getLabel()
+//        {
+//            return _label;
+//        }
+//    }
 
     protected long _runId;
     protected Container _container;

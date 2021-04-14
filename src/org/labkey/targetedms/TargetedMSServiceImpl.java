@@ -24,7 +24,9 @@ import org.labkey.api.pipeline.PipelineValidationException;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.targetedms.BlibSourceFile;
+import org.labkey.api.targetedms.IGeneralPrecursor;
 import org.labkey.api.targetedms.IModification;
+import org.labkey.api.targetedms.IPeptideGroup;
 import org.labkey.api.targetedms.ISampleFile;
 import org.labkey.api.targetedms.ITargetedMSRun;
 import org.labkey.api.targetedms.SkylineAnnotation;
@@ -37,6 +39,8 @@ import org.labkey.targetedms.datasource.MsDataSourceUtil;
 import org.labkey.targetedms.parser.SampleFile;
 import org.labkey.targetedms.parser.speclib.BlibSpectrumReader;
 import org.labkey.targetedms.query.ModificationManager;
+import org.labkey.targetedms.query.PeptideGroupManager;
+import org.labkey.targetedms.query.PrecursorManager;
 import org.labkey.targetedms.query.ReplicateManager;
 
 import java.nio.file.Path;
@@ -131,6 +135,12 @@ public class TargetedMSServiceImpl implements TargetedMSService
     public TableInfo getTableInfoGeneralMolecule()
     {
         return TargetedMSManager.getTableInfoGeneralMolecule();
+    }
+
+    @Override
+    public TableInfo getTableInfoGeneralPrecursor()
+    {
+        return TargetedMSManager.getTableInfoGeneralPrecursor();
     }
 
     @Override
@@ -242,5 +252,17 @@ public class TargetedMSServiceImpl implements TargetedMSService
     public List<? extends ISampleFile> getSampleFilesWithData(List<? extends ISampleFile> sampleFiles, Container container)
     {
         return MsDataSourceUtil.getInstance().getSampleFilesWithData(sampleFiles, container);
+    }
+
+    @Override
+    public List<? extends IPeptideGroup> getPeptideGroups (ITargetedMSRun run)
+    {
+        return run != null ? PeptideGroupManager.getPeptideGroups(run.getId()) : Collections.emptyList();
+    }
+
+    @Override
+    public List<? extends IGeneralPrecursor> getPrecursors(IPeptideGroup pepGroup)
+    {
+        return pepGroup != null ? PrecursorManager.getPrecursorsForPeptideGroup(pepGroup.getId()) : Collections.emptyList();
     }
 }

@@ -76,6 +76,7 @@ public interface TargetedMSService
     TableInfo getTableInfoRuns();
     TableInfo getTableInfoPeptideGroup();
     TableInfo getTableInfoGeneralMolecule();
+    TableInfo getTableInfoGeneralPrecursor();
     List<String> getSampleFilePaths(long runId);
     List<? extends ISampleFile> getSampleFiles(long runId);
     List<? extends IModification.IStructuralModification> getStructuralModificationsUsedInRun(long runId);
@@ -99,4 +100,7 @@ public interface TargetedMSService
      * @return list of sample files for which data was found
      */
     List<? extends ISampleFile> getSampleFilesWithData(List<? extends ISampleFile> sampleFiles, Container container);
+
+    List<? extends IPeptideGroup> getPeptideGroups(ITargetedMSRun run);
+    List<? extends IGeneralPrecursor> getPrecursors(IPeptideGroup pepGroup);
 }

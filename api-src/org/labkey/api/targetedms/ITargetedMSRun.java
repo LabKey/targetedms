@@ -26,13 +26,34 @@ import java.util.Date;
  */
 public interface ITargetedMSRun
 {
-    public Container getContainer();
-    public String getBaseName();
-    public String getFileName();
-    public String getDescription();
-    public Date getCreated();
-    public long getId();
-    public Integer getDataId();
-    public Integer getSkydDataId();
-    public String getSoftwareVersion();
+    /** Don't change the ordering of these enum values without updating the values in targetedms.runs.representativedatastate */
+    public enum RepresentativeDataState
+    {
+        NotRepresentative(""),
+        Representative_Protein("R - Protein"),
+        Representative_Peptide("R - Peptide");
+
+        private String _label;
+
+        RepresentativeDataState(String label)
+        {
+            _label = label;
+        }
+
+        public String getLabel()
+        {
+            return _label;
+        }
+    }
+
+    Container getContainer();
+    String getBaseName();
+    String getFileName();
+    String getDescription();
+    Date getCreated();
+    long getId();
+    Integer getDataId();
+    Integer getSkydDataId();
+    String getSoftwareVersion();
+    RepresentativeDataState getRepresentativeDataState();
 }

@@ -15,6 +15,10 @@
 
 package org.labkey.targetedms.parser;
 
+import org.labkey.api.targetedms.IPeptideGroup;
+import org.labkey.api.targetedms.RepresentativeDataState;
+import org.labkey.api.util.MemTracker;
+
 import java.util.Map;
 
 /**
@@ -22,7 +26,7 @@ import java.util.Map;
  * Date: 4/2/12
  * Time: 2:13 PM
  */
-public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
+public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation> implements IPeptideGroup
 {
     private long _runId;
     private Integer _sequenceId;
@@ -46,6 +50,11 @@ public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
     private String _altDescription;
 
     protected RepresentativeDataState _representativeDataState = RepresentativeDataState.NotRepresentative;
+
+    public PeptideGroup()
+    {
+        MemTracker.getInstance().put(this);
+    }
 
     public long getRunId()
     {
