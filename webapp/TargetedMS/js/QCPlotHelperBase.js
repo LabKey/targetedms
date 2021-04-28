@@ -285,7 +285,10 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         if (this.filterQCPoints && !this.groupedX) {
             this.truncateOutOfRangeQCPoints();
         }
-        this.persistSelectedFormOptions();
+        // do not persist plot options in qc folder if changed after coming through experimental folder link
+        if (!this.showExpRunRange) {
+            this.persistSelectedFormOptions();
+        }
 
         if (this.precursors.length === 0) {
             this.failureHandler({message: "There were no records found. The date filter applied may be too restrictive."});
@@ -348,40 +351,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     getPlotWidth: function() {
         var width = this.plotWidth - 30;
         return !this.largePlot && this.plotTypes.length > 1 ? width / 2 : width;
-    },
-
-    getExperimentRunDetails: function (runId) {
-        var sql = "Select MIN(sf.AcquiredTime) AS StartDate,\n" +
-                "       MAX(sf.AcquiredTime) AS EndDate,\n" +
-                "       r.FileName,\n" +
-                "       sf.InstrumentSerialNumber,\n" +
-                "       sf.InstrumentId.model\n" +
-                "FROM targetedms.Replicate rep\n" +
-                "INNER JOIN targetedms.SampleFile sf ON rep.Id = sf.ReplicateId\n" +
-                "INNER JOIN targetedms.Runs r on r.Id = rep.RunId\n" +
-                "where rep.RunId ='" + runId + "'\n" +
-                "GROUP BY r.FileName, sf.InstrumentSerialNumber, sf.InstrumentId.model";
-
-        LABKEY.Query.executeSql({
-            schemaName: 'targetedms',
-            sql: sql,
-            containerFilter: LABKEY.Query.containerFilter.allFolders,
-            scope: this,
-            success: function (response) {
-
-                var runDetails = response.rows[0];
-                this.expRunDetails = {};
-                this.expRunDetails['instrumentName'] = runDetails.model;
-                this.expRunDetails['serialNumber'] = runDetails.InstrumentSerialNumber;
-                this.expRunDetails['fileName'] = runDetails.FileName;
-                this.expRunDetails['startDate'] = runDetails.StartDate;
-                this.expRunDetails['endDate'] = runDetails.EndDate;
-                // initialize the form panel toolbars and display the plot
-                this.add(this.initPlotFormToolbars());
-                this.displayTrendPlot();
-            },
-            failure: this.failureHandler
-        });
     },
 
     calculatePlotIndicesBetweenDates: function (precursorInfo) {
