@@ -549,8 +549,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             var htmlStr = this.showExpRunRange
                     ? "<a href=" + Ext4.String.htmlEncode(returnUrl) + ">"
                     + Ext4.String.htmlEncode(this.expRunDetails.fileName) + " : "
-                    + Ext4.String.htmlEncode(this.formatDate(this.expRunDetails.startDate)) + " through "
-                    + Ext4.String.htmlEncode(this.formatDate(this.expRunDetails.endDate))
+                    + Ext4.String.htmlEncode(this.formatDate(this.expRunDetails.startDate, false)) + " through "
+                    + Ext4.String.htmlEncode(this.formatDate(this.expRunDetails.endDate, false))
                     + "</a>"
                     : "";
             this.experimentRunDateRangeToolbar = Ext4.create('Ext.toolbar.Toolbar', {
@@ -1741,8 +1741,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 return Ext4.util.Format.date(d, 'Y-m-d');
             }
         }
-        else if (typeof(d) === 'string' && d.length === 19) {
-            // support format of strings like "2013-08-27 14:45:49"
+        else if (typeof(d) === 'string' && (d.length === 19 || d.length === 23)) {
+            // support format of strings like "2013-08-27 14:45:49" or "2013-08-16 20:26:28.000"
             return includeTime ? d : d.substring(0, d.indexOf(' '));
         }
         else {
