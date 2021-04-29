@@ -204,6 +204,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         // no need to filter if less than 6 data points are present between reference end of guideset and startdate
         if (this.filterPointsLastIndex - this.filterPointsFirstIndex < 6) {
             this.filterQCPoints = false;
+            // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
+            this.getStartDateField().setValue(this.formatDate(tempData.data[this.filterPointsFirstIndex].AcquiredTime));
         }
         else if (this.showExpRunRange){ // skip 5 points
             this.filterPointsLastIndex = this.filterPointsLastIndex - 6;
