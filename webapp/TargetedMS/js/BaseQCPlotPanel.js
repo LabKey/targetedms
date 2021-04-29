@@ -203,14 +203,14 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
     queryQCInstruments: function(successCallback, callbackScope) {
         LABKEY.Query.executeSql({
             schemaName: 'targetedms',
-            sql: 'SELECT DISTINCT instrumentSerialNumber FROM samplefile',
+            sql: 'SELECT DISTINCT instrumentSerialNumber, instrumentId.model FROM samplefile',
             containerFilter: LABKEY.Query.containerFilter.current,
             scope: this,
             success: function (response) {
 
                 if (response.rows && response.rows.length > 0) {
                     this.qcIntrumentsArr = response.rows.map(function (row) {
-                        return row.instrumentSerialNumber;
+                        return row.instrumentSerialNumber + (row.model ? ' - ' + row.model : '');
                     })
                 }
 
