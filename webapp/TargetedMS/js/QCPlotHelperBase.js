@@ -158,8 +158,10 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             this.processRawGuideSetData(plotDataRows);
         }
 
+        var tempData; // temp variable to store data for setting the date
         for (var i = this.pagingStartIndex; i < this.pagingEndIndex; i++) {
             var plotDataRow = plotDataRows[i];
+            tempData = plotDataRow;
             var fragment = plotDataRow.SeriesLabel;
             Ext4.iterate(plotDataRow.data, function (plotData) {
                 Ext4.iterate(sampleFiles, function (sampleFile) {
@@ -195,10 +197,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                             this.filterPointsLastIndex = j;
                         }
                     }
-
-                    if (j === this.filterPointsFirstIndex) {
-                        this.getStartDateField().setValue(this.formatDate(plotDataRow.data[this.filterPointsFirstIndex].AcquiredTime));
-                    }
                 }
             }
         }
@@ -207,8 +205,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         if (this.filterPointsLastIndex - this.filterPointsFirstIndex < 6) {
             this.filterQCPoints = false;
         }
-        else { // skip 5 points
+        else if (this.showExpRunRange){ // skip 5 points
             this.filterPointsLastIndex = this.filterPointsLastIndex - 6;
+            // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
+            // adding 1 as the point is right after filter last index
+            this.getStartDateField().setValue(this.formatDate(tempData.data[this.filterPointsLastIndex + 1].AcquiredTime));
         }
 
         // Issue 31678: get the full set of dates values from the precursor data and from the annotations
