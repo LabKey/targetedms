@@ -192,9 +192,12 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     // for truncating out of range guideset data find last index of plotData starting from this.startDate
                     if (plotData.AcquiredTime >= this.startDate) {
                         if (!this.filterPointsLastIndex) {
-                            // skip 5 points
                             this.filterPointsLastIndex = j;
                         }
+                    }
+
+                    if (j === this.filterPointsFirstIndex) {
+                        this.getStartDateField().setValue(this.formatDate(plotDataRow.data[this.filterPointsFirstIndex].AcquiredTime));
                     }
                 }
             }
@@ -204,7 +207,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         if (this.filterPointsLastIndex - this.filterPointsFirstIndex < 6) {
             this.filterQCPoints = false;
         }
-        else {
+        else { // skip 5 points
             this.filterPointsLastIndex = this.filterPointsLastIndex - 6;
         }
 

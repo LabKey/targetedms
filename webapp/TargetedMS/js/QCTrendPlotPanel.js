@@ -213,8 +213,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 this.expRunDetails['endDate'] = runDetails.EndDate;
 
                 Ext4.apply(this, {
-                    startDate: this.formatDate(this.expRunDetails['startDate'], false), // change to date of 1st point
-                    endDate: this.formatDate(this.expRunDetails['endDate'], false)
+                    startDate: this.formatDate(this.expRunDetails['startDate'], false),
+                    endDate: this.formatDate(this.expRunDetails['endDate'], false),
+                    dateRangeOffset: -1
                 });
 
                 // initialize the form panel toolbars and display the plot
@@ -1007,6 +1008,15 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return this.showExcludedPointsCheckbox;
     },
 
+    resetFilterPointsIndices: function() {
+        if (this.filterPointsFirstIndex) {
+            this.filterPointsFirstIndex = undefined;
+        }
+        if (this.filterPointsLastIndex) {
+            this.filterPointsLastIndex = undefined;
+        }
+    },
+
     getShowReferenceCheckbox : function() {
         if (!this.showReferenceGSCheckBox) {
             this.showReferenceGSCheckBox = Ext4.create('Ext.form.field.Checkbox', {
@@ -1019,6 +1029,20 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         this.showReferenceGS = newValue;
                         this.havePlotOptionsChanged = true;
 
+                        if (this.showExpRunRange) {
+                            if (newValue) {
+                                this.resetFilterPointsIndices();
+                                Ext4.apply(this, {
+                                    startDate: this.formatDate(this.expRunDetails.startDate, false),
+                                    endDate: this.formatDate(this.expRunDetails.endDate, false),
+                                    dateRangeOffset: -1
+                                });
+                            }
+                            else {
+                                this.getStartDateField().setValue(this.formatDate(this.expRunDetails.startDate, false));
+                            }
+
+                        }
                         this.setLoadingMsg();
                         this.getAnnotationData();
                     }
@@ -1076,7 +1100,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         var metricProps = this.getMetricPropsById(this.metric);
 
-        if(metricProps) {
+        if (metricProps) {
             this.getAnnotationData();
         }
         else {
@@ -1186,7 +1210,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     processAnnotationData: function(data) {
-        if(data) {
+        if (data) {
             this.annotationData = data.rows;
             this.annotationShape = LABKEY.vis.Scale.Shape()[4]; // 0: circle, 1: triangle, 2: square, 3: diamond, 4: X
 
@@ -1194,33 +1218,33 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             this.legendData = [];
 
             // if more than one type of legend present, add a legend header for annotations
-        if (this.annotationData.length > 0 && (this.singlePlot || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot())) {
-                this.legendData.push({
-                    text: 'Annotations',
-                    separator: true
-                });
-        }
-
-        for (var i = 0; i < this.annotationData.length; i++) {
-                var annotation = this.annotationData[i];
-                var annotationDate = this.formatDate(Ext4.Date.parse(annotation['Date'], LABKEY.Utils.getDateTimeFormatWithMS()), !this.groupedX);
-
-                // track if we need to stack annotations that fall on the same date
-                if (!dateCount[annotationDate]) {
-                    dateCount[annotationDate] = 0;
-                }
-                annotation.yStepIndex = dateCount[annotationDate];
-                dateCount[annotationDate]++;
-
-                // get unique annotation names and colors for the legend
-            if (Ext4.Array.pluck(this.legendData, "text").indexOf(annotation['Name']) == -1) {
+            if (this.annotationData.length > 0 && (this.singlePlot || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot())) {
                     this.legendData.push({
-                        text: annotation['Name'],
-                        color: '#' + annotation['Color'],
-                        shape: this.annotationShape
+                        text: 'Annotations',
+                        separator: true
                     });
-                }
             }
+
+            for (var i = 0; i < this.annotationData.length; i++) {
+                    var annotation = this.annotationData[i];
+                    var annotationDate = this.formatDate(Ext4.Date.parse(annotation['Date'], LABKEY.Utils.getDateTimeFormatWithMS()), !this.groupedX);
+
+                    // track if we need to stack annotations that fall on the same date
+                    if (!dateCount[annotationDate]) {
+                        dateCount[annotationDate] = 0;
+                    }
+                    annotation.yStepIndex = dateCount[annotationDate];
+                    dateCount[annotationDate]++;
+
+                    // get unique annotation names and colors for the legend
+                if (Ext4.Array.pluck(this.legendData, "text").indexOf(annotation['Name']) == -1) {
+                        this.legendData.push({
+                            text: annotation['Name'],
+                            color: '#' + annotation['Color'],
+                            shape: this.annotationShape
+                        });
+                    }
+                }
 
             this.getPlotsData();
         }
@@ -1705,12 +1729,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }
 
             // reset reference guideset indices
-            if (this.filterPointsFirstIndex) {
-                this.filterPointsFirstIndex = undefined;
-            }
-            if (this.filterPointsLastIndex) {
-                this.filterPointsLastIndex = undefined;
-            }
+            this.resetFilterPointsIndices();
         }
     },
 
@@ -1746,8 +1765,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             var annotationValue = annotation.get('text');
 
             var selected = this.selectedAnnotations[annotationName];
-            if(!selected)
-            {
+            if (!selected) {
                 selected = [];
                 this.selectedAnnotations[annotationName] = selected;
             }
