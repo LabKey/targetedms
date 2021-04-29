@@ -52,7 +52,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                 container.parentOnly = containers.length == 1;
                 if (this.qcPlotPanel.qcIntrumentsArr) {
                     if (this.qcPlotPanel.qcIntrumentsArr.length > 1) {
-                        container.instrument = 'multiple instruments. QC folders should have data from only one instrument.'
+                        container.instrument = 'multiple instruments. We recommend that each instrument use its own QC folder.'
                     }
                     else if (this.qcPlotPanel.qcIntrumentsArr.length === 1) {
                         container.instrument = this.qcPlotPanel.qcIntrumentsArr[0];
