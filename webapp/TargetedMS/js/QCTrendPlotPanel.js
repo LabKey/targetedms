@@ -188,14 +188,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     getExperimentRunDetails: function (runId) {
         var sql = "Select MIN(sf.AcquiredTime) AS StartDate,\n" +
                 "       MAX(sf.AcquiredTime) AS EndDate,\n" +
-                "       r.FileName,\n" +
-                "       sf.InstrumentSerialNumber,\n" +
-                "       sf.InstrumentId.model\n" +
-                "FROM targetedms.Replicate rep\n" +
-                "INNER JOIN targetedms.SampleFile sf ON rep.Id = sf.ReplicateId\n" +
-                "INNER JOIN targetedms.Runs r on r.Id = rep.RunId\n" +
-                "where rep.RunId ='" + runId + "'\n" +
-                "GROUP BY r.FileName, sf.InstrumentSerialNumber, sf.InstrumentId.model";
+                "       sf.ReplicateId.RunId.FileName\n" +
+                "FROM targetedms.SampleFile sf\n" +
+                "WHERE sf.ReplicateId.RunId ='" + runId + "'\n" +
+                "GROUP BY sf.ReplicateId.RunId.FileName";
 
         LABKEY.Query.executeSql({
             schemaName: 'targetedms',
@@ -206,8 +202,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
                 var runDetails = response.rows[0];
                 this.expRunDetails = {};
-                this.expRunDetails['instrumentName'] = runDetails.model;
-                this.expRunDetails['serialNumber'] = runDetails.InstrumentSerialNumber;
                 this.expRunDetails['fileName'] = runDetails.FileName;
                 this.expRunDetails['startDate'] = runDetails.StartDate;
                 this.expRunDetails['endDate'] = runDetails.EndDate;
@@ -1520,8 +1514,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 // TODO: look into setting background color of title tooltip
                 expRange.append("title").text(function (d) {
                     return "Skyline File: " + Ext4.String.htmlEncode(me.expRunDetails.fileName)
-                            + ", \nSerial No: " + Ext4.String.htmlEncode(me.expRunDetails.serialNumber)
-                            + ", \nInstrument Name: " + Ext4.String.htmlEncode(me.expRunDetails.instrumentName)
                             + ", \nStart: " + Ext4.String.htmlEncode(me.formatDate(Ext4.Date.parse(me.expRunDetails.startDate, LABKEY.Utils.getDateTimeFormatWithMS()), true))
                             + ", \nEnd: " + Ext4.String.htmlEncode(me.formatDate(Ext4.Date.parse(me.expRunDetails.endDate, LABKEY.Utils.getDateTimeFormatWithMS()), true))
                             + ", \nMean: " + Ext4.String.htmlEncode(expMean)
