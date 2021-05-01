@@ -53,14 +53,6 @@ public class RepresentativeStateManager
     {
         try (DbScope.Transaction transaction = TargetedMSManager.getSchema().getScope().ensureTransaction())
         {
-            setRepresentativeStateNoTransaction(user, container, localDirectory, run, state);
-            transaction.commit();
-        }
-    }
-
-    public static void setRepresentativeStateNoTransaction(User user, Container container, LocalDirectory localDirectory,
-                                              TargetedMSRun run, TargetedMSRun.RepresentativeDataState state)
-    {
             int conflictCount = 0;
             if(state == TargetedMSRun.RepresentativeDataState.Representative_Protein)
             {
@@ -115,6 +107,9 @@ public class RepresentativeStateManager
                     "Updated representative state. Number of conflicts " + conflictCount);
 
             Table.update(user, TargetedMSManager.getTableInfoRuns(), run, run.getId());
+
+            transaction.commit();
+        }
     }
 
     private static void revertProteinRepresentativeState(User user, Container container, TargetedMSRun run)
