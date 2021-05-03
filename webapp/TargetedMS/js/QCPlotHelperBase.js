@@ -201,17 +201,19 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             }
         }
 
-        // no need to filter if less than 6 data points are present between reference end of guideset and startdate
-        if (this.filterPointsLastIndex - this.filterPointsFirstIndex < 6) {
-            this.filterQCPoints = false;
-            // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
-            this.getStartDateField().setValue(this.formatDate(tempData.data[this.filterPointsFirstIndex].AcquiredTime));
-        }
-        else if (this.showExpRunRange){ // skip 5 points
-            this.filterPointsLastIndex = this.filterPointsLastIndex - 6;
-            // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
-            // adding 1 as the point is right after filter last index
-            this.getStartDateField().setValue(this.formatDate(tempData.data[this.filterPointsLastIndex + 1].AcquiredTime));
+        if (this.showExpRunRange) {
+            // no need to filter if less than 6 data points are present between reference end of guideset and startdate
+            if (this.filterPointsLastIndex - this.filterPointsFirstIndex < 6) {
+                this.filterQCPoints = false;
+                // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
+                this.getStartDateField().setValue(this.formatDate(tempData.data[this.filterPointsFirstIndex].AcquiredTime));
+            }
+            else { // skip 5 points
+                this.filterPointsLastIndex = this.filterPointsLastIndex - 6;
+                // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
+                // adding 1 as the point is right after filter last index
+                this.getStartDateField().setValue(this.formatDate(tempData.data[this.filterPointsLastIndex + 1].AcquiredTime));
+            }
         }
 
         // Issue 31678: get the full set of dates values from the precursor data and from the annotations
