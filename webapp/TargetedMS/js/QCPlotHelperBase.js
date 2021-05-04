@@ -201,7 +201,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             }
         }
 
-        if (this.showExpRunRange) {
+        if (this.showExpRunRange && this.filterPointsLastIndex && this.filterPointsFirstIndex) {
             // no need to filter if less than 6 data points are present between reference end of guideset and startdate
             if (this.filterPointsLastIndex - this.filterPointsFirstIndex < 6) {
                 this.filterQCPoints = false;
@@ -681,7 +681,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             disableRangeDisplay: this.isMultiSeries()
         };
 
-        if (this.filterQCPoints) {
+        // lines are not separated when indices are not present
+        if (this.filterQCPoints && this.filterPointsLastIndex && this.filterPointsFirstIndex) {
             trendLineProps.lineColor = '#000000';
             trendLineProps.groupBy = "ReferenceRangeSeries";
         }

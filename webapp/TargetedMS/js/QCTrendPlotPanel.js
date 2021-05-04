@@ -207,8 +207,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 this.expRunDetails['endDate'] = runDetails.EndDate;
 
                 Ext4.apply(this, {
-                    startDate: this.formatDate(this.expRunDetails['startDate'], false),
-                    endDate: this.formatDate(this.expRunDetails['endDate'], false),
+                    startDate: this.formatDate(this.expRunDetails['startDate']),
+                    endDate: this.formatDate(this.expRunDetails['endDate']),
                     dateRangeOffset: -1
                 });
 
@@ -1027,8 +1027,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                             if (newValue) {
                                 this.resetFilterPointsIndices();
                                 Ext4.apply(this, {
-                                    startDate: this.formatDate(this.expRunDetails.startDate, false),
-                                    endDate: this.formatDate(this.expRunDetails.endDate, false),
+                                    startDate: this.formatDate(this.expRunDetails.startDate),
+                                    endDate: this.formatDate(this.expRunDetails.endDate),
                                     dateRangeOffset: -1
                                 });
                             }
