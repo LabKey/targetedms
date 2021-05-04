@@ -72,8 +72,7 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
         checker().verifyTrue("Instruments Summary webpart is missing",
                 isElementPresent(Locator.tagWithAttribute("h3", "title", "Instruments Summary")));
         table = new DataRegionTable("InstrumentSummary", getDriver());
-        checker().verifyEquals("Invalid QC Folder Name ", QC_FOLDER_1,
-                table.getDataAsText(0, "QCFolders"));
+        checker().verifyTrue("Invalid QC Folder Name ", table.getDataAsText(0, "QCFolders").contains(QC_FOLDER_1));
 
         setUpFolder(QC_FOLDER_2, FolderType.QC);
         importData(SKY_FILE_QC);
@@ -86,8 +85,8 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
         table = new DataRegionTable("InstrumentSummary", getDriver());
         checker().verifyEquals("Invalid Instrument serial number", "Exactive Series slot #2384",
                 table.getDataAsText(0, "SerialNumber"));
-        checker().verifyEquals("Invalid QC Folder Name ", QC_FOLDER_1 + "\n" + QC_FOLDER_2,
-                table.getDataAsText(0, "QCFolders"));
+        checker().verifyTrue("Invalid QC Folder Name ",
+                table.getDataAsText(0, "QCFolders").contains(QC_FOLDER_1 + "\n" + QC_FOLDER_2));
 
         clickAndWait(Locator.linkWithText(QC_FOLDER_1));
         checker().verifyEquals("Did not navigate to QC folder ", QC_FOLDER_1, getCurrentContainer());
