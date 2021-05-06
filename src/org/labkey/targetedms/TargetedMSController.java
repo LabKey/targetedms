@@ -4562,7 +4562,7 @@ public class TargetedMSController extends SpringActionController
                 if (IKeyword.BIOLOGICAL_PROCESS_CATEGORY.equals(keyword.categoryId))
                     extraAnnotations.computeIfAbsent("Biological Processes", k -> new List<HtmlString>()).add(link);
                 if (IKeyword.MOLECULAR_FUNCTION_CATEGORY.equals(keyword.categoryId))
-                    molecularFunctions.add(link);
+                    extraAnnotations.computeIfAbsent("Molecular Functions", k -> new List<HtmlString>()).add(link);
             }
 
             Map<String, Collection<HtmlString>> extraAnnotations = new LinkedHashMap<>();
