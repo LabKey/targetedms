@@ -1294,7 +1294,13 @@ public class TargetedMSController extends SpringActionController
                 }
             }
 
-            List<QCMetricConfiguration> qcMetricConfigurations = TargetedMSManager.get()
+            // get start date and end date for this qc folder i.e min(acquiredTime) and max(acquiredTime) from samplefile - 1hr
+            var qcFolderDateRange = TargetedMSManager.getQCFolderDateRange(getContainer());
+            // always query the for full start dates and end dates
+            // if start date and end date match the form start date and end date do nothing - 0.25
+            // else use start date and end date for this qc folder to calculate means and sd for different regions (if present else for the all the rows) -
+            // send those means and sds for the zoomed in region
+            List<QCMetricConfiguration> qcMetricConfigurations = TargetedMSManager
                     .getEnabledQCMetricConfigurations(getContainer(), getUser())
                     .stream()
                     .filter(qcMetricConfiguration -> qcMetricConfiguration.getId() == passedMetricId)
