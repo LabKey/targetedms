@@ -1293,20 +1293,37 @@ public class TargetedMSController extends SpringActionController
                     filterQCPoints = true;
                 }
             }
-
-            // get start date and end date for this qc folder i.e min(acquiredTime) and max(acquiredTime) from samplefile - 1hr
-            var qcFolderDateRange = TargetedMSManager.getQCFolderDateRange(getContainer());
-            // always query the for full start dates and end dates
-            // if start date and end date match the form start date and end date do nothing - 0.25
-            // else use start date and end date for this qc folder to calculate means and sd for different regions (if present else for the all the rows) -
-            // send those means and sds for the zoomed in region
             List<QCMetricConfiguration> qcMetricConfigurations = TargetedMSManager
                     .getEnabledQCMetricConfigurations(getContainer(), getUser())
                     .stream()
                     .filter(qcMetricConfiguration -> qcMetricConfiguration.getId() == passedMetricId)
                     .collect(Collectors.toList());
+
             List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(getContainer(), getUser(), qcMetricConfigurations, rangeStartDate, form.getEndDate(), form.getSelectedAnnotations(), form.isShowExcluded());
             Map<GuideSetKey, GuideSetStats> stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+
+            // get start date and end date for this qc folder i.e min(acquiredTime) and max(acquiredTime) from samplefile - 1hr
+            Map<String,Object> qcFolderDateRange = TargetedMSManager.getQCFolderDateRange(getContainer());
+            Date qcStartDate = (Date) qcFolderDateRange.get("startDate");
+            Date qcEndDate = (Date) qcFolderDateRange.get("endDate");
+
+            boolean zoomedRange = qcStartDate.compareTo(rangeStartDate) != 0 || qcEndDate.compareTo(form.getEndDate()) != 0;
+
+            if (zoomedRange)
+            {
+                // get full qc plots data
+                List<RawMetricDataSet> fullRawMetricDataSets = generator.getRawMetricDataSets(getContainer(), getUser(), qcMetricConfigurations, qcStartDate, qcEndDate, form.getSelectedAnnotations(), form.isShowExcluded());
+                Map<GuideSetKey, GuideSetStats> fullStats = generator.getAllProcessedMetricGuideSets(fullRawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+                // attach mean and sd stats from full stats
+                stats.forEach((guideSetKey, guideSetStats) -> {
+                    GuideSetStats correctGuideSetStats = fullStats.get(guideSetKey);
+                    guideSetStats.setAverage(correctGuideSetStats.getAverage());
+                    guideSetStats.setStandardDeviation(correctGuideSetStats.getStandardDeviation());
+                    guideSetStats.setMovingRangeAverage(correctGuideSetStats.getMovingRangeAverage());
+                    guideSetStats.setMovingRangeStdDev(correctGuideSetStats.getMovingRangeStdDev());
+                });
+            }
+
             Map<Integer, QCMetricConfiguration> metricMap = qcMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
             List<SampleFileInfo> sampleFiles = OutlierGenerator.get().getSampleFiles(rawMetricDataSets, stats, metricMap, getContainer(), null);
             List<QCPlotFragment> qcPlotFragments = OutlierGenerator.get().getQCPlotFragment(rawMetricDataSets, stats);

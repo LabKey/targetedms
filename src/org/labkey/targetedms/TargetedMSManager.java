@@ -73,7 +73,6 @@ import org.labkey.api.security.permissions.DeletePermission;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.util.FileUtil;
-import org.labkey.api.util.Pair;
 import org.labkey.api.util.StringUtilsLabKey;
 import org.labkey.api.view.NotFoundException;
 import org.labkey.api.view.UnauthorizedException;
@@ -2575,7 +2574,7 @@ public class TargetedMSManager
 
     public static Map<String,Object> getQCFolderDateRange(Container container)
     {
-        var sql = new SQLFragment("SELECT CAST(MIN(sf.AcquiredTime) AS DATE) AS startDate, CAST(MAX(sf.AcquiredTime) AS DATE) AS endDate ");
+        var sql = new SQLFragment("SELECT MIN(sf.AcquiredTime) AS startDate, MAX(sf.AcquiredTime) AS endDate ");
         sql.append(" FROM ").append(getTableInfoSampleFile(), "sf");
         sql.append(" INNER JOIN ").append(getTableInfoReplicate(), "rep").append(" ON sf.ReplicateId = rep.Id ");
         sql.append(" INNER JOIN ").append(getTableInfoRuns(), "r").append(" ON rep.RunId = r.Id ");
