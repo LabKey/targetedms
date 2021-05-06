@@ -1302,7 +1302,7 @@ public class TargetedMSController extends SpringActionController
             List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(getContainer(), getUser(), qcMetricConfigurations, rangeStartDate, form.getEndDate(), form.getSelectedAnnotations(), form.isShowExcluded());
             Map<GuideSetKey, GuideSetStats> stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
 
-            // get start date and end date for this qc folder i.e min(acquiredTime) and max(acquiredTime) from samplefile - 1hr
+            // get start date and end date for this qc folder
             Map<String,Object> qcFolderDateRange = TargetedMSManager.getQCFolderDateRange(getContainer());
             Date qcStartDate = (Date) qcFolderDateRange.get("startDate");
             Date qcEndDate = (Date) qcFolderDateRange.get("endDate");
