@@ -19,7 +19,7 @@ protein =
 
         let precursor = null;
         for (let i = 0; i < protein.precursors.length; i++) {
-            if (protein.precursors[i].precursorId === precursorId) {
+            if (protein.precursors[i].PrecursorId === precursorId) {
                 precursor = protein.precursors[i];
                 break;
             }
@@ -36,7 +36,7 @@ protein =
         let childHtml = '';
         let separator = '<div class="chromatogramMatrix">';
 
-        protein.selectedPrecursor.replicateInfo.forEach(function(replicate) {
+        protein.selectedPrecursor.ReplicateInfo.forEach(function(replicate) {
             if (replicate.Timepoint !== currentTimepoint) {
                 // Wrap to the next line
                 childHtml += separator;
@@ -53,7 +53,7 @@ protein =
 
         $('a[name*=\'Chromatograms\'] > span').text('Chromatograms for ' + precursor.FullDescription);
 
-        protein.selectedPrecursor.replicateInfo.forEach(function(replicate) {
+        protein.selectedPrecursor.ReplicateInfo.forEach(function(replicate) {
             const parentElement = $('#chrom' + replicate.PrecursorChromInfoId);
             LABKEY.targetedms.SVGChart.requestAndRenderSVG(chromatogramUrl + "id=" + replicate.PrecursorChromInfoId + "&syncY=true&syncX=false&chartWidth=275&chartHeight=300",
                     parentElement[0],
@@ -65,11 +65,11 @@ protein =
             );
         });
 
-        $('#selectedPeptideLink').attr("href", showPeptideUrl + "id=" + protein.selectedPrecursor.peptideId);
+        $('#selectedPeptideLink').attr("href", showPeptideUrl + "id=" + protein.selectedPrecursor.PeptideId);
 
         if (precursorChromInfoId) {
             if (precursorChromInfoId === true) {
-                precursorChromInfoId = protein.selectedPrecursor.replicateInfo[0].PrecursorChromInfoId;
+                precursorChromInfoId = protein.selectedPrecursor.ReplicateInfo[0].PrecursorChromInfoId;
             }
             // Scroll to the chromatogram plot
             window.location.hash = "#chrom" + precursorChromInfoId;
@@ -183,14 +183,9 @@ protein =
                 PeptideId: precursor.PeptideId,
                 CalibrationCurveId: precursor.CalibrationCurveId,
 
-                peptideSequence: precursor.PeptideSequence,
-                modifiedSequence: precursor.ModifiedSequence,
-                mz: precursor.Mz,
-                peptideId: precursor.PeptideId,
-                precursorId: precursor.PrecursorId,
-                charge: precursor.Charge,
-                abbreviated: LABKEY.targetedms.QCPlotLegendHelper.getUniquePrefix(precursor.fragment, true) + ' ' + protein.renderCharge(precursor.Charge),
-                replicateInfo: precursorRows
+                ModifiedSequence: precursor.ModifiedSequence,
+                AbbreviatedLabel: LABKEY.targetedms.QCPlotLegendHelper.getUniquePrefix(precursor.fragment, true) + ' ' + protein.renderCharge(precursor.Charge),
+                ReplicateInfo: precursorRows
             };
 
             // Sum the total area across replicates
@@ -303,25 +298,24 @@ protein =
 
                 let enabled = true;
                 protein.precursors.forEach(function(pep) {
-                    if (pep.PeptideId === precursor.peptideId) {
+                    if (pep.PeptideId === precursor.PeptideId) {
                         enabled = pep.Enabled;
                     }
                 });
 
-                const abbreviatedSequence = precursor.abbreviated;
-                precursor.replicateInfo.forEach(function(replicateInfo) {
+                precursor.ReplicateInfo.forEach(function(replicateInfo) {
                     plotData.push({
                         timepoint: replicateInfo.Timepoint,
                         intensity: replicateInfo.TotalArea,
                         grouping: replicateInfo.Grouping,
                         replicate: replicateInfo.Replicate,
-                        sequence: precursor.modifiedSequence,
+                        sequence: precursor.ModifiedSequence,
                         peptideSequence: precursor.Sequence,
-                        xLabel: abbreviatedSequence,
+                        xLabel: precursor.AbbreviatedLabel,
                         charge: replicateInfo.Charge,
                         mz: replicateInfo.Mz,
                         precursorId: replicateInfo.PrecursorId,
-                        peptideId: replicateInfo.peptideId,
+                        peptideId: replicateInfo.PeptideId,
                         startIndex: replicateInfo.StartIndex,
                         precursorChromInfoId: replicateInfo.PrecursorChromInfoId,
                         enabled: precursor.Enabled
@@ -463,8 +457,8 @@ protein =
                     opacity: 0.8,
                     clickFn: function (event, row) {
                         for (let i = 0; i < protein.precursors.length; i++) {
-                            if (protein.precursors[i].abbreviated === row.name) {
-                                protein.selectPrecursor(protein.precursors[i].precursorId, true);
+                            if (protein.precursors[i].AbbreviatedLabel === row.name) {
+                                protein.selectPrecursor(protein.precursors[i].PrecursorId, true);
                             }
                         }
                     }
@@ -533,8 +527,8 @@ protein =
                 geom: new LABKEY.vis.Geom.BarPlot({
                     clickFn: function (event, row) {
                         for (let i = 0; i < protein.precursors.length; i++) {
-                            if (protein.precursors[i].abbreviated === row.sequence) {
-                                protein.selectPrecursor(protein.precursors[i].precursorId, true);
+                            if (protein.precursors[i].AbbreviatedLabel === row.sequence) {
+                                protein.selectPrecursor(protein.precursors[i].PrecursorId, true);
                             }
                         }
                     },
