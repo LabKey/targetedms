@@ -4553,26 +4553,15 @@ public class TargetedMSController extends SpringActionController
 
             List<IKeyword> keywords = TargetedMSManager.getKeywords(seqId);
 
-            List<HtmlString> biologicalProcesses = new ArrayList<>();
-            List<HtmlString> molecularFunctions = new ArrayList<>();
+            Map<String, Collection<HtmlString>> extraAnnotations = new LinkedHashMap<>();
 
             for (IKeyword keyword : keywords)
             {
                 HtmlString link = new Link.LinkBuilder(keyword.label).href("https://www.uniprot.org/keywords/" + keyword.id).target("_blank").clearClasses().getHtmlString();
                 if (IKeyword.BIOLOGICAL_PROCESS_CATEGORY.equals(keyword.categoryId))
-                    extraAnnotations.computeIfAbsent("Biological Processes", k -> new List<HtmlString>()).add(link);
+                    extraAnnotations.computeIfAbsent("Biological Processes", k -> new ArrayList<>()).add(link);
                 if (IKeyword.MOLECULAR_FUNCTION_CATEGORY.equals(keyword.categoryId))
-                    extraAnnotations.computeIfAbsent("Molecular Functions", k -> new List<HtmlString>()).add(link);
-            }
-
-            Map<String, Collection<HtmlString>> extraAnnotations = new LinkedHashMap<>();
-            if (!biologicalProcesses.isEmpty())
-            {
-                extraAnnotations.put("Biological Processes", biologicalProcesses);
-            }
-            if (!molecularFunctions.isEmpty())
-            {
-                extraAnnotations.put("Molecular Functions", molecularFunctions);
+                    extraAnnotations.computeIfAbsent("Molecular Functions", k -> new ArrayList<>()).add(link);
             }
 
             box.addView(proteinService.getAnnotationsView(seqId, extraAnnotations));
