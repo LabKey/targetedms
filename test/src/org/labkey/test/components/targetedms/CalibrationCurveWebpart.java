@@ -99,7 +99,7 @@ public class CalibrationCurveWebpart extends BodyWebPart<CalibrationCurveWebpart
     protected class ElementCache extends BodyWebPart.ElementCache
     {
         private final WebElement exportToPng = Locator.id("targetedmsCalibrationCurvefa-image-o").findWhenNeeded(this);
-        private final WebElement exportToPdf = Locator.id("targetedmsCalibrationCurvefa--pdf-o").findWhenNeeded(this);
+        private final WebElement exportToPdf = Locator.id("targetedmsCalibrationCurvefa-pdf-o").findWhenNeeded(this);
         private final WebElement svg = Locator.css("svg").findWhenNeeded(this);
         private List<WebElement> findPoints()
         {
