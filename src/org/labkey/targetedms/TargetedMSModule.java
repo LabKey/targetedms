@@ -470,7 +470,10 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
             svc.registerUsageMetrics(MODULE_NAME, () ->
             {
                 Map<String, Object> metric = new HashMap<>();
-                metric.put("runCount", new SqlSelector(DbSchema.get("TargetedMS", DbSchemaType.Module), "SELECT COUNT(*) FROM TargetedMS.Runs WHERE Deleted = ?", Boolean.FALSE).getObject(Long.class));
+                DbSchema schema = TargetedMSManager.getSchema();
+                metric.put("runCount", new SqlSelector(schema, "SELECT COUNT(*) FROM TargetedMS.Runs WHERE Deleted = ?", Boolean.FALSE).getObject(Long.class));
+                metric.put("guideSetCount", new SqlSelector(schema, "SELECT COUNT(*) FROM TargetedMS.GuideSet").getObject(Long.class));
+                metric.put("guideSetContainerCount", new SqlSelector(schema, "SELECT COUNT(DISTINCT Container) FROM TargetedMS.GuideSet").getObject(Long.class));
                 return metric;
             });
         }
