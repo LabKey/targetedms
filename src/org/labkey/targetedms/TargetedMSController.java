@@ -1313,13 +1313,16 @@ public class TargetedMSController extends SpringActionController
             // always query for the full range
             List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(getContainer(), getUser(), qcMetricConfigurations, qcFolderStartDate, qcFolderEndDate, form.getSelectedAnnotations(), form.isShowExcluded());
             Map<GuideSetKey, GuideSetStats> stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
-            boolean zoomedRange = DateUtil.getDateOnly(qcFolderStartDate).compareTo(rangeStartDate) != 0 || DateUtil.getDateOnly(qcFolderEndDate).compareTo(form.getEndDate()) != 0;
+            boolean zoomedRange = qcFolderStartDate != null &&
+                    qcFolderEndDate != null &&
+                    (DateUtil.getDateOnly(qcFolderStartDate).compareTo(rangeStartDate) != 0 ||
+                    DateUtil.getDateOnly(qcFolderEndDate).compareTo(form.getEndDate()) != 0);
             Map<GuideSetKey, GuideSetStats> targetedStats;
 
             if (zoomedRange)
             {
                 // filter the stats for targeted range
-                Predicate<RawMetricDataSet> withInDateRange = rawMetricDataSet ->
+                Predicate<RawMetricDataSet> withInDateRange = rawMetricDataSet -> rawMetricDataSet.getAcquiredTime() != null &&
                         (rawMetricDataSet.getAcquiredTime().after(qcStartDate)
                                 || DateUtil.getDateOnly(rawMetricDataSet.getAcquiredTime()).compareTo(qcStartDate) == 0) &&
                         (rawMetricDataSet.getAcquiredTime().before(form.getEndDate())
