@@ -1323,10 +1323,12 @@ public class TargetedMSController extends SpringActionController
             {
                 // filter the stats for targeted range
                 Predicate<RawMetricDataSet> withInDateRange = rawMetricDataSet -> rawMetricDataSet.getAcquiredTime() != null &&
+                        (qcStartDate != null &&
                         (rawMetricDataSet.getAcquiredTime().after(qcStartDate)
-                                || DateUtil.getDateOnly(rawMetricDataSet.getAcquiredTime()).compareTo(qcStartDate) == 0) &&
+                                || DateUtil.getDateOnly(rawMetricDataSet.getAcquiredTime()).compareTo(qcStartDate) == 0)) &&
+                        (form.getEndDate() != null &&
                         (rawMetricDataSet.getAcquiredTime().before(form.getEndDate())
-                                || DateUtil.getDateOnly(rawMetricDataSet.getAcquiredTime()).compareTo(form.getEndDate()) == 0);
+                                || DateUtil.getDateOnly(rawMetricDataSet.getAcquiredTime()).compareTo(form.getEndDate()) == 0));
                 rawMetricDataSets = rawMetricDataSets
                         .stream()
                         .filter(withInDateRange)
