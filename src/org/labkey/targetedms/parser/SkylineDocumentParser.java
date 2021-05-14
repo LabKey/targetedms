@@ -183,9 +183,10 @@ public class SkylineDocumentParser implements AutoCloseable
 
     /**
      * To prevent giant DIA documents from overwhelming the DB, we skip importing TransitionChromInfos if the document
-     * has more than 100,000
+     * has more than 100,000 AND has more than 1,000 precursors
      */
     public static final int MAX_TRANSITION_CHROM_INFOS = 100_000;
+    public static final int MAX_PRECURSORS = 1_000;
 
     /** Null if we haven't found a SKYD to parse */
     @Nullable
@@ -240,7 +241,7 @@ public class SkylineDocumentParser implements AutoCloseable
     /** @return if we've exceeded the maximum count of TransitionChromInfos that we want to store for a run */
     public boolean shouldSaveTransitionChromInfos()
     {
-        return _transitionChromInfoCount < MAX_TRANSITION_CHROM_INFOS;
+        return _transitionChromInfoCount < MAX_TRANSITION_CHROM_INFOS || _precursorCount < MAX_PRECURSORS;
     }
 
     @Override
