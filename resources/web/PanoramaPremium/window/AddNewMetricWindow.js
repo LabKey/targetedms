@@ -20,11 +20,13 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
         this.height = Ext4.max([Ext4.getBody().getHeight() * 0.3, 450]);
         this.width = Ext4.max([Ext4.getBody().getWidth() * 0.2, 450]);
         this.items = this.getItems();
-        this.buttons = [this.getSaveButton()];
-        if(this.operation === this.update) {
-            this.buttons.push(this.getDeleteButton());
-        }
-        this.buttons.push(this.getCancelButton());
+        this.dockedItems= [{
+            xtype: 'toolbar',
+            dock: 'bottom',
+            ui: 'footer',
+            items: this.getButtons()
+        }]
+
         this.callParent();
         if(this.operation === this.update) {
             if(this.metric.Series1SchemaName) {
@@ -64,6 +66,18 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
                 this.getEnabledQueriesCombo(),
             this.getQueryError(),
         ];
+    },
+
+    getButtons: function () {
+        var buttons = [];
+
+        buttons.push(this.getCancelButton());
+        buttons.push('->'); // to push remaining buttons to the right
+        if (this.operation === this.update) {
+            buttons.push(this.getDeleteButton());
+        }
+        buttons.push(this.getSaveButton());
+        return buttons;
     },
 
     getMetricNameField: function() {
@@ -538,28 +552,36 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
     },
 
     deleteMetric: function() {
-        var qcMetricToDelete = {metric: this.metric.id};
-        var metricToDelete = {id: this.metric.id};
+        Ext4.Msg.confirm('Delete Custom Metric', 'This will delete ' + LABKEY.Utils.encodeHtml(this.metric.name) +   ' metric. Are you sure you want to do this?', function(val){
+                if (val == 'yes'){
+                    var qcMetricToDelete = {metric: this.metric.id};
+                    var metricToDelete = {id: this.metric.id};
+                    LABKEY.Query.saveRows({
+                        containerPath: LABKEY.container.id,
+                        commands: [{
+                            schemaName: 'targetedms',
+                            queryName: 'qcenabledmetrics',
+                            command: 'delete',
+                            rows: [qcMetricToDelete]
+                        },{
+                            schemaName: 'targetedms',
+                            queryName: 'qcmetricconfiguration',
+                            command: 'delete',
+                            rows: [metricToDelete]
+                        }],
+                        scope: this,
+                        method: 'POST',
+                        success: function () {
+                            window.location = this.getReturnURL();
+                        }
+                    });
+                    win.close();
+                }
+            }, this);
 
-        LABKEY.Query.saveRows({
-            containerPath: LABKEY.container.id,
-            commands: [{
-                schemaName: 'targetedms',
-                queryName: 'qcenabledmetrics',
-                command: 'delete',
-                rows: [qcMetricToDelete]
-            },{
-                schemaName: 'targetedms',
-                queryName: 'qcmetricconfiguration',
-                command: 'delete',
-                rows: [metricToDelete]
-            }],
-            scope: this,
-            method: 'POST',
-            success: function () {
-                window.location = this.getReturnURL();
-            }
-        });
+
+
+
     },
 
     getReturnURL: function () {
