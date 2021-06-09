@@ -15,6 +15,7 @@
  */
 package org.labkey.targetedms.chart;
 
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jfree.chart.ChartColor;
 import org.jfree.data.xy.XYSeries;
@@ -66,7 +67,7 @@ import java.util.stream.Collectors;
  */
 public abstract class ChromatogramDataset
 {
-    private static final Logger LOG = Logger.getLogger(ChromatogramDataset.class);
+    private static final Logger LOG = LogManager.getLogger(ChromatogramDataset.class);
 
     XYSeriesCollection _jfreeDataset;
     Double _maxDisplayIntensity; // This is set only when we are synchronizing plots on intensity

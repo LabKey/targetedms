@@ -16,6 +16,7 @@
 
 package org.labkey.targetedms.passport;
 
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.action.SimpleViewAction;
@@ -68,7 +69,7 @@ import static org.labkey.targetedms.TargetedMSManager.getSqlDialect;
 public class PassportController extends SpringActionController
 {
     private static final DefaultActionResolver _actionResolver = new DefaultActionResolver(PassportController.class);
-    private static final Logger LOG = Logger.getLogger(PassportController.class);
+    private static final Logger LOG = LogManager.getLogger(PassportController.class);
 
     public PassportController()
     {
