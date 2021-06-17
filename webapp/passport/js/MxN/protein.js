@@ -33,22 +33,37 @@ protein =
         chromParent.empty();
 
         let currentTimepoint = null;
-        let childHtml = '';
-        let separator = '<div class="chromatogramMatrix">';
+        let childHtml = '<table class="chromatogramGrid"><tr><td/>';
 
+        var groupings = [];
+
+        protein.selectedPrecursor.ReplicateInfo.forEach(function(replicate) {
+            if (groupings.indexOf(replicate.Grouping) === -1) {
+                groupings.push(replicate.Grouping);
+            }
+        });
+
+        groupings.forEach(function(grouping) {
+            childHtml += '<td style="text-align: center; font-weight: bold">' + LABKEY.Utils.encodeHtml(grouping) + '</td>'
+        });
+
+        childHtml += '</tr><tr>';
+
+        let cols = 1;
+        currentTimepoint = null;
         protein.selectedPrecursor.ReplicateInfo.forEach(function(replicate) {
             if (replicate.Timepoint !== currentTimepoint) {
                 // Wrap to the next line
-                childHtml += separator;
-                separator = '</div>\n<div class="chromatogramMatrix">\n'
                 currentTimepoint = replicate.Timepoint;
+                cols++;
+                childHtml += '</tr><tr><td style="font-weight: bold;">' + LABKEY.Utils.encodeHtml(currentTimepoint) + '</td>';
             }
 
             const id = 'chrom' + replicate.PrecursorChromInfoId;
-            childHtml += '<a target="' + id + '"></a><span id="' + id + '" style="width: 275px; height: 325px"></span>\n';
+            childHtml += '<td><a target="' + id + '"></a><span id="' + id + '" style="width: 275px; height: 315px"></span></td>\n';
         });
 
-        childHtml += '</div>';
+        childHtml += '</tr><tr><td colspan="' + cols + '"><div id="seriesLegend" style="width: 100%"></div></td></tr></table>';
         chromParent.append(childHtml);
 
         $('a[name*=\'Chromatograms\'] > span').text('Chromatograms for ' + precursor.FullDescription);
@@ -59,9 +74,7 @@ protein =
                     parentElement[0],
                     $('#seriesLegend')[0],
                     false,
-                    function () {
-                        return replicate.Timepoint + ', ' + replicate.Grouping;
-                    }
+                    false
             );
         });
 
@@ -88,7 +101,6 @@ protein =
                 }
             }).render();
         }
-
     },
 
     calcStats: function(rows, getter) {
@@ -106,11 +118,12 @@ protein =
         let cvSum = 0;
         let count = 0;
         const cvs = [];
+
         for (let groupName in grouped) {
             if (grouped.hasOwnProperty(groupName)) {
                 const rowsForGroup = grouped[groupName];
                 const stats = this.calcStats(rowsForGroup, function (row) {
-                    return row.intensity
+                    return row[protein.settings.areaProperty];
                 });
                 cvs.push(stats.cv);
                 cvSum += stats.cv;
@@ -167,6 +180,9 @@ protein =
             return row.PrecursorId;
         });
 
+        let hasCalibratedArea = false;
+        let hasNormalizedArea = false;
+
         Object.keys(precursorGrouped).forEach(function(precursorId ) {
             const precursorRows = precursorGrouped[precursorId];
             const precursor = precursorRows[0];
@@ -175,6 +191,8 @@ protein =
                 Sequence: precursor.PeptideSequence,
                 FullDescription: precursor.ModifiedSequence + ' ' + protein.renderCharge(precursor.Charge) + ', ' + precursor.Mz.toFixed(4),
                 TotalArea: 0,
+                CalibratedArea: 0,
+                NormalizedArea: 0,
                 StartIndex: precursor.StartIndex,
                 EndIndex: precursor.EndIndex,
                 Enabled: true,
@@ -191,6 +209,10 @@ protein =
             // Sum the total area across replicates
             precursorRows.forEach(function(precursorRow) {
                 precursorData.TotalArea += precursorRow.TotalArea;
+                precursorData.CalibratedArea += precursorRow.CalibratedArea;
+                precursorData.NormalizedArea += precursorRow.NormalizedArea;
+                hasCalibratedArea |= precursorRow.CalibratedArea;
+                hasNormalizedArea |= precursorRow.NormalizedArea;
             });
 
             const timepointGrouped = LABKEY.vis.groupData(precursorRows, function (row) {
@@ -209,6 +231,10 @@ protein =
             protein.precursors.push(precursorData);
         });
 
+        const refreshFunction = function () {
+            protein.updateUI();
+        };
+
         // callback for the chart settings
         // when settings are changed this get called which updates data and UI
         const updateData = function () {
@@ -225,7 +251,7 @@ protein =
                 });
             }
 
-            const sortValue = "TotalArea";
+            const sortValue = "Area";
             if (sortBy === "Intensity") {
                 protein.precursors.sort(function (a, b) {
                     return b[sortValue] - a[sortValue];
@@ -256,12 +282,22 @@ protein =
                 window.clearTimeout(protein.refreshTimer);
             }
 
-            protein.refreshTimer = window.setTimeout(function () {
-                protein.updateUI();
-            }, 500);
+            protein.refreshTimer = window.setTimeout(refreshFunction, 500);
         };
 
         protein.settings = new Settings(updateData);
+        protein.settings.hasCalibratedArea = hasCalibratedArea;
+        protein.settings.hasNormalizedArea = hasNormalizedArea;
+
+        // Fall back to normalized or total if we don't have other options
+        if (!hasCalibratedArea) {
+            $('#valueType').val(hasNormalizedArea ? 'normalizedArea' : 'totalArea')
+        }
+
+        $('#totalCVCheckbox').change(refreshFunction);
+        $('#intraCVCheckbox').change(refreshFunction);
+        $('#interCVCheckbox').change(refreshFunction);
+        $("#valueType").change(refreshFunction);
 
         protein.longestPeptide = 0;
         protein.precursors.forEach(function(p) {
@@ -306,7 +342,9 @@ protein =
                 precursor.ReplicateInfo.forEach(function(replicateInfo) {
                     plotData.push({
                         timepoint: replicateInfo.Timepoint,
-                        intensity: replicateInfo.TotalArea,
+                        totalArea: replicateInfo.TotalArea,
+                        calibratedArea: replicateInfo.CalibratedArea,
+                        normalizedArea: replicateInfo.NormalizedArea,
                         grouping: replicateInfo.Grouping,
                         replicate: replicateInfo.Replicate,
                         sequence: precursor.ModifiedSequence,
@@ -332,11 +370,33 @@ protein =
             const summaryDataTable = [];
             const cvs = {};
 
+            const showTotal = $('#totalCVCheckbox')[0].checked;
+            const showIntra = $('#intraCVCheckbox')[0].checked;
+            const showInter = $('#interCVCheckbox')[0].checked;
+
+            protein.settings.areaProperty = $('#valueType')[0].value;
+
+            if (protein.settings.areaProperty === 'calibratedArea' && !protein.settings.hasCalibratedArea) {
+                $('#noCalibratedValuesError').css('display', '');
+                protein.settings.areaProperty = 'totalArea';
+            }
+            else {
+                $('#noCalibratedValuesError').css('display', 'none');
+            }
+
+            if (protein.settings.areaProperty === 'normalizedArea' && !protein.settings.hasNormalizedArea) {
+                $('#noNormalizedValuesError').css('display', '');
+                protein.settings.areaProperty = 'totalArea';
+            }
+            else {
+                $('#noNormalizedValuesError').css('display', 'none');
+            }
+
             Object.keys(groupedByPrecursorId).forEach(function(precursorId) {
                 const rowsForPrecursor = groupedByPrecursorId[precursorId];
                 const row = rowsForPrecursor[0];
                 const fullStats = protein.calcStats(rowsForPrecursor, function (x) {
-                    return x.intensity;
+                    return x[protein.settings.areaProperty];
                 });
                 medians[precursorId] = fullStats.Q2;
 
@@ -351,23 +411,30 @@ protein =
                         fullDescription: row.sequence + ' ' + protein.renderCharge(row.charge) + ', ' + row.mz.toFixed(4),
                         precursorId: row.precursorId
                     }
-                    cvLineData.push({
-                        ...sharedValues,
-                        cvMean: totalCV,
-                        cvType: 'Total CV'
-                    });
-                    cvLineData.push({
-                        ...sharedValues,
-                        cvMean: timepointCV.mean * 100,
-                        cvStdDev: timepointCV.sd * 100,
-                        cvType: 'Average intra-day CV'
-                    });
-                    cvLineData.push({
-                        ...sharedValues,
-                        cvMean: groupingCV.mean * 100,
-                        cvStdDev: groupingCV.sd * 100,
-                        cvType: 'Average inter-day CV'
-                    });
+
+                    if (showTotal) {
+                        cvLineData.push({
+                            ...sharedValues,
+                            cvMean: totalCV,
+                            cvType: 'Total CV'
+                        });
+                    }
+                    if (showIntra) {
+                        cvLineData.push({
+                            ...sharedValues,
+                            cvMean: timepointCV.mean * 100,
+                            cvStdDev: timepointCV.sd * 100,
+                            cvType: 'Average intra-day CV'
+                        });
+                    }
+                    if (showInter) {
+                        cvLineData.push({
+                            ...sharedValues,
+                            cvMean: groupingCV.mean * 100,
+                            cvStdDev: groupingCV.sd * 100,
+                            cvType: 'Average inter-day CV'
+                        });
+                    }
                 }
                 cvs[precursorId] = totalCV;
 
@@ -419,9 +486,9 @@ protein =
                         '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.mz.toFixed(4)) + '</td>' +
                         '<td style="text-align: right">' + (row.StartIndex ? row.StartIndex : '') + '</td>' +
                         '<td style="text-align: right">' + row.peptideSequence.length + '</td>' +
-                        '<td style="text-align: right">' + LABKEY.Utils.encodeHtml((row.groupingCV * 100).toFixed(1)) + '%</td>' +
-                        '<td style="text-align: right">' + LABKEY.Utils.encodeHtml((row.timepointCV* 100).toFixed(1)) + '%</td>' +
-                        '<td style="text-align: right">' + LABKEY.Utils.encodeHtml((row.totalCV).toFixed(1)) + '%</td>' +
+                        '<td style="text-align: right; ' + (row.groupingCV > 0.2 ? 'color: darkred; font-weight: bold' : '') + '">' + LABKEY.Utils.encodeHtml((row.groupingCV * 100).toFixed(1)) + '%</td>' +
+                        '<td style="text-align: right; ' + (row.timepointCV > 0.2 ? 'color: darkred; font-weight: bold' : '') + '">' + LABKEY.Utils.encodeHtml((row.timepointCV * 100).toFixed(1)) + '%</td>' +
+                        '<td style="text-align: right; ' + (row.totalCV > 0.2 ? 'color: darkred; font-weight: bold' : '') + '">' + LABKEY.Utils.encodeHtml((row.totalCV).toFixed(1)) + '%</td>' +
                         '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.fullStats.Q2.toExponential(3)) + '</td>' +
                         '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.fullStats.max.toExponential(3)) + '</td>' +
                         '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.fullStats.min.toExponential(3)) + '</td>' +
@@ -440,7 +507,7 @@ protein =
                 }),
                 aes: {
                     hoverText: function (row) {
-                        return row.intensity.toExponential(3) + '\n' +
+                        return row[protein.settings.areaProperty].toExponential(3) + '\n' +
                                 row.sequence + protein.renderCharge(row.charge) + ', ' + row.mz.toFixed(4) + '\n' +
                                 'Timepoint: ' + row.timepoint + '\n' +
                                 'Grouping: ' + row.grouping;
@@ -484,15 +551,12 @@ protein =
                 width: Math.min(parentWidth, 250 * (this.precursors.length + 1)),
                 height: 400,
                 gridLineColor: '#777777',
-                labels: {
-                    main: {value: 'Peak Area'}
-                },
                 data: plotData,
                 fontFamily: '13px',
                 gridLinesVisible: 'none',
                 layers: [boxLayer, pointLayer],
                 aes: {
-                    yLeft: 'intensity',
+                    yLeft: protein.settings.areaProperty,
                     x: 'xLabel',
                     color: 'timepoint',
                     shape: 'grouping'
@@ -523,61 +587,61 @@ protein =
                 color: 'cvType'
             };
 
-            const cvBarLayer = new LABKEY.vis.Layer({
-                geom: new LABKEY.vis.Geom.BarPlot({
-                    clickFn: function (event, row) {
-                        for (let i = 0; i < protein.precursors.length; i++) {
-                            if (protein.precursors[i].AbbreviatedLabel === row.sequence) {
-                                protein.selectPrecursor(protein.precursors[i].PrecursorId, true);
+            if (cvLineData.length) {
+
+                const cvBarLayer = new LABKEY.vis.Layer({
+                    geom: new LABKEY.vis.Geom.BarPlot({
+                        clickFn: function (event, row) {
+                            for (let i = 0; i < protein.precursors.length; i++) {
+                                if (protein.precursors[i].AbbreviatedLabel === row.sequence) {
+                                    protein.selectPrecursor(protein.precursors[i].PrecursorId, true);
+                                }
                             }
-                        }
-                    },
-                    hoverFn: function (row) {
-                        return row.cvType + ': ' + row.cvMean.toFixed(1) + '%\n' +
-                                row.fullDescription +
-                                (row.cvStdDev === undefined ? '' :
-                                        ('\nCV StdDev: ' + row.cvStdDev.toFixed(1) + '%'));
-                    }
-                }),
-                data: cvLineData,
-                aes: barAes
-            });
-
-
-            const cvPlot = new LABKEY.vis.Plot({
-                renderTo: 'cvChart',
-                rendererType: 'd3',
-                width: Math.min(parentWidth, 250 * (this.precursors.length + 1)),
-                height: 400,
-                labels: {
-                    main: {value: 'Coefficient of Variation'}
-                },
-                data: cvLineData,
-                fontFamily: '13px',
-                gridLinesVisible: 'none',
-                aes: barAes,
-                layers: [cvBarLayer],
-                scales: {
-                    x: {
-                        scaleType: 'discrete'
-                    },
-                    xSub: {
-                        scaleType: 'discrete'
-                    },
-                    y: {
-                        scaleType: 'continuous',
-                        trans: 'linear',
-                        tickFormat: function (d) {
-                            if (d === 0)
-                                return 0;
-                            return d.toFixed(0) + '%';
                         },
-                        domain: [0, null]
+                        hoverFn: function (row) {
+                            return row.cvType + ': ' + row.cvMean.toFixed(1) + '%\n' +
+                                    row.fullDescription +
+                                    (row.cvStdDev === undefined ? '' :
+                                            ('\nCV StdDev: ' + row.cvStdDev.toFixed(1) + '%'));
+                        }
+                    }),
+                    data: cvLineData,
+                    aes: barAes
+                });
+
+
+                const cvPlot = new LABKEY.vis.Plot({
+                    renderTo: 'cvChart',
+                    rendererType: 'd3',
+                    width: Math.min(parentWidth, 250 * (this.precursors.length + 1)),
+                    height: 400,
+                    data: cvLineData,
+                    fontFamily: '13px',
+                    gridLinesVisible: 'none',
+                    aes: barAes,
+                    layers: [cvBarLayer],
+                    scales: {
+                        x: {
+                            scaleType: 'discrete'
+                        },
+                        xSub: {
+                            scaleType: 'discrete'
+                        },
+                        y: {
+                            scaleType: 'continuous',
+                            trans: 'linear',
+                            tickFormat: function (d) {
+                                if (d === 0)
+                                    return 0;
+                                return d.toFixed(0) + '%';
+                            },
+                            domain: [0, null]
+                        }
                     }
-                }
-            });
-            cvPlot.render();
-            LABKEY.targetedms.SVGChart.attachPlotExportIcons('cvChart', 'Coefficient of Variation - ' + protein.preferredname, 800, 0);
+                });
+                cvPlot.render();
+                LABKEY.targetedms.SVGChart.attachPlotExportIcons('cvChart', 'Coefficient of Variation - ' + protein.preferredname, 800, 0);
+            }
         }
     },
 

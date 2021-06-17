@@ -4,7 +4,6 @@
     <div id="chromatograms">
     </div>
 </div>
-<div id="seriesLegend" style="width: 500px; margin: auto"></div>
 <div id="peptideinfo" class="peptideDetails"></div>
 <div class="peptideDetails"><a id="selectedPeptideLink" href="">View peptide details</a></div>
 

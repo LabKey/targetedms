@@ -136,6 +136,7 @@ class Constants
         UncompressedSize("INTEGER"),
         ChromatogramFormat("INTEGER"),
         Adduct("VARCHAR(200)"),
+        Quantitative("INTEGER"),
         ExplicitIonMobility("DOUBLE"),
         CCS("DOUBLE"),
         IonMobilityMS1("DOUBLE"),
@@ -637,7 +638,8 @@ class Constants
 
         FragmentName(Column.FragmentName),
         ChemicalFormula(Column.ChemicalFormula),
-        Adduct(Column.Adduct);
+        Adduct(Column.Adduct),
+        Quantitative(Column.Quantitative);
 
         private final Column _column;
         private final String _definition;

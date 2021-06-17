@@ -34,7 +34,10 @@ import org.labkey.api.query.QueryService;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.RequiresPermission;
 import org.labkey.api.security.permissions.ReadPermission;
+import org.labkey.api.util.DOM;
+import org.labkey.api.util.HtmlString;
 import org.labkey.api.view.ActionURL;
+import org.labkey.api.view.HtmlView;
 import org.labkey.api.view.JspView;
 import org.labkey.api.view.NavTree;
 import org.labkey.api.view.NotFoundException;
@@ -53,6 +56,7 @@ import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
 import org.xml.sax.SAXException;
 
+import javax.swing.text.html.HTML;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -156,10 +160,24 @@ public class PassportController extends SpringActionController
                 filterSection.setFrame(WebPartView.FrameType.PORTAL);
                 result.addView(filterSection);
 
-                JspView<?> chartSection = new JspView<>("/org/labkey/targetedms/view/passport/charts.jsp");
-                chartSection.setTitle("Comparison Plots");
-                chartSection.setFrame(WebPartView.FrameType.PORTAL);
-                result.addView(chartSection);
+                HtmlView intensityChart = new HtmlView(DOM.DIV(DOM.at().cl("exportable-plot").id("intensityChart")));
+                intensityChart.setTitle("Peak Areas");
+                intensityChart.setFrame(WebPartView.FrameType.PORTAL);
+                result.addView(intensityChart);
+
+                HtmlView cvChart = new HtmlView(
+                        DOM.createHtmlFragment(
+                            DOM.DIV(DOM.at(DOM.Attribute.style, "text-align: center"),"Show:",
+                                    HtmlString.NBSP, HtmlString.NBSP, DOM.INPUT(DOM.at(DOM.Attribute.checked, null).type("checkbox").id("totalCVCheckbox")), "Total CV",
+                                    HtmlString.NBSP, HtmlString.NBSP, DOM.INPUT(DOM.at(DOM.Attribute.checked, null).type("checkbox").id("intraCVCheckbox")), "Average intra-day CV",
+                                    HtmlString.NBSP, HtmlString.NBSP, DOM.INPUT(DOM.at(DOM.Attribute.checked, null).type("checkbox").id("interCVCheckbox")), "Average inter-day CV"
+                            ),
+                            DOM.DIV(DOM.at().cl("exportable-plot").id("cvChart"))
+                        )
+                );
+                cvChart.setTitle("Coefficient of Variation");
+                cvChart.setFrame(WebPartView.FrameType.PORTAL);
+                result.addView(cvChart);
 
                 JspView<?> chromatogramSection = new JspView<>("/org/labkey/targetedms/view/passport/chromatograms.jsp");
                 chromatogramSection.setTitle("Chromatograms");
