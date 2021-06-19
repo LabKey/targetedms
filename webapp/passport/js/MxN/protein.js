@@ -63,7 +63,8 @@ protein =
             childHtml += '<td><a target="' + id + '"></a><span id="' + id + '" style="width: 275px; height: 315px"></span></td>\n';
         });
 
-        childHtml += '</tr><tr><td colspan="' + cols + '"><div id="seriesLegend" style="width: 100%"></div></td></tr></table>';
+        childHtml += '</tr><tr><td colspan="' + cols + '"><div id="seriesLegend" style="width: 100%"></div>' +
+                '<div style="text-align: center"><a href="' + showPeptideUrl + 'id=' + protein.selectedPrecursor.PeptideId + '">Show peptide details</a></div></td></tr></table>';
         chromParent.append(childHtml);
 
         $('a[name*=\'Chromatograms\'] > span').text('Chromatograms for ' + precursor.FullDescription);
@@ -78,8 +79,6 @@ protein =
             );
         });
 
-        $('#selectedPeptideLink').attr("href", showPeptideUrl + "id=" + protein.selectedPrecursor.PeptideId);
-
         if (precursorChromInfoId) {
             if (precursorChromInfoId === true) {
                 precursorChromInfoId = protein.selectedPrecursor.ReplicateInfo[0].PrecursorChromInfoId;
@@ -91,13 +90,26 @@ protein =
         const calCurveElement = $('#calibrationCurve');
         calCurveElement.empty();
 
+        const figuresOfMeritElement = $('#figuresOfMerit');
+        figuresOfMeritElement.empty();
+
         if (protein.selectedPrecursor.CalibrationCurveId) {
             new LABKEY.WebPart({
                 partName: 'Targeted MS Calibration Curve',
-                renderTo: 'calibrationCurve',
-                frame: 'title',
+                renderTo: 'calibrationCurveDiv',
+                frame: 'portal',
                 partConfig: {
                     calibrationCurveId: precursor.CalibrationCurveId
+                }
+            }).render();
+
+            new LABKEY.WebPart({
+                partName: 'Targeted MS Figures of Merit',
+                renderTo: 'figuresOfMeritDiv',
+                frame: 'portal',
+                titleHref: LABKEY.ActionURL.buildURL('targetedms', 'showFiguresOfMerit', LABKEY.ActionURL.getContainer(), {generalMoleculeId: precursor.PeptideId}),
+                partConfig: {
+                    generalMoleculeId: precursor.PeptideId
                 }
             }).render();
         }
@@ -211,8 +223,8 @@ protein =
                 precursorData.TotalArea += precursorRow.TotalArea;
                 precursorData.CalibratedArea += precursorRow.CalibratedArea;
                 precursorData.NormalizedArea += precursorRow.NormalizedArea;
-                hasCalibratedArea |= precursorRow.CalibratedArea;
-                hasNormalizedArea |= precursorRow.NormalizedArea;
+                hasCalibratedArea ||= precursorRow.CalibratedArea;
+                hasNormalizedArea ||= precursorRow.NormalizedArea;
             });
 
             const timepointGrouped = LABKEY.vis.groupData(precursorRows, function (row) {

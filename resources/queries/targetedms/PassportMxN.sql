@@ -23,9 +23,9 @@ SELECT
     PrecursorId.PeptideId.EndIndex,
     SampleFileId,
     TotalArea,
-       CAST(NULL AS DOUBLE) AS CalibratedArea,
+    CAST(ifdefined(CalibratedArea) AS DOUBLE) AS CalibratedArea,
 --     TotalArea * 2 / PrecursorId.Charge + 1000000 AS CalibratedArea,
-    CAST(NULL AS DOUBLE) AS NormalizedArea,
+    CAST(ifdefined(NormalizedArea) AS DOUBLE) AS NormalizedArea,
 --     TotalArea * 3 * PrecursorId.Charge AS NormalizedArea,
     PrecursorId.PeptideId.PeptideGroupId.id as PepGroupId,
     cc.Id AS CalibrationCurveId

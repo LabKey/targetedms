@@ -254,13 +254,6 @@
     border: none;
 }
 
-.peptideDetails {
-    min-height:70px;
-    display: table;
-    margin: auto;
-    padding-top: 10px;
-}
-
 .external-link-icon {
     width: 10px;
     height: 10px;

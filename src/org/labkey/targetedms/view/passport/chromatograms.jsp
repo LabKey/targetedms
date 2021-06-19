@@ -4,8 +4,3 @@
     <div id="chromatograms">
     </div>
 </div>
-<div id="peptideinfo" class="peptideDetails"></div>
-<div class="peptideDetails"><a id="selectedPeptideLink" href="">View peptide details</a></div>
-
-<div id="calibrationCurve">
-</div>

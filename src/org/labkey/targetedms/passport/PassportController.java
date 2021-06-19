@@ -56,7 +56,6 @@ import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
 import org.xml.sax.SAXException;
 
-import javax.swing.text.html.HTML;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -183,6 +182,14 @@ public class PassportController extends SpringActionController
                 chromatogramSection.setTitle("Chromatograms");
                 chromatogramSection.setFrame(WebPartView.FrameType.PORTAL);
                 result.addView(chromatogramSection);
+
+                JspView<?> calCurveSection = new JspView<>("/org/labkey/targetedms/view/passport/webPartPlaceholder.jsp", "calibrationCurveDiv");
+                calCurveSection.setFrame(WebPartView.FrameType.NONE);
+                result.addView(calCurveSection);
+
+                JspView<?> fomSection = new JspView<>("/org/labkey/targetedms/view/passport/webPartPlaceholder.jsp", "figuresOfMeritDiv");
+                fomSection.setFrame(WebPartView.FrameType.NONE);
+                result.addView(fomSection);
             }
 
             return result;
