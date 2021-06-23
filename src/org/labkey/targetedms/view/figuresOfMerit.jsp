@@ -92,9 +92,13 @@
     <tr>
         <td class="labkey-form-label"></td>
         <td>
-            <div id="targetedms-fom-export" class="export-icon" data-toggle="tooltip" title="Export to Excel">
-                <a href="javascript:exportExcel()"><i class="fa fa-file-excel-o"></i> Export to Excel</a>
-            </div>
+            <% if (!bean.getMinimize()) { %>
+                <div id="targetedms-fom-export" class="export-icon" data-toggle="tooltip" title="Export to Excel">
+                    <a href="javascript:exportExcel()"><i class="fa fa-file-excel-o"></i> Export to Excel</a>
+                </div>
+            <% } else { %>
+                <%= link("Show Details", new ActionURL(TargetedMSController.ShowFiguresOfMeritAction.class, getContainer()).addParameter("GeneralMoleculeId", bean.getGeneralMoleculeId()))%>
+            <% } %>
             <span id="fom-loading">Loading...<i class="fa fa-spinner fa-pulse"></i></span>
         </td>
     </tr>

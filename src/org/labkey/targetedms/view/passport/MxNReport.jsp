@@ -132,6 +132,8 @@
         <th class="labkey-column-header" style="text-align: right">Min Intensity</th>
     </tr>
     </thead>
-    <tbody id="cvTableBody"></tbody>
+    <tbody id="cvTableBody">
+        <tr><td colspan="12">Loading...</td></tr>
+    </tbody>
 </table>
 

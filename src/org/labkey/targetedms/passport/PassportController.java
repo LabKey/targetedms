@@ -65,6 +65,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static org.labkey.targetedms.TargetedMSController.getShowListURL;
+import static org.labkey.targetedms.TargetedMSController.getShowRunURL;
 import static org.labkey.targetedms.TargetedMSManager.getSqlDialect;
 
 public class PassportController extends SpringActionController
@@ -78,7 +80,7 @@ public class PassportController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class BeginAction extends SimpleViewAction<Object>
+    public static class BeginAction extends SimpleViewAction<Object>
     {
         @Override
         public ModelAndView getView(Object o, BindException errors)
@@ -126,6 +128,7 @@ public class PassportController extends SpringActionController
     {
         private String _title;
         private IProtein _protein;
+        private TargetedMSRun _run;
 
         @Override
         public ModelAndView getView(ProteinForm form, BindException errors) throws IOException, SAXException, ParserConfigurationException
@@ -145,8 +148,8 @@ public class PassportController extends SpringActionController
 
             VBox result = new VBox();
             PeptideGroup group = PeptideGroupManager.getPeptideGroup(getContainer(), _protein.getPepGroupId());
-            TargetedMSRun run = TargetedMSManager.getRun(group.getRunId());
-            TargetedMSController.addProteinSummaryViews(result, group, run, getUser(), getContainer());
+            _run = TargetedMSManager.getRun(group.getRunId());
+            TargetedMSController.addProteinSummaryViews(result, group, _run, getUser(), getContainer());
 
             if (beforeAfter)
             {
@@ -159,7 +162,7 @@ public class PassportController extends SpringActionController
                 filterSection.setFrame(WebPartView.FrameType.PORTAL);
                 result.addView(filterSection);
 
-                HtmlView intensityChart = new HtmlView(DOM.DIV(DOM.at().cl("exportable-plot").id("intensityChart")));
+                HtmlView intensityChart = new HtmlView(DOM.DIV(DOM.at().cl("exportable-plot").id("intensityChart"), "Loading..."));
                 intensityChart.setTitle("Peak Areas");
                 intensityChart.setFrame(WebPartView.FrameType.PORTAL);
                 result.addView(intensityChart);
@@ -171,7 +174,7 @@ public class PassportController extends SpringActionController
                                     HtmlString.NBSP, HtmlString.NBSP, DOM.INPUT(DOM.at(DOM.Attribute.checked, null).type("checkbox").id("intraCVCheckbox")), "Average intra-day CV",
                                     HtmlString.NBSP, HtmlString.NBSP, DOM.INPUT(DOM.at(DOM.Attribute.checked, null).type("checkbox").id("interCVCheckbox")), "Average inter-day CV"
                             ),
-                            DOM.DIV(DOM.at().cl("exportable-plot").id("cvChart"))
+                            DOM.DIV(DOM.at().cl("exportable-plot").id("cvChart"), "Loading...")
                         )
                 );
                 cvChart.setTitle("Coefficient of Variation");
@@ -198,6 +201,11 @@ public class PassportController extends SpringActionController
         @Override
         public void addNavTrail(NavTree root)
         {
+            root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
+            if (_run != null)
+            {
+                root.addChild(_run.getDescription(), getShowRunURL(getContainer(), _run.getId()));
+            }
             if (_protein != null)
             {
                 root.addChild(_protein.getName(), new ActionURL(TargetedMSController.ShowProteinAction.class, getContainer()).addParameter("id", _protein.getPepGroupId()));

@@ -22,6 +22,7 @@ import org.labkey.api.data.Aggregate;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
+import org.labkey.api.data.ContainerManager;
 import org.labkey.api.data.DataColumn;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.RenderContext;
@@ -34,8 +35,11 @@ import org.labkey.api.query.DetailsURL;
 import org.labkey.api.query.ExprColumn;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.InvalidKeyException;
+import org.labkey.api.query.QueryForeignKey;
+import org.labkey.api.query.QueryService;
 import org.labkey.api.query.QueryUpdateService;
 import org.labkey.api.query.QueryUpdateServiceException;
+import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.security.UserPrincipal;
 import org.labkey.api.security.permissions.DeletePermission;
@@ -116,6 +120,9 @@ public class SampleFileTable extends TargetedMSTable
 
         DetailsURL instrumentURL = new DetailsURL(new ActionURL(TargetedMSController.ShowInstrumentAction.class, getContainer()), Collections.singletonMap("serialNumber", "InstrumentSerialNumber"));
         getMutableColumn("InstrumentSerialNumber").setURL(instrumentURL);
+
+        UserSchema samplesSchema = QueryService.get().getUserSchema(getUserSchema().getUser(), ContainerManager.getForPath("/Sample Manager"), "samples");
+        getMutableColumn("SampleName").setFk(QueryForeignKey.from(samplesSchema, null).table("MassSpecSamples").key("Name").raw(true).build());
     }
 
     @Override
@@ -126,6 +133,7 @@ public class SampleFileTable extends TargetedMSTable
             // Always include these columns
             List<FieldKey> defaultCols = new ArrayList<>(Arrays.asList(
                     FieldKey.fromParts("ReplicateId"),
+                    FieldKey.fromParts("SampleName"),
                     FieldKey.fromParts("File"),
                     FieldKey.fromParts("Download"),
                     FieldKey.fromParts("AcquiredTime"),

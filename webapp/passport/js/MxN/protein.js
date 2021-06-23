@@ -49,13 +49,11 @@ protein =
 
         childHtml += '</tr><tr>';
 
-        let cols = 1;
         currentTimepoint = null;
         protein.selectedPrecursor.ReplicateInfo.forEach(function(replicate) {
             if (replicate.Timepoint !== currentTimepoint) {
                 // Wrap to the next line
                 currentTimepoint = replicate.Timepoint;
-                cols++;
                 childHtml += '</tr><tr><td style="font-weight: bold;">' + LABKEY.Utils.encodeHtml(currentTimepoint) + '</td>';
             }
 
@@ -63,7 +61,7 @@ protein =
             childHtml += '<td><a target="' + id + '"></a><span id="' + id + '" style="width: 275px; height: 315px"></span></td>\n';
         });
 
-        childHtml += '</tr><tr><td colspan="' + cols + '"><div id="seriesLegend" style="width: 100%"></div>' +
+        childHtml += '</tr><tr><td colspan="' + (groupings.length + 1) + '"><div id="seriesLegend" style="width: 100%"></div>' +
                 '<div style="text-align: center"><a href="' + showPeptideUrl + 'id=' + protein.selectedPrecursor.PeptideId + '">Show peptide details</a></div></td></tr></table>';
         chromParent.append(childHtml);
 
@@ -98,6 +96,7 @@ protein =
                 partName: 'Targeted MS Calibration Curve',
                 renderTo: 'calibrationCurveDiv',
                 frame: 'portal',
+                titleHref: LABKEY.ActionURL.buildURL('targetedms', 'showCalibrationCurve', LABKEY.ActionURL.getContainer(), {calibrationCurveId: precursor.CalibrationCurveId}),
                 partConfig: {
                     calibrationCurveId: precursor.CalibrationCurveId
                 }

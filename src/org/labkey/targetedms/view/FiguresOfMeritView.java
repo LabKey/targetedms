@@ -62,8 +62,8 @@ public class FiguresOfMeritView extends JspView<FiguresOfMeritView.MoleculeInfo>
 
     public static class MoleculeInfo
     {
-        Integer _runId;
-        Integer _generalMoleculeId;
+        Long _runId;
+        Long _generalMoleculeId;
         String _peptideName;
         String _moleculeName;
         String _fileName;
@@ -74,22 +74,22 @@ public class FiguresOfMeritView extends JspView<FiguresOfMeritView.MoleculeInfo>
         TargetedMSRun _run;
         private boolean _minimize;
 
-        public Integer getRunId()
+        public Long getRunId()
         {
             return _runId;
         }
 
-        public void setRunId(Integer runId)
+        public void setRunId(Long runId)
         {
             _runId = runId;
         }
 
-        public Integer getGeneralMoleculeId()
+        public Long getGeneralMoleculeId()
         {
             return _generalMoleculeId;
         }
 
-        public void setGeneralMoleculeId(Integer moleculeId)
+        public void setGeneralMoleculeId(Long moleculeId)
         {
             _generalMoleculeId = moleculeId;
         }
