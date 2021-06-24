@@ -136,6 +136,11 @@ Ext4.define('LABKEY.targetedms.CalibrationCurve', {
     addPlot: function () {
         var me = this;
 
+        if (this.data.calibrationCurve.errorMessage) {
+            document.getElementById(this.renderTo).innerText = this.data.calibrationCurve.errorMessage;
+            return;
+        }
+
         // This is a dummy layer to be overwritten by the line layer when selecting a point
         this.selectedPointLayer = new LABKEY.vis.Layer({
             geom: new LABKEY.vis.Geom.Path({size: 3, opacity: 0}),

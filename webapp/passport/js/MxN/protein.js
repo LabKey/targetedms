@@ -32,6 +32,12 @@ protein =
         const chromParent = $('#chromatograms');
         chromParent.empty();
 
+        const calCurveElement = $('#calibrationCurve');
+        calCurveElement.empty();
+
+        const figuresOfMeritElement = $('#figuresOfMerit');
+        figuresOfMeritElement.empty();
+
         let currentTimepoint = null;
         let childHtml = '<table class="chromatogramGrid"><tr><td/>';
 
@@ -84,12 +90,6 @@ protein =
             // Scroll to the chromatogram plot
             window.location.hash = "#chrom" + precursorChromInfoId;
         }
-
-        const calCurveElement = $('#calibrationCurve');
-        calCurveElement.empty();
-
-        const figuresOfMeritElement = $('#figuresOfMerit');
-        figuresOfMeritElement.empty();
 
         if (protein.selectedPrecursor.CalibrationCurveId) {
             new LABKEY.WebPart({
@@ -653,6 +653,10 @@ protein =
                 cvPlot.render();
                 LABKEY.targetedms.SVGChart.attachPlotExportIcons('cvChart', 'Coefficient of Variation - ' + protein.preferredname, 800, 0);
             }
+        }
+        else {
+            document.getElementById('cvTableBody').innerHTML =
+                    '<tr><td colspan="12">No data to show. Replicates must have a Day annotation and either have no Sample Type set, or be marked as being Quality Controls.</td></tr>';
         }
     },
 
