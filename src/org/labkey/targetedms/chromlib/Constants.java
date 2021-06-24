@@ -146,6 +146,7 @@ class Constants
         ExplicitIonMobilityUnits("VARCHAR(200)"),
         ExplicitCcsSqa("DOUBLE"),
         ExplicitCompensationVoltage("DOUBLE"),
+        QValue("DOUBLE"),
 
         PrecursorId("INTEGER NOT NULL", Table.Precursor, Id),
         IsotopeModId("INTEGER NOT NULL", Table.IsotopeModification, Id),
@@ -532,6 +533,7 @@ class Constants
         ExplicitIonMobilityUnits(Column.ExplicitIonMobilityUnits),
         ExplicitCcsSqa(Column.ExplicitCcsSqa),
         ExplicitCompensationVoltage(Column.ExplicitCompensationVoltage),
+        QValue(Column.QValue),
 
         Adduct(Column.Adduct);
 
