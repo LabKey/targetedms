@@ -22,7 +22,6 @@ import org.labkey.api.data.Aggregate;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
-import org.labkey.api.data.ContainerManager;
 import org.labkey.api.data.DataColumn;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.RenderContext;
@@ -35,11 +34,8 @@ import org.labkey.api.query.DetailsURL;
 import org.labkey.api.query.ExprColumn;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.InvalidKeyException;
-import org.labkey.api.query.QueryForeignKey;
-import org.labkey.api.query.QueryService;
 import org.labkey.api.query.QueryUpdateService;
 import org.labkey.api.query.QueryUpdateServiceException;
-import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.security.UserPrincipal;
 import org.labkey.api.security.permissions.DeletePermission;
@@ -69,7 +65,7 @@ import java.util.Set;
 public class SampleFileTable extends TargetedMSTable
 {
     @Nullable
-    private TargetedMSRun _run;
+    private final TargetedMSRun _run;
 
     public SampleFileTable(TargetedMSSchema schema, ContainerFilter cf)
     {
@@ -90,7 +86,7 @@ public class SampleFileTable extends TargetedMSTable
         {
             addCondition(new SQLFragment("ReplicateId IN (SELECT Id FROM ").
                     append(TargetedMSManager.getTableInfoReplicate(), "r").
-                    append(" WHERE RunId = ?)").add(run.getId()), FieldKey.fromParts("ReplicateId"));
+                    append(" WHERE RunId = ?)").add(_run.getId()), FieldKey.fromParts("ReplicateId"));
         }
 
         SQLFragment excludedSQL = new SQLFragment("CASE WHEN ReplicateId IN (SELECT ReplicateId FROM ");
@@ -116,13 +112,10 @@ public class SampleFileTable extends TargetedMSTable
         var downloadCol = addWrapColumn("Download", getRealTable().getColumn("Id"));
         downloadCol.setKeyField(false);
         downloadCol.setTextAlign("left");
-        downloadCol.setDisplayColumnFactory(colInfo -> new DownloadLinkColumn(colInfo));
+        downloadCol.setDisplayColumnFactory(DownloadLinkColumn::new);
 
         DetailsURL instrumentURL = new DetailsURL(new ActionURL(TargetedMSController.ShowInstrumentAction.class, getContainer()), Collections.singletonMap("serialNumber", "InstrumentSerialNumber"));
         getMutableColumn("InstrumentSerialNumber").setURL(instrumentURL);
-
-        UserSchema samplesSchema = QueryService.get().getUserSchema(getUserSchema().getUser(), ContainerManager.getForPath("/Sample Manager"), "samples");
-        getMutableColumn("SampleName").setFk(QueryForeignKey.from(samplesSchema, null).table("MassSpecSamples").key("Name").raw(true).build());
     }
 
     @Override
@@ -231,9 +224,9 @@ public class SampleFileTable extends TargetedMSTable
                 .append(" ELSE ").append(filePathColSql).append(" END");
     }
 
-    private class DownloadLinkColumn extends DataColumn
+    private static class DownloadLinkColumn extends DataColumn
     {
-        private FieldKey _containerFieldKey = FieldKey.fromParts("ReplicateId", "RunId", "Container");
+        private final FieldKey _containerFieldKey = FieldKey.fromParts("ReplicateId", "RunId", "Container");
 
         public DownloadLinkColumn(ColumnInfo col)
         {
