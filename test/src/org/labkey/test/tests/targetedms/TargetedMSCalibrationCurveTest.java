@@ -586,11 +586,10 @@ public class TargetedMSCalibrationCurveTest extends TargetedMSTest
         clickAndWait(Locator.linkContainingText(scenario + ".sky.zip"));
         clickAndWait(Locator.linkContainingText("calibration curve"));
 
-        calibrationCurvesTable = new DataRegionTable((peptide?"calibration_curves":"calibration_curves_sm_mol"), this);
-        calibrationCurvesTable.setFilter("GeneralMoleculeId", "Equals", (fom!=null?fom.getName():molName));
-
-        clickAndWait(Locator.linkContainingText("Fom"));
-
+        // Go to the calibration curve detail page
+        clickAndWait(Locator.linkContainingText(fom != null ? fom.getName() : molName));
+        // Drill into the FOM details page
+        clickAndWait(Locator.linkContainingText("Show Details"));
         waitForElement(Locators.pageSignal("targetedms-fom-loaded"));
 
         verifyFomTable("fom-table-standard", stdGroups, stdConcentrations, stdBiases, stdExcluded);
@@ -744,16 +743,7 @@ public class TargetedMSCalibrationCurveTest extends TargetedMSTest
                 goBack();
                 calibrationCurvesTable.clickRowDetails(rowWithoutData);
 
-                calibrationCurveWebpart = new CalibrationCurveWebpart(getDriver());
-                assertEquals("Calibration curve with no data shouldn't have any points", 0, calibrationCurveWebpart.getSvgPoints().size());
-                actualLegendText = calibrationCurveWebpart.getSvgLegendItems();
-                expectedLegendText = new ArrayList<>(baseLegendText);
-                expectedLegendText.addAll(Arrays.asList(
-                    "Slope: 0",
-                    "Intercept: 0",
-                    "rSquared: 0"
-                ));
-                assertEquals("Wrong legend text", expectedLegendText, actualLegendText);
+                assertTextPresent("Unable to calculate curve, since there are no data points available");
             }
         }
 
