@@ -136,7 +136,7 @@ class Constants
         UncompressedSize("INTEGER"),
         ChromatogramFormat("INTEGER"),
         Adduct("VARCHAR(200)"),
-        Quantitative("INTEGER"),
+        Quantitative("BOOL"),
         ExplicitIonMobility("DOUBLE"),
         CCS("DOUBLE"),
         IonMobilityMS1("DOUBLE"),

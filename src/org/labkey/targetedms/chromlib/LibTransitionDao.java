@@ -65,11 +65,11 @@ public class LibTransitionDao extends BaseDaoImpl<LibTransition>
         Boolean quantitative = transition.isQuantitative();
         if (quantitative == null)
         {
-            stmt.setNull(colIndex++, Types.INTEGER);
+            stmt.setNull(colIndex++, Types.BOOLEAN);
         }
         else
         {
-            stmt.setInt(colIndex++, quantitative.booleanValue() ? 1 : 0);
+            stmt.setBoolean(colIndex++, quantitative.booleanValue());
         }
     }
     @Override
@@ -110,14 +110,14 @@ public class LibTransitionDao extends BaseDaoImpl<LibTransition>
             transition.setChemicalFormula(rs.getString(TransitionColumn.ChemicalFormula.baseColumn().name()));
             transition.setAdduct(rs.getString(TransitionColumn.Adduct.baseColumn().name()));
 
-            int quantitative = rs.getInt(rs.getInt(TransitionColumn.Quantitative.baseColumn().name()));
+            boolean quantitative = rs.getBoolean(rs.getInt(TransitionColumn.Quantitative.baseColumn().name()));
             if (rs.wasNull())
             {
                 transition.setQuantitative(null);
             }
             else
             {
-                transition.setQuantitative(quantitative == 1);
+                transition.setQuantitative(quantitative);
             }
 
             transitions.add(transition);
