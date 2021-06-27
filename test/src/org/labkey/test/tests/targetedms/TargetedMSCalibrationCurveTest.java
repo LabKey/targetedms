@@ -518,12 +518,12 @@ public class TargetedMSCalibrationCurveTest extends TargetedMSTest
 
     private void verifyFomSummary(FiguresOfMerit fom)
     {
-        assertElementContains(Locator.tagWithId("td", "loq-stat"), "Lower: " + fom.getLoq());
-        assertElementContains(Locator.tagWithId("td", "uloq-stat"), "Upper: " + fom.getUloq());
-        assertElementContains(Locator.tagWithId("td", "bias-limit"), "Bias Limit: " + fom.getBiasLimit());
-        assertElementContains(Locator.tagWithId("td", "cv-limit"), "CV Limit: " + fom.getCvLimit());
-        assertElementContains(Locator.tagWithId("td", "lod-value"), "Lower: " + fom.getLod());
-        assertElementContains(Locator.tagWithId("td", "lod-calc"), "Calculation: " + fom.getCalc());
+        assertElementContains(Locator.tagWithId("td", "lloq-stat"), fom.getLoq());
+        assertElementContains(Locator.tagWithId("td", "uloq-stat"), fom.getUloq());
+        assertElementContains(Locator.tagWithId("td", "bias-limit"), fom.getBiasLimit());
+        assertElementContains(Locator.tagWithId("td", "cv-limit"), fom.getCvLimit());
+        assertElementContains(Locator.tagWithId("td", "llod-value"), fom.getLod());
+        assertElementContains(Locator.tagWithId("td", "lod-calc"), fom.getCalc());
     }
 
     private void testFiguresOfMerit(String scenario, @Nullable FiguresOfMerit fom)

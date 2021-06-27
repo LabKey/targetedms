@@ -70,6 +70,10 @@
         </tr>
     <% } %>
     <tr>
+        <td class="labkey-form-label">Lower Limit of Detection</td>
+        <td id="llod-value">...</td>
+    </tr>
+    <tr>
         <td class="labkey-form-label">Lower Limit of Quantitation</td>
         <td id="lloq-stat">...</td>
     </tr>
@@ -79,15 +83,15 @@
     </tr>
     <tr>
         <td class="labkey-form-label">LOQ Bias Limit</td>
-        <td><%= h(bean.getMaxLOQBias()) %>%</td>
+        <td id="bias-limit"><%= h(bean.getMaxLOQBias()) %>%</td>
     </tr>
     <tr>
         <td class="labkey-form-label">LOQ CV Limit</td>
-        <td><%= h(bean.getMaxLOQCV() == null ? "N/A" : (bean.getMaxLOQCV() + "%")) %></td>
+        <td id="cv-limit"><%= h(bean.getMaxLOQCV() == null ? "N/A" : (bean.getMaxLOQCV() + "%")) %></td>
     </tr>
     <tr>
         <td class="labkey-form-label">LOD Calculation</td>
-        <td><%= h(lodCalculation) %></td>
+        <td id="lod-calc"><%= h(lodCalculation) %></td>
     </tr>
     <tr>
         <td class="labkey-form-label"></td>
@@ -608,7 +612,7 @@
                 }
             }
 
-            $('#lod-value').html(lodValue);
+            $('#llod-value').html(lodValue);
 
             this['blankxlsExport'].push([]);
             this['blankxlsExport'].push(["Limit of Detection"]);
