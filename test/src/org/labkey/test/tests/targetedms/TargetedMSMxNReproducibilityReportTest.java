@@ -11,8 +11,11 @@ import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.categories.DailyB;
 import org.labkey.test.categories.MS2;
+import org.labkey.test.util.DataRegionTable;
 
 import java.io.IOException;
+
+import static org.labkey.test.Locator.tag;
 
 @Category({DailyB.class, MS2.class})
 @BaseWebDriverTest.ClassTimeout(minutes = 6)
@@ -27,7 +30,11 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
     {
         TargetedMSMxNReproducibilityReportTest init = (TargetedMSMxNReproducibilityReportTest) getCurrentTest();
         init.setupFolder(FolderType.Library);
+    }
 
+    private Locator.XPathLocator linkWithFontAwesomeIcon(String icon)
+    {
+        return tag("a").withChild(tag("i").withAttributeContaining("class", icon));
     }
 
     @Override
@@ -43,10 +50,13 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
         importData(SKY_FILE);
 
         goToProjectHome();
-        clickAndWait(Locator.linkWithText(SKY_FILE));
+        clickTab("Proteins");
+
+        DataRegionTable table = new DataRegionTable("PeptideGroup", this);
+        table.setFilter("Label", "Equals", "PEPTIDE_GROUP_0");
 
         log("Clicking on the protein");
-        clickAndWait(Locator.linkWithText("PEPTIDE_GROUP_0"));
+        clickAndWait(linkWithFontAwesomeIcon("fa-th"));
 
         waitForElement(Locator.tagWithName("a", "Protein"));
 
@@ -73,11 +83,10 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
         navigateToFolder(getProjectName(), subFolderName);
         clickAndWait(Locator.linkWithText(SKY_FILE_WITH_SINGLE_REPLICATE));
 
-        log("Clicking on the protein");
-        clickAndWait(Locator.linkWithText("gi|171455|gb|AAA88712.1|"));
-        waitForElement(Locator.tagWithName("a", "Protein"));
+        DataRegionTable table = new DataRegionTable("PeptideGroup", this);
+        table.setFilter("Label", "Equals", "gi|171455|gb|AAA88712.1|");
 
-        checker().verifyFalse("Reproducibility Report should not be present", isElementPresent(Locator.linkWithText("Reproducibility Report")));
+        assertElementNotPresent("Shouldn't have reproducibility report link", linkWithFontAwesomeIcon("fa-th"));
     }
 
     private int getGraphCount(String sequence)
