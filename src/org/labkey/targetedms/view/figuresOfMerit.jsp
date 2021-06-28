@@ -97,8 +97,8 @@
         <td class="labkey-form-label"></td>
         <td>
             <% if (!bean.getMinimize()) { %>
-                <div id="targetedms-fom-export" class="export-icon" data-toggle="tooltip" title="Export to Excel">
-                    <a href="javascript:exportExcel()"><i class="fa fa-file-excel-o"></i> Export to Excel</a>
+                <div class="export-icon" data-toggle="tooltip" title="Export to Excel">
+                    <a id="targetedms-fom-export" href="javascript:exportExcel()"><i class="fa fa-file-excel-o"></i> Export to Excel</a>
                 </div>
             <% } else { %>
                 <%= link("Show Details", new ActionURL(TargetedMSController.ShowFiguresOfMeritAction.class, getContainer()).addParameter("GeneralMoleculeId", bean.getGeneralMoleculeId()))%>
