@@ -81,8 +81,8 @@ public class TargetedMSCalibrationCurveTest extends TargetedMSTest
         FiguresOfMerit fom = new FiguresOfMerit("VIFDANAPVAVR");
         fom.setLoq("1.0");
         fom.setUloq("10.0");
-        fom.setBiasLimit("20%");
-        fom.setCvLimit("20%");
+        fom.setBiasLimit("20.0%");
+        fom.setCvLimit("20.0%");
         fom.setLod("0.11");
         fom.setCalc("Blank plus 2 * SD");
 
@@ -96,7 +96,7 @@ public class TargetedMSCalibrationCurveTest extends TargetedMSTest
         FiguresOfMerit fom = new FiguresOfMerit("VIFDANAPVAVR");
         fom.setLoq("0.05");
         fom.setUloq("10.0");
-        fom.setBiasLimit("30%");
+        fom.setBiasLimit("30.0%");
         fom.setCvLimit("N/A");
         fom.setLod("0.10");
         fom.setCalc("Blank plus 3 * SD");
@@ -117,8 +117,8 @@ public class TargetedMSCalibrationCurveTest extends TargetedMSTest
         FiguresOfMerit fom = new FiguresOfMerit("Gly");
         fom.setLoq("500.0");
         fom.setUloq("500.0");
-        fom.setBiasLimit("30%");
-        fom.setCvLimit("1%");
+        fom.setBiasLimit("30.0%");
+        fom.setCvLimit("1.0%");
         fom.setLod("-5.84");
         fom.setCalc("Blank plus 2 * SD");
 

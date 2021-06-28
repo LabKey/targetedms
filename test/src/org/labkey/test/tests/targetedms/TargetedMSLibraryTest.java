@@ -160,7 +160,7 @@ public class TargetedMSLibraryTest extends TargetedMSTest
                                            SKY_FILE2);
 
         DataRegionTable table = new DataRegionTable("PeptideGroup", this);
-        table.setFilter("RepresentativeDataState/Value", "Equals", "Current");
+        table.setFilter("RepresentativeDataState", "Equals", "Current");
 
         verifyLibraryProteins(proteins, files);
     }
