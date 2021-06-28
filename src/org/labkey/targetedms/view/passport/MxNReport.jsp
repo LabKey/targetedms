@@ -36,18 +36,6 @@
 
 <script type="text/javascript">
     var proteinJSON = <%=protein.getJSON(false).getJavaScriptFragment(2)%>
-    document.addEventListener("DOMContentLoaded", function() {
-        LABKEY.Query.selectRows({
-            schemaName: 'targetedms',
-            queryName: 'PassportMxN',
-            success: function(data) {
-                protein.initialize(data);
-            },
-            filterArray: [ LABKEY.Filter.create('PepGroupId', <%= protein.getPepGroupId() %>)],
-            sort: 'AcquiredTime'
-        });
-
-    });
     var chromatogramUrl = "<%=h(urlFor(TargetedMSController.PrecursorChromatogramChartAction.class))%>";
     var showPeptideUrl = "<%=h(urlFor(TargetedMSController.ShowPeptideAction.class))%>";
 </script>

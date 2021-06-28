@@ -697,3 +697,14 @@ protein =
         });
     }
 };
+document.addEventListener("DOMContentLoaded", function() {
+    LABKEY.Query.selectRows({
+        schemaName: 'targetedms',
+        queryName: 'PassportMxN',
+        success: function (data) {
+            protein.initialize(data);
+        },
+        filterArray: [LABKEY.Filter.create('PepGroupId', proteinJSON.id)],
+        sort: 'AcquiredTime'
+    });
+});

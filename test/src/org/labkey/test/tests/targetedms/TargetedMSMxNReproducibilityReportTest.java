@@ -80,7 +80,7 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
         importData(SKY_FILE_WITH_SINGLE_REPLICATE);
 
         navigateToFolder(getProjectName(), subFolderName);
-        clickAndWait(Locator.linkWithText(SKY_FILE_WITH_SINGLE_REPLICATE));
+        clickTab("Proteins");
 
         DataRegionTable table = new DataRegionTable("PeptideGroup", this);
         table.setFilter("Label", "Equals", "gi|171455|gb|AAA88712.1|");
