@@ -32,9 +32,9 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
         init.setupFolder(FolderType.Library);
     }
 
-    private Locator.XPathLocator linkWithFontAwesomeIcon(String icon)
+    private Locator.XPathLocator reproducibilityReportLink()
     {
-        return tag("a").withChild(tag("i").withAttributeContaining("class", icon));
+        return tag("a").withChild(tag("i").withAttributeContaining("class", "fa-th").withAttributeContaining("title", "Reproducibility Report"));
     }
 
     @Override
@@ -56,7 +56,7 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
         table.setFilter("Label", "Equals", "PEPTIDE_GROUP_0");
 
         log("Clicking on the protein");
-        clickAndWait(linkWithFontAwesomeIcon("fa-th"));
+        clickAndWait(reproducibilityReportLink());
 
         waitForElement(Locator.tagWithName("a", "Protein"));
 
@@ -80,12 +80,17 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
         importData(SKY_FILE_WITH_SINGLE_REPLICATE);
 
         navigateToFolder(getProjectName(), subFolderName);
-        clickTab("Proteins");
+        // Ensure tab didn't get automatically added since we don't have reporting to link to
+        assertElementNotPresent(Locator.folderTab("Proteins"));
 
-        DataRegionTable table = new DataRegionTable("PeptideGroup", this);
+        // Go to the view via the schema browser to make sure it's not giving the link to the reproducibility report
+        goToSchemaBrowser();
+        DataRegionTable table = viewQueryData("targetedms", "PeptideGroup");
+        table.goToView("Library Proteins");
+        table = new DataRegionTable("query", this);
         table.setFilter("Label", "Equals", "gi|171455|gb|AAA88712.1|");
 
-        assertElementNotPresent("Shouldn't have reproducibility report link", linkWithFontAwesomeIcon("fa-th"));
+        assertElementNotPresent("Shouldn't have reproducibility report link", reproducibilityReportLink());
     }
 
     private int getGraphCount(String sequence)
