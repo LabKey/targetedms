@@ -44,7 +44,7 @@
 %>
 <script type="text/javascript">
 
-    let calibrationCurvePlot;
+    var calibrationCurvePlot;
 
     Ext4.onReady(function () {
 
