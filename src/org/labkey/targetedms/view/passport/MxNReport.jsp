@@ -121,7 +121,7 @@
     </tr>
     </thead>
     <tbody id="cvTableBody">
-        <tr><td colspan="12">Loading...</td></tr>
+        <tr><td colspan="12">Initializing...</td></tr>
     </tbody>
 </table>
 

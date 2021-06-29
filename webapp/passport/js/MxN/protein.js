@@ -697,7 +697,8 @@ protein =
         });
     }
 };
-document.addEventListener("DOMContentLoaded", function() {
+
+$(document).ready(function() {
     LABKEY.Query.selectRows({
         schemaName: 'targetedms',
         queryName: 'PassportMxN',
@@ -707,4 +708,7 @@ document.addEventListener("DOMContentLoaded", function() {
         filterArray: [LABKEY.Filter.create('PepGroupId', proteinJSON.id)],
         sort: 'AcquiredTime'
     });
+
+    document.getElementById('cvTableBody').innerHTML =
+            '<tr><td colspan="12">Loading...</td></tr>';
 });
