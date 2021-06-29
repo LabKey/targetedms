@@ -698,12 +698,16 @@ protein =
     }
 };
 
-$(document).ready(function() {
+function loadDataReproducibility() {
     LABKEY.Query.selectRows({
         schemaName: 'targetedms',
         queryName: 'PassportMxN',
         success: function (data) {
             protein.initialize(data);
+        },
+        failure: function(response) {
+            document.getElementById('cvTableBody').innerHTML =
+                    '<tr><td colspan="12">Failed to load. ' + (response && response.exception ? LABKEY.Utils.encodeHtml(response.exception) : '') + '</td></tr>';
         },
         filterArray: [LABKEY.Filter.create('PepGroupId', proteinJSON.id)],
         sort: 'AcquiredTime'
@@ -711,4 +715,4 @@ $(document).ready(function() {
 
     document.getElementById('cvTableBody').innerHTML =
             '<tr><td colspan="12">Loading...</td></tr>';
-});
+}

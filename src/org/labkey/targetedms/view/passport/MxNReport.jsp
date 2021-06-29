@@ -32,15 +32,6 @@
     JspView<?> me = (JspView<?>) HttpView.currentView();
     IProtein protein = (IProtein)me.getModelBean();
     %>
-    <!--START IMPORTS-->
-
-<script type="text/javascript">
-    var proteinJSON = <%=protein.getJSON(false).getJavaScriptFragment(2)%>
-    var chromatogramUrl = "<%=h(urlFor(TargetedMSController.PrecursorChromatogramChartAction.class))%>";
-    var showPeptideUrl = "<%=h(urlFor(TargetedMSController.ShowPeptideAction.class))%>";
-</script>
-<!--END IMPORTS-->
-
 <div style="padding-bottom: 2em">
 <table>
     <tr>
@@ -125,3 +116,9 @@
     </tbody>
 </table>
 
+<script type="text/javascript">
+    var proteinJSON = <%=protein.getJSON(false).getJavaScriptFragment(2)%>
+    var chromatogramUrl = "<%=h(urlFor(TargetedMSController.PrecursorChromatogramChartAction.class))%>";
+    var showPeptideUrl = "<%=h(urlFor(TargetedMSController.ShowPeptideAction.class))%>";
+    loadDataReproducibility();
+</script>
