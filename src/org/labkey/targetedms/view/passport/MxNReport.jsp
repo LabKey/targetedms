@@ -15,7 +15,6 @@
         dependencies.add("vis/vis");
         dependencies.add("passport/js/util.js");
         dependencies.add("passport/js/settings.js");
-        dependencies.add("passport/js/MxN/protein.js");
         dependencies.add("passport/js/proteinbar.js");
         dependencies.add("internal/jQuery");
         dependencies.add("passport/jQuery/jquery-ui.min.css");
@@ -118,7 +117,24 @@
 
 <script type="text/javascript">
     var proteinJSON = <%=protein.getJSON(false).getJavaScriptFragment(2)%>
-    var chromatogramUrl = "<%=h(urlFor(TargetedMSController.PrecursorChromatogramChartAction.class))%>";
-    var showPeptideUrl = "<%=h(urlFor(TargetedMSController.ShowPeptideAction.class))%>";
-    loadDataReproducibility();
+    var chromatogramUrl = <%=q(urlFor(TargetedMSController.PrecursorChromatogramChartAction.class))%>;
+    var showPeptideUrl = <%=q(urlFor(TargetedMSController.ShowPeptideAction.class))%>;
+    LABKEY.requiresScript('passport/js/MxN/protein.js', function() {
+        LABKEY.Query.selectRows({
+            schemaName: 'targetedms',
+            queryName: 'PassportMxN',
+            success: function (data) {
+                protein.initialize(data);
+            },
+            failure: function(response) {
+                document.getElementById('cvTableBody').innerHTML =
+                        '<tr><td colspan="12">Failed to load. ' + (response && response.exception ? LABKEY.Utils.encodeHtml(response.exception) : '') + '</td></tr>';
+            },
+            filterArray: [LABKEY.Filter.create('PepGroupId', proteinJSON.id)],
+            sort: 'AcquiredTime'
+        });
+
+        document.getElementById('cvTableBody').innerHTML =
+                '<tr><td colspan="12">Loading...</td></tr>';
+    });
 </script>
