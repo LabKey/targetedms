@@ -222,8 +222,8 @@ protein =
                 precursorData.TotalArea += precursorRow.TotalArea;
                 precursorData.CalibratedArea += precursorRow.CalibratedArea;
                 precursorData.NormalizedArea += precursorRow.NormalizedArea;
-                hasCalibratedArea ||= precursorRow.CalibratedArea;
-                hasNormalizedArea ||= precursorRow.NormalizedArea;
+                hasCalibratedArea = hasCalibratedArea || precursorRow.CalibratedArea;
+                hasNormalizedArea = hasNormalizedArea || precursorRow.NormalizedArea;
             });
 
             const timepointGrouped = LABKEY.vis.groupData(precursorRows, function (row) {
