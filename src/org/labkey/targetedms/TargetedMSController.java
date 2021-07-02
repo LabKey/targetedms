@@ -134,6 +134,7 @@ import org.labkey.api.util.DateUtil;
 import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.HelpTopic;
 import org.labkey.api.util.HtmlString;
+import org.labkey.api.util.Link;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.util.Pair;
 import org.labkey.api.util.StringUtilsLabKey;
@@ -171,7 +172,9 @@ import org.labkey.targetedms.model.GuideSetStats;
 import org.labkey.targetedms.model.QCMetricConfiguration;
 import org.labkey.targetedms.model.QCPlotFragment;
 import org.labkey.targetedms.model.RawMetricDataSet;
+import org.labkey.targetedms.model.passport.IKeyword;
 import org.labkey.targetedms.outliers.OutlierGenerator;
+import org.labkey.targetedms.parser.CalibrationCurveEntity;
 import org.labkey.targetedms.parser.GeneralMolecule;
 import org.labkey.targetedms.parser.GeneralMoleculeChromInfo;
 import org.labkey.targetedms.parser.Molecule;
@@ -213,11 +216,13 @@ import org.labkey.targetedms.query.TargetedMSTable;
 import org.labkey.targetedms.query.TransitionManager;
 import org.labkey.targetedms.search.ModificationSearchWebPart;
 import org.labkey.targetedms.view.CalibrationCurveChart;
+import org.labkey.targetedms.view.CalibrationCurveView;
 import org.labkey.targetedms.view.CalibrationCurvesView;
 import org.labkey.targetedms.view.ChromatogramsDataRegion;
 import org.labkey.targetedms.view.DocumentPrecursorsView;
 import org.labkey.targetedms.view.DocumentTransitionsView;
 import org.labkey.targetedms.view.DocumentView;
+import org.labkey.targetedms.view.FiguresOfMeritView;
 import org.labkey.targetedms.view.GroupComparisonView;
 import org.labkey.targetedms.view.InstrumentSummaryWebPart;
 import org.labkey.targetedms.view.ModifiedPeptideHtmlMaker;
@@ -268,6 +273,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.labkey.api.targetedms.TargetedMSService.FOLDER_TYPE_PROP_NAME;
@@ -1292,16 +1298,59 @@ public class TargetedMSController extends SpringActionController
                 }
             }
 
-            List<QCMetricConfiguration> qcMetricConfigurations = TargetedMSManager.get()
+            final Date qcStartDate = rangeStartDate;
+            List<QCMetricConfiguration> qcMetricConfigurations = TargetedMSManager
                     .getEnabledQCMetricConfigurations(getContainer(), getUser())
                     .stream()
                     .filter(qcMetricConfiguration -> qcMetricConfiguration.getId() == passedMetricId)
                     .collect(Collectors.toList());
-            List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(getContainer(), getUser(), qcMetricConfigurations, rangeStartDate, form.getEndDate(), form.getSelectedAnnotations(), form.isShowExcluded());
+
+            // get start date and end date for this qc folder
+            Map<String,Object> qcFolderDateRange = TargetedMSManager.getQCFolderDateRange(getContainer());
+            Date qcFolderStartDate = (Date) qcFolderDateRange.get("startDate");
+            Date qcFolderEndDate = (Date) qcFolderDateRange.get("endDate");
+
+            // always query for the full range
+            List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(getContainer(), getUser(), qcMetricConfigurations, qcFolderStartDate, qcFolderEndDate, form.getSelectedAnnotations(), form.isShowExcluded());
             Map<GuideSetKey, GuideSetStats> stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+            boolean zoomedRange = qcFolderStartDate != null &&
+                    qcFolderEndDate != null &&
+                    (DateUtil.getDateOnly(qcFolderStartDate).compareTo(rangeStartDate) != 0 ||
+                    DateUtil.getDateOnly(qcFolderEndDate).compareTo(form.getEndDate()) != 0);
+            Map<GuideSetKey, GuideSetStats> targetedStats;
+
+            if (zoomedRange)
+            {
+                // filter the stats for targeted range
+                Predicate<RawMetricDataSet> withInDateRange = rawMetricDataSet -> rawMetricDataSet.getAcquiredTime() != null &&
+                        (qcStartDate != null &&
+                        (rawMetricDataSet.getAcquiredTime().after(qcStartDate)
+                                || DateUtil.getDateOnly(rawMetricDataSet.getAcquiredTime()).compareTo(qcStartDate) == 0)) &&
+                        (form.getEndDate() != null &&
+                        (rawMetricDataSet.getAcquiredTime().before(form.getEndDate())
+                                || DateUtil.getDateOnly(rawMetricDataSet.getAcquiredTime()).compareTo(form.getEndDate()) == 0));
+                rawMetricDataSets = rawMetricDataSets
+                        .stream()
+                        .filter(withInDateRange)
+                        .collect(Collectors.toList());
+                targetedStats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+                // attach mean and sd stats from full stats
+                targetedStats.forEach((guideSetKey, guideSetStats) -> {
+                    GuideSetStats correctGuideSetStats = stats.get(guideSetKey);
+                    guideSetStats.setAverage(correctGuideSetStats.getAverage());
+                    guideSetStats.setStandardDeviation(correctGuideSetStats.getStandardDeviation());
+                    guideSetStats.setMovingRangeAverage(correctGuideSetStats.getMovingRangeAverage());
+                    guideSetStats.setMovingRangeStdDev(correctGuideSetStats.getMovingRangeStdDev());
+                });
+            }
+            else
+            {
+                targetedStats = stats;
+            }
+
             Map<Integer, QCMetricConfiguration> metricMap = qcMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
-            List<SampleFileInfo> sampleFiles = OutlierGenerator.get().getSampleFiles(rawMetricDataSets, stats, metricMap, getContainer(), null);
-            List<QCPlotFragment> qcPlotFragments = OutlierGenerator.get().getQCPlotFragment(rawMetricDataSets, stats);
+            List<SampleFileInfo> sampleFiles = OutlierGenerator.get().getSampleFiles(rawMetricDataSets, targetedStats, metricMap, getContainer(), null);
+            List<QCPlotFragment> qcPlotFragments = OutlierGenerator.get().getQCPlotFragment(rawMetricDataSets, targetedStats);
 
             response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toQCPlotJSON).collect(Collectors.toList()));
             response.put("plotDataRows", qcPlotFragments
@@ -1319,7 +1368,9 @@ public class TargetedMSController extends SpringActionController
             GuideSet gs = null;
             for (GuideSet guideSet : guideSets)
             {
-                if (!guideSet.isDefault() && guideSet.getTrainingEnd().before(startDate))
+                // guideset end date should be before or equal start date
+                if (!guideSet.isDefault() &&
+                        (guideSet.getTrainingEnd().before(startDate) || DateUtil.getDateOnly(guideSet.getTrainingEnd()).compareTo(startDate) == 0))
                 {
                     if (null == gs)
                     {
@@ -3388,32 +3439,36 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class ShowPKAction extends SimpleViewAction<PKForm>
+    public class ShowPKAction extends SimpleViewAction<GeneralMoleculeForm>
     {
         private TargetedMSRun _run;  // save for use in appendNavTrail
         private GeneralMolecule _molecule;
 
         @Override
-        public void validate(PKForm form, BindException errors)
+        public void validate(GeneralMoleculeForm form, BindException errors)
         {
-            if (form.getRunId() == null || form.getGeneralMoleculeId() == null)
+            if (form.getGeneralMoleculeId() == null)
                 throw new NotFoundException("Missing one of the required parameters, RunId or GeneralMoleculeId.");
-
-            _run = validateRun(form.getRunId());
 
             _molecule = PeptideManager.getPeptide(getContainer(), form.getGeneralMoleculeId());
             if (_molecule == null)
                 _molecule = MoleculeManager.getMolecule(getContainer(), form.getGeneralMoleculeId());
             if (_molecule == null)
                 throw new NotFoundException("Could not find Molecule " + form.getGeneralMoleculeId());
+
+            PeptideGroup group = PeptideGroupManager.getPeptideGroup(getContainer(), _molecule.getPeptideGroupId());
+            if (group == null)
+                throw new NotFoundException("Could not find group " + _molecule.getPeptideGroupId());
+            _run = TargetedMSManager.getRun(group.getRunId());
+
+            if (_run == null || !_run.getContainer().equals(getContainer()))
+                throw new NotFoundException("Could not find run " + group.getRunId());
         }
 
         @Override
-        public ModelAndView getView(PKForm form, BindException errors)
+        public ModelAndView getView(GeneralMoleculeForm form, BindException errors)
         {
-            List<String> subgroupNames = TargetedMSManager.get().getReplicateSubgroupNames(getUser(), getContainer(), _molecule);
-            form.setSampleGroupNames(subgroupNames);
-            return new JspView<>("/org/labkey/targetedms/view/pharmacokinetics.jsp", form);
+            return new JspView<>("/org/labkey/targetedms/view/pharmacokinetics.jsp", _molecule);
         }
         
         @Override
@@ -3896,9 +3951,9 @@ public class TargetedMSController extends SpringActionController
         }
 
         @Override
-        protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
+        protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, @Nullable String dataRegion)
         {
-            if (dataRegion.equalsIgnoreCase(INSTRUMENT_SUMMARY_DATA_REGION_NAME))
+            if (INSTRUMENT_SUMMARY_DATA_REGION_NAME.equalsIgnoreCase(dataRegion))
             {
                 return new InstrumentSummaryWebPart(getViewContext());
             }
@@ -3906,8 +3961,7 @@ public class TargetedMSController extends SpringActionController
             {
                 QuerySettings settings = new QuerySettings(getViewContext(), REPLICATE_DATA_REGION_NAME, TargetedMSSchema.SAMPLE_FILE_RUN_PREFIX + _run.getRunId());
                 settings.setBaseSort(new Sort(FieldKey.fromParts("ReplicateId", "Name")));
-                TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
-                return schema.createView(getViewContext(), settings, errors);
+                return createViewWithNoContainerFilterOptions(settings, errors);
             }
         }
 
@@ -4016,12 +4070,8 @@ public class TargetedMSController extends SpringActionController
         protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
         {
             QuerySettings settings = new QuerySettings(getViewContext(), _dataRegionName, "PeptideIds");
-            // Issue 40731- prevent expensive cross-folder queries when the results will always be scoped to the current
-            // run anyway
-            settings.setContainerFilterName(null);
             settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("PeptideGroupId", "RunId"), form.getId()));
-            TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
-            return schema.createView(getViewContext(), settings, errors);
+            return createViewWithNoContainerFilterOptions(settings, errors);
         }
     }
 
@@ -4088,9 +4138,8 @@ public class TargetedMSController extends SpringActionController
         protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
         {
             QuerySettings settings = new QuerySettings(getViewContext(), _dataRegionName, LOG_QUERY_NAME);
-            TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
             settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("RunId"), form.getId()));
-            return schema.createView(getViewContext(), settings, errors);
+            return createViewWithNoContainerFilterOptions(settings, errors);
         }
     }
 
@@ -4429,38 +4478,12 @@ public class TargetedMSController extends SpringActionController
             _run = TargetedMSManager.getRun(group.getRunId());
             _proteinLabel = group.getLabel();
 
-            Integer peptideCount = TargetedMSManager.getPeptideGroupPeptideCount(_run, group.getId());
             Integer moleculeCount = TargetedMSManager.getPeptideGroupMoleculeCount(_run, group.getId());
-            boolean proteomics = peptideCount != null && peptideCount.intValue() > 0;
-
             // Peptide group details
-            JspView<PeptideGroup> detailsView = new JspView<>("/org/labkey/targetedms/view/moleculeListView.jsp", group);
-            detailsView.setFrame(WebPartView.FrameType.PORTAL);
-            detailsView.setTitle(proteomics ? "Protein" : "Molecule List");
-
-            VBox result = new VBox(detailsView);
+            VBox result = new VBox();
 
             TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
-
-            // Protein sequence coverage
-            if (group.getSequenceId() != null)
-            {
-                int seqId = group.getSequenceId().intValue();
-                List<String> peptideSequences = new ArrayList<>();
-                for (Peptide peptide : PeptideManager.getPeptidesForGroup(group.getId(), new TargetedMSSchema(getUser(), getContainer())))
-                {
-                    peptideSequences.add(peptide.getSequence());
-                }
-
-                ProteinService proteinService = ProteinService.get();
-                WebPartView sequenceView = proteinService.getProteinCoverageView(seqId, peptideSequences.toArray(new String[peptideSequences.size()]), 100, true);
-
-                sequenceView.setTitle("Sequence Coverage");
-                sequenceView.enableExpandCollapse("SequenceCoverage", false);
-                result.addView(sequenceView);
-
-                result.addView(proteinService.getAnnotationsView(seqId));
-            }
+            Integer peptideCount = addProteinSummaryViews(result, group, _run, getUser(), getContainer());
 
             // List of peptides
             if (peptideCount != null && peptideCount > 0)
@@ -4469,7 +4492,7 @@ public class TargetedMSController extends SpringActionController
                 baseVisibleColumns.add(FieldKey.fromParts(ModifiedSequenceDisplayColumn.PEPTIDE_COLUMN_NAME));
                 baseVisibleColumns.add(FieldKey.fromParts("CalcNeutralMass"));
                 baseVisibleColumns.add(FieldKey.fromParts("NumMissedCleavages"));
-                result.addView(getGeneralMoleculeQueryView(form, schema, errors, "Peptides", "Peptide", baseVisibleColumns));
+                result.addView(getGeneralMoleculeQueryView(form, errors, "Peptides", "Peptide", baseVisibleColumns));
             }
 
             // List of small molecules
@@ -4481,7 +4504,7 @@ public class TargetedMSController extends SpringActionController
                 baseVisibleColumns.add(FieldKey.fromParts("IonFormula"));
                 baseVisibleColumns.add(FieldKey.fromParts("MassAverage"));
                 baseVisibleColumns.add(FieldKey.fromParts("MassMonoisotopic"));
-                result.addView(getGeneralMoleculeQueryView(form, schema, errors, "Small Molecules", "Molecule", baseVisibleColumns));
+                result.addView(getGeneralMoleculeQueryView(form, errors, "Small Molecules", "Molecule", baseVisibleColumns));
             }
 
             SummaryChartBean summaryChartBean = new SummaryChartBean(_run);
@@ -4511,13 +4534,13 @@ public class TargetedMSController extends SpringActionController
             return result;
         }
 
-        private QueryView getGeneralMoleculeQueryView(ProteinDetailForm form, TargetedMSSchema schema, BindException errors,
+        private QueryView getGeneralMoleculeQueryView(ProteinDetailForm form, BindException errors,
                                                       String title, String queryName, List<FieldKey> baseVisibleColumns)
         {
             String dataRegionName = title.replaceAll(" ", "");
             QuerySettings settings = new QuerySettings(getViewContext(), dataRegionName, queryName);
             settings.getBaseFilter().addAllClauses(new SimpleFilter(FieldKey.fromParts("PeptideGroupId"), form.getId()));
-            QueryView view = new QueryView(schema, settings, errors);
+            QueryView view = createViewWithNoContainerFilterOptions(settings, errors);
 
             if (null == view.getCustomView())
             {
@@ -4541,6 +4564,62 @@ public class TargetedMSController extends SpringActionController
                 root.addChild(_proteinLabel);
             }
         }
+    }
+
+    /** Issue 40731- prevent expensive cross-folder queries when the results will always be scoped to the current run anyway */
+    private QueryView createViewWithNoContainerFilterOptions(QuerySettings settings, BindException errors)
+    {
+        TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+        settings.setContainerFilterName(null);
+        QueryView result = schema.createView(getViewContext(), settings, errors);
+        result.setAllowableContainerFilterTypes();
+        return result;
+    }
+
+    public static Integer addProteinSummaryViews(VBox box, PeptideGroup group, TargetedMSRun run, User user, Container container)
+    {
+        Integer peptideCount = TargetedMSManager.getPeptideGroupPeptideCount(run, group.getId());
+        boolean proteomics = peptideCount != null && peptideCount.intValue() > 0;
+
+        JspView<PeptideGroup> detailsView = new JspView<>("/org/labkey/targetedms/view/moleculeListView.jsp", group);
+        detailsView.setFrame(WebPartView.FrameType.PORTAL);
+        detailsView.setTitle(proteomics ? "Protein" : "Molecule List");
+
+        box.addView(detailsView);
+
+        if (group.getSequenceId() != null)
+        {
+            int seqId = group.getSequenceId().intValue();
+            List<String> peptideSequences = new ArrayList<>();
+            for (Peptide peptide : PeptideManager.getPeptidesForGroup(group.getId(), new TargetedMSSchema(user, container)))
+            {
+                peptideSequences.add(peptide.getSequence());
+            }
+
+            ProteinService proteinService = ProteinService.get();
+            WebPartView<?> sequenceView = proteinService.getProteinCoverageView(seqId, peptideSequences.toArray(new String[0]), 100, true, group.getAccession());
+
+            sequenceView.setTitle("Sequence Coverage");
+            sequenceView.enableExpandCollapse("SequenceCoverage", false);
+            box.addView(sequenceView);
+
+            List<IKeyword> keywords = TargetedMSManager.getKeywords(seqId);
+
+            Map<String, Collection<HtmlString>> extraAnnotations = new LinkedHashMap<>();
+
+            for (IKeyword keyword : keywords)
+            {
+                HtmlString link = new Link.LinkBuilder(keyword.label).href("https://www.uniprot.org/keywords/" + keyword.id).target("_blank").clearClasses().getHtmlString();
+                if (IKeyword.BIOLOGICAL_PROCESS_CATEGORY.equals(keyword.categoryId))
+                    extraAnnotations.computeIfAbsent("Biological Processes", k -> new ArrayList<>()).add(link);
+                if (IKeyword.MOLECULAR_FUNCTION_CATEGORY.equals(keyword.categoryId))
+                    extraAnnotations.computeIfAbsent("Molecular Functions", k -> new ArrayList<>()).add(link);
+            }
+
+            box.addView(proteinService.getAnnotationsView(seqId, extraAnnotations));
+        }
+
+        return peptideCount;
     }
 
     public static class ProteinDetailForm
@@ -4751,7 +4830,7 @@ public class TargetedMSController extends SpringActionController
                 searchURL.addParameter("seqId", group.getSequenceId().intValue());
                 searchURL.addParameter("identifier", group.getLabel());
                 getViewContext().getResponse().getWriter().write("<a href=\"" + searchURL + "\">Search for other references to this protein</a><br/>");
-                view = proteinService.getProteinCoverageView(seqId, peptideSequences.toArray(new String[peptideSequences.size()]), 40, true);
+                view = proteinService.getProteinCoverageView(seqId, peptideSequences.toArray(new String[0]), 40, true, null);
             }
             else
             {
@@ -5716,7 +5795,6 @@ public class TargetedMSController extends SpringActionController
 
             ViewContext viewContext = getViewContext();
             QuerySettings settings = new QuerySettings(viewContext, "TargetedMSMatches", "Precursor");
-//            QuerySettings settings = new QuerySettings(viewContext, "TargetedMSMatches");
 
             if (form.isIncludeSubfolders())
                 settings.setContainerFilterName(ContainerFilter.Type.CurrentAndSubfolders.name());
@@ -6981,93 +7059,46 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class ShowFiguresOfMeritAction extends SimpleViewAction<FomForm>
+    public class ShowFiguresOfMeritAction extends SimpleViewAction<GeneralMoleculeForm>
     {
-        private TargetedMSRun _run;
-        private GeneralMolecule _generalMolecule;
+        private FiguresOfMeritView _figuresOfMeritView;
 
         @Override
-        public void validate(FomForm form, BindException errors)
+        public void validate(GeneralMoleculeForm form, BindException errors)
         {
-            if (form.getRunId() == null || form.getGeneralMoleculeId() == null)
-                throw new NotFoundException("Missing one of the required parameters, RunId or GeneralMoleculeId.");
+            if (form.getGeneralMoleculeId() == null)
+                throw new NotFoundException("Missing required parameter GeneralMoleculeId.");
 
-            _run = TargetedMSManager.getRun(form.getRunId());
-            if (_run == null || !_run.getContainer().equals(getContainer()))
-                throw new NotFoundException("Could not find RunId " + form.getRunId());
         }
 
         @Override
-        public ModelAndView getView(FomForm form, BindException errors)
+        public ModelAndView getView(GeneralMoleculeForm form, BindException errors)
         {
-            UserSchema schema = QueryService.get().getUserSchema(getUser(), getViewContext().getContainer(), TargetedMSSchema.SCHEMA_NAME);
-            TableInfo tableInfo = schema.getTable(TargetedMSSchema.TABLE_MOLECULE_INFO);
-            if (tableInfo == null)
-            {
-                throw new NotFoundException("Query " + TargetedMSSchema.SCHEMA_NAME + "." + TargetedMSSchema.TABLE_MOLECULE_INFO + " not found.");
-            }
-
-            SimpleFilter filter = new SimpleFilter(FieldKey.fromString("GeneralMoleculeId"), form.getGeneralMoleculeId(), CompareType.EQUAL);
-            filter.addCondition(FieldKey.fromString("RunId"), form.getRunId(), CompareType.EQUAL);
-            TableSelector ts = new TableSelector(tableInfo, filter, null);
-
-            if (ts.getRowCount() < 1)
-            {
-                throw new NotFoundException("GeneralMoleculeId " + form.getGeneralMoleculeId() + " not found for RunId " + form.getRunId());
-            }
-
-            form = ts.getObject(FomForm.class);
-
-            JspView<FomForm> figuresOfMeritView = new JspView<>("/org/labkey/targetedms/view/figuresOfMerit.jsp", form);
-            figuresOfMeritView.setTitle("Figures of Merit");
-
-            QuantificationSettings settings = new TableSelector(schema.getTable(TargetedMSSchema.TABLE_QUANTIIFICATION_SETTINGS), new SimpleFilter(FieldKey.fromParts("RunId"), form.getRunId()), null).getObject(QuantificationSettings.class);
-            form.setQuantificationSettings(settings);
-
-            if (form.getPeptideName() != null)
-            {
-                _generalMolecule = PeptideManager.getPeptide(getContainer(), form.getGeneralMoleculeId());
-            }
-            else
-            {
-                _generalMolecule = MoleculeManager.getMolecule(getContainer(), form.getGeneralMoleculeId());
-            }
-
-            return figuresOfMeritView;
+            _figuresOfMeritView = new FiguresOfMeritView(getUser(), getContainer(), form.getGeneralMoleculeId().longValue(), false);
+            return _figuresOfMeritView;
         }
 
         @Override
         public void addNavTrail(NavTree root)
         {
-            if (null != _run)
+            if (_figuresOfMeritView != null && _figuresOfMeritView.getModelBean() != null)
             {
+                TargetedMSRun run = _figuresOfMeritView.getModelBean().getRun();
                 root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
-                root.addChild(_run.getDescription(), getShowCalibrationCurvesURL(getContainer(), _run.getId()));
+                root.addChild(run.getDescription(), getShowCalibrationCurvesURL(getContainer(), run.getId()));
 
-                if (_generalMolecule != null)
+                GeneralMolecule molecule = _figuresOfMeritView.getModelBean().getGeneralMolecule();
+                if (molecule != null)
                 {
-                    root.addChild(_generalMolecule.getTextId());
+                    root.addChild("Figures of Merit: " + molecule.getTextId());
                 }
-
             }
         }
     }
 
-    public static class PKForm
+    public static class GeneralMoleculeForm
     {
-        Integer _runId;
         Integer _generalMoleculeId;
-        private List<String> _sampleGroupNames;
-
-        public Integer getRunId()
-        {
-            return _runId;
-        }
-
-        public void setRunId(Integer runId)
-        {
-            _runId = runId;
-        }
 
         public Integer getGeneralMoleculeId()
         {
@@ -7078,118 +7109,14 @@ public class TargetedMSController extends SpringActionController
         {
             _generalMoleculeId = generalMoleculeId;
         }
-
-        public void setSampleGroupNames(List<String> sampleGroupNames)
-        {
-            _sampleGroupNames = sampleGroupNames;
-        }
-
-        public List<String> getSampleGroupNames()
-        {
-            return _sampleGroupNames;
-        }
-    }
-
-    public static class FomForm
-    {
-        Integer _runId;
-        Integer _generalMoleculeId;
-        String _peptideName;
-        String _moleculeName;
-        String _fileName;
-        String _sampleFiles;
-        QuantificationSettings _settings;
-
-        public Integer getRunId()
-        {
-            return _runId;
-        }
-
-        public void setRunId(Integer runId)
-        {
-            _runId = runId;
-        }
-
-        public Integer getGeneralMoleculeId()
-        {
-            return _generalMoleculeId;
-        }
-
-        public void setGeneralMoleculeId(Integer moleculeId)
-        {
-            _generalMoleculeId = moleculeId;
-        }
-
-        public String getPeptideName()
-        {
-            return _peptideName;
-        }
-
-        public void setPeptideName(String peptideName)
-        {
-            _peptideName = peptideName;
-        }
-
-        public String getMoleculeName()
-        {
-            return _moleculeName;
-        }
-
-        public void setMoleculeName(String moleculeName)
-        {
-            _moleculeName = moleculeName;
-        }
-
-        public String getFileName()
-        {
-            return _fileName;
-        }
-
-        public void setFileName(String fileName)
-        {
-            _fileName = fileName;
-        }
-
-        public String getSampleFiles()
-        {
-            return _sampleFiles;
-        }
-
-        public void setSampleFiles(String sampleFiles)
-        {
-            _sampleFiles = sampleFiles;
-        }
-
-        private void setQuantificationSettings(QuantificationSettings settings)
-        {
-            _settings = settings;
-        }
-
-        /** Defaults to 30 if nothing is set */
-        public double getMaxLOQBias()
-        {
-            return _settings == null || _settings.getMaxLOQBias() == null ? 30.0 : _settings.getMaxLOQBias().doubleValue();
-        }
-
-        /** Defaults to null if nothing is set */
-        public Double getMaxLOQCV()
-        {
-            return _settings == null ? null : _settings.getMaxLOQCV();
-        }
-
-        /** Defaults to "none" if nothing is set */
-        public String getLODCalculation()
-        {
-            return _settings == null || _settings.getLODCalculation() == null ? "none" : _settings.getLODCalculation();
-        }
     }
 
     @RequiresPermission(ReadPermission.class)
     public class ShowCalibrationCurveAction extends QueryViewAction<CalibrationCurveForm, QueryView>
     {
         protected TargetedMSRun _run;  // save for use in appendNavTrail
-        private CalibrationCurveChart _chart;
         private boolean _asProteomics;
+        private CalibrationCurveView _curvePlotView;
 
         public ShowCalibrationCurveAction()
         {
@@ -7203,9 +7130,9 @@ public class TargetedMSController extends SpringActionController
             {
                 root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
                 root.addChild(_run.getDescription(), getShowCalibrationCurvesURL(getContainer(), _run.getId()));
-                if (_chart.getMolecule() != null)
+                if (_curvePlotView.getChart().getMolecule() != null)
                 {
-                    root.addChild(_chart.getMolecule().getTextId());
+                    root.addChild("Calibration Curve: " + _curvePlotView.getChart().getMolecule().getTextId());
                 }
             }
         }
@@ -7213,19 +7140,20 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void validate(CalibrationCurveForm form, BindException errors)
         {
+            _curvePlotView = new CalibrationCurveView(getUser(), getContainer(), form.getCalibrationCurveId());
+            CalibrationCurveEntity chart = _curvePlotView.getChart().getCalibrationCurveEntity();
             //ensure that the experiment run is valid and exists within the current container
-            _run = validateRun(form.getId());
+            _run = validateRun(chart.getRunId());
         }
 
         @Override
         protected QueryView createQueryView(CalibrationCurveForm form, BindException errors, boolean forExport, @Nullable String dataRegion)
         {
-            UserSchema schema = new TargetedMSSchema(getUser(), getContainer());
             String queryName = _asProteomics ? "CalibrationCurvePrecursors" : "CalibrationCurveMoleculePrecursors";
             QuerySettings settings = new QuerySettings(getViewContext(), "curveDetail", queryName);
             settings.getBaseFilter().addCondition(FieldKey.fromParts("CalibrationCurve"), form.getCalibrationCurveId());
             settings.setBaseSort(new Sort("SampleFileId/SampleName"));
-            QueryView result = QueryView.create(getViewContext(), schema, settings, errors);
+            QueryView result = createViewWithNoContainerFilterOptions(settings, errors);
             result.setTitle("Quantitation Ratios");
             return result;
         }
@@ -7233,17 +7161,13 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(CalibrationCurveForm calibrationCurveForm, BindException errors)
         {
-            _chart = new CalibrationCurveChart(getUser(), getContainer(), calibrationCurveForm);
-            JSONObject curveData = _chart.getCalibrationCurveData();
-            if(null == curveData)
-                throw new NotFoundException("Calibration curve not found. Run ID: " + calibrationCurveForm.getId() +
-                        " Curve ID: " + calibrationCurveForm.getCalibrationCurveId());
-
-            _asProteomics = _chart.getMolecule() != null && _chart.getMolecule() instanceof Peptide;
-
-            calibrationCurveForm.setJsonData(curveData);
-            JspView<CalibrationCurveForm> curvePlotView = new JspView<>("/org/labkey/targetedms/view/calibrationCurve.jsp", calibrationCurveForm);
-            curvePlotView.setTitle("Calibration Curve");
+            CalibrationCurveChart chart = _curvePlotView.getChart();
+            GeneralMolecule molecule = chart.getMolecule();
+            if (molecule == null)
+            {
+                throw new NotFoundException("Could not find molecule");
+            }
+            _asProteomics = molecule instanceof Peptide;
 
             // Summary charts for the precursor
             SummaryChartBean summaryChartBean = new SummaryChartBean(_run);
@@ -7252,37 +7176,33 @@ public class TargetedMSController extends SpringActionController
             summaryChartBean.setInitialWidth(1200);
 
             // Use different setter and details URL for Peptide vs Small Molecule
-            ActionURL detailsUrl = null;
-            if (_chart.getMolecule() != null)
+            ActionURL detailsUrl;
+            if (_asProteomics)
             {
-                if (_asProteomics)
-                {
-                    summaryChartBean.setPeptideId(_chart.getMolecule().getId());
-                    detailsUrl = new ActionURL(ShowPeptideAction.class, getContainer());
-                }
-                else
-                {
-                    summaryChartBean.setMoleculeId(_chart.getMolecule().getId());
-                    detailsUrl = new ActionURL(ShowMoleculeAction.class, getContainer());
-                }
+                summaryChartBean.setPeptideId(molecule.getId());
+                detailsUrl = new ActionURL(ShowPeptideAction.class, getContainer());
             }
+            else
+            {
+                summaryChartBean.setMoleculeId(molecule.getId());
+                detailsUrl = new ActionURL(ShowMoleculeAction.class, getContainer());
+            }
+
+            FiguresOfMeritView fomView = new FiguresOfMeritView(getUser(), getContainer(), molecule.getId(), true);
+            fomView.setTitleHref(new ActionURL(ShowFiguresOfMeritAction.class, getContainer()).addParameter("GeneralMoleculeId", molecule.getId()));
 
             JspView<SummaryChartBean> summaryChartView = new JspView<>("/org/labkey/targetedms/view/summaryChartsView.jsp", summaryChartBean);
             summaryChartView.setTitle("Summary Charts");
-            if (detailsUrl != null)
-            {
-                detailsUrl.addParameter("id", _chart.getMolecule().getId());
-                summaryChartView.setTitleHref(detailsUrl);
-            }
+            detailsUrl.addParameter("id", molecule.getId());
+            summaryChartView.setTitleHref(detailsUrl);
 
-            return new VBox(curvePlotView, summaryChartView, createQueryView(calibrationCurveForm, errors, false, null));
+            return new VBox(_curvePlotView, fomView, summaryChartView, createQueryView(calibrationCurveForm, errors, false, null));
         }
     }
 
     public static class CalibrationCurveForm extends RunDetailsForm
     {
         int calibrationCurveId;
-        JSONObject jsonData;
 
         public int getCalibrationCurveId()
         {
@@ -7294,14 +7214,10 @@ public class TargetedMSController extends SpringActionController
             this.calibrationCurveId = calibrationCurveId;
         }
 
-        public JSONObject getJsonData()
+        @Override
+        public long getId()
         {
-            return jsonData;
-        }
-
-        public void setJsonData(JSONObject jsonData)
-        {
-            this.jsonData = jsonData;
+            return super.getId();
         }
     }
 

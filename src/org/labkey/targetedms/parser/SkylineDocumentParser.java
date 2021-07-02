@@ -156,7 +156,7 @@ public class SkylineDocumentParser implements AutoCloseable
     private static final String LINKED_FRAGMENT_ION = "linked_fragment_ion";
 
     private static final double MIN_SUPPORTED_VERSION = 1.2;
-    public static final double MAX_SUPPORTED_VERSION = 20.2;
+    public static final double MAX_SUPPORTED_VERSION = 20.22;
 
     private static final Pattern XML_ID_REGEX = Pattern.compile("\"/^[:_A-Za-z][-.:_A-Za-z0-9]*$/\"");
     private static final String XML_ID_FIRST_CHARS = ":_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -183,9 +183,11 @@ public class SkylineDocumentParser implements AutoCloseable
 
     /**
      * To prevent giant DIA documents from overwhelming the DB, we skip importing TransitionChromInfos if the document
-     * has more than 100,000
+     * has more than 100,000 AND has more than 1,000 precursors. We use both because a document may have a lot of
+     * replicates, so the TransitionChromInfo count by itself isn't sufficient to do the desired screening
      */
     public static final int MAX_TRANSITION_CHROM_INFOS = 100_000;
+    public static final int MAX_PRECURSORS = 1_000;
 
     /** Null if we haven't found a SKYD to parse */
     @Nullable
@@ -237,10 +239,11 @@ public class SkylineDocumentParser implements AutoCloseable
         readDocumentVersion(_reader);
     }
 
-    /** @return if we've exceeded the maximum count of TransitionChromInfos that we want to store for a run */
+    /** @return false if we've exceeded the maximum count of TransitionChromInfos that we want to store for a run,
+     * or true if we're below the threshold and should retain them */
     public boolean shouldSaveTransitionChromInfos()
     {
-        return _transitionChromInfoCount < MAX_TRANSITION_CHROM_INFOS;
+        return _transitionChromInfoCount < MAX_TRANSITION_CHROM_INFOS || _precursorCount < MAX_PRECURSORS;
     }
 
     @Override
@@ -1963,7 +1966,10 @@ public class SkylineDocumentParser implements AutoCloseable
             }
             else
             {
-                complexFragmentIonName = new ComplexFragmentIonName(transition.fragmentType, transitionProto.getFragmentOrdinal());
+                // Get the ion type from the transitionProto, because transition.getFragmentType() has not been set yet
+                String ionType = ionTypeToString(transitionProto.getFragmentType());
+
+                complexFragmentIonName = new ComplexFragmentIonName(ionType, transitionProto.getFragmentOrdinal());
             }
             for (SkylineDocument.SkylineDocumentProto.LinkedIon linkedIon : transitionProto.getLinkedIonsList())
             {
@@ -2057,7 +2063,11 @@ public class SkylineDocumentParser implements AutoCloseable
         {
             complexFragmentIonName.addChild(readLinkedIon(child));
         }
-        return Pair.of(new ComplexFragmentIonName.ModificationSite(linkedIon.getModificationIndex(), linkedIon.getModificationName()), complexFragmentIonName);
+        ComplexFragmentIonName.ModificationSite modificationSite = null;
+        if (linkedIon.getModificationName().length() > 0) {
+            modificationSite = new ComplexFragmentIonName.ModificationSite(linkedIon.getModificationIndex(), linkedIon.getModificationName());
+        }
+        return Pair.of(modificationSite, complexFragmentIonName);
     }
 
     // Replace strings like [+80] in the modified sequence with [+80.0]
@@ -3208,9 +3218,12 @@ public class SkylineDocumentParser implements AutoCloseable
             linkedIon = new ComplexFragmentIonName(strFragmentType, XmlUtil.readIntegerAttribute(reader, "fragment_ordinal"));
         }
 
-        ComplexFragmentIonName.ModificationSite modificationSite = new ComplexFragmentIonName.ModificationSite(
-                XmlUtil.readIntegerAttribute(reader, "index_aa"),
-                reader.getAttributeValue(null, "modification_name"));
+        ComplexFragmentIonName.ModificationSite modificationSite = null;
+        String modificationSiteName = reader.getAttributeValue(null, "modification_name");
+        if (modificationSiteName != null) {
+            modificationSite = new ComplexFragmentIonName.ModificationSite(XmlUtil.readIntegerAttribute(reader, "index_aa"),
+                    modificationSiteName);
+        }
         while(reader.hasNext()) {
 
             int evtType = reader.next();

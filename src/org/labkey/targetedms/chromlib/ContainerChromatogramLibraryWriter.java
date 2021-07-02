@@ -478,7 +478,11 @@ public class ContainerChromatogramLibraryWriter
         for(Peptide peptide: peptides)
         {
             List<Precursor> precursors = PrecursorManager.getPrecursorsForPeptide(peptide.getId(), schema);
-
+            if(precursors.size() == 0)
+            {
+                throw new IllegalStateException(String.format("No precursors found for peptide '%s'. Empty peptides are not allowed in library folders." +
+                        " Empty peptides can be removed in Skyline by selecting Refine > Remove Empty Peptides.", peptide.getSequence()));
+            }
             LibPeptide libPeptide = makeLibPeptide(peptide, precursors, run);
             protein.addChild(libPeptide);
         }
@@ -606,7 +610,7 @@ public class ContainerChromatogramLibraryWriter
 
         // Add transitions.
         Collection<Transition> transitions = TransitionManager.getTransitionsForPrecursor(precursor.getId(), _user, _container);
-        addTransitions(libPrecursor, transitions, bestChromInfo, (t, tci) -> new LibTransition(t, tci, precursor, TransitionManager.getOptimizations(t.getId())));
+        addTransitions(libPrecursor, transitions, bestChromInfo, (t, tci) -> new LibTransition(t, tci, precursor, TransitionManager.getOptimizations(t.getId()), TargetedMSManager.getTransitionFullScanSettings(run.getId())));
         _precursorCount++;
         return libPrecursor;
     }
@@ -621,7 +625,7 @@ public class ContainerChromatogramLibraryWriter
 
         Collection<MoleculeTransition> transitions = MoleculeTransitionManager.getTransitionsForPrecursor(precursor.getId(), _user, _container);
         // Add transitions.
-        addTransitions(libPrecursor, transitions, bestChromInfo, (t, tci) -> new LibTransition(t, tci, precursor, TransitionManager.getOptimizations(t.getId())));
+        addTransitions(libPrecursor, transitions, bestChromInfo, (t, tci) -> new LibTransition(t, tci, precursor, TransitionManager.getOptimizations(t.getId()), run.fetchFullScanSettings()));
         _precursorCount++;
         return libPrecursor;
     }

@@ -16,7 +16,8 @@
 
 package org.labkey.targetedms.passport;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.action.SimpleViewAction;
 import org.labkey.api.action.SpringActionController;
@@ -27,39 +28,36 @@ import org.labkey.api.data.Sort;
 import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.TableSelector;
+import org.labkey.api.protein.ProteinService;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.QueryService;
 import org.labkey.api.query.UserSchema;
-import org.labkey.api.reader.Readers;
 import org.labkey.api.security.RequiresPermission;
 import org.labkey.api.security.permissions.ReadPermission;
+import org.labkey.api.util.DOM;
+import org.labkey.api.util.HtmlString;
+import org.labkey.api.view.ActionURL;
+import org.labkey.api.view.HtmlView;
 import org.labkey.api.view.JspView;
 import org.labkey.api.view.NavTree;
 import org.labkey.api.view.NotFoundException;
 import org.labkey.api.view.VBox;
+import org.labkey.api.view.WebPartView;
+import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.TargetedMSManager;
-import org.labkey.targetedms.model.passport.IFeature;
+import org.labkey.targetedms.TargetedMSRun;
 import org.labkey.targetedms.model.passport.IFile;
-import org.labkey.targetedms.model.passport.IKeyword;
 import org.labkey.targetedms.model.passport.IPeptide;
 import org.labkey.targetedms.model.passport.IProtein;
+import org.labkey.targetedms.parser.PeptideGroup;
+import org.labkey.targetedms.query.PeptideGroupManager;
 import org.labkey.targetedms.view.passport.ProteinListView;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -67,12 +65,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static org.labkey.targetedms.TargetedMSController.getShowListURL;
+import static org.labkey.targetedms.TargetedMSController.getShowRunURL;
 import static org.labkey.targetedms.TargetedMSManager.getSqlDialect;
 
 public class PassportController extends SpringActionController
 {
     private static final DefaultActionResolver _actionResolver = new DefaultActionResolver(PassportController.class);
-    private static final Logger LOG = Logger.getLogger(PassportController.class);
+    private static final Logger LOG = LogManager.getLogger(PassportController.class);
 
     public PassportController()
     {
@@ -80,7 +80,7 @@ public class PassportController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class BeginAction extends SimpleViewAction<Object>
+    public static class BeginAction extends SimpleViewAction<Object>
     {
         @Override
         public ModelAndView getView(Object o, BindException errors)
@@ -126,6 +126,10 @@ public class PassportController extends SpringActionController
     @RequiresPermission(ReadPermission.class)
     public class ProteinAction extends SimpleViewAction<ProteinForm>
     {
+        private String _title;
+        private IProtein _protein;
+        private TargetedMSRun _run;
+
         @Override
         public ModelAndView getView(ProteinForm form, BindException errors) throws IOException, SAXException, ParserConfigurationException
         {
@@ -133,126 +137,84 @@ public class PassportController extends SpringActionController
             {
                 throw new NotFoundException("No valid protein ID specified");
             }
-            IProtein protein = getProtein(form.getProteinId());
+            _protein = getProtein(form.getProteinId());
 
-            if (null == protein)
+            if (null == _protein)
             {
                 throw new NotFoundException("Protein not found for id: " + form.getProteinId());
             }
-            boolean beforeAfter = protein.getPep().stream().anyMatch(pep -> pep.getReplicateInfo().stream().anyMatch(rep -> "BeforeIncubation".equalsIgnoreCase(rep.getReplicate())));
-            return new JspView<>("/org/labkey/targetedms/view/passport/" + (beforeAfter ? "beforeAfterReport" : "MxNReport") + ".jsp", protein);
+            boolean beforeAfter = _protein.getPep().stream().anyMatch(pep -> pep.getReplicateInfo().stream().anyMatch(rep -> "BeforeIncubation".equalsIgnoreCase(rep.getReplicate())));
+            _title = (beforeAfter ? "Passport Protein View" : "Reproducibility Report") + ": " + _protein.getName();
+
+            VBox result = new VBox();
+            PeptideGroup group = PeptideGroupManager.getPeptideGroup(getContainer(), _protein.getPepGroupId());
+            _run = TargetedMSManager.getRun(group.getRunId());
+            TargetedMSController.addProteinSummaryViews(result, group, _run, getUser(), getContainer());
+
+            if (beforeAfter)
+            {
+                result.addView(new JspView<>("/org/labkey/targetedms/view/passport/beforeAfterReport.jsp", _protein));
+            }
+            else
+            {
+                JspView<?> filterSection = new JspView<>("/org/labkey/targetedms/view/passport/MxNReport.jsp", _protein);
+                filterSection.setTitle("Precursors");
+                filterSection.setFrame(WebPartView.FrameType.PORTAL);
+                result.addView(filterSection);
+
+                HtmlView intensityChart = new HtmlView(DOM.DIV(DOM.at().cl("exportable-plot").id("intensityChart"), "Loading..."));
+                intensityChart.setTitle("Peak Areas");
+                intensityChart.setFrame(WebPartView.FrameType.PORTAL);
+                result.addView(intensityChart);
+
+                HtmlView cvChart = new HtmlView(
+                        DOM.createHtmlFragment(
+                            DOM.DIV(DOM.at(DOM.Attribute.style, "text-align: center"),"Show:",
+                                    HtmlString.NBSP, HtmlString.NBSP, DOM.INPUT(DOM.at(DOM.Attribute.checked, null).type("checkbox").id("totalCVCheckbox")), "Total CV",
+                                    HtmlString.NBSP, HtmlString.NBSP, DOM.INPUT(DOM.at(DOM.Attribute.checked, null).type("checkbox").id("intraCVCheckbox")), "Average intra-day CV",
+                                    HtmlString.NBSP, HtmlString.NBSP, DOM.INPUT(DOM.at(DOM.Attribute.checked, null).type("checkbox").id("interCVCheckbox")), "Average inter-day CV"
+                            ),
+                            DOM.DIV(DOM.at().cl("exportable-plot").id("cvChart"), "Loading...")
+                        )
+                );
+                cvChart.setTitle("Coefficient of Variation");
+                cvChart.setFrame(WebPartView.FrameType.PORTAL);
+                result.addView(cvChart);
+
+                JspView<?> chromatogramSection = new JspView<>("/org/labkey/targetedms/view/passport/chromatograms.jsp");
+                chromatogramSection.setTitle("Chromatograms");
+                chromatogramSection.setFrame(WebPartView.FrameType.PORTAL);
+                result.addView(chromatogramSection);
+
+                JspView<?> calCurveSection = new JspView<>("/org/labkey/targetedms/view/passport/webPartPlaceholder.jsp", "calibrationCurveDiv");
+                calCurveSection.setFrame(WebPartView.FrameType.NONE);
+                result.addView(calCurveSection);
+
+                JspView<?> fomSection = new JspView<>("/org/labkey/targetedms/view/passport/webPartPlaceholder.jsp", "figuresOfMeritDiv");
+                fomSection.setFrame(WebPartView.FrameType.NONE);
+                result.addView(fomSection);
+            }
+
+            return result;
         }
 
         @Override
         public void addNavTrail(NavTree root)
         {
-            root.addChild("Passport Protein View");
-        }
-    }
-
-    private void populateUniprotData(IProtein p) throws IOException, ParserConfigurationException, SAXException
-    {
-        if (p.getAccession() == null)
-        {
-            return;
-        }
-        String url = "https://www.ebi.ac.uk/proteins/api/features/" + p.getAccession();
-        List<IFeature> features = new ArrayList<>();
-
-        URL obj = new URL(url);
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-        con.setRequestProperty("Accept", "application/xml");
-        con.setRequestMethod("GET");
-        int responseCode = con.getResponseCode();
-        if (responseCode == HttpURLConnection.HTTP_OK)
-        { // success
-            StringBuilder response = new StringBuilder();
-            try (BufferedReader in = Readers.getReader(con.getInputStream()))
+            root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
+            if (_run != null)
             {
-                String inputLine;
-
-                while ((inputLine = in.readLine()) != null)
-                {
-                    response.append(inputLine);
-                }
+                root.addChild(_run.getDescription(), getShowRunURL(getContainer(), _run.getId()));
             }
-
-            DocumentBuilderFactory dbf =
-                    DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            InputSource is = new InputSource();
-            is.setCharacterStream(new StringReader(response.toString()));
-
-            Document doc = db.parse(is);
-            Element entry = (Element) doc.getFirstChild();
-            NodeList featureElements = entry.getElementsByTagName("feature");
-            for (int i = 0; i < featureElements.getLength(); i++)
+            if (_protein != null)
             {
-                try
-                {
-                    Element feature = (Element) featureElements.item(i);
-                    IFeature f = new IFeature();
-                    f.setType(feature.getAttribute("type"));
-                    f.setDescription(feature.getAttribute("description"));
-                    Element location = (Element) feature.getElementsByTagName("location").item(0);
-                    if (f.isVariation())
-                    {
-                        if (location.getChildNodes().getLength() == 1)
-                        {
-                            int loc = Integer.parseInt(((Element) location.getElementsByTagName("position").item(0)).getAttribute("position"));
-                            f.setStartIndex(loc);
-                            f.setEndIndex(loc);
-                            if (feature.getElementsByTagName("original").getLength() == 0 || feature.getElementsByTagName("variation").getLength() == 0)
-                            {
-                                continue;
-                            }
-                            String original = feature.getElementsByTagName("original").item(0).getFirstChild().getNodeValue();
-                            String variation = feature.getElementsByTagName("variation").item(0).getFirstChild().getNodeValue();
-                            f.setOriginal(original);
-                            f.setVariation(variation);
-                        }
-                        else if (location.getChildNodes().getLength() == 2)
-                        {
-                            f = getPosition(f, location);
-                        }
-
-                    }
-                    else
-                    {
-                        f = getPosition(f, location);
-                    }
-                    features.add(f);
-                }
-                catch (Exception e)
-                {
-                    // we don't really care at the moment but exception is likely if xml is formatted differently than expected or given in the spec which happens sometimes
-                    continue;
-                }
+                root.addChild(_protein.getName(), new ActionURL(TargetedMSController.ShowProteinAction.class, getContainer()).addParameter("id", _protein.getPepGroupId()));
             }
-            p.setFeatures(features);
+            if (_title != null)
+            {
+                root.addChild(_title);
+            }
         }
-        else
-        {
-            LOG.info("GET request did not work");
-        }
-    }
-
-    private IFeature getPosition(IFeature f, Element location)
-    {
-        if (location.getElementsByTagName("begin").getLength() == 1)
-        {
-            int begin = Integer.parseInt(((Element) location.getElementsByTagName("begin").item(0)).getAttribute("position"));
-            int end = Integer.parseInt(((Element) location.getElementsByTagName("end").item(0)).getAttribute("position"));
-            f.setStartIndex(begin);
-            f.setEndIndex(end);
-        }
-        else
-        {
-            int loc = Integer.parseInt(((Element) location.getElementsByTagName("position").item(0)).getAttribute("position"));
-            f.setStartIndex(loc);
-            f.setEndIndex(loc);
-        }
-        return f;
     }
 
     // returns null if no protein found
@@ -299,7 +261,7 @@ public class PassportController extends SpringActionController
         p.setFile(f);
         p.setAccession((String) map.get("accession"));
         populateProteinKeywords(p);
-        populateUniprotData(p);
+        p.setFeatures(ProteinService.get().getProteinFeatures(p.getAccession()));
         populatePeptides(p);
 
         return p;
@@ -309,21 +271,7 @@ public class PassportController extends SpringActionController
     {
         if (p.getSequenceId() != null)
         {
-            String qs = "SELECT kw.keywordid, kw.keyword, kw.category, kc.label " +
-                    "FROM prot.sequences p, prot.annotations a, prot.identifiers pi, targetedms.keywords kw, targetedms.keywordcategories kc " +
-                    "WHERE p.seqid = ? AND a.seqid = p.seqid AND pi.identid = a.annotident AND kw.keywordid = pi.identifier AND kc.categoryid = kw.category";
-            UserSchema schema = QueryService.get().getUserSchema(getUser(), getContainer(), "targetedms");
-            SQLFragment keywordQuery = new SQLFragment();
-            keywordQuery.append(qs);
-            keywordQuery.add(p.getSequenceId());
-
-            SqlSelector sqlSelector = new SqlSelector(schema.getDbSchema(), keywordQuery);
-            List<IKeyword> keywords = new ArrayList<>();
-            sqlSelector.forEach(prot -> keywords.add(new IKeyword(prot.getString("keywordid"),
-                    prot.getString("category"),
-                    prot.getString("keyword"),
-                    prot.getString("label"))));
-            p.setKeywords(keywords);
+            p.setKeywords(TargetedMSManager.getKeywords(p.getSequenceId()));
         }
     }
 

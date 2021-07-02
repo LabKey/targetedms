@@ -18,7 +18,8 @@ package org.labkey.targetedms.query;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.labkey.api.cache.CacheLoader;
+import org.junit.Assert;
+import org.junit.Test;
 import org.labkey.api.cache.CacheManager;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DatabaseCache;
@@ -30,18 +31,15 @@ import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.TableResultSet;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.query.FieldKey;
-import org.labkey.api.query.QueryService;
 import org.labkey.api.security.User;
-import org.labkey.api.view.NotFoundException;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.chart.ChromatogramDataset.RtRange;
 import org.labkey.targetedms.model.PrecursorChromInfoLitePlus;
 import org.labkey.targetedms.model.PrecursorChromInfoPlus;
-import org.labkey.targetedms.parser.GeneralPrecursor;
 import org.labkey.targetedms.parser.Precursor;
 import org.labkey.targetedms.parser.PrecursorChromInfo;
-import org.labkey.api.targetedms.RepresentativeDataState;
+import org.labkey.targetedms.parser.RepresentativeDataState;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -52,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -62,8 +61,8 @@ import java.util.Set;
 public class PrecursorManager
 {
     private static final int CACHE_SIZE = 10; // Cache results for upto 10 runs.
-    private static PrecursorIdsWithChromatograms _precursorIdsWithChromatograms = new PrecursorIdsWithChromatograms();
-    private static PrecursorIdsWithSpectra _precursorIdsWithSpectra = new PrecursorIdsWithSpectra();
+    private static final PrecursorIdsWithChromatograms _precursorIdsWithChromatograms = new PrecursorIdsWithChromatograms();
+    private static final PrecursorIdsWithSpectra _precursorIdsWithSpectra = new PrecursorIdsWithSpectra();
 
 
     private PrecursorManager() {}
@@ -121,12 +120,7 @@ public class PrecursorManager
         colNames.addAll(TargetedMSManager.getTableInfoPrecursor().getColumnNameSet());
         colNames.addAll(TargetedMSManager.getTableInfoGeneralPrecursor().getColumnNameSet());
 
-        List<Precursor> precursors = new TableSelector(new PrecursorTableInfo(targetedMSSchema, null, true), colNames, filter,  sort).getArrayList(Precursor.class);
-
-        if (precursors.isEmpty())
-            throw new NotFoundException(String.format("No precursors found for peptideId %d", peptideId));
-
-        return precursors;
+        return new TableSelector(new PrecursorTableInfo(targetedMSSchema, null, true), colNames, filter,  sort).getArrayList(Precursor.class);
     }
 
     @NotNull
@@ -135,10 +129,13 @@ public class PrecursorManager
         SimpleFilter filter = new SimpleFilter();
         filter.addCondition(FieldKey.fromParts("PrecursorId"), precursorId);
 
-        return new TableSelector(TargetedMSManager.getTableInfoPrecursorChromInfo(),
+        List<PrecursorChromInfo> result = new TableSelector(TargetedMSManager.getTableInfoPrecursorChromInfo(),
                                    filter,
-                                   new Sort("-TotalArea"))
+                                   null)
                                   .getArrayList(PrecursorChromInfo.class);
+        // Do the sort in Java to avoid DB-specific null sorting behaviors
+        Collections.sort(result);
+        return result;
     }
 
     public static PrecursorChromInfo getBestPrecursorChromInfoForPrecursor(long precursorId)
@@ -151,41 +148,14 @@ public class PrecursorManager
         // Get a list of chrom infos sorted by peak area (descending).
         List<PrecursorChromInfo> chromInfos = getSortedPrecursorChromInfosForPrecursor(precursorId);
 
-        if(chromInfos.size() == 0)
-        {
-            return null;
-        }
-        else
-        {
-            // If we only want the best sample file from a replicate, get a list of sample file Ids for the
-            // given replicate.
-            Set<Integer> sampleFileIds = getSampleFileIdsForReplicate(replicateId);
+        // Filter based on the sample file Ids for the given replicate.
+        Set<Long> sampleFileIds = getSampleFileIdsForReplicate(replicateId);
+        chromInfos = chromInfos.stream().filter(pci -> sampleFileIds.isEmpty() || sampleFileIds.contains(pci.getSampleFileId())).collect(Collectors.toList());
 
-            // Look for one that has area information and the peaks are not truncated
-            for (PrecursorChromInfo chromInfo : chromInfos)
-            {
-
-                if (chromInfo.getTotalArea() != null && (chromInfo.getNumTruncated() == null || chromInfo.getNumTruncated().intValue() == 0))
-                {
-                    if(sampleFileIds.size() == 0 || sampleFileIds.contains(chromInfo.getSampleFileId()))
-                    {
-                        return chromInfo;
-                    }
-                }
-            }
-
-            // If we did not find a chrom info with a non-null precursor area and non-truncated peaks,
-            // return the first chrom info with non-null precursor area.
-            for(PrecursorChromInfo chromInfo: chromInfos)
-            {
-                if(chromInfo.getTotalArea() != null)
-                    return chromInfo;
-            }
-            return chromInfos.get(0);
-        }
+        return getBestPrecursorChromInfo(chromInfos);
     }
 
-    public static Set<Integer> getSampleFileIdsForReplicate(long replicateId)
+    public static Set<Long> getSampleFileIdsForReplicate(long replicateId)
     {
         if(replicateId <= 0)
             return Collections.emptySet();
@@ -193,53 +163,36 @@ public class PrecursorManager
         SimpleFilter filter = new SimpleFilter();
         filter.addCondition(FieldKey.fromParts("ReplicateId"), replicateId);
 
-        Collection<Integer> result =  new TableSelector(TargetedMSManager.getTableInfoSampleFile(),
+        Collection<Long> result =  new TableSelector(TargetedMSManager.getTableInfoSampleFile(),
                                    Collections.singleton("Id"),
                                    filter,
                                    null)
-                                  .getCollection(Integer.class);
+                                  .getCollection(Long.class);
         return new HashSet<>(result);
     }
 
-    public static PrecursorChromInfo getBestPrecursorChromInfoForPeptide(long peptideId)
+    @Nullable
+    public static PrecursorChromInfo getBestPrecursorChromInfo(@NotNull List<PrecursorChromInfo> chromInfos)
     {
-        List<PrecursorChromInfo> chromInfos = getPrecursorChromInfosForPeptide(peptideId);
-
-        if(chromInfos == null || chromInfos.size() == 0)
+        if(chromInfos.size() == 0)
         {
             return null;
         }
-        else
+
+        Collections.sort(chromInfos);
+
+        for (PrecursorChromInfo chromInfo : chromInfos)
         {
-            chromInfos.sort((o1, o2) ->
+            // Look for an entry with an area that wasn't truncated
+            if (chromInfo.getTotalArea() != null && (chromInfo.getNumTruncated() == null || chromInfo.getNumTruncated().intValue() == 0))
             {
-                if ((o1 == o2) || (o1.getTotalArea() == o2.getTotalArea()))
-                {
-                    return 0;
-                }
-                else if (o1.getTotalArea() == null)
-                {
-                    return 1;
-                }
-                else if (o2.getTotalArea() == null)
-                {
-                    return -1;
-                }
-
-                return o2.getTotalArea().compareTo(o1.getTotalArea());
-            });
-
-            for (PrecursorChromInfo chromInfo : chromInfos)
-            {
-                if (chromInfo.getTotalArea() != null && (chromInfo.getNumTruncated() == null || chromInfo.getNumTruncated().intValue() == 0))
-                {
-                    return chromInfo;
-                }
+                return chromInfo;
             }
-            return chromInfos.get(0);
         }
+        return chromInfos.get(0);
     }
 
+    @NotNull
     public static List<PrecursorChromInfo> getPrecursorChromInfosForPeptide(long peptideId)
     {
         SQLFragment sql = new SQLFragment("SELECT ");
@@ -512,22 +465,6 @@ public class PrecursorManager
         new SqlExecutor(TargetedMSManager.getSchema()).execute(sql);
     }
 
-    // Set to either NotRepresentative or Representative_Deprecated.
-    // If the original status was Representative it will be updated to Representative_Deprecated.
-    // If the original status was Conflicted it will be update to NotRepresentative.
-    public static void updateStatusToDeprecatedOrNotRepresentative(long[] precursorIds)
-    {
-        if(precursorIds == null || precursorIds.length == 0)
-            return;
-
-        List<Long> precursorIdList = new ArrayList<>(precursorIds.length);
-        for(int i = 0; i < precursorIds.length; i++)
-        {
-            precursorIdList.add(precursorIds[i]);
-        }
-        updateStatusToDeprecatedOrNotRepresentative(precursorIdList);
-    }
-
     public static void updateStatusToDeprecatedOrNotRepresentative(List<Long> precursorIds)
     {
         if(precursorIds == null || precursorIds.size() == 0)
@@ -632,33 +569,29 @@ public class PrecursorManager
             sql.add(precursorId);
 
             Integer count = new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Integer.class);
-            return count != null ? count > 0 : false;
+            return count != null && count > 0;
         }
         else
         {
-            Set<Integer> precursorIds = _precursorIdsWithChromatograms.get(String.valueOf(runId), null, new CacheLoader<String, Set<Integer>>() {
-                @Override
-                public Set<Integer> load(String runId, @Nullable Object argument)
-                {
-                    SQLFragment sql = new SQLFragment("SELECT DISTINCT pci.PrecursorId FROM ");
-                    sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
-                    sql.append(" , ");
-                    sql.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "gp");
-                    sql.append(" , ");
-                    sql.append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm");
-                    sql.append(" , ");
-                    sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
-                    sql.append(" WHERE ");
-                    sql.append(" pci.PrecursorId = gp.Id ");
-                    sql.append(" AND ");
-                    sql.append(" gp.GeneralMoleculeId = gm.Id ");
-                    sql.append(" AND ");
-                    sql.append(" gm.PeptideGroupId = pg.Id ");
-                    sql.append(" AND ");
-                    sql.append("pg.RunId = ?");
-                    sql.add(Long.valueOf(runId));
-                    return Collections.unmodifiableSet(new HashSet<>(new SqlSelector(TargetedMSManager.getSchema(), sql).getCollection(Integer.class)));
-                }
+            Set<Long> precursorIds = _precursorIdsWithChromatograms.get(String.valueOf(runId), null, (runId1, argument) -> {
+                SQLFragment sql = new SQLFragment("SELECT DISTINCT pci.PrecursorId FROM ");
+                sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
+                sql.append(" , ");
+                sql.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "gp");
+                sql.append(" , ");
+                sql.append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm");
+                sql.append(" , ");
+                sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
+                sql.append(" WHERE ");
+                sql.append(" pci.PrecursorId = gp.Id ");
+                sql.append(" AND ");
+                sql.append(" gp.GeneralMoleculeId = gm.Id ");
+                sql.append(" AND ");
+                sql.append(" gm.PeptideGroupId = pg.Id ");
+                sql.append(" AND ");
+                sql.append("pg.RunId = ?");
+                sql.add(Long.valueOf(runId1));
+                return Collections.unmodifiableSet(new HashSet<>(new SqlSelector(TargetedMSManager.getSchema(), sql).getCollection(Long.class)));
             });
 
             return precursorIds.contains(precursorId);
@@ -703,7 +636,7 @@ public class PrecursorManager
         }
         else
         {
-            Set<Integer> precursorIds = _precursorIdsWithSpectra.get(String.valueOf(runId), null, (runId1, argument) -> {
+            Set<Long> precursorIds = _precursorIdsWithSpectra.get(String.valueOf(runId), null, (runId1, argument) -> {
                 SQLFragment sql = new SQLFragment("SELECT DISTINCT bib.PrecursorId FROM ");
                 sql.append(TargetedMSManager.getTableInfoBibliospec(), "bib");
                 sql.append(" , ");
@@ -753,7 +686,7 @@ public class PrecursorManager
                 sql.append(" AND ");
                 sql.append("specLib.RunId = ?");
                 sql.add(Long.valueOf(runId1));
-                return Set.copyOf(new SqlSelector(TargetedMSManager.getSchema(), sql).getCollection(Integer.class));
+                return Set.copyOf(new SqlSelector(TargetedMSManager.getSchema(), sql).getCollection(Long.class));
             });
 
             return precursorIds.contains(precursorId);
@@ -825,7 +758,7 @@ public class PrecursorManager
         }
     }
 
-    private static class PrecursorIdsWithSpectra extends DatabaseCache<String, Set<Integer>>
+    private static class PrecursorIdsWithSpectra extends DatabaseCache<String, Set<Long>>
     {
        public PrecursorIdsWithSpectra()
         {
@@ -833,7 +766,7 @@ public class PrecursorManager
         }
     }
 
-    private static class PrecursorIdsWithChromatograms extends DatabaseCache<String, Set<Integer>>
+    private static class PrecursorIdsWithChromatograms extends DatabaseCache<String, Set<Long>>
     {
         public PrecursorIdsWithChromatograms()
         {
@@ -841,14 +774,43 @@ public class PrecursorManager
         }
     }
 
-    public static List<GeneralPrecursor> getPrecursorsForPeptideGroup(long peptideGroupId)
+    public static class TestCase
     {
-        SQLFragment sql = new SQLFragment("SELECT p.* FROM ")
-                .append(TargetedMSManager.getTableInfoGeneralPrecursor(), "p")
-                .append(" INNER JOIN ")
-                .append(TargetedMSManager.getTableInfoGeneralMolecule(), "mol")
-                .append(" ON mol.Id = p.generalMoleculeId ")
-                .append(" WHERE mol.peptideGroupId = ? ").add(peptideGroupId);
-        return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(GeneralPrecursor.class);
+        @Test
+        public void testSort()
+        {
+            List<PrecursorChromInfo> areaInfos = new ArrayList<>();
+            areaInfos.add(create(null, 10.0));
+            areaInfos.add(create(null, 20.0));
+            areaInfos.add(create(null, null));
+
+            Collections.sort(areaInfos);
+            Assert.assertEquals(Double.valueOf(20.0), areaInfos.get(0).getTotalArea());
+            Assert.assertEquals(Double.valueOf(10.0), areaInfos.get(1).getTotalArea());
+            Assert.assertNull(areaInfos.get(2).getTotalArea());
+
+            // Add some entries with q-values
+            areaInfos.add(create(0.5, 11.0));
+            areaInfos.add(create(0.1, 5.0));
+            areaInfos.add(create(0.1, 8.0));
+
+            Collections.sort(areaInfos);
+            Assert.assertEquals(Double.valueOf(0.1), areaInfos.get(0).getQvalue());
+            Assert.assertEquals(Double.valueOf(8.0), areaInfos.get(0).getTotalArea());
+            Assert.assertEquals(Double.valueOf(0.1), areaInfos.get(1).getQvalue());
+            Assert.assertEquals(Double.valueOf(5.0), areaInfos.get(1).getTotalArea());
+            Assert.assertEquals(Double.valueOf(0.5), areaInfos.get(2).getQvalue());
+            Assert.assertEquals(Double.valueOf(11.0), areaInfos.get(2).getTotalArea());
+            Assert.assertEquals(Double.valueOf(20.0), areaInfos.get(3).getTotalArea());
+            Assert.assertEquals(Double.valueOf(10.0), areaInfos.get(4).getTotalArea());
+        }
+
+        private PrecursorChromInfo create(Double qvalue, Double totalArea)
+        {
+            PrecursorChromInfo result = new PrecursorChromInfo();
+            result.setQvalue(qvalue);
+            result.setTotalArea(totalArea);
+            return result;
+        }
     }
 }

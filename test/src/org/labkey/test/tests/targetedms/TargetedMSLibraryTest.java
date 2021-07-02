@@ -159,6 +159,9 @@ public class TargetedMSLibraryTest extends TargetedMSTest
                                            SKY_FILE2, SKY_FILE2, SKY_FILE2,
                                            SKY_FILE2);
 
+        DataRegionTable table = new DataRegionTable("PeptideGroup", this);
+        table.setFilter("RepresentativeDataState", "Equals", "Current");
+
         verifyLibraryProteins(proteins, files);
     }
 
@@ -197,7 +200,7 @@ public class TargetedMSLibraryTest extends TargetedMSTest
         assertElementPresent(Locator.pageHeader("CTCF"));
         assertTextPresent("HsCD00078657 (2-D02)");
         assertEquals("Wrong decoy value", "false", getText(Locator.tagWithClass("td", "labkey-form-label").withText("Decoy").followingSibling("td")));
-        assertEquals("Wrong File", SKY_FILE1, getText(Locator.tagWithClass("td", "labkey-form-label").withText("File").followingSibling("td")));
+        assertEquals("Wrong File", SKY_FILE1 + "    584 KB ", getText(Locator.tagWithClass("td", "labkey-form-label").withText("File").followingSibling("td")));
         assertElementPresent(Locator.xpath("//table[contains(@id, 'peptideMap')]"));
         ensureComparisonPlots("CTCF");
 

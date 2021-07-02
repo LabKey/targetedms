@@ -69,11 +69,10 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
         DataRegionTable table = new DataRegionTable("TargetedMSRuns", getDriver());
         clickAndWait(table.link(0, "Replicates"));
 
-        checker().verifyTrue("Instruments Summary webpart is missing",
-                isElementPresent(Locator.tagWithAttribute("h3", "title", "Instruments Summary")));
+        checker().verifyTrue("Instrument Summary webpart is missing",
+                isElementPresent(Locator.tagWithAttribute("h3", "title", "Instrument Summary")));
         table = new DataRegionTable("InstrumentSummary", getDriver());
-        checker().verifyEquals("Invalid QC Folder Name ", QC_FOLDER_1,
-                table.getDataAsText(0, "QCFolders"));
+        checker().verifyTrue("Invalid QC Folder Name ", table.getDataAsText(0, "QCFolders").contains(QC_FOLDER_1));
 
         setUpFolder(QC_FOLDER_2, FolderType.QC);
         importData(SKY_FILE_QC);
@@ -81,13 +80,13 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
         table = new DataRegionTable("TargetedMSRuns", getDriver());
         clickAndWait(table.link(0, "Replicates"));
 
-        checker().verifyTrue("Instruments Summary webpart is missing",
-                isElementPresent(Locator.tagWithAttribute("h3", "title", "Instruments Summary")));
+        checker().verifyTrue("Instrument Summary webpart is missing",
+                isElementPresent(Locator.tagWithAttribute("h3", "title", "Instrument Summary")));
         table = new DataRegionTable("InstrumentSummary", getDriver());
         checker().verifyEquals("Invalid Instrument serial number", "Exactive Series slot #2384",
                 table.getDataAsText(0, "SerialNumber"));
-        checker().verifyEquals("Invalid QC Folder Name ", QC_FOLDER_1 + "\n" + QC_FOLDER_2,
-                table.getDataAsText(0, "QCFolders"));
+        checker().verifyTrue("Invalid QC Folder Name ",
+                table.getDataAsText(0, "QCFolders").contains(QC_FOLDER_1 + "\n" + QC_FOLDER_2));
 
         clickAndWait(Locator.linkWithText(QC_FOLDER_1));
         checker().verifyEquals("Did not navigate to QC folder ", QC_FOLDER_1, getCurrentContainer());
@@ -102,8 +101,6 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
     public void testLinkExperimentalQC()
     {
         String expRange = "Skyline File: " + SKY_FILE_EXPERIMENT + ", " +
-                "Serial No: Exactive Series slot #2384, " +
-                "Instrument Name: Q Exactive, " +
                 "Start: 2013-08-09 11:39:00, " +
                 "End: 2013-08-27 14:45:49, " +
                 "Mean: 14.669, Std Dev: 0.501, " +
