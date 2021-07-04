@@ -32,14 +32,15 @@ import org.labkey.api.data.TableResultSet;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.security.User;
+import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.chart.ChromatogramDataset.RtRange;
 import org.labkey.targetedms.model.PrecursorChromInfoLitePlus;
 import org.labkey.targetedms.model.PrecursorChromInfoPlus;
+import org.labkey.targetedms.parser.GeneralPrecursor;
 import org.labkey.targetedms.parser.Precursor;
 import org.labkey.targetedms.parser.PrecursorChromInfo;
-import org.labkey.targetedms.parser.RepresentativeDataState;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -774,7 +775,18 @@ public class PrecursorManager
         }
     }
 
-    public static class TestCase
+    public static List<GeneralPrecursor> getPrecursorsForPeptideGroup(long peptideGroupId)
+    {
+        SQLFragment sql = new SQLFragment("SELECT p.* FROM ")
+                .append(TargetedMSManager.getTableInfoGeneralPrecursor(), "p")
+                .append(" INNER JOIN ")
+                .append(TargetedMSManager.getTableInfoGeneralMolecule(), "mol")
+                .append(" ON mol.Id = p.generalMoleculeId ")
+                .append(" WHERE mol.peptideGroupId = ? ").add(peptideGroupId);
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(GeneralPrecursor.class);
+    }
+
+        public static class TestCase
     {
         @Test
         public void testSort()
