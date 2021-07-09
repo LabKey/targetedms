@@ -13,6 +13,7 @@ import org.labkey.test.categories.DailyB;
 import org.labkey.test.categories.MS2;
 import org.labkey.test.util.DataRegionTable;
 
+import java.io.File;
 import java.io.IOException;
 
 import static org.labkey.test.Locator.tag;
@@ -23,18 +24,14 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
 {
     private static final String SKY_FILE = "UW_Cpep_Linearity_Imprecision_trimmed.sky.zip";
     private static final String SKY_FILE_WITH_SINGLE_REPLICATE = "ListTest.sky.zip";
-
+    private static final String SKY_FILE_FOR_CALIBRATION_CURVE = "Quantification/CalibrationScenariosTest/MergedDocuments.sky.zip";
+    private static final String SKY_CLIB_FILE = "L-Asp-Hipp-B1-A4-Tau_trimmed.sky.zip";
 
     @BeforeClass
     public static void setupProject()
     {
         TargetedMSMxNReproducibilityReportTest init = (TargetedMSMxNReproducibilityReportTest) getCurrentTest();
         init.setupFolder(FolderType.Library);
-    }
-
-    private Locator.XPathLocator reproducibilityReportLink()
-    {
-        return tag("a").withChild(tag("i").withAttributeContaining("class", "fa-th").withAttributeContaining("title", "Reproducibility Report"));
     }
 
     @Override
@@ -51,7 +48,6 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
 
         goToProjectHome();
         clickTab("Proteins");
-
         DataRegionTable table = new DataRegionTable("PeptideGroup", this);
         table.setFilter("Label", "Equals", "PEPTIDE_GROUP_0");
 
@@ -61,12 +57,32 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
         waitForElement(Locator.tagWithName("a", "Protein"));
 
         checker().verifyTrue("Reproducibility Report is not present", isTextPresent("Reproducibility Report"));
-
         checker().verifyEquals("Incorrect number of graphs for EAEDLQVGQVE", getPrecursorChromeInfoCount("EAEDLQVGQVE"),
                 getGraphCount("EAEDLQVGQVE"));
-
         checker().verifyEquals("Incorrect number of graphs for EAEDL[+7.0]QVGQVE", getPrecursorChromeInfoCount("EAEDL[+7.0]QVGQVE"),
                 getGraphCount("EAEDL[+7.0]QVGQVE"));
+
+        log("Verifying the value type");
+        checker().verifyEquals("The Value Type drop-down is not defaulted correct", "Normalized",
+                getSelectedOptionText(Locator.name("valueType")));
+        selectOptionByText(Locator.name("valueType"), "Calibrated");
+        checker().verifyTrue("Missing message when calibration value type is selected",
+                isElementPresent(Locator.tagWithId("td", "noCalibratedValuesError")
+                        .withoutAttributeContaining("style", "display: none")));
+        selectOptionByText(Locator.name("valueType"), "Normalized");
+
+        //TODO : More verifications to add for new sample file.
+        checker().verifyTrue("Missing calibration curve webpart",
+                isElementPresent(Locator.css("span.labkey-wp-title-text").withText("Calibration Curve")));
+
+        checker().verifyTrue("Missing Figures of Merit  webpart",
+                isElementPresent(Locator.css("span.labkey-wp-title-text").withText("Figures of Merit")));
+
+        log("Verifying Calibration Curves link");
+        clickTab("Proteins");
+        clickAndWait(calibrationCurvesLink());
+        checker().verifyTrue("Calibration curve link not working",
+                isElementPresent(Locator.css("span.labkey-wp-title-text").withText("Peptide Calibration Curves")));
     }
 
     @Test
@@ -93,6 +109,69 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
         assertElementNotPresent("Shouldn't have reproducibility report link", reproducibilityReportLink());
     }
 
+    @Test
+    public void testCalibrationCurve()
+    {
+        String subfolderName = "Calibration Curve";
+        goToProjectHome();
+        setupSubfolder(getProjectName(), subfolderName, FolderType.Library);
+
+        navigateToFolder(getProjectName(), subfolderName);
+        importData(SKY_FILE_FOR_CALIBRATION_CURVE);
+
+        clickTab("Proteins");
+
+        checker().verifyFalse("Reproducibility report link should not be present", isElementPresent(reproducibilityReportLink()));
+        checker().verifyTrue("Calibration curve icon should be present", isElementPresent(calibrationCurvesLink()));
+
+        clickAndWait(calibrationCurvesLink().index(2));
+
+        log("Verifying the FOM values");
+        checker().verifyEquals("Incorrect Lower limit of quantitation", "1.0",
+                Locator.tagWithId("td", "lloq-stat").findElement(getDriver()).getText());
+        checker().verifyEquals("Incorrect Upper limit of quantitation", "10.0",
+                Locator.tagWithId("td", "uloq-stat").findElement(getDriver()).getText());
+        clickAndWait(Locator.linkWithText("Show Details"));
+
+        log("Verifying only 3 samples for displayed");
+        checker().verifyEquals("More then 3 samples displayed",
+                "Blank+IS__VIFonly\n" + "Blank+IS__VIFonly (2)\n" + "Cal 1_0_20 ng_mL_VIFonly\n" + "and 22 more",
+                Locator.tagWithId("div", "fom-sampleList").findElement(getDriver()).getText());
+
+        log("Verifying the downloaded file");
+        File exportedExcel = clickAndWaitForDownload(Locator.linkWithId("targetedms-fom-export"));
+        checker().verifyTrue("Wrong file type for export [" + exportedExcel.getName() + "]", exportedExcel.getName().endsWith(".xlsx"));
+        checker().verifyTrue("Empty file downloaded", exportedExcel.length() > 0);
+    }
+
+    @Test
+    public void testClibFileUpdates()
+    {
+        String subfolderName = "Clib File Folder";
+        goToProjectHome();
+        setupSubfolder(getProjectName(), subfolderName, FolderType.Library);
+
+        navigateToFolder(getProjectName(), subfolderName);
+        importData(SKY_CLIB_FILE);
+
+        clickTab("Panorama Dashboard");
+        File downloadedClibFile = doAndWaitForDownload(() -> clickButton("Download", 0));
+
+    }
+
+    private Locator.XPathLocator reproducibilityReportLink()
+    {
+        return tag("a").withChild(tag("i").withAttributeContaining("class", "fa-th")
+                .withAttribute("title", "Reproducibility Report"));
+    }
+
+    private Locator.XPathLocator calibrationCurvesLink()
+    {
+        return tag("a").withChild(tag("i").withAttributeContaining("class", "fa-line-chart")
+                .withAttribute("title", "Calibration Curves"));
+    }
+
+
     private int getGraphCount(String sequence)
     {
         pushLocation();
@@ -113,4 +192,6 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
         SelectRowsResponse rowsResponse = rowsCommand.execute(createDefaultConnection(), getCurrentContainerPath());
         return rowsResponse.getRows().size();
     }
+
+
 }
