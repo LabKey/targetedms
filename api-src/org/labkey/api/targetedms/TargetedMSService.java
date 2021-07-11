@@ -76,6 +76,11 @@ public interface TargetedMSService
     TableInfo getTableInfoRuns();
     TableInfo getTableInfoPeptideGroup();
     TableInfo getTableInfoGeneralMolecule();
+    TableInfo getTableInfoMolecule();
+    TableInfo getTableInfoGeneralPrecursor();
+    TableInfo getTableInfoPrecursor();
+    TableInfo getTableInfoMoleculePrecursor();
+
     List<String> getSampleFilePaths(long runId);
     List<? extends ISampleFile> getSampleFiles(long runId);
     List<? extends IModification.IStructuralModification> getStructuralModificationsUsedInRun(long runId);

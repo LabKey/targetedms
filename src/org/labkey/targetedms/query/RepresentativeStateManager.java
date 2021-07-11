@@ -32,12 +32,11 @@ import org.labkey.targetedms.chromlib.ChromatogramLibraryUtils;
 import org.labkey.targetedms.parser.MoleculePrecursor;
 import org.labkey.targetedms.parser.PeptideGroup;
 import org.labkey.targetedms.parser.Precursor;
-import org.labkey.targetedms.parser.RepresentativeDataState;
+import org.labkey.api.targetedms.RepresentativeDataState;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * User: vsharma
@@ -71,7 +70,7 @@ public class RepresentativeStateManager
                                         "' '",
                                         "COALESCE(" + p + ".CustomIonName, '')",
                                         "' - '",
-                                        "CAST(" + gp + ".mz AS VARCHAR)"));;
+                                        "CAST(" + gp + ".mz AS VARCHAR)"));
             }
             else if(state == TargetedMSRun.RepresentativeDataState.NotRepresentative)
             {

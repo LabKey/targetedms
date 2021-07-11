@@ -134,6 +134,30 @@ public class TargetedMSServiceImpl implements TargetedMSService
     }
 
     @Override
+    public TableInfo getTableInfoMolecule()
+    {
+        return TargetedMSManager.getTableInfoMolecule();
+    }
+
+    @Override
+    public TableInfo getTableInfoGeneralPrecursor()
+    {
+        return TargetedMSManager.getTableInfoGeneralPrecursor();
+    }
+
+    @Override
+    public TableInfo getTableInfoPrecursor()
+    {
+        return TargetedMSManager.getTableInfoPrecursor();
+    }
+
+    @Override
+    public TableInfo getTableInfoMoleculePrecursor()
+    {
+        return TargetedMSManager.getTableInfoMoleculePrecursor();
+    }
+
+    @Override
     public List<String> getSampleFilePaths(long runId)
     {
         return ReplicateManager.getSampleFilePaths(runId);
