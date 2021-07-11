@@ -15,13 +15,11 @@
  */
 package org.labkey.targetedms.parser;
 
-import org.labkey.api.targetedms.IGeneralPrecursor;
 import org.labkey.api.targetedms.RepresentativeDataState;
-import org.labkey.api.util.MemTracker;
 
 import java.util.List;
 
-public class GeneralPrecursor<TransitionType extends GeneralTransition> extends AnnotatedEntity<PrecursorAnnotation> implements IGeneralPrecursor
+public class GeneralPrecursor<TransitionType extends GeneralTransition> extends AnnotatedEntity<PrecursorAnnotation>
 {
     protected long _generalMoleculeId;
     protected int _charge;
@@ -40,11 +38,6 @@ public class GeneralPrecursor<TransitionType extends GeneralTransition> extends 
     private Double _explicitCcsSqa;
     private Double _explicitCompensationVoltage;
     private Double _precursorConcentration;
-
-    public GeneralPrecursor()
-    {
-        MemTracker.getInstance().put(this);
-    }
 
     public long getGeneralMoleculeId()
     {

@@ -27,7 +27,7 @@ import java.util.Date;
 public interface ITargetedMSRun
 {
     /** Don't change the ordering of these enum values without updating the values in targetedms.runs.representativedatastate */
-    public enum RepresentativeDataState
+    enum RepresentativeDataState
     {
         NotRepresentative(""),
         Representative_Protein("R - Protein"),

@@ -38,7 +38,6 @@ import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.chart.ChromatogramDataset.RtRange;
 import org.labkey.targetedms.model.PrecursorChromInfoLitePlus;
 import org.labkey.targetedms.model.PrecursorChromInfoPlus;
-import org.labkey.targetedms.parser.GeneralPrecursor;
 import org.labkey.targetedms.parser.Precursor;
 import org.labkey.targetedms.parser.PrecursorChromInfo;
 
@@ -775,18 +774,7 @@ public class PrecursorManager
         }
     }
 
-    public static List<GeneralPrecursor> getPrecursorsForPeptideGroup(long peptideGroupId)
-    {
-        SQLFragment sql = new SQLFragment("SELECT p.* FROM ")
-                .append(TargetedMSManager.getTableInfoGeneralPrecursor(), "p")
-                .append(" INNER JOIN ")
-                .append(TargetedMSManager.getTableInfoGeneralMolecule(), "mol")
-                .append(" ON mol.Id = p.generalMoleculeId ")
-                .append(" WHERE mol.peptideGroupId = ? ").add(peptideGroupId);
-        return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(GeneralPrecursor.class);
-    }
-
-        public static class TestCase
+    public static class TestCase
     {
         @Test
         public void testSort()

@@ -24,9 +24,9 @@ import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.query.FieldKey;
+import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.parser.PeptideGroup;
-import org.labkey.api.targetedms.RepresentativeDataState;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -263,10 +263,5 @@ public class PeptideGroupManager
             return (Long) mapArray[0].get("ReplicateId");
         }
         return null;
-    }
-
-    public static List<PeptideGroup> getPeptideGroups(long runId)
-    {
-        return new TableSelector(TargetedMSManager.getTableInfoPeptideGroup(), new SimpleFilter(FieldKey.fromParts("RunId"), runId), null).getArrayList(PeptideGroup.class);
     }
 }
