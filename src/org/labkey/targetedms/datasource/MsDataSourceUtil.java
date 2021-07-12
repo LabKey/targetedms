@@ -621,7 +621,7 @@ public class MsDataSourceUtil
         @Test
         public void testEncodedDataFileUrl() throws IOException
         {
-            Lsid lsid = new Lsid(ExperimentService.get().generateGuidLSID(_container, new DataType("UploadedFile")));
+            Lsid lsid = new Lsid(ExperimentService.get().generateGuidLSID(_container, UPLOADED_FILE));
             String fileName = "Space !#$%&'(+)+,;=@[+].raw";
             ExpData data = ExperimentService.get().createData(_container, fileName, lsid.toString());
             data.setContainer(_container);
