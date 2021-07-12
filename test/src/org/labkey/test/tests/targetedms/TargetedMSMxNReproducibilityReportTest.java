@@ -132,6 +132,8 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
         clickAndWait(calibrationCurvesLink().index(2));
 
         log("Verifying the FOM values");
+        waitForElement(Locator.css("span.labkey-wp-title-text").withText("Figures of Merit"));
+        checker().verifyTrue("Incorrect peptide", isElementPresent(Locator.tagWithText("h3", "Calibration Curve: VIFDANAPVAVR")));
         checker().verifyEquals("Incorrect Lower limit of quantitation", "1.0",
                 Locator.tagWithId("td", "lloq-stat").findElement(getDriver()).getText());
         checker().verifyEquals("Incorrect Upper limit of quantitation", "10.0",
