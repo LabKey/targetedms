@@ -12,9 +12,14 @@ import org.labkey.test.Locator;
 import org.labkey.test.categories.DailyB;
 import org.labkey.test.categories.MS2;
 import org.labkey.test.util.DataRegionTable;
+import org.labkey.test.util.targetedms.ConnectionSource;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import static org.labkey.test.Locator.tag;
 
@@ -145,7 +150,7 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
     }
 
     @Test
-    public void testClibFileUpdates()
+    public void testClibFileUpdates() throws SQLException
     {
         String subfolderName = "Clib File Folder";
         goToProjectHome();
@@ -157,6 +162,12 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
         clickTab("Panorama Dashboard");
         File downloadedClibFile = doAndWaitForDownload(() -> clickButton("Download", 0));
 
+        checker().verifyTrue("Precursor table is missing qvalue column",
+                columnExists(downloadedClibFile, "Precursor", "qvalue"));
+        checker().verifyTrue("Transition table is missing Quantitative column",
+                columnExists(downloadedClibFile, "Transition", "Quantitative"));
+        checker().verifyEquals("Incorrect row data for Precursor", 4, sizeOfTable(downloadedClibFile, "Precursor"));
+        checker().verifyEquals("Incorrect row data for Transition", 31, sizeOfTable(downloadedClibFile, "Transition"));
     }
 
     private Locator.XPathLocator reproducibilityReportLink()
@@ -193,5 +204,34 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
         return rowsResponse.getRows().size();
     }
 
+    private boolean columnExists(File clibFile, String tableName, String columnName) throws SQLException
+    {
+        try (Connection conn = ConnectionSource.getConnection(clibFile.getAbsolutePath()))
+        {
+            DatabaseMetaData md = conn.getMetaData();
+            try (ResultSet rs = md.getColumns(null, null, tableName, columnName))
+            {
+                if (rs.next())
+                    return true; //Table exists
+                else
+                    return false;
+            }
+        }
+    }
 
+    private int sizeOfTable(File clibFile, String name) throws SQLException
+    {
+        int cnt = 0;
+        @SuppressWarnings("SqlResolve")
+        String sql = "SELECT * FROM " + name;
+        try (Connection conn = ConnectionSource.getConnection(clibFile.getAbsolutePath()))
+        {
+            try (ResultSet rs = conn.createStatement().executeQuery(sql))
+            {
+                while (rs.next())
+                    cnt++;
+            }
+        }
+        return cnt;
+    }
 }
