@@ -60,6 +60,7 @@ import org.labkey.api.query.UserIdQueryForeignKey;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.targetedms.RepresentativeDataState;
+import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.HtmlString;
 import org.labkey.api.util.StringExpression;
@@ -937,9 +938,9 @@ public class TargetedMSSchema extends UserSchema
         if (TABLE_REPRESENTATIVE_DATA_STATE_RUN.equalsIgnoreCase(name))
         {
             return new EnumTableInfo<>(
-                    TargetedMSRun.RepresentativeDataState.class,
+                    RunRepresentativeDataState.class,
                     this,
-                    TargetedMSRun.RepresentativeDataState::getLabel,
+                    RunRepresentativeDataState::getLabel,
                     true,
                     "Possible states a run might be in for resolving representative data after upload"
                     );

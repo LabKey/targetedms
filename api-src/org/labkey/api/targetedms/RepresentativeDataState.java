@@ -28,9 +28,9 @@ public enum RepresentativeDataState
     Deprecated("Deprecated"),
     Conflicted("Conflicted");
 
-    private String _label;
+    private final String _label;
 
-    private RepresentativeDataState(String label)
+    RepresentativeDataState(String label)
     {
         _label = label;
     }
