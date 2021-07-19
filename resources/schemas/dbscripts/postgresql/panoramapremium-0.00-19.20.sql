@@ -1,3 +1,5 @@
+/* panoramapremium-19.10-19.20.sql */
+
 CREATE SCHEMA PanoramaPremium;
 
 CREATE TABLE PanoramaPremium.QCEmailNotifications
