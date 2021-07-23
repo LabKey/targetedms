@@ -55,8 +55,8 @@ public class TargetedMSPrecursorLevelDataTest extends AbstractQuantificationTest
         FiguresOfMerit fom = new FiguresOfMerit("VIFDANAPVAVR");
         fom.setLoq("1.0");
         fom.setUloq("10.0");
-        fom.setBiasLimit("20%");
-        fom.setCvLimit("20%");
+        fom.setBiasLimit("20.0%");
+        fom.setCvLimit("20.0%");
         fom.setLod("0.11");
         fom.setCalc("Blank plus 2 * SD");
 
