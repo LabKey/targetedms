@@ -350,11 +350,13 @@ public class TransitionManager
      * Returns true if there are any TransitionChromInfo rows associated with the run.
      */
     public static boolean runHasTransitionChromInfos(TargetedMSRun run) {
-        SQLFragment sql = new SQLFragment("SELECT EXISTS (SELECT tci FROM " +
+        SQLFragment sql = new SQLFragment("SELECT tci.Id FROM " +
                 TargetedMSManager.getTableInfoReplicate() + " r INNER JOIN " +
                 TargetedMSManager.getTableInfoSampleFile() + " f ON f.ReplicateId = r.Id INNER JOIN " +
-                TargetedMSManager.getTableInfoTransitionChromInfo() + " tci ON tci.SampleFileId = f.Id WHERE r.RunId = ?)")
+                TargetedMSManager.getTableInfoTransitionChromInfo() + " tci ON tci.SampleFileId = f.Id WHERE r.RunId = ?")
                 .add(run.getId());
-        return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Boolean.class);
+        return new SqlSelector(TargetedMSManager.getSchema(),
+                TargetedMSSchema.getSchema().getSqlDialect().limitRows(sql, 1))
+                .getObject(Long.class) != null;
     }
 }
