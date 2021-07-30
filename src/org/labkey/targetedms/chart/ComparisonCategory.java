@@ -453,10 +453,12 @@ public interface ComparisonCategory
             ComparisonCategory.PeptideCategory badCategory1 = new ComparisonCategory.PeptideCategory("S[+122.0", 2, "light", null);
             ComparisonCategory.PeptideCategory badCategory2 = new ComparisonCategory.PeptideCategory("[+122.0]S", 2, "light", null);
             ComparisonCategory.PeptideCategory multiMod = new ComparisonCategory.PeptideCategory("S[+122.0][+16.0]", 2, "light", null);
+            ComparisonCategory.PeptideCategory multiMod2 = new ComparisonCategory.PeptideCategory("SS[+122.0][+16.0]A[+4.0]B", 2, "light", null);
 
             assertEquals("s", badCategory1._sequence);
             assertEquals(badCategory2._modifiedSequence, badCategory2._sequence);
             assertEquals("s", multiMod._sequence);
+            assertEquals("SsaB", multiMod2._sequence);
         }
 
         @Test
