@@ -110,8 +110,11 @@ public interface ComparisonCategory
                     sb.append(modifiedSequence.substring(index));
                     return sb.toString();
                 }
-                sb.append(modifiedSequence, index, modificationIndex - 1);
-                sb.append(Character.toLowerCase(modifiedSequence.charAt(modificationIndex - 1)));
+                if (index != modificationIndex)
+                {
+                    sb.append(modifiedSequence, index, modificationIndex - 1);
+                    sb.append(Character.toLowerCase(modifiedSequence.charAt(modificationIndex - 1)));
+                }
                 index = modifiedSequence.indexOf(']', modificationIndex + 1) + 1;
                 if (index == 0)
                     return sb.toString();
@@ -449,9 +452,11 @@ public interface ComparisonCategory
             // Ensure that we pass through bogus peptide strings without exceptions
             ComparisonCategory.PeptideCategory badCategory1 = new ComparisonCategory.PeptideCategory("S[+122.0", 2, "light", null);
             ComparisonCategory.PeptideCategory badCategory2 = new ComparisonCategory.PeptideCategory("[+122.0]S", 2, "light", null);
+            ComparisonCategory.PeptideCategory multiMod = new ComparisonCategory.PeptideCategory("S[+122.0][+16.0]", 2, "light", null);
 
             assertEquals("s", badCategory1._sequence);
             assertEquals(badCategory2._modifiedSequence, badCategory2._sequence);
+            assertEquals("s", multiMod._sequence);
         }
 
         @Test
