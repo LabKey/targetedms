@@ -16,7 +16,6 @@ package org.labkey.test.tests.targetedms;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.ModulePropertyValue;
 import org.labkey.test.categories.Daily;
@@ -25,7 +24,6 @@ import org.labkey.test.categories.MS2;
 import java.util.Arrays;
 
 @Category({Daily.class, MS2.class})
-@BaseWebDriverTest.ClassTimeout(minutes = 25)
 public class TargetedMSPrecursorLevelDataTest extends AbstractQuantificationTest
 {
     /**
