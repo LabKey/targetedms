@@ -49,13 +49,13 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
     public void enableMetric(String metric)
     {
         selectOptionByText(Locator.name(metric),"Enabled");
-        click(Locator.buttonContainingText("Save"));
+        clickAndWait(Locator.buttonContainingText("Save"));
     }
 
     public void disableMetric(String metric)
     {
         selectOptionByText(Locator.name(metric),"Disabled");
-        click(Locator.buttonContainingText("Save"));
+        clickAndWait(Locator.buttonContainingText("Save"));
     }
 
     public void addNewCustomMetric(Map<CustomMetricProperties, String> metricProperties)
@@ -122,7 +122,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
                 _ext4Helper.selectComboBoxItem("Enabled Query:", val);
             }
         });
-        Ext4Helper.Locators.ext4Button("Save").findElement(metricWindow).click();
+        clickAndWait(Ext4Helper.Locators.ext4Button("Save").findElement(metricWindow));
     }
 
     private void editTraceMetricValues(Window metricWindow, Map<TraceMetricProperties, String> metricProperties)
@@ -141,7 +141,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
                 setFormElement(Locator.name(prop.name()), val);
             }
         });
-        Ext4Helper.Locators.ext4Button("Save").findElement(metricWindow).click();
+        clickAndWait(Ext4Helper.Locators.ext4Button("Save").findElement(metricWindow));
         waitForText("QC Plots");
     }
 
