@@ -41,7 +41,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -132,12 +131,11 @@ public class UnitTestUtil
             FileUtils.deleteDirectory(zipDir);
         }
 
-        List<Path> files = ZipUtil.unzipToDirectory(pZip, zipDir, pLogger);
-        for(Path file : files)
-        {
-            String ext = FileUtil.getExtension(file.getFileName().toString());
+        List<File> files = ZipUtil.unzipToDirectory(pZip, zipDir, pLogger);
+        for(File file : files){
+            String ext = FileUtil.getExtension(file.getName());
             if(SkylineAuditLogParser.TestCase.SKYLINE_LOG_EXTENSION.equals(ext))
-                return file.toFile();
+                return file;
         }
         return null;
     }
