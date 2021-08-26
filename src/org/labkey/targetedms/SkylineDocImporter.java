@@ -155,7 +155,7 @@ public class SkylineDocImporter
     private transient PreparedStatement _transitionChromInfoStmt;
     private transient PreparedStatement _precursorChromInfoStmt;
     private transient PreparedStatement _precursorChromInfoIndicesStmt;
-    private File _auditLogFile;
+    private Path _auditLogFile;
 
     private final Set<String> _missingLibraries = new HashSet<>();
     private boolean _hasDayAnnotation;
@@ -456,7 +456,7 @@ public class SkylineDocImporter
             int calCurvesCount = quantifyRun(run, pepSettings, groupComparisons);
 
             SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, _log);
-            int auditLogEntriesCount = importer.importAuditLogFile(_auditLogFile, parser.getDocumentGUID(), run);
+            int auditLogEntriesCount = importer.importAuditLogFile(_auditLogFile.toFile(), parser.getDocumentGUID(), run);
 
             run.setAuditLogEntriesCount(auditLogEntriesCount);
             run.setPeptideGroupCount(parser.getPeptideGroupCount());
@@ -945,11 +945,11 @@ public class SkylineDocImporter
                 FileUtil.deleteDirectoryContents(zipDir);
             }
             _blibSourceDir = zipDir;
-            List<File> files = ZipUtil.unzipToDirectory(f, zipDir, _log);
-            File skyFile = null;
-            for(File file: files)
+            List<Path> files = ZipUtil.unzipToDirectory(f, zipDir, _log);
+            Path skyFile = null;
+            for(Path file: files)
             {
-                ext = FileUtil.getExtension(file.getName());
+                ext = FileUtil.getExtension(file.getFileName().toString());
                 if(SkylineFileUtils.EXT_SKY.equalsIgnoreCase(ext))
                 {
                     if (null != skyFile)
@@ -962,7 +962,7 @@ public class SkylineDocImporter
                 }
                 else if (SkylineFileUtils.EXT_BLIB.equalsIgnoreCase(ext))
                 {
-                    _blibSourcePaths.add(file.toPath());
+                    _blibSourcePaths.add(file);
                 }
                 else if (SkylineFileUtils.EXT_SKY_LOG.equalsIgnoreCase(ext))
                 {
@@ -974,7 +974,7 @@ public class SkylineDocImporter
             {
                 throw new IOException("zip file " + f + " does not contain a .sky file");
             }
-            f = skyFile;
+            f = skyFile.toFile();
         }
         else
         {
@@ -984,7 +984,7 @@ public class SkylineDocImporter
                 File possibleAuditFile = new File(f.getParent(), FileUtil.getBaseName(f) + "." + SkylineFileUtils.EXT_SKY_LOG);
                 if (possibleAuditFile.isFile())
                 {
-                    _auditLogFile = possibleAuditFile;
+                    _auditLogFile = possibleAuditFile.toPath();
                 }
             }
         }
