@@ -123,7 +123,7 @@ public class SampleFileTable extends TargetedMSTable
             Set<Container> matchingContainers = new HashSet<>();
             Set<String> matchingSampleTypeLSIDs = new HashSet<>();
 
-            // Iterate and make that the user has permission to the target container
+            // Iterate and make sure the user has permission to the target container
             Collection<Map<String, Object>> matches = new SqlSelector(getSchema().getScope(), sql).getMapCollection();
             for (Map<String, Object> match : matches)
             {
