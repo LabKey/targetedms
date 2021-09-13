@@ -39,7 +39,7 @@ import java.util.List;
  */
 public class PrecursorChromInfo extends AbstractChromInfo implements Comparable<PrecursorChromInfo>
 {
-    private static final Logger LOG = LogHelper.getLogger(PrecursorChromInfo.class, "Messages about fetching chromatograms, either from the cache (in memory or from S3/local files)");
+    private static final Logger LOG = LogHelper.getLogger(PrecursorChromInfo.class, "Messages about fetching chromatograms (from the cache or loading from S3/local files)");
 
     private long _precursorId;
     private long _generalMoleculeChromInfoId;
