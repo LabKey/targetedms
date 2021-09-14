@@ -82,6 +82,7 @@
                     sort: 'name',
                     scope: this,
                     success: function (result) {
+                        result.rows.sort(function(row1, row2) { return row1.name.toLowerCase().localeCompare(row2.name.toLowerCase()); });
                         qcMetrics = result.rows;
                         showQCMetrics();
                     },

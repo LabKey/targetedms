@@ -57,8 +57,10 @@ public class PanoramaPremiumModule extends DefaultModule
     {
         addController(PanoramaPremiumController.NAME, PanoramaPremiumController.class);
         PanoramaPremiumSchema.register(this);
+        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", ConfigureQCMetricsCustomizer.get());
         Portal.registerNavTreeCustomizer("Targeted MS QC Plots", ConfigureQCMetricsCustomizer.get());
         Portal.registerNavTreeCustomizer("Targeted MS QC Summary", OutlierNotificationSubscriber.get());
+        Portal.registerNavTreeCustomizer("Targeted MS QC Plots", OutlierNotificationSubscriber.get());
         TargetedMSService.get().registerSkylineDocumentImportListener(QCNotificationSender.get());
     }
 

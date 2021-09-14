@@ -12,6 +12,7 @@ import org.labkey.api.view.NavTreeCustomizer;
 import org.labkey.api.view.ViewContext;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ConfigureQCMetricsCustomizer implements NavTreeCustomizer
@@ -31,16 +32,14 @@ public class ConfigureQCMetricsCustomizer implements NavTreeCustomizer
         if(viewContext.getContainer().hasPermission(viewContext.getUser(), AdminPermission.class))
         {
             List<NavTree> navTrees = new ArrayList<>();
-            NavTree link = new NavTree("QCMetricConfiguration");
             ActionURL url = new ActionURL("panoramapremium", "configureQCMetric", viewContext.getContainer()).addReturnURL(viewContext.getActionURL());
-            link.addChild("Configure QC Metrics", url);
-            navTrees.add(link);
+            navTrees.add(new NavTree("Configure QC Metrics", url));
 
             return navTrees;
         }
         else
         {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
     }
 }

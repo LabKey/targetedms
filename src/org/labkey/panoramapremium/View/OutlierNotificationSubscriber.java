@@ -8,6 +8,7 @@ import org.labkey.api.view.NavTreeCustomizer;
 import org.labkey.api.view.ViewContext;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class OutlierNotificationSubscriber implements NavTreeCustomizer
@@ -24,19 +25,17 @@ public class OutlierNotificationSubscriber implements NavTreeCustomizer
     @Override
     public List<NavTree> getNavTrees(ViewContext viewContext)
     {
-        if(viewContext.getContainer().hasPermission(viewContext.getUser(), ReadPermission.class) && !viewContext.getUser().isGuest())
+        if (viewContext.getContainer().hasPermission(viewContext.getUser(), ReadPermission.class) && !viewContext.getUser().isGuest())
         {
             List<NavTree> navTrees = new ArrayList<>();
-            NavTree link = new NavTree("OutlierNotificationSubscription");
             ActionURL url = new ActionURL("panoramapremium", "subscribeOutlierNotifications", viewContext.getContainer()).addReturnURL(viewContext.getActionURL());
-            link.addChild("Subscribe Outlier Notifications", url);
-            navTrees.add(link);
+            navTrees.add(new NavTree("Subscribe Outlier Notifications", url));
 
             return navTrees;
         }
         else
         {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
     }
 }
