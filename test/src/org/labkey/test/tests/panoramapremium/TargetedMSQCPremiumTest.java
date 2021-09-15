@@ -14,14 +14,12 @@ import org.labkey.test.Locator;
 import org.labkey.test.TestTimeoutException;
 import org.labkey.test.categories.Git;
 import org.labkey.test.components.dumbster.EmailRecordTable;
-import org.labkey.test.components.html.BootstrapMenu;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.components.targetedms.QCSummaryWebPart;
 import org.labkey.test.components.targetedms.TargetedMSRunsTable;
 import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
 import org.labkey.test.util.APIContainerHelper;
-
 import org.labkey.test.util.ApiPermissionsHelper;
 import org.labkey.test.util.DataRegionTable;
 import org.openqa.selenium.NoSuchElementException;
@@ -33,6 +31,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @Category(Git.class)
 public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
@@ -93,18 +92,13 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         configureUI.enableMetric(metric);
 
         impersonate(USER);
-        BootstrapMenu qcPlotMenu = qcPlotsWebPart.getWebParMenu();
         log("Verifying Configure QC Metrics Menu option not present for non admin");
         try
         {
-            qcPlotMenu.findVisibleMenuItems();
-            assert false;
+            goToConfigureMetricsUI();
+            fail("Shouldn't have found the QC metrics config menu item as non-admin");
         }
-        catch (NoSuchElementException ex)
-        {
-            assert true : "No menu option present";
-        }
-
+        catch (NoSuchElementException ignored) {}
     }
 
     @Test
