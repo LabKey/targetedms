@@ -28,4 +28,4 @@ UPDATE
 SET
     EnabledQueryName = 'QCMetricEnabled_transitionArea',
     EnabledSchemaName = 'targetedms'
-WHERE Name = 'Transition/Precursor Areas';
+WHERE Name = 'Transition & Precursor Areas';
