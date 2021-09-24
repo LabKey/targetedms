@@ -748,6 +748,9 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         TPAREARATIO("Transition/Precursor Area Ratio", true),
         TPAREAS("Transition & Precursor Areas", true),
         MASSACCURACY("Mass Accuracy", true),
+        IRTINTERCEPT("iRT Intercept", true),
+        IRTSLOPE("iRT Slope", true),
+        IRTCORRELATION("iRT Correlation", true),
         TICAREA("TIC Area", true);
 
         private String _text;
