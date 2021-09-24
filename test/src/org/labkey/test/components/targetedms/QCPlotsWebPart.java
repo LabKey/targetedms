@@ -448,7 +448,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         {
             endPoint = elementCache().svgBackgrounds.findElements(this).get(0);
             xEndOffset = (Integer.parseInt(endPoint.getAttribute("width")) / 2) - 1;
-            ;
         }
 
         getWrapper().scrollIntoView(startPoint);
@@ -631,7 +630,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         PERCENT_OF_MEAN("Percent of Mean"),
         STANDARD_DEVIATIONS("Standard Deviations");
 
-        private String _text;
+        private final String _text;
 
         Scale(String text)
         {
@@ -657,8 +656,8 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         ALL(0, "All dates"),
         CUSTOM(-1, "Custom range");
 
-        private Integer _offset;
-        private String _label;
+        private final Integer _offset;
+        private final String _label;
 
         DateRangeOffset(Integer offset, String label)
         {
@@ -692,9 +691,9 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         CUSUMm("CUSUMm", "Mean CUSUM", "_CUSUMm"),
         CUSUMv("CUSUMv", "Variability CUSUM", "_CUSUMv");
 
-        private String _label;
-        private String _labellong;
-        private String _suffix;
+        private final String _label;
+        private final String _labellong;
+        private final String _suffix;
 
         QCPlotType(String shortlabel, String longlabel, String idSuffix)
         {
@@ -725,7 +724,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         ExcludeMetric("Exclude sample from QC for this metric"),
         ExcludeAll("Exclude sample from QC for all metrics");
 
-        private String _label;
+        private final String _label;
 
         QCPlotExclusionState(String label)
         {
@@ -748,9 +747,9 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         TPAREARATIO("Transition/Precursor Area Ratio", true),
         TPAREAS("Transition & Precursor Areas", true),
         MASSACCURACY("Mass Accuracy", true),
-        IRTINTERCEPT("iRT Intercept", true),
-        IRTSLOPE("iRT Slope", true),
-        IRTCORRELATION("iRT Correlation", true),
+        IRTINTERCEPT("iRT Intercept", false),
+        IRTSLOPE("iRT Slope", false),
+        IRTCORRELATION("iRT Correlation", false),
         TICAREA("TIC Area", true);
 
         private String _text;
@@ -815,7 +814,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         Locator.CssLocator svgBackgrounds = Locator.css("svg g.brush rect.background");
         Locator.XPathLocator hopscotchBubble = Locator.byClass("hopscotch-bubble-container");
         Locator.XPathLocator hopscotchBubbleClose = Locator.byClass("hopscotch-bubble-close");
-        private Map<QCPlotType, Checkbox> plotTypeCheckboxes = new HashMap<>();
+        private final Map<QCPlotType, Checkbox> plotTypeCheckboxes = new HashMap<>();
 
         List<WebElement> findPlots()
         {
