@@ -742,12 +742,12 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         RETENTION("Retention Time", true),
         TOTAL_PEAK("Total Peak Area (Precursor + Transition)", true),
-        PRECURSOR_AREA("Precursor Peak Area", true),
+        PRECURSOR_AREA("Precursor Area", true),
         FWHM("Full Width at Half Maximum (FWHM)", true),
         FWB("Full Width at Base (FWB)", true),
         LHRATIO("Light/Heavy Ratio", false),
         TPAREARATIO("Transition/Precursor Area Ratio", true),
-        TRANSITION_AREA("Transition/Precursor Area Ratio", true),
+        TRANSITION_AREA("Transition Area", true),
         TPAREAS("Transition & Precursor Areas", true),
         MASSACCURACY("Mass Accuracy", true),
         TICAREA("TIC Area", true);
