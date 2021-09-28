@@ -235,7 +235,7 @@ public class TargetedMSQCTest extends TargetedMSTest
     public void testQCPlotInputs()
     {
         List<QCPlotsWebPart.MetricType> metricTypeWithData =
-                Arrays.asList(QCPlotsWebPart.MetricType.PEAK, QCPlotsWebPart.MetricType.RETENTION, QCPlotsWebPart.MetricType.FWHM,
+                Arrays.asList(QCPlotsWebPart.MetricType.TOTAL_PEAK, QCPlotsWebPart.MetricType.RETENTION, QCPlotsWebPart.MetricType.FWHM,
                         QCPlotsWebPart.MetricType.FWB, QCPlotsWebPart.MetricType.TPAREARATIO, QCPlotsWebPart.MetricType.TPAREAS,
                         QCPlotsWebPart.MetricType.MASSACCURACY, QCPlotsWebPart.MetricType.TICAREA);
 
