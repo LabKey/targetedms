@@ -1341,43 +1341,34 @@ public class TargetedMSManager
         {
             if (!fileIsReferenced(uri))
             {
-                try
+                deleteRunForFile(uri, c, u);
+
+                // Remove .sky.zip from file name to get directory name
+                Path file = FileUtil.getPath(c, uri);
+                String dirName = FilenameUtils.removeExtension(FilenameUtils.removeExtension(FileUtil.getFileName(file)));
+
+                Path dir = file.getParent().resolve(dirName);
+                Path viewFile = file.getParent().resolve(dirName + ".sky.view");
+                Path skydFile = file.getParent().resolve(dirName + ".skyd");
+
+                logMsg = "All the related sampleFiles for " + file.toString() + " have been updated with newer data.";
+                logMsgs.add(logMsg);
+                _log.info(logMsg);
+
+                logMsgs = deleteFileWithLogging(file, logMsgs);
+
+                if (Files.exists(viewFile))
+                    logMsgs = deleteFileWithLogging(viewFile, logMsgs);
+
+                if (Files.exists(skydFile))
+                    logMsgs = deleteFileWithLogging(skydFile, logMsgs);
+
+                if (Files.isDirectory(dir))
                 {
-                    deleteRunForFile(uri, c, u);
-
-                    // Remove .sky.zip from file name to get directory name
-                    Path file = FileUtil.getPath(c, uri);
-                    String dirName = FilenameUtils.removeExtension(FilenameUtils.removeExtension(FileUtil.getFileName(file)));
-
-                    Path dir = file.getParent().resolve(dirName);
-                    Path viewFile = file.getParent().resolve(dirName + ".sky.view");
-                    Path skydFile = file.getParent().resolve(dirName + ".skyd");
-
-                    logMsg = "All the related sampleFiles for " + file.toString() + " have been updated with newer data.";
+                    logMsg = "Deleting directory " + dir.toString();
                     logMsgs.add(logMsg);
                     _log.info(logMsg);
-
-                    logMsgs = deleteFileWithLogging(file, logMsgs);
-
-                    if (Files.exists(viewFile))
-                        logMsgs = deleteFileWithLogging(viewFile, logMsgs);
-
-                    if (Files.exists(skydFile))
-                        logMsgs = deleteFileWithLogging(skydFile, logMsgs);
-
-                    if (Files.isDirectory(dir))
-                    {
-                        logMsg = "Deleting directory " + dir.toString();
-                        logMsgs.add(logMsg);
-                        _log.info(logMsg);
-                        FileUtil.deleteDir(dir);
-                    }
-                }
-                catch (IOException e)
-                {
-                    logMsg = "Unable to delete unzipped directory from file "; // + file;        TODO
-                    _log.warn(logMsg);
-                    logMsgs.add(logMsg);
+                    FileUtil.deleteDir(dir, _log);
                 }
             }
         }
