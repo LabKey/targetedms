@@ -10,6 +10,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
+import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestTimeoutException;
 import org.labkey.test.categories.Git;
@@ -34,6 +35,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 @Category(Git.class)
+@BaseWebDriverTest.ClassTimeout(minutes = 6)
 public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
 {
     @Rule
@@ -82,6 +84,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         String metric = "Peak Area";
         ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
         configureUI.disableMetric(metric);
+        configureUI.clickSave();
 
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
@@ -90,7 +93,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         //re-enabling peak area metric
         goToConfigureMetricsUI();
         configureUI.enableMetric(metric);
-
+        clickAndWait(Locator.buttonContainingText("Save"));
         impersonate(USER);
         log("Verifying Configure QC Metrics Menu option not present for non admin");
         try
@@ -164,6 +167,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         goToConfigureMetricsUI();
         configureUI.disableMetric(metricName);
+        configureUI.clickSave();
 
         verifyMetricNotPresent(qcPlotsWebPart, metricName);
 

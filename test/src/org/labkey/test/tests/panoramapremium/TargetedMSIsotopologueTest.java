@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.categories.Git;
 import org.labkey.test.components.ext4.Window;
@@ -15,6 +16,7 @@ import java.util.Arrays;
 import static org.junit.Assert.assertTrue;
 
 @Category(Git.class)
+@BaseWebDriverTest.ClassTimeout(minutes = 3)
 public class TargetedMSIsotopologueTest extends TargetedMSPremiumTest
 {
     protected static final String ISOTOPOLOGUE_FILE_ANNOTATED = "PRM_7x5mix_A40010_QEHF_examples_v3.sky.zip";

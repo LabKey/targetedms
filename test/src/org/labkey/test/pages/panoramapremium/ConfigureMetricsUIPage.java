@@ -46,15 +46,20 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         super(test.getDriver());
     }
 
-    public void enableMetric(String metric)
+    public ConfigureMetricsUIPage enableMetric(String metric)
     {
         selectOptionByText(Locator.name(metric),"Enabled");
-        clickAndWait(Locator.buttonContainingText("Save"));
+        return this;
     }
 
-    public void disableMetric(String metric)
+    public ConfigureMetricsUIPage disableMetric(String metric)
     {
         selectOptionByText(Locator.name(metric),"Disabled");
+        return this;
+    }
+
+    public void clickSave()
+    {
         clickAndWait(Locator.buttonContainingText("Save"));
     }
 
