@@ -196,7 +196,7 @@ public class AuditLogTree implements Iterable<AuditLogTree>
             }
 
             // performing depth-first search because audit log trees are typically deeper than wider.
-            stack.addAll(0, _children.values());
+            stack.addAll(0, currentEntry._children.values());
         }
         return null;
     }
