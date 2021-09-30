@@ -30,12 +30,14 @@ import org.labkey.api.data.RenderContext;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.Table;
+import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.data.dialect.SqlDialect;
 import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.exp.api.ExpSampleType;
 import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.exp.api.SampleTypeService;
+import org.labkey.api.exp.property.DomainProperty;
 import org.labkey.api.exp.query.SamplesSchema;
 import org.labkey.api.query.DefaultQueryUpdateService;
 import org.labkey.api.query.DetailsURL;
@@ -79,6 +81,8 @@ public class SampleFileTable extends TargetedMSTable
     @Nullable
     private final TargetedMSRun _run;
 
+    private final String SAMPLE_FIELD_KEY = "SampleName";
+
     public SampleFileTable(TargetedMSSchema schema, ContainerFilter cf)
     {
         this(schema, cf, null);
@@ -109,14 +113,14 @@ public class SampleFileTable extends TargetedMSTable
         ExprColumn excludedColumn = new ExprColumn(this, "Excluded", excludedSQL, JdbcType.BOOLEAN);
         addColumn(excludedColumn);
 
-        getMutableColumn("SampleName").setFk(new LazyForeignKey(() ->
+        getMutableColumn(SAMPLE_FIELD_KEY).setFk(new LazyForeignKey(() ->
         {
             // Do a query to look across the entire server for samples where the name matches with names from the
             // targetedms.SampleFiles table, as currently filtered by the SampleFileTable (container and/or run)
             SQLFragment sql = new SQLFragment("SELECT DISTINCT Container, CpasType FROM ");
             sql.append(ExperimentService.get().getTinfoMaterial(), "m");
             sql.append(" WHERE CpasType IS NOT NULL AND Name IN (SELECT SampleName FROM (");
-            Set<ColumnInfo> selectCols = Set.of(getColumn("SampleName"));
+            Set<ColumnInfo> selectCols = Set.of(getColumn(SAMPLE_FIELD_KEY));
             sql.append(QueryService.get().getSelectSQL(SampleFileTable.this, selectCols, null, null, Table.ALL_ROWS, 0, false));
             sql.append(") X)");
 
@@ -176,14 +180,25 @@ public class SampleFileTable extends TargetedMSTable
     {
         if (_defaultVisibleColumns == null && _run != null)
         {
-            // Always include these columns
             List<FieldKey> defaultCols = new ArrayList<>(Arrays.asList(
                     FieldKey.fromParts("ReplicateId"),
-                    FieldKey.fromParts("SampleName"),
+                    FieldKey.fromParts(SAMPLE_FIELD_KEY)
+            ));
+
+            // call to the SampleName FK to resolve the ExpSampleType so we can add any custom user defined fields to the default view
+            TableInfo sampleLookupTableInfo = getColumn(SAMPLE_FIELD_KEY).getFk().getLookupTableInfo();
+            if (sampleLookupTableInfo != null)
+            {
+                for (DomainProperty property : sampleLookupTableInfo.getDomain().getProperties())
+                    defaultCols.add(FieldKey.fromParts(SAMPLE_FIELD_KEY, property.getName()));
+            }
+
+            defaultCols.addAll(Arrays.asList(
                     FieldKey.fromParts("File"),
                     FieldKey.fromParts("Download"),
                     FieldKey.fromParts("AcquiredTime"),
-                    FieldKey.fromParts("InstrumentSerialNumber")));
+                    FieldKey.fromParts("InstrumentSerialNumber")
+            ));
 
             // Find the columns that have values for the run of interest, and include them in the set of columns in the default
             // view. We don't really care what the value is for the columns, just that it exists, so we arbitrarily use
