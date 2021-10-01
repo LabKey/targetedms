@@ -36,6 +36,7 @@ import org.labkey.api.data.dialect.SqlDialect;
 import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.exp.api.ExpSampleType;
 import org.labkey.api.exp.api.ExperimentService;
+import org.labkey.api.exp.api.ExperimentUrls;
 import org.labkey.api.exp.api.SampleTypeService;
 import org.labkey.api.exp.property.DomainProperty;
 import org.labkey.api.exp.query.SamplesSchema;
@@ -54,6 +55,7 @@ import org.labkey.api.security.permissions.DeletePermission;
 import org.labkey.api.security.permissions.Permission;
 import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.targetedms.TargetedMSService;
+import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.view.ActionURL;
 import org.labkey.targetedms.TargetedMSController;
@@ -145,8 +147,15 @@ public class SampleFileTable extends TargetedMSTable
                 ExpSampleType sampleType = SampleTypeService.get().getSampleType(matchingSampleTypeLSIDs.iterator().next());
                 if (sampleType != null)
                 {
+                    ActionURL sampleUrl = PageFlowUtil.urlProvider(ExperimentUrls.class, true).getMaterialDetailsBaseURL(sampleType.getContainer(), SAMPLE_FIELD_KEY + "/RowId");
+                    DetailsURL url = new DetailsURL(sampleUrl, "rowId", FieldKey.fromParts(SAMPLE_FIELD_KEY, "RowId"));
+                    url.setContainerContext(new ContainerContext.FieldKeyContext(FieldKey.fromParts(SAMPLE_FIELD_KEY, "Folder"), true), false);
+                    url.setStrictContainerContextEval(true);
+
                     return new QueryForeignKey.Builder(new SamplesSchema(getUserSchema().getUser(), matchingContainers.iterator().next()), null).
-                            table(sampleType.getName()).key("Name").
+                            table(sampleType.getName()).
+                            key("Name").
+                            url(url).
                             raw(true).
                             build();
                 }
