@@ -10,11 +10,7 @@
                         <url>/targetedms-showPrecursorList.view?id=${Id}</url>
                     </column>
                     <column columnName="PeptideGroupCount">
-                        <columnTitle>Proteins</columnTitle>
-                        <url>/targetedms-showPrecursorList.view?id=${Id}</url>
-                    </column>
-                    <column columnName="MoleculeListCount">
-                        <columnTitle>Molecule Lists</columnTitle>
+                        <columnTitle>Proteins / Molecule Lists</columnTitle>
                         <url>/targetedms-showPrecursorList.view?id=${Id}</url>
                     </column>
                     <column columnName="PeptideCount">
