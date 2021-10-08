@@ -81,14 +81,14 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
     @Test
     public void testConfigureQCMetrics()
     {
-        String metric = "Peak Area";
+        String metric = QCPlotsWebPart.MetricType.TOTAL_PEAK.toString();
         ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
         configureUI.disableMetric(metric);
         configureUI.clickSave();
 
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        verifyMetricNotPresent(qcPlotsWebPart, "Peak Area");
+        verifyMetricNotPresent(qcPlotsWebPart, metric);
 
         //re-enabling peak area metric
         goToConfigureMetricsUI();
@@ -228,7 +228,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate("2009-11-03 19:37:28"));
         waitForElement(qcPlotsWebPart.getBubble());
         String pressureTracehoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
-        assertTrue("Wrong value present", pressureTracehoverText.contains(firstTraceValue.get("value")));
+        assertTrue("Wrong value present", pressureTracehoverText.contains("7.363"));
 
         log("Delete run and verify trace metric values are deleted");
         clickTab("Runs");
