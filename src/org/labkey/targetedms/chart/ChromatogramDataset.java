@@ -18,6 +18,7 @@ package org.labkey.targetedms.chart;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jfree.chart.ChartColor;
+import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.labkey.api.data.Container;
@@ -439,10 +440,12 @@ public abstract class ChromatogramDataset
             return _annotations;
         }
 
+        private static final RtRange DUMMY_RANGE = new RtRange(0, 0);
+
         protected RtRange summarizeRanges(List<RtRange> ranges)
         {
-            double min = ranges.stream().min(Comparator.comparingDouble(RtRange::getMinRt)).orElseThrow().getMinRt();
-            double max = ranges.stream().max(Comparator.comparingDouble(RtRange::getMaxRt)).orElseThrow().getMaxRt();
+            double min = ranges.stream().min(Comparator.comparingDouble(RtRange::getMinRt)).orElse(DUMMY_RANGE).getMinRt();
+            double max = ranges.stream().max(Comparator.comparingDouble(RtRange::getMaxRt)).orElse(DUMMY_RANGE).getMaxRt();
 
             return new RtRange(min, max);
         }
@@ -483,14 +486,13 @@ public abstract class ChromatogramDataset
 
         protected abstract RtRange getRtRangeSummary();
 
-        protected PeakInChart addPrecursorAsSeries(XYSeriesCollection dataset, Chromatogram chromatogram,
-                                                   PrecursorChromInfoPlus pChromInfo,
-                                                   RtRange chromatogramRtRange, String label,
-                                                   int seriesIndex)
+        protected PeakInChart addDataToSeries(Chromatogram chromatogram,
+                                              PrecursorChromInfoPlus pChromInfo,
+                                              RtRange chromatogramRtRange,
+                                              int seriesIndex,
+                                              XYSeries series)
         {
             float[] times = chromatogram.getTimes();
-
-            XYSeries series = new XYSeries(label);
 
             List<TransitionChromInfoAndQuantitative> chromInfoList = TransitionManager.getTransitionChromInfoAndQuantitative(pChromInfo, _fullScanSettings);
             // Key in the map is the chromatogram index; used to index into the RT and intensity arrays of the chromatogram.
@@ -547,16 +549,27 @@ public abstract class ChromatogramDataset
                     continue;
                 if(chromatogramRtRange.isBefore(times[i]))
                     break;
-                series.add(times[i], totalIntensities[i]);
-                maxTraceIntensity = Math.max(maxTraceIntensity, totalIntensities[i]);
-                if(pChromInfo.isRtInPeakBoundary(times[i]) && totalIntensities[i] > maxPeakIntensity)
+                int existingIndex = series.indexOf(times[i]);
+                double summedTotal = totalIntensities[i];
+                if (existingIndex < 0)
+                {
+                    series.add(times[i], totalIntensities[i]);
+                }
+                else
+                {
+                    XYDataItem existingItem = series.getDataItem(existingIndex);
+                    summedTotal = existingItem.getYValue() + totalIntensities[i];
+                    existingItem.setY(summedTotal);
+                    series.addOrUpdate(existingItem);
+                }
+                maxTraceIntensity = Math.max(maxTraceIntensity, summedTotal);
+                if(pChromInfo.isRtInPeakBoundary(times[i]) && summedTotal > maxPeakIntensity)
                 {
                     // Look for the most intense point within the peak integration boundary.
-                    maxPeakIntensity = totalIntensities[i];
+                    maxPeakIntensity = summedTotal;
                     rtAtPeakApex = times[i];
                 }
             }
-            dataset.addSeries(series);
 
             return new PeakInChart(maxPeakIntensity, rtAtPeakApex, maxTraceIntensity, bestMassErrorPpm);
         }
@@ -629,12 +642,15 @@ public abstract class ChromatogramDataset
                 Chromatogram chromatogram = pChromInfo.createChromatogram(_run);
                 if (chromatogram != null)
                 {
+                    XYSeries series = new XYSeries(getLabel(pChromInfo));
+                    _jfreeDataset.addSeries(series);
                     // Instead of displaying separate peaks for each transition of this precursor,
                     // we will sum up the intensities and display a single peak for the precursor
-                    PeakInChart peakInChart = addPrecursorAsSeries(_jfreeDataset, chromatogram, pChromInfo,
+                    PeakInChart peakInChart = addDataToSeries(chromatogram, pChromInfo,
                             chromatogramRtRange,
-                            getLabel(pChromInfo),
-                            i);
+                            i,
+                            series);
+
 
                     _seriesColors.put(i, getSeriesColor(pChromInfo, i));
                     _maxDatasetIntensity = Math.max(_maxDatasetIntensity, peakInChart.getMaxTraceIntensity());
@@ -1579,30 +1595,37 @@ public abstract class ChromatogramDataset
             int i = 0;
             for (Map.Entry<GeneralMolecule, List<PrecursorChromInfoPlus>> entry : _allMolecules.entrySet())
             {
+                GeneralMolecule gm = entry.getKey();
+
+                XYSeries series = new XYSeries(gm.getTextId(), true, false);
+                _jfreeDataset.addSeries(series);
+                _seriesColors.put(i, ColorGenerator.getColor(gm.getTextId(), _seriesColors.values()));
+
                 // Get the retention time range that should be displayed for this molecule
-                RtRange chromatogramRtRange = getChromatogramRange(entry.getKey(), entry.getValue());
+                RtRange chromatogramRtRange = getChromatogramRange(gm, entry.getValue());
                 ranges.add(chromatogramRtRange);
 
+                PeakInChart peakInChart = null;
                 for (PrecursorChromInfoPlus info : entry.getValue())
                 {
                     Chromatogram chromatogram = info.createChromatogram(_run);
                     if (chromatogram != null)
                     {
-                        _seriesColors.put(i, ColorGenerator.getColor(entry.getKey().getTextId(), _seriesColors.values()));
-
-                        // Instead of displaying separate peaks for each transition of this precursor,
-                        // we will sum up the intensities and display a single peak for the precursor
-                        PeakInChart peakInChart = addPrecursorAsSeries(_jfreeDataset, chromatogram, info,
+                        // Instead of displaying separate peaks for each precursor,
+                        // we will sum up the intensities and display a single peak for the molecule
+                        peakInChart = addDataToSeries(chromatogram, info,
                                 chromatogramRtRange,
-                                getLabel(entry.getKey(), info),
-                                i);
+                                i,
+                                series);
 
                         _maxDatasetIntensity = Math.max(_maxDatasetIntensity, peakInChart.getMaxTraceIntensity());
-
-                        addAnnotation(info, peakInChart, i);
-                        i++;
                     }
                 }
+                if (peakInChart != null)
+                {
+                    addAnnotation(null, peakInChart, i);
+                }
+                i++;
             }
 
             RtRange fullRange = summarizeRanges(ranges);

@@ -19,8 +19,10 @@ package org.labkey.targetedms;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keypoint.PngEncoder;
 import org.apache.batik.dom.GenericDOMImplementation;
+import org.apache.batik.svggen.SVGGeneratorContext;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.batik.svggen.SVGGraphics2DIOException;
+import org.apache.batik.svggen.SVGIDGenerator;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -228,6 +230,7 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -293,6 +296,7 @@ public class TargetedMSController extends SpringActionController
 
     private static final DefaultActionResolver _actionResolver = new DefaultActionResolver(TargetedMSController.class);
     public static final String CONFIGURE_TARGETED_MS_FOLDER = "Configure Panorama Folder";
+    public static final String SVG_ID_GENERATOR_ATTRIBUTE_NAME = SVGIDGenerator.class.getName();
 
     public TargetedMSController()
     {
@@ -1671,7 +1675,23 @@ public class TargetedMSController extends SpringActionController
         Document document = domImpl.createDocument(svgNS, "svg", null);
 
         // Create an instance of the SVG Generator from Batik
-        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+        SVGGeneratorContext context = SVGGeneratorContext.createDefault(document);
+
+        // Chrome (and perhaps other browsers) gets confused if multiple <svg> sections on the same page
+        // share DOM id element values, so use a session-scoped generator to make sure they're different.
+        // The object itself is tiny (a hashmap with two String/Integer key/value pairs, so no concerns about memory use
+        HttpSession session = getViewContext().getRequest().getSession(true);
+        if (session != null)
+        {
+            SVGIDGenerator idGen = (SVGIDGenerator) session.getAttribute(SVG_ID_GENERATOR_ATTRIBUTE_NAME);
+            if (idGen == null)
+            {
+                idGen = new SVGIDGenerator();
+                session.setAttribute(SVG_ID_GENERATOR_ATTRIBUTE_NAME, idGen);
+            }
+            context.setIDGenerator(idGen);
+        }
+        SVGGraphics2D svgGenerator = new SVGGraphics2D(context, false);
         Dimension dim = new Dimension(form.getChartWidth(), form.getChartHeight());
         svgGenerator.setSVGCanvasSize(dim);
         Rectangle r = new Rectangle(dim);

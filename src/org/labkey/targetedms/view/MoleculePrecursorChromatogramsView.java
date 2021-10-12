@@ -23,7 +23,7 @@ import org.labkey.targetedms.parser.Molecule;
 import org.labkey.targetedms.query.GeneralMoleculePrecursorChromatogramsTableInfo;
 import org.springframework.validation.BindException;
 
-import static org.labkey.targetedms.view.ChromatogramsDataRegion.PEPTIDE_PRECURSOR_CHROM_DATA_REGION;
+import static org.labkey.targetedms.view.ChromatogramsDataRegion.MOLECULE_PRECURSOR_CHROM_DATA_REGION;
 
 public class MoleculePrecursorChromatogramsView extends ChromatogramGridView
 {
@@ -41,7 +41,7 @@ public class MoleculePrecursorChromatogramsView extends ChromatogramGridView
         GeneralMoleculePrecursorChromatogramsTableInfo tableInfo = new GeneralMoleculePrecursorChromatogramsTableInfo(molecule, schema, form);
         return new ChromatogramsDataRegion(viewContext,
                 tableInfo,
-                PEPTIDE_PRECURSOR_CHROM_DATA_REGION,
+                MOLECULE_PRECURSOR_CHROM_DATA_REGION,
                 StringUtils.join(tableInfo.getDisplayColumnNames(), ","));
         }
 }

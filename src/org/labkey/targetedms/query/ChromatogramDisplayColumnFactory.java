@@ -153,6 +153,19 @@ public class ChromatogramDisplayColumnFactory implements DisplayColumnFactory
     public DisplayColumn createRenderer(ColumnInfo colInfo)
     {
         return new DataColumn(colInfo) {
+
+            @Override
+            public boolean isFilterable()
+            {
+                return false;
+            }
+
+            @Override
+            public boolean isSortable()
+            {
+                return false;
+            }
+
             @Override
             public void renderGridCellContents(RenderContext ctx, Writer out) throws IOException
             {
@@ -189,7 +202,7 @@ public class ChromatogramDisplayColumnFactory implements DisplayColumnFactory
 
                 String html = "<a name=\"ChromInfo" + id + "\"></a>";
                 html += "<div alt=\"Chromatogram " + PageFlowUtil.filter(sampleName) + "\" style=\"border: " + (highlight ? "beige" : "white") +
-                        " solid 8px; width:" + (_chartWidth + 16) + "px; height:" + (_chart_height + 50) + "px\" id=\"" + PageFlowUtil.filter(domId) + "\"></div>" +
+                        " solid 8px; width:" + (_chartWidth + 16) + "px; min-height:" + (_chart_height + 50) + "px\" id=\"" + PageFlowUtil.filter(domId) + "\"></div>" +
                         "<div style=\"text-align: center\" id=\"" + PageFlowUtil.filter(domLabelId) + "\"></div>";
 
                 dataRegion.addSVG(chromAction.getLocalURIString(), domId, domLabelId);

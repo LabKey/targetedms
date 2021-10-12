@@ -56,7 +56,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                         container.instrument = ' for multiple instruments - ' + this.qcPlotPanel.qcIntrumentsArr.join(', ') + '. ' + msg;
 
                     }
-                    else if (this.qcPlotPanel.qcIntrumentsArr.length === 1) {
+                    else if (this.qcPlotPanel.qcIntrumentsArr.length === 1 && this.qcPlotPanel.qcIntrumentsArr[0]) {
                         container.instrument = ' for ' + this.qcPlotPanel.qcIntrumentsArr[0];
                     }
                 }
