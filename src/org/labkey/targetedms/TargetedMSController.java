@@ -25,7 +25,6 @@ import org.apache.batik.svggen.SVGGraphics2DIOException;
 import org.apache.batik.svggen.SVGIDGenerator;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -144,6 +143,7 @@ import org.labkey.api.util.Pair;
 import org.labkey.api.util.StringUtilsLabKey;
 import org.labkey.api.util.URLHelper;
 import org.labkey.api.util.UnexpectedException;
+import org.labkey.api.util.logging.LogHelper;
 import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.GridView;
 import org.labkey.api.view.HtmlView;
@@ -292,7 +292,7 @@ import static org.labkey.targetedms.TargetedMSModule.QC_FOLDER_WEB_PARTS;
 
 public class TargetedMSController extends SpringActionController
 {
-    private static final Logger LOG = LogManager.getLogger(TargetedMSController.class);
+    private static final Logger LOG = LogHelper.getLogger(TargetedMSController.class, "Panorama web user interface activity");
 
     private static final DefaultActionResolver _actionResolver = new DefaultActionResolver(TargetedMSController.class);
     public static final String CONFIGURE_TARGETED_MS_FOLDER = "Configure Panorama Folder";
@@ -509,7 +509,7 @@ public class TargetedMSController extends SpringActionController
         }
 
         @Override
-        public ModelAndView getView(ChromatogramCrawlerForm form, boolean reshow, BindException errors) throws Exception
+        public ModelAndView getView(ChromatogramCrawlerForm form, boolean reshow, BindException errors)
         {
             return new HtmlView("Chromatogram Crawler", DIV("Crawl all containers under the parent " + getContainer().getPath(),
                     FORM(at(method, "POST"),
@@ -541,7 +541,7 @@ public class TargetedMSController extends SpringActionController
     // Action to create a Raw Data tab
     // ------------------------------------------------------------------------
     @RequiresPermission(AdminPermission.class)
-    public class AddRawDataTabAction extends FormHandlerAction
+    public class AddRawDataTabAction extends FormHandlerAction<Object>
     {
         @Override
         public void validateCommand(Object target, Errors errors)
@@ -551,7 +551,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public boolean handlePost(Object o, BindException errors)
         {
-            Container c = getContainer(); ;
+            Container c = getContainer();
             if(!c.hasActiveModuleByName(MODULE_NAME))
             {
                 return true; // no TargetedMS module found - do nothing
@@ -612,12 +612,12 @@ public class TargetedMSController extends SpringActionController
     // Action to show a list of uploaded documents
     // ------------------------------------------------------------------------
     @RequiresPermission(AdminPermission.class)
-    public class SetupAction extends SimpleViewAction
+    public class SetupAction extends SimpleViewAction<Object>
     {
         @Override
         public ModelAndView getView(Object o, BindException errors)
         {
-            JspView view = new JspView("/org/labkey/targetedms/view/folderSetup.jsp");
+            JspView<?> view = new JspView<>("/org/labkey/targetedms/view/folderSetup.jsp");
             view.setFrame(WebPartView.FrameType.NONE);
 
             getPageConfig().setNavTrail(ContainerManager.getCreateContainerWizardSteps(getContainer(), getContainer().getParent()));
@@ -958,25 +958,25 @@ public class TargetedMSController extends SpringActionController
         if (autoQCPingMap != null)
         {
             // check if the last modified date is recent (i.e. within the last 15 min)
-            long timeoutMinutesAgo = System.currentTimeMillis() - (TargetedMSManager.get().getAutoQCPingTimeout(container) * 60000);
+            long timeoutMinutesAgo = System.currentTimeMillis() - ((long)TargetedMSManager.get().getAutoQCPingTimeout(container) * 60000l);
             Timestamp lastModified = (Timestamp)autoQCPingMap.get("Modified");
             autoQCPingMap.put("isRecent", lastModified.getTime() >= timeoutMinutesAgo);
         }
         properties.put("autoQCPing", autoQCPingMap);
-        properties.put("metricCount", TargetedMSManager.get().getEnabledQCMetricConfigurations(instrumentContainer, getUser()).size());
+        properties.put("metricCount", TargetedMSManager.getEnabledQCMetricConfigurations(instrumentContainer, getUser()).size());
 
         return properties;
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class GetQCMetricConfigurationsAction extends ReadOnlyApiAction
+    public class GetQCMetricConfigurationsAction extends ReadOnlyApiAction<Object>
     {
         @Override
         public Object execute(Object form, BindException errors)
         {
             ApiSimpleResponse response = new ApiSimpleResponse();
 
-            List<QCMetricConfiguration> enabledQCMetricConfigurations = TargetedMSManager.get().getEnabledQCMetricConfigurations(getContainer(), getUser());
+            List<QCMetricConfiguration> enabledQCMetricConfigurations = TargetedMSManager.getEnabledQCMetricConfigurations(getContainer(), getUser());
 
             List<JSONObject> result = new ArrayList<>();
             for (QCMetricConfiguration configuration : enabledQCMetricConfigurations)
@@ -989,7 +989,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class GetContainerReplicateAnnotationsAction extends ReadOnlyApiAction
+    public class GetContainerReplicateAnnotationsAction extends ReadOnlyApiAction<Object>
     {
         @Override
         public Object execute(Object form, BindException errors)
@@ -1033,29 +1033,6 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
-    private Container getCandidateContainer(Container container, User user)
-    {
-        Container sharedContainer = ContainerManager.getSharedContainer();
-        Container rootContainer = ContainerManager.getRoot();
-
-        boolean isParentValid = false;
-        if(container.equals(sharedContainer)){
-            return rootContainer;
-        }
-
-        while (!isParentValid)
-        {
-            container = container.getParent();
-            if(container.equals(rootContainer)){
-                return sharedContainer;
-            }
-
-            FolderType folderType = TargetedMSManager.getFolderType(container);
-            isParentValid = container.hasPermission(user, ReadPermission.class) && folderType == FolderType.QC;
-        }
-        return container;
-    }
-
     private static class QCSummaryForm
     {
         boolean includeSubfolders;
@@ -1072,10 +1049,10 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class QCSummaryHistoryAction extends SimpleViewAction
+    public class QCSummaryHistoryAction extends SimpleViewAction<Object>
     {
         @Override
-        public ModelAndView getView(Object o, BindException errors) throws Exception
+        public ModelAndView getView(Object o, BindException errors)
         {
             return new QCSummaryWebPart(getViewContext(), null);
         }
@@ -1111,7 +1088,7 @@ public class TargetedMSController extends SpringActionController
         {
             ApiSimpleResponse response = new ApiSimpleResponse();
 
-            List<QCMetricConfiguration> enabledQCMetricConfigurations = TargetedMSManager.get().getEnabledQCMetricConfigurations(getContainer(), getUser());
+            List<QCMetricConfiguration> enabledQCMetricConfigurations = TargetedMSManager.getEnabledQCMetricConfigurations(getContainer(), getUser());
 
             if(enabledQCMetricConfigurations.isEmpty())
             {
@@ -1381,12 +1358,12 @@ public class TargetedMSController extends SpringActionController
     // Action to show a list of chromatogram library archived revisions
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class ArchivedRevisionsAction extends SimpleViewAction
+    public class ArchivedRevisionsAction extends SimpleViewAction<Object>
     {
         @Override
         public ModelAndView getView(Object o, BindException errors)
         {
-            JspView view = new JspView("/org/labkey/targetedms/view/archivedRevisionsDownload.jsp");
+            JspView<?> view = new JspView<>("/org/labkey/targetedms/view/archivedRevisionsDownload.jsp");
             view.setFrame(WebPartView.FrameType.PORTAL);
             view.setTitle("Archived Revisions");
 
@@ -1406,7 +1383,7 @@ public class TargetedMSController extends SpringActionController
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
     @ActionNames("showList, begin")
-    public class ShowListAction extends SimpleViewAction
+    public class ShowListAction extends SimpleViewAction<Object>
     {
         @Override
         public ModelAndView getView(Object o, BindException errors)
@@ -1416,7 +1393,7 @@ public class TargetedMSController extends SpringActionController
             FolderType folderType = TargetedMSManager.getFolderType(getContainer());
             if(folderType == TargetedMSService.FolderType.Library || folderType == TargetedMSService.FolderType.LibraryProtein)
             {
-                vbox.addView(new JspView("/org/labkey/targetedms/view/conflictSummary.jsp"));
+                vbox.addView(new JspView<>("/org/labkey/targetedms/view/conflictSummary.jsp"));
             }
             vbox.addView(runListView);
             return vbox;
@@ -1683,7 +1660,7 @@ public class TargetedMSController extends SpringActionController
         HttpSession session = getViewContext().getRequest().getSession(true);
         if (session != null)
         {
-            SVGIDGenerator idGen = null;
+            SVGIDGenerator idGen;
             synchronized (TargetedMSController.class)
             {
                 idGen = (SVGIDGenerator) session.getAttribute(SVG_ID_GENERATOR_ATTRIBUTE_NAME);
@@ -2751,11 +2728,6 @@ public class TargetedMSController extends SpringActionController
                 return response;
             }
             TargetedMSRun run = TargetedMSManager.getRunForGeneralMolecule(peptide.getId());
-            if (run == null)
-            {
-                response.put("error", "Could not find run for id " + precursor.getGeneralMoleculeId());
-                return response;
-            }
 
             List<PeptideSettings.SpectrumLibrary> libraries = LibraryManager.getLibraries(run.getId());
             PeptideSettings.SpectrumLibrary library = null;
@@ -3490,7 +3462,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresLogin
-    public class GetMaxSupportedVersionsAction extends ReadOnlyApiAction
+    public class GetMaxSupportedVersionsAction extends ReadOnlyApiAction<Object>
     {
         @Override
         public ApiResponse execute(Object object, BindException errors)
@@ -3502,7 +3474,7 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
-    private JspView getSummaryView(RunDetailsForm form, TargetedMSRun run)
+    private JspView<?> getSummaryView(RunDetailsForm form, TargetedMSRun run)
     {
         Set<Integer> ids = Collections.singleton(ExperimentService.get().getExpRun(run.getExperimentRunLSID()).getRowId());
 
@@ -3825,7 +3797,7 @@ public class TargetedMSController extends SpringActionController
         {
             DocumentTransitionsView view;
 
-            if(dataRegion.equals(PeptideTransitionsView.DATAREGION_NAME))
+            if(PeptideTransitionsView.DATAREGION_NAME.equals(dataRegion))
             {
                 view = new PeptideTransitionsView(getViewContext(),
                         new TargetedMSSchema(getUser(), getContainer()), TargetedMSSchema.TABLE_TRANSITION,
@@ -4014,7 +3986,7 @@ public class TargetedMSController extends SpringActionController
         }
 
         @Override
-        protected QueryView createQueryView(InstrumentForm form, BindException errors, boolean forExport, @Nullable String dataRegion) throws Exception
+        protected QueryView createQueryView(InstrumentForm form, BindException errors, boolean forExport, @Nullable String dataRegion)
         {
             if (TargetedMSSchema.TABLE_SAMPLE_FILE.equalsIgnoreCase(dataRegion))
             {
@@ -4109,7 +4081,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         protected ModelAndView getHtmlView(FormType form, BindException errors) throws Exception
         {
-            WebPartView replicatesView = createInitializedQueryView(form, errors, false, _dataRegionName);
+            WebPartView<?> replicatesView = createInitializedQueryView(form, errors, false, _dataRegionName);
             replicatesView.setFrame(WebPartView.FrameType.PORTAL);
             replicatesView.setTitle(_title);
 
@@ -5656,9 +5628,7 @@ public class TargetedMSController extends SpringActionController
                 String url = data.getWebDavURL(ExpData.PathType.full);
                 if (url != null)
                 {
-                    StringBuilder content = new StringBuilder();
-                    content.append(url);
-                    ByteArrayInputStream inputStream = new ByteArrayInputStream(content.toString().getBytes(StringUtilsLabKey.DEFAULT_CHARSET));
+                    ByteArrayInputStream inputStream = new ByteArrayInputStream(url.getBytes(StringUtilsLabKey.DEFAULT_CHARSET));
                     PageFlowUtil.streamFile(getViewContext().getResponse(), Collections.emptyMap(), baseFileName + ".skyp", inputStream, true);
                 }
                 else
@@ -6299,7 +6269,7 @@ public class TargetedMSController extends SpringActionController
     // - viewable from the chromatogramLibraryDownload.jsp webpart
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class GraphLibraryStatisticsAction extends ExportAction
+    public class GraphLibraryStatisticsAction extends ExportAction<Object>
     {
         @Override
         public void export(Object o, HttpServletResponse response, BindException errors) throws Exception
@@ -6968,7 +6938,7 @@ public class TargetedMSController extends SpringActionController
                 allLinkedIds.forEach((x) ->
                 {
                     ExpRun run = ExperimentService.get().getExpRun(x);
-                    if (run.getReplacedByRun() != null)
+                    if (run != null && run.getReplacedByRun() != null)
                     {
                         run.setReplacedByRun(null);
                         try
@@ -6977,7 +6947,7 @@ public class TargetedMSController extends SpringActionController
                         }
                         catch (BatchValidationException e)
                         {
-                            throw new UnexpectedException(e);
+                            throw UnexpectedException.wrap(e);
                         }
                     }
                 });
