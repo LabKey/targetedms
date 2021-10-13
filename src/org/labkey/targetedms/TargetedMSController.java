@@ -1683,11 +1683,15 @@ public class TargetedMSController extends SpringActionController
         HttpSession session = getViewContext().getRequest().getSession(true);
         if (session != null)
         {
-            SVGIDGenerator idGen = (SVGIDGenerator) session.getAttribute(SVG_ID_GENERATOR_ATTRIBUTE_NAME);
-            if (idGen == null)
+            SVGIDGenerator idGen = null;
+            synchronized (TargetedMSController.class)
             {
-                idGen = new SVGIDGenerator();
-                session.setAttribute(SVG_ID_GENERATOR_ATTRIBUTE_NAME, idGen);
+                idGen = (SVGIDGenerator) session.getAttribute(SVG_ID_GENERATOR_ATTRIBUTE_NAME);
+                if (idGen == null)
+                {
+                    idGen = new SVGIDGenerator();
+                    session.setAttribute(SVG_ID_GENERATOR_ATTRIBUTE_NAME, idGen);
+                }
             }
             context.setIDGenerator(idGen);
         }
