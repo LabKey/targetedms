@@ -87,10 +87,10 @@ public class PeptideManager
         sql.append("p.id, p.sequence, p.startindex, p.endindex, p.previousaa, p.nextaa, ");
         sql.append("p.calcneutralmass, p.nummissedcleavages, p.rank, p.decoy, p.peptidemodifiedsequence, ");
         sql.append("gm.standardtype FROM targetedms.generalmolecule gm, targetedms.peptide p WHERE ");
-        sql.append("p.id = gm.id AND gm.peptidegroupid=?");
+        sql.append("p.id = gm.id AND gm.peptidegroupid=? ORDER BY gm.Id");
         sql.add(peptideGroupId);
 
-        return new SqlSelector(TargetedMSManager.getSchema(), sql).getCollection(Peptide.class);
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(Peptide.class);
     }
 
     public static Double getMinRetentionTime(long peptideId)

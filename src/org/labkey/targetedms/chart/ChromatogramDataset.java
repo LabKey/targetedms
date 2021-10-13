@@ -66,6 +66,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1517,7 +1518,7 @@ public abstract class ChromatogramDataset
 
         protected List<PrecursorChromInfoPlus> getPrecursorChromInfos()
         {
-            _allMolecules = new HashMap<>();
+            _allMolecules = new LinkedHashMap<>();
             String peptideSelectionKey = DataRegionSelection.getSelectionKey(TargetedMSSchema.SCHEMA_NAME, TargetedMSSchema.TABLE_PEPTIDE, null, "Peptides");
             String moleculeSelectionKey = DataRegionSelection.getSelectionKey(TargetedMSSchema.SCHEMA_NAME, TargetedMSSchema.TABLE_MOLECULE, null, "SmallMolecules");
 
