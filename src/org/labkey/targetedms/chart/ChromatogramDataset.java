@@ -1540,7 +1540,7 @@ public abstract class ChromatogramDataset
                 if (selectedIds.contains(generalMolecule.getId()))
                 {
                     // As soon as we find a single match in the selection filter the molecules based on the selected ids
-                    Map<GeneralMolecule, List<PrecursorChromInfoPlus>> filtered = new HashMap<>();
+                    Map<GeneralMolecule, List<PrecursorChromInfoPlus>> filtered = new LinkedHashMap<>();
                     for (Map.Entry<GeneralMolecule, List<PrecursorChromInfoPlus>> entry : _allMolecules.entrySet())
                     {
                         if (selectedIds.contains(entry.getKey().getId()))
