@@ -131,6 +131,7 @@ import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.targetedms.TargetedMSUrls;
 import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.util.Button;
+import org.labkey.api.util.ConfigurationException;
 import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.DOM;
 import org.labkey.api.util.DateUtil;
@@ -1533,8 +1534,7 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
-    private void writeChart(AbstractChartForm form, HttpServletResponse response, JFreeChart chart)
-            throws Exception
+    private void writeChart(AbstractChartForm form, HttpServletResponse response, JFreeChart chart) throws IOException
     {
         TextTitle title = chart.getTitle();
         String filename = title == null ? "PanoramaPlot" : FileUtil.makeLegalName(title.getText().replace('"', '_'));
@@ -1607,25 +1607,33 @@ public class TargetedMSController extends SpringActionController
                 response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + ".png" + "\"");
             }
 
-            if (!form.hasDpi())
+            try
             {
-                ChartUtilities.writeChartAsPNG(response.getOutputStream(), chart, form.getChartWidth(), form.getChartHeight(), false, 5);
-            }
-            else
-            {
-                int dpi = form.getDpi();
-                double scaleFactor = (double) dpi / (double) AbstractChartForm.SCREEN_RES;
-                int w = form.getChartWidth();
-                int h = form.getChartHeight();
-                int desiredWidth = (int) (w * scaleFactor);
-                int desiredHeight = (int) (h * scaleFactor);
+                if (!form.hasDpi())
+                {
+                    ChartUtilities.writeChartAsPNG(response.getOutputStream(), chart, form.getChartWidth(), form.getChartHeight(), false, 5);
+                }
+                else
+                {
+                    int dpi = form.getDpi();
+                    double scaleFactor = (double) dpi / (double) AbstractChartForm.SCREEN_RES;
+                    int w = form.getChartWidth();
+                    int h = form.getChartHeight();
+                    int desiredWidth = (int) (w * scaleFactor);
+                    int desiredHeight = (int) (h * scaleFactor);
 
-                BufferedImage image = chart.createBufferedImage(desiredWidth, desiredHeight, w, h, null);
-                PngEncoder encoder = new PngEncoder(image);
-                encoder.setDpi(dpi, dpi);
-                encoder.setCompressionLevel(5);
-                byte[] bytes = encoder.pngEncode();
-                response.getOutputStream().write(bytes);
+                    BufferedImage image = chart.createBufferedImage(desiredWidth, desiredHeight, w, h, null);
+                    PngEncoder encoder = new PngEncoder(image);
+                    encoder.setDpi(dpi, dpi);
+                    encoder.setCompressionLevel(5);
+                    byte[] bytes = encoder.pngEncode();
+                    response.getOutputStream().write(bytes);
+                }
+            }
+            catch (InternalError e)
+            {
+                // Issue 43455 - improve error message when unable to render plots due to missing fonts on Linux
+                throw new ConfigurationException("Failed to render plot, likely because of missing fonts on Linux. See " + new HelpTopic("trouble").getHelpTopicHref(), e);
             }
         }
     }
