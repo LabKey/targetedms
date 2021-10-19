@@ -166,6 +166,6 @@ public class ChromatogramChartMakerFactory
 
     public JFreeChart createGroupChart(PeptideGroup group, SampleFile sampleFile, ViewContext context)
     {
-        return new ChromatogramChartMaker().make(new ChromatogramDataset.GroupDataset(group, sampleFile, context, _syncIntensity, _syncRt), false, "Time", "Value");
+        return new ChromatogramChartMaker().make(new ChromatogramDataset.GroupDataset(group, sampleFile, context, _syncIntensity, _syncRt), false, "Retention Time", "Intensity");
     }
 }
