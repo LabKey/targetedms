@@ -71,6 +71,7 @@ import org.labkey.api.data.ContainerManager;
 import org.labkey.api.data.DataRegion;
 import org.labkey.api.data.DbScope;
 import org.labkey.api.data.PropertyManager;
+import org.labkey.api.data.RenderContext;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.Sort;
@@ -238,6 +239,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -272,7 +274,6 @@ import static org.labkey.api.targetedms.TargetedMSService.RAW_FILES_TAB;
 import static org.labkey.api.util.DOM.A;
 import static org.labkey.api.util.DOM.Attribute.height;
 import static org.labkey.api.util.DOM.Attribute.href;
-import static org.labkey.api.util.DOM.Attribute.id;
 import static org.labkey.api.util.DOM.Attribute.method;
 import static org.labkey.api.util.DOM.Attribute.src;
 import static org.labkey.api.util.DOM.Attribute.width;
@@ -4569,7 +4570,17 @@ public class TargetedMSController extends SpringActionController
                     ChromatogramsDataRegion.GROUP_CHROM_DATA_REGION);
             chromatogramRegion.setLegendElementId("groupChromatogramLegend");
             tableInfo.addGroupFilter(group);
-            ChromatogramGridView chromatogramView = new ChromatogramGridView(chromatogramRegion, errors);
+            ChromatogramGridView chromatogramView = new ChromatogramGridView(chromatogramRegion, errors)
+            {
+                @Override
+                public void renderView(RenderContext model, PrintWriter out) throws IOException
+                {
+                    out.write("<div style=\"display: inline-block\">\n");
+                    out.write("<div id=\"groupChromatogramLegend\"></div>\n");
+                    super.renderView(model, out);
+                    out.write("</div>\n");
+                }
+            };
 
             GeneralMoleculeChromatogramsViewBean bean = new GeneralMoleculeChromatogramsViewBean();
             bean.setResultsUri(new ActionURL(ShowProteinAction.class, getContainer()).getLocalURIString());
@@ -4583,7 +4594,6 @@ public class TargetedMSController extends SpringActionController
             chromatogramsBox.setTitle("Chromatograms");
             chromatogramsBox.enableExpandCollapse("Chromatograms", false);
             chromatogramsBox.addView(chartForm);
-            chromatogramsBox.addView(new HtmlView(DOM.DIV(at(id, "groupChromatogramLegend"))));
             chromatogramsBox.addView(chromatogramView);
             chromatogramsBox.setShowTitle(true);
             chromatogramsBox.setFrame(WebPartView.FrameType.PORTAL);
