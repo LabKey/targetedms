@@ -1320,7 +1320,7 @@ public class TargetedMSController extends SpringActionController
 
             Map<Integer, QCMetricConfiguration> metricMap = qcMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
             List<SampleFileInfo> sampleFiles = OutlierGenerator.get().getSampleFiles(rawMetricDataSets, targetedStats, metricMap, getContainer(), null);
-            List<QCPlotFragment> qcPlotFragments = OutlierGenerator.get().getQCPlotFragment(rawMetricDataSets, targetedStats);
+            List<QCPlotFragment> qcPlotFragments = OutlierGenerator.get().getQCPlotFragment(rawMetricDataSets, targetedStats, getContainer(), getUser());
 
             response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toQCPlotJSON).collect(Collectors.toList()));
             response.put("plotDataRows", qcPlotFragments
