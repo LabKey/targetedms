@@ -137,7 +137,6 @@ import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.DOM;
 import org.labkey.api.util.DateUtil;
 import org.labkey.api.util.FileUtil;
-import org.labkey.api.util.HelpTopic;
 import org.labkey.api.util.HtmlString;
 import org.labkey.api.util.Link;
 import org.labkey.api.util.PageFlowUtil;
@@ -4445,7 +4444,8 @@ public class TargetedMSController extends SpringActionController
             List<? extends ExpMaterial> materials = ExperimentService.get().getExpMaterialsByName(sampleName, null, getUser());
             if (materials.size() == 1)
             {
-                materialURL = materials.get(0).detailsURL();
+                ExpMaterial material = materials.get(0);
+                materialURL = material.detailsURL(material.getContainer(), true);
             }
 
             VBox result = new VBox();
@@ -6789,7 +6789,7 @@ public class TargetedMSController extends SpringActionController
 
     private void addRootNavTrail(NavTree root, String title, PageConfig page, String helpTopic)
     {
-        page.setHelpTopic(new HelpTopic(null == helpTopic ? "targetedms" : helpTopic));
+        page.setHelpTopic(null == helpTopic ? "targetedms" : helpTopic);
         root.addChild("TargetedMS Runs", getShowListURL(getContainer()));
         if (null != title)
             root.addChild(title);
