@@ -137,6 +137,7 @@ import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.DOM;
 import org.labkey.api.util.DateUtil;
 import org.labkey.api.util.FileUtil;
+import org.labkey.api.util.HelpTopic;
 import org.labkey.api.util.HtmlString;
 import org.labkey.api.util.Link;
 import org.labkey.api.util.PageFlowUtil;
