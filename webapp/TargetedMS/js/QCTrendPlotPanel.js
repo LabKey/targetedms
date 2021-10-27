@@ -1936,7 +1936,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         // But override them with colors assigned by the server, when available, so that we match Skyline's assignment
         for (let i = 0; i < this.precursors.length; i++) {
-            if (this.fragmentPlotData[this.precursors[i]].color) {
+            // We only get data points for the precursors in the current "page" so double check that it's in the fragmentPlotData object
+            if (this.fragmentPlotData[this.precursors[i]] && this.fragmentPlotData[this.precursors[i]].color) {
                 result[i] = this.fragmentPlotData[this.precursors[i]].color;
             }
         }
