@@ -1528,11 +1528,19 @@ public abstract class ChromatogramDataset
 
             for (Molecule molecule : MoleculeManager.getMoleculesForGroup(_group.getId()))
             {
-                _allMolecules.put(molecule, MoleculePrecursorManager.getPrecursorChromInfosForMolecule(molecule.getId(), _sampleFile.getId(), _user, _container));
+                List<PrecursorChromInfoPlus> chromInfos = MoleculePrecursorManager.getPrecursorChromInfosForMolecule(molecule.getId(), _sampleFile.getId(), _user, _container);
+                if (!chromInfos.isEmpty())
+                {
+                    _allMolecules.put(molecule, chromInfos);
+                }
             }
             for (Peptide peptide : PeptideManager.getPeptidesForGroup(_group.getId()))
             {
-                _allMolecules.put(peptide, PrecursorManager.getPrecursorChromInfosForPeptide(peptide.getId(), _sampleFile.getId(), _user, _container));
+                List<PrecursorChromInfoPlus> chromInfos = PrecursorManager.getPrecursorChromInfosForPeptide(peptide.getId(), _sampleFile.getId(), _user, _container);
+                if (!chromInfos.isEmpty())
+                {
+                    _allMolecules.put(peptide, chromInfos);
+                }
             }
 
             for (GeneralMolecule generalMolecule : _allMolecules.keySet())
