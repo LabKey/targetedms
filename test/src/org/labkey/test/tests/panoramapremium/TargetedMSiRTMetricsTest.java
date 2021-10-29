@@ -10,15 +10,19 @@ import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.components.targetedms.QCSummaryWebPart;
 import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
+import org.labkey.test.util.DataRegionTable;
+import org.openqa.selenium.WebElement;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Category(Git.class)
-@BaseWebDriverTest.ClassTimeout(minutes = 4)
+@BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
 {
     protected static final String NON_IRTMETRICS_SKYFILE = "QC_1.sky.zip";
     protected static final String IRTMETRICS_SKYFILE = "DIA-QE-Bruderer-iRT-minimized.sky.zip";
+    String subFolderName = "iRTMetric";
 
     @BeforeClass
     public static void initProject()
@@ -73,7 +77,6 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
     @Test
     public void testFileWithIRTMetricValue()
     {
-        String subFolderName = "iRTMetric";
         goToProjectHome();
         setupSubfolder(getProjectName(), subFolderName, FolderType.QC);
 
@@ -126,5 +129,51 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
         checker().verifyTrue("iRT Correlation missing in tooltip", isElementPresent(Locator.linkWithText("iRT Correlation")));
         checker().verifyTrue("iRT Intercept missing in tooltip", isElementPresent(Locator.linkWithText("iRT Intercept")));
         checker().verifyTrue("iRT Slope missing in tooltip", isElementPresent(Locator.linkWithText("iRT Slope")));
+
+        /*
+            Test coverage for Request #37745, "Synchronize Skyline and Panorama plot colors,"
+         */
+        verifyChromatogramPlotColors("LFLQFGAQGSPFLK", "rgb(128,78,0)");
+        verifyChromatogramPlotColors("YILAGVENSK", "rgb(144,189,218)");
+
+        navigateToFolder(getProjectName(), subFolderName);
+        qcDashboard = new PanoramaDashboard(this);
+        qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.RETENTION);
+        qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
+
+        verifyQCPlotColors("LFLQFGAQGSPFLK", "#804E00");
+        verifyQCPlotColors("YILAGVENSK", "#90BDDA");
+    }
+
+    private void verifyChromatogramPlotColors(String peptide, String color)
+    {
+        navigateToFolder(getProjectName(), subFolderName);
+        clickTab("Runs");
+        clickAndWait(Locator.linkWithText(IRTMETRICS_SKYFILE));
+        clickAndWait(Locator.linkWithText("Biognosys standards"));
+
+        DataRegionTable table = new DataRegionTable("Peptides", getDriver());
+        table.uncheckAllOnPage();
+        table.checkCheckbox(table.getRowIndexStrict(0, peptide));
+
+        checker().verifyTrue("Incorrect chromatogram color for " + peptide,
+                isElementPresent(Locator.tag("g").withAttributeContaining("style", color)));
+    }
+
+    private void verifyQCPlotColors(String peptide, String color)
+    {
+        List<WebElement> legendList = Locator.tagWithClass("g", "legend-item").findElements(getDriver());
+        for (WebElement e : legendList)
+        {
+            if (e.getAttribute("title").startsWith(peptide + " "))
+            {
+                checker().verifyEquals("Incorrect color for QC plot for " + peptide, color,
+                        Locator.tag("path").findElement(e).getAttribute("fill"));
+                return;
+            }
+
+        }
+        throw new RuntimeException("Did not find the peptide " + peptide);
     }
 }
