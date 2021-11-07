@@ -224,7 +224,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         clickTab("Raw Data");
 
         log("Drops the dataTransferItems object");
-        dragAndDropFileInDropZone(single);
+        _fileBrowserHelper.dragDropUpload(single, "TestZipMeDir.zip");
 
         log("Verifying if the file is uploaded and zipped");
         waitForElement(Locator.tagWithText("span", "TestZipMeDir.zip"),WAIT_FOR_PAGE);
@@ -234,6 +234,11 @@ public class TargetedMSQCTest extends TargetedMSTest
     @Test
     public void testQCPlotInputs()
     {
+        List<QCPlotsWebPart.MetricType> metricTypeWithData =
+                Arrays.asList(QCPlotsWebPart.MetricType.TOTAL_PEAK, QCPlotsWebPart.MetricType.RETENTION, QCPlotsWebPart.MetricType.FWHM,
+                        QCPlotsWebPart.MetricType.FWB, QCPlotsWebPart.MetricType.TPAREARATIO, QCPlotsWebPart.MetricType.TPAREAS,
+                        QCPlotsWebPart.MetricType.MASSACCURACY, QCPlotsWebPart.MetricType.TICAREA);
+
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.filterQCPlotsToInitialData(PRECURSORS.length, true);
@@ -275,17 +280,16 @@ public class TargetedMSQCTest extends TargetedMSTest
         // test that plot0 changes based on metric type
         for (QCPlotsWebPart.MetricType type : QCPlotsWebPart.MetricType.values())
         {
-            // Skip over metrics that auto-hide when they don't have data
-            if (type.hasData() && type != qcPlotsWebPart.getCurrentMetricType())
+            // Skip over metrics that dont have data.
+            if (metricTypeWithData.contains(type) &&  type != qcPlotsWebPart.getCurrentMetricType())
             {
                 log("Verify plot type: " + type);
                 initialSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
-                qcPlotsWebPart.setMetricType(type, type.hasData());
-                if (type.hasData())
-                    assertNotEquals(initialSVGText, qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0"));
+                qcPlotsWebPart.setMetricType(type);
+                assertNotEquals(initialSVGText, qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0"));
 
                 // back to default metric type for baseline comparison of svg plot change
-                qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.RETENTION, true, type.hasData());
+                qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.RETENTION);
             }
         }
     }
@@ -299,7 +303,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         // change all of the plot input fields and filter to a single date
         String testDateStr = "2013-08-20";
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.PEAK);
+        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TOTAL_PEAK);
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.PERCENT_OF_MEAN);
         qcPlotsWebPart.setGroupXAxisValuesByDate(true);
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
@@ -311,7 +315,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         refresh();
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.waitForPlots(1, true);
-        assertEquals("Metric Type not round tripped as expected", QCPlotsWebPart.MetricType.PEAK, qcPlotsWebPart.getCurrentMetricType());
+        assertEquals("Metric Type not round tripped as expected", QCPlotsWebPart.MetricType.TOTAL_PEAK, qcPlotsWebPart.getCurrentMetricType());
         assertEquals("Y-Axis Scale not round tripped as expected", QCPlotsWebPart.Scale.PERCENT_OF_MEAN, qcPlotsWebPart.getCurrentScale());
         assertTrue("Group X-Axis not round tripped as expected", qcPlotsWebPart.isGroupXAxisValuesByDateChecked());
         assertTrue("Show All Peptides not round tripped as expected", qcPlotsWebPart.isShowAllPeptidesInSinglePlotChecked());
@@ -379,7 +383,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.waitForPlots(1, false);
         assertEquals("Y-axis Scale selection wasn't persisted", QCPlotsWebPart.Scale.LOG, qcPlotsWebPart.getCurrentScale());
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.PEAK);
+        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TOTAL_PEAK);
         assertEquals("Unexpected number of plots with invalid log scale.", 0, qcPlotsWebPart.getLogScaleInvalidCount());
         assertEquals("Unexpected number of plots with invalid log scale.", 1, qcPlotsWebPart.getLogScaleWarningCount());
         assertEquals("Unexpected number of plots with log scale 0 value replacement warning.", PRECURSORS.length, qcPlotsWebPart.getLogScaleEpsilonWarningCount());
@@ -709,7 +713,8 @@ public class TargetedMSQCTest extends TargetedMSTest
         if (plotType == CUSUMm || plotType == QCPlotsWebPart.QCPlotType.CUSUMv)
             expectedNumPointsPerSeries *= 2;
 
-        String[] legendItemColors = new String[]{"#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494"};
+        // Use the same color assignments that Skyline generates for multi-molecule plots
+        String[] legendItemColors = new String[]{"#755538", "#A1A4AD", "#E2A0AF", "#ED8CFF", "#D19D00", "#70A783", "#00625F"};
 
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();

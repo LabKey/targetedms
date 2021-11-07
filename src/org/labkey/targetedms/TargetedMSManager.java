@@ -70,8 +70,8 @@ import org.labkey.api.query.SchemaKey;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.security.permissions.DeletePermission;
-import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.targetedms.RepresentativeDataState;
+import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.util.FileUtil;
@@ -1157,6 +1157,7 @@ public class TargetedMSManager
         return run;
     }
 
+    @NotNull
     public static TargetedMSRun getRunForGeneralMolecule(long id)
     {
         String sql = "SELECT run.* FROM "+
@@ -1321,6 +1322,7 @@ public class TargetedMSManager
                 new CompareType.EqualsCompareClause(FieldKey.fromParts("DataFileUrl"), CompareType.EQUAL, "file:" + dataFileUrl),
                 new CompareType.EqualsCompareClause(FieldKey.fromParts("DataFileUrl"), CompareType.EQUAL, "file://" + dataFileUrl)
         ));
+        filter.addCondition(FieldKey.fromParts("RunId"), null, CompareType.NONBLANK);
 
         Set<Integer> runIds = new HashSet<>();
         for (Map<String, Object> map : new TableSelector(expDataTable, Collections.singleton("RunId"), filter, null).getMapCollection())
@@ -2150,6 +2152,8 @@ public class TargetedMSManager
                 result.add(metric);
             }
         }
+        // Ensure we get a case-insensitive sort regardless of DB collation
+        Collections.sort(result);
         return result;
     }
 
