@@ -61,7 +61,7 @@ import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.Le
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.MovingRange;
 
 @Category({Daily.class, MS2.class})
-@BaseWebDriverTest.ClassTimeout(minutes = 28)
+@BaseWebDriverTest.ClassTimeout(minutes = 35)
 public class TargetedMSQCTest extends TargetedMSTest
 {
     private static final String[] PRECURSORS = {
