@@ -41,6 +41,7 @@ import org.labkey.test.util.ApiPermissionsHelper;
 import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.Ext4Helper;
 import org.labkey.test.util.LogMethod;
+import org.labkey.test.util.LoggedParam;
 import org.labkey.test.util.PipelineStatusTable;
 import org.labkey.test.util.PortalHelper;
 import org.labkey.test.util.targetedms.QCHelper;
@@ -466,7 +467,8 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.resetInitialQCPlotFields();
     }
 
-    private void testEachMultiSeriesQCPlot(QCPlotsWebPart.QCPlotType plotType)
+    @LogMethod
+    private void testEachMultiSeriesQCPlot(@LoggedParam QCPlotsWebPart.QCPlotType plotType)
     {
         log("Test plot type " + plotType.getLongLabel());
 
