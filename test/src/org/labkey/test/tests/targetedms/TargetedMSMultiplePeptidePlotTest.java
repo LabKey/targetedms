@@ -85,11 +85,11 @@ public class TargetedMSMultiplePeptidePlotTest extends TargetedMSTest
 
         log("Verifying the chromatogram plots for peptides");
         clickAndWait(Locator.linkWithText("VYVEELKPTPEGDLEILLQK"));
-        int expecptedGraphCount = 20;
+        int expectedGraphCount = 20;
         table = new DataRegionTable("PeptidePrecursorChromatograms", getDriver());
         waitForElementToDisappear(Locator.tagWithAttributeContaining("div", "alt", "Chromatogram Q_Exactive")
                 .withText("Loading..."), WebDriverWrapper.WAIT_FOR_PAGE);
         List<WebElement> svgs = Locator.tag("svg").findElements(table);
-        checker().withScreenshot("SVGCount").verifyEquals("Incorrect SVG graphs", expecptedGraphCount, svgs.size());
+        checker().withScreenshot("SVGCount").verifyEquals("Incorrect SVG graphs", expectedGraphCount, svgs.size());
     }
 }
