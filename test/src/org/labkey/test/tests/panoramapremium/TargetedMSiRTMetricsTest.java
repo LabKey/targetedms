@@ -1,5 +1,6 @@
 package org.labkey.test.tests.panoramapremium;
 
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -10,11 +11,13 @@ import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.components.targetedms.QCSummaryWebPart;
 import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
-import org.labkey.test.util.DataRegionTable;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Category(Git.class)
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
@@ -131,10 +134,20 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
         checker().verifyTrue("iRT Slope missing in tooltip", isElementPresent(Locator.linkWithText("iRT Slope")));
 
         /*
-            Test coverage for Request #37745, "Synchronize Skyline and Panorama plot colors,"
+            Test coverage for Issue 37745, "Synchronize Skyline and Panorama plot colors,"
          */
-        verifyChromatogramPlotColors("LFLQFGAQGSPFLK", "rgb(128,78,0)");
-        verifyChromatogramPlotColors("YILAGVENSK", "rgb(144,189,218)");
+        navigateToFolder(getProjectName(), subFolderName);
+        clickTab("Runs");
+        clickAndWait(Locator.linkWithText(IRTMETRICS_SKYFILE));
+        clickAndWait(Locator.linkWithText("Biognosys standards"));
+
+        final String peptide1 = "LFLQFGAQGSPFLK";
+        final String peptide1Color = "#804E00";
+        final String peptide2 = "YILAGVENSK";
+        final String peptide2Color = "#90BDDA";
+
+        Assert.assertEquals("Plot color for " + peptide1, peptide1Color, getChromatogramPlotColor(peptide1));
+        Assert.assertEquals("Plot color for " + peptide2, peptide2Color, getChromatogramPlotColor(peptide2));
 
         navigateToFolder(getProjectName(), subFolderName);
         qcDashboard = new PanoramaDashboard(this);
@@ -142,23 +155,81 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.RETENTION);
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
 
-        verifyQCPlotColors("LFLQFGAQGSPFLK", "#804E00");
-        verifyQCPlotColors("YILAGVENSK", "#90BDDA");
+        verifyQCPlotColors(peptide1, peptide1Color);
+        verifyQCPlotColors(peptide2, peptide2Color);
     }
 
-    private void verifyChromatogramPlotColors(String peptide, String color)
+    private static final Pattern rgbPattern = Pattern.compile("rgba?\\((?<r>[0-9]+), ?(?<g>[0-9]+), ?(?<b>[0-9]+).*\\)");
+    /**
+     * Convert a CSS color style into a consistent format.
+     *  - Hex: '#FFFFFF'
+     *  - RGB: 'rgb(r, g, b)'
+     *  - RGBA: 'rgba(r, g, b, a)'
+     * @param color color value from a web element
+     * @return Hex value of the provided color
+     */
+    public static String hexColor(String color)
     {
-        navigateToFolder(getProjectName(), subFolderName);
-        clickTab("Runs");
-        clickAndWait(Locator.linkWithText(IRTMETRICS_SKYFILE));
-        clickAndWait(Locator.linkWithText("Biognosys standards"));
+        if (color.startsWith("#"))
+        {
+            if (color.length() != 7)
+            {
+                throw new IllegalArgumentException("Invalid HEX color value (not 3x8 bit hex string '#FFFFFF'): " + color);
+            }
+            return color;
+        }
+        else // rgb/rgba
+        {
+            Matcher matcher = rgbPattern.matcher(color);
+            if (matcher.matches())
+            {
+                StringBuilder hexColor = new StringBuilder("#");
+                {
+                    // Red
+                    int rInt = Integer.parseInt(matcher.group("r"));
+                    String r = Integer.toHexString(rInt);
+                    if (r.length() < 2)
+                        hexColor.append("0");
+                    hexColor.append(r);
+                }
+                {
+                    // Green
+                    int gInt = Integer.parseInt(matcher.group("g"));
+                    String g = Integer.toHexString(gInt);
+                    if (g.length() < 2)
+                        hexColor.append("0");
+                    hexColor.append(g);
+                }
+                {
+                    // Blue
+                    int bInt = Integer.parseInt(matcher.group("b"));
+                    String b = Integer.toHexString(bInt);
+                    if (b.length() < 2)
+                        hexColor.append("0");
+                    hexColor.append(b);
+                }
 
-        DataRegionTable table = new DataRegionTable("Peptides", getDriver());
-        table.uncheckAllOnPage();
-        table.checkCheckbox(table.getRowIndexStrict(0, peptide));
+                if (hexColor.length() != 7)
+                {
+                    throw new IllegalArgumentException("Invalid HEX color value (not 3x8 bit hex string '#FFFFFF'): " + color);
+                }
 
-        checker().verifyTrue("Incorrect chromatogram color for " + peptide,
-                isElementPresent(Locator.tag("g").withAttributeContaining("style", color)));
+                return hexColor.toString().toUpperCase();
+            }
+
+            throw new IllegalArgumentException("Can't parse color (should be hex, rgb, or rgba value): " + color);
+        }
+    }
+
+    private String getChromatogramPlotColor(String peptide)
+    {
+        final String cssColor = shortWait().ignoring(WebDriverException.class).until(wd ->
+            Locator.id("groupChromatogramLegend")
+                .append(Locator.tag("td").withPredicate("text()=" + Locator.XPathLocator.xq(peptide)).childTag("span"))
+                .findElement(wd)
+                .getCssValue("color")
+        );
+        return hexColor(cssColor);
     }
 
     private void verifyQCPlotColors(String peptide, String color)
