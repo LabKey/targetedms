@@ -91,6 +91,8 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
                         withTimeout(WAIT_FOR_JAVASCRIPT).
                         isDisplayed());
 
+        checker().screenShotIfNewError("calcurve-and-fom");
+
         log("Verifying Calibration Curves link");
         clickTab("Proteins");
         clickAndWait(calibrationCurvesLink());
