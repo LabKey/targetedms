@@ -195,9 +195,15 @@ protein =
         let hasCalibratedArea = false;
         let hasNormalizedArea = false;
 
+        let hasStartIndex = false;
+
         Object.keys(precursorGrouped).forEach(function(precursorId ) {
             const precursorRows = precursorGrouped[precursorId];
             const precursor = precursorRows[0];
+
+            if (precursor.StartIndex) {
+                hasStartIndex = true;
+            }
 
             const precursorData = {
                 Sequence: precursor.PeptideSequence,
@@ -243,6 +249,10 @@ protein =
             protein.precursors.push(precursorData);
         });
 
+        if (!hasStartIndex) {
+            $('#sequenceLocationPeptideSortOption').remove();
+        }
+
         const refreshFunction = function () {
             protein.updateUI();
         };
@@ -256,26 +266,6 @@ protein =
 
                 peptide.Enabled = peptide.Sequence.length >= bounds.start && peptide.Sequence.length <= bounds.end;
             }
-            const sortBy = protein.settings.getSortBy();
-            if (sortBy === "Sequence Location") {
-                protein.precursors.sort(function (a, b) {
-                    return a.StartIndex - b.StartIndex;
-                });
-            }
-
-            const sortValue = "Area";
-            if (sortBy === "Intensity") {
-                protein.precursors.sort(function (a, b) {
-                    return b[sortValue] - a[sortValue];
-                });
-            }
-            const clipboardPeptides = [];
-            protein.precursors.forEach(function (a) {
-                if (a.Enabled) {
-                    clipboardPeptides.push(a.Sequence) // add to copy clipboard feature
-                }
-            });
-            $("#copytoclipboard").attr("clipboard", clipboardPeptides.join("\r"));
 
             setFilteredPeptideCount();
 
@@ -323,7 +313,6 @@ protein =
         protein.settings.update();
         if(protein != null && data.rows.length > 0) {
             $(window).resize(function() { protein.updateUI() });
-            protein.selectPrecursor(protein.precursors[0].PrecursorId, false);
         }
     },
 
@@ -472,14 +461,15 @@ protein =
             if (sortBy === "Sequence Location") {
                 sortFunction = function (a, b) { return a.StartIndex - b.StartIndex };
             }
-
-            if (sortBy === "Intensity") {
+            else if (sortBy === "Sequence") {
+                sortFunction = function (a, b) { return a.sequence.localeCompare(b.sequence) };
+            }
+            else if (sortBy === "Intensity") {
                 sortFunction = function (a, b) {
                     return medians[b.precursorId] - medians[a.precursorId];
                 };
             }
-
-            if (sortBy === "Coefficient of Variation") {
+            else if (sortBy === "Coefficient of Variation") {
                 sortFunction = function (a, b) {
                     return cvs[b.precursorId] - cvs[a.precursorId];
                 };
@@ -490,6 +480,16 @@ protein =
             plotData.sort(sortFunction);
             cvLineData.sort(sortFunction);
             summaryDataTable.sort(sortFunction);
+
+            const clipboardPeptides = [];
+            summaryDataTable.forEach(function (a) {
+                clipboardPeptides.push(a.sequence) // add to copy clipboard feature
+            });
+            $("#copytoclipboard").attr("clipboard", clipboardPeptides.join("\r"));
+
+            if (!protein.selectedPrecursor) {
+                protein.selectPrecursor(summaryDataTable[0].precursorId, false);
+            }
 
             let tableHTML = '';
             summaryDataTable.forEach(function(row, index) {
