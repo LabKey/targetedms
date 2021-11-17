@@ -86,9 +86,7 @@
         </td>
         <td style="padding-left: 2em">
             Matching precursors:
-            <span id="filteredPeptideCount">
-                <green><%=protein.getPep().size()%></green>/<%=protein.getPep().size()%>
-            </span>
+            <span id="filteredPrecursorCount"></span>/<span id="totalPrecursorCount"></span>
         </td>
     </tr>
     <tr>

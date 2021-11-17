@@ -28,6 +28,7 @@ protein =
         protein.selectedPrecursor = precursor;
 
         $('#seriesLegend').empty();
+        $('#precursorRadio' + precursorId).prop("checked", true);
 
         const chromParent = $('#chromatograms');
         chromParent.empty();
@@ -75,7 +76,7 @@ protein =
 
         protein.selectedPrecursor.ReplicateInfo.forEach(function(replicate) {
             const parentElement = $('#chrom' + replicate.PrecursorChromInfoId);
-            LABKEY.targetedms.SVGChart.requestAndRenderSVG(chromatogramUrl + "id=" + replicate.PrecursorChromInfoId + "&syncY=true&syncX=false&chartWidth=275&chartHeight=300",
+            LABKEY.targetedms.SVGChart.requestAndRenderSVG(chromatogramUrl + "id=" + replicate.PrecursorChromInfoId + "&syncY=true&syncYBasedOnPrecursor=true&syncX=false&chartWidth=275&chartHeight=300",
                     parentElement[0],
                     $('#seriesLegend')[0],
                     false,
@@ -285,7 +286,8 @@ protein =
                         activePeptides++
                 });
 
-                $("#filteredPeptideCount > green").text(activePeptides);
+                $("#filteredPrecursorCount").text(activePeptides);
+                $("#totalPrecursorCount").text(protein.precursors.length);
             }
 
             // Coalesce updates to the rest of the plot because the slider can rapidly fire many updates
@@ -451,7 +453,7 @@ protein =
 
                 summaryDataTable.push({
                     precursorChromInfoId: row.precursorChromInfoId,
-                    precursorId: precursorId,
+                    precursorId: parseInt(precursorId),
                     sequence: row.sequence,
                     peptideSequence: row.peptideSequence,
                     charge: row.charge,
@@ -490,9 +492,9 @@ protein =
             summaryDataTable.sort(sortFunction);
 
             let tableHTML = '';
-            summaryDataTable.forEach(function(row) {
+            summaryDataTable.forEach(function(row, index) {
                 tableHTML += '<tr' + (row.enabled ? '' : ' style="text-decoration: line-through; background-color: LightGray"') + '>' +
-                        '<td colspan="2"><a href="#chrom' + row.precursorChromInfoId + '" onclick="protein.selectPrecursor(' + row.precursorId + ', true)">' + LABKEY.Utils.encodeHtml(row.sequence) + '</a></td>' +
+                        '<td colspan="2"><input type="radio" ' + (row.precursorId === protein.selectedPrecursor.PrecursorId ? 'checked="true"' : '') + ' name="precursorRadio" id="precursorRadio' + row.precursorId + '" onclick="protein.selectPrecursor(' + row.precursorId + ', true)" /><a href="#chrom' + row.precursorChromInfoId + '" onclick="protein.selectPrecursor(' + row.precursorId + ', true)">' + LABKEY.Utils.encodeHtml(row.sequence) + '</a></td>' +
                         '<td>' + LABKEY.Utils.encodeHtml((row.charge >= 0 ? '+' : '') + row.charge) + '</td>' +
                         '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.mz.toFixed(4)) + '</td>' +
                         '<td style="text-align: right">' + (row.StartIndex ? row.StartIndex : '') + '</td>' +
