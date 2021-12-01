@@ -136,7 +136,7 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
         /*
             Test coverage for Issue 37745, "Synchronize Skyline and Panorama plot colors,"
          */
-        navigateToFolder(getProjectName(), subFolderName);
+        goToProjectFolder(getProjectName(), subFolderName);
         clickTab("Runs");
         clickAndWait(Locator.linkWithText(IRTMETRICS_SKYFILE));
         clickAndWait(Locator.linkWithText("Biognosys standards"));
@@ -223,7 +223,7 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
 
     private String getChromatogramPlotColor(String peptide)
     {
-        final String cssColor = shortWait().ignoring(WebDriverException.class).until(wd ->
+        final String cssColor = longWait().ignoring(WebDriverException.class).until(wd ->
             Locator.id("groupChromatogramLegend")
                 .append(Locator.tag("td").withPredicate("text()=" + Locator.XPathLocator.xq(peptide)).childTag("span"))
                 .findElement(wd)
