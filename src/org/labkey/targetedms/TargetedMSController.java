@@ -4127,8 +4127,6 @@ public class TargetedMSController extends SpringActionController
     @RequiresPermission(ReadPermission.class)
     public class ShowSkylineAuditLogAction extends ShowRunSingleDetailsAction<RunDetailsForm>
     {
-        private static final String LOG_QUERY_NAME = "AuditLogTraverse";
-
         public ShowSkylineAuditLogAction()
         {
             super(RunDetailsForm.class,"Skyline Audit Log", "SkylineAuditLog");
@@ -4137,8 +4135,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
         {
-            QuerySettings settings = new QuerySettings(getViewContext(), _dataRegionName, LOG_QUERY_NAME);
-            settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("RunId"), form.getId()));
+            QuerySettings settings = new QuerySettings(getViewContext(), _dataRegionName, TargetedMSSchema.TABLE_SKYLINE_AUDITLOG_PREFIX + form.getId());
             return createViewWithNoContainerFilterOptions(settings, errors);
         }
     }
@@ -4147,7 +4144,7 @@ public class TargetedMSController extends SpringActionController
     public class ShowSkylineAuditLogExtraInfoAJAXAction extends SimpleViewAction<SkylineAuditLogExtraInfoForm>
     {
         @Override
-        public ModelAndView getView(SkylineAuditLogExtraInfoForm form, BindException errors) throws Exception
+        public ModelAndView getView(SkylineAuditLogExtraInfoForm form, BindException errors)
         {
             SkylineAuditLogExtraInfoBean bean;
             String errMessage = null;
