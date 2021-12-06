@@ -1389,23 +1389,6 @@ public class TargetedMSSchema extends UserSchema
             catch (NumberFormatException ignored) {}
         }
 
-//        if (TABLE_SKYLINE_AUDITLOG_ENTRY.equalsIgnoreCase(name))
-//        {
-//            // Swap for the view that pulls in the VersionId/RunId for every row. We keep its name the as AuditLogEntry
-//            // for backwards compatibility with queries
-//            TargetedMSTable result = new TargetedMSTable(getSchema().getTable(TABLE_SKYLINE_AUDITLOG), this, cf, ContainerJoinType.RunFK);
-//            result.setName(TABLE_SKYLINE_AUDITLOG_ENTRY);
-//            result.getMutableColumn("RunId").setFk(QueryForeignKey.from(this, cf).table(TABLE_RUNS));
-//            return result;
-//        }
-//
-//        if (TABLE_SKYLINE_AUDITLOG_MESSAGE.equalsIgnoreCase(name))
-//        {
-//            TargetedMSTable result = new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.EntryVersionFK);
-//            result.getMutableColumn("EntryId").setFk(QueryForeignKey.from(this, cf).table(TABLE_SKYLINE_AUDITLOG_ENTRY));
-//            return result;
-//        }
-//
         // Issue 35966 - Show a custom set of columns by default for a run-scoped replicate view
         if (name.toLowerCase().startsWith(SAMPLE_FILE_RUN_PREFIX))
         {
