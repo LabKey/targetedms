@@ -60,7 +60,7 @@ public class SkylineAuditTable extends VirtualTable<TargetedMSSchema>
         cteSQL.append(_run.getId());
 
         cteSQL.append("\n");
-        cteSQL.append("UNION");
+        cteSQL.append("UNION ALL");
         cteSQL.append("\n");
 
         cteSQL.append("SELECT ");
