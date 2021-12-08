@@ -123,15 +123,16 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
         ticAreaHoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
         checker().withScreenshot("IRTSlope").verifyTrue("Incorrect iRT Slope value calculated", ticAreaHoverText.contains("0.6463"));
         qcPlotsWebPart.closeBubble();
+        mouseOut();
 
         log("Verifying the tooltip area of QC summary web part");
         QCSummaryWebPart qcSummaryWebPart = qcDashboard.getQcSummaryWebPart();
         QCSummaryWebPart.QcSummaryTile qcSummaryTile = qcSummaryWebPart.getQcSummaryTiles().get(0);
         mouseOver(qcSummaryTile.getRecentSampleFiles().get(0));
-        waitForElement(qcSummaryWebPart.getBubble());
-        checker().verifyTrue("iRT Correlation missing in tooltip", isElementPresent(Locator.linkWithText("iRT Correlation")));
-        checker().verifyTrue("iRT Intercept missing in tooltip", isElementPresent(Locator.linkWithText("iRT Intercept")));
-        checker().verifyTrue("iRT Slope missing in tooltip", isElementPresent(Locator.linkWithText("iRT Slope")));
+        final WebElement bubble = waitForElement(qcSummaryWebPart.getBubble().withDescendant(Locator.byClass("hopscotch-title").withText("Sample Details")));
+        checker().verifyTrue("iRT Correlation missing in tooltip", Locator.linkWithText("iRT Correlation").existsIn(bubble));
+        checker().verifyTrue("iRT Intercept missing in tooltip", Locator.linkWithText("iRT Intercept").existsIn(bubble));
+        checker().verifyTrue("iRT Slope missing in tooltip", Locator.linkWithText("iRT Slope").existsIn(bubble));
 
         /*
             Test coverage for Issue 37745, "Synchronize Skyline and Panorama plot colors,"
