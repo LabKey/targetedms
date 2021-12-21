@@ -35,7 +35,7 @@
         dependencies.add("targetedms/js/ParetoPlotPanel.js");
     }
 %>
-<%!
+<%
     String tiledPlotPanelId = "tiledPlotPanel-" + getRequestScopedUID();
 %>
 
