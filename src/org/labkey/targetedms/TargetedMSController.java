@@ -2995,7 +2995,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void export(SummaryChartForm form, HttpServletResponse response, BindException errors) throws Exception
         {
-            JFreeChart chart;
+            JFreeChart chart = null;
             if (form.isAsProteomics())
             {
                 chart = new ComparisonChartMaker().makePeakAreasChart(
@@ -3009,7 +3009,7 @@ public class TargetedMSController extends SpringActionController
                         form.isLogValues(), getUser(), getContainer()
                 );
             }
-            else
+            else if (_molecule != null)
             {
                 chart = new ComparisonChartMaker().makePeakAreasChart(
                         form.getReplicateId(),
