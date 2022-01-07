@@ -2990,12 +2990,17 @@ public class TargetedMSController extends SpringActionController
             validatePeptideGroup(form);
             validatePeptide(form);
             validateMolecule(form);
+
+            if (_molecule == null && _peptide == null && _peptideGrp == null)
+            {
+                throw new NotFoundException();
+            }
         }
 
         @Override
         public void export(SummaryChartForm form, HttpServletResponse response, BindException errors) throws Exception
         {
-            JFreeChart chart = null;
+            JFreeChart chart;
             if (form.isAsProteomics())
             {
                 chart = new ComparisonChartMaker().makePeakAreasChart(
@@ -3009,7 +3014,7 @@ public class TargetedMSController extends SpringActionController
                         form.isLogValues(), getUser(), getContainer()
                 );
             }
-            else if (_molecule != null)
+            else
             {
                 chart = new ComparisonChartMaker().makePeakAreasChart(
                         form.getReplicateId(),
