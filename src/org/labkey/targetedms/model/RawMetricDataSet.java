@@ -21,32 +21,33 @@ import org.labkey.api.targetedms.model.OutlierCounts;
 import org.labkey.api.visualization.Stats;
 
 import java.text.DecimalFormat;
-import java.util.Date;
 
 public class RawMetricDataSet
 {
+    private static final DecimalFormat DECIMAL_FORMAT;
+    static
+    {
+        DECIMAL_FORMAT = new DecimalFormat();
+        DECIMAL_FORMAT.setMinimumFractionDigits(4);
+    }
+
+    private final SampleFileQCMetadata _sampleFile;
+
     String seriesLabel;
     Double metricValue;
     int metricId;
     int metricSeriesIndex;
-    int guideSetId;
-    long sampleFileId;
 
-    Integer precursorId;
-    Integer precursorChromInfoId;
+    Long precursorId;
+    Long precursorChromInfoId;
     String dataType;
     Double mz;
-    Date acquiredTime;
-    boolean ignoreInQC;
-    boolean inGuideSetTrainingRange;
+
     Double mR;
     Double cusumMP;
     Double cusumMN;
     Double cusumVP;
     Double cusumVN;
-
-    String filePath;
-    long replicateId;
 
     String modifiedSequence;
     String customIonName;
@@ -54,6 +55,22 @@ public class RawMetricDataSet
     Double massMonoisotopic;
     Double massAverage;
     String precursorCharge;
+
+    private GuideSetKey _guideSetKey;
+
+    public RawMetricDataSet(SampleFileQCMetadata metadata)
+    {
+        if (metadata == null)
+        {
+            throw new IllegalArgumentException();
+        }
+        _sampleFile = metadata;
+    }
+
+    public SampleFileQCMetadata getSampleFile()
+    {
+        return _sampleFile;
+    }
 
     @Nullable
     public String getSeriesLabel()
@@ -64,8 +81,6 @@ public class RawMetricDataSet
         }
         else
         {
-            DecimalFormat df = new DecimalFormat();
-            df.setMinimumFractionDigits(4);
             StringBuilder modifiedSL = new StringBuilder();
 
             if (null != modifiedSequence)
@@ -89,9 +104,9 @@ public class RawMetricDataSet
                 if (null != massMonoisotopic && null != massAverage)
                 {
                     modifiedSL.append(" [");
-                    modifiedSL.append(df.format(massMonoisotopic));
+                    modifiedSL.append(DECIMAL_FORMAT.format(massMonoisotopic));
                     modifiedSL.append("/");
-                    modifiedSL.append(df.format(massAverage));
+                    modifiedSL.append(DECIMAL_FORMAT.format(massAverage));
                     modifiedSL.append("] ");
                 }
             }
@@ -105,7 +120,7 @@ public class RawMetricDataSet
             if (null != mz)
             {
                 modifiedSL.append(", ");
-                modifiedSL.append(df.format(mz));
+                modifiedSL.append(DECIMAL_FORMAT.format(mz));
             }
 
             return modifiedSL.toString();
@@ -150,37 +165,31 @@ public class RawMetricDataSet
 
     public GuideSetKey getGuideSetKey()
     {
-        return new GuideSetKey(getMetricId(), getMetricSeriesIndex(), getGuideSetId(), getSeriesLabel());
-    }
-
-    public int getGuideSetId()
-    {
-        return guideSetId;
-    }
-
-    public void setGuideSetId(int guideSetId)
-    {
-        this.guideSetId = guideSetId;
+        if (_guideSetKey == null)
+        {
+            _guideSetKey = new GuideSetKey(getMetricId(), getMetricSeriesIndex(), _sampleFile.getGuideSetId(), getSeriesLabel());
+        }
+        return _guideSetKey;
     }
 
     @Nullable
-    public Integer getPrecursorId()
+    public Long getPrecursorId()
     {
         return precursorId;
     }
 
-    public void setPrecursorId(Integer precursorId)
+    public void setPrecursorId(Long precursorId)
     {
         this.precursorId = precursorId;
     }
 
     @Nullable
-    public Integer getPrecursorChromInfoId()
+    public Long getPrecursorChromInfoId()
     {
         return precursorChromInfoId;
     }
 
-    public void setPrecursorChromInfoId(Integer precursorChromInfoId)
+    public void setPrecursorChromInfoId(Long precursorChromInfoId)
     {
         this.precursorChromInfoId = precursorChromInfoId;
     }
@@ -204,47 +213,6 @@ public class RawMetricDataSet
     public void setMz(Double mz)
     {
         this.mz = mz;
-    }
-
-    @Nullable
-    public Date getAcquiredTime()
-    {
-        return acquiredTime;
-    }
-
-    public void setAcquiredTime(Date acquiredTime)
-    {
-        this.acquiredTime = acquiredTime;
-    }
-
-    public boolean isIgnoreInQC()
-    {
-        return ignoreInQC;
-    }
-
-    public void setIgnoreInQC(boolean ignoreInQC)
-    {
-        this.ignoreInQC = ignoreInQC;
-    }
-
-    public boolean isInGuideSetTrainingRange()
-    {
-        return inGuideSetTrainingRange;
-    }
-
-    public void setInGuideSetTrainingRange(boolean inGuideSetTrainingRange)
-    {
-        this.inGuideSetTrainingRange = inGuideSetTrainingRange;
-    }
-
-    public long getSampleFileId()
-    {
-        return sampleFileId;
-    }
-
-    public void setSampleFileId(long sampleFileId)
-    {
-        this.sampleFileId = sampleFileId;
     }
 
     @Nullable
@@ -300,26 +268,6 @@ public class RawMetricDataSet
     public void setCUSUMvN(Double d)
     {
         this.cusumVN = d;
-    }
-
-    public String getFilePath()
-    {
-        return filePath;
-    }
-
-    public void setFilePath(String filePath)
-    {
-        this.filePath = filePath;
-    }
-
-    public long getReplicateId()
-    {
-        return replicateId;
-    }
-
-    public void setReplicateId(long replicateId)
-    {
-        this.replicateId = replicateId;
     }
 
     public String getModifiedSequence()
@@ -384,7 +332,7 @@ public class RawMetricDataSet
 
     public boolean isLeveyJenningsOutlier(GuideSetStats stat)
     {
-        if (ignoreInQC || metricValue == null || stat == null)
+        if (_sampleFile.isIgnoreInQC() || metricValue == null || stat == null)
         {
             return false;
         }
@@ -397,12 +345,12 @@ public class RawMetricDataSet
 
     public boolean isMovingRangeOutlier(GuideSetStats stat)
     {
-        return !isIgnoreInQC() && stat != null && mR != null && mR > Stats.MOVING_RANGE_UPPER_LIMIT_WEIGHT * stat.getMovingRangeAverage();
+        return !_sampleFile.isIgnoreInQC() && stat != null && mR != null && mR > Stats.MOVING_RANGE_UPPER_LIMIT_WEIGHT * stat.getMovingRangeAverage();
     }
 
     private boolean isCUSUMOutlier(Double value)
     {
-        return !isIgnoreInQC() && value != null && value > Stats.CUSUM_CONTROL_LIMIT;
+        return !_sampleFile.isIgnoreInQC() && value != null && value > Stats.CUSUM_CONTROL_LIMIT;
     }
 
     public boolean isCUSUMvPOutlier()
