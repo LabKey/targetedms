@@ -115,7 +115,7 @@ public class QCPlotFragment
             dataJsonObject.put("PrecursorChromInfoId", plotData.getPrecursorChromInfoId());
             dataJsonObject.put("InGuideSetTrainingRange", plotData.getSampleFile().isInGuideSetTrainingRange());
             dataJsonObject.put("GuideSetId", plotData.getSampleFile().getGuideSetId());
-            dataJsonObject.put("IgnoreInQC", plotData.getSampleFile().isIgnoreInQC());
+            dataJsonObject.put("IgnoreInQC", plotData.getSampleFile().isIgnoreInQC(plotData.getMetricId()));
             dataJsonObject.put("PrecursorId", plotData.getPrecursorId());
             dataJsonObject.put("SeriesType", plotData.getMetricSeriesIndex());
             if (includeMR)

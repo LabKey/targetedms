@@ -983,7 +983,7 @@ public class TargetedMSController extends SpringActionController
             List<JSONObject> result = new ArrayList<>();
             for (QCMetricConfiguration configuration : enabledQCMetricConfigurations)
             {
-                   result.add(configuration.toJSON());
+                result.add(configuration.toJSON());
             }
             response.put("configurations", result);
             return response;
