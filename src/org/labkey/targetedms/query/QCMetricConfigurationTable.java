@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.ContainerManager;
+import org.labkey.api.data.DbScope;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.data.Table;
@@ -104,6 +105,7 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
         {
             var insertedRow = super.insertRow(user, container, row);
             calculateAndInsertTraceValuesForMetric((int) insertedRow.get("Id"), container, user);
+            TargetedMSManager.get().clearCachedEnabledQCMetrics(container);
             return insertedRow;
         }
 
@@ -114,6 +116,7 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
             var metricId = (int) updatedRow.get("Id");
             deleteTraceValueForMetric(metricId, container);
             calculateAndInsertTraceValuesForMetric(metricId, container, user);
+            TargetedMSManager.get().clearCachedEnabledQCMetrics(container);
             return updatedRow;
         }
 
@@ -121,6 +124,7 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
         protected Map<String, Object> deleteRow(User user, Container container, Map<String, Object> oldRow) throws InvalidKeyException, QueryUpdateServiceException, SQLException
         {
             deleteTraceValueForMetric((Integer) oldRow.get("id"), container);
+            TargetedMSManager.get().clearCachedEnabledQCMetrics(container);
             return super.deleteRow(user, container, oldRow);
         }
 

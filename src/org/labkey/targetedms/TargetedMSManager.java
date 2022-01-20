@@ -143,12 +143,12 @@ public class TargetedMSManager
     }
 
     /**
-     * A very short-lived cache to make it faster to render QC folders. A number of API calls come from the
+     * A cache to make it faster to render QC folders. A number of API calls come from the
      * client rendering the overview, all of which need to know the enabled configs.
      *
      * Could switch to a longer-lived cache that's invalidated by changes to the configuration for even more benefit.
      */
-    private static final Cache<Container, List<QCMetricConfiguration>> _metricCache = CacheManager.getCache(1000, TimeUnit.SECONDS.toMillis(15), "Short-lived QC metric configs");
+    private static final Cache<Container, List<QCMetricConfiguration>> _metricCache = CacheManager.getCache(1000, TimeUnit.HOURS.toMillis(1), "Enabled QC metric configs");
 
     public static TargetedMSManager get()
     {
@@ -1113,6 +1113,9 @@ public class TargetedMSManager
                     throw new RuntimeException("Pipeline root not found.");
                 }
             }
+
+            // We may have deleted the last set of data for a given metric
+            TargetedMSManager.get().clearCachedEnabledQCMetrics(run.getContainer());
         }
 
         // Mark all of the runs for deletion
@@ -2606,5 +2609,10 @@ public class TargetedMSManager
         sql.append(" WHERE r.Container = ").append(container);
 
         return new SqlSelector(getSchema(), sql).getMap();
+    }
+
+    public void clearCachedEnabledQCMetrics(Container container)
+    {
+        getSchema().getScope().addCommitTask(() -> _metricCache.remove(container), DbScope.CommitTaskOption.IMMEDIATE, DbScope.CommitTaskOption.POSTCOMMIT, DbScope.CommitTaskOption.POSTROLLBACK);
     }
 }
