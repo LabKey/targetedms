@@ -1,12 +1,10 @@
 package org.labkey.targetedms.model;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 import org.labkey.targetedms.parser.SampleFile;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,7 +13,6 @@ public class SampleFileQCMetadata extends SampleFile
     boolean inGuideSetTrainingRange;
     private Set<Integer> _ignoredMetricIds = Collections.emptySet();
 
-    @Nullable
     public boolean isIgnoreInQC(int metricId)
     {
         // Use -1 to signify that an exclusion is for the whole sample (and therefore applies to all metrics)
