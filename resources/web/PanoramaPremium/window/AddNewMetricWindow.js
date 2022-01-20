@@ -575,7 +575,6 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
                             window.location = this.getReturnURL();
                         }
                     });
-                    win.close();
                 }
             }, this);
 
