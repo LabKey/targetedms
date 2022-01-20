@@ -325,11 +325,8 @@ public class OutlierGenerator
         {
             while (rs.next())
             {
-                RawMetricDataSet.PrecursorInfo p = new RawMetricDataSet.PrecursorInfo(format);
-                p.setPrecursorId(rs.getLong("Id"));
-                p.setMz(rs.getDouble("MZ"));
+                RawMetricDataSet.PrecursorInfo p = createPrecursor(format, rs, precursors);
                 p.setModifiedSequence(rs.getString("ModifiedSequence"));
-                precursors.put(p.getPrecursorId(), p);
             }
         }
 
@@ -338,17 +335,25 @@ public class OutlierGenerator
         {
             while (rs.next())
             {
-                RawMetricDataSet.PrecursorInfo p = new RawMetricDataSet.PrecursorInfo(format);
-                p.setPrecursorId(rs.getLong("Id"));
-                p.setMz(rs.getDouble("MZ"));
+                RawMetricDataSet.PrecursorInfo p = createPrecursor(format, rs, precursors);
                 p.setCustomIonName(rs.getString("CustomIonName"));
                 p.setIonFormula(rs.getString("IonFormula"));
                 p.setMassMonoisotopic(getDouble(rs, "massMonoisotopic"));
                 p.setMassAverage(getDouble(rs, "massAverage"));
-                precursors.put(p.getPrecursorId(), p);
             }
         }
         return precursors;
+    }
+
+    @NotNull
+    private RawMetricDataSet.PrecursorInfo createPrecursor(DecimalFormat format, ResultSet rs, Map<Long, RawMetricDataSet.PrecursorInfo> precursors) throws SQLException
+    {
+        RawMetricDataSet.PrecursorInfo p = new RawMetricDataSet.PrecursorInfo(format);
+        p.setPrecursorId(rs.getLong("Id"));
+        p.setMz(rs.getDouble("MZ"));
+        p.setPrecursorCharge(rs.getInt("Charge"));
+        precursors.put(p.getPrecursorId(), p);
+        return p;
     }
 
     private Long getLong(ResultSet rs, String columnName) throws SQLException

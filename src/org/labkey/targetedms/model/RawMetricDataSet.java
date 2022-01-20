@@ -71,7 +71,7 @@ public class RawMetricDataSet
         String ionFormula;
         Double massMonoisotopic;
         Double massAverage;
-        String precursorCharge;
+        int precursorCharge;
 
         String seriesLabel;
 
@@ -97,7 +97,7 @@ public class RawMetricDataSet
 
         public void setPrecursorCharge(int precursorCharge)
         {
-            this.precursorCharge = LabelFactory.getChargeLabel(precursorCharge, false);
+            this.precursorCharge = precursorCharge;
         }
 
         public void setModifiedSequence(String modifiedSequence)
@@ -159,11 +159,8 @@ public class RawMetricDataSet
                     }
                 }
 
-                if (null != precursorCharge)
-                {
-                    modifiedSL.append(" ");
-                    modifiedSL.append(precursorCharge);
-                }
+                modifiedSL.append(" ");
+                modifiedSL.append(LabelFactory.getChargeLabel(precursorCharge, false));
 
                 modifiedSL.append(", ");
                 modifiedSL.append(format.format(mz));
@@ -319,35 +316,6 @@ public class RawMetricDataSet
     public void setCUSUMvN(Double d)
     {
         this.cusumVN = d;
-    }
-
-    public String getModifiedSequence()
-    {
-        return _precursor == null ? null : _precursor.modifiedSequence;
-    }
-
-    public String getCustomIonName()
-    {
-        return _precursor == null ? null : _precursor.customIonName;
-    }
-    public String getIonFormula()
-    {
-        return _precursor == null ? null : _precursor.ionFormula;
-    }
-
-    public Double getMassMonoisotopic()
-    {
-        return _precursor == null ? null : _precursor.massMonoisotopic;
-    }
-
-    public Double getMassAverage()
-    {
-        return _precursor == null ? null : _precursor.massAverage;
-    }
-
-    public String getPrecursorCharge()
-    {
-        return _precursor == null ? null : _precursor.precursorCharge;
     }
 
     public boolean isLeveyJenningsOutlier(GuideSetStats stat)
