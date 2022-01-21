@@ -113,6 +113,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
 
         log("Clicking the outliew notification link");
         qcSummary.clickMenuItem("Subscribe Outlier Notifications");
+        waitForElement(Locator.radioButtonByName("subscriptionType").index(1));
         checkRadioButton(Locator.radioButtonByName("subscriptionType").index(1));
         setFormElement(Locator.name("outlierCount"), "1");
         clickAndWait(Locator.tagWithAttribute("input", "value", "Save"));
