@@ -260,21 +260,21 @@
                     value:'<a style="color:#069; cursor:pointer;" id="clear-annot" onclick="clearAnnotations()">Clear</a>',
                     style:'margin-left:15px;',
                     name: "hideAnnotations"
+                },
+                {
+                    xtype: 'button',
+                    text: 'Update',
+                    handler: function(btn) {
+                        form.getForm().findField("annotationsFilter").setValue(form.getForm().findField("annotationsFilter").getValue().join(","));
+                        form.getForm().findField("replicatesFilter").setValue(form.getForm().findField("replicatesFilter").getValue().join(","));
+                        form.getForm().findField("update").setValue(true);
+                        form.submit({
+                            url: <%=q(bean.getResultsUri())%>,
+                            method: 'GET'
+                        });
+                    }
                 }
             ],
-            buttonAlign: 'left',
-            buttons: [{
-                text: 'Update',
-                handler: function(btn) {
-                    form.getForm().findField("annotationsFilter").setValue(form.getForm().findField("annotationsFilter").getValue().join(","));
-                    form.getForm().findField("replicatesFilter").setValue(form.getForm().findField("replicatesFilter").getValue().join(","));
-                    form.getForm().findField("update").setValue(true);
-                    form.submit({
-                    url: <%=q(bean.getResultsUri())%>,
-                        method: 'GET'
-                    });
-                }
-            }]
         });
 
         // This has to happen after form is rendered.
