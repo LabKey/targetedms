@@ -1,0 +1,6 @@
+<customView xmlns="http://labkey.org/data/xml/queryCustomView" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            label="Library Members">
+    <filters>
+        <filter column="RepresentativeDataState" operator="eq" value="1"/>
+    </filters>
+</customView>

@@ -28,6 +28,7 @@ import org.labkey.api.exp.query.ExpRunTable;
 import org.labkey.api.exp.query.ExpSchema;
 import org.labkey.api.module.Module;
 import org.labkey.api.ms2.MS2Service;
+import org.labkey.api.query.CustomView;
 import org.labkey.api.query.DefaultSchema;
 import org.labkey.api.query.DetailsURL;
 import org.labkey.api.query.ExprColumn;
@@ -35,6 +36,7 @@ import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.LookupForeignKey;
 import org.labkey.api.query.QueryAction;
+import org.labkey.api.query.QueryDefinition;
 import org.labkey.api.query.QueryForeignKey;
 import org.labkey.api.query.QuerySchema;
 import org.labkey.api.query.QuerySettings;
@@ -76,6 +78,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class TargetedMSSchema extends UserSchema
 {
@@ -203,6 +206,17 @@ public class TargetedMSSchema extends UserSchema
 
     /** Prefix for a run-specific table name, customized based on the data present within that run */
     public static final String SAMPLE_FILE_RUN_PREFIX = "samplefile_run";
+
+    // Map of tables that have a library view -> name of the library view
+    public static final CaseInsensitiveHashMap<String> TABLES_LIBRARY_VIEWS = new CaseInsensitiveHashMap<>(Map.of(
+            TargetedMSSchema.TABLE_PEPTIDE_GROUP, "LibraryProteins",
+            TargetedMSSchema.TABLE_PEPTIDE, "LibraryPeptides",
+            TargetedMSSchema.TABLE_MOLECULE, "LibraryMolecules",
+            TargetedMSSchema.TABLE_LIBRARY_PRECURSOR, "LibraryPrecursors",
+            TargetedMSSchema.TABLE_LIBRARY_MOLECULE_PRECURSOR, "LibraryPrecursors",
+            TargetedMSSchema.TABLE_EXPERIMENT_PRECURSOR, "LibraryMembers", // Library members in a single document
+            TargetedMSSchema.TABLE_MOLECULE_PRECURSOR, "LibraryMembers" // Library members in a single document
+    ));
 
     private final ExpSchema _expSchema;
     private Map<String, List<AnnotatedTargetedMSTable.AnnotationSettingForTyping>> _annotations;
@@ -1137,6 +1151,28 @@ public class TargetedMSSchema extends UserSchema
             }
             result.addColumn(noteAnnotation);
 
+            SQLFragment libPrecursorCountSQL;
+            if (TargetedMSManager.isLibraryFolder(getContainer()))
+            {
+                // In a protein library folder, peptide groups that are in the library, and all their precursors, are marked as "representative".
+                // In a peptide library, however, only precursors are marked as "representative". So, applying a filter on the "representative"
+                // state of the peptide groups in a peptide library folder will display an empty grid.
+                // Add a "RepresentativePrecursorCount" column for the number of precursors in a peptide group that are marked as "representative".
+                // This count can be used as a filter to display peptide groups that are in the current library in both protein and peptide library folders.
+                libPrecursorCountSQL = new SQLFragment(" (SELECT COUNT(p.Id) FROM ")
+                        .append(TargetedMSManager.getTableInfoGeneralPrecursor(), "p")
+                        .append(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm").append(" ON p.generalmoleculeid = gm.id ")
+                        .append(" WHERE gm.peptidegroupid = ").append(ExprColumn.STR_TABLE_ALIAS).append(".id ")
+                        .append(" AND p.RepresentativeDataState = ? ").add(RepresentativeDataState.Representative.ordinal())
+                        .append(") ");
+            }
+            else
+            {
+                libPrecursorCountSQL = new SQLFragment(" (SELECT 0) ");
+            }
+            ExprColumn currentLibPrecursorCountCol = new ExprColumn(result, "RepresentativePrecursorCount", libPrecursorCountSQL, JdbcType.INTEGER);
+            currentLibPrecursorCountCol.setHidden(true);
+            result.addColumn(currentLibPrecursorCountCol);
             return result;
         }
 
@@ -1477,15 +1513,14 @@ public class TargetedMSSchema extends UserSchema
     @Override
     protected QuerySettings createQuerySettings(String dataRegionName, String queryName, String viewName)
     {
-        if(TABLE_PRECURSOR.equalsIgnoreCase(queryName)
-           || TABLE_EXPERIMENT_PRECURSOR.equalsIgnoreCase(queryName)
+        if(TABLE_EXPERIMENT_PRECURSOR.equalsIgnoreCase(queryName)
            || TABLE_LIBRARY_DOC_PRECURSOR.equalsIgnoreCase(queryName)
            || TABLE_TRANSITION.equalsIgnoreCase(queryName))
         {
             return new QuerySettings(dataRegionName)
             {
                 {
-                    setMaxRows(10);
+                    setMaxRows(10); // Show upto 10 protein rows in the nested grid view for a document
                 }
             };
         }
@@ -1534,6 +1569,25 @@ public class TargetedMSSchema extends UserSchema
         }
 
         return super.createView(context, settings, errors);
+    }
+
+    @Override
+    public List<CustomView> getModuleCustomViews(Container container, QueryDefinition qd)
+    {
+        var customViews = super.getModuleCustomViews(container, qd);
+        var tableName = qd.getName();
+
+        if (!SCHEMA_NAME.equals(qd.getSchema().getName())
+                || !TABLES_LIBRARY_VIEWS.containsKey(tableName)
+                || TargetedMSManager.isLibraryFolder(container))
+        {
+            return customViews;
+        }
+
+        // We are looking at one of the tables that has a library view defined but we are not in a library folder.
+        // Remove the library views from customViews.
+        return customViews.stream().filter(v -> v.getName() == null || !v.getName().equals(TABLES_LIBRARY_VIEWS.get(v.getQueryName())))
+                .collect(Collectors.toList());
     }
 
     private Set<String> getAllTableNames(boolean caseInsensitive)

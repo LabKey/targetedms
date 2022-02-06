@@ -16,13 +16,11 @@
 package org.labkey.targetedms.query;
 
 import org.labkey.api.data.ContainerFilter;
-import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.query.FieldKey;
 import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
-import org.labkey.api.targetedms.RepresentativeDataState;
 import org.springframework.web.servlet.mvc.Controller;
 
 import java.util.ArrayList;
@@ -91,20 +89,10 @@ public class MoleculePrecursorTableInfo extends AbstractGeneralPrecursorTableInf
             super(TargetedMSManager.getTableInfoMoleculePrecursor(), TargetedMSSchema.TABLE_LIBRARY_MOLECULE_PRECURSOR, schema, cf, false);
         }
 
-        public void selectRepresentative()
-        {
-            SQLFragment sql = new SQLFragment();
-            sql.append("RepresentativeDataState = ? ");
-            sql.add(RepresentativeDataState.Representative.ordinal());
-            addCondition(sql);
-        }
-
         @Override
         public String getName()
         {
             return TargetedMSSchema.TABLE_LIBRARY_MOLECULE_PRECURSOR;
         }
     }
-
-
 }
