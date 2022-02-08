@@ -62,9 +62,9 @@ public class LibraryQueryViewWebPart extends QueryView
     private static final CaseInsensitiveHashMap<String> SUPPORTED = new CaseInsensitiveHashMap<>(Map.of(
             TargetedMSSchema.TABLE_PEPTIDE_GROUP, "Proteins",
             TargetedMSSchema.TABLE_PEPTIDE, "Peptides",
-            TargetedMSSchema.TABLE_LIBRARY_PRECURSOR, "Precursors",
+            TargetedMSSchema.TABLE_PRECURSOR, "Precursors",
             TargetedMSSchema.TABLE_MOLECULE, "Molecules",
-            TargetedMSSchema.TABLE_LIBRARY_MOLECULE_PRECURSOR, "Molecule Precursors"));
+            TargetedMSSchema.TABLE_MOLECULE_PRECURSOR, "Molecule Precursors"));
 
     @NotNull
     public static LibraryQueryViewWebPart forTable(@NotNull String tableName, @NotNull ViewContext viewContext)

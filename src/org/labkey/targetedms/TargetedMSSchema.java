@@ -113,10 +113,8 @@ public class TargetedMSSchema extends UserSchema
     public static final String TABLE_GENERAL_MOLECULE_ANNOTATION = "GeneralMoleculeAnnotation";
     public static final String TABLE_PEPTIDE_ANNOTATION = "PeptideAnnotation";
     public static final String TABLE_PRECURSOR = "Precursor";
-    public static final String TABLE_EXPERIMENT_PRECURSOR = "ExperimentPrecursor";
-    public static final String TABLE_LIBRARY_PRECURSOR = "LibraryPrecursor";
-    public static final String TABLE_LIBRARY_MOLECULE_PRECURSOR = "LibraryMoleculePrecursor";
-    public static final String TABLE_LIBRARY_DOC_PRECURSOR = "LibraryDocPrecursor";
+    public static final String TABLE_EXPERIMENT_PRECURSOR = "ExperimentPrecursor"; // For displaying nested grid for a document (peptides)
+    public static final String TABLE_EXPERIMENT_MOLECULE_PRECURSOR = "ExperimentMoleculePrecursor"; // For displaying nested grid for a document (small molecules)
     public static final String TABLE_PRECURSOR_ANNOTATION = "PrecursorAnnotation";
     public static final String TABLE_TRANSITION = "Transition";
     public static final String TABLE_MOLECULE_TRANSITION = "MoleculeTransition";
@@ -212,10 +210,10 @@ public class TargetedMSSchema extends UserSchema
             TargetedMSSchema.TABLE_PEPTIDE_GROUP, "LibraryProteins",
             TargetedMSSchema.TABLE_PEPTIDE, "LibraryPeptides",
             TargetedMSSchema.TABLE_MOLECULE, "LibraryMolecules",
-            TargetedMSSchema.TABLE_LIBRARY_PRECURSOR, "LibraryPrecursors",
-            TargetedMSSchema.TABLE_LIBRARY_MOLECULE_PRECURSOR, "LibraryPrecursors",
-            TargetedMSSchema.TABLE_EXPERIMENT_PRECURSOR, "LibraryMembers", // Library members in a single document
-            TargetedMSSchema.TABLE_MOLECULE_PRECURSOR, "LibraryMembers" // Library members in a single document
+            TargetedMSSchema.TABLE_PRECURSOR, "LibraryPrecursors",
+            TargetedMSSchema.TABLE_MOLECULE_PRECURSOR, "LibraryPrecursors",
+            TargetedMSSchema.TABLE_EXPERIMENT_PRECURSOR, "LibraryMembers", // Library members in a single document with peptides
+            TargetedMSSchema.TABLE_EXPERIMENT_MOLECULE_PRECURSOR, "LibraryMembers" // Library members in a single document with small molecules
     ));
 
     private final ExpSchema _expSchema;
@@ -1298,14 +1296,11 @@ public class TargetedMSSchema extends UserSchema
             return new PrecursorTableInfo.ExperimentPrecursorTableInfo(this, cf);
         }
 
-        if (TABLE_LIBRARY_PRECURSOR.equalsIgnoreCase(name) || TABLE_LIBRARY_DOC_PRECURSOR.equalsIgnoreCase(name))
+        if (TABLE_EXPERIMENT_MOLECULE_PRECURSOR.equalsIgnoreCase(name))
         {
-            return new PrecursorTableInfo.LibraryPrecursorTableInfo(this, cf);
+            return new MoleculePrecursorTableInfo.ExperimentMoleculePrecursorTableInfo(this, cf);
         }
-        if (TABLE_LIBRARY_MOLECULE_PRECURSOR.equalsIgnoreCase(name))
-        {
-            return new MoleculePrecursorTableInfo.LibraryMoleculePrecursorTableInfo(this, cf);
-        }
+
         if (TABLE_GENERAL_MOLECULE_ANNOTATION.equalsIgnoreCase(name) || TABLE_PEPTIDE_ANNOTATION.equalsIgnoreCase(name))
         {
             GeneralMoleculeAnnotationTableInfo result = new GeneralMoleculeAnnotationTableInfo(getSchema().getTable(TABLE_GENERAL_MOLECULE_ANNOTATION), this, cf, ContainerJoinType.GeneralMoleculeFK);
@@ -1514,7 +1509,7 @@ public class TargetedMSSchema extends UserSchema
     protected QuerySettings createQuerySettings(String dataRegionName, String queryName, String viewName)
     {
         if(TABLE_EXPERIMENT_PRECURSOR.equalsIgnoreCase(queryName)
-           || TABLE_LIBRARY_DOC_PRECURSOR.equalsIgnoreCase(queryName)
+           || TABLE_EXPERIMENT_MOLECULE_PRECURSOR.equalsIgnoreCase(queryName)
            || TABLE_TRANSITION.equalsIgnoreCase(queryName))
         {
             return new QuerySettings(dataRegionName)
@@ -1646,9 +1641,7 @@ public class TargetedMSSchema extends UserSchema
         hs.add(TABLE_IRT_SCALE);
         hs.add(TABLE_RETENTION_TIME_PREDICTION_SETTINGS);
         hs.add(TABLE_EXPERIMENT_PRECURSOR);
-        hs.add(TABLE_LIBRARY_PRECURSOR);
-        hs.add(TABLE_LIBRARY_MOLECULE_PRECURSOR);
-        hs.add(TABLE_LIBRARY_DOC_PRECURSOR);
+        hs.add(TABLE_EXPERIMENT_MOLECULE_PRECURSOR);
         hs.add(TABLE_ISOLATION_SCHEME);
         hs.add(TABLE_ISOLATION_WINDOW);
         hs.add(TABLE_PREDICTOR);

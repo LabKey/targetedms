@@ -97,8 +97,7 @@ public class PrecursorTableInfo extends AbstractGeneralPrecursorTableInfo
     }
 
     /**
-     * Used with {@link org.labkey.targetedms.view.PeptidePrecursorsView} to display the nested grid for a single document
-     * in a non-library folder.
+     * Used with {@link org.labkey.targetedms.view.PeptidePrecursorsView} to display the nested grid for a single document.
      */
     public static class ExperimentPrecursorTableInfo extends PrecursorTableInfo
     {
@@ -111,20 +110,6 @@ public class PrecursorTableInfo extends AbstractGeneralPrecursorTableInfo
         public String getName()
         {
             return TargetedMSSchema.TABLE_EXPERIMENT_PRECURSOR;
-        }
-    }
-
-    public static class LibraryPrecursorTableInfo extends PrecursorTableInfo
-    {
-        public LibraryPrecursorTableInfo(final TargetedMSSchema schema, ContainerFilter cf)
-        {
-            super(TargetedMSManager.getTableInfoPrecursor(), cf, TargetedMSSchema.TABLE_LIBRARY_PRECURSOR, schema, false);
-        }
-
-        @Override
-        public String getName()
-        {
-            return TargetedMSSchema.TABLE_LIBRARY_PRECURSOR;
         }
     }
 

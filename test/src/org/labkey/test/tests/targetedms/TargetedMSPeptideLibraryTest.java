@@ -107,7 +107,7 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
     {
         log("Verify precursors in the library");
 
-        DataRegionTable precursorTable = new DataRegionTable("LibraryPrecursor",getDriver());
+        DataRegionTable precursorTable = new DataRegionTable("Precursor",getDriver());
         if (precursorTable.getPagingWidget().hasPagingButton(false))
         {
             precursorTable.getPagingWidget().clickShowAll();

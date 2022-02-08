@@ -143,7 +143,7 @@ public class TargetedMSSmallMoleculeLibraryTest extends TargetedMSTest
     {
         log("Verify precursors in the library");
 
-        DataRegionTable precursorTable = new DataRegionTable("LibraryMoleculePrecursor" ,getDriver());
+        DataRegionTable precursorTable = new DataRegionTable("MoleculePrecursor" ,getDriver());
         if(libraryPrecursorCount > 100)
         {
             precursorTable.getPagingWidget().setPageSize(250, true);

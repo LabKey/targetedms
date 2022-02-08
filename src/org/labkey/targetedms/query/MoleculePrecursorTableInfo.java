@@ -82,17 +82,20 @@ public class MoleculePrecursorTableInfo extends AbstractGeneralPrecursorTableInf
         return TargetedMSController.MoleculePrecursorAllChromatogramsChartAction.class;
     }
 
-    public static class LibraryMoleculePrecursorTableInfo extends MoleculePrecursorTableInfo
+    /**
+     * Used with {@link org.labkey.targetedms.view.SmallMoleculePrecursorsView} to display the nested grid for a single document.
+     */
+    public static class ExperimentMoleculePrecursorTableInfo extends MoleculePrecursorTableInfo
     {
-        public LibraryMoleculePrecursorTableInfo(final TargetedMSSchema schema, ContainerFilter cf)
+        public ExperimentMoleculePrecursorTableInfo(final TargetedMSSchema schema, ContainerFilter cf)
         {
-            super(TargetedMSManager.getTableInfoMoleculePrecursor(), TargetedMSSchema.TABLE_LIBRARY_MOLECULE_PRECURSOR, schema, cf, false);
+            super(TargetedMSManager.getTableInfoMoleculePrecursor(), TargetedMSSchema.TABLE_EXPERIMENT_MOLECULE_PRECURSOR, schema, cf,false);
         }
 
         @Override
         public String getName()
         {
-            return TargetedMSSchema.TABLE_LIBRARY_MOLECULE_PRECURSOR;
+            return TargetedMSSchema.TABLE_EXPERIMENT_MOLECULE_PRECURSOR;
         }
     }
 }

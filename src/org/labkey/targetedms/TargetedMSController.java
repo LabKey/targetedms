@@ -3921,30 +3921,17 @@ public class TargetedMSController extends SpringActionController
             DocumentPrecursorsView view;
             if(PeptidePrecursorsView.DATAREGION_NAME.equals(dataRegion))
             {
-                FolderType folderType = TargetedMSManager.getFolderType(getContainer());
-                String queryName;
-                if (folderType == FolderType.LibraryProtein || folderType == FolderType.Library)
-                {
-                    queryName = TargetedMSSchema.TABLE_LIBRARY_DOC_PRECURSOR;
-                }
-                else
-                {
-                    queryName = TargetedMSSchema.TABLE_EXPERIMENT_PRECURSOR;
-                }
-
                 view = new PeptidePrecursorsView(getViewContext(),
                         new TargetedMSSchema(getUser(), getContainer()),
-                        queryName,
+                        TargetedMSSchema.TABLE_EXPERIMENT_PRECURSOR,
                         form.getId(),
-                        forExport)
-                {
-                };
+                        forExport);
             }
             else
             {
                 view = new SmallMoleculePrecursorsView(getViewContext(),
                         new TargetedMSSchema(getUser(), getContainer()),
-                        TargetedMSSchema.TABLE_MOLECULE_PRECURSOR,
+                        TargetedMSSchema.TABLE_EXPERIMENT_MOLECULE_PRECURSOR,
                         form.getId(),
                         forExport);
             }

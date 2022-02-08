@@ -281,7 +281,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
                 @Override
                 public WebPartView<?> getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
                 {
-                    return LibraryQueryViewWebPart.forTable(TargetedMSSchema.TABLE_LIBRARY_PRECURSOR, portalCtx);
+                    return LibraryQueryViewWebPart.forTable(TargetedMSSchema.TABLE_PRECURSOR, portalCtx);
                 }
             },
 
@@ -290,7 +290,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
                 @Override
                 public WebPartView<?> getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
                 {
-                    return LibraryQueryViewWebPart.forTable(TargetedMSSchema.TABLE_LIBRARY_MOLECULE_PRECURSOR, portalCtx);
+                    return LibraryQueryViewWebPart.forTable(TargetedMSSchema.TABLE_MOLECULE_PRECURSOR, portalCtx);
                 }
             },
 

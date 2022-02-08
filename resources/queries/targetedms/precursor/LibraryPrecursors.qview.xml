@@ -1,19 +1,17 @@
 <customView xmlns="http://labkey.org/data/xml/queryCustomView" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             label="Library Precursors" canOverride="true">
     <columns>
-        <column name="MoleculeId/PeptideGroupId/Label" />
-        <column name="MoleculeId/Molecule" />
-        <column name="CustomIonName" />
-        <column name="IonFormula" />
+        <column name="PeptideId/PeptideGroupId/Label" />
+        <column name="PeptideId/ModifiedPeptideDisplayColumn" />
+        <column name="ModifiedPrecursorDisplayColumn" />
         <column name="Charge" />
         <column name="IsotopeLabelId" />
         <column name="Mz" />
-        <column name="MassMonoisotopic" />
-        <column name="MassAverage" />
+        <column name="NeutralMass" />
         <column name="CollisionEnergy" />
         <column name="DeclusteringPotential" />
         <column name="NoteAnnotations" />
-        <column name="MoleculeId/PeptideGroupId/RunId/File" />
+        <column name="PeptideId/PeptideGroupId/RunId/File" />
     </columns>
 
     <filters>
@@ -21,10 +19,9 @@
     </filters>
 
     <sorts>
-        <sort column="MoleculeId/MoleculeName" />
-        <sort column="IonFormula" />
-        <sort column="CustomIonName" />
-        <sort column="MoleculeId/PeptideGroupId/RunId/File" />
-   </sorts>
+        <sort column="PeptideId/PeptideGroupId/Label" />
+        <sort column="ModifiedSequence" />
+        <sort column="PeptideId/PeptideGroupId/RunId/File" />
+    </sorts>
 
 </customView>
