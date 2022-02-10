@@ -13,5 +13,7 @@ CREATE FUNCTION targetedms.getQCGroupRowId(OUT rowId int) AS
     'SELECT rowId FROM targetedms.QCGroup WHERE label = ''Included'' '
 LANGUAGE SQL;
 
-ALTER TABLE targetedms.Peptide ADD COLUMN QCGroupId INT NOT NULL DEFAULT targetedms.getQCGroupRowId();
-ALTER TABLE targetedms.Molecule ADD COLUMN QCGroupId INT NOT NULL DEFAULT targetedms.getQCGroupRowId();
+ALTER TABLE targetedms.Peptide
+    ADD COLUMN QCGroupId INT NOT NULL DEFAULT targetedms.getQCGroupRowId();
+ALTER TABLE targetedms.Molecule
+    ADD COLUMN QCGroupId INT NOT NULL DEFAULT targetedms.getQCGroupRowId();

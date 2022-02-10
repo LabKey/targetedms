@@ -14,14 +14,16 @@ GO
 
 CREATE FUNCTION targetedms.getQCGroupRowId() RETURNS INT AS
 BEGIN
-        DECLARE @retVal INT;
-SELECT @retVal = rowId FROM targetedms.QCGroup WHERE label = 'Included'
+    DECLARE @retVal INT;
+    SELECT @retVal = rowId FROM targetedms.QCGroup WHERE label = 'Included'
     RETURN @retVal;
 END;
 GO
 
-ALTER TABLE targetedms.Peptide ADD QCGroupId INT NOT NULL DEFAULT targetedms.getQCGroupRowId();
+ALTER TABLE targetedms.Peptide
+    ADD QCGroupId INT NOT NULL DEFAULT targetedms.getQCGroupRowId();
 GO
 
-ALTER TABLE targetedms.Molecule ADD QCGroupId INT NOT NULL DEFAULT targetedms.getQCGroupRowId();
+ALTER TABLE targetedms.Molecule
+    ADD QCGroupId INT NOT NULL DEFAULT targetedms.getQCGroupRowId();
 GO
