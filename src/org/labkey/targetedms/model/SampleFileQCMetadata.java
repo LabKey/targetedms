@@ -1,6 +1,7 @@
 package org.labkey.targetedms.model;
 
 import org.apache.commons.lang3.StringUtils;
+import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.targetedms.parser.SampleFile;
 
 import java.util.Arrays;
@@ -46,5 +47,13 @@ public class SampleFileQCMetadata extends SampleFile
     public void setInGuideSetTrainingRange(boolean inGuideSetTrainingRange)
     {
         this.inGuideSetTrainingRange = inGuideSetTrainingRange;
+    }
+
+    @Override
+    public SampleFileInfo toSampleFileInfo()
+    {
+        SampleFileInfo result = super.toSampleFileInfo();
+        result.setInGuideSetTrainingRange(isInGuideSetTrainingRange());
+        return result;
     }
 }

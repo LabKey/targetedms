@@ -20,6 +20,8 @@ public class SampleFileInfo extends OutlierCounts
     /** Use a TreeMap to keep the metrics sorted by name */
     final Map<String, OutlierCounts> byMetric = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
+    private Boolean _inGuideSetTrainingRange;
+
     public SampleFileInfo(long sampleId, Date acquiredTime, String sampleFile, int guideSetId, boolean ignoreForAllMetric, String filePath, Long replicateId)
     {
         this.sampleId = sampleId;
@@ -111,7 +113,20 @@ public class SampleFileInfo extends OutlierCounts
         jsonObject.put("ReplicateId", getReplicateId());
         jsonObject.put("FilePath", getFilePath());
         jsonObject.put("AcquiredTime", getAcquiredTime());
+        jsonObject.put("GuideSetId", getGuideSetId());
+        // Intentionally dereference wrapper object to be sure it's always populated with a true/false value in this codepath
+        jsonObject.put("InGuideSetTrainingRange", _inGuideSetTrainingRange.booleanValue());
 
         return jsonObject;
+    }
+
+    public void setInGuideSetTrainingRange(Boolean inGuideSetTrainingRange)
+    {
+        _inGuideSetTrainingRange = inGuideSetTrainingRange;
+    }
+
+    public boolean getInGuideSetTrainingRange()
+    {
+        return _inGuideSetTrainingRange;
     }
 }
