@@ -142,6 +142,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
     processPlotData: function() {
         var parsed = this.lastParsedResponse;
+        if (!parsed)
+            return;
+
         var plotDataRows = parsed.plotDataRows;
         var metricProps = parsed.metricProps;
         var sampleFiles = parsed.sampleFiles;
