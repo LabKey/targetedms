@@ -14,12 +14,13 @@ public class SampleFileQCMetadata extends SampleFile
     boolean inGuideSetTrainingRange;
     private Set<Integer> _ignoredMetricIds = Collections.emptySet();
 
+    // Use -1 to signify that an exclusion is for the whole sample (and therefore applies to all metrics)
+    // See GROUP_CONCAT in SampleFileForQC.sql
+    private static final int ALL_METRICS = -1;
+
     public boolean isIgnoreInQC(int metricId)
     {
-        // Use -1 to signify that an exclusion is for the whole sample (and therefore applies to all metrics)
-        // See GROUP_CONCAT in SampleFileForQC.sql
-
-        return _ignoredMetricIds.contains(metricId) || _ignoredMetricIds.contains(-1);
+        return _ignoredMetricIds.contains(metricId) || _ignoredMetricIds.contains(ALL_METRICS);
     }
 
     public String getExcludedMetricIds(String ignoredMetricIds)
@@ -54,6 +55,7 @@ public class SampleFileQCMetadata extends SampleFile
     {
         SampleFileInfo result = super.toSampleFileInfo();
         result.setInGuideSetTrainingRange(isInGuideSetTrainingRange());
+        result.setIgnoreForAllMetric(_ignoredMetricIds.contains(ALL_METRICS));
         return result;
     }
 }
