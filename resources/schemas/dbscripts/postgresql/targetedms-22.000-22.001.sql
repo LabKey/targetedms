@@ -1,19 +1,13 @@
-CREATE TABLE targetedms.QCGroup
+CREATE TABLE targetedms.ExcludedPrecursors
 (
     rowId SERIAL NOT NULL,
-    label VARCHAR(100),
+    precursorIdentifier VARCHAR(1000),
+    Container ENTITYID NOT NULL,
 
-    CONSTRAINT PK_QCGROUP_ROWID PRIMARY KEY (rowId)
+    CONSTRAINT PK_EXCLUDEDPRECURSORS_ROWID PRIMARY KEY (rowId),
+    CONSTRAINT FK_EXCLUDEDPRECURSORS_CONTAINER FOREIGN KEY (Container) REFERENCES core.Containers(EntityId),
+    CONSTRAINT UQ_EXCLUDEDPRECURSORS_PRECURSOR_IDENTIFIER UNIQUE (precursorIdentifier)
+
 );
 
-INSERT INTO targetedms.QCGroup (label) VALUES ('Included');
-INSERT INTO targetedms.QCGroup (label) VALUES ('Excluded');
-
-CREATE FUNCTION targetedms.getQCGroupRowId(OUT rowId int) AS
-    'SELECT rowId FROM targetedms.QCGroup WHERE label = ''Included'' '
-LANGUAGE SQL;
-
-ALTER TABLE targetedms.Peptide
-    ADD COLUMN QCGroupId INT NOT NULL DEFAULT targetedms.getQCGroupRowId();
-ALTER TABLE targetedms.Molecule
-    ADD COLUMN QCGroupId INT NOT NULL DEFAULT targetedms.getQCGroupRowId();
+CREATE INDEX IX_EXCLUDEDPRECURSORS_CONTAINER ON targetedms.ExcludedPrecursors (Container);
