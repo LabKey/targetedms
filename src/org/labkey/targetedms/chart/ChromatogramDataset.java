@@ -329,7 +329,7 @@ public abstract class ChromatogramDataset
         @Override
         public String getChartTitle()
         {
-            return _chromInfo.getTitle();
+            return _chromInfo.getTextId() == null ? "Unknown trace" : _chromInfo.getTextId();
         }
 
         @Override
