@@ -8,11 +8,11 @@ SELECT
         END) AS markedAs,
 FROM
      (SELECT
-        (molPrec.customIonName || ', ' ||
-         molPrec.IonFormula || ', ' ||
-         cast(molPrec.massMonoisotopic AS VARCHAR) || ', ' ||
-         cast(molPrec.massAverage AS VARCHAR) ||', '||
-         cast(molPrec.charge AS VARCHAR) ||', '||
+        (molPrec.customIonName || ',' ||
+         molPrec.IonFormula || ',' ||
+         cast(molPrec.massMonoisotopic AS VARCHAR) || ',' ||
+         cast(molPrec.massAverage AS VARCHAR) ||','||
+         cast(molPrec.charge AS VARCHAR) ||','||
          cast(molPrec.mz AS VARCHAR)) AS precursorIdentifier, -- "key field" required for 'requireSelection' to work
         mol.peptideGroupId.Label,
         -- mol.PeptideGroupId.RunId.File,

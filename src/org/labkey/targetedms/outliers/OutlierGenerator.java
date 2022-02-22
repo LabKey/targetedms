@@ -50,6 +50,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -66,6 +67,7 @@ import java.util.stream.Collectors;
 public class OutlierGenerator
 {
     private static final OutlierGenerator INSTANCE = new OutlierGenerator();
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.000");
 
     private OutlierGenerator() {}
 
@@ -236,7 +238,7 @@ public class OutlierGenerator
         }
     }
 
-    public List<RawMetricDataSet> getRawMetricDataSets(Container container, User user, List<QCMetricConfiguration> configurations, Date startDate, Date endDate, List<AnnotationGroup> annotationGroups, boolean showExcluded)
+    public List<RawMetricDataSet> getRawMetricDataSets(Container container, User user, List<QCMetricConfiguration> configurations, Date startDate, Date endDate, List<AnnotationGroup> annotationGroups, boolean showExcluded, boolean showExcludedPrecursors)
     {
         List<RawMetricDataSet> result = new ArrayList<>();
 
@@ -264,7 +266,8 @@ public class OutlierGenerator
 
         try
         {
-            Map<Long, RawMetricDataSet.PrecursorInfo> precursors = loadPrecursors(schema);
+            Map<Long, Object> excludedPrecursorIds = new HashMap<>();
+            Map<Long, RawMetricDataSet.PrecursorInfo> precursors = loadPrecursors(schema, excludedPrecursorIds, showExcludedPrecursors);
 
             try (ResultSet rs = new SqlSelector(TargetedMSManager.getSchema(), sql).getResultSet(false))
             {
@@ -272,6 +275,9 @@ public class OutlierGenerator
                 {
                     long sampleFileId = rs.getLong("SampleFileId");
                     Long precursorId = getLong(rs, "PrecursorId");
+
+                    if (excludedPrecursorIds.containsKey(precursorId))
+                        continue;
 
                     // Sample-scoped metrics won't have an associated precursor
                     RawMetricDataSet.PrecursorInfo precursor = null;
@@ -313,18 +319,28 @@ public class OutlierGenerator
      * set of results.
      */
     @NotNull
-    private Map<Long, RawMetricDataSet.PrecursorInfo> loadPrecursors(TargetedMSSchema schema) throws SQLException
+    private Map<Long, RawMetricDataSet.PrecursorInfo> loadPrecursors(TargetedMSSchema schema, Map<Long, Object> excludedPrecursorsIds, boolean showExcludedPrecursors) throws SQLException
     {
         Map<Long, RawMetricDataSet.PrecursorInfo> precursors = new HashMap<>();
 
         DecimalFormat format = new DecimalFormat();
         format.setMinimumFractionDigits(4);
 
+        Collection<Map<String, Object>> excludedPrecursors = new TableSelector(schema.getTable("ExcludedPrecursors")).getMapCollection();
+
         // First the proteomics side
         try (ResultSet rs = new TableSelector(schema.getTable(TargetedMSSchema.TABLE_PRECURSOR)).getResultSet(false))
         {
             while (rs.next())
             {
+                if (!showExcludedPrecursors && isExcludedPrecursorPeptide(excludedPrecursors,
+                        rs.getString("ModifiedSequence"),
+                        rs.getInt("Charge"),
+                        rs.getDouble("MZ")))
+                {
+                    excludedPrecursorsIds.put(rs.getLong("Id"), null);
+                    continue;
+                }
                 RawMetricDataSet.PrecursorInfo p = createPrecursor(format, rs, precursors);
                 p.setModifiedSequence(rs.getString("ModifiedSequence"));
             }
@@ -335,6 +351,17 @@ public class OutlierGenerator
         {
             while (rs.next())
             {
+                if (!showExcludedPrecursors && isExcludedPrecursorMolecule(excludedPrecursors,
+                        rs.getString("CustomIonName"),
+                        rs.getString("IonFormula"),
+                        getDouble(rs, "massMonoisotopic"),
+                        getDouble(rs, "massAverage"),
+                        rs.getInt("Charge"),
+                        rs.getDouble("MZ")))
+                {
+                    excludedPrecursorsIds.put(rs.getLong("Id"), null);
+                    continue;
+                }
                 RawMetricDataSet.PrecursorInfo p = createPrecursor(format, rs, precursors);
                 p.setCustomIonName(rs.getString("CustomIonName"));
                 p.setIonFormula(rs.getString("IonFormula"));
@@ -343,6 +370,19 @@ public class OutlierGenerator
             }
         }
         return precursors;
+    }
+
+    private boolean isExcludedPrecursorPeptide(Collection<Map<String, Object>> excludedPrecursors, String modifiedSeq, int charge, double mz)
+    {
+        String peptidePrecursorIdentifier = modifiedSeq + "," + charge + "," + DECIMAL_FORMAT.format(mz);
+        return excludedPrecursors.stream().filter(m -> m.get("precursorIdentifier").equals(peptidePrecursorIdentifier)).collect(Collectors.toList()).size() == 1;
+    }
+
+    private boolean isExcludedPrecursorMolecule(Collection<Map<String, Object>> excludedPrecursors, String customIonName,
+                                                String ionFormula, double massMonoIso, double massAvg, int charge, double mz)
+    {
+        String moleculePrecursorIdentifier = customIonName + "," + ionFormula + "," + DECIMAL_FORMAT.format(massMonoIso) + "," + DECIMAL_FORMAT.format(massAvg) + "," + charge + "," + DECIMAL_FORMAT.format(mz);
+        return excludedPrecursors.stream().map(m -> m.get("precursorIdentifier").equals(moleculePrecursorIdentifier)).collect(Collectors.toList()).size() == 1;
     }
 
     @NotNull

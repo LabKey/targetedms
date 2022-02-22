@@ -8,7 +8,7 @@ SELECT
 END) AS markedAs
 FROM
      (SELECT
-        (pep.PeptideModifiedSequence || ', ' || cast(prec.charge AS VARCHAR) || ', ' || cast(prec.mz AS VARCHAR)) AS precursorIdentifier, -- "key field" required for 'requireSelection' to work
+        (pep.PeptideModifiedSequence || ',' || cast(prec.charge AS VARCHAR) || ',' || cast(prec.mz AS VARCHAR)) AS precursorIdentifier, -- "key field" required for 'requireSelection' to work
         pep.PeptideModifiedSequence AS peptideSequence,
         -- pep.PeptideGroupId.RunId.File,
         pep.PeptideGroupId.Label,
