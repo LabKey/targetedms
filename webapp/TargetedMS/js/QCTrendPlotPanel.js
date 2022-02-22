@@ -1939,7 +1939,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             singlePlot: this.singlePlot,
             showExcluded: this.showExcluded,
             dateRangeOffset: this.dateRangeOffset,
-            selectedAnnotations: annotationsProp
+            selectedAnnotations: annotationsProp,
+            showExcludedPrecursors: this.showExcludedPrecursors
         };
 
         // set start and end date to null unless we are

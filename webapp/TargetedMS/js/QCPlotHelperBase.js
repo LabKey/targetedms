@@ -110,6 +110,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         plotsConfig.showExcluded = this.showExcluded;
         // show reference guide set for custom date range
         plotsConfig.showReferenceGS = this.showReferenceGS && this.dateRangeOffset !== 0;
+        plotsConfig.showExcludedPrecursors = this.showExcludedPrecursors;
 
         var config = this.getReportConfig()
 
