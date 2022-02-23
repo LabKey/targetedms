@@ -12,3 +12,5 @@ GO
 
 CREATE INDEX IX_EXCLUDEDPRECURSORS_CONTAINER ON targetedms.ExcludedPrecursors (Container);
 GO
+ALTER TABLE targetedms.SampleFileChromInfo
+    ADD Flags INT;

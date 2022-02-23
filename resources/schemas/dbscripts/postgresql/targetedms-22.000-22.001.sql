@@ -11,3 +11,5 @@ CREATE TABLE targetedms.ExcludedPrecursors
 );
 
 CREATE INDEX IX_EXCLUDEDPRECURSORS_CONTAINER ON targetedms.ExcludedPrecursors (Container);
+ALTER TABLE targetedms.SampleFileChromInfo
+    ADD COLUMN Flags INT;
