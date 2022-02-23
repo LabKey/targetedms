@@ -8,16 +8,16 @@ SELECT
         END) AS markedAs,
 FROM
      (SELECT
-        (molPrec.customIonName || ',' ||
-         molPrec.IonFormula || ',' ||
-         cast(molPrec.massMonoisotopic AS VARCHAR) || ',' ||
-         cast(molPrec.massAverage AS VARCHAR) ||','||
+        ((CASE WHEN molPrec.MoleculeId.customIonName IS NOT NULL THEN molPrec.MoleculeId.customIonName
+         ELSE molPrec.MoleculeId.ionFormula END) || ',' ||
+         cast(round(molPrec.massMonoisotopic, 3) AS VARCHAR) || ',' ||
+         cast(round(molPrec.massAverage, 3) AS VARCHAR) ||','||
          cast(molPrec.charge AS VARCHAR) ||','||
-         cast(molPrec.mz AS VARCHAR)) AS precursorIdentifier, -- "key field" required for 'requireSelection' to work
+         cast(round(molPrec.Mz, 3) AS VARCHAR)) AS precursorIdentifier, -- "key field" required for 'requireSelection' to work
         mol.peptideGroupId.Label,
         -- mol.PeptideGroupId.RunId.File,
-        molPrec.customIonName,
-        molPrec.IonFormula,
+        molPrec.MoleculeId.customIonName,
+        molPrec.MoleculeId.ionFormula,
         molPrec.charge,
         molPrec.mz,
         molPrec.massMonoisotopic,
@@ -27,13 +27,13 @@ FROM
         LEFT JOIN
             targetedms.MoleculePrecursor molPrec
         ON
-            mol.IonFormula = molPrec.moleculeId.ionFormula
+            mol.Id = molPrec.GeneralMoleculeId.Id
 
         GROUP BY
             mol.peptideGroupId.Label,
         -- mol.PeptideGroupId.RunId.File,
-            molPrec.IonFormula,
-            molPrec.customIonName,
+            molPrec.MoleculeId.IonFormula,
+            molPrec.MoleculeId.customIonName,
             molPrec.charge,
             molPrec.mz,
             molPrec.massAverage,

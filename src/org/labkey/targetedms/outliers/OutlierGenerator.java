@@ -374,14 +374,19 @@ public class OutlierGenerator
     private boolean isExcludedPrecursorPeptide(Collection<Map<String, Object>> excludedPrecursors, String modifiedSeq, int charge, double mz)
     {
         String peptidePrecursorIdentifier = modifiedSeq + "," + charge + "," + DECIMAL_FORMAT.format(mz);
-        return excludedPrecursors.stream().filter(m -> m.get("precursorIdentifier").equals(peptidePrecursorIdentifier)).collect(Collectors.toList()).size() == 1;
+        return excludedPrecursors.stream().filter(m -> m.get("precursorIdentifier").equals(peptidePrecursorIdentifier)).count() == 1;
     }
 
     private boolean isExcludedPrecursorMolecule(Collection<Map<String, Object>> excludedPrecursors, String customIonName,
                                                 String ionFormula, double massMonoIso, double massAvg, int charge, double mz)
     {
-        String moleculePrecursorIdentifier = customIonName + "," + ionFormula + "," + DECIMAL_FORMAT.format(massMonoIso) + "," + DECIMAL_FORMAT.format(massAvg) + "," + charge + "," + DECIMAL_FORMAT.format(mz);
-        return excludedPrecursors.stream().map(m -> m.get("precursorIdentifier").equals(moleculePrecursorIdentifier)).collect(Collectors.toList()).size() == 1;
+        String ionFormulaWithoutBrackets = StringUtils.isNotBlank(ionFormula) && ionFormula.contains("[") ? ionFormula.substring(0, ionFormula.lastIndexOf("[")) : ionFormula;
+        String moleculePrecursorIdentifier = (StringUtils.isNotBlank(customIonName) ? customIonName : ionFormulaWithoutBrackets) + "," +
+                                            DECIMAL_FORMAT.format(massMonoIso) + "," +
+                                            DECIMAL_FORMAT.format(massAvg) + "," +
+                                            charge + "," +
+                                            DECIMAL_FORMAT.format(mz);
+        return excludedPrecursors.stream().filter(m -> m.get("precursorIdentifier").equals(moleculePrecursorIdentifier)).count() == 1;
     }
 
     @NotNull
