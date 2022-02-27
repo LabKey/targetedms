@@ -27,6 +27,7 @@ import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.services.ServiceRegistry;
 import org.labkey.api.targetedms.model.SampleFileInfo;
+import org.labkey.api.targetedms.model.SampleFilePath;
 import org.labkey.api.view.ViewBackgroundInfo;
 
 import java.nio.file.Path;
@@ -86,11 +87,16 @@ public interface TargetedMSService
     TableInfo getTableInfoGeneralPrecursor();
     TableInfo getTableInfoPrecursor();
     TableInfo getTableInfoMoleculePrecursor();
+    TableInfo getTableInfoPeptideStructuralModification();
+    TableInfo getTableInfoPeptideIsotopeModification();
+    TableInfo getTableInfoInstrument();
 
     List<String> getSampleFilePaths(long runId);
     List<? extends ISampleFile> getSampleFiles(long runId);
     List<? extends IModification.IStructuralModification> getStructuralModificationsUsedInRun(long runId);
     List<? extends IModification.IIsotopeModification> getIsotopeModificationsUsedInRun(long runId);
+    IModification.IStructuralModification getStructuralModification(long id);
+    IModification.IIsotopeModification getIsotopeModification(long id);
 
     @Nullable ISpectrumLibrary getLibrary(long id, @Nullable Container container, User user);
 
@@ -120,11 +126,12 @@ public interface TargetedMSService
     Integer importSkylineDocument(ViewBackgroundInfo info, Path skylinePath) throws XarFormatException, PipelineValidationException;
 
     /**
-     * @param sampleFiles list of sample files for which we should check if data exists
-     * @param container container where we should look for the data
-     * @return list of sample files for which data was found
+     * @param sampleFiles list of sample files for which we should do a path lookup on the server
+     * @param container container where we should look for the files
+     * @param lookupExpData if true, look for a matching row in exp.data before looking on the filesystem
+     * @return List of {@link SampleFilePath} objects encapsulating an ISampleFile and its path on the server.
      */
-    List<? extends ISampleFile> getSampleFilesWithData(List<? extends ISampleFile> sampleFiles, Container container);
+    List<SampleFilePath> getSampleFilePaths(List<? extends ISampleFile> sampleFiles, Container container, boolean lookupExpData);
 
     /**
      * Returns the name of a chromatogram library file according to the naming pattern used for creating
