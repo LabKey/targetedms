@@ -8,25 +8,19 @@ SELECT
 END) AS markedAs
 FROM
      (SELECT
-        (pep.PeptideModifiedSequence || ',' || cast(prec.charge AS VARCHAR) || ',' || cast(round(prec.mz, 3) AS VARCHAR)) AS precursorIdentifier, -- "key field" required for 'requireSelection' to work
-        pep.PeptideModifiedSequence AS peptideSequence,
-        -- pep.PeptideGroupId.RunId.File,
-        pep.PeptideGroupId.Label,
+        (prec.GeneralMoleculeId.PeptideModifiedSequence || ',' || cast(prec.charge AS VARCHAR) || ',' || cast(round(prec.mz, 3) AS VARCHAR)) AS precursorIdentifier, -- "key field" required for 'requireSelection' to work
+        prec.GeneralMoleculeId.PeptideModifiedSequence AS peptideSequence,
+        prec.GeneralMoleculeId.PeptideGroupId.Label,
         prec.charge,
         prec.mz,
         prec.neutralMass,
         prec.IsotopeLabelId.Name
         FROM
-        targetedms.Peptide pep
-        LEFT JOIN
         targetedms.Precursor prec
-        ON
-        pep.PeptideModifiedSequence = prec.PeptideId.modifiedPeptideDisplayColumn
 
         GROUP BY
-            pep.PeptideModifiedSequence,
-        --     pep.PeptideGroupId.RunId.File,
-            pep.PeptideGroupId.Label,
+            prec.GeneralMoleculeId.PeptideModifiedSequence,
+            prec.GeneralMoleculeId.PeptideGroupId.Label,
             prec.charge,
             prec.mz,
             prec.neutralMass,

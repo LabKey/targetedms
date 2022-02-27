@@ -325,17 +325,18 @@ public class OutlierGenerator
         DecimalFormat format = new DecimalFormat();
         format.setMinimumFractionDigits(4);
 
-        Collection<Map<String, Object>> excludedPrecursors = new TableSelector(schema.getTable("ExcludedPrecursors")).getMapCollection();
+        Collection<ExcludedPrecursor> excludedPrecursors = new TableSelector(schema.getTable("ExcludedPrecursors")).getCollection(ExcludedPrecursor.class);
 
         // First the proteomics side
         try (ResultSet rs = new TableSelector(schema.getTable(TargetedMSSchema.TABLE_PRECURSOR)).getResultSet(false))
         {
             while (rs.next())
             {
+                //skip Excluded peptide precursors
                 if (!showExcludedPrecursors && isExcludedPrecursorPeptide(excludedPrecursors,
                         rs.getString("ModifiedSequence"),
                         rs.getInt("Charge"),
-                        rs.getDouble("MZ")))
+                        getDouble(rs, "MZ")))
                 {
                     excludedPrecursorsIds.put(rs.getLong("Id"), null);
                     continue;
@@ -350,13 +351,14 @@ public class OutlierGenerator
         {
             while (rs.next())
             {
+                //skip Excluded molecule precursors
                 if (!showExcludedPrecursors && isExcludedPrecursorMolecule(excludedPrecursors,
                         rs.getString("CustomIonName"),
                         rs.getString("IonFormula"),
                         getDouble(rs, "massMonoisotopic"),
                         getDouble(rs, "massAverage"),
                         rs.getInt("Charge"),
-                        rs.getDouble("MZ")))
+                        getDouble(rs, "MZ")))
                 {
                     excludedPrecursorsIds.put(rs.getLong("Id"), null);
                     continue;
@@ -371,13 +373,13 @@ public class OutlierGenerator
         return precursors;
     }
 
-    private boolean isExcludedPrecursorPeptide(Collection<Map<String, Object>> excludedPrecursors, String modifiedSeq, int charge, double mz)
+    private boolean isExcludedPrecursorPeptide(Collection<ExcludedPrecursor> excludedPrecursors, String modifiedSeq, int charge, double mz)
     {
         String peptidePrecursorIdentifier = modifiedSeq + "," + charge + "," + DECIMAL_FORMAT.format(mz);
-        return excludedPrecursors.stream().filter(m -> m.get("precursorIdentifier").equals(peptidePrecursorIdentifier)).count() == 1;
+        return excludedPrecursors.stream().filter(m -> m.getPrecursorIdentifier().equalsIgnoreCase(peptidePrecursorIdentifier)).count() == 1;
     }
 
-    private boolean isExcludedPrecursorMolecule(Collection<Map<String, Object>> excludedPrecursors, String customIonName,
+    private boolean isExcludedPrecursorMolecule(Collection<ExcludedPrecursor> excludedPrecursors, String customIonName,
                                                 String ionFormula, double massMonoIso, double massAvg, int charge, double mz)
     {
         String ionFormulaWithoutBrackets = StringUtils.isNotBlank(ionFormula) && ionFormula.contains("[") ? ionFormula.substring(0, ionFormula.lastIndexOf("[")) : ionFormula;
@@ -386,7 +388,7 @@ public class OutlierGenerator
                                             DECIMAL_FORMAT.format(massAvg) + "," +
                                             charge + "," +
                                             DECIMAL_FORMAT.format(mz);
-        return excludedPrecursors.stream().filter(m -> m.get("precursorIdentifier").equals(moleculePrecursorIdentifier)).count() == 1;
+        return excludedPrecursors.stream().filter(m -> m.getPrecursorIdentifier().equalsIgnoreCase(moleculePrecursorIdentifier)).count() == 1;
     }
 
     @NotNull
@@ -580,6 +582,32 @@ public class OutlierGenerator
         public void setValues(List<String> values)
         {
             this.values = values;
+        }
+    }
+
+    public static class ExcludedPrecursor
+    {
+        private int rowId;
+        private String precursorIdentifier;
+
+        public int getRowId()
+        {
+            return rowId;
+        }
+
+        public void setRowId(int rowId)
+        {
+            this.rowId = rowId;
+        }
+
+        public String getPrecursorIdentifier()
+        {
+            return precursorIdentifier;
+        }
+
+        public void setPrecursorIdentifier(String precursorIdentifier)
+        {
+            this.precursorIdentifier = precursorIdentifier;
         }
     }
 }
