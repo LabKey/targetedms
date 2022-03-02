@@ -58,6 +58,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
@@ -375,20 +376,20 @@ public class OutlierGenerator
 
     private boolean isExcludedPrecursorPeptide(Collection<ExcludedPrecursor> excludedPrecursors, String modifiedSeq, int charge, double mz)
     {
-        String peptidePrecursorIdentifier = modifiedSeq + "," + charge + "," + DECIMAL_FORMAT.format(mz);
-        return excludedPrecursors.stream().filter(m -> m.getPrecursorIdentifier().equalsIgnoreCase(peptidePrecursorIdentifier)).count() == 1;
+        return excludedPrecursors.stream().filter(ep -> Objects.equals(ep.getModifiedSequence(), modifiedSeq) &&
+                                                        Objects.equals(ep.getCharge(), charge) &&
+                                                        Objects.equals(ep.getMz(), mz)).count() == 1;
     }
 
     private boolean isExcludedPrecursorMolecule(Collection<ExcludedPrecursor> excludedPrecursors, String customIonName,
-                                                String ionFormula, double massMonoIso, double massAvg, int charge, double mz)
+                                                String ionFormula, double massMonoisotopic, double massAverage, int charge, double mz)
     {
-        String ionFormulaWithoutBrackets = StringUtils.isNotBlank(ionFormula) && ionFormula.contains("[") ? ionFormula.substring(0, ionFormula.lastIndexOf("[")) : ionFormula;
-        String moleculePrecursorIdentifier = (StringUtils.isNotBlank(customIonName) ? customIonName : ionFormulaWithoutBrackets) + "," +
-                                            DECIMAL_FORMAT.format(massMonoIso) + "," +
-                                            DECIMAL_FORMAT.format(massAvg) + "," +
-                                            charge + "," +
-                                            DECIMAL_FORMAT.format(mz);
-        return excludedPrecursors.stream().filter(m -> m.getPrecursorIdentifier().equalsIgnoreCase(moleculePrecursorIdentifier)).count() == 1;
+        return excludedPrecursors.stream().filter(ep -> Objects.equals(ep.getCustomIonName(), customIonName) &&
+                                                        Objects.equals(ep.getIonFormula(), ionFormula) &&
+                                                        Objects.equals(ep.getMassMonoisotopic(), massMonoisotopic) &&
+                                                        Objects.equals(ep.getMassAverage(), massAverage) &&
+                                                        Objects.equals(ep.getCharge(), charge) &&
+                                                        Objects.equals(ep.getMz(), mz)).count() == 1;
     }
 
     @NotNull
@@ -587,8 +588,14 @@ public class OutlierGenerator
 
     public static class ExcludedPrecursor
     {
-        private int rowId;
-        private String precursorIdentifier;
+        int rowId;
+        double mz;
+        int charge;
+        String modifiedSequence;
+        String customIonName;
+        String ionFormula;
+        Double massMonoisotopic;
+        Double massAverage;
 
         public int getRowId()
         {
@@ -600,14 +607,74 @@ public class OutlierGenerator
             this.rowId = rowId;
         }
 
-        public String getPrecursorIdentifier()
+        public double getMz()
         {
-            return precursorIdentifier;
+            return mz;
         }
 
-        public void setPrecursorIdentifier(String precursorIdentifier)
+        public void setMz(double mz)
         {
-            this.precursorIdentifier = precursorIdentifier;
+            this.mz = mz;
+        }
+
+        public int getCharge()
+        {
+            return charge;
+        }
+
+        public void setCharge(int charge)
+        {
+            this.charge = charge;
+        }
+
+        public String getModifiedSequence()
+        {
+            return modifiedSequence;
+        }
+
+        public void setModifiedSequence(String modifiedSequence)
+        {
+            this.modifiedSequence = modifiedSequence;
+        }
+
+        public String getCustomIonName()
+        {
+            return customIonName;
+        }
+
+        public void setCustomIonName(String customIonName)
+        {
+            this.customIonName = customIonName;
+        }
+
+        public String getIonFormula()
+        {
+            return ionFormula;
+        }
+
+        public void setIonFormula(String ionFormula)
+        {
+            this.ionFormula = ionFormula;
+        }
+
+        public Double getMassMonoisotopic()
+        {
+            return massMonoisotopic;
+        }
+
+        public void setMassMonoisotopic(Double massMonoisotopic)
+        {
+            this.massMonoisotopic = massMonoisotopic;
+        }
+
+        public Double getMassAverage()
+        {
+            return massAverage;
+        }
+
+        public void setMassAverage(Double massAverage)
+        {
+            this.massAverage = massAverage;
         }
     }
 }
