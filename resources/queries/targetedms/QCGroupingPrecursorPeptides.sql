@@ -12,7 +12,7 @@ precPep.name,
 FROM
      (SELECT
         min(prec.Id) AS Id,
-        prec.GeneralMoleculeId.PeptideModifiedSequence AS modifiedSequence,
+        prec.modifiedSequence AS modifiedSequence,
         prec.GeneralMoleculeId.PeptideGroupId.Label AS Label,
         prec.charge AS charge,
         prec.mz AS mz,
@@ -22,7 +22,7 @@ FROM
         targetedms.Precursor prec
 
         GROUP BY
-            prec.GeneralMoleculeId.PeptideModifiedSequence,
+            prec.modifiedSequence,
             prec.GeneralMoleculeId.PeptideGroupId.Label,
             prec.charge,
             prec.mz,
