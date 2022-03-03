@@ -9,7 +9,7 @@ SELECT
     mp.mz,
     mp.massMonoisotopic,
     mp.massAverage,
-    (CASE WHEN exclPrec.markedAs = 'Excluded' THEN 'Excluded' ELSE 'Included' END) AS markedAs
+    (CASE WHEN exclPrec.RowId IS NULL THEN 'Included' ELSE 'Excluded' END) AS markedAs
 FROM
      (SELECT
         min(molPrec.Id) AS Id,
@@ -32,11 +32,11 @@ FROM
             molPrec.massAverage,
             molPrec.massMonoisotopic) mp
     LEFT JOIN
-    (SELECT *, 'Excluded' AS markedAs FROM targetedms.ExcludedPrecursors) exclPrec
+    targetedms.ExcludedPrecursors exclPrec
     ON
     isequal(exclPrec.customIonName, mp.customIonName) AND
     isequal(exclPrec.ionFormula, mp.ionFormula) AND
     isequal(exclPrec.charge, mp.charge) AND
-    isequal(round(exclPrec.mz, 4), round(mp.mz,4)) AND
-    isequal(round(exclPrec.massMonoisotopic, 4), round(mp.massMonoisotopic, 4)) AND
-    isequal(round(exclPrec.massAverage, 4), round(mp.massAverage, 4))
+    isequal(exclPrec.mz, mp.mz) AND
+    isequal(exclPrec.massMonoisotopic, mp.massMonoisotopic) AND
+    isequal(exclPrec.massAverage, mp.massAverage)

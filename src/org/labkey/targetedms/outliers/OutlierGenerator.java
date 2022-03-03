@@ -376,20 +376,20 @@ public class OutlierGenerator
 
     private boolean isExcludedPrecursorPeptide(Collection<ExcludedPrecursor> excludedPrecursors, String modifiedSeq, int charge, double mz)
     {
-        return excludedPrecursors.stream().filter(ep -> Objects.equals(ep.getModifiedSequence(), modifiedSeq) &&
+        return excludedPrecursors.stream().anyMatch(ep -> Objects.equals(ep.getModifiedSequence(), modifiedSeq) &&
                                                         Objects.equals(ep.getCharge(), charge) &&
-                                                        Objects.equals(ep.getMz(), mz)).count() == 1;
+                                                        Objects.equals(ep.getMz(), mz));
     }
 
     private boolean isExcludedPrecursorMolecule(Collection<ExcludedPrecursor> excludedPrecursors, String customIonName,
                                                 String ionFormula, double massMonoisotopic, double massAverage, int charge, double mz)
     {
-        return excludedPrecursors.stream().filter(ep -> Objects.equals(ep.getCustomIonName(), customIonName) &&
+        return excludedPrecursors.stream().anyMatch(ep -> Objects.equals(ep.getCustomIonName(), customIonName) &&
                                                         Objects.equals(ep.getIonFormula(), ionFormula) &&
                                                         Objects.equals(ep.getMassMonoisotopic(), massMonoisotopic) &&
                                                         Objects.equals(ep.getMassAverage(), massAverage) &&
                                                         Objects.equals(ep.getCharge(), charge) &&
-                                                        Objects.equals(ep.getMz(), mz)).count() == 1;
+                                                        Objects.equals(ep.getMz(), mz));
     }
 
     @NotNull
