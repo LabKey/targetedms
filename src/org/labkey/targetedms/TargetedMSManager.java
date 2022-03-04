@@ -586,6 +586,11 @@ public class TargetedMSManager
         return getSchema().getTable(TargetedMSSchema.TABLE_CHROMATOGRAM_LIB_INFO);
     }
 
+    public static TableInfo getTableInfoExcludedPrecursors()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION);
+    }
+
     /** @return rowId for pipeline job that will perform the import asynchronously */
     public static Integer addRunToQueue(ViewBackgroundInfo info,
                                         final Path path) throws XarFormatException, PipelineValidationException
