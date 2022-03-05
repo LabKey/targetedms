@@ -64,6 +64,8 @@ import org.labkey.api.action.SimpleViewAction;
 import org.labkey.api.action.SpringActionController;
 import org.labkey.api.admin.AdminUrls;
 import org.labkey.api.analytics.AnalyticsService;
+import org.labkey.api.audit.AuditLogService;
+import org.labkey.api.audit.provider.SiteSettingsAuditProvider;
 import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
@@ -714,20 +716,22 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
+    private static final String CATEGORY = "TargetedMSLeveyJenningsPlotOptions";
+
     @RequiresPermission(ReadPermission.class)
     public class LeveyJenningsPlotOptionsAction extends MutatingApiAction<LeveyJenningsPlotOptions>
     {
-        private static final String CATEGORY = "TargetedMSLeveyJenningsPlotOptions";
-
         @Override
         public Object execute(LeveyJenningsPlotOptions form, BindException errors)
         {
             ApiSimpleResponse response = new ApiSimpleResponse();
 
+            PropertyManager.PropertyMap properties = null;
+
             // only stash and retrieve plot option properties for logged in users
             if (!getUser().isGuest())
             {
-                PropertyManager.PropertyMap properties = PropertyManager.getWritableProperties(getUser(), getContainer(), CATEGORY, true);
+                properties = PropertyManager.getWritableProperties(getUser(), getContainer(), CATEGORY, true);
 
                 Map<String, String> valuesToPersist = form.getAsMapOfStrings();
                 if (!valuesToPersist.isEmpty())
@@ -751,9 +755,54 @@ public class TargetedMSController extends SpringActionController
                     }
                 }
 
-                response.put("properties", properties);
             }
 
+            if (properties == null || properties.isEmpty())
+            {
+                // Fall back on the defaults for the current container
+                properties = PropertyManager.getProperties(getContainer(), CATEGORY);
+            }
+            response.put("properties", properties);
+
+            return response;
+        }
+    }
+
+    @RequiresPermission(AdminPermission.class)
+    public class SaveQCPlotSettingsAsDefaultAction extends MutatingApiAction<LeveyJenningsPlotOptions>
+    {
+        @Override
+        public Object execute(LeveyJenningsPlotOptions form, BindException errors)
+        {
+            PropertyManager.PropertyMap current = PropertyManager.getProperties(getUser(), getContainer(), CATEGORY);
+            PropertyManager.PropertyMap defaults = PropertyManager.getWritableProperties(getContainer(), CATEGORY, true);
+            defaults.putAll(current);
+            defaults.save();
+
+            SiteSettingsAuditProvider.SiteSettingsAuditEvent event = new SiteSettingsAuditProvider.SiteSettingsAuditEvent(
+                    getContainer().getEntityId().toString(), "Panorama QC plot default settings saved for " + getContainer().getPath());
+            AuditLogService.get().addEvent(getUser(), event);
+
+            ApiSimpleResponse response = new ApiSimpleResponse();
+            response.put("success", true);
+            return response;
+        }
+    }
+
+    @RequiresPermission(AdminPermission.class)
+    public class RevertToDefaultQCPlotSettingsAction extends MutatingApiAction<LeveyJenningsPlotOptions>
+    {
+        @Override
+        public Object execute(LeveyJenningsPlotOptions form, BindException errors)
+        {
+            PropertyManager.PropertyMap current = PropertyManager.getWritableProperties(getUser(), getContainer(), CATEGORY, false);
+            if (current != null)
+            {
+                current.delete();
+            }
+
+            ApiSimpleResponse response = new ApiSimpleResponse();
+            response.put("success", true);
             return response;
         }
     }

@@ -4,6 +4,32 @@
  * Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
  */
 
+if (!LABKEY.targetedms) {
+    LABKEY.targetedms = {};
+}
+
+if (!LABKEY.targetedms.PlotSettingsUtil) {
+    LABKEY.targetedms.PlotSettingsUtil = {
+        saveAsDefault: function () {
+            LABKEY.Ajax.request({
+                method: 'POST',
+                url: LABKEY.ActionURL.buildURL('targetedms', 'saveQCPlotSettingsAsDefault'),
+                success: function() { alert('Defaults saved successfully'); },
+                failure: LABKEY.Utils.getCallbackWrapper(function(error) { alert('Failed to save defaults'); console.log(error); }, this, true)
+            });
+        },
+
+        revertToDefault: function () {
+            LABKEY.Ajax.request({
+                method: 'POST',
+                url: LABKEY.ActionURL.buildURL('targetedms', 'revertToDefaultQCPlotSettings'),
+                success: function() { window.location.reload(); },
+                failure: LABKEY.Utils.getCallbackWrapper(function(error) { alert('Failed to revert to defaults'); console.log(error); }, this, true)
+            });
+        }
+    }
+}
+
 /**
  * Class to create a panel for displaying the R plot for the trending of retention times, peak areas, and other
  * values for the selected graph parameters.
