@@ -215,6 +215,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                         // for truncating out of range guideset data  find first index of plotDate ending at guideset.trainingEnd
                         if (plotData.GuideSetId == guideSetId && plotData.InGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {
                             this.filterPoints[fragment][plotData.SeriesType]['filterPointsFirstIndex'] = j + 1;
+                            // ReferenceRangeSeries is used to separate series
+                            this.fragmentPlotData[fragment].data[j]['ReferenceRangeSeries'] = "GuideSet";
+                        }
+                        else {
+                            this.fragmentPlotData[fragment].data[j]['ReferenceRangeSeries'] = "InRange";
                         }
 
                     }, this);
@@ -374,15 +379,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
                     for (let i = lastIndex; i >= firstIndex; i--) {
                         fragmentData.data.splice(i, 1);
-                    }
-
-                    // ReferenceRangeSeries is used to separate series
-                    for (let i = 0; i < firstIndex; i++) {
-                        fragmentData.data[i]['ReferenceRangeSeries'] = "GuideSet";
-                    }
-
-                    for (let i = firstIndex; i < fragmentData.data.length; i++) {
-                        fragmentData.data[i]['ReferenceRangeSeries'] = "InRange";
                     }
                 });
 
