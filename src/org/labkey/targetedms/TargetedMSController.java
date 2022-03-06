@@ -769,7 +769,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(AdminPermission.class)
-    public class SaveQCPlotSettingsAsDefaultAction extends MutatingApiAction<LeveyJenningsPlotOptions>
+    public static class SaveQCPlotSettingsAsDefaultAction extends MutatingApiAction<LeveyJenningsPlotOptions>
     {
         @Override
         public Object execute(LeveyJenningsPlotOptions form, BindException errors)
@@ -789,8 +789,9 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
-    @RequiresPermission(AdminPermission.class)
-    public class RevertToDefaultQCPlotSettingsAction extends MutatingApiAction<LeveyJenningsPlotOptions>
+    @RequiresLogin
+    @RequiresPermission(ReadPermission.class)
+    public static class RevertToDefaultQCPlotSettingsAction extends MutatingApiAction<LeveyJenningsPlotOptions>
     {
         @Override
         public Object execute(LeveyJenningsPlotOptions form, BindException errors)
