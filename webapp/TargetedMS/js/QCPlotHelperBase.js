@@ -237,8 +237,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         if (this.showExpRunRange && this.filterPoints) {
 
             const scope = this;
-            Ext4.Object.each(this.fragmentPlotData, function(label, fragmentData) {
-                Ext4.Object.each(scope.filterPoints[label], function (seriesType, filterPointsData) {
+            for (let i = 0; i < plotDataRows.length; i++) {
+                Ext4.Object.each(scope.filterPoints[plotDataRows[i].SeriesLabel], function (seriesType, filterPointsData) {
                     // no need to filter if less than 6 data points are present between reference end of guideset and startdate
                     let firstIndex = filterPointsData['filterPointsFirstIndex'];
                     let lastIndex = filterPointsData['filterPointsLastIndex'];
@@ -246,17 +246,18 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                         if (lastIndex - firstIndex < 6) {
                             scope.filterQCPoints = false;
                             // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
-                            scope.getStartDateField().setValue(scope.formatDate(fragmentData.data[firstIndex].AcquiredTime));
+
+                            scope.getStartDateField().setValue(scope.formatDate(plotDataRows[i].data[firstIndex].AcquiredTime));
                         }
                         else { // skip 5 points
-                            lastIndex = firstIndex - 6;
+                            lastIndex = lastIndex - 6;
                             // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
                             // adding 1 as the point is right after filter last index
-                            scope.getStartDateField().setValue(scope.formatDate(fragmentData.data[lastIndex + 1].AcquiredTime));
+                            scope.getStartDateField().setValue(scope.formatDate(plotDataRows[i].data[lastIndex + 1].AcquiredTime));
                         }
                     }
                 });
-            });
+            }
 
         }
 
