@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2019 LabKey Corporation. All rights reserved. No portion of this work may be reproduced in
- * any form or by any electronic or mechanical means without written permission from LabKey Corporation.
- */
 package org.labkey.panoramapremium.View;
 
 import org.jetbrains.annotations.NotNull;
@@ -15,14 +11,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ConfigureQCMetricsCustomizer implements NavTreeCustomizer
+public class QCSummaryMenuCustomizer implements NavTreeCustomizer
 {
+    private final String controller = "panoramapremium";
+    private @NotNull String actionName;
+    private @NotNull String menuLabel;
 
-    private static final ConfigureQCMetricsCustomizer _instance = new ConfigureQCMetricsCustomizer();
-
-    public static ConfigureQCMetricsCustomizer get()
+    public QCSummaryMenuCustomizer(@NotNull String actionName, @NotNull String menuLabel)
     {
-        return _instance;
+        this.actionName = actionName;
+        this.menuLabel = menuLabel;
     }
 
     @NotNull
@@ -32,8 +30,8 @@ public class ConfigureQCMetricsCustomizer implements NavTreeCustomizer
         if(viewContext.getContainer().hasPermission(viewContext.getUser(), AdminPermission.class))
         {
             List<NavTree> navTrees = new ArrayList<>();
-            ActionURL url = new ActionURL("panoramapremium", "configureQCMetric", viewContext.getContainer()).addReturnURL(viewContext.getActionURL());
-            navTrees.add(new NavTree("Configure QC Metrics", url));
+            ActionURL url = new ActionURL(controller, actionName, viewContext.getContainer()).addReturnURL(viewContext.getActionURL());
+            navTrees.add(new NavTree(menuLabel, url));
 
             return navTrees;
         }

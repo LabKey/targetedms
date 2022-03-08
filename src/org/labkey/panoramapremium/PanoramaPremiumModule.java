@@ -15,8 +15,7 @@ import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.view.Portal;
 import org.labkey.api.view.WebPartFactory;
-import org.labkey.panoramapremium.View.ConfigureQCMetricsCustomizer;
-import org.labkey.panoramapremium.View.OutlierNotificationSubscriber;
+import org.labkey.panoramapremium.View.QCSummaryMenuCustomizer;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -57,10 +56,13 @@ public class PanoramaPremiumModule extends DefaultModule
     {
         addController(PanoramaPremiumController.NAME, PanoramaPremiumController.class);
         PanoramaPremiumSchema.register(this);
-        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", ConfigureQCMetricsCustomizer.get());
-        Portal.registerNavTreeCustomizer("Targeted MS QC Plots", ConfigureQCMetricsCustomizer.get());
-        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", OutlierNotificationSubscriber.get());
-        Portal.registerNavTreeCustomizer("Targeted MS QC Plots", OutlierNotificationSubscriber.get());
+        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", new QCSummaryMenuCustomizer("configureQCMetric", "Configure QC Metrics"));
+        Portal.registerNavTreeCustomizer("Targeted MS QC Plots", new QCSummaryMenuCustomizer("configureQCMetric", "Configure QC Metrics"));
+
+        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", new QCSummaryMenuCustomizer("subscribeOutlierNotifications", "Subscribe Outlier Notifications"));
+        Portal.registerNavTreeCustomizer("Targeted MS QC Plots", new QCSummaryMenuCustomizer("subscribeOutlierNotifications", "Subscribe Outlier Notifications"));
+
+        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", new QCSummaryMenuCustomizer("configureQCGroups", "Include or Exclude Peptides/Molecules"));
         TargetedMSService.get().registerSkylineDocumentImportListener(QCNotificationSender.get());
     }
 

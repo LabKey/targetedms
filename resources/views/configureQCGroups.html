@@ -1,0 +1,121 @@
+<script type="text/javascript">
+
+    function markPrecursorAsIncludedHandler(dataRegion, dataRegionName) {
+        LABKEY.Ajax.request({
+            url: LABKEY.ActionURL.buildURL(
+                    'panoramapremium',
+                    'markPrecursorAsIncluded',
+                    LABKEY.ActionURL.getContainer(),
+                    {
+                        dataRegionSelectionKey: dataRegion.name,
+                        '.select': dataRegion.getChecked(),
+                        queryName: dataRegion.getQueryConfig()['queryName']
+                    }),
+            method: 'POST',
+            scope: this,
+            success: LABKEY.Utils.getCallbackWrapper(function() {
+                console.log("Peptides/Molecules marked as included");
+                window.location.reload();
+            }),
+            failure: LABKEY.Utils.getCallbackWrapper(function(request, response, obj){
+                console.log("Failed to include Peptides/Molecules");
+            }, this)
+        });
+    }
+    function markPrecursorAsExcludedHandler(dataRegion, dataRegionName) {
+        LABKEY.Ajax.request({
+            url: LABKEY.ActionURL.buildURL(
+                    'panoramapremium',
+                    'markPrecursorAsExcluded',
+                    LABKEY.ActionURL.getContainer(),
+                    {
+                        dataRegionSelectionKey: dataRegion.name,
+                        '.select': dataRegion.getChecked(),
+                        queryName: dataRegion.getQueryConfig()['queryName']
+                    }),
+            method: 'POST',
+            scope: this,
+            success: LABKEY.Utils.getCallbackWrapper(function() {
+                console.log("Peptides/Molecules marked as excluded");
+                window.location.reload();
+            }),
+            failure: LABKEY.Utils.getCallbackWrapper(function(request, response, obj){
+                console.log("Failed to excluded Peptides/Molecules");
+            }, this)
+        });
+    }
+
+        LABKEY.Query.selectRows({
+            schemaName: 'targetedms',
+            queryName: 'Peptide',
+            scope: this,
+            success: function (result) {
+                if (result.rows.length > 0) {
+                    new LABKEY.QueryWebPart({
+                        renderTo: 'mark-precursor-peptides',
+                        schemaName: 'targetedms',
+                        queryName: 'QCGroupingPrecursorPeptides',
+                        title: 'Precursor Peptides',
+                        buttonBar: {
+                            items: [
+                                LABKEY.QueryWebPart.standardButtons.views,
+                                LABKEY.QueryWebPart.standardButtons.charts,
+                                LABKEY.QueryWebPart.standardButtons.exportRows,
+                                LABKEY.QueryWebPart.standardButtons.print,
+                                LABKEY.QueryWebPart.standardButtons.pageSize,
+                                {
+                                    text: 'Mark As Included',
+                                    requiresSelection: 'true',
+                                    handler: markPrecursorAsIncludedHandler
+                                },
+                                {
+                                    text: 'Mark As Excluded',
+                                    requiresSelection: 'true',
+                                    handler: markPrecursorAsExcludedHandler
+                                }
+                            ]
+                        }
+                    });
+                }
+            }
+        });
+
+    LABKEY.Query.selectRows({
+        schemaName: 'targetedms',
+        queryName: 'Molecule',
+        scope: this,
+        success: function (result) {
+            if (result.rows.length > 0) {
+                new LABKEY.QueryWebPart({
+                    renderTo: 'mark-precursor-molecule',
+                    schemaName: 'targetedms',
+                    queryName: 'QCGroupingPrecursorMolecules',
+                    title: 'Precursor Molecules',
+                    buttonBar: {
+                        items:[
+                            LABKEY.QueryWebPart.standardButtons.views,
+                            LABKEY.QueryWebPart.standardButtons.charts,
+                            LABKEY.QueryWebPart.standardButtons.exportRows,
+                            LABKEY.QueryWebPart.standardButtons.print,
+                            LABKEY.QueryWebPart.standardButtons.pageSize,
+                            {
+                                text: 'Mark As Included',
+                                requiresSelection: 'true',
+                                handler: markPrecursorAsIncludedHandler
+                            },
+                            {
+                                text: 'Mark As Excluded',
+                                requiresSelection: 'true',
+                                handler: markPrecursorAsExcludedHandler
+                            }
+                        ]}
+                });
+            }
+        }
+    });
+</script>
+
+<div id="mark-precursor-peptides"></div>
+
+<div id="mark-precursor-molecule"></div>
+
