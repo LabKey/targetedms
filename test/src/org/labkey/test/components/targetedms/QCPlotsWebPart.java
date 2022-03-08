@@ -212,6 +212,10 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         elementCache().showReferenceGuideSet.set(check);
     }
 
+    public void setShowExcludedPrecursors(boolean check)
+    {
+        elementCache().showExcludedPrecursors.set(check);
+    }
     public boolean isShowReferenceGuideSetChecked()
     {
         return elementCache().showReferenceGuideSet.isChecked();
@@ -789,6 +793,8 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         Checkbox showExcludedCheckbox = new Checkbox(Locator.css("#show-excluded-points input")
                 .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
         Checkbox showReferenceGuideSet = new Checkbox(Locator.css("#show-oorange-gs input")
+                .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
+        Checkbox showExcludedPrecursors = new Checkbox(Locator.css("#show-excluded-precursors input")
                 .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
 
 
