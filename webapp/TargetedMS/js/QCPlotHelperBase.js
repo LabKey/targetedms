@@ -236,27 +236,24 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         if (this.showExpRunRange && this.filterPoints) {
 
-            const scope = this;
             for (let i = 0; i < plotDataRows.length; i++) {
-                Ext4.Object.each(scope.filterPoints[plotDataRows[i].SeriesLabel], function (seriesType, filterPointsData) {
+                Ext4.Object.each(this.filterPoints[plotDataRows[i].SeriesLabel], function (seriesType, filterPointsData) {
                     // no need to filter if less than 6 data points are present between reference end of guideset and startdate
-                    let firstIndex = filterPointsData['filterPointsFirstIndex'];
-                    let lastIndex = filterPointsData['filterPointsLastIndex'];
-                    if (firstIndex && lastIndex) {
-                        if (lastIndex - firstIndex < 6) {
-                            scope.filterQCPoints = false;
+                    if (filterPointsData['filterPointsFirstIndex'] && filterPointsData['filterPointsLastIndex']) {
+                        if (filterPointsData['filterPointsLastIndex'] - filterPointsData['filterPointsFirstIndex'] < 6) {
+                            this.filterQCPoints = false;
                             // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
 
-                            scope.getStartDateField().setValue(scope.formatDate(plotDataRows[i].data[firstIndex].AcquiredTime));
+                            this.getStartDateField().setValue(this.formatDate(plotDataRows[i].data[filterPointsData['filterPointsFirstIndex']].AcquiredTime));
                         }
                         else { // skip 5 points
-                            lastIndex = lastIndex - 6;
+                            filterPointsData['filterPointsLastIndex'] = filterPointsData['filterPointsLastIndex'] - 6;
                             // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
                             // adding 1 as the point is right after filter last index
-                            scope.getStartDateField().setValue(scope.formatDate(plotDataRows[i].data[lastIndex + 1].AcquiredTime));
+                            this.getStartDateField().setValue(this.formatDate(plotDataRows[i].data[filterPointsData['filterPointsLastIndex'] + 1].AcquiredTime));
                         }
                     }
-                });
+                }, this);
             }
 
         }
