@@ -34,6 +34,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     groupedX: false,
     singlePlot: false,
     showExcluded: false,
+    showExcludedPrecursors: false,
     showReferenceGS: true,
     plotWidth: null,
     enableBrushing: false,
@@ -424,6 +425,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             toolbarItems.push(this.getShowExcludedCheckbox());
             toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
             toolbarItems.push(this.getShowReferenceCheckbox());
+            toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
+            toolbarItems.push(this.getShowExcludedPrecursorsCheckbox());
 
             this.otherPlotOptionsToolbar = Ext4.create('Ext.toolbar.Toolbar', {
                 ui: 'footer',
@@ -986,7 +989,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (!this.showExcludedPointsCheckbox) {
             this.showExcludedPointsCheckbox = Ext4.create('Ext.form.field.Checkbox', {
                 id: 'show-excluded-points',
-                boxLabel: 'Show Excluded Points',
+                boxLabel: 'Show Excluded Samples',
                 checked: this.showExcluded,
                 listeners: {
                     scope: this,
@@ -1003,6 +1006,29 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }
 
         return this.showExcludedPointsCheckbox;
+    },
+
+    getShowExcludedPrecursorsCheckbox : function() {
+        if (!this.showExcludedPrecursorsCheckbox) {
+            this.showExcludedPrecursorsCheckbox = Ext4.create('Ext.form.field.Checkbox', {
+                id: 'show-excluded-precursors',
+                boxLabel: 'Show Excluded Precursors',
+                checked: this.showExcludedPrecursors,
+                listeners: {
+                    scope: this,
+                    change: function(cb, newValue, oldValue)
+                    {
+                        this.showExcludedPrecursors = newValue;
+                        this.havePlotOptionsChanged = true;
+
+                        this.setLoadingMsg();
+                        this.getAnnotationData();
+                    }
+                }
+            });
+        }
+
+        return this.showExcludedPrecursorsCheckbox;
     },
 
     resetFilterPointsIndices: function() {
@@ -1913,7 +1939,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             singlePlot: this.singlePlot,
             showExcluded: this.showExcluded,
             dateRangeOffset: this.dateRangeOffset,
-            selectedAnnotations: annotationsProp
+            selectedAnnotations: annotationsProp,
+            showExcludedPrecursors: this.showExcludedPrecursors
         };
 
         // set start and end date to null unless we are
