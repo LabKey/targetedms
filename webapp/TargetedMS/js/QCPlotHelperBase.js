@@ -196,30 +196,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         }
 
-        if (this.showExpRunRange && this.filterPoints) {
-
-            for (let i = 0; i < plotDataRows.length; i++) {
-                Ext4.Object.each(this.filterPoints[plotDataRows[i].SeriesLabel], function (seriesType, filterPointsData) {
-                    // no need to filter if less than 6 data points are present between reference end of guideset and startdate
-                    if (filterPointsData['filterPointsFirstIndex'] && filterPointsData['filterPointsLastIndex']) {
-                        if (filterPointsData['filterPointsLastIndex'] - filterPointsData['filterPointsFirstIndex'] < 6) {
-                            this.filterQCPoints = false;
-                            // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
-
-                            this.getStartDateField().setValue(this.formatDate(plotDataRows[i].data[filterPointsData['filterPointsFirstIndex']].AcquiredTime));
-                        }
-                        else { // skip 5 points
-                            filterPointsData['filterPointsLastIndex'] = filterPointsData['filterPointsLastIndex'] - 6;
-                            // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
-                            // adding 1 as the point is right after filter last index
-                            this.getStartDateField().setValue(this.formatDate(plotDataRows[i].data[filterPointsData['filterPointsLastIndex'] + 1].AcquiredTime));
-                        }
-                    }
-                }, this);
-            }
-
-        }
-
         // Issue 31678: get the full set of dates values from the precursor data and from the annotations
         for (var j = 0; j < this.annotationData.length; j++) {
             allPlotDateValues.push(this.formatDate(new Date(this.annotationData[j].Date), true));
@@ -329,6 +305,30 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     }
                 }
             }
+        }
+
+        if (this.showExpRunRange && this.filterPoints) {
+
+            for (let i = 0; i < plotDataRows.length; i++) {
+                Ext4.Object.each(this.filterPoints[plotDataRows[i].SeriesLabel], function (seriesType, filterPointsData) {
+                    // no need to filter if less than 6 data points are present between reference end of guideset and startdate
+                    if (filterPointsData['filterPointsFirstIndex'] && filterPointsData['filterPointsLastIndex']) {
+                        if (filterPointsData['filterPointsLastIndex'] - filterPointsData['filterPointsFirstIndex'] < 6) {
+                            this.filterQCPoints = false;
+                            // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
+
+                            this.getStartDateField().setValue(this.formatDate(plotDataRows[i].data[filterPointsData['filterPointsFirstIndex']].AcquiredTime));
+                        }
+                        else { // skip 5 points
+                            filterPointsData['filterPointsLastIndex'] = filterPointsData['filterPointsLastIndex'] - 6;
+                            // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
+                            // adding 1 as the point is right after filter last index
+                            this.getStartDateField().setValue(this.formatDate(plotDataRows[i].data[filterPointsData['filterPointsLastIndex'] + 1].AcquiredTime));
+                        }
+                    }
+                }, this);
+            }
+
         }
 
         this.renderPlots();
