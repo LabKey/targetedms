@@ -50,6 +50,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -57,6 +58,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
@@ -66,6 +68,7 @@ import java.util.stream.Collectors;
 public class OutlierGenerator
 {
     private static final OutlierGenerator INSTANCE = new OutlierGenerator();
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.000");
 
     private OutlierGenerator() {}
 
@@ -236,7 +239,7 @@ public class OutlierGenerator
         }
     }
 
-    public List<RawMetricDataSet> getRawMetricDataSets(TargetedMSSchema schema, List<QCMetricConfiguration> configurations, Date startDate, Date endDate, List<AnnotationGroup> annotationGroups, boolean showExcluded)
+    public List<RawMetricDataSet> getRawMetricDataSets(TargetedMSSchema schema, List<QCMetricConfiguration> configurations, Date startDate, Date endDate, List<AnnotationGroup> annotationGroups, boolean showExcluded, boolean showExcludedPrecursors)
     {
         List<RawMetricDataSet> result = new ArrayList<>();
 
@@ -263,7 +266,8 @@ public class OutlierGenerator
 
         try
         {
-            Map<Long, RawMetricDataSet.PrecursorInfo> precursors = loadPrecursors(schema);
+            Map<Long, Object> excludedPrecursorIds = new HashMap<>();
+            Map<Long, RawMetricDataSet.PrecursorInfo> precursors = loadPrecursors(schema, excludedPrecursorIds, showExcludedPrecursors);
 
             try (ResultSet rs = new SqlSelector(TargetedMSManager.getSchema(), sql).getResultSet(false))
             {
@@ -271,6 +275,9 @@ public class OutlierGenerator
                 {
                     long sampleFileId = rs.getLong("SampleFileId");
                     Long precursorId = getLong(rs, "PrecursorId");
+
+                    if (excludedPrecursorIds.containsKey(precursorId))
+                        continue;
 
                     // Sample-scoped metrics won't have an associated precursor
                     RawMetricDataSet.PrecursorInfo precursor = null;
@@ -312,18 +319,29 @@ public class OutlierGenerator
      * set of results.
      */
     @NotNull
-    private Map<Long, RawMetricDataSet.PrecursorInfo> loadPrecursors(TargetedMSSchema schema) throws SQLException
+    private Map<Long, RawMetricDataSet.PrecursorInfo> loadPrecursors(TargetedMSSchema schema, Map<Long, Object> excludedPrecursorsIds, boolean showExcludedPrecursors) throws SQLException
     {
         Map<Long, RawMetricDataSet.PrecursorInfo> precursors = new HashMap<>();
 
         DecimalFormat format = new DecimalFormat();
         format.setMinimumFractionDigits(4);
 
+        Collection<ExcludedPrecursor> excludedPrecursors = new TableSelector(schema.getTable("ExcludedPrecursors")).getCollection(ExcludedPrecursor.class);
+
         // First the proteomics side
         try (ResultSet rs = new TableSelector(schema.getTable(TargetedMSSchema.TABLE_PRECURSOR)).getResultSet(false))
         {
             while (rs.next())
             {
+                //skip Excluded peptide precursors
+                if (!showExcludedPrecursors && isExcludedPrecursorPeptide(excludedPrecursors,
+                        rs.getString("ModifiedSequence"),
+                        rs.getInt("Charge"),
+                        getDouble(rs, "MZ")))
+                {
+                    excludedPrecursorsIds.put(rs.getLong("Id"), null);
+                    continue;
+                }
                 RawMetricDataSet.PrecursorInfo p = createPrecursor(format, rs, precursors);
                 p.setModifiedSequence(rs.getString("ModifiedSequence"));
             }
@@ -334,6 +352,18 @@ public class OutlierGenerator
         {
             while (rs.next())
             {
+                //skip Excluded molecule precursors
+                if (!showExcludedPrecursors && isExcludedPrecursorMolecule(excludedPrecursors,
+                        rs.getString("CustomIonName"),
+                        rs.getString("IonFormula"),
+                        getDouble(rs, "massMonoisotopic"),
+                        getDouble(rs, "massAverage"),
+                        rs.getInt("Charge"),
+                        getDouble(rs, "MZ")))
+                {
+                    excludedPrecursorsIds.put(rs.getLong("Id"), null);
+                    continue;
+                }
                 RawMetricDataSet.PrecursorInfo p = createPrecursor(format, rs, precursors);
                 p.setCustomIonName(rs.getString("CustomIonName"));
                 p.setIonFormula(rs.getString("IonFormula"));
@@ -342,6 +372,24 @@ public class OutlierGenerator
             }
         }
         return precursors;
+    }
+
+    private boolean isExcludedPrecursorPeptide(Collection<ExcludedPrecursor> excludedPrecursors, String modifiedSeq, int charge, double mz)
+    {
+        return excludedPrecursors.stream().anyMatch(ep -> Objects.equals(ep.getModifiedSequence(), modifiedSeq) &&
+                                                        Objects.equals(ep.getCharge(), charge) &&
+                                                        Objects.equals(ep.getMz(), mz));
+    }
+
+    private boolean isExcludedPrecursorMolecule(Collection<ExcludedPrecursor> excludedPrecursors, String customIonName,
+                                                String ionFormula, double massMonoisotopic, double massAverage, int charge, double mz)
+    {
+        return excludedPrecursors.stream().anyMatch(ep -> Objects.equals(ep.getCustomIonName(), customIonName) &&
+                                                        Objects.equals(ep.getIonFormula(), ionFormula) &&
+                                                        Objects.equals(ep.getMassMonoisotopic(), massMonoisotopic) &&
+                                                        Objects.equals(ep.getMassAverage(), massAverage) &&
+                                                        Objects.equals(ep.getCharge(), charge) &&
+                                                        Objects.equals(ep.getMz(), mz));
     }
 
     @NotNull
@@ -535,6 +583,98 @@ public class OutlierGenerator
         public void setValues(List<String> values)
         {
             this.values = values;
+        }
+    }
+
+    public static class ExcludedPrecursor
+    {
+        int rowId;
+        double mz;
+        int charge;
+        String modifiedSequence;
+        String customIonName;
+        String ionFormula;
+        Double massMonoisotopic;
+        Double massAverage;
+
+        public int getRowId()
+        {
+            return rowId;
+        }
+
+        public void setRowId(int rowId)
+        {
+            this.rowId = rowId;
+        }
+
+        public double getMz()
+        {
+            return mz;
+        }
+
+        public void setMz(double mz)
+        {
+            this.mz = mz;
+        }
+
+        public int getCharge()
+        {
+            return charge;
+        }
+
+        public void setCharge(int charge)
+        {
+            this.charge = charge;
+        }
+
+        public String getModifiedSequence()
+        {
+            return modifiedSequence;
+        }
+
+        public void setModifiedSequence(String modifiedSequence)
+        {
+            this.modifiedSequence = modifiedSequence;
+        }
+
+        public String getCustomIonName()
+        {
+            return customIonName;
+        }
+
+        public void setCustomIonName(String customIonName)
+        {
+            this.customIonName = customIonName;
+        }
+
+        public String getIonFormula()
+        {
+            return ionFormula;
+        }
+
+        public void setIonFormula(String ionFormula)
+        {
+            this.ionFormula = ionFormula;
+        }
+
+        public Double getMassMonoisotopic()
+        {
+            return massMonoisotopic;
+        }
+
+        public void setMassMonoisotopic(Double massMonoisotopic)
+        {
+            this.massMonoisotopic = massMonoisotopic;
+        }
+
+        public Double getMassAverage()
+        {
+            return massAverage;
+        }
+
+        public void setMassAverage(Double massAverage)
+        {
+            this.massAverage = massAverage;
         }
     }
 }

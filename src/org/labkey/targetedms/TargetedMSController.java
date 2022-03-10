@@ -1156,7 +1156,7 @@ public class TargetedMSController extends SpringActionController
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
             Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
 
-            List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(schema, enabledQCMetricConfigurations, null, null, Collections.emptyList(), true);
+            List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(schema, enabledQCMetricConfigurations, null, null, Collections.emptyList(), true, false);
 
             Map<GuideSetKey, GuideSetStats> stats = OutlierGenerator.get().getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
 
@@ -1181,6 +1181,7 @@ public class TargetedMSController extends SpringActionController
         private List<OutlierGenerator.AnnotationGroup> _selectedAnnotations;
         private boolean _showExcluded;
         private boolean _showReferenceGS;
+        private boolean _showExcludedPrecursors;
 
         public int getMetricId()
         {
@@ -1281,6 +1282,16 @@ public class TargetedMSController extends SpringActionController
         {
             _showReferenceGS = showReferenceGS;
         }
+
+        public boolean isShowExcludedPrecursors()
+        {
+            return _showExcludedPrecursors;
+        }
+
+        public void setShowExcludedPrecursors(boolean showExcludedPrecursors)
+        {
+            _showExcludedPrecursors = showExcludedPrecursors;
+        }
     }
 
     /**
@@ -1338,7 +1349,7 @@ public class TargetedMSController extends SpringActionController
             Date qcFolderEndDate = (Date) qcFolderDateRange.get("endDate");
 
             // always query for the full range
-            List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(schema, qcMetricConfigurations, qcFolderStartDate, qcFolderEndDate, form.getSelectedAnnotations(), form.isShowExcluded());
+            List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(schema, qcMetricConfigurations, qcFolderStartDate, qcFolderEndDate, form.getSelectedAnnotations(), form.isShowExcluded(), form.isShowExcludedPrecursors());
             Map<GuideSetKey, GuideSetStats> stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
             boolean zoomedRange = qcFolderStartDate != null &&
                     qcFolderEndDate != null &&
