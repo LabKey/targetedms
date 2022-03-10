@@ -91,6 +91,18 @@
         </td>
     </tr>
     <tr>
+        <td colspan="6" id="intensityRatioToggle" style="display: none; padding-top: 0.5em">
+            <label>
+                <input type="radio" name="intensityRatioToggle" checked value="intensity" />
+                Intensity
+            </label>&nbsp;&nbsp;
+            <label>
+                <input type="radio" name="intensityRatioToggle" value="ratio" />
+                Light/Heavy Ratio
+            </label>
+        </td>
+    </tr>
+    <tr>
         <td colspan="6" id="noCalibratedValuesError" style="display: none; padding-top: 0.5em">
             <span class="labkey-error">
                 No calibrated values present.
@@ -135,6 +147,29 @@
     </tr>
     </thead>
     <tbody id="cvTableBody">
+        <tr><td colspan="12">Loading...</td></tr>
+    </tbody>
+</table>
+
+<table id="ratioCvTable" class="table-condensed labkey-data-region-legacy labkey-show-borders" style="padding-top: 2em; display: none;">
+    <thead>
+    <tr>
+        <th class="labkey-column-header">Sequence</th>
+        <th class="labkey-column-header">Light charge</th>
+        <th class="labkey-column-header">Heavy charge</th>
+        <th class="labkey-column-header" style="text-align: right">Light mZ</th>
+        <th class="labkey-column-header" style="text-align: right">Heavy mZ</th>
+        <th class="labkey-column-header">Start Index</th>
+        <th class="labkey-column-header">Length</th>
+        <th class="labkey-column-header" style="text-align: right">Inter-day CV</th>
+        <th class="labkey-column-header" style="text-align: right">Intra-day CV</th>
+        <th class="labkey-column-header" style="text-align: right">Total CV</th>
+        <th class="labkey-column-header" style="text-align: right">Mean Ratio</th>
+        <th class="labkey-column-header" style="text-align: right">Max Ratio</th>
+        <th class="labkey-column-header" style="text-align: right">Min Ratio</th>
+    </tr>
+    </thead>
+    <tbody id="ratioCvTableBody">
         <tr><td colspan="12">Loading...</td></tr>
     </tbody>
 </table>

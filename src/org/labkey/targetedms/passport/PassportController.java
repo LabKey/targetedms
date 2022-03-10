@@ -162,8 +162,8 @@ public class PassportController extends SpringActionController
                 filterSection.setFrame(WebPartView.FrameType.PORTAL);
                 result.addView(filterSection);
 
-                HtmlView intensityChart = new HtmlView(DOM.DIV(DOM.at().cl("exportable-plot").id("intensityChart"), "Loading..."));
-                intensityChart.setTitle("Peak Areas");
+                HtmlView intensityChart = new HtmlView(DOM.DIV(DOM.at().cl("exportable-plot").id("boxPlotChart"), "Loading..."));
+                intensityChart.setTitle("Intensity");
                 intensityChart.setFrame(WebPartView.FrameType.PORTAL);
                 result.addView(intensityChart);
 
@@ -177,7 +177,7 @@ public class PassportController extends SpringActionController
                             DOM.DIV(DOM.at().cl("exportable-plot").id("cvChart"), "Loading...")
                         )
                 );
-                cvChart.setTitle("Coefficient of Variation");
+                cvChart.setTitle("Intensity Coefficient of Variation");
                 cvChart.setFrame(WebPartView.FrameType.PORTAL);
                 result.addView(cvChart);
 
