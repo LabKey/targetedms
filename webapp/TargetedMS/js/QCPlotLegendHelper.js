@@ -37,6 +37,11 @@ if (!LABKEY.targetedms.QCPlotLegendHelper) {
         addString: function (name, isSequence) {
             var dict = isSequence ? this.peptidePrefixDictionary : this.customIonPrefixDictionary;
 
+            // For peptides, only look at the sequence
+            if (isSequence) {
+                name = name.substring(0, name.indexOf(' '));
+            }
+
             // Add to dictionary of sequences with this prefix.
             var prefix = this.getPrefix(name);
             var prefixMatches = dict[prefix];
@@ -125,6 +130,8 @@ if (!LABKEY.targetedms.QCPlotLegendHelper) {
                 return '';
 
             if (isPeptide) {
+                // Issue 45015 - include only peptide sequence when abbreviating
+                identifier = identifier.substring(0, identifier.indexOf(' '));
                 identifier = this.stripModifications(identifier);
             }
             else {
