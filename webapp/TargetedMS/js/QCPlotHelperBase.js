@@ -194,40 +194,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
             }, this);
 
-            if (this.filterQCPoints && !this.groupedX) {
-                for (var j = 0; j < plotDataRow.data.length; j++) {
-                    var plotData = plotDataRow.data[j];
 
-                    Ext4.Object.each(this.guideSetDataMap, function(guideSetId, guideSetData) {
-                        // for truncating out of range guideset data  find first index of plotDate ending at guideset.trainingEnd
-                        if (plotData.GuideSetId == guideSetId && plotData.InGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {
-                            this.filterPointsFirstIndex = j + 1;
-                        }
-                    }, this);
-
-                    // for truncating out of range guideset data find last index of plotData starting from this.startDate
-                    if (plotData.AcquiredTime >= this.startDate) {
-                        if (!this.filterPointsLastIndex) {
-                            this.filterPointsLastIndex = j;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (this.showExpRunRange && this.filterPointsLastIndex && this.filterPointsFirstIndex) {
-            // no need to filter if less than 6 data points are present between reference end of guideset and startdate
-            if (this.filterPointsLastIndex - this.filterPointsFirstIndex < 6) {
-                this.filterQCPoints = false;
-                // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
-                this.getStartDateField().setValue(this.formatDate(tempData.data[this.filterPointsFirstIndex].AcquiredTime));
-            }
-            else { // skip 5 points
-                this.filterPointsLastIndex = this.filterPointsLastIndex - 6;
-                // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
-                // adding 1 as the point is right after filter last index
-                this.getStartDateField().setValue(this.formatDate(tempData.data[this.filterPointsLastIndex + 1].AcquiredTime));
-            }
         }
 
         // Issue 31678: get the full set of dates values from the precursor data and from the annotations
@@ -241,11 +208,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         // merge in the annotation data to make room on the y axis
         for (var i = 0; i < this.precursors.length; i++) {
-            var precursorInfo = this.fragmentPlotData[this.precursors[i]];
+            let frag = this.precursors[i];
+            var precursorInfo = this.fragmentPlotData[frag];
 
             // We don't necessarily have info for all possible precursors, depending on the filters and plot type
-            if (precursorInfo)
-            {
+            if (precursorInfo) {
                 // if the min and max are the same, or very close, increase the range
                 if (precursorInfo.max == null && precursorInfo.min == null) {
                     precursorInfo.max = 1;
@@ -273,17 +240,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                         });
                     }
                 }
-                if (datesToAdd.length > 0)
-                {
+                if (datesToAdd.length > 0) {
                     var index = 0;
-                    for (var k = 0; k < datesToAdd.length; k++)
-                    {
+                    for (var k = 0; k < datesToAdd.length; k++) {
                         var added = false;
-                        for (var l = index; l < precursorInfo.data.length; l++)
-                        {
+                        for (var l = index; l < precursorInfo.data.length; l++) {
                             if ((this.groupedX && precursorInfo.data[l].date > datesToAdd[k].date)
-                                    || (!this.groupedX && precursorInfo.data[l].fullDate > datesToAdd[k].fullDate))
-                            {
+                                    || (!this.groupedX && precursorInfo.data[l].fullDate > datesToAdd[k].fullDate)) {
                                 precursorInfo.data.splice(l, 0, datesToAdd[k]);
                                 added = true;
                                 index = l;
@@ -291,13 +254,82 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                             }
                         }
                         // tack on any remaining dates to the end
-                        if (!added)
-                        {
+                        if (!added) {
                             precursorInfo.data.push(datesToAdd[k]);
                         }
                     }
                 }
+
+                // this.filterPoints - object to store left and right indices to truncate for a series for custom date range
+                // when showing reference guide set
+
+                if (this.filterQCPoints && !this.groupedX) {
+                    if (!this.filterPoints) {
+                        this.filterPoints = {};
+                    }
+                    if (!this.filterPoints[frag]) {
+                        this.filterPoints[frag] = {};
+                    }
+
+                    for (let j = 0; j < precursorInfo.data.length; j++) {
+                        let plotData = precursorInfo.data[j];
+
+
+                        if (!this.filterPoints[frag][plotData.SeriesType]) {
+                            this.filterPoints[frag][plotData.SeriesType] = {}
+                        }
+
+                        if (plotData.type === "missing") {
+                            continue;
+                        }
+
+
+                        Ext4.Object.each(this.guideSetDataMap, function(guideSetId, guideSetData) {
+                            // for truncating out of range guideset data  find first index of plotDate ending at guideset.trainingEnd
+                            if (plotData.guideSetId == guideSetId && plotData.inGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {
+                                this.filterPoints[frag][plotData.SeriesType]['filterPointsFirstIndex'] = j + 1;
+                                // ReferenceRangeSeries is used to separate series
+                                plotData['ReferenceRangeSeries'] = "GuideSet";
+                            }
+                            else {
+                                plotData['ReferenceRangeSeries'] = "InRange";
+                            }
+
+                        }, this);
+
+                        // for truncating out of range guideset data find last index of plotData starting from this.startDate
+                        if (plotData.fullDate >= this.startDate) {
+                            if (!this.filterPoints[frag][plotData.SeriesType]['filterPointsLastIndex']) {
+                                this.filterPoints[frag][plotData.SeriesType]['filterPointsLastIndex'] = j;
+                            }
+                        }
+                    }
+                }
             }
+        }
+
+        if (this.showExpRunRange && this.filterPoints) {
+
+            for (let i = 0; i < plotDataRows.length; i++) {
+                Ext4.Object.each(this.filterPoints[plotDataRows[i].SeriesLabel], function (seriesType, filterPointsData) {
+                    // no need to filter if less than 6 data points are present between reference end of guideset and startdate
+                    if (filterPointsData['filterPointsFirstIndex'] && filterPointsData['filterPointsLastIndex']) {
+                        if (filterPointsData['filterPointsLastIndex'] - filterPointsData['filterPointsFirstIndex'] < 6) {
+                            this.filterQCPoints = false;
+                            // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
+
+                            this.getStartDateField().setValue(this.formatDate(plotDataRows[i].data[filterPointsData['filterPointsFirstIndex']].AcquiredTime));
+                        }
+                        else { // skip 5 points
+                            filterPointsData['filterPointsLastIndex'] = filterPointsData['filterPointsLastIndex'] - 6;
+                            // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
+                            // adding 1 as the point is right after filter last index
+                            this.getStartDateField().setValue(this.formatDate(plotDataRows[i].data[filterPointsData['filterPointsLastIndex'] + 1].AcquiredTime));
+                        }
+                    }
+                }, this);
+            }
+
         }
 
         this.renderPlots();
@@ -339,19 +371,23 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         Ext4.Object.each(this.fragmentPlotData, function(label, fragmentData) {
             // traverse plotData backwards from firstIndex to lastIndex and
             // remove them from the array
-            if (this.filterQCPoints && this.filterPointsFirstIndex && this.filterPointsLastIndex) {
-                for (var i = this.filterPointsLastIndex; i >= this.filterPointsFirstIndex; i--) {
-                    this.fragmentPlotData[label].data.splice(i, 1);
-                }
+            if (this.filterQCPoints && this.filterPoints) {
 
-                // ReferenceRangeSeries is used to separate series
-                for (var i = 0; i < this.filterPointsFirstIndex; i++) {
-                    fragmentData.data[i]['ReferenceRangeSeries'] = "GuideSet";
-                }
+                // when we're plotting two different metrics at the same time, then we
+                // have repeated dates (from oldest to newest for metric 1, and then oldest to newest for metric 2, all in the same array).
+                // so, removing the array elements from the back
+                const filterPointsReversed = Object.keys(this.filterPoints[label]).reverse();
+                const lab  = label;
 
-                for (var i = this.filterPointsFirstIndex; i < fragmentData.data.length; i++) {
-                    fragmentData.data[i]['ReferenceRangeSeries'] = "InRange";
-                }
+                filterPointsReversed.forEach(seriesType => {
+                    let firstIndex = this.filterPoints[lab][seriesType]['filterPointsFirstIndex'];
+                    let lastIndex = this.filterPoints[lab][seriesType]['filterPointsLastIndex'];
+
+                    for (let i = lastIndex; i >= firstIndex; i--) {
+                        fragmentData.data.splice(i, 1);
+                    }
+                });
+
             }
         }, this);
     },
@@ -699,7 +735,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         };
 
         // lines are not separated when indices are not present
-        if (this.filterQCPoints && this.filterPointsLastIndex && this.filterPointsFirstIndex) {
+        if (this.filterQCPoints && this.filterPoints) {
             trendLineProps.lineColor = '#000000';
             trendLineProps.groupBy = "ReferenceRangeSeries";
         }
