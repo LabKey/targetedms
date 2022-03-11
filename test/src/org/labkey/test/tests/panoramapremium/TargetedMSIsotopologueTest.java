@@ -55,11 +55,17 @@ public class TargetedMSIsotopologueTest extends TargetedMSPremiumTest
         PanoramaDashboard qcDashboard = goToDashboard();
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
 
+        qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, null);
+
         log("Verifying if all the metrics are present");
-        assertTrue("Metric is not present " ,verifyMetricIsPresent(qcPlotsWebPart, "Isotopologue Accuracy"));
-        assertTrue("Metric is not present " ,verifyMetricIsPresent(qcPlotsWebPart, "Isotopologue LOD"));
-        assertTrue("Metric is not present " , verifyMetricIsPresent(qcPlotsWebPart, "Isotopologue LOQ"));
-        assertTrue("Metric is not present " ,verifyMetricIsPresent(qcPlotsWebPart, "Isotopologue Regression RSquared"));
+        assertTrue("Accuracy metric is not present", verifyMetricIsPresent(qcPlotsWebPart, "Isotopologue Accuracy"));
+        assertTrue("LOD metric is not present", verifyMetricIsPresent(qcPlotsWebPart, "Isotopologue LOD"));
+        assertTrue("LOQ metric is not present", verifyMetricIsPresent(qcPlotsWebPart, "Isotopologue LOQ"));
+        assertTrue("Regression metric is not present", verifyMetricIsPresent(qcPlotsWebPart, "Isotopologue Regression RSquared"));
+
+        // Issue 45015 - make sure abbreviations are correct. Unicode escape is for ellipsis character
+        waitForText("ELA\u2026GFK");
+        assertTextPresent("ELA\u2026GFk", "ELA\u2026PV\u2026", "ELA\u2026Pv\u2026", "ELA\u2026p\u2026");
 
         log("Verifying isotopologue is present while configuring the metric");
         qcPlotsWebPart.clickMenuItem("Configure QC Metrics");

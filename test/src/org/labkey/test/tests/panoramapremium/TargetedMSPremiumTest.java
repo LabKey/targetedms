@@ -31,16 +31,13 @@ public class TargetedMSPremiumTest extends TargetedMSTest
 
     protected boolean verifyMetricIsPresent(QCPlotsWebPart qcPlotsWebPart, String metricName)
     {
-        boolean retVal = false;
         List<String> qcMetricOptions = qcPlotsWebPart.getMetricTypeOptions();
         for (String type : qcMetricOptions)
         {
-            if (type.equalsIgnoreCase(metricName)) ;
-            retVal = true;
+            if (type.equalsIgnoreCase(metricName))
+                return true;
         }
 
-        return retVal;
-
+        return false;
     }
-
 }
