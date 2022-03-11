@@ -877,6 +877,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         this.showAllSeriesCheckbox(showAllSeriesCheckBox, showAllSeriesCheckBoxLocation);
 
                         this.setBrushingEnabled(false);
+                        if (this.filterQCPoints) {
+                            this.resetFilterPointsIndices();
+                        }
                         this.displayTrendPlot();
                     }
                 }
@@ -1029,11 +1032,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     resetFilterPointsIndices: function() {
-        if (this.filterPointsFirstIndex) {
-            this.filterPointsFirstIndex = undefined;
-        }
-        if (this.filterPointsLastIndex) {
-            this.filterPointsLastIndex = undefined;
+        if (this.filterPoints) {
+            this.filterPoints = undefined;
         }
     },
 
