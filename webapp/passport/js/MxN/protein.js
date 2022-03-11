@@ -73,11 +73,16 @@ protein =
                 '<div style="text-align: center"><a href="' + showPeptideUrl + 'id=' + protein.selectedPrecursor.PeptideId + '">Show peptide details</a></div></td></tr></table>';
         chromParent.append(childHtml);
 
-        $('a[name*=\'Chromatograms\'] > span').text('Chromatograms for ' + precursor.FullDescription);
+        const showRatio = $("input[name = 'intensityRatioToggle']:checked").val() === 'ratio';
+
+        $('a[name*=\'Chromatograms\'] > span').text('Chromatograms for ' + (showRatio ? precursor.Sequence : precursor.FullDescription));
+
 
         protein.selectedPrecursor.ReplicateInfo.forEach(function(replicate) {
             const parentElement = $('#chrom' + replicate.PrecursorChromInfoId);
-            LABKEY.targetedms.SVGChart.requestAndRenderSVG(chromatogramUrl + "id=" + replicate.PrecursorChromInfoId + "&syncY=true&syncYBasedOnPrecursor=true&syncX=false&chartWidth=275&chartHeight=300",
+            const url = showRatio ? (moleculeChromatogramUrl + "id=" + replicate.GeneralMoleculeChromInfoId) :
+                    (precursorChromatogramUrl + "id=" + replicate.PrecursorChromInfoId);
+            LABKEY.targetedms.SVGChart.requestAndRenderSVG(url + "&syncY=true&syncYBasedOnPrecursor=true&syncX=false&chartWidth=275&chartHeight=300",
                     parentElement[0],
                     $('#seriesLegend')[0],
                     false,
@@ -225,6 +230,7 @@ protein =
                 Enabled: true,
                 PrecursorId: precursor.PrecursorId,
                 ChromatogramId: precursor.PrecursorChromInfoId,
+                GeneralMoleculeChromInfoId: precursor.GeneralMoleculeChromInfoId,
                 PeptideId: precursor.PeptideId,
                 CalibrationCurveId: precursor.CalibrationCurveId,
 
@@ -339,7 +345,7 @@ protein =
         $('#intraCVCheckbox').change(refreshFunction);
         $('#interCVCheckbox').change(refreshFunction);
         $("#valueType").change(refreshFunction);
-        $("#intensityRatioToggle").change(refreshFunction);
+        $("#intensityRatioToggle").change(function() { protein.selectedPrecursor = null; refreshFunction() });
 
         protein.longestPeptide = 0;
         protein.precursors.forEach(function(p) {
@@ -369,6 +375,8 @@ protein =
         this.clearElement(document.getElementById("cvChart"));
         this.clearElement(document.getElementById("cvTableBody"));
         this.clearElement(document.getElementById("ratioCvTableBody"));
+
+        $('#valueSortOption').text(showRatio ? 'Light/heavy ratio' : 'Intensity');
 
         $('#cvTable').css('display', showRatio ? 'none' : '');
         $('#ratioCvTable').css('display', showRatio ? '' : 'none');
@@ -410,6 +418,7 @@ protein =
                         peptideId: replicateInfo.PeptideId,
                         startIndex: replicateInfo.StartIndex,
                         precursorChromInfoId: replicateInfo.PrecursorChromInfoId,
+                        generalMoleculeChromInfoId: replicateInfo.GeneralMoleculeChromInfoId,
                         enabled: precursor.Enabled
                     });
                 });
@@ -425,6 +434,7 @@ protein =
             const ratioCVLineData = [];
             const summaryDataTable = [];
             const cvs = {};
+            const ratioCvs = {};
 
             const showTotal = $('#totalCVCheckbox')[0].checked;
             const showIntra = $('#intraCVCheckbox')[0].checked;
@@ -548,9 +558,11 @@ protein =
                     }
                 }
                 cvs[precursorId] = totalCV;
+                ratioCvs[precursorId] = ratioTotalCV;
 
                 summaryDataTable.push({
                     precursorChromInfoId: row.precursorChromInfoId,
+                    generalMoleculeChromInfoId: row.generalMoleculeChromInfoId,
                     precursorId: parseInt(precursorId),
                     sequence: row.sequence,
                     peptideSequence: row.peptideSequence,
@@ -573,20 +585,20 @@ protein =
 
             const sortBy = protein.settings.getSortBy();
             let sortFunction;
-            if (sortBy === "Sequence Location") {
+            if (sortBy === 'sequencelocation') {
                 sortFunction = function (a, b) { return a.StartIndex - b.StartIndex };
             }
-            else if (sortBy === "Sequence") {
+            else if (sortBy === 'sequence') {
                 sortFunction = function (a, b) { return a.sequence.localeCompare(b.sequence) };
             }
-            else if (sortBy === "Intensity") {
+            else if (sortBy === 'value') {
                 sortFunction = function (a, b) {
-                    return medians[b.precursorId] - medians[a.precursorId];
+                    return showRatio ? (ratioMedians[b.precursorId] - ratioMedians[a.precursorId]) : (medians[b.precursorId] - medians[a.precursorId]);
                 };
             }
-            else if (sortBy === "Coefficient of Variation") {
+            else if (sortBy === 'cv') {
                 sortFunction = function (a, b) {
-                    return cvs[b.precursorId] - cvs[a.precursorId];
+                    return showRatio ? (ratioCvs[b.precursorId] - ratioCvs[a.precursorId]) : (cvs[b.precursorId] - cvs[a.precursorId]);
                 };
             }
 
@@ -597,22 +609,38 @@ protein =
             summaryDataTable.sort(sortFunction);
 
             const clipboardPeptides = [];
+            const clipboardRatioPeptides = [];
             summaryDataTable.forEach(function (a) {
-                clipboardPeptides.push(a.sequence) // add to copy clipboard feature
+                clipboardPeptides.push(a.sequence); // add to copy clipboard feature
+                if (a.heavyCharge) {
+                    clipboardRatioPeptides.push(a.sequence);
+                }
             });
-            $("#copytoclipboard").attr("clipboard", clipboardPeptides.join("\r"));
+            $("#copyToClipboardIntensity").attr("clipboard", clipboardPeptides.join("\r"));
+            $("#copyToClipboardRatio").attr("clipboard", clipboardRatioPeptides.join("\r"));
+
+            // Choose the default precursor
+            let defaultPrecursor = null;
+
+            summaryDataTable.forEach(function(row, index) {
+                if (row.heavyCharge && showRatio && defaultPrecursor != null) {
+                    defaultPrecursor = index;
+                }
+            });
 
             if (!protein.selectedPrecursor) {
-                protein.selectPrecursor(summaryDataTable[0].precursorId, false);
+                protein.selectPrecursor(summaryDataTable[defaultPrecursor == null ? 0 : defaultPrecursor].precursorId, false);
             }
 
             let tableHTML = '';
             let ratioTableHTML = '';
 
             summaryDataTable.forEach(function(row, index) {
-                tableHTML += '<tr' + (row.enabled ? '' : ' style="text-decoration: line-through; background-color: LightGray"') + '>' +
+                const commonRows = '<tr' + (row.enabled ? '' : ' style="text-decoration: line-through; background-color: LightGray"') + '>' +
                         '<td colspan="2"><input type="radio" ' + (row.precursorId === protein.selectedPrecursor.PrecursorId ? 'checked="true"' : '') + ' name="precursorRadio" id="precursorRadio' + row.precursorId + '" onclick="protein.selectPrecursor(' + row.precursorId + ', true)" /><a href="#chrom' + row.precursorChromInfoId + '" onclick="protein.selectPrecursor(' + row.precursorId + ', true)">' + LABKEY.Utils.encodeHtml(row.sequence) + '</a></td>' +
-                        '<td>' + LABKEY.Utils.encodeHtml((row.charge >= 0 ? '+' : '') + row.charge) + '</td>' +
+                        '<td>' + LABKEY.Utils.encodeHtml(protein.renderCharge(row.charge)) + '</td>';
+
+                tableHTML += commonRows +
                         '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.mz.toFixed(4)) + '</td>' +
                         '<td style="text-align: right">' + (row.StartIndex ? row.StartIndex : '') + '</td>' +
                         '<td style="text-align: right">' + row.peptideSequence.length + '</td>' +
@@ -625,10 +653,8 @@ protein =
                         '</tr>';
 
                 if (row.heavyCharge) {
-                    ratioTableHTML += '<tr' + (row.enabled ? '' : ' style="text-decoration: line-through; background-color: LightGray"') + '>' +
-                            '<td >' + LABKEY.Utils.encodeHtml(row.sequence) + '</a></td>' +
-                            '<td>' + LABKEY.Utils.encodeHtml((row.charge >= 0 ? '+' : '') + row.charge) + '</td>' +
-                            '<td>' + LABKEY.Utils.encodeHtml((row.heavyCharge >= 0 ? '+' : '') + row.heavyCharge) + '</td>' +
+                    ratioTableHTML += commonRows +
+                            '<td>' + LABKEY.Utils.encodeHtml(protein.renderCharge(row.heavyCharge)) + '</td>' +
                             '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.mz.toFixed(4)) + '</td>' +
                             '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.heavyMZ.toFixed(4)) + '</td>' +
                             '<td style="text-align: right">' + (row.StartIndex ? row.StartIndex : '') + '</td>' +
@@ -643,9 +669,11 @@ protein =
                 }
             });
 
-            document.getElementById('cvTableBody').innerHTML = tableHTML;
-            if (ratioTableHTML.length > 0) {
+            if (showRatio) {
                 document.getElementById('ratioCvTableBody').innerHTML = ratioTableHTML;
+            }
+            else {
+                document.getElementById('cvTableBody').innerHTML = tableHTML;
             }
 
             if (showRatio) {
@@ -676,8 +704,11 @@ protein =
     // Sets listeners of dom objects that need listeners
     setJqueryEventListeners: function() {
         // copy to clipboard action
-        $( "#copytoclipboard" ).click(function() {
-            copyTextToClipboard($( "#copytoclipboard" ).attr("clipboard"))
+        $( "#copyToClipboardIntensity" ).click(function() {
+            copyTextToClipboard($( "#copyToClipboardIntensity" ).attr("clipboard"))
+        });
+        $( "#copyToClipboardRatio" ).click(function() {
+            copyTextToClipboard($( "#copyToClipboardRatio" ).attr("clipboard"))
         });
 
         // initialize sliding ranger bar in Filter Options

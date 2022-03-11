@@ -51,7 +51,8 @@
         });
 
     });
-    var chromatogramUrl = "<%=h(urlFor(TargetedMSController.PrecursorChromatogramChartAction.class))%>";
+    var precursorChromatogramUrl = "<%=h(urlFor(TargetedMSController.PrecursorChromatogramChartAction.class))%>";
+    var moleculeChromatogramUrl = "<%=h(urlFor(TargetedMSController.GeneralMoleculeChromatogramChartAction.class))%>";
     var showPeptideUrl = "<%=h(urlFor(TargetedMSController.ShowPeptideAction.class))%>";
 </script>
 <!--END IMPORTS-->
@@ -62,7 +63,7 @@
         <td>
             <label for="peptideSort">Sort by:&nbsp;</label>
             <select id="peptideSort" name="peptideSort">
-                <option value="intensity">Intensity</option>
+                <option value="value" id="valueSortOption">Intensity</option>
                 <option value="sequence">Sequence</option>
                 <option value="sequencelocation" id="sequenceLocationPeptideSortOption">Sequence Location</option>
                 <option value="cv">Coefficient of Variation</option>
@@ -133,7 +134,7 @@
     <thead>
     <tr>
         <th class="labkey-column-header">Sequence</th>
-        <th class="labkey-column-header" style="text-align: right"><span id="copytoclipboard" clipboard="" style="color:rgb(85, 26, 139); cursor:pointer;" title="Copy filtered peptide list to clipboard">Copy</span></th>
+        <th class="labkey-column-header" style="text-align: right"><span id="copyToClipboardIntensity" clipboard="" style="color:rgb(85, 26, 139); cursor:pointer;" title="Copy filtered peptide list to clipboard">Copy</span></th>
         <th class="labkey-column-header">Charge</th>
         <th class="labkey-column-header" style="text-align: right">mZ</th>
         <th class="labkey-column-header">Start Index</th>
@@ -155,6 +156,7 @@
     <thead>
     <tr>
         <th class="labkey-column-header">Sequence</th>
+        <th class="labkey-column-header" style="text-align: right"><span id="copyToClipboardRatio" clipboard="" style="color:rgb(85, 26, 139); cursor:pointer;" title="Copy filtered peptide list to clipboard">Copy</span></th>
         <th class="labkey-column-header">Light charge</th>
         <th class="labkey-column-header">Heavy charge</th>
         <th class="labkey-column-header" style="text-align: right">Light mZ</th>

@@ -169,7 +169,7 @@ public class PassportController extends SpringActionController
 
                 HtmlView cvChart = new HtmlView(
                         DOM.createHtmlFragment(
-                            DOM.DIV(DOM.at(DOM.Attribute.style, "text-align: center"),"Show:",
+                            DOM.DIV("Show:",
                                     HtmlString.NBSP, HtmlString.NBSP, DOM.INPUT(DOM.at(DOM.Attribute.checked, null).type("checkbox").id("totalCVCheckbox")), "Total CV",
                                     HtmlString.NBSP, HtmlString.NBSP, DOM.INPUT(DOM.at(DOM.Attribute.checked, null).type("checkbox").id("intraCVCheckbox")), "Average intra-day CV",
                                     HtmlString.NBSP, HtmlString.NBSP, DOM.INPUT(DOM.at(DOM.Attribute.checked, null).type("checkbox").id("interCVCheckbox")), "Average inter-day CV"
