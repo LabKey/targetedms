@@ -16,6 +16,7 @@ SELECT
     PrecursorId.PeptideId.Id AS PeptideId,
     PrecursorId.Id AS PrecursorId,
     pci.Id AS PrecursorChromInfoId,
+    GeneralMoleculeChromInfoId,
     PrecursorId.PeptideId.StandardType,
     PrecursorId.PeptideId.StartIndex,
     PrecursorId.PeptideId.EndIndex,
