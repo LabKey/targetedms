@@ -392,14 +392,14 @@ public class SkylineAuditLogManager
 
         try (DbScope.Transaction t = TargetedMSManager.getSchema().getScope().ensureTransaction())
         {
+            SimpleFilter runAuditLogFilter = new SimpleFilter(FieldKey.fromParts("VersionId"), pRunId);
+
             if (deleteEntryIds.size() > 0)
             {
                 SimpleFilter entryFilter = new SimpleFilter(
                         new SimpleFilter.InClause(FieldKey.fromParts("entryId"), deleteEntryIds, false)
                 );
-                SimpleFilter runAuditLogFilter = new SimpleFilter(
-                        new SimpleFilter.InClause(FieldKey.fromParts("AuditLogEntryId"), deleteEntryIds, false)
-                ).addCondition(FieldKey.fromParts("VersionId"), pRunId);
+                runAuditLogFilter.addCondition(new SimpleFilter.InClause(FieldKey.fromParts("AuditLogEntryId"), deleteEntryIds));
                 Table.delete(TargetedMSManager.getTableInfoSkylineRunAuditLogEntry(), runAuditLogFilter);
                 Table.delete(TargetedMSManager.getTableInfoSkylineAuditLogMessage(), entryFilter);
                 Table.delete(TargetedMSManager.getTableInfoSkylineAuditLogEntry(), entryFilter);
@@ -409,9 +409,8 @@ public class SkylineAuditLogManager
                 AuditLogTree versionTree = root.findVersionEntry(pRunId);
                 if (versionTree != null)
                 {
-                    SQLFragment sqlUpdate = new SQLFragment("DELETE FROM ").append(TargetedMSManager.getTableInfoSkylineRunAuditLogEntry(), "r").append(" WHERE AuditLogEntryId = ? AND VersionId = ?");
-                    sqlUpdate.add(versionTree.getEntryId()).add(pRunId);
-                    new SqlExecutor(TargetedMSManager.getSchema()).execute(sqlUpdate);
+                    runAuditLogFilter.addCondition(FieldKey.fromParts("AuditLogEntryId"), versionTree.getEntryId());
+                    Table.delete(TargetedMSManager.getTableInfoSkylineRunAuditLogEntry(), runAuditLogFilter);
                 }
             }
             t.commit();
