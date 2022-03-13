@@ -343,7 +343,6 @@ public class SkylineAuditLogManager
                 .append(" ORDER BY treedepth");
 
         BaseSelector.ResultSetHandler<Map<String, AuditLogTree>> resultSetHandler = (rs, conn) -> {
-//            MultiValuedMap<String, AuditLogTree> result = new ArrayListValuedHashMap<>();
             Map<String, AuditLogTree> result = new HashMap<>(10);
 
             while(rs.next()){

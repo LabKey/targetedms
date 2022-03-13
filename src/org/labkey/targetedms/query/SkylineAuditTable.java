@@ -37,8 +37,6 @@ public class SkylineAuditTable extends VirtualTable<TargetedMSSchema>
         addColumn(new BaseColumnInfo("OrderNumberDescription", this, JdbcType.VARCHAR));
         addColumn(new BaseColumnInfo("MessageType", this, JdbcType.VARCHAR));
         addColumn(new BaseColumnInfo("MessageText", this, JdbcType.VARCHAR));
-
-//        getMutableColumn("VersionId").setFk(QueryForeignKey.from(schema, this.getContainerFilter()).table(TargetedMSSchema.TABLE_RUNS));
     }
 
     @Override
