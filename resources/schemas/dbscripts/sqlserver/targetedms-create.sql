@@ -30,6 +30,4 @@ SELECT t.entryId
 
 FROM logTree t
          INNER JOIN targetedms.AuditLogEntry e ON (t.EntryId = e.EntryId)
-         LEFT JOIN targetedms.RunAuditLogEntry ra ON t.entryId = ra.AuditLogEntryId
-WHERE ra.VersionId IS NOT NULL
-    );
+         LEFT JOIN targetedms.RunAuditLogEntry ra ON t.entryId = ra.AuditLogEntryId;

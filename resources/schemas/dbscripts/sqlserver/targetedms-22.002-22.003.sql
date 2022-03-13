@@ -3,7 +3,7 @@
 CREATE TABLE targetedms.RunAuditLogEntry
 (
     RowId                   INT IDENTITY(1, 1) NOT NULL,
-    VersionId               INT NOT NULL,
+    VersionId               BIGINT NOT NULL,
     AuditLogEntryId         INT NOT NULL,
     Container               ENTITYID NOT NULL,
     Created                 DATETIME,
