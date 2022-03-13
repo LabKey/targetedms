@@ -3,25 +3,23 @@ CREATE VIEW targetedms.AuditLog AS
 WITH logTree as (
     SELECT entryId
          , entryHash
-         , versionid AS RunId
          , parentEntryHash
     FROM targetedms.AuditLogEntry e
-    WHERE versionid IS NOT NULL
+    WHERE e.parentEntryHash = '(null)'
 
     UNION ALL
 
     SELECT nxt.entryId
          , nxt.entryHash
-         , COALESCE(nxt.versionid, prev.RunId) AS RunId
          , nxt.parentEntryHash
     FROM targetedms.AuditLogEntry nxt
              JOIN logTree prev
                   ON prev.parentEntryHash = nxt.entryHash
 )
-SELECT logTree.entryId
+SELECT t.entryId
      , e.documentguid
      , e.entryHash
-     , logTree.RunId
+     , ra.VersionId AS RunId
      , e.createtimestamp
      , e.timezoneoffset
      , e.username
@@ -30,5 +28,8 @@ SELECT logTree.entryId
      , e.reason
      , e.extrainfo
 
-FROM (SELECT DISTINCT entryId, RunId FROM logTree) logTree
-         INNER JOIN targetedms.AuditLogEntry e ON (logTree.EntryId = e.EntryId);
+FROM logTree t
+         INNER JOIN targetedms.AuditLogEntry e ON (t.EntryId = e.EntryId)
+         LEFT JOIN targetedms.RunAuditLogEntry ra ON t.entryId = ra.AuditLogEntryId
+WHERE ra.VersionId IS NOT NULL
+    );

@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class AuditLogTree implements Iterable<AuditLogTree>
 {
@@ -46,6 +47,15 @@ public class AuditLogTree implements Iterable<AuditLogTree>
         _parentEntryHash = pParentEntryHash;
         _entryId = pEntryid;
         _versionId = pVersionId;
+    }
+
+    public static String getMapId(String entryId, Long versionId)
+    {
+        String id = entryId;
+        if (null != versionId)
+            id += "-" + versionId;
+
+        return id;
     }
 
     public String getEntryHash()
@@ -75,18 +85,33 @@ public class AuditLogTree implements Iterable<AuditLogTree>
 
     public AuditLogTree addChild(AuditLogTree pChild)
     {
-        if(!_children.containsKey(pChild._entryHash))
-            _children.put(pChild.getEntryHash(), pChild);
+        String id = getMapId(pChild.getEntryHash(), pChild.getVersionId());
+        if(!_children.containsKey(id))
+            _children.put(id, pChild);
         return pChild;
     }
 
-    public boolean hasChild(String pEntryHash)
+    public boolean hasChild(String pEntryHash, Long versionId)
     {
-        return _children.containsKey(pEntryHash);
+        return _children.containsKey(getMapId(pEntryHash, versionId));
     }
 
-    public AuditLogTree getChild(String pEntryHash) {
-        return _children.getOrDefault(pEntryHash, null);
+    public boolean hasChildEntry(String pEntryHash)
+    {
+        return _children.keySet().stream().anyMatch(c -> c.startsWith(pEntryHash));
+    }
+
+    public AuditLogTree getChild(String pEntryHash, Long versionId) {
+        return _children.get(getMapId(pEntryHash, versionId));
+    }
+
+    public AuditLogTree getChildEntry(String pEntryHash) {
+        for (String key : _children.keySet())
+        {
+            if (key.startsWith(pEntryHash))
+                return _children.get(key);
+        }
+        return null;
     }
 
     public int getTreeSize()
@@ -114,9 +139,9 @@ public class AuditLogTree implements Iterable<AuditLogTree>
      * @param versionId  runId of the document version to be deleted
      * @return list of entries that can be deleted safely without corrupting other versions' logs.
      */
-    public List<AuditLogTree> deleteList(long versionId)
+    public Set<AuditLogTree> deleteList(long versionId)
     {
-        List<AuditLogTree> toDelete = new ArrayList<>();
+        Map<AuditLogTree, AuditLogTree> toDelete = new HashMap<>();
         List<StackEntry> stack = new ArrayList<>();
         stack.add(new StackEntry(null, this));
 
@@ -131,6 +156,8 @@ public class AuditLogTree implements Iterable<AuditLogTree>
                 stack.add(new StackEntry(stackEntry._entry, child));
             }
         }
+
+        List<String> doNotDelete = new ArrayList<>();
 
         // Now look at them in reverse order,
         for (int i = stack.size() - 1; i >= 0; i--)
@@ -148,23 +175,33 @@ public class AuditLogTree implements Iterable<AuditLogTree>
                 }
                 else if (versionId == currentEntry._versionId)      //check if it is the right version id
                 {
-                    // Stash it for deletion
-                    toDelete.add(currentEntry);
-                    AuditLogTree parent = stackEntry._parent;
-                    if (parent != null)
-                    {
-                        parent._children.remove(currentEntry.getEntryHash());
-                        // Check if the parent is now the last hop in the chain
-                        if (parent._children.isEmpty() && parent._versionId == null)
-                        {
-                            parent._versionId = versionId;
-                        }
-                    }
+                    if (!doNotDelete.contains(currentEntry.getEntryHash()))
+                        toDelete.put(currentEntry, stackEntry._parent);
+                }
+                else
+                {
+                    // Do not delete entries that belong to multiple versions
+                    doNotDelete.add(currentEntry.getEntryHash());
+                    toDelete.remove(currentEntry);
                 }
             }
         }
 
-        return toDelete;
+        for (Map.Entry<AuditLogTree, AuditLogTree> treeEntry : toDelete.entrySet())
+        {
+            AuditLogTree parent = treeEntry.getValue();
+            if (parent != null)
+            {
+                parent._children.remove(treeEntry.getKey().getEntryHash());
+                // Check if the parent is now the last hop in the chain
+                if (parent._children.isEmpty() && parent._versionId == null)
+                {
+                    parent._versionId = versionId;
+                }
+            }
+        }
+
+        return toDelete.keySet();
     }
 
     /** For traversing the tree of audit entries, we need to hold both the parent and the child in the relationship */

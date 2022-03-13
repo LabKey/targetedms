@@ -15,12 +15,12 @@
  */
 package org.labkey.targetedms.parser.skyaudit;
 
-import org.labkey.api.data.SQLFragment;
+import org.labkey.api.data.Container;
 import org.labkey.api.data.SimpleFilter;
-import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.data.Table;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.query.FieldKey;
+import org.labkey.api.security.User;
 import org.labkey.api.util.GUID;
 import org.labkey.api.view.ViewContext;
 import org.labkey.targetedms.TargetedMSManager;
@@ -39,8 +39,10 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class AuditLogEntry
 {
@@ -301,12 +303,23 @@ public class AuditLogEntry
      * Saves this entry into the database
      * @return this object
      */
-    public AuditLogEntry persist(){
+    public AuditLogEntry persist(User user, Container container){
         Table.insert(null, TargetedMSManager.getTableInfoSkylineAuditLogEntry(), this);
+
+        // save run audit log junction table entry
+        if (getVersionId() != null)
+        {
+            Map<String, Object> runAuditLogMap = new HashMap<>();
+            runAuditLogMap.put("VersionId", getVersionId());
+            runAuditLogMap.put("AuditLogEntryId", getEntryId());
+            runAuditLogMap.put("Container", container);
+            Table.insert(user, TargetedMSManager.getTableInfoSkylineRunAuditLogEntry(), runAuditLogMap);
+        }
+
         for(AuditLogMessage msg : _allInfoMessage)
         {
             msg.setEntryId(_entryId);
-            Table.insert(null, TargetedMSManager.getTableInfoSkylineAuditLogMessage(), msg);
+            Table.insert(user, TargetedMSManager.getTableInfoSkylineAuditLogMessage(), msg);
         }
         return this;
     }
@@ -314,25 +327,18 @@ public class AuditLogEntry
     /**
      * Updates entry's versionId field in the database. It is the only field that can change,
      * the rest of the entry is immutable.
-     * @param pVersionId new versionId value.
-     * @return this instance if the update is successful.
+     * @param VersionId run id.
+     * @return this
      */
-    public AuditLogEntry updateVersionId(Long pVersionId){
-        this.setVersionId(pVersionId);
-        SQLFragment sqlUpdate = new SQLFragment("");
+    public AuditLogEntry insertRunAuditLogEntry(User user, Container container, Long VersionId){
+        setVersionId(VersionId);
 
-        if(this._entryId == null){  //entryId can be null if this is an existing entry read from a file and not persisted into the database
-            //attempting to retrieve entryId using the alternative key of document GUID and entry hash.
-            sqlUpdate.append("UPDATE targetedms.AuditLogEntry SET versionId = ? WHERE documentGUID = ? AND entryHash = ?");
-            sqlUpdate.addAll(pVersionId, this._documentGUID.toString(), this._entryHash);
-        }
-        else
-        {
-            sqlUpdate.append("UPDATE targetedms.AuditLogEntry SET versionId = ? WHERE entryId = ?");
-            sqlUpdate.addAll(pVersionId, this._entryId);
-        }
+        Map<String, Object> runAuditLogMap = new HashMap<>();
+        runAuditLogMap.put("VersionId", getVersionId());
+        runAuditLogMap.put("AuditLogEntryId", getEntryId());
+        runAuditLogMap.put("Container", container);
+        Table.insert(user, TargetedMSManager.getTableInfoSkylineRunAuditLogEntry(), runAuditLogMap);
 
-        new SqlExecutor(TargetedMSManager.getSchema()).execute(sqlUpdate);
         return this;
     }
 

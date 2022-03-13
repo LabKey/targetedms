@@ -8,7 +8,6 @@ import org.labkey.api.data.MutableColumnInfo;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.VirtualTable;
 import org.labkey.api.query.FieldKey;
-import org.labkey.api.query.QueryForeignKey;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSRun;
 import org.labkey.targetedms.TargetedMSSchema;
@@ -39,7 +38,7 @@ public class SkylineAuditTable extends VirtualTable<TargetedMSSchema>
         addColumn(new BaseColumnInfo("MessageType", this, JdbcType.VARCHAR));
         addColumn(new BaseColumnInfo("MessageText", this, JdbcType.VARCHAR));
 
-        getMutableColumn("VersionId").setFk(QueryForeignKey.from(schema, this.getContainerFilter()).table(TargetedMSSchema.TABLE_RUNS));
+//        getMutableColumn("VersionId").setFk(QueryForeignKey.from(schema, this.getContainerFilter()).table(TargetedMSSchema.TABLE_RUNS));
     }
 
     @Override
@@ -54,9 +53,11 @@ public class SkylineAuditTable extends VirtualTable<TargetedMSSchema>
             separator = ", ";
             cteSQL.append(column.getValueSql("e"));
         }
+        cteSQL.append(separator).append(" r.VersionId");
         cteSQL.append("\n FROM ");
         cteSQL.append(TargetedMSManager.getTableInfoSkylineAuditLogEntry(), "e");
-        cteSQL.append(" WHERE e.VersionId = ? AND e.DocumentGUID = ?");
+        cteSQL.append(" JOIN ").append(TargetedMSManager.getTableInfoSkylineRunAuditLogEntry(), "r").append(" ON e.EntryId = r.AuditLogEntryId \n");
+        cteSQL.append(" WHERE r.VersionId = ? AND e.DocumentGUID = ?");
         cteSQL.add(_run.getId());
         cteSQL.add(_run.getDocumentGUID());
 
@@ -70,15 +71,9 @@ public class SkylineAuditTable extends VirtualTable<TargetedMSSchema>
         {
             cteSQL.append(separator);
             separator = ", ";
-            if ("VersionId".equalsIgnoreCase(column.getName()))
-            {
-               cteSQL.append("COALESCE(nxt.VersionId, prev.VersionId) AS VersionId");
-            }
-            else
-            {
-                cteSQL.append(column.getValueSql("nxt"));
-            }
+            cteSQL.append(column.getValueSql("nxt"));
         }
+        cteSQL.append(separator).append("prev.VersionId ");
         cteSQL.append("\n FROM ");
         cteSQL.append(TargetedMSManager.getTableInfoSkylineAuditLogEntry(), "nxt");
         cteSQL.append(" JOIN logTree prev ON prev.parentEntryHash = nxt.entryHash AND nxt.DocumentGUID = ?");

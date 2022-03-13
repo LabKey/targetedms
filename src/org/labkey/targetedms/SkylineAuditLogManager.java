@@ -62,6 +62,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
@@ -86,7 +87,7 @@ public class SkylineAuditLogManager
     }
 
 
-    public int importAuditLogFile(@NotNull File pAuditLogFile, @NotNull GUID pDocumentGUID, TargetedMSRun run) throws AuditLogException
+    public int importAuditLogFile(User user, Container container, @NotNull File pAuditLogFile, @NotNull GUID pDocumentGUID, TargetedMSRun run) throws AuditLogException
     {
         AuditLogImportContext context = new AuditLogImportContext();
         context._logFile = pAuditLogFile;
@@ -106,7 +107,7 @@ public class SkylineAuditLogManager
         {
             try (SkylineAuditLogParser parser = new SkylineAuditLogParser(context._logFile, _logger))
             {
-                int entriesCount = persistAuditLog(context, parser);
+                int entriesCount = persistAuditLog(user, container, context, parser);
                 verifyPostRequisites(context, parser);
                 return entriesCount;
             }
@@ -182,7 +183,7 @@ public class SkylineAuditLogManager
      * Iterates through the log entries and persists them one by one
      * @return number of audit log entries read from the file.
      */
-    private int persistAuditLog(AuditLogImportContext pContext, SkylineAuditLogParser parser) throws AuditLogException
+    private int persistAuditLog(User user, Container container, AuditLogImportContext pContext, SkylineAuditLogParser parser) throws AuditLogException
     {
         AuditLogMessageExpander expander = new AuditLogMessageExpander(_logger);
         //since entries in the log file are in reverse chronological order we have to
@@ -261,10 +262,13 @@ public class SkylineAuditLogManager
         for (AuditLogEntry ent : entries)
         {
             //if log tree has the hash
-            if (treePointer.hasChild(ent.getEntryHash()))
+            if (treePointer.hasChildEntry(ent.getEntryHash()))
             {
+                // Set so RunAuditLogEntry table can be updated
+                ent.setEntryId(treePointer.getChildEntry(ent.getEntryHash()).getEntryId());
+
                 //advance the tree and proceed to the next entry
-                treePointer = treePointer.getChild(ent.getEntryHash());
+                treePointer = treePointer.getChildEntry(ent.getEntryHash());
             }
             else
             {
@@ -274,7 +278,7 @@ public class SkylineAuditLogManager
                 }
                 // persist the entry and add to the tree
                 ent.setParentEntryHash(treePointer.getEntryHash());
-                ent.persist();
+                ent.persist(user, container);
                 persistedEntriesCount++;
                 AuditLogTree newTreeEntry = ent.getTreeEntry();
                 assert newTreeEntry != null;
@@ -284,7 +288,7 @@ public class SkylineAuditLogManager
             }
         }
         if (persistedEntriesCount == 0)      //if no entries were actually saved into the database we are uploading an earlier document version
-            entries.get(entries.size() - 1).updateVersionId(pContext._runId);   //and still need to update the terminal entry with the versionId.
+            entries.get(entries.size() - 1).insertRunAuditLogEntry(user, container, pContext._runId);   //and still need to update the terminal entry with the versionId.
 
         return entries.size();
     }
@@ -314,30 +318,32 @@ public class SkylineAuditLogManager
 
         SQLFragment treeQuery = new SQLFragment("");
         if(TargetedMSManager.getSqlDialect().isPostgreSQL()){
-            treeQuery.append("WITH RECURSIVE tree(id, hash, parenthash, versionId, treedepth) AS ");
+            treeQuery.append("WITH RECURSIVE tree(id, hash, parenthash, treedepth) AS ");
         }
         else if(TargetedMSManager.getSqlDialect().isSqlServer()){
-            treeQuery.append("WITH tree(id, hash, parenthash, versionId, treedepth) AS ");
+            treeQuery.append("WITH tree(id, hash, parenthash, treedepth) AS ");
         }
         else
             throw new AuditLogException("Database type not supported");
 
         treeQuery.append("( ");
 
-        SimpleFilter entryFilter = new SimpleFilter(FieldKey.fromParts("documentGuid"), "'" + pDocumentGUID.toString() + "'");
-        treeQuery.append("SELECT entryid, entryhash, parententryhash, versionId, 1 \n")
-                .append("FROM " + entryTbl.getSchema().getName() + "." + entryTbl.getName() + " \n")
-                .append("WHERE " + entryFilter.getFilterText() + "\n")
-                .append("  AND parententryhash = '" + AuditLogTree.NULL_STRING + "' \n")
-             .append(" UNION ALL \n")
-                .append(" SELECT entryid, entryhash, parententryhash, e.versionId, treedepth + 1 \n")
-                .append("FROM " + entryTbl.getSchema().getName() + "." + entryTbl.getName() + " e \n")
+        treeQuery.append("SELECT entryid, entryhash, parententryhash, 1 \n")
+                .append("FROM ").append(TargetedMSManager.getTableInfoSkylineAuditLogEntry(), "a").append("\n")
+                .append(" WHERE documentGuid = ? ").add(pDocumentGUID).append(" \n")
+                .append("  AND parententryhash = ?").add(AuditLogTree.NULL_STRING).append(" \n")
+                .append(" UNION ALL \n")
+                .append(" SELECT entryid, entryhash, parententryhash, treedepth + 1 \n")
+                .append("FROM ").append(TargetedMSManager.getTableInfoSkylineAuditLogEntry(), "e").append("\n")
                 .append(" JOIN tree ON tree.hash = e.parententryhash \n")
-                .append("WHERE " + entryFilter.getFilterText() + "\n")
-                 .append(" )\n")
-                 .append(" SELECT DISTINCT * FROM tree ORDER BY treedepth");
+                .append(" WHERE documentGuid = ? ").add(pDocumentGUID).append(" \n")
+                .append(" )\n")
+                .append(" SELECT DISTINCT t.*, r.VersionId FROM tree t \n")
+                .append(" LEFT JOIN ").append(TargetedMSManager.getTableInfoSkylineRunAuditLogEntry(), "r").append(" ON t.Id = r.AuditLogEntryId \n")
+                .append(" ORDER BY treedepth");
 
         BaseSelector.ResultSetHandler<Map<String, AuditLogTree>> resultSetHandler = (rs, conn) -> {
+//            MultiValuedMap<String, AuditLogTree> result = new ArrayListValuedHashMap<>();
             Map<String, AuditLogTree> result = new HashMap<>(10);
 
             while(rs.next()){
@@ -353,7 +359,7 @@ public class SkylineAuditLogManager
                         parentHash,
                         versionId
                 );
-                result.put(node.getEntryHash(), node);
+                result.put(AuditLogTree.getMapId(node.getEntryHash(), node.getVersionId()), node);
             }
             return  result;
         };
@@ -363,7 +369,10 @@ public class SkylineAuditLogManager
         nodes.put(AuditLogTree.NULL_STRING, root);
         for(Map.Entry<String, AuditLogTree> e : nodes.entrySet()){
             if(e.getValue().getParentEntryHash() != null)
-                nodes.get(e.getValue().getParentEntryHash()).addChild(e.getValue());
+            {
+                var entry = nodes.entrySet().stream().filter(n -> n.getKey().startsWith(e.getValue().getParentEntryHash())).findFirst();
+                entry.ifPresent(stringAuditLogTreeEntry -> stringAuditLogTreeEntry.getValue().addChild(e.getValue()));
+            }
         }
         return root;
     }
@@ -379,7 +388,7 @@ public class SkylineAuditLogManager
         String objGUID = new SqlSelector(TargetedMSManager.getSchema(), query).getObject(String.class);
         if(objGUID == null) return;     //nothing to delete if there is no document or the document has no GUID
         AuditLogTree root = buildLogTree(new GUID(objGUID));
-        List<Integer> deleteEntryIds = root.deleteList(pRunId).stream().map(AuditLogTree::getEntryId).collect(Collectors.toList());
+        Set<Integer> deleteEntryIds = root.deleteList(pRunId).stream().map(AuditLogTree::getEntryId).collect(Collectors.toSet());
 
         try (DbScope.Transaction t = TargetedMSManager.getSchema().getScope().ensureTransaction())
         {
@@ -388,6 +397,10 @@ public class SkylineAuditLogManager
                 SimpleFilter entryFilter = new SimpleFilter(
                         new SimpleFilter.InClause(FieldKey.fromParts("entryId"), deleteEntryIds, false)
                 );
+                SimpleFilter runAuditLogFilter = new SimpleFilter(
+                        new SimpleFilter.InClause(FieldKey.fromParts("AuditLogEntryId"), deleteEntryIds, false)
+                ).addCondition(FieldKey.fromParts("VersionId"), pRunId);
+                Table.delete(TargetedMSManager.getTableInfoSkylineRunAuditLogEntry(), runAuditLogFilter);
                 Table.delete(TargetedMSManager.getTableInfoSkylineAuditLogMessage(), entryFilter);
                 Table.delete(TargetedMSManager.getTableInfoSkylineAuditLogEntry(), entryFilter);
             }
@@ -396,8 +409,8 @@ public class SkylineAuditLogManager
                 AuditLogTree versionTree = root.findVersionEntry(pRunId);
                 if (versionTree != null)
                 {
-                    SQLFragment sqlUpdate = new SQLFragment("UPDATE targetedms.AuditLogEntry SET versionId = NULL WHERE entryId = ?");
-                    sqlUpdate.add(versionTree.getEntryId());
+                    SQLFragment sqlUpdate = new SQLFragment("DELETE FROM ").append(TargetedMSManager.getTableInfoSkylineRunAuditLogEntry(), "r").append(" WHERE AuditLogEntryId = ? AND VersionId = ?");
+                    sqlUpdate.add(versionTree.getEntryId()).add(pRunId);
                     new SqlExecutor(TargetedMSManager.getSchema()).execute(sqlUpdate);
                 }
             }
@@ -424,15 +437,23 @@ public class SkylineAuditLogManager
 
     public void deleteDocumentLog(@NotNull GUID pDocumentGUID)
     {
-        SQLFragment sqlDeleteMessages = new SQLFragment("DELETE FROM targetedms.AuditLogMessage " +
-                                "WHERE entryId IN (SELECT entryId from targetedms.AuditLogEntry WHERE documentGUID = ?)");
+        SQLFragment sqlDeleteMessages = new SQLFragment("DELETE FROM ").append(TargetedMSManager.getTableInfoSkylineAuditLogMessage(), "m");
+        sqlDeleteMessages.append(" WHERE entryId IN (SELECT entryId FROM ").append(TargetedMSManager.getTableInfoSkylineAuditLogEntry(), "a");
+        sqlDeleteMessages.append(" WHERE documentGUID = ?)");
         sqlDeleteMessages.add(pDocumentGUID.toString());
-        SQLFragment sqlDeleteEntries = new SQLFragment("DELETE FROM targetedms.AuditLogMessage WHERE documentGUID = ?");
+
+        SQLFragment sqlDeleteRunEntries = new SQLFragment("DELETE FROM ").append(TargetedMSManager.getTableInfoSkylineRunAuditLogEntry(), "r");
+        sqlDeleteRunEntries.append("WHERE AuditLogEntryId IN (SELECT entryId AS AuditLogEntryId FROM ").append(TargetedMSManager.getTableInfoSkylineAuditLogEntry(), "a");
+        sqlDeleteRunEntries.append(" WHERE documentGUID = ?)");
+
+        SQLFragment sqlDeleteEntries = new SQLFragment("DELETE FROM ").append(TargetedMSManager.getTableInfoSkylineAuditLogEntry(), "a");
+        sqlDeleteEntries.append(" WHERE documentGUID = ?");
         sqlDeleteEntries.add(pDocumentGUID.toString());
 
         SqlExecutor exec = new SqlExecutor(TargetedMSSchema.getSchema());
 
         exec.execute(sqlDeleteMessages);
+        exec.execute(sqlDeleteRunEntries);
         exec.execute(sqlDeleteEntries);
     }
 
@@ -458,7 +479,7 @@ public class SkylineAuditLogManager
             File logFile = UnitTestUtil.extractLogFromZip(fZip, _logger);
             SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, null);
 
-            importer.importAuditLogFile(logFile, _docGUID, run);
+            importer.importAuditLogFile(_user, _container, logFile, _docGUID, run);
             return importer.buildLogTree(_docGUID);
         }
 
@@ -489,7 +510,7 @@ public class SkylineAuditLogManager
             enableHashValidation();
             File logFile = UnitTestUtil.extractLogFromZip(UnitTestUtil.getSampleDataFile(fileName), _logger);
             SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, null);
-            importer.importAuditLogFile(logFile, _docGUID, getNewRun(_docGUID));
+            importer.importAuditLogFile(_user, _container, logFile, _docGUID, getNewRun(_docGUID));
             AuditLogTree tree = importer.buildLogTree(_docGUID);
             assertNotNull(tree);
             assertEquals(4, tree.getTreeSize());
@@ -541,21 +562,21 @@ public class SkylineAuditLogManager
             }
 
             assertNotNull(tree);
-            assertEquals(14, tree.getTreeSize());
+            assertEquals(15, tree.getTreeSize());
 
             SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, null);
             importer.deleteDocumentVersionLog(runs.pop().getId());
             tree = importer.buildLogTree(_docGUID);
-            assertEquals(13, tree.getTreeSize());
+            assertEquals(14, tree.getTreeSize());
 
             importer.deleteDocumentVersionLog(runs.pop().getId());
             tree = importer.buildLogTree(_docGUID);
-            assertEquals(11, tree.getTreeSize());
+            assertEquals(13, tree.getTreeSize());
 
             runs.pop();
             importer.deleteDocumentVersionLog(runs.pop().getId());
             tree = importer.buildLogTree(_docGUID);
-            assertEquals(11, tree.getTreeSize());
+            assertEquals(13, tree.getTreeSize());
         }
 
         @Test
