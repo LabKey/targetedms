@@ -49,6 +49,8 @@ public class AuditLogTree implements Iterable<AuditLogTree>
         _versionId = pVersionId;
     }
 
+    // Only audit log entries with versions will have duplicate entryIds when multiple runs
+    // claim same audit log entry, so concat version to the map key
     public static String getMapId(String entryId, Long versionId)
     {
         String id = entryId;

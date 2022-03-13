@@ -1560,6 +1560,18 @@
             <column columnName="ExtraInfo"/>
         </columns>
     </table>
+    <table tableName="RunAuditLogEntry" tableDbType="TABLE">
+        <columns>
+            <column columnName="RowId"/>
+            <column columnName="VersionId"/>
+            <column columnName="AuditLogEntryId"/>
+            <column columnName="Container"/>
+            <column columnName="Created"/>
+            <column columnName="CreatedBy"/>
+            <column columnName="Modified"/>
+            <column columnName="ModifiedBy"/>
+        </columns>
+    </table>
     <!-- View version of the AuditLogEntry table that uses a CTE to get the VersionId/RunId for every row -->
     <table tableName="AuditLog" tableDbType="VIEW">
         <columns>
