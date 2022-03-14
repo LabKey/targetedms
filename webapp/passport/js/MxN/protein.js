@@ -405,7 +405,7 @@ protein =
                         normalizedArea: replicateInfo.NormalizedArea,
                         lightHeavyTotalRatio: replicateInfo.LightHeavyTotalRatio,
                         lightHeavyCalibratedRatio: replicateInfo.LightHeavyCalibratedRatio,
-                        lightHeavyNormalizedRatio: replicateInfo.lightHeavyNormalizedRatio,
+                        lightHeavyNormalizedRatio: replicateInfo.LightHeavyNormalizedRatio,
                         heavy: replicateInfo.Heavy,
                         grouping: replicateInfo.Grouping,
                         replicate: replicateInfo.Replicate,
