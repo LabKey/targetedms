@@ -110,8 +110,8 @@ public class UnitTestUtil
         Table.delete(TargetedMSManager.getTableInfoSkylineAuditLogMessage(), messageDeleteFilter);
 
         //deleting the run entries
-        SQLFragment sqlDeleteRunEntries = new SQLFragment("DELETE FROM ").append(TargetedMSManager.getTableInfoSkylineRunAuditLogEntry(), "r");
-        sqlDeleteRunEntries.append(" WHERE AuditLogEntryId IN (SELECT entryId AS AuditLogEntryId FROM ").append(TargetedMSManager.getTableInfoSkylineAuditLogEntry(), "a");
+        SQLFragment sqlDeleteRunEntries = new SQLFragment("DELETE FROM ").append(TargetedMSManager.getTableInfoSkylineRunAuditLogEntry());
+        sqlDeleteRunEntries.append(" WHERE AuditLogEntryId IN (SELECT entryId AS AuditLogEntryId FROM ").append(TargetedMSManager.getTableInfoSkylineAuditLogEntry());
         sqlDeleteRunEntries.append(" WHERE documentGUID = ?)");
         sqlDeleteRunEntries.add(pDocumentGUID.toString());
 
