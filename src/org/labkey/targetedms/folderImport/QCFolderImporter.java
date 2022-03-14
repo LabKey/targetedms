@@ -14,8 +14,8 @@ import java.util.Collections;
 
 public class QCFolderImporter implements FolderImporter
 {
-    protected static final String QC_FOLDER_DATA_TYPE = "TargetedMS QC Metrics"; //TODO: is there a preference on naming this?
-    protected static final String QC_FOLDER_DIR = "targetedms";
+    protected static final String QC_FOLDER_DATA_TYPE = "Panorama QC Folder Settings";
+    protected static final String QC_FOLDER_DIR = "panoramaQC";
 
     @Override
     public String getDataType()
