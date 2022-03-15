@@ -468,7 +468,7 @@ public class SkylineDocImporter
             int calCurvesCount = quantifyRun(run, pepSettings, groupComparisons);
 
             SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, _log);
-            int auditLogEntriesCount = importer.importAuditLogFile(_user, _container, _auditLogFile, parser.getDocumentGUID(), run);
+            int auditLogEntriesCount = importer.importAuditLogFile(_user, _auditLogFile, parser.getDocumentGUID(), run);
 
             run.setAuditLogEntriesCount(auditLogEntriesCount);
             run.setPeptideGroupCount(parser.getPeptideGroupCount());

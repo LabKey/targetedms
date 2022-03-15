@@ -15,7 +15,6 @@
  */
 package org.labkey.targetedms.parser.skyaudit;
 
-import org.labkey.api.data.Container;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.Table;
 import org.labkey.api.data.TableSelector;
@@ -303,17 +302,13 @@ public class AuditLogEntry
      * Saves this entry into the database
      * @return this object
      */
-    public AuditLogEntry persist(User user, Container container){
+    public AuditLogEntry persist(User user){
         Table.insert(null, TargetedMSManager.getTableInfoSkylineAuditLogEntry(), this);
 
         // save run audit log junction table entry
         if (getVersionId() != null)
         {
-            Map<String, Object> runAuditLogMap = new HashMap<>();
-            runAuditLogMap.put("VersionId", getVersionId());
-            runAuditLogMap.put("AuditLogEntryId", getEntryId());
-            runAuditLogMap.put("Container", container);
-            Table.insert(user, TargetedMSManager.getTableInfoSkylineRunAuditLogEntry(), runAuditLogMap);
+            insertRunAuditLogEntry(user, getVersionId());
         }
 
         for(AuditLogMessage msg : _allInfoMessage)
@@ -330,13 +325,12 @@ public class AuditLogEntry
      * @param VersionId run id.
      * @return this
      */
-    public AuditLogEntry insertRunAuditLogEntry(User user, Container container, Long VersionId){
+    public AuditLogEntry insertRunAuditLogEntry(User user, Long VersionId){
         setVersionId(VersionId);
 
         Map<String, Object> runAuditLogMap = new HashMap<>();
         runAuditLogMap.put("VersionId", getVersionId());
         runAuditLogMap.put("AuditLogEntryId", getEntryId());
-        runAuditLogMap.put("Container", container);
         Table.insert(user, TargetedMSManager.getTableInfoSkylineRunAuditLogEntry(), runAuditLogMap);
 
         return this;

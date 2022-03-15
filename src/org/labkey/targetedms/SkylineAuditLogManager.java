@@ -87,7 +87,7 @@ public class SkylineAuditLogManager
     }
 
 
-    public int importAuditLogFile(User user, Container container, @NotNull File pAuditLogFile, @NotNull GUID pDocumentGUID, TargetedMSRun run) throws AuditLogException
+    public int importAuditLogFile(User user, @NotNull File pAuditLogFile, @NotNull GUID pDocumentGUID, TargetedMSRun run) throws AuditLogException
     {
         AuditLogImportContext context = new AuditLogImportContext();
         context._logFile = pAuditLogFile;
@@ -107,7 +107,7 @@ public class SkylineAuditLogManager
         {
             try (SkylineAuditLogParser parser = new SkylineAuditLogParser(context._logFile, _logger))
             {
-                int entriesCount = persistAuditLog(user, container, context, parser);
+                int entriesCount = persistAuditLog(user, context, parser);
                 verifyPostRequisites(context, parser);
                 return entriesCount;
             }
@@ -183,7 +183,7 @@ public class SkylineAuditLogManager
      * Iterates through the log entries and persists them one by one
      * @return number of audit log entries read from the file.
      */
-    private int persistAuditLog(User user, Container container, AuditLogImportContext pContext, SkylineAuditLogParser parser) throws AuditLogException
+    private int persistAuditLog(User user, AuditLogImportContext pContext, SkylineAuditLogParser parser) throws AuditLogException
     {
         AuditLogMessageExpander expander = new AuditLogMessageExpander(_logger);
         //since entries in the log file are in reverse chronological order we have to
@@ -278,7 +278,7 @@ public class SkylineAuditLogManager
                 }
                 // persist the entry and add to the tree
                 ent.setParentEntryHash(treePointer.getEntryHash());
-                ent.persist(user, container);
+                ent.persist(user);
                 persistedEntriesCount++;
                 AuditLogTree newTreeEntry = ent.getTreeEntry();
                 assert newTreeEntry != null;
@@ -288,7 +288,7 @@ public class SkylineAuditLogManager
             }
         }
         if (persistedEntriesCount == 0)      //if no entries were actually saved into the database we are uploading an earlier document version
-            entries.get(entries.size() - 1).insertRunAuditLogEntry(user, container, pContext._runId);   //and still need to update the terminal entry with the versionId.
+            entries.get(entries.size() - 1).insertRunAuditLogEntry(user, pContext._runId);   //and still need to update the terminal entry with the versionId.
 
         return entries.size();
     }
@@ -477,7 +477,7 @@ public class SkylineAuditLogManager
             File logFile = UnitTestUtil.extractLogFromZip(fZip, _logger);
             SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, null);
 
-            importer.importAuditLogFile(_user, _container, logFile, _docGUID, run);
+            importer.importAuditLogFile(_user, logFile, _docGUID, run);
             return importer.buildLogTree(_docGUID);
         }
 
@@ -508,7 +508,7 @@ public class SkylineAuditLogManager
             enableHashValidation();
             File logFile = UnitTestUtil.extractLogFromZip(UnitTestUtil.getSampleDataFile(fileName), _logger);
             SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, null);
-            importer.importAuditLogFile(_user, _container, logFile, _docGUID, getNewRun(_docGUID));
+            importer.importAuditLogFile(_user, logFile, _docGUID, getNewRun(_docGUID));
             AuditLogTree tree = importer.buildLogTree(_docGUID);
             assertNotNull(tree);
             assertEquals(4, tree.getTreeSize());
