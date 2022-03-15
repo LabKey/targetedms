@@ -125,7 +125,7 @@ protein =
         const result = LABKEY.vis.Stat.summary(rows, getter);
         result.sd = LABKEY.vis.Stat.getStdDev(result.sortedValues);
         result.mean = LABKEY.vis.Stat.getMean(result.sortedValues);
-        result.cv = result.Q2 ? (result.sd / result.Q2) : null;
+        result.cv = result.mean ? (result.sd / result.mean) : null;
         return result;
     },
 
@@ -647,7 +647,7 @@ protein =
                         '<td style="text-align: right; ' + (row.groupingCV > 0.2 ? 'color: darkred; font-weight: bold' : '') + '">' + LABKEY.Utils.encodeHtml((row.groupingCV * 100).toFixed(1)) + '%</td>' +
                         '<td style="text-align: right; ' + (row.timepointCV > 0.2 ? 'color: darkred; font-weight: bold' : '') + '">' + LABKEY.Utils.encodeHtml((row.timepointCV * 100).toFixed(1)) + '%</td>' +
                         '<td style="text-align: right; ' + (row.totalCV > 0.2 ? 'color: darkred; font-weight: bold' : '') + '">' + LABKEY.Utils.encodeHtml((row.totalCV).toFixed(1)) + '%</td>' +
-                        '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.fullStats.Q2.toExponential(3)) + '</td>' +
+                        '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.fullStats.mean.toExponential(3)) + '</td>' +
                         '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.fullStats.max.toExponential(3)) + '</td>' +
                         '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.fullStats.min.toExponential(3)) + '</td>' +
                         '</tr>';
@@ -662,7 +662,7 @@ protein =
                             '<td style="text-align: right; ' + (row.ratioGroupingCV > 0.2 ? 'color: darkred; font-weight: bold' : '') + '">' + LABKEY.Utils.encodeHtml((row.ratioGroupingCV * 100).toFixed(1)) + '%</td>' +
                             '<td style="text-align: right; ' + (row.ratioTimepointCV > 0.2 ? 'color: darkred; font-weight: bold' : '') + '">' + LABKEY.Utils.encodeHtml((row.ratioTimepointCV * 100).toFixed(1)) + '%</td>' +
                             '<td style="text-align: right; ' + (row.ratioTotalCV > 0.2 ? 'color: darkred; font-weight: bold' : '') + '">' + LABKEY.Utils.encodeHtml((row.ratioTotalCV).toFixed(1)) + '%</td>' +
-                            '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.ratioFullStats.Q2.toFixed(3)) + '</td>' +
+                            '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.ratioFullStats.mean.toFixed(3)) + '</td>' +
                             '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.ratioFullStats.max.toFixed(3)) + '</td>' +
                             '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.ratioFullStats.min.toFixed(3)) + '</td>' +
                             '</tr>';
@@ -861,9 +861,9 @@ protein =
                     return 'Peptide: ' + x +
                             '\nMin: ' + format(stats.min) +
                             '\nMax: ' + format(stats.max) +
-                            '\nMean: ' + format(stats.Q2) +
+                            '\nMean: ' + format(stats.mean) +
                             '\nStd dev: ' + format(sd) +
-                            '\n%CV: ' + (stats.Q2 ? ((sd / stats.Q2) * 100).toFixed(1) : 'N/A');
+                            '\n%CV: ' + (stats.mean ? ((sd / stats.mean) * 100).toFixed(1) : 'N/A');
                 }
             }
         });
