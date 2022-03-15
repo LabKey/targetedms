@@ -5,8 +5,10 @@ import org.labkey.api.admin.FolderWriter;
 import org.labkey.api.admin.FolderWriterFactory;
 import org.labkey.api.admin.ImportContext;
 import org.labkey.api.data.Container;
+import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.writer.VirtualFile;
 import org.labkey.folder.xml.FolderDocument;
+import org.labkey.targetedms.TargetedMSManager;
 
 public class QCFolderWriterFactory implements FolderWriterFactory
 {
@@ -22,6 +24,14 @@ public class QCFolderWriterFactory implements FolderWriterFactory
         public String getDataType()
         {
             return QCFolderImporter.QC_FOLDER_DATA_TYPE;
+        }
+
+        @Override
+        public boolean show(Container c)
+        {
+            TargetedMSManager.getFolderType(c);
+            TargetedMSService.FolderType folderType = TargetedMSManager.getFolderType(c);
+            return folderType == TargetedMSService.FolderType.QC;
         }
 
         @Override
