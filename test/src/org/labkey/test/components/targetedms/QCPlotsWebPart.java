@@ -207,6 +207,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         elementCache().showExcludedCheckbox.set(check);
     }
 
+    public boolean isShowExcludedPointsChecked()
+    {
+        return elementCache().showExcludedCheckbox.isChecked();
+    }
+
     public void setShowReferenceGuideSet(boolean check)
     {
         elementCache().showReferenceGuideSet.set(check);
@@ -224,6 +229,19 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     public boolean isShowAllPeptidesInSinglePlotChecked()
     {
         return elementCache().singlePlotCheckbox.isChecked();
+    }
+
+    public QCPlotsWebPart saveAsDefaultView()
+    {
+        clickMenuItem(false ,"Save as Default View");
+        getWrapper().acceptAlert();
+        return this;
+    }
+
+    public QCPlotsWebPart revertToDefaultView()
+    {
+        clickMenuItem("Revert to Default View");
+        return this;
     }
 
     public void applyRange()
