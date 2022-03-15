@@ -857,13 +857,14 @@ protein =
             aes: {
                 hoverText: function (x, stats) {
                     const sd = LABKEY.vis.Stat.getStdDev(stats.sortedValues);
+                    const mean = LABKEY.vis.Stat.getMean(stats.sortedValues);
 
                     return 'Peptide: ' + x +
                             '\nMin: ' + format(stats.min) +
                             '\nMax: ' + format(stats.max) +
-                            '\nMean: ' + format(stats.mean) +
+                            '\nMean: ' + format(mean) +
                             '\nStd dev: ' + format(sd) +
-                            '\n%CV: ' + (stats.mean ? ((sd / stats.mean) * 100).toFixed(1) : 'N/A');
+                            '\n%CV: ' + (mean ? ((sd / mean) * 100).toFixed(1) : 'N/A');
                 }
             }
         });
