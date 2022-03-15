@@ -27,12 +27,14 @@ import org.openqa.selenium.NoSuchElementException;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.CUSUMm;
 
 @Category(Git.class)
 @BaseWebDriverTest.ClassTimeout(minutes = 6)
@@ -76,6 +78,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         APIContainerHelper apiContainerHelper = new APIContainerHelper(this);
         apiContainerHelper.deleteProject(getProjectName(), afterTest);
         apiContainerHelper.deleteProject("PressureTraceQC", afterTest);
+        _userHelper.deleteUsers(false, USER);
     }
 
     @Test
@@ -246,4 +249,49 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         assertTrue("Trace values after import are not present", traceValuesTable.getDataRowCount() > 0);
     }
 
+    @Test
+    public void testDefaultViewSettingQCPlots()
+    {
+        goToProjectHome();
+
+        PanoramaDashboard panoramaDashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = panoramaDashboard.getQcPlotsWebPart();
+        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TOTAL_PEAK);
+        qcPlotsWebPart.checkPlotType(CUSUMm, true);
+        qcPlotsWebPart.chooseSmallPlotSize(false);
+        qcPlotsWebPart.setShowExcludedPoints(true);
+        qcPlotsWebPart.saveAsDefaultView();
+
+        log("Verifying the values are set after save as default view action");
+        checker().verifyTrue("Incorrect value for Show Excluded points", qcPlotsWebPart.isShowExcludedPointsChecked());
+        checker().verifyFalse("Incorrect value for plot size", qcPlotsWebPart.isSmallPlotSizeSelected());
+        checker().verifyEquals("Incorrect Metric value", QCPlotsWebPart.MetricType.TOTAL_PEAK.toString(),
+                qcPlotsWebPart.getCurrentMetricType().toString());
+
+        impersonate(USER);
+        checker().verifyTrue("Incorrect value for Show Excluded points for different user " + USER , qcPlotsWebPart.isShowExcludedPointsChecked());
+        checker().withScreenshot("Test1").verifyFalse("Incorrect value for plot size for different user " + USER, qcPlotsWebPart.isSmallPlotSizeSelected());
+        checker().verifyEquals("Incorrect Metric value for different user " + USER, QCPlotsWebPart.MetricType.TOTAL_PEAK.toString(),
+                qcPlotsWebPart.getCurrentMetricType().toString());
+        checker().verifyEquals("Reader user should not have save as default permission", Arrays.asList("Revert to Default View"),
+                getListOfMenuItems(qcPlotsWebPart));
+
+        stopImpersonating();
+
+        log("Verifying revert to default view action");
+        goToProjectHome();
+        panoramaDashboard = new PanoramaDashboard(this);
+        qcPlotsWebPart = panoramaDashboard.getQcPlotsWebPart();
+        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.RETENTION);
+        qcPlotsWebPart.revertToDefaultView();
+
+        checker().verifyEquals("Incorrect Metric value", QCPlotsWebPart.MetricType.TOTAL_PEAK.toString(),
+                qcPlotsWebPart.getCurrentMetricType().toString());
+    }
+
+    private List<String> getListOfMenuItems(QCPlotsWebPart qcPlotsWebPart)
+    {
+        qcPlotsWebPart.getTitleMenu().expand();
+        return getTexts(qcPlotsWebPart.getTitleMenu().findVisibleMenuItems());
+    }
 }
