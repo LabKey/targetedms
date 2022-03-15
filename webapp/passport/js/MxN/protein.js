@@ -428,11 +428,11 @@ protein =
                 return row.precursorId
             });
 
-            const medians = {};
-            const ratioMedians = {};
+            const means = {};
+            const ratioMeans = {};
             const cvLineData = [];
             const ratioCVLineData = [];
-            const summaryDataTable = [];
+            let summaryDataTable = [];
             const cvs = {};
             const ratioCvs = {};
 
@@ -478,7 +478,7 @@ protein =
                 const fullStats = protein.calcStats(rowsForPrecursor, function (x) {
                     return x[protein.settings.areaProperty];
                 });
-                medians[precursorId] = fullStats.Q2;
+                means[precursorId] = fullStats.mean;
 
                 const timepointCV = protein.calcMeanCV(rowsForPrecursor, 'timepoint', protein.settings.areaProperty);
                 const groupingCV = protein.calcMeanCV(rowsForPrecursor, 'grouping', protein.settings.areaProperty);
@@ -497,7 +497,7 @@ protein =
                     ratioFullStats = protein.calcStats(rowsForPrecursor, function (x) {
                         return x[protein.settings.ratioProperty];
                     });
-                    ratioMedians[precursorId] = ratioFullStats.Q2;
+                    ratioMeans[precursorId] = ratioFullStats.mean;
                 }
 
                 if (row.enabled) {
@@ -593,7 +593,7 @@ protein =
             }
             else if (sortBy === 'value') {
                 sortFunction = function (a, b) {
-                    return showRatio ? (ratioMedians[b.precursorId] - ratioMedians[a.precursorId]) : (medians[b.precursorId] - medians[a.precursorId]);
+                    return showRatio ? (ratioMeans[b.precursorId] - ratioMeans[a.precursorId]) : (means[b.precursorId] - means[a.precursorId]);
                 };
             }
             else if (sortBy === 'cv') {
@@ -606,6 +606,11 @@ protein =
 
             plotData.sort(sortFunction);
             cvLineData.sort(sortFunction);
+            if (showRatio) {
+                summaryDataTable = summaryDataTable.filter(function(row) {
+                    return row.heavyCharge;
+                })
+            }
             summaryDataTable.sort(sortFunction);
 
             const clipboardPeptides = [];
