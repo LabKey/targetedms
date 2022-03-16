@@ -1565,7 +1565,6 @@
             <column columnName="RowId"/>
             <column columnName="VersionId"/>
             <column columnName="AuditLogEntryId"/>
-            <column columnName="Container"/>
             <column columnName="Created"/>
             <column columnName="CreatedBy"/>
             <column columnName="Modified"/>
