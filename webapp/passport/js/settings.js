@@ -10,7 +10,7 @@ function Settings(updateCallback) {
         start: 0,
         end: 0
     };
-    var sortBy = "Intensity";
+    var sortBy = 'value';
 
     this.addFeatureVisible = function(type) {
         if(!contains(visibleFeatures, type)) {
@@ -34,7 +34,7 @@ function Settings(updateCallback) {
     $( "#peptideSort" )
             .change(function () {
                 $( "#peptideSort option:selected" ).each(function() {
-                    var newSort = $( this ).text();
+                    var newSort = $( this ).val();
                     if(newSort !== sortBy) {
                         sortBy = newSort;
                         update();

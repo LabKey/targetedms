@@ -1828,6 +1828,7 @@ public class TargetedMSController extends SpringActionController
             factory.setSyncIntensity(form.isSyncY());
             factory.setSyncRt(form.isSyncX());
             factory.setSplitGraph(form.isSplitGraph());
+            factory.setLegend(form.isLegend());
 
             JFreeChart chart;
             if (PeptideManager.getPeptide(getContainer(), gmChromInfo.getGeneralMoleculeId()) != null)

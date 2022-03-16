@@ -162,14 +162,14 @@ public class PassportController extends SpringActionController
                 filterSection.setFrame(WebPartView.FrameType.PORTAL);
                 result.addView(filterSection);
 
-                HtmlView intensityChart = new HtmlView(DOM.DIV(DOM.at().cl("exportable-plot").id("intensityChart"), "Loading..."));
-                intensityChart.setTitle("Peak Areas");
+                HtmlView intensityChart = new HtmlView(DOM.DIV(DOM.at().cl("exportable-plot").id("boxPlotChart"), "Loading..."));
+                intensityChart.setTitle("Intensity");
                 intensityChart.setFrame(WebPartView.FrameType.PORTAL);
                 result.addView(intensityChart);
 
                 HtmlView cvChart = new HtmlView(
                         DOM.createHtmlFragment(
-                            DOM.DIV(DOM.at(DOM.Attribute.style, "text-align: center"),"Show:",
+                            DOM.DIV("Show:",
                                     HtmlString.NBSP, HtmlString.NBSP, DOM.INPUT(DOM.at(DOM.Attribute.checked, null).type("checkbox").id("totalCVCheckbox")), "Total CV",
                                     HtmlString.NBSP, HtmlString.NBSP, DOM.INPUT(DOM.at(DOM.Attribute.checked, null).type("checkbox").id("intraCVCheckbox")), "Average intra-day CV",
                                     HtmlString.NBSP, HtmlString.NBSP, DOM.INPUT(DOM.at(DOM.Attribute.checked, null).type("checkbox").id("interCVCheckbox")), "Average inter-day CV"
@@ -177,7 +177,7 @@ public class PassportController extends SpringActionController
                             DOM.DIV(DOM.at().cl("exportable-plot").id("cvChart"), "Loading...")
                         )
                 );
-                cvChart.setTitle("Coefficient of Variation");
+                cvChart.setTitle("Intensity Coefficient of Variation");
                 cvChart.setFrame(WebPartView.FrameType.PORTAL);
                 result.addView(cvChart);
 

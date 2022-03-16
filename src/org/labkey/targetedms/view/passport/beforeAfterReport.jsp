@@ -79,7 +79,7 @@
                 <p>
                     <label for="peptideSort">Sort by:&nbsp;</label>
                     <select id="peptideSort" name="peptideSort">
-                        <option value="intensity">Intensity</option>
+                        <option value="value">Intensity</option>
                         <option value="sequencelocation">Sequence Location</option>
                     </select>
                 </p>
