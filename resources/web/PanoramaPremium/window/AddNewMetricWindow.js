@@ -516,16 +516,12 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
             newMetric.PrecursorScoped = this.metricTypeCombo.getValue();
 
 
-            if(this.schema2Combo.getValue()) {
-                newMetric.Series2SchemaName = this.schema2Combo.getValue();
-                newMetric.Series2QueryName = this.queries2Combo.getValue();
-                newMetric.Series2Label = this.series2AxisLabelField.getValue();
-            }
+            newMetric.Series2SchemaName = this.schema2Combo.getValue();
+            newMetric.Series2QueryName = this.queries2Combo.getValue();
+            newMetric.Series2Label = this.series2AxisLabelField.getValue();
 
-            if(this.enabledSchemaCombo.getValue()) {
-                newMetric.EnabledSchemaName = this.enabledSchemaCombo.getValue();
-                newMetric.EnabledQueryName = this.enabledQueriesCombo.getValue();
-            }
+            newMetric.EnabledSchemaName = this.enabledSchemaCombo.getValue();
+            newMetric.EnabledQueryName = this.enabledQueriesCombo.getValue();
 
             if(this.operation === this.update) {
                 newMetric.id = this.metric.id;

@@ -1,0 +1,5 @@
+<view xmlns="http://labkey.org/data/xml/view" title="Include or Exclude Peptide/Molecules">
+    <permissions>
+        <permission name="update"/>
+    </permissions>
+</view>
