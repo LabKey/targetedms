@@ -51,7 +51,8 @@
         });
 
     });
-    var chromatogramUrl = "<%=h(urlFor(TargetedMSController.PrecursorChromatogramChartAction.class))%>";
+    var precursorChromatogramUrl = "<%=h(urlFor(TargetedMSController.PrecursorChromatogramChartAction.class))%>";
+    var moleculeChromatogramUrl = "<%=h(urlFor(TargetedMSController.GeneralMoleculeChromatogramChartAction.class))%>";
     var showPeptideUrl = "<%=h(urlFor(TargetedMSController.ShowPeptideAction.class))%>";
 </script>
 <!--END IMPORTS-->
@@ -62,7 +63,7 @@
         <td>
             <label for="peptideSort">Sort by:&nbsp;</label>
             <select id="peptideSort" name="peptideSort">
-                <option value="intensity">Intensity</option>
+                <option value="value" id="valueSortOption">Intensity</option>
                 <option value="sequence">Sequence</option>
                 <option value="sequencelocation" id="sequenceLocationPeptideSortOption">Sequence Location</option>
                 <option value="cv">Coefficient of Variation</option>
@@ -88,6 +89,18 @@
         <td style="padding-left: 2em">
             Matching precursors:
             <span id="filteredPrecursorCount"></span>/<span id="totalPrecursorCount"></span>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="6" id="intensityRatioToggle" style="display: none; padding-top: 0.5em">
+            <label>
+                <input type="radio" name="intensityRatioToggle" checked value="intensity" />
+                Intensity
+            </label>&nbsp;&nbsp;
+            <label>
+                <input type="radio" name="intensityRatioToggle" value="ratio" />
+                Light/Heavy Ratio
+            </label>
         </td>
     </tr>
     <tr>
@@ -121,7 +134,7 @@
     <thead>
     <tr>
         <th class="labkey-column-header">Sequence</th>
-        <th class="labkey-column-header" style="text-align: right"><span id="copytoclipboard" clipboard="" style="color:rgb(85, 26, 139); cursor:pointer;" title="Copy filtered peptide list to clipboard">Copy</span></th>
+        <th class="labkey-column-header" style="text-align: right"><span id="copyToClipboardIntensity" clipboard="" style="color:rgb(85, 26, 139); cursor:pointer;" title="Copy filtered peptide list to clipboard">Copy</span></th>
         <th class="labkey-column-header">Charge</th>
         <th class="labkey-column-header" style="text-align: right">mZ</th>
         <th class="labkey-column-header">Start Index</th>
@@ -135,6 +148,30 @@
     </tr>
     </thead>
     <tbody id="cvTableBody">
+        <tr><td colspan="12">Loading...</td></tr>
+    </tbody>
+</table>
+
+<table id="ratioCvTable" class="table-condensed labkey-data-region-legacy labkey-show-borders" style="padding-top: 2em; display: none;">
+    <thead>
+    <tr>
+        <th class="labkey-column-header">Sequence</th>
+        <th class="labkey-column-header" style="text-align: right"><span id="copyToClipboardRatio" clipboard="" style="color:rgb(85, 26, 139); cursor:pointer;" title="Copy filtered peptide list to clipboard">Copy</span></th>
+        <th class="labkey-column-header">Light charge</th>
+        <th class="labkey-column-header">Heavy charge</th>
+        <th class="labkey-column-header" style="text-align: right">Light mZ</th>
+        <th class="labkey-column-header" style="text-align: right">Heavy mZ</th>
+        <th class="labkey-column-header">Start Index</th>
+        <th class="labkey-column-header">Length</th>
+        <th class="labkey-column-header" style="text-align: right">Inter-day CV</th>
+        <th class="labkey-column-header" style="text-align: right">Intra-day CV</th>
+        <th class="labkey-column-header" style="text-align: right">Total CV</th>
+        <th class="labkey-column-header" style="text-align: right">Mean Ratio</th>
+        <th class="labkey-column-header" style="text-align: right">Max Ratio</th>
+        <th class="labkey-column-header" style="text-align: right">Min Ratio</th>
+    </tr>
+    </thead>
+    <tbody id="ratioCvTableBody">
         <tr><td colspan="12">Loading...</td></tr>
     </tbody>
 </table>

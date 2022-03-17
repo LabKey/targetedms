@@ -1706,4 +1706,17 @@
             <column columnName="sampleFileId"/>
         </columns>
     </table>
+    <table tableName="ExcludedPrecursors" tableDbType="TABLE">
+        <columns>
+            <column columnName="rowId"/>
+            <column columnName="ModifiedSequence"/>
+            <column columnName="Mz"/>
+            <column columnName="Charge"/>
+            <column columnName="CustomIonName"/>
+            <column columnName="IonFormula"/>
+            <column columnName="MassMonoisotopic"/>
+            <column columnName="MassAverage"/>
+            <column columnName="Container"/>
+        </columns>
+    </table>
 </tables>

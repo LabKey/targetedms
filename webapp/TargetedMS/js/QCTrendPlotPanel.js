@@ -4,6 +4,32 @@
  * Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
  */
 
+if (!LABKEY.targetedms) {
+    LABKEY.targetedms = {};
+}
+
+if (!LABKEY.targetedms.PlotSettingsUtil) {
+    LABKEY.targetedms.PlotSettingsUtil = {
+        saveAsDefault: function () {
+            LABKEY.Ajax.request({
+                method: 'POST',
+                url: LABKEY.ActionURL.buildURL('targetedms', 'saveQCPlotSettingsAsDefault'),
+                success: function() { alert('Defaults saved successfully'); },
+                failure: LABKEY.Utils.getCallbackWrapper(function(error) { alert('Failed to save defaults'); console.log(error); }, this, true)
+            });
+        },
+
+        revertToDefault: function () {
+            LABKEY.Ajax.request({
+                method: 'POST',
+                url: LABKEY.ActionURL.buildURL('targetedms', 'revertToDefaultQCPlotSettings'),
+                success: function() { window.location.reload(); },
+                failure: LABKEY.Utils.getCallbackWrapper(function(error) { alert('Failed to revert to defaults'); console.log(error); }, this, true)
+            });
+        }
+    }
+}
+
 /**
  * Class to create a panel for displaying the R plot for the trending of retention times, peak areas, and other
  * values for the selected graph parameters.
@@ -34,6 +60,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     groupedX: false,
     singlePlot: false,
     showExcluded: false,
+    showExcludedPrecursors: false,
     showReferenceGS: true,
     plotWidth: null,
     enableBrushing: false,
@@ -424,6 +451,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             toolbarItems.push(this.getShowExcludedCheckbox());
             toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
             toolbarItems.push(this.getShowReferenceCheckbox());
+            toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
+            toolbarItems.push(this.getShowExcludedPrecursorsCheckbox());
 
             this.otherPlotOptionsToolbar = Ext4.create('Ext.toolbar.Toolbar', {
                 ui: 'footer',
@@ -874,6 +903,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         this.showAllSeriesCheckbox(showAllSeriesCheckBox, showAllSeriesCheckBoxLocation);
 
                         this.setBrushingEnabled(false);
+                        if (this.filterQCPoints) {
+                            this.resetFilterPointsIndices();
+                        }
                         this.displayTrendPlot();
                     }
                 }
@@ -983,7 +1015,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (!this.showExcludedPointsCheckbox) {
             this.showExcludedPointsCheckbox = Ext4.create('Ext.form.field.Checkbox', {
                 id: 'show-excluded-points',
-                boxLabel: 'Show Excluded Points',
+                boxLabel: 'Show Excluded Samples',
                 checked: this.showExcluded,
                 listeners: {
                     scope: this,
@@ -1002,12 +1034,32 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return this.showExcludedPointsCheckbox;
     },
 
-    resetFilterPointsIndices: function() {
-        if (this.filterPointsFirstIndex) {
-            this.filterPointsFirstIndex = undefined;
+    getShowExcludedPrecursorsCheckbox : function() {
+        if (!this.showExcludedPrecursorsCheckbox) {
+            this.showExcludedPrecursorsCheckbox = Ext4.create('Ext.form.field.Checkbox', {
+                id: 'show-excluded-precursors',
+                boxLabel: 'Show Excluded Precursors',
+                checked: this.showExcludedPrecursors,
+                listeners: {
+                    scope: this,
+                    change: function(cb, newValue, oldValue)
+                    {
+                        this.showExcludedPrecursors = newValue;
+                        this.havePlotOptionsChanged = true;
+
+                        this.setLoadingMsg();
+                        this.getAnnotationData();
+                    }
+                }
+            });
         }
-        if (this.filterPointsLastIndex) {
-            this.filterPointsLastIndex = undefined;
+
+        return this.showExcludedPrecursorsCheckbox;
+    },
+
+    resetFilterPointsIndices: function() {
+        if (this.filterPoints) {
+            this.filterPoints = undefined;
         }
     },
 
@@ -1913,7 +1965,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             singlePlot: this.singlePlot,
             showExcluded: this.showExcluded,
             dateRangeOffset: this.dateRangeOffset,
-            selectedAnnotations: annotationsProp
+            selectedAnnotations: annotationsProp,
+            showExcludedPrecursors: this.showExcludedPrecursors
         };
 
         // set start and end date to null unless we are
