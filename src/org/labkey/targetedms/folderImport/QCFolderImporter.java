@@ -14,19 +14,17 @@ import java.util.Collections;
 
 public class QCFolderImporter implements FolderImporter
 {
-    protected static final String QC_FOLDER_DATA_TYPE = "Panorama QC Folder Settings";
-    protected static final String QC_FOLDER_DIR = "PanoramaQC";
 
     @Override
     public String getDataType()
     {
-        return QC_FOLDER_DATA_TYPE;
+        return QCFolderConstants.QC_FOLDER_DATA_TYPE;
     }
 
     @Override
     public String getDescription()
     {
-        return QC_FOLDER_DATA_TYPE;
+        return QCFolderConstants.QC_FOLDER_DATA_TYPE;
     }
 
     @Override

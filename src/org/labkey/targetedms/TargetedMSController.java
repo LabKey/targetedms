@@ -815,6 +815,7 @@ public class TargetedMSController extends SpringActionController
         private Boolean _groupedX;
         private Boolean _singlePlot;
         private Boolean _showExcluded;
+        private Boolean _showExcludedPrecursors;
         private Integer _dateRangeOffset;
         private String _startDate;
         private String _endDate;
@@ -835,6 +836,8 @@ public class TargetedMSController extends SpringActionController
                 valueMap.put("singlePlot", Boolean.toString(_singlePlot));
             if (_showExcluded != null)
                 valueMap.put("showExcluded", Boolean.toString(_showExcluded));
+            if (_showExcludedPrecursors != null)
+                valueMap.put("showExcludedPrecursors", Boolean.toString(_showExcludedPrecursors));
             if (_dateRangeOffset != null)
                 valueMap.put("dateRangeOffset", Integer.toString(_dateRangeOffset));
             if (_plotTypes != null && !_plotTypes.isEmpty())
@@ -870,6 +873,16 @@ public class TargetedMSController extends SpringActionController
         public void setShowExcluded(Boolean showExcluded)
         {
             _showExcluded = showExcluded;
+        }
+
+        public Boolean getShowExcludedPrecursors()
+        {
+            return _showExcludedPrecursors;
+        }
+
+        public void setShowExcludedPrecursors(Boolean showExcludedPrecursors)
+        {
+            _showExcludedPrecursors = showExcludedPrecursors;
         }
 
         public void setDateRangeOffset(Integer dateRangeOffset)
