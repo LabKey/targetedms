@@ -152,12 +152,12 @@ public class ChromatogramChartMakerFactory
 
     public JFreeChart createPeptideChromChart(GeneralMoleculeChromInfo pepChromInfo, User user, Container container)
     {
-        return new ChromatogramChartMaker().make(new ChromatogramDataset.PeptideDataset(pepChromInfo, _syncIntensity, _syncRt, user, container));
+        return new ChromatogramChartMaker().make(new ChromatogramDataset.PeptideDataset(pepChromInfo, _syncIntensity, _syncRt, user, container), _legend);
     }
 
     public JFreeChart createMoleculeChromChart(GeneralMoleculeChromInfo molChromInfo, User user, Container container)
     {
-        return new ChromatogramChartMaker().make(new ChromatogramDataset.MoleculeDataset(molChromInfo, _syncIntensity, _syncRt, user, container));
+        return new ChromatogramChartMaker().make(new ChromatogramDataset.MoleculeDataset(molChromInfo, _syncIntensity, _syncRt, user, container), _legend);
     }
 
     public JFreeChart createSampleFileChromChart(SampleFileChromInfo chromInfo, User user, Container container)

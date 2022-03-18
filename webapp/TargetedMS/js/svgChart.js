@@ -74,14 +74,17 @@ if (!LABKEY.targetedms.SVGChart) {
         createExportIcon : function(divId, iconCls, tooltip, indexFromLeft, plotWidth, callbackFn)
         {
             let element = document.getElementById(divId);
-            var leftPositionPx = (indexFromLeft * 30) + element.getBoundingClientRect().left,
-                    exportIconDivId = divId + iconCls,
-                    html = '<div id="' + exportIconDivId + '" class="export-icon" style="left: ' + leftPositionPx + 'px;">'
-                            + '<i class="fa ' + iconCls + '"></i></div>';
+            // It's possible that the element has been removed from the page already
+            if (element) {
+                var leftPositionPx = (indexFromLeft * 30) + element.getBoundingClientRect().left,
+                        exportIconDivId = divId + iconCls,
+                        html = '<div id="' + exportIconDivId + '" class="export-icon" style="left: ' + leftPositionPx + 'px;">'
+                                + '<i class="fa ' + iconCls + '"></i></div>';
 
-            $('#' + divId).prepend(html);
+                $('#' + divId).prepend(html);
 
-            $('#' + exportIconDivId).click(this, callbackFn);
+                $('#' + exportIconDivId).click(this, callbackFn);
+            }
         },
 
         exportChartToImage : function(svgDivId, extraMargin, type, fileName)
