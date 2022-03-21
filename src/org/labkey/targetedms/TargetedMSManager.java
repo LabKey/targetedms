@@ -62,7 +62,6 @@ import org.labkey.api.pipeline.PipeRoot;
 import org.labkey.api.pipeline.PipelineService;
 import org.labkey.api.pipeline.PipelineValidationException;
 import org.labkey.api.query.BatchValidationException;
-import org.labkey.api.query.DefaultSchema;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.QueryDefinition;
 import org.labkey.api.query.QueryException;
@@ -532,6 +531,11 @@ public class TargetedMSManager
     public static TableInfo getTableInfoSkylineAuditLogEntry()
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_SKYLINE_AUDITLOG_ENTRY);
+    }
+
+    public static TableInfo getTableInfoSkylineRunAuditLogEntry()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_SKYLINE_RUN_AUDITLOG_ENTRY);
     }
 
     /** View that's a CTE to pull in the RunId */
