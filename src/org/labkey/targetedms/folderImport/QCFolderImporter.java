@@ -11,10 +11,10 @@ import org.labkey.api.writer.VirtualFile;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 public class QCFolderImporter implements FolderImporter
 {
-
     @Override
     public String getDataType()
     {
@@ -30,7 +30,21 @@ public class QCFolderImporter implements FolderImporter
     @Override
     public void process(@Nullable PipelineJob job, FolderImportContext ctx, VirtualFile root) throws Exception
     {
-        // TODO: iterate through qc properties in QC_FOLDER_DIR and insert into appropriate tables
+        if (null != job)
+        {
+            job.setStatus("IMPORT " + getDescription());
+        }
+
+        VirtualFile panoramaQCDir = root.getDir(QCFolderConstants.QC_FOLDER_DIR);
+        List<String> filesToImport = root.getDir(QCFolderConstants.QC_FOLDER_DIR).list();
+        for (String fileName : filesToImport)
+        {
+            PanoramaQCSettings qcSetting = PanoramaQCSettings.getSetting(fileName);
+            if (null != qcSetting)
+            {
+                qcSetting.importSettings(ctx, panoramaQCDir);
+            }
+        }
     }
 
     @Override

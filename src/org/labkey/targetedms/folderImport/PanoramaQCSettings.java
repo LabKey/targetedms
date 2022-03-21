@@ -2,6 +2,7 @@ package org.labkey.targetedms.folderImport;
 
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
+import org.labkey.api.admin.FolderImportContext;
 import org.labkey.api.data.ColumnHeaderType;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.CompareType;
@@ -21,6 +22,7 @@ import org.labkey.api.writer.VirtualFile;
 import org.labkey.targetedms.TargetedMSSchema;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.List;
@@ -32,7 +34,7 @@ import java.util.stream.Collectors;
 public enum PanoramaQCSettings
 {
     METRIC_CONFIG (TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, QCFolderConstants.QC_METRIC_CONFIGURATION_FILE_NAME),
-    QC_ENABLED_METRICS( TargetedMSSchema.TABLE_QC_ENABLED_METRICS, QCFolderConstants.QC_ENABLED_METRICS_FILE_NAME),
+    QC_ENABLED_METRICS (TargetedMSSchema.TABLE_QC_ENABLED_METRICS, QCFolderConstants.QC_ENABLED_METRICS_FILE_NAME),
     GUIDE_SET (TargetedMSSchema.TABLE_GUIDE_SET, QCFolderConstants.GUIDE_SET_FILE_NAME),
     QC_METRIC_EXCLUSION (TargetedMSSchema.TABLE_QC_METRIC_EXCLUSION, QCFolderConstants.QC_METRIC_EXCLUSION_FILE_NAME),
     PRECURSOR_EXCLUSION (TargetedMSSchema.TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION, QCFolderConstants.PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION_FILE_NAME),
@@ -42,13 +44,40 @@ public enum PanoramaQCSettings
     QC_PLOT_SETTINGS (null, QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME);
 
     private final @Nullable String _tableName;
-    private final String _settingFileName;
+    private final String _settingsFileName;
     private static final Logger LOG = LogHelper.getLogger(QCFolderWriterFactory.class, "Panorama QC Folder Settings");
 
     PanoramaQCSettings(String tableName, String fileName)
     {
         _tableName = tableName;
-        _settingFileName = fileName;
+        _settingsFileName = fileName;
+    }
+
+    public static @Nullable PanoramaQCSettings getSetting(String fileName)
+    {
+        switch (fileName)
+        {
+            case QCFolderConstants.QC_METRIC_CONFIGURATION_FILE_NAME:
+                return METRIC_CONFIG;
+            case QCFolderConstants.QC_ENABLED_METRICS_FILE_NAME:
+                return QC_ENABLED_METRICS;
+            case QCFolderConstants.GUIDE_SET_FILE_NAME:
+                return GUIDE_SET;
+            case QCFolderConstants.QC_METRIC_EXCLUSION_FILE_NAME:
+                return QC_METRIC_EXCLUSION;
+            case QCFolderConstants.PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION_FILE_NAME:
+                return PRECURSOR_EXCLUSION;
+            case QCFolderConstants.QC_ANNOTATION_FILE_NAME:
+                return QC_ANNOTATION;
+            case QCFolderConstants.QC_ANNOTATION_TYPE:
+                return QC_ANNOTATION_TYPE;
+            case QCFolderConstants.REPLICATE_ANNOTATION_FILE_NAME:
+                return REPLICATE_ANNOTATION;
+            case QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME:
+                return QC_PLOT_SETTINGS;
+            default:
+                return null;
+        }
     }
 
     protected void writeResults(String name, VirtualFile vf, Container container, User user)
@@ -59,11 +88,11 @@ public enum PanoramaQCSettings
         }
         else
         {
-            writeResultsToTSV(name, vf, container, user);
+            writeSettingsToTSV(name, vf, container, user);
         }
     }
 
-    private void writeResultsToTSV(String name, VirtualFile vf, Container container, User user)
+    private void writeSettingsToTSV(String name, VirtualFile vf, Container container, User user)
     {
         SimpleFilter filter = null;
         ContainerFilter cf = QC_ANNOTATION_TYPE.name().equals(name) ? ContainerFilter.getContainerFilterByName(ContainerFilter.Type.CurrentPlusProjectAndShared.name(), container, user) : null;
@@ -88,12 +117,12 @@ public enum PanoramaQCSettings
                 {
                     tsvWriter.setApplyFormats(false);
                     tsvWriter.setColumnHeaderType(ColumnHeaderType.FieldKey);
-                    PrintWriter out = vf.getPrintWriter(_settingFileName);
+                    PrintWriter out = vf.getPrintWriter(_settingsFileName);
                     tsvWriter.write(out);
                 }
                 catch (Exception e)
                 {
-                    LOG.error("Error writing results to " + _settingFileName, e);
+                    LOG.error("Error writing results to " + _settingsFileName, e);
                 }
             }
         }
@@ -150,5 +179,66 @@ public enum PanoramaQCSettings
         TableInfo ti = schema.getTable("QCMetricConfiguration");
         assert ti != null;
         return new TableSelector(ti, Set.of("Name"), new SimpleFilter(FieldKey.fromParts("Id"), rowId), null).getObject(String.class);
+    }
+
+    protected void importSettings(FolderImportContext ctx, VirtualFile panoramaQCDir)
+    {
+        if (_settingsFileName.equalsIgnoreCase(QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME))
+        {
+            importQCProperties(ctx, panoramaQCDir);
+        }
+        else
+        {
+            importFromTsv(ctx, panoramaQCDir);
+        }
+    }
+
+    private void importFromTsv(FolderImportContext ctx, VirtualFile panoramaQCDir)
+    {
+
+    }
+
+    private void importQCProperties(FolderImportContext ctx, VirtualFile panoramaQCDir)
+    {
+        try (InputStream is = panoramaQCDir.getInputStream(_settingsFileName))
+        {
+            Properties props = new Properties();
+            props.load(is);
+            if (!ctx.getUser().isGuest())
+            {
+                ctx.getLogger().info("Starting QC Plot settings import");
+
+                PropertyManager.PropertyMap properties = PropertyManager.getWritableProperties(ctx.getUser(), ctx.getContainer(), QCFolderConstants.CATEGORY, true);
+                for (Map.Entry<Object, Object> entry : props.entrySet())
+                {
+                    if (entry.getKey() instanceof String && entry.getValue() instanceof String)
+                    {
+                        if(entry.getKey().toString().equalsIgnoreCase("metric"))
+                        {
+                            String metricRowId = getMetricRowIdFromName(ctx.getUser(), ctx.getContainer(), entry.getValue().toString());
+                            properties.put(entry.getKey().toString(), metricRowId);
+                        }
+                        else
+                        {
+                            properties.put(entry.getKey().toString(), entry.getValue().toString());
+                        }
+                    }
+                }
+                properties.save();
+                ctx.getLogger().info("Finished importing QC Plot settings");
+            }
+        }
+        catch(Exception e)
+        {
+            LOG.error("Error importing QC Plot settings from " + QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME + ": " + e.getMessage(), e);
+        }
+    }
+
+    private String getMetricRowIdFromName(User user, Container c, String metricName)
+    {
+        TargetedMSSchema schema = new TargetedMSSchema(user, c);
+        TableInfo ti = schema.getTable("QCMetricConfiguration");
+        assert ti != null;
+        return new TableSelector(ti, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricName), null).getObject(String.class);
     }
 }
