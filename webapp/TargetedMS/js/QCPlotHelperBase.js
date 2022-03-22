@@ -184,6 +184,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 plotData['ReplicateId'] = sampleFile['ReplicateId'];
                 plotData['AcquiredTime'] = sampleFile['AcquiredTime'];
                 plotData['GuideSetId'] = sampleFile['GuideSetId'];
+                plotData['ReplicateName'] = sampleFile['ReplicateName'];
                 plotData['InGuideSetTrainingRange'] = sampleFile['InGuideSetTrainingRange'];
 
                 var data = this.processPlotDataRow(plotData, plotDataRow, fragment, metricProps);

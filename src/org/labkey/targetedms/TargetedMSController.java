@@ -204,25 +204,7 @@ import org.labkey.targetedms.parser.list.ListDefinition;
 import org.labkey.targetedms.parser.skyaudit.AuditLogEntry;
 import org.labkey.targetedms.parser.speclib.SpeclibReaderException;
 import org.labkey.targetedms.pipeline.ChromatogramCrawlerJob;
-import org.labkey.targetedms.query.ChromatogramDisplayColumnFactory;
-import org.labkey.targetedms.query.ConflictResultsManager;
-import org.labkey.targetedms.query.GroupChromatogramsTableInfo;
-import org.labkey.targetedms.query.IsotopeLabelManager;
-import org.labkey.targetedms.query.LibraryManager;
-import org.labkey.targetedms.query.ModificationManager;
-import org.labkey.targetedms.query.ModifiedSequenceDisplayColumn;
-import org.labkey.targetedms.query.MoleculeManager;
-import org.labkey.targetedms.query.MoleculePrecursorManager;
-import org.labkey.targetedms.query.PeptideChromatogramsTableInfo;
-import org.labkey.targetedms.query.PeptideGroupManager;
-import org.labkey.targetedms.query.PeptideManager;
-import org.labkey.targetedms.query.PrecursorChromatogramsTableInfo;
-import org.labkey.targetedms.query.PrecursorManager;
-import org.labkey.targetedms.query.ReplicateManager;
-import org.labkey.targetedms.query.SkylineListManager;
-import org.labkey.targetedms.query.SkylineListSchema;
-import org.labkey.targetedms.query.TargetedMSTable;
-import org.labkey.targetedms.query.TransitionManager;
+import org.labkey.targetedms.query.*;
 import org.labkey.targetedms.search.ModificationSearchWebPart;
 import org.labkey.targetedms.view.*;
 import org.labkey.targetedms.view.spectrum.LibrarySpectrumMatch;
@@ -4524,14 +4506,14 @@ public class TargetedMSController extends SpringActionController
 
     public static class IdForm
     {
-        private int _id;
+        private long _id;
 
-        public int getId()
+        public long getId()
         {
             return _id;
         }
 
-        public void setId(int id)
+        public void setId(long id)
         {
             _id = id;
         }
@@ -4551,6 +4533,11 @@ public class TargetedMSController extends SpringActionController
             {
                 throw new NotFoundException("Could not find SampleFile with ID " + form.getId());
             }
+
+            TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+            TableInfo sampleTable = schema.getTable(TargetedMSSchema.TABLE_SAMPLE_FILE);
+
+            Map<String, Object> sampleRow = new TableSelector(sampleTable, new SimpleFilter(FieldKey.fromParts("Id"), _sampleFile.getId()), null).getMap();
             Replicate replicate = TargetedMSManager.getReplicate(_sampleFile.getReplicateId(), getContainer());
             if (replicate == null)
             {
@@ -4571,16 +4558,14 @@ public class TargetedMSController extends SpringActionController
 
             // Summary for this sample file
             DOM.Renderable renderable = DOM.TABLE(cl("lk-fields-table"),
-                    TR(TD(cl("labkey-form-label"), "Sample File Name"),
-                            TD(materialURL == null ? _sampleFile.getSampleName() : A(at(href, materialURL), _sampleFile.getSampleName()))),
+                    TR(TD(cl("labkey-form-label"), "Sample Identifier"),
+                            TD(materialURL == null ? sampleRow.get(SampleFileTable.SAMPLE_FIELD_KEY) : A(at(href, materialURL), _sampleFile.getSampleName()))),
                     TR(TD(cl("labkey-form-label"), "File Path"),
                             TD(_sampleFile.getFilePath())),
                     TR(TD(cl("labkey-form-label"), "Acquired Time"),
                             TD(DateUtil.formatDateTime(getContainer(), _sampleFile.getAcquiredTime()))),
                     TR(TD(cl("labkey-form-label"), "Modified Time"),
                             TD(DateUtil.formatDateTime(getContainer(), _sampleFile.getModifiedTime()))),
-                    TR(TD(cl("labkey-form-label"), "Skyline ID"),
-                            TD(_sampleFile.getSkylineId())),
                     TR(TD(cl("labkey-form-label"), "Instrument Serial Number"),
                             TD(_sampleFile.getInstrumentSerialNumber())),
                     TR(TD(cl("labkey-form-label"), "Replicate Name"),

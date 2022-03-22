@@ -197,8 +197,8 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         List<List<String>> tempStringList02 = new ArrayList<>();
         tempStringList01.put("25fmol_Pepmix_spike_SRM_1601_04", "0");
         tempStringList01.put("25fmol_Pepmix_spike_SRM_1601_03", "0");
-        tempStringList02.add(Arrays.asList("25fmol_Pepmix_spike_SRM_1601_04", "Acquired Date/Time: 2015-01-16 15:08"));
-        tempStringList02.add(Arrays.asList("25fmol_Pepmix_spike_SRM_1601_03", "Acquired Date/Time: 2015-01-16 12:47"));
+        tempStringList02.add(Arrays.asList("25fmol_Pepmix_spike_SRM_1601_04", "Acquired: 2015-01-16 15:08"));
+        tempStringList02.add(Arrays.asList("25fmol_Pepmix_spike_SRM_1601_03", "Acquired: 2015-01-16 12:47"));
         validateSampleFile(0, tempStringList01, tempStringList02);
 
         // remove all sample files
@@ -231,9 +231,9 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         tempStringList01.put("Q_Exactive_08_23_2013_JGB_58", "27");
         tempStringList01.put("Q_Exactive_08_23_2013_JGB_51", "26");
         tempStringList01.put("Q_Exactive_08_23_2013_JGB_37", "31");
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_58", "Acquired Date/Time: 2013-08-27 14:45"));
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_51", "Acquired Date/Time: 2013-08-27 03:19"));
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_37", "Acquired Date/Time: 2013-08-26 04:27"));
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_58", "Acquired: 2013-08-27 14:45"));
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_51", "Acquired: 2013-08-27 03:19"));
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_37", "Acquired: 2013-08-26 04:27"));
         validateSampleFile(0, tempStringList01, tempStringList02);
 
         validateAutoQCStatus(MAIN_SUMMARY, Arrays.asList("qc-none", "fa-circle-o"), "Has never been pinged");
