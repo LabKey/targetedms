@@ -129,7 +129,7 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
         QCSummaryWebPart qcSummaryWebPart = qcDashboard.getQcSummaryWebPart();
         QCSummaryWebPart.QcSummaryTile qcSummaryTile = qcSummaryWebPart.getQcSummaryTiles().get(0);
         mouseOver(qcSummaryTile.getRecentSampleFiles().get(0));
-        final WebElement bubble = waitForElement(qcSummaryWebPart.getBubble().withDescendant(Locator.byClass("hopscotch-title").withText("Sample Details")));
+        final WebElement bubble = waitForElement(qcSummaryWebPart.getBubble().withDescendant(Locator.byClass("hopscotch-title").withText("sample8_R03")));
         checker().verifyTrue("iRT Correlation missing in tooltip", Locator.linkWithText("iRT Correlation").existsIn(bubble));
         checker().verifyTrue("iRT Intercept missing in tooltip", Locator.linkWithText("iRT Intercept").existsIn(bubble));
         checker().verifyTrue("iRT Slope missing in tooltip", Locator.linkWithText("iRT Slope").existsIn(bubble));
