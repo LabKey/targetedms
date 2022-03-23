@@ -23,25 +23,21 @@ import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.DataColumn;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.RenderContext;
-import org.labkey.api.data.RuntimeSQLException;
 import org.labkey.api.data.SQLFragment;
-import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.TableInfo;
-import org.labkey.api.data.TableResultSet;
+import org.labkey.api.data.dialect.SqlDialect;
 import org.labkey.api.gwt.client.FacetingBehaviorType;
 import org.labkey.api.query.ExprColumn;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.LookupForeignKey;
 import org.labkey.api.util.HtmlString;
 import org.labkey.api.util.HtmlStringBuilder;
-import org.labkey.api.util.PageFlowUtil;
+import org.labkey.api.util.Pair;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.parser.DataSettings;
 import org.labkey.targetedms.parser.list.ListDefinition;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -112,11 +108,11 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
         }
     }
 
-    private void addAnnotationsColumns(TableInfo annotationTableInfo, String annotationFKName, String columnName, String pkColumnName, String annotationTarget)
+    protected void addAnnotationsColumns(TableInfo annotationTableInfo, String annotationFKName, String columnName, String pkColumnName, String annotationTarget)
     {
         SQLFragment annotationsSQL = new SQLFragment("(SELECT ");
         annotationsSQL.append(TargetedMSManager.getSqlDialect().getGroupConcat(
-                new SQLFragment(TargetedMSManager.getSqlDialect().concatenate("a.Name", "\'"+ ANNOT_NAME_VALUE_SEPARATOR +"\' ", "a.Value")),
+                new SQLFragment(TargetedMSManager.getSqlDialect().concatenate("a.Name", "'" + ANNOT_NAME_VALUE_SEPARATOR + "' ", "a.Value")),
                 false,
                 true,
                 "'" + ANNOT_DELIMITER + "'"));
@@ -137,20 +133,8 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
             {
                 continue;
             }
-            // build expr col sql to select value field from annotation table
-            SQLFragment annotationSQL = new SQLFragment("(SELECT ",annotationSetting.getName());
-            DataSettings.AnnotationType annotationType = appendValueWithCast(annotationSetting, annotationSQL);
-            getAnnotationJoinSQL(annotationTableInfo, annotationFKName, annotationSQL);
-            annotationSQL.append(".").append(pkColumnName).append(" AND a.name = ?)");
+            ExprColumn annotationColumn = createAnnotationColumn(annotationTableInfo, annotationFKName, pkColumnName, annotationSetting);
 
-            // Create new column representing the annotation
-            ExprColumn annotationColumn = new AnnotationColumn(this, annotationSetting.getName(), annotationSQL, annotationType.getDataType());
-            annotationColumn.setLabel(annotationSetting.getName());
-            annotationColumn.setTextAlign("left");
-            annotationColumn.setFacetingBehaviorType(FacetingBehaviorType.ALWAYS_OFF);
-            annotationColumn.setMeasure(annotationType.isMeasure());
-            annotationColumn.setDimension(annotationType.isDimension());
-            
             // Check if the annotation is a lookup and all of the definitions agree on what its target list should be
             if (annotationSetting.getMaxLookup() != null && Objects.equals(annotationSetting.getMaxLookup(), annotationSetting.getMinLookup()))
             {
@@ -181,7 +165,26 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
         annotationsColumn.setDisplayColumnFactory(AnnotationsDisplayColumn::new);
     }
 
-    private void getAnnotationJoinSQL(TableInfo annotationTableInfo, String annotationFKName, SQLFragment annotationSQL)
+    @NotNull
+    protected ExprColumn createAnnotationColumn(TableInfo annotationTableInfo, String annotationFKName, String pkColumnName, AnnotationSettingForTyping annotationSetting)
+    {
+        // build expr col sql to select value field from annotation table
+        Pair<SQLFragment, DataSettings.AnnotationType> p = generateSQL(annotationTableInfo, annotationFKName, pkColumnName, annotationSetting, getSqlDialect());
+
+        SQLFragment annotationSQL = p.first;
+        DataSettings.AnnotationType annotationType = p.second;
+
+        // Create new column representing the annotation
+        ExprColumn annotationColumn = new AnnotationColumn(this, annotationSetting.getName(), annotationSQL, annotationType.getDataType());
+        annotationColumn.setLabel(annotationSetting.getName());
+        annotationColumn.setTextAlign("left");
+        annotationColumn.setFacetingBehaviorType(FacetingBehaviorType.ALWAYS_OFF);
+        annotationColumn.setMeasure(annotationType.isMeasure());
+        annotationColumn.setDimension(annotationType.isDimension());
+        return annotationColumn;
+    }
+
+    private static void getAnnotationJoinSQL(TableInfo annotationTableInfo, String annotationFKName, SQLFragment annotationSQL)
     {
         annotationSQL.append(" FROM ");
         annotationSQL.append(annotationTableInfo, "a");
@@ -205,28 +208,40 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
      *
      * @return The derived Annotation type.
      */
-    protected DataSettings.AnnotationType appendValueWithCast(AnnotationSettingForTyping annotationSettingForTyping, SQLFragment annotationSQL)
+    protected static Pair<SQLFragment, DataSettings.AnnotationType> generateSQL(TableInfo annotationTableInfo, String annotationFKName, String pkColumnName, AnnotationSettingForTyping annotationSetting, SqlDialect dialect)
     {
-        if (annotationSettingForTyping.getMaxType().equals(annotationSettingForTyping.getMinType()))
+        SQLFragment sql = new SQLFragment("(SELECT ", annotationSetting.getName());
+        DataSettings.AnnotationType annotationType = DataSettings.AnnotationType.text;
+
+        if (annotationSetting.getMaxType().equals(annotationSetting.getMinType()))
         {
-            DataSettings.AnnotationType annotationType =
-                    DataSettings.AnnotationType.fromString(annotationSettingForTyping.getMaxType());
+            annotationType = DataSettings.AnnotationType.fromString(annotationSetting.getMaxType());
+
             if (annotationType != null && annotationType != DataSettings.AnnotationType.text)
             {
                 // Issue 39003 - It's up to DB to decide if it applies the WHERE filter first to get to just the annotation
                 // values we expect based on replicate and name, so on SQL Server be permissive on the conversion
                 // in case we encounter other annotation values first that are of different types
-                annotationSQL.append(getSqlDialect().isSqlServer() ? "TRY_CAST" : "CAST");
+                sql.append(dialect.isSqlServer() ? "TRY_CAST" : "CAST");
 
-                annotationSQL.append("(").append("a.value AS ")
-                        .append(getSqlDialect().getSqlCastTypeName(annotationType.getDataType()));
-                annotationSQL.append(")");
-                return annotationType;
+                sql.append("(").append("a.value AS ")
+                        .append(dialect.getSqlCastTypeName(annotationType.getDataType()));
+                sql.append(")");
+            }
+            else
+            {
+                sql.append("a.value");
             }
         }
+        else
+        {
+            sql.append("a.value");
+        }
 
-        annotationSQL.append("a.value");
-        return DataSettings.AnnotationType.text;
+        getAnnotationJoinSQL(annotationTableInfo, annotationFKName, sql);
+        sql.append(".").append(pkColumnName).append(" AND a.name = ?)");
+
+        return Pair.of(sql, annotationType);
     }
 
     /**
