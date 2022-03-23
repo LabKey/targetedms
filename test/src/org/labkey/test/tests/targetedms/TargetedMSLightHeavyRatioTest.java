@@ -56,29 +56,29 @@ public class TargetedMSLightHeavyRatioTest extends TargetedMSTest
         assertEquals("Incorrect Sort by options for Intensity", Arrays.asList("Intensity", "Sequence", "Sequence Location", "Coefficient of Variation"),
                 precursorsWebPart.getSortByOptions());
         assertEquals("Incorrect column headers", Arrays.asList("Sequence", "Copy", "Charge", "mZ", "Start Index", "Length", "Inter-day CV", "Intra-day CV", "Total CV", "Mean Intensity", "Max Intensity", "Min Intensity"),
-                precursorsWebPart.getTableHeaders());
-        assertEquals("Incorrect number of rows displayed in the table", 8, precursorsWebPart.getTableRowCount());
+                precursorsWebPart.getIntensityTableHeaders());
+        assertEquals("Incorrect number of rows displayed in the table", 8, precursorsWebPart.getIntensityTableRowCount());
         assertEquals("Incorrect first row sorting in " + PrecursorsWebPart.SortBy.Intensity.toString(), "VLEPTLK[+8.0]",
-                precursorsWebPart.getTableElement(1, 1));
+                precursorsWebPart.getIntensityTableElement(1, 1));
         assertEquals("Incorrect last row after sorting in " + PrecursorsWebPart.SortBy.Intensity.toString(), "LPDATPTELAK",
-                precursorsWebPart.getTableElement(8, 1));
-        assertEquals("Incorrect Mean intensity for VLEPTLK", "3.925e+6", precursorsWebPart.getTableElement(2, 9));
-        assertEquals("Incorrect Max intensity for VLEPTLK", "4.882e+6", precursorsWebPart.getTableElement(2, 10));
-        assertEquals("Incorrect Min intensity for VLEPTLK", "3.232e+6", precursorsWebPart.getTableElement(2, 11));
+                precursorsWebPart.getIntensityTableElement(8, 1));
+        assertEquals("Incorrect Mean intensity for VLEPTLK", "3.925e+6", precursorsWebPart.getIntensityTableElement(2, 9));
+        assertEquals("Incorrect Max intensity for VLEPTLK", "4.882e+6", precursorsWebPart.getIntensityTableElement(2, 10));
+        assertEquals("Incorrect Min intensity for VLEPTLK", "3.232e+6", precursorsWebPart.getIntensityTableElement(2, 11));
 
         log("Verifying Sequence sort by option");
         precursorsWebPart.setSortBy(PrecursorsWebPart.SortBy.Sequence);
         assertEquals("Incorrect first row after sorting in " + PrecursorsWebPart.SortBy.Sequence.toString(), "ELPEHTVK",
-                precursorsWebPart.getTableElement(1, 1));
+                precursorsWebPart.getIntensityTableElement(1, 1));
         assertEquals("Incorrect last row after sorting in " + PrecursorsWebPart.SortBy.Sequence.toString(), "VLEPTLK[+8.0]",
-                precursorsWebPart.getTableElement(8, 1));
+                precursorsWebPart.getIntensityTableElement(8, 1));
 
         log("Verifying Coefficient of Variation sort by option");
         precursorsWebPart.setSortBy(PrecursorsWebPart.SortBy.Coefficient_of_Variation);
         assertEquals("Incorrect first row after sorting in " + PrecursorsWebPart.SortBy.Coefficient_of_Variation.toString(), "31.5%",
-                precursorsWebPart.getTableElement(1, 8));
+                precursorsWebPart.getIntensityTableElement(1, 8));
         assertEquals("Incorrect last row after sorting in " + PrecursorsWebPart.SortBy.Coefficient_of_Variation.toString(), "8.1%",
-                precursorsWebPart.getTableElement(8, 8));
+                precursorsWebPart.getIntensityTableElement(8, 8));
     }
 
     @Test

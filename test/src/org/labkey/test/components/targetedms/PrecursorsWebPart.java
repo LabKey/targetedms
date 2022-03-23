@@ -24,15 +24,9 @@ public class PrecursorsWebPart extends BodyWebPart<PrecursorsWebPart.Elements>
         waitForLoad();
     }
 
-    @Override
-    public void clearCache()
-    {
-        super.clearCache();
-    }
-
     public void waitForLoad()
     {
-        WebDriverWrapper.waitFor(() -> getTableRowCount() > 4, 10000);
+        WebDriverWrapper.waitFor(() -> getIntensityTableRowCount() > 4, 10000);
     }
 
     public PrecursorsWebPart setSortBy(PrecursorsWebPart.SortBy option)
@@ -45,10 +39,10 @@ public class PrecursorsWebPart extends BodyWebPart<PrecursorsWebPart.Elements>
 
     public Locator.XPathLocator getVisibleTable()
     {
-        if (elementCache().table.findElement(this).getAttribute("style").contains("display: none;"))
+        if (elementCache().intensityTable.findElement(this).getAttribute("style").contains("display: none;"))
             return elementCache().ratioTable;
 
-        return elementCache().table;
+        return elementCache().intensityTable;
     }
 
     public List<String> getSortByOptions()
@@ -82,9 +76,9 @@ public class PrecursorsWebPart extends BodyWebPart<PrecursorsWebPart.Elements>
         return this;
     }
 
-    public int getTableRowCount()
+    public int getIntensityTableRowCount()
     {
-        return elementCache().table.append("//tbody/tr").findElements(this).size();
+        return elementCache().intensityTable.append("//tbody/tr").findElements(this).size();
     }
 
     public int getRatioTableRowCount()
@@ -92,9 +86,9 @@ public class PrecursorsWebPart extends BodyWebPart<PrecursorsWebPart.Elements>
         return elementCache().ratioTable.append("//tbody/tr").findElements(this).size();
     }
 
-    public String getTableElement(int row, int column)
+    public String getIntensityTableElement(int row, int column)
     {
-        return elementCache().table.append("//tbody/tr[" + row + "]/td[" + column + "]").findElement(this).getText();
+        return elementCache().intensityTable.append("//tbody/tr[" + row + "]/td[" + column + "]").findElement(this).getText();
     }
 
     public String getRatioTableElement(int row, int column)
@@ -102,10 +96,10 @@ public class PrecursorsWebPart extends BodyWebPart<PrecursorsWebPart.Elements>
         return elementCache().ratioTable.append("//tbody/tr[" + row + "]/td[" + column + "]").findElement(this).getText();
     }
 
-    public List<String> getTableHeaders()
+    public List<String> getIntensityTableHeaders()
     {
         List<String> columnNames = new ArrayList<>();
-        List<WebElement> we = elementCache().table.append("//thead/tr/th").findElements(this);
+        List<WebElement> we = elementCache().intensityTable.append("//thead/tr/th").findElements(this);
         for (WebElement e : we)
             columnNames.add(e.getText());
         return columnNames;
@@ -162,7 +156,7 @@ public class PrecursorsWebPart extends BodyWebPart<PrecursorsWebPart.Elements>
         Locator.XPathLocator intensity = Locator.name("intensityRatioToggle").withAttribute("value", "intensity");
         Locator.XPathLocator ratio = Locator.name("intensityRatioToggle").withAttribute("value", "ratio");
 
-        Locator.XPathLocator table = Locator.id("cvTable");
+        Locator.XPathLocator intensityTable = Locator.id("cvTable");
         Locator.XPathLocator ratioTable = Locator.id("ratioCvTable");
     }
 }
