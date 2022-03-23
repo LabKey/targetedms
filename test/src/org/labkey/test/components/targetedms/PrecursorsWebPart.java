@@ -37,11 +37,19 @@ public class PrecursorsWebPart extends BodyWebPart<PrecursorsWebPart.Elements>
 
     public PrecursorsWebPart setSortBy(PrecursorsWebPart.SortBy option)
     {
-        getWrapper().selectOptionByText(elementCache().sortBy, option.toString());
-        getWrapper().sleep(1000);
+        doAndWaitForElementToRefresh(() -> getWrapper().selectOptionByText(elementCache().sortBy, option.toString()),
+                getVisibleTable().append("//tbody/tr[1]/td[1]"), //Checking for staleness in the first element of the table
+                1000);
         return this;
     }
 
+    public Locator.XPathLocator getVisibleTable()
+    {
+        if (elementCache().table.findElement(this).getAttribute("style").contains("display: none;"))
+            return elementCache().ratioTable;
+
+        return elementCache().table;
+    }
 
     public List<String> getSortByOptions()
     {
