@@ -20,11 +20,9 @@ import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.ContainerManager;
 import org.labkey.api.query.DefaultQueryUpdateService;
-import org.labkey.api.query.DuplicateKeyException;
-import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.InvalidKeyException;
 import org.labkey.api.query.QueryUpdateService;
-import org.labkey.api.query.QueryUpdateServiceException;
+import org.labkey.api.query.SimpleUserSchema;
 import org.labkey.api.query.ValidationException;
 import org.labkey.api.security.User;
 import org.labkey.api.security.UserPrincipal;
@@ -37,11 +35,11 @@ import org.labkey.targetedms.TargetedMSSchema;
 import java.sql.SQLException;
 import java.util.Map;
 
-public class QCEnabledMetricsTable extends FilteredTable<TargetedMSSchema>
+public class QCEnabledMetricsTable extends SimpleUserSchema.SimpleTable<TargetedMSSchema>
 {
     public QCEnabledMetricsTable(TargetedMSSchema schema, ContainerFilter cf)
     {
-        super(TargetedMSManager.getTableInfoQCEnabledMetrics(), schema, cf);
+        super(schema, TargetedMSManager.getTableInfoQCEnabledMetrics(), cf);
         TargetedMSTable.fixupLookups(this);
         wrapAllColumns(true);
     }
