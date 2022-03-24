@@ -278,7 +278,7 @@ protein =
                 }
             }
             var sortBy = protein.settings.getSortBy();
-            if (sortBy === "Sequence Location") {
+            if (sortBy === 'sequencelocation') {
                 barChartData.sort(function(a, b) {
                     return a["StartIndex"] - b["StartIndex"];
                 });
@@ -291,7 +291,7 @@ protein =
                 }
             });
 
-            if (sortBy === "Intensity") {
+            if (sortBy === 'value') {
                 barChartData.sort(function(a, b) {
                     return b[sortValue] - a[sortValue];
                 });

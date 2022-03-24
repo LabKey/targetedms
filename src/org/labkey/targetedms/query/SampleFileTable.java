@@ -58,12 +58,14 @@ import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.PageFlowUtil;
+import org.labkey.api.util.Pair;
 import org.labkey.api.view.ActionURL;
 import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSRun;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.datasource.MsDataSourceUtil;
+import org.labkey.targetedms.parser.DataSettings;
 import org.labkey.targetedms.parser.SampleFile;
 
 import java.io.IOException;
@@ -84,7 +86,7 @@ public class SampleFileTable extends TargetedMSTable
     @Nullable
     private final TargetedMSRun _run;
 
-    private final String SAMPLE_FIELD_KEY = "SampleName";
+    public static final String SAMPLE_FIELD_KEY = "SampleIdentifier";
 
     public SampleFileTable(TargetedMSSchema schema, ContainerFilter cf)
     {
@@ -116,16 +118,47 @@ public class SampleFileTable extends TargetedMSTable
         ExprColumn excludedColumn = new ExprColumn(this, "Excluded", excludedSQL, JdbcType.BOOLEAN);
         addColumn(excludedColumn);
 
-        getMutableColumn(SAMPLE_FIELD_KEY).setFk(new LazyForeignKey(() ->
+        // Special handling for a sample identifier annotation. Inject it even if this folder doesn't have it configured
+
+        AnnotatedTargetedMSTable.AnnotationSettingForTyping idSetting = new AnnotatedTargetedMSTable.AnnotationSettingForTyping("SampleIdentifier",
+                DataSettings.AnnotationType.text.toString(),
+                DataSettings.AnnotationType.text.toString(),
+                null,
+                null);
+
+        Pair<SQLFragment, DataSettings.AnnotationType> p = AnnotatedTargetedMSTable.generateSQL(TargetedMSManager.getTableInfoReplicateAnnotation(), "ReplicateId", "ReplicateId", idSetting, getSqlDialect());
+
+        // Note - keep this COALESCE in sync with the LazyForeignKey SQL below
+        SQLFragment sampleIdentifierSQL = new SQLFragment("COALESCE(");
+        sampleIdentifierSQL.append(p.first);
+        sampleIdentifierSQL.append(", ");
+        sampleIdentifierSQL.append(ExprColumn.STR_TABLE_ALIAS);
+        sampleIdentifierSQL.append(".SampleId, ");
+        sampleIdentifierSQL.append(ExprColumn.STR_TABLE_ALIAS);
+        sampleIdentifierSQL.append(".SampleName)");
+
+        ExprColumn idColumn = new ExprColumn(this, SAMPLE_FIELD_KEY, sampleIdentifierSQL, JdbcType.VARCHAR);
+        addColumn(idColumn);
+
+        idColumn.setFk(new LazyForeignKey(() ->
         {
             // Do a query to look across the entire server for samples where the name matches with names from the
             // targetedms.SampleFiles table, as currently filtered by the SampleFileTable (container and/or run)
-            SQLFragment sql = new SQLFragment("SELECT DISTINCT Container, CpasType FROM ");
+            SQLFragment sql = new SQLFragment("SELECT DISTINCT m.Container, m.CpasType FROM (\n");
+            sql.append("SELECT COALESCE(ra.value, sf.SampleId, sf.SampleName) AS SampleIdentifier FROM \n");
+            sql.append(TargetedMSManager.getTableInfoSampleFile(), "sf");
+            sql.append(" INNER JOIN \n");
+            sql.append(TargetedMSManager.getTableInfoReplicate(), "rep");
+            sql.append(" ON (rep.id = sf.ReplicateId) INNER JOIN \n");
+            sql.append(TargetedMSManager.getTableInfoRuns(), "r");
+            sql.append(" ON (r.id = rep.RunId) LEFT OUTER JOIN\n");
+            sql.append(TargetedMSManager.getTableInfoReplicateAnnotation(), "ra");
+            sql.append(" ON (ra.name = 'SampleIdentifier' AND ra.ReplicateId = rep.Id) \n");
+            sql.append(" WHERE ");
+            sql.append(getContainerFilter().getSQLFragment(getSchema(), new SQLFragment("r.Container")));
+            sql.append(") X INNER JOIN\n");
             sql.append(ExperimentService.get().getTinfoMaterial(), "m");
-            sql.append(" WHERE CpasType IS NOT NULL AND Name IN (SELECT SampleName FROM (");
-            Set<ColumnInfo> selectCols = Set.of(getColumn(SAMPLE_FIELD_KEY));
-            sql.append(QueryService.get().getSelectSQL(SampleFileTable.this, selectCols, null, null, Table.ALL_ROWS, 0, false));
-            sql.append(") X)");
+            sql.append(" ON m.Name = X.SampleIdentifier");
 
             Set<Container> matchingContainers = new HashSet<>();
             Set<String> matchingSampleTypeLSIDs = new HashSet<>();

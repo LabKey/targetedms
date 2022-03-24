@@ -1,5 +1,6 @@
 SELECT
     sf.*,
+    sf.ReplicateId.Name AS ReplicateName,
     e.ExcludedMetricIds,
     COALESCE(gs.RowId, 0) AS GuideSetId,
     CASE WHEN (sf.AcquiredTime >= gs.TrainingStart AND sf.AcquiredTime <= gs.TrainingEnd) THEN TRUE ELSE FALSE END AS InGuideSetTrainingRange

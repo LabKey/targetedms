@@ -62,7 +62,6 @@ import org.labkey.api.pipeline.PipeRoot;
 import org.labkey.api.pipeline.PipelineService;
 import org.labkey.api.pipeline.PipelineValidationException;
 import org.labkey.api.query.BatchValidationException;
-import org.labkey.api.query.DefaultSchema;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.QueryDefinition;
 import org.labkey.api.query.QueryException;
@@ -534,6 +533,11 @@ public class TargetedMSManager
         return getSchema().getTable(TargetedMSSchema.TABLE_SKYLINE_AUDITLOG_ENTRY);
     }
 
+    public static TableInfo getTableInfoSkylineRunAuditLogEntry()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_SKYLINE_RUN_AUDITLOG_ENTRY);
+    }
+
     /** View that's a CTE to pull in the RunId */
     public static TableInfo getTableInfoSkylineAuditLog()
     {
@@ -584,6 +588,11 @@ public class TargetedMSManager
     public static TableInfo getTableInfoChromatogramLib()
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_CHROMATOGRAM_LIB_INFO);
+    }
+
+    public static TableInfo getTableInfoExcludedPrecursors()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION);
     }
 
     /** @return rowId for pipeline job that will perform the import asynchronously */
@@ -2177,7 +2186,7 @@ public class TargetedMSManager
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(container, user);
             Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
 
-            List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(schema, enabledQCMetricConfigurations, null, null, Collections.emptyList(), true);
+            List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(schema, enabledQCMetricConfigurations, null, null, Collections.emptyList(), true, false);
 
             Map<GuideSetKey, GuideSetStats> stats = OutlierGenerator.get().getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
 

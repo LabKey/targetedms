@@ -17,6 +17,7 @@
 package org.labkey.targetedms;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.formula.functions.Na;
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.assay.sample.SampleAssayResultsConfig;
 import org.labkey.api.assay.sample.SampleAssayResultsService;
@@ -42,6 +43,7 @@ import org.labkey.api.pipeline.PipelineService;
 import org.labkey.api.protein.ProteinService;
 import org.labkey.api.protein.ProteomicsModule;
 import org.labkey.api.query.QueryView;
+import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.security.permissions.ApplicationAdminPermission;
 import org.labkey.api.settings.AdminConsole;
 import org.labkey.api.targetedms.TargetedMSService;
@@ -50,6 +52,8 @@ import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.BaseWebPartFactory;
 import org.labkey.api.view.JspView;
+import org.labkey.api.view.NavTree;
+import org.labkey.api.view.NavTreeCustomizer;
 import org.labkey.api.view.Portal;
 import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.WebPartFactory;
@@ -75,12 +79,14 @@ import org.labkey.targetedms.view.TransitionPeptideSearchViewProvider;
 import org.labkey.targetedms.view.TransitionProteinSearchViewProvider;
 import org.labkey.targetedms.view.passport.ProteinListView;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static org.labkey.api.targetedms.TargetedMSService.FOLDER_TYPE_PROP_NAME;
 import static org.labkey.api.targetedms.TargetedMSService.MODULE_NAME;
@@ -234,7 +240,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     @Override
     public Double getSchemaVersion()
     {
-        return 22.001;
+        return 22.003;
     }
 
     @Override
@@ -506,6 +512,24 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     {
         addController("targetedms", TargetedMSController.class);
         addController("passport", PassportController.class);
+
+        Portal.registerNavTreeCustomizer("Targeted MS QC Plots", viewContext -> {
+            List<NavTree> result = new ArrayList<>();
+            if (viewContext.hasPermission(AdminPermission.class))
+            {
+                NavTree save = new NavTree("Save as Default View");
+                save.setScript("LABKEY.targetedms.PlotSettingsUtil.saveAsDefault()");
+                result.add(save);
+            }
+            if (!viewContext.getUser().isGuest())
+            {
+                NavTree save = new NavTree("Revert to Default View");
+                save.setScript("LABKEY.targetedms.PlotSettingsUtil.revertToDefault()");
+                result.add(save);
+            }
+
+            return result;
+        });
 
         TargetedMSSchema.register(this);
         SkylineListSchema.register(this);

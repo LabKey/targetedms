@@ -34,6 +34,7 @@ import org.labkey.api.util.JunitUtil;
 import org.labkey.api.writer.ZipUtil;
 import org.labkey.targetedms.SkylineFileUtils;
 import org.labkey.targetedms.TargetedMSManager;
+import org.labkey.targetedms.TargetedMSSchema;
 
 import java.io.File;
 import java.io.IOException;
@@ -107,6 +108,15 @@ public class UnitTestUtil
         messageDeleteFilter.addInClause(FieldKey.fromParts("entryId"), recordIds);
 
         Table.delete(TargetedMSManager.getTableInfoSkylineAuditLogMessage(), messageDeleteFilter);
+
+        //deleting the run entries
+        SQLFragment sqlDeleteRunEntries = new SQLFragment("DELETE FROM ").append(TargetedMSManager.getTableInfoSkylineRunAuditLogEntry());
+        sqlDeleteRunEntries.append(" WHERE AuditLogEntryId IN (SELECT entryId AS AuditLogEntryId FROM ").append(TargetedMSManager.getTableInfoSkylineAuditLogEntry());
+        sqlDeleteRunEntries.append(" WHERE documentGUID = ?)");
+        sqlDeleteRunEntries.add(pDocumentGUID.toString());
+
+        SqlExecutor exec = new SqlExecutor(TargetedMSSchema.getSchema());
+        exec.execute(sqlDeleteRunEntries);
 
         //deleting the entries
         Table.delete(TargetedMSManager.getTableInfoSkylineAuditLogEntry(), entryFilter);

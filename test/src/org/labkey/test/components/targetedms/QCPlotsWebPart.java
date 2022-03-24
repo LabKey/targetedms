@@ -207,11 +207,20 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         elementCache().showExcludedCheckbox.set(check);
     }
 
+    public boolean isShowExcludedPointsChecked()
+    {
+        return elementCache().showExcludedCheckbox.isChecked();
+    }
+
     public void setShowReferenceGuideSet(boolean check)
     {
         elementCache().showReferenceGuideSet.set(check);
     }
 
+    public void setShowExcludedPrecursors(boolean check)
+    {
+        elementCache().showExcludedPrecursors.set(check);
+    }
     public boolean isShowReferenceGuideSetChecked()
     {
         return elementCache().showReferenceGuideSet.isChecked();
@@ -220,6 +229,19 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     public boolean isShowAllPeptidesInSinglePlotChecked()
     {
         return elementCache().singlePlotCheckbox.isChecked();
+    }
+
+    public QCPlotsWebPart saveAsDefaultView()
+    {
+        clickMenuItem(false ,"Save as Default View");
+        getWrapper().acceptAlert();
+        return this;
+    }
+
+    public QCPlotsWebPart revertToDefaultView()
+    {
+        clickMenuItem("Revert to Default View");
+        return this;
     }
 
     public void applyRange()
@@ -789,6 +811,8 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         Checkbox showExcludedCheckbox = new Checkbox(Locator.css("#show-excluded-points input")
                 .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
         Checkbox showReferenceGuideSet = new Checkbox(Locator.css("#show-oorange-gs input")
+                .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
+        Checkbox showExcludedPrecursors = new Checkbox(Locator.css("#show-excluded-precursors input")
                 .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
 
 

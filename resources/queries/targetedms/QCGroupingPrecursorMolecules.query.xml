@@ -1,0 +1,14 @@
+<query xmlns="http://labkey.org/data/xml/query">
+    <metadata>
+        <tables xmlns="http://labkey.org/data/xml">
+            <table tableName="QCGroupingPrecursorMolecules" tableDbType="NOT_IN_DB">
+                <columns>
+                    <column columnName="Id">
+                        <isHidden>true</isHidden>
+                        <isKeyField>true</isKeyField> <!--this is needed for the 'requiresSelection' to work in buttonBarOptions -->
+                    </column>
+                </columns>
+            </table>
+        </tables>
+    </metadata>
+</query>

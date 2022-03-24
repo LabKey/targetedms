@@ -201,14 +201,12 @@ public class PeakAreaRatioCalculator
     // Calculator for precursor area ratios in one sample file
     private class PrecursorAreaRatioCalculator extends AreaRatioCalculator<PrecursorChromInfo, PrecursorAreaRatio>
     {
-        private Map<String, TransitionAreaRatioCalculator> _calculatorMap;
-        private String _key;
-        private long _sampleFileId;
+        private final Map<String, TransitionAreaRatioCalculator> _calculatorMap = new HashMap<>();
+        private final String _key;
+        private final long _sampleFileId;
 
         PrecursorAreaRatioCalculator(String precursorKey, long sampleFileId)
         {
-            super();
-            _calculatorMap = new HashMap<>();
             _key = precursorKey;
             _sampleFileId = sampleFileId;
         }

@@ -1551,7 +1551,6 @@
             <column columnName="EntryId"/>
             <column columnName="DocumentGUID"/>
             <column columnName="EntryHash"/>
-            <column columnName="VersionId"/>
             <column columnName="CreateTimestamp"/>
             <column columnName="TimeZoneOffset"/>
             <column columnName="UserName"/>
@@ -1559,6 +1558,17 @@
             <column columnName="ParentEntryHash"/>
             <column columnName="Reason"/>
             <column columnName="ExtraInfo"/>
+        </columns>
+    </table>
+    <table tableName="RunAuditLogEntry" tableDbType="TABLE">
+        <columns>
+            <column columnName="RowId"/>
+            <column columnName="VersionId"/>
+            <column columnName="AuditLogEntryId"/>
+            <column columnName="Created"/>
+            <column columnName="CreatedBy"/>
+            <column columnName="Modified"/>
+            <column columnName="ModifiedBy"/>
         </columns>
     </table>
     <!-- View version of the AuditLogEntry table that uses a CTE to get the VersionId/RunId for every row -->
@@ -1704,6 +1714,19 @@
             <column columnName="metric"/>
             <column columnName="value"/>
             <column columnName="sampleFileId"/>
+        </columns>
+    </table>
+    <table tableName="ExcludedPrecursors" tableDbType="TABLE">
+        <columns>
+            <column columnName="rowId"/>
+            <column columnName="ModifiedSequence"/>
+            <column columnName="Mz"/>
+            <column columnName="Charge"/>
+            <column columnName="CustomIonName"/>
+            <column columnName="IonFormula"/>
+            <column columnName="MassMonoisotopic"/>
+            <column columnName="MassAverage"/>
+            <column columnName="Container"/>
         </columns>
     </table>
 </tables>

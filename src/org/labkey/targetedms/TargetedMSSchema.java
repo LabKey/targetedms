@@ -42,6 +42,7 @@ import org.labkey.api.query.QuerySchema;
 import org.labkey.api.query.QuerySettings;
 import org.labkey.api.query.QueryView;
 import org.labkey.api.query.SchemaKey;
+import org.labkey.api.query.SimpleUserSchema;
 import org.labkey.api.query.UserIdQueryForeignKey;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
@@ -179,8 +180,11 @@ public class TargetedMSSchema extends UserSchema
     public static final String TABLE_GENERAL_TRANSITION = "GeneralTransition";
     public static final String TABLE_MOLECULE_PRECURSOR = "MoleculePrecursor";
 
+    public static final String TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION = "ExcludedPrecursors";
+
     public static final String TABLE_SKYLINE_AUDITLOG = "AuditLog";
     public static final String TABLE_SKYLINE_AUDITLOG_ENTRY = "AuditLogEntry";
+    public static final String TABLE_SKYLINE_RUN_AUDITLOG_ENTRY = "RunAuditLogEntry";
     public static final String TABLE_SKYLINE_AUDITLOG_MESSAGE = "AuditLogMessage";
 
     public static final String TABLE_SKYLINE_AUDITLOG_PREFIX = "AuditLog_Run";
@@ -1524,6 +1528,13 @@ public class TargetedMSSchema extends UserSchema
             return result;
         }
 
+        if (TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION.equalsIgnoreCase(name))
+        {
+            SimpleUserSchema.SimpleTable<TargetedMSSchema> table =
+                    new SimpleUserSchema.SimpleTable<>(this, getSchema().getTable(TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION), cf).init();
+            return table;
+        }
+
         if (getTableNames().contains(name))
         {
             FilteredTable<TargetedMSSchema> result = new FilteredTable<>(getSchema().getTable(name), this, cf);
@@ -1705,6 +1716,7 @@ public class TargetedMSSchema extends UserSchema
         hs.add(TABLE_SAMPLE_FILE_CHROM_INFO);
         hs.add(TABLE_KEYWORDS);
         hs.add(TABLE_KEYWORD_CATEGORIES);
+        hs.add(TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION);
 
         return hs;
     }

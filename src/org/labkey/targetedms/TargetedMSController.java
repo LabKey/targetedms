@@ -64,6 +64,8 @@ import org.labkey.api.action.SimpleViewAction;
 import org.labkey.api.action.SpringActionController;
 import org.labkey.api.admin.AdminUrls;
 import org.labkey.api.analytics.AnalyticsService;
+import org.labkey.api.audit.AuditLogService;
+import org.labkey.api.audit.provider.SiteSettingsAuditProvider;
 import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
@@ -202,25 +204,7 @@ import org.labkey.targetedms.parser.list.ListDefinition;
 import org.labkey.targetedms.parser.skyaudit.AuditLogEntry;
 import org.labkey.targetedms.parser.speclib.SpeclibReaderException;
 import org.labkey.targetedms.pipeline.ChromatogramCrawlerJob;
-import org.labkey.targetedms.query.ChromatogramDisplayColumnFactory;
-import org.labkey.targetedms.query.ConflictResultsManager;
-import org.labkey.targetedms.query.GroupChromatogramsTableInfo;
-import org.labkey.targetedms.query.IsotopeLabelManager;
-import org.labkey.targetedms.query.LibraryManager;
-import org.labkey.targetedms.query.ModificationManager;
-import org.labkey.targetedms.query.ModifiedSequenceDisplayColumn;
-import org.labkey.targetedms.query.MoleculeManager;
-import org.labkey.targetedms.query.MoleculePrecursorManager;
-import org.labkey.targetedms.query.PeptideChromatogramsTableInfo;
-import org.labkey.targetedms.query.PeptideGroupManager;
-import org.labkey.targetedms.query.PeptideManager;
-import org.labkey.targetedms.query.PrecursorChromatogramsTableInfo;
-import org.labkey.targetedms.query.PrecursorManager;
-import org.labkey.targetedms.query.ReplicateManager;
-import org.labkey.targetedms.query.SkylineListManager;
-import org.labkey.targetedms.query.SkylineListSchema;
-import org.labkey.targetedms.query.TargetedMSTable;
-import org.labkey.targetedms.query.TransitionManager;
+import org.labkey.targetedms.query.*;
 import org.labkey.targetedms.search.ModificationSearchWebPart;
 import org.labkey.targetedms.view.*;
 import org.labkey.targetedms.view.spectrum.LibrarySpectrumMatch;
@@ -714,20 +698,22 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
+    private static final String CATEGORY = "TargetedMSLeveyJenningsPlotOptions";
+
     @RequiresPermission(ReadPermission.class)
     public class LeveyJenningsPlotOptionsAction extends MutatingApiAction<LeveyJenningsPlotOptions>
     {
-        private static final String CATEGORY = "TargetedMSLeveyJenningsPlotOptions";
-
         @Override
         public Object execute(LeveyJenningsPlotOptions form, BindException errors)
         {
             ApiSimpleResponse response = new ApiSimpleResponse();
 
+            PropertyManager.PropertyMap properties = null;
+
             // only stash and retrieve plot option properties for logged in users
             if (!getUser().isGuest())
             {
-                PropertyManager.PropertyMap properties = PropertyManager.getWritableProperties(getUser(), getContainer(), CATEGORY, true);
+                properties = PropertyManager.getWritableProperties(getUser(), getContainer(), CATEGORY, true);
 
                 Map<String, String> valuesToPersist = form.getAsMapOfStrings();
                 if (!valuesToPersist.isEmpty())
@@ -751,9 +737,55 @@ public class TargetedMSController extends SpringActionController
                     }
                 }
 
-                response.put("properties", properties);
             }
 
+            if (properties == null || properties.isEmpty())
+            {
+                // Fall back on the defaults for the current container
+                properties = PropertyManager.getProperties(getContainer(), CATEGORY);
+            }
+            response.put("properties", properties);
+
+            return response;
+        }
+    }
+
+    @RequiresPermission(AdminPermission.class)
+    public static class SaveQCPlotSettingsAsDefaultAction extends MutatingApiAction<LeveyJenningsPlotOptions>
+    {
+        @Override
+        public Object execute(LeveyJenningsPlotOptions form, BindException errors)
+        {
+            PropertyManager.PropertyMap current = PropertyManager.getProperties(getUser(), getContainer(), CATEGORY);
+            PropertyManager.PropertyMap defaults = PropertyManager.getWritableProperties(getContainer(), CATEGORY, true);
+            defaults.putAll(current);
+            defaults.save();
+
+            SiteSettingsAuditProvider.SiteSettingsAuditEvent event = new SiteSettingsAuditProvider.SiteSettingsAuditEvent(
+                    getContainer().getEntityId().toString(), "Panorama QC plot default settings saved for " + getContainer().getPath());
+            AuditLogService.get().addEvent(getUser(), event);
+
+            ApiSimpleResponse response = new ApiSimpleResponse();
+            response.put("success", true);
+            return response;
+        }
+    }
+
+    @RequiresLogin
+    @RequiresPermission(ReadPermission.class)
+    public static class RevertToDefaultQCPlotSettingsAction extends MutatingApiAction<LeveyJenningsPlotOptions>
+    {
+        @Override
+        public Object execute(LeveyJenningsPlotOptions form, BindException errors)
+        {
+            PropertyManager.PropertyMap current = PropertyManager.getWritableProperties(getUser(), getContainer(), CATEGORY, false);
+            if (current != null)
+            {
+                current.delete();
+            }
+
+            ApiSimpleResponse response = new ApiSimpleResponse();
+            response.put("success", true);
             return response;
         }
     }
@@ -1106,7 +1138,7 @@ public class TargetedMSController extends SpringActionController
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
             Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
 
-            List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(schema, enabledQCMetricConfigurations, null, null, Collections.emptyList(), true);
+            List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(schema, enabledQCMetricConfigurations, null, null, Collections.emptyList(), true, false);
 
             Map<GuideSetKey, GuideSetStats> stats = OutlierGenerator.get().getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
 
@@ -1131,6 +1163,7 @@ public class TargetedMSController extends SpringActionController
         private List<OutlierGenerator.AnnotationGroup> _selectedAnnotations;
         private boolean _showExcluded;
         private boolean _showReferenceGS;
+        private boolean _showExcludedPrecursors;
 
         public int getMetricId()
         {
@@ -1231,6 +1264,16 @@ public class TargetedMSController extends SpringActionController
         {
             _showReferenceGS = showReferenceGS;
         }
+
+        public boolean isShowExcludedPrecursors()
+        {
+            return _showExcludedPrecursors;
+        }
+
+        public void setShowExcludedPrecursors(boolean showExcludedPrecursors)
+        {
+            _showExcludedPrecursors = showExcludedPrecursors;
+        }
     }
 
     /**
@@ -1288,7 +1331,7 @@ public class TargetedMSController extends SpringActionController
             Date qcFolderEndDate = (Date) qcFolderDateRange.get("endDate");
 
             // always query for the full range
-            List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(schema, qcMetricConfigurations, qcFolderStartDate, qcFolderEndDate, form.getSelectedAnnotations(), form.isShowExcluded());
+            List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(schema, qcMetricConfigurations, qcFolderStartDate, qcFolderEndDate, form.getSelectedAnnotations(), form.isShowExcluded(), form.isShowExcludedPrecursors());
             Map<GuideSetKey, GuideSetStats> stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
             boolean zoomedRange = qcFolderStartDate != null &&
                     qcFolderEndDate != null &&
@@ -1767,6 +1810,7 @@ public class TargetedMSController extends SpringActionController
             factory.setSyncIntensity(form.isSyncY());
             factory.setSyncRt(form.isSyncX());
             factory.setSplitGraph(form.isSplitGraph());
+            factory.setLegend(form.isLegend());
 
             JFreeChart chart;
             if (PeptideManager.getPeptide(getContainer(), gmChromInfo.getGeneralMoleculeId()) != null)
@@ -4462,14 +4506,14 @@ public class TargetedMSController extends SpringActionController
 
     public static class IdForm
     {
-        private int _id;
+        private long _id;
 
-        public int getId()
+        public long getId()
         {
             return _id;
         }
 
-        public void setId(int id)
+        public void setId(long id)
         {
             _id = id;
         }
@@ -4489,6 +4533,11 @@ public class TargetedMSController extends SpringActionController
             {
                 throw new NotFoundException("Could not find SampleFile with ID " + form.getId());
             }
+
+            TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+            TableInfo sampleTable = schema.getTable(TargetedMSSchema.TABLE_SAMPLE_FILE);
+
+            Map<String, Object> sampleRow = new TableSelector(sampleTable, new SimpleFilter(FieldKey.fromParts("Id"), _sampleFile.getId()), null).getMap();
             Replicate replicate = TargetedMSManager.getReplicate(_sampleFile.getReplicateId(), getContainer());
             if (replicate == null)
             {
@@ -4509,16 +4558,14 @@ public class TargetedMSController extends SpringActionController
 
             // Summary for this sample file
             DOM.Renderable renderable = DOM.TABLE(cl("lk-fields-table"),
-                    TR(TD(cl("labkey-form-label"), "Sample File Name"),
-                            TD(materialURL == null ? _sampleFile.getSampleName() : A(at(href, materialURL), _sampleFile.getSampleName()))),
+                    TR(TD(cl("labkey-form-label"), "Sample Identifier"),
+                            TD(materialURL == null ? sampleRow.get(SampleFileTable.SAMPLE_FIELD_KEY) : A(at(href, materialURL), _sampleFile.getSampleName()))),
                     TR(TD(cl("labkey-form-label"), "File Path"),
                             TD(_sampleFile.getFilePath())),
                     TR(TD(cl("labkey-form-label"), "Acquired Time"),
                             TD(DateUtil.formatDateTime(getContainer(), _sampleFile.getAcquiredTime()))),
                     TR(TD(cl("labkey-form-label"), "Modified Time"),
                             TD(DateUtil.formatDateTime(getContainer(), _sampleFile.getModifiedTime()))),
-                    TR(TD(cl("labkey-form-label"), "Skyline ID"),
-                            TD(_sampleFile.getSkylineId())),
                     TR(TD(cl("labkey-form-label"), "Instrument Serial Number"),
                             TD(_sampleFile.getInstrumentSerialNumber())),
                     TR(TD(cl("labkey-form-label"), "Replicate Name"),

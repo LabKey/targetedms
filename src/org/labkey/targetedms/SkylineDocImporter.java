@@ -19,7 +19,6 @@ package org.labkey.targetedms;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -469,7 +468,7 @@ public class SkylineDocImporter
             int calCurvesCount = quantifyRun(run, pepSettings, groupComparisons);
 
             SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, _log);
-            int auditLogEntriesCount = importer.importAuditLogFile(_auditLogFile, parser.getDocumentGUID(), run);
+            int auditLogEntriesCount = importer.importAuditLogFile(_user, _auditLogFile, parser.getDocumentGUID(), run);
 
             run.setAuditLogEntriesCount(auditLogEntriesCount);
             run.setPeptideGroupCount(parser.getPeptideGroupCount());
