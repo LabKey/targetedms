@@ -18,10 +18,13 @@ import org.labkey.api.data.TableSelector;
 import org.labkey.api.gwt.client.AuditBehaviorType;
 import org.labkey.api.query.AbstractQueryImportAction;
 import org.labkey.api.query.BatchValidationException;
+import org.labkey.api.query.DuplicateKeyException;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.QueryService;
 import org.labkey.api.query.QueryUpdateService;
+import org.labkey.api.query.QueryUpdateServiceException;
 import org.labkey.api.reader.DataLoader;
+import org.labkey.api.reader.Readers;
 import org.labkey.api.reader.TabLoader;
 import org.labkey.api.security.User;
 import org.labkey.api.util.logging.LogHelper;
@@ -47,8 +50,8 @@ public enum PanoramaQCSettings
     GUIDE_SET (TargetedMSSchema.TABLE_GUIDE_SET, QCFolderConstants.GUIDE_SET_FILE_NAME),
     QC_METRIC_EXCLUSION (TargetedMSSchema.TABLE_QC_METRIC_EXCLUSION, QCFolderConstants.QC_METRIC_EXCLUSION_FILE_NAME),
     PRECURSOR_EXCLUSION (TargetedMSSchema.TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION, QCFolderConstants.PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION_FILE_NAME),
-    QC_ANNOTATION (TargetedMSSchema.TABLE_QC_ANNOTATION, QCFolderConstants.QC_ANNOTATION_FILE_NAME),
     QC_ANNOTATION_TYPE (TargetedMSSchema.TABLE_QC_ANNOTATION_TYPE, QCFolderConstants.QC_ANNOTATION_TYPE),
+    QC_ANNOTATION (TargetedMSSchema.TABLE_QC_ANNOTATION, QCFolderConstants.QC_ANNOTATION_FILE_NAME),
     REPLICATE_ANNOTATION (TargetedMSSchema.TABLE_REPLICATE_ANNOTATION, QCFolderConstants.REPLICATE_ANNOTATION_FILE_NAME),
     QC_PLOT_SETTINGS (null, QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME);
 
@@ -71,8 +74,8 @@ public enum PanoramaQCSettings
                     case QCFolderConstants.GUIDE_SET_FILE_NAME -> GUIDE_SET;
                     case QCFolderConstants.QC_METRIC_EXCLUSION_FILE_NAME -> QC_METRIC_EXCLUSION;
                     case QCFolderConstants.PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION_FILE_NAME -> PRECURSOR_EXCLUSION;
-                    case QCFolderConstants.QC_ANNOTATION_FILE_NAME -> QC_ANNOTATION;
                     case QCFolderConstants.QC_ANNOTATION_TYPE -> QC_ANNOTATION_TYPE;
+                    case QCFolderConstants.QC_ANNOTATION_FILE_NAME -> QC_ANNOTATION;
                     case QCFolderConstants.REPLICATE_ANNOTATION_FILE_NAME -> REPLICATE_ANNOTATION;
                     case QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME -> QC_PLOT_SETTINGS;
                     default -> null;
@@ -97,15 +100,16 @@ public enum PanoramaQCSettings
         ContainerFilter cf = QC_ANNOTATION_TYPE.name().equals(name) ? ContainerFilter.getContainerFilterByName(ContainerFilter.Type.CurrentPlusProjectAndShared.name(), container, user) : null;
 
         TargetedMSSchema schema = new TargetedMSSchema(user, container);
-        TableInfo ti = schema.getTable(_tableName, cf);
+        TableInfo ti = QC_ENABLED_METRICS.name().equals(name) ? schema.getTable("QCEnabledMetricsWithName") : schema.getTable(_tableName, cf);
+
+        assert ti != null;
+        List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ci -> ci.isUserEditable()).collect(Collectors.toList());
 
         if (METRIC_CONFIG.name().equals(name))
             filter = SimpleFilter.createContainerFilter(container); //only export the ones that are defined in current container (and not the ones from the root container)
         else if (REPLICATE_ANNOTATION.name().equals(name))
             filter = new SimpleFilter(FieldKey.fromString("Source"), "Skyline", CompareType.NEQ);
 
-        assert ti != null;
-        List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ci -> ci.isUserEditable()).collect(Collectors.toList());
         final SimpleFilter finalFilter = filter;
         ResultsFactory factory = ()-> QueryService.get().select(ti, userEditableCols, finalFilter, null, null, false);
 
@@ -132,7 +136,7 @@ public enum PanoramaQCSettings
         }
     }
 
-    private static void writePlotSettingsToPropertiesFile(VirtualFile vf, Container container, User user)
+    private void writePlotSettingsToPropertiesFile(VirtualFile vf, Container container, User user)
     {
         // Should get these settings if present:
         // Plot metric,
@@ -173,14 +177,6 @@ public enum PanoramaQCSettings
         }
     }
 
-    private static String getMetricNameFromRowId(User user, Container c, Integer rowId)
-    {
-        TargetedMSSchema schema = new TargetedMSSchema(user, c);
-        TableInfo ti = schema.getTable("QCMetricConfiguration");
-        assert ti != null;
-        return new TableSelector(ti, Set.of("Name"), new SimpleFilter(FieldKey.fromParts("Id"), rowId), null).getObject(String.class);
-    }
-
     protected void importSettings(FolderImportContext ctx, VirtualFile panoramaQCDir)
     {
         if (_settingsFileName.equalsIgnoreCase(QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME))
@@ -199,24 +195,39 @@ public enum PanoramaQCSettings
         TableInfo ti = schema.getTable(_tableName);
         assert ti != null;
         QueryUpdateService qus = ti.getUpdateService();
+        BatchValidationException errors = new BatchValidationException();
+        int numRows = 0;
         try
         {
             ctx.getLogger().info("Starting data import from " + _settingsFileName + " into targetedms." + _tableName);
+            DataLoader loader;
+            if (_tableName.equals(TargetedMSSchema.TABLE_QC_ENABLED_METRICS))
+            {
+                loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(_settingsFileName)), true);
+                List<Map<String, Object>> tsvData = loader.load();
+                tsvData.forEach(row -> {
+                    String metricValue = (String) row.get("metric");
+                    String metricRowId = getRowIdFromName(TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricValue), ctx.getUser(), ctx.getContainer());
+                    row.put("metric", metricRowId);
+                });
+                numRows = qus.insertRows(ctx.getUser(), ctx.getContainer(), tsvData, errors, null, null).size();
+            }
+            else
+            {
+                loader = DataLoader.get().createLoader(_settingsFileName, null, panoramaQCDir.getInputStream(_settingsFileName), true, null, TabLoader.TSV_FILE_TYPE);
 
-            DataLoader loader = DataLoader.get().createLoader(_settingsFileName, null, panoramaQCDir.getInputStream(_settingsFileName), true, null, TabLoader.TSV_FILE_TYPE);
+                AuditBehaviorType behaviorType = ti.getAuditBehavior();
+                TransactionAuditProvider.TransactionAuditEvent auditEvent = null;
+                if (behaviorType != null && behaviorType != AuditBehaviorType.NONE)
+                    auditEvent = createTransactionAuditEvent(ctx.getContainer(), QueryService.AuditAction.INSERT);
 
-            AuditBehaviorType behaviorType = ti.getAuditBehavior();
-            TransactionAuditProvider.TransactionAuditEvent auditEvent = null;
-            if (behaviorType != null && behaviorType != AuditBehaviorType.NONE)
-                auditEvent = createTransactionAuditEvent(ctx.getContainer(), QueryService.AuditAction.INSERT);
+                numRows = AbstractQueryImportAction.importData(loader, ti, qus, QueryUpdateService.InsertOption.INSERT,
+                        false, false, errors, behaviorType, auditEvent, ctx.getUser(), ctx.getContainer());
+            }
 
-            BatchValidationException errors = new BatchValidationException();
-            AbstractQueryImportAction.importData(loader, ti, qus, QueryUpdateService.InsertOption.INSERT,
-                    false, false, errors, behaviorType, auditEvent, ctx.getUser(), ctx.getContainer());
-
-            ctx.getLogger().info("Finished importing data from " + _settingsFileName + " into targetedms." + _tableName);
+            ctx.getLogger().info("Finished importing " + numRows + " rows from " + _settingsFileName + " into targetedms." + _tableName);
         }
-        catch (IOException e)
+        catch (IOException | DuplicateKeyException | BatchValidationException | QueryUpdateServiceException | SQLException e)
         {
             LOG.error("Error importing panorama qc settings from " + _settingsFileName + " into targetedms." + _tableName + ": " + e.getMessage(), e);
         }
@@ -239,7 +250,7 @@ public enum PanoramaQCSettings
                     {
                         if(entry.getKey().toString().equalsIgnoreCase("metric"))
                         {
-                            String metricRowId = getMetricRowIdFromName(ctx.getUser(), ctx.getContainer(), entry.getValue().toString());
+                            String metricRowId = getRowIdFromName(_tableName, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), entry.getValue().toString()), ctx.getUser(), ctx.getContainer());
                             properties.put(entry.getKey().toString(), metricRowId);
                         }
                         else
@@ -258,11 +269,19 @@ public enum PanoramaQCSettings
         }
     }
 
-    private String getMetricRowIdFromName(User user, Container c, String metricName)
+    private String getMetricNameFromRowId(User user, Container c, Integer rowId)
     {
         TargetedMSSchema schema = new TargetedMSSchema(user, c);
-        TableInfo ti = schema.getTable("QCMetricConfiguration");
+        TableInfo ti = schema.getTable(_tableName);
         assert ti != null;
-        return new TableSelector(ti, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricName), null).getObject(String.class);
+        return new TableSelector(ti, Set.of("Name"), new SimpleFilter(FieldKey.fromParts("Id"), rowId), null).getObject(String.class);
+    }
+
+    private String getRowIdFromName(String table, Set<String> colNames, SimpleFilter filter, User user, Container c)
+    {
+        TargetedMSSchema schema = new TargetedMSSchema(user, c);
+        TableInfo ti = schema.getTable(table);
+        assert ti != null;
+        return new TableSelector(ti, colNames, filter, null).getObject(String.class);
     }
 }
