@@ -21,6 +21,7 @@ public class SampleFileInfo extends OutlierCounts
 
     private Boolean _inGuideSetTrainingRange;
     private boolean ignoreForAllMetric;
+    private String _replicateName;
 
     public SampleFileInfo(long sampleId, Date acquiredTime, String sampleFile, int guideSetId, String filePath, Long replicateId)
     {
@@ -103,6 +104,8 @@ public class SampleFileInfo extends OutlierCounts
         jsonObject.put("SampleFile", getSampleFile());
         jsonObject.put("AcquiredTime", getAcquiredTime());
         jsonObject.put("GuideSetId", getGuideSetId());
+        jsonObject.put("ReplicateName", getReplicateName());
+        jsonObject.put("FilePath", getFilePath());
         jsonObject.put("IgnoreForAllMetric", isIgnoreForAllMetric());
         jsonObject.put("Metrics", getMetricsJSON());
 
@@ -120,6 +123,7 @@ public class SampleFileInfo extends OutlierCounts
         jsonObject.put("GuideSetId", getGuideSetId());
         // Intentionally dereference wrapper object to be sure it's always populated with a true/false value in this codepath
         jsonObject.put("InGuideSetTrainingRange", _inGuideSetTrainingRange.booleanValue());
+        jsonObject.put("ReplicateName", _replicateName);
 
         return jsonObject;
     }
@@ -132,5 +136,15 @@ public class SampleFileInfo extends OutlierCounts
     public boolean getInGuideSetTrainingRange()
     {
         return _inGuideSetTrainingRange;
+    }
+
+    public void setReplicateName(String replicateName)
+    {
+        _replicateName = replicateName;
+    }
+
+    public String getReplicateName()
+    {
+        return _replicateName;
     }
 }

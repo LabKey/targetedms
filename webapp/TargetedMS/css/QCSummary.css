@@ -59,6 +59,8 @@
 
 .sample-file-field-label {
     font-weight: bold;
+    padding-right: 1em;
+    vertical-align: top;
 }
 
 .sample-file-metric-list {
