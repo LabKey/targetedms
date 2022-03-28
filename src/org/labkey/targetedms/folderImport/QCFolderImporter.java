@@ -37,13 +37,14 @@ public class QCFolderImporter implements FolderImporter
 
         VirtualFile panoramaQCDir = root.getDir(QCFolderConstants.QC_FOLDER_DIR);
         List<String> filesToImport = root.getDir(QCFolderConstants.QC_FOLDER_DIR).list();
-        for (String fileName : filesToImport)
+
+        //iterate through PanoramaQCSettings enum values so that files get imported in that order/ordinal, since the lookup tables need to get populated first
+        for (PanoramaQCSettings qcSetting : PanoramaQCSettings.values())
         {
-            PanoramaQCSettings qcSetting = PanoramaQCSettings.getSetting(fileName);
-            if (null != qcSetting)
-            {
-                qcSetting.importSettings(ctx, panoramaQCDir);
-            }
+           if (filesToImport.stream().filter(f -> f.equalsIgnoreCase(qcSetting.getSettingsFileName())).count() == 1)
+           {
+               qcSetting.importSettings(ctx, panoramaQCDir);
+           }
         }
     }
 

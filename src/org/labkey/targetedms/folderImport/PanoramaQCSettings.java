@@ -11,7 +11,9 @@ import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.PropertyManager;
 import org.labkey.api.data.ResultsFactory;
+import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SimpleFilter;
+import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.TSVGridWriter;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.TableSelector;
@@ -35,6 +37,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -63,6 +67,16 @@ public enum PanoramaQCSettings
     {
         _tableName = tableName;
         _settingsFileName = fileName;
+    }
+
+    public String getTableName()
+    {
+        return _tableName;
+    }
+
+    public String getSettingsFileName()
+    {
+        return _settingsFileName;
     }
 
     public static @Nullable PanoramaQCSettings getSetting(String fileName)
@@ -111,7 +125,44 @@ public enum PanoramaQCSettings
             filter = new SimpleFilter(FieldKey.fromString("Source"), "Skyline", CompareType.NEQ);
 
         final SimpleFilter finalFilter = filter;
-        ResultsFactory factory = ()-> QueryService.get().select(ti, userEditableCols, finalFilter, null, null, false);
+
+        ResultsFactory factory;
+        if (QC_ANNOTATION.name().equals(name))
+        {
+            SQLFragment sql = new SQLFragment("SELECT qcAnnotationType.Name AS QCAnnotationTypeId, qcAnnotation.Description, qcAnnotation.Date ")
+                    .append(" FROM qcAnnotation")
+                    .append(" INNER JOIN qcAnnotationType")
+                    .append(" ON qcAnnotation.QCAnnotationTypeId = qcAnnotationType.Id");
+
+            Map<String, TableInfo> tableMap = new HashMap<>();
+            tableMap.put("qcAnnotation", ti);
+            tableMap.put("qcAnnotationType", schema.getTable(TargetedMSSchema.TABLE_QC_ANNOTATION_TYPE));
+
+            factory = ()-> QueryService.get().selectResults(schema, sql.getSQL(), tableMap, null, true, true);
+        }
+        else if (QC_METRIC_EXCLUSION.name().equals(name))
+        {
+            SQLFragment sql = new SQLFragment("SELECT replicate.Name AS ReplicateId, runs.FileName AS File, qcMetricConfig.Name AS MetricId ")
+                    .append(" FROM qcMetricExclusion")
+                    .append(" INNER JOIN replicate")
+                    .append(" ON qcMetricExclusion.ReplicateId = replicate.Id")
+                    .append(" INNER JOIN qcMetricConfig")
+                    .append(" ON qcMetricExclusion.MetricId = qcMetricConfig.Id")
+                    .append(" INNER JOIN runs")
+                    .append(" ON replicate.RunId = runs.Id");
+
+            Map<String, TableInfo> tableMap = new HashMap<>();
+            tableMap.put("qcMetricExclusion", ti);
+            tableMap.put("replicate", schema.getTable(TargetedMSSchema.TABLE_REPLICATE));
+            tableMap.put("qcMetricConfig", schema.getTable(TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION));
+            tableMap.put("runs", schema.getTable(TargetedMSSchema.TABLE_RUNS));
+
+            factory = ()-> QueryService.get().selectResults(schema, sql.getSQL(), tableMap, null, true, true);
+        }
+        else
+        {
+            factory = ()-> QueryService.get().select(ti, userEditableCols, finalFilter, null, null, false);
+        }
 
         try
         {
@@ -160,7 +211,7 @@ public enum PanoramaQCSettings
             {
                 if (name.equalsIgnoreCase("metric"))
                 {
-                    String metricValue = getMetricNameFromRowId(user, container, Integer.valueOf(plotSettings.get(name)));
+                    String metricValue = getMetricNameFromRowId(TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, user, container, Integer.valueOf(plotSettings.get(name)));
                     prop.put(name, metricValue);
                 }
                 else
@@ -201,7 +252,57 @@ public enum PanoramaQCSettings
         {
             ctx.getLogger().info("Starting data import from " + _settingsFileName + " into targetedms." + _tableName);
             DataLoader loader;
-            if (_tableName.equals(TargetedMSSchema.TABLE_QC_ENABLED_METRICS))
+            if (_tableName.equals(TargetedMSSchema.TABLE_QC_ANNOTATION_TYPE))
+            {
+                TableInfo tinfo = schema.getTable(_tableName, ContainerFilter.getContainerFilterByName(ContainerFilter.Type.CurrentPlusProjectAndShared.name(), ctx.getContainer(), ctx.getUser()));
+                loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(_settingsFileName)), true);
+                List<Map<String, Object>> tsvData = loader.load();
+                List<Map<String, Object>> newTsvData = new ArrayList<>();
+                tsvData.forEach(row -> {
+                    String name = (String) row.get("Name");
+                    boolean nameNotFound = new TableSelector(tinfo, Set.of("Name"), new SimpleFilter(FieldKey.fromParts("Name"), name), null).getRowCount() == 0;
+                    if (nameNotFound)
+                    {
+                        newTsvData.add(row);
+                    }
+                    else
+                    {
+                        ctx.getLogger().info("Row with '" + name + "' already exists. Skipping");
+                    }
+                });
+                numRows = qus.insertRows(ctx.getUser(), ctx.getContainer(), newTsvData, errors, null, null).size();
+            }
+            else if (_tableName.equals(TargetedMSSchema.TABLE_QC_ANNOTATION))
+            {
+                loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(_settingsFileName)), true);
+                List<Map<String, Object>> tsvData = loader.load();
+                tsvData.forEach(row -> {
+                    String nameValue = (String) row.get("QCAnnotationTypeId");
+                    String qcAnnotationTypeId = getRowIdFromName(TargetedMSSchema.TABLE_QC_ANNOTATION_TYPE, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), nameValue), ctx.getUser(), ctx.getContainer());
+                    row.put("QCAnnotationTypeId", qcAnnotationTypeId);
+                });
+                numRows = qus.insertRows(ctx.getUser(), ctx.getContainer(), tsvData, errors, null, null).size();
+            }
+            else if (_tableName.equals(TargetedMSSchema.TABLE_QC_METRIC_EXCLUSION))
+            {
+                loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(_settingsFileName)), true);
+                List<Map<String, Object>> tsvData = loader.load();
+                tsvData.forEach(row -> {
+
+                    String replicateName = (String) row.get("ReplicateId");
+                    String fileName = (String) row.get("File");
+                    SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("Name"), replicateName);
+                    filter.addCondition(FieldKey.fromString("RunId/FileName"), fileName);
+                    String replicateId = getRowIdFromName(TargetedMSSchema.TABLE_REPLICATE, Set.of("Id"), filter, ctx.getUser(), ctx.getContainer());
+                    row.put("ReplicateId", replicateId);
+
+                    String metricName = (String) row.get("MetricId");
+                    String metricId = getRowIdFromName(TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricName), ctx.getUser(), ctx.getContainer());
+                    row.put("MetricId", metricId);
+                });
+                numRows = qus.insertRows(ctx.getUser(), ctx.getContainer(), tsvData, errors, null, null).size();
+            }
+            else if (_tableName.equals(TargetedMSSchema.TABLE_QC_ENABLED_METRICS))
             {
                 loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(_settingsFileName)), true);
                 List<Map<String, Object>> tsvData = loader.load();
@@ -233,6 +334,15 @@ public enum PanoramaQCSettings
         }
     }
 
+    private List<IdNameMapping> getIdNameMappings(TargetedMSSchema schema, String srcTable, String joinTable, String idColumn, String nameColumn)
+    {
+        SQLFragment sql = new SQLFragment("SELECT st." + idColumn  + ", jt." + nameColumn)
+                .append(" FROM targetedms." + srcTable + " st")
+                .append(" INNER JOIN " + joinTable + " jt")
+                .append(" ON st." + idColumn + " = jt. " + idColumn);
+        return new SqlSelector(schema.getDbSchema().getScope(), sql).getArrayList(IdNameMapping.class);
+    }
+
     private void importQCProperties(FolderImportContext ctx, VirtualFile panoramaQCDir)
     {
         try (InputStream is = panoramaQCDir.getInputStream(_settingsFileName))
@@ -250,7 +360,7 @@ public enum PanoramaQCSettings
                     {
                         if(entry.getKey().toString().equalsIgnoreCase("metric"))
                         {
-                            String metricRowId = getRowIdFromName(_tableName, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), entry.getValue().toString()), ctx.getUser(), ctx.getContainer());
+                            String metricRowId = getRowIdFromName(TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), entry.getValue().toString()), ctx.getUser(), ctx.getContainer());
                             properties.put(entry.getKey().toString(), metricRowId);
                         }
                         else
@@ -269,19 +379,45 @@ public enum PanoramaQCSettings
         }
     }
 
-    private String getMetricNameFromRowId(User user, Container c, Integer rowId)
+    private String getMetricNameFromRowId(String tableName, User user, Container c, Integer rowId)
     {
         TargetedMSSchema schema = new TargetedMSSchema(user, c);
-        TableInfo ti = schema.getTable(_tableName);
+        TableInfo ti = schema.getTable(tableName);
         assert ti != null;
         return new TableSelector(ti, Set.of("Name"), new SimpleFilter(FieldKey.fromParts("Id"), rowId), null).getObject(String.class);
     }
 
-    private String getRowIdFromName(String table, Set<String> colNames, SimpleFilter filter, User user, Container c)
+    private String getRowIdFromName(String tableName, Set<String> colNames, SimpleFilter filter, User user, Container c)
     {
         TargetedMSSchema schema = new TargetedMSSchema(user, c);
-        TableInfo ti = schema.getTable(table);
+        TableInfo ti = schema.getTable(tableName);
         assert ti != null;
         return new TableSelector(ti, colNames, filter, null).getObject(String.class);
+    }
+
+    private static class IdNameMapping
+    {
+        Integer Id;
+        String Name;
+
+        public Integer getId()
+        {
+            return Id;
+        }
+
+        public void setId(Integer id)
+        {
+            Id = id;
+        }
+
+        public String getName()
+        {
+            return Name;
+        }
+
+        public void setName(String name)
+        {
+            Name = name;
+        }
     }
 }
