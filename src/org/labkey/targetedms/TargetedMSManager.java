@@ -613,7 +613,7 @@ public class TargetedMSManager
             XarSource source = new AbstractFileXarSource("Wrap Targeted MS Run", container, user)
             {
                 @Override
-                public File getLogFile()
+                public Path getLogFilePath()
                 {
                     throw new UnsupportedOperationException();
                 }
