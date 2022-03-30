@@ -266,7 +266,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
 
     renderContainerSampleFileStats: function (params) {
         var container = params.container;
-            var html = '<table class="table-condensed labkey-data-region-legacy labkey-show-borders"><thead><tr><td class="labkey-column-header">Sample Name</td><td class="labkey-column-header">Acquired</td><td class="labkey-column-header">Total outliers</td></tr></thead>';
+            var html = '<table class="table-condensed labkey-data-region-legacy labkey-show-borders"><thead><tr><td class="labkey-column-header">Replicate Name</td><td class="labkey-column-header">Acquired</td><td class="labkey-column-header">Total outliers</td></tr></thead>';
             var sampleFiles = params.sampleFiles;
             Ext4.iterate(sampleFiles, function (sampleFile) {
                 // create a new div id for each sampleFile to use for the hover details callout
@@ -276,7 +276,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
 
                 var iconCls = !sampleFile.IgnoreForAllMetric ? (totalOutliers === 0 ? 'fa-file-o qc-correct' : 'fa-file qc-error') : 'fa-file-o qc-none';
                 html += '<tr id="' + sampleFile.calloutId + '"><td><div class="sample-file-item">'
-                        + '<span class="fa ' + iconCls + '"></span> ' + Ext4.util.Format.htmlEncode(sampleFile.SampleFile) + '</div></td><td><div class="sample-file-item-acquired">' + Ext4.util.Format.date(sampleFile.AcquiredTime ? new Date(sampleFile.AcquiredTime) : null, LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s') + '</div></td>';
+                        + '<span class="fa ' + iconCls + '"></span> ' + Ext4.util.Format.htmlEncode(sampleFile.ReplicateName) + '</div></td><td><div class="sample-file-item-acquired">' + Ext4.util.Format.date(sampleFile.AcquiredTime ? new Date(sampleFile.AcquiredTime) : null, LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s') + '</div></td>';
 
                 html += '<td style="text-align: right"><div class="sample-file-item-outliers">';
                 if (sampleFile.IgnoreForAllMetric) {
@@ -312,8 +312,10 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
         var sampleHREF = LABKEY.ActionURL.buildURL('targetedms', 'showSampleFile', LABKEY.ActionURL.getContainer(), {id: sampleFile.SampleId});
 
         // generate the HTML content for the sample file display details
-        content += '<span class="sample-file-field-label">Name:</span> <a href="' + sampleHREF + '">' + Ext4.util.Format.htmlEncode(sampleFile.SampleFile) + '</a>'
-                + '<br/><span class="sample-file-field-label">Acquired Date/Time:</span> ' + Ext4.util.Format.date(sampleFile.AcquiredTime ? new Date(sampleFile.AcquiredTime) : null, LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s')
+        content += '<table>' +
+                '<tr><td class="sample-file-field-label">Acquired:</td><td>' + Ext4.util.Format.date(sampleFile.AcquiredTime ? new Date(sampleFile.AcquiredTime) : null, LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s') + '</td></tr>' +
+                '<tr><td class="sample-file-field-label">File Path:</td><td><a href="' + sampleHREF + '">' + Ext4.util.Format.htmlEncode(sampleFile.FilePath) + '</a></td></tr>' +
+                '</table><br/>'
         if (sampleFile.IgnoreForAllMetric) {
             content += '<div>Not included in QC</div>';
         }
@@ -387,7 +389,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                     target: el.dom,
                     placement: 'bottom',
                     width: sampleFile.Metrics.length > 0 ? 720 : 300,
-                    title: 'Sample Details',
+                    title: sampleFile.ReplicateName,
                     content: content,
                     onShow: this.attachHopscotchMouseClose
                 });
