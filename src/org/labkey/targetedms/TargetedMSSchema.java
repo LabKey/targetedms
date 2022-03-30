@@ -184,6 +184,7 @@ public class TargetedMSSchema extends UserSchema
 
     public static final String TABLE_SKYLINE_AUDITLOG = "AuditLog";
     public static final String TABLE_SKYLINE_AUDITLOG_ENTRY = "AuditLogEntry";
+    public static final String TABLE_SKYLINE_RUN_AUDITLOG_ENTRY = "RunAuditLogEntry";
     public static final String TABLE_SKYLINE_AUDITLOG_MESSAGE = "AuditLogMessage";
 
     public static final String TABLE_SKYLINE_AUDITLOG_PREFIX = "AuditLog_Run";

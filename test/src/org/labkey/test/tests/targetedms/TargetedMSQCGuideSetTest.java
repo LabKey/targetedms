@@ -333,19 +333,14 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         List<GetQueryDetailsResponse.Column> columns = queryDetailsResponse.getColumns();
 
         int groupingIndex = 11;
-        assertEquals("","Grouping", columns.get(groupingIndex).getName());
-        assertEquals("","Grouping", columns.get(groupingIndex).getCaption());
+        assertEquals("","Day", columns.get(groupingIndex).getName());
+        assertEquals("","Day", columns.get(groupingIndex).getCaption());
         assertEquals("", "Text (String)", columns.get(groupingIndex).getType());
 
         int ignoreIndex = 12;
-        assertEquals("","ignore_in_QC", columns.get(ignoreIndex).getName());
-        assertEquals("","ignore_in_QC", columns.get(ignoreIndex).getCaption());
-        assertEquals("", "True/False (Boolean)", columns.get(ignoreIndex).getType());
-
-        int timeIndex = 13;
-        assertEquals("","Time", columns.get(timeIndex).getName());
-        assertEquals("","Time", columns.get(timeIndex).getCaption());
-        assertEquals("", "Number (Double)", columns.get(timeIndex).getType());
+        assertEquals("","SampleIdentifier", columns.get(ignoreIndex).getName());
+        assertEquals("","SampleIdentifier", columns.get(ignoreIndex).getCaption());
+        assertEquals("", "Text (String)", columns.get(ignoreIndex).getType());
 
         //confirm data in grid view
         waitAndClickAndWait(Locator.linkWithText("view data"));
@@ -361,10 +356,9 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         expected.add(" ");
         expected.add(" ");
         expected.add(" ");
-        expected.add("Grouping: Group A\nignore_in_QC: true\nTime: 5");
-        expected.add("Group A");
-        expected.add("true");
-        expected.add("5.0");
+        expected.add("Day: 1\nSampleIdentifier: AnnotatedSample1");
+        expected.add("1");
+        expected.add("AnnotatedSample1");
         assertEquals("Wrong data in first row", expected, strings);
     }
 
