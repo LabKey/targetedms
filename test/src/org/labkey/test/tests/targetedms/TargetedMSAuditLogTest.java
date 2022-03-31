@@ -49,7 +49,6 @@ public class TargetedMSAuditLogTest extends TargetedMSTest
                 auditLog.getDataAsText(0, "MessageText"));
         assertEquals("End message is incorrect", "Managed results",
                 auditLog.getDataAsText(8, "MessageText"));
-
     }
 
     /*
@@ -66,7 +65,12 @@ public class TargetedMSAuditLogTest extends TargetedMSTest
 
         log("Verifying logs are imported correctly in " + FOLDER_2);
         DataRegionTable auditLog = getAuditLogs(FOLDER_2);
-        assertEquals("Invalid number of audit logs", 9, auditLog.getDataRowCount());
+        assertEquals("Invalid number of audit logs in " + FOLDER_2, 9, auditLog.getDataRowCount());
+
+        log("Verifying logs are not affected in first folder after importing in second folder");
+        auditLog = getAuditLogs(getProjectName());
+        assertEquals("Invalid number of audit logs in " + getProjectName(), 9, auditLog.getDataRowCount());
+
 
         log("Deleting " + FOLDER_2);
         APIContainerHelper apiContainerHelper = new APIContainerHelper(this);
