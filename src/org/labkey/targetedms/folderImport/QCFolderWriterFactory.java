@@ -42,7 +42,7 @@ public class QCFolderWriterFactory implements FolderWriterFactory
 
             for (PanoramaQCSettings setting : PanoramaQCSettings.values())
             {
-                setting.writeResults(setting.name(), vf, object, ctx.getUser());
+                setting.writeSettings(vf, object, ctx.getUser());
             }
         }
     }

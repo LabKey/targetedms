@@ -1,20 +1,32 @@
 package org.labkey.targetedms.folderImport;
 
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.admin.AbstractFolderImportFactory;
 import org.labkey.api.admin.FolderImportContext;
 import org.labkey.api.admin.FolderImporter;
+import org.labkey.api.data.TableInfo;
 import org.labkey.api.pipeline.PipelineJob;
 import org.labkey.api.pipeline.PipelineJobWarning;
+import org.labkey.api.query.BatchValidationException;
+import org.labkey.api.query.DuplicateKeyException;
+import org.labkey.api.query.QueryUpdateService;
+import org.labkey.api.query.QueryUpdateServiceException;
+import org.labkey.api.util.logging.LogHelper;
 import org.labkey.api.writer.VirtualFile;
+import org.labkey.targetedms.TargetedMSSchema;
 
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 public class QCFolderImporter implements FolderImporter
 {
+    private static final Logger LOG = LogHelper.getLogger(QCFolderImporter.class, "Panorama QC Folder Importer");
+
     @Override
     public String getDataType()
     {
@@ -37,13 +49,46 @@ public class QCFolderImporter implements FolderImporter
 
         VirtualFile panoramaQCDir = root.getDir(QCFolderConstants.QC_FOLDER_DIR);
         List<String> filesToImport = root.getDir(QCFolderConstants.QC_FOLDER_DIR).list();
+        TargetedMSSchema schema = new TargetedMSSchema(ctx.getUser(), ctx.getContainer());
 
         //iterate through PanoramaQCSettings enum values so that files get imported in that order/ordinal, since the lookup tables need to get populated first
         for (PanoramaQCSettings qcSetting : PanoramaQCSettings.values())
         {
            if (filesToImport.stream().filter(f -> f.equalsIgnoreCase(qcSetting.getSettingsFileName())).count() == 1)
            {
-               qcSetting.importSettings(ctx, panoramaQCDir);
+               try
+               {
+                   long numRows;
+
+                   if (qcSetting.getSettingsFileName().equalsIgnoreCase(QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME))
+                   {
+                       ctx.getLogger().info("Starting QC Plot settings import");
+                       numRows = qcSetting.importSettingsFromFile(ctx, panoramaQCDir, null, null, null, null);
+                       ctx.getLogger().info("Finished importing " + numRows + " QC Plot settings from " + qcSetting.getSettingsFileName() + " as properties.");
+                   }
+                   else
+                   {
+                       TableInfo ti = schema.getTable(qcSetting.getTableName());
+                       assert ti != null;
+                       QueryUpdateService qus = ti.getUpdateService();
+                       BatchValidationException errors = new BatchValidationException();
+
+                       ctx.getLogger().info("Starting data import from " + qcSetting.getSettingsFileName() + " into targetedms." + qcSetting.getTableName());
+                       numRows = qcSetting.importSettingsFromFile(ctx, panoramaQCDir, schema, ti, qus, errors);
+                       ctx.getLogger().info("Finished importing " + numRows + " rows from " + qcSetting.getSettingsFileName() + " into targetedms." + qcSetting.getTableName());
+                   }
+               }
+               catch (IOException | DuplicateKeyException | BatchValidationException | QueryUpdateServiceException | SQLException e)
+               {
+                   if (qcSetting.getSettingsFileName().equalsIgnoreCase(QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME))
+                   {
+                       LOG.error("Error importing QC Plot settings from " + QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME + ": " + e.getMessage(), e);
+                   }
+                   else
+                   {
+                       LOG.error("Error importing panorama qc settings from " + qcSetting.getSettingsFileName() + " into targetedms." + qcSetting.getTableName() + ": " + e.getMessage(), e);
+                   }
+               }
            }
         }
     }
