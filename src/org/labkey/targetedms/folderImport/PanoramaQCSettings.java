@@ -120,7 +120,7 @@ public enum PanoramaQCSettings
                     tsvData.forEach(row -> {
                         String name = (String) row.get("Name");
                         String logMsg = "Row with '" + name + "' already exists. Skipping";
-                        PanoramaQCSettings.getDataWithoutDuplicates(ctx, tinfo, row, dataWithoutDuplicates, logMsg);
+                        getDataWithoutDuplicates(ctx, tinfo, row, dataWithoutDuplicates, logMsg);
                     });
                     return dataWithoutDuplicates.size() > 0 ? qus.insertRows(ctx.getUser(), ctx.getContainer(), dataWithoutDuplicates, errors, null, null).size() : 0;
                 }
@@ -229,12 +229,14 @@ public enum PanoramaQCSettings
                         filter = new SimpleFilter();
                         for(String col : row.keySet())
                         {
-                            if (!col.equalsIgnoreCase("File"))
+                            if (null == row.get(col))
+                                filter.addCondition(FieldKey.fromParts(col), row.get(col), CompareType.ISBLANK);
+                            else if (!col.equalsIgnoreCase("File"))
                                 filter.addCondition(FieldKey.fromParts(col), row.get(col));
                         }
                         if (new TableSelector(ti, row.keySet(), filter, null).getRowCount() > 0)
                         {
-                            ctx.getLogger().info("Row with 'Replicate: " + replicateName + ", and Metric: " + metricName + "' already exists. Skipping");
+                            ctx.getLogger().warn("Row with 'Replicate: " + replicateName + ", and Metric: " + metricName + "' already exists. Skipping");
                         }
                         else
                         {
