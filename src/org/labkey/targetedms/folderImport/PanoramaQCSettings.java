@@ -96,72 +96,6 @@ public enum PanoramaQCSettings
                     return tsvDataWithoutDuplicates.size() > 0 ? qus.insertRows(ctx.getUser(), ctx.getContainer(), tsvDataWithoutDuplicates, errors, null, null).size() : 0;
                 }
             },
-    QC_METRIC_EXCLUSION (TargetedMSSchema.TABLE_QC_METRIC_EXCLUSION, QCFolderConstants.QC_METRIC_EXCLUSION_FILE_NAME)
-            {
-                @Override
-                public void writeSettings(VirtualFile vf, Container container, User user)
-                {
-                    TargetedMSSchema schema = new TargetedMSSchema(user, container);
-                    TableInfo ti = schema.getTable(getTableName());
-                    assert ti != null;
-                    SQLFragment sql = new SQLFragment("SELECT replicate.Name AS ReplicateId, runs.FileName AS File, qcMetricConfig.Name AS MetricId ")
-                            .append(" FROM qcMetricExclusion")
-                            .append(" INNER JOIN replicate")
-                            .append(" ON qcMetricExclusion.ReplicateId = replicate.Id")
-                            .append(" INNER JOIN qcMetricConfig")
-                            .append(" ON qcMetricExclusion.MetricId = qcMetricConfig.Id")
-                            .append(" INNER JOIN runs")
-                            .append(" ON replicate.RunId = runs.Id");
-
-                    Map<String, TableInfo> tableMap = new HashMap<>();
-                    tableMap.put("qcMetricExclusion", ti);
-                    tableMap.put("replicate", schema.getTable(TargetedMSSchema.TABLE_REPLICATE));
-                    tableMap.put("qcMetricConfig", schema.getTable(TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION));
-                    tableMap.put("runs", schema.getTable(TargetedMSSchema.TABLE_RUNS));
-
-                    ResultsFactory factory = ()-> QueryService.get().selectResults(schema, sql.getSQL(), tableMap, null, true, true);
-                    writeSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
-                }
-
-                @Override
-                public long importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws SQLException, QueryUpdateServiceException, BatchValidationException, DuplicateKeyException, IOException
-                {
-                    DataLoader loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(getSettingsFileName())), true);
-                    List<Map<String, Object>> tsvData = loader.load();
-                    List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
-                    tsvData.forEach(row -> {
-
-                        String replicateName = (String) row.get("ReplicateId");
-                        String fileName = (String) row.get("File");
-                        SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("Name"), replicateName);
-                        filter.addCondition(FieldKey.fromString("RunId/FileName"), fileName);
-                        Integer replicateId = getRowIdFromName(TargetedMSSchema.TABLE_REPLICATE, Set.of("Id"), filter, ctx.getUser(), ctx.getContainer());
-                        row.put("ReplicateId", replicateId);
-
-                        String metricName = (String) row.get("MetricId");
-                        Integer metricId = getRowIdFromName(TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricName), ctx.getUser(), ctx.getContainer());
-                        row.put("MetricId", metricId);
-
-                        //filter on values being imported to identify duplicates
-                        filter = new SimpleFilter();
-                        for(String col : row.keySet())
-                        {
-                            if (!col.equalsIgnoreCase("File"))
-                                filter.addCondition(FieldKey.fromParts(col), row.get(col));
-                        }
-                        if (new TableSelector(ti, row.keySet(), filter, null).getRowCount() > 0)
-                        {
-                            ctx.getLogger().info("Row with 'Replicate: " + replicateName + ", and Metric: " + metricName + "' already exists. Skipping");
-                        }
-                        else
-                        {
-                            dataWithoutDuplicates.add(row);
-                        }
-                    });
-                    return dataWithoutDuplicates.size() > 0 ? qus.insertRows(ctx.getUser(), ctx.getContainer(), dataWithoutDuplicates, errors, null, null).size() : 0;
-
-                }
-            },
     QC_ANNOTATION_TYPE (TargetedMSSchema.TABLE_QC_ANNOTATION_TYPE, QCFolderConstants.QC_ANNOTATION_TYPE)
             {
                 @Override
@@ -243,6 +177,72 @@ public enum PanoramaQCSettings
 
                     ResultsFactory factory = ()-> QueryService.get().select(ti, userEditableCols, filter, null);
                     writeSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
+                }
+            },
+    QC_METRIC_EXCLUSION (TargetedMSSchema.TABLE_QC_METRIC_EXCLUSION, QCFolderConstants.QC_METRIC_EXCLUSION_FILE_NAME)
+            {
+                @Override
+                public void writeSettings(VirtualFile vf, Container container, User user)
+                {
+                    TargetedMSSchema schema = new TargetedMSSchema(user, container);
+                    TableInfo ti = schema.getTable(getTableName());
+                    assert ti != null;
+                    SQLFragment sql = new SQLFragment("SELECT replicate.Name AS ReplicateId, runs.FileName AS File, qcMetricConfig.Name AS MetricId ")
+                            .append(" FROM qcMetricExclusion")
+                            .append(" LEFT JOIN replicate")
+                            .append(" ON qcMetricExclusion.ReplicateId = replicate.Id")
+                            .append(" LEFT JOIN qcMetricConfig")
+                            .append(" ON qcMetricExclusion.MetricId = qcMetricConfig.Id")
+                            .append(" INNER JOIN runs")
+                            .append(" ON replicate.RunId = runs.Id");
+
+                    Map<String, TableInfo> tableMap = new HashMap<>();
+                    tableMap.put("qcMetricExclusion", ti);
+                    tableMap.put("replicate", schema.getTable(TargetedMSSchema.TABLE_REPLICATE));
+                    tableMap.put("qcMetricConfig", schema.getTable(TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION));
+                    tableMap.put("runs", schema.getTable(TargetedMSSchema.TABLE_RUNS));
+
+                    ResultsFactory factory = ()-> QueryService.get().selectResults(schema, sql.getSQL(), tableMap, null, true, true);
+                    writeSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
+                }
+
+                @Override
+                public long importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws SQLException, QueryUpdateServiceException, BatchValidationException, DuplicateKeyException, IOException
+                {
+                    DataLoader loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(getSettingsFileName())), true);
+                    List<Map<String, Object>> tsvData = loader.load();
+                    List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
+                    tsvData.forEach(row -> {
+
+                        String replicateName = (String) row.get("ReplicateId");
+                        String fileName = (String) row.get("File");
+                        SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("Name"), replicateName);
+                        filter.addCondition(FieldKey.fromString("RunId/FileName"), fileName);
+                        Integer replicateId = getRowIdFromName(TargetedMSSchema.TABLE_REPLICATE, Set.of("Id"), filter, ctx.getUser(), ctx.getContainer());
+                        row.put("ReplicateId", replicateId);
+
+                        String metricName = (String) row.get("MetricId");
+                        Integer metricId = getRowIdFromName(TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricName), ctx.getUser(), ctx.getContainer());
+                        row.put("MetricId", metricId);
+
+                        //filter on values being imported to identify duplicates
+                        filter = new SimpleFilter();
+                        for(String col : row.keySet())
+                        {
+                            if (!col.equalsIgnoreCase("File"))
+                                filter.addCondition(FieldKey.fromParts(col), row.get(col));
+                        }
+                        if (new TableSelector(ti, row.keySet(), filter, null).getRowCount() > 0)
+                        {
+                            ctx.getLogger().info("Row with 'Replicate: " + replicateName + ", and Metric: " + metricName + "' already exists. Skipping");
+                        }
+                        else
+                        {
+                            dataWithoutDuplicates.add(row);
+                        }
+                    });
+                    return dataWithoutDuplicates.size() > 0 ? qus.insertRows(ctx.getUser(), ctx.getContainer(), dataWithoutDuplicates, errors, null, null).size() : 0;
+
                 }
             },
     QC_PLOT_SETTINGS (null, QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME)
