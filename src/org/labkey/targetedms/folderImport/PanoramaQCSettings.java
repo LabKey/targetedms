@@ -80,7 +80,7 @@ public enum PanoramaQCSettings
                 }
 
                 @Override
-                public long importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws SQLException, QueryUpdateServiceException, BatchValidationException, DuplicateKeyException, IOException
+                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws SQLException, QueryUpdateServiceException, BatchValidationException, DuplicateKeyException, IOException
                 {
                     DataLoader loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(getSettingsFileName())), true);
                     List<Map<String, Object>> tsvData = loader.load();
@@ -90,8 +90,7 @@ public enum PanoramaQCSettings
                         String metricValue = (String) row.get("metric");
                         Integer metricId = getRowIdFromName(TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricValue), ctx.getUser(), ctx.getContainer());
                         row.put("metric", metricId);
-                        String logMsg = "Row with 'Metric: " + metricValue + ", and Container: " + ctx.getContainer().getName() + "' already exists. Skipping";
-                        getDataWithoutDuplicates(ctx, ti, row, tsvDataWithoutDuplicates, logMsg);
+                        getDataWithoutDuplicates(ctx, ti, row, tsvDataWithoutDuplicates);
                     });
                     return tsvDataWithoutDuplicates.size() > 0 ? qus.insertRows(ctx.getUser(), ctx.getContainer(), tsvDataWithoutDuplicates, errors, null, null).size() : 0;
                 }
@@ -111,16 +110,15 @@ public enum PanoramaQCSettings
                 }
 
                 @Override
-                public long importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws SQLException, QueryUpdateServiceException, BatchValidationException, DuplicateKeyException, IOException
+                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws SQLException, QueryUpdateServiceException, BatchValidationException, DuplicateKeyException, IOException
                 {
                     TableInfo tinfo = schema.getTable(getTableName(), ContainerFilter.getContainerFilterByName(ContainerFilter.Type.CurrentPlusProjectAndShared.name(), ctx.getContainer(), ctx.getUser()));
                     DataLoader loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(getSettingsFileName())), true);
                     List<Map<String, Object>> tsvData = loader.load();
                     List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
+
                     tsvData.forEach(row -> {
-                        String name = (String) row.get("Name");
-                        String logMsg = "Row with '" + name + "' already exists. Skipping";
-                        getDataWithoutDuplicates(ctx, tinfo, row, dataWithoutDuplicates, logMsg);
+                        getDataWithoutDuplicates(ctx, tinfo, row, dataWithoutDuplicates);
                     });
                     return dataWithoutDuplicates.size() > 0 ? qus.insertRows(ctx.getUser(), ctx.getContainer(), dataWithoutDuplicates, errors, null, null).size() : 0;
                 }
@@ -148,17 +146,17 @@ public enum PanoramaQCSettings
                 }
 
                 @Override
-                public long importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws SQLException, QueryUpdateServiceException, BatchValidationException, DuplicateKeyException, IOException
+                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws SQLException, QueryUpdateServiceException, BatchValidationException, DuplicateKeyException, IOException
                 {
                     DataLoader loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(getSettingsFileName())), true);
                     List<Map<String, Object>> tsvData = loader.load();
                     List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
+
                     tsvData.forEach(row -> {
                         String nameValue = (String) row.get("QCAnnotationTypeId");
                         Integer qcAnnotationTypeId = getRowIdFromName(TargetedMSSchema.TABLE_QC_ANNOTATION_TYPE, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), nameValue), ctx.getUser(), ctx.getContainer());
                         row.put("QCAnnotationTypeId", qcAnnotationTypeId);
-                        String logMsg = "Row with '" + row.values() + "' values already exists. Skipping";
-                        getDataWithoutDuplicates(ctx, ti, row, dataWithoutDuplicates, logMsg);
+                        getDataWithoutDuplicates(ctx, ti, row, dataWithoutDuplicates);
                     });
 
                     return dataWithoutDuplicates.size() > 0 ? qus.insertRows(ctx.getUser(), ctx.getContainer(), dataWithoutDuplicates, errors, null, null).size() : 0;
@@ -172,11 +170,35 @@ public enum PanoramaQCSettings
                     TargetedMSSchema schema = new TargetedMSSchema(user, container);
                     TableInfo ti = schema.getTable(getTableName());
                     assert ti != null;
-                    List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ci -> ci.isUserEditable()).collect(Collectors.toList());
-                    SimpleFilter filter = new SimpleFilter(FieldKey.fromString("Source"), "Skyline", CompareType.NEQ);
 
-                    ResultsFactory factory = ()-> QueryService.get().select(ti, userEditableCols, filter, null);
+                    SQLFragment sql = new SQLFragment("SELECT replicateAnnotation.ReplicateId.Name AS ReplicateId, runs.FileName AS File, replicateAnnotation.Name, replicateAnnotation.Value, replicateAnnotation.Source ")
+                            .append(" FROM replicateAnnotation")
+                            .append(" INNER JOIN replicate")
+                            .append(" ON replicateAnnotation.replicateId = replicate.Id")
+                            .append(" INNER JOIN runs")
+                            .append(" ON replicate.RunId = runs.Id")
+                            .append(" WHERE Source != 'Skyline' ");
+
+                    Map<String, TableInfo> tableMap = new HashMap<>();
+                    tableMap.put("replicateAnnotation", ti);
+                    tableMap.put("replicate", schema.getTable(TargetedMSSchema.TABLE_REPLICATE));
+                    tableMap.put("runs", schema.getTable(TargetedMSSchema.TABLE_RUNS));
+
+                    ResultsFactory factory = ()-> QueryService.get().selectResults(schema, sql.getSQL(), tableMap, null, true, true);
                     writeSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
+                }
+
+                @Override
+                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws SQLException, QueryUpdateServiceException, BatchValidationException, DuplicateKeyException, IOException
+                {
+                    DataLoader loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(getSettingsFileName())), true);
+                    List<Map<String, Object>> tsvData = loader.load();
+                    List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
+
+                    tsvData.forEach(row -> {
+                        getReplicateDataWithoutDuplicates(ctx, ti, row, dataWithoutDuplicates);
+                    });
+                    return dataWithoutDuplicates.size() > 0 ? qus.insertRows(ctx.getUser(), ctx.getContainer(), dataWithoutDuplicates, errors, null, null).size() : 0;
                 }
             },
     QC_METRIC_EXCLUSION (TargetedMSSchema.TABLE_QC_METRIC_EXCLUSION, QCFolderConstants.QC_METRIC_EXCLUSION_FILE_NAME)
@@ -207,41 +229,17 @@ public enum PanoramaQCSettings
                 }
 
                 @Override
-                public long importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws SQLException, QueryUpdateServiceException, BatchValidationException, DuplicateKeyException, IOException
+                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws SQLException, QueryUpdateServiceException, BatchValidationException, DuplicateKeyException, IOException
                 {
                     DataLoader loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(getSettingsFileName())), true);
                     List<Map<String, Object>> tsvData = loader.load();
                     List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
+
                     tsvData.forEach(row -> {
-
-                        String replicateName = (String) row.get("ReplicateId");
-                        String fileName = (String) row.get("File");
-                        SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("Name"), replicateName);
-                        filter.addCondition(FieldKey.fromString("RunId/FileName"), fileName);
-                        Integer replicateId = getRowIdFromName(TargetedMSSchema.TABLE_REPLICATE, Set.of("Id"), filter, ctx.getUser(), ctx.getContainer());
-                        row.put("ReplicateId", replicateId);
-
                         String metricName = (String) row.get("MetricId");
                         Integer metricId = getRowIdFromName(TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricName), ctx.getUser(), ctx.getContainer());
                         row.put("MetricId", metricId);
-
-                        //filter on values being imported to identify duplicates
-                        filter = new SimpleFilter();
-                        for(String col : row.keySet())
-                        {
-                            if (null == row.get(col))
-                                filter.addCondition(FieldKey.fromParts(col), row.get(col), CompareType.ISBLANK);
-                            else if (!col.equalsIgnoreCase("File"))
-                                filter.addCondition(FieldKey.fromParts(col), row.get(col));
-                        }
-                        if (new TableSelector(ti, row.keySet(), filter, null).getRowCount() > 0)
-                        {
-                            ctx.getLogger().warn("Row with 'Replicate: " + replicateName + ", and Metric: " + metricName + "' already exists. Skipping");
-                        }
-                        else
-                        {
-                            dataWithoutDuplicates.add(row);
-                        }
+                        getReplicateDataWithoutDuplicates(ctx, ti, row, dataWithoutDuplicates);
                     });
                     return dataWithoutDuplicates.size() > 0 ? qus.insertRows(ctx.getUser(), ctx.getContainer(), dataWithoutDuplicates, errors, null, null).size() : 0;
 
@@ -292,7 +290,7 @@ public enum PanoramaQCSettings
                 }
 
                 @Override
-                public long importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws SQLException, QueryUpdateServiceException, BatchValidationException, DuplicateKeyException, IOException
+                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws SQLException, QueryUpdateServiceException, BatchValidationException, DuplicateKeyException, IOException
                 {
                     int numProps = 0;
                     try (InputStream is = panoramaQCDir.getInputStream(getSettingsFileName()))
@@ -347,15 +345,14 @@ public enum PanoramaQCSettings
         writeSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
     }
 
-    public long importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws SQLException, QueryUpdateServiceException, BatchValidationException, DuplicateKeyException, IOException
+    public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws SQLException, QueryUpdateServiceException, BatchValidationException, DuplicateKeyException, IOException
     {
         DataLoader loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(_settingsFileName)), true);
         List<Map<String, Object>> tsvData = loader.load();
         List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
 
         tsvData.forEach(row -> {
-            String logMsg = "Row with '" + row.values() + "' values already exists. Skipping";
-            getDataWithoutDuplicates(ctx, ti, row, dataWithoutDuplicates, logMsg);
+            getDataWithoutDuplicates(ctx, ti, row, dataWithoutDuplicates);
         });
         return dataWithoutDuplicates.size() > 0 ? qus.insertRows(ctx.getUser(), ctx.getContainer(), dataWithoutDuplicates, errors, null, null).size() : 0;
     }
@@ -411,10 +408,50 @@ public enum PanoramaQCSettings
         return new TableSelector(ti, colNames, filter, null).getObject(Integer.class);
     }
 
-    private static void getDataWithoutDuplicates(FolderImportContext ctx, @Nullable TableInfo ti, Map<String, Object> row, List<Map<String, Object>> dataWithoutDuplicates, String logMsg)
+    private static void getReplicateDataWithoutDuplicates(FolderImportContext ctx, @Nullable TableInfo ti, Map<String, Object> row, List<Map<String, Object>> dataWithoutDuplicates)
+    {
+        String replicateName = (String) row.get("ReplicateId");
+        String fileName = (String) row.get("File");
+        SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("Name"), replicateName);
+        filter.addCondition(FieldKey.fromString("RunId/FileName"), fileName);
+        Integer replicateId = getRowIdFromName(TargetedMSSchema.TABLE_REPLICATE, Set.of("Id"), filter, ctx.getUser(), ctx.getContainer());
+        row.put("ReplicateId", replicateId);
+
+        //filter on values being imported to identify duplicates
+        filter = new SimpleFilter();
+        String logMsg = "[";
+        int count = 0;
+        for(String col : row.keySet())
+        {
+            if (col.equalsIgnoreCase("File"))
+                continue;
+
+            if (null == row.get(col))
+                filter.addCondition(FieldKey.fromParts(col), row.get(col), CompareType.ISBLANK);
+            else
+                filter.addCondition(FieldKey.fromParts(col), row.get(col));
+
+            logMsg += col + ": '" + row.get(col) + "'" + (count == row.size()-2 ? "" : ", ") ;
+            ++count;
+        }
+
+        if (new TableSelector(ti, row.keySet(), filter, null).getRowCount() > 0)
+        {
+            logMsg += "] values already exists. Skipping";
+            ctx.getLogger().warn(logMsg);
+        }
+        else
+        {
+            dataWithoutDuplicates.add(row);
+        }
+    }
+
+    private static void getDataWithoutDuplicates(FolderImportContext ctx, @Nullable TableInfo ti, Map<String, Object> row, List<Map<String, Object>> dataWithoutDuplicates)
     {
         //filter on values being imported to identify duplicates
         SimpleFilter filter = new SimpleFilter();
+        String logMsg = "[";
+        int count = 0;
         for(String col : row.keySet())
         {
             if (null == row.get(col))
@@ -425,9 +462,12 @@ public enum PanoramaQCSettings
             {
                 filter.addCondition(FieldKey.fromParts(col), row.get(col));
             }
+            logMsg += col + ": '" + row.get(col) + "'" + (count == row.size()-1 ? "" : ", ");
+            ++count;
         }
         if (new TableSelector(ti, row.keySet(), filter, null).getRowCount() > 0)
         {
+            logMsg += "] values already exists. Skipping";
             ctx.getLogger().warn(logMsg);
         }
         else
