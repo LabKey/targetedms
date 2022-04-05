@@ -419,7 +419,7 @@ public enum PanoramaQCSettings
 
         //filter on values being imported to identify duplicates
         filter = new SimpleFilter();
-        String logMsg = "[";
+        String logMsg = "A row containing [";
         int count = 0;
         for(String col : row.keySet())
         {
@@ -450,7 +450,7 @@ public enum PanoramaQCSettings
     {
         //filter on values being imported to identify duplicates
         SimpleFilter filter = new SimpleFilter();
-        String logMsg = "[";
+        String logMsg = "A row containing [";
         int count = 0;
         for(String col : row.keySet())
         {
