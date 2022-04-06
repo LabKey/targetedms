@@ -332,7 +332,6 @@ public class TargetedMSQCTest extends TargetedMSTest
         selectedPlotTypes.add(CUSUMm);
         qcPlotsWebPart.checkPlotType(selectedPlotTypes.get(0), true);
         qcPlotsWebPart.checkPlotType(selectedPlotTypes.get(1), true);
-        qcPlotsWebPart.chooseSmallPlotSize(false);
         qcPlotsWebPart.waitForPlots(2, true);
 
         // test plot type selection is persisted
@@ -341,7 +340,6 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.waitForPlots(2, true);
         assertEquals("QC Plot Type not round tripped as expected", true, qcPlotsWebPart.isPlotTypeSelected(selectedPlotTypes.get(0)));
         assertEquals("QC Plot Type not round tripped as expected", true, qcPlotsWebPart.isPlotTypeSelected(selectedPlotTypes.get(1)));
-        assertEquals("Plot Size not round tripped as expected", false, qcPlotsWebPart.isSmallPlotSizeSelected());
 
         // impersonate a different user in this container and verify that initial form fields used
         impersonate(USER);
@@ -403,11 +401,9 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.checkAllPlotTypes(false);
         qcPlotsWebPart.checkPlotType(LeveyJennings, true);
         qcPlotsWebPart.waitForPlots(PRECURSORS.length, true);
-        assertFalse("Plot Size should be disabled with less than 2 plot types selected", qcPlotsWebPart.isPlotSizeRadioEnabled());
 
         qcPlotsWebPart.checkPlotType(MovingRange, true);
         qcPlotsWebPart.waitForPlots(PRECURSORS.length * 2, true);
-        assertTrue("Plot Size should be enabled with at least 2 plot types selected", qcPlotsWebPart.isPlotSizeRadioEnabled());
 
         assertElementNotPresent(qcPlotsWebPart.getLegendItemLocator("CUSUM Group", true));
 
@@ -416,20 +412,6 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.waitForPlots(PRECURSORS.length * 4, true);
 
         assertElementPresent(qcPlotsWebPart.getLegendItemLocator("CUSUM Group", true));
-
-        log("Verify Small/Large Plot Size");
-        if (!qcPlotsWebPart.isSmallPlotSizeSelected())
-        {
-            qcPlotsWebPart.chooseSmallPlotSize(true);
-            qcPlotsWebPart.waitForPlots();
-        }
-        assertTrue("Plot Size is set to small but plot is rendered in large size", isElementPresent(qcPlotsWebPart.getSmallPlotLoc()));
-
-        qcPlotsWebPart.chooseSmallPlotSize(false);
-        qcPlotsWebPart.waitForPlots();
-        refresh();
-        qcPlotsWebPart.waitForPlots();
-        assertFalse("Plot Size is set to large but plot is rendered in small size", isElementPresent(qcPlotsWebPart.getSmallPlotLoc()));
 
         qcPlotsWebPart.resetInitialQCPlotFields();
     }

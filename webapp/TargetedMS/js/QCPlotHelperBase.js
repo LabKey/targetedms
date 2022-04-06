@@ -6,8 +6,7 @@
 Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
     statics: {
-        qcPlotTypesWithYOptions : ['Levey-Jennings', 'Moving Range'],
-        qcPlotTypesWithoutYOptions : ['CUSUMm', 'CUSUMv']
+        qcPlotTypes : ['Levey-Jennings', 'Moving Range', 'CUSUMm', 'CUSUMv'],
     },
 
     showLJPlot: function()
@@ -408,8 +407,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     },
 
     getPlotWidth: function() {
-        var width = this.plotWidth - 30;
-        return !this.largePlot && this.plotTypes.length > 1 ? width / 2 : width;
+        return this.plotWidth - 30;
     },
 
     calculatePlotIndicesBetweenDates: function (precursorInfo) {
