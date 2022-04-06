@@ -1,6 +1,5 @@
 package org.labkey.targetedms.folderImport;
 
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.admin.AbstractFolderImportFactory;
@@ -13,7 +12,6 @@ import org.labkey.api.query.BatchValidationException;
 import org.labkey.api.query.DuplicateKeyException;
 import org.labkey.api.query.QueryUpdateService;
 import org.labkey.api.query.QueryUpdateServiceException;
-import org.labkey.api.util.logging.LogHelper;
 import org.labkey.api.writer.VirtualFile;
 import org.labkey.targetedms.TargetedMSSchema;
 
@@ -25,8 +23,6 @@ import java.util.List;
 
 public class QCFolderImporter implements FolderImporter
 {
-    private static final Logger LOG = LogHelper.getLogger(QCFolderImporter.class, "Panorama QC Folder Importer");
-
     @Override
     public String getDataType()
     {
@@ -82,11 +78,11 @@ public class QCFolderImporter implements FolderImporter
                {
                    if (qcSetting.getSettingsFileName().equalsIgnoreCase(QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME))
                    {
-                       LOG.error("Error importing QC Plot settings from " + QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME + ": " + e.getMessage(), e);
+                       throw new Exception("Error importing QC Plot settings from " + QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME + ": " + e.getMessage(), e);
                    }
                    else
                    {
-                       LOG.error("Error importing panorama qc settings from " + qcSetting.getSettingsFileName() + " into targetedms." + qcSetting.getTableName() + ": " + e.getMessage(), e);
+                       throw new Exception("Error importing panorama qc settings from " + qcSetting.getSettingsFileName() + " into targetedms." + qcSetting.getTableName() + ": " + e.getMessage(), e);
                    }
                }
            }

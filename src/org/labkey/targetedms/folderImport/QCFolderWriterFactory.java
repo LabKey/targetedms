@@ -10,7 +10,6 @@ import org.labkey.api.writer.VirtualFile;
 import org.labkey.folder.xml.FolderDocument;
 import org.labkey.targetedms.TargetedMSManager;
 
-
 public class QCFolderWriterFactory implements FolderWriterFactory
 {
     @Override
@@ -19,7 +18,7 @@ public class QCFolderWriterFactory implements FolderWriterFactory
         return new QCFolderWriter();
     }
 
-    private class QCFolderWriter extends BaseFolderWriter
+    private static class QCFolderWriter extends BaseFolderWriter
     {
         @Override
         public String getDataType()
