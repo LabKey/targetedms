@@ -1,0 +1,1 @@
+SELECT Id FROM targetedms.PrecursorChromInfo WHERE IsotopeDotp IS NOT NULL
