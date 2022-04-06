@@ -668,7 +668,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         var plotConfig = Ext4.apply(basePlotConfig, {
             margins : {
                 top: 65 + this.getMaxStackedAnnotations() * 12,
-                right: (this.showInPlotLegends() ? legendMargin : 30 ) + (this.isMultiSeries() ? 50 : 0),
+                right: (this.showInPlotLegends() ? legendMargin : 30 ) + (this.isMultiSeries() ? 60 : 10),
                 left: 75,
                 bottom: 75
             },
