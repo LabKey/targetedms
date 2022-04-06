@@ -1314,7 +1314,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }
     },
 
-    plotPointHover : function(event, row, layerSel, point, valueName) {
+    plotPointMouseOver : function(event, row, layerSel, point, valueName, plotConfig) {
         var showHoverTask = new Ext4.util.DelayedTask(),
             metricProps = this.getMetricPropsById(this.metric),
             me = this;
@@ -1362,6 +1362,24 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         Ext4.get(point).on('mouseout', function() {
             showHoverTask.cancel();
         }, this);
+
+        // for the combined / single plot case, we want to have point hover highlight the given series
+        // by using opacity to "push" the other points and lines to the background
+        if (plotConfig.properties.combined) {
+            var points = d3.selectAll('.point path');
+            var pointOpacityAcc = function(d) { return d.PrecursorId === row.PrecursorId ? 1 : 0.1 };
+            points.attr('fill-opacity', pointOpacityAcc).attr('stroke-opacity', pointOpacityAcc);
+
+            var hasYRightMetric = metricProps.series2QueryName !== undefined;
+            var lines = d3.selectAll('path.line');
+            var lineOpacityAcc = function(d) { return d.group.indexOf(row.fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1 };
+            lines.attr('fill-opacity', lineOpacityAcc).attr('stroke-opacity', lineOpacityAcc);
+        }
+    },
+
+    plotPointMouseOut : function(event, row, layerSel, valueName, plotConfig) {
+        d3.selectAll('.point path').attr('fill-opacity', 1).attr('stroke-opacity', 1).attr('stoke-width', 2);
+        d3.selectAll('path.line').attr('fill-opacity', 1).attr('stroke-opacity', 1).attr('stoke-width', 1);
     },
 
     attachHopscotchMouseClose: function() {

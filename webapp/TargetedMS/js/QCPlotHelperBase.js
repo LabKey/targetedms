@@ -650,11 +650,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             groupBy: 'fragment',
             color: 'fragment',
             defaultGuideSetLabel: 'fragment',
-            pointOpacityFn: function(row) { return row.IgnoreInQC ? 0.4 : 1; },
+            pointSize: 2,
             showTrendLine: true,
             showDataPoints: true,
-            mouseOverFn: this.plotPointHover,
+            mouseOverFn: this.plotPointMouseOver,
             mouseOverFnScope: this,
+            mouseOutFn: this.plotPointMouseOut,
+            mouseOutFnScope: this,
             position: this.groupedX ? 'jitter' : undefined
         };
 
@@ -723,13 +725,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             valueConversion: (this.yAxisScale === 'percentDeviation' || this.yAxisScale === 'standardDeviation' ? this.yAxisScale : undefined),
             shape: 'guideSetId',
             combined: false,
-            pointOpacityFn: function(row) { return row.IgnoreInQC ? 0.4 : 1; },
+            pointSize: 2,
             pointIdAttr: function(row) { return row['fullDate']; },
             showTrendLine: true,
             showDataPoints: true,
             defaultGuideSetLabel: 'fragment',
             defaultGuideSets: this.defaultGuideSet,
-            mouseOverFn: this.plotPointHover,
+            mouseOverFn: this.plotPointMouseOver,
             mouseOverFnScope: this,
             position: this.groupedX ? 'jitter' : undefined,
             disableRangeDisplay: this.isMultiSeries()
