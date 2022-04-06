@@ -8,6 +8,7 @@ import org.labkey.test.Locator;
 import org.labkey.test.WebTestHelper;
 import org.labkey.test.categories.Git;
 import org.labkey.test.params.experiment.SampleTypeDefinition;
+import org.labkey.test.util.APIContainerHelper;
 import org.labkey.test.util.PortalHelper;
 import org.labkey.test.util.SampleTypeHelper;
 
@@ -42,10 +43,10 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
         _containerHelper.enableModules(Arrays.asList("Dumbster", "PanoramaPremium", "SampleManagement"));
 
         setupSubfolder(getProjectName(), TargetedMS_SubFolder, FolderType.QC);
-        importData(SProCoP_FILE);
+        importData(SProCoP_FILE_ANNOTATED);
 
         goToProjectHome();
-        _containerHelper.createSubfolder(getProjectName(), Sample_Manager_Subfolder);
+        new APIContainerHelper(this).createSubfolder(getProjectName(), Sample_Manager_Subfolder);
         new PortalHelper(getDriver()).addBodyWebPart("Sample Types");
 
         log("Creating Samples in SM subfolder");
@@ -55,39 +56,44 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
     @Test
     public void testSampleTypeNavigation()
     {
-        String s1 = "Q_Exactive_08_23_2013_JGB_58";
-        String s2 = "Q_Exactive_08_23_2013_JGB_51";
+        String s1 = "AnnotatedSample1";
+        String s2 = "ExtractedSampleId4";
+        String s3 = "Q_Exactive_08_09_2013_JGB_87";
 
         log("Verifying links does not navigate to SM application");
         navigateToFolder(getProjectName(), TargetedMS_SubFolder);
         waitAndClickAndWait(Locator.linkContainingText("sample files"));
-        clickAndWait(Locator.linkWithText(s1).index(1));
-        checker().verifyTrue("Sample link navigated to sample manager application when no samples in folder",
-                getCurrentRelativeURL().contains(WebTestHelper.buildRelativeUrl("targetedms", getProjectName() + "/" + TargetedMS_SubFolder, "showSampleFile")));
+        assertTextPresent(s1, s2, s3);
+        assertElementNotPresent(Locator.linkWithText(s1));
+        assertElementNotPresent(Locator.linkWithText(s2));
 
         log("Adding samples");
         List<Map<String, String>> samples = Arrays.asList(Map.of("Name", s1),
-                Map.of("Name", s2));
+                Map.of("Name", s2), Map.of("Name", s3));
         addSamples(sampleType, samples);
 
         goToProjectHome();
         navigateToFolder(getProjectName(), TargetedMS_SubFolder);
-        clickAndWait(Locator.linkContainingText("sample files"));
+        clickTab("Runs");
+        waitAndClickAndWait(Locator.linkWithText(SProCoP_FILE_ANNOTATED));
+        clickAndWait(Locator.linkWithText("6 replicates"));
 
         log("Clicking the replicate column link to verify the navigation");
-        clickAndWait(Locator.linkWithText(s1).index(0));
+        clickAndWait(Locator.linkWithText("Q_Exactive_08_09_2013_JGB_02").index(0));
         checker().verifyTrue("Sample link did not navigate to sample manager application",
                 getCurrentRelativeURL().contains(WebTestHelper.buildRelativeUrl("targetedms", getProjectName() + "/" + TargetedMS_SubFolder, "showSampleFile")));
         goBack();
 
         log("Navigating to SM app");
-        clickAndWait(Locator.linkWithText(s1).index(1));
+        assertElementPresent(Locator.linkWithText(s2));
+        assertElementPresent(Locator.linkWithText(s3));
+        clickAndWait(Locator.linkWithText(s1));
         checker().verifyTrue("Sample link did not navigate to sample manager application",
                 getCurrentRelativeURL().contains(WebTestHelper.buildRelativeUrl("sampleManager", getProjectName() + "/" + Sample_Manager_Subfolder, "app")));
 
         log("Navigating back to labkey server");
         click(Locator.linkWithText("Assays"));
-        waitAndClickAndWait(Locator.linkWithText(SProCoP_FILE));
+        waitAndClickAndWait(Locator.linkWithText(SProCoP_FILE_ANNOTATED));
         checker().verifyTrue("Did not navigate back to labkey server",
                 getCurrentRelativeURL().contains(WebTestHelper.buildRelativeUrl("targetedms", getProjectName() + "/" + TargetedMS_SubFolder, "showPrecursorList")));
 
@@ -98,7 +104,7 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
 
         navigateToFolder(getProjectName(), TargetedMS_SubFolder);
         waitAndClickAndWait(Locator.linkContainingText("sample files"));
-        clickAndWait(Locator.linkWithText(s1).index(1));
+        clickAndWait(Locator.linkWithText(s1));
         checker().verifyTrue("Sample link navigated to sample manager application when disabled at folder level",
                 getCurrentRelativeURL().contains(WebTestHelper.buildRelativeUrl("experiment", getProjectName() + "/" + Sample_Manager_Subfolder, "showMaterial")));
 
