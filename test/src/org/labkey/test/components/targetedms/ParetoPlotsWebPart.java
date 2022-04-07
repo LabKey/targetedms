@@ -44,9 +44,11 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
         TPAREARATIO("Transition/Precursor Area Ratio"),
         PAREA("Precursor Area"),
         TAREA("Transition Area"),
-        MASSACCURACY("Mass Accuracy");
+        MASSACCURACY("Mass Accuracy"),
+        ISOTOPE_DOTP("Isotope dotp"),
+        LIBRARY_DOTP("Library dotp");
 
-        private String _text;
+        private final String _text;
 
         MetricTypeTicks(String text)
         {
@@ -81,8 +83,8 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
         CUSUMm("Mean CUSUM", "_CUSUMm"),
         CUSUMv("Variability CUSUM", "_CUSUMv");
 
-        private String _label;
-        private String _suffix;
+        private final String _label;
+        private final String _suffix;
 
         ParetoPlotType(String text, String idSuffix)
         {

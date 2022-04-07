@@ -254,7 +254,9 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         assertEquals("Wrong number of non-conformers for MA", 21, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 4));
         assertEquals("Wrong number of non-conformers for RT", 17, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 5));
         assertEquals("Wrong number of non-conformers for FWHM", 12, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 6));
-        assertEquals("Wrong number of non-conformers for T/P Ratio", 4, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 7));
+        assertEquals("Wrong number of non-conformers for Isotope dotp", 5, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 7));
+        assertEquals("Wrong number of non-conformers for area ratio", 4, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 8));
+        assertEquals("Wrong number of non-conformers for TIC area", 2, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 9));
         verifyTicksOnPlots(paretoPlotsWebPart, guideSetId, plotType);
         verifyNavigationToPanoramaDashboard(guideSetId, QCPlotsWebPart.QCPlotType.MovingRange, 0, QCPlotsWebPart.MetricType.TOTAL_PEAK, true);
 
