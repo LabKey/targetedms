@@ -1240,6 +1240,17 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }
     },
 
+    legendMouseOver : function(data, item) {
+        if (data.name) {
+            // in the multi series case, the name as the series label appended, so use the hoverText instead
+            this.highlightFragmentSeries(data.hoverText);
+        }
+    },
+
+    legendMouseOut : function(data, item) {
+        this.plotPointMouseOut();
+    },
+
     plotPointMouseOver : function(event, row, layerSel, point, valueName, plotConfig) {
         var showHoverTask = new Ext4.util.DelayedTask(),
             metricProps = this.getMetricPropsById(this.metric),
@@ -1292,20 +1303,34 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         // for the combined / single plot case, we want to have point hover highlight the given series
         // by using opacity to "push" the other points and lines to the background
         if (plotConfig.properties.combined) {
-            var points = d3.selectAll('.point path');
-            var pointOpacityAcc = function(d) { return d.PrecursorId === row.PrecursorId ? 1 : 0.1 };
-            points.attr('fill-opacity', pointOpacityAcc).attr('stroke-opacity', pointOpacityAcc);
-
-            var hasYRightMetric = metricProps.series2QueryName !== undefined;
-            var lines = d3.selectAll('path.line');
-            var lineOpacityAcc = function(d) { return d.group.indexOf(row.fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1 };
-            lines.attr('fill-opacity', lineOpacityAcc).attr('stroke-opacity', lineOpacityAcc);
+            this.highlightFragmentSeries(row.fragment);
         }
     },
 
     plotPointMouseOut : function(event, row, layerSel, valueName, plotConfig) {
-        d3.selectAll('.point path').attr('fill-opacity', 1).attr('stroke-opacity', 1).attr('stoke-width', 2);
-        d3.selectAll('path.line').attr('fill-opacity', 1).attr('stroke-opacity', 1).attr('stoke-width', 1);
+        d3.selectAll('.point path').attr('fill-opacity', 1).attr('stroke-opacity', 1);
+        d3.selectAll('path.line').attr('fill-opacity', 1).attr('stroke-opacity', 1);
+        d3.selectAll('.legend .legend-item').attr('fill-opacity', 1).attr('stroke-opacity', 1);
+    },
+
+    highlightFragmentSeries : function(fragment) {
+        var metricProps = this.getMetricPropsById(this.metric);
+
+        var points = d3.selectAll('.point path');
+        var pointOpacityAcc = function(d) { return d.fragment === fragment ? 1 : 0.1 };
+        points.attr('fill-opacity', pointOpacityAcc).attr('stroke-opacity', pointOpacityAcc);
+
+        var hasYRightMetric = metricProps.series2QueryName !== undefined;
+        var lines = d3.selectAll('path.line');
+        var lineOpacityAcc = function(d) { return d.group.indexOf(fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1 };
+        lines.attr('fill-opacity', lineOpacityAcc).attr('stroke-opacity', lineOpacityAcc);
+
+        var legendItems = d3.selectAll('.legend .legend-item');
+        var legendOpacityAcc = function(d) {
+            if (!d.name) return 1;
+            return d.name.indexOf(fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1
+        };
+        legendItems.attr('fill-opacity', legendOpacityAcc).attr('stroke-opacity', legendOpacityAcc);
     },
 
     attachHopscotchMouseClose: function() {

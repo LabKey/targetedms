@@ -655,7 +655,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             mouseOverFnScope: this,
             mouseOutFn: this.plotPointMouseOut,
             mouseOutFnScope: this,
-            position: this.groupedX ? 'jitter' : undefined
+            position: this.groupedX ? 'jitter' : undefined,
+            legendMouseOverFn: this.legendMouseOver,
+            legendMouseOverFnScope: this,
+            legendMouseOutFn: this.legendMouseOut,
+            legendMouseOutFnScope: this
         };
 
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(combinePlotData, plotType, isCUSUMMean));
