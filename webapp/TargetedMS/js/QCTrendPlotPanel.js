@@ -1317,12 +1317,12 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         var metricProps = this.getMetricPropsById(this.metric);
 
         var points = d3.selectAll('.point path');
-        var pointOpacityAcc = function(d) { return d.fragment === fragment ? 1 : 0.1 };
+        var pointOpacityAcc = function(d) { return d.fragment === undefined || d.fragment === null || d.fragment === fragment ? 1 : 0.1 };
         points.attr('fill-opacity', pointOpacityAcc).attr('stroke-opacity', pointOpacityAcc);
 
         var hasYRightMetric = metricProps.series2QueryName !== undefined;
         var lines = d3.selectAll('path.line');
-        var lineOpacityAcc = function(d) { return d.group.indexOf(fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1 };
+        var lineOpacityAcc = function(d) { return d.group === undefined || d.group === null || d.group.indexOf(fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1 };
         lines.attr('fill-opacity', lineOpacityAcc).attr('stroke-opacity', lineOpacityAcc);
 
         var legendItems = d3.selectAll('.legend .legend-item');
