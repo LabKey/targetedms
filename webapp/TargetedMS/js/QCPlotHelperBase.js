@@ -640,7 +640,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             disableRangeDisplay: disableRange,
             xTick: this.groupedX ? 'groupedXTick' : 'fullDate',
             xTickLabel: 'date',
-            shape: 'IgnoreInQC', // TODO how to we use specific plot icons instead of just the first two in the available set?
+            shape: 'IgnoreInQC',
             combined: true,
             yAxisScale: (showLogInvalid ? 'linear' : (this.yAxisScale !== 'log' ? 'linear' : 'log')),
             valueConversion: (this.yAxisScale === 'percentDeviation' || this.yAxisScale === 'standardDeviation' ? this.yAxisScale : undefined),
@@ -726,7 +726,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             xTickLabel: 'date',
             yAxisScale: (precursorInfo.showLogInvalid ? 'linear' : (this.yAxisScale !== 'log' ? 'linear' : 'log')),
             valueConversion: (this.yAxisScale === 'percentDeviation' || this.yAxisScale === 'standardDeviation' ? this.yAxisScale : undefined),
-            shape: 'IgnoreInQC', // TODO how to we use specific plot icons instead of just the first two in the available set?
+            shape: 'IgnoreInQC',
             combined: false,
             pointSize: 2,
             pointIdAttr: function(row) { return row['fullDate']; },
