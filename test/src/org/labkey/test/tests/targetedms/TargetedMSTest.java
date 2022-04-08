@@ -62,7 +62,7 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
     protected enum SvgShapes
     {
         CIRCLE("M0,2A2"),
-        TRIANGLE("M0,2L2");
+        CIRCLE_OPEN("M0-2");
 
         private String _pathPrefix;
         SvgShapes(String pathPrefix)

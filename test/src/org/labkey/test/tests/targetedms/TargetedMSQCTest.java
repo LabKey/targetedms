@@ -821,6 +821,11 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.setShowExcludedPoints(true);
         qcPlotsWebPart.waitForPlots(2, true);
 
+        int includedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
+        assertEquals("Unexpected number of included data points in plot SVG", 6, includedPointCount);
+        int excludedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
+        assertEquals("Unexpected number of included data points in plot SVG", 0, excludedPointCount);
+
         // verify that the plot data points are excluded and then change the state to re-include it
         String acquiredDateStr = getAcquiredDateDisplayStr(sampleFileAcquiredDates[0]);
         verifyExclusionButtonSelection(acquiredDateStr, QCPlotsWebPart.QCPlotExclusionState.ExcludeAll);
@@ -843,6 +848,11 @@ public class TargetedMSQCTest extends TargetedMSTest
         verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "5");
         changePointExclusionState(getAcquiredDateDisplayStr(sampleFileAcquiredDates[2]), QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric, 2);
         verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "1");
+
+        includedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
+        assertEquals("Unexpected number of included data points in plot SVG", 2, includedPointCount);
+        excludedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
+        assertEquals("Unexpected number of included data points in plot SVG", 4, excludedPointCount);
     }
 
     private void verifyQCSummarySampleFileOutliers(String acquiredDate, String outlierInfo)
