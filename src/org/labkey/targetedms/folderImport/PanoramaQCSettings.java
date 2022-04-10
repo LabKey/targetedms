@@ -1,6 +1,6 @@
 package org.labkey.targetedms.folderImport;
 
-import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.admin.FolderImportContext;
 import org.labkey.api.data.ColumnHeaderType;
@@ -25,8 +25,9 @@ import org.labkey.api.reader.DataLoader;
 import org.labkey.api.reader.Readers;
 import org.labkey.api.reader.TabLoader;
 import org.labkey.api.security.User;
-import org.labkey.api.util.logging.LogHelper;
+import org.labkey.api.view.NotFoundException;
 import org.labkey.api.writer.VirtualFile;
+import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
 
 import java.io.IOException;
@@ -34,7 +35,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -46,37 +46,31 @@ public enum PanoramaQCSettings
     METRIC_CONFIG (TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, QCFolderConstants.QC_METRIC_CONFIGURATION_FILE_NAME)
             {
                 @Override
-                public void writeSettings(VirtualFile vf, Container container, User user) throws Exception
+                public void exportSettings(VirtualFile vf, Container container, User user) throws Exception
                 {
-                    TargetedMSSchema schema = new TargetedMSSchema(user, container);
-                    TableInfo ti = schema.getTable(getTableName());
-                    assert ti != null;
+                    TableInfo ti = getTableInfo(user, container, null);
                     List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ci -> ci.isUserEditable()).collect(Collectors.toList());
                     SimpleFilter filter = SimpleFilter.createContainerFilter(container); //only export the ones that are defined in current container (and not the ones from the root container)
 
                     ResultsFactory factory = ()-> QueryService.get().select(ti, userEditableCols, filter, null);
-                    writeSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
+                    exportSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
                 }
             },
     QC_ENABLED_METRICS (TargetedMSSchema.TABLE_QC_ENABLED_METRICS, QCFolderConstants.QC_ENABLED_METRICS_FILE_NAME)
             {
                 @Override
-                public void writeSettings(VirtualFile vf, Container container, User user) throws Exception
+                public void exportSettings(VirtualFile vf, Container container, User user) throws Exception
                 {
                     TargetedMSSchema schema = new TargetedMSSchema(user, container);
-                    TableInfo ti = schema.getTable(getTableName());
-                    assert ti != null;
-                    SQLFragment sql = new SQLFragment("SELECT qcMetricConfig.Name AS metric, qcEnabledMetrics.enabled, qcEnabledMetrics.lowerBound, qcEnabledMetrics.upperBound, qcEnabledMetrics.cusumLimit ")
-                            .append(" FROM qcEnabledMetrics")
-                            .append(" INNER JOIN qcMetricConfig")
+                    TableInfo ti = getTableInfo(user, container, null);
+                    SQLFragment sql = new SQLFragment("SELECT qcMetricConfig.Name AS metric, qcEnabledMetrics.enabled, qcEnabledMetrics.lowerBound, qcEnabledMetrics.upperBound, qcEnabledMetrics.cusumLimit FROM ")
+                            .append(ti, "qcEnabledMetrics")
+                            .append(" INNER JOIN ")
+                            .append(TargetedMSManager.getTableInfoQCMetricConfiguration(), "qcMetricConfig")
                             .append(" ON qcEnabledMetrics.metric = qcMetricConfig.Id");
 
-                    Map<String, TableInfo> tableMap = new HashMap<>();
-                    tableMap.put("qcEnabledMetrics", ti);
-                    tableMap.put("qcMetricConfig", schema.getTable(TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION));
-
-                    ResultsFactory factory = ()-> QueryService.get().selectResults(schema, sql.getSQL(), tableMap, null, true, true);
-                    writeSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
+                    ResultsFactory factory = ()-> QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true);
+                    exportSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
                 }
 
                 @Override
@@ -86,56 +80,49 @@ public enum PanoramaQCSettings
                     List<Map<String, Object>> tsvData = loader.load();
                     List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
 
-                    tsvData.forEach(row -> {
-                        String metricValue = (String) row.get("metric");
-                        Integer metricId = getRowIdFromName(TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricValue), ctx.getUser(), ctx.getContainer());
-                        row.put("metric", metricId);
-                        getDataWithoutDuplicates(ctx, ti, row, dataWithoutDuplicates);
-                    });
+                        tsvData.forEach(row -> {
+                            String metricValue = (String) row.get("metric");
+                            Integer metricId = getRowIdFromName(metricValue, getSettingsFileName(), getTableName(), TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricValue), ctx.getUser(), ctx.getContainer());
+                            row.put("metric", metricId);
+                            getDataWithoutDuplicates(ctx, ti, row, dataWithoutDuplicates);
+                        });
                     return insertData(ctx.getUser(), ctx.getContainer(), dataWithoutDuplicates, errors, qus, getSettingsFileName(), getTableName());
                 }
             },
     QC_ANNOTATION_TYPE (TargetedMSSchema.TABLE_QC_ANNOTATION_TYPE, QCFolderConstants.QC_ANNOTATION_TYPE)
             {
                 @Override
-                public void writeSettings(VirtualFile vf, Container container, User user) throws Exception
+                public void exportSettings(VirtualFile vf, Container container, User user) throws Exception
                 {
-                    TargetedMSSchema schema = new TargetedMSSchema(user, container);
                     ContainerFilter cf = ContainerFilter.getContainerFilterByName(ContainerFilter.Type.CurrentPlusProjectAndShared.name(), container, user);
-                    TableInfo ti = schema.getTable(getTableName(), cf);
-                    assert ti != null;
+                    TableInfo ti = getTableInfo(user, container, cf);
                     List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ci -> ci.isUserEditable()).collect(Collectors.toList());
                     ResultsFactory factory = ()-> QueryService.get().select(ti, userEditableCols, null, null);
-                    writeSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
+                    exportSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
                 }
 
                 @Override
                 public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws Exception
                 {
-                    assert schema != null;
-                    TableInfo tinfo = schema.getTable(getTableName(), ContainerFilter.getContainerFilterByName(ContainerFilter.Type.CurrentPlusProjectAndShared.name(), ctx.getContainer(), ctx.getUser()));
+                    TableInfo tinfo = getTableInfo(ctx.getUser(), ctx.getContainer(), ContainerFilter.getContainerFilterByName(ContainerFilter.Type.CurrentPlusProjectAndShared.name(), ctx.getContainer(), ctx.getUser()));
                     return importSettings(ctx, tinfo, getSettingsFileName(), panoramaQCDir, errors, qus);
                 }
             },
     QC_ANNOTATION (TargetedMSSchema.TABLE_QC_ANNOTATION, QCFolderConstants.QC_ANNOTATION_FILE_NAME)
             {
                 @Override
-                public void writeSettings(VirtualFile vf, Container container, User user) throws Exception
+                public void exportSettings(VirtualFile vf, Container container, User user) throws Exception
                 {
                     TargetedMSSchema schema = new TargetedMSSchema(user, container);
-                    TableInfo ti = schema.getTable(getTableName());
-                    assert ti != null;
-                    SQLFragment sql = new SQLFragment("SELECT qcAnnotationType.Name AS QCAnnotationTypeId, qcAnnotation.Description, qcAnnotation.Date ")
-                            .append(" FROM qcAnnotation")
-                            .append(" INNER JOIN qcAnnotationType")
+                    TableInfo ti = getTableInfo(user, container, null);
+                    SQLFragment sql = new SQLFragment("SELECT qcAnnotationType.Name AS QCAnnotationTypeId, qcAnnotation.Description, qcAnnotation.Date FROM ")
+                            .append(ti, "qcAnnotation")
+                            .append(" INNER JOIN ")
+                            .append(TargetedMSManager.getTableInfoQCAnnotationType(), "qcAnnotationType")
                             .append(" ON qcAnnotation.QCAnnotationTypeId = qcAnnotationType.Id");
 
-                    Map<String, TableInfo> tableMap = new HashMap<>();
-                    tableMap.put("qcAnnotation", ti);
-                    tableMap.put("qcAnnotationType", schema.getTable(TargetedMSSchema.TABLE_QC_ANNOTATION_TYPE));
-
-                    ResultsFactory factory = ()-> QueryService.get().selectResults(schema, sql.getSQL(), tableMap, null, true, true);
-                    writeSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
+                    ResultsFactory factory = ()-> QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true);
+                    exportSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
                 }
 
                 @Override
@@ -147,7 +134,7 @@ public enum PanoramaQCSettings
 
                     tsvData.forEach(row -> {
                         String nameValue = (String) row.get("QCAnnotationTypeId");
-                        Integer qcAnnotationTypeId = getRowIdFromName(TargetedMSSchema.TABLE_QC_ANNOTATION_TYPE, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), nameValue), ctx.getUser(), ctx.getContainer());
+                        Integer qcAnnotationTypeId = getRowIdFromName(nameValue, getSettingsFileName(), getTableName(), TargetedMSSchema.TABLE_QC_ANNOTATION_TYPE, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), nameValue), ctx.getUser(), ctx.getContainer());
                         row.put("QCAnnotationTypeId", qcAnnotationTypeId);
                         getDataWithoutDuplicates(ctx, ti, row, dataWithoutDuplicates);
                     });
@@ -158,65 +145,59 @@ public enum PanoramaQCSettings
     REPLICATE_ANNOTATION (TargetedMSSchema.TABLE_REPLICATE_ANNOTATION, QCFolderConstants.REPLICATE_ANNOTATION_FILE_NAME)
             {
                 @Override
-                public void writeSettings(VirtualFile vf, Container container, User user) throws Exception
+                public void exportSettings(VirtualFile vf, Container container, User user) throws Exception
                 {
                     TargetedMSSchema schema = new TargetedMSSchema(user, container);
-                    TableInfo ti = schema.getTable(getTableName());
-                    assert ti != null;
+                    TableInfo ti = getTableInfo(user, container, null);
 
-                    SQLFragment sql = new SQLFragment("SELECT replicateAnnotation.ReplicateId.Name AS ReplicateId, runs.FileName AS File, replicateAnnotation.Name, replicateAnnotation.Value, replicateAnnotation.Source ")
-                            .append(" FROM replicateAnnotation")
-                            .append(" INNER JOIN replicate")
+                    SQLFragment sql = new SQLFragment("SELECT replicateAnnotation.ReplicateId.Name AS ReplicateId, runs.FileName AS File, replicateAnnotation.Name, replicateAnnotation.Value, replicateAnnotation.Source FROM ")
+                            .append(ti, "replicateAnnotation")
+                            .append(" INNER JOIN ")
+                            .append(TargetedMSManager.getTableInfoReplicate(), "replicate")
                             .append(" ON replicateAnnotation.replicateId = replicate.Id")
-                            .append(" INNER JOIN runs")
+                            .append(" INNER JOIN ")
+                            .append(TargetedMSManager.getTableInfoRuns(), "runs")
                             .append(" ON replicate.RunId = runs.Id")
                             .append(" WHERE Source != 'Skyline' ");
 
-                    Map<String, TableInfo> tableMap = new HashMap<>();
-                    tableMap.put("replicateAnnotation", ti);
-                    tableMap.put("replicate", schema.getTable(TargetedMSSchema.TABLE_REPLICATE));
-                    tableMap.put("runs", schema.getTable(TargetedMSSchema.TABLE_RUNS));
-
-                    ResultsFactory factory = ()-> QueryService.get().selectResults(schema, sql.getSQL(), tableMap, null, true, true);
-                    writeSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
+                    ResultsFactory factory = ()-> QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true);
+                    exportSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
                 }
 
                 @Override
-                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws Exception
+                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws Exception
                 {
                     DataLoader loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(getSettingsFileName())), true);
                     List<Map<String, Object>> tsvData = loader.load();
                     List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
 
-                    tsvData.forEach(row -> getReplicateDataWithoutDuplicates(ctx, ti, row, dataWithoutDuplicates));
+                    tsvData.forEach(row -> {
+                        getReplicateDataWithoutDuplicates(getSettingsFileName(), getTableName(), ctx, ti, row, dataWithoutDuplicates);
+                    });
                     return insertData(ctx.getUser(), ctx.getContainer(), dataWithoutDuplicates, errors, qus, getSettingsFileName(), getTableName());
                 }
             },
     QC_METRIC_EXCLUSION (TargetedMSSchema.TABLE_QC_METRIC_EXCLUSION, QCFolderConstants.QC_METRIC_EXCLUSION_FILE_NAME)
             {
                 @Override
-                public void writeSettings(VirtualFile vf, Container container, User user) throws Exception
+                public void exportSettings(VirtualFile vf, Container container, User user) throws Exception
                 {
                     TargetedMSSchema schema = new TargetedMSSchema(user, container);
-                    TableInfo ti = schema.getTable(getTableName());
-                    assert ti != null;
-                    SQLFragment sql = new SQLFragment("SELECT replicate.Name AS ReplicateId, runs.FileName AS File, qcMetricConfig.Name AS MetricId ")
-                            .append(" FROM qcMetricExclusion")
-                            .append(" LEFT JOIN replicate")
+                    TableInfo ti = getTableInfo(user, container, null);
+                    SQLFragment sql = new SQLFragment("SELECT replicate.Name AS ReplicateId, runs.FileName AS File, qcMetricConfig.Name AS MetricId FROM ")
+                            .append(ti, "qcMetricExclusion")
+                            .append(" LEFT JOIN ")
+                            .append(TargetedMSManager.getTableInfoReplicate(), "replicate")
                             .append(" ON qcMetricExclusion.ReplicateId = replicate.Id")
-                            .append(" LEFT JOIN qcMetricConfig")
+                            .append(" LEFT JOIN ")
+                            .append(TargetedMSManager.getTableInfoQCMetricConfiguration(), "qcMetricConfig")
                             .append(" ON qcMetricExclusion.MetricId = qcMetricConfig.Id")
-                            .append(" INNER JOIN runs")
+                            .append(" INNER JOIN ")
+                            .append(TargetedMSManager.getTableInfoRuns(), "runs")
                             .append(" ON replicate.RunId = runs.Id");
 
-                    Map<String, TableInfo> tableMap = new HashMap<>();
-                    tableMap.put("qcMetricExclusion", ti);
-                    tableMap.put("replicate", schema.getTable(TargetedMSSchema.TABLE_REPLICATE));
-                    tableMap.put("qcMetricConfig", schema.getTable(TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION));
-                    tableMap.put("runs", schema.getTable(TargetedMSSchema.TABLE_RUNS));
-
-                    ResultsFactory factory = ()-> QueryService.get().selectResults(schema, sql.getSQL(), tableMap, null, true, true);
-                    writeSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
+                    ResultsFactory factory = ()-> QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true);
+                    exportSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
                 }
 
                 @Override
@@ -228,9 +209,9 @@ public enum PanoramaQCSettings
 
                     tsvData.forEach(row -> {
                         String metricName = (String) row.get("MetricId");
-                        Integer metricId = getRowIdFromName(TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricName), ctx.getUser(), ctx.getContainer());
+                        Integer metricId = getRowIdFromName(metricName, getSettingsFileName(), getTableName(), TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricName), ctx.getUser(), ctx.getContainer());
                         row.put("MetricId", metricId);
-                        getReplicateDataWithoutDuplicates(ctx, ti, row, dataWithoutDuplicates);
+                        getReplicateDataWithoutDuplicates(getSettingsFileName(), getTableName(), ctx, ti, row, dataWithoutDuplicates);
                     });
                     return insertData(ctx.getUser(), ctx.getContainer(), dataWithoutDuplicates, errors, qus, getSettingsFileName(), getTableName());
                 }
@@ -238,7 +219,7 @@ public enum PanoramaQCSettings
     QC_PLOT_SETTINGS (null, QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME)
             {
                 @Override
-                public void writeSettings(VirtualFile vf, Container container, User user) throws IOException
+                public void exportSettings(VirtualFile vf, Container container, User user) throws IOException
                 {
                     // Should get these settings if present:
                     // Plot metric,
@@ -291,7 +272,7 @@ public enum PanoramaQCSettings
                                 {
                                     if(entry.getKey().toString().equalsIgnoreCase("metric"))
                                     {
-                                        Integer metricRowId = getRowIdFromName(TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), entry.getValue().toString()), ctx.getUser(), ctx.getContainer());
+                                        Integer metricRowId = getRowIdFromName(entry.getValue().toString(), getSettingsFileName(), null, TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), entry.getValue().toString()), ctx.getUser(), ctx.getContainer());
                                         properties.put(entry.getKey().toString(), String.valueOf(metricRowId));
                                     }
                                     else
@@ -312,7 +293,6 @@ public enum PanoramaQCSettings
 
     private final @Nullable String _tableName;
     private final String _settingsFileName;
-    private static final Logger LOG = LogHelper.getLogger(PanoramaQCSettings.class, "Panorama QC Folder Settings");
 
     PanoramaQCSettings(@Nullable String tableName, String fileName)
     {
@@ -330,17 +310,37 @@ public enum PanoramaQCSettings
         return _settingsFileName;
     }
 
-    public void writeSettings(VirtualFile vf, Container container, User user) throws Exception
+    public @NotNull TableInfo getTableInfo(User user, Container container, @Nullable ContainerFilter cf)
+    {
+        return getTableInfo(user, container, getTableName(), cf);
+    }
+
+    private @NotNull TableInfo getTableInfo(User user, Container container, String tableName, @Nullable ContainerFilter cf)
+    {
+        TargetedMSSchema schema = new TargetedMSSchema(user, container);
+        TableInfo ti = schema.getTable(tableName, cf);
+        if (null == ti)
+            throw new NotFoundException(schema.getSchemaName() + "." + getTableName() + " not found in '" + container.getName() + "'");
+        return ti;
+    }
+
+    public void exportSettings(VirtualFile vf, Container container, User user) throws Exception
     {
         TargetedMSSchema schema = new TargetedMSSchema(user, container);
         TableInfo ti = schema.getTable(getTableName());
-        assert ti != null;
-        List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ci -> ci.isUserEditable()).collect(Collectors.toList());
-        ResultsFactory factory = ()-> QueryService.get().select(ti, userEditableCols, null, null);
-        writeSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
+        if (ti != null)
+        {
+            List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ci -> ci.isUserEditable()).collect(Collectors.toList());
+            ResultsFactory factory = ()-> QueryService.get().select(ti, userEditableCols, null, null);
+            exportSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
+        }
+        else
+        {
+            throw new NotFoundException("targetedms." + getTableName() + " not found.");
+        }
     }
 
-    protected void writeSettingsToTSV(VirtualFile vf, ResultsFactory factory, String fileName, String tableName) throws Exception
+    protected void exportSettingsToTSV(VirtualFile vf, ResultsFactory factory, String fileName, String tableName) throws Exception
     {
         try
         {
@@ -353,10 +353,6 @@ public enum PanoramaQCSettings
                     PrintWriter out = vf.getPrintWriter(fileName);
                     tsvWriter.write(out);
                 }
-                catch (IOException e)
-                {
-                    throw new IOException("Error writing results to " + fileName, e);
-                }
             }
         }
         catch (IOException | SQLException e)
@@ -367,27 +363,41 @@ public enum PanoramaQCSettings
 
     protected String getMetricNameFromRowId(User user, Container c, Integer rowId)
     {
-        TargetedMSSchema schema = new TargetedMSSchema(user, c);
-        TableInfo ti = schema.getTable(TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION);
-        assert ti != null;
-        return new TableSelector(ti, Set.of("Name"), new SimpleFilter(FieldKey.fromParts("Id"), rowId), null).getObject(String.class);
+        TableInfo ti = getTableInfo(user, c, TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, null);
+        String value = new TableSelector(ti, Set.of("Name"), new SimpleFilter(FieldKey.fromParts("Id"), rowId), null).getObject(String.class);
+        if (null == value)
+        {
+            throw new NotFoundException("Id with value '" + rowId + "' not found in " + TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION + ". Unable to export QC properties.");
+        }
+        return value;
     }
 
-    protected Integer getRowIdFromName(String tableName, Set<String> colNames, SimpleFilter filter, User user, Container c)
+    protected Integer getRowIdFromName(String name, String fileName, String targetTable, String lookupTableName, Set<String> colNames, SimpleFilter filter, User user, Container c)
     {
-        TargetedMSSchema schema = new TargetedMSSchema(user, c);
-        TableInfo ti = schema.getTable(tableName);
-        assert ti != null;
-        return new TableSelector(ti, colNames, filter, null).getObject(Integer.class);
+        TableInfo ti = getTableInfo(user, c, lookupTableName, null);
+        Integer value = new TableSelector(ti, colNames, filter, null).getObject(Integer.class);
+        if (null == value)
+        {
+            String msg = "Error resolving '" + name + "' to its corresponding Id. Id not found in targetedms." + lookupTableName + ". ";
+            if (null == targetTable)
+            {
+                msg += "Unable to save QC Properties from " + fileName + ".";
+            }
+            else
+                msg += "Unable to import data from " + fileName + " into targetedms." + targetTable;
+
+            throw new NotFoundException(msg);
+        }
+        return value;
     }
 
-    protected void getReplicateDataWithoutDuplicates(FolderImportContext ctx, @Nullable TableInfo ti, Map<String, Object> row, List<Map<String, Object>> dataWithoutDuplicates)
+    protected void getReplicateDataWithoutDuplicates(String settingsFileName, String targetTable, FolderImportContext ctx, TableInfo ti, Map<String, Object> row, List<Map<String, Object>> dataWithoutDuplicates)
     {
         String replicateName = (String) row.get("ReplicateId");
-        String fileName = (String) row.get("File");
+        String file = (String) row.get("File");
         SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("Name"), replicateName);
-        filter.addCondition(FieldKey.fromString("RunId/FileName"), fileName);
-        Integer replicateId = getRowIdFromName(TargetedMSSchema.TABLE_REPLICATE, Set.of("Id"), filter, ctx.getUser(), ctx.getContainer());
+        filter.addCondition(FieldKey.fromString("RunId/FileName"), file);
+        Integer replicateId = getRowIdFromName(replicateName, settingsFileName, targetTable, TargetedMSSchema.TABLE_REPLICATE, Set.of("Id"), filter, ctx.getUser(), ctx.getContainer());
         row.put("ReplicateId", replicateId);
 
         //filter on values being imported to identify duplicates
@@ -408,11 +418,10 @@ public enum PanoramaQCSettings
             ++count;
         }
 
-        assert ti != null;
         if (new TableSelector(ti, row.keySet(), filter, null).getRowCount() > 0)
         {
             logMsg += "] values already exists. Skipping";
-            ctx.getLogger().warn(logMsg);
+            ctx.getLogger().info(logMsg);
         }
         else
         {
@@ -420,7 +429,7 @@ public enum PanoramaQCSettings
         }
     }
 
-    protected void getDataWithoutDuplicates(FolderImportContext ctx, @Nullable TableInfo ti, Map<String, Object> row, List<Map<String, Object>> dataWithoutDuplicates)
+    protected void getDataWithoutDuplicates(FolderImportContext ctx, TableInfo ti, Map<String, Object> row, List<Map<String, Object>> dataWithoutDuplicates)
     {
         //filter on values being imported to identify duplicates
         SimpleFilter filter = new SimpleFilter();
@@ -439,11 +448,10 @@ public enum PanoramaQCSettings
             logMsg += col + ": '" + row.get(col) + "'" + (count == row.size()-1 ? "" : ", ");
             ++count;
         }
-        assert ti != null;
         if (new TableSelector(ti, row.keySet(), filter, null).getRowCount() > 0)
         {
             logMsg += "] values already exists. Skipping";
-            ctx.getLogger().warn(logMsg);
+            ctx.getLogger().info(logMsg);
         }
         else
         {
@@ -471,18 +479,23 @@ public enum PanoramaQCSettings
     {
         if (dataWithoutDuplicates.size() > 0)
         {
-            assert qus != null;
-            List<Map<String,Object>> insertedRows;
-            try
+            if (qus != null)
             {
-                insertedRows = qus.insertRows(user, container, dataWithoutDuplicates, errors, null, null);
+                List<Map<String,Object>> insertedRows;
+                try
+                {
+                    insertedRows = qus.insertRows(user, container, dataWithoutDuplicates, errors, null, null);
+                }
+                catch (DuplicateKeyException | BatchValidationException | QueryUpdateServiceException | SQLException e)
+                {
+                    throw new Exception("Data from " + settingsFileName + " did not get imported into targetedms." + tableName, e);
+                }
+                return insertedRows.size();
             }
-            catch (DuplicateKeyException | BatchValidationException | QueryUpdateServiceException | SQLException e)
+            else
             {
-                throw new Exception("Data from " + settingsFileName + " did not get imported into targetedms." + tableName, e);
+                throw new NotFoundException("Query update service for targetedms." + tableName + " not found.");
             }
-
-            return insertedRows.size();
         }
         return 0;
     }

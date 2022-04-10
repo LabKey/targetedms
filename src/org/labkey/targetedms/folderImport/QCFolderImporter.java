@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import org.labkey.api.admin.AbstractFolderImportFactory;
 import org.labkey.api.admin.FolderImportContext;
 import org.labkey.api.admin.FolderImporter;
+import org.labkey.api.admin.ImportException;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.pipeline.PipelineJob;
 import org.labkey.api.pipeline.PipelineJobWarning;
@@ -64,8 +65,7 @@ public class QCFolderImporter implements FolderImporter
                    }
                    else
                    {
-                       TableInfo ti = schema.getTable(qcSetting.getTableName());
-                       assert ti != null;
+                       TableInfo ti = qcSetting.getTableInfo(ctx.getUser(), ctx.getContainer(), null);
                        QueryUpdateService qus = ti.getUpdateService();
                        BatchValidationException errors = new BatchValidationException();
 
@@ -78,11 +78,11 @@ public class QCFolderImporter implements FolderImporter
                {
                    if (qcSetting.getSettingsFileName().equalsIgnoreCase(QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME))
                    {
-                       throw new Exception("Error importing QC Plot settings from " + QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME + ": " + e.getMessage(), e);
+                       throw new ImportException("Error importing QC Plot settings from " + QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME + ": " + e.getMessage(), e);
                    }
                    else
                    {
-                       throw new Exception("Error importing panorama qc settings from " + qcSetting.getSettingsFileName() + " into targetedms." + qcSetting.getTableName() + ": " + e.getMessage(), e);
+                       throw new ImportException("Error importing panorama qc settings from " + qcSetting.getSettingsFileName() + " into targetedms." + qcSetting.getTableName() + ": " + e.getMessage(), e);
                    }
                }
            }
@@ -101,6 +101,12 @@ public class QCFolderImporter implements FolderImporter
         public FolderImporter create()
         {
             return new QCFolderImporter();
+        }
+
+        @Override
+        public int getPriority()
+        {
+            return 100; //this ensures skyline files from 'xar\experiments_and_runs\Runs' gets imported first, then the QC settings
         }
     }
 }

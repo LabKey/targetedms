@@ -6,7 +6,7 @@ public class QCFolderConstants
 {
     protected static final String QC_FOLDER_DATA_TYPE = "Panorama QC Folder Settings";
     protected static final String QC_FOLDER_DIR = "PanoramaQC";
-    protected static final String CATEGORY = "TargetedMSLeveyJenningsPlotOptions";
+    public static final String CATEGORY = "TargetedMSLeveyJenningsPlotOptions";
 
     protected static final String QC_METRIC_CONFIGURATION_FILE_NAME = TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION + ".tsv";
     protected static final String QC_ENABLED_METRICS_FILE_NAME = TargetedMSSchema.TABLE_QC_ENABLED_METRICS + ".tsv";
