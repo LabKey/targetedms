@@ -1,5 +1,6 @@
 package org.labkey.targetedms.folderImport;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.admin.FolderImportContext;
@@ -209,7 +210,11 @@ public enum PanoramaQCSettings
 
                     tsvData.forEach(row -> {
                         String metricName = (String) row.get("MetricId");
-                        Integer metricId = getRowIdFromName(metricName, getSettingsFileName(), getTableName(), TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricName), ctx.getUser(), ctx.getContainer());
+                        Integer metricId = null;
+                        if (StringUtils.isNotBlank(metricName))
+                        {
+                            metricId = getRowIdFromName(metricName, getSettingsFileName(), getTableName(), TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricName), ctx.getUser(), ctx.getContainer());
+                        }
                         row.put("MetricId", metricId);
                         getReplicateDataWithoutDuplicates(getSettingsFileName(), getTableName(), ctx, ti, row, dataWithoutDuplicates);
                     });
@@ -320,24 +325,16 @@ public enum PanoramaQCSettings
         TargetedMSSchema schema = new TargetedMSSchema(user, container);
         TableInfo ti = schema.getTable(tableName, cf);
         if (null == ti)
-            throw new NotFoundException(schema.getSchemaName() + "." + getTableName() + " not found in '" + container.getName() + "'");
+            throw new NotFoundException(schema.getSchemaName() + "." + getTableName() + " not found in '" + container.getPath() + "'");
         return ti;
     }
 
     public void exportSettings(VirtualFile vf, Container container, User user) throws Exception
     {
-        TargetedMSSchema schema = new TargetedMSSchema(user, container);
-        TableInfo ti = schema.getTable(getTableName());
-        if (ti != null)
-        {
-            List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ci -> ci.isUserEditable()).collect(Collectors.toList());
-            ResultsFactory factory = ()-> QueryService.get().select(ti, userEditableCols, null, null);
-            exportSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
-        }
-        else
-        {
-            throw new NotFoundException("targetedms." + getTableName() + " not found.");
-        }
+        TableInfo ti = getTableInfo(user, container, null);
+        List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ci -> ci.isUserEditable()).collect(Collectors.toList());
+        ResultsFactory factory = ()-> QueryService.get().select(ti, userEditableCols, null, null);
+        exportSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
     }
 
     protected void exportSettingsToTSV(VirtualFile vf, ResultsFactory factory, String fileName, String tableName) throws Exception
