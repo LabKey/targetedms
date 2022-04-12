@@ -130,6 +130,9 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         if (hasExistingPlot)
             plot = elementCache().findPlots().get(0);
 
+        // scroll to prevent inadvertent hover over QC Summary webpart items that show hopscotch tooltips
+        getWrapper().scrollIntoView(elementCache().metricTypeCombo, true);
+
         getWrapper()._ext4Helper.selectComboBoxItem(elementCache().metricTypeCombo, metricType.toString());
 
         if (hasExistingPlot)

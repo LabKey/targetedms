@@ -288,8 +288,6 @@ public class TargetedMSQCTest extends TargetedMSTest
                 qcPlotsWebPart.setMetricType(type);
                 assertNotEquals(initialSVGText, qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0"));
 
-                checkAndCloseTooltip();
-
                 // back to default metric type for baseline comparison of svg plot change
                 qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.RETENTION);
             }
