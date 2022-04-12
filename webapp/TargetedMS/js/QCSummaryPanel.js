@@ -142,7 +142,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                     '<div class="qc-summary-text">No sample files imported</div>',
                     '<div class="auto-qc-ping" id="{autoQcCalloutId}">AutoQC <span class="{autoQCPing:this.getAutoQCPingClass}"></span></div>',
                 '<tpl elseif="docCount == 0 && parentOnly">',
-                    '<div class="qc-summary-text">No data found.</div>',
+                    '<div class="qc-summary-text">No data found.</div><div>&nbsp;</div>' + this.getAutoQCSetupInfo(),
                 '<tpl elseif="docCount &gt; 0">',
                     '<div class="qc-summary-text">',
                         '<a href="{path:this.getSampleFileLink}">{fileCount} sample file{fileCount:this.pluralize}</a> ' +
@@ -180,6 +180,15 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
         );
     },
 
+    getAutoQCSetupInfo: function() {
+        return '<div><a href="https://panoramaweb.org/home/wiki-page.view?name=autoqc_loader" target="_blank" rel="noopener noreferrer">AutoQC</a>' +
+                ' can automically analyze and import system suitability data into this folder using a Skyline template document.</div><br/>' +
+                '<div>After installing AutoQC, create a configuration for this folder. Within its Panorama setting tab, ' +
+                'check the Publish to Panorama checkbox. Use <strong>' + LABKEY.Utils.encodeHtml(LABKEY.ActionURL.getBaseURL()) +
+                '</strong> as the URL and <strong>' + LABKEY.Utils.encodeHtml(LABKEY.ActionURL.getContainer()) + '</strong>' +
+                ' as the folder path.</div>'
+    },
+
     showAutoQCMessage : function(divId, autoQC, hasChildren) {
         var divEl = Ext4.get(divId),
             content = '';
@@ -188,17 +197,15 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
             return;
 
         if (autoQC == null) {
-            content = 'Has never been pinged';
+            content = 'AutoQC has never pinged this folder';
         }
         else
         {
             var modifiedFormatted = Ext4.util.Format.date(new Date(autoQC.modified), LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s');
-            content = autoQC.isRecent ? 'Was pinged recently on ' + modifiedFormatted : 'Was pinged on ' + modifiedFormatted;
+            content = autoQC.isRecent ? 'AutoQC pinged recently on ' + modifiedFormatted : 'AutoQC last pinged on ' + modifiedFormatted;
         }
 
-        content = '<div>' + content + '</div><br/><div>To point AutoQC at this folder, go to configuration\'s Panorama setting tab. ' +
-                'Check the Publish to Panorama checkbox. Use <strong>' + LABKEY.Utils.encodeHtml(LABKEY.ActionURL.getBaseURL()) +
-                '</strong> as the URL and <strong>' + LABKEY.Utils.encodeHtml(LABKEY.ActionURL.getContainer()) + '</strong> as the folder.</div>'
+        content = '<div>' + content + '</div><br/>' + this.getAutoQCSetupInfo();
 
         // add mouse listeners to the div element for when to show the AutoQC message
         divEl.on('mouseover', function() {

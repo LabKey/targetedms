@@ -26,6 +26,16 @@ if (!LABKEY.targetedms.PlotSettingsUtil) {
                 success: function() { window.location.reload(); },
                 failure: LABKEY.Utils.getCallbackWrapper(function(error) { alert('Failed to revert to defaults'); console.log(error); }, this, true)
             });
+        },
+
+        formatNumeric: function(val) {
+            if (LABKEY.vis.isValid(val)) {
+                if (val > 100000 || val < -100000) {
+                    return val.toExponential(3);
+                }
+                return parseFloat(val.toFixed(3));
+            }
+            return "N/A";
         }
     }
 }
@@ -1548,9 +1558,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     expDataArr.push(pointsData[i].value);
                 }
 
-                var expMean = me.formatNumeric(LABKEY.vis.Stat.getMean(expDataArr));
-                var expStdDev = me.formatNumeric(LABKEY.vis.Stat.getStdDev(expDataArr));
-                var expPercentCV = me.formatNumeric((expStdDev / expMean) * 100);
+                var expMean = LABKEY.targetedms.PlotSettingsUtil.formatNumeric(LABKEY.vis.Stat.getMean(expDataArr));
+                var expStdDev = LABKEY.targetedms.PlotSettingsUtil.formatNumeric(LABKEY.vis.Stat.getStdDev(expDataArr));
+                var expPercentCV = LABKEY.targetedms.PlotSettingsUtil.formatNumeric((expStdDev / expMean) * 100);
 
                 var expRangeData = [];
                 expRangeData.push({
@@ -1596,9 +1606,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     mean, stdDev, percentCV;
 
                 if (showGuideSetStats) {
-                    mean = me.formatNumeric(seriesGuideSetInfo.Mean);
-                    stdDev = me.formatNumeric(seriesGuideSetInfo.StdDev);
-                    percentCV = me.formatNumeric((stdDev / mean) * 100);
+                    mean = LABKEY.targetedms.PlotSettingsUtil.formatNumeric(seriesGuideSetInfo.Mean);
+                    stdDev = LABKEY.targetedms.PlotSettingsUtil.formatNumeric(seriesGuideSetInfo.StdDev);
+                    percentCV = LABKEY.targetedms.PlotSettingsUtil.formatNumeric((stdDev / mean) * 100);
                 }
 
                 return "Guide Set ID: " + Ext4.String.htmlEncode(d.GuideSetId) + ","
@@ -1707,16 +1717,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         else {
             return d;
         }
-    },
-
-    formatNumeric: function(val) {
-        if (LABKEY.vis.isValid(val)) {
-            if (val > 100000 || val < -100000) {
-                return val.toExponential(3);
-            }
-            return parseFloat(val.toFixed(3));
-        }
-        return "N/A";
     },
 
     getReportConfig: function() {
