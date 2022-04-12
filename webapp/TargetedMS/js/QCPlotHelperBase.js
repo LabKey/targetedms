@@ -598,19 +598,24 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     getYScaleLabel: function(plotType, conversion, label) {
         var yScaleLabel;
 
+        var conversionLabel = null;
+
         if (plotType !== LABKEY.vis.TrendingLinePlotType.MovingRange && plotType !== LABKEY.vis.TrendingLinePlotType.LeveyJennings) {
             yScaleLabel = 'Sum of Deviations'
         }
-        else if (conversion && label !== "Transition Area") {
+        else if (conversion) {
             var options = this.getYAxisOptions();
             for (var i = 0; i < options.data.length; i++) {
                 if (options.data[i][0] === conversion)
-                    yScaleLabel = options.data[i][1];
+                    conversionLabel = options.data[i][1];
             }
         }
 
         if (!yScaleLabel) {
             yScaleLabel = label;
+            if (conversionLabel) {
+                yScaleLabel += ' (' + conversionLabel + ')';
+            }
         }
         return yScaleLabel;
     },
@@ -636,7 +641,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         else if (this.yAxisScale === 'standardDeviation' && plotType === LABKEY.vis.TrendingLinePlotType.LeveyJennings) {
             disableRange = false;
         }
-        var scope = this;
 
         var trendLineProps = {
             disableRangeDisplay: disableRange,
@@ -676,13 +680,14 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 },
                 subtitle: {
                     value: this.getSubtitle("All Series", plotType, trendLineProps.valueConversion),
+                    visibility: 'hidden',  // Set as hidden so it doesn't clutter the web UI. It'll get set to visible during export, where it's useful context.
                     color: '#555555'
                 },
                 yLeft: {
                     value: this.getYScaleLabel(plotType, trendLineProps.valueConversion, metricProps.yAxisLabel1)
                 },
                 yRight: {
-                    value: this.isMultiSeries() ? metricProps.yAxisLabel2 : undefined,
+                    value: this.isMultiSeries() ? this.getYScaleLabel(plotType, trendLineProps.valueConversion, metricProps.yAxisLabel2) : undefined,
                     visibility: this.isMultiSeries() ? undefined : 'hidden'
                 }
             },
@@ -779,6 +784,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 },
                 subtitle: {
                     value: this.getSubtitle(this.precursors[precursorIndex], plotType, trendLineProps.valueConversion),
+                    visibility: 'hidden',  // Set as hidden so it doesn't clutter the web UI. It'll get set to visible during export, where it's useful context.
                     color: '#555555'
                 },
                 yLeft: {
@@ -787,7 +793,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     position: leftMarginOffset > 0 ? leftMarginOffset - 15 : undefined
                 },
                 yRight: {
-                    value: this.isMultiSeries() ? metricProps.yAxisLabel2 : undefined,
+                    value: this.isMultiSeries() ? this.getYScaleLabel(plotType, trendLineProps.valueConversion, metricProps.yAxisLabel2) : undefined,
                     visibility: this.isMultiSeries() ? undefined : 'hidden',
                     color: this.isMultiSeries() ? this.getColorRange()[1] : undefined
                 }
