@@ -1242,7 +1242,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     legendMouseOver : function(data, item) {
         if (data.name) {
-            // in the multi series case, the name as the series label appended, so use the hoverText instead
+            // in the multi series case, the name has the series label appended, so use the hoverText instead
             this.highlightFragmentSeries(data.hoverText);
         }
     },

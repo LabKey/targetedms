@@ -288,6 +288,8 @@ public class TargetedMSQCTest extends TargetedMSTest
                 qcPlotsWebPart.setMetricType(type);
                 assertNotEquals(initialSVGText, qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0"));
 
+                checkAndCloseTooltip();
+
                 // back to default metric type for baseline comparison of svg plot change
                 qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.RETENTION);
             }
@@ -773,15 +775,20 @@ public class TargetedMSQCTest extends TargetedMSTest
         //Check for clickable PDF and PNG export icons for Combined plot
         verifyDownloadablePlotIcons(1);
 
-        Locator bubbleClose = Locator.byClass("hopscotch-bubble-close");
-        if (isElementPresent(bubbleClose) && isElementVisible(bubbleClose))
-            click(bubbleClose);
+        checkAndCloseTooltip();
 
         //deselect "Show All Peptides in Single Plot"
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false, currentPagePlotCount);
 
         //Check for no. of PDF and PNG export icons for individual plots
         verifyDownloadablePlotIcons(currentPagePlotCount);
+    }
+
+    private void checkAndCloseTooltip()
+    {
+        Locator bubbleClose = Locator.byClass("hopscotch-bubble-close");
+        if (isElementPresent(bubbleClose) && isElementVisible(bubbleClose))
+            click(bubbleClose);
     }
 
     @Test
