@@ -258,19 +258,16 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         QCPlotsWebPart qcPlotsWebPart = panoramaDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TOTAL_PEAK);
         qcPlotsWebPart.checkPlotType(CUSUMm, true);
-        qcPlotsWebPart.chooseSmallPlotSize(false);
         qcPlotsWebPart.setShowExcludedPoints(true);
         qcPlotsWebPart.saveAsDefaultView();
 
         log("Verifying the values are set after save as default view action");
         checker().verifyTrue("Incorrect value for Show Excluded points", qcPlotsWebPart.isShowExcludedPointsChecked());
-        checker().verifyFalse("Incorrect value for plot size", qcPlotsWebPart.isSmallPlotSizeSelected());
         checker().verifyEquals("Incorrect Metric value", QCPlotsWebPart.MetricType.TOTAL_PEAK.toString(),
                 qcPlotsWebPart.getCurrentMetricType().toString());
 
         impersonate(USER);
         checker().verifyTrue("Incorrect value for Show Excluded points for different user " + USER , qcPlotsWebPart.isShowExcludedPointsChecked());
-        checker().withScreenshot("Test1").verifyFalse("Incorrect value for plot size for different user " + USER, qcPlotsWebPart.isSmallPlotSizeSelected());
         checker().verifyEquals("Incorrect Metric value for different user " + USER, QCPlotsWebPart.MetricType.TOTAL_PEAK.toString(),
                 qcPlotsWebPart.getCurrentMetricType().toString());
         checker().verifyEquals("Reader user should not have save as default permission", Arrays.asList("Revert to Default View"),
