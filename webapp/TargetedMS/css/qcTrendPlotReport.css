@@ -51,8 +51,8 @@
 }
 
 .qc-hover-field .x4-form-item-label {
-    margin-top: 2px;
     font-weight: bold;
+    font-size: 12px;
 }
 
 .qc-paging-prev, .qc-paging-next {

@@ -75,26 +75,25 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
             this.add(this.getPlotPointDetailField('Group', 'CUSUMmN' == this.valueName || 'CUSUMvN' == this.valueName ? 'CUSUM-' : 'CUSUM+'));
         }
 
-        if(this.metricProps.precursorScoped)
-            this.add(this.getPlotPointDetailField('m/z', this.pointData['mz']));
-        this.add(this.getPlotPointDetailField('Replicate', this.pointData['ReplicateName']));
-        this.add(this.getPlotPointDetailField('Acquired', this.pointData['fullDate']));
         if (this.pointData.conversion && this.pointData.rawValue !== undefined && this.valueName.indexOf("CUSUM") === -1) {
             if (this.pointData.conversion === 'percentDeviation') {
-                this.add(this.getPlotPointDetailField('Value', this.formatMetricValue(this.pointData.rawValue)));
-                this.add(this.getPlotPointDetailField('Percent of Mean', (this.valueName ? this.pointData[this.valueName] : this.pointData['value']) + '%'))
+                this.add(this.getPlotPointDetailField('Value', LABKEY.targetedms.PlotSettingsUtil.formatNumeric(this.pointData.rawValue)));
+                this.add(this.getPlotPointDetailField('% of Mean', (this.valueName ? this.pointData[this.valueName] : this.pointData['value']) + '%'))
             }
             else if (this.pointData.conversion === 'standardDeviation') {
-                this.add(this.getPlotPointDetailField('Value', this.formatMetricValue(this.pointData.rawValue)));
-                this.add(this.getPlotPointDetailField('Standard Deviations', this.valueName ? this.pointData[this.valueName] : this.pointData['value']))
+                this.add(this.getPlotPointDetailField('Value', LABKEY.targetedms.PlotSettingsUtil.formatNumeric(this.pointData.rawValue)));
+                this.add(this.getPlotPointDetailField('Std Devs', this.valueName ? this.pointData[this.valueName] : this.pointData['value']))
             }
             else {
-                this.add(this.getPlotPointDetailField('Value', this.formatMetricValue(this.valueName ? this.pointData[this.valueName] : this.pointData['value'])));
+                this.add(this.getPlotPointDetailField('Value', LABKEY.targetedms.PlotSettingsUtil.formatNumeric(this.valueName ? this.pointData[this.valueName] : this.pointData['value'])));
             }
         }
         else {
-            this.add(this.getPlotPointDetailField('Value', this.formatMetricValue(this.valueName ? this.pointData[this.valueName] : this.pointData['value'])));
+            this.add(this.getPlotPointDetailField('Value', LABKEY.targetedms.PlotSettingsUtil.formatNumeric(this.valueName ? this.pointData[this.valueName] : this.pointData['value'])));
         }
+
+        this.add(this.getPlotPointDetailField('Replicate', this.pointData['ReplicateName']));
+        this.add(this.getPlotPointDetailField('Acquired', this.pointData['fullDate']));
         this.add(this.getPlotPointDetailField('File Path', this.pointData['FilePath'].replace(/\\/g, '\\<wbr>').replace(/\//g, '\/<wbr>').replace(/_/g, '_<wbr>')));
 
         if (this.canEdit) {
@@ -105,25 +104,6 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
         }
 
         this.add(Ext4.create('Ext.Component', { html: this.getPlotPointClickLinks() }));
-    },
-
-    formatMetricValue: function(value) {
-        if (Ext4.isNumeric(value)) {
-            if (value > 1000) {
-                return Ext4.util.Format.number(value, '0,000');
-            }
-            if (value > 100) {
-                return Ext4.util.Format.number(value, '0.#');
-            }
-            if (value > 10) {
-                return Ext4.util.Format.number(value, '0.##');
-            }
-            if (value > 1) {
-                return Ext4.util.Format.number(value, '0.###');
-            }
-            return Ext4.util.Format.number(value, '0.####');
-        }
-        return value;
     },
 
     getPlotPointDetailField : function(label, value, includeCls) {
@@ -145,7 +125,7 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
                 items: [this.getPlotPointExclusionRadioGroup()],
                 dockedItems: [{
                     xtype: 'toolbar',
-                    dock: 'bottom',
+                    dock: 'right',
                     ui: 'footer',
                     padding: '0 0 10px 0',
                     items: ['->', this.getPlotPointExclusionSaveBtn()]
@@ -255,17 +235,17 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
                 width: 450,
                 columns: 1,
                 items: [{
-                    boxLabel: 'Include in QC', name: 'status',
+                    boxLabel: 'Include', name: 'status',
                     inputValue: this.STATE.INCLUDE,
-                    checked: this.originalStatus == this.STATE.INCLUDE
+                    checked: this.originalStatus === this.STATE.INCLUDE
                 },{
-                    boxLabel: 'Exclude sample from QC for this metric', name: 'status',
+                    boxLabel: 'Exclude replicate for this metric', name: 'status',
                     inputValue: this.STATE.EXCLUDE_METRIC,
-                    checked: this.originalStatus == this.STATE.EXCLUDE_METRIC
+                    checked: this.originalStatus === this.STATE.EXCLUDE_METRIC
                 },{
-                    boxLabel: 'Exclude sample from QC for all metrics', name: 'status',
+                    boxLabel: 'Exclude replicate for all metrics', name: 'status',
                     inputValue: this.STATE.EXCLUDE_ALL,
-                    checked: this.originalStatus == this.STATE.EXCLUDE_ALL
+                    checked: this.originalStatus === this.STATE.EXCLUDE_ALL
                 }],
                 listeners: {
                     scope: this,

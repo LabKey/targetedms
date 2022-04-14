@@ -100,15 +100,10 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
     {
         var leftPositionPx = (indexFromLeft * 30) + 60,
             exportIconDivId = divId + iconCls,
-            html = '<div id="' + exportIconDivId + '" class="export-icon" style="left: ' + leftPositionPx + 'px;">'
+            html = '<div id="' + exportIconDivId + '" class="export-icon" title="' + Ext4.util.Format.htmlEncode(tooltip) + '" style="left: ' + leftPositionPx + 'px;">'
                     + '<i class="fa ' + iconCls + '"></i></div>';
 
         Ext4.get(divId).insertHtml('afterBegin', html);
-
-        Ext4.create('Ext.tip.ToolTip', {
-            target: exportIconDivId,
-            html: tooltip
-        });
 
         Ext4.get(exportIconDivId).on('click', callbackFn, this);
     },
