@@ -101,7 +101,7 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate(acquiredDate));
         waitForElement(qcPlotsWebPart.getBubble());
         String ticAreaHoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
-        checker().withScreenshot("IRTCorrelation").verifyTrue("Incorrect iRT Correlation value calculated", ticAreaHoverText.contains("0.9992"));
+        checker().withScreenshot("IRTCorrelation").verifyTrue("Incorrect iRT Correlation value calculated", ticAreaHoverText.contains("0.999"));
         qcPlotsWebPart.closeBubble();
 
         log("Verifying the iRT Intercept plot values");
@@ -121,7 +121,7 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate(acquiredDate));
         waitForElement(qcPlotsWebPart.getBubble());
         ticAreaHoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
-        checker().withScreenshot("IRTSlope").verifyTrue("Incorrect iRT Slope value calculated", ticAreaHoverText.contains("0.6463"));
+        checker().withScreenshot("IRTSlope").verifyTrue("Incorrect iRT Slope value calculated", ticAreaHoverText.contains("0.646"));
         qcPlotsWebPart.closeBubble();
         mouseOut();
 
