@@ -255,8 +255,8 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         refresh();
         waitForElements(Locator.tagWithClass("div", "sample-file-item"), 6);
 
-        validateAutoQCStatus(MAIN_SUMMARY, Arrays.asList("qc-correct", "fa-check-circle"), "Was pinged recently on " + mainFolderLastPingDate);
-        validateAutoQCStatus(SUB_FOLDER02, Arrays.asList("qc-correct", "fa-check-circle"), "Was pinged recently on " + subfolder2LastPingDate);
+        validateAutoQCStatus(MAIN_SUMMARY, Arrays.asList("qc-correct", "fa-check-circle"), "AutoQC pinged recently on " + mainFolderLastPingDate);
+        validateAutoQCStatus(SUB_FOLDER02, Arrays.asList("qc-correct", "fa-check-circle"), "AutoQC pinged recently on " + subfolder2LastPingDate);
 
 
         log("Now wait for ping limit to occur.");
@@ -266,8 +266,8 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         refresh();
 
         log("Validate the ping timeout icons for the main folder and sub-folder 2.");
-        validateAutoQCStatus(MAIN_SUMMARY, Arrays.asList("qc-error", "fa-circle"), "Was pinged on " + mainFolderLastPingDate);
-        validateAutoQCStatus(SUB_FOLDER02, Arrays.asList("qc-error", "fa-circle"), "Was pinged on " + subfolder2LastPingDate);
+        validateAutoQCStatus(MAIN_SUMMARY, Arrays.asList("qc-error", "fa-circle"), "AutoQC last pinged on " + mainFolderLastPingDate);
+        validateAutoQCStatus(SUB_FOLDER02, Arrays.asList("qc-error", "fa-circle"), "AutoQC last pinged on " + subfolder2LastPingDate);
 
         log("Subfolder 1 should still think it's never been pinged");
         validateAutoQCStatus(SUB_FOLDER01, Arrays.asList("qc-none", "fa-circle-o"), "AutoQC has never pinged this folder");
