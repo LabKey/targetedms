@@ -58,14 +58,6 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
 
     addPlotsToPlotDiv: function(ids, title, div, wp)
     {
-        if (this.largePlot)
-            this.addLargePlotsToPlotDiv(ids, title, div, wp);
-        else
-            this.addSmallPlotsToPlotDiv(ids, title, div, wp);
-    },
-
-    addLargePlotsToPlotDiv: function (ids, title, div, wp)
-    {
         var html = this.getPlotWebPartHeader(wp, title);
 
         Ext4.each(ids, function(plotId){
@@ -73,31 +65,6 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
                     '     <td><div id="' + plotId + '" class="chart-render-div"></div></td>' +
                     ' </tr>';
         });
-        html += '</table>';
-        Ext4.get(div).insertHtml('beforeEnd', html);
-    },
-
-    addSmallPlotsToPlotDiv: function (ids, title, div, wp)
-    {
-        var html = this.getPlotWebPartHeader(wp, title);
-
-        if (ids.length > 0)
-        {
-            html += ' <tr>' +
-                    '     <td><div class="plot-small-layout chart-render-div" id="' + ids[0] + '"></div>';
-            if (ids.length > 1)
-                html += '<div class="plot-small-layout chart-render-div" id="' + ids[1] + '"></div>';
-            html += ' </td></tr>';
-        }
-
-        if (ids.length > 2)
-        {
-            html += ' <tr>' +
-                    '     <td><div class="plot-small-layout chart-render-div" id="' + ids[2] + '"></div>';
-            if (ids.length > 3)
-                html += '<div class="plot-small-layout chart-render-div" id="' + ids[3] + '"></div>';
-            html += ' </td></tr>';
-        }
         html += '</table>';
         Ext4.get(div).insertHtml('beforeEnd', html);
     },
@@ -131,7 +98,7 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
 
     createExportIcon : function(divId, iconCls, tooltip, indexFromLeft, plotIndex, plotWidth, callbackFn)
     {
-        var leftPositionPx = (( (!this.largePlot && this.plotTypes && this.plotTypes.length > 1) ? plotIndex % 2 : 0) * plotWidth) + (indexFromLeft * 30) + 60,
+        var leftPositionPx = (indexFromLeft * 30) + 60,
             exportIconDivId = divId + iconCls,
             html = '<div id="' + exportIconDivId + '" class="export-icon" title="' + Ext4.util.Format.htmlEncode(tooltip) + '" style="left: ' + leftPositionPx + 'px;">'
                     + '<i class="fa ' + iconCls + '"></i></div>';

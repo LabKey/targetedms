@@ -61,7 +61,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     yAxisScale: 'linear',
     metric: null,
     plotTypes: ['Levey-Jennings'],
-    largePlot: false,
     dateRangeOffset: 0,
     minAcquiredTime: null,
     maxAcquiredTime: null,
@@ -263,7 +262,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             { tbar: this.getCustomDateRangeToolbar() },
             { tbar: this.getFirstPlotOptionsToolbar() },
             { tbar: this.getSecondPlotOptionsToolbar() },
-            { tbar: this.getThirdPlotOptionsToolbar() },
             { tbar: this.getGuideSetMessageToolbar() },
             { tbar: this.getExperimentRunDateRangeToolbar() }
         ];
@@ -281,10 +279,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 ui: 'footer',
                 cls: 'levey-jennings-toolbar',
                 layout: { pack: 'center' },
+                padding: '0 10px 10px 10px',
                 items: [
-                    this.getPlotSizeOptions(),
-                    {xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'},
-                    this.getPlotTypeOptions(true),
+                    this.getPlotTypeOptions(),
+                    {xtype: 'tbseparator'}, {xtype: 'tbspacer'},
                     this.getScaleCombo()
                 ],
                 listeners: {
@@ -299,74 +297,15 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return this.plotTypeOptionsToolbar;
     },
 
-    getSecondPlotOptionsToolbar: function() {
-      if(!this.plotTypeWithoutYOptionsToolbar) {
-          this.plotTypeWithoutYOptionsToolbar =  Ext4.create('Ext.toolbar.Toolbar', {
-              ui: 'footer',
-              cls: 'levey-jennings-toolbar',
-              layout: { pack: 'center' },
-              items: [
-                  {xtype: 'tbspacer'},
-                  {xtype: 'tbspacer'},
-                  {xtype: 'tbspacer'},
-                  {xtype: 'tbspacer'},
-                  this.getPlotTypeOptions(false)
-              ],
-              listeners: {
-                  scope: this,
-                  render: function(cmp) {
-                      cmp.doLayout();
-                  }
-              }
-          });
-      }
-      return this.plotTypeWithoutYOptionsToolbar;
-    },
-
-    getPlotSizeOptions: function() {
-        var plotSizeRadio = [{
-            boxLabel  : 'Small',
-            name      : 'largePlot',
-            inputValue: false,
-            checked   : !this.largePlot
-        },{
-            boxLabel  : 'Large',
-            name      : 'largePlot',
-            inputValue: true,
-            checked   : this.largePlot
-        }];
-
-        return {
-            xtype: 'radiogroup',
-            fieldLabel: 'Plot Size',
-            columns: 2,
-            id: 'plot-size-radio-group',
-            width: 180,
-            items: plotSizeRadio,
-            disabled: this.plotTypes.length < 2,
-            cls: 'plot-size-radio-group',
-            listeners: {
-                scope: this,
-                change: function(cmp, newVal, oldVal) {
-                    this.largePlot = newVal.largePlot;
-                    this.havePlotOptionsChanged = true;
-
-                    this.setBrushingEnabled(false);
-                    this.displayTrendPlot();
-                }
-            }
-        }
-    },
-
-    getPlotTypeOptions: function(withYOptions) {
+    getPlotTypeOptions: function() {
         var plotTypeCheckBoxes = [];
         var me = this;
-        Ext4.each(LABKEY.targetedms.QCPlotHelperBase[withYOptions ? 'qcPlotTypesWithYOptions' : 'qcPlotTypesWithoutYOptions'], function(plotType){
+        Ext4.each(LABKEY.targetedms.QCPlotHelperBase.qcPlotTypes, function(plotType){
             plotTypeCheckBoxes.push({
                 boxLabel: plotType,
-                name: (withYOptions ? 'plotTypes' : 'plotTypesWithoutYOptions'),
+                name: 'plotTypes',
                 inputValue: plotType,
-                cls: 'qc-plot-type-checkbox',
+                width: plotType.length > 10 ? 110 : 70,
                 checked: this.isPlotTypeSelected(plotType),
                 listeners: {
                     render: function(cmp) {
@@ -396,29 +335,19 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         return {
             xtype: 'checkboxgroup',
-            fieldLabel: (withYOptions ? 'QC Plot Type' : undefined),
+            fieldLabel: 'Plot Types',
             columns: plotTypeCheckBoxes.length,
             items: plotTypeCheckBoxes,
             cls: 'plot-type-checkbox-group',
-            id: (withYOptions ? 'qc-plot-type-with-y-options' : 'qc-plot-types'),
-            width: (withYOptions ? 300 : undefined),
+            id: 'qc-plot-type-with-y-options',
+            width: 475,
             listeners: {
                 scope: this,
                 change: function(cmp, newVal, oldVal) {
-                    var newValues = newVal[withYOptions ? 'plotTypes' : 'plotTypesWithoutYOptions'];
-                    var otherPlotTypeOptions = (withYOptions ? 'plotTypesWithoutYOptions' : 'plotTypes');
-
+                    var newValues = newVal['plotTypes'];
                     this.plotTypes = newValues ? Ext4.isArray(newValues) ? newValues : [newValues] : [];
-                    var options = Ext4.getCmp((withYOptions ? 'qc-plot-types' : 'qc-plot-type-with-y-options')).getValue();
-                    if (options && options[otherPlotTypeOptions]) {
-                        if (Ext4.isArray(options[otherPlotTypeOptions])) {
-                            this.plotTypes = this.plotTypes.concat(options[otherPlotTypeOptions]);
-                        } else {
-                            this.plotTypes.push(options[otherPlotTypeOptions]);
-                        }
-                    }
+
                     this.havePlotOptionsChanged = true;
-                    Ext4.getCmp('plot-size-radio-group').setDisabled(this.plotTypes.length < 2);
                     this.setBrushingEnabled(false);
                     this.displayTrendPlot();
                 }
@@ -428,31 +357,33 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     getMainPlotOptionsToolbar : function() {
         if (!this.mainPlotOptionsToolbar) {
+            var toolbarItems = [
+                this.getMetricCombo(),
+                {xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'},
+                this.getDateRangeCombo()
+            ];
+
+            // only add the create guide set button if the user has the proper permissions to insert/update guide sets
+            if (this.canUserEdit()) {
+                toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
+                toolbarItems.push(this.getGuideSetCreateButton());
+            }
+
             this.mainPlotOptionsToolbar = Ext4.create('Ext.toolbar.Toolbar', {
                 ui: 'footer',
                 cls: 'levey-jennings-toolbar',
                 padding: 10,
                 layout: { pack: 'center' },
-                items: [
-                    this.getMetricCombo(),
-                    {xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'},
-                    this.getDateRangeCombo()
-                ]
+                items: toolbarItems
             });
         }
 
         return this.mainPlotOptionsToolbar;
     },
 
-    getThirdPlotOptionsToolbar : function() {
+    getSecondPlotOptionsToolbar : function() {
         if (!this.otherPlotOptionsToolbar) {
             var  toolbarItems = [];
-
-            // only add the create guide set button if the user has the proper permissions to insert/update guide sets
-            if (this.canUserEdit()) {
-                toolbarItems.push(this.getGuideSetCreateButton());
-                toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
-            }
 
             toolbarItems.push(this.getGroupedXCheckbox());
             toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
@@ -615,7 +546,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     isValidQCPlotType: function(plotType) {
         var valid = false;
-        Ext4.each(LABKEY.targetedms.QCPlotHelperBase.qcPlotTypesWithYOptions.concat(LABKEY.targetedms.QCPlotHelperBase.qcPlotTypesWithoutYOptions), function(type){
+        Ext4.each(LABKEY.targetedms.QCPlotHelperBase.qcPlotTypes, function(type){
             if (plotType == type) {
                 valid = true;
                 return;
@@ -684,11 +615,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             else {
                 paramValues['plotTypes'] = plotTypes;
             }
-        }
-
-        paramValue = urlParams['largePlot'];
-        if (paramValue !== undefined && paramValue !== null) {
-            paramValues['largePlot'] = paramValue.toString().toLowerCase() === 'true';
         }
 
         if (alertMessage.length > 0) {
@@ -1324,7 +1250,18 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }
     },
 
-    plotPointHover : function(event, row, layerSel, point, valueName) {
+    legendMouseOver : function(data, item) {
+        if (data.name) {
+            // in the multi series case, the name has the series label appended, so use the hoverText instead
+            this.highlightFragmentSeries(data.hoverText);
+        }
+    },
+
+    legendMouseOut : function(data, item) {
+        this.plotPointMouseOut();
+    },
+
+    plotPointMouseOver : function(event, row, layerSel, point, valueName, plotConfig) {
         var showHoverTask = new Ext4.util.DelayedTask(),
             metricProps = this.getMetricPropsById(this.metric),
             me = this;
@@ -1372,6 +1309,38 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         Ext4.get(point).on('mouseout', function() {
             showHoverTask.cancel();
         }, this);
+
+        // for the combined / single plot case, we want to have point hover highlight the given series
+        // by using opacity to "push" the other points and lines to the background
+        if (plotConfig.properties.combined) {
+            this.highlightFragmentSeries(row.fragment);
+        }
+    },
+
+    plotPointMouseOut : function(event, row, layerSel, valueName, plotConfig) {
+        d3.selectAll('.point path').attr('fill-opacity', 1).attr('stroke-opacity', 1);
+        d3.selectAll('path.line').attr('fill-opacity', 1).attr('stroke-opacity', 1);
+        d3.selectAll('.legend .legend-item').attr('fill-opacity', 1).attr('stroke-opacity', 1);
+    },
+
+    highlightFragmentSeries : function(fragment) {
+        var metricProps = this.getMetricPropsById(this.metric);
+
+        var points = d3.selectAll('.point path');
+        var pointOpacityAcc = function(d) { return d.fragment === undefined || d.fragment === null || d.fragment === fragment ? 1 : 0.1 };
+        points.attr('fill-opacity', pointOpacityAcc).attr('stroke-opacity', pointOpacityAcc);
+
+        var hasYRightMetric = metricProps.series2QueryName !== undefined;
+        var lines = d3.selectAll('path.line');
+        var lineOpacityAcc = function(d) { return d.group === undefined || d.group === null || d.group.indexOf(fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1 };
+        lines.attr('fill-opacity', lineOpacityAcc).attr('stroke-opacity', lineOpacityAcc);
+
+        var legendItems = d3.selectAll('.legend .legend-item');
+        var legendOpacityAcc = function(d) {
+            if (!d.name) return 1;
+            return d.name.indexOf(fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1
+        };
+        legendItems.attr('fill-opacity', legendOpacityAcc).attr('stroke-opacity', legendOpacityAcc);
     },
 
     attachHopscotchMouseClose: function() {
@@ -1959,7 +1928,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         var props = {
             metric: this.metric,
             plotTypes: this.plotTypes,
-            largePlot: this.largePlot,
             yAxisScale: this.yAxisScale,
             groupedX: this.groupedX,
             singlePlot: this.singlePlot,

@@ -6,8 +6,7 @@
 Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
     statics: {
-        qcPlotTypesWithYOptions : ['Levey-Jennings', 'Moving Range'],
-        qcPlotTypesWithoutYOptions : ['CUSUMm', 'CUSUMv']
+        qcPlotTypes : ['Levey-Jennings', 'Moving Range', 'CUSUMm', 'CUSUMv'],
     },
 
     showLJPlot: function()
@@ -408,8 +407,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     },
 
     getPlotWidth: function() {
-        var width = this.plotWidth - 30;
-        return !this.largePlot && this.plotTypes.length > 1 ? width / 2 : width;
+        return this.plotWidth - 30;
     },
 
     calculatePlotIndicesBetweenDates: function (precursorInfo) {
@@ -646,7 +644,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             disableRangeDisplay: disableRange,
             xTick: this.groupedX ? 'groupedXTick' : 'fullDate',
             xTickLabel: 'date',
-            shape: 'guideSetId',
+            shape: 'IgnoreInQC',
             combined: true,
             yAxisScale: (showLogInvalid ? 'linear' : (this.yAxisScale !== 'log' ? 'linear' : 'log')),
             valueConversion: (this.yAxisScale === 'percentDeviation' || this.yAxisScale === 'standardDeviation' ? this.yAxisScale : undefined),
@@ -654,12 +652,19 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             groupBy: 'fragment',
             color: 'fragment',
             defaultGuideSetLabel: 'fragment',
-            pointOpacityFn: function(row) { return row.IgnoreInQC ? 0.4 : 1; },
+            pointSize: 2,
+            shapeRange: [LABKEY.vis.Scale.Shape()[0] /* circle */, LABKEY.vis.Scale.DataspaceShape()[0] /* open circle */],
             showTrendLine: true,
             showDataPoints: true,
-            mouseOverFn: this.plotPointHover,
+            mouseOverFn: this.plotPointMouseOver,
             mouseOverFnScope: this,
-            position: this.groupedX ? 'jitter' : undefined
+            mouseOutFn: this.plotPointMouseOut,
+            mouseOutFnScope: this,
+            position: this.groupedX ? 'jitter' : undefined,
+            legendMouseOverFn: this.legendMouseOver,
+            legendMouseOverFnScope: this,
+            legendMouseOutFn: this.legendMouseOut,
+            legendMouseOutFnScope: this
         };
 
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(combinePlotData, plotType, isCUSUMMean));
@@ -670,7 +675,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         var plotConfig = Ext4.apply(basePlotConfig, {
             margins : {
                 top: 65 + this.getMaxStackedAnnotations() * 12,
-                right: (this.showInPlotLegends() ? legendMargin : 30 ) + (this.isMultiSeries() ? 50 : 0),
+                right: (this.showInPlotLegends() ? legendMargin : 30 ) + (this.isMultiSeries() ? 60 : 10),
                 left: 75,
                 bottom: 75
             },
@@ -726,15 +731,16 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             xTickLabel: 'date',
             yAxisScale: (precursorInfo.showLogInvalid ? 'linear' : (this.yAxisScale !== 'log' ? 'linear' : 'log')),
             valueConversion: (this.yAxisScale === 'percentDeviation' || this.yAxisScale === 'standardDeviation' ? this.yAxisScale : undefined),
-            shape: 'guideSetId',
+            shape: 'IgnoreInQC',
             combined: false,
-            pointOpacityFn: function(row) { return row.IgnoreInQC ? 0.4 : 1; },
+            pointSize: 2,
             pointIdAttr: function(row) { return row['fullDate']; },
+            shapeRange: [LABKEY.vis.Scale.Shape()[0] /* circle */, LABKEY.vis.Scale.DataspaceShape()[0] /* open circle */],
             showTrendLine: true,
             showDataPoints: true,
             defaultGuideSetLabel: 'fragment',
             defaultGuideSets: this.defaultGuideSet,
-            mouseOverFn: this.plotPointHover,
+            mouseOverFn: this.plotPointMouseOver,
             mouseOverFnScope: this,
             position: this.groupedX ? 'jitter' : undefined,
             disableRangeDisplay: this.isMultiSeries()
