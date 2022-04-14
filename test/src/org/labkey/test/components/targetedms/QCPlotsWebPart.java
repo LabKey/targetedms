@@ -742,11 +742,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public enum QCPlotExclusionState
     {
-        Include("Include in QC"),
-        ExcludeMetric("Exclude sample from QC for this metric"),
-        ExcludeAll("Exclude sample from QC for all metrics");
+        Include("Include"),
+        ExcludeMetric("Exclude replicate for this metric"),
+        ExcludeAll("Exclude replicate for all metrics");
 
-        private String _label;
+        private final String _label;
 
         QCPlotExclusionState(String label)
         {

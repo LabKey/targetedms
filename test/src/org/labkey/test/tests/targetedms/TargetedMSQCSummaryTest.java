@@ -236,13 +236,13 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_37", "Acquired: 2013-08-26 04:27"));
         validateSampleFile(0, tempStringList01, tempStringList02);
 
-        validateAutoQCStatus(MAIN_SUMMARY, Arrays.asList("qc-none", "fa-circle-o"), "Has never been pinged");
+        validateAutoQCStatus(MAIN_SUMMARY, Arrays.asList("qc-none", "fa-circle-o"), "AutoQC has never pinged this folder");
 
         log("Now validate the icon for the sub-folder 1.");
-        validateAutoQCStatus(SUB_FOLDER01, Arrays.asList("qc-none", "fa-circle-o"), "Has never been pinged");
+        validateAutoQCStatus(SUB_FOLDER01, Arrays.asList("qc-none", "fa-circle-o"), "AutoQC has never pinged this folder");
 
         log("Now validate the icon for the sub-folder 2.");
-        validateAutoQCStatus(SUB_FOLDER02, Arrays.asList("qc-none", "fa-circle-o"), "Has never been pinged");
+        validateAutoQCStatus(SUB_FOLDER02, Arrays.asList("qc-none", "fa-circle-o"), "AutoQC has never pinged this folder");
 
         log("Ping to simulate AutoQC checking in.");
         //http://localhost:8080/labkey/TargetedMSQCSummaryTest%20Project/QC%20Subfolder%202/targetedms-autoqcping.view
@@ -270,7 +270,7 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         validateAutoQCStatus(SUB_FOLDER02, Arrays.asList("qc-error", "fa-circle"), "Was pinged on " + subfolder2LastPingDate);
 
         log("Subfolder 1 should still think it's never been pinged");
-        validateAutoQCStatus(SUB_FOLDER01, Arrays.asList("qc-none", "fa-circle-o"), "Has never been pinged");
+        validateAutoQCStatus(SUB_FOLDER01, Arrays.asList("qc-none", "fa-circle-o"), "AutoQC has never pinged this folder");
 
 
         log("Validate that a guide set updates the file info as expected.");
