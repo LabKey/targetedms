@@ -603,7 +603,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         ContainerManager.addContainerListener(listener);
 
 		ActionURL chromatogramURL = new ActionURL(TargetedMSController.ChromatogramCrawlerAction.class, ContainerManager.getRoot());
-        AdminConsole.addLink(AdminConsole.SettingsLinkType.Configuration, "Targeted MS Chromatogram Crawler", chromatogramURL, ApplicationAdminPermission.class);
+        AdminConsole.addLink(AdminConsole.SettingsLinkType.Premium, "Targeted MS Chromatogram Crawler", chromatogramURL, ApplicationAdminPermission.class);
 
         FileContentService fcs = FileContentService.get();
         if(null != fcs)
