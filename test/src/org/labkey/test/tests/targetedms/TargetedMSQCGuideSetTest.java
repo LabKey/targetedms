@@ -194,10 +194,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
 
         // 4 of the 5 guide sets are visible in plot region based on the initial data
         List<Pair<String, Integer>> shapeCounts = new ArrayList<>();
-        shapeCounts.add(Pair.of(SvgShapes.CIRCLE.getPathPrefix(), 4));
-        shapeCounts.add(Pair.of(SvgShapes.TRIANGLE.getPathPrefix(), 23));
-        shapeCounts.add(Pair.of(SvgShapes.SQUARE.getPathPrefix(), 18));
-        shapeCounts.add(Pair.of(SvgShapes.DIAMOND.getPathPrefix(), 2));
+        shapeCounts.add(Pair.of(SvgShapes.CIRCLE.getPathPrefix(), 47));
         verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 4, shapeCounts, 47);
 
         // check box for group x-axis values by date and verify
@@ -212,7 +209,6 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         qcPlotsWebPart.filterQCPlots("2013-08-19", "2013-08-19", PRECURSORS.length);
         shapeCounts = new ArrayList<>();
         shapeCounts.add(Pair.of(SvgShapes.CIRCLE.getPathPrefix(), 2));
-        shapeCounts.add(Pair.of(SvgShapes.TRIANGLE.getPathPrefix(), 0));
         verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 0, shapeCounts, 2);
     }
 

@@ -6,8 +6,7 @@
 Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
     statics: {
-        qcPlotTypesWithYOptions : ['Levey-Jennings', 'Moving Range'],
-        qcPlotTypesWithoutYOptions : ['CUSUMm', 'CUSUMv']
+        qcPlotTypes : ['Levey-Jennings', 'Moving Range', 'CUSUMm', 'CUSUMv'],
     },
 
     showLJPlot: function()
@@ -408,8 +407,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     },
 
     getPlotWidth: function() {
-        var width = this.plotWidth - 30;
-        return !this.largePlot && this.plotTypes.length > 1 ? width / 2 : width;
+        return this.plotWidth - 30;
     },
 
     calculatePlotIndicesBetweenDates: function (precursorInfo) {
@@ -598,19 +596,24 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     getYScaleLabel: function(plotType, conversion, label) {
         var yScaleLabel;
 
+        var conversionLabel = null;
+
         if (plotType !== LABKEY.vis.TrendingLinePlotType.MovingRange && plotType !== LABKEY.vis.TrendingLinePlotType.LeveyJennings) {
             yScaleLabel = 'Sum of Deviations'
         }
-        else if (conversion && label !== "Transition Area") {
+        else if (conversion) {
             var options = this.getYAxisOptions();
             for (var i = 0; i < options.data.length; i++) {
                 if (options.data[i][0] === conversion)
-                    yScaleLabel = options.data[i][1];
+                    conversionLabel = options.data[i][1];
             }
         }
 
         if (!yScaleLabel) {
             yScaleLabel = label;
+            if (conversionLabel) {
+                yScaleLabel += ' (' + conversionLabel + ')';
+            }
         }
         return yScaleLabel;
     },
@@ -636,13 +639,12 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         else if (this.yAxisScale === 'standardDeviation' && plotType === LABKEY.vis.TrendingLinePlotType.LeveyJennings) {
             disableRange = false;
         }
-        var scope = this;
 
         var trendLineProps = {
             disableRangeDisplay: disableRange,
             xTick: this.groupedX ? 'groupedXTick' : 'fullDate',
             xTickLabel: 'date',
-            shape: 'guideSetId',
+            shape: 'IgnoreInQC',
             combined: true,
             yAxisScale: (showLogInvalid ? 'linear' : (this.yAxisScale !== 'log' ? 'linear' : 'log')),
             valueConversion: (this.yAxisScale === 'percentDeviation' || this.yAxisScale === 'standardDeviation' ? this.yAxisScale : undefined),
@@ -650,12 +652,19 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             groupBy: 'fragment',
             color: 'fragment',
             defaultGuideSetLabel: 'fragment',
-            pointOpacityFn: function(row) { return row.IgnoreInQC ? 0.4 : 1; },
+            pointSize: 2,
+            shapeRange: [LABKEY.vis.Scale.Shape()[0] /* circle */, LABKEY.vis.Scale.DataspaceShape()[0] /* open circle */],
             showTrendLine: true,
             showDataPoints: true,
-            mouseOverFn: this.plotPointHover,
+            mouseOverFn: this.plotPointMouseOver,
             mouseOverFnScope: this,
-            position: this.groupedX ? 'jitter' : undefined
+            mouseOutFn: this.plotPointMouseOut,
+            mouseOutFnScope: this,
+            position: this.groupedX ? 'jitter' : undefined,
+            legendMouseOverFn: this.legendMouseOver,
+            legendMouseOverFnScope: this,
+            legendMouseOutFn: this.legendMouseOut,
+            legendMouseOutFnScope: this
         };
 
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(combinePlotData, plotType, isCUSUMMean));
@@ -666,7 +675,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         var plotConfig = Ext4.apply(basePlotConfig, {
             margins : {
                 top: 65 + this.getMaxStackedAnnotations() * 12,
-                right: (this.showInPlotLegends() ? legendMargin : 30 ) + (this.isMultiSeries() ? 50 : 0),
+                right: (this.showInPlotLegends() ? legendMargin : 30 ) + (this.isMultiSeries() ? 60 : 10),
                 left: 75,
                 bottom: 75
             },
@@ -676,13 +685,14 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 },
                 subtitle: {
                     value: this.getSubtitle("All Series", plotType, trendLineProps.valueConversion),
+                    visibility: 'hidden',  // Set as hidden so it doesn't clutter the web UI. It'll get set to visible during export, where it's useful context.
                     color: '#555555'
                 },
                 yLeft: {
                     value: this.getYScaleLabel(plotType, trendLineProps.valueConversion, metricProps.yAxisLabel1)
                 },
                 yRight: {
-                    value: this.isMultiSeries() ? metricProps.yAxisLabel2 : undefined,
+                    value: this.isMultiSeries() ? this.getYScaleLabel(plotType, trendLineProps.valueConversion, metricProps.yAxisLabel2) : undefined,
                     visibility: this.isMultiSeries() ? undefined : 'hidden'
                 }
             },
@@ -721,15 +731,16 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             xTickLabel: 'date',
             yAxisScale: (precursorInfo.showLogInvalid ? 'linear' : (this.yAxisScale !== 'log' ? 'linear' : 'log')),
             valueConversion: (this.yAxisScale === 'percentDeviation' || this.yAxisScale === 'standardDeviation' ? this.yAxisScale : undefined),
-            shape: 'guideSetId',
+            shape: 'IgnoreInQC',
             combined: false,
-            pointOpacityFn: function(row) { return row.IgnoreInQC ? 0.4 : 1; },
+            pointSize: 2,
             pointIdAttr: function(row) { return row['fullDate']; },
+            shapeRange: [LABKEY.vis.Scale.Shape()[0] /* circle */, LABKEY.vis.Scale.DataspaceShape()[0] /* open circle */],
             showTrendLine: true,
             showDataPoints: true,
             defaultGuideSetLabel: 'fragment',
             defaultGuideSets: this.defaultGuideSet,
-            mouseOverFn: this.plotPointHover,
+            mouseOverFn: this.plotPointMouseOver,
             mouseOverFnScope: this,
             position: this.groupedX ? 'jitter' : undefined,
             disableRangeDisplay: this.isMultiSeries()
@@ -779,6 +790,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 },
                 subtitle: {
                     value: this.getSubtitle(this.precursors[precursorIndex], plotType, trendLineProps.valueConversion),
+                    visibility: 'hidden',  // Set as hidden so it doesn't clutter the web UI. It'll get set to visible during export, where it's useful context.
                     color: '#555555'
                 },
                 yLeft: {
@@ -787,7 +799,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     position: leftMarginOffset > 0 ? leftMarginOffset - 15 : undefined
                 },
                 yRight: {
-                    value: this.isMultiSeries() ? metricProps.yAxisLabel2 : undefined,
+                    value: this.isMultiSeries() ? this.getYScaleLabel(plotType, trendLineProps.valueConversion, metricProps.yAxisLabel2) : undefined,
                     visibility: this.isMultiSeries() ? undefined : 'hidden',
                     color: this.isMultiSeries() ? this.getColorRange()[1] : undefined
                 }
