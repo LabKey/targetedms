@@ -286,7 +286,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public String getSVGPlotText(int plotPanelIndex, String plotIdSuffix)
     {
-        Locator loc = Locator.tagWithClass("div", "tiledPlotPanel").append(
+        Locator loc = Locator.tagWithClass("div", "tiledPlotPanel").index(plotPanelIndex).append(
                 Locator.tag("div").attributeEndsWith("id", plotIdSuffix)
                         .withDescendant(Locator.xpath("//*[local-name() = 'svg']")));
         WebElement svg = loc.findElement(getWrapper().getDriver());
