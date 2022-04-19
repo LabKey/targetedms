@@ -244,9 +244,9 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.filterQCPlotsToInitialData(PRECURSORS.length, true);
 
         // test option to "Group X-Axis values by Date"
-        String initialSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+        String initialSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
         qcPlotsWebPart.setGroupXAxisValuesByDate(true);
-        assertFalse(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0")));
+        assertFalse(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0")));
         qcPlotsWebPart.setGroupXAxisValuesByDate(false);
 
         // test that plot0 changes based on scale
@@ -254,9 +254,9 @@ public class TargetedMSQCTest extends TargetedMSTest
         {
             if (scale != qcPlotsWebPart.getCurrentScale())
             {
-                initialSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+                initialSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
                 qcPlotsWebPart.setScale(scale);
-                String svgPlotText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+                String svgPlotText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
                 assertFalse(svgPlotText.isEmpty());
                 assertFalse(initialSVGText.equals(svgPlotText));
             }
@@ -267,13 +267,13 @@ public class TargetedMSQCTest extends TargetedMSTest
         // test that plot0_plotType_1 (CUSUMm) does not change from linear
         qcPlotsWebPart.checkPlotType(CUSUMm, true);
         qcPlotsWebPart.waitForPlots(2, true);
-        initialSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0_plotType_1");
+        initialSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1");
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LOG);
-        assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0_plotType_1")));
+        assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1")));
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.PERCENT_OF_MEAN);
-        assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0_plotType_1")));
+        assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1")));
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.STANDARD_DEVIATIONS);
-        assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0_plotType_1")));
+        assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1")));
 
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LINEAR);
 
@@ -284,9 +284,9 @@ public class TargetedMSQCTest extends TargetedMSTest
             if (metricTypeWithData.contains(type) &&  type != qcPlotsWebPart.getCurrentMetricType())
             {
                 log("Verify plot type: " + type);
-                initialSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+                initialSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
                 qcPlotsWebPart.setMetricType(type);
-                assertNotEquals(initialSVGText, qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0"));
+                assertNotEquals(initialSVGText, qcPlotsWebPart.getSVGPlotText("precursorPlot0"));
 
                 // back to default metric type for baseline comparison of svg plot change
                 qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.RETENTION);
@@ -682,7 +682,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         log("Verifying TIC Area QC Plots");
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TICAREA);
         qcPlotsWebPart.waitForPlots(1, true);
-        String ticPlotSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+        String ticPlotSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
         assertFalse(ticPlotSVGText.isEmpty());
 
         log("Verifying Show All Series Checkbox");
