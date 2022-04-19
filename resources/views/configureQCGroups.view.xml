@@ -1,4 +1,4 @@
-<view xmlns="http://labkey.org/data/xml/view" title="Include or Exclude Peptide/Molecules">
+<view xmlns="http://labkey.org/data/xml/view" title="Include or Exclude Precursors">
     <permissions>
         <permission name="update"/>
     </permissions>

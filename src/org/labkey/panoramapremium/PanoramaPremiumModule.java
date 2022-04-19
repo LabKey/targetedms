@@ -62,7 +62,7 @@ public class PanoramaPremiumModule extends DefaultModule
         Portal.registerNavTreeCustomizer("Targeted MS QC Summary", new QCSummaryMenuCustomizer("subscribeOutlierNotifications", "Subscribe Outlier Notifications"));
         Portal.registerNavTreeCustomizer("Targeted MS QC Plots", new QCSummaryMenuCustomizer("subscribeOutlierNotifications", "Subscribe Outlier Notifications"));
 
-        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", new QCSummaryMenuCustomizer("configureQCGroups", "Include or Exclude Peptides/Molecules"));
+        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", new QCSummaryMenuCustomizer("configureQCGroups", "Include or Exclude Precursors"));
         TargetedMSService.get().registerSkylineDocumentImportListener(QCNotificationSender.get());
     }
 
