@@ -226,7 +226,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         QCPlotsWebPart qcPlotsWebPart = dashboard.getQcPlotsWebPart();
         _ext4Helper.selectComboBoxItem(Locator.id("metric-type-field"), metricName);
         qcPlotsWebPart.waitForPlots(1, true);
-        String pressurePlotSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+        String pressurePlotSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
         assertFalse("Pressure trace plot is not present", pressurePlotSVGText.isEmpty());
         assertTrue("Y axis label is not correct or present", pressurePlotSVGText.contains(yAxisLabel));
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate("2009-11-03 19:37:28"));
