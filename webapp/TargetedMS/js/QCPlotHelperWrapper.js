@@ -137,8 +137,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         }
         this.addPlotsToPlotDiv(ids, 'All Series', this.plotDivId, 'qc-plot-wp');
         var plotIndex = 0;
-        var legendMargin = 14 * lengthOfLongestLegend + (this.isMultiSeries() ? 50 : 0) + 20;
-        var annotMargin = 11 * lengthOfLongestAnnot;
+        var legendMargin = 9 * lengthOfLongestLegend;
+        var annotMargin = 9 * lengthOfLongestAnnot;
 
         if( annotMargin > legendMargin) {
             legendMargin = annotMargin;  // Give some extra space if annotations defined

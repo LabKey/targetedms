@@ -194,10 +194,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
 
         // 4 of the 5 guide sets are visible in plot region based on the initial data
         List<Pair<String, Integer>> shapeCounts = new ArrayList<>();
-        shapeCounts.add(Pair.of(SvgShapes.CIRCLE.getPathPrefix(), 4));
-        shapeCounts.add(Pair.of(SvgShapes.TRIANGLE.getPathPrefix(), 23));
-        shapeCounts.add(Pair.of(SvgShapes.SQUARE.getPathPrefix(), 18));
-        shapeCounts.add(Pair.of(SvgShapes.DIAMOND.getPathPrefix(), 2));
+        shapeCounts.add(Pair.of(SvgShapes.CIRCLE.getPathPrefix(), 47));
         verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 4, shapeCounts, 47);
 
         // check box for group x-axis values by date and verify
@@ -212,7 +209,6 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         qcPlotsWebPart.filterQCPlots("2013-08-19", "2013-08-19", PRECURSORS.length);
         shapeCounts = new ArrayList<>();
         shapeCounts.add(Pair.of(SvgShapes.CIRCLE.getPathPrefix(), 2));
-        shapeCounts.add(Pair.of(SvgShapes.TRIANGLE.getPathPrefix(), 0));
         verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 0, shapeCounts, 2);
     }
 
@@ -254,7 +250,9 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         assertEquals("Wrong number of non-conformers for MA", 21, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 4));
         assertEquals("Wrong number of non-conformers for RT", 17, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 5));
         assertEquals("Wrong number of non-conformers for FWHM", 12, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 6));
-        assertEquals("Wrong number of non-conformers for T/P Ratio", 4, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 7));
+        assertEquals("Wrong number of non-conformers for Isotope dotp", 5, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 7));
+        assertEquals("Wrong number of non-conformers for area ratio", 4, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 8));
+        assertEquals("Wrong number of non-conformers for TIC area", 2, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 9));
         verifyTicksOnPlots(paretoPlotsWebPart, guideSetId, plotType);
         verifyNavigationToPanoramaDashboard(guideSetId, QCPlotsWebPart.QCPlotType.MovingRange, 0, QCPlotsWebPart.MetricType.TOTAL_PEAK, true);
 

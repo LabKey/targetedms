@@ -130,6 +130,9 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         if (hasExistingPlot)
             plot = elementCache().findPlots().get(0);
 
+        // scroll to prevent inadvertent hover over QC Summary webpart items that show hopscotch tooltips
+        getWrapper().scrollIntoView(elementCache().metricTypeCombo, true);
+
         getWrapper()._ext4Helper.selectComboBoxItem(elementCache().metricTypeCombo, metricType.toString());
 
         if (hasExistingPlot)
@@ -163,27 +166,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     public boolean isGroupXAxisValuesByDateChecked()
     {
         return elementCache().groupedXCheckbox.isChecked();
-    }
-
-    public void chooseSmallPlotSize(boolean small)
-    {
-        String label = "Small";
-        if (!small)
-            label = "Large";
-        RadioButton plotSizeButton = RadioButton.RadioButton().withLabel(label).find(this);
-        plotSizeButton.check();
-    }
-
-    public boolean isSmallPlotSizeSelected()
-    {
-        RadioButton plotSizeButton = RadioButton.RadioButton().withLabel("Small").find(this);
-        return plotSizeButton.isChecked();
-    }
-
-    public boolean isPlotSizeRadioEnabled()
-    {
-        RadioButton plotSizeButton = RadioButton.RadioButton().withLabel("Small").find(this);
-        return plotSizeButton.isEnabled();
     }
 
     /**
@@ -325,11 +307,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         {
             checkAllPlotTypes(false);
             checkPlotType(QCPlotsWebPart.QCPlotType.LeveyJennings, true);
-            waitForPlots();
-        }
-        if (isPlotSizeRadioEnabled())
-        {
-            chooseSmallPlotSize(true);
             waitForPlots();
         }
         if (getCurrentScale() != QCPlotsWebPart.Scale.LINEAR)
@@ -549,11 +526,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
             return elementCache().legendItemPopup.containing(text);
     }
 
-    public Locator getSmallPlotLoc()
-    {
-        return elementCache().smallPlotLayoutDiv;
-    }
-
     public String getPaginationText()
     {
         return elementCache().paginationPanel.getText();
@@ -742,11 +714,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public enum QCPlotExclusionState
     {
-        Include("Include in QC"),
-        ExcludeMetric("Exclude sample from QC for this metric"),
-        ExcludeAll("Exclude sample from QC for all metrics");
+        Include("Include"),
+        ExcludeMetric("Exclude replicate for this metric"),
+        ExcludeAll("Exclude replicate for all metrics");
 
-        private String _label;
+        private final String _label;
 
         QCPlotExclusionState(String label)
         {
@@ -827,7 +799,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         Locator.CssLocator legendItem = Locator.css("svg g.legend-item");
         Locator.CssLocator legendItemTitle = Locator.css("svg g.legend-item title");
         Locator.CssLocator legendItemPopup = Locator.css(".headerlegendpopup svg g.legend-item");
-        Locator.CssLocator smallPlotLayoutDiv = Locator.css(".plot-small-layout");
         Locator.CssLocator paginationPrevBtn = Locator.css(".qc-paging-prev");
         Locator.CssLocator paginationNextBtn = Locator.css(".qc-paging-next");
         Locator.CssLocator svgBackgrounds = Locator.css("svg g.brush rect.background");
