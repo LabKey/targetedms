@@ -39,6 +39,7 @@ import org.labkey.api.targetedms.model.SampleFilePath;
 import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.targetedms.chromlib.ChromatogramLibraryUtils;
 import org.labkey.targetedms.datasource.MsDataSourceUtil;
+import org.labkey.targetedms.parser.Replicate;
 import org.labkey.targetedms.parser.SampleFile;
 import org.labkey.targetedms.query.LibraryManager;
 import org.labkey.targetedms.query.ModificationManager;
@@ -330,5 +331,12 @@ public class TargetedMSServiceImpl implements TargetedMSService
     public @Nullable Integer parseChromLibRevision(@NotNull String chromLibFileName)
     {
         return ChromatogramLibraryUtils.parseChromLibRevision(chromLibFileName);
+    }
+
+    @Override
+    public @Nullable String getSampleReplicateName(long sampleFileId, Container container)
+    {
+        Replicate replicate = ReplicateManager.getSampleReplicate(sampleFileId, container);
+        return replicate != null ? replicate.getName() : null;
     }
 }
