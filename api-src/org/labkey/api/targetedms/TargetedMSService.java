@@ -151,4 +151,13 @@ public interface TargetedMSService
      */
     @Nullable
     Integer parseChromLibRevision(@NotNull String chromLibFileName);
+
+    /**
+     *
+     * @param sampleFileId
+     * @param container container that has the Skyline document that the sample file belongs to.
+     * @return the replicate name associated with the given sampleFileId. Returns null if a database row with the given
+     * sampleFileId does not exist, or if the Skyline document with the sample file is not in the given container.
+     */
+    @Nullable String getSampleReplicateName(long sampleFileId, Container container);
 }
