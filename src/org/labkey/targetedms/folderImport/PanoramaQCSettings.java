@@ -55,9 +55,7 @@ public enum PanoramaQCSettings
                     SimpleFilter filter = SimpleFilter.createContainerFilter(container); //only export the ones that are defined in current container (and not the ones from the root container)
 
                     Results results = QueryService.get().select(ti, userEditableCols, filter, null);
-                    ResultsFactory factory = ()-> results;
-                    exportSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
-                    results.close();
+                    exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
                 }
             },
     QC_ENABLED_METRICS (TargetedMSSchema.TABLE_QC_ENABLED_METRICS, QCFolderConstants.QC_ENABLED_METRICS_FILE_NAME)
@@ -74,16 +72,13 @@ public enum PanoramaQCSettings
                             .append(" ON qcEnabledMetrics.metric = qcMetricConfig.Id");
 
                     Results results = QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true);
-                    ResultsFactory factory = ()-> results;
-                    exportSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
-                    results.close();
+                    exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
                 }
 
                 @Override
                 public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws Exception
                 {
-                    DataLoader loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(getSettingsFileName())), true);
-                    List<Map<String, Object>> tsvData = loader.load();
+                    List<Map<String, Object>> tsvData = getTsvData(panoramaQCDir, getSettingsFileName());
                     List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
 
                         tsvData.forEach(row -> {
@@ -105,8 +100,7 @@ public enum PanoramaQCSettings
                     List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ci -> ci.isUserEditable()).collect(Collectors.toList());
 
                     Results results = QueryService.get().select(ti, userEditableCols, null, null);
-                    ResultsFactory factory = ()-> results;
-                    exportSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
+                    exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
                     results.close();
                 }
 
@@ -133,16 +127,13 @@ public enum PanoramaQCSettings
                             .append(" ON qcAnnotation.QCAnnotationTypeId = qcAnnotationType.Id");
 
                     Results results = QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true);
-                    ResultsFactory factory = ()-> results;
-                    exportSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
-                    results.close();
+                    exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
                 }
 
                 @Override
                 public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws Exception
                 {
-                    DataLoader loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(getSettingsFileName())), true);
-                    List<Map<String, Object>> tsvData = loader.load();
+                    List<Map<String, Object>> tsvData = getTsvData(panoramaQCDir, getSettingsFileName());
                     List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
                     ContainerFilter cf = ContainerFilter.getContainerFilterByName(ContainerFilter.Type.CurrentPlusProjectAndShared.name(), ctx.getContainer(), ctx.getUser());
 
@@ -175,16 +166,13 @@ public enum PanoramaQCSettings
                             .append(" WHERE Source != 'Skyline' ");
 
                     Results results = QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true);
-                    ResultsFactory factory = () -> results;
-                    exportSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
-                    results.close();
+                    exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
                 }
 
                 @Override
                 public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws Exception
                 {
-                    DataLoader loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(getSettingsFileName())), true);
-                    List<Map<String, Object>> tsvData = loader.load();
+                    List<Map<String, Object>> tsvData = getTsvData(panoramaQCDir, getSettingsFileName());
                     List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
 
                     tsvData.forEach(row -> {
@@ -213,16 +201,13 @@ public enum PanoramaQCSettings
                             .append(" ON replicate.RunId = runs.Id");
 
                     Results results = QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true);
-                    ResultsFactory factory = ()-> results;
-                    exportSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
-                    results.close();
+                    exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
                 }
 
                 @Override
                 public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws Exception
                 {
-                    DataLoader loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(getSettingsFileName())), true);
-                    List<Map<String, Object>> tsvData = loader.load();
+                    List<Map<String, Object>> tsvData = getTsvData(panoramaQCDir, getSettingsFileName());
                     List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
 
                     tsvData.forEach(row -> {
@@ -352,16 +337,17 @@ public enum PanoramaQCSettings
         List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ci -> ci.isUserEditable()).collect(Collectors.toList());
 
         Results results = QueryService.get().select(ti, userEditableCols, null, null);
-        ResultsFactory factory = ()-> results;
-        exportSettingsToTSV(vf, factory, getSettingsFileName(), getTableName());
-        results.close();
+        exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
     }
 
-    protected void exportSettingsToTSV(VirtualFile vf, ResultsFactory factory, String fileName, String tableName) throws Exception
+    protected void exportSettingsToTSV(VirtualFile vf, Results results, String fileName, String tableName) throws Exception
     {
-        try
+        ResultsFactory factory = ()-> results;
+
+        //try-with-resources to ensure Results instance is closed regardless of whether try statement executes as expected or throws an exception
+        try (Results res = factory.get())
         {
-            if (factory.get().countAll() > 0)
+            if (res.countAll() > 0)
             {
                 try (TSVGridWriter tsvWriter = new TSVGridWriter(factory))
                 {
@@ -497,12 +483,19 @@ public enum PanoramaQCSettings
 
     protected int importSettings(FolderImportContext ctx, TableInfo tinfo, String settingsFileName, VirtualFile panoramaQCDir, @Nullable BatchValidationException errors, @Nullable QueryUpdateService qus) throws Exception
     {
-        DataLoader loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(settingsFileName)), true);
-        List<Map<String, Object>> tsvData = loader.load();
+        List<Map<String, Object>> tsvData = getTsvData(panoramaQCDir, settingsFileName);
         List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
 
         tsvData.forEach(row -> getDataWithoutDuplicates(ctx, tinfo, row, dataWithoutDuplicates));
         return insertData(ctx.getUser(), ctx.getContainer(), dataWithoutDuplicates, errors, qus, getSettingsFileName(), getTableName());
+    }
+
+    protected List<Map<String, Object>> getTsvData(VirtualFile panoramaQCDir, String settingsFile) throws IOException
+    {
+        try (DataLoader loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(settingsFile)), true))
+        {
+            return loader.load();
+        }
     }
 
     protected int insertData(User user, Container container, List<Map<String, Object>> dataWithoutDuplicates, BatchValidationException errors,
