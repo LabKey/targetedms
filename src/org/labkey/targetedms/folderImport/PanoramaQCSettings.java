@@ -342,14 +342,12 @@ public enum PanoramaQCSettings
 
     protected void exportSettingsToTSV(VirtualFile vf, Results results, String fileName, String tableName) throws Exception
     {
-        ResultsFactory factory = ()-> results;
-
         //try-with-resources to ensure Results instance is closed regardless of whether try statement executes as expected or throws an exception
         try (results)
         {
             if (results.countAll() > 0)
             {
-                try (TSVGridWriter tsvWriter = new TSVGridWriter(factory))
+                try (TSVGridWriter tsvWriter = new TSVGridWriter(()-> results))
                 {
                     tsvWriter.setApplyFormats(false);
                     tsvWriter.setColumnHeaderType(ColumnHeaderType.FieldKey);
