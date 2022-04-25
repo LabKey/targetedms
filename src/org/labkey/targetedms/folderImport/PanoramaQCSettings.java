@@ -345,9 +345,9 @@ public enum PanoramaQCSettings
         ResultsFactory factory = ()-> results;
 
         //try-with-resources to ensure Results instance is closed regardless of whether try statement executes as expected or throws an exception
-        try (Results res = factory.get())
+        try (results)
         {
-            if (res.countAll() > 0)
+            if (results.countAll() > 0)
             {
                 try (TSVGridWriter tsvWriter = new TSVGridWriter(factory))
                 {
