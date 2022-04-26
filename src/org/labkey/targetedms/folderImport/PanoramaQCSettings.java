@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.admin.FolderImportContext;
+import org.labkey.api.admin.ImportException;
 import org.labkey.api.data.ColumnHeaderType;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.CompareType;
@@ -26,7 +27,6 @@ import org.labkey.api.reader.DataLoader;
 import org.labkey.api.reader.Readers;
 import org.labkey.api.reader.TabLoader;
 import org.labkey.api.security.User;
-import org.labkey.api.view.NotFoundException;
 import org.labkey.api.writer.VirtualFile;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
@@ -85,12 +85,12 @@ public enum PanoramaQCSettings
                     List<Map<String, Object>> tsvData = getTsvData(panoramaQCDir, getSettingsFileName());
                     List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
 
-                        tsvData.forEach(row -> {
-                            String metricValue = (String) row.get("metric");
-                            Integer metricId = getRowIdFromName(metricValue, getSettingsFileName(), getTableName(), TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricValue), ctx.getUser(), ctx.getContainer(), null);
-                            row.put("metric", metricId);
-                            getDataWithoutDuplicates(ctx, ti, row, dataWithoutDuplicates);
-                        });
+                    tsvData.forEach(row -> {
+                        String metricValue = (String) row.get("metric");
+                        Integer metricId = getRowIdFromName(metricValue, getSettingsFileName(), getTableName(), TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricValue), ctx.getUser(), ctx.getContainer(), null);
+                        row.put("metric", metricId);
+                        getDataWithoutDuplicates(ctx, ti, row, dataWithoutDuplicates);
+                    });
                     return insertData(ctx.getUser(), ctx.getContainer(), dataWithoutDuplicates, errors, qus, getSettingsFileName(), getTableName());
                 }
             },
@@ -338,7 +338,7 @@ public enum PanoramaQCSettings
         TargetedMSSchema schema = new TargetedMSSchema(user, container);
         TableInfo ti = schema.getTable(tableName, cf);
         if (null == ti)
-            throw new NotFoundException(schema.getSchemaName() + "." + getTableName() + " not found in '" + container.getPath() + "'");
+            throw new IllegalArgumentException(schema.getSchemaName() + "." + getTableName() + " not found in '" + container.getPath() + "'");
         return ti;
     }
 
@@ -363,13 +363,15 @@ public enum PanoramaQCSettings
                 {
                     tsvWriter.setApplyFormats(false);
                     tsvWriter.setColumnHeaderType(ColumnHeaderType.FieldKey);
-                    PrintWriter out = vf.getPrintWriter(fileName);
-                    tsvWriter.write(out);
+                    try (PrintWriter out = vf.getPrintWriter(fileName))
+                    {
+                        tsvWriter.write(out);
+                    }
                 }
         }
         catch (IOException | SQLException e)
         {
-            throw new Exception("Error getting results from " + tableName, e);
+            throw new ImportException("Error getting results from " + tableName, e);
         }
     }
 
@@ -379,7 +381,7 @@ public enum PanoramaQCSettings
         String value = new TableSelector(ti, Set.of("Name"), new SimpleFilter(FieldKey.fromParts("Id"), rowId), null).getObject(String.class);
         if (null == value)
         {
-            throw new NotFoundException("Id with value '" + rowId + "' not found in " + TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION + ". Unable to export QC properties.");
+            throw new IllegalArgumentException("Id with value '" + rowId + "' not found in " + TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION + ". Unable to export QC properties.");
         }
         return value;
     }
@@ -398,7 +400,7 @@ public enum PanoramaQCSettings
             else
                 msg += "Unable to import data from " + fileName + " into targetedms." + targetTable;
 
-            throw new NotFoundException(msg);
+            throw new IllegalArgumentException(msg);
         }
         return value;
     }
@@ -521,13 +523,13 @@ public enum PanoramaQCSettings
                 }
                 catch (DuplicateKeyException | BatchValidationException | QueryUpdateServiceException | SQLException e)
                 {
-                    throw new Exception("Data from " + settingsFileName + " did not get imported into targetedms." + tableName, e);
+                    throw new ImportException("Data from " + settingsFileName + " did not get imported into targetedms." + tableName, e);
                 }
                 return insertedRows.size();
             }
             else
             {
-                throw new NotFoundException("Query update service for targetedms." + tableName + " not found.");
+                throw new IllegalArgumentException("Query update service for targetedms." + tableName + " not found.");
             }
         }
         return 0;
