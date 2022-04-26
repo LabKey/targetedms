@@ -11,7 +11,6 @@ import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.PropertyManager;
 import org.labkey.api.data.Results;
-import org.labkey.api.data.ResultsFactory;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.TSVGridWriter;
@@ -32,6 +31,7 @@ import org.labkey.api.writer.VirtualFile;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -54,8 +54,10 @@ public enum PanoramaQCSettings
                     List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ci -> ci.isUserEditable()).collect(Collectors.toList());
                     SimpleFilter filter = SimpleFilter.createContainerFilter(container); //only export the ones that are defined in current container (and not the ones from the root container)
 
-                    Results results = QueryService.get().select(ti, userEditableCols, filter, null);
-                    exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
+                    try(Results results = QueryService.get().select(ti, userEditableCols, filter, null))
+                    {
+                        exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
+                    }
                 }
             },
     QC_ENABLED_METRICS (TargetedMSSchema.TABLE_QC_ENABLED_METRICS, QCFolderConstants.QC_ENABLED_METRICS_FILE_NAME)
@@ -71,8 +73,10 @@ public enum PanoramaQCSettings
                             .append(TargetedMSManager.getTableInfoQCMetricConfiguration(), "qcMetricConfig")
                             .append(" ON qcEnabledMetrics.metric = qcMetricConfig.Id");
 
-                    Results results = QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true);
-                    exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
+                    try (Results results = QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true))
+                    {
+                        exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
+                    }
                 }
 
                 @Override
@@ -99,9 +103,10 @@ public enum PanoramaQCSettings
                     TableInfo ti = getTableInfo(user, container, cf);
                     List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ci -> ci.isUserEditable()).collect(Collectors.toList());
 
-                    Results results = QueryService.get().select(ti, userEditableCols, null, null);
-                    exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
-                    results.close();
+                    try (Results results = QueryService.get().select(ti, userEditableCols, null, null))
+                    {
+                        exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
+                    }
                 }
 
                 @Override
@@ -126,8 +131,10 @@ public enum PanoramaQCSettings
                             .append(" SELECT * FROM \"Shared\".targetedms.qcannotationtype) qcAnnotationType")
                             .append(" ON qcAnnotation.QCAnnotationTypeId = qcAnnotationType.Id");
 
-                    Results results = QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true);
-                    exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
+                    try (Results results = QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true))
+                    {
+                        exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
+                    }
                 }
 
                 @Override
@@ -165,8 +172,10 @@ public enum PanoramaQCSettings
                             .append(" ON replicate.RunId = runs.Id")
                             .append(" WHERE Source != 'Skyline' ");
 
-                    Results results = QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true);
-                    exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
+                    try (Results results = QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true))
+                    {
+                        exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
+                    }
                 }
 
                 @Override
@@ -200,8 +209,10 @@ public enum PanoramaQCSettings
                             .append(TargetedMSManager.getTableInfoRuns(), "runs")
                             .append(" ON replicate.RunId = runs.Id");
 
-                    Results results = QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true);
-                    exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
+                    try (Results results = QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true))
+                    {
+                        exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
+                    }
                 }
 
                 @Override
@@ -336,17 +347,18 @@ public enum PanoramaQCSettings
         TableInfo ti = getTableInfo(user, container, null);
         List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ci -> ci.isUserEditable()).collect(Collectors.toList());
 
-        Results results = QueryService.get().select(ti, userEditableCols, null, null);
-        exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
+        try (Results results = QueryService.get().select(ti, userEditableCols, null, null))
+        {
+            exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
+        }
     }
 
     protected void exportSettingsToTSV(VirtualFile vf, Results results, String fileName, String tableName) throws Exception
     {
-        //try-with-resources to ensure Results instance is closed regardless of whether try statement executes as expected or throws an exception
-        try (results)
+        try
         {
             if (results.countAll() > 0)
-            {
+
                 try (TSVGridWriter tsvWriter = new TSVGridWriter(()-> results))
                 {
                     tsvWriter.setApplyFormats(false);
@@ -354,7 +366,6 @@ public enum PanoramaQCSettings
                     PrintWriter out = vf.getPrintWriter(fileName);
                     tsvWriter.write(out);
                 }
-            }
         }
         catch (IOException | SQLException e)
         {
@@ -490,7 +501,7 @@ public enum PanoramaQCSettings
 
     protected List<Map<String, Object>> getTsvData(VirtualFile panoramaQCDir, String settingsFile) throws IOException
     {
-        try (DataLoader loader = new TabLoader(Readers.getReader(panoramaQCDir.getInputStream(settingsFile)), true))
+        try (BufferedReader reader = Readers.getReader(panoramaQCDir.getInputStream(settingsFile)); DataLoader loader = new TabLoader(reader, true))
         {
             return loader.load();
         }
