@@ -29,6 +29,7 @@ import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.InvalidKeyException;
 import org.labkey.api.query.QueryUpdateService;
 import org.labkey.api.query.QueryUpdateServiceException;
+import org.labkey.api.query.SimpleUserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.security.UserPrincipal;
 import org.labkey.api.security.permissions.Permission;
@@ -43,11 +44,11 @@ import java.util.Map;
 * Created by: jeckels
 * Date: 12/7/14
 */
-public class QCAnnotationTypeTable extends FilteredTable<TargetedMSSchema>
+public class QCAnnotationTypeTable extends SimpleUserSchema.SimpleTable<TargetedMSSchema>
 {
     public QCAnnotationTypeTable(TargetedMSSchema schema, ContainerFilter cf)
     {
-        super(TargetedMSManager.getTableInfoQCAnnotationType(), schema, cf);
+        super(schema, TargetedMSManager.getTableInfoQCAnnotationType(), cf);
         wrapAllColumns(true);
         TargetedMSTable.fixupLookups(this);
         getMutableColumn("Color").setDisplayColumnFactory(new DisplayColumnFactory()
