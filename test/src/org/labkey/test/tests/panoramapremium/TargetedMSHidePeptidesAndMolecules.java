@@ -115,7 +115,7 @@ public class TargetedMSHidePeptidesAndMolecules extends TargetedMSTest
     {
         PanoramaDashboard qcDashboard = goToDashboard();
         QCSummaryWebPart qcSummaryWebPart = qcDashboard.getQcSummaryWebPart();
-        qcSummaryWebPart.clickMenuItem("Include or Exclude Peptides/Molecules");
+        qcSummaryWebPart.clickMenuItem("Include or Exclude Precursors");
         return new DataRegionTable.DataRegionFinder(getDriver()).waitFor();
     }
 }
