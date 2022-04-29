@@ -38,7 +38,6 @@ import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -440,7 +439,7 @@ public enum PanoramaQCSettings
             ++count;
         }
 
-        if (new TableSelector(ti, new LinkedHashSet<>(row.keySet()), filter, null).getRowCount() > 0)
+        if (new TableSelector(ti, filter, null).exists())
         {
             logMsg += "] values already exists. Skipping";
             ctx.getLogger().info(logMsg);
