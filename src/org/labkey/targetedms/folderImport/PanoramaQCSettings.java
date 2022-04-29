@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -51,7 +52,7 @@ public enum PanoramaQCSettings
                 public void exportSettings(VirtualFile vf, Container container, User user) throws Exception
                 {
                     TableInfo ti = getTableInfo(user, container, null);
-                    List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ci -> ci.isUserEditable()).collect(Collectors.toList());
+                    List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ColumnInfo::isUserEditable).collect(Collectors.toList());
                     SimpleFilter filter = SimpleFilter.createContainerFilter(container); //only export the ones that are defined in current container (and not the ones from the root container)
 
                     try(Results results = QueryService.get().select(ti, userEditableCols, filter, null))
@@ -87,7 +88,7 @@ public enum PanoramaQCSettings
 
                     tsvData.forEach(row -> {
                         String metricValue = (String) row.get("metric");
-                        Integer metricId = getRowIdFromName(metricValue, getSettingsFileName(), getTableName(), TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricValue), ctx.getUser(), ctx.getContainer(), null);
+                        Integer metricId = getRowIdFromName(metricValue, getSettingsFileName(), getTableName(), TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Collections.singleton("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricValue), ctx.getUser(), ctx.getContainer(), null);
                         row.put("metric", metricId);
                         getDataWithoutDuplicates(ctx, ti, row, dataWithoutDuplicates);
                     });
@@ -101,7 +102,7 @@ public enum PanoramaQCSettings
                 {
                     ContainerFilter cf = ContainerFilter.getContainerFilterByName(ContainerFilter.Type.CurrentPlusProjectAndShared.name(), container, user);
                     TableInfo ti = getTableInfo(user, container, cf);
-                    List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ci -> ci.isUserEditable()).collect(Collectors.toList());
+                    List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ColumnInfo::isUserEditable).collect(Collectors.toList());
 
                     try (Results results = QueryService.get().select(ti, userEditableCols, null, null))
                     {
@@ -146,7 +147,7 @@ public enum PanoramaQCSettings
 
                     tsvData.forEach(row -> {
                         String nameValue = (String) row.get("QCAnnotationTypeId");
-                        Integer qcAnnotationTypeId = getRowIdFromName(nameValue, getSettingsFileName(), getTableName(), TargetedMSSchema.TABLE_QC_ANNOTATION_TYPE, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), nameValue), ctx.getUser(), ctx.getContainer(), cf);
+                        Integer qcAnnotationTypeId = getRowIdFromName(nameValue, getSettingsFileName(), getTableName(), TargetedMSSchema.TABLE_QC_ANNOTATION_TYPE, Collections.singleton("Id"), new SimpleFilter(FieldKey.fromParts("Name"), nameValue), ctx.getUser(), ctx.getContainer(), cf);
                         row.put("QCAnnotationTypeId", qcAnnotationTypeId);
                         getDataWithoutDuplicates(ctx, ti, row, dataWithoutDuplicates);
                     });
@@ -184,9 +185,7 @@ public enum PanoramaQCSettings
                     List<Map<String, Object>> tsvData = getTsvData(panoramaQCDir, getSettingsFileName());
                     List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
 
-                    tsvData.forEach(row -> {
-                        getReplicateDataWithoutDuplicates(getSettingsFileName(), getTableName(), ctx, ti, row, dataWithoutDuplicates);
-                    });
+                    tsvData.forEach(row -> getReplicateDataWithoutDuplicates(getSettingsFileName(), getTableName(), ctx, ti, row, dataWithoutDuplicates));
                     return insertData(ctx.getUser(), ctx.getContainer(), dataWithoutDuplicates, errors, qus, getSettingsFileName(), getTableName());
                 }
             },
@@ -274,7 +273,7 @@ public enum PanoramaQCSettings
                 }
 
                 @Override
-                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws SQLException, QueryUpdateServiceException, BatchValidationException, DuplicateKeyException, IOException
+                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws IOException
                 {
                     int numProps = 0;
                     try (InputStream is = panoramaQCDir.getInputStream(getSettingsFileName()))
@@ -345,7 +344,7 @@ public enum PanoramaQCSettings
     public void exportSettings(VirtualFile vf, Container container, User user) throws Exception
     {
         TableInfo ti = getTableInfo(user, container, null);
-        List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ci -> ci.isUserEditable()).collect(Collectors.toList());
+        List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ColumnInfo::isUserEditable).collect(Collectors.toList());
 
         try (Results results = QueryService.get().select(ti, userEditableCols, null, null))
         {
@@ -378,7 +377,7 @@ public enum PanoramaQCSettings
     protected String getMetricNameFromRowId(User user, Container c, Integer rowId)
     {
         TableInfo ti = getTableInfo(user, c, TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, null);
-        String value = new TableSelector(ti, Set.of("Name"), new SimpleFilter(FieldKey.fromParts("Id"), rowId), null).getObject(String.class);
+        String value = new TableSelector(ti, Collections.singleton("Name"), new SimpleFilter(FieldKey.fromParts("Id"), rowId), null).getObject(String.class);
         if (null == value)
         {
             throw new IllegalArgumentException("Id with value '" + rowId + "' not found in " + TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION + ". Unable to export QC properties.");
