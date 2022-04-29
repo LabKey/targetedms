@@ -38,6 +38,7 @@ import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -225,7 +226,7 @@ public enum PanoramaQCSettings
                         Integer metricId = null;
                         if (StringUtils.isNotBlank(metricName)) //Metric is not a required field and can be null
                         {
-                            metricId = getRowIdFromName(metricName, getSettingsFileName(), getTableName(), TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricName), ctx.getUser(), ctx.getContainer(), null);
+                            metricId = getRowIdFromName(metricName, getSettingsFileName(), getTableName(), TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Collections.singleton("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricName), ctx.getUser(), ctx.getContainer(), null);
                         }
                         row.put("MetricId", metricId);
                         getReplicateDataWithoutDuplicates(getSettingsFileName(), getTableName(), ctx, ti, row, dataWithoutDuplicates);
@@ -289,7 +290,7 @@ public enum PanoramaQCSettings
                                 {
                                     if(entry.getKey().toString().equalsIgnoreCase("metric"))
                                     {
-                                        Integer metricRowId = getRowIdFromName(entry.getValue().toString(), getSettingsFileName(), null, TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Set.of("Id"), new SimpleFilter(FieldKey.fromParts("Name"), entry.getValue().toString()), ctx.getUser(), ctx.getContainer(), null);
+                                        Integer metricRowId = getRowIdFromName(entry.getValue().toString(), getSettingsFileName(), null, TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Collections.singleton("Id"), new SimpleFilter(FieldKey.fromParts("Name"), entry.getValue().toString()), ctx.getUser(), ctx.getContainer(), null);
                                         properties.put(entry.getKey().toString(), String.valueOf(metricRowId));
                                     }
                                     else
@@ -410,7 +411,7 @@ public enum PanoramaQCSettings
         String file = (String) row.get("File");
         SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("Name"), replicateName);
         filter.addCondition(FieldKey.fromString("RunId/FileName"), file);
-        Integer replicateId = getRowIdFromName(replicateName, settingsFileName, targetTable, TargetedMSSchema.TABLE_REPLICATE, Set.of("Id"), filter, ctx.getUser(), ctx.getContainer(), null);
+        Integer replicateId = getRowIdFromName(replicateName, settingsFileName, targetTable, TargetedMSSchema.TABLE_REPLICATE, Collections.singleton("Id"), filter, ctx.getUser(), ctx.getContainer(), null);
         row.put("ReplicateId", replicateId);
 
         //filter on values being imported to identify duplicates
@@ -439,7 +440,7 @@ public enum PanoramaQCSettings
             ++count;
         }
 
-        if (new TableSelector(ti, row.keySet(), filter, null).getRowCount() > 0)
+        if (new TableSelector(ti, new LinkedHashSet<>(row.keySet()), filter, null).getRowCount() > 0)
         {
             logMsg += "] values already exists. Skipping";
             ctx.getLogger().info(logMsg);
