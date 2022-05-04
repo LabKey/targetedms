@@ -21,12 +21,17 @@ import org.labkey.api.data.Container;
 import org.labkey.api.data.DatabaseCache;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SqlSelector;
+import org.labkey.api.protein.PeptideCharacteristic;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.parser.GeneralMoleculeChromInfo;
 import org.labkey.targetedms.parser.Peptide;
+import org.labkey.targetedms.parser.Precursor;
+import org.labkey.targetedms.parser.PrecursorChromInfo;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -91,6 +96,24 @@ public class PeptideManager
         sql.add(peptideGroupId);
 
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(Peptide.class);
+    }
+
+    public static PeptideCharacteristic getPeptideCharacteristic(long peptideId)
+    {
+        SQLFragment sql = new SQLFragment("SELECT X.Sequence, MAX(X.Intensity) AS Intensity, MAX(X.Confidence) AS Confidence FROM ");
+        sql.append("(SELECT pep.Sequence, SUM(TotalArea) AS Intensity, MAX(qvalue) AS Confidence FROM ");
+        sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
+        sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralPrecursor(), "p");
+        sql.append(" ON p.Id = pci.PrecursorId");
+        sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoPeptide(),"pep");
+        sql.append(" ON p.GeneralMoleculeId = pep.Id");
+        sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoSampleFile(), "sf");
+        sql.append(" ON sf.Id = pci.SampleFileId");
+        sql.append(" WHERE p.GeneralMoleculeId=? ");
+        sql.append(" GROUP BY pep.Sequence,pci.SampleFileId ) X ");
+        sql.append(" GROUP BY X.Sequence");
+        sql.add(peptideId);
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(PeptideCharacteristic.class);
     }
 
     public static Double getMinRetentionTime(long peptideId)
