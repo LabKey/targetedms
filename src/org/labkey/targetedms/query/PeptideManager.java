@@ -100,7 +100,7 @@ public class PeptideManager
 
     public static PeptideCharacteristic getPeptideCharacteristic(long peptideId)
     {
-        SQLFragment sql = new SQLFragment("SELECT X.Sequence, MAX(X.Intensity) AS Intensity, MAX(X.Confidence) AS Confidence FROM ");
+        SQLFragment sql = new SQLFragment("SELECT X.Sequence, LOG10(MAX(X.Intensity)) AS Intensity, LOG10(MAX(X.Confidence)) AS Confidence FROM ");
         sql.append("(SELECT pep.Sequence, SUM(TotalArea) AS Intensity, MAX(qvalue) AS Confidence FROM ");
         sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
         sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralPrecursor(), "p");
