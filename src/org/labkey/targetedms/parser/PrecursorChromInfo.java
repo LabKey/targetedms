@@ -47,7 +47,7 @@ public class PrecursorChromInfo extends AbstractChromInfo implements Comparable<
     private Double _bestRetentionTime;
     private Double _minStartTime;
     private Double _maxEndTime;
-    private Double _totalArea; // intensity - sum
+    private Double _totalArea;
     private Double _totalBackground;
     private Double _totalAreaFragment;
     private Double _totalAreaMs1;
@@ -63,7 +63,7 @@ public class PrecursorChromInfo extends AbstractChromInfo implements Comparable<
     private Integer _optimizationStep;
     private String _userSet;
     private String _note;
-    private Double _qvalue; // c score - max
+    private Double _qvalue;
     private Double _zscore;
 
     private byte[] _chromatogram;
