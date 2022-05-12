@@ -370,7 +370,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         }
 
         assertEquals("Unexpected number of training range rects visible", visibleTrainingRanges * PRECURSORS.length, qcPlotsWebPart.getGuideSetTrainingRectCount());
-        assertEquals("Unexpected number of error bar elements", axisTickCount * PRECURSORS.length * 4, qcPlotsWebPart.getGuideSetErrorBarPathCount("error-bar-vert"));
+        assertEquals("Unexpected number of error bar elements", axisTickCount * PRECURSORS.length * 4, qcPlotsWebPart.getGuideSetErrorBarPathCount());
     }
 
     private void validateGuideSetStats(GuideSet gs) throws IOException, CommandException
