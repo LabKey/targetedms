@@ -174,6 +174,7 @@ import org.labkey.targetedms.conflict.ConflictPeptide;
 import org.labkey.targetedms.conflict.ConflictPrecursor;
 import org.labkey.targetedms.conflict.ConflictProtein;
 import org.labkey.targetedms.conflict.ConflictTransition;
+import org.labkey.targetedms.folderImport.QCFolderConstants;
 import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
@@ -698,8 +699,6 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
-    private static final String CATEGORY = "TargetedMSLeveyJenningsPlotOptions";
-
     @RequiresPermission(ReadPermission.class)
     public class LeveyJenningsPlotOptionsAction extends MutatingApiAction<LeveyJenningsPlotOptions>
     {
@@ -713,7 +712,7 @@ public class TargetedMSController extends SpringActionController
             // only stash and retrieve plot option properties for logged in users
             if (!getUser().isGuest())
             {
-                properties = PropertyManager.getWritableProperties(getUser(), getContainer(), CATEGORY, true);
+                properties = PropertyManager.getWritableProperties(getUser(), getContainer(), QCFolderConstants.CATEGORY, true);
 
                 Map<String, String> valuesToPersist = form.getAsMapOfStrings();
                 if (!valuesToPersist.isEmpty())
@@ -742,7 +741,7 @@ public class TargetedMSController extends SpringActionController
             if (properties == null || properties.isEmpty())
             {
                 // Fall back on the defaults for the current container
-                properties = PropertyManager.getProperties(getContainer(), CATEGORY);
+                properties = PropertyManager.getProperties(getContainer(), QCFolderConstants.CATEGORY);
             }
             response.put("properties", properties);
 
@@ -756,8 +755,8 @@ public class TargetedMSController extends SpringActionController
         @Override
         public Object execute(LeveyJenningsPlotOptions form, BindException errors)
         {
-            PropertyManager.PropertyMap current = PropertyManager.getProperties(getUser(), getContainer(), CATEGORY);
-            PropertyManager.PropertyMap defaults = PropertyManager.getWritableProperties(getContainer(), CATEGORY, true);
+            PropertyManager.PropertyMap current = PropertyManager.getProperties(getUser(), getContainer(), QCFolderConstants.CATEGORY);
+            PropertyManager.PropertyMap defaults = PropertyManager.getWritableProperties(getContainer(), QCFolderConstants.CATEGORY, true);
             defaults.putAll(current);
             defaults.save();
 
@@ -778,7 +777,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public Object execute(LeveyJenningsPlotOptions form, BindException errors)
         {
-            PropertyManager.PropertyMap current = PropertyManager.getWritableProperties(getUser(), getContainer(), CATEGORY, false);
+            PropertyManager.PropertyMap current = PropertyManager.getWritableProperties(getUser(), getContainer(), QCFolderConstants.CATEGORY, false);
             if (current != null)
             {
                 current.delete();
@@ -797,6 +796,7 @@ public class TargetedMSController extends SpringActionController
         private Boolean _groupedX;
         private Boolean _singlePlot;
         private Boolean _showExcluded;
+        private Boolean _showExcludedPrecursors;
         private Integer _dateRangeOffset;
         private String _startDate;
         private String _endDate;
@@ -817,6 +817,8 @@ public class TargetedMSController extends SpringActionController
                 valueMap.put("singlePlot", Boolean.toString(_singlePlot));
             if (_showExcluded != null)
                 valueMap.put("showExcluded", Boolean.toString(_showExcluded));
+            if (_showExcludedPrecursors != null)
+                valueMap.put("showExcludedPrecursors", Boolean.toString(_showExcludedPrecursors));
             if (_dateRangeOffset != null)
                 valueMap.put("dateRangeOffset", Integer.toString(_dateRangeOffset));
             if (_plotTypes != null && !_plotTypes.isEmpty())
@@ -852,6 +854,16 @@ public class TargetedMSController extends SpringActionController
         public void setShowExcluded(Boolean showExcluded)
         {
             _showExcluded = showExcluded;
+        }
+
+        public Boolean getShowExcludedPrecursors()
+        {
+            return _showExcludedPrecursors;
+        }
+
+        public void setShowExcludedPrecursors(Boolean showExcludedPrecursors)
+        {
+            _showExcludedPrecursors = showExcludedPrecursors;
         }
 
         public void setDateRangeOffset(Integer dateRangeOffset)
