@@ -160,7 +160,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         if (this.showLJPlot()) {
             this.processLJGuideSetData(plotDataRows);
         }
-        else if (this.showMovingRangePlot() || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot()) {
+        if (this.showMovingRangePlot() || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot()) {
             this.processRawGuideSetData(plotDataRows);
         }
 
@@ -612,7 +612,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         if (!yScaleLabel) {
             yScaleLabel = label;
             if (conversionLabel) {
-                yScaleLabel += ' (' + conversionLabel + ')';
+                yScaleLabel = yScaleLabel ? (yScaleLabel + ' (' + conversionLabel + ')') : conversionLabel;
             }
         }
         return yScaleLabel;
