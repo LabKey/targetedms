@@ -22,7 +22,6 @@ import org.labkey.api.data.DisplayColumnFactory;
 import org.labkey.api.data.RenderContext;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.util.HtmlString;
-import org.labkey.api.util.PageFlowUtil;
 import org.labkey.targetedms.view.IconFactory;
 import org.labkey.targetedms.view.ModifiedPeptideHtmlMaker;
 
@@ -256,7 +255,6 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
             {
                 _cellData = getHtmlMaker().getPrecursorHtml(peptideId,
                         isotopeLabelId,
-                        sequence,
                         precursorModifiedSequence,
                         runId);
                 _iconPath = IconFactory.getPrecursorIconPath(precursorId, runId, decoy);

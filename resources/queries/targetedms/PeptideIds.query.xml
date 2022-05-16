@@ -6,7 +6,8 @@
                     <column columnName="Modification">
                         <textAlign>left</textAlign>
                     </column>
-                    <column columnName="Sequence">
+                    <column columnName="PeptideModifiedSequence">
+                        <columnTitle>Peptide</columnTitle>
                         <displayColumnFactory>
                             <className>org.labkey.targetedms.query.ModifiedSequenceDisplayColumn$PeptideDisplayColumnFactory</className>
                             <properties>
@@ -23,6 +24,22 @@
                     </column>
                     <column columnName="ExpectedPeptideMass">
                         <formatString>0.00</formatString>
+                    </column>
+                    <column columnName="Chain">
+                        <displayColumnFactory>
+                            <className>org.labkey.targetedms.query.CrossLinkedPeptideDisplayColumn$ChainFactory</className>
+                        </displayColumnFactory>
+                    </column>
+                    <column columnName="PeptideLocation">
+                        <displayColumnFactory>
+                            <className>org.labkey.targetedms.query.CrossLinkedPeptideDisplayColumn$PeptideLocationFactory</className>
+                        </displayColumnFactory>
+                    </column>
+                    <column columnName="BondLocation">
+                        <columnTitle>Disulfide Bond Connection</columnTitle>
+                        <displayColumnFactory>
+                            <className>org.labkey.targetedms.query.CrossLinkedPeptideDisplayColumn$BondLocationFactory</className>
+                        </displayColumnFactory>
                     </column>
                     <column columnName="TotalArea">
                         <columnTitle>Intensity</columnTitle>

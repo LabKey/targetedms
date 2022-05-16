@@ -17,7 +17,6 @@
 package org.labkey.targetedms;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.formula.functions.Na;
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.admin.FolderSerializationRegistry;
 import org.labkey.api.assay.sample.SampleAssayResultsConfig;
@@ -54,7 +53,6 @@ import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.BaseWebPartFactory;
 import org.labkey.api.view.JspView;
 import org.labkey.api.view.NavTree;
-import org.labkey.api.view.NavTreeCustomizer;
 import org.labkey.api.view.Portal;
 import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.WebPartFactory;
@@ -74,6 +72,7 @@ import org.labkey.targetedms.query.SkylineListSchema;
 import org.labkey.targetedms.search.ModificationSearchWebPart;
 import org.labkey.targetedms.search.ProteinSearchWebPart;
 import org.labkey.targetedms.view.CalibrationCurveView;
+import org.labkey.targetedms.view.CrossLinkedPeptideInfo;
 import org.labkey.targetedms.view.FiguresOfMeritView;
 import org.labkey.targetedms.view.LibraryQueryViewWebPart;
 import org.labkey.targetedms.view.QCSummaryWebPart;
@@ -89,7 +88,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static org.labkey.api.targetedms.TargetedMSService.FOLDER_TYPE_PROP_NAME;
 import static org.labkey.api.targetedms.TargetedMSService.MODULE_NAME;
@@ -663,7 +661,8 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
             SampleFile.TestCase.class,
             SkylineAuditLogParser.TestCase.class,
             TargetedMSController.TestCase.class,
-            PrecursorManager.TestCase.class
+            PrecursorManager.TestCase.class,
+            CrossLinkedPeptideInfo.TestCase.class
         );
     }
 
