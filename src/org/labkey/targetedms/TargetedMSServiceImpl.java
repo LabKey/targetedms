@@ -35,9 +35,11 @@ import org.labkey.api.targetedms.SkylineDocumentImportListener;
 import org.labkey.api.targetedms.TargetedMSFolderTypeListener;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.targetedms.model.SampleFileInfo;
+import org.labkey.api.targetedms.model.SampleFilePath;
 import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.targetedms.chromlib.ChromatogramLibraryUtils;
 import org.labkey.targetedms.datasource.MsDataSourceUtil;
+import org.labkey.targetedms.parser.Replicate;
 import org.labkey.targetedms.parser.SampleFile;
 import org.labkey.targetedms.query.LibraryManager;
 import org.labkey.targetedms.query.ModificationManager;
@@ -161,6 +163,23 @@ public class TargetedMSServiceImpl implements TargetedMSService
     }
 
     @Override
+    public TableInfo getTableInfoPeptideStructuralModification()
+    {
+        return TargetedMSManager.getTableInfoPeptideStructuralModification();
+    }
+    @Override
+    public TableInfo getTableInfoPeptideIsotopeModification()
+    {
+        return TargetedMSManager.getTableInfoPeptideIsotopeModification();
+    }
+
+    @Override
+    public TableInfo getTableInfoInstrument()
+    {
+        return TargetedMSManager.getTableInfoInstrument();
+    }
+
+    @Override
     public List<String> getSampleFilePaths(long runId)
     {
         return ReplicateManager.getSampleFilePaths(runId);
@@ -182,6 +201,18 @@ public class TargetedMSServiceImpl implements TargetedMSService
     public List<? extends IModification.IIsotopeModification> getIsotopeModificationsUsedInRun(long runId)
     {
         return ModificationManager.getIsotopeModificationsUsedInRun(runId);
+    }
+
+    @Override
+    public IModification.IStructuralModification getStructuralModification(long id)
+    {
+        return ModificationManager.getStructuralModification(id);
+    }
+
+    @Override
+    public IModification.IIsotopeModification getIsotopeModification(long id)
+    {
+        return ModificationManager.getIsotopeModification(id);
     }
 
     @Override
@@ -285,9 +316,9 @@ public class TargetedMSServiceImpl implements TargetedMSService
     }
 
     @Override
-    public List<? extends ISampleFile> getSampleFilesWithData(List<? extends ISampleFile> sampleFiles, Container container)
+    public List<SampleFilePath> getSampleFilePaths(List<? extends ISampleFile> sampleFiles, Container container, boolean lookupExpData)
     {
-        return MsDataSourceUtil.getInstance().getSampleFilesWithData(sampleFiles, container);
+        return MsDataSourceUtil.getInstance().getSampleFilePaths(sampleFiles, container, lookupExpData);
     }
 
     @Override
@@ -300,5 +331,12 @@ public class TargetedMSServiceImpl implements TargetedMSService
     public @Nullable Integer parseChromLibRevision(@NotNull String chromLibFileName)
     {
         return ChromatogramLibraryUtils.parseChromLibRevision(chromLibFileName);
+    }
+
+    @Override
+    public @Nullable String getSampleReplicateName(long sampleFileId, Container container)
+    {
+        Replicate replicate = ReplicateManager.getSampleReplicate(sampleFileId, container);
+        return replicate != null ? replicate.getName() : null;
     }
 }
