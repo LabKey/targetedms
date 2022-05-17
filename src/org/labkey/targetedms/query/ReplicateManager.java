@@ -58,6 +58,20 @@ public class ReplicateManager
             .getObject(replicateId, Replicate.class);
     }
 
+    public static Replicate getSampleReplicate(long sampleFileId, Container container)
+    {
+        SQLFragment sqlFragment = new SQLFragment("SELECT rep.* FROM ");
+        sqlFragment.append(TargetedMSManager.getTableInfoSampleFile(), "s");
+        sqlFragment.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoReplicate(), "rep");
+        sqlFragment.append(" ON s.replicateId = rep.Id");
+        sqlFragment.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoRuns(), "r");
+        sqlFragment.append(" ON r.Id = rep.runId");
+        sqlFragment.append(" WHERE s.Id=?").add(sampleFileId);
+        sqlFragment.append(" AND r.Container=?").add(container);
+
+        return new SqlSelector(TargetedMSManager.getSchema(), sqlFragment).getObject(Replicate.class);
+    }
+
     /**
      * @return the distinct list of metric IDs that are set as exclusions for replicates of the supplied name.
      * Null indicates that there was an exclusion for all metrics for the replicate.
