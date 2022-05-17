@@ -4677,14 +4677,11 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(final ChromatogramForm form, BindException errors)
         {
-            String viewBy = getViewContext().getActionURL().getParameter("viewBy");
             PeptideGroup group = PeptideGroupManager.getPeptideGroup(getContainer(), form.getId());
             if (group == null)
             {
                 throw new NotFoundException("Could not find protein #" + form.getId());
             }
-
-            group.setViewBy(viewBy);
 
             _run = validateRun(group.getRunId());
             _proteinLabel = group.getLabel();
@@ -4840,14 +4837,7 @@ public class TargetedMSController extends SpringActionController
         if (group.getSequenceId() != null)
         {
             int seqId = group.getSequenceId().intValue();
-            List<PeptideCharacteristic> peptideCharacteristics = new ArrayList<>();
-            for (Peptide peptide : PeptideManager.getPeptidesForGroup(group.getId()))
-            {
-                var peptideCharacteristic = PeptideManager.getPeptideCharacteristic(peptide.getId());
-                peptideCharacteristic.setIntensityView(group.getViewBy() != null && group.getViewBy().equalsIgnoreCase("intensity"));
-                peptideCharacteristic.setConfidenceView(group.getViewBy() != null && group.getViewBy().equalsIgnoreCase("confidenceScore"));
-                peptideCharacteristics.add(peptideCharacteristic);
-            }
+            List<PeptideCharacteristic> peptideCharacteristics = new ArrayList<>(PeptideManager.getPeptideCharacteristic(group.getId()));
 
             ProteinService proteinService = ProteinService.get();
             WebPartView<?> sequenceView = proteinService.getProteinCoverageView(seqId, peptideCharacteristics, 100, true, group.getAccession());

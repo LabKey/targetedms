@@ -94,22 +94,24 @@ public class PeptideManager
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(Peptide.class);
     }
 
-    public static PeptideCharacteristic getPeptideCharacteristic(long peptideId)
+    public static List<PeptideCharacteristic> getPeptideCharacteristic(long peptideGroupId)
     {
-        SQLFragment sql = new SQLFragment("SELECT X.Sequence, LOG10(MAX(X.Intensity)) AS Intensity, -ROUND(LOG10(MAX(X.Confidence)),4) AS Confidence FROM ");
+        SQLFragment sql = new SQLFragment("SELECT X.Sequence, LOG10(MAX(X.Intensity)) AS Intensity, ROUND(MAX(X.Confidence),4) AS Confidence FROM ");
         sql.append("(SELECT pep.Sequence, SUM(TotalArea) AS Intensity, MAX(qvalue) AS Confidence FROM ");
         sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
         sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralPrecursor(), "p");
         sql.append(" ON p.Id = pci.PrecursorId");
         sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoPeptide(),"pep");
         sql.append(" ON p.GeneralMoleculeId = pep.Id");
+        sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralMolecule(),"gm");
+        sql.append(" ON gm.id = pep.Id");
         sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoSampleFile(), "sf");
         sql.append(" ON sf.Id = pci.SampleFileId");
-        sql.append(" WHERE p.GeneralMoleculeId=? ");
+        sql.append(" WHERE gm.PeptideGroupId=? ");
         sql.append(" GROUP BY pep.Sequence,pci.SampleFileId ) X ");
         sql.append(" GROUP BY X.Sequence");
-        sql.add(peptideId);
-        return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(PeptideCharacteristic.class);
+        sql.add(peptideGroupId);
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PeptideCharacteristic.class);
     }
 
     public static Double getMinRetentionTime(long peptideId)

@@ -46,7 +46,6 @@ public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
     private String _note;
 
     private String _altDescription;
-    private String _viewBy;
 
     protected RepresentativeDataState _representativeDataState = RepresentativeDataState.NotRepresentative;
 
@@ -208,15 +207,5 @@ public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
     public void setAltDescription(String altDescription)
     {
         _altDescription = altDescription;
-    }
-
-    public String getViewBy()
-    {
-        return _viewBy;
-    }
-
-    public void setViewBy(String viewBy)
-    {
-        _viewBy = viewBy;
     }
 }
