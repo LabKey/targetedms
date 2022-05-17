@@ -62,7 +62,7 @@ public class SamplePivotCustomizer implements TableCustomizer
         return null;
     }
 
-    private Integer getRunId()
+    private Long getRunId()
     {
         ViewContext context = HttpView.currentContext();
 
@@ -83,7 +83,7 @@ public class SamplePivotCustomizer implements TableCustomizer
             String paramValue = filterURL.getParameter(_urlParameter);
             try
             {
-                return Integer.parseInt(paramValue);
+                return Long.parseLong(paramValue);
             }
             catch (NumberFormatException ignored) {}
         }
@@ -108,8 +108,7 @@ public class SamplePivotCustomizer implements TableCustomizer
             {
                 try
                 {
-                    // Get the sample names associated with that run
-                    return Integer.parseInt(clause.getParamVals()[0].toString());
+                    return Long.parseLong(clause.getParamVals()[0].toString());
                 }
                 catch (NumberFormatException ignored) {}
             }
@@ -122,7 +121,7 @@ public class SamplePivotCustomizer implements TableCustomizer
     {
         if (HttpView.hasCurrentView())
         {
-            Integer runId = getRunId();
+            Long runId = getRunId();
             if (runId != null)
             {
                 ViewContext context = HttpView.currentContext();
@@ -132,6 +131,7 @@ public class SamplePivotCustomizer implements TableCustomizer
                 TableInfo sampleFileTable = schema.getTable(_replicateNameQuery == null ? TargetedMSSchema.TABLE_SAMPLE_FILE : _replicateNameQuery);
                 if (sampleFileTable != null)
                 {
+                    // Fetch the sample and/or replicate names associated with the selected run
                     Set<FieldKey> fieldKeys = _replicateField == null ?
                             Set.of(FieldKey.fromParts("SampleName"), FieldKey.fromParts("ReplicateId", "Name")) :
                             Set.of(FieldKey.fromString(_replicateField));
