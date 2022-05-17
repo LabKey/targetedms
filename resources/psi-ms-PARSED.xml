@@ -119,6 +119,7 @@
     <instrument id="MS:1002275" name="Xevo G2-S Tof" vendor="Waters" description="Waters oa-ToF based Xevo G2-S Tof."/>
     <instrument id="MS:1002276" name="Xevo G2-S QTof" vendor="Waters" description="Waters oa-ToF based Xevo G2-S QTof."/>
     <instrument id="MS:1002274" name="SQ Detector 2" vendor="Waters" description="Waters quadrupole based SQ Detector 2."/>
+    <instrument id="MS:1003252" name="Xevo G2-XS QTof" vendor="Waters" description="Waters Corporation Xevo G2-XS QTof quadrupole time-of-flight mass spectrometer."/>
     <instrument id="MS:1000192" name="Quattro Ultima" vendor="Waters" description="Waters (triple) quadrupole based Ultima."/>
     <instrument id="MS:1000632" name="Q-Tof Premier" vendor="Waters" description="Waters oa-ToF based Q-Tof Premier."/>
     <instrument id="MS:1000191" name="quattro micro" vendor="Waters" description="Waters (triple) quadrupole based micro."/>
@@ -167,7 +168,7 @@
     <instrument id="MS:1001774" name="MALDI Synapt G2-S MS" vendor="Waters" description="Waters oa-ToF based MALDI Synapt G2-S MS."/>
     <instrument id="MS:1000166" name="IsoProbe T" vendor="Waters" description="Waters IsoProbe T MS."/>
     <instrument id="MS:1001772" name="MALDI Synapt G2 MS" vendor="Waters" description="Waters oa-ToF based MALDI Synapt G2 MS."/>
-    <instrument id="MS:1002729" name="Xevo G2 XS Tof" vendor="Waters" description="Waters Corporation Xevo G2 XS Tof orthogonal acceleration time-of-flight mass spectrometer."/>
+    <instrument id="MS:1002729" name="Xevo G2-XS Tof" vendor="Waters" description="Waters Corporation Xevo G2 XS Tof orthogonal acceleration time-of-flight mass spectrometer."/>
     <instrument id="MS:1000165" name="IsoProbe" vendor="Waters" description="Waters IsoProbe MS."/>
     <instrument id="MS:1001771" name="MALDI Synapt G2 HDMS" vendor="Waters" description="Waters oa-ToF based MALDI Synapt G2 HDMS."/>
     <instrument id="MS:1000164" name="IsoPrime" vendor="Waters" description="Waters IsoPrime MS."/>
@@ -247,6 +248,7 @@
     <instrument id="MS:1000623" name="Accela PDA" vendor="Thermo Scientific" description="Accela PDA."/>
     <instrument id="MS:1000622" name="Surveyor PDA" vendor="Thermo Scientific" description="Surveyor PDA."/>
     <instrument id="MS:1002732" name="Orbitrap Fusion Lumos" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Fusion Lumos mass spectrometer with Tribrid architecture consisting of quadrupole mass filter, linear ion trap and Orbitrap mass analyzers."/>
+    <instrument id="MS:1003245" name="Q Exactive UHMR" vendor="Thermo Scientific" description="Thermo Scientific Q Exactive UHMR (Ultra High Mass Range) Hybrid Quadrupole Orbitrap MS."/>
     <instrument id="MS:1000743" name="TSQ Quantum Ultra AM" vendor="Thermo Scientific" description="Thermo Scientific TSQ Quantum Ultra AM."/>
     <instrument id="MS:1002416" name="Orbitrap Fusion" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Fusion."/>
     <instrument id="MS:1002417" name="Orbitrap Fusion ETD" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Fusion with ETD."/>
@@ -294,7 +296,10 @@
     <instrument id="MS:1002793" name="6570 Q-TOF LC/MS" vendor="Agilent" description="The 6570 Quadrupole Time-of-Flight LC/MS is a Agilent liquid chromatography instrument combined with a Agilent time of flight mass spectrometer."/>
     <instrument id="MS:1002790" name="6542 Q-TOF LC/MS" vendor="Agilent" description="The 6542 Quadrupole Time-of-Flight LC/MS is a Agilent liquid chromatography instrument combined with a Agilent time of flight mass spectrometer."/>
     <instrument id="MS:1002791" name="6545 Q-TOF LC/MS" vendor="Agilent" description="The 6545 Quadrupole Time-of-Flight LC/MS is a Agilent liquid chromatography instrument combined with a Agilent time of flight mass spectrometer."/>
+    <instrument id="MS:1000935" name="6470A Triple Quadrupole LC/MS" vendor="Agilent" description="The 6470A Quadrupole LC/MS system is a Agilent liquid chromatography instrument combined with a Agilent triple quadrupole mass spectrometer."/>
     <instrument id="MS:1000677" name="6520A Quadrupole Time-of-Flight LC/MS" vendor="Agilent" description="The 6520A Quadrupole Time-of-Flight LC/MS is a Agilent liquid chromatography instrument combined with a Agilent time of flight mass spectrometer. This time of flight mass spectrometer has a m/z range of 50-12000, mass accuracy of less than 2 ppm and resolution greater than 26,000 at m/z 2722. It has multiple ion sources and can be used with multimode ion sources."/>
+    <instrument id="MS:1000937" name="6495C Triple Quadrupole LC/MS" vendor="Agilent" description="The 6495C Quadrupole LC/MS system is a Agilent liquid chromatography instrument combined with a Agilent triple quadrupole mass spectrometer."/>
+    <instrument id="MS:1000936" name="6470B Triple Quadrupole LC/MS" vendor="Agilent" description="The 6470B Quadrupole LC/MS system is a Agilent liquid chromatography instrument combined with a Agilent triple quadrupole mass spectrometer."/>
     <instrument id="MS:1000675" name="6220 Time-of-Flight LC/MS" vendor="Agilent" description="The 6220 Time-of-Flight LC/MS is a Agilent liquid chromatography instrument combined with a Agilent time of flight mass spectrometer. This time of flight mass spectrometer has a m/z range of 50-12000, mass accuracy of less than 2 ppm and resolution greater than 13,000 at m/z 2722. It has multiple ion sources and can be used with multimode ion sources."/>
     <instrument id="MS:1000676" name="6510 Quadrupole Time-of-Flight LC/MS" vendor="Agilent" description="The 6510 Quadrupole Time-of-Flight LC/MS is a Agilent liquid chromatography instrument combined with a Agilent time of flight mass spectrometer. This time of flight mass spectrometer has a m/z range of 50-12000, mass accuracy of less than 2 ppm and resolution greater than 13,000 at m/z 2722. It has multiple ion sources and can be used with multimode ion sources."/>
     <instrument id="MS:1000474" name="6320 Ion Trap LC/MS" vendor="Agilent" description="The 6320 Ion Trap LC/MS is a Agilent liquid chromatography instrument combined with a 6300 series Agilent ion trap. It has a mass range of 50-2200 between 0.6 to 0.25 resolution and mass range of 200-4000 with resolution of less than 3. The scan speed varies from 1650-27000 for the respective mass ranges."/>

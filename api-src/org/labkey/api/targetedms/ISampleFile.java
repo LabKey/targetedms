@@ -4,6 +4,8 @@ import java.util.Date;
 
 public interface ISampleFile
 {
+    long getId();
+    long getReplicateId();
     String getFilePath();
     String getSampleName();
     Date getAcquiredTime();

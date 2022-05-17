@@ -376,9 +376,9 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         return elementCache().experimentRangeRect.waitForElement(getDriver(), WAIT_FOR_JAVASCRIPT).getText();
     }
 
-    public int getGuideSetErrorBarPathCount(String cls)
+    public int getGuideSetErrorBarPathCount()
     {
-        return Locator.css("svg g g.error-bar path." + cls).findElements(getDriver()).size();
+        return Locator.css("svg g g.error-bar").findElements(getDriver()).size();
     }
 
     public List<WebElement> getPointElements(String attr, String value, boolean isPrefix)
