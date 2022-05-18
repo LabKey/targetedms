@@ -117,13 +117,13 @@ public class MsDataSourceTypes
         }
     };
 
-    private static MsDataSource[] sourceTypes = new MsDataSource[]{
+    private static final MsDataSource[] sourceTypes = new MsDataSource[]{
             THERMO, SCIEX, SHIMADZU, // File-based
             WATERS, AGILENT, BRUKER, // Directory-based
             CONVERTED_DATA_SOURCE}; // mzML, mzXML etc.
 
 
-    private static Map<String, List<MsDataSource>> EXTENSION_SOURCE_MAP = new HashMap<>();
+    private static final Map<String, List<MsDataSource>> EXTENSION_SOURCE_MAP = new HashMap<>();
     static
     {
         for (MsDataSource s : sourceTypes)
@@ -141,6 +141,7 @@ public class MsDataSourceTypes
         // Can return more than one data source type. For example, Bruker and Waters both have .d extension;
         // Thermo and Waters both have .raw extension
         var sources = EXTENSION_SOURCE_MAP.get(extension(name));
+        if (sources == null) sources = EXTENSION_SOURCE_MAP.get(extension(name, 2)); // .wiff.scan file, for example
         return sources != null ? sources : Collections.emptyList();
     }
 
@@ -151,14 +152,11 @@ public class MsDataSourceTypes
 
     private static String extension(String name)
     {
-        if(name != null)
-        {
-            int idx = name.lastIndexOf('.');
-            if(idx != -1)
-            {
-                return name.substring(idx).toLowerCase();
-            }
-        }
-        return "";
+        return extension(name, 1);
+    }
+
+    private static String extension(String name, int dots)
+    {
+        return name.substring(FileUtil.getBaseName(name, dots).length()).toLowerCase();
     }
 }
