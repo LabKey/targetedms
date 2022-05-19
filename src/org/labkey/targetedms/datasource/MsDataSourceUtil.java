@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.labkey.api.files.FileContentService.UPLOADED_FILE;
@@ -296,10 +297,10 @@ public class MsDataSourceUtil
     }
 
     private Path getDataPath(String fileName, MsDataSource sourceType, Path rawFilesDir)
+    {
+        try (Stream<Path> list = Files.walk(rawFilesDir).filter(p -> isSourceMatch(p, fileName, sourceType)))
         {
-        try
-        {
-            return Files.walk(rawFilesDir).filter(p -> isSourceMatch(p, fileName, sourceType)).findFirst().orElse(null);
+            return list.findFirst().orElse(null);
         }
         catch (IOException e)
         {
