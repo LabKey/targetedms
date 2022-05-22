@@ -144,7 +144,7 @@ public class ModifiedPeptideHtmlMaker
         {
             previousAA = null;
             nextAA = null;
-            result.append("<br />");
+            result.append("<br />\n");
             if (runId != null)
             {
                 List<PeptideGroup> proteins = _proteins.computeIfAbsent(runId, id -> PeptideGroupManager.getPeptideGroupsForRun(runId));

@@ -43,6 +43,8 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
     String _iconPath;
     HtmlString _cellData;
 
+    boolean _exportAsStrippedHtml = false;
+
     public static final String PEPTIDE_COLUMN_NAME = "ModifiedPeptideDisplayColumn";
     public static final String PRECURSOR_COLUMN_NAME = "ModifiedPrecursorDisplayColumn";
 
@@ -68,6 +70,45 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
     }
 
     @Override
+    public String getTsvFormattedValue(RenderContext ctx)
+    {
+        if (_exportAsStrippedHtml)
+        {
+            initialize(ctx);
+            return extractTextFromHtml(_cellData);
+        }
+        return super.getTsvFormattedValue(ctx);
+    }
+
+    @Override
+    public Object getExcelCompatibleValue(RenderContext ctx)
+    {
+        if (_exportAsStrippedHtml)
+        {
+            initialize(ctx);
+            return extractTextFromHtml(_cellData);
+        }
+        return super.getExcelCompatibleValue(ctx);
+    }
+
+    @Override
+    public Object getJsonValue(RenderContext ctx)
+    {
+        if (_exportAsStrippedHtml)
+        {
+            initialize(ctx);
+            return extractTextFromHtml(_cellData);
+        }
+        return super.getJsonValue(ctx);
+    }
+
+    private String extractTextFromHtml(HtmlString html)
+    {
+        // This isn't a particularly robust way to extract text from HTML but given our simple HTML (no script, etc), it's enough
+        return html.toString().replaceAll("<[^>]*>", "");
+    }
+
+    @Override
     String getIconPath()
     {
         return _iconPath;
@@ -81,6 +122,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
 
     public static class PeptideDisplayColumnFactory implements DisplayColumnFactory
     {
+        private boolean _exportStrippedHtml = false;
         private boolean _showNextAndPrevious = false;
         private boolean _useParens = false;
 
@@ -92,6 +134,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
         {
             _showNextAndPrevious = getBooleanProperty(map, "showNextAndPrevious", _showNextAndPrevious);
             _useParens = getBooleanProperty(map, "useParens", _useParens);
+            _exportStrippedHtml = getBooleanProperty(map, "exportFormatted", _exportStrippedHtml);
         }
 
         private boolean getBooleanProperty(MultiValuedMap<String, String> map, String propertyName, boolean defaultValue)
@@ -107,7 +150,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
         @Override
         public DisplayColumn createRenderer(ColumnInfo colInfo)
         {
-            return new ModifiedSequenceDisplayColumn.PeptideCol(colInfo, _showNextAndPrevious, _useParens);
+            return new ModifiedSequenceDisplayColumn.PeptideCol(colInfo, _showNextAndPrevious, _useParens, _exportStrippedHtml);
         }
     }
 
@@ -120,14 +163,15 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
 
         public PeptideCol(ColumnInfo colInfo)
         {
-            this(colInfo, false, false);
+            this(colInfo, false, false, false);
         }
 
-        public PeptideCol(ColumnInfo colInfo, boolean showNextAndPrevious, boolean useParens)
+        public PeptideCol(ColumnInfo colInfo, boolean showNextAndPrevious, boolean useParens, boolean exportStrippedHtml)
         {
             super(colInfo);
             _showNextAndPrevious = showNextAndPrevious;
             _useParens = useParens;
+            _exportAsStrippedHtml = exportStrippedHtml;
 
             _previousAAFieldKey = FieldKey.fromString(getParentFieldKey(), "PreviousAa");
             _nextAAFieldKey = FieldKey.fromString(getParentFieldKey(), "NextAa");
@@ -146,13 +190,16 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
             Object result = super.getDisplayValue(ctx);
             if (_showNextAndPrevious)
             {
-                String previous = (String)ctx.get(_previousAAFieldKey);
-                String next = (String)ctx.get(_nextAAFieldKey);
-                if (_useParens)
+                String previous = ctx.get(_previousAAFieldKey, String.class);
+                String next = ctx.get(_nextAAFieldKey, String.class);
+                if (previous != null && next != null)
                 {
-                    return "(" + previous + ")" + result + "(" + next + ")";
+                    if (_useParens)
+                    {
+                        return "(" + previous + ")" + result + "(" + next + ")";
+                    }
+                    return previous + "." + result + "." + next;
                 }
-                return previous + "." + result + "." + next;
             }
             return result;
         }
@@ -176,19 +223,19 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
         @Override
         public void initialize(RenderContext ctx)
         {
-            Long peptideId = (Long)ctx.get(FieldKey.fromString(super.getParentFieldKey(), "Id"));
+            Long peptideId = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "Id"), Long.class);
 
-            String sequence = (String)ctx.get(FieldKey.fromString(super.getParentFieldKey(), "Sequence"));
+            String sequence = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "Sequence"), String.class);
 
-            Long runId = (Long)ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PeptideGroupId/RunId"));
+            Long runId = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PeptideGroupId/RunId"), Long.class);
 
-            Boolean decoy = (Boolean)ctx.get(FieldKey.fromString(super.getParentFieldKey(), "Decoy"));
+            Boolean decoy = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "Decoy"), Boolean.class);
             if(decoy == null)  decoy = Boolean.FALSE;
 
-            String standardType = (String)ctx.get(FieldKey.fromString(super.getParentFieldKey(), "StandardType"));
+            String standardType = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "StandardType"), String.class);
 
-            String previousAA = _showNextAndPrevious ? (String)ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PreviousAa")) : null;
-            String nextAA = _showNextAndPrevious ? (String)ctx.get(FieldKey.fromString(super.getParentFieldKey(), "NextAa")) : null;
+            String previousAA = _showNextAndPrevious ? ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PreviousAa"), String.class) : null;
+            String nextAA = _showNextAndPrevious ? ctx.get(FieldKey.fromString(super.getParentFieldKey(), "NextAa"), String.class) : null;
 
             String peptideModifiedSequence = (String)getValue(ctx);
 
@@ -232,17 +279,12 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
         @Override
         public void initialize(RenderContext ctx)
         {
-            Long precursorId = (Long)ctx.get(FieldKey.fromString(super.getParentFieldKey(), "Id"));
-
-            Long peptideId = (Long)ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PeptideId"));
-
-            String sequence = (String) ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PeptideId/Sequence"));
-
-            Long isotopeLabelId = (Long) ctx.get(FieldKey.fromString(super.getParentFieldKey(), "IsotopeLabelId"));
-
-            Long runId = (Long) ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PeptideId/PeptideGroupId/RunId"));
-
-            Boolean decoy = (Boolean) ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PeptideId/Decoy"));
+            Long precursorId = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "Id"), Long.class);
+            Long peptideId = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PeptideId"), Long.class);
+            String sequence = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PeptideId/Sequence"), String.class);
+            Long isotopeLabelId = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "IsotopeLabelId"), Long.class);
+            Long runId = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PeptideId/PeptideGroupId/RunId"), Long.class);
+            Boolean decoy = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PeptideId/Decoy"), Boolean.class);
             if(decoy == null) decoy = Boolean.FALSE;
 
             String precursorModifiedSequence = (String)getValue(ctx);

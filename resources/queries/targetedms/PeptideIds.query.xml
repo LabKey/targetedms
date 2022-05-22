@@ -13,6 +13,7 @@
                             <properties>
                                 <property name="showNextAndPrevious">true</property>
                                 <property name="useParens">true</property>
+                                <property name="exportFormatted">true</property>
                             </properties>
                         </displayColumnFactory>
                     </column>

@@ -30,8 +30,6 @@ public class CrossLinkedPeptideInfo
 
     private final List<Linker> _linkers = new ArrayList<>();
 
-    private final List<String> _parseErrors = new ArrayList<>();
-
     public CrossLinkedPeptideInfo(String modifiedSequence)
     {
         Matcher crossLinkMatcher = FULL_PATTERN.matcher(modifiedSequence);
@@ -222,6 +220,16 @@ public class CrossLinkedPeptideInfo
             Assert.assertEquals("Linker mass", -2.01565, i._linkers.get(0).getMass(), 0.00001);
             Assert.assertEquals("Linker mass", -4.555, i._linkers.get(1).getMass(), 0.00001);
         }
+
+        @Test
+        public void testOmittedIndices()
+        {
+            CrossLinkedPeptideInfo i = new CrossLinkedPeptideInfo("CCVECPPCPAPPVAGPSVFLFPPKPK-GPSVFPLAPCSR-TVAPTECS-TVAPTECS-GPSVFPLAPCSR-CCVECPPCPAPPVAGPSVFLFPPKPK-[-2.01565@5,*,*,*,*,5][-2.01565@8,*,*,*,*,8][-2.01565@1,*,7][-2.01565@2,10][-2.01565@*,*,*,7,*,1][-2.01565@*,*,*,*,10,2]");
+            Assert.assertEquals("Unmodified peptides", Arrays.asList("CCVECPPCPAPPVAGPSVFLFPPKPK", "GPSVFPLAPCSR", "TVAPTECS", "TVAPTECS", "GPSVFPLAPCSR", "CCVECPPCPAPPVAGPSVFLFPPKPK"), i._unmodifiedPeptides);
+            Assert.assertEquals("Link location", Set.of(4, 7, 0, 1), i.getBaseSequence().getLinkIndices());
+            Assert.assertEquals("Link location", Set.of(9), i.getExtraSequences().get(0).getLinkIndices());
+            Assert.assertEquals("Link location", Set.of(4, 7, 0, 1), i.getExtraSequences().get(4).getLinkIndices());
+        }
     }
 
     public class Linker
@@ -239,27 +247,21 @@ public class CrossLinkedPeptideInfo
             String indexString = parts[1];
             String[] allIndices = indexString.split(",");
 
-            if (allIndices.length != _unmodifiedPeptides.size())
+            // Parse the indices where the links are happening
+            for (int i = 0; i < _unmodifiedPeptides.size(); i++)
             {
-                _parseErrors.add("Link indices didn't match number of linked peptides: " + linkInfo);
-            }
-            else
-            {
-                // Parse the indices where the links are happening
-                for (String indices : allIndices)
+                String indices = i < allIndices.length ? allIndices[i] : null;
+                Set<Integer> parsedIndices = new TreeSet<>();
+                String[] peptideIndexStrings = indices == null ? new String[0] : indices.split("-");
+                for (String index : peptideIndexStrings)
                 {
-                    Set<Integer> parsedIndices = new TreeSet<>();
-                    String[] peptideIndexStrings = indices.split("-");
-                    for (String index : peptideIndexStrings)
+                    // * means that the peptide isn't involved in the cross-linking
+                    if (!"*".equals(index))
                     {
-                        // * means that the peptide isn't involved in the cross-linking
-                        if (!"*".equals(index))
-                        {
-                            parsedIndices.add(Integer.parseInt(index) - 1);
-                        }
+                        parsedIndices.add(Integer.parseInt(index) - 1);
                     }
-                    _linkIndices.add(parsedIndices);
                 }
+                _linkIndices.add(parsedIndices);
             }
         }
 

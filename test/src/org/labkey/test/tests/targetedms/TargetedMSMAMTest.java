@@ -15,6 +15,7 @@
  */
 package org.labkey.test.tests.targetedms;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.remoteapi.CommandException;
@@ -25,17 +26,23 @@ import org.labkey.test.categories.Daily;
 import java.io.IOException;
 
 @Category({Daily.class})
-@BaseWebDriverTest.ClassTimeout(minutes = 8)
 public class TargetedMSMAMTest extends TargetedMSTest
 {
     protected static final String SKY_FILE = "iRT Human+Standard Calibrate.zip";
+    protected static final String CROSS_LINKED_SKY_FILE = "CrosslinkPeptideMapTest.sky.zip";
+
+    @BeforeClass
+    public static void setupProject()
+    {
+        TargetedMSMAMTest init = (TargetedMSMAMTest) getCurrentTest();
+        init.setupFolder(FolderType.ExperimentMAM);
+        init.importData(SKY_FILE, 1);
+        init.importData(CROSS_LINKED_SKY_FILE, 2);
+    }
 
     @Test
-    public void testSteps() throws IOException, CommandException
+    public void testSteps()
     {
-        setupFolder(FolderType.ExperimentMAM);
-        importData(SKY_FILE);
-
         clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
         clickAndWait(Locator.linkContainingText(SKY_FILE));
 
@@ -55,5 +62,19 @@ public class TargetedMSMAMTest extends TargetedMSTest
         assertTextPresentInThisOrder("70-84", "325-333", "28-41");
         assertTextPresentInThisOrder("(K)ASTEGVAIQGQQGTR(L)", "(K)AQYEDIANR(S)", "(K)SVTEQGAELSNEER(N)");
         assertTextPresentInThisOrder("Carbamidomethyl Cysteine @ C156", "Carbamidomethyl Cysteine @ C244", "Carbamidomethyl Cysteine @ C93");
+    }
+
+    @Test
+    public void testCrossLinkedPeptideMap()
+    {
+        clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
+        clickAndWait(Locator.linkContainingText(CROSS_LINKED_SKY_FILE));
+
+        verifyRunSummaryCountsPep(2,3,0, 3,3, 1, 0, 0);
+
+        clickAndWait(Locator.linkContainingText("Peptide Map"));
+        assertTextPresentInThisOrder("364-366", "367-369", "364-367");
+        assertTextPresentInThisOrder("Q364, N366", "T369", "D364");
+        assertTextPresentInThisOrder("(A)LKPLALV(D)", "(G)AVVQDPA(Y)", "(F)YGEATSR(E)");
     }
 }
