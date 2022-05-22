@@ -16,11 +16,18 @@
 package org.labkey.targetedms.chart;
 
 import org.apache.commons.lang3.StringUtils;
+import org.labkey.api.data.Container;
+import org.labkey.api.security.User;
+import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.model.PrecursorChromInfoLitePlus;
 import org.labkey.targetedms.model.PrecursorComparator;
+import org.labkey.targetedms.parser.Molecule;
+import org.labkey.targetedms.parser.MoleculePrecursor;
 import org.labkey.targetedms.parser.Replicate;
 import org.labkey.targetedms.parser.ReplicateAnnotation;
 import org.labkey.targetedms.parser.SampleFile;
+import org.labkey.targetedms.query.MoleculeManager;
+import org.labkey.targetedms.query.MoleculePrecursorManager;
 import org.labkey.targetedms.query.ReplicateManager;
 
 import java.util.ArrayList;
@@ -39,17 +46,22 @@ import java.util.Set;
 public class ComparisonChartInputMaker
 {
     private final ComparisonDataset.ChartType _chartType;
+    private final User _user;
+    private final Container _container;
     private final long _runId;
     private List<PrecursorChromInfoLitePlus> _pciPlusList;  // precursor = modified sequence + charge + isotope label
     private String _groupByAnnotationName;
     private String _filterByAnnotationValue;
     private boolean _cvValues = false;
     private boolean _logValues = false;
+    private TargetedMSSchema _schema;
 
-    public ComparisonChartInputMaker(long runId, List<PrecursorChromInfoLitePlus> pciPlusList, ComparisonDataset.ChartType chartType)
+    public ComparisonChartInputMaker(long runId, List<PrecursorChromInfoLitePlus> pciPlusList, ComparisonDataset.ChartType chartType, User user, Container container)
     {
         _runId = runId;
         _chartType = chartType;
+        _user = user;
+        _container = container;
         if(pciPlusList != null)
         {
             _pciPlusList = pciPlusList;
@@ -278,8 +290,24 @@ public class ComparisonChartInputMaker
     private ComparisonCategory.MoleculeCategory getMoleculeCategoryLabel(PrecursorChromInfoLitePlus pciPlus,
                                                     Map<Long, String> sampleFileAnnotMap)
     {
-        return new ComparisonCategory.MoleculeCategory(pciPlus.getCustomIonName(),
+        String label = pciPlus.getCustomIonName();
+        if (label == null)
+        {
+            MoleculePrecursor precursor = MoleculePrecursorManager.getPrecursor(getSchema(), pciPlus.getPrecursorId());
+            Molecule molecule = MoleculeManager.getMolecule(_container, precursor.getGeneralMoleculeId());
+            label = molecule.getTextId();
+        }
+        return new ComparisonCategory.MoleculeCategory(label,
                                    pciPlus.getCharge(),
                                    sampleFileAnnotMap.get(pciPlus.getSampleFileId()));
+    }
+
+    public TargetedMSSchema getSchema()
+    {
+        if (_schema == null)
+        {
+            _schema = new TargetedMSSchema(_user, _container);
+        }
+        return _schema;
     }
 }
