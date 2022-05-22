@@ -167,7 +167,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         assertTextPresent("CDC19 SGDID:S000000036, Chr I from 71787-73289, Verified ORF, \"Pyruvate kinase, functions as a homotetramer in glycolysis to convert phosphoenolpyruvate to pyruvate, the input for aerobic (TCA cycle) or anaerobic (glucose fermentation) respiration");
         // Verify expected peptides/proteins in the nested view
         //Verify that amino acids from peptides are highlighted in blue as expected.
-        assertElementPresent(Locator.xpath("//tr//td//a//span[text()='LTSLNVVAGSDL'][span[contains(@style,'font-weight:bold;color:#0000ff;') and text()='R']]"));
+        assertElementPresent(Locator.xpath("//tr//td//a//div[text()='LTSLNVVAGSDL'][span[contains(@style,'font-weight:bold;color:#0000ff;') and text()='R']]"));
 
         if(smallMolPresent)
         {
@@ -222,16 +222,16 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         //waitForText("1 - 13 of 13");
         assertTextPresentInThisOrder("Targeted MS Modification Search", "Targeted MS Peptides");
         assertTextPresent("Amino acids:", "Delta mass:");
-        assertEquals(13, Locator.xpath("//td//a//span[contains(@title, 'R[+10.0]')]").findElements(getDriver()).size());
-        assertEquals(0, Locator.xpath("//td//a//span[contains(@title, 'K[+8.0]')]").findElements(getDriver()).size());
+        assertEquals(13, Locator.xpath("//td//a//div[contains(@title, 'R[+10.0]')]").findElements(getDriver()).size());
+        assertEquals(0, Locator.xpath("//td//a//div[contains(@title, 'K[+8.0]')]").findElements(getDriver()).size());
 
         // search for K[+8] modification
         setFormElement(Locator.name("aminoAcids"), "k R, N"); // should be split into just chars
         setFormElement(Locator.name("deltaMass"), "8.01"); // should be rounded to a whole number
         waitAndClickAndWait(Ext4Helper.Locators.ext4Button("Search"));
         //waitForText("1 - 31 of 31");
-        assertEquals(0, Locator.xpath("//td//a//span[contains(@title, 'R[+10.0]')]").findElements(getDriver()).size());
-        assertEquals(31, Locator.xpath("//td//a//span[contains(@title, 'K[+8.0]')]").findElements(getDriver()).size());
+        assertEquals(0, Locator.xpath("//td//a//div[contains(@title, 'R[+10.0]')]").findElements(getDriver()).size());
+        assertEquals(31, Locator.xpath("//td//a//div[contains(@title, 'K[+8.0]')]").findElements(getDriver()).size());
 
         // test custom name search type
         _ext4Helper.selectRadioButton("Search by:", "Modification name");
@@ -243,13 +243,13 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         _ext4Helper.selectComboBoxItem("Custom name:", "Label:13C(6)15N(4) (C-term R)");
         waitAndClickAndWait(Ext4Helper.Locators.ext4Button("Search"));
         //waitForText("1 - 13 of 13");
-        assertEquals(13, Locator.xpath("//td//a//span[contains(@title, 'R[+10.0]')]").findElements(getDriver()).size());
-        assertEquals(0, Locator.xpath("//td//a//span[contains(@title, 'K[+8.0]')]").findElements(getDriver()).size());
+        assertEquals(13, Locator.xpath("//td//a//div[contains(@title, 'R[+10.0]')]").findElements(getDriver()).size());
+        assertEquals(0, Locator.xpath("//td//a//div[contains(@title, 'K[+8.0]')]").findElements(getDriver()).size());
         setFormElement(Locator.name("customName"), "Label:13C(6)15N(2) (C-term K)"); // test timing fix, instead of using _ext4Helper.selectComboBoxItem again
         waitAndClickAndWait(Ext4Helper.Locators.ext4Button("Search"));
         //waitForText("1 - 31 of 31");
-        assertEquals(0, Locator.xpath("//td//a//span[contains(@title, 'R[+10.0]')]").findElements(getDriver()).size());
-        assertEquals(31, Locator.xpath("//td//a//span[contains(@title, 'K[+8.0]')]").findElements(getDriver()).size());
+        assertEquals(0, Locator.xpath("//td//a//div[contains(@title, 'R[+10.0]')]").findElements(getDriver()).size());
+        assertEquals(31, Locator.xpath("//td//a//div[contains(@title, 'K[+8.0]')]").findElements(getDriver()).size());
 
         // test unimod name search type
         _ext4Helper.selectRadioButton("Type:", "All Unimod modifications");
@@ -260,8 +260,8 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         _ext4Helper.selectComboBoxItem(Ext4Helper.Locators.formItemWithLabelContaining("Unimod name:"), "Label:13C(6)15N(4) (C-term R)");
         waitAndClickAndWait(Ext4Helper.Locators.ext4Button("Search"));
         //waitForText("1 - 13 of 13");
-        assertEquals(13, Locator.xpath("//td//a//span[contains(@title, 'R[+10.0]')]").findElements(getDriver()).size());
-        assertEquals(0, Locator.xpath("//td//a//span[contains(@title, 'K[+8.0]')]").findElements(getDriver()).size());
+        assertEquals(13, Locator.xpath("//td//a//div[contains(@title, 'R[+10.0]')]").findElements(getDriver()).size());
+        assertEquals(0, Locator.xpath("//td//a//div[contains(@title, 'K[+8.0]')]").findElements(getDriver()).size());
 
         // test C-term search using special character (i.e. ] )
         _ext4Helper.selectRadioButton("Search by:", "Delta mass");
@@ -269,8 +269,8 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         setFormElement(Locator.name("deltaMass"), "8");
         waitAndClickAndWait(Ext4Helper.Locators.ext4Button("Search"));
         //waitForText("1 - 31 of 31");
-        assertEquals(0, Locator.xpath("//td//a//span[contains(@title, 'R[+10.0]')]").findElements(getDriver()).size());
-        assertEquals(31, Locator.xpath("//td//a//span[contains(@title, 'K[+8.0]')]").findElements(getDriver()).size());
+        assertEquals(0, Locator.xpath("//td//a//div[contains(@title, 'R[+10.0]')]").findElements(getDriver()).size());
+        assertEquals(31, Locator.xpath("//td//a//div[contains(@title, 'K[+8.0]')]").findElements(getDriver()).size());
     }
 
     @LogMethod
