@@ -20,7 +20,7 @@ package org.labkey.targetedms.parser;
  */
 public class CustomIon
 {
-    private final static String massFormat = "{0} [{1:F06}/{2:F06}]";
+    private final static String massFormat = "%s [%.4f/%.4f]";
 
     private CustomIon(){}
 
