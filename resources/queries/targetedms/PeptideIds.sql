@@ -7,11 +7,14 @@ SELECT
    -- Concatenate the empty string so that the protein DisplayColumn doesn't get propagated too
    PrecursorId.PeptideId.PeptideGroupId.Label || '' AS Chain,
    CAST(PrecursorId.PeptideId.StartIndex + 1 AS VARCHAR) || '-' || CAST(PrecursorId.PeptideId.EndIndex AS VARCHAR) AS PeptideLocation,
-   PrecursorId.PeptideId.Sequence,
+   -- Value is calculated in Java in CrossLinkedPeptideDisplayColumn
+   CAST(NULL AS VARCHAR) AS BondLocation,
+   PrecursorId.PeptideId.Sequence @hidden,
    PrecursorId.PeptideId.NextAA @hidden,
    PrecursorId.PeptideId.PreviousAA @hidden,
-   PrecursorId.ModifiedSequence AS PeptideModifiedSequence @hidden,
+   PrecursorId.PeptideId.PeptideModifiedSequence AS PeptideModifiedSequence,
    PrecursorId.PeptideId AS Id @hidden,
+   PrecursorId.PeptideId.PeptideGroupId.RunId AS RunId @hidden,
    -- Show the modifications and their locations
    (SELECT GROUP_CONCAT((StructuralModId.Name ||
                          ' @ ' ||
@@ -24,12 +27,12 @@ SELECT
 FROM
      targetedms.precursorchrominfo pci
 GROUP BY
-   PrecursorId.ModifiedSequence,
-   PrecursorId.ModifiedSequence,
+   PrecursorId.PeptideId.PeptideModifiedSequence,
    PrecursorId.NeutralMass,
    PrecursorId.PeptideId,
    PrecursorId.PeptideId.PeptideGroupId,
    PrecursorId.PeptideId.PeptideGroupId.Label,
+   PrecursorId.PeptideId.PeptideGroupId.RunId,
    PrecursorId.PeptideId.Sequence,
    PrecursorId.PeptideId.NextAA,
    PrecursorId.PeptideId.PreviousAA,

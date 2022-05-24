@@ -22,12 +22,15 @@ import org.labkey.api.util.PageFlowUtil;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.chart.ChartColors;
 import org.labkey.targetedms.parser.Peptide;
+import org.labkey.targetedms.parser.PeptideGroup;
 import org.labkey.targetedms.parser.Precursor;
 import org.labkey.targetedms.query.IsotopeLabelManager;
 import org.labkey.targetedms.query.ModificationManager;
+import org.labkey.targetedms.query.PeptideGroupManager;
 import org.labkey.targetedms.query.PeptideManager;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,7 +43,9 @@ public class ModifiedPeptideHtmlMaker
 {
     // RunId -> IsotopeLabelId (The database ID of the first isotope label type for the run).
     // Used to get the display color for label types.
-    private Map<Long, Long> _firstIsotopeLabelIdInDocMap;
+    private final Map<Long, Long> _firstIsotopeLabelIdInDocMap;
+
+    private final Map<Long, List<PeptideGroup>> _proteins = new HashMap<>();
 
     private final static String[] HEX_PADDING = new String[] {
                                                         "",
@@ -65,12 +70,12 @@ public class ModifiedPeptideHtmlMaker
 
     public HtmlString getPrecursorHtml(Peptide peptide, Precursor precursor, Long runId)
     {
-        return getPrecursorHtml(peptide.getId(), precursor.getIsotopeLabelId(), peptide.getSequence(), precursor.getModifiedSequence(), runId);
+        return getPrecursorHtml(peptide.getId(), precursor.getIsotopeLabelId(), precursor.getModifiedSequence(), runId);
     }
 
-    public HtmlString getPrecursorHtml(long peptideId, long isotopeLabelId, String peptideSequence, String precursorModifiedSequence, Long runId)
+    public HtmlString getPrecursorHtml(long peptideId, long isotopeLabelId, String precursorModifiedSequence, Long runId)
     {
-        return getHtml(peptideId, isotopeLabelId, peptideSequence, precursorModifiedSequence, runId, null, null, false);
+        return getHtml(peptideId, isotopeLabelId, precursorModifiedSequence, runId, null, null, false);
     }
 
     public HtmlString getPeptideHtml(Peptide peptide, Long runId)
@@ -86,10 +91,10 @@ public class ModifiedPeptideHtmlMaker
             altSequence = sequence;
         }
 
-        return getHtml(peptideId, null, sequence, altSequence, runId, previousAA, nextAA, useParens);
+        return getHtml(peptideId, null, altSequence, runId, previousAA, nextAA, useParens);
     }
 
-    private HtmlString getHtml(long peptideId,  @Nullable Long isotopeLabelId, String sequence, String altSequence, Long runId, @Nullable String previousAA, @Nullable String nextAA, boolean useParens)
+    private HtmlString getHtml(long peptideId, @Nullable Long isotopeLabelId, String altSequence, Long runId, @Nullable String previousAA, @Nullable String nextAA, boolean useParens)
     {
         Long firstIsotopeLabelIdInDoc = null;
         if(runId != null)
@@ -105,6 +110,8 @@ public class ModifiedPeptideHtmlMaker
             }
         }
 
+        boolean showPreviousNext = previousAA != null || nextAA != null;
+
         Set<Integer> strModIndices = ModificationManager.getStructuralModIndexes(peptideId, runId);
         Set<Integer> isotopeModIndices = null;
         if(isotopeLabelId != null)
@@ -112,10 +119,8 @@ public class ModifiedPeptideHtmlMaker
             isotopeModIndices = ModificationManager.getIsotopeModIndexes(peptideId, isotopeLabelId, runId);
         }
 
-
         StringBuilder result = new StringBuilder();
-
-        result.append("<span title='").append(PageFlowUtil.filter(altSequence)).append("'>");
+        result.append("<div style=\"display: inline-block;\" title='").append(PageFlowUtil.filter(altSequence)).append("'>");
         String labelModColor = "black";
         StringBuilder error = new StringBuilder();
         if(isotopeLabelId != null)
@@ -130,6 +135,62 @@ public class ModifiedPeptideHtmlMaker
             }
         }
 
+        CrossLinkedPeptideInfo crossLink = new CrossLinkedPeptideInfo(altSequence);
+
+        renderSequence(crossLink.getBaseSequence(), strModIndices, isotopeModIndices, result, labelModColor, useParens, previousAA, nextAA);
+
+        // If we have cross-linking info, show those peptides too
+        for (CrossLinkedPeptideInfo.PeptideSequence extraSequence : crossLink.getExtraSequences())
+        {
+            previousAA = null;
+            nextAA = null;
+            result.append("<br />\n");
+            if (runId != null)
+            {
+                List<PeptideGroup> proteins = _proteins.computeIfAbsent(runId, id -> PeptideGroupManager.getPeptideGroupsForRun(runId));
+                PeptideGroup matchingProtein = extraSequence.findMatch(proteins);
+                if (matchingProtein != null)
+                {
+                    String proteinSequence = matchingProtein.getSequence();
+                    int startIndex = proteinSequence.indexOf(extraSequence.getUnmodified());
+                    int endIndex = startIndex + extraSequence.getUnmodified().length();
+                    
+                    // Stay consistent with primary sequence for showing or hiding previous and next amino acids
+                    if (showPreviousNext)
+                    {
+                        if (startIndex > 0)
+                        {
+                            previousAA = Character.toString(proteinSequence.charAt(startIndex - 1));
+                        }
+                        else
+                        {
+                            previousAA = "-";
+                        }
+                        if (endIndex < proteinSequence.length())
+                        {
+                            nextAA = Character.toString(proteinSequence.charAt(endIndex));
+                        }
+                        else
+                        {
+                            nextAA = "-";
+                        }
+                    }
+                }
+            }
+            renderSequence(extraSequence, strModIndices, isotopeModIndices, result, labelModColor, useParens, previousAA, nextAA);
+        }
+
+        result.append("</div>");
+
+        if(error.length() > 0)
+        {
+            result.append("<div style='color:red;'>").append(PageFlowUtil.filter(error.toString())).append("</div>");
+        }
+        return HtmlString.unsafe(result.toString());
+    }
+
+    private void renderSequence(CrossLinkedPeptideInfo.PeptideSequence sequenceInfo, Set<Integer> strModIndices, Set<Integer> isotopeModIndices, StringBuilder result, String labelModColor, boolean useParens, @Nullable String previousAA, @Nullable String nextAA)
+    {
         if (previousAA != null)
         {
             if (useParens)
@@ -140,17 +201,24 @@ public class ModifiedPeptideHtmlMaker
             result.append(useParens ? ")" : ".");
         }
 
+        String sequence = sequenceInfo.getUnmodified();
+
         for(int i = 0; i < sequence.length(); i++)
         {
             boolean isStrModified = strModIndices != null && strModIndices.contains(i);
             boolean isIsotopeModified = isotopeModIndices != null && isotopeModIndices.contains(i);
+            boolean isCrossLinked = sequenceInfo.isCrossLinked(i);
 
-            if(isIsotopeModified || isStrModified)
+            if(isIsotopeModified || isStrModified || isCrossLinked)
             {
                 StringBuilder style = new StringBuilder("style='font-weight:bold;");
                 if(isIsotopeModified)
                 {
                     style.append("color:").append(labelModColor).append(";");
+                }
+                else if (isCrossLinked)
+                {
+                    style.append("color:").append("green").append(";");
                 }
                 if(isStrModified)
                 {
@@ -161,7 +229,7 @@ public class ModifiedPeptideHtmlMaker
             }
             else
             {
-                result.append(sequence.charAt(i));
+                result.append(PageFlowUtil.filter(sequence.charAt(i)));
             }
         }
 
@@ -174,13 +242,6 @@ public class ModifiedPeptideHtmlMaker
                 result.append(")");
             }
         }
-
-        result.append("</span>");
-        if(error.length() > 0)
-        {
-            result.append("<div style='color:red;'>" + PageFlowUtil.filter(error.toString()) + "</div>");
-        }
-        return HtmlString.unsafe(result.toString());
     }
 
     public String toHex(int rgb)
