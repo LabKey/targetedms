@@ -35,6 +35,9 @@ import java.io.Writer;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import static org.labkey.targetedms.view.ChromatogramsDataRegion.FRAGMENT_PREFIX;
+import static org.labkey.targetedms.view.ChromatogramsDataRegion.HIGHLIGHTED_CHROMATOGRAM_PARAMETER_NAME;
+
 /**
  * User: vsharma
  * Date: 5/3/12
@@ -190,7 +193,7 @@ public class ChromatogramDisplayColumnFactory implements DisplayColumnFactory
                 boolean highlight = false;
                 if (HttpView.hasCurrentView())
                 {
-                    highlight = String.valueOf(id).equals(HttpView.currentRequest().getParameter("chromInfoId"));
+                    highlight = String.valueOf(id).equals(HttpView.currentRequest().getParameter(HIGHLIGHTED_CHROMATOGRAM_PARAMETER_NAME));
                 }
 
                 String sampleName = ctx.get(_type.getSampleNameFieldKey(getBoundColumn().getFieldKey().getParent()), String.class);
@@ -200,7 +203,7 @@ public class ChromatogramDisplayColumnFactory implements DisplayColumnFactory
 
                 ChromatogramsDataRegion dataRegion = (ChromatogramsDataRegion)ctx.getCurrentRegion();
 
-                String html = "<a name=\"ChromInfo" + id + "\"></a>";
+                String html = "<a name=\"" + FRAGMENT_PREFIX + id + "\"></a>";
                 html += "<div alt=\"Chromatogram " + PageFlowUtil.filter(sampleName) + "\" style=\"border: " + (highlight ? "beige" : "white") +
                         " solid 8px; width:" + (_chartWidth + 16) + "px; min-height:" + (_chart_height + 50) + "px\" id=\"" + PageFlowUtil.filter(domId) + "\"></div>" +
                         "<div style=\"text-align: center\" id=\"" + PageFlowUtil.filter(domLabelId) + "\"></div>";
