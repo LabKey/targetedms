@@ -104,7 +104,6 @@ import org.labkey.targetedms.query.PrecursorManager;
 import org.labkey.targetedms.query.ReplicateManager;
 import org.labkey.targetedms.query.RepresentativeStateManager;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
@@ -146,8 +145,6 @@ public class TargetedMSManager
     /**
      * A cache to make it faster to render QC folders. A number of API calls come from the
      * client rendering the overview, all of which need to know the enabled configs.
-     *
-     * Could switch to a longer-lived cache that's invalidated by changes to the configuration for even more benefit.
      */
     private static final Cache<Container, List<QCMetricConfiguration>> _metricCache = CacheManager.getCache(1000, TimeUnit.HOURS.toMillis(1), "Enabled QC metric configs");
 
@@ -1325,7 +1322,7 @@ public class TargetedMSManager
     public static List<GuideSet> getGuideSets(Container c, User u)
     {
         TargetedMSSchema schema = new TargetedMSSchema(u, c);
-        TableInfo table = schema.getTable("GuideSetForOutliers", null);
+        TableInfo table = schema.getTableOrThrow("GuideSetForOutliers", null);
         return new TableSelector(table, null, new Sort("TrainingStart")).getArrayList(GuideSet.class);
     }
 
@@ -2130,7 +2127,7 @@ public class TargetedMSManager
     {
         return _metricCache.get(targetedMSSchema.getContainer(), null, (c, argument) ->
         {
-            TableInfo metricsTable = targetedMSSchema.getTable("qcMetricsConfig", null);
+            TableInfo metricsTable = targetedMSSchema.getTableOrThrow("qcMetricsConfig", null);
             List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, new SimpleFilter(FieldKey.fromParts("Enabled"), false, CompareType.NEQ_OR_NULL), new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
             List<QCMetricConfiguration> result = new ArrayList<>();
             for (QCMetricConfiguration metric : metrics)
@@ -2310,7 +2307,7 @@ public class TargetedMSManager
         idColumnNames.add("RowId"); //RowId is parent or original document's rowid
         idColumnNames.add("ReplacedByRun");//ReplacedByRun is child or modified document's rowid
 
-        TableInfo runsTable = schema.getTable(TargetedMSSchema.TABLE_TARGETED_MS_RUNS);
+        TableInfo runsTable = schema.getTableOrThrow(TargetedMSSchema.TABLE_TARGETED_MS_RUNS);
         TableSelector selector = new TableSelector(runsTable, idColumnNames, filter, null);
 
         //get RowId -> ReplacedByRun key value pairs and also populate the opposite direction to get ReplacedByRun -> RowId
@@ -2335,7 +2332,7 @@ public class TargetedMSManager
     public List<String> getReplicateSubgroupNames(User user, Container container, @NotNull GeneralMolecule molecule)
     {
         UserSchema userSchema = QueryService.get().getUserSchema(user, container, "targetedms");
-        TableInfo tableInfo = userSchema.getTable("pharmacokinetics");
+        TableInfo tableInfo = userSchema.getTableOrThrow("pharmacokinetics");
 
         SQLFragment sqlFragment = new SQLFragment();
         sqlFragment.append("SELECT DISTINCT(COALESCE(p.SubGroup, 'NA')) FROM ");
