@@ -96,7 +96,15 @@ public class PeptideManager
 
     public static List<PeptideCharacteristic> getPeptideCharacteristic(long peptideGroupId)
     {
-        SQLFragment sql = new SQLFragment("SELECT X.Sequence, LOG10(MAX(X.Intensity)) AS Intensity, ROUND(-LOG10(MAX(X.Confidence)),4) AS Confidence FROM ");
+        var sqlDialect = TargetedMSManager.getSqlDialect();
+        var pgLog10Intensity = "LOG(" + sqlDialect.getNumericCast(new SQLFragment("MAX(X.Intensity)")).getSQL() + ")";
+        var sqlServerLog10Intensity = "LOG10(MAX(X.Intensity))";
+        var pgConfidenceValueToRound = "-LOG(" + sqlDialect.getNumericCast(new SQLFragment("MAX(X.Confidence)")).getSQL() + ")";
+        var pgLog10Confidence = "ROUND(" + sqlDialect.getNumericCast(new SQLFragment(pgConfidenceValueToRound)).getSQL() + ",4)";
+        var sqlServerLog10Confidence = "ROUND(-LOG10(MAX(X.Confidence)),4)";
+        var log10IntensitySql = sqlDialect.isPostgreSQL() ? pgLog10Intensity : sqlServerLog10Intensity;
+        var log10ConfidenceSql = sqlDialect.isPostgreSQL() ? pgLog10Confidence : sqlServerLog10Confidence;
+        SQLFragment sql = new SQLFragment("SELECT X.Sequence, " + log10IntensitySql + " AS Intensity, " + log10ConfidenceSql + " AS Confidence FROM ");
         sql.append("(SELECT pep.Sequence, SUM(TotalArea) AS Intensity, MAX(qvalue) AS Confidence FROM ");
         sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
         sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralPrecursor(), "p");
