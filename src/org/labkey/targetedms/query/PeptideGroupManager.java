@@ -23,6 +23,7 @@ import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.TableSelector;
+import org.labkey.api.protein.ProteinService;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.targetedms.TargetedMSManager;
@@ -62,6 +63,18 @@ public class PeptideGroupManager
         sql.add(id);
 
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(PeptideGroup.class);
+    }
+
+    public static List<PeptideGroup> getPeptideGroupsForRun(long runId)
+    {
+        SQLFragment sql = new SQLFragment("SELECT p.ProtSequence AS Sequence, pg.* FROM ");
+        sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
+        sql.append(" LEFT OUTER JOIN ");
+        sql.append(ProteinService.get().getSequencesTable(), "p");
+        sql.append(" ON pg.SequenceId = p.SeqId WHERE pg.RunId = ?");
+        sql.add(runId);
+
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PeptideGroup.class);
     }
 
     public static void updateRepresentativeStatus(List<Long> peptideGroupIds, RepresentativeDataState representativeState)

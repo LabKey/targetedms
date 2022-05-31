@@ -31,12 +31,26 @@ public class SkylineAuditTable extends VirtualTable<TargetedMSSchema>
         }
         MutableColumnInfo extraInfoCol = new BaseColumnInfo("HasExtraInfo", this, JdbcType.VARCHAR);
         extraInfoCol.setDisplayColumnFactory(new SkylineAuditLogExtraInfoAJAXDisplayColumnFactory());
-        extraInfoCol.setLabel("Extra Info");
+        extraInfoCol.setLabel("Detailed Info");
         addColumn(extraInfoCol);
         addColumn(new BaseColumnInfo("OrderNumber", this, JdbcType.INTEGER));
         addColumn(new BaseColumnInfo("OrderNumberDescription", this, JdbcType.VARCHAR));
         addColumn(new BaseColumnInfo("MessageType", this, JdbcType.VARCHAR));
         addColumn(new BaseColumnInfo("MessageText", this, JdbcType.VARCHAR));
+
+        // Match up with Skyline's labeling and hide internal columns like hashes and GUIDs
+        getMutableColumnOrThrow("EntryId").setHidden(true);
+        getMutableColumnOrThrow("DocumentGUID").setHidden(true);
+        getMutableColumnOrThrow("CreateTimestamp").setLabel("Time Stamp");
+        getMutableColumnOrThrow("EntryHash").setHidden(true);
+        getMutableColumnOrThrow("ExtraInfo").setLabel("Detailed Info (raw text)");
+        getMutableColumnOrThrow("FormatVersion").setLabel("Skyline Version");
+        getMutableColumnOrThrow("ParentEntryHash").setHidden(true);
+        getMutableColumnOrThrow("OrderNumber").setHidden(true);
+        getMutableColumnOrThrow("OrderNumberDescription").setHidden(true);
+        getMutableColumnOrThrow("MessageType").setHidden(true);
+        getMutableColumnOrThrow("MessageText").setLabel("Summary Message");
+        getMutableColumnOrThrow("UserName").setLabel("User");
     }
 
     @Override

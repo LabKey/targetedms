@@ -179,6 +179,7 @@ import org.labkey.targetedms.folderImport.QCFolderConstants;
 import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
+import org.labkey.targetedms.model.PrecursorChromInfoLitePlus;
 import org.labkey.targetedms.model.QCMetricConfiguration;
 import org.labkey.targetedms.model.QCPlotFragment;
 import org.labkey.targetedms.model.RawMetricDataSet;
@@ -1894,6 +1895,9 @@ public class TargetedMSController extends SpringActionController
 
             ChromatogramsDataRegion dRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
                     ChromatogramsDataRegion.PRECURSOR_CHROM_DATA_REGION);
+
+            pageToSelectedChromatogram(form, dRegion, PrecursorManager.getChromInfosLitePlusForPrecursor(form.getId(), getUser(), getContainer()));
+
             GridView gridView = new ChromatogramGridView(dRegion, errors);
             gridView.setFrame(WebPartView.FrameType.PORTAL);
             gridView.setTitle("Chromatograms");
@@ -1939,6 +1943,40 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
+    /**
+     * If the client's requested we show a particular chromatogram figure out which page of plots it's on
+     * and send a redirect to get there. See issue 45544.
+     */
+    private void pageToSelectedChromatogram(ChromatogramForm form, ChromatogramsDataRegion dRegion, List<PrecursorChromInfoLitePlus> chromInfos)
+    {
+        if (form.getChromInfoId() != null)
+        {
+            // We're looking to show a particular chromatogram
+            int index = 0;
+
+            // Figure out which page of plots it's on
+            for (PrecursorChromInfoLitePlus chromInfo : chromInfos)
+            {
+                if (chromInfo.getId() == form.getChromInfoId())
+                {
+                    int perPage = dRegion.getSettings().getMaxRows();
+                    ActionURL redirectURL = getViewContext().getActionURL().clone();
+                    // Swap the URL parameter, so we can highlight it and not need to recalculate the index
+                    redirectURL.deleteParameter("chromInfoId");
+                    redirectURL.addParameter(ChromatogramsDataRegion.HIGHLIGHTED_CHROMATOGRAM_PARAMETER_NAME, form.getChromInfoId());
+                    if (index > perPage)
+                    {
+                        redirectURL.addParameter(dRegion.getName() + ".offset", ((index / perPage) * perPage));
+                    }
+                    redirectURL.setFragment(ChromatogramsDataRegion.FRAGMENT_PREFIX + form.getChromInfoId());
+                    throw new RedirectException(redirectURL);
+                }
+                index++;
+            }
+        }
+        // No match found so no need to redirect
+    }
+
     @RequiresPermission(ReadPermission.class)
     public class MoleculePrecursorAllChromatogramsChartAction extends SimpleViewAction<ChromatogramForm>
     {
@@ -1980,6 +2018,9 @@ public class TargetedMSController extends SpringActionController
 
             ChromatogramsDataRegion dRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
                     ChromatogramsDataRegion.PRECURSOR_CHROM_DATA_REGION);
+
+            pageToSelectedChromatogram(form, dRegion, MoleculePrecursorManager.getChromInfosLitePlusForMoleculePrecursor(form.getId(), getUser(), getContainer()));
+
             GridView gridView = new GridView(dRegion, errors);
             gridView.setFrame(WebPartView.FrameType.PORTAL);
             gridView.setTitle("Chromatograms");
@@ -2337,6 +2378,8 @@ public class TargetedMSController extends SpringActionController
         private String _annotationsFilter;
         private String _replicatesFilter;
         private boolean _update;
+        private Long _chromInfoId;
+        private Long _highlightChromInfoId;
 
         public ChromatogramForm()
         {
@@ -2362,6 +2405,16 @@ public class TargetedMSController extends SpringActionController
         public void setReplicatesFilter(String replicatesFilter)
         {
             _replicatesFilter = replicatesFilter;
+        }
+
+        public Long getChromInfoId()
+        {
+            return _chromInfoId;
+        }
+
+        public void setChromInfoId(Long chromInfoId)
+        {
+            _chromInfoId = chromInfoId;
         }
 
         @NotNull

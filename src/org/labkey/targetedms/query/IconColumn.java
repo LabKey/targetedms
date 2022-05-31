@@ -66,9 +66,10 @@ public abstract class IconColumn extends DataColumn
             return HtmlString.EMPTY_STRING;
         }
 
-        StringBuilder imgHtml = new StringBuilder("<img src=\"");
-        imgHtml.append(PageFlowUtil.filter(iconPath)).append("\"").append(" title=\"" + PageFlowUtil.filter(getLinkTitle()) +"\"").append(" width=\"16\" height=\"16\" style=\"margin-right: 5px;\"/>");
-        return HtmlString.unsafe(imgHtml.toString());
+        return HtmlString.unsafe("<img src=\"" + PageFlowUtil.filter(iconPath) +
+                "\" title=\"" +
+                PageFlowUtil.filter(getLinkTitle()) +
+                "\" width=\"16\" height=\"16\" style=\"vertical-align: top; margin-right: 5px;\"/>");
     }
 
     @Override

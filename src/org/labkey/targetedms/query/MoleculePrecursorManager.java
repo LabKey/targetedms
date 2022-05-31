@@ -41,8 +41,11 @@ public class MoleculePrecursorManager
 
     public static MoleculePrecursor getPrecursor(Container c, long id, User user)
     {
-        TargetedMSSchema schema = new TargetedMSSchema(user, c);
+        return getPrecursor(new TargetedMSSchema(user, c), id);
+    }
 
+    public static MoleculePrecursor getPrecursor(TargetedMSSchema schema, long id)
+    {
         SQLFragment sql = new SQLFragment("SELECT pre.* FROM ");
         sql.append(new MoleculePrecursorTableInfo(schema, null, true), "pre");
         sql.append(", ");
@@ -54,7 +57,7 @@ public class MoleculePrecursorManager
         sql.append(" WHERE pre.GeneralMoleculeId = mol.Id AND ");
         sql.append("mol.PeptideGroupId = pg.Id AND pg.RunId = r.Id AND r.Deleted = ? AND r.Container = ? AND pre.Id = ?");
         sql.add(false);
-        sql.add(c.getId());
+        sql.add(schema.getContainer().getId());
         sql.add(id);
 
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(MoleculePrecursor.class);
@@ -130,6 +133,9 @@ public class MoleculePrecursorManager
             sql.append(" AND pci.SampleFileId=?");
             sql.add(sampleFileId);
         }
+
+        // Apply a deterministic ordering, related to properly scrolling for issue 45544
+        sql.append(" ORDER BY pci.Id");
 
         return  new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PrecursorChromInfoLitePlus.class);
     }

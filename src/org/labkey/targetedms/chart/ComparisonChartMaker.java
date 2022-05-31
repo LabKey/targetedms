@@ -225,7 +225,7 @@ public class ComparisonChartMaker
                                          String yLabel, boolean barChart,
                                          User user, Container container)
     {
-        ComparisonChartInputMaker inputMaker = new ComparisonChartInputMaker(peptideGroup.getRunId(), pciPlusList, chartType);
+        ComparisonChartInputMaker inputMaker = new ComparisonChartInputMaker(peptideGroup.getRunId(), pciPlusList, chartType, user, container);
         inputMaker.setGroupByAnnotationName(groupByAnnotation);
         inputMaker.setFilterByAnnotationValue(filterByAnnotation);
         inputMaker.setCvValues(cvValues);
