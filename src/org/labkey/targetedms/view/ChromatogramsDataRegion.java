@@ -56,6 +56,8 @@ public class ChromatogramsDataRegion extends DataRegion
     public static final String PEPTIDE_PRECURSOR_CHROM_DATA_REGION = "PeptidePrecursorChromatograms";
     public static final String MOLECULE_PRECURSOR_CHROM_DATA_REGION = "MoleculePrecursorChromatograms";
 
+    public static final String HIGHLIGHTED_CHROMATOGRAM_PARAMETER_NAME = "highlightChromInfoId";
+    public static final String FRAGMENT_PREFIX = "ChromInfo";
     private final List<String> _listeningDataRegionNames = new ArrayList<>();
     private final JSONArray _svgs = new JSONArray();
 

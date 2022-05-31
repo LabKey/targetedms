@@ -134,6 +134,9 @@ public class MoleculePrecursorManager
             sql.add(sampleFileId);
         }
 
+        // Apply a deterministic ordering, related to properly scrolling for issue 45544
+        sql.append(" ORDER BY pci.Id");
+
         return  new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PrecursorChromInfoLitePlus.class);
     }
 
