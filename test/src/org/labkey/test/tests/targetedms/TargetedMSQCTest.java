@@ -198,6 +198,24 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertEquals("Wrong precursors", Arrays.asList(PRECURSOR_TITLES), qcPlotsWebPart.getPlotTitles());
     }
 
+    /*
+        Test coverage for Issue 45544: Clicking "View Chromatogram" from Panorama QC plot doesn't page to show desired plot
+        https://www.labkey.org/home/Developer/issues/issues-details.view?issueId=45544
+     */
+    @Test
+    public void testClickingChromatogramPlotFromQCPlot()
+    {
+        String acquiredDate = "2013-08-15 01:11:28";
+        goToProjectHome();
+        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        mouseOver(qcPlotsWebPart.getPointByAcquiredDate(acquiredDate));
+        waitForElement(qcPlotsWebPart.getBubble());
+        clickAndWait(Locator.linkWithText("view chromatogram"));
+
+        assertTrue("Incorrect replicate", isTextPresent("Q_Exactive_08_09_2013_JGB_88"));
+    }
+
     @Test
     public void testQCAnnotations()
     {
