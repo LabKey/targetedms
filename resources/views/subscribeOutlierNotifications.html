@@ -1,0 +1,130 @@
+<p>
+    Panorama can automatically notify you when new data is imported into this folder.
+</p>
+
+<div id="userSubscriptionDiv"></div>
+<div id="userSubscriptionErrorDiv"></div>
+
+<script type="text/javascript">
+    if (!LABKEY.internal)
+        LABKEY.internal = {};
+
+    LABKEY.internal.SubscribeQCNotification = new function () {
+
+        var userSubscription;
+        var userSubscriptionHtml = '';
+
+        function showUserSubscription() {
+
+            userSubscriptionHtml +=  '<p>'
+                                  +     '<input type="radio" name="subscriptionType" ' + (userSubscription ? (!userSubscription.enabled ? "checked":"") :"" )  + '/> Do not email with notifications about newly imported data<br/>'
+                                  +     '<input type="radio" name="subscriptionType" id="enable" ' + (userSubscription ? (userSubscription.enabled ? "checked":"") :"" ) + '/> Email me when the '
+                                  +     '<select name="sampleCount">'
+                                  +         '<option value="1" ' + (userSubscription ? (userSubscription.samples === 1 && userSubscription.enabled ? "selected":"") :"" ) + '>most</option>'
+                                  +         '<option value="2" ' + (userSubscription ? (userSubscription.samples === 2 && userSubscription.enabled ? "selected":"") :"" ) + '>two most</option>'
+                                  +         '<option value="3" ' + (userSubscription ? (userSubscription.samples === 3 && userSubscription.enabled ? "selected":"") :"" ) + '>three most</option>'
+                                  +         '<option value="4" ' + (userSubscription ? (userSubscription.samples === 4 && userSubscription.enabled ? "selected":"") :"" ) + '>four most</option>'
+                                  +         '<option value="5" ' + (userSubscription ? (userSubscription.samples === 5 && userSubscription.enabled ? "selected":"") :"" ) + '>five most</option>'
+                                  +     '</select> '
+                                  +     'recently imported samples each have at least '
+                                  +     '<input type="number" style="width: 3em" min="0" name="outlierCount"/> outliers'
+                                  +  '</p>'
+                                  + '<input type="button" value="Save" class="labkey-button primary"  onclick="LABKEY.internal.SubscribeQCNotification.onSave()"/> '
+                                  + '<input type="button" value="Cancel" class="labkey-button" onclick="LABKEY.internal.SubscribeQCNotification.onCancel()" />' ;
+
+            jQuery('#userSubscriptionDiv').html(userSubscriptionHtml);
+
+            if(userSubscription && userSubscription.outliers && userSubscription.enabled)
+            {
+                jQuery('input[name="outlierCount"]').val(userSubscription.outliers);
+            }
+        }
+
+        function getReturnURL() {
+            var returnURL = LABKEY.ActionURL.getParameter('returnUrl');
+
+            if(returnURL) {
+                return returnURL;
+            }
+            else {
+                return LABKEY.ActionURL.buildURL('project', 'start');
+            }
+        }
+
+        return {
+            getUserSubscriptions: function() {
+                LABKEY.Query.selectRows({
+                    schemaName: 'PanoramaPremium',
+                    queryName: 'qcemailnotifications',
+                    columns: ['userId','outliers','samples','enabled'],
+                    filterArray: [LABKEY.Filter.create('userId', LABKEY.user.id, LABKEY.Filter.Types.EQUAL)],
+                    scope: this,
+                    success: function (result) {
+                        if(result.rows.length > 0)
+                            userSubscription = result.rows[0];
+                        showUserSubscription();
+                    },
+                    failure: LABKEY.Utils.getCallbackWrapper(LABKEY.internal.SubscribeQCNotification.onError, this, true)
+                });
+            },
+
+            onCancel: function () {
+                window.location = getReturnURL();
+            },
+
+            onSave: function () {
+                var enable = jQuery('#enable').is(':checked');
+                var samples = jQuery('select[name=sampleCount]').val()
+                var outliers = jQuery('input[name=outlierCount]').val();
+
+                var records = [];
+                var commands = [];
+
+
+                LABKEY.Query.selectRows({
+                   schemaName: 'PanoramaPremium',
+                   queryName: 'qcemailnotifications',
+                   columns: ['userId'],
+                   filterArray: [LABKEY.Filter.create('userId', LABKEY.user.id, LABKEY.Filter.Types.EQUAL)],
+                   success: function (data) {
+                       var op = data.rows.length > 0 ? 'update':'insert';
+
+                       records.push({enabled: enable, outliers: outliers, samples: samples, userId: LABKEY.user.id});
+
+                       commands.push({
+                           schemaName: 'PanoramaPremium',
+                           queryName: 'qcemailnotifications',
+                           command: op,
+                           rows: records
+                       });
+
+                       LABKEY.Query.saveRows({
+                           commands: commands,
+                           method: 'POST',
+                           success: function () {
+                               window.location = getReturnURL();
+                           },
+                           failure: LABKEY.Utils.getCallbackWrapper(LABKEY.internal.SubscribeQCNotification.onError, this, true)
+                       });
+                   }
+                });
+
+            },
+            onError: function (exception, responseObj) {
+                var msg = LABKEY.Utils.getMsgFromError(responseObj, exception, {
+                    showExceptionClass: false,
+                    msgPrefix: 'Error: '
+                });
+
+                if (responseObj.exception === "The existing row was not found.") {
+                    msg = 'You are not subscribed to any notification.'
+                }
+
+                jQuery('#qcMetricsError').html('<p>' + LABKEY.Utils.encodeHtml(msg) + '</p>');
+            }
+
+        }
+    };
+
+    LABKEY.internal.SubscribeQCNotification.getUserSubscriptions();
+</script>
