@@ -13,23 +13,24 @@ import org.labkey.api.query.InvalidKeyException;
 import org.labkey.api.query.QueryUpdateService;
 import org.labkey.api.query.QueryUpdateServiceException;
 import org.labkey.api.query.UserIdQueryForeignKey;
+import org.labkey.api.query.UserSchema;
 import org.labkey.api.query.ValidationException;
 import org.labkey.api.security.User;
 import org.labkey.api.security.UserPrincipal;
 import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.security.permissions.Permission;
 import org.labkey.api.security.permissions.ReadPermission;
-import org.labkey.panoramapremium.PanoramaPremiumManager;
-import org.labkey.panoramapremium.PanoramaPremiumSchema;
+import org.labkey.targetedms.TargetedMSManager;
+import org.labkey.targetedms.TargetedMSSchema;
 
 import java.sql.SQLException;
 import java.util.Map;
 
-public class QCEmailNotificationsTable extends FilteredTable<PanoramaPremiumSchema>
+public class QCEmailNotificationsTable extends FilteredTable<TargetedMSSchema>
 {
-    public QCEmailNotificationsTable(@NotNull PanoramaPremiumSchema userSchema, @Nullable ContainerFilter containerFilter)
+    public QCEmailNotificationsTable(@NotNull TargetedMSSchema userSchema, @Nullable ContainerFilter containerFilter)
     {
-        super(PanoramaPremiumManager.getTableInfoQCEmailNotifications(), userSchema, containerFilter);
+        super(TargetedMSManager.getTableInfoQCEmailNotifications(), userSchema, containerFilter);
         var userColumn = wrapColumn(getRealTable().getColumn("userId"));
         var outlierColumn = wrapColumn( getRealTable().getColumn("outliers"));
         var sampleFilesColumn = wrapColumn( getRealTable().getColumn("samples"));
@@ -51,13 +52,13 @@ public class QCEmailNotificationsTable extends FilteredTable<PanoramaPremiumSche
     @Override
     protected void applyContainerFilter(ContainerFilter filter)
     {
-        if (filter.getType().equals(ContainerFilter.Type.Current))
+        if (ContainerFilter.Type.Current.equals(filter.getType()))
             filter = getDefaultMetricContainerFilter(getUserSchema());
 
         super.applyContainerFilter(filter);
     }
 
-    public static ContainerFilter getDefaultMetricContainerFilter(PanoramaPremiumSchema schema)
+    public static ContainerFilter getDefaultMetricContainerFilter(UserSchema schema)
     {
         // the base set of configuration live at the root container
         return new ContainerFilter.CurrentPlusExtras(schema.getContainer(), schema.getUser(), ContainerManager.getRoot());
@@ -75,7 +76,7 @@ public class QCEmailNotificationsTable extends FilteredTable<PanoramaPremiumSche
         return (getContainer().hasPermission(user, ReadPermission.class));
     }
 
-    private class QCEmailNotificationsQueryUpdateService extends DefaultQueryUpdateService
+    private static class QCEmailNotificationsQueryUpdateService extends DefaultQueryUpdateService
     {
         public QCEmailNotificationsQueryUpdateService(@NotNull TableInfo queryTable, TableInfo dbTable)
         {

@@ -56,6 +56,7 @@ import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.PopupMenu;
 import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.template.ClientDependency;
+import org.labkey.panoramapremium.query.QCEmailNotificationsTable;
 import org.labkey.targetedms.parser.Chromatogram;
 import org.labkey.targetedms.parser.ChromatogramBinaryFormat;
 import org.labkey.targetedms.parser.ReplicateAnnotation;
@@ -208,6 +209,8 @@ public class TargetedMSSchema extends UserSchema
 
     /** Prefix for a run-specific table name, customized based on the data present within that run */
     public static final String SAMPLE_FILE_RUN_PREFIX = "samplefile_run";
+
+    public static final String TABLE_QC_EMAIL_NOTIFICATIONS = "QCEmailNotifications";
 
     // Map of tables that have a library view -> name of the library view
     public static final CaseInsensitiveHashMap<String> TABLES_LIBRARY_VIEWS = new CaseInsensitiveHashMap<>(Map.of(
@@ -1535,6 +1538,11 @@ public class TargetedMSSchema extends UserSchema
             return table;
         }
 
+        if(TABLE_QC_EMAIL_NOTIFICATIONS.equalsIgnoreCase(name))
+        {
+            return new QCEmailNotificationsTable(this, cf);
+        }
+
         if (getTableNames().contains(name))
         {
             FilteredTable<TargetedMSSchema> result = new FilteredTable<>(getSchema().getTable(name), this, cf);
@@ -1717,6 +1725,7 @@ public class TargetedMSSchema extends UserSchema
         hs.add(TABLE_KEYWORDS);
         hs.add(TABLE_KEYWORD_CATEGORIES);
         hs.add(TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION);
+        hs.add(TABLE_QC_EMAIL_NOTIFICATIONS);
 
         return hs;
     }

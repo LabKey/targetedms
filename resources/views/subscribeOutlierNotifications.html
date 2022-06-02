@@ -17,7 +17,7 @@
         function showUserSubscription() {
 
             userSubscriptionHtml +=  '<p>'
-                                  +     '<input type="radio" name="subscriptionType" ' + (userSubscription ? (!userSubscription.enabled ? "checked":"") :"" )  + '/> Do not email with notifications about newly imported data<br/>'
+                                  +     '<input type="radio" name="subscriptionType" ' + (userSubscription ? (!userSubscription.enabled ? "checked":"") : "checked" )  + '/> Do not email with notifications about newly imported data<br/>'
                                   +     '<input type="radio" name="subscriptionType" id="enable" ' + (userSubscription ? (userSubscription.enabled ? "checked":"") :"" ) + '/> Email me when the '
                                   +     '<select name="sampleCount">'
                                   +         '<option value="1" ' + (userSubscription ? (userSubscription.samples === 1 && userSubscription.enabled ? "selected":"") :"" ) + '>most</option>'
@@ -54,7 +54,7 @@
         return {
             getUserSubscriptions: function() {
                 LABKEY.Query.selectRows({
-                    schemaName: 'PanoramaPremium',
+                    schemaName: 'targetedms',
                     queryName: 'qcemailnotifications',
                     columns: ['userId','outliers','samples','enabled'],
                     filterArray: [LABKEY.Filter.create('userId', LABKEY.user.id, LABKEY.Filter.Types.EQUAL)],
@@ -82,7 +82,7 @@
 
 
                 LABKEY.Query.selectRows({
-                   schemaName: 'PanoramaPremium',
+                   schemaName: 'targetedms',
                    queryName: 'qcemailnotifications',
                    columns: ['userId'],
                    filterArray: [LABKEY.Filter.create('userId', LABKEY.user.id, LABKEY.Filter.Types.EQUAL)],
@@ -92,7 +92,7 @@
                        records.push({enabled: enable, outliers: outliers, samples: samples, userId: LABKEY.user.id});
 
                        commands.push({
-                           schemaName: 'PanoramaPremium',
+                           schemaName: 'targetedms',
                            queryName: 'qcemailnotifications',
                            command: op,
                            rows: records
