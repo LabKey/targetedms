@@ -18,6 +18,7 @@ import org.labkey.api.util.ExceptionUtil;
 import org.labkey.api.util.MailHelper;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.panoramapremium.model.UserSubscription;
+import org.labkey.targetedms.TargetedMSManager;
 
 import javax.mail.Message;
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class QCNotificationSender implements SkylineDocumentImportListener
         if(TargetedMSService.get().getFolderType(container) == TargetedMSService.FolderType.QC)
         {
             //check if the user is subscribed to receive qc notifications
-            List<UserSubscription> userSubscriptions = getUserSubscription(container, user);
+            List<UserSubscription> userSubscriptions = getUserSubscriptions(container);
 
             if (!userSubscriptions.isEmpty())
             {
@@ -205,9 +206,13 @@ public class QCNotificationSender implements SkylineDocumentImportListener
         return emailSubjectAndBody;
     }
 
-    public List<UserSubscription> getUserSubscription(Container container, User user)
+    public List<UserSubscription> getUserSubscriptions(Container container)
     {
-        SQLFragment sql = new SQLFragment("SELECT userId,enabled, samples, outliers FROM PanoramaPremium.QCEmailNotifications WHERE Container = ? AND enabled = ?" , container.getId(), true);
+        SQLFragment sql = new SQLFragment("SELECT userId,enabled, samples, outliers FROM ").
+                append(TargetedMSManager.getTableInfoQCEmailNotifications(), "qcen").
+                append(" WHERE Container = ? AND enabled = ?").
+                add(container.getId()).
+                add(true);
         DbSchema query = DbSchema.get("targetedms", DbSchemaType.Module);
         return new SqlSelector(query, sql).getArrayList(UserSubscription.class);
     }
