@@ -101,6 +101,7 @@ import org.labkey.api.pipeline.PipelineUrls;
 import org.labkey.api.pipeline.PipelineValidationException;
 import org.labkey.api.pipeline.browse.PipelinePathForm;
 import org.labkey.api.portal.ProjectUrls;
+import org.labkey.api.protein.PeptideCharacteristic;
 import org.labkey.api.protein.ProteinService;
 import org.labkey.api.query.BatchValidationException;
 import org.labkey.api.query.DetailsURL;
@@ -4889,14 +4890,10 @@ public class TargetedMSController extends SpringActionController
         if (group.getSequenceId() != null)
         {
             int seqId = group.getSequenceId().intValue();
-            List<String> peptideSequences = new ArrayList<>();
-            for (Peptide peptide : PeptideManager.getPeptidesForGroup(group.getId()))
-            {
-                peptideSequences.add(peptide.getSequence());
-            }
+            List<PeptideCharacteristic> peptideCharacteristics = new ArrayList<>(PeptideManager.getPeptideCharacteristic(group.getId()));
 
             ProteinService proteinService = ProteinService.get();
-            WebPartView<?> sequenceView = proteinService.getProteinCoverageView(seqId, peptideSequences.toArray(new String[0]), 100, true, group.getAccession());
+            WebPartView<?> sequenceView = proteinService.getProteinCoverageView(seqId, peptideCharacteristics, 100, true, group.getAccession());
 
             sequenceView.setTitle("Sequence Coverage");
             sequenceView.enableExpandCollapse("SequenceCoverage", false);
@@ -5104,17 +5101,19 @@ public class TargetedMSController extends SpringActionController
             if (group.getSequenceId() != null)
             {
                 int seqId = group.getSequenceId().intValue();
-                List<String> peptideSequences = new ArrayList<>();
+                List<PeptideCharacteristic> peptideCharacteristics = new ArrayList<>();
                 for (Peptide peptide : PeptideManager.getPeptidesForGroup(group.getId()))
                 {
-                    peptideSequences.add(peptide.getSequence());
+                    PeptideCharacteristic peptideCharacteristic = new PeptideCharacteristic();
+                    peptideCharacteristic.setSequence(peptide.getSequence());
+                    peptideCharacteristics.add(peptideCharacteristic);
                 }
                 ProteinService proteinService = ProteinService.get();
                 ActionURL searchURL = urlProvider(MS2Urls.class).getProteinSearchUrl(getContainer());
                 searchURL.addParameter("seqId", group.getSequenceId().intValue());
                 searchURL.addParameter("identifier", group.getLabel());
                 getViewContext().getResponse().getWriter().write("<a href=\"" + searchURL + "\">Search for other references to this protein</a><br/>");
-                view = proteinService.getProteinCoverageView(seqId, peptideSequences.toArray(new String[0]), 40, true, null);
+                view = proteinService.getProteinCoverageView(seqId, peptideCharacteristics, 40, true, null);
             }
             else
             {
