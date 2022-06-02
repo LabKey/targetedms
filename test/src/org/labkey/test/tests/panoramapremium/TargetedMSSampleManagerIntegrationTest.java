@@ -40,7 +40,7 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
     private void doInit()
     {
         setupFolder(FolderType.QC);
-        _containerHelper.enableModules(Arrays.asList("Dumbster", "PanoramaPremium", "SampleManagement"));
+        _containerHelper.enableModules(Arrays.asList("Dumbster", "SampleManagement"));
 
         setupSubfolder(getProjectName(), TargetedMS_SubFolder, FolderType.QC);
         importData(SProCoP_FILE_ANNOTATED);

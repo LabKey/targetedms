@@ -41,7 +41,7 @@ public class TargetedMSHidePeptidesAndMolecules extends TargetedMSTest
     private void doInit()
     {
         setupFolder(FolderType.QC);
-        _containerHelper.enableModules(Arrays.asList("Dumbster", "PanoramaPremium"));
+        _containerHelper.enableModules(Arrays.asList("Dumbster"));
 
         setupSubfolder(getProjectName(), PeptidesOnlySubfolder, FolderType.QC);
         importData(PeptidesOnlySkyFile);

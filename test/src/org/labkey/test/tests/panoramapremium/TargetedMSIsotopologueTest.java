@@ -31,7 +31,7 @@ public class TargetedMSIsotopologueTest extends TargetedMSPremiumTest
     private void doInit()
     {
         setupFolder(FolderType.QC);
-        _containerHelper.enableModules(Arrays.asList("Dumbster", "PanoramaPremium"));
+        _containerHelper.enableModules(Arrays.asList("Dumbster"));
         importData(ISOTOPOLOGUE_FILE_ANNOTATED);
     }
 

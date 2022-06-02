@@ -59,7 +59,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
     private void doInit()
     {
         setupFolder(FolderType.QC);
-        _containerHelper.enableModules(Arrays.asList("Dumbster", "PanoramaPremium"));
+        _containerHelper.enableModules(Arrays.asList("Dumbster"));
         _userHelper.createUser(USER);
         new ApiPermissionsHelper(this).setUserPermissions(USER, "Reader");
         importData(SProCoP_FILE);

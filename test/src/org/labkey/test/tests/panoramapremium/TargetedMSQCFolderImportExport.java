@@ -42,7 +42,7 @@ public class TargetedMSQCFolderImportExport extends TargetedMSPremiumTest
     {
         setupFolder(FolderType.QC);
         setUpFolder(IMPORT_FOLDER, FolderType.QC);
-        _containerHelper.enableModules(Arrays.asList("Dumbster", "PanoramaPremium"));
+        _containerHelper.enableModules(Arrays.asList("Dumbster"));
 
         goToProjectHome();
         importData(SProCoP_FILE);
