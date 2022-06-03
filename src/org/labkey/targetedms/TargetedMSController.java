@@ -2575,7 +2575,16 @@ public class TargetedMSController extends SpringActionController
                 }
                 sql.append(")");
             }
+        }
 
+        public Long getChromInfoId()
+        {
+            return _chromInfoId;
+        }
+
+        public void setChromInfoId(Long chromInfoId)
+        {
+            _chromInfoId = chromInfoId;
         }
     }
 
