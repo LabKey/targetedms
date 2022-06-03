@@ -68,6 +68,8 @@ public class TargetedMSListener implements ContainerManager.ContainerListener
         new SqlExecutor(TargetedMSManager.getSchema()).execute("DELETE FROM " + TargetedMSManager.getTableInfoExcludedPrecursors() + " WHERE Container = ?", c);
 
         LibSpectrumReader.clearLibCache(c);
+
+        new SqlExecutor(TargetedMSManager.getSchema()).execute("DELETE FROM " + TargetedMSManager.getTableInfoQCEmailNotifications() + " WHERE Container = ?", c);
     }
 
     @Override
