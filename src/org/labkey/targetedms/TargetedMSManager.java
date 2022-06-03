@@ -432,11 +432,6 @@ public class TargetedMSManager
         return getSchema().getTable(TargetedMSSchema.TABLE_ENZYME);
     }
 
-
-    public static TableInfo getTableInfoQCEmailNotifications()
-    {
-        return getSchema().getTable(TargetedMSSchema.TABLE_QC_EMAIL_NOTIFICATIONS);
-    }
     public static TableInfo getTableInfoAnnotationSettings()
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_ANNOTATION_SETTINGS);

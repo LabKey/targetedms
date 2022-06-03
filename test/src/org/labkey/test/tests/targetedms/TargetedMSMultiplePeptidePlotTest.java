@@ -71,12 +71,11 @@ public class TargetedMSMultiplePeptidePlotTest extends TargetedMSTest
         clickButton("Update");
 
         checker().verifyEquals("Only one graph should have been displayed", 1, table.getDataRowCount());
-        checker().verifyNotNull("Couldn't find plot with width " + width,
-                Locator.tagWithAttribute("rect", "width", width).findElement(getDriver()));
-        checker().verifyNotNull("Couldn't find plot with height " + height,
-                Locator.tagWithAttribute("rect", "height", height).findElement(getDriver()));
+        checker().verifyEquals("Incorrect width of the plot", width,
+                Locator.tagWithAttribute("rect", "x", "0").findElement(getDriver()).getAttribute("width"));
+        checker().verifyEquals("Incorrect height of the plot", height,
+                Locator.tagWithAttribute("rect", "x", "0").findElement(getDriver()).getAttribute("height"));
         checker().verifyTrue("Incorrect replicate", isElementPresent(Locator.tagContainingText("div", replicateName)));
-        checker().screenShotIfNewError("singleReplicate");
 
         log("Verifying exporting of PNG and PDF plots");
         mouseOver(Locator.tagWithAttributeContaining("div", "alt", "Chromatogram"));
