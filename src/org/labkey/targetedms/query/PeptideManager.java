@@ -21,6 +21,7 @@ import org.labkey.api.data.Container;
 import org.labkey.api.data.DatabaseCache;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SqlSelector;
+import org.labkey.api.protein.PeptideCharacteristic;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.parser.GeneralMoleculeChromInfo;
 import org.labkey.targetedms.parser.Peptide;
@@ -91,6 +92,34 @@ public class PeptideManager
         sql.add(peptideGroupId);
 
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(Peptide.class);
+    }
+
+    public static List<PeptideCharacteristic> getPeptideCharacteristic(long peptideGroupId)
+    {
+        var sqlDialect = TargetedMSManager.getSqlDialect();
+        var pgLog10Intensity = "LOG(" + sqlDialect.getNumericCast(new SQLFragment("MAX(X.Intensity)")).getSQL() + ")";
+        var sqlServerLog10Intensity = "LOG10(MAX(X.Intensity))";
+        var pgConfidenceValueToRound = "-LOG(" + sqlDialect.getNumericCast(new SQLFragment("MAX(X.Confidence)")).getSQL() + ")";
+        var pgLog10Confidence = "ROUND(" + sqlDialect.getNumericCast(new SQLFragment(pgConfidenceValueToRound)).getSQL() + ",4)";
+        var sqlServerLog10Confidence = "ROUND(-LOG10(MAX(X.Confidence)),4)";
+        var log10IntensitySql = sqlDialect.isPostgreSQL() ? pgLog10Intensity : sqlServerLog10Intensity;
+        var log10ConfidenceSql = sqlDialect.isPostgreSQL() ? pgLog10Confidence : sqlServerLog10Confidence;
+        SQLFragment sql = new SQLFragment("SELECT X.Sequence, " + log10IntensitySql + " AS Intensity, " + log10ConfidenceSql + " AS Confidence FROM ");
+        sql.append("(SELECT pep.Sequence, SUM(TotalArea) AS Intensity, MAX(qvalue) AS Confidence FROM ");
+        sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
+        sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralPrecursor(), "p");
+        sql.append(" ON p.Id = pci.PrecursorId");
+        sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoPeptide(),"pep");
+        sql.append(" ON p.GeneralMoleculeId = pep.Id");
+        sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralMolecule(),"gm");
+        sql.append(" ON gm.id = pep.Id");
+        sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoSampleFile(), "sf");
+        sql.append(" ON sf.Id = pci.SampleFileId");
+        sql.append(" WHERE gm.PeptideGroupId=? ");
+        sql.append(" GROUP BY pep.Sequence,pci.SampleFileId ) X ");
+        sql.append(" GROUP BY X.Sequence");
+        sql.add(peptideGroupId);
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PeptideCharacteristic.class);
     }
 
     public static Double getMinRetentionTime(long peptideId)
