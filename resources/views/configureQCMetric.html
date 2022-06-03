@@ -1,0 +1,266 @@
+<p style="width: 800px">
+    Configure the metrics to be tracked for quality control and system suitability. Metrics can be enabled and disabled
+    in each folder. Metrics set to "Auto" will automatically enable based on the available data in the current folder.
+</p>
+
+<div id="qcMetricsTable"></div>
+<div id="qcMetricsError"></div>
+<script type="text/javascript">
+
+    if (!LABKEY.internal)
+        LABKEY.internal = {};
+
+    LABKEY.internal.ConfigureQCMetrics = new function () {
+        var qcMetrics;
+        var qcMetricsTable ='';
+        var configRows = [];
+
+        function showQCMetrics() {
+            qcMetricsTable += '<form id="qcMetricsForm" >';
+
+            qcMetricsTable += '<table class="labkey-data-region-legacy labkey-show-borders">' +
+                                '<tr>' +
+                                    '<td class="labkey-column-header">Status</td>' +
+                                    '<td class="labkey-column-header">Name</td>' +
+                                    '<td class="labkey-column-header">Type</td>' +
+                                '</tr>';
+
+            jQuery.each(qcMetrics, function (index, row) {
+                var rowClass = index % 2 === 1 ? "labkey-row" : "labkey-alternate-row";
+                configRows.push({metric: row.id, name: row.name, Enabled: row.Enabled, Inserted: row.Inserted});
+                var editLock = row.Container === LABKEY.container.id;
+
+                qcMetricsTable += '<tr class="' + rowClass + '">';
+
+                qcMetricsTable += '<td>' + '<select name=\"' + LABKEY.Utils.encodeHtml(row.name) + '\" id=\"' +  "select-"+ row.id  +  '\">' +
+                            '<option value="true" ' + (row.Enabled ? 'selected' : '') + '>Enabled</option>' +
+                            '<option value="" ' + (row.Enabled == null ? 'selected' : '') + '>Auto</option>' +
+                            '<option value="false" ' + (row.Enabled === false ? 'selected' : '') + '>Disabled</option>' +
+                        '</select>' +
+                        '</td>';
+
+                qcMetricsTable += '<td>' + (editLock ? '<a id="editLink' + index + '" href="#">' : '' ) + LABKEY.Utils.encodeHtml(row.name) + '</td>' + (editLock ? '</a>' : '' );
+                qcMetricsTable += '<td>' + (row.PrecursorScoped ? 'Precursor' : 'Run') + '</td>' +
+                        '</tr>';
+
+            });
+
+            qcMetricsTable += '</table>' + '<br>' +
+                    '<button type="button" class="labkey-button primary" onclick="LABKEY.internal.ConfigureQCMetrics.save()" style="margin-right: 20px;">Save</button>' +
+                    '<button type="button" class="labkey-button" onclick="LABKEY.internal.ConfigureQCMetrics.resetQCMetrics()" style="margin-right: 20px;">Cancel</button>' +
+                    '<button type="button" class="labkey-button" onclick="LABKEY.internal.ConfigureQCMetrics.addNewMetric(\'custom\')" style="margin-right: 20px;">Add New Custom Metric</button>' +
+                    '<button type="button" class="labkey-button" onclick="LABKEY.internal.ConfigureQCMetrics.addNewMetric(\'trace\')">Add New Trace Metric</button>' +
+                    '</form>';
+
+            jQuery('#qcMetricsTable').html(qcMetricsTable);
+
+            jQuery.each(qcMetrics, function (index, row) {
+                jQuery('#editLink' + index).click(function (e) {
+                    e.preventDefault();
+                    LABKEY.internal.ConfigureQCMetrics.editMetric(jQuery('#editLink' + index).text());
+                    return false;
+                })
+            });
+        }
+
+        function getReturnURL() {
+            var returnURL = LABKEY.ActionURL.getParameter('returnUrl');
+
+            if(returnURL) {
+                return returnURL;
+            }
+            else {
+                return LABKEY.ActionURL.buildURL('project', 'start');
+            }
+        }
+
+        return {
+            getQCMetrics: function() {
+                LABKEY.Query.selectRows({
+                    schemaName: 'targetedms',
+                    queryName: 'qcMetricsConfig',
+                    sort: 'name',
+                    scope: this,
+                    success: function (result) {
+                        result.rows.sort(function(row1, row2) { return row1.name.toLowerCase().localeCompare(row2.name.toLowerCase()); });
+                        qcMetrics = result.rows;
+                        showQCMetrics();
+                    },
+                    failure: LABKEY.Utils.getCallbackWrapper(LABKEY.internal.ConfigureQCMetrics.onError, this, true)
+                });
+            },
+
+            onError: function(exception, responseObj){
+                console.error(arguments);
+
+                var msg = LABKEY.Utils.getMsgFromError(responseObj, exception, {
+                    showExceptionClass: false,
+                    msgPrefix: 'Error: '
+                });
+
+                jQuery('#qcMetricsError').html('<p>' + msg + '</p>');
+            },
+
+            editMetric: function (metricName) {
+                var clickedQcMetricConfig = {};
+                jQuery.each(qcMetrics, function (index, row) {
+                    if (row.name === metricName) {
+                        clickedQcMetricConfig = row;
+                    }
+                });
+
+                var op = 'update';
+                if (clickedQcMetricConfig.TraceName) {
+                    LABKEY.internal.ConfigureQCMetrics.showTraceMetricWindow(op, clickedQcMetricConfig)
+                }
+                else {
+                    LABKEY.internal.ConfigureQCMetrics.showCustomMetricWindow(op, clickedQcMetricConfig);
+                }
+            },
+
+            resetQCMetrics: function(){
+                window.location = getReturnURL();
+            },
+
+            showCustomMetricWindow: function (op, clickedMetric) {
+                LABKEY.Query.getSchemas({
+                    scope: this,
+                    containerPath: LABKEY.container.id,
+                    success:  function(schemasInfo) {
+                        var windowConfig = {
+                            parent: this,
+                            schemas: schemasInfo.schemas,
+                            operation: op
+                        };
+
+                        if (clickedMetric) {
+                            windowConfig.metric = clickedMetric;
+                        }
+                        Ext4.create('Panorama.Window.AddCustomMetricWindow', windowConfig).show();
+                    }
+                });
+            },
+
+            showTraceMetricWindow: function (op, clickedMetric) {
+                LABKEY.Query.selectRows({
+                    schemaName: 'targetedms',
+                    queryName: 'SampleFileChromInfo',
+                    columns: ['TextId'],
+                    filterArray: [LABKEY.Filter.create('TextId', null, LABKEY.Filter.Types.NOT_MISSING)],
+                    success: function (sampleFileChromInfos) {
+
+                        var tracesPresent = false;
+                        if (sampleFileChromInfos.rows && sampleFileChromInfos.rows.length > 0) {
+                            var rows = sampleFileChromInfos.rows;
+                            var uniqueTraces = [];
+                            var trace  = {};
+
+                            for (var i in rows) {
+                                trace[rows[i]['TextId']] = rows[i];
+                            }
+
+                            for (i in trace) {
+                                uniqueTraces.push(trace[i]);
+                            }
+
+                            traces = uniqueTraces;
+                            tracesPresent = true;
+                        }
+
+                        var windowConfig = {
+                            parent: this,
+                            traces: tracesPresent ? traces : {} ,
+                            tracesPresent: tracesPresent,
+                            operation: op
+                        }
+
+                        if (clickedMetric) {
+                            windowConfig.metric = clickedMetric;
+                        }
+
+                        Ext4.create('Panorama.Window.AddTraceMetricWindow', windowConfig).show();
+                    }
+                });
+            },
+
+            addNewMetric: function (metricType) {
+                var op = 'insert';
+                if (metricType === 'custom') {
+                    this.showCustomMetricWindow(op);
+                }
+                else if (metricType === 'trace') {
+                    this.showTraceMetricWindow(op)
+                }
+            },
+
+            save: function () {
+                var recordsToInsert = [];
+                var recordsToUpdate = [];
+
+                LABKEY.internal.ConfigureQCMetrics.rowsBeforeSave.forEach(function (metricRow) {
+
+                    var stringValue = jQuery('#select-' + metricRow.metric)[0].value;
+                    var newValue;
+                    switch (stringValue) {
+                        case '' : newValue = null; break;
+                        case 'true' : newValue = true; break;
+                        case 'false' : newValue = false; break;
+                    }
+                    if (metricRow.Inserted) {
+                        //metric unchecked now
+                        if(newValue !== metricRow.Enabled) {
+                            recordsToUpdate.push({metric: metricRow.metric, Enabled: newValue});
+                        }
+
+                        metricRow.Enabled = newValue;
+                    }
+                    else {
+                        recordsToInsert.push({metric: metricRow.metric, Enabled: newValue});
+                        metricRow.Inserted = true;
+                    }
+                });
+
+                var rowsToUpsert = false;
+                var commands = [];
+
+                if (recordsToInsert.length > 0) {
+                    commands.push({
+                        schemaName: 'targetedms',
+                        queryName: 'qcenabledmetrics',
+                        command: 'insert',
+                        rows: recordsToInsert
+                    });
+                    rowsToUpsert = true;
+                }
+
+                if (recordsToUpdate.length > 0) {
+                    commands.push({
+                        schemaName: 'targetedms',
+                        queryName: 'qcenabledmetrics',
+                        command: 'update',
+                        rows: recordsToUpdate
+                    });
+                    rowsToUpsert = true;
+                }
+
+                if (rowsToUpsert) {
+                    LABKEY.Query.saveRows({
+                        commands: commands,
+                        method: 'POST',
+                        success: function (data) {
+                            window.location = getReturnURL();
+                        },
+                        failure: LABKEY.Utils.getCallbackWrapper(LABKEY.internal.ConfigureQCMetrics.onError, this, true)
+                    });
+                } else {
+                    window.location = getReturnURL();
+                }
+
+            },
+            rowsBeforeSave: configRows
+        }
+    };
+
+    LABKEY.internal.ConfigureQCMetrics.getQCMetrics();
+
+</script>

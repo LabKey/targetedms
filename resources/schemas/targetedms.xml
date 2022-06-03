@@ -1729,4 +1729,17 @@
             <column columnName="Container"/>
         </columns>
     </table>
+    <table tableName="QCEmailNotifications" tableDbType="TABLE">
+        <columns>
+            <column columnName="userId"/>
+            <column columnName="enabled"/>
+            <column columnName="outliers"/>
+            <column columnName="samples"/>
+            <column columnName="Created"/>
+            <column columnName="CreatedBy"/>
+            <column columnName="Modified"/>
+            <column columnName="ModifiedBy"/>
+            <column columnName="Container"/>
+        </columns>
+    </table>
 </tables>
