@@ -321,7 +321,7 @@ public class TargetedMSController extends SpringActionController
     // Action to setup a new folder
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class FolderSetupAction extends FormHandlerAction<FolderSetupForm>
+    public static class FolderSetupAction extends FormHandlerAction<FolderSetupForm>
     {
         public static final String DATA_PIPELINE_TAB = "Data Pipeline";
         public static final String RUNS_TAB = "Runs";
@@ -531,7 +531,7 @@ public class TargetedMSController extends SpringActionController
     // Action to create a Raw Data tab
     // ------------------------------------------------------------------------
     @RequiresPermission(AdminPermission.class)
-    public class AddRawDataTabAction extends FormHandlerAction<Object>
+    public static class AddRawDataTabAction extends FormHandlerAction<Object>
     {
         @Override
         public void validateCommand(Object target, Errors errors)
@@ -602,7 +602,7 @@ public class TargetedMSController extends SpringActionController
     // Action to show a list of uploaded documents
     // ------------------------------------------------------------------------
     @RequiresPermission(AdminPermission.class)
-    public class SetupAction extends SimpleViewAction<Object>
+    public static class SetupAction extends SimpleViewAction<Object>
     {
         @Override
         public ModelAndView getView(Object o, BindException errors)
@@ -627,12 +627,12 @@ public class TargetedMSController extends SpringActionController
     // Action to show QC reports
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class LeveyJenningsAction extends SimpleViewAction<URLParameterBean>
+    public static class LeveyJenningsAction extends SimpleViewAction<URLParameterBean>
     {
         @Override
         public ModelAndView getView(URLParameterBean urlParameterBean, BindException errors)
         {
-            return new JspView("/org/labkey/targetedms/view/qcTrendPlotReport.jsp");
+            return new JspView<>("/org/labkey/targetedms/view/qcTrendPlotReport.jsp");
         }
 
         @Override
@@ -702,7 +702,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class LeveyJenningsPlotOptionsAction extends MutatingApiAction<LeveyJenningsPlotOptions>
+    public static class  LeveyJenningsPlotOptionsAction extends MutatingApiAction<LeveyJenningsPlotOptions>
     {
         @Override
         public Object execute(LeveyJenningsPlotOptions form, BindException errors)
@@ -1007,7 +1007,7 @@ public class TargetedMSController extends SpringActionController
         if (autoQCPingMap != null)
         {
             // check if the last modified date is recent (i.e. within the last 15 min)
-            long timeoutMinutesAgo = System.currentTimeMillis() - ((long)TargetedMSManager.get().getAutoQCPingTimeout(container) * 60000l);
+            long timeoutMinutesAgo = System.currentTimeMillis() - ((long)TargetedMSManager.get().getAutoQCPingTimeout(container) * 60000L);
             Timestamp lastModified = (Timestamp)autoQCPingMap.get("Modified");
             autoQCPingMap.put("isRecent", lastModified.getTime() >= timeoutMinutesAgo);
         }
@@ -1019,7 +1019,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class GetQCMetricConfigurationsAction extends ReadOnlyApiAction<Object>
+    public static class GetQCMetricConfigurationsAction extends ReadOnlyApiAction<Object>
     {
         @Override
         public Object execute(Object form, BindException errors)
@@ -1040,7 +1040,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class GetContainerReplicateAnnotationsAction extends ReadOnlyApiAction<Object>
+    public static class GetContainerReplicateAnnotationsAction extends ReadOnlyApiAction<Object>
     {
         @Override
         public Object execute(Object form, BindException errors)
@@ -1100,7 +1100,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class QCSummaryHistoryAction extends SimpleViewAction<Object>
+    public static class QCSummaryHistoryAction extends SimpleViewAction<Object>
     {
         @Override
         public ModelAndView getView(Object o, BindException errors)
@@ -1131,7 +1131,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class GetQCMetricOutliersAction extends ReadOnlyApiAction<QCMetricOutliersForm>
+    public static class GetQCMetricOutliersAction extends ReadOnlyApiAction<QCMetricOutliersForm>
     {
 
         @Override
@@ -1174,7 +1174,7 @@ public class TargetedMSController extends SpringActionController
         private boolean _includeVariableCusum;
         private Date _startDate;
         private Date _endDate;
-        private List<OutlierGenerator.AnnotationGroup> _selectedAnnotations;
+        private List<OutlierGenerator.AnnotationGroup> _selectedAnnotations = Collections.emptyList();
         private boolean _showExcluded;
         private boolean _showReferenceGS;
         private boolean _showExcludedPrecursors;
@@ -1296,7 +1296,7 @@ public class TargetedMSController extends SpringActionController
      * */
     @RequiresPermission(ReadPermission.class)
     @Marshal(Marshaller.Jackson)
-    public class GetQCPlotsDataAction extends ReadOnlyApiAction<QCPlotsDataForm>
+    public static class GetQCPlotsDataAction extends ReadOnlyApiAction<QCPlotsDataForm>
     {
 
         @Override
@@ -1339,6 +1339,11 @@ public class TargetedMSController extends SpringActionController
                     .filter(qcMetricConfiguration -> qcMetricConfiguration.getId() == passedMetricId)
                     .collect(Collectors.toList());
 
+            if (qcMetricConfigurations.isEmpty())
+            {
+                throw new NotFoundException("No matching metric found for id " + passedMetricId);
+            }
+
             // get start date and end date for this qc folder
             Map<String,Object> qcFolderDateRange = TargetedMSManager.getQCFolderDateRange(getContainer());
             Date qcFolderStartDate = (Date) qcFolderDateRange.get("startDate");
@@ -1348,7 +1353,7 @@ public class TargetedMSController extends SpringActionController
             List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(schema, qcMetricConfigurations, qcFolderStartDate, qcFolderEndDate, form.getSelectedAnnotations(), form.isShowExcluded(), form.isShowExcludedPrecursors());
             Map<GuideSetKey, GuideSetStats> stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
             boolean zoomedRange = qcFolderStartDate != null &&
-                    qcFolderEndDate != null &&
+                    qcFolderEndDate != null && rangeStartDate != null && form.getEndDate() != null &&
                     (DateUtil.getDateOnly(qcFolderStartDate).compareTo(rangeStartDate) != 0 ||
                     DateUtil.getDateOnly(qcFolderEndDate).compareTo(form.getEndDate()) != 0);
             Map<GuideSetKey, GuideSetStats> targetedStats;
@@ -1424,7 +1429,7 @@ public class TargetedMSController extends SpringActionController
     // Action to show a list of chromatogram library archived revisions
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class ArchivedRevisionsAction extends SimpleViewAction<Object>
+    public static class ArchivedRevisionsAction extends SimpleViewAction<Object>
     {
         @Override
         public ModelAndView getView(Object o, BindException errors)
@@ -1449,7 +1454,7 @@ public class TargetedMSController extends SpringActionController
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
     @ActionNames("showList, begin")
-    public class ShowListAction extends SimpleViewAction<Object>
+    public static class ShowListAction extends SimpleViewAction<Object>
     {
         @Override
         public ModelAndView getView(Object o, BindException errors)
@@ -1478,7 +1483,7 @@ public class TargetedMSController extends SpringActionController
      * customize grid and view chooser menus available.
      */
     @RequiresPermission(ReadPermission.class)
-    public class ShowTargetsAction extends SimpleViewAction<ShowTargetsForm>
+    public static class ShowTargetsAction extends SimpleViewAction<ShowTargetsForm>
     {
         private String _pageTitle;
         @Override
@@ -1486,7 +1491,7 @@ public class TargetedMSController extends SpringActionController
         {
             if (StringUtils.isBlank(form.getQueryName()))
             {
-                errors.reject(ERROR_MSG, String.format("Expected a table name in the request", form.getQueryName()));
+                errors.reject(ERROR_MSG, String.format("Expected a table name in the request"));
                 return new SimpleErrorView(errors);
             }
             if (!LibraryQueryViewWebPart.isTableSupported(form.getQueryName()))
@@ -1667,9 +1672,8 @@ public class TargetedMSController extends SpringActionController
                 {
                     extractSeriesLegendInfo(series, plot, dataset);
                 }
-                if (plot instanceof CombinedDomainXYPlot)
+                if (plot instanceof CombinedDomainXYPlot combinedPlot)
                 {
-                    CombinedDomainXYPlot combinedPlot = (CombinedDomainXYPlot)plot;
                     for (XYPlot subplot : (List<XYPlot>) combinedPlot.getSubplots())
                     {
                         XYDataset combinedDataset = subplot.getDataset();
@@ -2062,7 +2066,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class PeptideAllChromatogramsChartAction extends SimpleViewAction<ChromatogramForm>
+    public static class PeptideAllChromatogramsChartAction extends SimpleViewAction<ChromatogramForm>
     {
         private TargetedMSRun _run; // save for use in appendNavTrail
 
@@ -2407,16 +2411,6 @@ public class TargetedMSController extends SpringActionController
             _replicatesFilter = replicatesFilter;
         }
 
-        public Long getChromInfoId()
-        {
-            return _chromInfoId;
-        }
-
-        public void setChromInfoId(Long chromInfoId)
-        {
-            _chromInfoId = chromInfoId;
-        }
-
         @NotNull
         public List<Integer> getReplicatesFilterList()
         {
@@ -2581,7 +2575,16 @@ public class TargetedMSController extends SpringActionController
                 }
                 sql.append(")");
             }
+        }
 
+        public Long getChromInfoId()
+        {
+            return _chromInfoId;
+        }
+
+        public void setChromInfoId(Long chromInfoId)
+        {
+            _chromInfoId = chromInfoId;
         }
     }
 
