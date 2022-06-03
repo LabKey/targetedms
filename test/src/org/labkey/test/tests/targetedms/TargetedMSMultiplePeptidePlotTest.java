@@ -76,6 +76,7 @@ public class TargetedMSMultiplePeptidePlotTest extends TargetedMSTest
         checker().verifyEquals("Incorrect height of the plot", height,
                 Locator.tagWithAttribute("rect", "x", "0").findElement(getDriver()).getAttribute("height"));
         checker().verifyTrue("Incorrect replicate", isElementPresent(Locator.tagContainingText("div", replicateName)));
+        checker().screenShotIfNewError("singleReplicate");
 
         log("Verifying exporting of PNG and PDF plots");
         mouseOver(Locator.tagWithAttributeContaining("div", "alt", "Chromatogram"));
