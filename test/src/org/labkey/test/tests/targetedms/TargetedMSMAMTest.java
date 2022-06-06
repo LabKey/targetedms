@@ -61,7 +61,7 @@ public class TargetedMSMAMTest extends TargetedMSTest
         assertTextPresentInThisOrder("NU205", "NU205", "1433Z");
         assertTextPresentInThisOrder("70-84", "325-333", "28-41");
         assertTextPresentInThisOrder("(K)ASTEGVAIQGQQGTR(L)", "(K)AQYEDIANR(S)", "(K)SVTEQGAELSNEER(N)");
-        assertTextPresentInThisOrder("Carbamidomethyl Cysteine @ C156", "Carbamidomethyl Cysteine @ C245", "Carbamidomethyl Cysteine @ C94");
+        assertTextPresentInThisOrder("Carbamidomethyl Cysteine @ C157", "Carbamidomethyl Cysteine @ C245", "Carbamidomethyl Cysteine @ C94");
     }
 
     @Test
