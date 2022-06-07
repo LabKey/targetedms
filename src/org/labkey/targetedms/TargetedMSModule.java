@@ -644,13 +644,15 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
             fcs.addZiploaderPattern(extBrukerRaw2);
         }
 
+        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", new QCSummaryMenuCustomizer("configureQCGroups", "Configure Included and Excluded Precursors"));
+        Portal.registerNavTreeCustomizer("Targeted MS QC Plots", new QCSummaryMenuCustomizer("configureQCGroups", "Configure Included and Excluded Precursors"));
+
         Portal.registerNavTreeCustomizer("Targeted MS QC Summary", new QCSummaryMenuCustomizer("configureQCMetric", "Configure QC Metrics"));
         Portal.registerNavTreeCustomizer("Targeted MS QC Plots", new QCSummaryMenuCustomizer("configureQCMetric", "Configure QC Metrics"));
 
-        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", new QCSummaryMenuCustomizer("subscribeOutlierNotifications", "Subscribe Outlier Notifications"));
-        Portal.registerNavTreeCustomizer("Targeted MS QC Plots", new QCSummaryMenuCustomizer("subscribeOutlierNotifications", "Subscribe Outlier Notifications"));
+        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", new QCSummaryMenuCustomizer("subscribeOutlierNotifications", "Subscribe to Outlier Notification Emails"));
+        Portal.registerNavTreeCustomizer("Targeted MS QC Plots", new QCSummaryMenuCustomizer("subscribeOutlierNotifications", "Subscribe to Outlier Notification Emails"));
 
-        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", new QCSummaryMenuCustomizer("configureQCGroups", "Include or Exclude Precursors"));
         TargetedMSService.get().registerSkylineDocumentImportListener(QCNotificationSender.get());
     }
 

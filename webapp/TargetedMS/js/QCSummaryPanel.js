@@ -143,13 +143,24 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                     '<div class="auto-qc-ping" id="{autoQcCalloutId}">AutoQC <span class="{autoQCPing:this.getAutoQCPingClass}"></span></div>',
                 '<tpl elseif="docCount == 0 && parentOnly">',
                     '<div class="qc-summary-text">No data found.</div><div>&nbsp;</div>' + this.getAutoQCSetupInfo(),
+                '<tpl elseif="docCount &gt; 0 && LABKEY.user.isAdmin">',
+                    '<div class="qc-summary-text">',
+                        '<a href="{path:this.getSampleFileLink}">{fileCount} sample file{fileCount:this.pluralize}</a> ' +
+                            'tracking <a href="{path:this.getPrecursorConfigLink}">{precursorCount} precursor{precursorCount:this.pluralize}</a> ' +
+                            'with <a href="{path:this.getMetricConfigLink}">{metricCount} metric{metricCount:this.pluralize}</a> {instrument}',
+                    '</div>',
                 '<tpl elseif="docCount &gt; 0">',
                     '<div class="qc-summary-text">',
                         '<a href="{path:this.getSampleFileLink}">{fileCount} sample file{fileCount:this.pluralize}</a> ' +
-                            'tracking {precursorCount} precursor{precursorCount:this.pluralize} with {metricCount} metric{metricCount:this.pluralize} {instrument}',
+                        'tracking {precursorCount} precursor{precursorCount:this.pluralize} with {metricCount} metric{metricCount:this.pluralize} {instrument}',
                     '</div>',
+                '</tpl>',
+                '<tpl if="docCount &gt; 0">',
                     '<div class="item-text sample-file-details sample-file-details-loading" id="qc-summary-samplefiles-{id}">Loading...</div>',
                     '<div class="auto-qc-ping" id="{autoQcCalloutId}">AutoQC <span class="{autoQCPing:this.getAutoQCPingClass}"></span></div>',
+                '</tpl>',
+                '<tpl if="!LABKEY.user.isGuest">',
+                    '<div class="email-notifications" id="{autoQcCalloutId}"><a href="{path:this.getEmailNotificationLink}">Notifications <span class="fa fa-envelope"></span></a></div>',
                 '</tpl>',
             '</tpl>',
             {
@@ -165,6 +176,18 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                 {
                     return LABKEY.ActionURL.buildURL('query', 'executeQuery', path,
                             {schemaName: 'targetedms', 'query.queryName': 'SampleFile'});
+                },
+                getMetricConfigLink: function (path)
+                {
+                    return LABKEY.ActionURL.buildURL('targetedms', 'configureQCMetric', path);
+                },
+                getPrecursorConfigLink: function (path)
+                {
+                    return LABKEY.ActionURL.buildURL('targetedms', 'configureQCGroups', path);
+                },
+                getEmailNotificationLink: function (path)
+                {
+                    return LABKEY.ActionURL.buildURL('targetedms', 'subscribeOutlierNotifications', path);
                 },
                 getFullHistoryLink: function (path)
                 {
