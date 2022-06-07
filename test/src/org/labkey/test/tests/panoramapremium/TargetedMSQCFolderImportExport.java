@@ -154,7 +154,7 @@ public class TargetedMSQCFolderImportExport extends TargetedMSPremiumTest
     {
         goToProjectHome(projectName);
         QCSummaryWebPart qcSummaryWebPart = goToDashboard().getQcSummaryWebPart();
-        qcSummaryWebPart.clickMenuItem("Include or Exclude Precursors");
+        qcSummaryWebPart.clickMenuItem("Configure Included and Excluded Precursors");
         DataRegionTable table = new DataRegionTable.DataRegionFinder(getDriver()).waitFor();
         table.checkCheckbox(rowNum);
         table.clickHeaderButton("Mark As Excluded");

@@ -114,8 +114,8 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         PanoramaDashboard qcDashboard = goToDashboard();
         QCSummaryWebPart qcSummary = qcDashboard.getQcSummaryWebPart();
 
-        log("Clicking the outliew notification link");
-        qcSummary.clickMenuItem("Subscribe Outlier Notifications");
+        log("Clicking the outlier notification link");
+        qcSummary.clickMenuItem("Subscribe to Outlier Notification Emails");
         waitForElement(Locator.radioButtonByName("subscriptionType").index(1));
         checkRadioButton(Locator.radioButtonByName("subscriptionType").index(1));
         setFormElement(Locator.name("outlierCount"), "1");
