@@ -1,9 +1,10 @@
 -- This query for Precursor Peptides displays under QC Summary menu 'Include or Exclude Peptides/Molecules'
 
 SELECT
-precPep.Id,
-precPep.modifiedSequence,
+precPep.Id AS PrecursorId,
+precPep.PeptideGroupId AS Id,
 precPep.Label,
+precPep.modifiedSequence,
 precPep.charge,
 precPep.mz,
 precPep.neutralMass,
@@ -14,6 +15,7 @@ FROM
         min(prec.Id) AS Id,
         prec.modifiedSequence AS modifiedSequence,
         prec.GeneralMoleculeId.PeptideGroupId.Label AS Label,
+        prec.GeneralMoleculeId.PeptideGroupId AS PeptideGroupId,
         prec.charge AS charge,
         prec.mz AS mz,
         prec.neutralMass AS neutralMass,
@@ -24,6 +26,7 @@ FROM
         GROUP BY
             prec.modifiedSequence,
             prec.GeneralMoleculeId.PeptideGroupId.Label,
+            prec.GeneralMoleculeId.PeptideGroupId,
             prec.charge,
             prec.mz,
             prec.neutralMass,
