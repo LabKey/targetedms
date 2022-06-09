@@ -13,6 +13,7 @@ import org.labkey.api.query.BatchValidationException;
 import org.labkey.api.query.DuplicateKeyException;
 import org.labkey.api.query.QueryUpdateService;
 import org.labkey.api.query.QueryUpdateServiceException;
+import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.writer.VirtualFile;
 import org.labkey.targetedms.TargetedMSSchema;
 
@@ -27,13 +28,13 @@ public class QCFolderImporter implements FolderImporter
     @Override
     public String getDataType()
     {
-        return QCFolderConstants.QC_FOLDER_DATA_TYPE;
+        return TargetedMSService.QC_FOLDER_DATA_TYPE;
     }
 
     @Override
     public String getDescription()
     {
-        return QCFolderConstants.QC_FOLDER_DATA_TYPE;
+        return TargetedMSService.QC_FOLDER_DATA_TYPE;
     }
 
     @Override

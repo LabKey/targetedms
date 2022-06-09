@@ -23,7 +23,7 @@ public class QCFolderWriterFactory implements FolderWriterFactory
         @Override
         public String getDataType()
         {
-            return QCFolderConstants.QC_FOLDER_DATA_TYPE;
+            return TargetedMSService.QC_FOLDER_DATA_TYPE;
         }
 
         @Override
