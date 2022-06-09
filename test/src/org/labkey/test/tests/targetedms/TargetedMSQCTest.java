@@ -860,6 +860,34 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertEquals("Unexpected number of included data points in plot SVG", 4, excludedPointCount);
     }
 
+    /*
+       Test coverage : Issue 45440: Moving range plot broken when choosing Percent of Mean or Standard Deviation y-axis options
+     */
+    @Test
+    public void testYAxisOptionsMovingRangePlot()
+    {
+        goToProjectHome();
+        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        log("Enabling Moving range along with Levey-Jennings");
+        qcPlotsWebPart.checkPlotType(MovingRange, true);
+        qcPlotsWebPart.waitForPlots(PRECURSORS.length * 2, true);
+
+        log("Verifying standard deviations plots");
+        String initialSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+        qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.STANDARD_DEVIATIONS);
+        String svgPlotText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+        assertFalse(svgPlotText.isEmpty());
+        assertFalse(initialSVGText.equals(svgPlotText));
+
+        log("Verifying percent of mean plots");
+        initialSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+        qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.PERCENT_OF_MEAN);
+        svgPlotText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+        assertFalse(svgPlotText.isEmpty());
+        assertFalse(initialSVGText.equals(svgPlotText));
+    }
+
     private void verifyQCSummarySampleFileOutliers(String acquiredDate, String outlierInfo)
     {
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
