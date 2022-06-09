@@ -2472,6 +2472,7 @@ public class SkylineDocImporter
         sql.append(getNullableCriteria("massdiffmono", mod.getMassDiffMono()));
         sql.append(getNullableCriteria("massdiffavg", mod.getMassDiffAvg()));
         sql.append(getNullableCriteria("unimodid", mod.getUnimodId()));
+        sql.append(getNullableCriteria("crosslinker", mod.isCrosslinker()));
 
         PeptideSettings.StructuralModification[] structuralModifications = new SqlSelector(TargetedMSManager.getSchema().getScope(), sql).getArray(PeptideSettings.StructuralModification.class);
 

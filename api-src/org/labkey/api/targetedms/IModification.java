@@ -17,6 +17,7 @@ public interface IModification
     Double getMassDiffAvg();
 
     Integer getUnimodId();
+    boolean isCrosslinker();
 
     interface IStructuralModification extends IModification
     {

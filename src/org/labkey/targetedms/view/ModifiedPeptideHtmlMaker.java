@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.util.HtmlString;
 import org.labkey.api.util.PageFlowUtil;
+import org.labkey.api.util.Pair;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.chart.ChartColors;
 import org.labkey.targetedms.parser.Peptide;
@@ -33,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * User: vsharma
@@ -112,7 +114,7 @@ public class ModifiedPeptideHtmlMaker
 
         boolean showPreviousNext = previousAA != null || nextAA != null;
 
-        Set<Integer> strModIndices = ModificationManager.getStructuralModIndexes(peptideId, runId);
+        Set<Pair<Integer, Integer>> strModIndices = ModificationManager.getStructuralModIndexes(peptideId, runId);
         Set<Integer> isotopeModIndices = null;
         if(isotopeLabelId != null)
         {
@@ -137,7 +139,7 @@ public class ModifiedPeptideHtmlMaker
 
         CrossLinkedPeptideInfo crossLink = new CrossLinkedPeptideInfo(altSequence);
 
-        renderSequence(crossLink.getBaseSequence(), strModIndices, isotopeModIndices, result, labelModColor, useParens, previousAA, nextAA);
+        renderSequence(crossLink.getBaseSequence(), filterModIndices(strModIndices, 0), isotopeModIndices, result, labelModColor, useParens, previousAA, nextAA);
 
         // If we have cross-linking info, show those peptides too
         for (CrossLinkedPeptideInfo.PeptideSequence extraSequence : crossLink.getExtraSequences())
@@ -177,7 +179,7 @@ public class ModifiedPeptideHtmlMaker
                     }
                 }
             }
-            renderSequence(extraSequence, strModIndices, isotopeModIndices, result, labelModColor, useParens, previousAA, nextAA);
+            renderSequence(extraSequence, filterModIndices(strModIndices, extraSequence.getPeptidIndex()), isotopeModIndices, result, labelModColor, useParens, previousAA, nextAA);
         }
 
         result.append("</div>");
@@ -187,6 +189,11 @@ public class ModifiedPeptideHtmlMaker
             result.append("<div style='color:red;'>").append(PageFlowUtil.filter(error.toString())).append("</div>");
         }
         return HtmlString.unsafe(result.toString());
+    }
+
+    private Set<Integer> filterModIndices(Set<Pair<Integer, Integer>> strModIndices, int peptideIndex)
+    {
+        return strModIndices.stream().filter(x -> x.first == peptideIndex).map(x -> x.second).collect(Collectors.toSet());
     }
 
     private void renderSequence(CrossLinkedPeptideInfo.PeptideSequence sequenceInfo, Set<Integer> strModIndices, Set<Integer> isotopeModIndices, StringBuilder result, String labelModColor, boolean useParens, @Nullable String previousAA, @Nullable String nextAA)

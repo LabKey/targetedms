@@ -179,6 +179,11 @@ public class CrossLinkedPeptideInfo
             }
             return null;
         }
+
+        public int getPeptidIndex()
+        {
+            return _index;
+        }
     }
 
     public static class TestCase
