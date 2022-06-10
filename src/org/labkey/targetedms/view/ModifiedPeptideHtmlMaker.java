@@ -179,7 +179,7 @@ public class ModifiedPeptideHtmlMaker
                     }
                 }
             }
-            renderSequence(extraSequence, filterModIndices(strModIndices, extraSequence.getPeptidIndex()), isotopeModIndices, result, labelModColor, useParens, previousAA, nextAA);
+            renderSequence(extraSequence, filterModIndices(strModIndices, extraSequence.getPeptideIndex()), isotopeModIndices, result, labelModColor, useParens, previousAA, nextAA);
         }
 
         result.append("</div>");

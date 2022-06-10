@@ -981,7 +981,7 @@
             <column columnName="MassDiffMono"/>
             <column columnName="MassDiffAvg"/>
             <column columnName="UnimodId"/>
-            <column columnName="CrossLinked"/>
+            <column columnName="CrossLinker"/>
         </columns>
     </table>
     <table tableName="structuralmodloss" tableDbType="TABLE">

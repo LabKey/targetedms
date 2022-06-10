@@ -180,7 +180,7 @@ public class CrossLinkedPeptideInfo
             return null;
         }
 
-        public int getPeptidIndex()
+        public int getPeptideIndex()
         {
             return _index;
         }
