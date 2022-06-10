@@ -874,18 +874,28 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.waitForPlots(PRECURSORS.length * 2, true);
 
         log("Verifying standard deviations plots");
-        String initialSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.STANDARD_DEVIATIONS);
         String svgPlotText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
-        assertFalse(svgPlotText.isEmpty());
-        assertFalse(initialSVGText.equals(svgPlotText));
+        assertFalse("Plot with standard deviations option is blank", svgPlotText.isEmpty());
+        assertTrue("New plot is not as expected for standard deviations (y-axis) values ", svgPlotText.contains("-3\n" +
+                "-2\n" +
+                "-1\n" +
+                "0\n" +
+                "1\n" +
+                "2\n" +
+                "3\n" +
+                "4"));
 
         log("Verifying percent of mean plots");
-        initialSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.PERCENT_OF_MEAN);
         svgPlotText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
-        assertFalse(svgPlotText.isEmpty());
-        assertFalse(initialSVGText.equals(svgPlotText));
+        assertFalse("Plot with percent of mean option is blank", svgPlotText.isEmpty());
+        assertTrue("New plot is not as expected for percent of mean (y-axis) values", svgPlotText.contains("90\n" +
+                "95\n" +
+                "100\n" +
+                "105\n" +
+                "110\n" +
+                "115"));
     }
 
     private void verifyQCSummarySampleFileOutliers(String acquiredDate, String outlierInfo)
