@@ -125,6 +125,9 @@ public class SkylineDocumentParser implements AutoCloseable
     private static final String IMPLICIT_MODIFICATION = "implicit_modification";
     private static final String IMPLICIT_HEAVY_MODIFICATIONS = "implicit_heavy_modifications";
     private static final String IMPLICIT_STATIC_MODIFICATIONS = "implicit_static_modifications";
+    private static final String CROSSLINKS = "crosslinks";
+    private static final String CROSSLINK = "crosslink";
+    private static final String SITE = "site";
     private static final String VARIABLE_MODIFICATION = "variable_modification";
     private static final String SEQUENCE = "sequence";
     private static final String BIBLIOSPEC_SPECTRUM_INFO = "bibliospec_spectrum_info";
@@ -1581,6 +1584,10 @@ public class SkylineDocumentParser implements AutoCloseable
             {
                 structuralMods.addAll(readStructuralModifications(reader, IMPLICIT_STATIC_MODIFICATIONS, IMPLICIT_MODIFICATION));
             }
+            else if (XmlUtil.isStartElement(reader, evtType, CROSSLINKS))
+            {
+                structuralMods.addAll(readCrosslinkers(reader, CROSSLINKS, CROSSLINK));
+            }
             else if (XmlUtil.isStartElement(reader, evtType, EXPLICIT_HEAVY_MODIFICATIONS))
             {
                 isotopeMods.addAll(readIsotopeModifications(reader, EXPLICIT_HEAVY_MODIFICATIONS, EXPLICIT_MODIFICATION));
@@ -1644,6 +1651,38 @@ public class SkylineDocumentParser implements AutoCloseable
         return mod;
     }
 
+    private List<Peptide.StructuralModification> readCrosslink(XMLStreamReader reader) throws XMLStreamException
+    {
+        List<Peptide.StructuralModification> result = new ArrayList<>();
+
+        String name = XmlUtil.readRequiredAttribute(reader, "modification_name", CROSSLINK);
+
+        while (reader.hasNext())
+        {
+            reader.next();
+            int evtType = reader.getEventType();
+            if (XmlUtil.isEndElement(reader, evtType, CROSSLINK))
+            {
+                break;
+            }
+
+            if (XmlUtil.isStartElement(reader, evtType, SITE))
+            {
+                int peptideIndex = XmlUtil.readRequiredIntegerAttribute(reader, "peptide_index", SITE);
+                if (peptideIndex == 0)
+                {
+                    Peptide.StructuralModification mod = new Peptide.StructuralModification();
+                    mod.setModificationName(name);
+                    mod.setIndexAa(XmlUtil.readRequiredIntegerAttribute(reader, "index_aa", SITE));
+                    mod.setPeptideIndex(XmlUtil.readRequiredIntegerAttribute(reader, "peptide_index", SITE));
+                    result.add(mod);
+                }
+            }
+        }
+
+        return result;
+    }
+
     private List<Peptide.StructuralModification> readStructuralModifications(XMLStreamReader reader, String parentElement, String childElement) throws XMLStreamException
     {
         List<Peptide.StructuralModification> modifications = new ArrayList<>();
@@ -1658,6 +1697,25 @@ public class SkylineDocumentParser implements AutoCloseable
             else if (XmlUtil.isStartElement(reader, evtType, childElement))
             {
                 modifications.add(readStructuralModification(reader));
+            }
+        }
+        return modifications;
+    }
+
+    private List<Peptide.StructuralModification> readCrosslinkers(XMLStreamReader reader, String parentElement, String childElement) throws XMLStreamException
+    {
+        List<Peptide.StructuralModification> modifications = new ArrayList<>();
+        while(reader.hasNext())
+        {
+           int evtType = reader.next();
+            if(XmlUtil.isEndElement(reader, evtType, parentElement))
+            {
+                break;
+            }
+
+            else if (XmlUtil.isStartElement(reader, evtType, childElement))
+            {
+                modifications.addAll(readCrosslink(reader));
             }
         }
         return modifications;

@@ -131,9 +131,13 @@ public class SampleFileTable extends TargetedMSTable
         // Note - keep this COALESCE in sync with the LazyForeignKey SQL below
         SQLFragment sampleIdentifierSQL = new SQLFragment("COALESCE(");
         sampleIdentifierSQL.append(p.first);
-        sampleIdentifierSQL.append(", ");
+        sampleIdentifierSQL.append(", CASE WHEN ");
+        sampleIdentifierSQL.append(getSqlDialect().getVarcharLengthFunction());
+        sampleIdentifierSQL.append("(");
         sampleIdentifierSQL.append(ExprColumn.STR_TABLE_ALIAS);
-        sampleIdentifierSQL.append(".SampleId, ");
+        sampleIdentifierSQL.append(".SampleId) > 2 THEN ");
+        sampleIdentifierSQL.append(ExprColumn.STR_TABLE_ALIAS);
+        sampleIdentifierSQL.append(".SampleId END, ");
         sampleIdentifierSQL.append(ExprColumn.STR_TABLE_ALIAS);
         sampleIdentifierSQL.append(".SampleName)");
 

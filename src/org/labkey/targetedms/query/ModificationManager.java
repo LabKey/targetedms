@@ -72,29 +72,27 @@ public class ModificationManager
      *         and the mass of the modification.
      *         ModifiedIndex -> MassDiff
      */
-    public static Map<Integer, Double> getPeptideStructuralModsMap(long peptideId)
+    public static Map<Pair<Integer, Integer>, Double> getPeptideStructuralModsMap(long peptideId)
     {
-        final Map<Integer, Double> strModIndexMassDiff = new HashMap<>();
-        String sql = "SELECT IndexAa, MassDiff "+
+        final Map<Pair<Integer, Integer>, Double> strModIndexMassDiff = new HashMap<>();
+        String sql = "SELECT IndexAa, MassDiff, PeptideIndex "+
                      "FROM "+ TargetedMSManager.getTableInfoPeptideStructuralModification()+" "+
                      "WHERE PeptideId=?";
         SQLFragment sf = new SQLFragment(sql, peptideId);
 
-        new SqlSelector(getSchema(), sf).forEach(new Selector.ForEachBlock<ResultSet>()
-        {
-            @Override
-            public void exec(ResultSet rs) throws SQLException
-            {
-                int index = rs.getInt("IndexAa");
-                double massDiff = rs.getDouble("MassDiff");
+        new SqlSelector(getSchema(), sf).forEach(rs -> {
+            int indexAA = rs.getInt("IndexAa");
+            int peptideIndex = rs.getInt("PeptideIndex");
+            double massDiff = rs.getDouble("MassDiff");
 
-                Double diffAtIndex = strModIndexMassDiff.get(index);
-                if (diffAtIndex != null)
-                {
-                    massDiff += diffAtIndex;
-                }
-                strModIndexMassDiff.put(index, massDiff);
+            Pair<Integer, Integer> key = Pair.of(peptideIndex, indexAA);
+
+            Double diffAtIndex = strModIndexMassDiff.get(key);
+            if (diffAtIndex != null)
+            {
+                massDiff += diffAtIndex;
             }
+            strModIndexMassDiff.put(key, massDiff);
         });
 
         return strModIndexMassDiff;
@@ -276,13 +274,12 @@ public class ModificationManager
 
 
     /**
-     * @param runId
      * @return    PeptideId -> (Set of indexes where the peptide has structural modifications)
      */
-    private static Map<Long, Set<Integer>> getPeptideStructuralModIndexMap(long runId)
+    private static Map<Long, Set<Pair<Integer, Integer>>> getPeptideStructuralModIndexMap(long runId)
     {
         SQLFragment sql = new SQLFragment();
-        sql.append(" SELECT mod.PeptideId AS peptideId, mod.IndexAA AS indexAA ");
+        sql.append(" SELECT mod.PeptideId AS peptideId, mod.IndexAA AS indexAA, mod.PeptideIndex AS peptideIndex");
         sql.append(" FROM ");
         sql.append(TargetedMSManager.getTableInfoPeptideStructuralModification(), "mod");
         sql.append(" , ");
@@ -300,21 +297,21 @@ public class ModificationManager
         sql.append(" AND ");
         sql.append(" mod.peptideId = gm.id ");
 
-        final Map<Long, Set<Integer>> peptideModIndexMap = new HashMap<>();
+        final Map<Long, Set<Pair<Integer, Integer>>> peptideModIndexMap = new HashMap<>();
 
         new SqlSelector(getSchema(), sql).forEach(rs -> {
             long peptideId = rs.getLong("peptideId");
-            int index = rs.getInt("indexAa");
+            int indexAA = rs.getInt("indexAa");
+            int peptideIndex = rs.getInt("peptideIndex");
 
-            Set<Integer> modIndexes = peptideModIndexMap.computeIfAbsent(peptideId, k -> new HashSet<>());
-            modIndexes.add(index);
+            Set<Pair<Integer, Integer>> modIndexes = peptideModIndexMap.computeIfAbsent(peptideId, k -> new HashSet<>());
+            modIndexes.add(Pair.of(peptideIndex, indexAA));
         });
 
         return Collections.unmodifiableMap(peptideModIndexMap);
     }
 
     /**
-     * @param runId
      * @return  PeptideId/IsotopeLabelId -> Set of indexes where the PeptideId/IsotopeLabelId has a isotope modification
      */
     private static Map<Pair<Long,Long>, Set<Integer>> getPeptideIsotopeModIndexMap(long runId)
@@ -353,18 +350,18 @@ public class ModificationManager
         return Collections.unmodifiableMap(peptideModIndexMap);
     }
 
-    public static Set<Integer> getStructuralModIndexes(long peptideId, Long runId)
+    /** Pair is the index of the crosslinked peptide (or 0 for non-crosslinked peptides) and the amino acid index */
+    public static Set<Pair<Integer, Integer>> getStructuralModIndexes(long peptideId, Long runId)
     {
         if(runId == null)
         {
-            Map<Integer, Double> modMap = getPeptideStructuralModsMap(peptideId);
+            Map<Pair<Integer, Integer>, Double> modMap = getPeptideStructuralModsMap(peptideId);
             return new HashSet<>(modMap.keySet());
         }
         else
         {
-            Map<Long, Set<Integer>> modIndexesForRun = _peptideStrModIndexes.get(String.valueOf(runId), null, (runId1, argument) -> getPeptideStructuralModIndexMap(Long.valueOf(runId1)));
-
-            return modIndexesForRun.get(peptideId);
+            Map<Long, Set<Pair<Integer, Integer>>> modIndexesForRun = _peptideStrModIndexes.get(String.valueOf(runId), null, (runId1, argument) -> getPeptideStructuralModIndexMap(Long.valueOf(runId1)));
+            return modIndexesForRun.getOrDefault(peptideId, Collections.emptySet());
         }
     }
 
@@ -404,7 +401,7 @@ public class ModificationManager
         }
     }
 
-    private static class PeptideStrModIndexes extends DatabaseCache<String, Map<Long, Set<Integer>>>
+    private static class PeptideStrModIndexes extends DatabaseCache<String, Map<Long, Set<Pair<Integer, Integer>>>>
     {
         public PeptideStrModIndexes()
         {

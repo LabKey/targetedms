@@ -265,6 +265,7 @@ public class Peptide extends GeneralMolecule
     public static final class StructuralModification extends Modification
     {
         private long _structuralModId;
+        private int _peptideIndex = 0;  // Default to a single, non-crosslinked peptide
 
         public long getStructuralModId()
         {
@@ -274,6 +275,16 @@ public class Peptide extends GeneralMolecule
         public void setStructuralModId(long structuralModId)
         {
             _structuralModId = structuralModId;
+        }
+
+        public int getPeptideIndex()
+        {
+            return _peptideIndex;
+        }
+
+        public void setPeptideIndex(int peptideIndex)
+        {
+            _peptideIndex = peptideIndex;
         }
     }
 
