@@ -860,6 +860,34 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertEquals("Unexpected number of included data points in plot SVG", 4, excludedPointCount);
     }
 
+    /*
+       Test coverage : Issue 45440: Moving range plot broken when choosing Percent of Mean or Standard Deviation y-axis options
+     */
+    @Test
+    public void testYAxisOptionsMovingRangePlot()
+    {
+        goToProjectHome();
+        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        log("Enabling Moving range along with Levey-Jennings");
+        qcPlotsWebPart.checkPlotType(MovingRange, true);
+        qcPlotsWebPart.waitForPlots(PRECURSORS.length * 2, true);
+
+        log("Verifying standard deviations plots");
+        qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.STANDARD_DEVIATIONS);
+        String svgPlotText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+        assertFalse("Plot with standard deviations option is blank", svgPlotText.isEmpty());
+        //Expected y axis values are -3 -2 -1 0 1 2 3 4
+        assertTrue("New plot is not as expected for standard deviations (y-axis) values ", svgPlotText.contains("-3-2-101234"));
+
+        log("Verifying percent of mean plots");
+        qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.PERCENT_OF_MEAN);
+        svgPlotText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+        assertFalse("Plot with percent of mean option is blank", svgPlotText.isEmpty());
+        //Expected y axis values are 90 95 100 105 110 115
+        assertTrue("New plot is not as expected for percent of mean (y-axis) values", svgPlotText.contains("9095100105110115"));
+    }
+
     private void verifyQCSummarySampleFileOutliers(String acquiredDate, String outlierInfo)
     {
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
