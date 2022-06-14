@@ -4894,9 +4894,17 @@ public class TargetedMSController extends SpringActionController
         {
             int seqId = group.getSequenceId().intValue();
             List<PeptideCharacteristic> peptideCharacteristics = new ArrayList<>(PeptideManager.getPeptideCharacteristic(group.getId()));
+            List<Replicate> replicates = ReplicateManager.getReplicatesForRun(run.getRunId());
+            List<org.labkey.api.ms.Replicate> msReplicates = new ArrayList<>();
+            replicates.forEach(replicate -> {
+                var rep = new org.labkey.api.ms.Replicate();
+                rep.setName(replicate.getName());
+                rep.setId(replicate.getId());
+                msReplicates.add(rep);
+            });
 
             ProteinService proteinService = ProteinService.get();
-            WebPartView<?> sequenceView = proteinService.getProteinCoverageView(seqId, peptideCharacteristics, 100, true, group.getAccession());
+            WebPartView<?> sequenceView = proteinService.getProteinCoverageViewWithSettings(seqId, peptideCharacteristics, msReplicates, 100, true, group.getAccession());
 
             sequenceView.setTitle("Sequence Coverage");
             sequenceView.enableExpandCollapse("SequenceCoverage", false);

@@ -23,6 +23,7 @@ import java.util.List;
  */
 public class Replicate extends AnnotatedEntity<ReplicateAnnotation>
 {
+    private long _id;
     private long _runId;
     private String _name;
 
@@ -36,6 +37,17 @@ public class Replicate extends AnnotatedEntity<ReplicateAnnotation>
 
     private List<SampleFile> _sampleFileList;
 
+    @Override
+    public long getId()
+    {
+        return _id;
+    }
+
+    @Override
+    public void setId(long id)
+    {
+        _id = id;
+    }
 
     public long getRunId()
     {
