@@ -206,14 +206,25 @@ public class TargetedMSQCTest extends TargetedMSTest
     public void testClickingChromatogramPlotFromQCPlot()
     {
         String acquiredDate = "2013-08-15 01:11:28";
+        String replicate = "Q_Exactive_08_09_2013_JGB_88";
+        verifyChromatogramPlot(acquiredDate, replicate);
+
+        acquiredDate = "2013-08-12 04:54:55";
+        replicate = "Q_Exactive_08_09_2013_JGB_38";
+        verifyChromatogramPlot(acquiredDate, replicate);
+    }
+
+    private void verifyChromatogramPlot(String date, String replicate)
+    {
+        log("Verifying view chromatogram is linked correctly for " + date + "to replicate " + replicate);
         goToProjectHome();
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        mouseOver(qcPlotsWebPart.getPointByAcquiredDate(acquiredDate));
+        qcPlotsWebPart.waitForPlots();
+        mouseOver(qcPlotsWebPart.getPointByAcquiredDate(date));
         waitForElement(qcPlotsWebPart.getBubble());
         clickAndWait(Locator.linkWithText("view chromatogram"));
-
-        assertTrue("Incorrect replicate", isTextPresent("Q_Exactive_08_09_2013_JGB_88"));
+        assertTrue("Incorrect replicate", isTextPresent(replicate));
     }
 
     @Test
