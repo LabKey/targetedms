@@ -877,14 +877,14 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.STANDARD_DEVIATIONS);
         String svgPlotText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
         assertFalse("Plot with standard deviations option is blank", svgPlotText.isEmpty());
-        log("SVG content SD" + svgPlotText);
+        //Expected y axis values are -3 -2 -1 0 1 2 3 4
         assertTrue("New plot is not as expected for standard deviations (y-axis) values ", svgPlotText.contains("-3-2-101234"));
 
         log("Verifying percent of mean plots");
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.PERCENT_OF_MEAN);
         svgPlotText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
         assertFalse("Plot with percent of mean option is blank", svgPlotText.isEmpty());
-        log("SVG for POM " + svgPlotText);
+        //Expected y axis values are 90 95 100 105 110 115
         assertTrue("New plot is not as expected for percent of mean (y-axis) values", svgPlotText.contains("9095100105110115"));
     }
 
