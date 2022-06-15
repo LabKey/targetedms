@@ -64,6 +64,7 @@ public interface TargetedMSService
     String CHROM_LIB_FILE_BASE_NAME = "chromlib";
     String CHROM_LIB_FILE_EXT = "clib";
     String PROP_CHROM_LIB_REVISION = "chromLibRevision";
+    String QC_FOLDER_DATA_TYPE = "Panorama QC Folder Settings";
 
     ITargetedMSRun getRun(long runId, Container container);
     @Nullable ITargetedMSRun getRun(long runId, User user);
