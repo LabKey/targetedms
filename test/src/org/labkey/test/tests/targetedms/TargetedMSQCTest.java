@@ -221,10 +221,11 @@ public class TargetedMSQCTest extends TargetedMSTest
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.waitForPlots();
+        scrollIntoView(qcPlotsWebPart.getPointByAcquiredDate(date), true);
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate(date));
         waitForElement(qcPlotsWebPart.getBubble());
         clickAndWait(Locator.linkWithText("view chromatogram"));
-        assertTrue("Incorrect replicate", isTextPresent(replicate));
+        assertTrue("Navigated to incorrect replicate", isTextPresent(replicate));
     }
 
     @Test
