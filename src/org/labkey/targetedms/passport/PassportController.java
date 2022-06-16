@@ -149,7 +149,7 @@ public class PassportController extends SpringActionController
             VBox result = new VBox();
             PeptideGroup group = PeptideGroupManager.getPeptideGroup(getContainer(), _protein.getPepGroupId());
             _run = TargetedMSManager.getRun(group.getRunId());
-            TargetedMSController.addProteinSummaryViews(result, group, _run, getUser(), getContainer());
+            TargetedMSController.addProteinSummaryViews(result, group, _run, null);
 
             if (beforeAfter)
             {

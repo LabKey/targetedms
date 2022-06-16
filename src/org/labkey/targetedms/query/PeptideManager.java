@@ -15,6 +15,7 @@
 
 package org.labkey.targetedms.query;
 
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.cache.CacheLoader;
 import org.labkey.api.cache.CacheManager;
 import org.labkey.api.data.Container;
@@ -28,6 +29,7 @@ import org.labkey.targetedms.parser.Peptide;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -94,11 +96,11 @@ public class PeptideManager
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(Peptide.class);
     }
 
-    public static List<PeptideCharacteristic> getPeptideCharacteristic(long peptideGroupId)
+    public static List<PeptideCharacteristic> getPeptideCharacteristic(long peptideGroupId, @Nullable Long replicateId)
     {
         var sqlDialect = TargetedMSManager.getSqlDialect();
         var pgLog10Intensity = "LOG(" + sqlDialect.getNumericCast(new SQLFragment("MAX(X.Intensity)")).getSQL() + ")";
-        var sqlServerLog10Intensity = "LOG10(MAX(X.Intensity))";
+        var sqlServerLog10Intensity = "CASE WHEN MAX(X.Intensity) IS NOT NULL AND MAX(X.Intensity) != 0 THEN LOG10(MAX(X.Intensity)) ELSE 0 END ";
         var pgConfidenceValueToRound = "-LOG(" + sqlDialect.getNumericCast(new SQLFragment("MAX(X.Confidence)")).getSQL() + ")";
         var pgLog10Confidence = "ROUND(" + sqlDialect.getNumericCast(new SQLFragment(pgConfidenceValueToRound)).getSQL() + ",4)";
         var sqlServerLog10Confidence = "ROUND(-LOG10(MAX(X.Confidence)),4)";
@@ -115,10 +117,23 @@ public class PeptideManager
         sql.append(" ON gm.id = pep.Id");
         sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoSampleFile(), "sf");
         sql.append(" ON sf.Id = pci.SampleFileId");
+        if (!Objects.equals(replicateId, Long.valueOf(0)))
+        {
+            sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoReplicate(), "rep");
+            sql.append(" ON rep.Id = sf.ReplicateId");
+        }
         sql.append(" WHERE gm.PeptideGroupId=? ");
+        if (!Objects.equals(replicateId, Long.valueOf(0)))
+        {
+            sql.append(" AND rep.Id=? ");
+        }
         sql.append(" GROUP BY pep.Sequence,pci.SampleFileId ) X ");
         sql.append(" GROUP BY X.Sequence");
         sql.add(peptideGroupId);
+        if (!Objects.equals(replicateId, Long.valueOf(0)))
+        {
+            sql.add(replicateId);
+        }
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PeptideCharacteristic.class);
     }
 

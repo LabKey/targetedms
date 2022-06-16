@@ -2384,6 +2384,7 @@ public class TargetedMSController extends SpringActionController
         private boolean _update;
         private Long _chromInfoId;
         private Long _highlightChromInfoId;
+        private long _replicateId;
 
         public ChromatogramForm()
         {
@@ -2400,6 +2401,15 @@ public class TargetedMSController extends SpringActionController
             _id = id;
         }
 
+        public long getReplicateId()
+        {
+            return _replicateId;
+        }
+
+        public void setReplicateId(long replicateId)
+        {
+            _replicateId = replicateId;
+        }
 
         public String getReplicatesFilter()
         {
@@ -4746,7 +4756,7 @@ public class TargetedMSController extends SpringActionController
             // Peptide group details
             VBox result = new VBox();
 
-            Integer peptideCount = addProteinSummaryViews(result, group, _run, getUser(), getContainer());
+            Integer peptideCount = addProteinSummaryViews(result, group, _run, form.getReplicateId());
 
             GroupChromatogramsTableInfo tableInfo = new GroupChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()), form);
             ChromatogramsDataRegion chromatogramRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
@@ -4879,7 +4889,7 @@ public class TargetedMSController extends SpringActionController
         return result;
     }
 
-    public static Integer addProteinSummaryViews(VBox box, PeptideGroup group, TargetedMSRun run, User user, Container container)
+    public static Integer addProteinSummaryViews(VBox box, PeptideGroup group, TargetedMSRun run, @Nullable Long replicateId)
     {
         Integer peptideCount = TargetedMSManager.getPeptideGroupPeptideCount(run, group.getId());
         boolean proteomics = peptideCount != null && peptideCount.intValue() > 0;
@@ -4893,7 +4903,7 @@ public class TargetedMSController extends SpringActionController
         if (group.getSequenceId() != null)
         {
             int seqId = group.getSequenceId().intValue();
-            List<PeptideCharacteristic> peptideCharacteristics = new ArrayList<>(PeptideManager.getPeptideCharacteristic(group.getId()));
+            List<PeptideCharacteristic> peptideCharacteristics = new ArrayList<>(PeptideManager.getPeptideCharacteristic(group.getId(), replicateId));
             List<Replicate> replicates = ReplicateManager.getReplicatesForRun(run.getRunId());
             List<org.labkey.api.ms.Replicate> msReplicates = new ArrayList<>();
             replicates.forEach(replicate -> {
