@@ -70,7 +70,7 @@ public class QCPlotFragment
         this.guideSetStats = guideSetStats;
     }
 
-    public JSONObject toJSON(boolean includeLJ, boolean includeMR, boolean includeMeanCusum, boolean includeVariableCusum)
+    public JSONObject toJSON(boolean includeLJ, boolean includeMR, boolean includeMeanCusum, boolean includeVariableCusum, boolean showExcluded)
     {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("DataType", getDataType());
@@ -114,6 +114,12 @@ public class QCPlotFragment
             dataJsonObject.put("SampleFileId", plotData.getSampleFile().getId());
             dataJsonObject.put("PrecursorChromInfoId", plotData.getPrecursorChromInfoId());
             boolean ignoreInQC = plotData.getSampleFile().isIgnoreInQC(plotData.getMetricId());
+            if (ignoreInQC && !showExcluded)
+            {
+                // Issue 45701: Samples excluded for single metric don't get hidden in QC plots
+                break;
+            }
+
             if (ignoreInQC)
             {
                 // Reduce JSON payload size by only sending value for rows where it's true

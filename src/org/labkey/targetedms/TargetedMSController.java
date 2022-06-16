@@ -1388,7 +1388,7 @@ public class TargetedMSController extends SpringActionController
             response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toQCPlotJSON).collect(Collectors.toList()));
             response.put("plotDataRows", qcPlotFragments
                     .stream()
-                    .map(qcPlotFragment -> qcPlotFragment.toJSON(form.isIncludeLJ(), form.isIncludeMR(), form.isIncludeMeanCusum(), form.isIncludeVariableCusum()))
+                    .map(qcPlotFragment -> qcPlotFragment.toJSON(form.isIncludeLJ(), form.isIncludeMR(), form.isIncludeMeanCusum(), form.isIncludeVariableCusum(), form.isShowExcluded()))
                     .collect(Collectors.toList()));
             response.put("metricProps", metricMap.get(passedMetricId).toJSON());
             response.put("filterQCPoints", filterQCPoints);
