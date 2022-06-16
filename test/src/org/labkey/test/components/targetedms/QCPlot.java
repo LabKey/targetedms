@@ -44,6 +44,8 @@ public class QCPlot
         return precursor;
     }
 
+    public WebElement getPlot() { return plot;}
+
     public List<QCHelper.Annotation> getAnnotations()
     {
         List<WebElement> annotationEls = elements().annotation.findElements(plot);
