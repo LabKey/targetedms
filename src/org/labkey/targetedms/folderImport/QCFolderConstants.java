@@ -4,7 +4,6 @@ import org.labkey.targetedms.TargetedMSSchema;
 
 public class QCFolderConstants
 {
-    protected static final String QC_FOLDER_DATA_TYPE = "Panorama QC Folder Settings";
     protected static final String QC_FOLDER_DIR = "PanoramaQC";
     public static final String CATEGORY = "TargetedMSLeveyJenningsPlotOptions";
 
