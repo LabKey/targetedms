@@ -4914,7 +4914,7 @@ public class TargetedMSController extends SpringActionController
             });
 
             ProteinService proteinService = ProteinService.get();
-            WebPartView<?> sequenceView = proteinService.getProteinCoverageViewWithSettings(seqId, peptideCharacteristics, msReplicates, 100, true, group.getAccession());
+            WebPartView<?> sequenceView = proteinService.getProteinCoverageViewWithSettings(seqId, peptideCharacteristics, 100, true, group.getAccession(), msReplicates);
 
             sequenceView.setTitle("Sequence Coverage");
             sequenceView.enableExpandCollapse("SequenceCoverage", false);

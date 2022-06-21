@@ -107,7 +107,9 @@ public class PeptideManager
         var log10IntensitySql = sqlDialect.isPostgreSQL() ? pgLog10Intensity : sqlServerLog10Intensity;
         var log10ConfidenceSql = sqlDialect.isPostgreSQL() ? pgLog10Confidence : sqlServerLog10Confidence;
         SQLFragment sql = new SQLFragment("SELECT X.Sequence, " + log10IntensitySql + " AS Intensity, " + log10ConfidenceSql + " AS Confidence FROM ");
-        sql.append("(SELECT pep.Sequence, SUM(TotalArea) AS Intensity, MAX(qvalue) AS Confidence FROM ");
+        sql.append("(SELECT pep.Sequence,");
+        sql.append(" CASE WHEN SUM(TotalArea) IS NULL OR SUM(TotalArea) < 1 THEN 1 ELSE SUM(TotalArea) END AS Intensity, ");
+        sql.append(" MAX(qvalue) AS Confidence FROM ");
         sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
         sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralPrecursor(), "p");
         sql.append(" ON p.Id = pci.PrecursorId");
