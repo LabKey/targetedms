@@ -119,7 +119,7 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
         static final Locator summaryTile = Locator.tagWithClass("div", "summary-tile");
         static final Locator recentSampleFilesLoading = Locator.tagWithClass("div", "sample-file-details-loading");
         static final Locator recentSampleFile = Locator.css("div.sample-file-item");
-        static final Locator recentSampleFileOutliers = Locator.css("div.sample-file-item-outliers");
+        static final Locator recentSampleFileTotalOutliers = Locator.css("div.sample-file-item-total-outliers");
         static final Locator recentSampleFileAcquired = Locator.css("div.sample-file-item-acquired");
     }
 
@@ -217,7 +217,7 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
             if (_recentSampleFileOutliers == null)
             {
                 _recentSampleFileOutliers = new ArrayList<>();
-                _recentSampleFileOutliers.addAll(Locators.recentSampleFileOutliers.findElements(this));
+                _recentSampleFileOutliers.addAll(Locators.recentSampleFileTotalOutliers.findElements(this));
             }
             return _recentSampleFileOutliers;
         }

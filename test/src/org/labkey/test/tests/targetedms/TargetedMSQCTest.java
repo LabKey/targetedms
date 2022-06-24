@@ -841,7 +841,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         // verify initial QC summary outlier info
         verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[0], "0");
-        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[1], "not included in QC");
+        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[1], "excluded");
         verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "0");
 
         // create a guide set and verify updated QC Summary outliers info

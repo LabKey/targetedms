@@ -311,13 +311,13 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                         + '<span class="fa ' + iconCls + '"></span> ' + Ext4.util.Format.htmlEncode(sampleFile.ReplicateName) + '</div></td><td><div class="sample-file-item-acquired">' + Ext4.util.Format.date(sampleFile.AcquiredTime ? new Date(sampleFile.AcquiredTime) : null, LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s') + '</div></td>';
 
                 if (sampleFile.IgnoreForAllMetric) {
-                    html += '<td colspan="4"><div class="sample-file-item-outliers" style="text-align: center">excluded</div></td>';
+                    html += '<td colspan="4"><div class="sample-file-item-total-outliers" style="text-align: center">excluded</div></td>';
                 }
                 else {
-                    html += '<td style="text-align: right"><div class="sample-file-item-outliers">' + sampleFile.LeveyJennings + "</div></td>"
-                    html += '<td style="text-align: right"><div class="sample-file-item-outliers">' + sampleFile.mR + "</div></td>"
-                    html += '<td style="text-align: right"><div class="sample-file-item-outliers">' + (sampleFile.CUSUMm + sampleFile.CUSUMv) + "</div></td>"
-                    html += '<td style="text-align: right"><div class="sample-file-item-outliers">' + totalOutliers + "</div></td>"
+                    html += '<td style="text-align: right"><div class="sample-file-item-lj-outliers">' + sampleFile.LeveyJennings + "</div></td>"
+                    html += '<td style="text-align: right"><div class="sample-file-item-mr-outliers">' + sampleFile.mR + "</div></td>"
+                    html += '<td style="text-align: right"><div class="sample-file-item-cusum-outliers">' + (sampleFile.CUSUMm + sampleFile.CUSUMv) + "</div></td>"
+                    html += '<td style="text-align: right"><div class="sample-file-item-total-outliers">' + totalOutliers + "</div></td>"
                 }
                 html += '</tr>';
             });
