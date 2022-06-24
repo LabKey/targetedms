@@ -143,7 +143,19 @@ public class QCNotificationSender implements SkylineDocumentImportListener
         //create separate table for each sample file having outliers
         for (SampleFileInfo sampleFileInfoDetails : samplesToEmail)
         {
-            html.append("<h4>").append(PageFlowUtil.filter(sampleFileInfoDetails.getSampleFile())).append(" - ").append(sampleFileInfoDetails.getLeveyJennings() + sampleFileInfoDetails.getmR() + sampleFileInfoDetails.getCUSUMm() + sampleFileInfoDetails.getCUSUMv()).append(" total outliers</h4>");
+            html.append("<h4>").append(PageFlowUtil.filter(sampleFileInfoDetails.getSampleFile())).append(" - ");
+
+            var totalOutliers = sampleFileInfoDetails.getLeveyJennings() + sampleFileInfoDetails.getmR() + sampleFileInfoDetails.getCUSUMm() + sampleFileInfoDetails.getCUSUMv();
+            if (totalOutliers > 0)
+            {
+                html.append(sampleFileInfoDetails.getLeveyJennings()).append("Levey-Jennings outliers, ");
+                html.append(totalOutliers).append(" total outliers");
+            }
+            else
+            {
+                html.append("no outliers");
+            }
+            html.append("</h4>\n");
             html.append("<p>Acquired ").append(DateUtil.formatDateTime(container, sampleFileInfoDetails.getAcquiredTime())).append("</p>");
             html.append("<table style=\"border: 1px solid #d3d3d3;\"><thead><tr><td style=\"border: 1px solid #d3d3d3;\"></td><td  style=\"border: 1px solid #d3d3d3;\" colspan=\"7\" align=\"center\">Outliers</td></tr>")
                     .append("<tr>")
@@ -182,8 +194,6 @@ public class QCNotificationSender implements SkylineDocumentImportListener
             {
                 emailSubjectAndBody.setRecentOutliers(sampleFileInfoDetails.getLeveyJennings() + sampleFileInfoDetails.getmR() + sampleFileInfoDetails.getCUSUMmN() + sampleFileInfoDetails.getCUSUMmP() + sampleFileInfoDetails.getCUSUMvN() + sampleFileInfoDetails.getCUSUMvP());
             }
-
-            var totalOutliers = sampleFileInfoDetails.getLeveyJennings() + sampleFileInfoDetails.getmR() + sampleFileInfoDetails.getCUSUMmN() + sampleFileInfoDetails.getCUSUMmP() + sampleFileInfoDetails.getCUSUMvN() + sampleFileInfoDetails.getCUSUMvP();
 
             html.append("<tr>")
                     .append("<td style=\"border: 1px solid #d3d3d3;\"><b>Total</b></td>")

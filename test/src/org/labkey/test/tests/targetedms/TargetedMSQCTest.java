@@ -683,6 +683,9 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertFalse("peptide should not be present", ticAreahoverText.contains("peptide"));
         assertFalse("View Chromatogram link should not be present", ticAreahoverText.contains("VIEW CHROMATOGRAM"));
 
+        // Reload the page to clear the popup
+        refresh();
+
         log("Moving QC Plots Webpart down");
         portalHelper.moveWebPart("QC Plots", PortalHelper.Direction.DOWN);
         portalHelper.exitAdminMode();
@@ -841,7 +844,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         // verify initial QC summary outlier info
         verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[0], "0");
-        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[1], "not included in QC");
+        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[1], "excluded");
         verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "0");
 
         // create a guide set and verify updated QC Summary outliers info
