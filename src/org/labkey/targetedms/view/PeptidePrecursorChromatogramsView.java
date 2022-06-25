@@ -34,19 +34,21 @@ public class PeptidePrecursorChromatogramsView extends ChromatogramGridView
 {
     public PeptidePrecursorChromatogramsView(Peptide peptide, TargetedMSSchema schema,
                                              TargetedMSController.ChromatogramForm form,
-                                             BindException errors, ViewContext viewContext)
+                                             BindException errors, ViewContext viewContext, boolean canBeSplit)
     {
 
-        super(makeDataRegion(peptide, schema, form, viewContext), errors);
+        super(makeDataRegion(peptide, schema, form, viewContext, canBeSplit), errors);
     }
 
     private static ChromatogramsDataRegion makeDataRegion(Peptide peptide, TargetedMSSchema schema,
-                                             TargetedMSController.ChromatogramForm form, ViewContext viewContext)
+                                             TargetedMSController.ChromatogramForm form, ViewContext viewContext, boolean canBeSplit)
     {
         GeneralMoleculePrecursorChromatogramsTableInfo tableInfo = new GeneralMoleculePrecursorChromatogramsTableInfo(peptide, schema, form);
-        return new ChromatogramsDataRegion(viewContext,
+        ChromatogramsDataRegion result = new ChromatogramsDataRegion(viewContext,
                 tableInfo,
                 PEPTIDE_PRECURSOR_CHROM_DATA_REGION,
-                StringUtils.join(tableInfo.getDisplayColumnNames(), ","));
+                form.isSplitGraph(),
+                StringUtils.join(tableInfo.getDisplayColumnNames(), ","), canBeSplit);
+        return result;
     }
 }

@@ -1894,11 +1894,11 @@ public class TargetedMSController extends SpringActionController
             precursorInfo.setFrame(WebPartView.FrameType.PORTAL);
             precursorInfo.setTitle("Precursor Summary");
 
-            PrecursorChromatogramsTableInfo tableInfo = new PrecursorChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()), form.getChartWidth(), form.getChartHeight());
+            PrecursorChromatogramsTableInfo tableInfo = new PrecursorChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()), form.getChartWidth(), form.getChartHeight(), form.isSplitGraph());
             tableInfo.addPrecursorFilter(precursorId);
 
             ChromatogramsDataRegion dRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
-                    ChromatogramsDataRegion.PRECURSOR_CHROM_DATA_REGION);
+                    ChromatogramsDataRegion.PRECURSOR_CHROM_DATA_REGION, form.isSplitGraph());
 
             pageToSelectedChromatogram(form, dRegion, PrecursorManager.getChromInfosLitePlusForPrecursor(form.getId(), getUser(), getContainer()));
 
@@ -2017,11 +2017,11 @@ public class TargetedMSController extends SpringActionController
             precursorInfo.setFrame(WebPartView.FrameType.PORTAL);
             precursorInfo.setTitle("Molecule Precursor Summary");
 
-            PrecursorChromatogramsTableInfo tableInfo = new PrecursorChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()));
+            PrecursorChromatogramsTableInfo tableInfo = new PrecursorChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()), form.getChartWidth(), form.getChartHeight(), form.isSplitGraph());
             tableInfo.addPrecursorFilter(precursorId);
 
             ChromatogramsDataRegion dRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
-                    ChromatogramsDataRegion.PRECURSOR_CHROM_DATA_REGION);
+                    ChromatogramsDataRegion.PRECURSOR_CHROM_DATA_REGION, form.isSplitGraph());
 
             pageToSelectedChromatogram(form, dRegion, MoleculePrecursorManager.getChromInfosLitePlusForMoleculePrecursor(form.getId(), getUser(), getContainer()));
 
@@ -2104,7 +2104,7 @@ public class TargetedMSController extends SpringActionController
             tableInfo.addPeptideFilter();
 
             ChromatogramsDataRegion dRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
-                    ChromatogramsDataRegion.PEPTIDE_CHROM_DATA_REGION);
+                    ChromatogramsDataRegion.PEPTIDE_CHROM_DATA_REGION, form.isSplitGraph());
             GridView gridView = new GridView(dRegion, errors);
             gridView.setFrame(WebPartView.FrameType.PORTAL);
             gridView.setTitle("Chromatograms");
@@ -2641,14 +2641,14 @@ public class TargetedMSController extends SpringActionController
             // Precursor and transition chromatograms. One row per replicate
             boolean canBeSplitView = PrecursorManager.canBeSplitView(form.getId());
             bean.setCanBeSplitView(canBeSplitView);
-            if(canBeSplitView && !form.isUpdate())
+            if (!canBeSplitView || form.isUpdate())
             {
-                form.setSplitGraph(true);
+                form.setSplitGraph(false);
             }
             boolean showOptPeaksOption = PrecursorManager.hasOptimizationPeaks(form.getId());
             bean.setShowOptPeaksOption(showOptPeaksOption);
 
-            PeptidePrecursorChromatogramsView chromView = new PeptidePrecursorChromatogramsView(peptide, new TargetedMSSchema(getUser(), getContainer()), form, errors, getViewContext());
+            PeptidePrecursorChromatogramsView chromView = new PeptidePrecursorChromatogramsView(peptide, new TargetedMSSchema(getUser(), getContainer()), form, errors, getViewContext(), canBeSplitView);
             JspView<PeptideChromatogramsViewBean> chartForm = new JspView<>("/org/labkey/targetedms/view/chromatogramsForm.jsp", bean);
 
             VBox chromatogramsBox = new VBox();
@@ -4750,7 +4750,7 @@ public class TargetedMSController extends SpringActionController
 
             GroupChromatogramsTableInfo tableInfo = new GroupChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()), form);
             ChromatogramsDataRegion chromatogramRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
-                    ChromatogramsDataRegion.GROUP_CHROM_DATA_REGION);
+                    ChromatogramsDataRegion.GROUP_CHROM_DATA_REGION, form.isSplitGraph(), "Id", false);
             chromatogramRegion.setLegendElementId("groupChromatogramLegend");
             tableInfo.addGroupFilter(group);
             ChromatogramGridView chromatogramView = new ChromatogramGridView(chromatogramRegion, errors)

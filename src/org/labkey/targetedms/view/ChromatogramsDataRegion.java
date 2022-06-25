@@ -29,6 +29,7 @@ import org.labkey.api.data.UpdateColumn;
 import org.labkey.api.query.FilteredTable;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.util.URLHelper;
+import org.labkey.api.view.DisplayElement;
 import org.labkey.api.view.NavTree;
 import org.labkey.api.view.ViewContext;
 import org.labkey.targetedms.query.ChromatogramGridQuerySettings;
@@ -60,18 +61,27 @@ public class ChromatogramsDataRegion extends DataRegion
     public static final String FRAGMENT_PREFIX = "ChromInfo";
     private final List<String> _listeningDataRegionNames = new ArrayList<>();
     private final JSONArray _svgs = new JSONArray();
+    private final boolean _splitGraph;
 
     private String _legendElementId;
+    private final boolean _canBeSplit;
 
-    public ChromatogramsDataRegion(ViewContext context, FilteredTable<?> tableInfo, String name)
+    public ChromatogramsDataRegion(ViewContext context, FilteredTable<?> tableInfo, String name, boolean splitGraph)
     {
-        this(context, tableInfo, name, "Id");
+        this(context, tableInfo, name, splitGraph, "Id");
     }
 
-    public ChromatogramsDataRegion(ViewContext context, FilteredTable<?> tableInfo, String name, String columns)
+    public ChromatogramsDataRegion(ViewContext context, FilteredTable<?> tableInfo, String name, boolean splitGraph, String columns)
+    {
+        this(context, tableInfo, name, splitGraph, columns, true);
+    }
+
+    public ChromatogramsDataRegion(ViewContext context, FilteredTable<?> tableInfo, String name, boolean splitGraph, String columns, boolean canBeSplit)
     {
         setTable(tableInfo);
         addColumns(tableInfo, columns);
+        _splitGraph = splitGraph;
+        _canBeSplit = canBeSplit;
 
         ChromatogramGridQuerySettings settings = new ChromatogramGridQuerySettings(context, name);
         setSettings(settings);
@@ -85,7 +95,23 @@ public class ChromatogramsDataRegion extends DataRegion
     {
         ButtonBar bar = new ButtonBar();
         bar.add(createRowSizeMenuButton());
+        if (_canBeSplit)
+        {
+            bar.add(createSplitGraphButton());
+        }
         setButtonBar(bar);
+    }
+
+    private MenuButton createSplitGraphButton()
+    {
+        MenuButton graphMenu = new MenuButton("Graph Type", getName() + ".Menu.GraphType");
+
+        URLHelper target = getSettings().getSortFilterURL();
+
+        graphMenu.addMenuItem("Split", target.clone().replaceParameter("splitGraph", "true"), null, _splitGraph);
+        graphMenu.addMenuItem("Combined", target.clone().replaceParameter("splitGraph", "false"), null, !_splitGraph);
+
+        return graphMenu;
     }
 
     @Override
