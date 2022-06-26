@@ -251,24 +251,30 @@ public enum PanoramaQCSettings
                     //-Show Reference Guide Set - checkbox value
                     //-Show Excluded Precursors– checkbox value
 
-                    Map<String, String> plotSettings = PropertyManager.getProperties(user, container, QCFolderConstants.CATEGORY);
+                    // Get the saved defaults for the container
+                    Map<String, String> plotSettings = PropertyManager.getProperties(container, QCFolderConstants.CATEGORY);
 
-                    try (PrintWriter out = vf.getPrintWriter(QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME)) {
-
-                        Properties prop = new Properties();
-                        for (String name : plotSettings.keySet())
+                    // Don't bother saving if there aren't any default settings
+                    if (!plotSettings.isEmpty())
+                    {
+                        try (PrintWriter out = vf.getPrintWriter(QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME))
                         {
-                            if (name.equalsIgnoreCase("metric"))
+
+                            Properties prop = new Properties();
+                            for (String name : plotSettings.keySet())
                             {
-                                String metricValue = getMetricNameFromRowId(user, container, Integer.valueOf(plotSettings.get(name)));
-                                prop.put(name, metricValue);
+                                if (name.equalsIgnoreCase("metric"))
+                                {
+                                    String metricValue = getMetricNameFromRowId(user, container, Integer.valueOf(plotSettings.get(name)));
+                                    prop.put(name, metricValue);
+                                }
+                                else
+                                {
+                                    prop.put(name, plotSettings.get(name));
+                                }
                             }
-                            else
-                            {
-                                prop.put(name, plotSettings.get(name));
-                            }
+                            prop.store(out, null);
                         }
-                        prop.store(out, null);
                     }
                 }
 
