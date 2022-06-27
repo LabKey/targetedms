@@ -4768,7 +4768,8 @@ public class TargetedMSController extends SpringActionController
             // Peptide group details
             VBox result = new VBox();
 
-            Integer peptideCount = addProteinSummaryViews(result, group, _run, form.getReplicateId(), form._peptideForm.equalsIgnoreCase("stacked"));
+            var showModifiedPeptides = form._peptideForm != null && form._peptideForm.equalsIgnoreCase("stacked");
+            Integer peptideCount = addProteinSummaryViews(result, group, _run, form.getReplicateId(), showModifiedPeptides);
 
             GroupChromatogramsTableInfo tableInfo = new GroupChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()), form);
             ChromatogramsDataRegion chromatogramRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
