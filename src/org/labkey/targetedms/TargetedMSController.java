@@ -249,6 +249,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -2385,6 +2386,7 @@ public class TargetedMSController extends SpringActionController
         private Long _chromInfoId;
         private Long _highlightChromInfoId;
         private long _replicateId;
+        private String _peptideForm;
 
         public ChromatogramForm()
         {
@@ -2595,6 +2597,16 @@ public class TargetedMSController extends SpringActionController
         public void setChromInfoId(Long chromInfoId)
         {
             _chromInfoId = chromInfoId;
+        }
+
+        public String getPeptideForm()
+        {
+            return _peptideForm;
+        }
+
+        public void setPeptideForm(String peptideForm)
+        {
+            _peptideForm = Objects.requireNonNullElse(peptideForm, "combined");
         }
     }
 
@@ -4756,7 +4768,7 @@ public class TargetedMSController extends SpringActionController
             // Peptide group details
             VBox result = new VBox();
 
-            Integer peptideCount = addProteinSummaryViews(result, group, _run, form.getReplicateId());
+            Integer peptideCount = addProteinSummaryViews(result, group, _run, form.getReplicateId(), form._peptideForm.equalsIgnoreCase("stacked"));
 
             GroupChromatogramsTableInfo tableInfo = new GroupChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()), form);
             ChromatogramsDataRegion chromatogramRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
@@ -4889,7 +4901,7 @@ public class TargetedMSController extends SpringActionController
         return result;
     }
 
-    public static Integer addProteinSummaryViews(VBox box, PeptideGroup group, TargetedMSRun run, @Nullable Long replicateId)
+    public static Integer addProteinSummaryViews(VBox box, PeptideGroup group, TargetedMSRun run, @Nullable Long replicateId, boolean showModifiedPeptides)
     {
         Integer peptideCount = TargetedMSManager.getPeptideGroupPeptideCount(run, group.getId());
         boolean proteomics = peptideCount != null && peptideCount.intValue() > 0;
@@ -4903,7 +4915,12 @@ public class TargetedMSController extends SpringActionController
         if (group.getSequenceId() != null)
         {
             int seqId = group.getSequenceId().intValue();
-            List<PeptideCharacteristic> peptideCharacteristics = new ArrayList<>(PeptideManager.getPeptideCharacteristic(group.getId(), replicateId));
+            List<PeptideCharacteristic> combinedPeptideCharacteristics = new ArrayList<>(PeptideManager.getCombinedPeptideCharacteristics(group.getId(), replicateId));
+            List<PeptideCharacteristic> modifiedPeptideCharacteristics = Collections.emptyList();
+            if (showModifiedPeptides)
+            {
+                modifiedPeptideCharacteristics = new ArrayList<>(PeptideManager.getModifiedPeptideCharacteristics(group.getId(), replicateId));
+            }
             List<Replicate> replicates = ReplicateManager.getReplicatesForRun(run.getRunId());
             List<org.labkey.api.ms.Replicate> msReplicates = new ArrayList<>();
             replicates.forEach(replicate -> {
@@ -4914,7 +4931,7 @@ public class TargetedMSController extends SpringActionController
             });
 
             ProteinService proteinService = ProteinService.get();
-            WebPartView<?> sequenceView = proteinService.getProteinCoverageViewWithSettings(seqId, peptideCharacteristics, 100, true, group.getAccession(), msReplicates);
+            WebPartView<?> sequenceView = proteinService.getProteinCoverageViewWithSettings(seqId, combinedPeptideCharacteristics, 100, true, group.getAccession(), msReplicates, modifiedPeptideCharacteristics);
 
             sequenceView.setTitle("Sequence Coverage");
             sequenceView.enableExpandCollapse("SequenceCoverage", false);
