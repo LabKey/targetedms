@@ -106,8 +106,9 @@ public class PeptideManager
         var sqlServerLog10Confidence = "ROUND(-LOG10(MAX(X.Confidence)),4)";
         var log10IntensitySql = sqlDialect.isPostgreSQL() ? pgLog10Intensity : sqlServerLog10Intensity;
         var log10ConfidenceSql = sqlDialect.isPostgreSQL() ? pgLog10Confidence : sqlServerLog10Confidence;
-        SQLFragment sql = new SQLFragment("SELECT X.Sequence, " + log10IntensitySql + " AS Intensity, " + log10ConfidenceSql + " AS Confidence FROM ");
-        sql.append("(SELECT pep.Sequence,");
+        SQLFragment sql = new SQLFragment("SELECT X.Sequence, " + log10IntensitySql + " AS Intensity, " + log10ConfidenceSql + " AS Confidence, ");
+        sql.append(" MAX(X.Intensity) AS RawIntensity, MAX(X.Confidence) AS RawConfidence, X.StartIndex, X.EndIndex FROM ");
+        sql.append("(SELECT pep.Sequence, pep.StartIndex, pep.EndIndex, ");
         sql.append(" CASE WHEN SUM(TotalArea) IS NULL OR SUM(TotalArea) < 1 THEN 1 ELSE SUM(TotalArea) END AS Intensity, ");
         sql.append(" MAX(qvalue) AS Confidence FROM ");
         sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
@@ -129,8 +130,8 @@ public class PeptideManager
         {
             sql.append(" AND rep.Id=? ");
         }
-        sql.append(" GROUP BY pep.Sequence,pci.SampleFileId ) X ");
-        sql.append(" GROUP BY X.Sequence");
+        sql.append(" GROUP BY pep.Sequence,pci.SampleFileId, pep.StartIndex, pep.EndIndex ) X ");
+        sql.append(" GROUP BY X.Sequence, X.StartIndex, X.EndIndex ");
         sql.add(peptideGroupId);
         if (!Objects.equals(replicateId, Long.valueOf(0)))
         {
@@ -150,7 +151,8 @@ public class PeptideManager
         var log10IntensitySql = sqlDialect.isPostgreSQL() ? pgLog10Intensity : sqlServerLog10Intensity;
         var log10ConfidenceSql = sqlDialect.isPostgreSQL() ? pgLog10Confidence : sqlServerLog10Confidence;
         SQLFragment sql = new SQLFragment("SELECT X.Sequence, X.PeptideModifiedSequence AS ModifiedSequence, X.StartIndex, X.EndIndex ,");
-        sql.append(log10IntensitySql + " AS Intensity, " + log10ConfidenceSql + " AS Confidence FROM ");
+        sql.append(log10IntensitySql + " AS Intensity, " + log10ConfidenceSql + " AS Confidence, ");
+        sql.append(" MAX(X.Intensity) AS RawIntensity, MAX(X.Confidence) AS RawConfidence FROM ");
         sql.append("(SELECT pep.Sequence, pep.PeptideModifiedSequence, pep.StartIndex, pep.EndIndex, ");
         sql.append(" CASE WHEN SUM(TotalArea) IS NULL OR SUM(TotalArea) < 1 THEN 1 ELSE SUM(TotalArea) END AS Intensity, ");
         sql.append(" MAX(qvalue) AS Confidence FROM ");
