@@ -30,12 +30,7 @@ public class PrecursorChromatogramsTableInfo extends FilteredTable<TargetedMSSch
 {
     private long _precursorId;
 
-    public PrecursorChromatogramsTableInfo(TargetedMSSchema schema)
-    {
-        this(schema, ChromatogramDisplayColumnFactory.CHART_WIDTH, ChromatogramDisplayColumnFactory.CHART_HEIGHT);
-    }
-
-    public PrecursorChromatogramsTableInfo(TargetedMSSchema schema, int chartWidth, int chartHeight)
+    public PrecursorChromatogramsTableInfo(TargetedMSSchema schema, int chartWidth, int chartHeight, boolean splitGraph)
     {
         super(TargetedMSManager.getTableInfoPrecursorChromInfo(), schema);
 
@@ -48,7 +43,7 @@ public class PrecursorChromatogramsTableInfo extends FilteredTable<TargetedMSSch
         peptideCol.setLabel("");
 
         ChromatogramDisplayColumnFactory colFactory = new ChromatogramDisplayColumnFactory(getContainer(),
-                ChromatogramDisplayColumnFactory.Type.PrecursorSampleLookup, chartWidth, chartHeight);
+                ChromatogramDisplayColumnFactory.Type.PrecursorSampleLookup, chartWidth, chartHeight, splitGraph);
         peptideCol.setDisplayColumnFactory(colFactory);
     }
 
