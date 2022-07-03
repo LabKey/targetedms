@@ -4768,8 +4768,8 @@ public class TargetedMSController extends SpringActionController
             // Peptide group details
             VBox result = new VBox();
 
-            var showModifiedPeptides = form._peptideForm != null && form._peptideForm.equalsIgnoreCase("stacked");
-            Integer peptideCount = addProteinSummaryViews(result, group, _run, form.getReplicateId(), showModifiedPeptides);
+            var showStackedPeptides = form._peptideForm != null && form._peptideForm.equalsIgnoreCase("stacked");
+            Integer peptideCount = addProteinSummaryViews(result, group, _run, form.getReplicateId(), showStackedPeptides);
 
             GroupChromatogramsTableInfo tableInfo = new GroupChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()), form);
             ChromatogramsDataRegion chromatogramRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
@@ -4902,7 +4902,7 @@ public class TargetedMSController extends SpringActionController
         return result;
     }
 
-    public static Integer addProteinSummaryViews(VBox box, PeptideGroup group, TargetedMSRun run, @Nullable Long replicateId, boolean showModifiedPeptides)
+    public static Integer addProteinSummaryViews(VBox box, PeptideGroup group, TargetedMSRun run, @Nullable Long replicateId, boolean showStackedPeptides)
     {
         Integer peptideCount = TargetedMSManager.getPeptideGroupPeptideCount(run, group.getId());
         boolean proteomics = peptideCount != null && peptideCount.intValue() > 0;
@@ -4929,7 +4929,7 @@ public class TargetedMSController extends SpringActionController
             });
 
             ProteinService proteinService = ProteinService.get();
-            WebPartView<?> sequenceView = proteinService.getProteinCoverageViewWithSettings(seqId, combinedPeptideCharacteristics, 100, true, group.getAccession(), msReplicates, modifiedPeptideCharacteristics);
+            WebPartView<?> sequenceView = proteinService.getProteinCoverageViewWithSettings(seqId, combinedPeptideCharacteristics, 100, true, group.getAccession(), msReplicates, modifiedPeptideCharacteristics, showStackedPeptides);
 
             sequenceView.setTitle("Sequence Coverage");
             sequenceView.enableExpandCollapse("SequenceCoverage", false);
