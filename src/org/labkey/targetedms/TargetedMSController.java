@@ -4917,11 +4917,8 @@ public class TargetedMSController extends SpringActionController
         {
             int seqId = group.getSequenceId().intValue();
             List<PeptideCharacteristic> combinedPeptideCharacteristics = new ArrayList<>(PeptideManager.getCombinedPeptideCharacteristics(group.getId(), replicateId));
-            List<PeptideCharacteristic> modifiedPeptideCharacteristics = Collections.emptyList();
-            if (showModifiedPeptides)
-            {
-                modifiedPeptideCharacteristics = new ArrayList<>(PeptideManager.getModifiedPeptideCharacteristics(group.getId(), replicateId));
-            }
+            List<PeptideCharacteristic> modifiedPeptideCharacteristics = new ArrayList<>(PeptideManager.getModifiedPeptideCharacteristics(group.getId(), replicateId));;
+
             List<Replicate> replicates = ReplicateManager.getReplicatesForRun(run.getRunId());
             List<org.labkey.api.ms.Replicate> msReplicates = new ArrayList<>();
             replicates.forEach(replicate -> {
