@@ -22,6 +22,7 @@ import org.labkey.api.data.Container;
 import org.labkey.api.data.DatabaseCache;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SqlSelector;
+import org.labkey.api.data.dialect.SqlDialect;
 import org.labkey.api.protein.PeptideCharacteristic;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.parser.GeneralMoleculeChromInfo;
@@ -96,17 +97,27 @@ public class PeptideManager
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(Peptide.class);
     }
 
+    private static String appendLog10IntensitySql(SqlDialect sqlDialect)
+    {
+        var pgLog10Intensity = " CASE WHEN MAX(X.Intensity) IS NOT NULL AND MAX(X.Intensity) != 0 THEN LOG(" + sqlDialect.getNumericCast(new SQLFragment("MAX(X.Intensity)")).getSQL() + ") ELSE 0 END ";
+        var sqlServerLog10Intensity = " CASE WHEN MAX(X.Intensity) IS NOT NULL AND MAX(X.Intensity) != 0 THEN LOG10(MAX(X.Intensity)) ELSE 0 END ";
+        return sqlDialect.isPostgreSQL() ? pgLog10Intensity : sqlServerLog10Intensity;
+    }
+
+    private static String appendLog10ConfidenceSql(SqlDialect sqlDialect)
+    {
+        var pgConfidenceValueToRound = " CASE WHEN MAX(X.Confidence) IS NOT NULL AND MAX(X.Confidence) != 0 THEN -LOG(" + sqlDialect.getNumericCast(new SQLFragment("MAX(X.Confidence)")).getSQL() + ")  ELSE 0 END ";
+        var pgLog10Confidence = "ROUND(" + sqlDialect.getNumericCast(new SQLFragment(pgConfidenceValueToRound)).getSQL() + ",4)";
+        var sqlServerLog10Confidence = " CASE WHEN MAX(X.Confidence) IS NOT NULL AND MAX(X.Confidence) != 0 THEN ROUND(-LOG10(MAX(X.Confidence)),4)  ELSE 0 END ";
+        return sqlDialect.isPostgreSQL() ? pgLog10Confidence : sqlServerLog10Confidence;
+    }
+
     public static List<PeptideCharacteristic> getCombinedPeptideCharacteristics(long peptideGroupId, @Nullable Long replicateId)
     {
+        var shouldFilterAndGroupByReplicate = null != replicateId && !Objects.equals(replicateId, Long.valueOf(0));
         var sqlDialect = TargetedMSManager.getSqlDialect();
-        var pgLog10Intensity = "LOG(" + sqlDialect.getNumericCast(new SQLFragment("MAX(X.Intensity)")).getSQL() + ")";
-        var sqlServerLog10Intensity = "CASE WHEN MAX(X.Intensity) IS NOT NULL AND MAX(X.Intensity) != 0 THEN LOG10(MAX(X.Intensity)) ELSE 0 END ";
-        var pgConfidenceValueToRound = "-LOG(" + sqlDialect.getNumericCast(new SQLFragment("MAX(X.Confidence)")).getSQL() + ")";
-        var pgLog10Confidence = "ROUND(" + sqlDialect.getNumericCast(new SQLFragment(pgConfidenceValueToRound)).getSQL() + ",4)";
-        var sqlServerLog10Confidence = "ROUND(-LOG10(MAX(X.Confidence)),4)";
-        var log10IntensitySql = sqlDialect.isPostgreSQL() ? pgLog10Intensity : sqlServerLog10Intensity;
-        var log10ConfidenceSql = sqlDialect.isPostgreSQL() ? pgLog10Confidence : sqlServerLog10Confidence;
-        SQLFragment sql = new SQLFragment("SELECT X.Sequence, " + log10IntensitySql + " AS Intensity, " + log10ConfidenceSql + " AS Confidence, ");
+
+        SQLFragment sql = new SQLFragment("SELECT X.Sequence, " + appendLog10IntensitySql(sqlDialect) + " AS Intensity, " + appendLog10ConfidenceSql(sqlDialect) + " AS Confidence, ");
         sql.append(" MAX(X.Intensity) AS RawIntensity, MAX(X.Confidence) AS RawConfidence, X.StartIndex, X.EndIndex FROM ");
         sql.append("(SELECT pep.Sequence, pep.StartIndex, pep.EndIndex, ");
         sql.append(" CASE WHEN SUM(TotalArea) IS NULL OR SUM(TotalArea) < 1 THEN 1 ELSE SUM(TotalArea) END AS Intensity, ");
@@ -120,38 +131,30 @@ public class PeptideManager
         sql.append(" ON gm.id = pep.Id");
         sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoSampleFile(), "sf");
         sql.append(" ON sf.Id = pci.SampleFileId");
-        if (!Objects.equals(replicateId, Long.valueOf(0)))
+        if (shouldFilterAndGroupByReplicate)
         {
             sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoReplicate(), "rep");
             sql.append(" ON rep.Id = sf.ReplicateId");
         }
         sql.append(" WHERE gm.PeptideGroupId=? ");
-        if (!Objects.equals(replicateId, Long.valueOf(0)))
+        sql.add(peptideGroupId);
+        if (shouldFilterAndGroupByReplicate)
         {
             sql.append(" AND rep.Id=? ");
+            sql.add(replicateId);
         }
         sql.append(" GROUP BY pep.Sequence,pci.SampleFileId, pep.StartIndex, pep.EndIndex ) X ");
         sql.append(" GROUP BY X.Sequence, X.StartIndex, X.EndIndex ");
-        sql.add(peptideGroupId);
-        if (!Objects.equals(replicateId, Long.valueOf(0)))
-        {
-            sql.add(replicateId);
-        }
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PeptideCharacteristic.class);
     }
 
     public static List<PeptideCharacteristic> getModifiedPeptideCharacteristics(long peptideGroupId, @Nullable Long replicateId)
     {
+        var shouldFilterAndGroupByReplicate = null != replicateId && !Objects.equals(replicateId, Long.valueOf(0));
         var sqlDialect = TargetedMSManager.getSqlDialect();
-        var pgLog10Intensity = "LOG(" + sqlDialect.getNumericCast(new SQLFragment("MAX(X.Intensity)")).getSQL() + ")";
-        var sqlServerLog10Intensity = "CASE WHEN MAX(X.Intensity) IS NOT NULL AND MAX(X.Intensity) != 0 THEN LOG10(MAX(X.Intensity)) ELSE 0 END ";
-        var pgConfidenceValueToRound = "-LOG(" + sqlDialect.getNumericCast(new SQLFragment("MAX(X.Confidence)")).getSQL() + ")";
-        var pgLog10Confidence = "ROUND(" + sqlDialect.getNumericCast(new SQLFragment(pgConfidenceValueToRound)).getSQL() + ",4)";
-        var sqlServerLog10Confidence = "ROUND(-LOG10(MAX(X.Confidence)),4)";
-        var log10IntensitySql = sqlDialect.isPostgreSQL() ? pgLog10Intensity : sqlServerLog10Intensity;
-        var log10ConfidenceSql = sqlDialect.isPostgreSQL() ? pgLog10Confidence : sqlServerLog10Confidence;
+
         SQLFragment sql = new SQLFragment("SELECT X.Sequence, X.PeptideModifiedSequence AS ModifiedSequence, X.StartIndex, X.EndIndex ,");
-        sql.append(log10IntensitySql + " AS Intensity, " + log10ConfidenceSql + " AS Confidence, ");
+        sql.append(appendLog10IntensitySql(sqlDialect) + " AS Intensity, " + appendLog10ConfidenceSql(sqlDialect) + " AS Confidence, ");
         sql.append(" MAX(X.Intensity) AS RawIntensity, MAX(X.Confidence) AS RawConfidence FROM ");
         sql.append("(SELECT pep.Sequence, pep.PeptideModifiedSequence, pep.StartIndex, pep.EndIndex, ");
         sql.append(" CASE WHEN SUM(TotalArea) IS NULL OR SUM(TotalArea) < 1 THEN 1 ELSE SUM(TotalArea) END AS Intensity, ");
@@ -165,23 +168,21 @@ public class PeptideManager
         sql.append(" ON gm.id = pep.Id");
         sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoSampleFile(), "sf");
         sql.append(" ON sf.Id = pci.SampleFileId");
-        if (!Objects.equals(replicateId, Long.valueOf(0)))
+        if (shouldFilterAndGroupByReplicate)
         {
             sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoReplicate(), "rep");
             sql.append(" ON rep.Id = sf.ReplicateId");
         }
         sql.append(" WHERE gm.PeptideGroupId=? ");
-        if (!Objects.equals(replicateId, Long.valueOf(0)))
+        sql.add(peptideGroupId);
+        if (shouldFilterAndGroupByReplicate)
         {
             sql.append(" AND rep.Id=? ");
+            sql.add(replicateId);
         }
         sql.append(" GROUP BY pep.Sequence,pci.SampleFileId, pep.PeptideModifiedSequence, pep.StartIndex, pep.EndIndex ) X ");
         sql.append(" GROUP BY X.Sequence, X.PeptideModifiedSequence, X.StartIndex, X.EndIndex ");
-        sql.add(peptideGroupId);
-        if (!Objects.equals(replicateId, Long.valueOf(0)))
-        {
-            sql.add(replicateId);
-        }
+
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PeptideCharacteristic.class);
     }
 

@@ -2606,7 +2606,7 @@ public class TargetedMSController extends SpringActionController
 
         public void setPeptideForm(String peptideForm)
         {
-            _peptideForm = Objects.requireNonNullElse(peptideForm, "combined");
+            _peptideForm = Objects.requireNonNullElse(peptideForm, PeptideCharacteristic.COMBINED_PEPTIDE);
         }
     }
 
