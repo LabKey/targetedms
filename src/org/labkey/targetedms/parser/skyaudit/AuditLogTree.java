@@ -159,13 +159,24 @@ public class AuditLogTree implements Iterable<AuditLogTree>
             }
         }
 
-        List<String> doNotDelete = new ArrayList<>();
+        Map<String, Integer> entityCount = new HashMap<>();
 
         // Now look at them in reverse order,
         for (int i = stack.size() - 1; i >= 0; i--)
         {
             StackEntry stackEntry = stack.get(i);
             AuditLogTree currentEntry = stackEntry._entry;
+
+            Integer count = entityCount.get(currentEntry.getEntryHash());
+            if (count != null)
+            {
+                entityCount.put(currentEntry.getEntryHash(), ++count);
+            }
+            else
+            {
+                entityCount.put(currentEntry.getEntryHash(), 1);
+            }
+
             if (currentEntry._children.size() == 0)      //if this is a leaf
             {
                 if (currentEntry._versionId == null)
@@ -177,28 +188,29 @@ public class AuditLogTree implements Iterable<AuditLogTree>
                 }
                 else if (versionId == currentEntry._versionId)      //check if it is the right version id
                 {
-                    if (!doNotDelete.contains(currentEntry.getEntryHash()))
-                        toDelete.put(currentEntry, stackEntry._parent);
-                }
-                else
-                {
-                    // Do not delete entries that belong to multiple versions
-                    doNotDelete.add(currentEntry.getEntryHash());
-                    toDelete.remove(currentEntry);
+                    toDelete.put(currentEntry, stackEntry._parent);
                 }
             }
         }
 
         for (Map.Entry<AuditLogTree, AuditLogTree> treeEntry : toDelete.entrySet())
         {
-            AuditLogTree parent = treeEntry.getValue();
-            if (parent != null)
+            // Don't delete anything used in multiple contexts
+            if (entityCount.get(treeEntry.getKey().getEntryHash()) > 1)
             {
-                parent._children.remove(treeEntry.getKey().getEntryHash());
-                // Check if the parent is now the last hop in the chain
-                if (parent._children.isEmpty() && parent._versionId == null)
+                toDelete.remove(treeEntry.getKey());
+            }
+            else
+            {
+                AuditLogTree parent = treeEntry.getValue();
+                if (parent != null)
                 {
-                    parent._versionId = versionId;
+                    parent._children.remove(treeEntry.getKey().getEntryHash());
+                    // Check if the parent is now the last hop in the chain
+                    if (parent._children.isEmpty() && parent._versionId == null)
+                    {
+                        parent._versionId = versionId;
+                    }
                 }
             }
         }
