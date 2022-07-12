@@ -220,8 +220,9 @@ public class TargetedMSQCTest extends TargetedMSTest
         goToProjectHome();
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        qcPlotsWebPart.waitForPlots(PRECURSORS.length * 2, true);
-        scrollIntoView(qcPlotsWebPart.getPlots().get(0).getPlot(), true);
+        qcPlotsWebPart.waitForPlots(2, false);
+//        scrollIntoView(qcPlotsWebPart.getPlots().get(0).getPlot(), true);
+        scrollIntoView(Locator.tagWithText("span","FFVAPFPEVFGK ++, 692.8686"));
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate(date));
         waitForElement(qcPlotsWebPart.getBubble());
         clickAndWait(Locator.linkWithText("view chromatogram"));
