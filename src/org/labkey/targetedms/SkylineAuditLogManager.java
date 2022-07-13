@@ -465,10 +465,12 @@ public class SkylineAuditLogManager
     public static class TestCase extends Assert
     {
         private static final String FOLDER_NAME = "TargetedMSAuditLogImportFolder";
+        private static final String FOLDER_NAME2 = "TargetedMSAuditLogImportFolder2";
         private static final GUID _docGUID = new GUID("50323e78-0e2b-4764-b979-9b71559bbf9f");
         private static final Logger _logger = LogManager.getLogger(SkylineAuditLogManager.TestCase.class);
         private static User _user;
         private static Container _container;
+        private static Container _container2;
 
         @Before
         public void initTest()
@@ -476,13 +478,19 @@ public class SkylineAuditLogManager
             UnitTestUtil.cleanupDatabase(_docGUID);
             _user = TestContext.get().getUser();
             _container = ContainerManager.ensureContainer(JunitUtil.getTestContainer(), FOLDER_NAME);
+            _container2 = ContainerManager.ensureContainer(JunitUtil.getTestContainer(), FOLDER_NAME2);
         }
 
         private AuditLogTree persistALogFile(String filePath, TargetedMSRun run) throws IOException, AuditLogException
         {
+            return persistALogFile(filePath, run, _container);
+        }
+
+        private AuditLogTree persistALogFile(String filePath, TargetedMSRun run, Container container) throws IOException, AuditLogException
+        {
             File fZip = UnitTestUtil.getSampleDataFile(filePath);
             File logFile = UnitTestUtil.extractLogFromZip(fZip, _logger);
-            SkylineAuditLogManager importer = new SkylineAuditLogManager(_container, null);
+            SkylineAuditLogManager importer = new SkylineAuditLogManager(container, null);
 
             importer.importAuditLogFile(_user, logFile, _docGUID, run);
             return importer.buildLogTree(_docGUID);
@@ -490,8 +498,13 @@ public class SkylineAuditLogManager
 
         private TargetedMSRun getNewRun(GUID pDocumentGUID)
         {
+            return getNewRun(pDocumentGUID, _container);
+        }
+
+        private TargetedMSRun getNewRun(GUID pDocumentGUID, Container container)
+        {
             TargetedMSRun run = new TargetedMSRun();
-            run.setContainer(_container);
+            run.setContainer(container);
             run.setDocumentGUID(pDocumentGUID);
             Table.insert(_user, TargetedMSManager.getTableInfoRuns(), run);
             _logger.info(String.format("new run is inserted with id %d", run.getId()));
@@ -547,6 +560,45 @@ public class SkylineAuditLogManager
         {
             ModuleProperty logLevelProperty = TargetedMSModule.SKYLINE_AUDIT_LEVEL_PROPERTY;
             logLevelProperty.saveValue(null, _container, Integer.toString(SkylineAuditLogSecurityManager.INTEGRITY_LEVEL.HASH.getValue()));
+        }
+
+        @Test
+        public void auditTreeDeleteTest() throws IOException, AuditLogException
+        {
+            AuditLogTree tree;
+
+            TargetedMSRun run1 = getNewRun(_docGUID, _container);
+            TargetedMSRun run2 = getNewRun(_docGUID, _container);
+            TargetedMSRun run3 = getNewRun(_docGUID, _container);
+            TargetedMSRun run4 = getNewRun(_docGUID, _container2);
+
+            persistALogFile("AuditLogFiles/MethodEdit_v1.zip", run1, _container);
+            persistALogFile("AuditLogFiles/MethodEdit_v2.zip", run2, _container);
+            persistALogFile("AuditLogFiles/MethodEdit_v3.zip", run3, _container);
+            tree = persistALogFile("AuditLogFiles/MethodEdit_v1.zip", run4, _container2);
+
+            assertNotNull(tree);
+            assertEquals(8, tree.getTreeSize());
+
+            SkylineAuditLogManager importer1 = new SkylineAuditLogManager(_container, null);
+            SkylineAuditLogManager importer2 = new SkylineAuditLogManager(_container2, null);
+
+            // Deletes one run-auditlog node
+            importer1.deleteDocumentVersionLog(run1.getId());
+            tree = importer1.buildLogTree(_docGUID);
+            assertEquals(7, tree.getTreeSize());
+
+            // Ensure fk constraint is not hit. The audit log will not be deleted because the same audit log entries
+            // are used in MethodEdit_v2, so the number of nodes is the same
+            importer2.deleteDocumentVersionLog(run4.getId());
+            tree = importer2.buildLogTree(_docGUID);
+            assertEquals(7, tree.getTreeSize());
+
+            // Removes one audit log from tree that is not used in run2
+            importer1.deleteDocumentVersionLog(run3.getId());
+            tree = importer1.buildLogTree(_docGUID);
+            assertEquals(6, tree.getTreeSize());
+
         }
 
         @Test
