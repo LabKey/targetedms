@@ -222,6 +222,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.waitForPlots(2, false);
 //        scrollIntoView(qcPlotsWebPart.getPlots().get(0).getPlot(), true);
+        qcDashboard.getQcSummaryWebPart().waitForLoad();
         scrollIntoView(Locator.tagWithText("span","FFVAPFPEVFGK ++, 692.8686"));
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate(date));
         waitForElement(qcPlotsWebPart.getBubble());
