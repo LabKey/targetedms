@@ -58,6 +58,9 @@ import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.WebPartFactory;
 import org.labkey.api.view.WebPartView;
 import org.labkey.api.view.template.ClientDependency;
+import org.labkey.panoramapremium.PanoramaPremiumController;
+import org.labkey.panoramapremium.QCNotificationSender;
+import org.labkey.panoramapremium.View.QCSummaryMenuCustomizer;
 import org.labkey.targetedms.chart.ComparisonCategory;
 import org.labkey.targetedms.chart.ReplicateLabelMinimizer;
 import org.labkey.targetedms.datasource.MsDataSourceUtil;
@@ -241,7 +244,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     @Override
     public Double getSchemaVersion()
     {
-        return 22.004;
+        return 22.008;
     }
 
     @Override
@@ -513,6 +516,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     {
         addController("targetedms", TargetedMSController.class);
         addController("passport", PassportController.class);
+        addController(PanoramaPremiumController.NAME, PanoramaPremiumController.class);
 
         Portal.registerNavTreeCustomizer("Targeted MS QC Plots", viewContext -> {
             List<NavTree> result = new ArrayList<>();
@@ -609,8 +613,8 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         TargetedMSListener listener = new TargetedMSListener();
         ContainerManager.addContainerListener(listener);
 
-		ActionURL chromatogramURL = new ActionURL(TargetedMSController.ChromatogramCrawlerAction.class, ContainerManager.getRoot());
-        AdminConsole.addLink(AdminConsole.SettingsLinkType.Configuration, "Targeted MS Chromatogram Crawler", chromatogramURL, ApplicationAdminPermission.class);
+        ActionURL chromatogramURL = new ActionURL(TargetedMSController.ChromatogramCrawlerAction.class, ContainerManager.getRoot());
+        AdminConsole.addLink(AdminConsole.SettingsLinkType.Premium, "Targeted MS Chromatogram Crawler", chromatogramURL, ApplicationAdminPermission.class);
 
         FileContentService fcs = FileContentService.get();
         if(null != fcs)
@@ -639,6 +643,17 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
             fcs.addZiploaderPattern(extBrukerRaw1);
             fcs.addZiploaderPattern(extBrukerRaw2);
         }
+
+        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", new QCSummaryMenuCustomizer("configureQCGroups", "Configure Included and Excluded Precursors"));
+        Portal.registerNavTreeCustomizer("Targeted MS QC Plots", new QCSummaryMenuCustomizer("configureQCGroups", "Configure Included and Excluded Precursors"));
+
+        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", new QCSummaryMenuCustomizer("configureQCMetric", "Configure QC Metrics"));
+        Portal.registerNavTreeCustomizer("Targeted MS QC Plots", new QCSummaryMenuCustomizer("configureQCMetric", "Configure QC Metrics"));
+
+        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", new QCSummaryMenuCustomizer("subscribeOutlierNotifications", "Subscribe to Outlier Notification Emails"));
+        Portal.registerNavTreeCustomizer("Targeted MS QC Plots", new QCSummaryMenuCustomizer("subscribeOutlierNotifications", "Subscribe to Outlier Notification Emails"));
+
+        TargetedMSService.get().registerSkylineDocumentImportListener(QCNotificationSender.get());
     }
 
     @NotNull

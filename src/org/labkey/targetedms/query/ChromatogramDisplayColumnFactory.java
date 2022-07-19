@@ -123,9 +123,9 @@ public class ChromatogramDisplayColumnFactory implements DisplayColumnFactory
         this(container, type, CHART_WIDTH, CHART_HEIGHT, null, false, false, false, false, null, null);
     }
 
-    public ChromatogramDisplayColumnFactory(Container container, Type type, int chartWidth, int chartHeight)
+    public ChromatogramDisplayColumnFactory(Container container, Type type, int chartWidth, int chartHeight, boolean splitGraph)
     {
-        this(container, type, chartWidth, chartHeight, null, false, false, false, false, null, null);
+        this(container, type, chartWidth, chartHeight, null, false, false, splitGraph, false, null, null);
     }
 
     public ChromatogramDisplayColumnFactory(Container container, Type type, int chartWidth, int chartHeight, Consumer<ActionURL> urlCustomizer)

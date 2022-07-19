@@ -277,9 +277,9 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.filterQCPlotsToInitialData(PRECURSORS.length, true);
 
         // test option to "Group X-Axis values by Date"
-        String initialSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+        String initialSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
         qcPlotsWebPart.setGroupXAxisValuesByDate(true);
-        assertFalse(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0")));
+        assertFalse(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0")));
         qcPlotsWebPart.setGroupXAxisValuesByDate(false);
 
         // test that plot0 changes based on scale
@@ -287,9 +287,9 @@ public class TargetedMSQCTest extends TargetedMSTest
         {
             if (scale != qcPlotsWebPart.getCurrentScale())
             {
-                initialSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+                initialSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
                 qcPlotsWebPart.setScale(scale);
-                String svgPlotText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+                String svgPlotText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
                 assertFalse(svgPlotText.isEmpty());
                 assertFalse(initialSVGText.equals(svgPlotText));
             }
@@ -300,13 +300,13 @@ public class TargetedMSQCTest extends TargetedMSTest
         // test that plot0_plotType_1 (CUSUMm) does not change from linear
         qcPlotsWebPart.checkPlotType(CUSUMm, true);
         qcPlotsWebPart.waitForPlots(2, true);
-        initialSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0_plotType_1");
+        initialSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1");
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LOG);
-        assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0_plotType_1")));
+        assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1")));
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.PERCENT_OF_MEAN);
-        assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0_plotType_1")));
+        assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1")));
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.STANDARD_DEVIATIONS);
-        assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0_plotType_1")));
+        assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1")));
 
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LINEAR);
 
@@ -317,9 +317,9 @@ public class TargetedMSQCTest extends TargetedMSTest
             if (metricTypeWithData.contains(type) && type != qcPlotsWebPart.getCurrentMetricType())
             {
                 log("Verify plot type: " + type);
-                initialSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+                initialSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
                 qcPlotsWebPart.setMetricType(type);
-                assertNotEquals(initialSVGText, qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0"));
+                assertNotEquals(initialSVGText, qcPlotsWebPart.getSVGPlotText("precursorPlot0"));
 
                 // back to default metric type for baseline comparison of svg plot change
                 qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.RETENTION);
@@ -697,7 +697,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         log("Verifying TIC Area QC Plots");
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TICAREA);
         qcPlotsWebPart.waitForPlots(1, true);
-        String ticPlotSVGText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+        String ticPlotSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
         assertFalse(ticPlotSVGText.isEmpty());
 
         log("Verifying Show All Series Checkbox");
@@ -715,6 +715,9 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertTrue("Wrong Link present", ticAreahoverText.contains("VIEW DOCUMENT"));
         assertFalse("peptide should not be present", ticAreahoverText.contains("peptide"));
         assertFalse("View Chromatogram link should not be present", ticAreahoverText.contains("VIEW CHROMATOGRAM"));
+
+        // Reload the page to clear the popup
+        refresh();
 
         log("Moving QC Plots Webpart down");
         portalHelper.moveWebPart("QC Plots", PortalHelper.Direction.DOWN);
@@ -874,7 +877,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         // verify initial QC summary outlier info
         verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[0], "0");
-        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[1], "not included in QC");
+        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[1], "excluded");
         verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "0");
 
         // create a guide set and verify updated QC Summary outliers info
@@ -891,6 +894,34 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertEquals("Unexpected number of included data points in plot SVG", 2, includedPointCount);
         excludedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
         assertEquals("Unexpected number of included data points in plot SVG", 4, excludedPointCount);
+    }
+
+    /*
+       Test coverage : Issue 45440: Moving range plot broken when choosing Percent of Mean or Standard Deviation y-axis options
+     */
+    @Test
+    public void testYAxisOptionsMovingRangePlot()
+    {
+        goToProjectHome();
+        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        log("Enabling Moving range along with Levey-Jennings");
+        qcPlotsWebPart.checkPlotType(MovingRange, true);
+        qcPlotsWebPart.waitForPlots(PRECURSORS.length * 2, true);
+
+        log("Verifying standard deviations plots");
+        qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.STANDARD_DEVIATIONS);
+        String svgPlotText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+        assertFalse("Plot with standard deviations option is blank", svgPlotText.isEmpty());
+        //Expected y axis values are -3 -2 -1 0 1 2 3 4
+        assertTrue("New plot is not as expected for standard deviations (y-axis) values ", svgPlotText.contains("-3-2-101234"));
+
+        log("Verifying percent of mean plots");
+        qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.PERCENT_OF_MEAN);
+        svgPlotText = qcPlotsWebPart.getSVGPlotText("tiledPlotPanel-2-precursorPlot0");
+        assertFalse("Plot with percent of mean option is blank", svgPlotText.isEmpty());
+        //Expected y axis values are 90 95 100 105 110 115
+        assertTrue("New plot is not as expected for percent of mean (y-axis) values", svgPlotText.contains("9095100105110115"));
     }
 
     private void verifyQCSummarySampleFileOutliers(String acquiredDate, String outlierInfo)

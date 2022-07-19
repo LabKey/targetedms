@@ -70,7 +70,7 @@ public class QCPlotFragment
         this.guideSetStats = guideSetStats;
     }
 
-    public JSONObject toJSON(boolean includeLJ, boolean includeMR, boolean includeMeanCusum, boolean includeVariableCusum)
+    public JSONObject toJSON(boolean includeLJ, boolean includeMR, boolean includeMeanCusum, boolean includeVariableCusum, boolean showExcluded)
     {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("DataType", getDataType());
@@ -114,28 +114,32 @@ public class QCPlotFragment
             dataJsonObject.put("SampleFileId", plotData.getSampleFile().getId());
             dataJsonObject.put("PrecursorChromInfoId", plotData.getPrecursorChromInfoId());
             boolean ignoreInQC = plotData.getSampleFile().isIgnoreInQC(plotData.getMetricId());
-            if (ignoreInQC)
+            if (!ignoreInQC || showExcluded)
             {
-                // Reduce JSON payload size by only sending value for rows where it's true
-                dataJsonObject.put("IgnoreInQC", true);
+                // Issue 45701: Samples excluded for single metric don't get hidden in QC plots
+                if (ignoreInQC)
+                {
+                    // Reduce JSON payload size by only sending value for rows where it's true
+                    dataJsonObject.put("IgnoreInQC", true);
+                }
+                dataJsonObject.put("PrecursorId", plotData.getPrecursorId());
+                dataJsonObject.put("SeriesType", plotData.getMetricSeriesIndex());
+                if (includeMR)
+                {
+                    dataJsonObject.put("MR", plotData.getmR());
+                }
+                if (includeMeanCusum)
+                {
+                    dataJsonObject.put("CUSUMmN", plotData.getCUSUMmN());
+                    dataJsonObject.put("CUSUMmP", plotData.getCUSUMmP());
+                }
+                if (includeVariableCusum)
+                {
+                    dataJsonObject.put("CUSUMvP", plotData.getCUSUMvP());
+                    dataJsonObject.put("CUSUMvN", plotData.getCUSUMvN());
+                }
+                dataJsonArray.put(dataJsonObject);
             }
-            dataJsonObject.put("PrecursorId", plotData.getPrecursorId());
-            dataJsonObject.put("SeriesType", plotData.getMetricSeriesIndex());
-            if (includeMR)
-            {
-                dataJsonObject.put("MR", plotData.getmR());
-            }
-            if (includeMeanCusum)
-            {
-                dataJsonObject.put("CUSUMmN", plotData.getCUSUMmN());
-                dataJsonObject.put("CUSUMmP", plotData.getCUSUMmP());
-            }
-            if (includeVariableCusum)
-            {
-                dataJsonObject.put("CUSUMvP", plotData.getCUSUMvP());
-                dataJsonObject.put("CUSUMvN", plotData.getCUSUMvN());
-            }
-            dataJsonArray.put(dataJsonObject);
         }
 
         jsonObject.put("data", dataJsonArray);

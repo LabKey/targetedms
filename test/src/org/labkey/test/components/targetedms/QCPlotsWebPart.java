@@ -266,11 +266,18 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         return plots;
     }
 
-    public String getSVGPlotText(String id)
+    public String getSVGPlotText(int plotPanelIndex, String plotIdSuffix)
     {
-        Locator loc = Locator.tagWithId("div", id).withDescendant(Locator.xpath("//*[local-name() = 'svg']"));
+        Locator loc = Locator.tagWithClass("div", "tiledPlotPanel").index(plotPanelIndex).append(
+                Locator.tag("div").attributeEndsWith("id", plotIdSuffix)
+                        .withDescendant(Locator.xpath("//*[local-name() = 'svg']")));
         WebElement svg = loc.findElement(getWrapper().getDriver());
         return svg.getText();
+    }
+
+    public String getSVGPlotText(String plotIdSuffix)
+    {
+        return getSVGPlotText(0, plotIdSuffix);
     }
 
     public List<String> getPlotTitles()

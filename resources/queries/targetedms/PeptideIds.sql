@@ -17,9 +17,10 @@ SELECT
    PrecursorId.PeptideId.PeptideGroupId.RunId AS RunId @hidden,
    -- Show the modifications and their locations
    (SELECT GROUP_CONCAT((StructuralModId.Name ||
-                         ' @ ' ||
+                         -- For now omit AA index info for anything but the first crosslinked peptide
+                         CASE WHEN psm.PeptideIndex = 0 THEN (' @ ' ||
                          SUBSTRING(p.Sequence, IndexAA + 1, 1) ||
-                         CAST(IndexAA + p.StartIndex + 1 AS VARCHAR)),
+                         CAST(IndexAA + p.StartIndex + 1 AS VARCHAR)) ELSE '' END),
        (', ' || CHR(10)))
    FROM targetedms.PeptideStructuralModification psm INNER JOIN targetedms.Peptide p ON psm.PeptideId = p.Id WHERE psm.PeptideId = pci.PrecursorId.PeptideId) AS Modification,
    SUM(TotalArea) AS TotalArea

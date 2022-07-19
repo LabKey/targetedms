@@ -101,6 +101,7 @@ import org.labkey.api.pipeline.PipelineUrls;
 import org.labkey.api.pipeline.PipelineValidationException;
 import org.labkey.api.pipeline.browse.PipelinePathForm;
 import org.labkey.api.portal.ProjectUrls;
+import org.labkey.api.protein.PeptideCharacteristic;
 import org.labkey.api.protein.ProteinService;
 import org.labkey.api.query.BatchValidationException;
 import org.labkey.api.query.DetailsURL;
@@ -248,6 +249,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -320,7 +322,7 @@ public class TargetedMSController extends SpringActionController
     // Action to setup a new folder
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class FolderSetupAction extends FormHandlerAction<FolderSetupForm>
+    public static class FolderSetupAction extends FormHandlerAction<FolderSetupForm>
     {
         public static final String DATA_PIPELINE_TAB = "Data Pipeline";
         public static final String RUNS_TAB = "Runs";
@@ -530,7 +532,7 @@ public class TargetedMSController extends SpringActionController
     // Action to create a Raw Data tab
     // ------------------------------------------------------------------------
     @RequiresPermission(AdminPermission.class)
-    public class AddRawDataTabAction extends FormHandlerAction<Object>
+    public static class AddRawDataTabAction extends FormHandlerAction<Object>
     {
         @Override
         public void validateCommand(Object target, Errors errors)
@@ -601,7 +603,7 @@ public class TargetedMSController extends SpringActionController
     // Action to show a list of uploaded documents
     // ------------------------------------------------------------------------
     @RequiresPermission(AdminPermission.class)
-    public class SetupAction extends SimpleViewAction<Object>
+    public static class SetupAction extends SimpleViewAction<Object>
     {
         @Override
         public ModelAndView getView(Object o, BindException errors)
@@ -626,12 +628,12 @@ public class TargetedMSController extends SpringActionController
     // Action to show QC reports
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class LeveyJenningsAction extends SimpleViewAction<URLParameterBean>
+    public static class LeveyJenningsAction extends SimpleViewAction<URLParameterBean>
     {
         @Override
         public ModelAndView getView(URLParameterBean urlParameterBean, BindException errors)
         {
-            return new JspView("/org/labkey/targetedms/view/qcTrendPlotReport.jsp");
+            return new JspView<>("/org/labkey/targetedms/view/qcTrendPlotReport.jsp");
         }
 
         @Override
@@ -701,7 +703,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class LeveyJenningsPlotOptionsAction extends MutatingApiAction<LeveyJenningsPlotOptions>
+    public static class  LeveyJenningsPlotOptionsAction extends MutatingApiAction<LeveyJenningsPlotOptions>
     {
         @Override
         public Object execute(LeveyJenningsPlotOptions form, BindException errors)
@@ -1006,7 +1008,7 @@ public class TargetedMSController extends SpringActionController
         if (autoQCPingMap != null)
         {
             // check if the last modified date is recent (i.e. within the last 15 min)
-            long timeoutMinutesAgo = System.currentTimeMillis() - ((long)TargetedMSManager.get().getAutoQCPingTimeout(container) * 60000l);
+            long timeoutMinutesAgo = System.currentTimeMillis() - ((long)TargetedMSManager.get().getAutoQCPingTimeout(container) * 60000L);
             Timestamp lastModified = (Timestamp)autoQCPingMap.get("Modified");
             autoQCPingMap.put("isRecent", lastModified.getTime() >= timeoutMinutesAgo);
         }
@@ -1018,7 +1020,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class GetQCMetricConfigurationsAction extends ReadOnlyApiAction<Object>
+    public static class GetQCMetricConfigurationsAction extends ReadOnlyApiAction<Object>
     {
         @Override
         public Object execute(Object form, BindException errors)
@@ -1039,7 +1041,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class GetContainerReplicateAnnotationsAction extends ReadOnlyApiAction<Object>
+    public static class GetContainerReplicateAnnotationsAction extends ReadOnlyApiAction<Object>
     {
         @Override
         public Object execute(Object form, BindException errors)
@@ -1099,7 +1101,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class QCSummaryHistoryAction extends SimpleViewAction<Object>
+    public static class QCSummaryHistoryAction extends SimpleViewAction<Object>
     {
         @Override
         public ModelAndView getView(Object o, BindException errors)
@@ -1130,7 +1132,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class GetQCMetricOutliersAction extends ReadOnlyApiAction<QCMetricOutliersForm>
+    public static class GetQCMetricOutliersAction extends ReadOnlyApiAction<QCMetricOutliersForm>
     {
 
         @Override
@@ -1173,7 +1175,7 @@ public class TargetedMSController extends SpringActionController
         private boolean _includeVariableCusum;
         private Date _startDate;
         private Date _endDate;
-        private List<OutlierGenerator.AnnotationGroup> _selectedAnnotations;
+        private List<OutlierGenerator.AnnotationGroup> _selectedAnnotations = Collections.emptyList();
         private boolean _showExcluded;
         private boolean _showReferenceGS;
         private boolean _showExcludedPrecursors;
@@ -1295,7 +1297,7 @@ public class TargetedMSController extends SpringActionController
      * */
     @RequiresPermission(ReadPermission.class)
     @Marshal(Marshaller.Jackson)
-    public class GetQCPlotsDataAction extends ReadOnlyApiAction<QCPlotsDataForm>
+    public static class GetQCPlotsDataAction extends ReadOnlyApiAction<QCPlotsDataForm>
     {
 
         @Override
@@ -1338,6 +1340,11 @@ public class TargetedMSController extends SpringActionController
                     .filter(qcMetricConfiguration -> qcMetricConfiguration.getId() == passedMetricId)
                     .collect(Collectors.toList());
 
+            if (qcMetricConfigurations.isEmpty())
+            {
+                throw new NotFoundException("No matching metric found for id " + passedMetricId);
+            }
+
             // get start date and end date for this qc folder
             Map<String,Object> qcFolderDateRange = TargetedMSManager.getQCFolderDateRange(getContainer());
             Date qcFolderStartDate = (Date) qcFolderDateRange.get("startDate");
@@ -1347,7 +1354,7 @@ public class TargetedMSController extends SpringActionController
             List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(schema, qcMetricConfigurations, qcFolderStartDate, qcFolderEndDate, form.getSelectedAnnotations(), form.isShowExcluded(), form.isShowExcludedPrecursors());
             Map<GuideSetKey, GuideSetStats> stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
             boolean zoomedRange = qcFolderStartDate != null &&
-                    qcFolderEndDate != null &&
+                    qcFolderEndDate != null && rangeStartDate != null && form.getEndDate() != null &&
                     (DateUtil.getDateOnly(qcFolderStartDate).compareTo(rangeStartDate) != 0 ||
                     DateUtil.getDateOnly(qcFolderEndDate).compareTo(form.getEndDate()) != 0);
             Map<GuideSetKey, GuideSetStats> targetedStats;
@@ -1388,7 +1395,7 @@ public class TargetedMSController extends SpringActionController
             response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toQCPlotJSON).collect(Collectors.toList()));
             response.put("plotDataRows", qcPlotFragments
                     .stream()
-                    .map(qcPlotFragment -> qcPlotFragment.toJSON(form.isIncludeLJ(), form.isIncludeMR(), form.isIncludeMeanCusum(), form.isIncludeVariableCusum()))
+                    .map(qcPlotFragment -> qcPlotFragment.toJSON(form.isIncludeLJ(), form.isIncludeMR(), form.isIncludeMeanCusum(), form.isIncludeVariableCusum(), form.isShowExcluded()))
                     .collect(Collectors.toList()));
             response.put("metricProps", metricMap.get(passedMetricId).toJSON());
             response.put("filterQCPoints", filterQCPoints);
@@ -1423,7 +1430,7 @@ public class TargetedMSController extends SpringActionController
     // Action to show a list of chromatogram library archived revisions
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class ArchivedRevisionsAction extends SimpleViewAction<Object>
+    public static class ArchivedRevisionsAction extends SimpleViewAction<Object>
     {
         @Override
         public ModelAndView getView(Object o, BindException errors)
@@ -1448,7 +1455,7 @@ public class TargetedMSController extends SpringActionController
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
     @ActionNames("showList, begin")
-    public class ShowListAction extends SimpleViewAction<Object>
+    public static class ShowListAction extends SimpleViewAction<Object>
     {
         @Override
         public ModelAndView getView(Object o, BindException errors)
@@ -1477,7 +1484,7 @@ public class TargetedMSController extends SpringActionController
      * customize grid and view chooser menus available.
      */
     @RequiresPermission(ReadPermission.class)
-    public class ShowTargetsAction extends SimpleViewAction<ShowTargetsForm>
+    public static class ShowTargetsAction extends SimpleViewAction<ShowTargetsForm>
     {
         private String _pageTitle;
         @Override
@@ -1485,7 +1492,7 @@ public class TargetedMSController extends SpringActionController
         {
             if (StringUtils.isBlank(form.getQueryName()))
             {
-                errors.reject(ERROR_MSG, String.format("Expected a table name in the request", form.getQueryName()));
+                errors.reject(ERROR_MSG, String.format("Expected a table name in the request"));
                 return new SimpleErrorView(errors);
             }
             if (!LibraryQueryViewWebPart.isTableSupported(form.getQueryName()))
@@ -1666,9 +1673,8 @@ public class TargetedMSController extends SpringActionController
                 {
                     extractSeriesLegendInfo(series, plot, dataset);
                 }
-                if (plot instanceof CombinedDomainXYPlot)
+                if (plot instanceof CombinedDomainXYPlot combinedPlot)
                 {
-                    CombinedDomainXYPlot combinedPlot = (CombinedDomainXYPlot)plot;
                     for (XYPlot subplot : (List<XYPlot>) combinedPlot.getSubplots())
                     {
                         XYDataset combinedDataset = subplot.getDataset();
@@ -1889,11 +1895,11 @@ public class TargetedMSController extends SpringActionController
             precursorInfo.setFrame(WebPartView.FrameType.PORTAL);
             precursorInfo.setTitle("Precursor Summary");
 
-            PrecursorChromatogramsTableInfo tableInfo = new PrecursorChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()), form.getChartWidth(), form.getChartHeight());
+            PrecursorChromatogramsTableInfo tableInfo = new PrecursorChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()), form.getChartWidth(), form.getChartHeight(), form.isSplitGraph());
             tableInfo.addPrecursorFilter(precursorId);
 
             ChromatogramsDataRegion dRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
-                    ChromatogramsDataRegion.PRECURSOR_CHROM_DATA_REGION);
+                    ChromatogramsDataRegion.PRECURSOR_CHROM_DATA_REGION, form.isSplitGraph());
 
             pageToSelectedChromatogram(form, dRegion, PrecursorManager.getChromInfosLitePlusForPrecursor(form.getId(), getUser(), getContainer()));
 
@@ -2012,11 +2018,11 @@ public class TargetedMSController extends SpringActionController
             precursorInfo.setFrame(WebPartView.FrameType.PORTAL);
             precursorInfo.setTitle("Molecule Precursor Summary");
 
-            PrecursorChromatogramsTableInfo tableInfo = new PrecursorChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()));
+            PrecursorChromatogramsTableInfo tableInfo = new PrecursorChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()), form.getChartWidth(), form.getChartHeight(), form.isSplitGraph());
             tableInfo.addPrecursorFilter(precursorId);
 
             ChromatogramsDataRegion dRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
-                    ChromatogramsDataRegion.PRECURSOR_CHROM_DATA_REGION);
+                    ChromatogramsDataRegion.PRECURSOR_CHROM_DATA_REGION, form.isSplitGraph());
 
             pageToSelectedChromatogram(form, dRegion, MoleculePrecursorManager.getChromInfosLitePlusForMoleculePrecursor(form.getId(), getUser(), getContainer()));
 
@@ -2061,7 +2067,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class PeptideAllChromatogramsChartAction extends SimpleViewAction<ChromatogramForm>
+    public static class PeptideAllChromatogramsChartAction extends SimpleViewAction<ChromatogramForm>
     {
         private TargetedMSRun _run; // save for use in appendNavTrail
 
@@ -2099,7 +2105,7 @@ public class TargetedMSController extends SpringActionController
             tableInfo.addPeptideFilter();
 
             ChromatogramsDataRegion dRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
-                    ChromatogramsDataRegion.PEPTIDE_CHROM_DATA_REGION);
+                    ChromatogramsDataRegion.PEPTIDE_CHROM_DATA_REGION, form.isSplitGraph());
             GridView gridView = new GridView(dRegion, errors);
             gridView.setFrame(WebPartView.FrameType.PORTAL);
             gridView.setTitle("Chromatograms");
@@ -2379,6 +2385,8 @@ public class TargetedMSController extends SpringActionController
         private boolean _update;
         private Long _chromInfoId;
         private Long _highlightChromInfoId;
+        private long _replicateId;
+        private String _peptideForm;
 
         public ChromatogramForm()
         {
@@ -2395,6 +2403,15 @@ public class TargetedMSController extends SpringActionController
             _id = id;
         }
 
+        public long getReplicateId()
+        {
+            return _replicateId;
+        }
+
+        public void setReplicateId(long replicateId)
+        {
+            _replicateId = replicateId;
+        }
 
         public String getReplicatesFilter()
         {
@@ -2404,16 +2421,6 @@ public class TargetedMSController extends SpringActionController
         public void setReplicatesFilter(String replicatesFilter)
         {
             _replicatesFilter = replicatesFilter;
-        }
-
-        public Long getChromInfoId()
-        {
-            return _chromInfoId;
-        }
-
-        public void setChromInfoId(Long chromInfoId)
-        {
-            _chromInfoId = chromInfoId;
         }
 
         @NotNull
@@ -2580,7 +2587,26 @@ public class TargetedMSController extends SpringActionController
                 }
                 sql.append(")");
             }
+        }
 
+        public Long getChromInfoId()
+        {
+            return _chromInfoId;
+        }
+
+        public void setChromInfoId(Long chromInfoId)
+        {
+            _chromInfoId = chromInfoId;
+        }
+
+        public String getPeptideForm()
+        {
+            return _peptideForm;
+        }
+
+        public void setPeptideForm(String peptideForm)
+        {
+            _peptideForm = Objects.requireNonNullElse(peptideForm, PeptideCharacteristic.COMBINED_PEPTIDE);
         }
     }
 
@@ -2637,14 +2663,14 @@ public class TargetedMSController extends SpringActionController
             // Precursor and transition chromatograms. One row per replicate
             boolean canBeSplitView = PrecursorManager.canBeSplitView(form.getId());
             bean.setCanBeSplitView(canBeSplitView);
-            if(canBeSplitView && !form.isUpdate())
+            if (!canBeSplitView || form.isUpdate())
             {
-                form.setSplitGraph(true);
+                form.setSplitGraph(false);
             }
             boolean showOptPeaksOption = PrecursorManager.hasOptimizationPeaks(form.getId());
             bean.setShowOptPeaksOption(showOptPeaksOption);
 
-            PeptidePrecursorChromatogramsView chromView = new PeptidePrecursorChromatogramsView(peptide, new TargetedMSSchema(getUser(), getContainer()), form, errors, getViewContext());
+            PeptidePrecursorChromatogramsView chromView = new PeptidePrecursorChromatogramsView(peptide, new TargetedMSSchema(getUser(), getContainer()), form, errors, getViewContext(), canBeSplitView);
             JspView<PeptideChromatogramsViewBean> chartForm = new JspView<>("/org/labkey/targetedms/view/chromatogramsForm.jsp", bean);
 
             VBox chromatogramsBox = new VBox();
@@ -4742,11 +4768,12 @@ public class TargetedMSController extends SpringActionController
             // Peptide group details
             VBox result = new VBox();
 
-            Integer peptideCount = addProteinSummaryViews(result, group, _run, getUser(), getContainer());
+            var showStackedPeptides = form._peptideForm != null && form._peptideForm.equalsIgnoreCase("stacked");
+            Integer peptideCount = addProteinSummaryViews(result, group, _run, form.getReplicateId(), showStackedPeptides);
 
             GroupChromatogramsTableInfo tableInfo = new GroupChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()), form);
             ChromatogramsDataRegion chromatogramRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
-                    ChromatogramsDataRegion.GROUP_CHROM_DATA_REGION);
+                    ChromatogramsDataRegion.GROUP_CHROM_DATA_REGION, form.isSplitGraph(), "Id", false);
             chromatogramRegion.setLegendElementId("groupChromatogramLegend");
             tableInfo.addGroupFilter(group);
             ChromatogramGridView chromatogramView = new ChromatogramGridView(chromatogramRegion, errors)
@@ -4875,7 +4902,7 @@ public class TargetedMSController extends SpringActionController
         return result;
     }
 
-    public static Integer addProteinSummaryViews(VBox box, PeptideGroup group, TargetedMSRun run, User user, Container container)
+    public static Integer addProteinSummaryViews(VBox box, PeptideGroup group, TargetedMSRun run, @Nullable Long replicateId, boolean showStackedPeptides)
     {
         Integer peptideCount = TargetedMSManager.getPeptideGroupPeptideCount(run, group.getId());
         boolean proteomics = peptideCount != null && peptideCount.intValue() > 0;
@@ -4889,14 +4916,20 @@ public class TargetedMSController extends SpringActionController
         if (group.getSequenceId() != null)
         {
             int seqId = group.getSequenceId().intValue();
-            List<String> peptideSequences = new ArrayList<>();
-            for (Peptide peptide : PeptideManager.getPeptidesForGroup(group.getId()))
-            {
-                peptideSequences.add(peptide.getSequence());
-            }
+            List<PeptideCharacteristic> combinedPeptideCharacteristics = new ArrayList<>(PeptideManager.getCombinedPeptideCharacteristics(group.getId(), replicateId));
+            List<PeptideCharacteristic> modifiedPeptideCharacteristics = new ArrayList<>(PeptideManager.getModifiedPeptideCharacteristics(group.getId(), replicateId));;
+
+            List<Replicate> replicates = ReplicateManager.getReplicatesForRun(run.getRunId());
+            List<org.labkey.api.ms.Replicate> msReplicates = new ArrayList<>();
+            replicates.forEach(replicate -> {
+                var rep = new org.labkey.api.ms.Replicate();
+                rep.setName(replicate.getName());
+                rep.setId(replicate.getId());
+                msReplicates.add(rep);
+            });
 
             ProteinService proteinService = ProteinService.get();
-            WebPartView<?> sequenceView = proteinService.getProteinCoverageView(seqId, peptideSequences.toArray(new String[0]), 100, true, group.getAccession());
+            WebPartView<?> sequenceView = proteinService.getProteinCoverageViewWithSettings(seqId, combinedPeptideCharacteristics, 100, true, group.getAccession(), msReplicates, modifiedPeptideCharacteristics, showStackedPeptides);
 
             sequenceView.setTitle("Sequence Coverage");
             sequenceView.enableExpandCollapse("SequenceCoverage", false);
@@ -5104,17 +5137,19 @@ public class TargetedMSController extends SpringActionController
             if (group.getSequenceId() != null)
             {
                 int seqId = group.getSequenceId().intValue();
-                List<String> peptideSequences = new ArrayList<>();
+                List<PeptideCharacteristic> peptideCharacteristics = new ArrayList<>();
                 for (Peptide peptide : PeptideManager.getPeptidesForGroup(group.getId()))
                 {
-                    peptideSequences.add(peptide.getSequence());
+                    PeptideCharacteristic peptideCharacteristic = new PeptideCharacteristic();
+                    peptideCharacteristic.setSequence(peptide.getSequence());
+                    peptideCharacteristics.add(peptideCharacteristic);
                 }
                 ProteinService proteinService = ProteinService.get();
                 ActionURL searchURL = urlProvider(MS2Urls.class).getProteinSearchUrl(getContainer());
                 searchURL.addParameter("seqId", group.getSequenceId().intValue());
                 searchURL.addParameter("identifier", group.getLabel());
                 getViewContext().getResponse().getWriter().write("<a href=\"" + searchURL + "\">Search for other references to this protein</a><br/>");
-                view = proteinService.getProteinCoverageView(seqId, peptideSequences.toArray(new String[0]), 40, true, null);
+                view = proteinService.getProteinCoverageView(seqId, peptideCharacteristics, 40, true, null);
             }
             else
             {

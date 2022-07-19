@@ -3,10 +3,10 @@ SELECT
   StructuralModId AS Modification,
   SUM(ModifiedAreaProportion) AS PercentModified,
   MIN(Id) AS Id @hidden,
-  Sequence,
+  PeptideModifiedSequence,
+  Sequence @hidden,
   PreviousAA @hidden,
   NextAA @hidden,
-  PeptideModifiedSequence @hidden,
   SampleName,
   -- Explicitly cast for SQLServer to avoid trying to add as numeric types
   SUBSTRING(Sequence, IndexAA + 1, 1) || CAST(StartIndex + IndexAA + 1 AS VARCHAR) AS SiteLocation,

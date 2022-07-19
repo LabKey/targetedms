@@ -29,9 +29,15 @@
 .auto-qc-ping {
     color: #222222;
     position: absolute;
-    top: 5px;
-    right: 5px;
-    cursor: pointer
+    top: 0;
+    right: 0;
+    cursor: help;
+}
+.email-notifications {
+    color: #222222;
+    position: absolute;
+    top: 1.8em;
+    right: 0;
 }
 .qc-none {
     color: grey;

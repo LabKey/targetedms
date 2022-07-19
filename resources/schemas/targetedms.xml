@@ -852,6 +852,7 @@
             <column columnName="PeptideId"/>
             <column columnName="StructuralModId"/>
             <column columnName="IndexAA"/>
+            <column columnName="PeptideIndex"/>
             <column columnName="MassDiff"/>
         </columns>
     </table>
@@ -974,12 +975,13 @@
                 <isHidden>true</isHidden>
             </column>
             <column columnName="name"/>
-            <column columnName="aminoacid"/>
+            <column columnName="AminoAcid"/>
             <column columnName="terminus"/>
             <column columnName="formula"/>
-            <column columnName="massdiffmono"/>
-            <column columnName="massdiffavg"/>
-            <column columnName="unimodid"/>
+            <column columnName="MassDiffMono"/>
+            <column columnName="MassDiffAvg"/>
+            <column columnName="UnimodId"/>
+            <column columnName="CrossLinker"/>
         </columns>
     </table>
     <table tableName="structuralmodloss" tableDbType="TABLE">
@@ -1726,6 +1728,19 @@
             <column columnName="IonFormula"/>
             <column columnName="MassMonoisotopic"/>
             <column columnName="MassAverage"/>
+            <column columnName="Container"/>
+        </columns>
+    </table>
+    <table tableName="QCEmailNotifications" tableDbType="TABLE">
+        <columns>
+            <column columnName="userId"/>
+            <column columnName="enabled"/>
+            <column columnName="outliers"/>
+            <column columnName="samples"/>
+            <column columnName="Created"/>
+            <column columnName="CreatedBy"/>
+            <column columnName="Modified"/>
+            <column columnName="ModifiedBy"/>
             <column columnName="Container"/>
         </columns>
     </table>

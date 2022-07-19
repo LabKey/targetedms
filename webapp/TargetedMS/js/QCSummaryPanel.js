@@ -143,13 +143,24 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                     '<div class="auto-qc-ping" id="{autoQcCalloutId}">AutoQC <span class="{autoQCPing:this.getAutoQCPingClass}"></span></div>',
                 '<tpl elseif="docCount == 0 && parentOnly">',
                     '<div class="qc-summary-text">No data found.</div><div>&nbsp;</div>' + this.getAutoQCSetupInfo(),
+                '<tpl elseif="docCount &gt; 0 && LABKEY.user.isAdmin">',
+                    '<div class="qc-summary-text">',
+                        '<a href="{path:this.getSampleFileLink}">{fileCount} sample file{fileCount:this.pluralize}</a> ' +
+                            'tracking <a href="{path:this.getPrecursorConfigLink}">{precursorCount} precursor{precursorCount:this.pluralize}</a> ' +
+                            'with <a href="{path:this.getMetricConfigLink}">{metricCount} metric{metricCount:this.pluralize}</a> {instrument}',
+                    '</div>',
                 '<tpl elseif="docCount &gt; 0">',
                     '<div class="qc-summary-text">',
                         '<a href="{path:this.getSampleFileLink}">{fileCount} sample file{fileCount:this.pluralize}</a> ' +
-                            'tracking {precursorCount} precursor{precursorCount:this.pluralize} with {metricCount} metric{metricCount:this.pluralize} {instrument}',
+                        'tracking {precursorCount} precursor{precursorCount:this.pluralize} with {metricCount} metric{metricCount:this.pluralize} {instrument}',
                     '</div>',
+                '</tpl>',
+                '<tpl if="docCount &gt; 0">',
                     '<div class="item-text sample-file-details sample-file-details-loading" id="qc-summary-samplefiles-{id}">Loading...</div>',
                     '<div class="auto-qc-ping" id="{autoQcCalloutId}">AutoQC <span class="{autoQCPing:this.getAutoQCPingClass}"></span></div>',
+                '</tpl>',
+                '<tpl if="!LABKEY.user.isGuest">',
+                    '<div class="email-notifications" id="{autoQcCalloutId}"><a href="{path:this.getEmailNotificationLink}">Notifications <span class="fa fa-envelope"></span></a></div>',
                 '</tpl>',
             '</tpl>',
             {
@@ -165,6 +176,18 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                 {
                     return LABKEY.ActionURL.buildURL('query', 'executeQuery', path,
                             {schemaName: 'targetedms', 'query.queryName': 'SampleFile'});
+                },
+                getMetricConfigLink: function (path)
+                {
+                    return LABKEY.ActionURL.buildURL('targetedms', 'configureQCMetric', path);
+                },
+                getPrecursorConfigLink: function (path)
+                {
+                    return LABKEY.ActionURL.buildURL('targetedms', 'configureQCGroups', path);
+                },
+                getEmailNotificationLink: function (path)
+                {
+                    return LABKEY.ActionURL.buildURL('targetedms', 'subscribeOutlierNotifications', path);
                 },
                 getFullHistoryLink: function (path)
                 {
@@ -273,7 +296,9 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
 
     renderContainerSampleFileStats: function (params) {
         var container = params.container;
-            var html = '<table class="table-condensed labkey-data-region-legacy labkey-show-borders"><thead><tr><td class="labkey-column-header">Replicate Name</td><td class="labkey-column-header">Acquired</td><td class="labkey-column-header">Total outliers</td></tr></thead>';
+            var html = '<table class="table-condensed labkey-data-region-legacy labkey-show-borders">';
+            html += '<thead><tr><td colspan="2"/><td colspan="4" style="text-align: center" class="labkey-column-header">Outliers</td></tr></thead>';
+            html += '<thead><tr><td class="labkey-column-header">Replicate Name</td><td class="labkey-column-header">Acquired</td><td class="labkey-column-header">Levey-Jennings</td><td class="labkey-column-header">Moving Range</td><td class="labkey-column-header">CUSUM</td><td class="labkey-column-header">Total</td></tr></thead>';
             var sampleFiles = params.sampleFiles;
             Ext4.iterate(sampleFiles, function (sampleFile) {
                 // create a new div id for each sampleFile to use for the hover details callout
@@ -285,14 +310,16 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                 html += '<tr id="' + sampleFile.calloutId + '"><td><div class="sample-file-item">'
                         + '<span class="fa ' + iconCls + '"></span> ' + Ext4.util.Format.htmlEncode(sampleFile.ReplicateName) + '</div></td><td><div class="sample-file-item-acquired">' + Ext4.util.Format.date(sampleFile.AcquiredTime ? new Date(sampleFile.AcquiredTime) : null, LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s') + '</div></td>';
 
-                html += '<td style="text-align: right"><div class="sample-file-item-outliers">';
                 if (sampleFile.IgnoreForAllMetric) {
-                    html += 'not included in QC';
+                    html += '<td colspan="4"><div class="sample-file-item-total-outliers" style="text-align: center">excluded</div></td>';
                 }
                 else {
-                    html += totalOutliers;
+                    html += '<td style="text-align: right"><div class="sample-file-item-lj-outliers">' + sampleFile.LeveyJennings + "</div></td>"
+                    html += '<td style="text-align: right"><div class="sample-file-item-mr-outliers">' + sampleFile.mR + "</div></td>"
+                    html += '<td style="text-align: right"><div class="sample-file-item-cusum-outliers">' + (sampleFile.CUSUMm + sampleFile.CUSUMv) + "</div></td>"
+                    html += '<td style="text-align: right"><div class="sample-file-item-total-outliers">' + totalOutliers + "</div></td>"
                 }
-                html += '</div></td></tr>';
+                html += '</tr>';
             });
             html += '</table>';
             if (container.fileCount > sampleFiles.length) {

@@ -27,6 +27,7 @@ import org.labkey.api.security.User;
 import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.util.Formats;
+import org.labkey.api.util.Pair;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSRun;
 import org.labkey.targetedms.TargetedMSSchema;
@@ -200,14 +201,15 @@ public class ConflictResultsManager
 
     private static String getPeptideModifiedSequence(Peptide peptide)
     {
-        Map<Integer, Double> structuralModMap = ModificationManager.getPeptideStructuralModsMap(peptide.getId());
+        Map<Pair<Integer, Integer>, Double> structuralModMap = ModificationManager.getPeptideStructuralModsMap(peptide.getId());
         StringBuilder modifiedSequence = new StringBuilder();
 
         String sequence = peptide.getSequence();
         for(int i = 0; i < sequence.length(); i++)
         {
             modifiedSequence.append(sequence.charAt(i));
-            Double massDiff = structuralModMap.get(i);
+            // This is only used for very old Skyline documents predating support for crosslinking, so always use 0 as the peptideIndex
+            Double massDiff = structuralModMap.get(Pair.of(0, i));
             if(massDiff != null)
             {
                 String sign = massDiff > 0 ? "+" : "";

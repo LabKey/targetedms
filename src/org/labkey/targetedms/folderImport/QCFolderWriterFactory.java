@@ -1,13 +1,12 @@
 package org.labkey.targetedms.folderImport;
 
 import org.labkey.api.admin.BaseFolderWriter;
+import org.labkey.api.admin.FolderExportContext;
 import org.labkey.api.admin.FolderWriter;
 import org.labkey.api.admin.FolderWriterFactory;
-import org.labkey.api.admin.ImportContext;
 import org.labkey.api.data.Container;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.writer.VirtualFile;
-import org.labkey.folder.xml.FolderDocument;
 import org.labkey.targetedms.TargetedMSManager;
 
 public class QCFolderWriterFactory implements FolderWriterFactory
@@ -35,7 +34,7 @@ public class QCFolderWriterFactory implements FolderWriterFactory
         }
 
         @Override
-        public void write(Container object, ImportContext<FolderDocument.Folder> ctx, VirtualFile root) throws Exception
+        public void write(Container object, FolderExportContext ctx, VirtualFile root) throws Exception
         {
             VirtualFile vf = root.getDir(QCFolderConstants.QC_FOLDER_DIR);
 

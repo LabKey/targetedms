@@ -42,6 +42,7 @@ public class MoleculePrecursorChromatogramsView extends ChromatogramGridView
         return new ChromatogramsDataRegion(viewContext,
                 tableInfo,
                 MOLECULE_PRECURSOR_CHROM_DATA_REGION,
+                form.isSplitGraph(),
                 StringUtils.join(tableInfo.getDisplayColumnNames(), ","));
         }
 }

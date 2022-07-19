@@ -537,6 +537,8 @@ public class PeptideSettings
         private Double _massDiffMono;
         private Double _massDiffAvg;
         private Integer _unimodId;
+        private boolean _crosslinker;
+
 
         @Override
         public String getName()
@@ -613,6 +615,17 @@ public class PeptideSettings
         public void setUnimodId(Integer unimodId)
         {
             _unimodId = unimodId;
+        }
+
+        @Override
+        public boolean isCrosslinker()
+        {
+            return _crosslinker;
+        }
+
+        public void setCrosslinker(boolean crosslinker)
+        {
+            _crosslinker = crosslinker;
         }
     }
 

@@ -42,6 +42,7 @@ class PeptideSettingsParser
     private static final String STATIC_MODIFICATIONS = "static_modifications";
     private static final String STATIC_MODIFICATION = "static_modification";
     private static final String POTENTIAL_LOSS = "potential_loss";
+    private static final String CROSSLINKER = "crosslinker";
     private static final String HEAVY_MODIFICATIONS = "heavy_modifications";
     private static final String AMINOACID = "aminoacid";
     private static final String TERMINUS = "terminus";
@@ -187,7 +188,7 @@ class PeptideSettingsParser
 
         // If there is a single internal standard it is written out as an attribute.
         // Otherwise, there is one <internal_standard> element for each standard
-        String inernalStandard = reader.getAttributeValue(null, INTERNAL_STANDARD);
+        String internalStandard = reader.getAttributeValue(null, INTERNAL_STANDARD);
         Set<String> internalStandards = new HashSet<>();
 
         List<PeptideSettings.RunStructuralModification> staticMods = new ArrayList<>();
@@ -195,9 +196,9 @@ class PeptideSettingsParser
         modifications.setStructuralModifications(staticMods);
         modifications.setIsotopeModifications(isotopeMods);
 
-        if(null != inernalStandard)
+        if(null != internalStandard)
         {
-            internalStandards.add(inernalStandard);
+            internalStandards.add(internalStandard);
         }
 
         List<String> isotopeLabelNames  = new ArrayList<>();
@@ -292,6 +293,11 @@ class PeptideSettingsParser
             if (XmlUtil.isEndElement(reader, evtType, STATIC_MODIFICATION))
             {
                 break;
+            }
+
+            if (XmlUtil.isStartElement(reader, evtType, CROSSLINKER))
+            {
+                mod.setCrosslinker(true);
             }
 
             if (XmlUtil.isStartElement(reader, evtType, POTENTIAL_LOSS))

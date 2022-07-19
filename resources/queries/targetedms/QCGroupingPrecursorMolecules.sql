@@ -1,7 +1,7 @@
 -- This query for Molecules displays under QC Summary menu 'Include or Exclude Peptides/Molecules'
 
 SELECT
-    mp.Id,
+    mp.Id AS PrecursorId,
     mp.Label,
     mp.customIonName,
     mp.ionFormula,
