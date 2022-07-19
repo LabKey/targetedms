@@ -5779,12 +5779,12 @@ public class TargetedMSController extends SpringActionController
             // Tell the browser to wait 400ms before going to the download.  This is to ensure
             // that the GA tracking request goes through. Some browsers will interrupt the tracking
             // request if the download opens on the same page.
-            String timeout = "setTimeout(function(){location.href=that.href;},400);return false;";
+            String timeout = "that=this; setTimeout(function(){location.href=that.href;},400);return false;";
 
             // Wrap in try/catch as a hacky way to not care which GA variants are active
 
             // Universal Analytics - remove after conversion to GA4 is complete
-            onClickScript = "try {that=this; _gaq.push(['_trackEvent', 'SkyDocDownload', " + PageFlowUtil.qh(run.getContainer().getPath()) + ", " + PageFlowUtil.qh(run.getFileName()) + "]); } catch (err) {}";
+            onClickScript = "try {_gaq.push(['_trackEvent', 'SkyDocDownload', " + PageFlowUtil.qh(run.getContainer().getPath()) + ", " + PageFlowUtil.qh(run.getFileName()) + "]); } catch (err) {}";
             // GA4 variant
             onClickScript += "try {gtag('event', 'SkyDocDownload', {path: " + PageFlowUtil.qh(run.getContainer().getPath()) + ", fileName: " + PageFlowUtil.qh(run.getFileName()) + "}); } catch(err) {}";
 
