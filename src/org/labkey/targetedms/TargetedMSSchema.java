@@ -27,7 +27,6 @@ import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.exp.query.ExpRunTable;
 import org.labkey.api.exp.query.ExpSchema;
 import org.labkey.api.module.Module;
-import org.labkey.api.ms2.MS2Service;
 import org.labkey.api.query.CustomView;
 import org.labkey.api.query.DefaultSchema;
 import org.labkey.api.query.DetailsURL;
@@ -1017,9 +1016,9 @@ public class TargetedMSSchema extends UserSchema
         {
             FilteredTable<TargetedMSSchema> result = new FilteredTable<>(getSchema().getTable(TABLE_AUTOQC_PING), this, cf);
             result.wrapAllColumns(true);
-            result.getMutableColumn("CreatedBy").setFk(new UserIdQueryForeignKey(this));
-            result.getMutableColumn("ModifiedBy").setFk(new UserIdQueryForeignKey(this));
-            result.getMutableColumn("Container").setFk(new ContainerForeignKey(this));
+            result.getMutableColumnOrThrow("CreatedBy").setFk(new UserIdQueryForeignKey(this));
+            result.getMutableColumnOrThrow("ModifiedBy").setFk(new UserIdQueryForeignKey(this));
+            result.getMutableColumnOrThrow("Container").setFk(new ContainerForeignKey(this));
             return result;
         }
 
@@ -1045,7 +1044,7 @@ public class TargetedMSSchema extends UserSchema
                     true,
                     "Possible representative states for a peptide group or precursor");
 
-            var viewColumn = tableInfo.getMutableColumn("Value");
+            var viewColumn = tableInfo.getMutableColumnOrThrow("Value");
             viewColumn.setLabel("Library State");
             viewColumn.setDisplayColumnFactory(RepresentativeStateDisplayColumn::new);
 
@@ -1070,15 +1069,7 @@ public class TargetedMSSchema extends UserSchema
                     return TargetedMSController.ShowProteinAction.class;
                 }
             };
-            result.getMutableColumn("SequenceId").setFk(new LookupForeignKey("SeqId")
-            {
-                @Override
-                public TableInfo getLookupTableInfo()
-                {
-                    return MS2Service.get().createSequencesTableInfo(getUser(), getContainer());
-                }
-            });
-            var labelColumn = result.getMutableColumn("Label");
+            var labelColumn = result.getMutableColumnOrThrow("Label");
             labelColumn.setURL(result.getDetailsURL(null, null));
             if (proteomics)
             {
@@ -1173,11 +1164,10 @@ public class TargetedMSSchema extends UserSchema
             else
             {
                 labelColumn.setLabel(TargetedMSSchema.COL_LIST);
-                result.getMutableColumn("SequenceId").setHidden(true);
             }
-            result.getMutableColumn("RunId").setFk(QueryForeignKey.from(this, cf).to(TABLE_TARGETED_MS_RUNS, "File", null));
-            result.getMutableColumn("RepresentativeDataState").setFk(QueryForeignKey.from(this, cf).to(TargetedMSSchema.TABLE_REPRESENTATIVE_DATA_STATE, "RowId", null));
-            result.getMutableColumn("RepresentativeDataState").setHidden(true);
+            result.getMutableColumnOrThrow("RunId").setFk(QueryForeignKey.from(this, cf).to(TABLE_TARGETED_MS_RUNS, "File", null));
+            result.getMutableColumnOrThrow("RepresentativeDataState").setFk(QueryForeignKey.from(this, cf).to(TargetedMSSchema.TABLE_REPRESENTATIVE_DATA_STATE, "RowId", null));
+            result.getMutableColumnOrThrow("RepresentativeDataState").setHidden(true);
 
             // Create a WrappedColumn for Note & Annotations
             WrappedColumn noteAnnotation = new WrappedColumn(result.getColumn("Annotations"), "NoteAnnotations");
@@ -1250,7 +1240,7 @@ public class TargetedMSSchema extends UserSchema
             ContainerContext context = new ContainerContext.FieldKeyContext(FieldKey.fromParts("RunId", "Container"));
             DetailsURL url = DetailsURL.fromString("targetedms-showListContent.view?id=${RunId}&listId=${Id}", context);
             result.setDetailsURL(url);
-            result.getMutableColumn("Name").setURL(url);
+            result.getMutableColumnOrThrow("Name").setURL(url);
             return result;
         }
 
@@ -1292,8 +1282,14 @@ public class TargetedMSSchema extends UserSchema
             return new MoleculeTableInfo(this, cf, false);
         }
 
-        if (TABLE_PROTEIN.equalsIgnoreCase(name) ||
-            TABLE_PEPTIDE_GROUP_ANNOTATION.equalsIgnoreCase(name))
+        if (TABLE_PROTEIN.equalsIgnoreCase(name))
+        {
+            TargetedMSTable result =  new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.PeptideGroupFK);
+            result.getMutableColumnOrThrow("PeptideGroupId").setFk(new QueryForeignKey(new QueryForeignKey.Builder(this, cf).table(TABLE_PEPTIDE_GROUP)));
+            result.getMutableColumnOrThrow("SequenceId").setFk(new QueryForeignKey(new QueryForeignKey.Builder(this, cf).schema("prot").table("Sequences")));
+            return result;
+        }
+        if (TABLE_PEPTIDE_GROUP_ANNOTATION.equalsIgnoreCase(name))
         {
             return new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.PeptideGroupFK);
         }
@@ -1388,7 +1384,7 @@ public class TargetedMSSchema extends UserSchema
                     TargetedMSManager.getTableInfoTransitionChromInfoAnnotation(), "TransitionChromInfoId", "Transition Result Annotations", "transition_result", false);
             TargetedMSSchema targetedMSSchema = this;
 
-            var transitionId = result.getMutableColumn("TransitionId");
+            var transitionId = result.getMutableColumnOrThrow("TransitionId");
             transitionId.setFk(new LookupForeignKey("Id")
             {
                 @Override
@@ -1441,7 +1437,7 @@ public class TargetedMSSchema extends UserSchema
         {
             TargetedMSTable result = new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.TransitionFK);
             TargetedMSSchema targetedMSSchema = this;
-            result.getMutableColumn("TransitionId").setFk(new LookupForeignKey("Id")
+            result.getMutableColumnOrThrow("TransitionId").setFk(new LookupForeignKey("Id")
             {
                 @Override
                 public TableInfo getLookupTableInfo()
@@ -1479,7 +1475,7 @@ public class TargetedMSSchema extends UserSchema
         if(TABLE_SAMPLE_FILE_CHROM_INFO.equalsIgnoreCase(name))
         {
             TargetedMSTable result = new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.SampleFileFK);
-            result.getMutableColumn("SampleFileId").setFk(new QueryForeignKey.Builder(this, cf).table(TABLE_SAMPLE_FILE));
+            result.getMutableColumnOrThrow("SampleFileId").setFk(new QueryForeignKey.Builder(this, cf).table(TABLE_SAMPLE_FILE));
             return result;
         }
 
@@ -1533,9 +1529,7 @@ public class TargetedMSSchema extends UserSchema
 
         if (TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION.equalsIgnoreCase(name))
         {
-            SimpleUserSchema.SimpleTable<TargetedMSSchema> table =
-                    new SimpleUserSchema.SimpleTable<>(this, getSchema().getTable(TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION), cf).init();
-            return table;
+            return new SimpleUserSchema.SimpleTable<>(this, getSchema().getTable(TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION), cf).init();
         }
 
         if(TABLE_QC_EMAIL_NOTIFICATIONS.equalsIgnoreCase(name))
@@ -1549,9 +1543,9 @@ public class TargetedMSSchema extends UserSchema
             result.wrapAllColumns(true);
             if (name.equalsIgnoreCase(TABLE_RUNS))
             {
-                result.getMutableColumn("DataId").setFk(QueryForeignKey.from(_expSchema, cf).to(ExpSchema.TableType.Data.name(), null, null));
-                result.getMutableColumn("Owner").setFk(new UserIdQueryForeignKey(this, true));
-                result.getMutableColumn("SkydDataId").setFk(QueryForeignKey.from(_expSchema, cf).to(ExpSchema.TableType.Data.name(), null, null));
+                result.getMutableColumnOrThrow("DataId").setFk(QueryForeignKey.from(_expSchema, cf).to(ExpSchema.TableType.Data.name(), null, null));
+                result.getMutableColumnOrThrow("Owner").setFk(new UserIdQueryForeignKey(this, true));
+                result.getMutableColumnOrThrow("SkydDataId").setFk(QueryForeignKey.from(_expSchema, cf).to(ExpSchema.TableType.Data.name(), null, null));
             }
             TargetedMSTable.fixupLookups(result);
             return result;

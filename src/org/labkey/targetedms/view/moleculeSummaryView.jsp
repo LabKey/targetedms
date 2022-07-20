@@ -43,9 +43,7 @@
     </tr>
     <tr>
         <%
-            Integer seqId = bean.getPeptideGroup().getSequenceId();
-            boolean isProtein = seqId  != null;
-            String fieldLabel =  isProtein ? "Protein" : "Group";
+            String fieldLabel = bean.getPeptideGroup().getProteins().isEmpty() ? "Group" : "Protein";
 
             ActionURL showProteinUrl = new ActionURL(TargetedMSController.ShowProteinAction.class, getContainer());
             showProteinUrl.addParameter("id", bean.getPeptideGroup().getId());

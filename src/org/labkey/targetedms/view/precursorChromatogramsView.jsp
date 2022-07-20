@@ -40,7 +40,7 @@
     </tr>
     <tr>
         <%
-            String fieldLabel = bean.getPeptideGroup().getSequenceId() != null ? "Protein" : "Group";
+            String fieldLabel = bean.getPeptideGroup().getProteins().isEmpty() ? "Group" : "Protein";
             ActionURL showGroupUrl = new ActionURL(TargetedMSController.ShowProteinAction.class, getContainer());
             showGroupUrl.addParameter("id", bean.getPeptideGroup().getId());
         %>

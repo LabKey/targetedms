@@ -334,7 +334,6 @@ public class SkylineDocImporter
             run.setFormatVersion(parser.getFormatVersion());
             run.setSoftwareVersion(parser.getSoftwareVersion());
 
-            ProteinService proteinService = ProteinService.get();
             ExpData skydData = parser.readSettings(_container, _user);
             if (skydData != null)
             {
@@ -402,7 +401,7 @@ public class SkylineDocImporter
             {
                 // TODO: bulk insert of precursor, transition, chrom info etc.
                 PeptideGroup pepGroup = parser.nextPeptideGroup();
-                insertPeptideGroup(proteinService, replicateInfo.skylineIdSampleFileIdMap,
+                insertPeptideGroup(replicateInfo.skylineIdSampleFileIdMap,
                         modInfo, libraryNameIdMap, pepGroup, parser, peptides, smallMolecules, parser.getTransitionSettings());
                 if (++peptideGroupCount % 100 == 0)
                 {
@@ -1252,7 +1251,7 @@ public class SkylineDocImporter
         return instrument;
     }
 
-    private void insertPeptideGroup(ProteinService proteinService, Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
+    private void insertPeptideGroup(Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
                                     ModificationInfo modInfo,
                                     Map<String, Long> libraryNameIdMap, PeptideGroup pepGroup, SkylineDocumentParser parser, Set<String> peptides, Set<String> smallMolecules,
                                     TransitionSettings transitionSettings)
@@ -1261,29 +1260,7 @@ public class SkylineDocImporter
         pepGroup.setRunId(_runId);
 
         String pepGrpLabel = pepGroup.getLabel();
-        if(!StringUtils.isBlank(pepGrpLabel))
-        {
-            if(pepGroup.isProtein())
-            {
-                Map<String, Set<String>> identifierMap = getIdentifiers(proteinService, pepGroup);
-
-                // prot.sequences table limits the name to 50 characters
-                String protName = pepGrpLabel.length() > 50 ? pepGrpLabel.substring(0, 50) : pepGrpLabel;
-                int seqId = proteinService.ensureProtein(pepGroup.getSequence(), null, protName, pepGroup.getDescription());
-
-                pepGroup.setSequenceId(seqId);
-
-                proteinService.ensureIdentifiers(seqId, identifierMap);
-            }
-
-            // targetedms.peptidegroup table limits the label and name to 255 characters.
-            // Truncate to 255 characters after we have parsed identifiers.
-            pepGroup.setLabel(pepGrpLabel.substring(0, Math.min(255, pepGrpLabel.length())));
-            String pepGrpName = pepGroup.getName();
-            pepGrpName = pepGrpName != null ? pepGrpName.substring(0, Math.min(255, pepGrpName.length())) : null;
-            pepGroup.setName(pepGrpName);
-        }
-        else
+        if(StringUtils.isBlank(pepGrpLabel))
         {
             // Add a dummy label. The "label" column in targetedms.PeptideGroup is not nullable.
             pepGroup.setLabel("PEPTIDE_GROUP_" + blankLabelIndex++);
@@ -1291,16 +1268,19 @@ public class SkylineDocImporter
 
         if(_isProteinLibraryDoc)
         {
-            if(pepGroup.getSequenceId() != null)
+            for (Protein protein : pepGroup.getProteins())
             {
-                if(_libProteinSequenceIds.contains(pepGroup.getSequenceId()))
+                if(protein.getSequenceId() != null)
                 {
-                    throw new PanoramaBadDataException("Duplicate protein sequence found: "+pepGroup.getLabel()+", seqId "+pepGroup.getSequenceId()
-                    + ". Documents uploaded to a protein library folder should contain unique proteins.");
-                }
-                else if(!pepGroup.isDecoy())
-                {
-                    _libProteinSequenceIds.add(pepGroup.getSequenceId());
+                    if(_libProteinSequenceIds.contains(protein.getSequenceId()))
+                    {
+                        throw new PanoramaBadDataException("Duplicate protein sequence found: "+pepGroup.getLabel()+", seqId "+protein.getSequenceId()
+                                + ". Documents uploaded to a protein library folder should contain unique proteins.");
+                    }
+                    else if(!pepGroup.isDecoy())
+                    {
+                        _libProteinSequenceIds.add(protein.getSequenceId());
+                    }
                 }
             }
             if(_libProteinLabels.contains(pepGroup.getLabel()))
@@ -1317,6 +1297,12 @@ public class SkylineDocImporter
         // CONSIDER: If there is already an identical entry in the PeptideGroup table re-use it.
         _log.info("Inserting " + pepGroup.getLabel());
         pepGroup = Table.insert(_user, TargetedMSManager.getTableInfoPeptideGroup(), pepGroup);
+
+        for (Protein protein : pepGroup.getProteins())
+        {
+            protein.setPeptideGroupId(pepGroup.getId());
+            insertProtein(protein);
+        }
 
         for (PeptideGroupAnnotation annotation : pepGroup.getAnnotations())
         {
@@ -1389,12 +1375,31 @@ public class SkylineDocImporter
         }
     }
 
-    private static final String SKYLINE_IDENT_TYPE = "Skyline";
-    private Map<String, Set<String>> getIdentifiers(ProteinService proteinService, PeptideGroup pepGroup)
+    private void insertProtein(Protein protein)
     {
-        String label = StringUtils.trimToNull(pepGroup.getLabel());
-        String name = StringUtils.trimToNull(pepGroup.getName());
-        String description = pepGroup.getDescription();
+        if (!StringUtils.isBlank(protein.getLabel()))
+        {
+            ProteinService proteinService = ProteinService.get();
+            Map<String, Set<String>> identifierMap = getIdentifiers(proteinService, protein);
+
+            String label = protein.getLabel();
+            // prot.sequences table limits the name to 50 characters
+            String protName = label.length() > 50 ? label.substring(0, 50) : label;
+            int seqId = proteinService.ensureProtein(protein.getSequence(), null, protName, protein.getDescription());
+
+            protein.setSequenceId(seqId);
+
+            proteinService.ensureIdentifiers(seqId, identifierMap);
+        }
+        Table.insert(null, TargetedMSManager.getTableInfoProtein(), protein);
+    }
+
+    private static final String SKYLINE_IDENT_TYPE = "Skyline";
+    private Map<String, Set<String>> getIdentifiers(ProteinService proteinService, Protein protein)
+    {
+        String label = StringUtils.trimToNull(protein.getLabel());
+        String name = StringUtils.trimToNull(protein.getName());
+        String description = protein.getDescription();
 
         Map<String, Set<String>> identifierMap;
         if(description != null && description.startsWith("IPI") && description.contains("|"))

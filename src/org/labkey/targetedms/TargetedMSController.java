@@ -196,6 +196,7 @@ import org.labkey.targetedms.parser.PeptideGroup;
 import org.labkey.targetedms.parser.PeptideSettings;
 import org.labkey.targetedms.parser.Precursor;
 import org.labkey.targetedms.parser.PrecursorChromInfo;
+import org.labkey.targetedms.parser.Protein;
 import org.labkey.targetedms.parser.Replicate;
 import org.labkey.targetedms.parser.ReplicateAnnotation;
 import org.labkey.targetedms.parser.SampleFile;
@@ -267,6 +268,7 @@ import static org.labkey.api.util.DOM.Attribute.method;
 import static org.labkey.api.util.DOM.Attribute.src;
 import static org.labkey.api.util.DOM.Attribute.width;
 import static org.labkey.api.util.DOM.DIV;
+import static org.labkey.api.util.DOM.P;
 import static org.labkey.api.util.DOM.SPAN;
 import static org.labkey.api.util.DOM.TD;
 import static org.labkey.api.util.DOM.TR;
@@ -4913,9 +4915,12 @@ public class TargetedMSController extends SpringActionController
 
         box.addView(detailsView);
 
-        if (group.getSequenceId() != null)
+        List<Protein> proteins = PeptideGroupManager.getProteinsForPeptideGroup(group.getId(), false);
+
+        Protein selectedProtein = selectProtein(proteins);
+        if (selectedProtein != null)
         {
-            int seqId = group.getSequenceId().intValue();
+            int seqId = selectedProtein.getSequenceId();
             List<PeptideCharacteristic> combinedPeptideCharacteristics = new ArrayList<>(PeptideManager.getCombinedPeptideCharacteristics(group.getId(), replicateId));
             List<PeptideCharacteristic> modifiedPeptideCharacteristics = new ArrayList<>(PeptideManager.getModifiedPeptideCharacteristics(group.getId(), replicateId));;
 
@@ -4929,7 +4934,7 @@ public class TargetedMSController extends SpringActionController
             });
 
             ProteinService proteinService = ProteinService.get();
-            WebPartView<?> sequenceView = proteinService.getProteinCoverageViewWithSettings(seqId, combinedPeptideCharacteristics, 100, true, group.getAccession(), msReplicates, modifiedPeptideCharacteristics, showStackedPeptides);
+            WebPartView<?> sequenceView = proteinService.getProteinCoverageViewWithSettings(seqId, combinedPeptideCharacteristics, 100, true, selectedProtein.getAccession(), msReplicates, modifiedPeptideCharacteristics, showStackedPeptides);
 
             sequenceView.setTitle("Sequence Coverage");
             sequenceView.enableExpandCollapse("SequenceCoverage", false);
@@ -4952,6 +4957,16 @@ public class TargetedMSController extends SpringActionController
         }
 
         return peptideCount;
+    }
+
+    @Nullable
+    private static Protein selectProtein(List<Protein> proteins)
+    {
+        if (proteins.size() == 1)
+        {
+            return proteins.get(0);
+        }
+        return null;
     }
 
     public static class SummaryChartBean
@@ -5133,10 +5148,13 @@ public class TargetedMSController extends SpringActionController
                 throw new NotFoundException("Could not find peptide group #" + form.getId());
             }
 
+            List<Protein> proteins = PeptideGroupManager.getProteinsForPeptideGroup(group.getId(), false);
+            Protein selectedProtein = selectProtein(proteins);
+
             WebPartView<?> view;
-            if (group.getSequenceId() != null)
+            if (selectedProtein != null)
             {
-                int seqId = group.getSequenceId().intValue();
+                int seqId = selectedProtein.getSequenceId().intValue();
                 List<PeptideCharacteristic> peptideCharacteristics = new ArrayList<>();
                 for (Peptide peptide : PeptideManager.getPeptidesForGroup(group.getId()))
                 {
@@ -5146,7 +5164,7 @@ public class TargetedMSController extends SpringActionController
                 }
                 ProteinService proteinService = ProteinService.get();
                 ActionURL searchURL = urlProvider(MS2Urls.class).getProteinSearchUrl(getContainer());
-                searchURL.addParameter("seqId", group.getSequenceId().intValue());
+                searchURL.addParameter("seqId", selectedProtein.getSequenceId().intValue());
                 searchURL.addParameter("identifier", group.getLabel());
                 getViewContext().getResponse().getWriter().write("<a href=\"" + searchURL + "\">Search for other references to this protein</a><br/>");
                 view = proteinService.getProteinCoverageView(seqId, peptideCharacteristics, 40, true, null);

@@ -1291,8 +1291,6 @@ public class SkylineDocumentParser implements AutoCloseable
             String labelDescription = reader.getAttributeValue(null, "label_description");
             pepGroup.setDescription(StringUtils.isBlank(labelDescription) ? description : labelDescription);
             pepGroup.setAltDescription((!StringUtils.isBlank(labelDescription) && !StringUtils.isBlank(description)) ? description : null);
-
-            pepGroup.setProtein(true);
         }
         else
         {
@@ -1301,13 +1299,27 @@ public class SkylineDocumentParser implements AutoCloseable
             pepGroup.setDescription(reader.getAttributeValue(null, "label_description"));
         }
 
-        pepGroup.setAccession(reader.getAttributeValue(null, "accession"));
-        pepGroup.setPreferredName(reader.getAttributeValue(null, "preferred_name"));
-        pepGroup.setGene(reader.getAttributeValue(null, "gene"));
-        pepGroup.setSpecies(reader.getAttributeValue(null, "species"));
+        String accession = reader.getAttributeValue(null, "accession");
+        String preferredName = reader.getAttributeValue(null, "preferred_name");
+        String gene = reader.getAttributeValue(null, "gene");
+        String species = reader.getAttributeValue(null, "species");
+
+        Protein protein = null;
+        if (accession != null || preferredName != null || gene != null || species != null)
+        {
+            protein = pepGroup.addProtein();
+            protein.setAccession(accession);
+            protein.setPreferredName(preferredName);
+            protein.setGene(gene);
+            protein.setSpecies(species);
+        }
 
         boolean decoy = Boolean.parseBoolean(reader.getAttributeValue(null, "decoy"));
         pepGroup.setDecoy(decoy);
+
+        String decoyMatchProportion = reader.getAttributeValue(null, "decoy_match_proportion");
+        if (null != decoyMatchProportion)
+            pepGroup.setDecoyMatchProportion(Double.parseDouble(decoyMatchProportion));
 
         while(reader.hasNext())
         {
@@ -1318,7 +1330,11 @@ public class SkylineDocumentParser implements AutoCloseable
             }
             else if (XmlUtil.isStartElement(reader, evtType, SEQUENCE))
             {
-                pepGroup.setSequence(reader.getElementText().replaceAll("\\s+", ""));
+                if (protein == null)
+                {
+                    protein = pepGroup.addProtein();
+                }
+                protein.setSequence(reader.getElementText().replaceAll("\\s+", ""));
             }
             else if (XmlUtil.isStartElement(reader, evtType, ANNOTATION))
             {
