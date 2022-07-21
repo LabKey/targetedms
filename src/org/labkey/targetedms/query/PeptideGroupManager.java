@@ -89,11 +89,11 @@ public class PeptideGroupManager
     public static List<Protein> getProteinsForRun(long runId)
     {
         // Include the Sequence from the prot.sequences table
-        SQLFragment sql = new SQLFragment("SELECT s.ProtSequence, p.* FROM ");
+        SQLFragment sql = new SQLFragment("SELECT s.ProtSequence AS Sequence, p.* FROM ");
         sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
         sql.append(" INNER JOIN ");
         sql.append(TargetedMSManager.getTableInfoProtein(), "p");
-        sql.append(" ON p.PeptideGroupId = p.Id INNER JOIN " );
+        sql.append(" ON p.PeptideGroupId = pg.Id LEFT OUTER JOIN " );
         sql.append(ProteinService.get().getSequencesTable(), "s");
         sql.append(" ON p.SequenceId = s.SeqId WHERE pg.RunId = ?");
         sql.add(runId);
