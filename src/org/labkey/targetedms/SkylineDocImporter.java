@@ -1377,7 +1377,7 @@ public class SkylineDocImporter
 
     private void insertProtein(Protein protein)
     {
-        if (!StringUtils.isBlank(protein.getLabel()))
+        if (!StringUtils.isBlank(protein.getLabel()) && protein.getSequence() != null)
         {
             ProteinService proteinService = ProteinService.get();
             Map<String, Set<String>> identifierMap = getIdentifiers(proteinService, protein);

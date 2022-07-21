@@ -2300,7 +2300,10 @@ public class SkylineDocumentParser implements AutoCloseable
                     }
                     if (matchIndex == -1)
                     {
-                        _log.warn("Unable to find a matching chromatogram for file path " + filePath + ". SKYD file may be out of sync with primary Skyline document. Transition " + transition.toString() + ", " + precursor + ", " +precursor.getCharge());
+                        incrementMissingChromatograms(filePath,
+                                "Unable to find a matching chromatogram for file path " + filePath +
+                                ". SKYD file may be out of sync with primary Skyline document. Transition " + transition +
+                                ", " + precursor + ", " +precursor.getCharge());
                     }
                     else
                     {
@@ -2311,6 +2314,15 @@ public class SkylineDocumentParser implements AutoCloseable
                 }
             }
         }
+    }
+
+    private void incrementMissingChromatograms(String filePath, String logMessage)
+    {
+        AtomicInteger count = _missingChromatograms.computeIfAbsent(filePath, s -> {
+            _log.warn(logMessage);
+            return new AtomicInteger(0);
+        });
+        count.incrementAndGet();
     }
 
     @Nullable
@@ -2344,12 +2356,7 @@ public class SkylineDocumentParser implements AutoCloseable
 
         if (chromatogram == null)
         {
-            AtomicInteger count = _missingChromatograms.computeIfAbsent(filePath, s -> {
-                _log.warn("Unable to find at least one chromatogram for file path " + s);
-                return new AtomicInteger(0);
-            });
-            count.incrementAndGet();
-
+            incrementMissingChromatograms(filePath, "Unable to find at least one chromatogram for file path " + filePath);
             i.remove();
         }
         return chromatogram;
@@ -3117,11 +3124,7 @@ public class SkylineDocumentParser implements AutoCloseable
 
                 if (sampleFile == null)
                 {
-                    AtomicInteger count = _missingChromatograms.computeIfAbsent(path, s -> {
-                        _log.warn("Unable to resolve " + path + " to SampleFile, will not import its sample-scoped chromatogram");
-                        return new AtomicInteger(0);
-                    });
-                    count.incrementAndGet();
+                    incrementMissingChromatograms(path, "Unable to resolve " + path + " to SampleFile, will not import its sample-scoped chromatogram");
                 }
                 else
                 {
