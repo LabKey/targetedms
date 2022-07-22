@@ -272,7 +272,10 @@
                 <displayWidth>500</displayWidth>
             </column>
             <column columnName="Name" />
-            <column columnName="Accession" />
+            <column columnName="Accession">
+                <url>https://www.uniprot.org/uniprot/${accession}</url>
+                <urlTarget>_blank</urlTarget>
+            </column>
             <column columnName="PreferredName" />
             <column columnName="Gene" />
             <column columnName="Species" />
