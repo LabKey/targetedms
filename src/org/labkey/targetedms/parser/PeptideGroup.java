@@ -150,7 +150,7 @@ public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
         _altDescription = altDescription;
     }
 
-    public Protein addProtein()
+    public Protein addSingleProtein()
     {
         if (_proteins == null)
         {
@@ -163,5 +163,14 @@ public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
         result.setAltDescription(_altDescription);
         _proteins.add(result);
         return result;
+    }
+
+    public void addProtein(Protein protein)
+    {
+        if (_proteins == null)
+        {
+            _proteins = new ArrayList<>();
+        }
+        _proteins.add(protein);
     }
 }
