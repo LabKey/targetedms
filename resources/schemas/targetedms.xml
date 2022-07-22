@@ -231,6 +231,7 @@
             </column>
             <column columnName="Note"/>
             <column columnName="Decoy"/>
+            <column columnName="DecoyMatchProportion"/>
             <column columnName="Description">
                 <inputType>text</inputType>
                 <displayWidth>500</displayWidth>

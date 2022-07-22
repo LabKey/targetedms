@@ -53,6 +53,8 @@ ALTER TABLE targetedms.PeptideGroup
     ALTER COLUMN Name TYPE TEXT,
     ALTER COLUMN Label TYPE TEXT;
 
-ALTER TABLE targetedms.Protein ADD CONSTRAINT FK_Protein_PeptideGroup FOREIGN KEY (PeptideGroupId) REFERENCES targetedms.PeptideGroup(Id);
-
+CREATE INDEX IX_Protein_Label ON targetedms.Protein(Label);
 CREATE INDEX IX_Protein_PeptideGroupId ON targetedms.Protein(PeptideGroupId);
+CREATE INDEX IX_Protein_SequenceId ON targetedms.Protein(SequenceId);
+ALTER TABLE targetedms.Protein ADD CONSTRAINT FK_Protein_PeptideGroup FOREIGN KEY (PeptideGroupId) REFERENCES targetedms.PeptideGroup(Id);
+ALTER TABLE targetedms.Protein ADD CONSTRAINT FK_Protein_Sequences FOREIGN KEY(SequenceId) REFERENCES prot.Sequences (seqid);

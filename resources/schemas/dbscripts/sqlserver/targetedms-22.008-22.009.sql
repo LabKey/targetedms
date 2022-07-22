@@ -43,8 +43,19 @@ WHERE pg.Id IN (
         targetedms.Peptide p ON gm.Id = p.Id
 );
 
+DROP INDEX targetedms.peptidegroup.IX_PeptideGroup_SequenceId;
+ALTER TABLE targetedms.peptidegroup DROP CONSTRAINT FK_PeptideGroup_Sequences;
+
 ALTER TABLE targetedms.PeptideGroup
-    DROP COLUMN SequenceId, Accession, PreferredName, Gene, Species;
+    DROP COLUMN SequenceId;
+ALTER TABLE targetedms.PeptideGroup
+    DROP COLUMN Accession;
+ALTER TABLE targetedms.PeptideGroup
+    DROP COLUMN PreferredName;
+ALTER TABLE targetedms.PeptideGroup
+    DROP COLUMN Gene;
+ALTER TABLE targetedms.PeptideGroup
+    DROP COLUMN Species;
 
 ALTER TABLE targetedms.PeptideGroup
     ADD DecoyMatchProportion FLOAT;
@@ -54,6 +65,8 @@ ALTER TABLE targetedms.PeptideGroup
 ALTER TABLE targetedms.PeptideGroup
     ALTER COLUMN Label NVARCHAR(MAX);
 
-ALTER TABLE targetedms.Protein ADD CONSTRAINT FK_Protein_PeptideGroup FOREIGN KEY (PeptideGroupId) REFERENCES targetedms.PeptideGroup(Id);
-
+CREATE INDEX IX_Protein_Label ON targetedms.Protein(Label);
 CREATE INDEX IX_Protein_PeptideGroupId ON targetedms.Protein(PeptideGroupId);
+CREATE INDEX IX_Protein_SequenceId ON targetedms.Protein(SequenceId);
+ALTER TABLE targetedms.Protein ADD CONSTRAINT FK_Protein_PeptideGroup FOREIGN KEY (PeptideGroupId) REFERENCES targetedms.PeptideGroup(Id);
+ALTER TABLE targetedms.Protein ADD CONSTRAINT FK_Protein_Sequences FOREIGN KEY(SequenceId) REFERENCES prot.Sequences (seqid);
