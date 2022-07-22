@@ -21,6 +21,7 @@ import org.labkey.targetedms.query.PeptideGroupManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * User: vsharma
@@ -118,11 +119,16 @@ public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
 
     public List<Protein> getProteins()
     {
+        return getProteins(true);
+    }
+    public List<Protein> getProteins(boolean includeNullSeqIds)
+    {
         if (_proteins == null)
         {
             _proteins = PeptideGroupManager.getProteinsForPeptideGroup(getId(), true);
         }
-        return Collections.unmodifiableList(_proteins);
+        return Collections.unmodifiableList(includeNullSeqIds ? _proteins :
+                _proteins.stream().filter(p -> p.getSequence() != null).collect(Collectors.toList()));
     }
 
     public void setProteins(List<Protein> proteins)

@@ -54,19 +54,12 @@
         List<Protein> proteins = bean.getProteins();
         List<String> accessions = proteins.stream().map(Protein::getAccession).filter(Objects::nonNull).toList();
     %>
-    <% if (proteins.size() > 1) { %>
-    <tr>
-        <td class="labkey-form-label">Proteins within group</td>
-        <td><%= proteins.size() %></td>
-    </tr>
-    <% } %>
-    <% if (!accessions.isEmpty()) { %>
+    <% if (accessions.size() == 1) {
+        String accession = accessions.get(0); %>
         <tr>
-            <td class="labkey-form-label"><%= h(StringUtilsLabKey.pluralize(accessions.size(), "Accession"))%></td>
+            <td class="labkey-form-label">Accession</td>
             <td>
-                <% for (String accession : accessions) { %>
-                    <a href="https://www.uniprot.org/uniprot/<%=h(accession)%>"><%= h(accession)%></a>
-                <% } %>
+                <a href="https://www.uniprot.org/uniprot/<%=h(accession)%>"><%= h(accession)%></a>
             </td>
         </tr>
     <% } %>

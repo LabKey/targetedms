@@ -1286,7 +1286,7 @@ public class TargetedMSSchema extends UserSchema
         {
             TargetedMSTable result =  new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.PeptideGroupFK);
             result.getMutableColumnOrThrow("PeptideGroupId").setFk(new QueryForeignKey(new QueryForeignKey.Builder(this, cf).table(TABLE_PEPTIDE_GROUP)));
-            result.getMutableColumnOrThrow("SequenceId").setFk(new QueryForeignKey(new QueryForeignKey.Builder(this, cf).schema("prot").table("Sequences")));
+            result.getMutableColumnOrThrow("SequenceId").setFk(new QueryForeignKey(new QueryForeignKey.Builder(this, cf).schema("protein").table("Sequences")));
             return result;
         }
         if (TABLE_PEPTIDE_GROUP_ANNOTATION.equalsIgnoreCase(name))

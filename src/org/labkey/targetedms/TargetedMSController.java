@@ -4771,7 +4771,7 @@ public class TargetedMSController extends SpringActionController
             VBox result = new VBox();
 
             var showStackedPeptides = form._peptideForm != null && form._peptideForm.equalsIgnoreCase("stacked");
-            Integer peptideCount = addProteinSummaryViews(result, group, _run, form.getReplicateId(), showStackedPeptides);
+            Integer peptideCount = addProteinSummaryViews(result, group, _run, form.getReplicateId(), showStackedPeptides, errors, getViewContext());
 
             GroupChromatogramsTableInfo tableInfo = new GroupChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()), form);
             ChromatogramsDataRegion chromatogramRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
@@ -4897,27 +4897,42 @@ public class TargetedMSController extends SpringActionController
     /** Issue 40731- prevent expensive cross-folder queries when the results will always be scoped to the current run anyway */
     private QueryView createViewWithNoContainerFilterOptions(QuerySettings settings, BindException errors)
     {
-        TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+        return createViewWithNoContainerFilterOptions(settings, errors, getViewContext());
+    }
+
+    private static QueryView createViewWithNoContainerFilterOptions(QuerySettings settings, BindException errors, ViewContext viewContext)
+    {
+        TargetedMSSchema schema = new TargetedMSSchema(viewContext.getUser(), viewContext.getContainer());
         settings.setContainerFilterName(null);
-        QueryView result = schema.createView(getViewContext(), settings, errors);
+        QueryView result = schema.createView(viewContext, settings, errors);
         result.setAllowableContainerFilterTypes();
         return result;
     }
 
-    public static Integer addProteinSummaryViews(VBox box, PeptideGroup group, TargetedMSRun run, @Nullable Long replicateId, boolean showStackedPeptides)
+    public static Integer addProteinSummaryViews(VBox box, PeptideGroup group, TargetedMSRun run, @Nullable Long replicateId, boolean showStackedPeptides, BindException errors, ViewContext viewContext)
     {
         Integer peptideCount = TargetedMSManager.getPeptideGroupPeptideCount(run, group.getId());
         boolean proteomics = peptideCount != null && peptideCount.intValue() > 0;
 
         JspView<PeptideGroup> detailsView = new JspView<>("/org/labkey/targetedms/view/moleculeListView.jsp", group);
         detailsView.setFrame(WebPartView.FrameType.PORTAL);
-        detailsView.setTitle(proteomics ? "Protein" : "Molecule List");
+        detailsView.setTitle(proteomics ? (group.getProteins().size() == 1 ? "Protein" : "Protein Group") : "Molecule List");
 
         box.addView(detailsView);
 
-        List<Protein> proteins = PeptideGroupManager.getProteinsForPeptideGroup(group.getId(), false);
+        if (proteomics && !group.getProteins().isEmpty())
+        {
+            QuerySettings settings = new QuerySettings(viewContext, "Proteins", "Protein");
+            settings.getBaseFilter().addAllClauses(new SimpleFilter(FieldKey.fromParts("PeptideGroupId"), group.getId()));
+            QueryView view = createViewWithNoContainerFilterOptions(settings, errors, viewContext);
+            view.setTitle("Proteins");
+            view.enableExpandCollapse("Proteins", false);
+            view.setFrame(WebPartView.FrameType.PORTAL);
+            view.setUseQueryViewActionExportURLs(true);
+            box.addView(view);
+        }
 
-        Protein selectedProtein = selectProtein(proteins);
+        Protein selectedProtein = selectProtein(group.getProteins(false));
         if (selectedProtein != null)
         {
             int seqId = selectedProtein.getSequenceId();

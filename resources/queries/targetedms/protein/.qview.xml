@@ -1,0 +1,14 @@
+<customView xmlns="http://labkey.org/data/xml/queryCustomView" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <columns>
+        <column name="Label" />
+        <column name="Accession" />
+        <column name="PreferredName" />
+        <column name="Gene" />
+        <column name="SequenceId/Length" />
+        <column name="SequenceId/Mass" />
+        <column name="Description" />
+    </columns>
+    <sorts>
+        <sort column="Id" />
+    </sorts>
+</customView>
