@@ -257,6 +257,7 @@
             </column>
             <column columnName="Label">
                 <columnTitle>Protein / Label</columnTitle>
+                <url>/targetedms-showProtein.view?id=${PeptideGroupId}&amp;proteinId=${Id}</url>
             </column>
             <column columnName="SequenceId">
                 <columnTitle>Sequence Id</columnTitle>

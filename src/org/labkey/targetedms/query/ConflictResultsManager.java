@@ -60,7 +60,7 @@ public class ConflictResultsManager
     public static List<ConflictProtein> getConflictedProteins(Container container)
     {
         // Get a list of conflicted proteins in the given container
-        SQLFragment getConflictProteinsSql = new SQLFragment("SELECT ");
+        SQLFragment getConflictProteinsSql = new SQLFragment("SELECT DISTINCT ");
         getConflictProteinsSql.append("pg.Id AS newProteinId, ");
         getConflictProteinsSql.append("pg.RunId AS newProteinRunId, ");
         getConflictProteinsSql.append("r.filename AS newRunFile, ");
@@ -74,8 +74,12 @@ public class ConflictResultsManager
         getConflictProteinsSql.append(", ");
         getConflictProteinsSql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
         getConflictProteinsSql.append(" INNER JOIN ");
+        getConflictProteinsSql.append(TargetedMSManager.getTableInfoProtein(), "p");
+        getConflictProteinsSql.append(" ON p.PeptideGroupId = pg.Id INNER JOIN ");
         getConflictProteinsSql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg2");
-        getConflictProteinsSql.append(" ON (pg.SequenceId = pg2.SequenceId  OR pg.Label = pg2.Label ) ");
+        getConflictProteinsSql.append(" INNER JOIN ");
+        getConflictProteinsSql.append(TargetedMSManager.getTableInfoProtein(), "p2");
+        getConflictProteinsSql.append(" ON (pg2.Id = p2.PeptideGroupId AND (p.SequenceId = p2.SequenceId OR pg.Label = pg2.Label)) ");
         getConflictProteinsSql.append(" INNER JOIN ");
         getConflictProteinsSql.append(TargetedMSManager.getTableInfoRuns(), "r2");
         getConflictProteinsSql.append(" ON (r2.Id = pg2.RunId) ");

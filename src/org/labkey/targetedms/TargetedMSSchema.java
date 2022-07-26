@@ -70,6 +70,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1287,6 +1288,17 @@ public class TargetedMSSchema extends UserSchema
             TargetedMSTable result =  new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.PeptideGroupFK);
             result.getMutableColumnOrThrow("PeptideGroupId").setFk(new QueryForeignKey(new QueryForeignKey.Builder(this, cf).table(TABLE_PEPTIDE_GROUP)));
             result.getMutableColumnOrThrow("SequenceId").setFk(new QueryForeignKey(new QueryForeignKey.Builder(this, cf).schema("protein").table("Sequences")));
+
+            result.setDefaultVisibleColumns(Arrays.asList(
+                    FieldKey.fromParts("Label"),
+                    FieldKey.fromParts("Accession"),
+                    FieldKey.fromParts("PreferredName"),
+                    FieldKey.fromParts("Gene"),
+                    FieldKey.fromParts("SequenceId", "Length"),
+                    FieldKey.fromParts("SequenceId", "Mass"),
+                    FieldKey.fromParts("Description")
+            ));
+
             return result;
         }
         if (TABLE_PEPTIDE_GROUP_ANNOTATION.equalsIgnoreCase(name))
