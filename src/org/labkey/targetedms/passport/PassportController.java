@@ -222,10 +222,10 @@ public class PassportController extends SpringActionController
     private IProtein getProtein(Integer proteinId) throws ParserConfigurationException, SAXException, IOException
     {
         SQLFragment targetedMSProteinQuery = new SQLFragment();
-        targetedMSProteinQuery.append("SELECT ps.seqid as seqid, pg.accession, ps.bestgenename, ps.description, ps.protsequence, ps.length, " +
-                "pg.id as pgid, pg.species, pg.preferredname, pg.runid, pg.label, " +
+        targetedMSProteinQuery.append("SELECT ps.seqid as seqid, p.accession, ps.bestgenename, ps.description, ps.protsequence, ps.length, " +
+                "pg.id as pgid, p.species, p.preferredname, pg.runid, p.label, " +
                 "r.dataid, r.filename, r.created, r.modified, r.formatversion " +
-                "FROM targetedms.peptidegroup pg INNER JOIN targetedms.runs r on r.id = pg.runid LEFT OUTER JOIN prot.sequences ps ON ps.seqid = pg.sequenceid " +
+                "FROM targetedms.peptidegroup pg INNER JOIN targetedms.protein p ON p.PeptideGroupId = pg.Id INNER JOIN targetedms.runs r on r.id = pg.runid LEFT OUTER JOIN prot.sequences ps ON ps.seqid = p.sequenceid " +
                 "WHERE r.container = ? AND pg.Id = ?");
         targetedMSProteinQuery.add(getContainer().getId());
         targetedMSProteinQuery.add(proteinId);

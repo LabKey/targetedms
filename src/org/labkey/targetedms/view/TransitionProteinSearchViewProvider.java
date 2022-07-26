@@ -31,6 +31,7 @@ import org.labkey.api.query.QueryView;
 import org.labkey.api.query.QueryViewProvider;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.view.ViewContext;
+import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSModule;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.query.TargetedMSTable;
@@ -60,8 +61,8 @@ public class TransitionProteinSearchViewProvider implements QueryViewProvider<Pr
         if (! viewContext.getContainer().getActiveModules().contains(ModuleLoader.getInstance().getModule(TargetedMSModule.class)))
             return null;  // only enable this view if the TargetedMSModule is active
 
-        QuerySettings settings = new QuerySettings(viewContext, getDataRegionName(), "PeptideGroup");
-        settings.addAggregates(new Aggregate(FieldKey.fromParts("RunId", "File"), Aggregate.BaseType.COUNT, null, true));
+        QuerySettings settings = new QuerySettings(viewContext, getDataRegionName(), "Protein");
+        settings.addAggregates(new Aggregate(FieldKey.fromParts("PeptideGroupId", "RunId", "File"), Aggregate.BaseType.COUNT, null, true));
 
         // Issue 17576: Peptide and Protein searches do not work for searching in subfolders
         if (form.isIncludeSubfolders())
@@ -73,16 +74,19 @@ public class TransitionProteinSearchViewProvider implements QueryViewProvider<Pr
             protected TableInfo createTable()
             {
                 TargetedMSTable inner = (TargetedMSTable) super.createTable();
-                FilteredTable result = new FilteredTable(inner, getSchema());
+                FilteredTable<?> result = new FilteredTable<>(inner, getSchema());
                 result.wrapAllColumns(true);
 
                 // Apply a filter to restrict to the set of matching proteins
-                SQLFragment sql = new SQLFragment("Id IN (SELECT pg.Id FROM targetedms.PeptideGroup AS pg ");
+                SQLFragment sql = new SQLFragment("Id IN (SELECT p.Id FROM ");
+                sql.append(TargetedMSManager.getTableInfoProtein(), "p");
+                sql.append(" INNER JOIN ");
+                sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
 
-                sql.append(" WHERE ((");
+                sql.append(" ON p.PeptideGroupId = pg.Id WHERE ((");
                 if (form.getSeqId().length > 0)
                 {
-                    sql.append("pg.SequenceId IN (");
+                    sql.append("p.SequenceId IN (");
                     String separator = "";
                     for (int seqId : form.getSeqId())
                     {
@@ -94,11 +98,13 @@ public class TransitionProteinSearchViewProvider implements QueryViewProvider<Pr
                     sql.append(" OR ");
                 }
 
-                sql.append(getProteinLabelCondition("pg.Label", getProteinLabels(form.getIdentifier()), form.isExactMatch()));
+                sql.append(getProteinLabelCondition("p.Label", getProteinLabels(form.getIdentifier()), form.isExactMatch()));
 
                 ContainerFilter cf = form.isIncludeSubfolders() ? ContainerFilter.Type.CurrentAndSubfolders.create(getContainer(), getUser()) : ContainerFilter.current(getContainer());
-                sql.append(")) AND RunId IN (SELECT Id FROM targetedms.runs WHERE ");
-                sql.append(cf.getSQLFragment(result.getSchema(), new SQLFragment("Container"), getContainer()));
+                sql.append(")) AND pg.RunId IN (SELECT Id FROM ");
+                sql.append(TargetedMSManager.getTableInfoRuns(), "r");
+                sql.append(" WHERE ");
+                sql.append(cf.getSQLFragment(result.getSchema(), new SQLFragment("Container")));
                 sql.append("))");
                 result.addCondition(sql);
 
@@ -109,10 +115,10 @@ public class TransitionProteinSearchViewProvider implements QueryViewProvider<Pr
                 visibleColumns.add(FieldKey.fromParts("PreferredName"));
                 visibleColumns.add(FieldKey.fromParts("Gene"));
                 visibleColumns.add(FieldKey.fromParts("Species"));
-                visibleColumns.add(FieldKey.fromParts("RunId", "File"));
+                visibleColumns.add(FieldKey.fromParts("PeptideGroupId", "RunId", "File"));
                 if(form.isIncludeSubfolders())
                 {
-                    visibleColumns.add(FieldKey.fromParts("RunId", "Folder", "Path"));
+                    visibleColumns.add(FieldKey.fromParts("PeptideGroupId", "RunId", "Folder", "Path"));
                 }
 
                 result.setDefaultVisibleColumns(visibleColumns);
@@ -152,7 +158,7 @@ public class TransitionProteinSearchViewProvider implements QueryViewProvider<Pr
         for (String param : labels)
         {
             sqlFragment.append(separator);
-            sqlFragment.append("LOWER (" + columnName + ")");
+            sqlFragment.append("LOWER (").append(columnName).append(")");
             if (exactMatch)
             {
                 sqlFragment.append(" = LOWER(?)");
