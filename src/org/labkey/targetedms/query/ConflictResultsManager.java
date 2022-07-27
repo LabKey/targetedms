@@ -73,11 +73,11 @@ public class ConflictResultsManager
         getConflictProteinsSql.append(TargetedMSManager.getTableInfoRuns(), "r");
         getConflictProteinsSql.append(", ");
         getConflictProteinsSql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
+        getConflictProteinsSql.append(", ");
+        getConflictProteinsSql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg2");
         getConflictProteinsSql.append(" INNER JOIN ");
         getConflictProteinsSql.append(TargetedMSManager.getTableInfoProtein(), "p");
         getConflictProteinsSql.append(" ON p.PeptideGroupId = pg.Id INNER JOIN ");
-        getConflictProteinsSql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg2");
-        getConflictProteinsSql.append(" INNER JOIN ");
         getConflictProteinsSql.append(TargetedMSManager.getTableInfoProtein(), "p2");
         getConflictProteinsSql.append(" ON (pg2.Id = p2.PeptideGroupId AND (p.SequenceId = p2.SequenceId OR pg.Label = pg2.Label)) ");
         getConflictProteinsSql.append(" INNER JOIN ");
