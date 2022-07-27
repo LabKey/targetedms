@@ -4745,17 +4745,32 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
+    public static class ProteinForm extends ChromatogramForm
+    {
+        private Long _proteinId;
+
+        public Long getProteinId()
+        {
+            return _proteinId;
+        }
+
+        public void setProteinId(Long proteinId)
+        {
+            _proteinId = proteinId;
+        }
+    }
+
     // ------------------------------------------------------------------------
     // Action to show a protein detail page
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class ShowProteinAction extends SimpleViewAction<ChromatogramForm>
+    public class ShowProteinAction extends SimpleViewAction<ProteinForm>
     {
         private TargetedMSRun _run; // save for use in appendNavTrail
         private String _proteinLabel;
 
         @Override
-        public ModelAndView getView(final ChromatogramForm form, BindException errors)
+        public ModelAndView getView(final ProteinForm form, BindException errors)
         {
             PeptideGroup group = PeptideGroupManager.getPeptideGroup(getContainer(), form.getId());
             if (group == null)
@@ -4770,8 +4785,8 @@ public class TargetedMSController extends SpringActionController
             // Peptide group details
             VBox result = new VBox();
 
-            var showStackedPeptides = form._peptideForm != null && form._peptideForm.equalsIgnoreCase("stacked");
-            Integer peptideCount = addProteinSummaryViews(result, group, _run, form.getReplicateId(), showStackedPeptides, errors, getViewContext());
+            var showStackedPeptides = "stacked".equalsIgnoreCase(form.getPeptideForm());
+            Integer peptideCount = addProteinSummaryViews(result, group, _run, form.getReplicateId(), showStackedPeptides, errors, getViewContext(), form.getProteinId());
 
             GroupChromatogramsTableInfo tableInfo = new GroupChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()), form);
             ChromatogramsDataRegion chromatogramRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
@@ -4909,7 +4924,7 @@ public class TargetedMSController extends SpringActionController
         return result;
     }
 
-    public static Integer addProteinSummaryViews(VBox box, PeptideGroup group, TargetedMSRun run, @Nullable Long replicateId, boolean showStackedPeptides, BindException errors, ViewContext viewContext)
+    public static Integer addProteinSummaryViews(VBox box, PeptideGroup group, TargetedMSRun run, @Nullable Long replicateId, boolean showStackedPeptides, BindException errors, ViewContext viewContext, @Nullable Long proteinId)
     {
         Integer peptideCount = TargetedMSManager.getPeptideGroupPeptideCount(run, group.getId());
         boolean proteomics = peptideCount != null && peptideCount.intValue() > 0;
@@ -4932,7 +4947,7 @@ public class TargetedMSController extends SpringActionController
             box.addView(view);
         }
 
-        Protein selectedProtein = selectProtein(group.getProteins(false));
+        Protein selectedProtein = selectProtein(group.getProteins(false), proteinId);
         if (selectedProtein != null)
         {
             int seqId = selectedProtein.getSequenceId();
@@ -4951,7 +4966,7 @@ public class TargetedMSController extends SpringActionController
             ProteinService proteinService = ProteinService.get();
             WebPartView<?> sequenceView = proteinService.getProteinCoverageViewWithSettings(seqId, combinedPeptideCharacteristics, 100, true, selectedProtein.getAccession(), msReplicates, modifiedPeptideCharacteristics, showStackedPeptides);
 
-            sequenceView.setTitle("Sequence Coverage");
+            sequenceView.setTitle("Sequence Coverage" + (group.getProteins(false).size() > 1 ? " for " + selectedProtein.getLabel() : ""));
             sequenceView.enableExpandCollapse("SequenceCoverage", false);
             box.addView(sequenceView);
 
@@ -4975,12 +4990,23 @@ public class TargetedMSController extends SpringActionController
     }
 
     @Nullable
-    private static Protein selectProtein(List<Protein> proteins)
+    private static Protein selectProtein(List<Protein> proteins, @Nullable Long proteinId)
     {
-        if (proteins.size() == 1)
+        if (proteinId == null && !proteins.isEmpty())
         {
             return proteins.get(0);
         }
+        if (proteinId != null)
+        {
+            for (Protein protein : proteins)
+            {
+                if (protein.getId() == proteinId)
+                {
+                    return protein;
+                }
+            }
+        }
+
         return null;
     }
 
@@ -5152,10 +5178,10 @@ public class TargetedMSController extends SpringActionController
     // Action to show a protein detail page
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class ShowProteinAJAXAction extends SimpleViewAction<ChromatogramForm>
+    public class ShowProteinAJAXAction extends SimpleViewAction<ProteinForm>
     {
         @Override
-        public ModelAndView getView(ChromatogramForm form, BindException errors) throws Exception
+        public ModelAndView getView(ProteinForm form, BindException errors) throws Exception
         {
             PeptideGroup group = PeptideGroupManager.getPeptideGroup(getContainer(), form.getId());
             if (group == null)
@@ -5164,7 +5190,7 @@ public class TargetedMSController extends SpringActionController
             }
 
             List<Protein> proteins = PeptideGroupManager.getProteinsForPeptideGroup(group.getId(), false);
-            Protein selectedProtein = selectProtein(proteins);
+            Protein selectedProtein = selectProtein(proteins, form.getProteinId());
 
             WebPartView<?> view;
             if (selectedProtein != null)
