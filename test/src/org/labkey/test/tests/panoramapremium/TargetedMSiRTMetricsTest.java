@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
-import org.labkey.test.categories.Git;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.components.targetedms.QCSummaryWebPart;
 import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
@@ -19,7 +18,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Category(Git.class)
+@Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
 {
@@ -37,7 +36,6 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
     private void doInit()
     {
         setupFolder(FolderType.QC);
-        _containerHelper.enableModules(Arrays.asList("Dumbster"));
     }
 
     @Override

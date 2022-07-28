@@ -18,14 +18,9 @@ package org.labkey.test.tests.targetedms;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.labkey.remoteapi.CommandException;
-import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
-import org.labkey.test.categories.Daily;
 
-import java.io.IOException;
-
-@Category({Daily.class})
+@Category({})
 public class TargetedMSMAMTest extends TargetedMSTest
 {
     protected static final String SKY_FILE = "iRT Human+Standard Calibrate.zip";
