@@ -13,7 +13,6 @@ import org.junit.rules.ExpectedException;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestTimeoutException;
-import org.labkey.test.categories.Git;
 import org.labkey.test.components.dumbster.EmailRecordTable;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.components.targetedms.QCSummaryWebPart;
@@ -36,7 +35,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.CUSUMm;
 
-@Category(Git.class)
+@Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 6)
 public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
 {
@@ -59,7 +58,6 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
     private void doInit()
     {
         setupFolder(FolderType.QC);
-        _containerHelper.enableModules(Arrays.asList("Dumbster"));
         _userHelper.createUser(USER);
         new ApiPermissionsHelper(this).setUserPermissions(USER, "Reader");
         importData(SProCoP_FILE);

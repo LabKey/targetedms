@@ -4,7 +4,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.BaseWebDriverTest;
-import org.labkey.test.categories.Git;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.components.targetedms.QCSummaryWebPart;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
@@ -13,7 +12,7 @@ import org.labkey.test.util.DataRegionTable;
 
 import java.util.Arrays;
 
-@Category(Git.class)
+@Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 3)
 public class TargetedMSHidePeptidesAndMolecules extends TargetedMSTest
 {
@@ -41,7 +40,6 @@ public class TargetedMSHidePeptidesAndMolecules extends TargetedMSTest
     private void doInit()
     {
         setupFolder(FolderType.QC);
-        _containerHelper.enableModules(Arrays.asList("Dumbster"));
 
         setupSubfolder(getProjectName(), PeptidesOnlySubfolder, FolderType.QC);
         importData(PeptidesOnlySkyFile);

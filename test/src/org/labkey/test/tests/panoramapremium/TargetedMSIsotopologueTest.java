@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
-import org.labkey.test.categories.Git;
 import org.labkey.test.components.ext4.Window;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
@@ -15,7 +14,7 @@ import java.util.Arrays;
 
 import static org.junit.Assert.assertTrue;
 
-@Category(Git.class)
+@Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 3)
 public class TargetedMSIsotopologueTest extends TargetedMSPremiumTest
 {
@@ -31,7 +30,6 @@ public class TargetedMSIsotopologueTest extends TargetedMSPremiumTest
     private void doInit()
     {
         setupFolder(FolderType.QC);
-        _containerHelper.enableModules(Arrays.asList("Dumbster"));
         importData(ISOTOPOLOGUE_FILE_ANNOTATED);
     }
 
