@@ -21,7 +21,6 @@ import org.junit.experimental.categories.Category;
 import org.labkey.api.util.Pair;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
-import org.labkey.test.categories.Daily;
 import org.labkey.test.components.CustomizeView;
 import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.LogMethod;
@@ -36,7 +35,7 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-@Category({Daily.class})
+@Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSPeptideLibraryTest extends TargetedMSTest
 {

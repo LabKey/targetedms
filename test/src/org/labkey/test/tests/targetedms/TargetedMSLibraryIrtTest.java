@@ -19,12 +19,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
-import org.labkey.test.categories.Daily;
 import org.labkey.test.util.LogMethod;
 
 import static org.junit.Assert.assertEquals;
 
-@Category({Daily.class})
+@Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 10)
 public class TargetedMSLibraryIrtTest extends TargetedMSIrtTest
 {

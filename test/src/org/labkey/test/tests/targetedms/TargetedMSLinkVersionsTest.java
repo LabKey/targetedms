@@ -20,7 +20,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.BaseWebDriverTest;
-import org.labkey.test.categories.Daily;
 import org.labkey.test.components.targetedms.LinkVersionsGrid;
 import org.labkey.test.components.targetedms.TargetedMSRunsTable;
 
@@ -29,7 +28,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-@Category({Daily.class})
+@Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 25)
 public class TargetedMSLinkVersionsTest extends TargetedMSTest
 {
