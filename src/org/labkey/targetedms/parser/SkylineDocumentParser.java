@@ -1463,7 +1463,9 @@ public class SkylineDocumentParser implements AutoCloseable
             {
                 return MoleculeType.MOLECULE;
             }
-            if(XmlUtil.isEndElement(_reader, evtType, PEPTIDE_LIST) || XmlUtil.isEndElement(_reader, evtType, PROTEIN))
+            if(XmlUtil.isEndElement(_reader, evtType, PEPTIDE_LIST) ||
+                    XmlUtil.isEndElement(_reader, evtType, PROTEIN) ||
+                    XmlUtil.isEndElement(_reader, evtType, PROTEIN_GROUP))
             {
                 return null;
             }

@@ -4931,11 +4931,11 @@ public class TargetedMSController extends SpringActionController
 
         JspView<PeptideGroup> detailsView = new JspView<>("/org/labkey/targetedms/view/moleculeListView.jsp", group);
         detailsView.setFrame(WebPartView.FrameType.PORTAL);
-        detailsView.setTitle(proteomics ? (group.getProteins().size() == 1 ? "Protein" : "Protein Group") : "Molecule List");
+        detailsView.setTitle(proteomics ? (group.getProteins().size() > 1 ? "Protein Group" : "Protein") : "Molecule List");
 
         box.addView(detailsView);
 
-        if (proteomics && !group.getProteins().isEmpty())
+        if (proteomics && group.getProteins().size() > 1)
         {
             QuerySettings settings = new QuerySettings(viewContext, "Proteins", "Protein");
             settings.getBaseFilter().addAllClauses(new SimpleFilter(FieldKey.fromParts("PeptideGroupId"), group.getId()));
