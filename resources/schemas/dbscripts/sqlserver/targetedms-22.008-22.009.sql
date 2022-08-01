@@ -5,11 +5,11 @@ CREATE TABLE targetedms.Protein
 (
     Id BIGINT IDENTITY(1, 1) NOT NULL,
     PeptideGroupId BIGINT NOT NULL,
-    Label NVARCHAR(MAX) NOT NULL,
+    Label NVARCHAR(512) NOT NULL,
     Description NVARCHAR(MAX),
     SequenceId INTEGER,
     Note NVARCHAR(MAX),
-    Name NVARCHAR(MAX),
+    Name NVARCHAR(512),
     Accession NVARCHAR(50),
     PreferredName NVARCHAR(MAX),
     Gene NVARCHAR(2000),
@@ -44,6 +44,8 @@ WHERE pg.Id IN (
 );
 
 DROP INDEX targetedms.peptidegroup.IX_PeptideGroup_SequenceId;
+DROP INDEX targetedms.peptidegroup.IX_PeptideGroup_Label;
+
 ALTER TABLE targetedms.peptidegroup DROP CONSTRAINT FK_PeptideGroup_Sequences;
 
 ALTER TABLE targetedms.PeptideGroup

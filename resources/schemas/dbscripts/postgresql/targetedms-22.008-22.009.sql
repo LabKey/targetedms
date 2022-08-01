@@ -4,11 +4,11 @@ CREATE TABLE targetedms.Protein
 (
     Id BIGSERIAL NOT NULL,
     PeptideGroupId BIGINT NOT NULL,
-    Label TEXT NOT NULL,
+    Label VARCHAR(512) NOT NULL,
     Description TEXT,
     SequenceId INTEGER,
     Note TEXT,
-    Name TEXT,
+    Name VARCHAR(512),
     Accession VARCHAR(50),
     PreferredName TEXT,
     Gene VARCHAR(2000),
@@ -40,6 +40,8 @@ WHERE pg.Id IN (
     INNER JOIN
         targetedms.Peptide p ON gm.Id = p.Id
 );
+
+DROP INDEX targetedms.peptidegroup.IX_PeptideGroup_Label;
 
 ALTER TABLE targetedms.PeptideGroup
     DROP COLUMN SequenceId,
