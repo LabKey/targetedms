@@ -41,7 +41,7 @@ WHERE pg.Id IN (
         targetedms.Peptide p ON gm.Id = p.Id
 );
 
-DROP INDEX targetedms.peptidegroup.IX_PeptideGroup_Label;
+DROP INDEX targetedms.IX_PeptideGroup_Label;
 
 ALTER TABLE targetedms.PeptideGroup
     DROP COLUMN SequenceId,
