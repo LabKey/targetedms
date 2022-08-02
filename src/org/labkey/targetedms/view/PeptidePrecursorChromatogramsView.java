@@ -44,11 +44,11 @@ public class PeptidePrecursorChromatogramsView extends ChromatogramGridView
                                              TargetedMSController.ChromatogramForm form, ViewContext viewContext, boolean canBeSplit)
     {
         GeneralMoleculePrecursorChromatogramsTableInfo tableInfo = new GeneralMoleculePrecursorChromatogramsTableInfo(peptide, schema, form);
-        ChromatogramsDataRegion result = new ChromatogramsDataRegion(viewContext,
+        return new ChromatogramsDataRegion(viewContext,
                 tableInfo,
                 PEPTIDE_PRECURSOR_CHROM_DATA_REGION,
                 form.isSplitGraph(),
-                StringUtils.join(tableInfo.getDisplayColumnNames(), ","), canBeSplit);
-        return result;
+                canBeSplit,
+                StringUtils.join(tableInfo.getDisplayColumnNames(), ","));
     }
 }

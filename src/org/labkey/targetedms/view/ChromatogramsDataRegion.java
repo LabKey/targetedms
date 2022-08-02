@@ -66,17 +66,12 @@ public class ChromatogramsDataRegion extends DataRegion
     private String _legendElementId;
     private final boolean _canBeSplit;
 
-    public ChromatogramsDataRegion(ViewContext context, FilteredTable<?> tableInfo, String name, boolean splitGraph)
+    public ChromatogramsDataRegion(ViewContext context, FilteredTable<?> tableInfo, String name, boolean splitGraph, boolean canBeSplit)
     {
-        this(context, tableInfo, name, splitGraph, "Id");
+        this(context, tableInfo, name, splitGraph, canBeSplit, "Id");
     }
 
-    public ChromatogramsDataRegion(ViewContext context, FilteredTable<?> tableInfo, String name, boolean splitGraph, String columns)
-    {
-        this(context, tableInfo, name, splitGraph, columns, true);
-    }
-
-    public ChromatogramsDataRegion(ViewContext context, FilteredTable<?> tableInfo, String name, boolean splitGraph, String columns, boolean canBeSplit)
+    public ChromatogramsDataRegion(ViewContext context, FilteredTable<?> tableInfo, String name, boolean splitGraph, boolean canBeSplit, String columns)
     {
         setTable(tableInfo);
         addColumns(tableInfo, columns);
