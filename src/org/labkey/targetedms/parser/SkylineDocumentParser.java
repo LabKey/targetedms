@@ -1410,12 +1410,13 @@ public class SkylineDocumentParser implements AutoCloseable
             }
             else if (XmlUtil.isStartElement(reader, evtType, ANNOTATION))
             {
-                // TODO?
+                // TODO - wait to implement until we confirm Skyline is allowing protein-level annotations and we have
+                // an example document
             }
             else if (XmlUtil.isStartElement(reader, evtType, NOTE))
             {
-                // TODO?
-//                result.setNote(readNote(reader));
+                // TODO - wait to implement until we confirm Skyline is allowing protein-level notes and we have
+                // an example document
             }
         }
         return result;
