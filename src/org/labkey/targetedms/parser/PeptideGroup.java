@@ -179,4 +179,13 @@ public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
         }
         _proteins.add(protein);
     }
+
+    /**
+     * @return a description of the type of the grouping - "Protein" for single-protein proteomics data or "Group"
+     * when there's small molecule data or multiple proteins
+     */
+    public String getFieldLabel()
+    {
+        return getProteins().isEmpty() ? "Group" : "Protein";
+    }
 }
