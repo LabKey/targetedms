@@ -47,7 +47,21 @@ public class TargetedMSProteinGroupingTest extends TargetedMSTest
 
         log("Verifying protein matches for peptide");
         DataRegionTable proteinTable = new DataRegionTable.DataRegionFinder(getDriver()).withName("Proteins").waitFor();
+        String protein1 = "sp|O60814|H2B1K_HUMAN";
         checker().verifyEquals("Incorrect number of protein matched", 14, proteinTable.getDataRowCount());
+        checker().verifyTrue("Incorrect title for Sequence coverage webpart for " + protein1,
+                isElementPresent(Locator.tagWithAttribute("h3", "title", "Sequence Coverage for " + protein1)));
+        checker().verifyEquals("Incorrect Sequence for " + protein1,
+                "MPEPAKSAPAPKKGSKKAVTKAQKKDGKKRKRSRKESYSVYVYKVLKQVHPDTGISSKAMGIMNSFVNDIFERIAGEASRLAHYNKRSTITSREIQTAVRLLLPGELAKHAVSEGTKAVTKYTSAK",
+                getCurrentSequence());
+
+        String protein2 = "sp|P33778|H2B1B_HUMAN";
+        click(Locator.linkWithText(protein2));
+        checker().verifyTrue("Incorrect title for Sequence coverage webpart for " + protein2,
+                isElementPresent(Locator.tagWithAttribute("h3", "title", "Sequence Coverage for " + protein2)));
+        checker().verifyEquals("Incorrect Sequence for " + protein2,
+                "MPEPSKSAPAPKKGSKKAITKAQKKDGKKRKRSRKESYSIYVYKVLKQVHPDTGISSKAMGIMNSFVNDIFERIAGEASRLAHYNKRSTITSREIQTAVRLLLPGELAKHAVSEGTKAVTKYTSSK",
+                getCurrentSequence());
 
         DataRegionTable peptideTable = new DataRegionTable.DataRegionFinder(getDriver()).withName("Peptides").waitFor();
         checker().verifyEquals("Incorrect number of peptides imported", 1, peptideTable.getDataRowCount());
@@ -57,4 +71,11 @@ public class TargetedMSProteinGroupingTest extends TargetedMSTest
         peptideTable = new DataRegionTable.DataRegionFinder(getDriver()).withName("Peptides").waitFor();
         checker().verifyEquals("Incorrect group for the protein", group, peptideTable.getDataAsText(0, "PeptideGroupId"));
     }
+
+    private String getCurrentSequence()
+    {
+        String unformattedString = (String) executeScript("return document.getElementById(\"peptideMap\").textContent;");
+        return unformattedString.replaceAll("[^A-Z]", "").trim().substring(1);
+    }
+
 }
