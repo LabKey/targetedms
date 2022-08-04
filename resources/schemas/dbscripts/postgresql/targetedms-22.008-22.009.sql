@@ -9,7 +9,7 @@ CREATE TABLE targetedms.Protein
     SequenceId INTEGER,
     Note TEXT,
     Name VARCHAR(512),
-    Accession VARCHAR(50),
+    Accession VARCHAR(200),
     PreferredName TEXT,
     Gene VARCHAR(2000),
     Species VARCHAR(255),
