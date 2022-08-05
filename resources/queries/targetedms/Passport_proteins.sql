@@ -13,6 +13,6 @@ SELECT
   min(p.PeptideGroupId.id) AS proteinId @hidden
 
 FROM protein p
-INNER JOIN peptide pep ON p.peptidegroupid = pep.peptidegroupid AND pep.standardtype IS NOT NULL
-WHERE sequenceid IS NOT NULL
+LEFT OUTER JOIN peptide pep ON p.peptidegroupid = pep.peptidegroupid AND pep.standardtype IS NOT NULL
+WHERE sequenceid IS NOT NULL AND pep.id IS NULL
 GROUP BY sequenceid
