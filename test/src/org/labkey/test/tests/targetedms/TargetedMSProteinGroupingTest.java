@@ -75,6 +75,10 @@ public class TargetedMSProteinGroupingTest extends TargetedMSTest
     private String getCurrentSequence()
     {
         String unformattedString = (String) executeScript("return document.getElementById(\"peptideMap\").textContent;");
+        /*
+            The textContent is getting the whole table text content along with this "The number displayed on each peptide box is the rank" text.
+            When we replace everything but capital letters T stays back along with sequence so substring to get the sequence string.
+         */
         return unformattedString.replaceAll("[^A-Z]", "").trim().substring(1);
     }
 
