@@ -40,11 +40,10 @@
     </tr>
     <tr>
         <%
-            String fieldLabel = bean.getPeptideGroup().getSequenceId() != null ? "Protein" : "Group";
             ActionURL showGroupUrl = new ActionURL(TargetedMSController.ShowProteinAction.class, getContainer());
             showGroupUrl.addParameter("id", bean.getPeptideGroup().getId());
         %>
-        <td class="labkey-form-label"><%=h(fieldLabel)%></td>
+        <td class="labkey-form-label"><%=h(bean.getPeptideGroup().getFieldLabel())%></td>
         <td><a href="<%= h(showGroupUrl)%>"><%= h(bean.getPeptideGroup().getLabel())%></a></td>
     </tr>
     <tr>

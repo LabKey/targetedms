@@ -4,7 +4,7 @@ import org.jetbrains.annotations.Nullable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.labkey.targetedms.parser.Peptide;
-import org.labkey.targetedms.parser.PeptideGroup;
+import org.labkey.targetedms.parser.Protein;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -167,9 +167,9 @@ public class CrossLinkedPeptideInfo
         }
 
         @Nullable
-        public PeptideGroup findMatch(List<PeptideGroup> proteins)
+        public Protein findMatch(List<Protein> proteins)
         {
-            for (PeptideGroup protein : proteins)
+            for (Protein protein : proteins)
             {
                 String proteinSequence = protein.getSequence();
                 if (proteinSequence != null && proteinSequence.contains(getUnmodified()))

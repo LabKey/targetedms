@@ -7,6 +7,7 @@ import org.labkey.api.data.DisplayColumnFactory;
 import org.labkey.api.data.RenderContext;
 import org.labkey.api.query.FieldKey;
 import org.labkey.targetedms.parser.PeptideGroup;
+import org.labkey.targetedms.parser.Protein;
 import org.labkey.targetedms.view.CrossLinkedPeptideInfo;
 
 import java.util.Collections;
@@ -23,10 +24,10 @@ import java.util.function.BiFunction;
 public class CrossLinkedPeptideDisplayColumn extends DataColumn
 {
     // Cache the proteins for a given run to avoid many redundant queries
-    private final Map<Long, List<PeptideGroup>> _proteins = new HashMap<>();
-    private final BiFunction<PeptideGroup, CrossLinkedPeptideInfo.PeptideSequence, String> _formatter;
+    private final Map<Long, List<Protein>> _proteins = new HashMap<>();
+    private final BiFunction<Protein, CrossLinkedPeptideInfo.PeptideSequence, String> _formatter;
 
-    public CrossLinkedPeptideDisplayColumn(ColumnInfo col, BiFunction<PeptideGroup, CrossLinkedPeptideInfo.PeptideSequence, String> formatter)
+    public CrossLinkedPeptideDisplayColumn(ColumnInfo col, BiFunction<Protein, CrossLinkedPeptideInfo.PeptideSequence, String> formatter)
     {
         super(col);
         setNoWrap(true);
@@ -50,14 +51,14 @@ public class CrossLinkedPeptideDisplayColumn extends DataColumn
             CrossLinkedPeptideInfo i = new CrossLinkedPeptideInfo(modifiedSequence);
             if (i.isCrosslinked())
             {
-                List<PeptideGroup> proteins = getProteinsFromRun(ctx);
+                List<Protein> proteins = getProteinsFromRun(ctx);
 
                 StringBuilder result = new StringBuilder();
                 String separator = "";
 
                 for (CrossLinkedPeptideInfo.PeptideSequence sequence : i.getAllSequences())
                 {
-                    PeptideGroup protein = sequence.findMatch(proteins);
+                    Protein protein = sequence.findMatch(proteins);
                     if (protein != null)
                     {
                         result.append(separator);
@@ -71,12 +72,12 @@ public class CrossLinkedPeptideDisplayColumn extends DataColumn
         return defaultValue;
     }
 
-    private List<PeptideGroup> getProteinsFromRun(RenderContext ctx)
+    private List<Protein> getProteinsFromRun(RenderContext ctx)
     {
         Long runId = ctx.get(getRunIdFieldKey(), Long.class);
         if (runId != null)
         {
-            return _proteins.computeIfAbsent(runId, x -> PeptideGroupManager.getPeptideGroupsForRun(runId));
+            return _proteins.computeIfAbsent(runId, x -> PeptideGroupManager.getProteinsForRun(runId));
         }
         return Collections.emptyList();
     }
@@ -113,9 +114,9 @@ public class CrossLinkedPeptideDisplayColumn extends DataColumn
         @Override
         public DisplayColumn createRenderer(ColumnInfo colInfo)
         {
-            return new CrossLinkedPeptideDisplayColumn(colInfo, (protein, sequence) ->
+            return new CrossLinkedPeptideDisplayColumn(colInfo, (peptideGroup, sequence) ->
             {
-                int startIndex = protein.getSequence().indexOf(sequence.getUnmodified());
+                int startIndex = peptideGroup.getSequence().indexOf(sequence.getUnmodified());
                 return (startIndex + 1) + "-" + (startIndex + sequence.getUnmodified().length());
             });
         }
@@ -126,7 +127,7 @@ public class CrossLinkedPeptideDisplayColumn extends DataColumn
         @Override
         public DisplayColumn createRenderer(ColumnInfo colInfo)
         {
-            return new CrossLinkedPeptideDisplayColumn(colInfo, (protein, sequence) ->
+            return new CrossLinkedPeptideDisplayColumn(colInfo, (peptideGroup, sequence) ->
             {
                 StringBuilder result = new StringBuilder();
                 String separator = "";
@@ -134,7 +135,7 @@ public class CrossLinkedPeptideDisplayColumn extends DataColumn
                 {
                     result.append(separator);
                     separator = ", ";
-                    int startIndex = protein.getSequence().indexOf(sequence.getUnmodified());
+                    int startIndex = peptideGroup.getSequence().indexOf(sequence.getUnmodified());
                     result.append(sequence.getUnmodified().charAt(linkIndex));
                     result.append(startIndex + linkIndex + 1);
                 }

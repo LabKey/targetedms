@@ -27,14 +27,18 @@ import org.labkey.api.protein.ProteinService;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.targetedms.TargetedMSManager;
+import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.parser.PeptideGroup;
+import org.labkey.targetedms.parser.Protein;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * User: vsharma
@@ -65,13 +69,44 @@ public class PeptideGroupManager
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(PeptideGroup.class);
     }
 
+    public static List<Protein> getProteinsForPeptideGroup(long peptideGroupId, boolean includeNullSeqIds)
+    {
+        SQLFragment sql = new SQLFragment("SELECT s.ProtSequence AS Sequence, p.* FROM ");
+        sql.append(TargetedMSManager.getTableInfoProtein(), "p");
+        sql.append(" LEFT OUTER JOIN ");
+        sql.append(ProteinService.get().getSequencesTable(), "s");
+        sql.append(" ON p.SequenceId = s.SeqId WHERE p.PeptideGroupId = ?");
+        sql.add(peptideGroupId);
+        if (!includeNullSeqIds)
+        {
+            sql.append(" AND p.SequenceId IS NOT NULL");
+        }
+        sql.append(" ORDER BY p.Id");
+
+        return Collections.unmodifiableList(new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(Protein.class));
+    }
+
+    public static List<Protein> getProteinsForRun(long runId)
+    {
+        // Include the Sequence from the prot.sequences table
+        SQLFragment sql = new SQLFragment("SELECT s.ProtSequence AS Sequence, p.* FROM ");
+        sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
+        sql.append(" INNER JOIN ");
+        sql.append(TargetedMSManager.getTableInfoProtein(), "p");
+        sql.append(" ON p.PeptideGroupId = pg.Id LEFT OUTER JOIN " );
+        sql.append(ProteinService.get().getSequencesTable(), "s");
+        sql.append(" ON p.SequenceId = s.SeqId WHERE pg.RunId = ?");
+        sql.add(runId);
+
+        return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(Protein.class);
+    }
+
+
     public static List<PeptideGroup> getPeptideGroupsForRun(long runId)
     {
-        SQLFragment sql = new SQLFragment("SELECT p.ProtSequence AS Sequence, pg.* FROM ");
+        SQLFragment sql = new SQLFragment("SELECT * FROM ");
         sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
-        sql.append(" LEFT OUTER JOIN ");
-        sql.append(ProteinService.get().getSequencesTable(), "p");
-        sql.append(" ON pg.SequenceId = p.SeqId WHERE pg.RunId = ?");
+        sql.append(" WHERE RunId = ?");
         sql.add(runId);
 
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PeptideGroup.class);
@@ -179,11 +214,18 @@ public class PeptideGroupManager
         sql.append(" AND pepgrp.RepresentativeDataState = ?");
         sql.add(RepresentativeDataState.Deprecated.ordinal());
         sql.append(" AND (");
-        if(pepGrp.getSequenceId() != null)
+
+        List<Protein> proteins = getProteinsForPeptideGroup(pepGrp.getId(), false);
+        Set<Integer> seqIds = proteins.stream().map(Protein::getSequenceId).collect(Collectors.toSet());
+
+        if (!seqIds.isEmpty())
         {
-            sql.append("pepgrp.SequenceId = ?");
-            sql.add(pepGrp.getSequenceId());
-            sql.append(" OR ");
+            // Look for overlapping SequenceIds in other peptide group's protein
+            sql.append("pepgrp.Id IN (SELECT PeptideGroupId FROM ");
+            sql.append(TargetedMSManager.getTableInfoProtein(), "p");
+            sql.append(" WHERE SequenceId ");
+            TargetedMSSchema.getSchema().getSqlDialect().appendInClauseSql(sql, seqIds);
+            sql.append(") OR ");
         }
         sql.append(" pepgrp.Label = ?");
         sql.add(pepGrp.getLabel());

@@ -99,6 +99,7 @@ public class SkylineDocumentParser implements AutoCloseable
     private static final String INSTRUMENT_INFO = "instrument_info";
     private static final String PEPTIDE_LIST = "peptide_list";
     private static final String PROTEIN = "protein";
+    private static final String PROTEIN_GROUP = "protein_group";
     private static final String PEPTIDE = "peptide";
     private static final String MOLECULE = "molecule";
     private static final String NOTE = "note";
@@ -160,7 +161,7 @@ public class SkylineDocumentParser implements AutoCloseable
     private static final String LINKED_FRAGMENT_ION = "linked_fragment_ion";
 
     private static final double MIN_SUPPORTED_VERSION = 1.2;
-    public static final double MAX_SUPPORTED_VERSION = 20.22;
+    public static final double MAX_SUPPORTED_VERSION = 22.13;
 
     private static final Pattern XML_ID_REGEX = Pattern.compile("\"/^[:_A-Za-z][-.:_A-Za-z0-9]*$/\"");
     private static final String XML_ID_FIRST_CHARS = ":_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -1255,7 +1256,9 @@ public class SkylineDocumentParser implements AutoCloseable
             int evtType = _reader.next();
             if (evtType == XMLStreamReader.START_ELEMENT)
             {
-                if (PEPTIDE_LIST.equalsIgnoreCase(_reader.getLocalName()) || PROTEIN.equalsIgnoreCase(_reader.getLocalName()))
+                if (PEPTIDE_LIST.equalsIgnoreCase(_reader.getLocalName()) ||
+                        PROTEIN.equalsIgnoreCase(_reader.getLocalName()) ||
+                        PROTEIN_GROUP.equalsIgnoreCase(_reader.getLocalName()))
                 {
                     return true;
                 }
@@ -1275,9 +1278,7 @@ public class SkylineDocumentParser implements AutoCloseable
         List<PeptideGroupAnnotation> annotations = new ArrayList<>();
         pepGroup.setAnnotations(annotations);
 
-        boolean isProtein = PROTEIN.equalsIgnoreCase(_reader.getLocalName());
-
-        if(isProtein)
+        if (PROTEIN.equalsIgnoreCase(_reader.getLocalName()) || PROTEIN_GROUP.equalsIgnoreCase(_reader.getLocalName()))
         {
             // <protein> elements have the 'name'  and 'description' attribute
             // <protein> elements can also have a 'label_name' attribute.  This is the name that the user
@@ -1291,8 +1292,6 @@ public class SkylineDocumentParser implements AutoCloseable
             String labelDescription = reader.getAttributeValue(null, "label_description");
             pepGroup.setDescription(StringUtils.isBlank(labelDescription) ? description : labelDescription);
             pepGroup.setAltDescription((!StringUtils.isBlank(labelDescription) && !StringUtils.isBlank(description)) ? description : null);
-
-            pepGroup.setProtein(true);
         }
         else
         {
@@ -1301,24 +1300,50 @@ public class SkylineDocumentParser implements AutoCloseable
             pepGroup.setDescription(reader.getAttributeValue(null, "label_description"));
         }
 
-        pepGroup.setAccession(reader.getAttributeValue(null, "accession"));
-        pepGroup.setPreferredName(reader.getAttributeValue(null, "preferred_name"));
-        pepGroup.setGene(reader.getAttributeValue(null, "gene"));
-        pepGroup.setSpecies(reader.getAttributeValue(null, "species"));
+        Protein protein = null;
+        if (PROTEIN.equalsIgnoreCase(reader.getLocalName()))
+        {
+            // Single protein entry - split between PeptideGroup and Protein for storage
+            String accession = reader.getAttributeValue(null, "accession");
+            String preferredName = reader.getAttributeValue(null, "preferred_name");
+            String gene = reader.getAttributeValue(null, "gene");
+            String species = reader.getAttributeValue(null, "species");
+
+            if (accession != null || preferredName != null || gene != null || species != null)
+            {
+                protein = pepGroup.addSingleProtein();
+                protein.setAccession(accession);
+                protein.setPreferredName(preferredName);
+                protein.setGene(gene);
+                protein.setSpecies(species);
+            }
+        }
 
         boolean decoy = Boolean.parseBoolean(reader.getAttributeValue(null, "decoy"));
         pepGroup.setDecoy(decoy);
 
-        while(reader.hasNext())
+        String decoyMatchProportion = reader.getAttributeValue(null, "decoy_match_proportion");
+        if (null != decoyMatchProportion)
+            pepGroup.setDecoyMatchProportion(Double.parseDouble(decoyMatchProportion));
+
+        while (reader.hasNext())
         {
-           int evtType = reader.next();
-            if(XmlUtil.isEndElement(reader, evtType, PEPTIDE_LIST) || XmlUtil.isEndElement(reader, evtType, PROTEIN))
+            int evtType = reader.next();
+            if (XmlUtil.isStartElement(reader, evtType, PROTEIN))
+            {
+                pepGroup.addProtein(readProtein(reader));
+            }
+            if (XmlUtil.isEndElement(reader, evtType, PEPTIDE_LIST) || XmlUtil.isEndElement(reader, evtType, PROTEIN))
             {
                 break;
             }
             else if (XmlUtil.isStartElement(reader, evtType, SEQUENCE))
             {
-                pepGroup.setSequence(reader.getElementText().replaceAll("\\s+", ""));
+                if (protein == null)
+                {
+                    protein = pepGroup.addSingleProtein();
+                }
+                protein.setSequence(reader.getElementText().replaceAll("\\s+", ""));
             }
             else if (XmlUtil.isStartElement(reader, evtType, ANNOTATION))
             {
@@ -1347,6 +1372,54 @@ public class SkylineDocumentParser implements AutoCloseable
         _peptideGroupCount++;
         updateProgress();
         return pepGroup;
+    }
+
+    private Protein readProtein(XMLStreamReader reader) throws XMLStreamException
+    {
+        Protein result = new Protein();
+
+        // <protein> elements have the 'name'  and 'description' attribute
+        // <protein> elements can also have a 'label_name' attribute.  This is the name that the user
+        // can type in the document node in Skyline, and most likely the name they want to see in Panorama.
+        String name = reader.getAttributeValue(null, "name");
+        String labelName = reader.getAttributeValue(null, "label_name");
+        result.setLabel(StringUtils.isBlank(labelName) ? name : labelName);
+        result.setName((!StringUtils.isBlank(labelName) && !StringUtils.isBlank(name)) ? name : null);
+
+        String description = reader.getAttributeValue(null, "description");
+        String labelDescription = reader.getAttributeValue(null, "label_description");
+        result.setDescription(StringUtils.isBlank(labelDescription) ? description : labelDescription);
+        result.setAltDescription((!StringUtils.isBlank(labelDescription) && !StringUtils.isBlank(description)) ? description : null);
+
+        // Single protein entry - split between PeptideGroup and Protein for storage
+        result.setAccession(reader.getAttributeValue(null, "accession"));
+        result.setPreferredName(reader.getAttributeValue(null, "preferred_name"));
+        result.setGene(reader.getAttributeValue(null, "gene"));
+        result.setSpecies(reader.getAttributeValue(null, "species"));
+
+        while (reader.hasNext())
+        {
+            int evtType = reader.next();
+            if (XmlUtil.isEndElement(reader, evtType, PROTEIN))
+            {
+                return result;
+            }
+            if (XmlUtil.isStartElement(reader, evtType, SEQUENCE))
+            {
+                result.setSequence(reader.getElementText().replaceAll("\\s+", ""));
+            }
+            else if (XmlUtil.isStartElement(reader, evtType, ANNOTATION))
+            {
+                // TODO - wait to implement until we confirm Skyline is allowing protein-level annotations and we have
+                // an example document
+            }
+            else if (XmlUtil.isStartElement(reader, evtType, NOTE))
+            {
+                // TODO - wait to implement until we confirm Skyline is allowing protein-level notes and we have
+                // an example document
+            }
+        }
+        return result;
     }
 
     public void logMissingChromatogramCounts()
@@ -1391,7 +1464,9 @@ public class SkylineDocumentParser implements AutoCloseable
             {
                 return MoleculeType.MOLECULE;
             }
-            if(XmlUtil.isEndElement(_reader, evtType, PEPTIDE_LIST) || XmlUtil.isEndElement(_reader, evtType, PROTEIN))
+            if(XmlUtil.isEndElement(_reader, evtType, PEPTIDE_LIST) ||
+                    XmlUtil.isEndElement(_reader, evtType, PROTEIN) ||
+                    XmlUtil.isEndElement(_reader, evtType, PROTEIN_GROUP))
             {
                 return null;
             }
@@ -2284,7 +2359,10 @@ public class SkylineDocumentParser implements AutoCloseable
                     }
                     if (matchIndex == -1)
                     {
-                        _log.warn("Unable to find a matching chromatogram for file path " + filePath + ". SKYD file may be out of sync with primary Skyline document. Transition " + transition.toString() + ", " + precursor + ", " +precursor.getCharge());
+                        incrementMissingChromatograms(filePath,
+                                "Unable to find a matching chromatogram for file path " + filePath +
+                                ". SKYD file may be out of sync with primary Skyline document. Transition " + transition +
+                                ", " + precursor + ", " +precursor.getCharge());
                     }
                     else
                     {
@@ -2295,6 +2373,15 @@ public class SkylineDocumentParser implements AutoCloseable
                 }
             }
         }
+    }
+
+    private void incrementMissingChromatograms(String filePath, String logMessage)
+    {
+        AtomicInteger count = _missingChromatograms.computeIfAbsent(filePath, s -> {
+            _log.warn(logMessage);
+            return new AtomicInteger(0);
+        });
+        count.incrementAndGet();
     }
 
     @Nullable
@@ -2328,12 +2415,7 @@ public class SkylineDocumentParser implements AutoCloseable
 
         if (chromatogram == null)
         {
-            AtomicInteger count = _missingChromatograms.computeIfAbsent(filePath, s -> {
-                _log.warn("Unable to find at least one chromatogram for file path " + s);
-                return new AtomicInteger(0);
-            });
-            count.incrementAndGet();
-
+            incrementMissingChromatograms(filePath, "Unable to find at least one chromatogram for file path " + filePath);
             i.remove();
         }
         return chromatogram;
@@ -3101,11 +3183,7 @@ public class SkylineDocumentParser implements AutoCloseable
 
                 if (sampleFile == null)
                 {
-                    AtomicInteger count = _missingChromatograms.computeIfAbsent(path, s -> {
-                        _log.warn("Unable to resolve " + path + " to SampleFile, will not import its sample-scoped chromatogram");
-                        return new AtomicInteger(0);
-                    });
-                    count.incrementAndGet();
+                    incrementMissingChromatograms(path, "Unable to resolve " + path + " to SampleFile, will not import its sample-scoped chromatogram");
                 }
                 else
                 {

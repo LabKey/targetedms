@@ -15,8 +15,9 @@
  */
 package org.labkey.targetedms.chromlib;
 
-import org.labkey.api.protein.ProteinService;
 import org.labkey.targetedms.parser.PeptideGroup;
+import org.labkey.targetedms.parser.Protein;
+import org.labkey.targetedms.query.PeptideGroupManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,13 +41,10 @@ public class LibProtein extends AbstractLibEntity
         setName(pepGroup.getLabel());
         _description = pepGroup.getDescription();
 
-        if(pepGroup.getSequenceId() != null)
+        List<Protein> proteins = PeptideGroupManager.getProteinsForPeptideGroup(pepGroup.getId(), false);
+        if (!proteins.isEmpty())
         {
-            setSequence(ProteinService.get().getProteinSequence(pepGroup.getSequenceId()));
-        }
-        else
-        {
-            setSequence(pepGroup.getSequence());
+            setSequence(proteins.get(0).getSequence());
         }
     }
 

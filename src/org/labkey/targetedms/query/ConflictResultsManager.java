@@ -60,33 +60,40 @@ public class ConflictResultsManager
     public static List<ConflictProtein> getConflictedProteins(Container container)
     {
         // Get a list of conflicted proteins in the given container
-        SQLFragment getConflictProteinsSql = new SQLFragment("SELECT ");
-        getConflictProteinsSql.append("pg.Id AS newProteinId, ");
+        SQLFragment getConflictProteinsSql = new SQLFragment("SELECT DISTINCT x1.*, x2.*");
+        getConflictProteinsSql.append(" FROM (");
+        getConflictProteinsSql.append("SELECT pg.Id AS newProteinId, ");
         getConflictProteinsSql.append("pg.RunId AS newProteinRunId, ");
         getConflictProteinsSql.append("r.filename AS newRunFile, ");
         getConflictProteinsSql.append("pg.Label AS newProteinLabel, ");
+        getConflictProteinsSql.append("p.SequenceId AS newSequenceId ");
+        getConflictProteinsSql.append("FROM ");
+        getConflictProteinsSql.append(TargetedMSManager.getTableInfoRuns(), "r");
+        getConflictProteinsSql.append(" INNER JOIN ");
+        getConflictProteinsSql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
+        getConflictProteinsSql.append(" ON r.Container = ? AND r.Id = pg.RunId AND pg.RepresentativeDataState = ? LEFT OUTER JOIN ");
+        getConflictProteinsSql.add(container);
+        getConflictProteinsSql.add(RepresentativeDataState.Conflicted.ordinal());
+        getConflictProteinsSql.append(TargetedMSManager.getTableInfoProtein(), "p");
+        getConflictProteinsSql.append(" ON p.PeptideGroupId = pg.Id) x1 ");
+
+        getConflictProteinsSql.append(" INNER JOIN (SELECT ");
         getConflictProteinsSql.append("pg2.Id AS oldProteinId, ");
         getConflictProteinsSql.append("pg2.RunId AS oldProteinRunId, ");
         getConflictProteinsSql.append("r2.filename AS oldRunFile, ");
-        getConflictProteinsSql.append("pg2.Label AS oldProteinLabel ");
-        getConflictProteinsSql.append(" FROM ");
-        getConflictProteinsSql.append(TargetedMSManager.getTableInfoRuns(), "r");
-        getConflictProteinsSql.append(", ");
-        getConflictProteinsSql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
+        getConflictProteinsSql.append("pg2.Label AS oldProteinLabel, ");
+        getConflictProteinsSql.append("p2.SequenceId AS oldSequenceId ");
+        getConflictProteinsSql.append("FROM ");
+        getConflictProteinsSql.append(TargetedMSManager.getTableInfoRuns(), "r2");
         getConflictProteinsSql.append(" INNER JOIN ");
         getConflictProteinsSql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg2");
-        getConflictProteinsSql.append(" ON (pg.SequenceId = pg2.SequenceId  OR pg.Label = pg2.Label ) ");
-        getConflictProteinsSql.append(" INNER JOIN ");
-        getConflictProteinsSql.append(TargetedMSManager.getTableInfoRuns(), "r2");
-        getConflictProteinsSql.append(" ON (r2.Id = pg2.RunId) ");
-        getConflictProteinsSql.append(" WHERE r.Id = pg.RunId AND r.Container=? " );
-        getConflictProteinsSql.append(" AND r2.Container=? ");
-        getConflictProteinsSql.append(" AND pg.RepresentativeDataState=? ");
-        getConflictProteinsSql.append(" AND pg2.RepresentativeDataState=? ");
+        getConflictProteinsSql.append(" ON r2.Id = pg2.RunId AND r2.Container = ? AND pg2.RepresentativeDataState = ? LEFT OUTER JOIN ");
         getConflictProteinsSql.add(container);
-        getConflictProteinsSql.add(container);
-        getConflictProteinsSql.add(RepresentativeDataState.Conflicted.ordinal());
         getConflictProteinsSql.add(RepresentativeDataState.Representative.ordinal());
+        getConflictProteinsSql.append(TargetedMSManager.getTableInfoProtein(), "p2");
+        getConflictProteinsSql.append(" ON pg2.Id = p2.PeptideGroupId ) x2" );
+
+        getConflictProteinsSql.append(" ON (newSequenceId = oldSequenceId OR newProteinLabel = oldProteinLabel)");
 
         return new SqlSelector(TargetedMSManager.getSchema(), getConflictProteinsSql).getArrayList(ConflictProtein.class);
     }

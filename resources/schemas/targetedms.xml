@@ -229,17 +229,9 @@
             <column columnName="Label">
                 <columnTitle>Protein / Label</columnTitle>
             </column>
-            <column columnName="SequenceId">
-                <columnTitle>Sequence Id</columnTitle>
-                <fk>
-                    <fkDbSchema>prot</fkDbSchema>
-                    <fkTable>sequences</fkTable>
-                    <fkColumnName>seqid</fkColumnName>
-                    <fkDisplayColumnName>BestName</fkDisplayColumnName>
-                </fk>
-            </column>
-            <column columnName="Decoy"/>
             <column columnName="Note"/>
+            <column columnName="Decoy"/>
+            <column columnName="DecoyMatchProportion"/>
             <column columnName="Description">
                 <inputType>text</inputType>
                 <displayWidth>500</displayWidth>
@@ -251,7 +243,41 @@
                 <columnTitle>Library State</columnTitle>
             </column>
             <column columnName="Name" />
-            <column columnName="Accession" />
+            <column columnName="AltDescription"/>
+        </columns>
+    </table>
+    <table tableDbType="TABLE" tableName="Protein">
+        <titleColumn>Label</titleColumn>
+        <description>Contains a row for protein within a grouping in a targeted MS run.</description>
+        <columns>
+            <column columnName="Id">
+                <isHidden>true</isHidden>
+            </column>
+            <column columnName="PeptideGroupId">
+            </column>
+            <column columnName="Label">
+                <columnTitle>Protein / Label</columnTitle>
+                <url>/targetedms-showProtein.view?id=${PeptideGroupId}&amp;proteinId=${Id}</url>
+            </column>
+            <column columnName="SequenceId">
+                <columnTitle>Sequence Id</columnTitle>
+                <fk>
+                    <fkDbSchema>prot</fkDbSchema>
+                    <fkTable>sequences</fkTable>
+                    <fkColumnName>seqid</fkColumnName>
+                    <fkDisplayColumnName>BestName</fkDisplayColumnName>
+                </fk>
+            </column>
+            <column columnName="Note"/>
+            <column columnName="Description">
+                <inputType>text</inputType>
+                <displayWidth>500</displayWidth>
+            </column>
+            <column columnName="Name" />
+            <column columnName="Accession">
+                <url>https://www.uniprot.org/uniprot/${accession}</url>
+                <urlTarget>_blank</urlTarget>
+            </column>
             <column columnName="PreferredName" />
             <column columnName="Gene" />
             <column columnName="Species" />
@@ -901,17 +927,6 @@
             <column columnName="Intercept">
                 <formatString>0.0000E0</formatString>
             </column>
-        </columns>
-    </table>
-    <table tableName="protein" tableDbType="TABLE">
-        <columns>
-            <column columnName="Id">
-                <isHidden>true</isHidden>
-            </column>
-            <column columnName="peptidegroupid"/>
-            <column columnName="labkeysequenceid"/>
-            <column columnName="name"/>
-            <column columnName="description"/>
         </columns>
     </table>
     <table tableName="retentiontimepredictionsettings" tableDbType="TABLE">
