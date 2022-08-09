@@ -9,6 +9,7 @@ import org.labkey.test.components.targetedms.QCSummaryWebPart;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
 import org.labkey.test.tests.targetedms.TargetedMSTest;
 import org.labkey.test.util.DataRegionTable;
+import org.labkey.test.util.PortalHelper;
 
 import java.util.Arrays;
 
@@ -24,6 +25,7 @@ public class TargetedMSHidePeptidesAndMolecules extends TargetedMSTest
     private static final String PeptidesOnlySubfolder = "Peptides Only";
     private static final String MoleculesOnlySubFolder = "Molecules Only";
     private static final String PeptidesAndMoleculesSubfolder = "Peptides and Molecules";
+    private static final String EmptyProject = "Empty QC Folder";
 
     @BeforeClass
     public static void initProject()
@@ -85,11 +87,17 @@ public class TargetedMSHidePeptidesAndMolecules extends TargetedMSTest
     @Test
     public void testMultipleSkyFilesImport()
     {
+        setupSubfolder(getProjectName(), EmptyProject, FolderType.QC);
+        new PortalHelper(this).clickWebpartMenuItem("QC Summary", true, "Configure Included and Excluded Precursors");
+        checker().verifyTrue("Incorrect error message before importing SKY file",
+                isTextPresent("No data loaded in this folder. Import a Skyline document into this folder to configure exclusions."));
+        checker().screenShotIfNewError("EmptyProjectErrorMessage");
+
         navigateToFolder(getProjectName(), PeptidesOnlySubfolder);
         DataRegionTable table = gotoIncludeExcludeMenu();
         checker().verifyEquals("Incorrect peptides with single import file", Arrays.asList("AGGSSEPVTGLADK", "VEATFGVDESANK"), table.getColumnDataAsText("modifiedSequence"));
 
-        log("Importing the second folder");
+        log("Importing the second file folder");
         navigateToFolder(getProjectName(), PeptidesOnlySubfolder);
         importData(PeptidesOnlySkyFile_2, 2);
         table = gotoIncludeExcludeMenu();
