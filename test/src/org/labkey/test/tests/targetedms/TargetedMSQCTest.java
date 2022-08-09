@@ -204,6 +204,10 @@ public class TargetedMSQCTest extends TargetedMSTest
     @Test
     public void testClickingChromatogramPlotFromQCPlot()
     {
+        goToProjectHome();
+        new SiteNavBar(getDriver()).enterPageAdminMode();
+        portalHelper.moveWebPart("QC Plots", PortalHelper.Direction.UP);
+
         String acquiredDate = "2013-08-15 01:11:28";
         String replicate = "Q_Exactive_08_09_2013_JGB_88";
         verifyChromatogramPlot(acquiredDate, replicate);
@@ -220,8 +224,6 @@ public class TargetedMSQCTest extends TargetedMSTest
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.waitForPlots(2, false);
-//        scrollIntoView(qcPlotsWebPart.getPlots().get(0).getPlot(), true);
-        qcDashboard.getQcSummaryWebPart().waitForLoad();
         scrollIntoView(Locator.tagWithText("span","FFVAPFPEVFGK ++, 692.8686"));
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate(date));
         waitForElement(qcPlotsWebPart.getBubble());
