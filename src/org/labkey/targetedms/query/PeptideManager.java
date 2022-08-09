@@ -122,14 +122,16 @@ public class PeptideManager
         sql.append("(SELECT pep.Sequence, pep.StartIndex, pep.EndIndex, ");
         sql.append(" CASE WHEN SUM(TotalArea) IS NULL OR SUM(TotalArea) < 1 THEN 1 ELSE SUM(TotalArea) END AS Intensity, ");
         sql.append(" MAX(qvalue) AS Confidence FROM ");
-        sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
-        sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralPrecursor(), "p");
-        sql.append(" ON p.Id = pci.PrecursorId");
-        sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoPeptide(),"pep");
+        sql.append(TargetedMSManager.getTableInfoPeptide(),"pep");
+        sql.append(" INNER JOIN ");
+        sql.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "p");
         sql.append(" ON p.GeneralMoleculeId = pep.Id");
         sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralMolecule(),"gm");
         sql.append(" ON gm.id = pep.Id");
-        sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoSampleFile(), "sf");
+        sql.append(" LEFT OUTER JOIN ");
+        sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
+        sql.append(" ON p.Id = pci.PrecursorId ");
+        sql.append(" LEFT OUTER JOIN ").append(TargetedMSManager.getTableInfoSampleFile(), "sf");
         sql.append(" ON sf.Id = pci.SampleFileId");
         if (shouldFilterAndGroupByReplicate)
         {
@@ -159,14 +161,16 @@ public class PeptideManager
         sql.append("(SELECT pep.Sequence, pep.PeptideModifiedSequence, pep.StartIndex, pep.EndIndex, ");
         sql.append(" CASE WHEN SUM(TotalArea) IS NULL OR SUM(TotalArea) < 1 THEN 1 ELSE SUM(TotalArea) END AS Intensity, ");
         sql.append(" MAX(qvalue) AS Confidence FROM ");
-        sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
-        sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralPrecursor(), "p");
-        sql.append(" ON p.Id = pci.PrecursorId");
-        sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoPeptide(),"pep");
+        sql.append(TargetedMSManager.getTableInfoPeptide(),"pep");
+        sql.append(" INNER JOIN ");
+        sql.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "p");
         sql.append(" ON p.GeneralMoleculeId = pep.Id");
         sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralMolecule(),"gm");
         sql.append(" ON gm.id = pep.Id");
-        sql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoSampleFile(), "sf");
+        sql.append(" LEFT OUTER JOIN ");
+        sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
+        sql.append(" ON p.Id = pci.PrecursorId ");
+        sql.append(" LEFT OUTER JOIN ").append(TargetedMSManager.getTableInfoSampleFile(), "sf");
         sql.append(" ON sf.Id = pci.SampleFileId");
         if (shouldFilterAndGroupByReplicate)
         {

@@ -196,6 +196,7 @@ import org.labkey.targetedms.parser.PeptideGroup;
 import org.labkey.targetedms.parser.PeptideSettings;
 import org.labkey.targetedms.parser.Precursor;
 import org.labkey.targetedms.parser.PrecursorChromInfo;
+import org.labkey.targetedms.parser.Protein;
 import org.labkey.targetedms.parser.Replicate;
 import org.labkey.targetedms.parser.ReplicateAnnotation;
 import org.labkey.targetedms.parser.SampleFile;
@@ -267,6 +268,7 @@ import static org.labkey.api.util.DOM.Attribute.method;
 import static org.labkey.api.util.DOM.Attribute.src;
 import static org.labkey.api.util.DOM.Attribute.width;
 import static org.labkey.api.util.DOM.DIV;
+import static org.labkey.api.util.DOM.P;
 import static org.labkey.api.util.DOM.SPAN;
 import static org.labkey.api.util.DOM.TD;
 import static org.labkey.api.util.DOM.TR;
@@ -1898,8 +1900,10 @@ public class TargetedMSController extends SpringActionController
             PrecursorChromatogramsTableInfo tableInfo = new PrecursorChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()), form.getChartWidth(), form.getChartHeight(), form.isSplitGraph());
             tableInfo.addPrecursorFilter(precursorId);
 
+            boolean canBeSplitView = checkSplitability(form, _peptideId, bean);
+
             ChromatogramsDataRegion dRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
-                    ChromatogramsDataRegion.PRECURSOR_CHROM_DATA_REGION, form.isSplitGraph());
+                    ChromatogramsDataRegion.PRECURSOR_CHROM_DATA_REGION, form.isSplitGraph(), canBeSplitView);
 
             pageToSelectedChromatogram(form, dRegion, PrecursorManager.getChromInfosLitePlusForPrecursor(form.getId(), getUser(), getContainer()));
 
@@ -2014,6 +2018,8 @@ public class TargetedMSController extends SpringActionController
             bean.setPeptideGroup(pepGroup);
             bean.setRun(_run);
 
+            boolean canBeSplitView = checkSplitability(form, _moleculeId, bean);
+
             JspView<MoleculePrecursorChromatogramsViewBean> precursorInfo = new JspView<>("/org/labkey/targetedms/view/moleculePrecursorChromatogramsView.jsp", bean);
             precursorInfo.setFrame(WebPartView.FrameType.PORTAL);
             precursorInfo.setTitle("Molecule Precursor Summary");
@@ -2022,7 +2028,7 @@ public class TargetedMSController extends SpringActionController
             tableInfo.addPrecursorFilter(precursorId);
 
             ChromatogramsDataRegion dRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
-                    ChromatogramsDataRegion.PRECURSOR_CHROM_DATA_REGION, form.isSplitGraph());
+                    ChromatogramsDataRegion.PRECURSOR_CHROM_DATA_REGION, form.isSplitGraph(), canBeSplitView);
 
             pageToSelectedChromatogram(form, dRegion, MoleculePrecursorManager.getChromInfosLitePlusForMoleculePrecursor(form.getId(), getUser(), getContainer()));
 
@@ -2104,8 +2110,10 @@ public class TargetedMSController extends SpringActionController
             tableInfo.setPeptideId(peptideId);
             tableInfo.addPeptideFilter();
 
+            boolean canBeSplit = checkSplitability(form, peptideId, bean);
+
             ChromatogramsDataRegion dRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
-                    ChromatogramsDataRegion.PEPTIDE_CHROM_DATA_REGION, form.isSplitGraph());
+                    ChromatogramsDataRegion.PEPTIDE_CHROM_DATA_REGION, form.isSplitGraph(), canBeSplit);
             GridView gridView = new GridView(dRegion, errors);
             gridView.setFrame(WebPartView.FrameType.PORTAL);
             gridView.setTitle("Chromatograms");
@@ -2126,6 +2134,17 @@ public class TargetedMSController extends SpringActionController
                 root.addChild("Peptide Chromatograms");
             }
         }
+    }
+
+    private static boolean checkSplitability(ChromatogramForm form, long id, GeneralMoleculeChromatogramsViewBean bean)
+    {
+        boolean canBeSplitView = PrecursorManager.canBeSplitView(id);
+        bean.setCanBeSplitView(canBeSplitView);
+        if (!canBeSplitView || form.isUpdate())
+        {
+            form.setSplitGraph(false);
+        }
+        return canBeSplitView;
     }
 
     public static class MoleculePrecursorChromatogramsViewBean extends MoleculeChromatogramsViewBean
@@ -2661,12 +2680,7 @@ public class TargetedMSController extends SpringActionController
             vbox.addView(peptideInfo);
 
             // Precursor and transition chromatograms. One row per replicate
-            boolean canBeSplitView = PrecursorManager.canBeSplitView(form.getId());
-            bean.setCanBeSplitView(canBeSplitView);
-            if (!canBeSplitView || form.isUpdate())
-            {
-                form.setSplitGraph(false);
-            }
+            boolean canBeSplitView = checkSplitability(form, form.getId(), bean);
             boolean showOptPeaksOption = PrecursorManager.hasOptimizationPeaks(form.getId());
             bean.setShowOptPeaksOption(showOptPeaksOption);
 
@@ -2756,12 +2770,7 @@ public class TargetedMSController extends SpringActionController
             // Molecule precursor and transition chromatograms. One row per replicate
             VBox chromatogramsBox = new VBox();
 
-            boolean canBeSplitView = PrecursorManager.canBeSplitView(form.getId());
-            bean.setCanBeSplitView(canBeSplitView);
-            if(canBeSplitView && !form.isUpdate())
-            {
-                form.setSplitGraph(true);
-            }
+            boolean canBeSplitView = checkSplitability(form, moleculeId, bean);
 
             int maxTransitions = TargetedMSManager.getMaxTransitionCount(moleculeId);
             if (maxTransitions > 10)
@@ -2769,7 +2778,7 @@ public class TargetedMSController extends SpringActionController
                 form.setDefaultChartHeight(300 + maxTransitions * 10);
             }
 
-            MoleculePrecursorChromatogramsView chromView = new MoleculePrecursorChromatogramsView(molecule, new TargetedMSSchema(getUser(), getContainer()), form, errors, getViewContext());
+            MoleculePrecursorChromatogramsView chromView = new MoleculePrecursorChromatogramsView(molecule, new TargetedMSSchema(getUser(), getContainer()), form, errors, getViewContext(), canBeSplitView);
             JspView<MoleculeChromatogramsViewBean> chartForm = new JspView<>("/org/labkey/targetedms/view/chromatogramsForm.jsp", bean);
 
             chromatogramsBox.setTitle("Chromatograms");
@@ -4743,17 +4752,32 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
+    public static class ProteinForm extends ChromatogramForm
+    {
+        private Long _proteinId;
+
+        public Long getProteinId()
+        {
+            return _proteinId;
+        }
+
+        public void setProteinId(Long proteinId)
+        {
+            _proteinId = proteinId;
+        }
+    }
+
     // ------------------------------------------------------------------------
     // Action to show a protein detail page
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class ShowProteinAction extends SimpleViewAction<ChromatogramForm>
+    public class ShowProteinAction extends SimpleViewAction<ProteinForm>
     {
         private TargetedMSRun _run; // save for use in appendNavTrail
         private String _proteinLabel;
 
         @Override
-        public ModelAndView getView(final ChromatogramForm form, BindException errors)
+        public ModelAndView getView(final ProteinForm form, BindException errors)
         {
             PeptideGroup group = PeptideGroupManager.getPeptideGroup(getContainer(), form.getId());
             if (group == null)
@@ -4768,12 +4792,12 @@ public class TargetedMSController extends SpringActionController
             // Peptide group details
             VBox result = new VBox();
 
-            var showStackedPeptides = form._peptideForm != null && form._peptideForm.equalsIgnoreCase("stacked");
-            Integer peptideCount = addProteinSummaryViews(result, group, _run, form.getReplicateId(), showStackedPeptides);
+            var showStackedPeptides = "stacked".equalsIgnoreCase(form.getPeptideForm());
+            Integer peptideCount = addProteinSummaryViews(result, group, _run, form.getReplicateId(), showStackedPeptides, errors, getViewContext(), form.getProteinId());
 
             GroupChromatogramsTableInfo tableInfo = new GroupChromatogramsTableInfo(new TargetedMSSchema(getUser(), getContainer()), form);
             ChromatogramsDataRegion chromatogramRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
-                    ChromatogramsDataRegion.GROUP_CHROM_DATA_REGION, form.isSplitGraph(), "Id", false);
+                    ChromatogramsDataRegion.GROUP_CHROM_DATA_REGION, form.isSplitGraph(), false);
             chromatogramRegion.setLegendElementId("groupChromatogramLegend");
             tableInfo.addGroupFilter(group);
             ChromatogramGridView chromatogramView = new ChromatogramGridView(chromatogramRegion, errors)
@@ -4895,27 +4919,45 @@ public class TargetedMSController extends SpringActionController
     /** Issue 40731- prevent expensive cross-folder queries when the results will always be scoped to the current run anyway */
     private QueryView createViewWithNoContainerFilterOptions(QuerySettings settings, BindException errors)
     {
-        TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+        return createViewWithNoContainerFilterOptions(settings, errors, getViewContext());
+    }
+
+    private static QueryView createViewWithNoContainerFilterOptions(QuerySettings settings, BindException errors, ViewContext viewContext)
+    {
+        TargetedMSSchema schema = new TargetedMSSchema(viewContext.getUser(), viewContext.getContainer());
         settings.setContainerFilterName(null);
-        QueryView result = schema.createView(getViewContext(), settings, errors);
+        QueryView result = schema.createView(viewContext, settings, errors);
         result.setAllowableContainerFilterTypes();
         return result;
     }
 
-    public static Integer addProteinSummaryViews(VBox box, PeptideGroup group, TargetedMSRun run, @Nullable Long replicateId, boolean showStackedPeptides)
+    public static Integer addProteinSummaryViews(VBox box, PeptideGroup group, TargetedMSRun run, @Nullable Long replicateId, boolean showStackedPeptides, BindException errors, ViewContext viewContext, @Nullable Long proteinId)
     {
         Integer peptideCount = TargetedMSManager.getPeptideGroupPeptideCount(run, group.getId());
         boolean proteomics = peptideCount != null && peptideCount.intValue() > 0;
 
         JspView<PeptideGroup> detailsView = new JspView<>("/org/labkey/targetedms/view/moleculeListView.jsp", group);
         detailsView.setFrame(WebPartView.FrameType.PORTAL);
-        detailsView.setTitle(proteomics ? "Protein" : "Molecule List");
+        detailsView.setTitle(proteomics ? (group.getProteins().size() > 1 ? "Protein Group" : "Protein") : "Molecule List");
 
         box.addView(detailsView);
 
-        if (group.getSequenceId() != null)
+        if (proteomics && group.getProteins().size() > 1)
         {
-            int seqId = group.getSequenceId().intValue();
+            QuerySettings settings = new QuerySettings(viewContext, "Proteins", "Protein");
+            settings.getBaseFilter().addAllClauses(new SimpleFilter(FieldKey.fromParts("PeptideGroupId"), group.getId()));
+            QueryView view = createViewWithNoContainerFilterOptions(settings, errors, viewContext);
+            view.setTitle("Proteins");
+            view.enableExpandCollapse("Proteins", false);
+            view.setFrame(WebPartView.FrameType.PORTAL);
+            view.setUseQueryViewActionExportURLs(true);
+            box.addView(view);
+        }
+
+        Protein selectedProtein = selectProtein(group.getProteins(false), proteinId);
+        if (selectedProtein != null)
+        {
+            int seqId = selectedProtein.getSequenceId();
             List<PeptideCharacteristic> combinedPeptideCharacteristics = new ArrayList<>(PeptideManager.getCombinedPeptideCharacteristics(group.getId(), replicateId));
             List<PeptideCharacteristic> modifiedPeptideCharacteristics = new ArrayList<>(PeptideManager.getModifiedPeptideCharacteristics(group.getId(), replicateId));;
 
@@ -4929,9 +4971,9 @@ public class TargetedMSController extends SpringActionController
             });
 
             ProteinService proteinService = ProteinService.get();
-            WebPartView<?> sequenceView = proteinService.getProteinCoverageViewWithSettings(seqId, combinedPeptideCharacteristics, 100, true, group.getAccession(), msReplicates, modifiedPeptideCharacteristics, showStackedPeptides);
+            WebPartView<?> sequenceView = proteinService.getProteinCoverageViewWithSettings(seqId, combinedPeptideCharacteristics, 100, true, selectedProtein.getAccession(), msReplicates, modifiedPeptideCharacteristics, showStackedPeptides);
 
-            sequenceView.setTitle("Sequence Coverage");
+            sequenceView.setTitle("Sequence Coverage" + (group.getProteins(false).size() > 1 ? " for " + selectedProtein.getLabel() : ""));
             sequenceView.enableExpandCollapse("SequenceCoverage", false);
             box.addView(sequenceView);
 
@@ -4952,6 +4994,27 @@ public class TargetedMSController extends SpringActionController
         }
 
         return peptideCount;
+    }
+
+    @Nullable
+    private static Protein selectProtein(List<Protein> proteins, @Nullable Long proteinId)
+    {
+        if (proteinId == null && !proteins.isEmpty())
+        {
+            return proteins.get(0);
+        }
+        if (proteinId != null)
+        {
+            for (Protein protein : proteins)
+            {
+                if (protein.getId() == proteinId)
+                {
+                    return protein;
+                }
+            }
+        }
+
+        return null;
     }
 
     public static class SummaryChartBean
@@ -5122,10 +5185,10 @@ public class TargetedMSController extends SpringActionController
     // Action to show a protein detail page
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class ShowProteinAJAXAction extends SimpleViewAction<ChromatogramForm>
+    public class ShowProteinAJAXAction extends SimpleViewAction<ProteinForm>
     {
         @Override
-        public ModelAndView getView(ChromatogramForm form, BindException errors) throws Exception
+        public ModelAndView getView(ProteinForm form, BindException errors) throws Exception
         {
             PeptideGroup group = PeptideGroupManager.getPeptideGroup(getContainer(), form.getId());
             if (group == null)
@@ -5133,10 +5196,13 @@ public class TargetedMSController extends SpringActionController
                 throw new NotFoundException("Could not find peptide group #" + form.getId());
             }
 
+            List<Protein> proteins = PeptideGroupManager.getProteinsForPeptideGroup(group.getId(), false);
+            Protein selectedProtein = selectProtein(proteins, form.getProteinId());
+
             WebPartView<?> view;
-            if (group.getSequenceId() != null)
+            if (selectedProtein != null)
             {
-                int seqId = group.getSequenceId().intValue();
+                int seqId = selectedProtein.getSequenceId().intValue();
                 List<PeptideCharacteristic> peptideCharacteristics = new ArrayList<>();
                 for (Peptide peptide : PeptideManager.getPeptidesForGroup(group.getId()))
                 {
@@ -5146,7 +5212,7 @@ public class TargetedMSController extends SpringActionController
                 }
                 ProteinService proteinService = ProteinService.get();
                 ActionURL searchURL = urlProvider(MS2Urls.class).getProteinSearchUrl(getContainer());
-                searchURL.addParameter("seqId", group.getSequenceId().intValue());
+                searchURL.addParameter("seqId", selectedProtein.getSequenceId().intValue());
                 searchURL.addParameter("identifier", group.getLabel());
                 getViewContext().getResponse().getWriter().write("<a href=\"" + searchURL + "\">Search for other references to this protein</a><br/>");
                 view = proteinService.getProteinCoverageView(seqId, peptideCharacteristics, 40, true, null);

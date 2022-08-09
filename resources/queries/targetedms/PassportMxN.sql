@@ -7,7 +7,7 @@ SELECT
     COALESCE(SampleFileId.ReplicateId.BatchName, ifdefined(SampleFileId.ReplicateId.Day), ifdefined(SampleFileId.ReplicateId.SampleGroup)) AS Timepoint,
     ifdefined(SampleFileId.ReplicateId.SampleGroup2) AS Grouping,
     PrecursorId.PeptideId.PeptideGroupId.Label AS ProteinName,
-    PrecursorId.PeptideId.PeptideGroupId.SequenceId.SeqId AS seq,
+    (SELECT MIN(SequenceId) FROM targetedms.Protein p WHERE p.PeptideGroupId = PrecursorId.PeptideId.PeptideGroupId) AS seq,
     PrecursorId.PeptideId.Sequence AS PeptideSequence,
     PrecursorId.IsotopeLabelId.Name AS Label,
     PrecursorId.ModifiedSequence,
