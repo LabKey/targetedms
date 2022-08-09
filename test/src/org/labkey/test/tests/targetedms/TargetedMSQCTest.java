@@ -156,17 +156,17 @@ public class TargetedMSQCTest extends TargetedMSTest
 
     private final PortalHelper portalHelper = new PortalHelper(this);
 
+    @BeforeClass
+    public static void initProject()
+    {
+        TargetedMSQCTest init = (TargetedMSQCTest) getCurrentTest();
+        init.doInit();
+    }
+
     @Override
     protected String getProjectName()
     {
         return getClass().getSimpleName() + " Project";
-    }
-
-    @BeforeClass
-    public static void initProject()
-    {
-        TargetedMSQCTest init = (TargetedMSQCTest)getCurrentTest();
-        init.doInit();
     }
 
     private void doInit()
@@ -195,6 +195,41 @@ public class TargetedMSQCTest extends TargetedMSTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.filterQCPlotsToInitialData(PRECURSORS.length, true);
         assertEquals("Wrong precursors", Arrays.asList(PRECURSOR_TITLES), qcPlotsWebPart.getPlotTitles());
+    }
+
+    /*
+        Test coverage for Issue 45544: Clicking "View Chromatogram" from Panorama QC plot doesn't page to show desired plot
+        https://www.labkey.org/home/Developer/issues/issues-details.view?issueId=45544
+     */
+    @Test
+    public void testClickingChromatogramPlotFromQCPlot()
+    {
+        goToProjectHome();
+        new SiteNavBar(getDriver()).enterPageAdminMode();
+        portalHelper.moveWebPart("QC Plots", PortalHelper.Direction.UP);
+
+        String acquiredDate = "2013-08-15 01:11:28";
+        String replicate = "Q_Exactive_08_09_2013_JGB_88";
+        verifyChromatogramPlot(acquiredDate, replicate);
+
+        acquiredDate = "2013-08-12 04:54:55";
+        replicate = "Q_Exactive_08_09_2013_JGB_38";
+        verifyChromatogramPlot(acquiredDate, replicate);
+    }
+
+    private void verifyChromatogramPlot(String date, String replicate)
+    {
+        log("Verifying view chromatogram is linked correctly for " + date + " to replicate " + replicate);
+        goToProjectHome();
+        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        qcPlotsWebPart.waitForPlots(2, false);
+        scrollIntoView(Locator.tagWithText("span","FFVAPFPEVFGK ++, 692.8686"));
+        mouseOver(qcPlotsWebPart.getPointByAcquiredDate(date));
+        waitForElement(qcPlotsWebPart.getBubble());
+        clickAndWait(Locator.linkWithText("view chromatogram"));
+        assertTrue("Navigated to incorrect replicate", isTextPresent(replicate));
+        assertTrue("Plot is not highlighted", Locator.tagWithAttribute("div", "alt", "Chromatogram " + replicate).findElement(getDriver()).getAttribute("style").contains(" solid beige"));
     }
 
     @Test
@@ -226,7 +261,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         _fileBrowserHelper.dragDropUpload(single, "TestZipMeDir.zip");
 
         log("Verifying if the file is uploaded and zipped");
-        waitForElement(Locator.tagWithText("span", "TestZipMeDir.zip"),WAIT_FOR_PAGE);
+        waitForElement(Locator.tagWithText("span", "TestZipMeDir.zip"), WAIT_FOR_PAGE);
         assertElementPresent(Locator.tagWithText("span", "TestZipMeDir.zip"));
     }
 
@@ -280,7 +315,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         for (QCPlotsWebPart.MetricType type : QCPlotsWebPart.MetricType.values())
         {
             // Skip over metrics that dont have data.
-            if (metricTypeWithData.contains(type) &&  type != qcPlotsWebPart.getCurrentMetricType())
+            if (metricTypeWithData.contains(type) && type != qcPlotsWebPart.getCurrentMetricType())
             {
                 log("Verify plot type: " + type);
                 initialSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
@@ -545,7 +580,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertEquals("Wrong precursors", precursors, qcPlotsWebPart.getPlotTitles());
 
         // Filter the grid to a single peptide
-        DataRegionTable drt =  getSchemaBrowserDataView("targetedms", "GeneralMoleculeChromInfo");
+        DataRegionTable drt = getSchemaBrowserDataView("targetedms", "GeneralMoleculeChromInfo");
 
         drt.setFilter("PeptideId", "Equals", "AGGSSEPVTGLADK");
 
@@ -610,10 +645,10 @@ public class TargetedMSQCTest extends TargetedMSTest
     private void verifyCombinedLegend()
     {
         assertTextPresent("ATEEQLK",  // 7 is max length without abbreviation
-            "FFV\u2026",
-            "VLV\u2026");
+                "FFV\u2026",
+                "VLV\u2026");
 
-        String result = (String)executeScript(longPeptideJSTest);
+        String result = (String) executeScript(longPeptideJSTest);
         assertEquals("", result);
     }
 
@@ -804,20 +839,20 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         //confirm 3 exclusions
         DataRegionTable drt = getSchemaBrowserDataView("targetedms", "QCMetricExclusion");
-        assertEquals("Wrong count", 3,drt.getDataRowCount());
-        assertEquals("Wrong metric", " ", drt.getRowDataAsText(0,"MetricId").get(0));
-        assertEquals("Wrong metric", " ", drt.getRowDataAsText(1,"MetricId").get(0));
-        assertEquals("Wrong metric", " ", drt.getRowDataAsText(2,"MetricId").get(0));
+        assertEquals("Wrong count", 3, drt.getDataRowCount());
+        assertEquals("Wrong metric", " ", drt.getRowDataAsText(0, "MetricId").get(0));
+        assertEquals("Wrong metric", " ", drt.getRowDataAsText(1, "MetricId").get(0));
+        assertEquals("Wrong metric", " ", drt.getRowDataAsText(2, "MetricId").get(0));
 
-        importData(QC_1b_FILE,2);
+        importData(QC_1b_FILE, 2);
         clickFolder(subFolderName);
         verifyQcSummary(1, 3, 2);
 
         drt = getSchemaBrowserDataView("targetedms", "QCMetricExclusion");
-        assertEquals("Wrong count", 3,drt.getDataRowCount());
-        assertEquals("Wrong metric", " ", drt.getRowDataAsText(0,"MetricId").get(0));
-        assertEquals("Wrong metric", " ", drt.getRowDataAsText(1,"MetricId").get(0));
-        assertEquals("Wrong metric", " ", drt.getRowDataAsText(2,"MetricId").get(0));
+        assertEquals("Wrong count", 3, drt.getDataRowCount());
+        assertEquals("Wrong metric", " ", drt.getRowDataAsText(0, "MetricId").get(0));
+        assertEquals("Wrong metric", " ", drt.getRowDataAsText(1, "MetricId").get(0));
+        assertEquals("Wrong metric", " ", drt.getRowDataAsText(2, "MetricId").get(0));
 
         verifyUploadReport("Replicate 25fmol_Pepmix_spike_SRM_1601_03 has an ignore_in_QC=false annotation " +
                 "but there are existing exclusions that were added within Panorama or from a previous import.");
@@ -901,7 +936,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
     private String getAcquiredDateDisplayStr(String acquiredDate)
     {
-        return acquiredDate.replaceAll("/","-");
+        return acquiredDate.replaceAll("/", "-");
     }
 
     private void verifyExclusionButtonSelection(String acquiredDate, QCPlotsWebPart.QCPlotExclusionState state)
@@ -931,7 +966,7 @@ public class TargetedMSQCTest extends TargetedMSTest
     @LogMethod
     private void verifyUploadReport(String... reportText)
     {
-        beginAt( getCurrentContainerPath()  + "/pipeline-status-showList.view?");
+        beginAt(getCurrentContainerPath() + "/pipeline-status-showList.view?");
         waitForRunningPipelineJobs(MAX_WAIT_SECONDS * 1000);
 
         PipelineStatusTable statusTable = new PipelineStatusTable(this);
