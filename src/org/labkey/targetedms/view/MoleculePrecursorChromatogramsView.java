@@ -29,20 +29,22 @@ public class MoleculePrecursorChromatogramsView extends ChromatogramGridView
 {
     public MoleculePrecursorChromatogramsView(Molecule molecule, TargetedMSSchema schema,
                                               TargetedMSController.ChromatogramForm form,
-                                              BindException errors, ViewContext viewContext)
+                                              BindException errors, ViewContext viewContext, boolean canBeSplit)
     {
 
-        super(makeDataRegion(molecule, schema, form, viewContext), errors);
+        super(makeDataRegion(molecule, schema, form, viewContext, canBeSplit), errors);
     }
 
     private static ChromatogramsDataRegion makeDataRegion(Molecule molecule, TargetedMSSchema schema,
-                                             TargetedMSController.ChromatogramForm form, ViewContext viewContext)
+                                             TargetedMSController.ChromatogramForm form, ViewContext viewContext, boolean canBeSplit)
     {
         GeneralMoleculePrecursorChromatogramsTableInfo tableInfo = new GeneralMoleculePrecursorChromatogramsTableInfo(molecule, schema, form);
         return new ChromatogramsDataRegion(viewContext,
                 tableInfo,
                 MOLECULE_PRECURSOR_CHROM_DATA_REGION,
                 form.isSplitGraph(),
-                StringUtils.join(tableInfo.getDisplayColumnNames(), ","));
+                canBeSplit,
+                StringUtils.join(tableInfo.getDisplayColumnNames(), ",")
+            );
         }
 }

@@ -16,8 +16,12 @@
 package org.labkey.targetedms.parser;
 
 import org.labkey.api.targetedms.RepresentativeDataState;
+import org.labkey.targetedms.query.PeptideGroupManager;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * User: vsharma
@@ -27,21 +31,15 @@ import java.util.Map;
 public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
 {
     private long _runId;
-    private Integer _sequenceId;
 
     private String _label;
     private String _name;
     private String _description;
-    private String _accession;
-    private String _preferredName;
-    private String _gene;
-    private String _species;
-
-    private String _sequence;
-    private boolean _protein;
-    private Map<String, String> _alternativeProteins;
 
     private boolean _decoy;
+    private Double _decoyMatchProportion;
+
+    private List<Protein> _proteins;
 
     private String _note;
 
@@ -57,16 +55,6 @@ public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
     public void setRunId(long runId)
     {
         _runId = runId;
-    }
-
-    public Integer getSequenceId()
-    {
-        return _sequenceId;
-    }
-
-    public void setSequenceId(Integer sequenceId)
-    {
-        _sequenceId = sequenceId;
     }
 
     public String getLabel()
@@ -99,36 +87,6 @@ public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
         _description = description;
     }
 
-    public String getSequence()
-    {
-        return _sequence;
-    }
-
-    public void setSequence(String sequence)
-    {
-        _sequence = sequence;
-    }
-
-    public boolean isProtein()
-    {
-        return _protein;
-    }
-
-    public void setProtein(boolean protein)
-    {
-        _protein = protein;
-    }
-
-    public Map<String, String> getAlternativeProteins()
-    {
-        return _alternativeProteins;
-    }
-
-    public void setAlternativeProteins(Map<String, String> alternativeProteins)
-    {
-        _alternativeProteins = alternativeProteins;
-    }
-
     public boolean isDecoy()
     {
         return _decoy;
@@ -137,6 +95,16 @@ public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
     public void setDecoy(boolean decoy)
     {
         _decoy = decoy;
+    }
+
+    public Double getDecoyMatchProportion()
+    {
+        return _decoyMatchProportion;
+    }
+
+    public void setDecoyMatchProportion(Double decoyMatchProportion)
+    {
+        _decoyMatchProportion = decoyMatchProportion;
     }
 
     public void setNote(String note)
@@ -149,6 +117,25 @@ public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
         return _note;
     }
 
+    public List<Protein> getProteins()
+    {
+        return getProteins(true);
+    }
+    public List<Protein> getProteins(boolean includeNullSeqIds)
+    {
+        if (_proteins == null)
+        {
+            _proteins = PeptideGroupManager.getProteinsForPeptideGroup(getId(), true);
+        }
+        return Collections.unmodifiableList(includeNullSeqIds ? _proteins :
+                _proteins.stream().filter(p -> p.getSequence() != null).collect(Collectors.toList()));
+    }
+
+    public void setProteins(List<Protein> proteins)
+    {
+        _proteins = proteins;
+    }
+
     public RepresentativeDataState getRepresentativeDataState()
     {
         return _representativeDataState;
@@ -159,46 +146,6 @@ public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
         _representativeDataState = representativeDataState;
     }
 
-    public String getAccession()
-    {
-        return _accession;
-    }
-
-    public void setAccession(String accession)
-    {
-        _accession = accession;
-    }
-
-    public String getPreferredName()
-    {
-        return _preferredName;
-    }
-
-    public void setPreferredName(String preferredName)
-    {
-        _preferredName = preferredName;
-    }
-
-    public String getGene()
-    {
-        return _gene;
-    }
-
-    public void setGene(String gene)
-    {
-        _gene = gene;
-    }
-
-    public String getSpecies()
-    {
-        return _species;
-    }
-
-    public void setSpecies(String species)
-    {
-        _species = species;
-    }
-
     public String getAltDescription()
     {
         return _altDescription;
@@ -207,5 +154,38 @@ public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
     public void setAltDescription(String altDescription)
     {
         _altDescription = altDescription;
+    }
+
+    public Protein addSingleProtein()
+    {
+        if (_proteins == null)
+        {
+            _proteins = new ArrayList<>();
+        }
+        Protein result = new Protein();
+        result.setName(_name);
+        result.setLabel(_label);
+        result.setDescription(_description);
+        result.setAltDescription(_altDescription);
+        _proteins.add(result);
+        return result;
+    }
+
+    public void addProtein(Protein protein)
+    {
+        if (_proteins == null)
+        {
+            _proteins = new ArrayList<>();
+        }
+        _proteins.add(protein);
+    }
+
+    /**
+     * @return a description of the type of the grouping - "Protein" for single-protein proteomics data or "Group"
+     * when there's small molecule data or multiple proteins
+     */
+    public String getFieldLabel()
+    {
+        return getProteins().isEmpty() ? "Group" : "Protein";
     }
 }

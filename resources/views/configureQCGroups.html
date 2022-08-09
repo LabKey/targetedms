@@ -22,6 +22,7 @@
             }, this)
         });
     }
+
     function markPrecursorAsExcludedHandler(dataRegion, dataRegionName) {
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL(
@@ -45,74 +46,54 @@
         });
     }
 
-        LABKEY.Query.selectRows({
+    function addListing(targetId, queryName, title) {
+        new LABKEY.QueryWebPart({
+            renderTo: targetId,
             schemaName: 'targetedms',
-            queryName: 'Peptide',
+            queryName: queryName,
+            title: title,
+            buttonBar: {
+                items:[
+                    LABKEY.QueryWebPart.standardButtons.views,
+                    LABKEY.QueryWebPart.standardButtons.charts,
+                    LABKEY.QueryWebPart.standardButtons.exportRows,
+                    LABKEY.QueryWebPart.standardButtons.print,
+                    LABKEY.QueryWebPart.standardButtons.pageSize,
+                    {
+                        text: 'Mark As Included',
+                        requiresSelection: 'true',
+                        handler: markPrecursorAsIncludedHandler
+                    },
+                    {
+                        text: 'Mark As Excluded',
+                        requiresSelection: 'true',
+                        handler: markPrecursorAsExcludedHandler
+                    }
+                ]}
+        });
+    }
+
+        LABKEY.Query.executeSql({
+            schemaName: 'targetedms',
+            sql: 'SELECT SUM(PeptideCount) AS Peptides, SUM(SmallMoleculeCount) AS SmallMolecules FROM Runs',
             scope: this,
             success: function (result) {
-                if (result.rows.length > 0) {
-                    new LABKEY.QueryWebPart({
-                        renderTo: 'mark-precursor-peptides',
-                        schemaName: 'targetedms',
-                        queryName: 'QCGroupingPrecursorPeptides',
-                        title: 'Peptide Precursors',
-                        buttonBar: {
-                            items: [
-                                LABKEY.QueryWebPart.standardButtons.views,
-                                LABKEY.QueryWebPart.standardButtons.charts,
-                                LABKEY.QueryWebPart.standardButtons.exportRows,
-                                LABKEY.QueryWebPart.standardButtons.print,
-                                LABKEY.QueryWebPart.standardButtons.pageSize,
-                                {
-                                    text: 'Mark As Included',
-                                    requiresSelection: 'true',
-                                    handler: markPrecursorAsIncludedHandler
-                                },
-                                {
-                                    text: 'Mark As Excluded',
-                                    requiresSelection: 'true',
-                                    handler: markPrecursorAsExcludedHandler
-                                }
-                            ]
-                        }
-                    });
+                const peptides = result.rows[0].Peptides;
+                const molecules = result.rows[0].SmallMolecules;
+                if (peptides > 0) {
+                    addListing('mark-precursor-peptides', 'QCGroupingPrecursorPeptides', 'Peptide Precursors');
+                }
+
+                if (molecules > 0) {
+                    addListing('mark-precursor-molecule', 'QCGroupingPrecursorMolecules', 'Small Molecule Precursors');
+                }
+
+                // Values will be null if we don't have any data yet
+                if (!peptides && !molecules) {
+                    document.getElementById('mark-precursor-peptides').innerText = 'No data loaded in this folder. Import a Skyline document into this folder to configure exclusions.'
                 }
             }
         });
-
-    LABKEY.Query.selectRows({
-        schemaName: 'targetedms',
-        queryName: 'Molecule',
-        scope: this,
-        success: function (result) {
-            if (result.rows.length > 0) {
-                new LABKEY.QueryWebPart({
-                    renderTo: 'mark-precursor-molecule',
-                    schemaName: 'targetedms',
-                    queryName: 'QCGroupingPrecursorMolecules',
-                    title: 'Small Molecule Precursors',
-                    buttonBar: {
-                        items:[
-                            LABKEY.QueryWebPart.standardButtons.views,
-                            LABKEY.QueryWebPart.standardButtons.charts,
-                            LABKEY.QueryWebPart.standardButtons.exportRows,
-                            LABKEY.QueryWebPart.standardButtons.print,
-                            LABKEY.QueryWebPart.standardButtons.pageSize,
-                            {
-                                text: 'Mark As Included',
-                                requiresSelection: 'true',
-                                handler: markPrecursorAsIncludedHandler
-                            },
-                            {
-                                text: 'Mark As Excluded',
-                                requiresSelection: 'true',
-                                handler: markPrecursorAsExcludedHandler
-                            }
-                        ]}
-                });
-            }
-        }
-    });
 </script>
 
 <div id="mark-precursor-peptides"></div>

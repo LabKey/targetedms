@@ -21,15 +21,17 @@
 <%@ page import="org.labkey.targetedms.parser.PeptideGroup" %>
 <%@ page import="org.labkey.targetedms.TargetedMSRun" %>
 <%@ page import="org.labkey.targetedms.TargetedMSManager" %>
-<%@ page import="org.labkey.api.targetedms.TargetedMSService" %>
-<%@ page import="org.labkey.api.view.ActionURL" %>
-<%@ page import="org.labkey.targetedms.passport.PassportController" %>
+<%@ page import="java.util.List" %>
+<%@ page import="org.labkey.targetedms.parser.Protein" %>
+<%@ page import="java.util.stream.Collectors" %>
+<%@ page import="org.apache.commons.lang3.StringUtils" %>
+<%@ page import="org.labkey.api.util.StringUtilsLabKey" %>
+<%@ page import="java.util.Objects" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 <%
     JspView<PeptideGroup> me = (JspView<PeptideGroup>) HttpView.currentView();
     PeptideGroup bean = me.getModelBean();
     TargetedMSRun run = TargetedMSManager.getRun(bean.getRunId());
-    TargetedMSService.FolderType folderType = TargetedMSManager.getFolderType(run.getContainer());
 %>
 
 <table class="lk-fields-table">
@@ -48,10 +50,17 @@
         <td class="labkey-form-label">Decoy</td>
         <td><%= h(bean.isDecoy()) %></td>
     </tr>
-    <% if (bean.getAccession() != null) { %>
+    <%
+        List<Protein> proteins = bean.getProteins();
+        List<String> accessions = proteins.stream().map(Protein::getAccession).filter(Objects::nonNull).toList();
+    %>
+    <% if (accessions.size() == 1) {
+        String accession = accessions.get(0); %>
         <tr>
             <td class="labkey-form-label">Accession</td>
-            <td><a href="https://www.uniprot.org/uniprot/<%=h(bean.getAccession())%>"><%= h(bean.getAccession())%></a></td>
+            <td>
+                <a href="https://www.uniprot.org/uniprot/<%=h(accession)%>"><%= h(accession)%></a>
+            </td>
         </tr>
     <% } %>
     <tr>

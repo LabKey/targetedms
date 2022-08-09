@@ -19,7 +19,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
-import org.labkey.test.categories.Daily;
 import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.LogMethod;
 import org.labkey.test.util.PipelineStatusTable;
@@ -36,7 +35,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-@Category({Daily.class})
+@Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSLibraryTest extends TargetedMSTest
 {
@@ -131,7 +130,7 @@ public class TargetedMSLibraryTest extends TargetedMSTest
         {
             int idx = proteinsTable.getRowIndex("Label", protein);
             assertTrue("Expected protein " + protein + " not found in table", idx != -1);
-            List<String>fileName = proteinsTable.getRowDataAsText(idx, "File");
+            List<String>fileName = proteinsTable.getRowDataAsText(idx, "RunId/File");
             assertEquals(1, fileName.size());
             assertEquals("Unexpected file name for " + protein, files.get(i), fileName.get(0));
             i++;
