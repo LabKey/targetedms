@@ -26,12 +26,16 @@ import org.labkey.api.view.ViewContext;
  */
 public class ChromatogramGridQuerySettings extends QuerySettings
 {
-    private int _maxRowSize = 2;
+    private int _maxRowSize;
 
-    public ChromatogramGridQuerySettings(ViewContext context, String dataRegionName)
+    public ChromatogramGridQuerySettings(ViewContext context, String dataRegionName, boolean replicateChromatogramsGrouped)
     {
         super(dataRegionName);
         setMaxRows(10);
+        // On the peptide / molecule details page all the chromatograms from a replicate are displayed together. These are
+        // the total precursor ion chromatogram and the fragment ion chromatograms from all the peptide / molecule precursors
+        // In this case we set the default row size to 1 so that each row displays the chromatograms from a single replicate.
+        _maxRowSize = replicateChromatogramsGrouped ? 1 : 2;
         init(context);
 
         setAllowCustomizeView(false);
