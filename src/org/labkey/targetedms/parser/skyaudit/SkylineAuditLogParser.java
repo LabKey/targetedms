@@ -347,14 +347,11 @@ public class SkylineAuditLogParser implements AutoCloseable
 
                 for(AuditLogMessage msg : ent.getAllInfoMessage())
                 {
-                    Assert.assertNotNull(msg.getExpandedText());
                     Assert.assertNotNull(msg.getEnText());
-                    Assert.assertNotEquals("", msg.getExpandedText());
                 }
                 prevEntry = ent;
             }
 
-            Assert.assertTrue(expander.areAllMessagesExpanded());
             Assert.assertTrue(expander.areResourcesReady());
             Assert.assertNotNull(entries.get(2).getExtraInfo());
             Assert.assertNull(entries.get(1).getExtraInfo());
@@ -378,26 +375,6 @@ public class SkylineAuditLogParser implements AutoCloseable
             }
         }
 
-        //TODO: test invalid expansion: missing resource file or missing token in a file.
-        @Test
-        public void testMissingResourceName() throws XMLStreamException, AuditLogException, AuditLogParsingException, IOException
-        {
-            _logFile = UnitTestUtil.getSampleDataFile("AuditLogFiles/InvalidResourceTest.skyl");
-            _parser = new SkylineAuditLogParser(_logFile, _logger);
-
-            AuditLogMessageExpander expander = new AuditLogMessageExpander(_logger);
-            List<AuditLogEntry> entries = new LinkedList<>();
-
-            while(_parser.hasNextEntry())
-            {
-                AuditLogEntry ent = _parser.parseLogEntry();
-                entries.add(ent.expandEntry(expander));
-                _logger.debug(ent.toString());
-            }
-
-            Assert.assertTrue(expander.areResourcesReady());
-            Assert.assertFalse(expander.areAllMessagesExpanded());
-        }
         //TODO: Validate against different files.
     }
 

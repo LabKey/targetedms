@@ -162,7 +162,7 @@ public class AuditLogMessageExpander
         public static final String COLUMN_CAPTIONS = "ColumnCaptions";
         public static final String ENUMS = "EnumNames";
 
-        public String[] RESOURCE_NAMES = new String[]{ "PropertyNames", "PropertyElementNames", "AuditLogStrings", "ColumnCaptions", "EnumNames" };
+        public String[] RESOURCE_NAMES = new String[]{ "PropertyNames", "PropertyElementNames", "ColumnCaptions", "EnumNames" };
         private final Logger _logger;
         private boolean _resourcesReady = true;
 
