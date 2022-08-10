@@ -23,8 +23,8 @@ import org.labkey.api.util.Pair;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.chart.ChartColors;
 import org.labkey.targetedms.parser.Peptide;
-import org.labkey.targetedms.parser.PeptideGroup;
 import org.labkey.targetedms.parser.Precursor;
+import org.labkey.targetedms.parser.Protein;
 import org.labkey.targetedms.query.IsotopeLabelManager;
 import org.labkey.targetedms.query.ModificationManager;
 import org.labkey.targetedms.query.PeptideGroupManager;
@@ -47,7 +47,7 @@ public class ModifiedPeptideHtmlMaker
     // Used to get the display color for label types.
     private final Map<Long, Long> _firstIsotopeLabelIdInDocMap;
 
-    private final Map<Long, List<PeptideGroup>> _proteins = new HashMap<>();
+    private final Map<Long, List<Protein>> _proteins = new HashMap<>();
 
     private final static String[] HEX_PADDING = new String[] {
                                                         "",
@@ -149,8 +149,8 @@ public class ModifiedPeptideHtmlMaker
             result.append("<br />\n");
             if (runId != null)
             {
-                List<PeptideGroup> proteins = _proteins.computeIfAbsent(runId, id -> PeptideGroupManager.getPeptideGroupsForRun(runId));
-                PeptideGroup matchingProtein = extraSequence.findMatch(proteins);
+                List<Protein> proteins = _proteins.computeIfAbsent(runId, id -> PeptideGroupManager.getProteinsForRun(runId));
+                Protein matchingProtein = extraSequence.findMatch(proteins);
                 if (matchingProtein != null)
                 {
                     String proteinSequence = matchingProtein.getSequence();

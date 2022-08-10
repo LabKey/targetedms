@@ -16,6 +16,7 @@
 package org.labkey.targetedms.query;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DbScope;
 import org.labkey.api.data.SQLFragment;
@@ -192,7 +193,7 @@ public class RepresentativeStateManager
         makeActiveSQL.add(run.getId());
         if(peptideGroupIdsToExclude.size() > 0)
         {
-            makeActiveSQL.append(" AND Id NOT IN (" + StringUtils.join(peptideGroupIdsToExclude, ',') + ")");
+            makeActiveSQL.append(" AND Id NOT IN (").append(StringUtils.join(peptideGroupIdsToExclude, ',')).append(")");
         }
         makeActiveSQL.append(" AND Id NOT IN ( ");
         // Issue 40407: Chromatogram library folder issues
@@ -207,16 +208,21 @@ public class RepresentativeStateManager
    	    (SELECT sequenceId from targetedms.peptidegroup pg1 INNER JOIN targetedms.runs r1 ON pg1.RunId = r1.Id
         WHERE r1.Container=<container> AND pg1.RepresentativeDataState=1 AND pg1.SequenceId IS NOT NULL
          */
-        makeActiveSQL.append(" (SELECT Id FROM ").append(TargetedMSManager.getTableInfoPeptideGroup(), "pg_seq");
+        makeActiveSQL.append(" (SELECT pg_seq.Id FROM ").append(TargetedMSManager.getTableInfoPeptideGroup(), "pg_seq");
+        makeActiveSQL.append(" INNER JOIN ");
+        makeActiveSQL.append(TargetedMSManager.getTableInfoProtein(), "p");
+        makeActiveSQL.append(" ON pg_seq.Id = p.PeptideGroupID ");
         makeActiveSQL.append(" WHERE RunId = ?").add(run.getId());
         makeActiveSQL.append(" AND SequenceId IN ( ");
         makeActiveSQL.append(" SELECT SequenceId FROM ");
         makeActiveSQL.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg1");
         makeActiveSQL.append(" INNER JOIN ");
+        makeActiveSQL.append(TargetedMSManager.getTableInfoProtein(), "p1");
+        makeActiveSQL.append(" ON pg1.Id = p1.PeptideGroupId INNER JOIN ");
         makeActiveSQL.append(TargetedMSManager.getTableInfoRuns(), "r1");
         makeActiveSQL.append(" ON pg1.RunID = r1.Id ");
         makeActiveSQL.append(" WHERE r1.Container=? AND pg1.RepresentativeDataState=? ");
-        makeActiveSQL.append(" AND  pg1.SequenceId IS NOT NULL)) ");
+        makeActiveSQL.append(" AND  p1.SequenceId IS NOT NULL)) ");
         makeActiveSQL.add(container);
         makeActiveSQL.add(RepresentativeDataState.Representative.ordinal());
 
@@ -243,14 +249,14 @@ public class RepresentativeStateManager
         new SqlExecutor(TargetedMSManager.getSchema()).execute(makeActiveSQL);
 
         // Mark all other peptide groups as being in the conflicted state
-        SQLFragment makeConflictedSQL = new SQLFragment("UPDATE "+TargetedMSManager.getTableInfoPeptideGroup());
+        SQLFragment makeConflictedSQL = new SQLFragment("UPDATE " + TargetedMSManager.getTableInfoPeptideGroup());
         makeConflictedSQL.append(" SET RepresentativeDataState = ?");
         makeConflictedSQL.add(RepresentativeDataState.Conflicted.ordinal());
         makeConflictedSQL.append(" WHERE RunId=?");
         makeConflictedSQL.add(run.getId());
         if(peptideGroupIdsToExclude.size() > 0)
         {
-            makeConflictedSQL.append(" AND Id NOT IN (" + StringUtils.join(peptideGroupIdsToExclude, ',') + ")");
+            makeConflictedSQL.append(" AND Id NOT IN (").append(StringUtils.join(peptideGroupIdsToExclude, ',')).append(")");
         }
         makeConflictedSQL.append(" AND RepresentativeDataState != ?");
         makeConflictedSQL.add(RepresentativeDataState.Representative.ordinal());
@@ -262,7 +268,7 @@ public class RepresentativeStateManager
         // If this run has "standard" proteins, mark them as being representative.
         // Older versions of the proteins, from previous runs, will be marked as deprecated.
         List<Long> standardPeptideGroupIds = getAllStandardPeptideGroups(run);
-        if(standardPeptideGroupIds != null && standardPeptideGroupIds.size() > 0)
+        if(standardPeptideGroupIds.size() > 0)
         {
             updateStandardPeptideGroups(container, standardPeptideGroupIds);
         }
@@ -313,12 +319,14 @@ public class RepresentativeStateManager
         return getFilteredPeptideGroupIds(run, true, true);
     }
 
+    @NotNull
     private static List<Long> getAllStandardPeptideGroups(TargetedMSRun run)
     {
         // Get a list of peptide group ids that only have either decoy or standard peptides
         return getFilteredPeptideGroupIds(run, true, false);
     }
 
+    @NotNull
     private static List<Long> getFilteredPeptideGroupIds(TargetedMSRun run, boolean includeStandard, boolean includeDecoy)
     {
         // Get a list of peptide group ids that only have either decoy or standard peptides
@@ -339,8 +347,7 @@ public class RepresentativeStateManager
         sql.add(run.getId());
         if(includeDecoy)
         {
-            sql.append(" AND (pep.Decoy IS NULL OR pep.Decoy = " +
-                    TargetedMSManager.getSqlDialect().getBooleanFALSE() + ")");
+            sql.append(" AND (pep.Decoy IS NULL OR pep.Decoy = ").append(TargetedMSManager.getSqlDialect().getBooleanFALSE()).append(")");
         }
         if(includeStandard)
         {
@@ -423,7 +430,7 @@ public class RepresentativeStateManager
     private static void updatePrecursorRepresentativeState(String refCol, long refId)
     {
         SQLFragment updatePrecursorStateSQL = new SQLFragment();
-        updatePrecursorStateSQL.append("UPDATE "+TargetedMSManager.getTableInfoGeneralPrecursor());
+        updatePrecursorStateSQL.append("UPDATE ").append(String.valueOf(TargetedMSManager.getTableInfoGeneralPrecursor()));
         updatePrecursorStateSQL.append(" SET RepresentativeDataState = pg.RepresentativeDataState ");
         updatePrecursorStateSQL.append(" FROM ");
         updatePrecursorStateSQL.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
@@ -433,12 +440,12 @@ public class RepresentativeStateManager
         updatePrecursorStateSQL.append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm");
         updatePrecursorStateSQL.append(" WHERE pep.Id = gm.Id");
         updatePrecursorStateSQL.append(" AND pg.Id = gm.peptideGroupId");
-        updatePrecursorStateSQL.append(" AND pep.Id = "+TargetedMSManager.getTableInfoGeneralPrecursor()+".GeneralMoleculeId");
-        updatePrecursorStateSQL.append(" AND " + refCol + " = ?");
+        updatePrecursorStateSQL.append(" AND pep.Id = ").append(String.valueOf(TargetedMSManager.getTableInfoGeneralPrecursor())).append(".GeneralMoleculeId");
+        updatePrecursorStateSQL.append(" AND ").append(refCol).append(" = ?");
         // Ignore decoy peptides
         updatePrecursorStateSQL.append(" AND ( pep.Decoy IS NULL ");
         updatePrecursorStateSQL.append(" OR ");
-        updatePrecursorStateSQL.append( "pep.Decoy = " + TargetedMSManager.getSqlDialect().getBooleanFALSE());
+        updatePrecursorStateSQL.append("pep.Decoy = ").append(TargetedMSManager.getSqlDialect().getBooleanFALSE());
         updatePrecursorStateSQL.append(") ");
         updatePrecursorStateSQL.add(refId);
 
@@ -460,8 +467,8 @@ public class RepresentativeStateManager
         makeActiveSQL.append(TargetedMSManager.getTableInfoRuns(), "r");
         makeActiveSQL.append(" WHERE pg.RunId = ? ");
         makeActiveSQL.add(run.getId());
-        makeActiveSQL.append(" AND pre.Id = " + TargetedMSManager.getTableInfoGeneralPrecursor() + ".Id");
-        makeActiveSQL.append(" AND " + TargetedMSManager.getTableInfoGeneralPrecursor()+".GeneralMoleculeId = m.Id");
+        makeActiveSQL.append(" AND pre.Id = ").append(String.valueOf(TargetedMSManager.getTableInfoGeneralPrecursor())).append(".Id");
+        makeActiveSQL.append(" AND ").append(String.valueOf(TargetedMSManager.getTableInfoGeneralPrecursor())).append(".GeneralMoleculeId = m.Id");
         makeActiveSQL.append(" AND m.Id = gm.Id");
         makeActiveSQL.append(" AND gm.PeptideGroupId = pg.Id");
         // Ignore standard (e.g. iRT) peptides
@@ -500,12 +507,12 @@ public class RepresentativeStateManager
         makeConflictedSQL.append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm");
         makeConflictedSQL.append(" WHERE pg.RunId=?");
         makeConflictedSQL.add(run.getId());
-        makeConflictedSQL.append(" AND " + TargetedMSManager.getTableInfoGeneralPrecursor() + ".RepresentativeDataState != ?");
+        makeConflictedSQL.append(" AND ").append(String.valueOf(TargetedMSManager.getTableInfoGeneralPrecursor())).append(".RepresentativeDataState != ?");
         makeConflictedSQL.add(RepresentativeDataState.Representative.ordinal());
         makeConflictedSQL.append(moleculeFilterSQL);
         // Ignore standard (e.g. iRT) peptides
         makeConflictedSQL.append(" AND gm.StandardType IS NULL");
-        makeConflictedSQL.append(" AND "+TargetedMSManager.getTableInfoGeneralPrecursor()+".GeneralMoleculeId = m.Id");
+        makeConflictedSQL.append(" AND ").append(String.valueOf(TargetedMSManager.getTableInfoGeneralPrecursor())).append(".GeneralMoleculeId = m.Id");
         makeConflictedSQL.append(" AND m.Id = gm.Id");
         makeConflictedSQL.append(" AND gm.PeptideGroupId = pg.Id");
 
