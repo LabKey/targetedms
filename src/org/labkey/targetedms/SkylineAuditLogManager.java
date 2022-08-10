@@ -15,7 +15,6 @@
  */
 package org.labkey.targetedms;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
@@ -38,7 +37,7 @@ import org.labkey.api.security.User;
 import org.labkey.api.util.GUID;
 import org.labkey.api.util.JunitUtil;
 import org.labkey.api.util.TestContext;
-import org.labkey.api.view.ViewContext;
+import org.labkey.api.util.logging.LogHelper;
 import org.labkey.targetedms.parser.skyaudit.AuditLogEntry;
 import org.labkey.targetedms.parser.skyaudit.AuditLogException;
 import org.labkey.targetedms.parser.skyaudit.AuditLogMessageExpander;
@@ -69,7 +68,7 @@ import java.util.stream.Collectors;
 
 public class SkylineAuditLogManager
 {
-    private static final Logger _logger = LogManager.getLogger(SkylineAuditLogManager.class);
+    private static final Logger _logger = LogHelper.getLogger(SkylineAuditLogManager.class, "Persists Skyline audit logs in database");
     private final SkylineAuditLogSecurityManager _securityMgr;
 
     private static class AuditLogImportContext
@@ -213,11 +212,6 @@ public class SkylineAuditLogManager
                         "Error when parsing audit log file.",
                         SkylineAuditLogSecurityManager.INTEGRITY_LEVEL.ANY, e);
             }
-        }
-
-        if (!expander.areAllMessagesExpanded())
-        {
-            _logger.warn("At least one audit log expansion token failed to expand. This is expected for old Skyline documents, but not for newer ones");
         }
 
         for (AuditLogEntry ent : entries)
@@ -467,7 +461,6 @@ public class SkylineAuditLogManager
         private static final String FOLDER_NAME = "TargetedMSAuditLogImportFolder";
         private static final String FOLDER_NAME2 = "TargetedMSAuditLogImportFolder2";
         private static final GUID _docGUID = new GUID("50323e78-0e2b-4764-b979-9b71559bbf9f");
-        private static final Logger _logger = LogManager.getLogger(SkylineAuditLogManager.TestCase.class);
         private static User _user;
         private static Container _container;
         private static Container _container2;
@@ -640,11 +633,8 @@ public class SkylineAuditLogManager
         public void testEntryRetrieval() throws AuditLogException
         {
             AuditLogTree node = new SkylineAuditLogManager(_container, null).buildLogTree(_docGUID);
-            ViewContext vc = new ViewContext();
-            vc.setContainer(_container);
-            vc.setUser(_user);
             while(node.iterator().hasNext()){
-                AuditLogEntry ent = AuditLogEntry.retrieve(node.getEntryId(), vc);
+                AuditLogEntry ent = AuditLogEntry.retrieve(node.getEntryId());
                 node = node.iterator().next();
             }
         }

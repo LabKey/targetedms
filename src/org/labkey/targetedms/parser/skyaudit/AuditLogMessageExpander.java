@@ -37,33 +37,26 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /***
  * Class to handle expansion of the messages in case they do not have pre-expanded english text
  */
 public class AuditLogMessageExpander
 {
-    private Map<String, Map<String, String>> _resources;
-    private List<UnaryOperator<String>> _parserFunctions;
-    private List<Predicate<String>> _checkerFunctions;
-    private Logger _logger;
-    private AuditLogResourceLoader _loader;
-    private static final Pattern _formatMatch = Pattern.compile("\\{(([0-9]+):([a-zA-Z0-9_]+))\\}");
-    private static final  Pattern _cSharpFormatMatch = Pattern.compile("\\{([0-9]+)\\}");
-    private boolean _allMessagesExpanded = true;
-
+    private final Map<String, Map<String, String>> _resources;
+    private final List<UnaryOperator<String>> _parserFunctions;
+    private final List<Predicate<String>> _checkerFunctions;
+    private final AuditLogResourceLoader _loader;
+    private static final Pattern _formatMatch = Pattern.compile("\\{(([0-9]+):([a-zA-Z0-9_]+))}");
 
     public AuditLogMessageExpander(Logger pLogger){
-        _logger = pLogger;
-        _loader = new AuditLogResourceLoader(_logger);
+        _loader = new AuditLogResourceLoader(pLogger);
         _resources = _loader.loadResources();
 
         _parserFunctions = new ArrayList<>() {
             {
                 add((s) -> getResource(AuditLogResourceLoader.PROPERTIES, s));
                 add((s) -> getResource(AuditLogResourceLoader.PROPERTY_ELEMENTS, s));
-                add((s) -> getResource(AuditLogResourceLoader.LOG_STRINGS, s));
                 add((s) -> parsePrimitive(s));
                 add((s) -> s);      //Parse path
                 add((s) -> getResource(AuditLogResourceLoader.COLUMN_CAPTIONS, s));
@@ -75,7 +68,6 @@ public class AuditLogMessageExpander
             {
                 add((s) -> _resources.get(AuditLogResourceLoader.PROPERTIES).containsKey(s));
                 add((s) -> _resources.get(AuditLogResourceLoader.PROPERTY_ELEMENTS).containsKey(s));
-                add((s) -> _resources.get(AuditLogResourceLoader.LOG_STRINGS).containsKey(s));
                 add((s) -> true);
                 add((s) -> true);      //Parse path
                 add((s) -> _resources.get(AuditLogResourceLoader.COLUMN_CAPTIONS).containsKey(s));
@@ -86,13 +78,7 @@ public class AuditLogMessageExpander
 
     private String getResource(String pResourceName, String pElementName){
         Map<String, String> resource = _resources.get(pResourceName);
-        if(resource.containsKey(pElementName))
-            return resource.get(pElementName);
-        else
-        {
-            _allMessagesExpanded = false;
-            return pElementName;
-        }
+        return resource.getOrDefault(pElementName, pElementName);
     }
 
     private String parsePrimitive(String str) {
@@ -111,46 +97,11 @@ public class AuditLogMessageExpander
             return false;
         return null;
     }
-    private static Integer tryParseInt(String str) {
-        try {
-            return Integer.parseInt(str);
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
-
     private static String Quote(String str) {
         if (str == null)
             return null;
 
         return String.format("\"%s\"", str);
-    }
-
-    /**
-     * Converting C# string format specifications into Java ones
-     * @param s     a string containing format specifications
-     * @return      string with equivalent java formats.
-     */
-    private String cSharpToJavaFormatString(String s) {
-
-        if (s == null || s.isEmpty())
-            return s;
-
-        Matcher match = _cSharpFormatMatch.matcher(s);
-        StringBuilder resultBuilder = new StringBuilder();
-        boolean hasMatches = false;
-        int lastPos = 0;
-        while(match.find()){
-            resultBuilder.append(s, lastPos, match.start());
-            // Issue 42281: C# is zero-based, Java is one-based
-            resultBuilder.append( String.format("%%%s$s", Integer.parseInt(match.group(1)) + 1));
-            lastPos = match.end();
-            hasMatches = true;
-        }
-        if(hasMatches)
-            return resultBuilder.toString();
-        else
-            return s;
     }
 
     public boolean needsExpansion(String str){
@@ -174,7 +125,7 @@ public class AuditLogMessageExpander
         Matcher match = _formatMatch.matcher(str);
         while(match.find())
         {
-            resultBuilder.append(str.substring(lastPos, match.start()));
+            resultBuilder.append(str, lastPos, match.start());
             //verify that function index is correct and property is in the file
             int functionIndex = Integer.parseInt(match.group(2));
             if (functionIndex <= 6 && _checkerFunctions.get(functionIndex).test(match.group(3)))
@@ -186,7 +137,6 @@ public class AuditLogMessageExpander
             }
             else
             {
-                _allMessagesExpanded = false;
                 resultBuilder.append(match.group(0));
             }
             lastPos = match.end();
@@ -197,38 +147,9 @@ public class AuditLogMessageExpander
         return resultBuilder.toString();
     }
 
-    public AuditLogMessage expandMessage(AuditLogMessage msg){
-
-        Object[] parsedNames = msg
-                .getNames()
-                .stream()
-                .map(n -> expandLogString(n))
-                .collect(Collectors.toList()).toArray();
-
-        if(_resources.containsKey(AuditLogResourceLoader.LOG_STRINGS))
-        {
-            Map<String, String> resource = _resources.get(AuditLogResourceLoader.LOG_STRINGS);
-            if (resource.containsKey(msg.getMessageType()))
-            {
-                if(resource.containsKey(msg.getMessageType())){
-                    String cSharpFmt = resource.get(msg.getMessageType());
-                    String format = cSharpToJavaFormatString(cSharpFmt);
-                    msg.setExpandedText(String.format(format, parsedNames));
-                }
-                else
-                    _allMessagesExpanded = false;
-            }
-        }
-        else
-            _allMessagesExpanded = false;
-
-        return msg;
-    }
-
     public boolean areResourcesReady() {return _loader.areResourcesReady();}
-    public boolean areAllMessagesExpanded() {return _allMessagesExpanded;}
 
-    public class AuditLogResourceLoader
+    public static class AuditLogResourceLoader
     {
 
         private static final String DATA = "data";
@@ -238,12 +159,11 @@ public class AuditLogMessageExpander
 
         public static final String PROPERTIES = "PropertyNames";
         public static final String PROPERTY_ELEMENTS = "PropertyElementNames";
-        public static final String LOG_STRINGS = "AuditLogStrings";
         public static final String COLUMN_CAPTIONS = "ColumnCaptions";
         public static final String ENUMS = "EnumNames";
 
         public String[] RESOURCE_NAMES = new String[]{ "PropertyNames", "PropertyElementNames", "AuditLogStrings", "ColumnCaptions", "EnumNames" };
-        private Logger _logger;
+        private final Logger _logger;
         private boolean _resourcesReady = true;
 
 
@@ -299,8 +219,6 @@ public class AuditLogMessageExpander
          * Parses the resource XML file
          * @param pFile XML file to parse
          * @return key-value map of the resources in the file
-         * @throws IOException
-         * @throws XMLStreamException
          */
         private Map<String, String> parseResource(File pFile)  throws IOException, XMLStreamException
         {

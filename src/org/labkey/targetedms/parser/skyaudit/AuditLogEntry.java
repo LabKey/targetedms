@@ -21,9 +21,7 @@ import org.labkey.api.data.TableSelector;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.security.User;
 import org.labkey.api.util.GUID;
-import org.labkey.api.view.ViewContext;
 import org.labkey.targetedms.TargetedMSManager;
-import org.labkey.targetedms.TargetedMSSchema;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -72,9 +70,8 @@ public class AuditLogEntry
         _documentFormatVersion = documentFormatVersion;
     }
 
-    public static AuditLogEntry retrieve(int pEntryId, ViewContext viewContext)
+    public static AuditLogEntry retrieve(int pEntryId)
     {
-        TargetedMSSchema schema = new TargetedMSSchema(viewContext.getUser(), viewContext.getContainer());
         TableSelector sel = new TableSelector(TargetedMSManager.getTableInfoSkylineAuditLog(), new SimpleFilter(FieldKey.fromParts("EntryId"), pEntryId), null);
         List<AuditLogEntry> results = sel.getArrayList(AuditLogEntry.class);
         // Possible to get more than one match if two documents share an audit history. In this case, we don't care
@@ -344,8 +341,6 @@ public class AuditLogEntry
     public AuditLogEntry expandEntry(AuditLogMessageExpander pExpander){
         if(_extraInfo != null)
             setExtraInfo(pExpander.expandLogString(_extraInfo));
-        for(AuditLogMessage msg : _allInfoMessage)
-            pExpander.expandMessage(msg);
 
         return this;
     }
