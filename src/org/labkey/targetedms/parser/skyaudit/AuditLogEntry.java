@@ -286,9 +286,7 @@ public class AuditLogEntry
      * Checks if the entry hash can be calculated.
      * @return true if all messages of this entry have expanded English text
      */
-    public boolean canBeHashed(AuditLogMessageExpander pExpander){
-        if(pExpander.needsExpansion(_extraInfo))
-            return false;
+    public boolean canBeHashed(){
         for(AuditLogMessage msg : _allInfoMessage){
             if(msg.getEnText() == null)
                 return false;
@@ -329,18 +327,6 @@ public class AuditLogEntry
         runAuditLogMap.put("VersionId", getVersionId());
         runAuditLogMap.put("AuditLogEntryId", getEntryId());
         Table.insert(user, TargetedMSManager.getTableInfoSkylineRunAuditLogEntry(), runAuditLogMap);
-
-        return this;
-    }
-
-    /***
-     * Expands tokenized log messages in the entry into readable English text using local resource files.
-     * @param pExpander an instance of AuditLogMessageExpander class to perform the expansion.
-     * @return this object.
-     */
-    public AuditLogEntry expandEntry(AuditLogMessageExpander pExpander){
-        if(_extraInfo != null)
-            setExtraInfo(pExpander.expandLogString(_extraInfo));
 
         return this;
     }

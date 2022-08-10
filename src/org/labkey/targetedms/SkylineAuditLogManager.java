@@ -40,7 +40,6 @@ import org.labkey.api.util.TestContext;
 import org.labkey.api.util.logging.LogHelper;
 import org.labkey.targetedms.parser.skyaudit.AuditLogEntry;
 import org.labkey.targetedms.parser.skyaudit.AuditLogException;
-import org.labkey.targetedms.parser.skyaudit.AuditLogMessageExpander;
 import org.labkey.targetedms.parser.skyaudit.AuditLogParsingException;
 import org.labkey.targetedms.parser.skyaudit.AuditLogTree;
 import org.labkey.targetedms.parser.skyaudit.SkylineAuditLogParser;
@@ -184,7 +183,6 @@ public class SkylineAuditLogManager
      */
     private int persistAuditLog(User user, AuditLogImportContext pContext, SkylineAuditLogParser parser) throws AuditLogException
     {
-        AuditLogMessageExpander expander = new AuditLogMessageExpander(_logger);
         //since entries in the log file are in reverse chronological order we have to
         //read them in the list and then reverse it before the tree processing
         List<AuditLogEntry> entries = new LinkedList<>();
@@ -196,7 +194,6 @@ public class SkylineAuditLogManager
             try
             {
                 AuditLogEntry ent = parser.parseLogEntry();
-                ent.expandEntry(expander);
                 ent.setDocumentGUID(pContext._documentGUID);
                 pContext._rootHash.update(ent.getEntryHash().getBytes(StandardCharsets.UTF_8));
                 // Insert at the beginning of the list so we can quickly iterate in reverse order for validation

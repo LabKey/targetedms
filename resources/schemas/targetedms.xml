@@ -1619,7 +1619,6 @@
             <column columnName="EnText">
                 <columnTitle>Log Message</columnTitle>
             </column>
-            <column columnName="ExpandedText"/>
             <column columnName="Reason"/>
         </columns>
     </table>
