@@ -23,6 +23,7 @@ import org.labkey.api.util.logging.LogHelper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,7 +34,8 @@ public class AuditLogTree implements Iterable<AuditLogTree>
 
     private static final Logger LOG = LogHelper.getLogger(AuditLogTree.class, "Skyline audit log validation");
 
-    private final Map<String, AuditLogTree> _children = new HashMap<>();
+    // Issue 46081 - use a linked hash map for deterministic ordering and resolution
+    private final Map<String, AuditLogTree> _children = new LinkedHashMap<>();
     private final String _entryHash;
     private final GUID _documentGUID;
     private final String _parentEntryHash;
@@ -93,18 +95,9 @@ public class AuditLogTree implements Iterable<AuditLogTree>
         return pChild;
     }
 
-    public boolean hasChild(String pEntryHash, Long versionId)
-    {
-        return _children.containsKey(getMapId(pEntryHash, versionId));
-    }
-
     public boolean hasChildEntry(String pEntryHash)
     {
         return _children.keySet().stream().anyMatch(c -> c.startsWith(pEntryHash));
-    }
-
-    public AuditLogTree getChild(String pEntryHash, Long versionId) {
-        return _children.get(getMapId(pEntryHash, versionId));
     }
 
     public AuditLogTree getChildEntry(String pEntryHash) {
