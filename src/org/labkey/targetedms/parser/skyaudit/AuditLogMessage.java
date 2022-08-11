@@ -27,7 +27,6 @@ public class AuditLogMessage
     protected String _tag;
     protected String _messageType;
     protected String _enText;
-    protected String _expandedText;
     protected String _reason;
 
     protected List<String> _names;
@@ -93,16 +92,6 @@ public class AuditLogMessage
         _enText = enText;
     }
 
-    public String getExpandedText()
-    {
-        return _expandedText;
-    }
-
-    public void setExpandedText(String exText)
-    {
-        _expandedText = exText;
-    }
-
     public String getReason()
     {
         return _reason;
@@ -113,8 +102,6 @@ public class AuditLogMessage
     public byte[] getHashBytes(Charset cs){
         if(_enText != null)
             return _enText.getBytes(cs);
-        else if(_expandedText != null)
-            return _expandedText.getBytes(cs);
         else
             return _messageType.getBytes(cs);
     }
@@ -128,7 +115,6 @@ public class AuditLogMessage
                 ", _tag='" + _tag + '\'' +
                 ", _messageType='" + _messageType + '\'' +
                 ", _enText='" + _enText + '\'' +
-                ", _expandedText='" + _expandedText + '\'' +
                 ", _reason='" + _reason + '\'' +
                 ", _names=" + _names +
                 '}';

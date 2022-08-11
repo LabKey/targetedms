@@ -4450,7 +4450,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(SkylineAuditLogExtraInfoForm form, BindException errors)
         {
-            AuditLogEntry ent = AuditLogEntry.retrieve(form.getEntryId(), getViewContext());
+            AuditLogEntry ent = AuditLogEntry.retrieve(form.getEntryId());
             getPageConfig().setTemplate(PageConfig.Template.None);
             return new JspView<>("/org/labkey/targetedms/view/skylineAuditLogExtraInfoView.jsp", ent);
         }
