@@ -414,45 +414,6 @@ public class SkylineAuditLogManager
         }
     }
 
-    /**
-     * Deletes all log entries for this document based on the documentGUID.
-     * This assumes that all versions of the document are being deleted.
-     * @param pRunId of one of the versions of the document to be deleted
-     */
-    public void deleteDocumentLog(int pRunId)
-    {
-        SQLFragment sqlGetGuid = new SQLFragment("SELECT documentGUID FROM targetedms.Runs WHERE Id = ?");
-        sqlGetGuid.add(pRunId);
-
-        String res = new SqlSelector(TargetedMSManager.getSchema(), sqlGetGuid).getObject(String.class);
-        if(res != null)
-        {
-            deleteDocumentLog(new GUID(res));
-        }
-    }
-
-    public void deleteDocumentLog(@NotNull GUID pDocumentGUID)
-    {
-        SQLFragment sqlDeleteMessages = new SQLFragment("DELETE FROM ").append(TargetedMSManager.getTableInfoSkylineAuditLogMessage(), "m");
-        sqlDeleteMessages.append(" WHERE entryId IN (SELECT entryId FROM ").append(TargetedMSManager.getTableInfoSkylineAuditLogEntry(), "a");
-        sqlDeleteMessages.append(" WHERE documentGUID = ?)");
-        sqlDeleteMessages.add(pDocumentGUID.toString());
-
-        SQLFragment sqlDeleteRunEntries = new SQLFragment("DELETE FROM ").append(TargetedMSManager.getTableInfoSkylineRunAuditLogEntry(), "r");
-        sqlDeleteRunEntries.append("WHERE AuditLogEntryId IN (SELECT entryId AS AuditLogEntryId FROM ").append(TargetedMSManager.getTableInfoSkylineAuditLogEntry(), "a");
-        sqlDeleteRunEntries.append(" WHERE documentGUID = ?)");
-
-        SQLFragment sqlDeleteEntries = new SQLFragment("DELETE FROM ").append(TargetedMSManager.getTableInfoSkylineAuditLogEntry(), "a");
-        sqlDeleteEntries.append(" WHERE documentGUID = ?");
-        sqlDeleteEntries.add(pDocumentGUID.toString());
-
-        SqlExecutor exec = new SqlExecutor(TargetedMSSchema.getSchema());
-
-        exec.execute(sqlDeleteMessages);
-        exec.execute(sqlDeleteRunEntries);
-        exec.execute(sqlDeleteEntries);
-    }
-
     public static class TestCase extends Assert
     {
         private static final String FOLDER_NAME = "TargetedMSAuditLogImportFolder";
@@ -473,14 +434,9 @@ public class SkylineAuditLogManager
 
         private AuditLogTree persistALogFile(String filePath, TargetedMSRun run) throws IOException, AuditLogException
         {
-            return persistALogFile(filePath, run, _container);
-        }
-
-        private AuditLogTree persistALogFile(String filePath, TargetedMSRun run, Container container) throws IOException, AuditLogException
-        {
             File fZip = UnitTestUtil.getSampleDataFile(filePath);
             File logFile = UnitTestUtil.extractLogFromZip(fZip, _logger);
-            SkylineAuditLogManager importer = new SkylineAuditLogManager(container, null);
+            SkylineAuditLogManager importer = new SkylineAuditLogManager(run.getContainer(), null);
 
             importer.importAuditLogFile(_user, logFile, _docGUID, run);
             return importer.buildLogTree(_docGUID);
@@ -553,6 +509,24 @@ public class SkylineAuditLogManager
         }
 
         @Test
+        public void testRepeatedOverlappingImports() throws AuditLogException, IOException
+        {
+            // Coverage for issue 46081: uix_auditlogentry_document constraint violation importing overlapping Skyline audit logs
+
+            // For reasons that I (jeckels) do not fully understand, the failure with this test isn't fully
+            // deterministic, but in my testing 20 attempts is always more than sufficient to repro the failure.
+            for (int i = 0; i < 20; i++)
+            {
+                TargetedMSRun runA = getNewRun(_docGUID);
+                persistALogFile("AuditLogFiles/MethodEdit_v1.zip", runA);
+                TargetedMSRun runB = getNewRun(_docGUID);
+                persistALogFile("AuditLogFiles/MethodEdit_v5.1.zip", runB);
+                TargetedMSRun runC = getNewRun(_docGUID);
+                persistALogFile("AuditLogFiles/MethodEdit_v2.zip", runC);
+            }
+        }
+
+        @Test
         public void auditTreeDeleteTest() throws IOException, AuditLogException
         {
             AuditLogTree tree;
@@ -562,10 +536,10 @@ public class SkylineAuditLogManager
             TargetedMSRun run3 = getNewRun(_docGUID, _container);
             TargetedMSRun run4 = getNewRun(_docGUID, _container2);
 
-            persistALogFile("AuditLogFiles/MethodEdit_v1.zip", run1, _container);
-            persistALogFile("AuditLogFiles/MethodEdit_v2.zip", run2, _container);
-            persistALogFile("AuditLogFiles/MethodEdit_v3.zip", run3, _container);
-            tree = persistALogFile("AuditLogFiles/MethodEdit_v1.zip", run4, _container2);
+            persistALogFile("AuditLogFiles/MethodEdit_v1.zip", run1);
+            persistALogFile("AuditLogFiles/MethodEdit_v2.zip", run2);
+            persistALogFile("AuditLogFiles/MethodEdit_v3.zip", run3);
+            tree = persistALogFile("AuditLogFiles/MethodEdit_v1.zip", run4);
 
             assertNotNull(tree);
             assertEquals(8, tree.getTreeSize());
@@ -632,6 +606,7 @@ public class SkylineAuditLogManager
             AuditLogTree node = new SkylineAuditLogManager(_container, null).buildLogTree(_docGUID);
             while(node.iterator().hasNext()){
                 AuditLogEntry ent = AuditLogEntry.retrieve(node.getEntryId());
+                assertNotNull(ent);
                 node = node.iterator().next();
             }
         }
