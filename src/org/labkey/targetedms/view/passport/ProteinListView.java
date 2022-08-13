@@ -56,15 +56,14 @@ public class ProteinListView extends QueryView
         super.setupDataView(ret);
         ActionURL url = new ActionURL(PassportController.ProteinAction.class, getContainer());
         url.addParameter("proteinId", "${proteinId}");
-        SimpleDisplayColumn urlColumn = new UrlColumn(url.toString(), "PASSPORT VIEW");
+        SimpleDisplayColumn urlColumn = new UrlColumn(url, "PASSPORT VIEW");
         ret.getDataRegion().addDisplayColumn(0, urlColumn);
 
         ActionURL urlDownload = new ActionURL(TargetedMSController.DownloadDocumentAction.class, getContainer());
         urlDownload.addParameter("id", "${runid}");
-        SimpleDisplayColumn urlColumnDownload = new UrlColumn(urlDownload.toString(), "Download");
+        SimpleDisplayColumn urlColumnDownload = new UrlColumn(urlDownload, "Download");
         urlColumnDownload.setName("Skyline"); // TODO check if works
         ret.getDataRegion().addDisplayColumn(10, urlColumnDownload);
         ret.getDataRegion().removeColumns("runid");
     }
-
 }
