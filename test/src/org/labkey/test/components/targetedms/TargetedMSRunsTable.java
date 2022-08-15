@@ -64,13 +64,13 @@ public class TargetedMSRunsTable extends DataRegionTable
 
     public void deleteRun(String documentName)
     {
-        uncheckAll();
+        uncheckAllOnPage();
         final int rowIndex = getRowIndex("File", documentName);
         if (rowIndex < 0)
             fail("Unable to find checkbox for non-existent file: " + documentName);
         checkCheckbox(rowIndex);
-        clickHeaderButtonByText("Delete");
-        getWrapper().clickButton("Confirm Delete");
+        clickHeaderButton("Delete");
+        getWrapper().clickButton("Yes, Delete");
     }
 
     public ClustergrammerDialog openClustergrammerDialog(List<String> documents)
@@ -81,7 +81,7 @@ public class TargetedMSRunsTable extends DataRegionTable
 
     public void openDialogForDocuments(String buttonText, List<String> documentNames)
     {
-        uncheckAll();
+        uncheckAllOnPage();
         for (String documentName : documentNames)
         {
             final int rowIndex = getRowIndex("File", documentName);
@@ -90,7 +90,7 @@ public class TargetedMSRunsTable extends DataRegionTable
             checkCheckbox(rowIndex);
         }
 
-        clickHeaderButtonByText(buttonText);
+        clickHeaderButton(buttonText);
     }
 
     public void showAllVersions()

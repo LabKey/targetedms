@@ -84,8 +84,8 @@ public class TargetedMSLinkVersionsTest extends TargetedMSTest
 
         if (hasRunsToDelete)
         {
-            table.clickHeaderButtonByText("Delete");
-            clickButton("Confirm Delete");
+            table.clickHeaderButton("Delete");
+            clickButton("Yes, Delete");
         }
     }
 
