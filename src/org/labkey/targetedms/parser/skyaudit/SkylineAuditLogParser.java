@@ -20,7 +20,6 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.labkey.api.module.Module;
 import org.labkey.api.module.ModuleLoader;
@@ -43,7 +42,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -331,7 +329,6 @@ public class SkylineAuditLogParser implements AutoCloseable
             _parser = new SkylineAuditLogParser(_logFile, _logger);
             Assert.assertNotNull(_parser.getEnRootHash());
 
-            AuditLogMessageExpander expander = new AuditLogMessageExpander(_logger);
             AuditLogEntry prevEntry = null;
 
             while(_parser.hasNextEntry())
@@ -340,28 +337,24 @@ public class SkylineAuditLogParser implements AutoCloseable
                 ent.setDocumentGUID(_docGUID);
                 if(prevEntry != null)
                     ent.setParentEntryHash(prevEntry.getEntryHash());
-                entries.add(ent.expandEntry(expander));
+                entries.add(ent);
                 _logger.debug(ent.toString());
                 //all messages in this file should have expanded text
                 //ent.persist();
 
                 for(AuditLogMessage msg : ent.getAllInfoMessage())
                 {
-                    Assert.assertNotNull(msg.getExpandedText());
                     Assert.assertNotNull(msg.getEnText());
-                    Assert.assertNotEquals("", msg.getExpandedText());
                 }
                 prevEntry = ent;
             }
 
-            Assert.assertTrue(expander.areAllMessagesExpanded());
-            Assert.assertTrue(expander.areResourcesReady());
             Assert.assertNotNull(entries.get(2).getExtraInfo());
             Assert.assertNull(entries.get(1).getExtraInfo());
 
             Assert.assertEquals(11, entries.size());
             Assert.assertEquals(6, entries.get(5).getAllInfoMessage().size());
-            Assert.assertTrue(entries.get(0).canBeHashed(expander));
+            Assert.assertTrue(entries.get(0).canBeHashed());
         }
 
         @Test
@@ -378,26 +371,6 @@ public class SkylineAuditLogParser implements AutoCloseable
             }
         }
 
-        //TODO: test invalid expansion: missing resource file or missing token in a file.
-        @Test
-        public void testMissingResourceName() throws XMLStreamException, AuditLogException, AuditLogParsingException, IOException
-        {
-            _logFile = UnitTestUtil.getSampleDataFile("AuditLogFiles/InvalidResourceTest.skyl");
-            _parser = new SkylineAuditLogParser(_logFile, _logger);
-
-            AuditLogMessageExpander expander = new AuditLogMessageExpander(_logger);
-            List<AuditLogEntry> entries = new LinkedList<>();
-
-            while(_parser.hasNextEntry())
-            {
-                AuditLogEntry ent = _parser.parseLogEntry();
-                entries.add(ent.expandEntry(expander));
-                _logger.debug(ent.toString());
-            }
-
-            Assert.assertTrue(expander.areResourcesReady());
-            Assert.assertFalse(expander.areAllMessagesExpanded());
-        }
         //TODO: Validate against different files.
     }
 

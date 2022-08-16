@@ -28,8 +28,8 @@ import org.labkey.api.data.Results;
 import org.labkey.api.data.UpdateColumn;
 import org.labkey.api.query.FilteredTable;
 import org.labkey.api.util.PageFlowUtil;
+import org.labkey.api.util.StringUtilsLabKey;
 import org.labkey.api.util.URLHelper;
-import org.labkey.api.view.DisplayElement;
 import org.labkey.api.view.NavTree;
 import org.labkey.api.view.ViewContext;
 import org.labkey.targetedms.query.ChromatogramGridQuerySettings;
@@ -66,19 +66,22 @@ public class ChromatogramsDataRegion extends DataRegion
     private String _legendElementId;
     private final boolean _canBeSplit;
 
+    private final boolean _replicateChromatogramsGrouped;
+
     public ChromatogramsDataRegion(ViewContext context, FilteredTable<?> tableInfo, String name, boolean splitGraph, boolean canBeSplit)
     {
-        this(context, tableInfo, name, splitGraph, canBeSplit, "Id");
+        this(context, tableInfo, name, splitGraph, canBeSplit, "Id", false);
     }
 
-    public ChromatogramsDataRegion(ViewContext context, FilteredTable<?> tableInfo, String name, boolean splitGraph, boolean canBeSplit, String columns)
+    public ChromatogramsDataRegion(ViewContext context, FilteredTable<?> tableInfo, String name, boolean splitGraph, boolean canBeSplit, String columns, boolean replicateChromatogramsGrouped)
     {
         setTable(tableInfo);
         addColumns(tableInfo, columns);
         _splitGraph = splitGraph;
         _canBeSplit = canBeSplit;
+        _replicateChromatogramsGrouped = replicateChromatogramsGrouped;
 
-        ChromatogramGridQuerySettings settings = new ChromatogramGridQuerySettings(context, name);
+        ChromatogramGridQuerySettings settings = new ChromatogramGridQuerySettings(context, name, _replicateChromatogramsGrouped);
         setSettings(settings);
 
         populateButtonBar();
@@ -240,7 +243,11 @@ public class ChromatogramsDataRegion extends DataRegion
             url.replaceParameter("maxRowSize", rowSize);
 
             boolean checked = rowSize == maxRowSize;
-            NavTree item = pageSizeMenu.addMenuItem(rowSize + " per row", url, null, checked);
+            // When all the chromatograms (total precursor ion + fragment ion) from a replicate are displayed together, the row size is
+            // the number of replicates for which chromatograms are being displayed in a row, rather than the number of plots in a row.
+            // Clarify this in the caption.
+            String menuItemCaption = (_replicateChromatogramsGrouped ? StringUtilsLabKey.pluralize(rowSize, "replicate") : rowSize.toString()) + " per row";
+            NavTree item = pageSizeMenu.addMenuItem(menuItemCaption, url, null, checked);
             item.setId("Row Size:" + rowSize);
         }
 

@@ -86,11 +86,18 @@ public class TargetedMSMultiplePeptidePlotTest extends TargetedMSTest
 
         log("Verifying the chromatogram plots for peptides");
         clickAndWait(Locator.linkWithText("VYVEELKPTPEGDLEILLQK"));
-        int expectedGraphCount = 20;
         table = new DataRegionTable("PeptidePrecursorChromatograms", getDriver());
+        // There are 47 replicates. In the default view we expect a row for each of the first 10 replicates
+        checker().verifyEquals("Expected one row each for the first 10 replicates", 10, table.getDataRowCount());
+        // Each row should have two chromatogram charts from a replicate - the total precursor chromatogram and the fragment ion chromatogram for the precursor
+        int expectedGraphCount = 20;
         waitForElementToDisappear(Locator.tagWithAttributeContaining("div", "alt", "Chromatogram Q_Exactive")
                 .withText("Loading..."), WebDriverWrapper.WAIT_FOR_PAGE);
         List<WebElement> svgs = Locator.tag("svg").findElements(table);
         checker().withScreenshot("SVGCount").verifyEquals("Incorrect SVG graphs", expectedGraphCount, svgs.size());
+        // Change the row size to 2 replicates per row
+        table.clickHeaderMenu("Row Size", "2 replicates per row");
+        // Each row will have chromatograms from two replicates. We expect 5 rows since we are displaying the first 10 replicates.
+        checker().verifyEquals("Incorrect row count after changing row size to 2 replicates per row", 5, table.getDataRowCount());
     }
 }
