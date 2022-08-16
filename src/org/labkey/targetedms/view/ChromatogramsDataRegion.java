@@ -163,14 +163,12 @@ public class ChromatogramsDataRegion extends DataRegion
                     if (rowClass != null)
                         out.write(" class=\"" + rowClass + "\"");
                     out.write(">");
-                    out.write("<td><table cellpadding=\"0\" cellspacing=\"0\"><tr>");
                 }
                 ctx.setRow(factory.getRowMap(rs));
                 renderTableRow(ctx, out, showRecordSelectors, renderers, rowIndex++);
                 count++;
                 if (count == maxRowSize)
                 {
-                    out.write("</tr></table></td>");
                     out.write("</tr>\n");
                     count = 0;
                 }
@@ -184,7 +182,6 @@ public class ChromatogramsDataRegion extends DataRegion
                 out.write("<td style=\"border:0;\"></td>");
                 count++;
             }
-            out.write("</tr></table>");
             out.write("</tr>\n");
         }
 
