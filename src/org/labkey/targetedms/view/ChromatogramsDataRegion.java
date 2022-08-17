@@ -140,6 +140,12 @@ public class ChromatogramsDataRegion extends DataRegion
     }
 
     @Override
+    protected void renderGridHeaderColumns(RenderContext ctx, Writer out, boolean showRecordSelectors, List<DisplayColumn> renderers)
+    {
+        // No need to render the headers for this specialized grid - they just take space
+    }
+
+    @Override
     protected int renderTableContents(RenderContext ctx, Writer out, boolean showRecordSelectors, List<DisplayColumn> renderers) throws SQLException, IOException
     {
         int rowIndex = 0;
