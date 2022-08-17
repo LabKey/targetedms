@@ -289,7 +289,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         waitForElements(Locator.xpath("//table[contains(@lk-region-name, 'PeptidePrecursorChromatograms')]//div[contains(@alt, 'Chromatogram silac_1_to_4')]"), 3);
 
         //Click on a precursor icon link.
-        clickAndWait(Locator.linkWithHref("precursorAllChromatogramsChart.view?"));
+        clickAndWait(Locator.linkWithHref("precursorAllChromatogramsChart.view"));
         //Verify expected values in detail view. Verify chromatogram.
         assertTextPresentInThisOrder("Precursor Chromatograms: LTSLNVVAGSDLR", "YAL038W", "672.8777");
         assertElementPresent(Locator.xpath("//table[contains(@lk-region-name, 'PrecursorChromatograms')]"));
