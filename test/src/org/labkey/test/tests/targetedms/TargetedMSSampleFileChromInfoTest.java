@@ -73,7 +73,7 @@ public class TargetedMSSampleFileChromInfoTest extends TargetedMSTest
 
 
 
-        Connection cn = createDefaultConnection(false);
+        Connection cn = createDefaultConnection();
         SelectRowsCommand cmd = new SelectRowsCommand("targetedms", "samplefilechrominfo");
         cmd.setRequiredVersion(9.1);
         cmd.setColumns(Arrays.asList("SampleFileId", "StartTime", "EndTime", "TextId", "NumPoints", "UncompressedSize", "ChromatogramFormat", "ChromatogramOffset", "ChromatogramLength", "SampleFileId/ReplicateId"));

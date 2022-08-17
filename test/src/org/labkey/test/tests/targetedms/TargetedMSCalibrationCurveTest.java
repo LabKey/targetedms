@@ -268,7 +268,7 @@ public class TargetedMSCalibrationCurveTest extends AbstractQuantificationTest
 
     private void setSampleFileReplicate(long sampleFileId, long replicateId) throws IOException, CommandException
     {
-        Connection connection = createDefaultConnection(true);
+        Connection connection = createDefaultConnection();
         List<Map<String, Object>> sampleFileRows = Arrays.asList(
                 Maps.of("id", sampleFileId,
                         "replicateId", replicateId

@@ -92,7 +92,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
     @LogMethod
     protected void verifyAttributeGroupIdCalcs() throws IOException, CommandException
     {
-        Connection cn = createDefaultConnection(false);
+        Connection cn = createDefaultConnection();
         // Query for small molecule data
         SelectRowsCommand smallMoleculeCommand = new SelectRowsCommand("targetedms", "generalmoleculechrominfo");
         smallMoleculeCommand.setRequiredVersion(9.1);
@@ -132,7 +132,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         cmd.setRequiredVersion(9.1);
         cmd.setColumns(Arrays.asList("ReplicateId/Name", "FilePath", "AcquiredTime", "InstrumentId", "InstrumentSerialNumber", "SampleId"));
         cmd.addFilter("InstrumentSerialNumber", "6147F", Filter.Operator.EQUAL);
-        SelectRowsResponse response = cmd.execute(createDefaultConnection(false), getCurrentContainerPath());
+        SelectRowsResponse response = cmd.execute(createDefaultConnection(), getCurrentContainerPath());
 
         assertEquals("Matching row count", 1, response.getRowset().getSize());
         assertEquals("Matching FilePath", "E:\\skydata\\20110215_MikeB\\S_1.RAW?centroid_ms1=true", response.getRowset().iterator().next().getValue("FilePath"));
@@ -651,7 +651,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
     @NotNull
     private Rowset getPeptideAreaRatiosResults(String documentName) throws IOException, CommandException
     {
-        Connection conn = createDefaultConnection(false);
+        Connection conn = createDefaultConnection();
         SelectRowsCommand cmd = new SelectRowsCommand("targetedms", "peptidearearatio");
         cmd.setRequiredVersion(9.1);
         cmd.setSorts(List.of(new Sort("PeptideChrominfoId/SampleFileId/ReplicateId"),

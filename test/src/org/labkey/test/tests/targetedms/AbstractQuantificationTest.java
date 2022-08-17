@@ -449,7 +449,7 @@ public class AbstractQuantificationTest extends TargetedMSTest
                 "FROM generalmoleculechrominfo";
         ExecuteSqlCommand sc = new ExecuteSqlCommand("targetedms");
         sc.setSql(query);
-        SelectRowsResponse resp = sc.execute(createDefaultConnection(true), getProjectName() + "/" + scenario);
+        SelectRowsResponse resp = sc.execute(createDefaultConnection(), getProjectName() + "/" + scenario);
         List<Map<String, Object>> expectedRows = readScenarioCsv(scenario, "PeptideResultQuantification");
         for (Map<String, Object> expectedRow : expectedRows)
         {
