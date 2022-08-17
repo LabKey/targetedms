@@ -145,6 +145,7 @@ public class PeptideManager
             sql.append(" AND rep.Id=? ");
             sql.add(replicateId);
         }
+        sql.append(" AND pep.StartIndex IS NOT NULL AND pep.EndIndex IS NOT NULL ");
         sql.append(" GROUP BY pep.Sequence,pci.SampleFileId, pep.StartIndex, pep.EndIndex ) X ");
         sql.append(" GROUP BY X.Sequence, X.StartIndex, X.EndIndex ");
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PeptideCharacteristic.class);
@@ -184,6 +185,7 @@ public class PeptideManager
             sql.append(" AND rep.Id=? ");
             sql.add(replicateId);
         }
+        sql.append(" AND pep.StartIndex IS NOT NULL AND pep.EndIndex IS NOT NULL ");
         sql.append(" GROUP BY pep.Sequence,pci.SampleFileId, pep.PeptideModifiedSequence, pep.StartIndex, pep.EndIndex ) X ");
         sql.append(" GROUP BY X.Sequence, X.PeptideModifiedSequence, X.StartIndex, X.EndIndex ");
 

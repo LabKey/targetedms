@@ -49,6 +49,8 @@ public class PeptidePrecursorChromatogramsView extends ChromatogramGridView
                 PEPTIDE_PRECURSOR_CHROM_DATA_REGION,
                 form.isSplitGraph(),
                 canBeSplit,
-                StringUtils.join(tableInfo.getDisplayColumnNames(), ","));
+                StringUtils.join(tableInfo.getDisplayColumnNames(), ","),
+                true // All chromatograms from a replicate are displayed together in a row.
+                );
     }
 }
