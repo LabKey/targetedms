@@ -381,7 +381,7 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
 
     private String doAutoQCPing(@Nullable String subFolder)
     {
-        Connection cn = createDefaultConnection(true);
+        Connection cn = createDefaultConnection();
         AutoQCPing aqcp = new AutoQCPing();
         CommandResponse cr;
         String folderPath = getProjectName();

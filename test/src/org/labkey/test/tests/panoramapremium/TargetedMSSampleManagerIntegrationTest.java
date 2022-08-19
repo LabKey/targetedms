@@ -80,7 +80,7 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
         log("Clicking the replicate column link to verify the navigation");
         clickAndWait(Locator.linkWithText("Q_Exactive_08_09_2013_JGB_02").index(0));
         checker().verifyTrue("Sample link did not navigate to sample manager application",
-                getCurrentRelativeURL().contains(WebTestHelper.buildRelativeUrl("targetedms", getProjectName() + "/" + TargetedMS_SubFolder, "showSampleFile")));
+                getCurrentRelativeURL(false).contains(WebTestHelper.buildRelativeUrl("targetedms", getProjectName() + "/" + TargetedMS_SubFolder, "showSampleFile")));
         goBack();
 
         log("Navigating to SM app");
@@ -88,13 +88,13 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
         assertElementPresent(Locator.linkWithText(s3));
         clickAndWait(Locator.linkWithText(s1));
         checker().verifyTrue("Sample link did not navigate to sample manager application",
-                getCurrentRelativeURL().contains(WebTestHelper.buildRelativeUrl("sampleManager", getProjectName() + "/" + Sample_Manager_Subfolder, "app")));
+                getCurrentRelativeURL(false).contains(WebTestHelper.buildRelativeUrl("sampleManager", getProjectName() + "/" + Sample_Manager_Subfolder, "app")));
 
         log("Navigating back to labkey server");
         click(Locator.linkWithText("Assays"));
         waitAndClickAndWait(Locator.linkWithText(SProCoP_FILE_ANNOTATED));
         checker().verifyTrue("Did not navigate back to labkey server",
-                getCurrentRelativeURL().contains(WebTestHelper.buildRelativeUrl("targetedms", getProjectName() + "/" + TargetedMS_SubFolder, "showPrecursorList")));
+                getCurrentRelativeURL(false).contains(WebTestHelper.buildRelativeUrl("targetedms", getProjectName() + "/" + TargetedMS_SubFolder, "showPrecursorList")));
 
         log("Disabling the SM to verify the navigation");
         goToProjectHome();
@@ -105,7 +105,7 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
         waitAndClickAndWait(Locator.linkContainingText("sample files"));
         clickAndWait(Locator.linkWithText(s1));
         checker().verifyTrue("Sample link navigated to sample manager application when disabled at folder level",
-                getCurrentRelativeURL().contains(WebTestHelper.buildRelativeUrl("experiment", getProjectName() + "/" + Sample_Manager_Subfolder, "showMaterial")));
+                getCurrentRelativeURL(false).contains(WebTestHelper.buildRelativeUrl("experiment", getProjectName() + "/" + Sample_Manager_Subfolder, "showMaterial")));
 
     }
 

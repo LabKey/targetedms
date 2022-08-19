@@ -67,7 +67,7 @@ public class TargetedMSListTest extends TargetedMSTest
 
         SelectRowsCommand rowsCommand = new SelectRowsCommand("targetedmslists", samplesName.get());
         rowsCommand.setRequiredVersion(9.1);
-        SelectRowsResponse rowsResponse = rowsCommand.execute(createDefaultConnection(false), getCurrentContainerPath());
+        SelectRowsResponse rowsResponse = rowsCommand.execute(createDefaultConnection(), getCurrentContainerPath());
         assertEquals("Wrong number of rows in 'Samples'", 5, rowsResponse.getRows().size());
 
         Set<String> sampleNames = new HashSet<>();
@@ -93,7 +93,7 @@ public class TargetedMSListTest extends TargetedMSTest
         // Check that the targetedms.replicate table has the expected rows and points to the right lookup values
         SelectRowsCommand replicateRowsCommand = new SelectRowsCommand("targetedms", "replicate");
         replicateRowsCommand.setRequiredVersion(9.1);
-        SelectRowsResponse replicateRowsResponse = replicateRowsCommand.execute(createDefaultConnection(false), getCurrentContainerPath());
+        SelectRowsResponse replicateRowsResponse = replicateRowsCommand.execute(createDefaultConnection(), getCurrentContainerPath());
         assertEquals("Wrong number of replicate rows", replicateRowCount, replicateRowsResponse.getRowCount().intValue());
         Set<String> replicateSampleLookupValues = new HashSet<>();
         replicateRowsResponse.getRowset().forEach((r) -> replicateSampleLookupValues.add((String)r.getDisplayValue("Sample")));
@@ -101,11 +101,11 @@ public class TargetedMSListTest extends TargetedMSTest
 
         // Check the contents of the unioned "Samples" lookup query
         SelectRowsCommand sampleRowsUnionedCommand = new SelectRowsCommand("targetedmslists", "All_Samples");
-        assertEquals("Wrong number of unioned sample list rows", sampleUnionRowCount, sampleRowsUnionedCommand.execute(createDefaultConnection(false), getCurrentContainerPath()).getRowCount().intValue());
+        assertEquals("Wrong number of unioned sample list rows", sampleUnionRowCount, sampleRowsUnionedCommand.execute(createDefaultConnection(), getCurrentContainerPath()).getRowCount().intValue());
 
         // Check the schema to make sure it's exposing the expected single-list and unioned-list queries
         GetQueriesCommand command = new GetQueriesCommand("targetedmslists");
-        GetQueriesResponse queriesResponse = command.execute(createDefaultConnection(false), getCurrentContainerPath());
+        GetQueriesResponse queriesResponse = command.execute(createDefaultConnection(), getCurrentContainerPath());
         assertEquals("Wrong number of queries", listQueryCount, queriesResponse.getQueryNames().size());
         Set<String> trimmedNames = queriesResponse.getQueryNames().stream().filter((s) -> !s.startsWith("All_")).map((s) -> s.substring(s.indexOf("_") + 1)).collect(Collectors.toSet());
         assertTrue("Missing 'DocumentProperties'", trimmedNames.contains("DocumentProperties"));

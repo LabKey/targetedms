@@ -139,7 +139,7 @@ public class TargetedMSDocumentFormatsTest extends TargetedMSTest
 
     private void validateCrossLinked(String file, int countWithAnyIon, String modifiedPeptide, String ion, double precursorMz, double... transitionMz) throws IOException, CommandException
     {
-        Connection cn = createDefaultConnection(false);
+        Connection cn = createDefaultConnection();
 
         Filter fileFilter = new Filter("PrecursorId/PeptideId/PeptideGroupId/RunId/Name", file, Filter.Operator.EQUAL);
 
