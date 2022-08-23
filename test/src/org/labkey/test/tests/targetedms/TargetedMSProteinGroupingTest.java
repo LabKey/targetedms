@@ -56,7 +56,7 @@ public class TargetedMSProteinGroupingTest extends TargetedMSTest
                 getCurrentSequence());
 
         String protein2 = "sp|P33778|H2B1B_HUMAN";
-        click(Locator.linkWithText(protein2));
+        clickAndWait(Locator.linkWithText(protein2));
         checker().verifyTrue("Incorrect title for Sequence coverage webpart for " + protein2,
                 isElementPresent(Locator.tagWithAttribute("h3", "title", "Sequence Coverage for " + protein2)));
         checker().verifyEquals("Incorrect Sequence for " + protein2,
