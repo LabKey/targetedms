@@ -18,12 +18,10 @@ package org.labkey.targetedms.query;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.SQLFragment;
-import org.labkey.api.data.WrappedColumn;
 import org.labkey.api.query.ExprColumn;
 import org.labkey.api.query.FieldKey;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
-import org.labkey.targetedms.view.AnnotationUIDisplayColumn;
 
 import java.util.ArrayList;
 
@@ -44,7 +42,7 @@ public class DocTransitionsTableInfo extends AbstractGeneralTransitionTableInfo
 
         setDescription(TargetedMSManager.getTableInfoTransition().getDescription());
 
-        var precursorCol = getMutableColumn("GeneralPrecursorId");
+        var precursorCol = getMutableColumnOrThrow("GeneralPrecursorId");
         precursorCol.setFk(new TargetedMSForeignKey(getUserSchema(), TargetedMSSchema.TABLE_PRECURSOR, cf));
         precursorCol.setHidden(true);
 
@@ -103,14 +101,5 @@ public class DocTransitionsTableInfo extends AbstractGeneralTransitionTableInfo
         visibleColumns.add(FieldKey.fromParts("Charge"));
 
         setDefaultVisibleColumns(visibleColumns);
-
-        if (!omitAnnotations)
-        {
-            // Create a WrappedColumn for Note & Annotations
-            WrappedColumn noteAnnotation = new WrappedColumn(getColumn("Annotations"), "NoteAnnotations");
-            noteAnnotation.setDisplayColumnFactory(colInfo -> new AnnotationUIDisplayColumn(colInfo));
-            noteAnnotation.setLabel("Transition Note/Annotations");
-            addColumn(noteAnnotation);
-        }
     }
 }

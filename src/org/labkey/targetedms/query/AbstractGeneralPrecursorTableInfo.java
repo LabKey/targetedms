@@ -20,13 +20,11 @@ import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.TableInfo;
-import org.labkey.api.data.WrappedColumn;
 import org.labkey.api.query.ExprColumn;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.LookupForeignKey;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
-import org.labkey.targetedms.view.AnnotationUIDisplayColumn;
 
 /**
  * User: binalpatel
@@ -40,14 +38,14 @@ public class AbstractGeneralPrecursorTableInfo extends JoinedTargetedMSTable
         super(TargetedMSManager.getTableInfoGeneralPrecursor(), tableInfo, schema, cf,
         TargetedMSSchema.ContainerJoinType.GeneralMoleculeFK,
         TargetedMSManager.getTableInfoPrecursorAnnotation(),
-        "PrecursorId", "Precursor Annotations", "precursor", omitAnnotations);
+        "PrecursorId", omitAnnotations ? null : "Precursor", "precursor");
 
         setName(tableName);
         // use the description and title column from the specialized TableInfo
         setDescription(tableInfo.getDescription());
         setTitleColumn(tableInfo.getTitleColumn());
 
-        getMutableColumn("RepresentativeDataState").setFk(new LookupForeignKey()
+        getMutableColumnOrThrow("RepresentativeDataState").setFk(new LookupForeignKey()
         {
             @Override
             public TableInfo getLookupTableInfo()
@@ -63,15 +61,6 @@ public class AbstractGeneralPrecursorTableInfo extends JoinedTargetedMSTable
         transitionCountSQL.append(".Id)");
         ExprColumn transitionCountCol = new ExprColumn(this, "TransitionCount", transitionCountSQL, JdbcType.INTEGER);
         addColumn(transitionCountCol);
-
-        if (!omitAnnotations)
-        {
-            // Create a WrappedColumn for Note & Annotations
-            WrappedColumn noteAnnotation = new WrappedColumn(getColumn("Annotations"), "NoteAnnotations");
-            noteAnnotation.setDisplayColumnFactory(colInfo -> new AnnotationUIDisplayColumn(colInfo));
-            noteAnnotation.setLabel("Precursor Note/Annotations");
-            addColumn(noteAnnotation);
-        }
     }
 
     public void setRunId(long runId)

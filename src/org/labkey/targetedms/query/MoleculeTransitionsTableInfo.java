@@ -77,14 +77,5 @@ public class MoleculeTransitionsTableInfo extends AbstractGeneralTransitionTable
         visibleColumns.add(FieldKey.fromParts("Mz"));
         visibleColumns.add(FieldKey.fromParts("Charge"));
         setDefaultVisibleColumns(visibleColumns);
-
-        if (!omitAnnotations)
-        {
-            // Create a WrappedColumn for Note & Annotations
-            WrappedColumn noteAnnotation = new WrappedColumn(getColumn("Annotations"), "NoteAnnotations");
-            noteAnnotation.setDisplayColumnFactory(colInfo -> new AnnotationUIDisplayColumn(colInfo));
-            noteAnnotation.setLabel("Molecule Transition Note/Annotations");
-            addColumn(noteAnnotation);
-        }
     }
 }

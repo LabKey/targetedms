@@ -16,6 +16,7 @@
 package org.labkey.targetedms.query;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.SQLFragment;
@@ -41,9 +42,9 @@ public class JoinedTargetedMSTable extends AnnotatedTargetedMSTable
 {
     private final TableInfo _specializedTable;
 
-    public JoinedTargetedMSTable(TableInfo generalTable, TableInfo specializedTable, TargetedMSSchema schema, ContainerFilter cf, TargetedMSSchema.ContainerJoinType joinType, TableInfo annotationTableInfo, String annotationFKName, String columnName, String annotationTarget, boolean omitAnnotations)
+    public JoinedTargetedMSTable(TableInfo generalTable, TableInfo specializedTable, TargetedMSSchema schema, ContainerFilter cf, TargetedMSSchema.ContainerJoinType joinType, TableInfo annotationTableInfo, String annotationFKName, @Nullable String annotationLabelPrefix, String annotationTarget)
     {
-        super(generalTable, schema, cf, joinType, annotationTableInfo, annotationFKName, columnName, annotationTarget, omitAnnotations);
+        super(generalTable, schema, cf, joinType, annotationTableInfo, annotationFKName, annotationLabelPrefix, annotationTarget);
 
         _specializedTable = specializedTable;
         setName(_specializedTable.getName());
