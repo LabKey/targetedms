@@ -660,7 +660,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             mouseOverFnScope: this,
             mouseOutFn: this.plotPointMouseOut,
             mouseOutFnScope: this,
-            position: this.groupedX ? 'jitter' : undefined,
+            position: this.groupedX ? 'sequential' : undefined,
             legendMouseOverFn: this.legendMouseOver,
             legendMouseOverFnScope: this,
             legendMouseOutFn: this.legendMouseOut,
@@ -742,7 +742,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             defaultGuideSets: this.defaultGuideSet,
             mouseOverFn: this.plotPointMouseOver,
             mouseOverFnScope: this,
-            position: this.groupedX ? 'jitter' : undefined,
+            position: this.groupedX ? 'sequential' : undefined,
             disableRangeDisplay: this.isMultiSeries()
         };
 
