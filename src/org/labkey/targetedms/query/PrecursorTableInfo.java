@@ -15,12 +15,9 @@
  */
 package org.labkey.targetedms.query;
 
-import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.ContainerFilter;
-import org.labkey.api.data.DisplayColumn;
-import org.labkey.api.data.DisplayColumnFactory;
 import org.labkey.api.data.TableInfo;
-import org.labkey.api.data.WrappedColumn;
+import org.labkey.api.data.WrappedColumnInfo;
 import org.labkey.api.query.FieldKey;
 import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.TargetedMSManager;
@@ -46,7 +43,7 @@ public class PrecursorTableInfo extends AbstractGeneralPrecursorTableInfo
     {
         super(tableInfo, tableName, schema, cf, omitAnnotations);
 
-        var generalMoleculeId = getMutableColumn("GeneralMoleculeId");
+        var generalMoleculeId = getMutableColumnOrThrow("GeneralMoleculeId");
         generalMoleculeId.setFk(new TargetedMSForeignKey(_userSchema, TargetedMSSchema.TABLE_PEPTIDE, cf));
         generalMoleculeId.setHidden(true);
 
@@ -54,19 +51,11 @@ public class PrecursorTableInfo extends AbstractGeneralPrecursorTableInfo
         peptideId.setFk(new TargetedMSForeignKey(_userSchema, TargetedMSSchema.TABLE_PEPTIDE, cf));
         addColumn(peptideId);
 
-        getMutableColumn("IsotopeLabelId").setFk(new TargetedMSForeignKey(getUserSchema(), TargetedMSSchema.TABLE_ISOTOPE_LABEL, cf));
+        getMutableColumnOrThrow("IsotopeLabelId").setFk(new TargetedMSForeignKey(getUserSchema(), TargetedMSSchema.TABLE_ISOTOPE_LABEL, cf));
 
-        WrappedColumn modSeqCol = new WrappedColumn(getColumn("ModifiedSequence"), ModifiedSequenceDisplayColumn.PRECURSOR_COLUMN_NAME);
-        modSeqCol.setLabel("Precursor");
+        var modSeqCol = WrappedColumnInfo.wrapAsCopy(this, FieldKey.fromParts(ModifiedSequenceDisplayColumn.PRECURSOR_COLUMN_NAME), getColumn("ModifiedSequence"), "Precursor", null);
         modSeqCol.setDescription("Modified precursor sequence");
-        modSeqCol.setDisplayColumnFactory( new DisplayColumnFactory()
-        {
-            @Override
-            public DisplayColumn createRenderer(ColumnInfo colInfo)
-            {
-                return new ModifiedSequenceDisplayColumn.PrecursorCol(colInfo);
-            }
-        });
+        modSeqCol.setDisplayColumnFactory(ModifiedSequenceDisplayColumn.PrecursorCol::new);
         modSeqCol.setURL(getDetailsURL(null, null));
         addColumn(modSeqCol);
 

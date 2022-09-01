@@ -15,6 +15,7 @@
  */
 package org.labkey.targetedms.query;
 
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.SQLFragment;
@@ -31,7 +32,7 @@ import org.labkey.api.targetedms.RepresentativeDataState;
 
 public abstract class AbstractGeneralMoleculeTableInfo extends JoinedTargetedMSTable
 {
-    public AbstractGeneralMoleculeTableInfo(TargetedMSSchema schema, TableInfo tableInfo, ContainerFilter cf, String annotationColumnName, boolean omitAnnotations)
+    public AbstractGeneralMoleculeTableInfo(TargetedMSSchema schema, TableInfo tableInfo, ContainerFilter cf, @Nullable String annotationLabelPrefix)
     {
         super(TargetedMSManager.getTableInfoGeneralMolecule(),
                 tableInfo,
@@ -39,8 +40,9 @@ public abstract class AbstractGeneralMoleculeTableInfo extends JoinedTargetedMST
                 cf,
                 TargetedMSSchema.ContainerJoinType.PeptideGroupFK,
                 TargetedMSManager.getTableInfoGeneralMoleculeAnnotation(),
-                "GeneralMoleculeId", annotationColumnName,
-                "peptide", omitAnnotations); // This may change as more small molecule work is done in Skyline.
+                "GeneralMoleculeId",
+                annotationLabelPrefix,
+                "peptide"); // This may change as more small molecule work is done in Skyline.
 
         // use the description and title column from the specialized TableInfo
         setDescription(tableInfo.getDescription());

@@ -356,6 +356,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         expected.add("Day: 1\nSampleIdentifier: AnnotatedSample1");
         expected.add("1");
         expected.add("AnnotatedSample1");
+        expected.add("Day: 1\n    SampleIdentifier: AnnotatedSample1");
         assertEquals("Wrong data in first row", expected, strings);
     }
 

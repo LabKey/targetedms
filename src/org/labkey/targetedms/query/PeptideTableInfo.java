@@ -16,12 +16,13 @@
 package org.labkey.targetedms.query;
 
 import org.labkey.api.data.ContainerFilter;
-import org.labkey.api.data.WrappedColumn;
+import org.labkey.api.data.MultiValuedForeignKey;
+import org.labkey.api.data.WrappedColumnInfo;
 import org.labkey.api.query.FieldKey;
+import org.labkey.api.query.QueryForeignKey;
 import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
-import org.labkey.targetedms.view.AnnotationUIDisplayColumn;
 import org.springframework.web.servlet.mvc.Controller;
 
 import java.util.ArrayList;
@@ -31,28 +32,27 @@ public class PeptideTableInfo extends AbstractGeneralMoleculeTableInfo
 {
     public PeptideTableInfo(TargetedMSSchema schema, ContainerFilter cf, boolean omitAnnotations)
     {
-        super(schema, TargetedMSManager.getTableInfoPeptide(), cf, "Peptide Annotations", omitAnnotations);
+        super(schema, TargetedMSManager.getTableInfoPeptide(), cf, omitAnnotations ? null : "Peptide");
 
-        if (!omitAnnotations)
-        {
-            // Add a WrappedColumn for Note & Annotations
-            WrappedColumn noteAnnotation = new WrappedColumn(getColumn("Annotations"), "NoteAnnotations");
-            noteAnnotation.setDisplayColumnFactory(colInfo -> new AnnotationUIDisplayColumn(colInfo));
-            noteAnnotation.setLabel("Peptide Note/Annotations");
-            addColumn(noteAnnotation);
-        }
-
-        var peptideGroupId = getMutableColumn("PeptideGroupId");
+        var peptideGroupId = getMutableColumnOrThrow("PeptideGroupId");
         peptideGroupId.setFk(new TargetedMSForeignKey(_userSchema, TargetedMSSchema.TABLE_PEPTIDE_GROUP, cf));
 
-        var sequenceColumn = getMutableColumn("Sequence");
+        var sequenceColumn = getMutableColumnOrThrow("Sequence");
         sequenceColumn.setURL(getDetailsURL(null, null));
-        WrappedColumn modSeqCol = new WrappedColumn(getColumn("PeptideModifiedSequence"), ModifiedSequenceDisplayColumn.PEPTIDE_COLUMN_NAME);
-        modSeqCol.setLabel("Peptide");
+
+        var modSeqCol = WrappedColumnInfo.wrapAsCopy(this, FieldKey.fromParts(ModifiedSequenceDisplayColumn.PEPTIDE_COLUMN_NAME), getColumn("PeptideModifiedSequence"), "Peptide", null);
         modSeqCol.setDescription("Modified peptide sequence");
         modSeqCol.setDisplayColumnFactory(new ModifiedSequenceDisplayColumn.PeptideDisplayColumnFactory());
         modSeqCol.setURL(getDetailsURL(null, null));
         addColumn(modSeqCol);
+
+        var structuralModCol = WrappedColumnInfo.wrapAsCopy(this, FieldKey.fromParts("StructuralModifications"), getColumn("Id"), null, null);
+        structuralModCol.setFk(new MultiValuedForeignKey(new QueryForeignKey.Builder(getUserSchema(), getContainerFilter()).table(TargetedMSSchema.TABLE_PEPTIDE_STRUCTURAL_MODIFICATION), "StructuralModId"));
+        addColumn(structuralModCol);
+
+        var isotopeModCol = WrappedColumnInfo.wrapAsCopy(this, FieldKey.fromParts("IsotopeModifications"), getColumn("Id"), null, null);
+        isotopeModCol.setFk(new MultiValuedForeignKey(new QueryForeignKey.Builder(getUserSchema(), getContainerFilter()).table(TargetedMSSchema.TABLE_PEPTIDE_ISOTOPE_MODIFICATION), "IsotopeModId"));
+        addColumn(isotopeModCol);
 
         List<FieldKey> defaultCols = new ArrayList<>(getDefaultVisibleColumns());
         defaultCols.add(0, FieldKey.fromParts("PeptideGroupId", "RunId", "Folder", "Path"));

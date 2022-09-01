@@ -18,13 +18,12 @@ package org.labkey.targetedms.query;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.SQLFragment;
-import org.labkey.api.data.WrappedColumn;
+import org.labkey.api.data.WrappedColumnInfo;
 import org.labkey.api.query.ExprColumn;
 import org.labkey.api.query.FieldKey;
 import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
-import org.labkey.targetedms.view.AnnotationUIDisplayColumn;
 import org.springframework.web.servlet.mvc.Controller;
 
 import java.util.ArrayList;
@@ -34,18 +33,9 @@ public class MoleculeTableInfo extends AbstractGeneralMoleculeTableInfo
 {
     public MoleculeTableInfo(TargetedMSSchema schema, ContainerFilter cf, boolean omitAnnotations)
     {
-        super(schema, TargetedMSManager.getTableInfoMolecule(), cf, "Molecule Annotations", omitAnnotations);
+        super(schema, TargetedMSManager.getTableInfoMolecule(), cf, omitAnnotations ? null : "Molecule");
 
-        if (!omitAnnotations)
-        {
-            // Add a WrappedColumn for Note & Annotations
-            WrappedColumn noteAnnotation = new WrappedColumn(getColumn("Annotations"), "NoteAnnotations");
-            noteAnnotation.setDisplayColumnFactory(AnnotationUIDisplayColumn::new);
-            noteAnnotation.setLabel("Molecule Note/Annotations");
-            addColumn(noteAnnotation);
-        }
-
-        var peptideGroupId = getMutableColumn("PeptideGroupId");
+        var peptideGroupId = getMutableColumnOrThrow("PeptideGroupId");
         peptideGroupId.setFk(new TargetedMSForeignKey(getUserSchema(), TargetedMSSchema.TABLE_MOLECULE_GROUP, cf));
 
         SQLFragment molSQL = new SQLFragment(" COALESCE(" + ExprColumn.STR_TABLE_ALIAS + ".CustomIonName, " +
@@ -55,8 +45,7 @@ public class MoleculeTableInfo extends AbstractGeneralMoleculeTableInfo
         molExprCol.setHidden(true);
         addColumn(molExprCol);
 
-        WrappedColumn moleculeCol = new WrappedColumn(getColumn("MoleculeName"), "Molecule");
-        moleculeCol.setLabel("Molecule");
+        var moleculeCol = WrappedColumnInfo.wrapAsCopy(this, FieldKey.fromParts("Molecule"), getColumn("MoleculeName"), "Molecule", null);
         moleculeCol.setDescription("Custom Ion Name");
         moleculeCol.setDisplayColumnFactory(IconColumn.MoleculeDisplayCol::new);
         moleculeCol.setURL(getDetailsURL(null, null));

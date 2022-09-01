@@ -1061,8 +1061,8 @@ public class TargetedMSSchema extends UserSchema
                                                                   ContainerJoinType.RunFK,
                                                                   TargetedMSManager.getTableInfoPeptideGroupAnnotation(),
                                                                   "PeptideGroupId",
-                                                                  proteomics ? "Protein Annotations" : "Molecule List Annotations",
-                                                                  "protein", false) // This may change as more small molecule work is done in Skyline.
+                                                                  proteomics ? COL_PROTEIN : COL_LIST,
+                                                                  "protein")
             {
                 @Override
                 protected Class<? extends Controller> getDetailsActionClass()
@@ -1170,19 +1170,6 @@ public class TargetedMSSchema extends UserSchema
             result.getMutableColumnOrThrow("RepresentativeDataState").setFk(QueryForeignKey.from(this, cf).to(TargetedMSSchema.TABLE_REPRESENTATIVE_DATA_STATE, "RowId", null));
             result.getMutableColumnOrThrow("RepresentativeDataState").setHidden(true);
 
-            // Create a WrappedColumn for Note & Annotations
-            WrappedColumn noteAnnotation = new WrappedColumn(result.getColumn("Annotations"), "NoteAnnotations");
-            noteAnnotation.setDisplayColumnFactory(AnnotationUIDisplayColumn::new);
-            if (proteomics)
-            {
-                noteAnnotation.setLabel(TargetedMSSchema.COL_PROTEIN + " Note/Annotations");
-            }
-            else
-            {
-                noteAnnotation.setLabel(TargetedMSSchema.COL_LIST + " Note/Annotations");
-            }
-            result.addColumn(noteAnnotation);
-
             SQLFragment libPrecursorCountSQL;
             if (TargetedMSManager.isLibraryFolder(getContainer()))
             {
@@ -1210,7 +1197,7 @@ public class TargetedMSSchema extends UserSchema
 
         if (TABLE_REPLICATE.equalsIgnoreCase(name))
         {
-            return new AnnotatedTargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.RunFK, TargetedMSManager.getTableInfoReplicateAnnotation(), "ReplicateId", "Replicate Annotations", "replicate", false);
+            return new AnnotatedTargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.RunFK, TargetedMSManager.getTableInfoReplicateAnnotation(), "ReplicateId", "Replicate", "replicate");
         }
 
         // Tables that have a FK to targetedms.Runs
@@ -1393,7 +1380,7 @@ public class TargetedMSSchema extends UserSchema
         if (TABLE_TRANSITION_CHROM_INFO.equalsIgnoreCase(name))
         {
             TargetedMSTable result = new AnnotatedTargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.SampleFileFK,
-                    TargetedMSManager.getTableInfoTransitionChromInfoAnnotation(), "TransitionChromInfoId", "Transition Result Annotations", "transition_result", false);
+                    TargetedMSManager.getTableInfoTransitionChromInfoAnnotation(), "TransitionChromInfoId", "Transition Result", "transition_result");
             TargetedMSSchema targetedMSSchema = this;
 
             var transitionId = result.getMutableColumnOrThrow("TransitionId");

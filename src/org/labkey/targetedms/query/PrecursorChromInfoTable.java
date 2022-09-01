@@ -32,7 +32,7 @@ public class PrecursorChromInfoTable extends AnnotatedTargetedMSTable
     public PrecursorChromInfoTable(TargetedMSSchema schema, ContainerFilter cf)
     {
         super(TargetedMSManager.getTableInfoPrecursorChromInfo(), schema, cf, null, new SQLFragment("Container"),
-                TargetedMSManager.getTableInfoPrecursorChromInfoAnnotation(), "PrecursorChromInfoId", "Precursor Result Annotations", "precursor_result", false);
+                TargetedMSManager.getTableInfoPrecursorChromInfoAnnotation(), "PrecursorChromInfoId", "Precursor Result", "precursor_result");
         var precursorId = getMutableColumn("PrecursorId");
         precursorId.setFk(new TargetedMSForeignKey(getUserSchema(), TargetedMSSchema.TABLE_PRECURSOR, cf));
 

@@ -25,6 +25,7 @@ import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.RenderContext;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.TableInfo;
+import org.labkey.api.data.WrappedColumnInfo;
 import org.labkey.api.data.dialect.SqlDialect;
 import org.labkey.api.gwt.client.FacetingBehaviorType;
 import org.labkey.api.query.ExprColumn;
@@ -37,6 +38,7 @@ import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.parser.DataSettings;
 import org.labkey.targetedms.parser.list.ListDefinition;
+import org.labkey.targetedms.view.AnnotationUIDisplayColumn;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,7 +51,6 @@ import java.util.stream.Collectors;
  * Optionally adds annotation-valued columns as if there were "real" columns. Can be conditionalized via the omitAnnotations
  * column to optimize for scenarios where they will never be used, such as when populating a Java bean with a fixed set
  * of get/set methods.
- *
  * Wires up lookups to Skyline lists when possible. {@link SkylineListUnionTable}
  *
  * User: jeckels
@@ -66,10 +67,10 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
                                     TargetedMSSchema.ContainerJoinType joinType,
                                     TableInfo annotationTableInfo,
                                     String annotationFKName,
-                                    String columnName,
-                                    String annotationTarget, boolean omitAnnotations) // The target of an annotation that applies to this table.
+                                    String annotationLabelPrefix,
+                                    String annotationTarget) // The target of an annotation that applies to this table.
     {
-        this(table, schema, cf, joinType, annotationTableInfo, annotationFKName, columnName, "Id", annotationTarget, omitAnnotations);
+        this(table, schema, cf, joinType, annotationTableInfo, annotationFKName, annotationLabelPrefix, "Id", annotationTarget);
     }
 
     public AnnotatedTargetedMSTable(TableInfo table,
@@ -79,15 +80,12 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
                                     SQLFragment containerSQL,
                                     TableInfo annotationTableInfo,
                                     String annotationFKName,
-                                    String columnName,
-                                    String annotationTarget, boolean omitAnnotations) // The target of an annotation that applies to this table.
+                                    String annotationLabelPrefix,
+                                    String annotationTarget) // The target of an annotation that applies to this table.
     {
         super(table, schema, cf, joinType, containerSQL);
 
-        if (!omitAnnotations)
-        {
-            addAnnotationsColumns(annotationTableInfo, annotationFKName, columnName, "Id", annotationTarget);
-        }
+        addAnnotationsColumns(annotationTableInfo, annotationFKName, annotationLabelPrefix, "Id", annotationTarget);
     }
 
     public AnnotatedTargetedMSTable(TableInfo table,
@@ -96,20 +94,22 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
                                     TargetedMSSchema.ContainerJoinType joinType,
                                     TableInfo annotationTableInfo,
                                     String annotationFKName,
-                                    String columnName,
+                                    String annotationLabelPrefix,
                                     String pkColumnName,
-                                    String annotationTarget, boolean omitAnnotations) // The target of an annotation that applies to this table.
+                                    String annotationTarget) // The target of an annotation that applies to this table.
     {
         super(table, schema, cf, joinType);
 
-        if (!omitAnnotations)
-        {
-            addAnnotationsColumns(annotationTableInfo, annotationFKName, columnName, pkColumnName, annotationTarget);
-        }
+        addAnnotationsColumns(annotationTableInfo, annotationFKName, annotationLabelPrefix, pkColumnName, annotationTarget);
     }
 
-    protected void addAnnotationsColumns(TableInfo annotationTableInfo, String annotationFKName, String columnName, String pkColumnName, String annotationTarget)
+    protected void addAnnotationsColumns(TableInfo annotationTableInfo, String annotationFKName, @Nullable String labelPrefix, String pkColumnName, String annotationTarget)
     {
+        if (labelPrefix == null)
+        {
+            return;
+        }
+
         SQLFragment annotationsSQL = new SQLFragment("(SELECT ");
         annotationsSQL.append(TargetedMSManager.getSqlDialect().getGroupConcat(
                 new SQLFragment(TargetedMSManager.getSqlDialect().concatenate("a.Name", "'" + ANNOT_NAME_VALUE_SEPARATOR + "' ", "a.Value")),
@@ -119,7 +119,7 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
         getAnnotationJoinSQL(annotationTableInfo, annotationFKName, annotationsSQL);
         annotationsSQL.append(".").append(pkColumnName).append(")");
         ExprColumn annotationsColumn = new ExprColumn(this, "Annotations", annotationsSQL, JdbcType.VARCHAR);
-        annotationsColumn.setLabel(columnName);
+        annotationsColumn.setLabel(labelPrefix + " Annotations");
         annotationsColumn.setTextAlign("left");
         annotationsColumn.setFacetingBehaviorType(FacetingBehaviorType.ALWAYS_OFF);
         addColumn(annotationsColumn);
@@ -135,7 +135,7 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
             }
             ExprColumn annotationColumn = createAnnotationColumn(annotationTableInfo, annotationFKName, pkColumnName, annotationSetting);
 
-            // Check if the annotation is a lookup and all of the definitions agree on what its target list should be
+            // Check if the annotation is a lookup and all the definitions agree on what its target list should be
             if (annotationSetting.getMaxLookup() != null && Objects.equals(annotationSetting.getMaxLookup(), annotationSetting.getMinLookup()))
             {
                 String lookup = annotationSetting.getMaxLookup();
@@ -163,6 +163,10 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
         }
 
         annotationsColumn.setDisplayColumnFactory(AnnotationsDisplayColumn::new);
+
+        var noteAnnotation = WrappedColumnInfo.wrapAsCopy(this, FieldKey.fromParts("NoteAnnotations"), annotationsColumn, labelPrefix + " Note/Annotations", null);
+        noteAnnotation.setDisplayColumnFactory(AnnotationUIDisplayColumn::new);
+        addColumn(noteAnnotation);
     }
 
     @NotNull
@@ -306,13 +310,13 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
         }
 
         @Override
-        public Class getValueClass()
+        public Class<?> getValueClass()
         {
             return String.class;
         }
 
         @Override
-        public Class getDisplayValueClass()
+        public Class<?> getDisplayValueClass()
         {
             return String.class;
         }
