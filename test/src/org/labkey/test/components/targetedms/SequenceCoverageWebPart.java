@@ -6,6 +6,7 @@ import org.labkey.test.WebDriverWrapper;
 import org.labkey.test.components.BodyWebPart;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 
 import java.util.ArrayList;
@@ -38,37 +39,24 @@ public class SequenceCoverageWebPart extends BodyWebPart<SequenceCoverageWebPart
 
     public SequenceCoverageWebPart setDisplayBy(String value)
     {
-        elementCache().displayBy.selectByValue(value);
-        waitForDisplayToRefresh();
+        elementCache().displayBy.selectByVisibleText(value);
         return this;
     }
 
     public String getReplicate()
     {
-        return elementCache().replicate.getText();
+        return elementCache().replicate.getFirstSelectedOption().getText();
     }
 
     public SequenceCoverageWebPart setReplicate(String value)
     {
-        getWrapper().selectOptionByText(elementCache().replicate, value);
-        waitForDisplayToRefresh();
-        return this;
-    }
-
-    public SequenceCoverageWebPart waitForDisplayToRefresh()
-    {
-        //TODO : Add logic to wait for load
+        elementCache().replicate.selectByVisibleText(value);
         return this;
     }
 
     public SequenceCoverageWebPart setModifiedForm(String value)
     {
-        if (value.equals("combined"))
-            getWrapper().checkRadioButton(elementCache().combined);
-        else
-            getWrapper().checkRadioButton(elementCache().stacked);
-
-        waitForDisplayToRefresh();
+        getWrapper().checkRadioButton(elementCache().modifiedForms.withAttribute("value", value));
         return this;
     }
 
@@ -80,14 +68,30 @@ public class SequenceCoverageWebPart extends BodyWebPart<SequenceCoverageWebPart
     public List<String> getHeatMapLegendValues()
     {
         List<String> ret = new ArrayList<>();
-        List<WebElement> text = elementCache().heatMapLegend.withChild(Locator.tag("text")).findElements(this);
-        for( WebElement e : text)
+        List<WebElement> text = Locator.tag("text").findElements(elementCache().heatMapLegend);
+        for (WebElement e : text)
         {
-            if(e.getText() != null)
-                ret.add(e.getText());
+            String textValue = e.getText();
+            if (!textValue.isBlank())
+                ret.add(textValue);
         }
         return ret;
     }
+
+    public String getPopUpDetails(String value)
+    {
+        if (elementCache().peptideDetailsHelp.isDisplayed())
+        {
+            Locator.tagWithAttribute("img", "alt", "close").findElement(elementCache().peptideDetailsHelp).click();
+            getWrapper().shortWait().until(ExpectedConditions.invisibilityOf(elementCache().peptideDetailsHelp));
+        }
+
+        getWrapper().mouseOver(Locator.tagWithAttributeContaining("a", "id", "helpPopup").withText(value));
+        getWrapper().shortWait().until(ExpectedConditions.visibilityOf(elementCache().peptideDetailsHelp));
+
+        return Locator.id("helpDivBody").findElement(elementCache().peptideDetailsHelp).getText();
+    }
+
     @Override
     protected Elements newElementCache()
     {
@@ -96,12 +100,11 @@ public class SequenceCoverageWebPart extends BodyWebPart<SequenceCoverageWebPart
 
     public class Elements extends BodyWebPart.ElementCache
     {
-//        WebElement displayBy = Locator.name("peptideSettings").findElement(this);
         Select displayBy = new Select(Locator.name("peptideSettings").findWhenNeeded(this));
-        WebElement replicate = Locator.name("replicateSettings").findWhenNeeded(this);
-        Locator.XPathLocator combined = Locator.name("combinedOrStacked").withAttribute("value", "combined");
-        Locator.XPathLocator stacked = Locator.name("combinedOrStacked").withAttribute("value", "stacked");
+        Select replicate = new Select(Locator.name("replicateSettings").findWhenNeeded(this));
+        Locator.XPathLocator modifiedForms = Locator.name("combinedOrStacked");
         WebElement peptideMap = Locator.id("peptideMap").findWhenNeeded(this);
-        Locator.XPathLocator heatMapLegend = Locator.tagWithClass("div","heatmap");
+        WebElement heatMapLegend = Locator.tagWithClass("div", "heatmap").child(Locator.tag("svg")).findWhenNeeded(this);
+        WebElement peptideDetailsHelp = Locator.id("helpDiv").findWhenNeeded(getDriver());
     }
 }
