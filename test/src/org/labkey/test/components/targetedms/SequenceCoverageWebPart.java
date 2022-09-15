@@ -78,9 +78,10 @@ public class SequenceCoverageWebPart extends BodyWebPart<SequenceCoverageWebPart
             Locator.tagWithAttribute("img", "alt", "close").findElement(elementCache().peptideDetailsHelp).click();
             getWrapper().shortWait().until(ExpectedConditions.invisibilityOf(elementCache().peptideDetailsHelp));
         }
-
+        WebElement numLink = getWrapper().shortWait().until(ExpectedConditions.elementToBeClickable(
+                Locator.tagWithAttributeContaining("a", "id", "helpPopup").withText(value).childTag("div")));
         WebDriverWrapper.waitFor(() -> {
-            getWrapper().mouseOver(Locator.tagWithAttributeContaining("a", "id", "helpPopup").withText(value));
+            numLink.click();
             return elementCache().peptideDetailsHelp.isDisplayed();
         }, "Peptide details tooltip did not appear", 5000);
 

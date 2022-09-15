@@ -103,13 +103,6 @@ public class TargetedMSProteinSequenceViewTest extends TargetedMSTest
                 "Confidence Score Rank: 23\n" +
                 "Raw Confidence: 0.006768\n" +
                 "Log 10 Base Confidence Score: 2.17", sequenceCoverage.getPopUpDetails("23"));
-        checker().verifyEquals("Incorrect peptide details for 2(Red)", "Mass: 2730.14\n" +
-                "Start: 225\n" +
-                "End: 248\n" +
-                "Unmodified: 1\n" +
-                "Confidence Score Rank: 2\n" +
-                "Raw Confidence: 0.000009\n" +
-                "Log 10 Base Confidence Score: 5.04", sequenceCoverage.getPopUpDetails("2"));
         checker().screenShotIfNewError("Confidence_Score_Errors");
     }
 
