@@ -4,6 +4,7 @@ package org.labkey.test.components.targetedms;
 import org.labkey.test.Locator;
 import org.labkey.test.WebDriverWrapper;
 import org.labkey.test.components.BodyWebPart;
+import org.labkey.test.components.html.SelectWrapper;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -29,7 +30,7 @@ public class SequenceCoverageWebPart extends BodyWebPart<SequenceCoverageWebPart
 
     public void waitForLoad()
     {
-        WebDriverWrapper.waitFor(() -> getMap() != null, 10000);
+        getWrapper().shortWait().until(ExpectedConditions.visibilityOf(elementCache().peptideMap));
     }
 
     public String getDisplayBy()
@@ -39,8 +40,7 @@ public class SequenceCoverageWebPart extends BodyWebPart<SequenceCoverageWebPart
 
     public SequenceCoverageWebPart setDisplayBy(String value)
     {
-        elementCache().displayBy.selectByVisibleText(value);
-        return this;
+        return doAndWaitForUpdate(() -> elementCache().displayBy.selectByVisibleText(value));
     }
 
     public String getReplicate()
@@ -50,19 +50,12 @@ public class SequenceCoverageWebPart extends BodyWebPart<SequenceCoverageWebPart
 
     public SequenceCoverageWebPart setReplicate(String value)
     {
-        elementCache().replicate.selectByVisibleText(value);
-        return this;
+        return doAndWaitForUpdate(() -> elementCache().replicate.selectByVisibleText(value));
     }
 
     public SequenceCoverageWebPart setModifiedForm(String value)
     {
-        getWrapper().checkRadioButton(elementCache().modifiedForms.withAttribute("value", value));
-        return this;
-    }
-
-    public WebElement getMap()
-    {
-        return elementCache().peptideMap;
+        return doAndWaitForUpdate(() -> getWrapper().checkRadioButton(elementCache().modifiedForms.withAttribute("value", value)));
     }
 
     public List<String> getHeatMapLegendValues()
@@ -86,10 +79,18 @@ public class SequenceCoverageWebPart extends BodyWebPart<SequenceCoverageWebPart
             getWrapper().shortWait().until(ExpectedConditions.invisibilityOf(elementCache().peptideDetailsHelp));
         }
 
-        getWrapper().mouseOver(Locator.tagWithAttributeContaining("a", "id", "helpPopup").withText(value));
-        getWrapper().shortWait().until(ExpectedConditions.visibilityOf(elementCache().peptideDetailsHelp));
+        WebDriverWrapper.waitFor(() -> {
+            getWrapper().mouseOver(Locator.tagWithAttributeContaining("a", "id", "helpPopup").withText(value));
+            return elementCache().peptideDetailsHelp.isDisplayed();
+        }, "Peptide details tooltip did not appear", 5000);
 
         return Locator.id("helpDivBody").findElement(elementCache().peptideDetailsHelp).getText();
+    }
+
+    public SequenceCoverageWebPart doAndWaitForUpdate(Runnable runnable)
+    {
+        getWrapper().doAndWaitForPageToLoad(runnable);
+        return new SequenceCoverageWebPart(getDriver());
     }
 
     @Override
@@ -100,11 +101,11 @@ public class SequenceCoverageWebPart extends BodyWebPart<SequenceCoverageWebPart
 
     public class Elements extends BodyWebPart.ElementCache
     {
-        Select displayBy = new Select(Locator.name("peptideSettings").findWhenNeeded(this));
-        Select replicate = new Select(Locator.name("replicateSettings").findWhenNeeded(this));
-        Locator.XPathLocator modifiedForms = Locator.name("combinedOrStacked");
-        WebElement peptideMap = Locator.id("peptideMap").findWhenNeeded(this);
-        WebElement heatMapLegend = Locator.tagWithClass("div", "heatmap").child(Locator.tag("svg")).findWhenNeeded(this);
-        WebElement peptideDetailsHelp = Locator.id("helpDiv").findWhenNeeded(getDriver());
+        final Select displayBy = SelectWrapper.Select(Locator.name("peptideSettings")).findWhenNeeded(this);
+        final Select replicate = SelectWrapper.Select(Locator.name("replicateSettings")).findWhenNeeded(this);
+        final Locator.XPathLocator modifiedForms = Locator.name("combinedOrStacked");
+        final WebElement peptideMap = Locator.id("peptideMap").findWhenNeeded(this);
+        final WebElement heatMapLegend = Locator.tagWithClass("div", "heatmap").child(Locator.tag("svg")).findWhenNeeded(this);
+        final WebElement peptideDetailsHelp = Locator.id("helpDiv").findWhenNeeded(getDriver());
     }
 }

@@ -58,14 +58,14 @@ public class TargetedMSProteinSequenceViewTest extends TargetedMSTest
         checker().verifyEquals("Incorrect heatMap legend values for Intensity", Arrays.asList("6.85", "5.27", "3.68"), sequenceCoverage.getHeatMapLegendValues());
         checker().verifyEquals("Incorrect Peptide Details for Intensity 23(Blue)", "Mass: 2890.21\n" +
                 "Start: 99\n" +
-                "End: 123\n" +
+                "End: 122\n" +
                 "Unmodified: 1\n" +
                 "Intensity Rank: 23\n" +
                 "Raw Intensity: 4.821E+03\n" +
                 "Log 10 Base Intensity: 3.68", sequenceCoverage.getPopUpDetails("23"));
         checker().verifyEquals("Incorrect peptide details for Intensity 4(Red)", "Mass: 1675.81\n" +
                 "Start: 123\n" +
-                "End: 138\n" +
+                "End: 137\n" +
                 "Unmodified: 1\n" +
                 "Intensity Rank: 4\n" +
                 "Raw Intensity: 4.753E+06\n" +
@@ -74,38 +74,38 @@ public class TargetedMSProteinSequenceViewTest extends TargetedMSTest
 
         log("Verifying replicate selection with intensity");
         checker().verifyEquals("Incorrect default selection for Replicate", "All", sequenceCoverage.getReplicate());
-        sequenceCoverage.setReplicate("20170901_CalCurves_YeastCurve_A_1ug-ul_BY4741_166");
-        sequenceCoverage = new SequenceCoverageWebPart(getDriver());
+        sequenceCoverage = sequenceCoverage.setReplicate("20170901_CalCurves_YeastCurve_A_1ug-ul_BY4741_166");
         checker().verifyEquals("Incorrect heatMap legend values for Intensity and single replicate", Arrays.asList("6.66", "5.17", "3.68"), sequenceCoverage.getHeatMapLegendValues());
         checker().verifyEquals("Incorrect Peptide Details for Intensity 15(Blue) and single replicate", "Mass: 2890.21\n" +
                 "Start: 99\n" +
-                "End: 123\n" +
+                "End: 122\n" +
                 "Unmodified: 1\n" +
                 "Intensity Rank: 15\n" +
                 "Raw Intensity: 4.821E+03\n" +
                 "Log 10 Base Intensity: 3.68", sequenceCoverage.getPopUpDetails("15"));
-        checker().verifyEquals("Incorrect peptide details for Intensity 1(Red) and single replicate", "Mass: 816.93\n" +
-                "Start: 218\n" +
-                "End: 225\n" +
-                "Unmodified: 1", sequenceCoverage.getPopUpDetails("1"));
+        checker().verifyEquals("Incorrect peptide details for Intensity 12(light red) and single replicate", "Mass: 1630.88\n" +
+                "Start: 165\n" +
+                "End: 178\n" +
+                "Unmodified: 1\n" +
+                "Intensity Rank: 12\n" +
+                "Raw Intensity: 2.436E+05\n" +
+                "Log 10 Base Intensity: 5.39", sequenceCoverage.getPopUpDetails("12"));
         checker().screenShotIfNewError("Intensity_And_SingleReplicate_Errors");
 
         log("Verifying Confidence score value");
-        sequenceCoverage.setDisplayBy("Confidence Score");
-        sequenceCoverage = new SequenceCoverageWebPart(getDriver());
-        sequenceCoverage.setReplicate("All");
-        sequenceCoverage = new SequenceCoverageWebPart(getDriver());
+        sequenceCoverage = sequenceCoverage.setReplicate("All");
+        sequenceCoverage = sequenceCoverage.setDisplayBy("Confidence Score");
         checker().verifyEquals("Incorrect heatMap legend values for confidence score", Arrays.asList("5.04", "3.61", "2.17"), sequenceCoverage.getHeatMapLegendValues());
         checker().verifyEquals("Incorrect Peptide Details 23(Blue)", "Mass: 846.08\n" +
                 "Start: 654\n" +
-                "End: 662\n" +
+                "End: 661\n" +
                 "Unmodified: 1\n" +
                 "Confidence Score Rank: 23\n" +
                 "Raw Confidence: 0.006768\n" +
                 "Log 10 Base Confidence Score: 2.17", sequenceCoverage.getPopUpDetails("23"));
         checker().verifyEquals("Incorrect peptide details for 2(Red)", "Mass: 2730.14\n" +
                 "Start: 225\n" +
-                "End: 249\n" +
+                "End: 248\n" +
                 "Unmodified: 1\n" +
                 "Confidence Score Rank: 2\n" +
                 "Raw Confidence: 0.000009\n" +
@@ -125,21 +125,20 @@ public class TargetedMSProteinSequenceViewTest extends TargetedMSTest
         checker().verifyEquals("Incorrect value for heat map legend for modified peptides", Arrays.asList("9.73", "8.41", "7.08"), sequenceCoverage.getHeatMapLegendValues());
         checker().verifyEquals("Incorrect Peptide Details for modified peptide QVTLR", "Mass: 597.72\n" +
                 "Start: 1\n" +
-                "End: 6\n" +
+                "End: 5\n" +
                 "Unmodified: 1\n" +
                 "Intensity Rank: 7\n" +
                 "Raw Intensity: 2.242E+09\n" +
                 "Log 10 Base Intensity: 9.35\n" +
                 "Modified Forms Log Raw Intensity\n" +
-                "QVTLR 7.10 1.2514412E7\n" +
-                "Q[-17.026549]VTLR 9.35 2.231622144E9", sequenceCoverage.getPopUpDetails("7"));
+                "Q[-17.026549]VTLR 9.35 2.231622144E9\n" +
+                "QVTLR 7.10 1.2514412E7", sequenceCoverage.getPopUpDetails("7"));
 
         log("Verifying the stacked modified form");
-        sequenceCoverage.setModifiedForm("stacked");
-        sequenceCoverage = new SequenceCoverageWebPart(getDriver());
+        sequenceCoverage = sequenceCoverage.setModifiedForm("stacked");
         checker().verifyEquals("Incorrect values for Stacked", "Mass: 1171.19\n" +
                 "Start: 296\n" +
-                "End: 305\n" +
+                "End: 304\n" +
                 "Unmodified: 1\n" +
                 "Intensity Rank: 20\n" +
                 "Raw Intensity: 2.531E+07\n" +
