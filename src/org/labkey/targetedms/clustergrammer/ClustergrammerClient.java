@@ -44,7 +44,8 @@ public class ClustergrammerClient
 
     public String generateHeatMap(ClustergrammerHeatMap matrix, BindException errors) throws Exception
     {
-        try (CloseableHttpClient httpclient = HttpClients.createDefault())
+        // Configure CloseableHttpClient to not follow redirects
+        try (CloseableHttpClient httpclient = HttpClients.custom().disableRedirectHandling().build())
         {
             HttpPost post = new HttpPost(CLUSTERGRAMMER_ENDPOINT);
 
