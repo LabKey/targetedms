@@ -55,7 +55,6 @@ dependencies
                    "PNG encoder"
            )
    )
-   implementation "org.apache.httpcomponents:httpmime:${httpmimeVersion}"
    BuildUtils.addLabKeyDependency(project: project, config: "implementation", depProjectPath:  BuildUtils.getCommonAssayModuleProjectPath(project.gradle, "ms2"), depProjectConfig: "apiJarFile")
    BuildUtils.addLabKeyDependency(project: project, config: "jspImplementation", depProjectPath: BuildUtils.getCommonAssayModuleProjectPath(project.gradle, "ms2"), depProjectConfig: "apiJarFile")
    BuildUtils.addLabKeyDependency(project: project, config: "modules", depProjectPath: BuildUtils.getCommonAssayModuleProjectPath(project.gradle, "ms2"), depProjectConfig: "published", depExtension: "module")

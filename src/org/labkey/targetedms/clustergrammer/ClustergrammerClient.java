@@ -16,17 +16,16 @@
 package org.labkey.targetedms.clustergrammer;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.entity.mime.HttpMultipartMode;
+import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.labkey.api.util.StringUtilsLabKey;
 import org.springframework.validation.BindException;
 
@@ -45,21 +44,20 @@ public class ClustergrammerClient
 
     public String generateHeatMap(ClustergrammerHeatMap matrix, BindException errors) throws Exception
     {
-        try (CloseableHttpClient httpclient = HttpClients.createDefault())
+        // Configure CloseableHttpClient to not follow redirects
+        try (CloseableHttpClient httpclient = HttpClients.custom().disableRedirectHandling().build())
         {
             HttpPost post = new HttpPost(CLUSTERGRAMMER_ENDPOINT);
 
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+            builder.setMode(HttpMultipartMode.LEGACY);
             builder.addBinaryBody("file", serializeMatrix(matrix.getMatrix()).getBytes(StringUtilsLabKey.DEFAULT_CHARSET), ContentType.DEFAULT_BINARY, matrix.getTitle() + ".txt");
 
             post.setEntity(builder.build());
 
             try (CloseableHttpResponse response = httpclient.execute(post))
             {
-                StatusLine status = response.getStatusLine();
-
-                if (status.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
+                if (response.getCode() == HttpStatus.SC_MOVED_TEMPORARILY)
                 {
                     Header header = response.getFirstHeader("Location");
                     if (header != null)
@@ -69,7 +67,7 @@ public class ClustergrammerClient
                 }
 
                 EntityUtils.consume(response.getEntity());
-                errors.reject(ERROR_MSG, "Request to Clustergrammer failed:\n " + status.getStatusCode() +": " + status.getReasonPhrase());
+                errors.reject(ERROR_MSG, "Request to Clustergrammer failed:\n " + response.getCode() +": " + response.getReasonPhrase());
             }
         }
 
