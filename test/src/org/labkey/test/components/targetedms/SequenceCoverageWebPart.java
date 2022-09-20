@@ -4,8 +4,10 @@ package org.labkey.test.components.targetedms;
 import org.labkey.test.Locator;
 import org.labkey.test.WebDriverWrapper;
 import org.labkey.test.components.BodyWebPart;
+import org.labkey.test.components.html.SelectWrapper;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 
 import java.util.ArrayList;
@@ -28,7 +30,7 @@ public class SequenceCoverageWebPart extends BodyWebPart<SequenceCoverageWebPart
 
     public void waitForLoad()
     {
-        WebDriverWrapper.waitFor(() -> getMap() != null, 10000);
+        getWrapper().shortWait().until(ExpectedConditions.visibilityOf(elementCache().peptideMap));
     }
 
     public String getDisplayBy()
@@ -38,56 +40,60 @@ public class SequenceCoverageWebPart extends BodyWebPart<SequenceCoverageWebPart
 
     public SequenceCoverageWebPart setDisplayBy(String value)
     {
-        elementCache().displayBy.selectByValue(value);
-        waitForDisplayToRefresh();
-        return this;
+        return doAndWaitForUpdate(() -> elementCache().displayBy.selectByVisibleText(value));
     }
 
     public String getReplicate()
     {
-        return elementCache().replicate.getText();
+        return elementCache().replicate.getFirstSelectedOption().getText();
     }
 
     public SequenceCoverageWebPart setReplicate(String value)
     {
-        getWrapper().selectOptionByText(elementCache().replicate, value);
-        waitForDisplayToRefresh();
-        return this;
-    }
-
-    public SequenceCoverageWebPart waitForDisplayToRefresh()
-    {
-        //TODO : Add logic to wait for load
-        return this;
+        return doAndWaitForUpdate(() -> elementCache().replicate.selectByVisibleText(value));
     }
 
     public SequenceCoverageWebPart setModifiedForm(String value)
     {
-        if (value.equals("combined"))
-            getWrapper().checkRadioButton(elementCache().combined);
-        else
-            getWrapper().checkRadioButton(elementCache().stacked);
-
-        waitForDisplayToRefresh();
-        return this;
-    }
-
-    public WebElement getMap()
-    {
-        return elementCache().peptideMap;
+        return doAndWaitForUpdate(() -> getWrapper().checkRadioButton(elementCache().modifiedForms.withAttribute("value", value)));
     }
 
     public List<String> getHeatMapLegendValues()
     {
         List<String> ret = new ArrayList<>();
-        List<WebElement> text = elementCache().heatMapLegend.withChild(Locator.tag("text")).findElements(this);
-        for( WebElement e : text)
+        List<WebElement> text = Locator.tag("text").findElements(elementCache().heatMapLegend);
+        for (WebElement e : text)
         {
-            if(e.getText() != null)
-                ret.add(e.getText());
+            String textValue = e.getText();
+            if (!textValue.isBlank())
+                ret.add(textValue);
         }
         return ret;
     }
+
+    public String getPopUpDetails(String value)
+    {
+        if (elementCache().peptideDetailsHelp.isDisplayed())
+        {
+            Locator.tagWithAttribute("img", "alt", "close").findElement(elementCache().peptideDetailsHelp).click();
+            getWrapper().shortWait().until(ExpectedConditions.invisibilityOf(elementCache().peptideDetailsHelp));
+        }
+        WebElement numLink = getWrapper().shortWait().until(ExpectedConditions.elementToBeClickable(
+                Locator.tagWithAttributeContaining("a", "id", "helpPopup").withText(value).childTag("div")));
+        WebDriverWrapper.waitFor(() -> {
+            numLink.click();
+            return elementCache().peptideDetailsHelp.isDisplayed();
+        }, "Peptide details tooltip did not appear", 5000);
+
+        return Locator.id("helpDivBody").findElement(elementCache().peptideDetailsHelp).getText();
+    }
+
+    public SequenceCoverageWebPart doAndWaitForUpdate(Runnable runnable)
+    {
+        getWrapper().doAndWaitForPageToLoad(runnable);
+        return new SequenceCoverageWebPart(getDriver());
+    }
+
     @Override
     protected Elements newElementCache()
     {
@@ -96,12 +102,11 @@ public class SequenceCoverageWebPart extends BodyWebPart<SequenceCoverageWebPart
 
     public class Elements extends BodyWebPart.ElementCache
     {
-//        WebElement displayBy = Locator.name("peptideSettings").findElement(this);
-        Select displayBy = new Select(Locator.name("peptideSettings").findWhenNeeded(this));
-        WebElement replicate = Locator.name("replicateSettings").findWhenNeeded(this);
-        Locator.XPathLocator combined = Locator.name("combinedOrStacked").withAttribute("value", "combined");
-        Locator.XPathLocator stacked = Locator.name("combinedOrStacked").withAttribute("value", "stacked");
-        WebElement peptideMap = Locator.id("peptideMap").findWhenNeeded(this);
-        Locator.XPathLocator heatMapLegend = Locator.tagWithClass("div","heatmap");
+        final Select displayBy = SelectWrapper.Select(Locator.name("peptideSettings")).findWhenNeeded(this);
+        final Select replicate = SelectWrapper.Select(Locator.name("replicateSettings")).findWhenNeeded(this);
+        final Locator.XPathLocator modifiedForms = Locator.name("combinedOrStacked");
+        final WebElement peptideMap = Locator.id("peptideMap").findWhenNeeded(this);
+        final WebElement heatMapLegend = Locator.tagWithClass("div", "heatmap").child(Locator.tag("svg")).findWhenNeeded(this);
+        final WebElement peptideDetailsHelp = Locator.id("helpDiv").findWhenNeeded(getDriver());
     }
 }
