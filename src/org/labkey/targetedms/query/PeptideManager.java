@@ -118,8 +118,8 @@ public class PeptideManager
         var sqlDialect = TargetedMSManager.getSqlDialect();
 
         SQLFragment sql = new SQLFragment("SELECT X.Sequence, " + appendLog10IntensitySql(sqlDialect) + " AS Intensity, " + appendLog10ConfidenceSql(sqlDialect) + " AS Confidence, ");
-        sql.append(" MAX(X.Intensity) AS RawIntensity, MAX(X.Confidence) AS RawConfidence, X.StartIndex, X.EndIndex FROM ");
-        sql.append("(SELECT pep.Sequence, pep.StartIndex, pep.EndIndex, ");
+        sql.append(" MAX(X.Intensity) AS RawIntensity, MAX(X.Confidence) AS RawConfidence FROM ");
+        sql.append("(SELECT pep.Sequence, ");
         sql.append(" CASE WHEN SUM(TotalArea) IS NULL OR SUM(TotalArea) < 1 THEN 1 ELSE SUM(TotalArea) END AS Intensity, ");
         sql.append(" MAX(qvalue) AS Confidence FROM ");
         sql.append(TargetedMSManager.getTableInfoPeptide(),"pep");
@@ -146,8 +146,8 @@ public class PeptideManager
             sql.add(replicateId);
         }
         sql.append(" AND pep.StartIndex IS NOT NULL AND pep.EndIndex IS NOT NULL ");
-        sql.append(" GROUP BY pep.Sequence,pci.SampleFileId, pep.StartIndex, pep.EndIndex ) X ");
-        sql.append(" GROUP BY X.Sequence, X.StartIndex, X.EndIndex ");
+        sql.append(" GROUP BY pep.Sequence,pci.SampleFileId ) X ");
+        sql.append(" GROUP BY X.Sequence ");
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PeptideCharacteristic.class);
     }
 
@@ -156,10 +156,10 @@ public class PeptideManager
         var shouldFilterAndGroupByReplicate = null != replicateId && !Objects.equals(replicateId, Long.valueOf(0));
         var sqlDialect = TargetedMSManager.getSqlDialect();
 
-        SQLFragment sql = new SQLFragment("SELECT X.Sequence, X.PeptideModifiedSequence AS ModifiedSequence, X.StartIndex, X.EndIndex ,");
+        SQLFragment sql = new SQLFragment("SELECT X.Sequence, X.PeptideModifiedSequence AS ModifiedSequence, ");
         sql.append(appendLog10IntensitySql(sqlDialect) + " AS Intensity, " + appendLog10ConfidenceSql(sqlDialect) + " AS Confidence, ");
         sql.append(" MAX(X.Intensity) AS RawIntensity, MAX(X.Confidence) AS RawConfidence FROM ");
-        sql.append("(SELECT pep.Sequence, pep.PeptideModifiedSequence, pep.StartIndex, pep.EndIndex, ");
+        sql.append("(SELECT pep.Sequence, pep.PeptideModifiedSequence, ");
         sql.append(" CASE WHEN SUM(TotalArea) IS NULL OR SUM(TotalArea) < 1 THEN 1 ELSE SUM(TotalArea) END AS Intensity, ");
         sql.append(" MAX(qvalue) AS Confidence FROM ");
         sql.append(TargetedMSManager.getTableInfoPeptide(),"pep");
@@ -186,8 +186,8 @@ public class PeptideManager
             sql.add(replicateId);
         }
         sql.append(" AND pep.StartIndex IS NOT NULL AND pep.EndIndex IS NOT NULL ");
-        sql.append(" GROUP BY pep.Sequence,pci.SampleFileId, pep.PeptideModifiedSequence, pep.StartIndex, pep.EndIndex ) X ");
-        sql.append(" GROUP BY X.Sequence, X.PeptideModifiedSequence, X.StartIndex, X.EndIndex ");
+        sql.append(" GROUP BY pep.Sequence,pci.SampleFileId, pep.PeptideModifiedSequence ) X ");
+        sql.append(" GROUP BY X.Sequence, X.PeptideModifiedSequence ");
 
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PeptideCharacteristic.class);
     }
