@@ -16,7 +16,7 @@
 package org.labkey.targetedms.model;
 
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
+import org.json.old.JSONObject;
 
 public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
 {
