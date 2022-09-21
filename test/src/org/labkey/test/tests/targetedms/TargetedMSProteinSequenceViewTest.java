@@ -124,8 +124,8 @@ public class TargetedMSProteinSequenceViewTest extends TargetedMSTest
                 "Raw Intensity: 2.242E+09\n" +
                 "Log 10 Base Intensity: 9.35\n" +
                 "Modified Forms Log Raw Intensity\n" +
-                "Q[-17.026549]VTLR 9.35 2.231622144E9\n" +
-                "QVTLR 7.10 1.2514412E7", sequenceCoverage.getPopUpDetails("7"));
+                "QVTLR 7.10 1.2514412E7\n" +
+                "Q[-17.026549]VTLR 9.35 2.231622144E9", sequenceCoverage.getPopUpDetails("7"));
 
         log("Verifying the stacked modified form");
         sequenceCoverage = sequenceCoverage.setModifiedForm("stacked");
