@@ -1,7 +1,7 @@
 package org.labkey.targetedms.model.passport;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.json.old.JSONArray;
+import org.json.old.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Date;

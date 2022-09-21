@@ -15,7 +15,7 @@
  */
 package org.labkey.targetedms.model;
 
-import org.json.JSONObject;
+import org.json.old.JSONObject;
 import org.labkey.api.data.Entity;
 import org.labkey.api.targetedms.model.OutlierCounts;
 import org.labkey.api.util.Pair;
