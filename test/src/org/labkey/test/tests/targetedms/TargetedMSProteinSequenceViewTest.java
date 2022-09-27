@@ -3,6 +3,7 @@ package org.labkey.test.tests.targetedms;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.labkey.junit.LabKeyAssert;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.components.targetedms.SequenceCoverageWebPart;
@@ -116,7 +117,7 @@ public class TargetedMSProteinSequenceViewTest extends TargetedMSTest
         log("Verified the combined modified form");
         SequenceCoverageWebPart sequenceCoverage = new SequenceCoverageWebPart(getDriver());
         checker().verifyEquals("Incorrect value for heat map legend for modified peptides", Arrays.asList("9.73", "8.41", "7.08"), sequenceCoverage.getHeatMapLegendValues());
-        checker().verifyEquals("Incorrect Peptide Details for modified peptide QVTLR", "Mass: 597.72\n" +
+        String combinedExpected = "Mass: 597.72\n" +
                 "Start: 1\n" +
                 "End: 5\n" +
                 "Unmodified: 1\n" +
@@ -125,11 +126,12 @@ public class TargetedMSProteinSequenceViewTest extends TargetedMSTest
                 "Log 10 Base Intensity: 9.35\n" +
                 "Modified Forms Log Raw Intensity\n" +
                 "Q[-17.026549]VTLR 9.35 2.231622144E9\n" +
-                "QVTLR 7.10 1.2514412E7", sequenceCoverage.getPopUpDetails("7"));
-
+                "QVTLR 7.10 1.2514412E7";
+        LabKeyAssert.assertEqualsSorted("Incorrect Peptide Details for modified peptide QVTLR", Arrays.asList(combinedExpected.split("\n"))
+                , Arrays.asList(sequenceCoverage.getPopUpDetails("7").split("\n")));
         log("Verifying the stacked modified form");
         sequenceCoverage = sequenceCoverage.setModifiedForm("stacked");
-        checker().verifyEquals("Incorrect values for Stacked", "Mass: 1171.19\n" +
+        String stackedExpected = "Mass: 1171.19\n" +
                 "Start: 296\n" +
                 "End: 304\n" +
                 "Unmodified: 1\n" +
@@ -140,7 +142,8 @@ public class TargetedMSProteinSequenceViewTest extends TargetedMSTest
                 "EEQYN[+1444.53387]STYR 7.40 2.5310828E7\n" +
                 "EEQYN[+1606.586693]STYR 7.34 2.2088366E7\n" +
                 "EEQYNSTYR 6.69 4949097.5\n" +
-                "EEQYN[+1768.639517]STYR 6.30 1987017.25", sequenceCoverage.getPopUpDetails("20"));
+                "EEQYN[+1768.639517]STYR 6.30 1987017.25";
+        LabKeyAssert.assertEqualsSorted("Incorrect values for Stacked", Arrays.asList(stackedExpected.split("\n")), Arrays.asList(sequenceCoverage.getPopUpDetails("20").split("\n")));
         checker().screenShotIfNewError("Modified_Forms_Error");
     }
 }
