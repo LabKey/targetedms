@@ -139,10 +139,10 @@ public class TargetedMSProteinSequenceViewTest extends TargetedMSTest
                 "Raw Intensity: 2.531E+07\n" +
                 "Log 10 Base Intensity: 7.40\n" +
                 "Modified Forms Log Raw Intensity\n" +
-                "EEQYN[+1444.53387]STYR 7.40 2.5310828E7\n" +
-                "EEQYN[+1606.586693]STYR 7.34 2.2088366E7\n" +
-                "EEQYNSTYR 6.69 4949097.5\n" +
-                "EEQYN[+1768.639517]STYR 6.30 1987017.25";
+                "EEQYN[+1444.53387]STYR 7.40 2.531E+07\n" +
+                "EEQYN[+1606.586693]STYR 7.34 2.209E+07\n" +
+                "EEQYNSTYR 6.69 4.949E+06\n" +
+                "EEQYN[+1768.639517]STYR 6.30 1.987E+06";
         LabKeyAssert.assertEqualsSorted("Incorrect values for Stacked", Arrays.asList(stackedExpected.split("\n")), Arrays.asList(sequenceCoverage.getPopUpDetails("20").split("\n")));
         checker().screenShotIfNewError("Modified_Forms_Error");
     }
