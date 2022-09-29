@@ -125,8 +125,8 @@ public class TargetedMSProteinSequenceViewTest extends TargetedMSTest
                 "Raw Intensity: 2.242E+09\n" +
                 "Log 10 Base Intensity: 9.35\n" +
                 "Modified Forms Log Raw Intensity\n" +
-                "Q[-17.026549]VTLR 9.35 2.231622144E9\n" +
-                "QVTLR 7.10 1.2514412E7";
+                "Q[-17.026549]VTLR 9.35 2.232E+09\n" +
+                "QVTLR 7.10 1.251E+07";
         LabKeyAssert.assertEqualsSorted("Incorrect Peptide Details for modified peptide QVTLR", Arrays.asList(combinedExpected.split("\n"))
                 , Arrays.asList(sequenceCoverage.getPopUpDetails("7").split("\n")));
         log("Verifying the stacked modified form");
