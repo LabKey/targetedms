@@ -15,17 +15,25 @@
 
 package org.labkey.targetedms.query;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.ContainerFilter;
-import org.labkey.api.data.JdbcType;
-import org.labkey.api.data.SQLFragment;
+import org.labkey.api.data.DataColumn;
+import org.labkey.api.data.DisplayColumn;
+import org.labkey.api.data.DisplayColumnFactory;
+import org.labkey.api.data.RenderContext;
 import org.labkey.api.data.WrappedColumn;
-import org.labkey.api.query.ExprColumn;
 import org.labkey.api.query.FieldKey;
+import org.labkey.api.util.HtmlString;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
+import org.labkey.targetedms.chart.LabelFactory;
+import org.labkey.targetedms.parser.GeneralTransition.IonType;
 import org.labkey.targetedms.view.AnnotationUIDisplayColumn;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * User: vsharma
@@ -54,28 +62,10 @@ public class DocTransitionsTableInfo extends AbstractGeneralTransitionTableInfo
         addColumn(precursorIdCol);
 
         //Display the fragment as y9 instead of 'y' and '9' in separate columns
-        StringBuilder sql = new StringBuilder();
-        sql.append(" CASE WHEN ");
-        sql.append(ExprColumn.STR_TABLE_ALIAS).append(".FragmentType != 'precursor'");
-        sql.append(" THEN ");
-        sql.append(" CASE WHEN ");
-        sql.append(ExprColumn.STR_TABLE_ALIAS).append(".FragmentType != 'custom'");
-        sql.append(" THEN ");
-        sql.append(TargetedMSManager.getSqlDialect().concatenate(ExprColumn.STR_TABLE_ALIAS + ".FragmentType",
-                "CAST(" + ExprColumn.STR_TABLE_ALIAS+".FragmentOrdinal AS VARCHAR)"));
-        sql.append(" ELSE ");
-        sql.append(ExprColumn.STR_TABLE_ALIAS + ".MeasuredIonName");
-        sql.append(" END ");
-        sql.append(" ELSE ");
-        sql.append(TargetedMSManager.getSqlDialect().concatenate(
-                "CASE WHEN " + ExprColumn.STR_TABLE_ALIAS + ".MassIndex > 0 THEN 'M+' ELSE 'M' END",
-                "CASE WHEN " + ExprColumn.STR_TABLE_ALIAS + ".MassIndex != 0 THEN CAST(" + ExprColumn.STR_TABLE_ALIAS + ".MassIndex AS VARCHAR) ELSE '' END"));
-        sql.append(" END ");
-        SQLFragment fragmentSql = new SQLFragment(sql.toString());
-        var fragment = new ExprColumn(this, "Fragment", fragmentSql, JdbcType.VARCHAR);
-        fragment.setTextAlign("Left");
-        fragment.setJdbcType(JdbcType.VARCHAR);
-        addColumn(fragment);
+        var fragmentCol = wrapColumn("Fragment", getRealTable().getColumn(FieldKey.fromParts("FragmentType")));
+        fragmentCol.setDisplayColumnFactory(new FragmentIonDisplayColumnFactory());
+        addColumn(fragmentCol);
+
 
         ArrayList<FieldKey> visibleColumns = new ArrayList<>();
         visibleColumns.add(FieldKey.fromParts("PrecursorId", "PeptideId", "PeptideGroupId", "Label"));
@@ -111,6 +101,84 @@ public class DocTransitionsTableInfo extends AbstractGeneralTransitionTableInfo
             noteAnnotation.setDisplayColumnFactory(colInfo -> new AnnotationUIDisplayColumn(colInfo));
             noteAnnotation.setLabel("Transition Note/Annotations");
             addColumn(noteAnnotation);
+        }
+    }
+
+    public static class FragmentIonDisplayColumnFactory implements DisplayColumnFactory
+    {
+        private final FieldKey _fragmentOrdinalFieldKey = FieldKey.fromParts("FragmentOrdinal");
+        private final FieldKey _neutralLossMassFieldKey = FieldKey.fromParts("NeutralLossMass");
+        private final FieldKey _massIndexFieldKey = FieldKey.fromParts("MassIndex");
+        private final FieldKey _measuredIonNameFieldKey = FieldKey.fromParts("MeasuredIonName");
+
+        @Override
+        public DisplayColumn createRenderer(ColumnInfo colInfo)
+        {
+            DataColumn dc = new DataColumn(colInfo) {
+
+                @Override
+                public Object getValue(RenderContext ctx)
+                {
+                    // Return the ion name without any extended characters
+                    return getValue(ctx, false);
+                }
+
+                private @Nullable String getValue(RenderContext ctx, boolean extendedCharsAllowed)
+                {
+                    String fragmentType = ctx.get(getColumnInfo().getFieldKey(), String.class);
+                    if (fragmentType != null)
+                    {
+                        IonType ionType = IonType.getType(fragmentType);
+                        if (ionType != null)
+                        {
+                            Integer fragmentOrdinal = ctx.get(_fragmentOrdinalFieldKey, Integer.class);
+                            Double neutralLossMass = ctx.get(_neutralLossMassFieldKey, Double.class);
+                            Integer massIndex = ctx.get(_massIndexFieldKey, Integer.class);
+                            String measuredIonName = ctx.get(_measuredIonNameFieldKey, String.class);
+
+                            return LabelFactory.getProteomicTransitionName(ionType, massIndex, fragmentOrdinal, measuredIonName, neutralLossMass, extendedCharsAllowed);
+                        }
+                        else
+                        {
+                            Integer fragmentOrdinal = ctx.get(_fragmentOrdinalFieldKey, Integer.class);
+                            Double neutralLossMass = ctx.get(_neutralLossMassFieldKey, Double.class);
+                            return LabelFactory.getProteomicTransitionName(fragmentType, fragmentOrdinal, neutralLossMass);
+                        }
+                    }
+                    return null;
+                }
+
+                @Override
+                public Object getDisplayValue(RenderContext ctx)
+                {
+                    return getValue(ctx);
+                }
+
+                @Override
+                public @Nullable String getFormattedText(RenderContext ctx)
+                {
+                    Object o = getValue(ctx);
+                    return o == null ? null : o.toString();
+                }
+
+                @Override @NotNull
+                public HtmlString getFormattedHtml(RenderContext ctx)
+                {
+                    // Display the fragment ion name with extended characters, if any. Example: z• (z+1) and z′ (z+2) ions.
+                    return HtmlString.of(getValue(ctx, true));
+                }
+
+                @Override
+                public void addQueryFieldKeys(Set<FieldKey> keys)
+                {
+                    super.addQueryFieldKeys(keys);
+                    keys.add(_fragmentOrdinalFieldKey);
+                    keys.add(_neutralLossMassFieldKey);
+                    keys.add(_massIndexFieldKey);
+                    keys.add(_measuredIonNameFieldKey);
+                }
+            };
+            return dc;
         }
     }
 }

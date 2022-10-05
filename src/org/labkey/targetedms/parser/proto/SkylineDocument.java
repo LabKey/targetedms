@@ -505,6 +505,15 @@ public final class SkylineDocument {
        * <code>ION_TYPE_custom = 8;</code>
        */
       ION_TYPE_custom(8),
+      /**
+       * <code>ION_TYPE_zH = 9;</code>
+       */
+      ION_TYPE_zH(9),
+      /**
+       * <code>ION_TYPE_zHH = 10;</code>
+       */
+      ION_TYPE_zHH(10),
+
       UNRECOGNIZED(-1),
       ;
 
@@ -579,6 +588,8 @@ public final class SkylineDocument {
           case 6: return ION_TYPE_z;
           case 7: return ION_TYPE_precursor;
           case 8: return ION_TYPE_custom;
+          case 9: return ION_TYPE_zH;
+          case 10: return ION_TYPE_zHH;
           default: return null;
         }
       }

@@ -39,6 +39,8 @@ import org.labkey.targetedms.chart.ChromatogramDataset.RtRange;
 import org.labkey.targetedms.model.PrecursorChromInfoLitePlus;
 import org.labkey.targetedms.model.PrecursorChromInfoPlus;
 import org.labkey.targetedms.parser.GeneralPrecursor;
+import org.labkey.targetedms.parser.GeneralTransition;
+import org.labkey.targetedms.parser.GeneralTransition.IonType;
 import org.labkey.targetedms.parser.Precursor;
 import org.labkey.targetedms.parser.PrecursorChromInfo;
 
@@ -725,7 +727,7 @@ public class PrecursorManager
         {
             for(String result: sqls)
             {
-                if(result.equals("precursor"))
+                if(IonType.precursor.name().equals(result))
                     return true;
             }
         }
