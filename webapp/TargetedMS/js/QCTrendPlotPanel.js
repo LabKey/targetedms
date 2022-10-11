@@ -1600,15 +1600,23 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }
         }
 
-        // Issue 32277: need to move the data points in front of the guide set range display
+        // Issue 46477: need to move the guide set range display behind the data points
         // so that points can be interacted with (i.e. hover to exclude, see details, etc.)
-        this.bringSvgElementToFront(plot, "a.point");
+        this.sendSvgElementToBack(plot, "rect.training");
     },
 
     bringSvgElementToFront: function(plot, selector) {
         this.getSvgElForPlot(plot).selectAll(selector)
             .each(function() {
                this.parentNode.parentNode.appendChild(this.parentNode);
+            });
+    },
+
+    sendSvgElementToBack: function(plot, selector) {
+        var firstPointLayer = this.getSvgElForPlot(plot).selectAll('g.layer')[0][0];
+        this.getSvgElForPlot(plot).selectAll(selector)
+            .each(function() {
+                this.parentNode.insertBefore(this, firstPointLayer);
             });
     },
 
