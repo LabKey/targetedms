@@ -38,6 +38,7 @@ import org.labkey.targetedms.IrtPeptide;
 import org.labkey.targetedms.SkylineDocImporter.IProgressStatus;
 import org.labkey.targetedms.TargetedMSModule;
 import org.labkey.targetedms.chromlib.ConnectionSource;
+import org.labkey.targetedms.parser.GeneralTransition.IonType;
 import org.labkey.targetedms.parser.list.ListColumn;
 import org.labkey.targetedms.parser.list.ListData;
 import org.labkey.targetedms.parser.proto.SkylineDocument;
@@ -2244,6 +2245,13 @@ public class SkylineDocumentParser implements AutoCloseable
                     }
                     transition.setAnnotations(annotations);
                 }
+
+                if (transition.getFragmentType() == null)
+                {
+                    // If we are unable to read the fragment type from the compressed transition data, it probably means that we need to add support for a new ion type.
+                    throw new IllegalStateException("Unable to read fragment type from transition data. Transition m/z: " + transition.getMz() + ", charge: " +transition.getCharge());
+                }
+
                 list.add(transition);
             }
             _transitionCount += list.size();
@@ -3103,14 +3111,16 @@ public class SkylineDocumentParser implements AutoCloseable
     private static String ionTypeToString(SkylineDocument.SkylineDocumentProto.IonType ionType) {
         return switch (ionType)
                 {
-                    case ION_TYPE_a -> "a";
-                    case ION_TYPE_b -> "b";
-                    case ION_TYPE_c -> "c";
-                    case ION_TYPE_x -> "x";
-                    case ION_TYPE_y -> "y";
-                    case ION_TYPE_z -> "z";
-                    case ION_TYPE_precursor -> "precursor";
-                    case ION_TYPE_custom -> "custom";
+                    case ION_TYPE_a -> IonType.a.name();
+                    case ION_TYPE_b -> IonType.b.name();
+                    case ION_TYPE_c -> IonType.c.name();
+                    case ION_TYPE_x -> IonType.x.name();
+                    case ION_TYPE_y -> IonType.y.name();
+                    case ION_TYPE_z -> IonType.z.name();
+                    case ION_TYPE_zH -> IonType.zh.name();
+                    case ION_TYPE_zHH -> IonType.zhh.name();
+                    case ION_TYPE_precursor -> IonType.precursor.name();
+                    case ION_TYPE_custom -> IonType.custom.name();
                     default -> null;
                 };
     }

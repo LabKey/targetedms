@@ -17,15 +17,65 @@ package org.labkey.targetedms.parser;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class GeneralTransition extends AnnotatedEntity<TransitionAnnotation>
 {
+    public enum IonType
+    {
+        // Order is important. This is the order in which the ion colors should be picked.
+        custom, precursor, y, b, z, c, x, a, zh ("z\u2022"), zhh ("z\u2032");
 
+        private final String _displayName;
+
+        IonType()
+        {
+            _displayName = this.name();
+        }
+
+        IonType(String displayName)
+        {
+            _displayName = displayName;
+        }
+
+        public String getDisplayName()
+        {
+            return _displayName;
+        }
+
+        public static IonType getType(String ionName)
+        {
+            return Arrays.stream(values())
+                    .filter(ion -> ion.name().equals(ionName))
+                    .findFirst().orElse(null);
+        }
+
+        public static boolean isNterm(IonType type)
+        {
+            return type == IonType.a || type == IonType.b || type == IonType.c || type == IonType.precursor;
+        }
+
+        public static boolean isCterm(IonType type)
+        {
+            return type == IonType.x || type == IonType.y || type == IonType.z || type == IonType.zh || type == IonType.zhh;
+        }
+
+        public static boolean isPrecursor(IonType type)
+        {
+            return type == IonType.precursor;
+        }
+
+        public static boolean isCustom(IonType type)
+        {
+            return type == IonType.custom;
+        }
+    }
     protected long generalPrecursorId;
     protected double mz;
     protected Integer charge;
     protected String fragmentType;  // 'a', 'b', 'c', 'x', 'y', 'z' or 'precursor'
+    private IonType _ionType;
     protected Integer isotopeDistRank;
     protected Double isotopeDistProportion;
     protected String note;
@@ -41,15 +91,6 @@ public class GeneralTransition extends AnnotatedEntity<TransitionAnnotation>
     private Double declusteringPotential;
     private Integer rank;
     private Double intensity;
-
-    protected static final String CUSTOM = "custom";
-    protected static final String PRECURSOR = "precursor";
-    private static final String Y_ION = "y";
-    private static final String Z_ION = "z";
-    private static final String X_ION = "x";
-    private static final String B_ION = "b";
-    private static final String C_ION = "c";
-    private static final String A_ION = "a";
 
     public long getGeneralPrecursorId()
     {
@@ -69,6 +110,12 @@ public class GeneralTransition extends AnnotatedEntity<TransitionAnnotation>
     public void setFragmentType(String fragmentType)
     {
         this.fragmentType = fragmentType;
+        _ionType = IonType.getType(fragmentType);
+    }
+
+    public @Nullable IonType getIonType()
+    {
+        return _ionType;
     }
 
     public Integer getCharge()
@@ -269,26 +316,22 @@ public class GeneralTransition extends AnnotatedEntity<TransitionAnnotation>
 
     public boolean isCustomIon()
     {
-        return CUSTOM.equalsIgnoreCase(fragmentType);
+        return IonType.isCustom(_ionType);
     }
 
     public boolean isPrecursorIon()
     {
-        return PRECURSOR.equalsIgnoreCase(fragmentType);
+        return IonType.isPrecursor(_ionType);
     }
 
     public boolean isNterm()
     {
-        return fragmentType != null && (fragmentType.equalsIgnoreCase(B_ION)
-                || fragmentType.equalsIgnoreCase(C_ION)
-                || fragmentType.equalsIgnoreCase(A_ION));
+        return IonType.isNterm(_ionType);
     }
 
 
     public boolean isCterm()
     {
-        return fragmentType != null && (fragmentType.equalsIgnoreCase(Y_ION)
-                || fragmentType.equalsIgnoreCase(Z_ION)
-                || fragmentType.equalsIgnoreCase(X_ION));
+        return IonType.isCterm(_ionType);
     }
 }
