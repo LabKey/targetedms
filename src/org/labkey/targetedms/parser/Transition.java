@@ -21,10 +21,8 @@ import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.chart.LabelFactory;
 
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -173,6 +171,7 @@ public class Transition extends GeneralTransition
         _complexFragmentIon = complexFragmentIon;
     }
 
+    @Override
     boolean isMs1()
     {
         if (!isPrecursorIon())
@@ -208,24 +207,13 @@ public class Transition extends GeneralTransition
 
     public static class TransitionComparator implements Comparator<Transition>
     {
-        private static Map<String, Integer> ionOrder;
-        static{
-            ionOrder = new HashMap<>();
-            int i = 1;
-            ionOrder.put("custom", i++);
-            ionOrder.put("precursor", i++);
-            ionOrder.put("y", i++);
-            ionOrder.put("b", i++);
-            ionOrder.put("z", i++);
-            ionOrder.put("c", i++);
-            ionOrder.put("x", i++);
-            ionOrder.put("a", i++);
-        }
-
         @Override
         public int compare(Transition t1, Transition t2)
         {
-            int result = ionOrder.get(t1.getFragmentType()).compareTo(ionOrder.get(t2.getFragmentType()));
+            int result = (t1.getIonType() != null || t2.getIonType() != null)
+                    ? Integer.compare(t1.getIonType() != null ? t1.getIonType().ordinal() : -1, t2.getIonType() != null ? t2.getIonType().ordinal() : -1)
+                    : t1.getFragmentType().compareTo(t2.getFragmentType());
+
             if(result == 0)
             {
                 if(t1.isPrecursorIon() && t2.isPrecursorIon())

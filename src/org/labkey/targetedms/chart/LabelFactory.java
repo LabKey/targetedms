@@ -16,6 +16,8 @@
 package org.labkey.targetedms.chart;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.security.User;
 import org.labkey.api.util.DateUtil;
@@ -23,6 +25,7 @@ import org.labkey.api.util.Formats;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSRun;
 import org.labkey.targetedms.parser.GeneralMoleculeChromInfo;
+import org.labkey.targetedms.parser.GeneralTransition.IonType;
 import org.labkey.targetedms.parser.Molecule;
 import org.labkey.targetedms.parser.MoleculePrecursor;
 import org.labkey.targetedms.parser.MoleculeTransition;
@@ -65,38 +68,64 @@ public class LabelFactory
 
     public static String transitionLabel(Transition transition)
     {
-        StringBuilder label = new StringBuilder();
-        if(transition.isPrecursorIon())
-        {
-            label.append("M");
-            Integer massIndex = transition.getMassIndex();
-            if(massIndex != null && massIndex != 0)
-            {
-                label.append(sign.format(transition.getMassIndex()));
-            }
-        }
-        else if(transition.isCustomIon())
-        {
-            label.append(transition.getMeasuredIonName());
-        }
-        else
-        {
-            label.append(transition.getFragmentType());
-            if(transition.getFragmentOrdinal() != null)
-            {
-                label.append(transition.getFragmentOrdinal());
-            }
-
-            Double neutralLossMass = transition.getNeutralLossMass();
-            if(neutralLossMass != null && neutralLossMass > 0.0)
-            {
-                label.append(" -").append(Formats.f0.format(neutralLossMass));
-            }
-        }
+        StringBuilder label = new StringBuilder(getProteomicTransitionName(transition));
         label.append(" - ").append(Formats.f4.format(transition.getMz()));
         if(transition.getCharge() != null)
         {
             label.append(getChargeLabel(transition.getCharge()));
+        }
+        return label.toString();
+    }
+
+    private static String getProteomicTransitionName(Transition transition)
+    {
+        if (transition.getIonType() != null)
+        {
+            return getProteomicTransitionName(transition.getIonType(), transition.getMassIndex(), transition.getFragmentOrdinal(),
+                    transition.getMeasuredIonName(), transition.getNeutralLossMass(), true);
+        }
+        else
+        {
+            // Transition's "fragmentType" cannot be resolved to an IonType.  This should happen only if new ion types added to Skyline are
+            // not yet supported in Panorama.
+            return getProteomicTransitionName(transition.getFragmentType(), transition.getFragmentOrdinal(), transition.getNeutralLossMass());
+        }
+    }
+
+    public static String getProteomicTransitionName(@NotNull IonType ionType, @Nullable Integer massIndex, @Nullable Integer fragmentOrdinal,
+                                                    @Nullable String measuredIonName, @Nullable Double neutralLossMass, boolean extendedCharsAllowed)
+    {
+        StringBuilder label = new StringBuilder();
+        if(IonType.isPrecursor(ionType))
+        {
+            label.append("M");
+            if(massIndex != null && massIndex != 0)
+            {
+                label.append(sign.format(massIndex));
+            }
+        }
+        else if(IonType.isCustom(ionType))
+        {
+            label.append(measuredIonName != null ? measuredIonName : ionType.name());
+        }
+        else
+        {
+            label.append(getProteomicTransitionName(extendedCharsAllowed ? ionType.getDisplayName() : ionType.name(), fragmentOrdinal, neutralLossMass));
+        }
+        return label.toString();
+    }
+
+    public static String getProteomicTransitionName(@NotNull String name, @Nullable Integer fragmentOrdinal, @Nullable Double neutralLossMass)
+    {
+        StringBuilder label = new StringBuilder(name);
+        if(fragmentOrdinal != null)
+        {
+            label.append(fragmentOrdinal);
+        }
+
+        if(neutralLossMass != null && neutralLossMass > 0.0)
+        {
+            label.append(" -").append(Formats.f0.format(neutralLossMass));
         }
         return label.toString();
     }

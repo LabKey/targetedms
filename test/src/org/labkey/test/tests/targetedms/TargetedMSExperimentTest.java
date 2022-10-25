@@ -34,13 +34,18 @@ import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.Ext4Helper;
 import org.labkey.test.util.FileBrowserHelper;
 import org.labkey.test.util.LogMethod;
+import org.labkey.test.util.TextSearcher;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -53,6 +58,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
 {
     private static final String SKY_FILE = "MRMer.zip";
     private static final String SKY_FILE2 = "MRMer_renamed_protein.zip";
+    private static final String SKY_FILE3 = "FragmentTypeTest.sky.zip";
 
     private static final String SKY_FILE_SMALLMOL_PEP = "smallmol_plus_peptides.sky.zip";
     private static final String SKY_FILE_SKYD_14 = "SampleIdTest.sky.zip";
@@ -87,6 +93,10 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         importData(SKY_FILE_AREA_RATIOS_2, ++jobCount);
         verifyAreaRatios();
         verifyBestMassErrorPpm();
+
+        // Verify product ion labels
+        importData(SKY_FILE3, ++jobCount);
+        verifyFragmentIonLabels(SKY_FILE3);
     }
 
     @LogMethod
@@ -737,5 +747,51 @@ public class TargetedMSExperimentTest extends TargetedMSTest
             long massErrorL = Math.round(bestMassErrorPpm * 10000);
             assertEquals("Wrong BestMassErrorPPM", massErrorL, Math.round(((Number) row.getValue("BestMassErrorPPM")).doubleValue() * 10000));
         }
+    }
+
+    private void verifyFragmentIonLabels(String fileName)
+    {
+        goToDashboard();
+        clickAndWait(Locator.linkContainingText(fileName));
+        var transitionsLink = Locator.linkContainingText(23 + " transitions");
+        assertElementPresent(transitionsLink);
+        clickAndWait(transitionsLink);
+        var precursorTable = new DataRegionTable("transitions_view" ,getDriver());
+        String nestedTableText = precursorTable.getDataAsText(1, 0); // Nested table of all transitions for a peptide group
+
+        // Expected fragment ions for peptide GGGGPGGGGPGGGSAGGPSQPPGGGGPGIR
+        var expectedIons = List.of(
+                "M-1 757.0258",
+                "M 757.3601",
+                "M+1 757.6943",
+                "M+2 758.0285",
+                "x25 657.6403",
+                "a22 786.8611",
+                "z\u20222",  "272.1843", // z.2
+                "z\u202213", "387.5359", // z.13
+                "z\u202212", "355.1850", // z.12
+                "z\u20329",  "251.4732", // z'9
+                "z\u20321",  "54.0409" // z'1
+        );
+        assertTextPresentInThisOrder(new TextSearcher(nestedTableText), expectedIons.toArray(new String[0]));
+
+        // Verify legend labels in the chromatogram plot
+        clickAndWait(Locator.linkContainingText("GGGGPGGGGPGGGSAGGPSQPPGGGGPGIR"));
+        // Wait for the plots to be loaded
+        shortWait().until(ExpectedConditions.invisibilityOfElementWithText(Locator.css("div.exportable-plot"), "Loading..."));
+        Set<String> expectedLegendTexts = Set.of("M-1 - 757.0258", "M - 757.3601", "M+1 - 757.6943", "M+2 - 758.0285",
+                "x25 - 657.6403+++", "a22 - 786.8611++",
+                "z\u20222 - 272.1843+", "z\u202213 - 387.5359+++", "z\u202212 - 355.1850+++",
+                "z\u20329 - 251.4732+++", "z\u20321 - 54.0409+++");
+
+        List<WebElement> svgElements = Locator.css("svg g text").findElements(getDriver());
+        Set<String> svgTexts = new HashSet<>();
+        for (WebElement el: svgElements)
+        {
+            svgTexts.add(el.getText());
+        }
+        List<String> missing = expectedLegendTexts.stream().filter(l -> !svgTexts.contains(l)).collect(Collectors.toList());
+
+        assertTrue("Missing legend items in chromatogram plot - " + missing, missing.size() == 0);
     }
 }
