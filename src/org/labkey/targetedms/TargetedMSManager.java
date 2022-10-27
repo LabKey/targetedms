@@ -76,6 +76,7 @@ import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.util.FileUtil;
+import org.labkey.api.util.Pair;
 import org.labkey.api.util.StringUtilsLabKey;
 import org.labkey.api.util.logging.LogHelper;
 import org.labkey.api.view.NotFoundException;
@@ -2135,6 +2136,11 @@ public class TargetedMSManager
             TableInfo metricsTable = targetedMSSchema.getTableOrThrow("qcMetricsConfig", null);
             List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, new SimpleFilter(FieldKey.fromParts("Enabled"), false, CompareType.NEQ_OR_NULL), new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
             List<QCMetricConfiguration> result = new ArrayList<>();
+
+            // We may encounter the same query to see if metrics are enabled more than once, so remember the values
+            // so we don't have to requery
+            Map<Pair<String, String>, Boolean> enabledQueries = new HashMap<>();
+
             for (QCMetricConfiguration metric : metrics)
             {
                 if (metric.getEnabled() == null)
@@ -2146,25 +2152,32 @@ public class TargetedMSManager
                     }
                     else
                     {
-                        QuerySchema enabledSchema = TargetedMSSchema.SCHEMA_NAME.equalsIgnoreCase(metric.getEnabledSchemaName()) ? targetedMSSchema : targetedMSSchema.getDefaultSchema().getSchema(metric.getEnabledSchemaName());
-                        if (enabledSchema != null)
+                        Pair<String, String> schemaQuery = new Pair<>(metric.getEnabledSchemaName(), metric.getEnabledQueryName());
+                        Boolean enabled = enabledQueries.computeIfAbsent(schemaQuery, p ->
                         {
-                            TableInfo enabledQuery = enabledSchema.getTable(metric.getEnabledQueryName(), null);
-                            if (enabledQuery != null)
+                            QuerySchema enabledSchema = TargetedMSSchema.SCHEMA_NAME.equalsIgnoreCase(metric.getEnabledSchemaName()) ? targetedMSSchema : targetedMSSchema.getDefaultSchema().getSchema(metric.getEnabledSchemaName());
+                            if (enabledSchema != null)
                             {
-                                if (new TableSelector(enabledQuery).exists())
+                                TableInfo enabledQuery = enabledSchema.getTable(metric.getEnabledQueryName(), null);
+                                if (enabledQuery != null)
                                 {
-                                    result.add(metric);
+                                    return new TableSelector(enabledQuery).exists();
+                                }
+                                else
+                                {
+                                    _log.warn("Could not find query " + metric.getEnabledSchemaName() + "." + metric.getEnabledQueryName() + " to determine if metric " + metric.getName() + " should be enabled in container " + c.getPath());
                                 }
                             }
                             else
                             {
-                                _log.warn("Could not find query " + metric.getEnabledSchemaName() + "." + metric.getEnabledQueryName() + " to determine if metric " + metric.getName() + " should be enabled in container " + c.getPath());
+                                _log.warn("Could not find schema " + metric.getEnabledSchemaName() + " to determine if metric " + metric.getName() + " should be enabled in container " + c.getPath());
                             }
-                        }
-                        else
+                            return false;
+                        });
+
+                        if (enabled)
                         {
-                            _log.warn("Could not find schema " + metric.getEnabledSchemaName() + " to determine if metric " + metric.getName() + " should be enabled in container " + c.getPath());
+                            result.add(metric);
                         }
                     }
                 }
