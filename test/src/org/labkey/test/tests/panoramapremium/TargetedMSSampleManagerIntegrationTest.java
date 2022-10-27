@@ -92,6 +92,7 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
 
         log("Navigating back to labkey server");
         click(Locator.linkWithText("Assays"));
+        waitAndClick(Locator.linkContainingText("Skyline Documents"));
         waitAndClickAndWait(Locator.linkWithText(SProCoP_FILE_ANNOTATED));
         checker().verifyTrue("Did not navigate back to labkey server",
                 getCurrentRelativeURL(false).contains(WebTestHelper.buildRelativeUrl("targetedms", getProjectName() + "/" + TargetedMS_SubFolder, "showPrecursorList")));
