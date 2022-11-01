@@ -53,21 +53,6 @@ public class ReplicateManager
             .getObject(sampleFileId, SampleFile.class);
     }
 
-    public static SampleFile getNewestSampleFile(Container container)
-    {
-        SQLFragment sqlFragment = new SQLFragment("SELECT s.* FROM ");
-        sqlFragment.append(TargetedMSManager.getTableInfoSampleFile(), "s");
-        sqlFragment.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoReplicate(), "rep");
-        sqlFragment.append(" ON s.replicateId = rep.Id");
-        sqlFragment.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoRuns(), "r");
-        sqlFragment.append(" ON r.Id = rep.runId");
-        sqlFragment.append(" WHERE r.Container=?").add(container);
-        sqlFragment.append(" ORDER BY AcquiredTime DESC");
-        sqlFragment = TargetedMSSchema.getSchema().getSqlDialect().limitRows(sqlFragment, 1);
-
-        return new SqlSelector(TargetedMSManager.getSchema(), sqlFragment).getObject(SampleFile.class);
-    }
-
     public static Replicate getReplicate(long replicateId)
     {
         return new TableSelector(TargetedMSManager.getSchema().getTable(TargetedMSSchema.TABLE_REPLICATE))
