@@ -39,8 +39,8 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.XYDataset;
-import org.json.old.JSONArray;
-import org.json.old.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 import org.labkey.api.action.ApiJsonWriter;
@@ -748,7 +748,10 @@ public class TargetedMSController extends SpringActionController
                 // Fall back on the defaults for the current container
                 properties = PropertyManager.getProperties(getContainer(), QCFolderConstants.CATEGORY);
             }
-            response.put("properties", properties);
+
+            Map<String, Object> toSend = new HashMap<>(properties);
+            toSend.putIfAbsent("dateRangeOffset", "180");
+            response.put("properties", toSend);
 
             return response;
         }
@@ -7332,11 +7335,13 @@ public class TargetedMSController extends SpringActionController
             else
                 json = new JSONObject(properties);
 
-            List<Map<String, Object>> list = json.getJSONArray("runs").toMapList();
-            for (Map<String, Object> entry : list)
+
+            JSONArray runArray = json.getJSONArray("runs");
+            for (int i = 0; i < runArray.length(); i++)
             {
-                Integer rowId = (Integer) entry.get("RowId");
-                Integer replacedByRunId = (Integer) entry.get("ReplacedByRun");
+                JSONObject entry = runArray.getJSONObject(i);
+                Integer rowId = entry.getInt("RowId");
+                Integer replacedByRunId = entry.has("ReplacedByRun") ? entry.getInt("ReplacedByRun") : null;
                 _runs.put(rowId, replacedByRunId);
             }
         }
