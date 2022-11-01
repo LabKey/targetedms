@@ -7329,19 +7329,17 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void bindProperties(Map<String,Object> properties)
         {
-            JSONObject json;
-            if (properties instanceof JSONObject)
-                json = (JSONObject)properties;
+            org.json.old.JSONObject json;
+            if (properties instanceof org.json.old.JSONObject)
+                json = (org.json.old.JSONObject)properties;
             else
-                json = new JSONObject(properties);
+                json = new org.json.old.JSONObject(properties);
 
-
-            JSONArray runArray = json.getJSONArray("runs");
-            for (int i = 0; i < runArray.length(); i++)
+            List<Map<String, Object>> list = json.getJSONArray("runs").toMapList();
+            for (Map<String, Object> entry : list)
             {
-                JSONObject entry = runArray.getJSONObject(i);
-                Integer rowId = entry.getInt("RowId");
-                Integer replacedByRunId = entry.has("ReplacedByRun") ? entry.getInt("ReplacedByRun") : null;
+                Integer rowId = (Integer) entry.get("RowId");
+                Integer replacedByRunId = (Integer) entry.get("ReplacedByRun");
                 _runs.put(rowId, replacedByRunId);
             }
         }
