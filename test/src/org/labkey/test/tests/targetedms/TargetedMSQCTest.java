@@ -573,8 +573,8 @@ public class TargetedMSQCTest extends TargetedMSTest
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.resetInitialQCPlotFields();
-        assertEquals("2015-01-16", qcPlotsWebPart.getCurrentStartDate());
-        assertEquals("2014-07-20", qcPlotsWebPart.getCurrentEndDate());
+        assertEquals("2014-07-20", qcPlotsWebPart.getCurrentStartDate());
+        assertEquals("2015-01-16", qcPlotsWebPart.getCurrentEndDate());
 
         // Check for the newly added precursors.
         assertEquals("Wrong precursors", precursors, qcPlotsWebPart.getPlotTitles());
