@@ -39,8 +39,8 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.XYDataset;
-import org.json.old.JSONArray;
-import org.json.old.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 import org.labkey.api.action.ApiJsonWriter;
@@ -748,7 +748,10 @@ public class TargetedMSController extends SpringActionController
                 // Fall back on the defaults for the current container
                 properties = PropertyManager.getProperties(getContainer(), QCFolderConstants.CATEGORY);
             }
-            response.put("properties", properties);
+
+            Map<String, Object> toSend = new HashMap<>(properties);
+            toSend.putIfAbsent("dateRangeOffset", "180");
+            response.put("properties", toSend);
 
             return response;
         }
@@ -7326,11 +7329,11 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void bindProperties(Map<String,Object> properties)
         {
-            JSONObject json;
-            if (properties instanceof JSONObject)
-                json = (JSONObject)properties;
+            org.json.old.JSONObject json;
+            if (properties instanceof org.json.old.JSONObject)
+                json = (org.json.old.JSONObject)properties;
             else
-                json = new JSONObject(properties);
+                json = new org.json.old.JSONObject(properties);
 
             List<Map<String, Object>> list = json.getJSONArray("runs").toMapList();
             for (Map<String, Object> entry : list)

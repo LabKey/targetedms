@@ -179,9 +179,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     calculateStartDateByOffset : function() {
         if (this.dateRangeOffset > 0) {
-            var todayMinusOffset = new Date();
-            todayMinusOffset.setDate(todayMinusOffset.getDate() - this.dateRangeOffset);
-            return todayMinusOffset;
+            var startDateByOffset = this.maxAcquiredTime ? new Date(this.maxAcquiredTime) : new Date();
+            startDateByOffset.setDate(startDateByOffset.getDate() - this.dateRangeOffset);
+            return startDateByOffset;
         }
 
         return this.minAcquiredTime;
@@ -189,7 +189,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     calculateEndDateByOffset : function() {
         if (this.dateRangeOffset > 0)
-            return new Date();
+            return this.maxAcquiredTime ? this.maxAcquiredTime : new Date();
 
         return this.maxAcquiredTime;
     },

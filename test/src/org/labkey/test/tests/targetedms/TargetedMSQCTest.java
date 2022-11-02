@@ -383,7 +383,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertEquals("Y-Axis Scale not set to default value", QCPlotsWebPart.Scale.LINEAR, qcPlotsWebPart.getCurrentScale());
         assertFalse("Group X-Axis not set to default value", qcPlotsWebPart.isGroupXAxisValuesByDateChecked());
         assertFalse("Show All Peptides not set to default value", qcPlotsWebPart.isShowAllPeptidesInSinglePlotChecked());
-        assertEquals("Date Range Offset not set to default value", QCPlotsWebPart.DateRangeOffset.ALL, qcPlotsWebPart.getCurrentDateRangeOffset());
+        assertEquals("Date Range Offset not set to default value", QCPlotsWebPart.DateRangeOffset.LAST_180_DAYS, qcPlotsWebPart.getCurrentDateRangeOffset());
 
         stopImpersonating();
         goToProjectHome();
@@ -573,7 +573,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.resetInitialQCPlotFields();
-        assertEquals("2015-01-16", qcPlotsWebPart.getCurrentStartDate());
+        assertEquals("2014-07-20", qcPlotsWebPart.getCurrentStartDate());
         assertEquals("2015-01-16", qcPlotsWebPart.getCurrentEndDate());
 
         // Check for the newly added precursors.

@@ -655,6 +655,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     public enum DateRangeOffset
     {
         ALL(0, "All dates"),
+        LAST_180_DAYS(180, "Last 180 days"),
         CUSTOM(-1, "Custom range");
 
         private Integer _offset;
@@ -671,7 +672,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
             for (DateRangeOffset v : values())
                 if (v.toString().equalsIgnoreCase(value))
                     return v;
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(value);
         }
 
         public Integer getOffset()
