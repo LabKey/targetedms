@@ -135,6 +135,7 @@ public abstract class RegressionFit {
             }
             var logPoints = points.stream().map(pt->logPoint(pt)).collect(Collectors.toList());
             var calibrationCurve = LINEAR.fit(logPoints);
+            calibrationCurve.setRegressionFit(this);
             return calibrationCurve;
         }
 
