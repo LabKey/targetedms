@@ -298,9 +298,9 @@ public class MsDataSourceUtil
 
     private Path getDataPath(String fileName, MsDataSource sourceType, Path rawFilesDir)
     {
-        try (Stream<Path> list = Files.walk(rawFilesDir).filter(p -> isSourceMatch(p, fileName, sourceType)))
+        try (Stream<Path> stream = Files.walk(rawFilesDir))
         {
-            return list.findFirst().orElse(null);
+            return stream.filter(p -> isSourceMatch(p, fileName, sourceType)).findFirst().orElse(null);
         }
         catch (IOException e)
         {
