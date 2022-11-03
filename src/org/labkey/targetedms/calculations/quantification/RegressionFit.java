@@ -24,6 +24,7 @@ import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.NelderMeadSimplex;
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizer;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+import org.jetbrains.annotations.Nullable;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -109,7 +110,7 @@ public abstract class RegressionFit {
         }
 
         @Override
-        public double getFittedX(CalibrationCurve calibrationCurve, double y)
+        public Double getX(CalibrationCurve calibrationCurve, double y)
         {
             double discriminant = calibrationCurve.getSlope()*calibrationCurve.getSlope()
                     - 4*calibrationCurve.getQuadraticCoefficient()*(calibrationCurve.getIntercept() - y);
@@ -143,10 +144,10 @@ public abstract class RegressionFit {
         }
 
         @Override
-        public double getFittedX(CalibrationCurve calibrationCurve, double y)
+        public Double getX(CalibrationCurve calibrationCurve, double y)
         {
-            var x = super.getFittedX(calibrationCurve, Math.log(y));
-            return Math.exp(x);
+            var x = super.getX(calibrationCurve, Math.log(y));
+            return x == null ? null : Math.exp(x);
         }
 
         @Override
@@ -216,7 +217,6 @@ public abstract class RegressionFit {
                 totalDelta += pt.getWeight() * delta * delta;
             }
             var score = totalDelta / totalWeight;
-            System.out.println("LOD: " + lod + " Score:" + score);
             return score;
         }
         private static CalibrationCurve getCalibrationCurveWithLod(double lod, List<WeightedObservedPoint> weightedObservedPoints)
@@ -252,7 +252,7 @@ public abstract class RegressionFit {
         @Override
         public Double getX(CalibrationCurve calibrationCurve, double y)
         {
-            Double x = getFittedX(calibrationCurve, y);
+            Double x = super.getX(calibrationCurve, y);
             if (x != null && calibrationCurve.hasTurningPoint() && x < calibrationCurve.getTurningPoint()) {
                 return null;
             }
@@ -340,11 +340,9 @@ public abstract class RegressionFit {
         return x * calibrationCurve.getSlope() + calibrationCurve.getIntercept();
     }
 
-    public Double getX(CalibrationCurve  calibrationCurve, double y) {
-        return getFittedX(calibrationCurve, y);
-    }
-
-    public double getFittedX(CalibrationCurve calibrationCurve, double y) {
+    @Nullable
+    public Double getX(CalibrationCurve  calibrationCurve, double y)
+    {
         return (y - calibrationCurve.getIntercept()) / calibrationCurve.getSlope();
     }
 

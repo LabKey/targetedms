@@ -14,6 +14,8 @@
  */
 package org.labkey.targetedms.calculations.quantification;
 
+import org.jetbrains.annotations.Nullable;
+
 public class CalibrationCurve implements Cloneable {
     private Double slope;
     private Double intercept;
@@ -109,6 +111,7 @@ public class CalibrationCurve implements Cloneable {
         return regressionFit.getY(this, x);
     }
 
+    @Nullable
     public Double getX(double y)
     {
         return regressionFit.getX(this, y);

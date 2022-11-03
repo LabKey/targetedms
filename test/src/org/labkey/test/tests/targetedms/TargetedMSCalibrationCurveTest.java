@@ -101,6 +101,18 @@ public class TargetedMSCalibrationCurveTest extends AbstractQuantificationTest
     }
 
     @Test
+    public void testBilinearFit() throws Exception
+    {
+        runScenario("BilinearCalibrationTest", "none", null);
+    }
+
+    @Test
+    public void testLinearInLogSpace() throws Exception
+    {
+        runScenario("LinearInLogSpace", "none", null);
+    }
+
+    @Test
     public void  testCalibrationPK()
     {
         String subFolderName = "MergedDocuments.sky";

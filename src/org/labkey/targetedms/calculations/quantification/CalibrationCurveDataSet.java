@@ -15,6 +15,7 @@
 package org.labkey.targetedms.calculations.quantification;
 
 import org.apache.commons.math3.fitting.WeightedObservedPoint;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -100,6 +101,7 @@ public class CalibrationCurveDataSet {
         return transitionKeys;
     }
 
+    @Nullable
     public Double getCalculatedConcentration(String label, CalibrationCurve calibrationCurve, Replicate replicate) {
         if (calibrationCurve == null) {
             return null;
@@ -108,7 +110,11 @@ public class CalibrationCurveDataSet {
         if (y == null) {
             return null;
         }
-        return calibrationCurve.getX(y) * replicate.getSampleDilutionFactor();
+        Double x = calibrationCurve.getX(y);
+        if (x == null) {
+            return null;
+        }
+        return x * replicate.getSampleDilutionFactor();
     }
 
     /**
