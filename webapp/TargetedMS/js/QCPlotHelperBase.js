@@ -7,6 +7,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
     statics: {
         qcPlotTypes : ['Levey-Jennings', 'Moving Range', 'CUSUMm', 'CUSUMv'],
+        maxPointsPerSeries : 300,
     },
 
     showLJPlot: function()
@@ -640,6 +641,12 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             disableRange = false;
         }
 
+        var maxPointsPerSeries = 0;
+        for (var i = 0; i < this.precursors.length; i++) {
+            maxPointsPerSeries = Math.max(this.fragmentPlotData[this.precursors[i]].data.length, maxPointsPerSeries);
+        }
+        var showDataPoints = maxPointsPerSeries <= LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries;
+
         var trendLineProps = {
             disableRangeDisplay: disableRange,
             xTick: this.groupedX ? 'groupedXTick' : 'fullDate',
@@ -655,7 +662,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             pointSize: 2,
             shapeRange: [LABKEY.vis.Scale.Shape()[0] /* circle */, LABKEY.vis.Scale.DataspaceShape()[0] /* open circle */],
             showTrendLine: true,
-            showDataPoints: true,
+            showDataPoints: showDataPoints,
             mouseOverFn: this.plotPointMouseOver,
             mouseOverFnScope: this,
             mouseOutFn: this.plotPointMouseOut,
@@ -663,8 +670,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             position: this.groupedX ? 'sequential' : undefined,
             legendMouseOverFn: this.legendMouseOver,
             legendMouseOverFnScope: this,
-            legendMouseOutFn: this.legendMouseOut,
-            legendMouseOutFnScope: this
+            legendMouseOutFn: this.plotPointMouseOut,
+            legendMouseOutFnScope: this,
+            pathMouseOverFn: this.pathMouseOver,
+            pathMouseOverFnScope: this,
+            pathMouseOutFn: this.plotPointMouseOut,
+            pathMouseOutFnScope: this,
+            hoverTextFn: !showDataPoints ? function() { return 'Narrow the date range to show individual data points.' } : undefined
         };
 
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(combinePlotData, plotType, isCUSUMMean));
@@ -726,6 +738,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     + "the mean with negative values have been omitted.</span>");
         }
 
+        var showDataPoints = precursorInfo.data.length <= LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries;
+
         var trendLineProps = {
             xTick: this.groupedX ? 'groupedXTick' : 'fullDate',
             xTickLabel: 'date',
@@ -737,13 +751,14 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             pointIdAttr: function(row) { return row['fullDate']; },
             shapeRange: [LABKEY.vis.Scale.Shape()[0] /* circle */, LABKEY.vis.Scale.DataspaceShape()[0] /* open circle */],
             showTrendLine: true,
-            showDataPoints: true,
+            showDataPoints: showDataPoints,
             defaultGuideSetLabel: 'fragment',
             defaultGuideSets: this.defaultGuideSet,
             mouseOverFn: this.plotPointMouseOver,
             mouseOverFnScope: this,
             position: this.groupedX ? 'sequential' : undefined,
-            disableRangeDisplay: this.isMultiSeries()
+            disableRangeDisplay: this.isMultiSeries(),
+            hoverTextFn: !showDataPoints ? function() { return 'Narrow the date range to show individual data points.' } : undefined
         };
 
         // lines are not separated when indices are not present

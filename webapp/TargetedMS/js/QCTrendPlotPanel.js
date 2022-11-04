@@ -1257,8 +1257,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }
     },
 
-    legendMouseOut : function(data, item) {
-        this.plotPointMouseOut();
+    pathMouseOver : function(event, pathData, layerSel, path, valueName, config) {
+        if (pathData.group) {
+            this.highlightFragmentSeries(pathData.group);
+        }
     },
 
     plotPointMouseOver : function(event, row, layerSel, point, valueName, plotConfig) {
