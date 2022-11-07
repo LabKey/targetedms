@@ -643,7 +643,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         var maxPointsPerSeries = 0;
         for (var i = 0; i < this.precursors.length; i++) {
-            maxPointsPerSeries = Math.max(this.fragmentPlotData[this.precursors[i]].data.length, maxPointsPerSeries);
+            if (this.fragmentPlotData[this.precursors[i]]) {
+                maxPointsPerSeries = Math.max(this.fragmentPlotData[this.precursors[i]].data.length, maxPointsPerSeries);
+            }
         }
         var showDataPoints = maxPointsPerSeries <= LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries;
 
@@ -738,7 +740,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     + "the mean with negative values have been omitted.</span>");
         }
 
-        var showDataPoints = precursorInfo.data.length <= LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries;
+        var showDataPoints = precursorInfo.data ? precursorInfo.data.length <= LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries : true;
 
         var trendLineProps = {
             xTick: this.groupedX ? 'groupedXTick' : 'fullDate',
