@@ -6,9 +6,10 @@
 Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
     statics: {
-        qcPlotTypes : ['Levey-Jennings', 'Moving Range', 'CUSUMm', 'CUSUMv'],
+        qcPlotTypes : ['Levey-Jennings', 'Moving Range', 'CUSUMm', 'CUSUMv', 'Trailing CV', 'Trailing Mean'],
     },
 
+    // add showTrailingMeanPlot and showTrailingCVPlot
     showLJPlot: function()
     {
         return this.isPlotTypeSelected('Levey-Jennings');
@@ -100,6 +101,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     },
 
     getPlotsData: function() {
+        // get input number N
+        // pass includeTrailingCV or includeTrailingMean in plotsConfig
         var plotsConfig = {};
         plotsConfig.metricId = this.metric;
         plotsConfig.includeLJ = this.showLJPlot();
@@ -128,6 +131,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             plotsConfig.endDate = config.EndDate;
         }
 
+        // pass input number N to plotsConfig
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetQCPlotsData.api'),
             success: function(response) {

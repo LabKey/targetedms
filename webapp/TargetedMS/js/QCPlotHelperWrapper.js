@@ -164,6 +164,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         {
             this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.CUSUM, false);
         }
+        // if this.showTrailingMean
+        // if this.showTrailingCV
 
         return true;
     },
@@ -182,6 +184,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
 
     getPlotTypeProperties: function(precursorInfo, plotType, isMean)
     {
+        // add for trailing mean and trailing cv
         if (plotType === LABKEY.vis.TrendingLinePlotType.MovingRange)
             return this.getMovingRangePlotTypeProperties(precursorInfo);
         else if (plotType === LABKEY.vis.TrendingLinePlotType.CUSUM)

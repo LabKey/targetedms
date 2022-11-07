@@ -300,51 +300,36 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     getPlotTypeOptions: function() {
         var plotTypeCheckBoxes = [];
         var me = this;
+        var selectedPlotTypes = [];
         Ext4.each(LABKEY.targetedms.QCPlotHelperBase.qcPlotTypes, function(plotType){
             plotTypeCheckBoxes.push({
-                boxLabel: plotType,
-                name: 'plotTypes',
                 inputValue: plotType,
-                width: plotType.length > 10 ? 110 : 70,
-                checked: this.isPlotTypeSelected(plotType),
-                listeners: {
-                    render: function(cmp) {
-                        cmp.getEl().on('mouseover', function () {
-                            var calloutMgr = hopscotch.getCalloutManager();
-                            calloutMgr.removeAllCallouts();
-                            calloutMgr.createCallout({
-                                id: Ext4.id(),
-                                target: cmp.getEl().dom,
-                                placement: 'top',
-                                width: 300,
-                                xOffset: -250,
-                                arrowOffset: 270,
-                                showCloseButton: false,
-                                title: plotType + ' Plot Type',
-                                content: me.getPlotTypeHelpTooltip(plotType)
-                            });
-                        }, this);
-
-                        cmp.getEl().on('mouseout', function() {
-                            hopscotch.getCalloutManager().removeAllCallouts();
-                        }, this);
-                    }
-                }
             });
+            if (this.isPlotTypeSelected(plotType))  {
+                selectedPlotTypes.push(plotType);
+            }
+
         }, this);
 
         return {
-            xtype: 'checkboxgroup',
-            fieldLabel: 'Plot Types',
-            columns: plotTypeCheckBoxes.length,
-            items: plotTypeCheckBoxes,
-            cls: 'plot-type-checkbox-group',
+            xtype: 'checkcombo',
             id: 'qc-plot-type-with-y-options',
-            width: 475,
+            fieldLabel: 'Plot Types',
+            width: 275,
+            expandToFitContent: true,
+            addAllSelector: true,
+            queryMode: 'local',
+            store: Ext4.create('Ext.data.Store', {
+                fields: ['inputValue'],
+                data: plotTypeCheckBoxes,
+            }),
+            displayField: 'inputValue',
+            valueField: 'inputValue',
+            value: selectedPlotTypes,
             listeners: {
                 scope: this,
                 change: function(cmp, newVal, oldVal) {
-                    var newValues = newVal['plotTypes'];
+                    var newValues = newVal;
                     this.plotTypes = newValues ? Ext4.isArray(newValues) ? newValues : [newValues] : [];
 
                     this.havePlotOptionsChanged = true;
