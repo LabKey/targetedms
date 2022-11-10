@@ -275,6 +275,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     getFirstPlotOptionsToolbar: function() {
         if (!this.plotTypeOptionsToolbar) {
+            let items = [];
             this.plotTypeOptionsToolbar = Ext4.create('Ext.toolbar.Toolbar', {
                 ui: 'footer',
                 cls: 'levey-jennings-toolbar',
@@ -282,6 +283,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 padding: '0 10px 10px 10px',
                 items: [
                     this.getPlotTypeOptions(),
+                    this.getTrailingRunsField(),
                     {xtype: 'tbseparator'}, {xtype: 'tbspacer'},
                     this.getScaleCombo()
                 ],
@@ -297,16 +299,32 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return this.plotTypeOptionsToolbar;
     },
 
+    getTrailingRunsField: function () {
+        if (!this.trailingRunsField) {
+            this.trailingRunsField = {
+                xtype : 'textfield',
+                fieldLabel: 'Tailing Last',
+                labelWidth: 70,
+                width: 105,
+                enableKeyEvents: true,
+                id : 'trailingRuns',
+                hidden: true
+            };
+        }
+        return this.trailingRunsField;
+    },
+
     getPlotTypeOptions: function() {
-        var plotTypeCheckBoxes = [];
-        var me = this;
-        var selectedPlotTypes = [];
+        let plotTypeCheckBoxes = [];
+        let selectedPlotTypes = [];
+
         Ext4.each(LABKEY.targetedms.QCPlotHelperBase.qcPlotTypes, function(plotType){
             plotTypeCheckBoxes.push({
                 inputValue: plotType,
             });
             if (this.isPlotTypeSelected(plotType))  {
                 selectedPlotTypes.push(plotType);
+                this.getTrailingRunsField().hidden = !((plotType.indexOf("Trailing Mean") > -1 || plotType.indexOf("Trailing CV") > -1));
             }
 
         }, this);
@@ -331,7 +349,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 change: function(cmp, newVal, oldVal) {
                     var newValues = newVal;
                     this.plotTypes = newValues ? Ext4.isArray(newValues) ? newValues : [newValues] : [];
-
+                    // this.plotTypeOptionsToolbar.items.push(this.getTrailingRunsField());
+                    this.getFirstPlotOptionsToolbar().items.get('trailingRuns').setVisible(newValues.indexOf("Trailing Mean") > -1 || newValues.indexOf("Trailing CV") > -1);
                     this.havePlotOptionsChanged = true;
                     this.setBrushingEnabled(false);
                     this.displayTrendPlot();
