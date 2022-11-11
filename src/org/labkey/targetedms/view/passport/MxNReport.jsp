@@ -34,7 +34,7 @@
     <!--START IMPORTS-->
 
 <script type="text/javascript">
-    var proteinJSON = <%=protein.getJSON(false).getJavaScriptFragment(2)%>
+    var proteinJSON = <%=json(protein.getJSON(false), 2)%>
     document.addEventListener("DOMContentLoaded", function() {
         LABKEY.Query.selectRows({
             schemaName: 'targetedms',
