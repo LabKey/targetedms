@@ -70,7 +70,7 @@
 
             LABKEY.Query.executeSql({
                 schemaName: 'targetedms',
-                sql: 'SELECT MIN(AcquiredTime) AS MinAcquiredTime, MAX(AcquiredTime) AS MaxAcquiredTime FROM SampleFile',
+                sql: 'SELECT MIN(AcquiredTime) AS MinAcquiredTime, MAX(AcquiredTime) AS MaxAcquiredTime, count(*) AS runs FROM SampleFile',
                 success: function(data) {
                     if (data.rows.length === 0 || !data.rows[0]['MinAcquiredTime']) {
                         Ext4.get(plotPanelId).update("No data found. Please upload runs using the Data Pipeline or directly from Skyline.");
@@ -94,7 +94,8 @@
                 plotDivId: plotPanelId,
                 plotPaginationDivId: plotPaginationPanelId,
                 minAcquiredTime: data.rows[0]['MinAcquiredTime'] ? new Date(data.rows[0]['MinAcquiredTime']) : null,
-                maxAcquiredTime: data.rows[0]['MaxAcquiredTime'] ? new Date(data.rows[0]['MaxAcquiredTime']) : null
+                maxAcquiredTime: data.rows[0]['MaxAcquiredTime'] ? new Date(data.rows[0]['MaxAcquiredTime']) : null,
+                runs: data.rows[0]['runs']
             });
         }
 

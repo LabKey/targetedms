@@ -75,6 +75,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     enableBrushing: false,
     havePlotOptionsChanged: false,
     selectedAnnotations: {},
+    runs: null,
 
     // Max number of plots/series to show per page
     maxCount: 50,
@@ -283,8 +284,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 padding: '0 10px 10px 10px',
                 items: [
                     this.getPlotTypeOptions(),
+                    {xtype: 'tbseparator'},
                     this.getTrailingRunsField(),
-                    {xtype: 'tbseparator'}, {xtype: 'tbspacer'},
+                    {xtype: 'tbspacer'},
                     this.getScaleCombo()
                 ],
                 listeners: {
@@ -302,13 +304,23 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     getTrailingRunsField: function () {
         if (!this.trailingRunsField) {
             this.trailingRunsField = {
-                xtype : 'textfield',
+                xtype : 'numberfield',
                 fieldLabel: 'Tailing Last',
-                labelWidth: 70,
-                width: 105,
+                labelWidth: 65,
+                width: 115,
                 enableKeyEvents: true,
                 id : 'trailingRuns',
-                hidden: true
+                value: this.runs > 10 ? 10 : this.runs,
+                hidden: true,
+                activeError: '',
+                allowDecimals: false,
+                minValue: 0,
+                listeners: {
+                    scope: this,
+                    change: function (cmp, newVal, oldVal) {
+
+                    }
+                }
             };
         }
         return this.trailingRunsField;
