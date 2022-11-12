@@ -64,6 +64,8 @@ import org.labkey.api.action.SimpleViewAction;
 import org.labkey.api.action.SpringActionController;
 import org.labkey.api.admin.AdminUrls;
 import org.labkey.api.analytics.AnalyticsService;
+import org.labkey.api.attachments.DocumentConversionService;
+import org.labkey.api.attachments.SvgSource;
 import org.labkey.api.audit.AuditLogService;
 import org.labkey.api.audit.provider.SiteSettingsAuditProvider;
 import org.labkey.api.data.CompareType;
@@ -165,7 +167,6 @@ import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.WebPartView;
 import org.labkey.api.view.template.ClientDependency;
 import org.labkey.api.view.template.PageConfig;
-import org.labkey.api.visualization.VisualizationService;
 import org.labkey.targetedms.chart.ChromatogramChartMakerFactory;
 import org.labkey.targetedms.chart.ComparisonChartMaker;
 import org.labkey.targetedms.chromlib.ChromatogramLibraryUtils;
@@ -268,7 +269,6 @@ import static org.labkey.api.util.DOM.Attribute.method;
 import static org.labkey.api.util.DOM.Attribute.src;
 import static org.labkey.api.util.DOM.Attribute.width;
 import static org.labkey.api.util.DOM.DIV;
-import static org.labkey.api.util.DOM.P;
 import static org.labkey.api.util.DOM.SPAN;
 import static org.labkey.api.util.DOM.TD;
 import static org.labkey.api.util.DOM.TR;
@@ -1720,7 +1720,7 @@ public class TargetedMSController extends SpringActionController
         }
         else if ("pdf".equalsIgnoreCase(form.getFormat()))
         {
-            VisualizationService.get().renderSvgAsPdf(renderSVG(form, chart), filename + ".pdf", getViewContext().getResponse());
+            DocumentConversionService.get().svgToPdf(SvgSource.of(renderSVG(form, chart)), filename + ".pdf", getViewContext().getResponse());
         }
         else
         {
