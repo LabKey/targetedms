@@ -122,8 +122,10 @@ import org.labkey.api.reports.model.ViewCategoryManager;
 import org.labkey.api.reports.report.RedirectReport;
 import org.labkey.api.reports.report.ReportDescriptor;
 import org.labkey.api.security.ActionNames;
+import org.labkey.api.security.Group;
 import org.labkey.api.security.RequiresLogin;
 import org.labkey.api.security.RequiresPermission;
+import org.labkey.api.security.SecurityManager;
 import org.labkey.api.security.User;
 import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.security.permissions.ApplicationAdminPermission;
@@ -5936,7 +5938,19 @@ public class TargetedMSController extends SpringActionController
                 String url = data.getWebDavURL(FileContentService.PathType.full);
                 if (url != null)
                 {
-                    ByteArrayInputStream inputStream = new ByteArrayInputStream(url.getBytes(StringUtilsLabKey.DEFAULT_CHARSET));
+                    String lineSeparator = "\r\n";
+                    StringBuilder text = new StringBuilder(url);
+                    if (run.getDocumentSize() != null)
+                    {
+                        text.append(lineSeparator).append("FileSize:").append(run.getDocumentSize()); // Size of the .sky.zip in bytes
+                    }
+                    if (!getContainer().hasPermission(SecurityManager.getGroup(Group.groupGuests), ReadPermission.class))
+                    {
+                        // Add the username of the downloading user if this container is not public
+                        text.append(lineSeparator).append("DownloadingUser:").append(getUser().getEmail());
+                    }
+
+                    ByteArrayInputStream inputStream = new ByteArrayInputStream(text.toString().getBytes(StringUtilsLabKey.DEFAULT_CHARSET));
                     PageFlowUtil.streamFile(getViewContext().getResponse(), Collections.emptyMap(), baseFileName + ".skyp", inputStream, true);
                 }
                 else
