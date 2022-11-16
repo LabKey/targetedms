@@ -76,6 +76,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     havePlotOptionsChanged: false,
     selectedAnnotations: {},
     runs: null,
+    trailingRuns: null,
 
     // Max number of plots/series to show per page
     maxCount: 50,
@@ -310,7 +311,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 width: 115,
                 enableKeyEvents: true,
                 id : 'trailingRuns',
-                value: this.runs > 10 ? 10 : this.runs,
+                value: this.trailingRuns ? this.trailingRuns : this.runs > 10 ? 10 : this.runs,
                 hidden: true,
                 activeError: '',
                 allowDecimals: false,
@@ -318,7 +319,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 listeners: {
                     scope: this,
                     change: function (cmp, newVal, oldVal) {
-
+                        this.trailingRuns = newVal;
+                        this.displayTrendPlot();
                     }
                 }
             };
@@ -631,6 +633,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             else {
                 paramValues['plotTypes'] = plotTypes;
             }
+        }
+        paramValue = urlParams['trailingRuns'];
+        if (paramValue === undefined) {
+            paramValues['trailingRuns'] = this.getTrailingRunsField().value;
         }
 
         if (alertMessage.length > 0) {
@@ -1958,7 +1964,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             showExcluded: this.showExcluded,
             dateRangeOffset: this.dateRangeOffset,
             selectedAnnotations: annotationsProp,
-            showExcludedPrecursors: this.showExcludedPrecursors
+            showExcludedPrecursors: this.showExcludedPrecursors,
+            trailingRuns: this.trailingRuns
         };
 
         // set start and end date to null unless we are

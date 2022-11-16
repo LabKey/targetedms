@@ -35,6 +35,16 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         return this.plotTypes.indexOf(plotType) > -1;
     },
 
+    showTrailingMeanPlot: function()
+    {
+        return this.isPlotTypeSelected('Trailing Mean');
+    },
+
+    showTrailingCVPlot: function()
+    {
+        return this.isPlotTypeSelected('Trailing CV');
+    },
+
     getGuideSetDataObj : function(row)
     {
         var guideSet = {
@@ -113,6 +123,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         // show reference guide set for custom date range
         plotsConfig.showReferenceGS = this.showReferenceGS && this.dateRangeOffset !== 0;
         plotsConfig.showExcludedPrecursors = this.showExcludedPrecursors;
+        plotsConfig.trailingRuns = this.trailingRuns;
+        plotsConfig.showTrailingMeanPlot = this.showTrailingMeanPlot();
+        plotsConfig.showTrailingCVPlot = this.showTrailingCVPlot();
 
         var config = this.getReportConfig()
 

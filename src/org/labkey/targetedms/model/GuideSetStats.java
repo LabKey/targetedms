@@ -136,7 +136,7 @@ public class GuideSetStats
         return result.toArray(new Double[0]);
     }
 
-    public void calculateStats()
+    public void calculateStats(Integer trailingRuns)
     {
         _locked = true;
 
@@ -160,6 +160,15 @@ public class GuideSetStats
 
         Double[] mRs = Stats.getMovingRanges(metricVals, false, null);
 
+        Double[] trailingMeans = null;
+        Double[] trailingCVs = null;
+
+        if (trailingRuns != null)
+        {
+            trailingMeans = Stats.getTrailingMeans(metricVals, trailingRuns);
+            trailingCVs = Stats.getTrailingCVs(metricVals, trailingRuns);
+        }
+
         double[] positiveCUSUMm = Stats.getCUSUMS(metricVals, false, false, false, null);
         double[] negativeCUSUMm = Stats.getCUSUMS(metricVals, true, false, false, null);
 
@@ -180,6 +189,14 @@ public class GuideSetStats
                 row.setCUSUMmN(negativeCUSUMm[i]);
                 row.setCUSUMvP(positiveCUSUMv[i]);
                 row.setCUSUMvN(negativeCUSUMv[i]);
+            }
+            if (trailingMeans != null && trailingMeans.length > 0 && i < trailingMeans.length)
+            {
+                row.setTrailingMean(trailingMeans[i]);
+            }
+            if (trailingCVs != null && trailingCVs.length > 0 && i < trailingCVs.length)
+            {
+                row.setTrailingCV(trailingCVs[i]);
             }
         }
     }
