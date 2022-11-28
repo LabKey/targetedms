@@ -9,44 +9,35 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         qcPlotTypes : ['Levey-Jennings', 'Moving Range', 'CUSUMm', 'CUSUMv', 'Trailing CV', 'Trailing Mean'],
     },
 
-    // add showTrailingMeanPlot and showTrailingCVPlot
-    showLJPlot: function()
-    {
+    showLJPlot: function() {
         return this.isPlotTypeSelected('Levey-Jennings');
     },
 
-    showMovingRangePlot: function()
-    {
+    showMovingRangePlot: function() {
         return this.isPlotTypeSelected('Moving Range');
     },
 
-    showMeanCUSUMPlot: function()
-    {
+    showMeanCUSUMPlot: function() {
         return this.isPlotTypeSelected('CUSUMm');
     },
 
-    showVariableCUSUMPlot: function()
-    {
+    showVariableCUSUMPlot: function() {
         return this.isPlotTypeSelected('CUSUMv');
     },
 
-    isPlotTypeSelected: function(plotType)
-    {
+    isPlotTypeSelected: function(plotType) {
         return this.plotTypes.indexOf(plotType) > -1;
     },
 
-    showTrailingMeanPlot: function()
-    {
+    showTrailingMeanPlot: function() {
         return this.isPlotTypeSelected('Trailing Mean');
     },
 
-    showTrailingCVPlot: function()
-    {
+    showTrailingCVPlot: function() {
         return this.isPlotTypeSelected('Trailing CV');
     },
 
-    getGuideSetDataObj : function(row)
-    {
+    getGuideSetDataObj : function(row) {
         var guideSet = {
             ReferenceEnd: row['ReferenceEnd'],
             TrainingEnd: row['TrainingEnd'],
@@ -124,8 +115,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         plotsConfig.showReferenceGS = this.showReferenceGS && this.dateRangeOffset !== 0;
         plotsConfig.showExcludedPrecursors = this.showExcludedPrecursors;
         plotsConfig.trailingRuns = this.trailingRuns;
-        plotsConfig.showTrailingMeanPlot = this.showTrailingMeanPlot();
-        plotsConfig.showTrailingCVPlot = this.showTrailingCVPlot();
+        plotsConfig.includeTrailingMeanPlot = this.showTrailingMeanPlot();
+        plotsConfig.includeTrailingCVPlot = this.showTrailingCVPlot();
 
         var config = this.getReportConfig()
 
@@ -618,6 +609,12 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         if (plotType !== LABKEY.vis.TrendingLinePlotType.MovingRange && plotType !== LABKEY.vis.TrendingLinePlotType.LeveyJennings) {
             yScaleLabel = 'Sum of Deviations'
         }
+        if (plotType === LABKEY.vis.TrendingLinePlotType.TrailingMean) {
+            yScaleLabel = label;
+        }
+        if (plotType === LABKEY.vis.TrendingLinePlotType.TrailingCV) {
+            yScaleLabel = 'CV (%)';
+        }
         else if (conversion) {
             var options = this.getYAxisOptions();
             for (var i = 0; i < options.data.length; i++) {
@@ -772,16 +769,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(precursorInfo, plotType, isCUSUMMean));
 
         var plotLegendData = this.getAdditionalPlotLegend(plotType);
-        if (Ext4.isArray(this.legendData))
-        {
+        if (Ext4.isArray(this.legendData)) {
             plotLegendData = plotLegendData.concat(this.legendData);
         }
 
-        if (plotLegendData && plotLegendData.length > 0)
-        {
-            Ext4.each(plotLegendData, function(legend){
-                if (legend.text && legend.text.length > 0)
-                {
+        if (plotLegendData && plotLegendData.length > 0) {
+            Ext4.each(plotLegendData, function(legend) {
+                if (legend.text && legend.text.length > 0) {
                     if ( !this.longestLegendText || (this.longestLegendText && legend.text.length > this.longestLegendText))
                         this.longestLegendText = legend.text.length;
                 }

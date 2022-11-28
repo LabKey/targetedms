@@ -7,47 +7,49 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
     mixins: {
         leveyJennings: 'LABKEY.targetedms.LeveyJenningsPlotHelper',
         cusum: 'LABKEY.targetedms.CUSUMPlotHelper',
-        movingRange: 'LABKEY.targetedms.MovingRangePlotHelper'
+        movingRange: 'LABKEY.targetedms.MovingRangePlotHelper',
+        trailingMean: 'LABKEY.targetedms.TrailingMeanPlotHelper',
+        trailingCV: 'LABKEY.targetedms.TrailingMeanCVHelper'
     },
 
     statics: {
-        getQCPlotTypeLabel: function(visPlotType, isCUSUMMean)
-        {
-            if (visPlotType == LABKEY.vis.TrendingLinePlotType.MovingRange)
+        getQCPlotTypeLabel: function(visPlotType, isCUSUMMean) {
+            if (visPlotType === LABKEY.vis.TrendingLinePlotType.MovingRange)
                 return 'Moving Range';
-            else if (visPlotType == LABKEY.vis.TrendingLinePlotType.CUSUM)
-            {
+            else if (visPlotType === LABKEY.vis.TrendingLinePlotType.CUSUM) {
                 if (isCUSUMMean)
                     return 'CUSUMm';
                 else
                     return 'CUSUMv';
+            }
+            else if (visPlotType === LABKEY.vis.TrendingLinePlotType.TrailingMean) {
+                return 'Trailing Mean';
+            }
+            else if (visPlotType === LABKEY.vis.TrendingLinePlotType.TrailingCV) {
+                return 'Trailing CV';
             }
             else
                 return 'Levey-Jennings';
         }
     },
 
-    addIndividualPrecursorPlots : function()
-    {
+    addIndividualPrecursorPlots : function() {
         var addedPlot = false,
                 metricProps = this.getMetricPropsById(this.metric),
                 me = this; // for plot brushing
 
         this.longestLegendText = 0;
 
-        for (var i = 0; i < this.precursors.length; i++)
-        {
+        for (var i = 0; i < this.precursors.length; i++) {
             var precursorInfo = this.fragmentPlotData[this.precursors[i]];
 
             // We don't necessarily have info for all possible precursors, depending on the filters and plot type
-            if (precursorInfo)
-            {
+            if (precursorInfo) {
                 addedPlot = true;
 
                 var id = this.plotDivId + "-precursorPlot" + i;
                 var ids = [id];
-                for (var j = 1; j < this.plotTypes.length; j++)
-                {
+                for (var j = 1; j < this.plotTypes.length; j++) {
                     ids.push(id + '_plotType_' + j);
                 }
 
@@ -55,21 +57,23 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
 
                 var plotIndex = 0;
                 // add a new panel for each plot so we can add the title to the frame
-                if (this.showLJPlot())
-                {
+                if (this.showLJPlot()) {
                     this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex++], i, precursorInfo, metricProps, LABKEY.vis.TrendingLinePlotType.LeveyJennings, undefined, me);
                 }
-                if (this.showMovingRangePlot())
-                {
+                if (this.showMovingRangePlot()) {
                     this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex++], i, precursorInfo, metricProps, LABKEY.vis.TrendingLinePlotType.MovingRange, undefined, me);
                 }
-                if (this.showMeanCUSUMPlot())
-                {
+                if (this.showMeanCUSUMPlot()) {
                     this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex++], i, precursorInfo, metricProps, LABKEY.vis.TrendingLinePlotType.CUSUM, true, me);
                 }
-                if (this.showVariableCUSUMPlot())
-                {
+                if (this.showVariableCUSUMPlot()) {
                     this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex], i, precursorInfo, metricProps, LABKEY.vis.TrendingLinePlotType.CUSUM, false, me);
+                }
+                if (this.showTrailingMeanPlot()) {
+                    this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex++], i, precursorInfo, metricProps, LABKEY.vis.TrendingLinePlotType.TrailingMean, undefined, me);
+                }
+                if (this.showTrailingCVPlot()) {
+                    this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex++], i, precursorInfo, metricProps, LABKEY.vis.TrendingLinePlotType.TrailingCV, undefined, me);
                 }
             }
         }
@@ -180,15 +184,21 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
             this.setCUSUMSeriesMinMax(dataObject, row, true);
         if (this.showVariableCUSUMPlot())
             this.setCUSUMSeriesMinMax(dataObject, row, false);
+        if (this.showTrailingMeanPlot())
+            this.setTrailingMeanMinMax(dataObject, row);
+        if (this.showTrailingCVPlot())
+            this.setTrailingCVMinMax(dataObject, row);
     },
 
-    getPlotTypeProperties: function(precursorInfo, plotType, isMean)
-    {
-        // add for trailing mean and trailing cv
+    getPlotTypeProperties: function(precursorInfo, plotType, isMean) {
         if (plotType === LABKEY.vis.TrendingLinePlotType.MovingRange)
             return this.getMovingRangePlotTypeProperties(precursorInfo);
         else if (plotType === LABKEY.vis.TrendingLinePlotType.CUSUM)
             return this.getCUSUMPlotTypeProperties(precursorInfo, isMean);
+        else if (plotType === LABKEY.vis.TrendingLinePlotType.TrailingMean)
+            return this.getTrailingMeanPlotTypeProperties(precursorInfo);
+        else if (plotType === LABKEY.vis.TrendingLinePlotType.TrailingCV)
+            return this.getTrailingCVPlotTypeProperties(precursorInfo);
         else
             return this.getLJPlotTypeProperties(precursorInfo);
     },
@@ -208,25 +218,27 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         return fragmentData;
     },
 
-    getInitPlotMinMaxData: function()
-    {
+    getInitPlotMinMaxData: function() {
         var plotData = {};
-        if (this.showLJPlot())
-        {
+        if (this.showLJPlot()) {
             Ext4.apply(plotData, this.getLJInitFragmentPlotData());
         }
-        if (this.showMovingRangePlot())
-        {
+        if (this.showMovingRangePlot()) {
             Ext4.apply(plotData, this.getMRInitFragmentPlotData());
         }
-        if (this.showMeanCUSUMPlot())
-        {
+        if (this.showMeanCUSUMPlot()) {
             Ext4.apply(plotData, this.getCUSUMInitFragmentPlotData(true));
         }
-        if (this.showVariableCUSUMPlot())
-        {
+        if (this.showVariableCUSUMPlot()) {
             Ext4.apply(plotData, this.getCUSUMInitFragmentPlotData(false));
         }
+        if (this.showTrailingMeanPlot()) {
+            Ext4.apply(plotData, this.getTrailingMeanInitFragmentPlotData());
+        }
+        if (this.showTrailingCVPlot()) {
+            Ext4.apply(plotData, this.getTrailingCVInitFragmentPlotData());
+        }
+
         return plotData;
     },
 
@@ -261,11 +273,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         };
 
         // if a guideSetId is defined for this row, include the guide set stats values in the data object
-        if (Ext4.isDefined(row['GuideSetId']) && row['GuideSetId'] > 0)
-        {
+        if (Ext4.isDefined(row['GuideSetId']) && row['GuideSetId'] > 0) {
             var gs = this.guideSetDataMap[row['GuideSetId']];
-            if (Ext4.isDefined(gs) && gs.Series[fragment])
-            {
+            if (Ext4.isDefined(gs) && gs.Series[fragment]) {
                 data['guideSetId'] = row['GuideSetId'];
                 data['inGuideSetTrainingRange'] = row['InGuideSetTrainingRange'];
                 data['groupedXTick'] = data['groupedXTick'] + '|'
@@ -274,22 +284,25 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
             }
         }
 
-        if (this.showLJPlot())
-        {
+        if (this.showLJPlot()) {
             Ext4.apply(data, this.processLJPlotDataRow(row, fragment, seriesType, metricProps));
         }
-        if (this.showMovingRangePlot())
-        {
+        if (this.showMovingRangePlot()) {
             Ext4.apply(data, this.processMRPlotDataRow(row, fragment, seriesType, metricProps));
         }
-        if (this.showMeanCUSUMPlot())
-        {
+        if (this.showMeanCUSUMPlot()) {
             Ext4.apply(data, this.processCUSUMPlotDataRow(row, fragment, seriesType, metricProps, true));
         }
-        if (this.showVariableCUSUMPlot())
-        {
+        if (this.showVariableCUSUMPlot()) {
             Ext4.apply(data, this.processCUSUMPlotDataRow(row, fragment, seriesType, metricProps, false));
         }
+        if (this.showTrailingMeanPlot()) {
+            Ext4.apply(data, this.processTrailingMeanPlotDataRow(row, fragment, seriesType, metricProps));
+        }
+        if (this.showTrailingCVPlot()) {
+            Ext4.apply(data, this.processTrailingCVPlotDataRow(row, fragment, seriesType, metricProps));
+        }
+
 
         return data;
     },
@@ -354,6 +367,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
             return LABKEY.targetedms.CUSUMPlotHelper.tooltips['CUSUMm'];
         else if (plotTypeName == 'CUSUMv')
             return LABKEY.targetedms.CUSUMPlotHelper.tooltips['CUSUMv'];
+        else if (plotTypeName === 'Trailing Mean')
+            return LABKEY.targetedms.TrailingMeanPlotHelper.tooltips['Trailing Mean'];
         return '';
     }
 });

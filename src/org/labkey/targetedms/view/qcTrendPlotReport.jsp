@@ -37,6 +37,8 @@
         dependencies.add("targetedms/js/QCPlotHelperBase.js");
         dependencies.add("targetedms/js/QCPlotLegendHelper.js");
         dependencies.add("targetedms/js/LeveyJenningsPlotHelper.js");
+        dependencies.add("targetedms/js/TrailingMeanPlotHelper.js");
+        dependencies.add("targetedms/js/TrailingCVPlotHelper.js");
         dependencies.add("targetedms/js/CUSUMPlotHelper.js");
         dependencies.add("targetedms/js/MovingRangePlotHelper.js");
         dependencies.add("targetedms/js/QCPlotHelperWrapper.js");

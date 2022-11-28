@@ -1187,8 +1187,8 @@ public class TargetedMSController extends SpringActionController
         @Getter @Setter private boolean showReferenceGS;
         @Getter @Setter private boolean showExcludedPrecursors;
         @Getter @Setter private int trailingRuns;
-        @Getter @Setter private boolean showTrailingMeanPlot;
-        @Getter @Setter private boolean showTrailingCVPlot;
+        @Getter @Setter private boolean includeTrailingMeanPlot;
+        @Getter @Setter private boolean includeTrailingCVPlot;
 
         public Date getStartDate()
         {
@@ -1273,7 +1273,7 @@ public class TargetedMSController extends SpringActionController
             // always query for the full range
             List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(schema, qcMetricConfigurations, qcFolderStartDate, qcFolderEndDate, form.getSelectedAnnotations(), form.isShowExcluded(), form.isShowExcludedPrecursors());
             Map<GuideSetKey, GuideSetStats> stats;
-            if (form.showTrailingCVPlot || form.showTrailingMeanPlot)
+            if (form.includeTrailingCVPlot || form.includeTrailingMeanPlot)
             {
                 stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())), form.trailingRuns);
             }
@@ -1323,7 +1323,7 @@ public class TargetedMSController extends SpringActionController
             response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toQCPlotJSON).collect(Collectors.toList()));
             response.put("plotDataRows", qcPlotFragments
                     .stream()
-                    .map(qcPlotFragment -> qcPlotFragment.toJSON(form.isIncludeLJ(), form.isIncludeMR(), form.isIncludeMeanCusum(), form.isIncludeVariableCusum(), form.isShowExcluded()))
+                    .map(qcPlotFragment -> qcPlotFragment.toJSON(form.isIncludeLJ(), form.isIncludeMR(), form.isIncludeMeanCusum(), form.isIncludeVariableCusum(), form.isShowExcluded(), form.isIncludeTrailingMeanPlot(), form.isIncludeTrailingCVPlot()))
                     .collect(Collectors.toList()));
             response.put("metricProps", metricMap.get(passedMetricId).toJSON());
             response.put("filterQCPoints", filterQCPoints);
