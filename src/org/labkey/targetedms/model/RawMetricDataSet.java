@@ -15,6 +15,8 @@
  */
 package org.labkey.targetedms.model;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.targetedms.model.OutlierCounts;
@@ -27,10 +29,10 @@ public class RawMetricDataSet
 {
     private final SampleFileQCMetadata _sampleFile;
 
-    String seriesLabel;
-    Double metricValue;
-    int metricId;
-    int metricSeriesIndex;
+    @Setter String seriesLabel;
+    @Setter Double metricValue;
+    @Getter @Setter int metricId;
+    @Getter @Setter int metricSeriesIndex;
 
     Long precursorChromInfoId;
 
@@ -39,6 +41,8 @@ public class RawMetricDataSet
     Double cusumMN;
     Double cusumVP;
     Double cusumVN;
+    @Getter @Setter Double trailingMean;
+    @Getter @Setter Double trailingCV;
 
     PrecursorInfo _precursor;
 
@@ -190,40 +194,10 @@ public class RawMetricDataSet
         return "";
     }
 
-    public void setSeriesLabel(String seriesLabel)
-    {
-        this.seriesLabel = seriesLabel;
-    }
-
     @Nullable
     public Double getMetricValue()
     {
         return metricValue;
-    }
-
-    public void setMetricValue(Double metricValue)
-    {
-        this.metricValue = metricValue;
-    }
-
-    public int getMetricId()
-    {
-        return metricId;
-    }
-
-    public void setMetricId(int metricId)
-    {
-        this.metricId = metricId;
-    }
-
-    public int getMetricSeriesIndex()
-    {
-        return metricSeriesIndex;
-    }
-
-    public void setMetricSeriesIndex(int metricSeriesIndex)
-    {
-        this.metricSeriesIndex = metricSeriesIndex;
     }
 
     public GuideSetKey getGuideSetKey()

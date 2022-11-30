@@ -75,6 +75,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     enableBrushing: false,
     havePlotOptionsChanged: false,
     selectedAnnotations: {},
+    runs: null,
+    trailingRuns: null,
 
     // Max number of plots/series to show per page
     maxCount: 50,
@@ -275,6 +277,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     getFirstPlotOptionsToolbar: function() {
         if (!this.plotTypeOptionsToolbar) {
+            let items = [];
             this.plotTypeOptionsToolbar = Ext4.create('Ext.toolbar.Toolbar', {
                 ui: 'footer',
                 cls: 'levey-jennings-toolbar',
@@ -282,7 +285,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 padding: '0 10px 10px 10px',
                 items: [
                     this.getPlotTypeOptions(),
-                    {xtype: 'tbseparator'}, {xtype: 'tbspacer'},
+                    {xtype: 'tbseparator'},
+                    this.getTrailingRunsField(),
+                    {xtype: 'tbspacer'},
                     this.getScaleCombo()
                 ],
                 listeners: {
@@ -297,56 +302,69 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return this.plotTypeOptionsToolbar;
     },
 
-    getPlotTypeOptions: function() {
-        var plotTypeCheckBoxes = [];
-        var me = this;
-        Ext4.each(LABKEY.targetedms.QCPlotHelperBase.qcPlotTypes, function(plotType){
-            plotTypeCheckBoxes.push({
-                boxLabel: plotType,
-                name: 'plotTypes',
-                inputValue: plotType,
-                width: plotType.length > 10 ? 110 : 70,
-                checked: this.isPlotTypeSelected(plotType),
+    getTrailingRunsField: function () {
+        if (!this.trailingRunsField) {
+            this.trailingRunsField = {
+                xtype : 'numberfield',
+                fieldLabel: 'Tailing Last',
+                labelWidth: 65,
+                width: 115,
+                enableKeyEvents: true,
+                id : 'trailingRuns',
+                value: this.trailingRuns ? this.trailingRuns : this.runs > 10 ? 10 : this.runs,
+                hidden: true,
+                activeError: '',
+                allowDecimals: false,
+                minValue: 0,
                 listeners: {
-                    render: function(cmp) {
-                        cmp.getEl().on('mouseover', function () {
-                            var calloutMgr = hopscotch.getCalloutManager();
-                            calloutMgr.removeAllCallouts();
-                            calloutMgr.createCallout({
-                                id: Ext4.id(),
-                                target: cmp.getEl().dom,
-                                placement: 'top',
-                                width: 300,
-                                xOffset: -250,
-                                arrowOffset: 270,
-                                showCloseButton: false,
-                                title: plotType + ' Plot Type',
-                                content: me.getPlotTypeHelpTooltip(plotType)
-                            });
-                        }, this);
-
-                        cmp.getEl().on('mouseout', function() {
-                            hopscotch.getCalloutManager().removeAllCallouts();
-                        }, this);
+                    scope: this,
+                    change: function (cmp, newVal, oldVal) {
+                        this.trailingRuns = newVal;
+                        this.displayTrendPlot();
                     }
                 }
+            };
+        }
+        return this.trailingRunsField;
+    },
+
+    getPlotTypeOptions: function() {
+        let plotTypeCheckBoxes = [];
+        let selectedPlotTypes = [];
+
+        Ext4.each(LABKEY.targetedms.QCPlotHelperBase.qcPlotTypes, function(plotType){
+            plotTypeCheckBoxes.push({
+                inputValue: plotType,
             });
+            if (this.isPlotTypeSelected(plotType))  {
+                selectedPlotTypes.push(plotType);
+                this.getTrailingRunsField().hidden = !((plotType.indexOf("Trailing Mean") > -1 || plotType.indexOf("Trailing CV") > -1));
+            }
+
         }, this);
 
         return {
-            xtype: 'checkboxgroup',
-            fieldLabel: 'Plot Types',
-            columns: plotTypeCheckBoxes.length,
-            items: plotTypeCheckBoxes,
-            cls: 'plot-type-checkbox-group',
+            xtype: 'checkcombo',
             id: 'qc-plot-type-with-y-options',
-            width: 475,
+            fieldLabel: 'Plot Types',
+            width: 275,
+            expandToFitContent: true,
+            addAllSelector: true,
+            queryMode: 'local',
+            store: Ext4.create('Ext.data.Store', {
+                fields: ['inputValue'],
+                data: plotTypeCheckBoxes,
+            }),
+            displayField: 'inputValue',
+            valueField: 'inputValue',
+            value: selectedPlotTypes,
             listeners: {
                 scope: this,
                 change: function(cmp, newVal, oldVal) {
-                    var newValues = newVal['plotTypes'];
+                    var newValues = newVal;
                     this.plotTypes = newValues ? Ext4.isArray(newValues) ? newValues : [newValues] : [];
-
+                    // this.plotTypeOptionsToolbar.items.push(this.getTrailingRunsField());
+                    this.getFirstPlotOptionsToolbar().items.get('trailingRuns').setVisible(newValues.indexOf("Trailing Mean") > -1 || newValues.indexOf("Trailing CV") > -1);
                     this.havePlotOptionsChanged = true;
                     this.setBrushingEnabled(false);
                     this.displayTrendPlot();
@@ -615,6 +633,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             else {
                 paramValues['plotTypes'] = plotTypes;
             }
+        }
+        paramValue = urlParams['trailingRuns'];
+        if (paramValue === undefined) {
+            paramValues['trailingRuns'] = this.getTrailingRunsField().value;
         }
 
         if (alertMessage.length > 0) {
@@ -1944,7 +1966,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             showExcluded: this.showExcluded,
             dateRangeOffset: this.dateRangeOffset,
             selectedAnnotations: annotationsProp,
-            showExcludedPrecursors: this.showExcludedPrecursors
+            showExcludedPrecursors: this.showExcludedPrecursors,
+            trailingRuns: this.trailingRuns
         };
 
         // set start and end date to null unless we are

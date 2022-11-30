@@ -37,12 +37,15 @@
         dependencies.add("targetedms/js/QCPlotHelperBase.js");
         dependencies.add("targetedms/js/QCPlotLegendHelper.js");
         dependencies.add("targetedms/js/LeveyJenningsPlotHelper.js");
+        dependencies.add("targetedms/js/TrailingMeanPlotHelper.js");
+        dependencies.add("targetedms/js/TrailingCVPlotHelper.js");
         dependencies.add("targetedms/js/CUSUMPlotHelper.js");
         dependencies.add("targetedms/js/MovingRangePlotHelper.js");
         dependencies.add("targetedms/js/QCPlotHelperWrapper.js");
         dependencies.add("targetedms/js/BaseQCPlotPanel.js");
         dependencies.add("targetedms/js/QCTrendPlotPanel.js");
         dependencies.add("targetedms/js/QCPlotHoverPanel.js");
+        dependencies.add("ux/CheckCombo/CheckCombo.js");
     }
 %>
 <%
@@ -69,7 +72,7 @@
 
             LABKEY.Query.executeSql({
                 schemaName: 'targetedms',
-                sql: 'SELECT MIN(AcquiredTime) AS MinAcquiredTime, MAX(AcquiredTime) AS MaxAcquiredTime FROM SampleFile',
+                sql: 'SELECT MIN(AcquiredTime) AS MinAcquiredTime, MAX(AcquiredTime) AS MaxAcquiredTime, count(*) AS runs FROM SampleFile',
                 success: function(data) {
                     if (data.rows.length === 0 || !data.rows[0]['MinAcquiredTime']) {
                         Ext4.get(plotPanelId).update("No data found. Please upload runs using the Data Pipeline or directly from Skyline.");
@@ -93,7 +96,8 @@
                 plotDivId: plotPanelId,
                 plotPaginationDivId: plotPaginationPanelId,
                 minAcquiredTime: data.rows[0]['MinAcquiredTime'] ? new Date(data.rows[0]['MinAcquiredTime']) : null,
-                maxAcquiredTime: data.rows[0]['MaxAcquiredTime'] ? new Date(data.rows[0]['MaxAcquiredTime']) : null
+                maxAcquiredTime: data.rows[0]['MaxAcquiredTime'] ? new Date(data.rows[0]['MaxAcquiredTime']) : null,
+                runs: data.rows[0]['runs']
             });
         }
 

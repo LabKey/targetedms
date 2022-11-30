@@ -419,7 +419,12 @@ public class OutlierGenerator
      * Calculate guide set stats for Levey-Jennings and moving range comparisons.
      * @param guideSets id to GuideSet
      */
+
     public Map<GuideSetKey, GuideSetStats> getAllProcessedMetricGuideSets(List<RawMetricDataSet> rawMetricData, Map<Integer, GuideSet> guideSets)
+    {
+        return getAllProcessedMetricGuideSets(rawMetricData, guideSets, null);
+    }
+    public Map<GuideSetKey, GuideSetStats> getAllProcessedMetricGuideSets(List<RawMetricDataSet> rawMetricData, Map<Integer, GuideSet> guideSets, Integer trailingRuns)
     {
         Map<GuideSetKey, GuideSetStats> result = new HashMap<>();
 
@@ -430,7 +435,7 @@ public class OutlierGenerator
             stats.addRow(row);
         }
 
-        result.values().forEach(GuideSetStats::calculateStats);
+        result.values().forEach(g -> g.calculateStats(trailingRuns));
         return result;
     }
 

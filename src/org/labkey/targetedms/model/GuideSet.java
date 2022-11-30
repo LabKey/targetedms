@@ -15,6 +15,8 @@
  */
 package org.labkey.targetedms.model;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.json.old.JSONObject;
 import org.labkey.api.data.Entity;
 import org.labkey.api.targetedms.model.OutlierCounts;
@@ -31,73 +33,12 @@ import java.util.Map;
  */
 public class GuideSet extends Entity
 {
-    private int _rowId;
-
-    private String _comment;
-    private Date _trainingStart;
-    private Date _trainingEnd;
-    private Date _referenceEnd;
-    private boolean _isDefault;
-
-    public int getRowId()
-    {
-        return _rowId;
-    }
-
-    public void setRowId(int rowId)
-    {
-        _rowId = rowId;
-    }
-
-    public String getComment()
-    {
-        return _comment;
-    }
-
-    public void setComment(String comment)
-    {
-        _comment = comment;
-    }
-
-    public Date getTrainingStart()
-    {
-        return _trainingStart;
-    }
-
-    public void setTrainingStart(Date trainingStart)
-    {
-        _trainingStart = trainingStart;
-    }
-
-    public Date getTrainingEnd()
-    {
-        return _trainingEnd;
-    }
-
-    public void setTrainingEnd(Date trainingEnd)
-    {
-        _trainingEnd = trainingEnd;
-    }
-
-    public Date getReferenceEnd()
-    {
-        return _referenceEnd;
-    }
-
-    public void setReferenceEnd(Date referenceEnd)
-    {
-        _referenceEnd = referenceEnd;
-    }
-
-    public boolean isDefault()
-    {
-        return _isDefault;
-    }
-
-    public void setIsDefault(boolean isDefault)
-    {
-        _isDefault = isDefault;
-    }
+    @Getter @Setter private int rowId;
+    @Getter @Setter private String comment;
+    @Getter @Setter private Date trainingStart;
+    @Getter @Setter private Date trainingEnd;
+    @Getter @Setter private Date referenceEnd;
+    @Getter @Setter private boolean isDefault;
 
     public JSONObject toJSON(List<RawMetricDataSet> dataRows, Map<Integer, QCMetricConfiguration> metrics, Map<GuideSetKey, GuideSetStats> stats)
     {

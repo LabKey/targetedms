@@ -18,6 +18,8 @@ package org.labkey.targetedms;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keypoint.PngEncoder;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGeneratorContext;
 import org.apache.batik.svggen.SVGGraphics2D;
@@ -813,6 +815,7 @@ public class TargetedMSController extends SpringActionController
         private List<String> _plotTypes;
         private Boolean _largePlot;
         public List<String> _selectedAnnotations;
+        @Getter @Setter private Integer trailingRuns;
 
         public Map<String, String> getAsMapOfStrings()
         {
@@ -837,6 +840,8 @@ public class TargetedMSController extends SpringActionController
                 valueMap.put("largePlot", Boolean.toString(_largePlot));
             if(_selectedAnnotations != null)
                 valueMap.put("selectedAnnotations", getSelectedAnnotationsString());
+            if (trailingRuns != null)
+                valueMap.put("trailingRuns", Integer.toString(trailingRuns));
             // note: start and end date handled separately since they can be null and we want to persist that
             return valueMap;
         }
@@ -1175,67 +1180,20 @@ public class TargetedMSController extends SpringActionController
 
     public static class QCPlotsDataForm
     {
-        private int _metricId;
-        private boolean _includeLJ;
-        private boolean _includeMR;
-        private boolean _includeMeanCusum;
-        private boolean _includeVariableCusum;
+        @Getter @Setter private int metricId;
+        @Getter @Setter private boolean includeLJ;
+        @Getter @Setter private boolean includeMR;
+        @Getter @Setter private boolean includeMeanCusum;
+        @Getter @Setter private boolean includeVariableCusum;
         private Date _startDate;
         private Date _endDate;
-        private List<OutlierGenerator.AnnotationGroup> _selectedAnnotations = Collections.emptyList();
-        private boolean _showExcluded;
-        private boolean _showReferenceGS;
-        private boolean _showExcludedPrecursors;
-
-        public int getMetricId()
-        {
-            return _metricId;
-        }
-
-        public void setMetricId(int metricId)
-        {
-            this._metricId = metricId;
-        }
-
-        public boolean isIncludeLJ()
-        {
-            return _includeLJ;
-        }
-
-        public void setIncludeLJ(boolean includeLJ)
-        {
-            this._includeLJ = includeLJ;
-        }
-
-        public boolean isIncludeMR()
-        {
-            return _includeMR;
-        }
-
-        public void setIncludeMR(boolean includeMR)
-        {
-            this._includeMR = includeMR;
-        }
-
-        public boolean isIncludeMeanCusum()
-        {
-            return _includeMeanCusum;
-        }
-
-        public void setIncludeMeanCusum(boolean includeMeanCusum)
-        {
-            this._includeMeanCusum = includeMeanCusum;
-        }
-
-        public boolean isIncludeVariableCusum()
-        {
-            return _includeVariableCusum;
-        }
-
-        public void setIncludeVariableCusum(boolean includeVariableCusum)
-        {
-            this._includeVariableCusum = includeVariableCusum;
-        }
+        @Getter @Setter private List<OutlierGenerator.AnnotationGroup> selectedAnnotations = Collections.emptyList();
+        @Getter @Setter  private boolean showExcluded;
+        @Getter @Setter private boolean showReferenceGS;
+        @Getter @Setter private boolean showExcludedPrecursors;
+        @Getter @Setter private int trailingRuns;
+        @Getter @Setter private boolean includeTrailingMeanPlot;
+        @Getter @Setter private boolean includeTrailingCVPlot;
 
         public Date getStartDate()
         {
@@ -1255,46 +1213,6 @@ public class TargetedMSController extends SpringActionController
         public void setEndDate(java.sql.Date endDate)
         {
             _endDate = endDate;
-        }
-
-        public List<OutlierGenerator.AnnotationGroup> getSelectedAnnotations()
-        {
-            return _selectedAnnotations;
-        }
-
-        public void setSelectedAnnotations(List<OutlierGenerator.AnnotationGroup> selectedAnnotations)
-        {
-            _selectedAnnotations = selectedAnnotations;
-        }
-
-        public boolean isShowExcluded()
-        {
-            return _showExcluded;
-        }
-
-        public void setShowExcluded(boolean showExcluded)
-        {
-            _showExcluded = showExcluded;
-        }
-
-        public boolean isShowReferenceGS()
-        {
-            return _showReferenceGS;
-        }
-
-        public void setShowReferenceGS(boolean showReferenceGS)
-        {
-            _showReferenceGS = showReferenceGS;
-        }
-
-        public boolean isShowExcludedPrecursors()
-        {
-            return _showExcludedPrecursors;
-        }
-
-        public void setShowExcludedPrecursors(boolean showExcludedPrecursors)
-        {
-            _showExcludedPrecursors = showExcludedPrecursors;
         }
     }
 
@@ -1359,7 +1277,15 @@ public class TargetedMSController extends SpringActionController
 
             // always query for the full range
             List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(schema, qcMetricConfigurations, qcFolderStartDate, qcFolderEndDate, form.getSelectedAnnotations(), form.isShowExcluded(), form.isShowExcludedPrecursors());
-            Map<GuideSetKey, GuideSetStats> stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+            Map<GuideSetKey, GuideSetStats> stats;
+            if (form.includeTrailingCVPlot || form.includeTrailingMeanPlot)
+            {
+                stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())), form.trailingRuns);
+            }
+            else
+            {
+                stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+            }
             boolean zoomedRange = qcFolderStartDate != null &&
                     qcFolderEndDate != null && rangeStartDate != null && form.getEndDate() != null &&
                     (DateUtil.getDateOnly(qcFolderStartDate).compareTo(rangeStartDate) != 0 ||
@@ -1402,7 +1328,7 @@ public class TargetedMSController extends SpringActionController
             response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toQCPlotJSON).collect(Collectors.toList()));
             response.put("plotDataRows", qcPlotFragments
                     .stream()
-                    .map(qcPlotFragment -> qcPlotFragment.toJSON(form.isIncludeLJ(), form.isIncludeMR(), form.isIncludeMeanCusum(), form.isIncludeVariableCusum(), form.isShowExcluded()))
+                    .map(qcPlotFragment -> qcPlotFragment.toJSON(form.isIncludeLJ(), form.isIncludeMR(), form.isIncludeMeanCusum(), form.isIncludeVariableCusum(), form.isShowExcluded(), form.isIncludeTrailingMeanPlot(), form.isIncludeTrailingCVPlot()))
                     .collect(Collectors.toList()));
             response.put("metricProps", metricMap.get(passedMetricId).toJSON());
             response.put("filterQCPoints", filterQCPoints);

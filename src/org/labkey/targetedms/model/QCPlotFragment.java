@@ -70,7 +70,7 @@ public class QCPlotFragment
         this.guideSetStats = guideSetStats;
     }
 
-    public JSONObject toJSON(boolean includeLJ, boolean includeMR, boolean includeMeanCusum, boolean includeVariableCusum, boolean showExcluded)
+    public JSONObject toJSON(boolean includeLJ, boolean includeMR, boolean includeMeanCusum, boolean includeVariableCusum, boolean showExcluded, boolean includeTrailingMean, boolean includeTrailingCV)
     {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("DataType", getDataType());
@@ -137,6 +137,14 @@ public class QCPlotFragment
                 {
                     dataJsonObject.put("CUSUMvP", plotData.getCUSUMvP());
                     dataJsonObject.put("CUSUMvN", plotData.getCUSUMvN());
+                }
+                if (includeTrailingMean)
+                {
+                    dataJsonObject.put("TrailingMean", plotData.getTrailingMean());
+                }
+                if (includeTrailingCV)
+                {
+                    dataJsonObject.put("TrailingCV", plotData.getTrailingCV());
                 }
                 dataJsonArray.put(dataJsonObject);
             }
