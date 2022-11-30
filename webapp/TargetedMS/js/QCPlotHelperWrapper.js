@@ -9,7 +9,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         cusum: 'LABKEY.targetedms.CUSUMPlotHelper',
         movingRange: 'LABKEY.targetedms.MovingRangePlotHelper',
         trailingMean: 'LABKEY.targetedms.TrailingMeanPlotHelper',
-        trailingCV: 'LABKEY.targetedms.TrailingMeanCVHelper'
+        trailingCV: 'LABKEY.targetedms.TrailingCVPlotHelper'
     },
 
     statics: {
@@ -369,6 +369,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
             return LABKEY.targetedms.CUSUMPlotHelper.tooltips['CUSUMv'];
         else if (plotTypeName === 'Trailing Mean')
             return LABKEY.targetedms.TrailingMeanPlotHelper.tooltips['Trailing Mean'];
+        else if (plotTypeName === 'Trailing CV')
+            return LABKEY.targetedms.TrailingCVPlotHelper.tooltips['Trailing CV'];
         return '';
     }
 });
