@@ -242,8 +242,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         return plotData;
     },
 
-    processPlotDataRow: function(row, plotDataRow, fragment, metricProps)
-    {
+    processPlotDataRow: function(row, plotDataRow, fragment, metricProps) {
         var dataType = plotDataRow['DataType'];
         var mz = Ext4.util.Format.number(plotDataRow['mz'], '0.0000');
         var color = plotDataRow['SeriesColor'];

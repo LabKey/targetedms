@@ -169,7 +169,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         if (this.showLJPlot()) {
             this.processLJGuideSetData(plotDataRows);
         }
-        if (this.showMovingRangePlot() || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot()) {
+        if (this.showMovingRangePlot() || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot() || this.showTrailingMeanPlot() || this.showTrailingCVPlot()) {
             this.processRawGuideSetData(plotDataRows);
         }
 

@@ -11,40 +11,30 @@ Ext4.define("LABKEY.targetedms.TrailingCVPlotHelper", {
         }
     },
     processTrailingCVPlotDataRow: function(row, fragment, seriesType, metricProps) {
-        var data = {};
-        // if a guideSetId is defined for this row, include the guide set stats values in the data object
-        if (Ext4.isDefined(row['GuideSetId']) && row['GuideSetId'] > 0)
-        {
-            var gs = this.guideSetDataMap[row['GuideSetId']];
-            if (Ext4.isDefined(gs) && gs.Series[fragment]&& gs.Series[fragment][seriesType])
-            {
-                data['mean'] = gs.Series[fragment][seriesType]['Mean'];
-                data['stdDev'] = gs.Series[fragment][seriesType]['StdDev'];
-            }
-        }
+        let data = {};
 
         if (this.isMultiSeries())
         {
-            data['value_' + seriesType] = row['TrailingCV'];
-            data['value_' + seriesType + 'Title'] = metricProps[seriesType + 'Label'];
+            data['TrailingCV_' + seriesType] = row['TrailingCV'];
+            data['TrailingCV_' + seriesType + 'Title'] = metricProps[seriesType + 'Label'];
         }
         else
         {
-            data['value'] = row['TrailingCV'];
+            data['TrailingCV'] = row['TrailingCV'];
         }
         return data;
 
     },
 
     getTrailingCVPlotTypeProperties: function(precursorInfo) {
-        var plotProperties = {};
+        let plotProperties = {};
         // some properties are specific to whether or not we are showing multiple y-axis series
         if (this.isMultiSeries()) {
-            plotProperties['value'] = 'value_series1';
-            plotProperties['valueRight'] = 'value_series2';
+            plotProperties['TrailingCV'] = 'value_series1';
+            plotProperties['TrailingCVRight'] = 'value_series2';
         }
         else {
-            plotProperties['value'] = 'value';
+            plotProperties['TrailingCV'] = 'TrailingCV';
             plotProperties['yAxisDomain'] = [precursorInfo.min, precursorInfo.max];
         }
         return plotProperties;
@@ -52,7 +42,7 @@ Ext4.define("LABKEY.targetedms.TrailingCVPlotHelper", {
 
     setTrailingCVMinMax: function (dataObject, row) {
         // track the min and max data so we can get the range for including the QC annotations
-        var val = row['value'];
+        var val = row['TrailingCV'];
         if (LABKEY.vis.isValid(val)) {
             if (dataObject.min == null || val < dataObject.min) {
                 dataObject.min = val;
@@ -61,16 +51,16 @@ Ext4.define("LABKEY.targetedms.TrailingCVPlotHelper", {
                 dataObject.max = val;
             }
 
-            if (this.yAxisScale == 'log' && val <= 0) {
+            if (this.yAxisScale === 'log' && val <= 0) {
                 dataObject.showLogInvalid = true;
             }
 
         }
         else if (this.isMultiSeries()) {
             // check if either of the y-axis metric values are invalid for a log scale
-            var val1 = row['value_series1'],
-                    val2 = row['value_series2'];
-            if (dataObject.showLogInvalid == undefined && this.yAxisScale == 'log') {
+            var val1 = row['TrailingCV_series1'],
+                    val2 = row['TrailingCV_series2'];
+            if (dataObject.showLogInvalid === undefined && this.yAxisScale === 'log') {
                 if ((LABKEY.vis.isValid(val1) && val1 <= 0) || (LABKEY.vis.isValid(val2) && val2 <= 0)) {
                     dataObject.showLogInvalid = true;
                 }

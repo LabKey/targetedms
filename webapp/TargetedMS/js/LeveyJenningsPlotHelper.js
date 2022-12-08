@@ -140,23 +140,19 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
     {
         var data = {};
         // if a guideSetId is defined for this row, include the guide set stats values in the data object
-        if (Ext4.isDefined(row['GuideSetId']) && row['GuideSetId'] > 0)
-        {
+        if (Ext4.isDefined(row['GuideSetId']) && row['GuideSetId'] > 0) {
             var gs = this.guideSetDataMap[row['GuideSetId']];
-            if (Ext4.isDefined(gs) && gs.Series[fragment]&& gs.Series[fragment][seriesType])
-            {
+            if (Ext4.isDefined(gs) && gs.Series[fragment]&& gs.Series[fragment][seriesType]) {
                 data['mean'] = gs.Series[fragment][seriesType]['Mean'];
                 data['stdDev'] = gs.Series[fragment][seriesType]['StdDev'];
             }
         }
 
-        if (this.isMultiSeries())
-        {
+        if (this.isMultiSeries()) {
             data['value_' + seriesType] = row['Value'];
             data['value_' + seriesType + 'Title'] = metricProps[seriesType + 'Label'];
         }
-        else
-        {
+        else {
             data['value'] = row['Value'];
         }
         return data;
