@@ -11,6 +11,7 @@ import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.targetedms.ConnectionSource;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,6 +67,7 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
                 getGraphCount("EAEDL[+7.0]QVGQVE"));
 
         log("Verifying the value type");
+        shortWait().until(ExpectedConditions.textToBePresentInElement(Locator.name("valueType").findElement(getDriver()),"Normalized"));
         checker().verifyEquals("The Value Type drop-down is not defaulted correct", "Normalized",
                 getSelectedOptionText(Locator.name("valueType")));
         selectOptionByText(Locator.name("valueType"), "Calibrated");
