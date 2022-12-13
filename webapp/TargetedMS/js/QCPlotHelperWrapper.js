@@ -101,8 +101,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         }
 
         // traverse the precursor list for: calculating the longest legend string and combine the plot data
-        for (var i = 0; i < this.precursors.length; i++)
-        {
+        for (var i = 0; i < this.precursors.length; i++) {
             precursorInfo = this.fragmentPlotData[this.precursors[i]];
             // We may not have a match if it's been filtered out - see issue 38720
             if (precursorInfo) {
@@ -135,8 +134,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         }
         var id = 'combinedPlot';
         var ids = [id];
-        for (var i = 1; i < this.plotTypes.length; i++)
-        {
+        for (var i = 1; i < this.plotTypes.length; i++) {
             ids.push(id + 'plotType' + i.toString());
         }
         this.addPlotsToPlotDiv(ids, 'All Series', this.plotDivId, 'qc-plot-wp');
@@ -152,24 +150,25 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         if (legendMargin > 300)
             legendMargin = 300;
 
-        if (this.showLJPlot())
-        {
+        if (this.showLJPlot()) {
             this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex++], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.LeveyJennings);
         }
-        if (this.showMovingRangePlot())
-        {
+        if (this.showMovingRangePlot()) {
             this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex++], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.MovingRange);
         }
-        if (this.showMeanCUSUMPlot())
-        {
+        if (this.showMeanCUSUMPlot()) {
             this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex++], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.CUSUM, true);
         }
-        if (this.showVariableCUSUMPlot())
-        {
+        if (this.showVariableCUSUMPlot()) {
             this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.CUSUM, false);
         }
-        // if this.showTrailingMean
-        // if this.showTrailingCV
+        if (this.showTrailingMeanPlot()) {
+            this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.TrailingMean, false);
+        }
+        if (this.showTrailingCVPlot()) {
+            this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.TrailingCV, false);
+        }
+
 
         return true;
     },
