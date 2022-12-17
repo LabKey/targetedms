@@ -190,13 +190,23 @@ public class GuideSetStats
                 row.setCUSUMvP(positiveCUSUMv[i]);
                 row.setCUSUMvN(negativeCUSUMv[i]);
             }
-            if (trailingMeans != null && trailingMeans.length > 0 && i < trailingMeans.length)
+        }
+        // start trailingCVs and trailingMeans from number of trailingRuns after the beginning
+        int j = 0; // index to traverse trailingMeans and trailingCVs array
+        if (null != trailingRuns)
+        {
+            for (int i = trailingRuns; i < includedRows.size(); i++)
             {
-                row.setTrailingMean(trailingMeans[i]);
-            }
-            if (trailingCVs != null && trailingCVs.length > 0 && i < trailingCVs.length)
-            {
-                row.setTrailingCV(trailingCVs[i]);
+                j++;
+                RawMetricDataSet row = includedRows.get(i);
+                if (trailingMeans.length > 0 && j < trailingMeans.length)
+                {
+                    row.setTrailingMean(trailingMeans[j]);
+                }
+                if (trailingCVs.length > 0 && j < trailingCVs.length)
+                {
+                    row.setTrailingCV(trailingCVs[j]);
+                }
             }
         }
     }
