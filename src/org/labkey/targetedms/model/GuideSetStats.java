@@ -163,7 +163,8 @@ public class GuideSetStats
         Double[] trailingMeans = null;
         Double[] trailingCVs = null;
 
-        if (trailingRuns != null)
+        // when guideset is present, pass metricVals from start of the guideset
+        if (trailingRuns != null && _guideSet.getRowId() != 0)
         {
             trailingMeans = Stats.getTrailingMeans(metricVals, trailingRuns);
             trailingCVs = Stats.getTrailingCVs(metricVals, trailingRuns);
@@ -199,11 +200,11 @@ public class GuideSetStats
             {
                 j++;
                 RawMetricDataSet row = includedRows.get(i);
-                if (trailingMeans.length > 0 && j < trailingMeans.length)
+                if (trailingMeans != null && trailingMeans.length > 0 && j < trailingMeans.length)
                 {
                     row.setTrailingMean(trailingMeans[j]);
                 }
-                if (trailingCVs.length > 0 && j < trailingCVs.length)
+                if (trailingCVs != null && trailingCVs.length > 0 && j < trailingCVs.length)
                 {
                     row.setTrailingCV(trailingCVs[j]);
                 }
