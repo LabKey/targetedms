@@ -355,15 +355,14 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         return [];
     },
 
-    getPlotTypeHelpTooltip: function(plotTypeName)
-    {
-        if (plotTypeName == 'Levey-Jennings')
+    getPlotTypeHelpTooltip: function(plotTypeName) {
+        if (plotTypeName === 'Levey-Jennings')
             return LABKEY.targetedms.LeveyJenningsPlotHelper.tooltips['Levey-Jennings'];
-        else if (plotTypeName == 'Moving Range')
+        else if (plotTypeName === 'Moving Range')
             return LABKEY.targetedms.MovingRangePlotHelper.tooltips['Moving Range'];
-        else if (plotTypeName == 'CUSUMm')
+        else if (plotTypeName === 'CUSUMm')
             return LABKEY.targetedms.CUSUMPlotHelper.tooltips['CUSUMm'];
-        else if (plotTypeName == 'CUSUMv')
+        else if (plotTypeName === 'CUSUMv')
             return LABKEY.targetedms.CUSUMPlotHelper.tooltips['CUSUMv'];
         else if (plotTypeName === 'Trailing Mean')
             return LABKEY.targetedms.TrailingMeanPlotHelper.tooltips['Trailing Mean'];

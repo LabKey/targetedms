@@ -34,7 +34,7 @@ Ext4.define("LABKEY.targetedms.TrailingMeanPlotHelper", {
         }
         else {
             plotProperties['TrailingMean'] = 'TrailingMean';
-            plotProperties['yAxisDomain'] = [precursorInfo.min, precursorInfo.max];
+            plotProperties['yAxisDomain'] = [precursorInfo.minTrailingMean, precursorInfo.maxTrailingMean];
         }
         return plotProperties;
     },
@@ -43,11 +43,11 @@ Ext4.define("LABKEY.targetedms.TrailingMeanPlotHelper", {
         // track the min and max data, so we can get the range for including the QC annotations
         let val = row['TrailingMean'];
         if (LABKEY.vis.isValid(val)) {
-            if (dataObject.min == null || val < dataObject.min) {
-                dataObject.min = val;
+            if (dataObject.minTrailingMean == null || val < dataObject.minTrailingMean) {
+                dataObject.minTrailingMean = val;
             }
-            if (dataObject.max == null || val > dataObject.max) {
-                dataObject.max = val;
+            if (dataObject.maxTrailingMean == null || val > dataObject.maxTrailingMean) {
+                dataObject.maxTrailingMean = val;
             }
 
             if (this.yAxisScale === 'log' && val <= 0) {
@@ -69,8 +69,8 @@ Ext4.define("LABKEY.targetedms.TrailingMeanPlotHelper", {
 
     getTrailingMeanInitFragmentPlotData: function() {
         return {
-            min: null,
-            max: null
+            minTrailingMean: null,
+            maxTrailingMean: null
         }
     },
 });

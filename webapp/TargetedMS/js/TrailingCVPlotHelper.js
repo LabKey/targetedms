@@ -35,7 +35,7 @@ Ext4.define("LABKEY.targetedms.TrailingCVPlotHelper", {
         }
         else {
             plotProperties['TrailingCV'] = 'TrailingCV';
-            plotProperties['yAxisDomain'] = [precursorInfo.min, precursorInfo.max];
+            plotProperties['yAxisDomain'] = [precursorInfo.TrailingCVMin, precursorInfo.TrailingCVMax];
         }
         return plotProperties;
     },
@@ -44,11 +44,11 @@ Ext4.define("LABKEY.targetedms.TrailingCVPlotHelper", {
         // track the min and max data so we can get the range for including the QC annotations
         var val = row['TrailingCV'];
         if (LABKEY.vis.isValid(val)) {
-            if (dataObject.min == null || val < dataObject.min) {
-                dataObject.min = val;
+            if (dataObject.TrailingCVMin == null || val < dataObject.TrailingCVMin) {
+                dataObject.TrailingCVMin = val;
             }
-            if (dataObject.max == null || val > dataObject.max) {
-                dataObject.max = val;
+            if (dataObject.TrailingCVMax == null || val > dataObject.TrailingCVMax) {
+                dataObject.TrailingCVMax = val;
             }
 
             if (this.yAxisScale === 'log' && val <= 0) {
@@ -70,8 +70,8 @@ Ext4.define("LABKEY.targetedms.TrailingCVPlotHelper", {
 
     getTrailingCVInitFragmentPlotData: function() {
         return {
-            min: null,
-            max: null
+            TrailingCVMin: null,
+            TrailingCVMax: null
         }
     },
 });
