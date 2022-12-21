@@ -927,6 +927,33 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertTrue("New plot is not as expected for percent of mean (y-axis) values", svgPlotText.contains("9095100105110115"));
     }
 
+    /*
+       Test coverage : Issue 45701: Samples excluded for single metric don't get hidden in QC plots
+    */
+    @Test
+    public void testSamplesExcludedForSingleMetric()
+    {
+        goToProjectHome();
+        log("Changing the exclusion state for one of the points");
+        String acquiredDate = "2013-08-14 22:48:37";
+        changePointExclusionState(acquiredDate, QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric, 2);
+
+        log("Setting Show Excluded Samples");
+        QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
+        qcPlotsWebPart.setShowExcludedPoints(true);
+
+        log("Verifying excluded sample is displayed");
+        qcPlotsWebPart.waitForPlots(1, false);
+        verifyExclusionButtonSelection(acquiredDate, QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric);
+
+        log("Changing the metric type");
+        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TOTAL_PEAK);
+        qcPlotsWebPart.setShowExcludedPoints(false);
+
+        qcPlotsWebPart.waitForPlots(1, false);
+        verifyExclusionButtonSelection(acquiredDate, QCPlotsWebPart.QCPlotExclusionState.Include);
+    }
+
     private void verifyQCSummarySampleFileOutliers(String acquiredDate, String outlierInfo)
     {
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
