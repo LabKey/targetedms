@@ -94,16 +94,21 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
 
         this.add(this.getPlotPointDetailField('Replicate', this.pointData['ReplicateName']));
         this.add(this.getPlotPointDetailField('Acquired', this.pointData['fullDate']));
-        this.add(this.getPlotPointDetailField('File Path', this.pointData['FilePath'].replace(/\\/g, '\\<wbr>').replace(/\//g, '\/<wbr>').replace(/_/g, '_<wbr>')));
-
-        if (this.canEdit) {
-            this.add(this.getPlotPointExclusionPanel());
-        }
-        else {
-            this.add(this.getPlotPointDetailField('Status', this.pointData['IgnoreInQC'] ? 'Not included in QC' : 'Included in QC'));
+        if (!this.pointData.TrailingMean || !this.pointData.TrailingCV) {
+            this.add(this.getPlotPointDetailField('File Path', this.pointData['FilePath'].replace(/\\/g, '\\<wbr>').replace(/\//g, '\/<wbr>').replace(/_/g, '_<wbr>')));
         }
 
-        this.add(Ext4.create('Ext.Component', { html: this.getPlotPointClickLinks() }));
+        if (!this.pointData.TrailingMean || !this.pointData.TrailingCV) {
+            if (this.canEdit) {
+                this.add(this.getPlotPointExclusionPanel());
+            }
+            else {
+                this.add(this.getPlotPointDetailField('Status', this.pointData['IgnoreInQC'] ? 'Not included in QC' : 'Included in QC'));
+            }
+
+
+            this.add(Ext4.create('Ext.Component', {html: this.getPlotPointClickLinks()}));
+        }
     },
 
     getPlotPointDetailField : function(label, value, includeCls) {
