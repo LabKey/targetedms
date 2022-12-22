@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -940,6 +941,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         log("Setting Show Excluded Samples");
         QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
+        assertTrue("Acquired date " + acquiredDate + " should have been excluded", verifyAcquiredDateIsNotDisplayed(acquiredDate));
         qcPlotsWebPart.setShowExcludedPoints(true);
 
         log("Verifying excluded sample is displayed");
@@ -966,6 +968,21 @@ public class TargetedMSQCTest extends TargetedMSTest
     private String getAcquiredDateDisplayStr(String acquiredDate)
     {
         return acquiredDate.replaceAll("/", "-");
+    }
+
+    private boolean verifyAcquiredDateIsNotDisplayed(String acquiredDate)
+    {
+        QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
+        try
+        {
+            qcPlotsWebPart.openExclusionBubble(acquiredDate);
+        }
+        catch (NoSuchElementException e)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private void verifyExclusionButtonSelection(String acquiredDate, QCPlotsWebPart.QCPlotExclusionState state)
