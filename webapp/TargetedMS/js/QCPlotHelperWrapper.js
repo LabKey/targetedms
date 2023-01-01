@@ -33,6 +33,83 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         }
     },
 
+    deepCloneArray: function (arr) {
+        return arr.map(function(item) {
+            // Check if the item is an array
+            if (Array.isArray(item)) {
+                // If it is, call deepCloneArray on it
+                return this.deepCloneArray(item);
+            } else if (typeof item === 'object' && item !== null) {
+                // If it's an object, use Object.assign to create a new object with the same properties
+                return Object.assign({}, item);
+            } else {
+                // Otherwise, it's a primitive value and we can just return it
+                return item;
+            }
+        });
+    },
+
+    deepCloneObject: function (obj) {
+        // Check if the object is an array
+        if (Array.isArray(obj)) {
+            // If it is, call deepCloneArray (which we defined earlier) to deep clone it
+            return this.deepCloneArray(obj);
+        } else if (typeof obj === 'object' && obj !== null) {
+            // Create an empty object to hold the cloned properties
+            const clone = {};
+
+            // Iterate over the object's own properties
+            for (const key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    // If the value is an object or an array, call deepCloneObject recursively to deep clone it
+                    if (typeof obj[key] === 'object' && obj[key] !== null) {
+                        clone[key] = this.deepCloneObject(obj[key]);
+                    } else {
+                        // Otherwise, just copy the value directly
+                        clone[key] = obj[key];
+                    }
+                }
+            }
+
+            return clone;
+        } else {
+            // If the object is not an object or an array, return it as is
+            return obj;
+        }
+    },
+
+    zoomDateRangeForTrailingGraphs: function (precursorInfo) {
+        let precursors = this.deepCloneObject(precursorInfo);
+        if (Object.keys(this.guideSetDataMap).length !== 0) {
+            let firstGuideSetStartDate = new Date();
+            // setting to tomorrow's date
+            firstGuideSetStartDate.setDate(firstGuideSetStartDate.getDate() + 1);
+            Ext4.Object.each(this.guideSetDataMap, function (id, gs) {
+                if (new Date(gs.TrainingStart).getTime() < firstGuideSetStartDate.getTime()) {
+                    firstGuideSetStartDate = new Date(gs.TrainingStart);
+                }
+            });
+
+            for (let ind = 0 ; ind < precursors.data.length; ind++) {
+                let data = precursors.data[ind];
+                if (new Date(data.date).getTime() < firstGuideSetStartDate.getTime()) {
+                    precursors.data.splice(ind, 1);
+                    ind--;
+                }
+            }
+        }
+        else {
+            for (let ind = 0 ; ind < precursors.data.length; ind++) {
+                let data = precursors.data[ind];
+                if (!data.TrailingMean) {
+                    precursors.data.splice(ind, 1);
+                    ind--;
+                }
+            }
+        }
+        return precursors;
+    },
+
     addIndividualPrecursorPlots : function() {
         var addedPlot = false,
                 metricProps = this.getMetricPropsById(this.metric),
@@ -41,7 +118,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         this.longestLegendText = 0;
 
         for (var i = 0; i < this.precursors.length; i++) {
-            var precursorInfo = this.fragmentPlotData[this.precursors[i]];
+            const precursorInfo = this.fragmentPlotData[this.precursors[i]];
 
             // We don't necessarily have info for all possible precursors, depending on the filters and plot type
             if (precursorInfo) {
@@ -70,10 +147,10 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
                     this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex], i, precursorInfo, metricProps, LABKEY.vis.TrendingLinePlotType.CUSUM, false, me);
                 }
                 if (this.showTrailingMeanPlot()) {
-                    this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex++], i, precursorInfo, metricProps, LABKEY.vis.TrendingLinePlotType.TrailingMean, undefined, me);
+                    this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex++], i, this.zoomDateRangeForTrailingGraphs(precursorInfo), metricProps, LABKEY.vis.TrendingLinePlotType.TrailingMean, undefined, me);
                 }
                 if (this.showTrailingCVPlot()) {
-                    this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex++], i, precursorInfo, metricProps, LABKEY.vis.TrendingLinePlotType.TrailingCV, undefined, me);
+                    this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex++], i, this.zoomDateRangeForTrailingGraphs(precursorInfo), metricProps, LABKEY.vis.TrendingLinePlotType.TrailingCV, undefined, me);
                 }
             }
         }
