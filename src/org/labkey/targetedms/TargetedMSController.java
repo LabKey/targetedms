@@ -4368,6 +4368,46 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
+    public class ShowEarlyStagePTMReportAction extends ShowRunSingleDetailsAction<RunDetailsForm>
+    {
+        public ShowEarlyStagePTMReportAction()
+        {
+            super(RunDetailsForm.class, "Early Stage PTM Report", "earlyStagePtmReport");
+        }
+
+        @Override
+        protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
+        {
+            QuerySettings settings = new QuerySettings(getViewContext(), _dataRegionName, "PTMPercentsGrouped")
+            {
+                @Override
+                protected QueryDefinition createQueryDef(UserSchema schema)
+                {
+                    QueryDefinition queryDef = super.createQueryDef(schema);
+
+                    String queryName = "PTMPercentsGrouped" + form.getId();
+                    QueryDefinition tempDef = QueryService.get().createQueryDef(getUser(), getContainer(), schema.getSchemaPath(), queryName);
+                    tempDef.setIsHidden(true);
+                    tempDef.setIsTemporary(true);
+                    tempDef.setSql(queryDef.getSql() + " IN (SELECT sf.SampleName FROM targetedms.SampleFile sf WHERE sf.ReplicateId.RunId = " + form.getId() + ")");
+                    tempDef.setMetadataXml(queryDef.getMetadataXml());
+
+                    return tempDef;
+                }
+            };
+            // Issue 40731- prevent expensive cross-folder queries when the results will always be scoped to the current
+            // run anyway
+            settings.setContainerFilterName(null);
+            settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("PeptideGroupId", "RunId"), form.getId()));
+            settings.setBaseSort(new Sort("PeptideGroupId, Sequence"));
+            TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+            QueryView result = schema.createView(getViewContext(), settings, errors);
+            result.setShadeAlternatingRows(false);
+            return result;
+        }
+    }
+
+    @RequiresPermission(ReadPermission.class)
     public class ShowPeptideMapAction extends ShowRunSingleDetailsAction<RunDetailsForm>
     {
         public ShowPeptideMapAction()

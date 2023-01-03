@@ -1,5 +1,10 @@
 package org.labkey.targetedms.parser;
 
+import org.labkey.api.util.Pair;
+
+import java.util.Collections;
+import java.util.List;
+
 public class Protein extends AnnotatedEntity<ProteinAnnotation>
 {
     private long _peptideGroupId;
@@ -18,6 +23,8 @@ public class Protein extends AnnotatedEntity<ProteinAnnotation>
     private String _sequence;
     private boolean _decoy;
     private Integer _sequenceId;
+
+    private List<Pair<Integer, Integer>> _cdrRanges = Collections.emptyList();
 
     public Integer getSequenceId()
     {
@@ -137,5 +144,27 @@ public class Protein extends AnnotatedEntity<ProteinAnnotation>
     public void setPeptideGroupId(long peptideGroupId)
     {
         _peptideGroupId = peptideGroupId;
+    }
+
+    public List<Pair<Integer, Integer>> getCdrRanges()
+    {
+        if (getPeptideGroupId() == 18519)
+        {
+            return List.of(Pair.of(26, 33), Pair.of(51, 57), Pair.of(96, 114));
+        }
+        if (getPeptideGroupId() == 18520)
+        {
+            return List.of(Pair.of(26, 33), Pair.of(51, 57), Pair.of(96, 116));
+        }
+        if (getPeptideGroupId() == 18521)
+        {
+            return List.of(Pair.of(27, 33), Pair.of(51, 53), Pair.of(90, 98));
+        }
+        return _cdrRanges;
+    }
+
+    public void setCdrRanges(List<Pair<Integer, Integer>> cdrRanges)
+    {
+        _cdrRanges = cdrRanges;
     }
 }
