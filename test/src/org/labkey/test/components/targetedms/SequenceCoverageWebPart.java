@@ -85,7 +85,7 @@ public class SequenceCoverageWebPart extends BodyWebPart<SequenceCoverageWebPart
             return elementCache().peptideDetailsHelp.isDisplayed();
         }, "Peptide details tooltip did not appear", 5000);
 
-        return Locator.id("helpDivBody").withText().findElement(elementCache().peptideDetailsHelp).getText();
+        return Locator.id("helpDivBody").withText().waitForElement(elementCache().peptideDetailsHelp, 1_000).getText();
     }
 
     public SequenceCoverageWebPart doAndWaitForUpdate(Runnable runnable)
