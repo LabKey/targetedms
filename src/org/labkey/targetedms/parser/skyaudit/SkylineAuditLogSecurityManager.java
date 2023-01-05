@@ -49,7 +49,8 @@ public class SkylineAuditLogSecurityManager
     {
         _jobLogger = jobLogger;
 
-        int propIndex = Integer.parseInt(ModuleLoader.getInstance().getModule(TargetedMSModule.class).SKYLINE_AUDIT_LEVEL_PROPERTY.getEffectiveValue(container));
+        int propIndex = Integer.parseInt(ModuleLoader.getInstance().getModule(TargetedMSModule.class)
+                .SKYLINE_AUDIT_LEVEL_PROPERTY.getEffectiveValue(container));
         _verificationLevel = INTEGRITY_LEVEL.values()[propIndex];
     }
 

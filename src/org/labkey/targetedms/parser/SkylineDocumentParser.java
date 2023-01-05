@@ -244,27 +244,28 @@ public class SkylineDocumentParser implements AutoCloseable
         _log = log;
         readDocumentVersion(_reader);
 
+        TargetedMSModule targetedMSModule = ModuleLoader.getInstance().getModule(TargetedMSModule.class);
         try
         {
-            _maxPrecursors = Integer.parseInt(ModuleLoader.getInstance().getModule(TargetedMSModule.class)
-                    .MAX_PRECURSORS_PROPERTY.getEffectiveValue(container));
+            _maxPrecursors = Integer.parseInt(targetedMSModule.MAX_PRECURSORS_PROPERTY.getEffectiveValue(container));
         }
         catch (NumberFormatException e)
         {
             _maxPrecursors = TargetedMSModule.DEFAULT_MAX_PRECURSORS;
-            _log.warn("Unable to parse MAX_PRECURSORS_PROPERTY value: " + ModuleLoader.getInstance().getModule(TargetedMSModule.class)
-                    .MAX_PRECURSORS_PROPERTY.getEffectiveValue(container) + ", defaulting to " + _maxPrecursors);
+            _log.warn("Unable to parse MAX_PRECURSORS_PROPERTY value: {}, defaulting to {}",
+                    targetedMSModule.MAX_PRECURSORS_PROPERTY.getEffectiveValue(container),
+                    _maxPrecursors);
         }
         try
         {
-            _maxTransitionChromInfos = Integer.parseInt(ModuleLoader.getInstance().getModule(TargetedMSModule.class)
-                    .MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(container));
+            _maxTransitionChromInfos = Integer.parseInt(targetedMSModule.MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(container));
         }
         catch (NumberFormatException e)
         {
             _maxTransitionChromInfos = TargetedMSModule.DEFAULT_MAX_TRANSITION_CHROM_INFOS;
-            _log.warn("Unable to parse MAX_TRANSITION_CHROM_INFOS_PROPERTY value: " + ModuleLoader.getInstance().getModule(TargetedMSModule.class)
-                    .MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(container) + ", defaulting to " + _maxTransitionChromInfos);
+            _log.warn();"Unable to parse MAX_TRANSITION_CHROM_INFOS_PROPERTY value: {}, defaulting to {}",
+                    targetedMSModule.MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(container),
+                    _maxTransitionChromInfos);
         }
     }
 
