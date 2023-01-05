@@ -263,7 +263,7 @@ public class SkylineDocumentParser implements AutoCloseable
         catch (NumberFormatException e)
         {
             _maxTransitionChromInfos = TargetedMSModule.DEFAULT_MAX_TRANSITION_CHROM_INFOS;
-            _log.warn();"Unable to parse MAX_TRANSITION_CHROM_INFOS_PROPERTY value: {}, defaulting to {}",
+            _log.warn("Unable to parse MAX_TRANSITION_CHROM_INFOS_PROPERTY value: {}, defaulting to {}",
                     targetedMSModule.MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(container),
                     _maxTransitionChromInfos);
         }
