@@ -30,7 +30,6 @@ import org.labkey.api.data.PropertySchema;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.UpgradeCode;
-import org.labkey.api.exp.ExperimentRunType;
 import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.files.DirectoryPattern;
 import org.labkey.api.files.FileContentService;
@@ -102,7 +101,6 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     // Protocol prefix for importing .zip archives from Skyline
     public static final String IMPORT_SKYZIP_PROTOCOL_OBJECT_PREFIX = "TargetedMS.ImportSkyZip";
 
-    public static final ExperimentRunType EXP_RUN_TYPE = new TargetedMSExperimentRunType();
     public static final String TARGETED_MS_SETUP = "Targeted MS Setup";
     public static final String TARGETED_MS_CHROMATOGRAM_LIBRARY_DOWNLOAD = "Chromatogram Library Download";
     public static final String TARGETED_MS_PRECURSOR_VIEW = "Targeted MS Precursor View";
@@ -147,15 +145,15 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
 
     public static final String[] QC_FOLDER_WEB_PARTS = new String[] {TARGETED_MS_QC_SUMMARY, TARGETED_MS_QC_PLOTS};
 
-    public static ModuleProperty FOLDER_TYPE_PROPERTY;
-    public static ModuleProperty SKIP_CHROMATOGRAM_IMPORT_PROPERTY;
-    public static ModuleProperty PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY;
-    public static ModuleProperty SKYLINE_AUDIT_LEVEL_PROPERTY;
-    public static ModuleProperty MAX_TRANSITION_CHROM_INFOS_PROPERTY;
+    public final ModuleProperty FOLDER_TYPE_PROPERTY;
+    public final ModuleProperty SKIP_CHROMATOGRAM_IMPORT_PROPERTY;
+    public final ModuleProperty PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY;
+    public final ModuleProperty SKYLINE_AUDIT_LEVEL_PROPERTY;
+    public final ModuleProperty MAX_TRANSITION_CHROM_INFOS_PROPERTY;
     public static final int DEFAULT_MAX_TRANSITION_CHROM_INFOS = 100_000;
-    public static ModuleProperty MAX_PRECURSORS_PROPERTY;
+    public final ModuleProperty MAX_PRECURSORS_PROPERTY;
     public static final int DEFAULT_MAX_PRECURSORS = 1_000;
-    public static ModuleProperty AUTO_QC_PING_TIMEOUT_PROPERTY;
+    public final ModuleProperty AUTO_QC_PING_TIMEOUT_PROPERTY;
 
     public TargetedMSModule()
     {
@@ -595,7 +593,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         ExperimentService.get().registerExperimentRunTypeSource(container -> {
             if (container == null || container.getActiveModules().contains(TargetedMSModule.this))
             {
-                return Collections.singleton(EXP_RUN_TYPE);
+                return Collections.singleton(TargetedMSService.get().getExperimentRunType());
             }
             return Collections.emptySet();
         });

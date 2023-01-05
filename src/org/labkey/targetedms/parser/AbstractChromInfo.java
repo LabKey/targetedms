@@ -23,6 +23,7 @@ import org.labkey.api.cache.CacheManager;
 import org.labkey.api.data.Container;
 import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.exp.api.ExperimentService;
+import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.util.Tuple3;
 import org.labkey.api.util.UnexpectedException;
 import org.labkey.targetedms.PanoramaBadDataException;
@@ -178,7 +179,8 @@ public abstract class AbstractChromInfo extends ChromInfo<PrecursorChromInfoAnno
     @Nullable
     public Chromatogram createChromatogram(TargetedMSRun run)
     {
-        return createChromatogram(run, Boolean.parseBoolean(TargetedMSModule.PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY.getEffectiveValue(_container)));
+        return createChromatogram(run, Boolean.parseBoolean(ModuleLoader.getInstance().getModule(TargetedMSModule.class)
+                .PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY.getEffectiveValue(_container)));
     }
 
     @Nullable
@@ -298,7 +300,8 @@ public abstract class AbstractChromInfo extends ChromInfo<PrecursorChromInfoAnno
     @Nullable
     public byte[] getChromatogramBytes(TargetedMSRun run)
     {
-        boolean loadFromSkyd = Boolean.parseBoolean(TargetedMSModule.PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY.getEffectiveValue(_container));
+        boolean loadFromSkyd = Boolean.parseBoolean(ModuleLoader.getInstance().getModule(TargetedMSModule.class)
+                .PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY.getEffectiveValue(_container));
         CompressedBytesAndStatus compressedBytesAndStatus = getCompressedBytesAndStatus(run, loadFromSkyd);
         return compressedBytesAndStatus.getCompressedBytes();
     }

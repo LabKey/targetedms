@@ -56,6 +56,7 @@ import org.labkey.api.exp.api.ExpProtocol;
 import org.labkey.api.exp.api.ExpRun;
 import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.module.Module;
+import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.module.ModuleProperty;
 import org.labkey.api.pipeline.LocalDirectory;
 import org.labkey.api.pipeline.PipeRoot;
@@ -2009,7 +2010,8 @@ public class TargetedMSManager
 
         try
         {
-            timeoutValue = Integer.parseInt(TargetedMSModule.AUTO_QC_PING_TIMEOUT_PROPERTY.getEffectiveValue(container));
+            timeoutValue = Integer.parseInt(ModuleLoader.getInstance().getModule(TargetedMSModule.class)
+                    .AUTO_QC_PING_TIMEOUT_PROPERTY.getEffectiveValue(container));
         }
         catch (NumberFormatException e)
         {
