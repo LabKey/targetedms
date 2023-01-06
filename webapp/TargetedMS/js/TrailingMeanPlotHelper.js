@@ -34,7 +34,15 @@ Ext4.define("LABKEY.targetedms.TrailingMeanPlotHelper", {
         }
         else {
             plotProperties['TrailingMean'] = 'TrailingMean';
-            plotProperties['yAxisDomain'] = [precursorInfo.minTrailingMean, precursorInfo.maxTrailingMean];
+
+            let min = Math.min(...precursorInfo.data.map(function(object) {
+                return object.TrailingMean;
+            }));
+            let max = Math.max(...precursorInfo.data.map(function(object) {
+                return object.TrailingMean;
+            }));
+
+            plotProperties['yAxisDomain'] = [min, max];
         }
         return plotProperties;
     },

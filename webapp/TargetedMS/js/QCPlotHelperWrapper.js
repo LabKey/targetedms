@@ -92,7 +92,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
 
             for (let ind = 0 ; ind < precursors.data.length; ind++) {
                 let data = precursors.data[ind];
-                if (new Date(data.date).getTime() < firstGuideSetStartDate.getTime()) {
+                if (new Date(data.fullDate).getTime() < firstGuideSetStartDate.getTime()) {
                     precursors.data.splice(ind, 1);
                     ind--;
                 }

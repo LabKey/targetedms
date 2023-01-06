@@ -35,14 +35,32 @@ Ext4.define("LABKEY.targetedms.TrailingCVPlotHelper", {
         }
         else {
             plotProperties['TrailingCV'] = 'TrailingCV';
-            plotProperties['yAxisDomain'] = [precursorInfo.TrailingCVMin, precursorInfo.TrailingCVMax];
+            let min = Math.min(...precursorInfo.data.map(function(object) {
+                return object.TrailingCV;
+            }));
+            let max = Math.max(...precursorInfo.data.map(function(object) {
+                return object.TrailingCV;
+            }));
+
+            // the number 20 is specified in the specs
+            if (min < 20 && max < 20) {
+                min = 0;
+                max = 20;
+            }
+
+            if (min > 20 || max > 20) {
+                min = 0;
+                max = Math.round(Math.ceil(max / 10) * 10);
+            }
+
+            plotProperties['yAxisDomain'] = [min, max];
         }
         return plotProperties;
     },
 
     setTrailingCVMinMax: function (dataObject, row) {
-        // track the min and max data so we can get the range for including the QC annotations
-        var val = row['TrailingCV'];
+        // track the min and max data, so we can get the range for including the QC annotations
+        let val = row['TrailingCV'];
         if (LABKEY.vis.isValid(val)) {
             if (dataObject.TrailingCVMin == null || val < dataObject.TrailingCVMin) {
                 dataObject.TrailingCVMin = val;
@@ -58,7 +76,7 @@ Ext4.define("LABKEY.targetedms.TrailingCVPlotHelper", {
         }
         else if (this.isMultiSeries()) {
             // check if either of the y-axis metric values are invalid for a log scale
-            var val1 = row['TrailingCV_series1'],
+            let val1 = row['TrailingCV_series1'],
                     val2 = row['TrailingCV_series2'];
             if (dataObject.showLogInvalid === undefined && this.yAxisScale === 'log') {
                 if ((LABKEY.vis.isValid(val1) && val1 <= 0) || (LABKEY.vis.isValid(val2) && val2 <= 0)) {

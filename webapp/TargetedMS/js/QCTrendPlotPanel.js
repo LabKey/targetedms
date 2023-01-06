@@ -355,7 +355,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             fieldLabel: 'Plot Types',
             width: 275,
             expandToFitContent: true,
-            addAllSelector: true,
+            addAllSelector: false,
             queryMode: 'local',
             store: Ext4.create('Ext.data.Store', {
                 fields: ['inputValue'],
