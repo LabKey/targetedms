@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
+import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.util.UnexpectedException;
 import org.labkey.api.util.logging.LogHelper;
 import org.labkey.targetedms.TargetedMSModule;
@@ -409,7 +410,8 @@ public class PrecursorChromInfo extends AbstractChromInfo implements Comparable<
     @Nullable @Override
     public Chromatogram createChromatogram(TargetedMSRun run)
     {
-        return createChromatogram(run, Boolean.parseBoolean(TargetedMSModule.PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY.getEffectiveValue(getContainer())));
+        return createChromatogram(run, Boolean.parseBoolean(ModuleLoader.getInstance().getModule(TargetedMSModule.class)
+                .PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY.getEffectiveValue(getContainer())));
     }
 
     @Override

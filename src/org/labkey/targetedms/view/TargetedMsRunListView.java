@@ -67,7 +67,7 @@ public class TargetedMsRunListView extends ExperimentRunListView
 
     public TargetedMsRunListView(UserSchema schema, QuerySettings settings, boolean hasDocVersions, boolean showAllVersions)
     {
-        super(schema, settings, TargetedMSModule.EXP_RUN_TYPE);
+        super(schema, settings, TargetedMSService.get().getExperimentRunType());
         _hasDocVersions = hasDocVersions;
         _showAllVersions = showAllVersions;
         setShowAddToRunGroupButton(false);
@@ -201,7 +201,7 @@ public class TargetedMsRunListView extends ExperimentRunListView
     public static TargetedMsRunListView createView(ViewContext model, ViewType viewType)
     {
         UserSchema schema = new TargetedMSSchema(model.getUser(), model.getContainer());
-        QuerySettings querySettings = getRunListQuerySettings(schema, model, TargetedMSModule.EXP_RUN_TYPE.getTableName(), true);
+        QuerySettings querySettings = getRunListQuerySettings(schema, model, TargetedMSService.get().getExperimentRunType().getTableName(), true);
 
         TargetedMsRunListView view = new TargetedMsRunListView(schema, querySettings,
                 TargetedMSManager.containerHasDocVersions(model.getContainer()),
