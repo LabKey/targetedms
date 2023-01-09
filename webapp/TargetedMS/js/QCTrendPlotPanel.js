@@ -646,11 +646,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 paramValues['plotTypes'] = plotTypes;
             }
         }
-        // paramValue = urlParams['trailingRuns'];
-        // if (paramValue === undefined) {
-        //     paramValues['trailingRuns'] = this.getTrailingRunsField().value;
-        // }
-        // debugger
 
         if (alertMessage.length > 0) {
             LABKEY.Utils.alert('Invalid URL Parameter(s)', alertMessage);

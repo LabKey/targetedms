@@ -24,6 +24,7 @@ import org.labkey.test.components.ext4.Checkbox;
 import org.labkey.test.components.ext4.RadioButton;
 import org.labkey.test.components.ext4.Window;
 import org.labkey.test.selenium.LazyWebElement;
+import org.labkey.test.util.Ext4Helper;
 import org.labkey.test.util.LogMethod;
 import org.labkey.test.util.LoggedParam;
 import org.openqa.selenium.StaleElementReferenceException;
@@ -144,15 +145,58 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
             waitForNoRecords();
     }
 
+    public void setQCPlotType(QCPlotType qcPlotType)
+    {
+        setQCPlotType(qcPlotType, true, false);
+    }
+
+    public void setQCPlotType(QCPlotType qcPlotType, boolean hasData)
+    {
+        setQCPlotType(qcPlotType, hasData, true);
+    }
+
+
+    @LogMethod
+    public void setQCPlotType(@LoggedParam QCPlotType qcPlotType, boolean hasData, boolean hasExistingPlot)
+    {
+        WebElement plot = null;
+        if (hasExistingPlot)
+            plot = elementCache().findPlots().get(0);
+
+        // scroll to prevent inadvertent hover over QC Summary webpart items that show hopscotch tooltips
+        getWrapper().scrollIntoView(elementCache().qcPlotTypeCombo, true);
+
+        getWrapper()._ext4Helper.selectComboBoxItem(elementCache().qcPlotTypeCombo, Ext4Helper.TextMatchTechnique.CONTAINS, qcPlotType.toString());
+
+        if (hasExistingPlot)
+            getWrapper().shortWait().until(ExpectedConditions.stalenessOf(plot));
+
+        if (hasData)
+            waitForPlots();
+        else
+            waitForNoRecords();
+    }
+
     public List<String> getMetricTypeOptions()
     {
         return getWrapper()._ext4Helper.getComboBoxOptions(elementCache().metricTypeCombo);
+    }
+
+    public List<String> getQCPlotTypeOptions()
+    {
+        return getWrapper()._ext4Helper.getComboBoxOptions(elementCache().qcPlotTypeCombo);
     }
 
     public MetricType getCurrentMetricType()
     {
         WebElement typeInput = elementCache().metricTypeCombo.append("//input").waitForElement(this, 1000);
         return MetricType.getEnum(typeInput.getAttribute("value"));
+    }
+
+    public QCPlotType getCurrentQCPlotType()
+    {
+        WebElement typeInput = elementCache().qcPlotTypeCombo.append("//input").waitForElement(this, 1000);
+        return QCPlotType.getEnum(typeInput.getAttribute("value"));
     }
 
     public void setGroupXAxisValuesByDate(boolean check)
@@ -312,8 +356,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
             setDateRangeOffset(DateRangeOffset.ALL);
         if (isPlotTypeSelected(QCPlotType.MovingRange) || isPlotTypeSelected(QCPlotType.CUSUMm) || isPlotTypeSelected(QCPlotType.CUSUMv))
         {
-            checkAllPlotTypes(false);
-            checkPlotType(QCPlotsWebPart.QCPlotType.LeveyJennings, true);
+            setQCPlotType(QCPlotsWebPart.QCPlotType.LeveyJennings);
             waitForPlots();
         }
         if (getCurrentScale() != QCPlotsWebPart.Scale.LINEAR)
@@ -574,7 +617,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public boolean isPlotTypeSelected(QCPlotType plotType)
     {
-        return elementCache().findQCPlotTypeCheckbox(plotType).isChecked();
+        return getCurrentQCPlotType() != plotType;
     }
 
     public void checkAllPlotTypes(boolean selected)
@@ -718,6 +761,20 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         {
             return _suffix;
         }
+
+        @Override
+        public String toString()
+        {
+            return _label;
+        }
+
+        public static QCPlotType getEnum(String value)
+        {
+            for (QCPlotType v : values())
+                if (v.toString().equalsIgnoreCase(value))
+                    return v;
+            throw new IllegalArgumentException(value);
+        }
     }
 
     public enum QCPlotExclusionState
@@ -784,6 +841,8 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         Locator.XPathLocator scaleCombo = Locator.id("scale-combo-box");
         Locator.XPathLocator dateRangeCombo = Locator.id("daterange-combo-box");
         Locator.XPathLocator metricTypeCombo = Locator.id("metric-type-field");
+
+        Locator.XPathLocator qcPlotTypeCombo = Locator.id("qc-plot-type-with-y-options");
         Checkbox groupedXCheckbox = new Checkbox(Locator.css("#grouped-x-field input")
                 .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
         Checkbox singlePlotCheckbox = new Checkbox(Locator.css("#peptides-single-plot input")
