@@ -26,6 +26,7 @@ import org.labkey.api.data.Container;
 import org.labkey.api.data.RuntimeSQLException;
 import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.exp.api.ExperimentService;
+import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.reader.TabLoader;
 import org.labkey.api.security.User;
 import org.labkey.api.util.FileUtil;
@@ -243,23 +244,28 @@ public class SkylineDocumentParser implements AutoCloseable
         _log = log;
         readDocumentVersion(_reader);
 
+        TargetedMSModule targetedMSModule = ModuleLoader.getInstance().getModule(TargetedMSModule.class);
         try
         {
-            _maxPrecursors = Integer.parseInt(TargetedMSModule.MAX_PRECURSORS_PROPERTY.getEffectiveValue(container));
+            _maxPrecursors = Integer.parseInt(targetedMSModule.MAX_PRECURSORS_PROPERTY.getEffectiveValue(container));
         }
         catch (NumberFormatException e)
         {
             _maxPrecursors = TargetedMSModule.DEFAULT_MAX_PRECURSORS;
-            _log.warn("Unable to parse MAX_PRECURSORS_PROPERTY value: " + TargetedMSModule.MAX_PRECURSORS_PROPERTY.getEffectiveValue(container) + ", defaulting to " + _maxPrecursors);
+            _log.warn("Unable to parse MAX_PRECURSORS_PROPERTY value: {}, defaulting to {}",
+                    targetedMSModule.MAX_PRECURSORS_PROPERTY.getEffectiveValue(container),
+                    _maxPrecursors);
         }
         try
         {
-            _maxTransitionChromInfos = Integer.parseInt(TargetedMSModule.MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(container));
+            _maxTransitionChromInfos = Integer.parseInt(targetedMSModule.MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(container));
         }
         catch (NumberFormatException e)
         {
             _maxTransitionChromInfos = TargetedMSModule.DEFAULT_MAX_TRANSITION_CHROM_INFOS;
-            _log.warn("Unable to parse MAX_TRANSITION_CHROM_INFOS_PROPERTY value: " + TargetedMSModule.MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(container) + ", defaulting to " + _maxTransitionChromInfos);
+            _log.warn("Unable to parse MAX_TRANSITION_CHROM_INFOS_PROPERTY value: {}, defaulting to {}",
+                    targetedMSModule.MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(container),
+                    _maxTransitionChromInfos);
         }
     }
 
@@ -2312,7 +2318,7 @@ public class SkylineDocumentParser implements AutoCloseable
                 // Read it out of the file on-demand, so we only load the subset that we need
                 try
                 {
-                    if (!Boolean.parseBoolean(TargetedMSModule.SKIP_CHROMATOGRAM_IMPORT_PROPERTY.getEffectiveValue(_container)))
+                    if (!Boolean.parseBoolean(ModuleLoader.getInstance().getModule(TargetedMSModule.class).SKIP_CHROMATOGRAM_IMPORT_PROPERTY.getEffectiveValue(_container)))
                     {
                         chromInfo.setChromatogram(_binaryParser.readChromatogramBytes(chromatogram));
                     }
