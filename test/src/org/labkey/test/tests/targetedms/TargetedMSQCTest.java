@@ -299,7 +299,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertElementPresent(qcPlotsWebPart.getLegendItemLocator("+/-3 x Std Dev", true));
 
         // test that plot0_plotType_1 (CUSUMm) does not change from linear
-        qcPlotsWebPart.checkPlotType(CUSUMm, true);
+        qcPlotsWebPart.checkPlotType(CUSUMm);
         qcPlotsWebPart.waitForPlots(2, true);
         initialSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1");
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LOG);
@@ -364,8 +364,8 @@ public class TargetedMSQCTest extends TargetedMSTest
         List<QCPlotsWebPart.QCPlotType> selectedPlotTypes = new ArrayList<>();
         selectedPlotTypes.add(MovingRange);
         selectedPlotTypes.add(CUSUMm);
-        qcPlotsWebPart.checkPlotType(selectedPlotTypes.get(0), true);
-        qcPlotsWebPart.checkPlotType(selectedPlotTypes.get(1), true);
+        qcPlotsWebPart.checkPlotType(selectedPlotTypes.get(0));
+        qcPlotsWebPart.checkPlotType(selectedPlotTypes.get(1));
         qcPlotsWebPart.waitForPlots(2, true);
 
         // test plot type selection is persisted
@@ -433,16 +433,16 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         log("Verify Plot Types and Legends");
         qcPlotsWebPart.checkAllPlotTypes(false);
-        qcPlotsWebPart.checkPlotType(LeveyJennings, true);
+        qcPlotsWebPart.checkPlotType(LeveyJennings);
         qcPlotsWebPart.waitForPlots(PRECURSORS.length, true);
 
-        qcPlotsWebPart.checkPlotType(MovingRange, true);
+        qcPlotsWebPart.checkPlotType(MovingRange);
         qcPlotsWebPart.waitForPlots(PRECURSORS.length * 2, true);
 
         assertElementNotPresent(qcPlotsWebPart.getLegendItemLocator("CUSUM Group", true));
 
-        qcPlotsWebPart.checkPlotType(CUSUMm, true);
-        qcPlotsWebPart.checkPlotType(QCPlotsWebPart.QCPlotType.CUSUMv, true);
+        qcPlotsWebPart.checkPlotType(CUSUMm);
+        qcPlotsWebPart.checkPlotType(QCPlotsWebPart.QCPlotType.CUSUMv);
         qcPlotsWebPart.waitForPlots(PRECURSORS.length * 4, true);
 
         assertElementPresent(qcPlotsWebPart.getLegendItemLocator("CUSUM Group", true));
@@ -473,7 +473,7 @@ public class TargetedMSQCTest extends TargetedMSTest
                 qcPlotsWebPart.waitForPlots();
             }
             qcPlotsWebPart.checkAllPlotTypes(false);
-            qcPlotsWebPart.checkPlotType(plotType, true);
+            qcPlotsWebPart.checkPlotType(plotType);
             qcPlotsWebPart.waitForPlots(1, false);
 
             testEachMultiSeriesQCPlot(plotType);
@@ -485,7 +485,7 @@ public class TargetedMSQCTest extends TargetedMSTest
     @LogMethod
     private void testEachMultiSeriesQCPlot(@LoggedParam QCPlotsWebPart.QCPlotType plotType)
     {
-        log("Test plot type " + plotType.getLongLabel());
+        log("Test plot type " + plotType.getLabel());
 
         String yLeftColor = "#66C2A5";
         String yRightColor = "#FC8D62";
@@ -677,7 +677,7 @@ public class TargetedMSQCTest extends TargetedMSTest
                 qcPlotsWebPart.waitForPlots();
             }
             qcPlotsWebPart.checkAllPlotTypes(false);
-            qcPlotsWebPart.checkPlotType(plotType, true);
+            qcPlotsWebPart.checkPlotType(plotType);
             qcPlotsWebPart.waitForPlots(1, false);
 
             testEachCombinedPlots(plotType);
@@ -727,7 +727,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
     private void testEachCombinedPlots(QCPlotsWebPart.QCPlotType plotType)
     {
-        log("Testing combined plot for " + plotType.getLongLabel());
+        log("Testing combined plot for " + plotType.getLabel());
         int count;
         int expectedNumPointsPerSeries = 47;
         if (plotType == CUSUMm || plotType == QCPlotsWebPart.QCPlotType.CUSUMv)
@@ -907,7 +907,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         log("Enabling Moving range along with Levey-Jennings");
-        qcPlotsWebPart.checkPlotType(MovingRange, true);
+        qcPlotsWebPart.checkPlotType(MovingRange);
         qcPlotsWebPart.waitForPlots(1, false);
 
         log("Verifying standard deviations plots");

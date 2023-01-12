@@ -255,7 +255,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         PanoramaDashboard panoramaDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = panoramaDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TOTAL_PEAK);
-        qcPlotsWebPart.checkPlotType(CUSUMm, true);
+        qcPlotsWebPart.checkPlotType(CUSUMm);
         qcPlotsWebPart.setShowExcludedPoints(true);
         qcPlotsWebPart.saveAsDefaultView();
 
