@@ -1302,6 +1302,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (valueName === "TrailingMean" || valueName === "TrailingCV") {
             panelY = panelY + 200;
         }
+
+        let trailingRuns = this.trailingRuns;
+        let trailingStartDate = Ext4.Date.format(new Date(this.minAcquiredTime), 'Y-m-d H:i:s');
+        let trailingEndDate = Ext4.Date.format(new Date(this.maxAcquiredTime), 'Y-m-d H:i:s');
+
         showHoverTask.delay(500, function() {
             var calloutMgr = hopscotch.getCalloutManager(),
                 hopscotchId = Ext4.id(),
@@ -1324,6 +1329,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                             renderTo: contentDivId,
                             pointData: row,
                             valueName: valueName,
+                            trailingRuns: trailingRuns,
+                            trailingStartDate: trailingStartDate,
+                            trailingEndDate: trailingEndDate,
                             metricProps: metricProps,
                             canEdit: me.canUserEdit(),
                             listeners: {

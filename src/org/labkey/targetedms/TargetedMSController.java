@@ -1192,7 +1192,7 @@ public class TargetedMSController extends SpringActionController
         @Getter @Setter  private boolean showExcluded;
         @Getter @Setter private boolean showReferenceGS;
         @Getter @Setter private boolean showExcludedPrecursors;
-        @Getter @Setter @Builder.Default private int trailingRuns = 10;
+        @Getter @Setter private int trailingRuns = 10;
         @Getter @Setter private boolean includeTrailingMeanPlot;
         @Getter @Setter private boolean includeTrailingCVPlot;
 
