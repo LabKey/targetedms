@@ -101,7 +101,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         else {
             for (let ind = 0 ; ind < precursors.data.length; ind++) {
                 let data = precursors.data[ind];
-                if (!data.TrailingMean || !data.TrailingCV) {
+                if (!data.TrailingMean && !data.TrailingCV) {
                     precursors.data.splice(ind, 1);
                     ind--;
                 }
