@@ -315,7 +315,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 hidden: true,
                 activeError: '',
                 allowDecimals: false,
-                minValue: 0,
+                minValue: 2,
                 listeners: {
                     scope: this,
                     change: function (cmp, newVal, oldVal) {

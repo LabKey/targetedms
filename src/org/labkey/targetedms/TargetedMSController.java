@@ -18,6 +18,7 @@ package org.labkey.targetedms;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keypoint.PngEncoder;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.batik.dom.GenericDOMImplementation;
@@ -1191,7 +1192,7 @@ public class TargetedMSController extends SpringActionController
         @Getter @Setter  private boolean showExcluded;
         @Getter @Setter private boolean showReferenceGS;
         @Getter @Setter private boolean showExcludedPrecursors;
-        @Getter @Setter private int trailingRuns;
+        @Getter @Setter @Builder.Default private int trailingRuns = 10;
         @Getter @Setter private boolean includeTrailingMeanPlot;
         @Getter @Setter private boolean includeTrailingCVPlot;
 

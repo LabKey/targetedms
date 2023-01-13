@@ -40,13 +40,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
                 // If it is, call deepCloneArray on it
                 return this.deepCloneArray(item);
             } else if (typeof item === 'object' && item !== null) {
-                // If it's an object, use Object.assign to create a new object with the same properties
-                return Object.assign({}, item);
+                // If it's an object, use deepCloneObject
+                return this.deepCloneObject(item);
             } else {
                 // Otherwise, it's a primitive value and we can just return it
                 return item;
             }
-        });
+        }, this);
     },
 
     deepCloneObject: function (obj) {
@@ -101,7 +101,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         else {
             for (let ind = 0 ; ind < precursors.data.length; ind++) {
                 let data = precursors.data[ind];
-                if (!data.TrailingMean) {
+                if (!data.TrailingMean || !data.TrailingCV) {
                     precursors.data.splice(ind, 1);
                     ind--;
                 }
