@@ -18,6 +18,7 @@ package org.labkey.test.components.targetedms;
 import org.apache.commons.collections4.SetUtils;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
+import org.labkey.test.Locators;
 import org.labkey.test.WebDriverWrapper;
 import org.labkey.test.components.BodyWebPart;
 import org.labkey.test.components.ext4.Checkbox;
@@ -58,19 +59,30 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         super(driver, DEFAULT_TITLE, index);
     }
 
-    private void waitForNoRecords()
+    @Override
+    public void waitForReady()
     {
-        WebDriverWrapper.waitFor(() -> elementCache().noRecords().size() > 0, 10000);
+        waitForPlotPanel();
+    }
+
+    private WebElement waitForPlotPanel()
+    {
+        List<WebElement> els = new ArrayList<>();
+        WebDriverWrapper.waitFor(() -> els.addAll(elementCache().findSeriesPanels()) ||
+                                els.addAll(elementCache().findPlotErrors()) ||
+                                els.addAll(elementCache().findNoRecordsMessage()),
+                "QC Plots Webpart load", 10_000);
+        return els.get(0);
     }
 
     private void doAndWaitForUpdate(Runnable action)
     {
-        WebElement plot = elementCache().findPlots().get(0);
+        WebElement plot = waitForPlotPanel();
 
         action.run();
 
         getWrapper().shortWait().until(ExpectedConditions.stalenessOf(plot));
-        waitForPlots();
+        waitForReady();
     }
 
     @LogMethod(quiet = true)
@@ -209,7 +221,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     public void setShowAllPeptidesInSinglePlot(boolean check, int expectedPlotCount)
     {
         setShowAllPeptidesInSinglePlot(check);
-        waitForPlots(expectedPlotCount, true);
+        waitForPlots(expectedPlotCount);
     }
 
     public void setShowExcludedPoints(boolean check)
@@ -262,20 +274,12 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         getWrapper()._ext4Helper.waitForMaskToDisappear(BaseWebDriverTest.WAIT_FOR_PAGE);
     }
 
-    public void waitForPlots()
-    {
-        waitForPlots(1, false);
-    }
-
-    public void waitForPlots(Integer plotCount, boolean exact)
+    public void waitForPlots(Integer plotCount)
     {
         if (plotCount > 0)
         {
             Supplier<String> messageSupplier = () -> "Waiting for " + plotCount + " plots. Found: " + elementCache().findPlots().size();
-            if (exact)
-                WebDriverWrapper.waitFor(() -> elementCache().findPlots().size() == plotCount, messageSupplier, WebDriverWrapper.WAIT_FOR_PAGE);
-            else
-                WebDriverWrapper.waitFor(() -> elementCache().findPlots().size() >= plotCount, messageSupplier, WebDriverWrapper.WAIT_FOR_PAGE);
+            WebDriverWrapper.waitFor(() -> elementCache().findPlots().size() == plotCount, messageSupplier, WebDriverWrapper.WAIT_FOR_PAGE);
         }
         else
         {
@@ -285,28 +289,16 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public List<QCPlot> getPlots()
     {
-        List<QCPlot> plots = new ArrayList<>();
-
-        for (WebElement plotEl : elementCache().findPlots())
-        {
-            plots.add(new QCPlot(plotEl));
-        }
-
-        return plots;
-    }
-
-    public String getSVGPlotText(int plotPanelIndex, String plotIdSuffix)
-    {
-        Locator loc = Locator.tagWithClass("div", "tiledPlotPanel").index(plotPanelIndex).append(
-                Locator.tag("div").attributeEndsWith("id", plotIdSuffix)
-                        .withDescendant(Locator.xpath("//*[local-name() = 'svg']")));
-        WebElement svg = loc.findElement(getWrapper().getDriver());
-        return svg.getText();
+        return elementCache().findSeriesPanels().stream().map(QCPlot::new).toList();
     }
 
     public String getSVGPlotText(String plotIdSuffix)
     {
-        return getSVGPlotText(0, plotIdSuffix);
+        Locator loc = Locator.tagWithClass("div", "tiledPlotPanel").append(
+                Locator.tag("div").attributeEndsWith("id", plotIdSuffix)
+                        .withDescendant(Locator.xpath("//*[local-name() = 'svg']")));
+        WebElement svg = loc.findElement(this);
+        return svg.getText();
     }
 
     public List<String> getPlotTitles()
@@ -342,7 +334,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         setGroupXAxisValuesByDate(false);
         setShowAllPeptidesInSinglePlot(false);
 
-        waitForPlots();
     }
 
     @LogMethod
@@ -352,7 +343,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         setStartDate(startDate);
         setEndDate(endDate);
         applyRange();
-        waitForPlots(expectedPlotCount, true);
+        waitForPlots(expectedPlotCount);
     }
 
     public int getGuideSetTrainingRectCount()
@@ -427,7 +418,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     @LogMethod
     public void createGuideSet(@LoggedParam GuideSet guideSet, String expectErrorMsg)
     {
-        waitForPlots(1, false);
+        waitForReady();
         getWrapper().clickButton("Create Guide Set", 0);
 
         WebElement startPoint;
@@ -486,6 +477,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         else if (expectPageReload)
         {
             getWrapper().clickAndWait(gsButtons.get(0)); // Create button : index 0
+            waitForReady();
         }
         else
         {
@@ -824,14 +816,24 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         Locator.XPathLocator hopscotchBubble = Locator.byClass("hopscotch-bubble-container");
         Locator.XPathLocator hopscotchBubbleClose = Locator.byClass("hopscotch-bubble-close");
 
-        List<WebElement> findPlots()
+        List<WebElement> findSeriesPanels()
         {
-            return Locator.css("table.qc-plot-wp").waitForElements(plotPanel, 20000);
+            return Locator.css("table.qc-plot-wp").findElements(plotPanel);
         }
 
-        List<WebElement> noRecords()
+        List<WebElement> findPlots()
+        {
+            return Locator.byClass("chart-render-div").findElements(plotPanel);
+        }
+
+        List<WebElement> findNoRecordsMessage()
         {
             return Locator.tagContainingText("span", "There were no records found.").findElements(plotPanel);
+        }
+
+        List<WebElement> findPlotErrors()
+        {
+            return Locators.labkeyError.findElements(plotPanel);
         }
 
         List<WebElement> logScaleInvalid()
