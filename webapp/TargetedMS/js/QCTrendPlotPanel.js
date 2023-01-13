@@ -1298,6 +1298,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             metricProps = this.getMetricPropsById(this.metric),
             me = this;
 
+        let panelY = me.canUserEdit() ? -375 : -270;
+        if (valueName === "TrailingMean" || valueName === "TrailingCV") {
+            panelY = panelY + 200;
+        }
         showHoverTask.delay(500, function() {
             var calloutMgr = hopscotch.getCalloutManager(),
                 hopscotchId = Ext4.id(),
@@ -1310,7 +1314,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     placement: 'top',
                     xOffset: shiftLeft ? -428 : -53,
                     arrowOffset: shiftLeft ? 410 : 35,
-                    yOffset: me.canUserEdit() ? -375 : -270,
+                    yOffset: panelY,
                     target: point,
                     content: '<div id="' + contentDivId + '"></div>',
                     onShow: function() {

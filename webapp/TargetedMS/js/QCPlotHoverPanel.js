@@ -98,7 +98,14 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
             this.add(this.getPlotPointDetailField('File Path', this.pointData['FilePath'].replace(/\\/g, '\\<wbr>').replace(/\//g, '\/<wbr>').replace(/_/g, '_<wbr>')));
         }
 
-        if (!this.pointData.TrailingMean || !this.pointData.TrailingCV) {
+        let hideExclusionAndPointClickLinks = false;
+        if (this.valueName === "TrailingMean") {
+            hideExclusionAndPointClickLinks = true
+        }
+        if (this.valueName === "TrailingCV") {
+            hideExclusionAndPointClickLinks = true
+        }
+        if (!hideExclusionAndPointClickLinks) {
             if (this.canEdit) {
                 this.add(this.getPlotPointExclusionPanel());
             }
