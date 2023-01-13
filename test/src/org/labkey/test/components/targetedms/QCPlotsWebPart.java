@@ -23,7 +23,6 @@ import org.labkey.test.components.BodyWebPart;
 import org.labkey.test.components.ext4.Checkbox;
 import org.labkey.test.components.ext4.ComboBox;
 import org.labkey.test.components.ext4.Window;
-import org.labkey.test.selenium.LazyWebElement;
 import org.labkey.test.util.Ext4Helper;
 import org.labkey.test.util.LogMethod;
 import org.labkey.test.util.LoggedParam;
@@ -626,7 +625,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         PERCENT_OF_MEAN("Percent of Mean"),
         STANDARD_DEVIATIONS("Standard Deviations");
 
-        private String _text;
+        private final String _text;
 
         Scale(String text)
         {
@@ -760,7 +759,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         IRTCORRELATION("iRT Correlation"),
         TICAREA("TIC Area");
 
-        private String _text;
+        private final String _text;
 
         MetricType(String text)
         {
@@ -781,10 +780,10 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         }
     }
 
-    public class Elements extends BodyWebPart.ElementCache
+    public class Elements extends BodyWebPart<?>.ElementCache
     {
-        WebElement startDate = new LazyWebElement(Locator.css("#start-date-field input"), this);
-        WebElement endDate = new LazyWebElement(Locator.css("#end-date-field input"), this);
+        WebElement startDate = Locator.css("#start-date-field input").findWhenNeeded(this);
+        WebElement endDate = Locator.css("#end-date-field input").findWhenNeeded(this);
         Locator.XPathLocator scaleCombo = Locator.id("scale-combo-box");
         Locator.XPathLocator dateRangeCombo = Locator.id("daterange-combo-box");
         Locator.XPathLocator metricTypeCombo = Locator.id("metric-type-field");
@@ -803,8 +802,8 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
                 .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
 
 
-        WebElement plotPanel = new LazyWebElement(Locator.css("div.tiledPlotPanel"), this);
-        WebElement paginationPanel = new LazyWebElement(Locator.css("div.plotPaginationHeaderPanel"), this);
+        WebElement plotPanel = Locator.css("div.tiledPlotPanel").findWhenNeeded(this);
+        WebElement paginationPanel = Locator.css("div.plotPaginationHeaderPanel").findWhenNeeded(this);
         Locator extFormDisplay = Locator.css("div.x4-form-display-field");
         Locator.CssLocator guideSetTrainingRect = Locator.css("svg rect.training");
         Locator.CssLocator experimentRangeRect = Locator.css("svg rect.expRange");
