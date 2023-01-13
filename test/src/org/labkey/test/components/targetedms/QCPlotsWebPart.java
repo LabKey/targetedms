@@ -820,17 +820,17 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         Locator.XPathLocator hopscotchBubble = Locator.byClass("hopscotch-bubble-container");
         Locator.XPathLocator hopscotchBubbleClose = Locator.byClass("hopscotch-bubble-close");
 
-        List<WebElement> findPlotPanels()
+        List<WebElement> findPlots()
         {
             return Locator.css("table.qc-plot-wp").waitForElements(plotPanel, 20000);
         }
 
-        List<WebElement> findPlots()
-        {
-            List<WebElement> plots = new ArrayList<>();
-            findPlotPanels().forEach(panel -> plots.addAll(Locator.css(".chart-render-div").findElements(panel)));
-            return plots;
-        }
+//        List<WebElement> findPlots()
+//        {
+//            List<WebElement> plots = new ArrayList<>();
+//            findPlotPanels().forEach(panel -> plots.addAll(Locator.css(".chart-render-div").findElements(panel)));
+//            return plots;
+//        }
 
         List<WebElement> noRecords()
         {
