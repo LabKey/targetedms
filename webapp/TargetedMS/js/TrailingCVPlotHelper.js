@@ -42,12 +42,13 @@ Ext4.define("LABKEY.targetedms.TrailingCVPlotHelper", {
                 return object.TrailingCV;
             }));
 
-            // the number 20 is specified in the specs
+            // Since 20 is a common limit for acceptable %CV, use that as the default range
             if (min < 20 && max < 20) {
                 min = 0;
                 max = 20;
             }
 
+            // expand range if we have values bigger than 20
             if (min > 20 || max > 20) {
                 min = 0;
                 max = Math.round(Math.ceil(max / 10) * 10);
