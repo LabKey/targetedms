@@ -16,7 +16,6 @@
 package org.labkey.test.components.targetedms;
 
 import org.apache.commons.collections4.SetUtils;
-import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.Locators;
 import org.labkey.test.WebDriverWrapper;
@@ -268,10 +267,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void applyRange()
     {
-        WebElement panelChild = Locator.css("svg").findElement(elementCache().plotPanel); // The panel itself doesn't become stale, but its children do
-        getWrapper().clickButton("Apply", 0);
-        getWrapper().shortWait().until(ExpectedConditions.stalenessOf(panelChild));
-        getWrapper()._ext4Helper.waitForMaskToDisappear(BaseWebDriverTest.WAIT_FOR_PAGE);
+        doAndWaitForUpdate(() -> elementCache().applyRangeButton.click());
     }
 
     public void waitForPlots(Integer plotCount)
@@ -781,6 +777,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         WebElement startDate = Locator.css("#start-date-field input").findWhenNeeded(this);
         WebElement endDate = Locator.css("#end-date-field input").findWhenNeeded(this);
+        WebElement applyRangeButton = Ext4Helper.Locators.ext4Button("Apply").findWhenNeeded(this);
         Locator.XPathLocator scaleCombo = Locator.id("scale-combo-box");
         Locator.XPathLocator dateRangeCombo = Locator.id("daterange-combo-box");
         Locator.XPathLocator metricTypeCombo = Locator.id("metric-type-field");
