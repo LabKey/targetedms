@@ -144,15 +144,18 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     public void setQCPlotTypes(@LoggedParam QCPlotType... qcPlotTypes)
     {
         Set<QCPlotType> currentQCPlotTypes = getCurrentQCPlotTypes();
-        SetUtils.disjunction(Set.of(qcPlotTypes), currentQCPlotTypes)
-                .forEach(this::toggleQCPlotType);
+        toggleQCPlotTypes(SetUtils.disjunction(Set.of(qcPlotTypes), currentQCPlotTypes));
     }
 
-    public void toggleQCPlotType(QCPlotType qcPlotType)
+    private void toggleQCPlotTypes(Set<QCPlotType> plotTypes)
     {
-        dismissTooltip();
+        if (!plotTypes.isEmpty())
+        {
+            dismissTooltip();
 
-        doAndWaitForUpdate(() -> elementCache().qcPlotTypeCombo.selectComboBoxItem(qcPlotType.getLabel()));
+            String[] typeLabels = plotTypes.stream().map(QCPlotType::getLabel).toArray(String[]::new);
+            elementCache().qcPlotTypeCombo.toggleComboBoxItems(typeLabels);
+        }
     }
 
     public List<String> getMetricTypeOptions()
@@ -554,7 +557,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         if (!isPlotTypeSelected(plotType))
         {
-            toggleQCPlotType(plotType);
+            toggleQCPlotTypes(Set.of(plotType));
         }
     }
 
@@ -789,7 +792,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         Locator.XPathLocator metricTypeCombo = Locator.id("metric-type-field");
 
         ComboBox qcPlotTypeCombo = new ComboBox.ComboBoxFinder(getDriver()).withIdPrefix("qc-plot-type-with-y-options")
-                .findWhenNeeded(this).setMatcher(Ext4Helper.TextMatchTechnique.CONTAINS);
+                .findWhenNeeded(this).setMatcher(Ext4Helper.TextMatchTechnique.CONTAINS).setMultiSelect(true);
         Checkbox groupedXCheckbox = new Checkbox(Locator.css("#grouped-x-field input")
                 .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
         Checkbox singlePlotCheckbox = new Checkbox(Locator.css("#peptides-single-plot input")
@@ -823,13 +826,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         {
             return Locator.css("table.qc-plot-wp").waitForElements(plotPanel, 20000);
         }
-
-//        List<WebElement> findPlots()
-//        {
-//            List<WebElement> plots = new ArrayList<>();
-//            findPlotPanels().forEach(panel -> plots.addAll(Locator.css(".chart-render-div").findElements(panel)));
-//            return plots;
-//        }
 
         List<WebElement> noRecords()
         {
