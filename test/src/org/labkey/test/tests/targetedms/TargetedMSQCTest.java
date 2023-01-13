@@ -49,7 +49,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -360,20 +362,17 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertEquals("Unexpected number of points for initial data date range", 21, count);
 
         // test plot type selection persistence
-        qcPlotsWebPart.checkAllPlotTypes(false);
-        List<QCPlotsWebPart.QCPlotType> selectedPlotTypes = new ArrayList<>();
+        Set<QCPlotsWebPart.QCPlotType> selectedPlotTypes = new HashSet<>();
         selectedPlotTypes.add(MovingRange);
         selectedPlotTypes.add(CUSUMm);
-        qcPlotsWebPart.checkPlotType(selectedPlotTypes.get(0));
-        qcPlotsWebPart.checkPlotType(selectedPlotTypes.get(1));
+        qcPlotsWebPart.setQCPlotTypes(selectedPlotTypes.toArray(QCPlotsWebPart.QCPlotType[]::new));
         qcPlotsWebPart.waitForPlots(2, true);
 
         // test plot type selection is persisted
         refresh();
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.waitForPlots(2, true);
-        assertEquals("QC Plot Type not round tripped as expected", true, qcPlotsWebPart.isPlotTypeSelected(selectedPlotTypes.get(0)));
-        assertEquals("QC Plot Type not round tripped as expected", true, qcPlotsWebPart.isPlotTypeSelected(selectedPlotTypes.get(1)));
+        assertEquals("QC Plot Type not round tripped as expected", selectedPlotTypes, qcPlotsWebPart.getCurrentQCPlotTypes());
 
         // impersonate a different user in this container and verify that initial form fields used
         impersonate(USER);
@@ -460,20 +459,9 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         for (QCPlotsWebPart.QCPlotType plotType : QCPlotsWebPart.QCPlotType.values())
         {
-            qcPlotsWebPart.waitForPlots(1, false);
-            if (qcPlotsWebPart.isGroupXAxisValuesByDateChecked())
-            {
-                qcPlotsWebPart.setGroupXAxisValuesByDate(false);
-                qcPlotsWebPart.waitForPlots();
-            }
-            if (qcPlotsWebPart.isShowAllPeptidesInSinglePlotChecked())
-            {
-                qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false, PRECURSORS.length);
-                qcPlotsWebPart.waitForPlots();
-            }
-            qcPlotsWebPart.checkAllPlotTypes(false);
-            qcPlotsWebPart.checkPlotType(plotType);
-            qcPlotsWebPart.waitForPlots(1, false);
+            qcPlotsWebPart.setGroupXAxisValuesByDate(false);
+            qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false, PRECURSORS.length);
+            qcPlotsWebPart.setQCPlotTypes(plotType);
 
             testEachMultiSeriesQCPlot(plotType);
         }
@@ -663,21 +651,9 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         for (QCPlotsWebPart.QCPlotType plotType : QCPlotsWebPart.QCPlotType.values())
         {
-            qcPlotsWebPart.waitForPlots(1, false);
-
-            if (qcPlotsWebPart.isShowAllPeptidesInSinglePlotChecked())
-            {
-                qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false, PRECURSORS.length);
-                qcPlotsWebPart.waitForPlots();
-            }
-            if (qcPlotsWebPart.isGroupXAxisValuesByDateChecked())
-            {
-                qcPlotsWebPart.setGroupXAxisValuesByDate(false);
-                qcPlotsWebPart.waitForPlots();
-            }
-            qcPlotsWebPart.checkAllPlotTypes(false);
-            qcPlotsWebPart.checkPlotType(plotType);
-            qcPlotsWebPart.waitForPlots(1, false);
+            qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false, PRECURSORS.length);
+            qcPlotsWebPart.setGroupXAxisValuesByDate(false);
+            qcPlotsWebPart.setQCPlotTypes(plotType);
 
             testEachCombinedPlots(plotType);
         }

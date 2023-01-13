@@ -177,7 +177,9 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     public Set<QCPlotType> getCurrentQCPlotTypes()
     {
         WebElement typeInput = Locator.tag("input").waitForElement(elementCache().qcPlotTypeCombo, 1000);
-        return Arrays.stream(typeInput.getDomProperty("value").split(", ?")).map(QCPlotType::getEnum).collect(Collectors.toSet());
+        return Arrays.stream(typeInput.getDomProperty("value").split(", ?"))
+                .filter(s -> !s.isEmpty())
+                .map(QCPlotType::getEnum).collect(Collectors.toSet());
     }
 
     public void setGroupXAxisValuesByDate(boolean check)
