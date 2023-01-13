@@ -16,7 +16,6 @@
 package org.labkey.test.components.targetedms;
 
 import org.apache.commons.collections4.SetUtils;
-import org.jetbrains.annotations.Nullable;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.WebDriverWrapper;
@@ -92,7 +91,10 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     @LogMethod(quiet = true)
     public void setDateRangeOffset(@LoggedParam DateRangeOffset dateRangeOffset)
     {
-        getWrapper()._ext4Helper.selectComboBoxItem(elementCache().dateRangeCombo, dateRangeOffset.toString());
+        if (getCurrentDateRangeOffset() != dateRangeOffset)
+        {
+            getWrapper()._ext4Helper.selectComboBoxItem(elementCache().dateRangeCombo, dateRangeOffset.toString());
+        }
     }
 
     public DateRangeOffset getCurrentDateRangeOffset()
@@ -126,13 +128,16 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     @LogMethod
     public void setMetricType(@LoggedParam MetricType metricType)
     {
-        doAndWaitForUpdate(() ->
+        if (getCurrentMetricType() != metricType)
         {
-            // scroll to prevent inadvertent hover over QC Summary webpart items that show hopscotch tooltips
-            getWrapper().scrollIntoView(elementCache().metricTypeCombo, true);
+            doAndWaitForUpdate(() ->
+            {
+                // scroll to prevent inadvertent hover over QC Summary webpart items that show hopscotch tooltips
+                getWrapper().scrollIntoView(elementCache().metricTypeCombo, true);
 
-            getWrapper()._ext4Helper.selectComboBoxItem(elementCache().metricTypeCombo, metricType.toString());
-        });
+                getWrapper()._ext4Helper.selectComboBoxItem(elementCache().metricTypeCombo, metricType.toString());
+            });
+        }
     }
 
     @LogMethod
@@ -174,7 +179,10 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void setGroupXAxisValuesByDate(boolean check)
     {
-        doAndWaitForUpdate(() -> elementCache().groupedXCheckbox.set(check));
+        if (elementCache().groupedXCheckbox.get() != check)
+        {
+            doAndWaitForUpdate(() -> elementCache().groupedXCheckbox.set(check));
+        }
     }
 
     public boolean isGroupXAxisValuesByDateChecked()
@@ -193,7 +201,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     /**
      * This should be called only when a plot is visible.
      */
-    public void setShowAllPeptidesInSinglePlot(boolean check, @Nullable Integer expectedPlotCount)
+    public void setShowAllPeptidesInSinglePlot(boolean check, int expectedPlotCount)
     {
         setShowAllPeptidesInSinglePlot(check);
         waitForPlots(expectedPlotCount, true);
@@ -321,35 +329,12 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     public void resetInitialQCPlotFields()
     {
         // revert to the initial form values if any of them have changed
-        if (getCurrentMetricType() != MetricType.RETENTION)
-            setMetricType(MetricType.RETENTION);
-        if (getCurrentDateRangeOffset() != DateRangeOffset.ALL)
-            setDateRangeOffset(DateRangeOffset.ALL);
-        if (isPlotTypeSelected(QCPlotType.MovingRange) || isPlotTypeSelected(QCPlotType.CUSUMm) || isPlotTypeSelected(QCPlotType.CUSUMv))
-        {
-            setQCPlotTypes(QCPlotsWebPart.QCPlotType.LeveyJennings);
-            waitForPlots();
-        }
-        if (getCurrentScale() != QCPlotsWebPart.Scale.LINEAR)
-        {
-            setScale(QCPlotsWebPart.Scale.LINEAR);
-            waitForPlots();
-        }
-        else
-        {
-            // work around to close Plot Type popup
-            setScale(Scale.LOG);
-            waitForPlots();
-            setScale(Scale.LINEAR);
-            waitForPlots();
-        }
-        if (isGroupXAxisValuesByDateChecked())
-        {
-            setGroupXAxisValuesByDate(false);
-            waitForPlots();
-        }
-        if (isShowAllPeptidesInSinglePlotChecked())
-            setShowAllPeptidesInSinglePlot(false, null);
+        setMetricType(MetricType.RETENTION);
+        setDateRangeOffset(DateRangeOffset.ALL);
+        setQCPlotTypes(QCPlotsWebPart.QCPlotType.LeveyJennings);
+        setScale(QCPlotsWebPart.Scale.LINEAR);
+        setGroupXAxisValuesByDate(false);
+        setShowAllPeptidesInSinglePlot(false);
 
         waitForPlots();
     }
@@ -576,6 +561,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         int halfWidth = elementCache().webPartTitle.getSize().getWidth() / 2;
         int xOffset = elementCache().webPartTitle.getLocation().getX() + halfWidth; // distance to edge of window from center of element
+        getWrapper().scrollIntoView(elementCache().webPartTitle);
         new Actions(getDriver())
                 .moveToElement(elementCache().webPartTitle) // Start at the center of the title
                 .moveByOffset(-xOffset, 0) // Move all the way to the left edge of the window
@@ -588,7 +574,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public boolean isPlotTypeSelected(QCPlotType plotType)
     {
-        return !getCurrentQCPlotTypes().contains(plotType);
+        return getCurrentQCPlotTypes().contains(plotType);
     }
 
     public void checkAllPlotTypes(boolean selected)
