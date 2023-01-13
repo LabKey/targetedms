@@ -432,8 +432,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
 
         log("Verify Plot Types and Legends");
-        qcPlotsWebPart.checkAllPlotTypes(false);
-        qcPlotsWebPart.checkPlotType(LeveyJennings);
+        qcPlotsWebPart.setQCPlotTypes(LeveyJennings);
         qcPlotsWebPart.waitForPlots(PRECURSORS.length, true);
 
         qcPlotsWebPart.checkPlotType(MovingRange);

@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -266,10 +267,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         if (plotCount > 0)
         {
+            Supplier<String> messageSupplier = () -> "Waiting for " + plotCount + " plots. Found: " + elementCache().findPlots().size();
             if (exact)
-                WebDriverWrapper.waitFor(() -> elementCache().findPlots().size() == plotCount, WebDriverWrapper.WAIT_FOR_PAGE);
+                WebDriverWrapper.waitFor(() -> elementCache().findPlots().size() == plotCount, messageSupplier, WebDriverWrapper.WAIT_FOR_PAGE);
             else
-                WebDriverWrapper.waitFor(() -> elementCache().findPlots().size() >= plotCount, WebDriverWrapper.WAIT_FOR_PAGE);
+                WebDriverWrapper.waitFor(() -> elementCache().findPlots().size() >= plotCount, messageSupplier, WebDriverWrapper.WAIT_FOR_PAGE);
         }
         else
         {
@@ -818,9 +820,16 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         Locator.XPathLocator hopscotchBubble = Locator.byClass("hopscotch-bubble-container");
         Locator.XPathLocator hopscotchBubbleClose = Locator.byClass("hopscotch-bubble-close");
 
-        List<WebElement> findPlots()
+        List<WebElement> findPlotPanels()
         {
             return Locator.css("table.qc-plot-wp").waitForElements(plotPanel, 20000);
+        }
+
+        List<WebElement> findPlots()
+        {
+            List<WebElement> plots = new ArrayList<>();
+            findPlotPanels().forEach(panel -> plots.addAll(Locator.css(".chart-render-div").findElements(panel)));
+            return plots;
         }
 
         List<WebElement> noRecords()
