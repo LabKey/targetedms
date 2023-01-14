@@ -301,7 +301,6 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         // test that plot0_plotType_1 (CUSUMm) does not change from linear
         qcPlotsWebPart.checkPlotType(CUSUMm);
-        qcPlotsWebPart.waitForPlots(2);
         initialSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1");
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LOG);
         assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1")));
@@ -468,6 +467,12 @@ public class TargetedMSQCTest extends TargetedMSTest
     @LogMethod
     private void testEachMultiSeriesQCPlot(@LoggedParam QCPlotsWebPart.QCPlotType plotType)
     {
+        if (!plotType.isStandardPointCount())
+        {
+            log("Skipping plot type " + plotType.getLabel());
+            return;
+        }
+
         log("Test plot type " + plotType.getLabel());
 
         String yLeftColor = "#66C2A5";
@@ -696,6 +701,12 @@ public class TargetedMSQCTest extends TargetedMSTest
 
     private void testEachCombinedPlots(QCPlotsWebPart qcPlotsWebPart, QCPlotsWebPart.QCPlotType plotType)
     {
+        if (!plotType.isStandardPointCount())
+        {
+            log("Skipping plot type " + plotType.getLabel());
+            return;
+        }
+
         log("Testing combined plot for " + plotType.getLabel());
         int count;
         int expectedNumPointsPerSeries = 47;

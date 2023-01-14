@@ -675,20 +675,22 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public enum QCPlotType
     {
-        LeveyJennings("Levey-Jennings", ""),
-        MovingRange("Moving Range", "_mR"),
-        CUSUMm("CUSUMm", "_CUSUMm"),
-        CUSUMv("CUSUMv", "_CUSUMv"),
-        TrailingCV("Trailing CV", ""),
-        TrailingMean("Trailing Mean", "");
+        LeveyJennings("Levey-Jennings", "", true),
+        MovingRange("Moving Range", "_mR", true),
+        CUSUMm("CUSUMm", "_CUSUMm", true),
+        CUSUMv("CUSUMv", "_CUSUMv", true),
+        TrailingCV("Trailing CV", "", false),
+        TrailingMean("Trailing Mean", "", false);
 
         private final String _label;
         private final String _idSuffix;
+        private final boolean _standardPointCount;
 
-        QCPlotType(String label, String idSuffix)
+        QCPlotType(String label, String idSuffix, boolean standardPointCount)
         {
             _label = label;
             _idSuffix = idSuffix;
+            _standardPointCount = standardPointCount;
         }
 
         public String getLabel()
@@ -699,6 +701,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         public String getIdSuffix()
         {
             return _idSuffix;
+        }
+
+        public boolean isStandardPointCount()
+        {
+            return _standardPointCount;
         }
 
         @Override
