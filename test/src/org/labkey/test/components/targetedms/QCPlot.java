@@ -29,18 +29,21 @@ import java.util.regex.Pattern;
 
 public class QCPlot
 {
-    WebElement plot;
+    final WebElement plot;
     String precursor;
     Map<String, QCHelper.AnnotationType> annotationTypes;
 
     QCPlot(WebElement plot)
     {
         this.plot = plot;
-        this.precursor = elements().precursor.findElement(plot).getText().trim();
     }
 
     public String getPrecursor()
     {
+        if (precursor == null)
+        {
+            precursor = elements().precursor.findElement(plot).getText().trim();
+        }
         return precursor;
     }
 

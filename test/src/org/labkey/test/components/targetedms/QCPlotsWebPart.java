@@ -16,8 +16,8 @@
 package org.labkey.test.components.targetedms;
 
 import org.apache.commons.collections4.SetUtils;
-import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
+import org.labkey.test.Locators;
 import org.labkey.test.WebDriverWrapper;
 import org.labkey.test.components.BodyWebPart;
 import org.labkey.test.components.ext4.Checkbox;
@@ -58,19 +58,30 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         super(driver, DEFAULT_TITLE, index);
     }
 
-    private void waitForNoRecords()
+    @Override
+    public void waitForReady()
     {
-        WebDriverWrapper.waitFor(() -> elementCache().noRecords().size() > 0, 10000);
+        waitForPlotPanel();
+    }
+
+    private WebElement waitForPlotPanel()
+    {
+        List<WebElement> els = new ArrayList<>();
+        WebDriverWrapper.waitFor(() -> els.addAll(elementCache().findSeriesPanels()) ||
+                                els.addAll(elementCache().findPlotErrors()) ||
+                                els.addAll(elementCache().findNoRecordsMessage()),
+                "QC Plots Webpart load", 10_000);
+        return els.get(0);
     }
 
     private void doAndWaitForUpdate(Runnable action)
     {
-        WebElement plot = elementCache().findPlots().get(0);
+        WebElement plot = waitForPlotPanel();
 
         action.run();
 
         getWrapper().shortWait().until(ExpectedConditions.stalenessOf(plot));
-        waitForPlots();
+        waitForReady();
     }
 
     @LogMethod(quiet = true)
@@ -144,15 +155,18 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     public void setQCPlotTypes(@LoggedParam QCPlotType... qcPlotTypes)
     {
         Set<QCPlotType> currentQCPlotTypes = getCurrentQCPlotTypes();
-        SetUtils.disjunction(Set.of(qcPlotTypes), currentQCPlotTypes)
-                .forEach(this::toggleQCPlotType);
+        toggleQCPlotTypes(SetUtils.disjunction(Set.of(qcPlotTypes), currentQCPlotTypes));
     }
 
-    public void toggleQCPlotType(QCPlotType qcPlotType)
+    private void toggleQCPlotTypes(Set<QCPlotType> plotTypes)
     {
-        dismissTooltip();
+        if (!plotTypes.isEmpty())
+        {
+            dismissTooltip();
 
-        doAndWaitForUpdate(() -> elementCache().qcPlotTypeCombo.selectComboBoxItem(qcPlotType.getLabel()));
+            String[] typeLabels = plotTypes.stream().map(QCPlotType::getLabel).toArray(String[]::new);
+            elementCache().qcPlotTypeCombo.toggleComboBoxItems(typeLabels);
+        }
     }
 
     public List<String> getMetricTypeOptions()
@@ -174,7 +188,9 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     public Set<QCPlotType> getCurrentQCPlotTypes()
     {
         WebElement typeInput = Locator.tag("input").waitForElement(elementCache().qcPlotTypeCombo, 1000);
-        return Arrays.stream(typeInput.getDomProperty("value").split(", ?")).map(QCPlotType::getEnum).collect(Collectors.toSet());
+        return Arrays.stream(typeInput.getDomProperty("value").split(", ?"))
+                .filter(s -> !s.isEmpty())
+                .map(QCPlotType::getEnum).collect(Collectors.toSet());
     }
 
     public void setGroupXAxisValuesByDate(boolean check)
@@ -204,7 +220,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     public void setShowAllPeptidesInSinglePlot(boolean check, int expectedPlotCount)
     {
         setShowAllPeptidesInSinglePlot(check);
-        waitForPlots(expectedPlotCount, true);
+        waitForPlots(expectedPlotCount);
     }
 
     public void setShowExcludedPoints(boolean check)
@@ -251,26 +267,15 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void applyRange()
     {
-        WebElement panelChild = Locator.css("svg").findElement(elementCache().plotPanel); // The panel itself doesn't become stale, but its children do
-        getWrapper().clickButton("Apply", 0);
-        getWrapper().shortWait().until(ExpectedConditions.stalenessOf(panelChild));
-        getWrapper()._ext4Helper.waitForMaskToDisappear(BaseWebDriverTest.WAIT_FOR_PAGE);
+        doAndWaitForUpdate(() -> elementCache().applyRangeButton.click());
     }
 
-    public void waitForPlots()
-    {
-        waitForPlots(1, false);
-    }
-
-    public void waitForPlots(Integer plotCount, boolean exact)
+    public void waitForPlots(Integer plotCount)
     {
         if (plotCount > 0)
         {
             Supplier<String> messageSupplier = () -> "Waiting for " + plotCount + " plots. Found: " + elementCache().findPlots().size();
-            if (exact)
-                WebDriverWrapper.waitFor(() -> elementCache().findPlots().size() == plotCount, messageSupplier, WebDriverWrapper.WAIT_FOR_PAGE);
-            else
-                WebDriverWrapper.waitFor(() -> elementCache().findPlots().size() >= plotCount, messageSupplier, WebDriverWrapper.WAIT_FOR_PAGE);
+            WebDriverWrapper.waitFor(() -> elementCache().findPlots().size() == plotCount, messageSupplier, WebDriverWrapper.WAIT_FOR_PAGE);
         }
         else
         {
@@ -280,28 +285,16 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public List<QCPlot> getPlots()
     {
-        List<QCPlot> plots = new ArrayList<>();
-
-        for (WebElement plotEl : elementCache().findPlots())
-        {
-            plots.add(new QCPlot(plotEl));
-        }
-
-        return plots;
-    }
-
-    public String getSVGPlotText(int plotPanelIndex, String plotIdSuffix)
-    {
-        Locator loc = Locator.tagWithClass("div", "tiledPlotPanel").index(plotPanelIndex).append(
-                Locator.tag("div").attributeEndsWith("id", plotIdSuffix)
-                        .withDescendant(Locator.xpath("//*[local-name() = 'svg']")));
-        WebElement svg = loc.findElement(getWrapper().getDriver());
-        return svg.getText();
+        return elementCache().findSeriesPanels().stream().map(QCPlot::new).toList();
     }
 
     public String getSVGPlotText(String plotIdSuffix)
     {
-        return getSVGPlotText(0, plotIdSuffix);
+        Locator loc = Locator.tagWithClass("div", "tiledPlotPanel").append(
+                Locator.tag("div").attributeEndsWith("id", plotIdSuffix)
+                        .withDescendant(Locator.xpath("//*[local-name() = 'svg']")));
+        WebElement svg = loc.findElement(this);
+        return svg.getText();
     }
 
     public List<String> getPlotTitles()
@@ -337,7 +330,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         setGroupXAxisValuesByDate(false);
         setShowAllPeptidesInSinglePlot(false);
 
-        waitForPlots();
     }
 
     @LogMethod
@@ -347,7 +339,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         setStartDate(startDate);
         setEndDate(endDate);
         applyRange();
-        waitForPlots(expectedPlotCount, true);
+        waitForPlots(expectedPlotCount);
     }
 
     public int getGuideSetTrainingRectCount()
@@ -422,7 +414,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     @LogMethod
     public void createGuideSet(@LoggedParam GuideSet guideSet, String expectErrorMsg)
     {
-        waitForPlots(1, false);
+        waitForReady();
         getWrapper().clickButton("Create Guide Set", 0);
 
         WebElement startPoint;
@@ -481,6 +473,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         else if (expectPageReload)
         {
             getWrapper().clickAndWait(gsButtons.get(0)); // Create button : index 0
+            waitForReady();
         }
         else
         {
@@ -554,7 +547,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         if (!isPlotTypeSelected(plotType))
         {
-            toggleQCPlotType(plotType);
+            toggleQCPlotTypes(Set.of(plotType));
         }
     }
 
@@ -682,20 +675,22 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public enum QCPlotType
     {
-        LeveyJennings("Levey-Jennings", ""),
-        MovingRange("Moving Range", "_mR"),
-        CUSUMm("CUSUMm", "_CUSUMm"),
-        CUSUMv("CUSUMv", "_CUSUMv"),
-        TrailingCV("Trailing CV", ""),
-        TrailingMean("Trailing Mean", "");
+        LeveyJennings("Levey-Jennings", "", true),
+        MovingRange("Moving Range", "_mR", true),
+        CUSUMm("CUSUMm", "_CUSUMm", true),
+        CUSUMv("CUSUMv", "_CUSUMv", true),
+        TrailingCV("Trailing CV", "", false),
+        TrailingMean("Trailing Mean", "", false);
 
         private final String _label;
         private final String _idSuffix;
+        private final boolean _standardPointCount;
 
-        QCPlotType(String label, String idSuffix)
+        QCPlotType(String label, String idSuffix, boolean standardPointCount)
         {
             _label = label;
             _idSuffix = idSuffix;
+            _standardPointCount = standardPointCount;
         }
 
         public String getLabel()
@@ -706,6 +701,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         public String getIdSuffix()
         {
             return _idSuffix;
+        }
+
+        public boolean isStandardPointCount()
+        {
+            return _standardPointCount;
         }
 
         @Override
@@ -784,12 +784,13 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         WebElement startDate = Locator.css("#start-date-field input").findWhenNeeded(this);
         WebElement endDate = Locator.css("#end-date-field input").findWhenNeeded(this);
+        WebElement applyRangeButton = Ext4Helper.Locators.ext4Button("Apply").findWhenNeeded(this);
         Locator.XPathLocator scaleCombo = Locator.id("scale-combo-box");
         Locator.XPathLocator dateRangeCombo = Locator.id("daterange-combo-box");
         Locator.XPathLocator metricTypeCombo = Locator.id("metric-type-field");
 
         ComboBox qcPlotTypeCombo = new ComboBox.ComboBoxFinder(getDriver()).withIdPrefix("qc-plot-type-with-y-options")
-                .findWhenNeeded(this).setMatcher(Ext4Helper.TextMatchTechnique.CONTAINS);
+                .findWhenNeeded(this).setMatcher(Ext4Helper.TextMatchTechnique.CONTAINS).setMultiSelect(true);
         Checkbox groupedXCheckbox = new Checkbox(Locator.css("#grouped-x-field input")
                 .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
         Checkbox singlePlotCheckbox = new Checkbox(Locator.css("#peptides-single-plot input")
@@ -819,21 +820,24 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         Locator.XPathLocator hopscotchBubble = Locator.byClass("hopscotch-bubble-container");
         Locator.XPathLocator hopscotchBubbleClose = Locator.byClass("hopscotch-bubble-close");
 
-        List<WebElement> findPlots()
+        List<WebElement> findSeriesPanels()
         {
-            return Locator.css("table.qc-plot-wp").waitForElements(plotPanel, 20000);
+            return Locator.css("table.qc-plot-wp").findElements(plotPanel);
         }
 
-//        List<WebElement> findPlots()
-//        {
-//            List<WebElement> plots = new ArrayList<>();
-//            findPlotPanels().forEach(panel -> plots.addAll(Locator.css(".chart-render-div").findElements(panel)));
-//            return plots;
-//        }
+        List<WebElement> findPlots()
+        {
+            return Locator.byClass("chart-render-div").findElements(plotPanel);
+        }
 
-        List<WebElement> noRecords()
+        List<WebElement> findNoRecordsMessage()
         {
             return Locator.tagContainingText("span", "There were no records found.").findElements(plotPanel);
+        }
+
+        List<WebElement> findPlotErrors()
+        {
+            return Locators.labkeyError.findElements(plotPanel);
         }
 
         List<WebElement> logScaleInvalid()

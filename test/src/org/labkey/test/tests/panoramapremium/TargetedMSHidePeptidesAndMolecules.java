@@ -73,7 +73,7 @@ public class TargetedMSHidePeptidesAndMolecules extends TargetedMSTest
         checker().verifyEquals("Incorrect number of plots displayed when excluded ", 1, qcPlotsWebPart.getPlots().size());
 
         qcPlotsWebPart.setShowExcludedPrecursors(true);
-        qcPlotsWebPart.waitForPlots(2, true);
+        qcPlotsWebPart.waitForPlots(2);
         checker().verifyEquals("Incorrect number of plots after show excluded precursor is checked ", 2, qcPlotsWebPart.getPlots().size());
 
         log("Verifying Inclusion");
