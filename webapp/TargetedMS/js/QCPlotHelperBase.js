@@ -740,7 +740,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     },
 
     addEachIndividualPrecursorPlot: function(plotIndex, id, precursorIndex, precursorInfo, metricProps, plotType, isCUSUMMean, scope) {
-        if (this.yAxisScale == 'log' && plotType != LABKEY.vis.TrendingLinePlotType.LeveyJennings && plotType != LABKEY.vis.TrendingLinePlotType.CUSUM) {
+        if ((plotType === LABKEY.vis.TrendingLinePlotType.TrailingMean ||
+                plotType === LABKEY.vis.TrendingLinePlotType.TrailingCV)
+                && this.trailingRuns >= this.runs) {
+            Ext4.get(id).update("<span class='labkey-error'> " + plotType + " - The number you entered is larger than the number of available runs. Only " + this.runs + " runs are used for calculation</span>");
+            return;
+        }
+        else if (this.yAxisScale == 'log' && plotType != LABKEY.vis.TrendingLinePlotType.LeveyJennings && plotType != LABKEY.vis.TrendingLinePlotType.CUSUM) {
             Ext4.get(id).update("<span style='font-style: italic;'>Values that are 0 have been replaced with 0.0000001 for log scale plot.</span>");
         }
         else if (precursorInfo.showLogInvalid && plotType !== LABKEY.vis.TrendingLinePlotType.CUSUM) {

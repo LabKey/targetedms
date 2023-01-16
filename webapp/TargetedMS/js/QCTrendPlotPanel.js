@@ -319,14 +319,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 listeners: {
                     scope: this,
                     change: function (cmp, newVal, oldVal) {
-                        if (newVal > this.runs) {
-                            Ext4.get(this.plotDivId).update("<span class='labkey-error'>The number you entered is larger than the number of available runs. Only " + this.runs + " runs are used for calculation</span>");
-                        }
-                        else {
-                            this.trailingRuns = newVal;
-                            this.havePlotOptionsChanged = true;
-                            this.displayTrendPlot();
-                        }
+                        this.trailingRuns = newVal;
+                        this.havePlotOptionsChanged = true;
+                        this.displayTrendPlot();
                     }
                 }
             };
@@ -369,17 +364,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 change: function(cmp, newVal, oldVal) {
                     var newValues = newVal;
                     this.plotTypes = newValues ? Ext4.isArray(newValues) ? newValues : [newValues] : [];
-                    if ((newValues.indexOf("Trailing Mean") > -1 || newValues.indexOf("Trailing CV") > -1) &&
-                            this.getFirstPlotOptionsToolbar().items.get('trailingRuns').getValue() > this.runs) {
-                        Ext4.get(this.plotDivId).update("<span class='labkey-error'>The number you entered is larger than the number of available runs. Only " + this.runs + " runs are used for calculation</span>");
-                    }
-                    else {
-                        // this.plotTypeOptionsToolbar.items.push(this.getTrailingRunsField());
-                        this.getFirstPlotOptionsToolbar().items.get('trailingRuns').setVisible(newValues.indexOf("Trailing Mean") > -1 || newValues.indexOf("Trailing CV") > -1);
-                        this.havePlotOptionsChanged = true;
-                        this.setBrushingEnabled(false);
-                        this.displayTrendPlot();
-                    }
+                    this.getFirstPlotOptionsToolbar().items.get('trailingRuns').setVisible(newValues.indexOf("Trailing Mean") > -1 || newValues.indexOf("Trailing CV") > -1);
+                    this.havePlotOptionsChanged = true;
+                    this.setBrushingEnabled(false);
+                    this.displayTrendPlot();
                 }
             }
         }
