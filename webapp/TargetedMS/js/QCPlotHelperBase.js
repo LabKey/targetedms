@@ -740,9 +740,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     },
 
     addEachIndividualPrecursorPlot: function(plotIndex, id, precursorIndex, precursorInfo, metricProps, plotType, isCUSUMMean, scope) {
-        if ((plotType === LABKEY.vis.TrendingLinePlotType.TrailingMean ||
-                plotType === LABKEY.vis.TrendingLinePlotType.TrailingCV)
-                && this.trailingRuns >= this.runs) {
+        let trailingMeanORCVPlot = plotType === LABKEY.vis.TrendingLinePlotType.TrailingMean ||
+                plotType === LABKEY.vis.TrendingLinePlotType.TrailingCV;
+        if (trailingMeanORCVPlot && this.trailingRuns >= this.runs) {
             Ext4.get(id).update("<span class='labkey-error'> " + plotType + " - The number you entered is larger than the number of available runs. Only " + this.runs + " runs are used for calculation</span>");
             return;
         }
@@ -862,7 +862,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         var plot = LABKEY.vis.TrendingLinePlot(plotConfig);
         plot.render();
 
-        this.addAnnotationsToPlot(plot, precursorInfo);
+        if (!trailingMeanORCVPlot) {
+            this.addAnnotationsToPlot(plot, precursorInfo);
+        }
 
         this.addGuideSetTrainingRangeToPlot(plot, precursorInfo);
 

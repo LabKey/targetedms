@@ -419,15 +419,16 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
             return this.getLJCombinedPlotLegendSeries();
     },
 
-    getAdditionalPlotLegend: function(plotType)
-    {
+    getAdditionalPlotLegend: function(plotType) {
         if (plotType === LABKEY.vis.TrendingLinePlotType.CUSUM)
             return this.getCUSUMGroupLegend();
         if (plotType === LABKEY.vis.TrendingLinePlotType.MovingRange)
             return this.getMRLegend();
         if (plotType === LABKEY.vis.TrendingLinePlotType.LeveyJennings)
             return this.getLJLegend();
-        if (this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot())
+        if (this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot() ||
+                plotType === LABKEY.vis.TrendingLinePlotType.TrailingMean ||
+                plotType === LABKEY.vis.TrendingLinePlotType.TrailingCV)
             return this.getEmptyLegend();
         return [];
     },
