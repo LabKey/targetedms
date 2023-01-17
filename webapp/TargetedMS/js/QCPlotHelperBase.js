@@ -742,9 +742,15 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     addEachIndividualPrecursorPlot: function(plotIndex, id, precursorIndex, precursorInfo, metricProps, plotType, isCUSUMMean, scope) {
         let trailingMeanORCVPlot = plotType === LABKEY.vis.TrendingLinePlotType.TrailingMean ||
                 plotType === LABKEY.vis.TrendingLinePlotType.TrailingCV;
-        if (trailingMeanORCVPlot && this.trailingRuns >= this.runs) {
-            Ext4.get(id).update("<span class='labkey-error'> " + plotType + " - The number you entered is larger than the number of available runs. Only " + this.runs + " runs are used for calculation</span>");
-            return;
+        if (trailingMeanORCVPlot) {
+            if (this.trailingRuns >= this.runs) {
+                Ext4.get(id).update("<span class='labkey-error'> " + plotType + " - The number you entered is larger than the number of available runs. Only " + this.runs + " runs are used for calculation</span>");
+                return;
+            }
+            else if (this.trailingRuns <= 2) {
+                Ext4.get(id).update("<span class='labkey-error'> " + plotType + " - Please enter a positive integer (>2) that is less than or equal to total number of available runs - " + this.runs + " </span>");
+                return;
+            }
         }
         else if (this.yAxisScale == 'log' && plotType != LABKEY.vis.TrendingLinePlotType.LeveyJennings && plotType != LABKEY.vis.TrendingLinePlotType.CUSUM) {
             Ext4.get(id).update("<span style='font-style: italic;'>Values that are 0 have been replaced with 0.0000001 for log scale plot.</span>");

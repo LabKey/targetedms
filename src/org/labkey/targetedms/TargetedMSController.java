@@ -1279,7 +1279,7 @@ public class TargetedMSController extends SpringActionController
             // always query for the full range
             List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(schema, qcMetricConfigurations, qcFolderStartDate, qcFolderEndDate, form.getSelectedAnnotations(), form.isShowExcluded(), form.isShowExcludedPrecursors());
             Map<GuideSetKey, GuideSetStats> stats;
-            if (form.includeTrailingCVPlot || form.includeTrailingMeanPlot)
+            if ((form.includeTrailingCVPlot || form.includeTrailingMeanPlot) && form.trailingRuns > 2)
             {
                 stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())), form.trailingRuns);
             }
