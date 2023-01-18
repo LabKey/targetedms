@@ -17,6 +17,7 @@ package org.labkey.targetedms.outliers;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.RuntimeSQLException;
 import org.labkey.api.data.SQLFragment;
@@ -422,9 +423,9 @@ public class OutlierGenerator
 
     public Map<GuideSetKey, GuideSetStats> getAllProcessedMetricGuideSets(List<RawMetricDataSet> rawMetricData, Map<Integer, GuideSet> guideSets)
     {
-        return getAllProcessedMetricGuideSets(rawMetricData, guideSets, null);
+        return getAllProcessedMetricGuideSets(rawMetricData, guideSets, null, null, null);
     }
-    public Map<GuideSetKey, GuideSetStats> getAllProcessedMetricGuideSets(List<RawMetricDataSet> rawMetricData, Map<Integer, GuideSet> guideSets, Integer trailingRuns)
+    public Map<GuideSetKey, GuideSetStats> getAllProcessedMetricGuideSets(List<RawMetricDataSet> rawMetricData, Map<Integer, GuideSet> guideSets, @Nullable Integer trailingRuns, @Nullable Date qcFolderStartDate, @Nullable Date qcFolderEndDate)
     {
         Map<GuideSetKey, GuideSetStats> result = new HashMap<>();
 
@@ -435,7 +436,7 @@ public class OutlierGenerator
             stats.addRow(row);
         }
 
-        result.values().forEach(g -> g.calculateStats(trailingRuns));
+        result.values().forEach(g -> g.calculateStats(trailingRuns, qcFolderStartDate, qcFolderEndDate));
         return result;
     }
 

@@ -1292,8 +1292,24 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }
 
         let trailingRuns = this.trailingRuns;
-        let trailingStartDate = Ext4.Date.format(new Date(this.minAcquiredTime), 'Y-m-d H:i:s');
-        let trailingEndDate = Ext4.Date.format(new Date(this.maxAcquiredTime), 'Y-m-d H:i:s');
+        let trailingStartDate;
+        let trailingEndDate;
+
+        // for custom date range option of date range combo
+        if (this.getDateRangeCombo().value === -1) {
+            trailingStartDate = Ext4.Date.format(new Date(this.startDateField.value), 'Y-m-d H:i:s');
+            trailingEndDate = Ext4.Date.format(new Date(this.endDateField.value), 'Y-m-d H:i:s');
+        }
+        // for last 7,15..365 days options of date range combo
+        else if (this.getDateRangeCombo().value !== 0) {
+            trailingStartDate = Ext4.Date.format(new Date(this.calculateStartDateByOffset()), 'Y-m-d H:i:s');
+            trailingEndDate = Ext4.Date.format(new Date(this.calculateEndDateByOffset()), 'Y-m-d H:i:s');
+        }
+        // for All dates option of date range combo
+        else {
+            trailingStartDate = Ext4.Date.format(new Date(this.minAcquiredTime), 'Y-m-d H:i:s');
+            trailingEndDate = Ext4.Date.format(new Date(this.maxAcquiredTime), 'Y-m-d H:i:s');
+        }
 
         showHoverTask.delay(500, function() {
             var calloutMgr = hopscotch.getCalloutManager(),

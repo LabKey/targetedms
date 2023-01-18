@@ -1281,7 +1281,7 @@ public class TargetedMSController extends SpringActionController
             Map<GuideSetKey, GuideSetStats> stats;
             if ((form.includeTrailingCVPlot || form.includeTrailingMeanPlot) && form.trailingRuns > 2)
             {
-                stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())), form.trailingRuns);
+                stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())), form.trailingRuns, form._startDate, form._endDate);
             }
             else
             {

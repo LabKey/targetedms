@@ -15,9 +15,11 @@
  */
 package org.labkey.targetedms.model;
 
+import org.labkey.api.util.DateUtil;
 import org.labkey.api.visualization.Stats;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +45,7 @@ public class GuideSetStats
     private double _movingRangeStdDev;
 
     private boolean _locked = false;
+    private int _trailingBeginIndex = 0;
 
     public GuideSetStats(GuideSetKey key, GuideSet guideSet)
     {
@@ -110,6 +113,39 @@ public class GuideSetStats
         }
     }
 
+    private Double[] getValuesForTrailing(List<RawMetricDataSet> rows, Date qcFolderStartDate, Date qcFolderEndDate)
+    {
+        List<Double> result = new ArrayList<>();
+        int beginInd = 0;
+        for (RawMetricDataSet row : rows)
+        {
+            if ((row.getSampleFile().getAcquiredTime().after(qcFolderStartDate)
+                    || DateUtil.getDateOnly(row.getSampleFile().getAcquiredTime()).compareTo(qcFolderStartDate) == 0) &&
+            (row.getSampleFile().getAcquiredTime().before(qcFolderEndDate)
+                            || DateUtil.getDateOnly(row.getSampleFile().getAcquiredTime()).compareTo(qcFolderEndDate) == 0))
+            {
+                Double value = row.getMetricValue();
+                if (value == null)
+                {
+                    result.add(0.0d);
+                }
+                else
+                {
+                    result.add((double) Math.round(value * 10000.0d) / 10000.0d);
+                }
+                if (_trailingBeginIndex == 0)
+                {
+                    _trailingBeginIndex = beginInd;
+                }
+            }
+            else
+            {
+                beginInd++;
+            }
+        }
+        return result.toArray(new Double[0]);
+    }
+
     private Double[] getValues(List<RawMetricDataSet> rows, boolean transformNullsToZero, boolean roundValues)
     {
         List<Double> result = new ArrayList<>();
@@ -136,7 +172,7 @@ public class GuideSetStats
         return result.toArray(new Double[0]);
     }
 
-    public void calculateStats(Integer trailingRuns)
+    public void calculateStats(Integer trailingRuns, Date qcFolderStartDate, Date qcFolderEndDate)
     {
         _locked = true;
 
@@ -165,8 +201,9 @@ public class GuideSetStats
 
         if (trailingRuns != null)
         {
-            trailingMeans = Stats.getTrailingMeans(metricVals, trailingRuns);
-            trailingCVs = Stats.getTrailingCVs(metricVals, trailingRuns);
+            var trailingVals = getValuesForTrailing(includedRows, qcFolderStartDate, qcFolderEndDate);
+            trailingMeans = Stats.getTrailingMeans(trailingVals, trailingRuns);
+            trailingCVs = Stats.getTrailingCVs(trailingVals, trailingRuns);
         }
 
         double[] positiveCUSUMm = Stats.getCUSUMS(metricVals, false, false, false, null);
@@ -195,7 +232,7 @@ public class GuideSetStats
         int j = 0; // index to traverse trailingMeans and trailingCVs array
         if (null != trailingRuns)
         {
-            for (int i = trailingRuns; i < includedRows.size(); i++)
+            for (int i = _trailingBeginIndex + trailingRuns; i < includedRows.size(); i++)
             {
                 RawMetricDataSet row = includedRows.get(i);
                 if (trailingMeans != null && trailingMeans.length > 0 && j < trailingMeans.length)
