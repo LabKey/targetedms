@@ -364,6 +364,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 change: function(cmp, newVal, oldVal) {
                     var newValues = newVal;
                     this.plotTypes = newValues ? Ext4.isArray(newValues) ? newValues : [newValues] : [];
+
+                    if (this.trailingRuns === undefined || this.trailingRuns === null) {
+                        this.trailingRuns = 10;
+                    }
                     this.getFirstPlotOptionsToolbar().items.get('trailingRuns').setVisible(newValues.indexOf("Trailing Mean") > -1 || newValues.indexOf("Trailing CV") > -1);
                     this.havePlotOptionsChanged = true;
                     this.setBrushingEnabled(false);
