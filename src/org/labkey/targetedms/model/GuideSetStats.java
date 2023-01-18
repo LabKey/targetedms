@@ -197,7 +197,6 @@ public class GuideSetStats
         {
             for (int i = trailingRuns; i < includedRows.size(); i++)
             {
-                j++;
                 RawMetricDataSet row = includedRows.get(i);
                 if (trailingMeans != null && trailingMeans.length > 0 && j < trailingMeans.length)
                 {
@@ -207,6 +206,7 @@ public class GuideSetStats
                 {
                     row.setTrailingCV(trailingCVs[j]);
                 }
+                j++;
             }
         }
     }
