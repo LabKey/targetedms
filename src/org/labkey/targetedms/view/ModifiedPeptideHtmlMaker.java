@@ -158,7 +158,7 @@ public class ModifiedPeptideHtmlMaker
                     // CDR ranges are one-based to make comparisons easy by doing the same for the peptide start/end indices
                     int peptideStartIndex = sequence.indexOf(crossLink.getBaseSequence().getUnmodified()) + 1;
                     int peptideEndIndex = peptideStartIndex + crossLink.getBaseSequence().getUnmodified().length();
-                    for (Pair<Integer, Integer> cdrRange : protein.getCdrRanges())
+                    for (Pair<Integer, Integer> cdrRange : protein.getCdrRangesList())
                     {
                         for (int i = Math.max(cdrRange.first, peptideStartIndex); i <= Math.min(cdrRange.second, peptideEndIndex); i++)
                         {

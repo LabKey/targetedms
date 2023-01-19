@@ -1,12 +1,20 @@
 package org.labkey.targetedms.parser;
 
+import org.apache.logging.log4j.Logger;
+import org.junit.Assert;
+import org.junit.Test;
 import org.labkey.api.util.Pair;
+import org.labkey.api.util.logging.LogHelper;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Protein extends AnnotatedEntity<ProteinAnnotation>
 {
+    private static final Logger LOG = LogHelper.getLogger(Protein.class, "Panorama protein parsing for CDR ranges");
     private long _peptideGroupId;
 
     private String _label;
@@ -146,25 +154,65 @@ public class Protein extends AnnotatedEntity<ProteinAnnotation>
         _peptideGroupId = peptideGroupId;
     }
 
-    public List<Pair<Integer, Integer>> getCdrRanges()
+    /** One-based indices for the complementarity-determining regions, specified by a PeptideGroup "CDR Range" annotation in the Skyline document */
+    public List<Pair<Integer, Integer>> getCdrRangesList()
     {
-        if (getPeptideGroupId() == 18519)
-        {
-            return List.of(Pair.of(26, 33), Pair.of(51, 57), Pair.of(96, 114));
-        }
-        if (getPeptideGroupId() == 18520)
-        {
-            return List.of(Pair.of(26, 33), Pair.of(51, 57), Pair.of(96, 116));
-        }
-        if (getPeptideGroupId() == 18521)
-        {
-            return List.of(Pair.of(27, 33), Pair.of(51, 53), Pair.of(90, 98));
-        }
         return _cdrRanges;
     }
 
-    public void setCdrRanges(List<Pair<Integer, Integer>> cdrRanges)
+    /** Parses out the start/end indices from a larger list like "[[26,33],[51,57],[96,114]]" */
+    private static final Pattern CDR_ELEMENT = Pattern.compile("\\[(\\d+),(\\d+)]");
+
+    public void setCdrRanges(String cdrRangesString)
+    {
+        List<Pair<Integer, Integer>> parsed = new ArrayList<>();
+        if (cdrRangesString != null)
+        {
+            Matcher matcher = CDR_ELEMENT.matcher(cdrRangesString);
+            while (matcher.find())
+            {
+                try
+                {
+                    int start = Integer.parseInt(matcher.group(1));
+                    int end = Integer.parseInt(matcher.group(2));
+                    parsed.add(Pair.of(start, end));
+                }
+                catch (NumberFormatException e)
+                {
+                    LOG.debug("Invalid protein CDR value: " + cdrRangesString);
+                }
+            }
+        }
+        _cdrRanges = Collections.unmodifiableList(parsed);
+    }
+
+    public void setCdrRangesList(List<Pair<Integer, Integer>> cdrRanges)
     {
         _cdrRanges = cdrRanges;
+    }
+
+    public static class TestCase
+    {
+        @Test
+        public void testCDRParse()
+        {
+            Protein p1 = new Protein();
+
+            Assert.assertEquals("Wrong CDR defaults", Collections.emptyList(), p1.getCdrRangesList());
+
+            p1.setCdrRanges(null);
+            Assert.assertEquals("Wrong CDR defaults", Collections.emptyList(), p1.getCdrRangesList());
+
+            p1.setCdrRanges("");
+            Assert.assertEquals("Wrong CDR defaults", Collections.emptyList(), p1.getCdrRangesList());
+
+            p1.setCdrRanges("[[26,33],[51,57],[96,114]]");
+            Assert.assertEquals("Wrong CDR parsing", List.of(Pair.of(26, 33), Pair.of(51, 57), Pair.of(96, 114)),
+                    p1.getCdrRangesList());
+
+            p1.setCdrRanges("[[26,33]");
+            Assert.assertEquals("Wrong CDR parsing", List.of(Pair.of(26, 33)),
+                    p1.getCdrRangesList());
+        }
     }
 }

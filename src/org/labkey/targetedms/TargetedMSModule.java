@@ -65,6 +65,7 @@ import org.labkey.targetedms.chart.ReplicateLabelMinimizer;
 import org.labkey.targetedms.datasource.MsDataSourceUtil;
 import org.labkey.targetedms.folderImport.QCFolderImporter;
 import org.labkey.targetedms.folderImport.QCFolderWriterFactory;
+import org.labkey.targetedms.parser.Protein;
 import org.labkey.targetedms.parser.SampleFile;
 import org.labkey.targetedms.parser.skyaudit.SkylineAuditLogParser;
 import org.labkey.targetedms.passport.PassportController;
@@ -675,7 +676,8 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
             SkylineAuditLogParser.TestCase.class,
             TargetedMSController.TestCase.class,
             PrecursorManager.TestCase.class,
-            CrossLinkedPeptideInfo.TestCase.class
+            CrossLinkedPeptideInfo.TestCase.class,
+            Protein.TestCase.class
         );
     }
 

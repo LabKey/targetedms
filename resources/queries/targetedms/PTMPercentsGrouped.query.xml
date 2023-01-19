@@ -17,6 +17,9 @@
                     <column columnName="PeptideGroupId">
                         <columnTitle>Chain</columnTitle>
                     </column>
+                    <column columnName="MaxPercentModified">
+                        <formatString>0.0%</formatString>
+                    </column>
                     <column columnName="Sequence">
                         <columnTitle>UnmodifiedSequence</columnTitle>
                     </column>

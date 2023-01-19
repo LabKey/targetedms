@@ -3,13 +3,15 @@ SELECT
     SiteLocation,
     PeptideModifiedSequence,
     Sequence @hidden,
-    Modification,
+    -- We have a special rule for this C-term modification - we're actually interested in the _unmodified_ percentage
+    (CASE WHEN Modification.Name = 'Lys-loss (Protein C-term K)' THEN 'C-term K' ELSE Modification.Name END) AS Modification,
     MIN(Id) AS Id @hidden,
     PreviousAA @hidden,
     NextAA @hidden,
     SampleName,
-    SUM(PercentModified) AS PercentModified,
-    SUM(TotalPercentModified) AS TotalPercentModified,
+    (CASE WHEN Modification.Name = 'Lys-loss (Protein C-term K)' THEN (1 - MAX(MinPercentModified)) ELSE MAX(MaxPercentModified) END) AS MaxPercentModified,
+    (CASE WHEN Modification.Name = 'Lys-loss (Protein C-term K)' THEN (1 - SUM(PercentModified)) ELSE SUM(PercentModified) END) AS PercentModified,
+    (CASE WHEN Modification.Name = 'Lys-loss (Protein C-term K)' THEN (1 - SUM(TotalPercentModified)) ELSE SUM(TotalPercentModified) END) AS TotalPercentModified,
     ModificationCount @hidden
 
 FROM
@@ -22,6 +24,6 @@ GROUP BY
     PeptideModifiedSequence,
     PeptideGroupId,
     SiteLocation,
-    Modification,
+    Modification.Name,
     ModificationCount
 PIVOT PercentModified, TotalPercentModified BY SampleName
