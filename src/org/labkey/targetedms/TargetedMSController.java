@@ -18,9 +18,6 @@ package org.labkey.targetedms;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keypoint.PngEncoder;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGeneratorContext;
 import org.apache.batik.svggen.SVGGraphics2D;
@@ -816,7 +813,7 @@ public class TargetedMSController extends SpringActionController
         private List<String> _plotTypes;
         private Boolean _largePlot;
         public List<String> _selectedAnnotations;
-        @Getter @Setter private Integer trailingRuns;
+        private Integer _trailingRuns;
 
         public Map<String, String> getAsMapOfStrings()
         {
@@ -841,8 +838,8 @@ public class TargetedMSController extends SpringActionController
                 valueMap.put("largePlot", Boolean.toString(_largePlot));
             if(_selectedAnnotations != null)
                 valueMap.put("selectedAnnotations", getSelectedAnnotationsString());
-            if (trailingRuns != null)
-                valueMap.put("trailingRuns", Integer.toString(trailingRuns));
+            if (_trailingRuns != null)
+                valueMap.put("trailingRuns", Integer.toString(_trailingRuns));
             // note: start and end date handled separately since they can be null and we want to persist that
             return valueMap;
         }
@@ -935,6 +932,16 @@ public class TargetedMSController extends SpringActionController
         public String getSelectedAnnotationsString()
         {
             return StringUtils.join(_selectedAnnotations, ",");
+        }
+
+        public Integer getTrailingRuns()
+        {
+            return _trailingRuns;
+        }
+
+        public void setTrailingRuns(Integer trailingRuns)
+        {
+            _trailingRuns = trailingRuns;
         }
     }
 
@@ -1181,20 +1188,70 @@ public class TargetedMSController extends SpringActionController
 
     public static class QCPlotsDataForm
     {
-        @Getter @Setter private int metricId;
-        @Getter @Setter private boolean includeLJ;
-        @Getter @Setter private boolean includeMR;
-        @Getter @Setter private boolean includeMeanCusum;
-        @Getter @Setter private boolean includeVariableCusum;
+        private int _metricId;
+        private boolean _includeLJ;
+        private boolean _includeMR;
+        private boolean _includeMeanCusum;
+        private boolean _includeVariableCusum;
         private Date _startDate;
         private Date _endDate;
-        @Getter @Setter private List<OutlierGenerator.AnnotationGroup> selectedAnnotations = Collections.emptyList();
-        @Getter @Setter  private boolean showExcluded;
-        @Getter @Setter private boolean showReferenceGS;
-        @Getter @Setter private boolean showExcludedPrecursors;
-        @Getter @Setter private int trailingRuns = 10;
-        @Getter @Setter private boolean includeTrailingMeanPlot;
-        @Getter @Setter private boolean includeTrailingCVPlot;
+        private List<OutlierGenerator.AnnotationGroup> _selectedAnnotations = Collections.emptyList();
+        private boolean _showExcluded;
+        private boolean _showReferenceGS;
+        private boolean _showExcludedPrecursors;
+        private int _trailingRuns = 10;
+        private boolean includeTrailingMeanPlot;
+        private boolean includeTrailingCVPlot;
+
+        public int getMetricId()
+        {
+            return _metricId;
+        }
+
+        public void setMetricId(int metricId)
+        {
+            this._metricId = metricId;
+        }
+
+        public boolean isIncludeLJ()
+        {
+            return _includeLJ;
+        }
+
+        public void setIncludeLJ(boolean includeLJ)
+        {
+            this._includeLJ = includeLJ;
+        }
+
+        public boolean isIncludeMR()
+        {
+            return _includeMR;
+        }
+
+        public void setIncludeMR(boolean includeMR)
+        {
+            this._includeMR = includeMR;
+        }
+
+        public boolean isIncludeMeanCusum()
+        {
+            return _includeMeanCusum;
+        }
+
+        public void setIncludeMeanCusum(boolean includeMeanCusum)
+        {
+            this._includeMeanCusum = includeMeanCusum;
+        }
+
+        public boolean isIncludeVariableCusum()
+        {
+            return _includeVariableCusum;
+        }
+
+        public void setIncludeVariableCusum(boolean includeVariableCusum)
+        {
+            this._includeVariableCusum = includeVariableCusum;
+        }
 
         public Date getStartDate()
         {
@@ -1214,6 +1271,76 @@ public class TargetedMSController extends SpringActionController
         public void setEndDate(java.sql.Date endDate)
         {
             _endDate = endDate;
+        }
+
+        public List<OutlierGenerator.AnnotationGroup> getSelectedAnnotations()
+        {
+            return _selectedAnnotations;
+        }
+
+        public void setSelectedAnnotations(List<OutlierGenerator.AnnotationGroup> selectedAnnotations)
+        {
+            _selectedAnnotations = selectedAnnotations;
+        }
+
+        public boolean isShowExcluded()
+        {
+            return _showExcluded;
+        }
+
+        public void setShowExcluded(boolean showExcluded)
+        {
+            _showExcluded = showExcluded;
+        }
+
+        public boolean isShowReferenceGS()
+        {
+            return _showReferenceGS;
+        }
+
+        public void setShowReferenceGS(boolean showReferenceGS)
+        {
+            _showReferenceGS = showReferenceGS;
+        }
+
+        public boolean isShowExcludedPrecursors()
+        {
+            return _showExcludedPrecursors;
+        }
+
+        public void setShowExcludedPrecursors(boolean showExcludedPrecursors)
+        {
+            _showExcludedPrecursors = showExcludedPrecursors;
+        }
+
+        public int getTrailingRuns()
+        {
+            return _trailingRuns;
+        }
+
+        public void setTrailingRuns(int trailingRuns)
+        {
+            _trailingRuns = trailingRuns;
+        }
+
+        public boolean isIncludeTrailingMeanPlot()
+        {
+            return includeTrailingMeanPlot;
+        }
+
+        public void setIncludeTrailingMeanPlot(boolean includeTrailingMeanPlot)
+        {
+            this.includeTrailingMeanPlot = includeTrailingMeanPlot;
+        }
+
+        public boolean isIncludeTrailingCVPlot()
+        {
+            return includeTrailingCVPlot;
+        }
+
+        public void setIncludeTrailingCVPlot(boolean includeTrailingCVPlot)
+        {
+            this.includeTrailingCVPlot = includeTrailingCVPlot;
         }
     }
 
@@ -1279,9 +1406,9 @@ public class TargetedMSController extends SpringActionController
             // always query for the full range
             List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(schema, qcMetricConfigurations, qcFolderStartDate, qcFolderEndDate, form.getSelectedAnnotations(), form.isShowExcluded(), form.isShowExcludedPrecursors());
             Map<GuideSetKey, GuideSetStats> stats;
-            if ((form.includeTrailingCVPlot || form.includeTrailingMeanPlot) && form.trailingRuns > 2)
+            if ((form.includeTrailingCVPlot || form.includeTrailingMeanPlot) && form._trailingRuns > 2)
             {
-                stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())), form.trailingRuns, form._startDate, form._endDate);
+                stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())), form._trailingRuns, form._startDate, form._endDate);
             }
             else
             {
