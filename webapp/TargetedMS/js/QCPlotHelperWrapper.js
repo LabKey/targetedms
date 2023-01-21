@@ -377,7 +377,10 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         if (this.showTrailingCVPlot()) {
             Ext4.apply(data, this.processTrailingCVPlotDataRow(row, fragment, seriesType, metricProps));
         }
-
+        if (this.showTrailingMeanPlot() || this.showTrailingCVPlot()) {
+            data['TrailingStartDate'] = row['TrailingStartDate'];
+            data['TrailingEndDate'] = row['TrailingEndDate'];
+        }
 
         return data;
     },

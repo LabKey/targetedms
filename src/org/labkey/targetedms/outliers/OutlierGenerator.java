@@ -423,9 +423,9 @@ public class OutlierGenerator
 
     public Map<GuideSetKey, GuideSetStats> getAllProcessedMetricGuideSets(List<RawMetricDataSet> rawMetricData, Map<Integer, GuideSet> guideSets)
     {
-        return getAllProcessedMetricGuideSets(rawMetricData, guideSets, null, null, null);
+        return getAllProcessedMetricGuideSets(rawMetricData, guideSets, null);
     }
-    public Map<GuideSetKey, GuideSetStats> getAllProcessedMetricGuideSets(List<RawMetricDataSet> rawMetricData, Map<Integer, GuideSet> guideSets, @Nullable Integer trailingRuns, @Nullable Date qcFolderStartDate, @Nullable Date qcFolderEndDate)
+    public Map<GuideSetKey, GuideSetStats> getAllProcessedMetricGuideSets(List<RawMetricDataSet> rawMetricData, Map<Integer, GuideSet> guideSets, @Nullable Integer trailingRuns)
     {
         Map<GuideSetKey, GuideSetStats> result = new HashMap<>();
 
@@ -436,7 +436,7 @@ public class OutlierGenerator
             stats.addRow(row);
         }
 
-        result.values().forEach(g -> g.calculateStats(trailingRuns, qcFolderStartDate, qcFolderEndDate));
+        result.values().forEach(g -> g.calculateStats(trailingRuns));
         return result;
     }
 

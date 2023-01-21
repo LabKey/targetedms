@@ -146,6 +146,11 @@ public class QCPlotFragment
                 {
                     dataJsonObject.put("TrailingCV", plotData.getTrailingCV());
                 }
+                if (includeTrailingMean || includeTrailingCV)
+                {
+                    dataJsonObject.put("TrailingStartDate", plotData.getTrailingStart());
+                    dataJsonObject.put("TrailingEndDate", plotData.getTrailingEnd());
+                }
                 dataJsonArray.put(dataJsonObject);
             }
         }

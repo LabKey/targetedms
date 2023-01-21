@@ -15,8 +15,6 @@
  */
 package org.labkey.targetedms.model;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.targetedms.model.OutlierCounts;
@@ -24,15 +22,16 @@ import org.labkey.api.visualization.Stats;
 import org.labkey.targetedms.chart.LabelFactory;
 
 import java.text.DecimalFormat;
+import java.util.Date;
 
 public class RawMetricDataSet
 {
     private final SampleFileQCMetadata _sampleFile;
 
-    @Setter String seriesLabel;
-    @Setter Double metricValue;
-    @Getter @Setter int metricId;
-    @Getter @Setter int metricSeriesIndex;
+    String seriesLabel;
+    Double metricValue;
+    int metricId;
+    int metricSeriesIndex;
 
     Long precursorChromInfoId;
 
@@ -41,9 +40,10 @@ public class RawMetricDataSet
     Double cusumMN;
     Double cusumVP;
     Double cusumVN;
-    @Getter @Setter Double trailingMean;
-    @Getter @Setter Double trailingCV;
-
+    Double trailingMean;
+    Double trailingCV;
+    Date trailingStart;
+    Date trailingEnd;
     PrecursorInfo _precursor;
 
     private GuideSetKey _guideSetKey;
@@ -194,10 +194,40 @@ public class RawMetricDataSet
         return "";
     }
 
+    public void setSeriesLabel(String seriesLabel)
+    {
+        this.seriesLabel = seriesLabel;
+    }
+
     @Nullable
     public Double getMetricValue()
     {
         return metricValue;
+    }
+
+    public void setMetricValue(Double metricValue)
+    {
+        this.metricValue = metricValue;
+    }
+
+    public int getMetricId()
+    {
+        return metricId;
+    }
+
+    public void setMetricId(int metricId)
+    {
+        this.metricId = metricId;
+    }
+
+    public int getMetricSeriesIndex()
+    {
+        return metricSeriesIndex;
+    }
+
+    public void setMetricSeriesIndex(int metricSeriesIndex)
+    {
+        this.metricSeriesIndex = metricSeriesIndex;
     }
 
     public GuideSetKey getGuideSetKey()
@@ -362,5 +392,45 @@ public class RawMetricDataSet
         {
             counts.setCUSUMvN(counts.getCUSUMvN() + 1);
         }
+    }
+
+    public Double getTrailingMean()
+    {
+        return trailingMean;
+    }
+
+    public void setTrailingMean(Double trailingMean)
+    {
+        this.trailingMean = trailingMean;
+    }
+
+    public Double getTrailingCV()
+    {
+        return trailingCV;
+    }
+
+    public void setTrailingCV(Double trailingCV)
+    {
+        this.trailingCV = trailingCV;
+    }
+
+    public Date getTrailingStart()
+    {
+        return trailingStart;
+    }
+
+    public void setTrailingStart(Date trailingStart)
+    {
+        this.trailingStart = trailingStart;
+    }
+
+    public Date getTrailingEnd()
+    {
+        return trailingEnd;
+    }
+
+    public void setTrailingEnd(Date trailingEnd)
+    {
+        this.trailingEnd = trailingEnd;
     }
 }
