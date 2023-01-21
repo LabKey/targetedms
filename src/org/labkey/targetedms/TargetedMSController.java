@@ -468,7 +468,7 @@ public class TargetedMSController extends SpringActionController
 
     }
 
-    public static void addDashboardTab(String tab, Container c, String[] includeWebParts)
+    public static void addDashboardTab(String tab, Container c, String... includeWebParts)
     {
         ArrayList<Portal.WebPart> newWebParts = new ArrayList<>();
         for(String name: includeWebParts)
@@ -478,13 +478,7 @@ public class TargetedMSController extends SpringActionController
         }
 
         Portal.saveParts(c, tab, newWebParts);
-        if (DefaultFolderType.DEFAULT_DASHBOARD.equals(tab))
-        {
-            // Save webparts to both pages, otherwise the TARGETED_MS_SETUP webpart gets copied over from
-            // portal.default to DefaultDashboard
-            Portal.saveParts(c, Portal.DEFAULT_PORTAL_PAGE_ID, newWebParts); // this will remove the TARGETED_MS_SETUP
-        }
-        else
+        if (!DefaultFolderType.DEFAULT_DASHBOARD.equals(tab))
         {
             Portal.addProperty(c, tab, Portal.PROP_CUSTOMTAB);
         }
