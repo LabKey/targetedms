@@ -197,22 +197,19 @@ public class GuideSetStats
         int j = 0; // index to traverse trailingMeans and trailingCVs array
         if (null != trailingRuns)
         {
-            for (int i = trailingRuns; i < includedRows.size(); i++)
+            for (int i = trailingRuns-1; i < includedRows.size(); i++)
             {
                 RawMetricDataSet row = includedRows.get(i);
-                RawMetricDataSet trailingStartRow = includedRows.get(i-trailingRuns);
-                RawMetricDataSet trailingEndRow = includedRows.get(i-1);
+                RawMetricDataSet trailingStartRow = includedRows.get(j);
                 if (trailingMeans != null && trailingMeans.length > 0 && j < trailingMeans.length)
                 {
                     row.setTrailingMean(trailingMeans[j]);
                     row.setTrailingStart(trailingStartRow.getSampleFile().getAcquiredTime());
-                    row.setTrailingEnd(trailingEndRow.getSampleFile().getAcquiredTime());
                 }
                 if (trailingCVs != null && trailingCVs.length > 0 && j < trailingCVs.length)
                 {
                     row.setTrailingCV(trailingCVs[j]);
                     row.setTrailingStart(trailingStartRow.getSampleFile().getAcquiredTime());
-                    row.setTrailingEnd(trailingEndRow.getSampleFile().getAcquiredTime());
                 }
                 j++;
             }

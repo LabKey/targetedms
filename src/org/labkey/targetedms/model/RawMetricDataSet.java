@@ -43,7 +43,6 @@ public class RawMetricDataSet
     Double trailingMean;
     Double trailingCV;
     Date trailingStart;
-    Date trailingEnd;
     PrecursorInfo _precursor;
 
     private GuideSetKey _guideSetKey;
@@ -424,13 +423,4 @@ public class RawMetricDataSet
         this.trailingStart = trailingStart;
     }
 
-    public Date getTrailingEnd()
-    {
-        return trailingEnd;
-    }
-
-    public void setTrailingEnd(Date trailingEnd)
-    {
-        this.trailingEnd = trailingEnd;
-    }
 }
