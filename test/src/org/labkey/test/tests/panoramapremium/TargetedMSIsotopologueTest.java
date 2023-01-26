@@ -10,8 +10,6 @@ import org.labkey.test.components.ext4.Window;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
 
-import java.util.Arrays;
-
 import static org.junit.Assert.assertTrue;
 
 @Category({})
@@ -53,7 +51,7 @@ public class TargetedMSIsotopologueTest extends TargetedMSPremiumTest
         PanoramaDashboard qcDashboard = goToDashboard();
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
 
-        qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, null);
+        qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true);
 
         log("Verifying if all the metrics are present");
         assertTrue("Accuracy metric is not present", verifyMetricIsPresent(qcPlotsWebPart, "Isotopologue Accuracy"));

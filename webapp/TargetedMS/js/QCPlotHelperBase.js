@@ -6,37 +6,39 @@
 Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
     statics: {
-        qcPlotTypes : ['Levey-Jennings', 'Moving Range', 'CUSUMm', 'CUSUMv'],
+        qcPlotTypes : ['Levey-Jennings', 'Moving Range', 'CUSUMm', 'CUSUMv', 'Trailing CV', 'Trailing Mean'],
         maxPointsPerSeries : 300,
     },
 
-    showLJPlot: function()
-    {
+    showLJPlot: function() {
         return this.isPlotTypeSelected('Levey-Jennings');
     },
 
-    showMovingRangePlot: function()
-    {
+    showMovingRangePlot: function() {
         return this.isPlotTypeSelected('Moving Range');
     },
 
-    showMeanCUSUMPlot: function()
-    {
+    showMeanCUSUMPlot: function() {
         return this.isPlotTypeSelected('CUSUMm');
     },
 
-    showVariableCUSUMPlot: function()
-    {
+    showVariableCUSUMPlot: function() {
         return this.isPlotTypeSelected('CUSUMv');
     },
 
-    isPlotTypeSelected: function(plotType)
-    {
+    isPlotTypeSelected: function(plotType) {
         return this.plotTypes.indexOf(plotType) > -1;
     },
 
-    getGuideSetDataObj : function(row)
-    {
+    showTrailingMeanPlot: function() {
+        return this.isPlotTypeSelected('Trailing Mean');
+    },
+
+    showTrailingCVPlot: function() {
+        return this.isPlotTypeSelected('Trailing CV');
+    },
+
+    getGuideSetDataObj : function(row) {
         var guideSet = {
             ReferenceEnd: row['ReferenceEnd'],
             TrainingEnd: row['TrainingEnd'],
@@ -101,6 +103,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     },
 
     getPlotsData: function() {
+        // get input number N
+        // pass includeTrailingCV or includeTrailingMean in plotsConfig
         var plotsConfig = {};
         plotsConfig.metricId = this.metric;
         plotsConfig.includeLJ = this.showLJPlot();
@@ -111,6 +115,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         // show reference guide set for custom date range
         plotsConfig.showReferenceGS = this.showReferenceGS && this.dateRangeOffset !== 0;
         plotsConfig.showExcludedPrecursors = this.showExcludedPrecursors;
+        plotsConfig.trailingRuns = this.trailingRuns;
+        plotsConfig.includeTrailingMeanPlot = this.showTrailingMeanPlot();
+        plotsConfig.includeTrailingCVPlot = this.showTrailingCVPlot();
 
         var config = this.getReportConfig()
 
@@ -129,6 +136,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             plotsConfig.endDate = config.EndDate;
         }
 
+        // pass input number N to plotsConfig
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetQCPlotsData.api'),
             success: function(response) {
@@ -161,7 +169,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         if (this.showLJPlot()) {
             this.processLJGuideSetData(plotDataRows);
         }
-        if (this.showMovingRangePlot() || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot()) {
+        if (this.showMovingRangePlot() || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot() || this.showTrailingMeanPlot() || this.showTrailingCVPlot()) {
             this.processRawGuideSetData(plotDataRows);
         }
 
@@ -602,6 +610,12 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         if (plotType !== LABKEY.vis.TrendingLinePlotType.MovingRange && plotType !== LABKEY.vis.TrendingLinePlotType.LeveyJennings) {
             yScaleLabel = 'Sum of Deviations'
         }
+        if (plotType === LABKEY.vis.TrendingLinePlotType.TrailingMean) {
+            yScaleLabel = label;
+        }
+        if (plotType === LABKEY.vis.TrendingLinePlotType.TrailingCV) {
+            yScaleLabel = 'CV (%)';
+        }
         else if (conversion) {
             var options = this.getYAxisOptions();
             for (var i = 0; i < options.data.length; i++) {
@@ -726,16 +740,25 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     },
 
     addEachIndividualPrecursorPlot: function(plotIndex, id, precursorIndex, precursorInfo, metricProps, plotType, isCUSUMMean, scope) {
-        if (this.yAxisScale == 'log' && plotType != LABKEY.vis.TrendingLinePlotType.LeveyJennings && plotType != LABKEY.vis.TrendingLinePlotType.CUSUM)
-        {
+        let trailingMeanORCVPlot = plotType === LABKEY.vis.TrendingLinePlotType.TrailingMean ||
+                plotType === LABKEY.vis.TrendingLinePlotType.TrailingCV;
+        if (trailingMeanORCVPlot) {
+            if (this.trailingRuns >= this.runs) {
+                Ext4.get(id).update("<span class='labkey-error'> " + plotType + " - The number you entered is larger than the number of available runs. Only " + this.runs + " runs are used for calculation</span>");
+                return;
+            }
+            else if (this.trailingRuns <= 2) {
+                Ext4.get(id).update("<span class='labkey-error'> " + plotType + " - Please enter a positive integer (>2) that is less than or equal to total number of available runs - " + this.runs + " </span>");
+                return;
+            }
+        }
+        else if (this.yAxisScale == 'log' && plotType != LABKEY.vis.TrendingLinePlotType.LeveyJennings && plotType != LABKEY.vis.TrendingLinePlotType.CUSUM) {
             Ext4.get(id).update("<span style='font-style: italic;'>Values that are 0 have been replaced with 0.0000001 for log scale plot.</span>");
         }
-        else if (precursorInfo.showLogInvalid && plotType !== LABKEY.vis.TrendingLinePlotType.CUSUM)
-        {
+        else if (precursorInfo.showLogInvalid && plotType !== LABKEY.vis.TrendingLinePlotType.CUSUM) {
             this.showInvalidLogMsg(id, true);
         }
-        else if (precursorInfo.showLogWarning && plotType !== LABKEY.vis.TrendingLinePlotType.CUSUM)
-        {
+        else if (precursorInfo.showLogWarning && plotType !== LABKEY.vis.TrendingLinePlotType.CUSUM) {
             Ext4.get(id).update("<span style='font-style: italic;'>For log scale, standard deviations below "
                     + "the mean with negative values have been omitted.</span>");
         }
@@ -772,16 +795,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(precursorInfo, plotType, isCUSUMMean));
 
         var plotLegendData = this.getAdditionalPlotLegend(plotType);
-        if (Ext4.isArray(this.legendData))
-        {
+        if (Ext4.isArray(this.legendData)) {
             plotLegendData = plotLegendData.concat(this.legendData);
         }
 
-        if (plotLegendData && plotLegendData.length > 0)
-        {
-            Ext4.each(plotLegendData, function(legend){
-                if (legend.text && legend.text.length > 0)
-                {
+        if (plotLegendData && plotLegendData.length > 0) {
+            Ext4.each(plotLegendData, function(legend) {
+                if (legend.text && legend.text.length > 0) {
                     if ( !this.longestLegendText || (this.longestLegendText && legend.text.length > this.longestLegendText))
                         this.longestLegendText = legend.text.length;
                 }
@@ -848,7 +868,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         var plot = LABKEY.vis.TrendingLinePlot(plotConfig);
         plot.render();
 
-        this.addAnnotationsToPlot(plot, precursorInfo);
+        if (!trailingMeanORCVPlot) {
+            this.addAnnotationsToPlot(plot, precursorInfo);
+        }
 
         this.addGuideSetTrainingRangeToPlot(plot, precursorInfo);
 

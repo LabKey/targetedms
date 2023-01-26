@@ -14,6 +14,9 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
     originalStatus: 0,
     existingExclusions: null,
     canEdit: false,
+    trailingRuns: null,
+    trailingStartDate: null,
+    trailingEndDate: null,
 
     STATE: {
         INCLUDE: 0,
@@ -65,6 +68,14 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
 
     initializePanel : function() {
 
+        let hideExclusionAndPointClickLinks = false;
+        if (this.valueName === "TrailingMean") {
+            hideExclusionAndPointClickLinks = true
+        }
+        if (this.valueName === "TrailingCV") {
+            hideExclusionAndPointClickLinks = true
+        }
+
         if (this.pointData[this.valueName + 'Title'] != undefined) {
             this.add(this.getPlotPointDetailField('Metric', this.pointData[this.valueName + 'Title']));
         }
@@ -92,18 +103,26 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
             this.add(this.getPlotPointDetailField('Value', LABKEY.targetedms.PlotSettingsUtil.formatNumeric(this.valueName ? this.pointData[this.valueName] : this.pointData['value'])));
         }
 
-        this.add(this.getPlotPointDetailField('Replicate', this.pointData['ReplicateName']));
-        this.add(this.getPlotPointDetailField('Acquired', this.pointData['fullDate']));
-        this.add(this.getPlotPointDetailField('File Path', this.pointData['FilePath'].replace(/\\/g, '\\<wbr>').replace(/\//g, '\/<wbr>').replace(/_/g, '_<wbr>')));
-
-        if (this.canEdit) {
-            this.add(this.getPlotPointExclusionPanel());
+        if (hideExclusionAndPointClickLinks) {
+            this.add(this.getPlotPointDetailField('Replicate', this.trailingRuns + " runs average"));
+            this.add(this.getPlotPointDetailField('Acquired', this.trailingStartDate + " - " + this.trailingEndDate));
         }
         else {
-            this.add(this.getPlotPointDetailField('Status', this.pointData['IgnoreInQC'] ? 'Not included in QC' : 'Included in QC'));
+            this.add(this.getPlotPointDetailField('Replicate', this.pointData['ReplicateName']));
+            this.add(this.getPlotPointDetailField('Acquired', this.pointData['fullDate']));
         }
 
-        this.add(Ext4.create('Ext.Component', { html: this.getPlotPointClickLinks() }));
+        if (!hideExclusionAndPointClickLinks) {
+            this.add(this.getPlotPointDetailField('File Path', this.pointData['FilePath'].replace(/\\/g, '\\<wbr>').replace(/\//g, '\/<wbr>').replace(/_/g, '_<wbr>')));
+            if (this.canEdit) {
+                this.add(this.getPlotPointExclusionPanel());
+            }
+            else {
+                this.add(this.getPlotPointDetailField('Status', this.pointData['IgnoreInQC'] ? 'Not included in QC' : 'Included in QC'));
+            }
+
+            this.add(Ext4.create('Ext.Component', {html: this.getPlotPointClickLinks()}));
+        }
     },
 
     getPlotPointDetailField : function(label, value, includeCls) {

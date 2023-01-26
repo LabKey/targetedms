@@ -813,6 +813,7 @@ public class TargetedMSController extends SpringActionController
         private List<String> _plotTypes;
         private Boolean _largePlot;
         public List<String> _selectedAnnotations;
+        private Integer _trailingRuns;
 
         public Map<String, String> getAsMapOfStrings()
         {
@@ -837,6 +838,8 @@ public class TargetedMSController extends SpringActionController
                 valueMap.put("largePlot", Boolean.toString(_largePlot));
             if(_selectedAnnotations != null)
                 valueMap.put("selectedAnnotations", getSelectedAnnotationsString());
+            if (_trailingRuns != null)
+                valueMap.put("trailingRuns", Integer.toString(_trailingRuns));
             // note: start and end date handled separately since they can be null and we want to persist that
             return valueMap;
         }
@@ -929,6 +932,16 @@ public class TargetedMSController extends SpringActionController
         public String getSelectedAnnotationsString()
         {
             return StringUtils.join(_selectedAnnotations, ",");
+        }
+
+        public Integer getTrailingRuns()
+        {
+            return _trailingRuns;
+        }
+
+        public void setTrailingRuns(Integer trailingRuns)
+        {
+            _trailingRuns = trailingRuns;
         }
     }
 
@@ -1186,6 +1199,9 @@ public class TargetedMSController extends SpringActionController
         private boolean _showExcluded;
         private boolean _showReferenceGS;
         private boolean _showExcludedPrecursors;
+        private int _trailingRuns = 10;
+        private boolean includeTrailingMeanPlot;
+        private boolean includeTrailingCVPlot;
 
         public int getMetricId()
         {
@@ -1296,6 +1312,36 @@ public class TargetedMSController extends SpringActionController
         {
             _showExcludedPrecursors = showExcludedPrecursors;
         }
+
+        public int getTrailingRuns()
+        {
+            return _trailingRuns;
+        }
+
+        public void setTrailingRuns(int trailingRuns)
+        {
+            _trailingRuns = trailingRuns;
+        }
+
+        public boolean isIncludeTrailingMeanPlot()
+        {
+            return includeTrailingMeanPlot;
+        }
+
+        public void setIncludeTrailingMeanPlot(boolean includeTrailingMeanPlot)
+        {
+            this.includeTrailingMeanPlot = includeTrailingMeanPlot;
+        }
+
+        public boolean isIncludeTrailingCVPlot()
+        {
+            return includeTrailingCVPlot;
+        }
+
+        public void setIncludeTrailingCVPlot(boolean includeTrailingCVPlot)
+        {
+            this.includeTrailingCVPlot = includeTrailingCVPlot;
+        }
     }
 
     /**
@@ -1359,7 +1405,15 @@ public class TargetedMSController extends SpringActionController
 
             // always query for the full range
             List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(schema, qcMetricConfigurations, qcFolderStartDate, qcFolderEndDate, form.getSelectedAnnotations(), form.isShowExcluded(), form.isShowExcludedPrecursors());
-            Map<GuideSetKey, GuideSetStats> stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+            Map<GuideSetKey, GuideSetStats> stats;
+            if ((form.includeTrailingCVPlot || form.includeTrailingMeanPlot) && form._trailingRuns > 2)
+            {
+                stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())), form._trailingRuns);
+            }
+            else
+            {
+                stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+            }
             boolean zoomedRange = qcFolderStartDate != null &&
                     qcFolderEndDate != null && rangeStartDate != null && form.getEndDate() != null &&
                     (DateUtil.getDateOnly(qcFolderStartDate).compareTo(rangeStartDate) != 0 ||
@@ -1402,7 +1456,7 @@ public class TargetedMSController extends SpringActionController
             response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toQCPlotJSON).collect(Collectors.toList()));
             response.put("plotDataRows", qcPlotFragments
                     .stream()
-                    .map(qcPlotFragment -> qcPlotFragment.toJSON(form.isIncludeLJ(), form.isIncludeMR(), form.isIncludeMeanCusum(), form.isIncludeVariableCusum(), form.isShowExcluded()))
+                    .map(qcPlotFragment -> qcPlotFragment.toJSON(form.isIncludeLJ(), form.isIncludeMR(), form.isIncludeMeanCusum(), form.isIncludeVariableCusum(), form.isShowExcluded(), form.isIncludeTrailingMeanPlot(), form.isIncludeTrailingCVPlot()))
                     .collect(Collectors.toList()));
             response.put("metricProps", metricMap.get(passedMetricId).toJSON());
             response.put("filterQCPoints", filterQCPoints);

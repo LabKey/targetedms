@@ -15,9 +15,11 @@
  */
 package org.labkey.targetedms.model;
 
+import org.labkey.api.util.DateUtil;
 import org.labkey.api.visualization.Stats;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -136,7 +138,7 @@ public class GuideSetStats
         return result.toArray(new Double[0]);
     }
 
-    public void calculateStats()
+    public void calculateStats(Integer trailingRuns)
     {
         _locked = true;
 
@@ -160,6 +162,15 @@ public class GuideSetStats
 
         Double[] mRs = Stats.getMovingRanges(metricVals, false, null);
 
+        Double[] trailingMeans = null;
+        Double[] trailingCVs = null;
+
+        if (trailingRuns != null)
+        {
+            trailingMeans = Stats.getTrailingMeans(metricVals, trailingRuns);
+            trailingCVs = Stats.getTrailingCVs(metricVals, trailingRuns);
+        }
+
         double[] positiveCUSUMm = Stats.getCUSUMS(metricVals, false, false, false, null);
         double[] negativeCUSUMm = Stats.getCUSUMS(metricVals, true, false, false, null);
 
@@ -180,6 +191,27 @@ public class GuideSetStats
                 row.setCUSUMmN(negativeCUSUMm[i]);
                 row.setCUSUMvP(positiveCUSUMv[i]);
                 row.setCUSUMvN(negativeCUSUMv[i]);
+            }
+        }
+        // start trailingCVs and trailingMeans from number of trailingRuns after the beginning
+        int j = 0; // index to traverse trailingMeans and trailingCVs array
+        if (null != trailingRuns)
+        {
+            for (int i = trailingRuns-1; i < includedRows.size(); i++)
+            {
+                RawMetricDataSet row = includedRows.get(i);
+                RawMetricDataSet trailingStartRow = includedRows.get(j);
+                if (trailingMeans != null && trailingMeans.length > 0 && j < trailingMeans.length)
+                {
+                    row.setTrailingMean(trailingMeans[j]);
+                    row.setTrailingStart(trailingStartRow.getSampleFile().getAcquiredTime());
+                }
+                if (trailingCVs != null && trailingCVs.length > 0 && j < trailingCVs.length)
+                {
+                    row.setTrailingCV(trailingCVs[j]);
+                    row.setTrailingStart(trailingStartRow.getSampleFile().getAcquiredTime());
+                }
+                j++;
             }
         }
     }
