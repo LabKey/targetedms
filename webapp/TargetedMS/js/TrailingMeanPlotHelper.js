@@ -7,7 +7,7 @@ Ext4.define("LABKEY.targetedms.TrailingMeanPlotHelper", {
     extend: 'LABKEY.targetedms.QCPlotHelperBase',
     statics: {
         tooltips: {
-            'Trailing Mean' : 'Blah '
+            'Trailing Mean' : 'A Trailing Mean plot shows the moving average of the previous N runs, as defined by the user.  It is useful for finding long-term trends otherwise disguised by fluctuations caused by outliers.'
         }
     },
 

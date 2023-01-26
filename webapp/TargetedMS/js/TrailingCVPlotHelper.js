@@ -7,7 +7,7 @@ Ext4.define("LABKEY.targetedms.TrailingCVPlotHelper", {
     extend: 'LABKEY.targetedms.QCPlotHelperBase',
     statics: {
         tooltips: {
-            'Trailing CV' : 'Blah '
+            'Trailing CV' : 'A Trailing Coefficient of Variation plot shows the moving average of percent coefficient of variation for the previous N runs, as defined by the user.  It is useful for finding long-term trends otherwise disguised by fluctuations caused by outliers.'
         }
     },
     processTrailingCVPlotDataRow: function(row, fragment, seriesType, metricProps) {

@@ -45,7 +45,7 @@
         dependencies.add("targetedms/js/BaseQCPlotPanel.js");
         dependencies.add("targetedms/js/QCTrendPlotPanel.js");
         dependencies.add("targetedms/js/QCPlotHoverPanel.js");
-        dependencies.add("ux/CheckCombo/CheckCombo.js");
+        dependencies.add("targetedms/js/PlotTypeCheckCombo.js");
     }
 %>
 <%
@@ -99,6 +99,42 @@
                 maxAcquiredTime: data.rows[0]['MaxAcquiredTime'] ? new Date(data.rows[0]['MaxAcquiredTime']) : null,
                 runs: data.rows[0]['runs']
             });
+        }
+
+        function createPlotTypeTooltip(tgt, plotType) {
+            let calloutMgr = hopscotch.getCalloutManager();
+            calloutMgr.removeAllCallouts();
+            calloutMgr.createCallout({
+                id: Ext4.id(),
+                target: tgt,
+                placement: 'top',
+                width: 300,
+                xOffset: -250,
+                arrowOffset: 270,
+                showCloseButton: false,
+                title: plotType.trim() + ' Plot Type',
+                content: this.getPlotTypeHelpTooltip(plotType.trim())
+            }, this);
+        }
+
+        function destroyPlotTypeTooltip() {
+            hopscotch.getCalloutManager().removeAllCallouts();
+        }
+
+        function  getPlotTypeHelpTooltip(plotTypeName) {
+            if (plotTypeName === 'Levey-Jennings')
+                return LABKEY.targetedms.LeveyJenningsPlotHelper.tooltips['Levey-Jennings'];
+            else if (plotTypeName === 'Moving Range')
+                return LABKEY.targetedms.MovingRangePlotHelper.tooltips['Moving Range'];
+            else if (plotTypeName === 'CUSUMm')
+                return LABKEY.targetedms.CUSUMPlotHelper.tooltips['CUSUMm'];
+            else if (plotTypeName === 'CUSUMv')
+                return LABKEY.targetedms.CUSUMPlotHelper.tooltips['CUSUMv'];
+            else if (plotTypeName === 'Trailing Mean')
+                return LABKEY.targetedms.TrailingMeanPlotHelper.tooltips['Trailing Mean'];
+            else if (plotTypeName === 'Trailing CV')
+                return LABKEY.targetedms.TrailingCVPlotHelper.tooltips['Trailing CV'];
+            return '';
         }
 
         Ext4.onReady(init);

@@ -345,7 +345,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }, this);
 
         return {
-            xtype: 'checkcombo',
+            xtype: 'plottype-checkcombo',
             id: 'qc-plot-type-with-y-options',
             fieldLabel: 'Plot Types',
             width: 275,
