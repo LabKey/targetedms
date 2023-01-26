@@ -306,8 +306,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (!this.trailingRunsField) {
             this.trailingRunsField = {
                 xtype : 'numberfield',
-                fieldLabel: 'Tailing Last',
-                labelWidth: 65,
+                fieldLabel: 'Trailing Last',
+                labelWidth: 70,
                 width: 115,
                 enableKeyEvents: true,
                 id : 'trailingRuns',
