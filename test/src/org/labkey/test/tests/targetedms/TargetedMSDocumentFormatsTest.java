@@ -167,8 +167,8 @@ public class TargetedMSDocumentFormatsTest extends TargetedMSTest
         int index = 0;
         for (Row row : response.getRowset())
         {
-            Assert.assertEquals("Wrong Mz for precursor " + index, precursorMz, (Double)row.getValue("PrecursorId/Mz"), 0.0001);
-            Assert.assertEquals("Wrong Mz for transition " + index, transitionMz[index++], (Double)row.getValue("Mz"), 0.0001);
+            Assert.assertEquals("Wrong Mz for precursor " + index, precursorMz, ((Number)row.getValue("PrecursorId/Mz")).doubleValue(), 0.0001);
+            Assert.assertEquals("Wrong Mz for transition " + index, transitionMz[index++], ((Number)row.getValue("Mz")).doubleValue(), 0.0001);
         }
     }
 }
