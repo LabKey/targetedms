@@ -164,20 +164,21 @@ public class TargetedMSDataHandler extends AbstractExperimentDataHandler
         TargetedMSService.FolderType sourceFolderType = TargetedMSManager.getFolderType(container);
         TargetedMSService.FolderType targetFolderType = TargetedMSManager.getFolderType(targetContainer);
 
-        if(sourceFolderType != TargetedMSService.FolderType.Experiment || targetFolderType != TargetedMSService.FolderType.Experiment)
+        if ((sourceFolderType != TargetedMSService.FolderType.Experiment && sourceFolderType != TargetedMSService.FolderType.ExperimentMAM)
+                || (targetFolderType != TargetedMSService.FolderType.Experiment && targetFolderType != TargetedMSService.FolderType.ExperimentMAM))
         {
             StringBuilder error = new StringBuilder();
-            if(sourceFolderType != TargetedMSService.FolderType.Experiment)
+            if (sourceFolderType != TargetedMSService.FolderType.Experiment && sourceFolderType != TargetedMSService.FolderType.ExperimentMAM)
             {
                 error.append("Source folder \"").append(container.getPath()).append("\" is")
                 .append((sourceFolderType == null) ? " not a Panorama type folder. " : " a \"" + sourceFolderType.name() + "\" folder. ");
             }
-            if(targetFolderType != TargetedMSService.FolderType.Experiment)
+            if (targetFolderType != TargetedMSService.FolderType.Experiment && targetFolderType != TargetedMSService.FolderType.ExperimentMAM)
             {
                 error.append("Target folder \"").append(targetContainer.getPath()).append("\" is")
                 .append((targetFolderType == null) ? " not a Panorama type folder. " : " a \"" + targetFolderType.name() + "\" folder. ");
             }
-            error.append("Runs can only be moved between Panorama \"Experimental Data\" folders. For other folder types please delete the run in the source folder and import it in the target folder.");
+            error.append("Runs can only be moved between Panorama \"Experimental Data\" or \"Multi-Attribute Method\" folders. For other folder types please delete the run in the source folder and import it in the target folder.");
             throw new ExperimentException(error.toString());
         }
 
