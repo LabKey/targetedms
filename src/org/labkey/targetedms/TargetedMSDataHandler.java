@@ -19,6 +19,7 @@ package org.labkey.targetedms;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DbScope;
 import org.labkey.api.exp.ExperimentException;
@@ -69,12 +70,12 @@ public class TargetedMSDataHandler extends AbstractExperimentDataHandler
     }
 
     @Override
-    public void importFile(ExpData data, File dataFile, ViewBackgroundInfo info, Logger log, XarContext context) throws ExperimentException
+    public void importFile(@NotNull ExpData data, File dataFile, @NotNull ViewBackgroundInfo info, @NotNull Logger log, @NotNull XarContext context) throws ExperimentException
     {
         importFile(data, dataFile != null ? dataFile.toPath() : null, info, log, context);
     }
     @Override
-    public void importFile(ExpData data, Path dataFile, ViewBackgroundInfo info, Logger log, XarContext context) throws ExperimentException
+    public void importFile(ExpData data, Path dataFile, ViewBackgroundInfo info, @NotNull Logger log, @NotNull XarContext context) throws ExperimentException
     {
         String description = data.getFile().getName();
         SkylineDocImporter importer = new SkylineDocImporter(info.getUser(), context.getContainer(), description,
@@ -334,7 +335,7 @@ public class TargetedMSDataHandler extends AbstractExperimentDataHandler
         if ("zip".equals(ext))
         {
             String firstExt = FileUtil.getExtension(FileUtil.getBaseName(url));     // See if it's sky.zip
-            if (null != firstExt && "sky".equalsIgnoreCase(firstExt))
+            if ("sky".equalsIgnoreCase(firstExt))
                 return Priority.HIGH;
 
             if (TargetedMSManager.getRunByDataId(data.getRowId(), data.getContainer()) != null)
