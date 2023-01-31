@@ -56,11 +56,11 @@ public class TargetedMSEarlyStagePTMReportTest extends TargetedMSTest
                         "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_2::PercentModified", "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_2::TotalPercentModified"));
 
         log("Verifying the cell colors:Green, Yellow and Red");
-        Assert.assertEquals("Incorrect risk category color for - Green", "rgba(137, 202, 83, 1)",
+        Assert.assertEquals("Incorrect risk category color for - Green", "rgb(137, 202, 83)",
                 Locator.xpath("//table/tbody/tr[9]/td[6]").findElement(reportTable).getCssValue("background-color"));
-        Assert.assertEquals("Incorrect risk category color for - Yellow", "rgba(254, 255, 63, 1)",
+        Assert.assertEquals("Incorrect risk category color for - Yellow", "rgb(254, 255, 63)",
                 Locator.xpath("//table/tbody/tr[8]/td[6]").findElement(reportTable).getCssValue("background-color"));
-        Assert.assertEquals("Incorrect risk category color for - Red", "rgba(250, 8, 26, 1)",
+        Assert.assertEquals("Incorrect risk category color for - Red", "rgb(250, 8, 26)",
                 Locator.xpath("//table/tbody/tr[8]/td[8]").findElement(reportTable).getCssValue("background-color"));
     }
 }
