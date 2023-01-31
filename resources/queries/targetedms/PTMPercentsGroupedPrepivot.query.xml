@@ -1,7 +1,7 @@
 <query xmlns="http://labkey.org/data/xml/query">
     <metadata>
         <tables xmlns="http://labkey.org/data/xml">
-            <table tableName="PTMPercentsGrouped" tableDbType="TABLE">
+            <table tableName="PTMPercentsGroupedPrepivot" tableDbType="TABLE">
                 <columns>
                     <column columnName="PeptideModifiedSequence">
                         <displayColumnFactory>
