@@ -18,7 +18,7 @@ public class TargetedMSProteinSequenceViewTest extends TargetedMSTest
     private static final String MODIFIED_PEPTIDES = "Modified Peptides Folder";
 
     private static final String CS_SKY_FILE = "ConfidenceScore.sky.zip";
-    private static final String MP_SKY_FILE = "ModifiedPeptides.sky.zip";
+    private static final String MP_SKY_FILE = "ModifiedPeptidesWithCDRAnnotation.sky.zip";
 
     @BeforeClass
     public static void initProject()
