@@ -9,7 +9,10 @@ SELECT
     PreviousAA @hidden,
     NextAA @hidden,
     SampleName,
-    (CASE WHEN Modification.Name = 'Lys-loss (Protein C-term K)' THEN (1 - MAX(MinPercentModified)) ELSE MAX(MaxPercentModified) END) AS MaxPercentModified,
+    -- Normally we want to show the max percentage modified across all replicates (5%, 10%, 20% -> 20% as the worst case)
+    -- However, for this one special modification, we invert the percentage. So 95% -> 5%, 90% -> 10%, 80% -> 20%. Thus,
+    -- we need to find the one with the lowest value, which becomes the highest percentage when we subtract it from 100%.
+    (CASE WHEN Modification.Name = 'Lys-loss (Protein C-term K)' THEN (1 - MIN(MinPercentModified)) ELSE MAX(MaxPercentModified) END) AS MaxPercentModified,
     (CASE WHEN Modification.Name = 'Lys-loss (Protein C-term K)' THEN (1 - SUM(PercentModified)) ELSE SUM(PercentModified) END) AS PercentModified,
     (CASE WHEN Modification.Name = 'Lys-loss (Protein C-term K)' THEN (1 - SUM(TotalPercentModified)) ELSE SUM(TotalPercentModified) END) AS TotalPercentModified,
     ModificationCount @hidden
