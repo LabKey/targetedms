@@ -27,6 +27,7 @@ import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.exp.query.ExpRunTable;
 import org.labkey.api.exp.query.ExpSchema;
 import org.labkey.api.module.Module;
+import org.labkey.api.query.CrosstabView;
 import org.labkey.api.query.CustomView;
 import org.labkey.api.query.DefaultSchema;
 import org.labkey.api.query.DetailsURL;
@@ -49,6 +50,7 @@ import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.HtmlString;
+import org.labkey.api.util.Pair;
 import org.labkey.api.util.StringExpression;
 import org.labkey.api.util.UnexpectedException;
 import org.labkey.api.view.ActionURL;
@@ -1572,7 +1574,7 @@ public class TargetedMSSchema extends UserSchema
     @Override @NotNull
     public QueryView createView(ViewContext context, @NotNull QuerySettings settings, BindException errors)
     {
-        if(TABLE_REPLICATE_ANNOTATION.equalsIgnoreCase(settings.getQueryName()))
+        if (TABLE_REPLICATE_ANNOTATION.equalsIgnoreCase(settings.getQueryName()))
         {
             return new QueryView(TargetedMSSchema.this, settings, errors)
             {
@@ -1606,6 +1608,41 @@ public class TargetedMSSchema extends UserSchema
                         };
                         ret.add(0, update);
                     }
+                }
+            };
+        }
+        if ("PTMPercentsGrouped".equalsIgnoreCase(settings.getQueryName()))
+        {
+            return new CrosstabView(TargetedMSSchema.this, settings, errors)
+            {
+                @Override
+                protected DataRegion createDataRegion()
+                {
+                    if (getTable() instanceof CrosstabTableInfo table)
+                    {
+                        // get the display columns and also adjust _numRowAxisCols and _numMeasures based on
+                        // the selected display columns
+                        getDisplayColumns();
+
+                        CrosstabDataRegion rgn = new CrosstabDataRegion(table.getSettings(), _numRowAxisCols, _numMeasures, _numMemberMeasures)
+                        {
+                            private final Map<String, Pair<Boolean, String>> _metadata = PTMPercentsGroupedCustomizer.getSampleMetadata(table);
+                            @Override
+                            protected String getMemberCaptionWithUrl(String caption, String url)
+                            {
+                                if (_metadata.containsKey(caption))
+                                {
+                                    caption = _metadata.get(caption).getValue();
+                                }
+                                return super.getMemberCaptionWithUrl(caption, url);
+                            }
+                        };
+                        configureDataRegion(rgn);
+
+                        return rgn;
+                    }
+
+                    return super.createDataRegion();
                 }
             };
         }
