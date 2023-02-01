@@ -162,6 +162,7 @@ public class TargetedMSDataHandler extends AbstractExperimentDataHandler
     @Override
     public void runMoved(ExpData newData, Container container, Container targetContainer, String oldRunLSID, String newRunLSID, User user, int oldDataRowID) throws ExperimentException
     {
+        super.runMoved(newData, container, targetContainer, oldRunLSID, newRunLSID, user, oldDataRowID);
         TargetedMSService.FolderType sourceFolderType = TargetedMSManager.getFolderType(container);
         TargetedMSService.FolderType targetFolderType = TargetedMSManager.getFolderType(targetContainer);
 
