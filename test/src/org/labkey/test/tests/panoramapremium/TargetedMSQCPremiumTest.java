@@ -223,7 +223,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         PanoramaDashboard dashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = dashboard.getQcPlotsWebPart();
         _ext4Helper.selectComboBoxItem(Locator.id("metric-type-field"), metricName);
-        qcPlotsWebPart.waitForPlots(1, true);
+        qcPlotsWebPart.waitForPlots(1);
         String pressurePlotSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
         assertFalse("Pressure trace plot is not present", pressurePlotSVGText.isEmpty());
         assertTrue("Y axis label is not correct or present", pressurePlotSVGText.contains(yAxisLabel));
@@ -255,7 +255,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         PanoramaDashboard panoramaDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = panoramaDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TOTAL_PEAK);
-        qcPlotsWebPart.checkPlotType(CUSUMm, true);
+        qcPlotsWebPart.checkPlotType(CUSUMm);
         qcPlotsWebPart.setShowExcludedPoints(true);
         qcPlotsWebPart.saveAsDefaultView();
 

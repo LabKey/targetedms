@@ -17,6 +17,7 @@ package org.labkey.targetedms.outliers;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.RuntimeSQLException;
 import org.labkey.api.data.SQLFragment;
@@ -419,7 +420,12 @@ public class OutlierGenerator
      * Calculate guide set stats for Levey-Jennings and moving range comparisons.
      * @param guideSets id to GuideSet
      */
+
     public Map<GuideSetKey, GuideSetStats> getAllProcessedMetricGuideSets(List<RawMetricDataSet> rawMetricData, Map<Integer, GuideSet> guideSets)
+    {
+        return getAllProcessedMetricGuideSets(rawMetricData, guideSets, null);
+    }
+    public Map<GuideSetKey, GuideSetStats> getAllProcessedMetricGuideSets(List<RawMetricDataSet> rawMetricData, Map<Integer, GuideSet> guideSets, @Nullable Integer trailingRuns)
     {
         Map<GuideSetKey, GuideSetStats> result = new HashMap<>();
 
@@ -430,7 +436,7 @@ public class OutlierGenerator
             stats.addRow(row);
         }
 
-        result.values().forEach(GuideSetStats::calculateStats);
+        result.values().forEach(g -> g.calculateStats(trailingRuns));
         return result;
     }
 

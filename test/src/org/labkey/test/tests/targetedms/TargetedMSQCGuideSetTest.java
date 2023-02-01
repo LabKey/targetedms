@@ -201,7 +201,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 4, shapeCounts, 20);
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
         assertEquals("Unexpected number of training range rects visible", 4, qcPlotsWebPart.getGuideSetTrainingRectCount());
-        qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false, null);
+        qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false);
         qcPlotsWebPart.setGroupXAxisValuesByDate(false);
 
         // filter plot by start/end date to check reference points without training points in view
@@ -523,7 +523,6 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
 
             PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
             qcDashboard.getQcPlotsWebPart().createGuideSet(guideSet, expectErrorMsg);
-            qcDashboard.getQcPlotsWebPart().waitForPlots();
         }
         else
         {
