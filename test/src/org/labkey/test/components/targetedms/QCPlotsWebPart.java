@@ -169,6 +169,17 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         }
     }
 
+    public String getTrailingLast()
+    {
+        return getWrapper().getFormElement(elementCache().trailingLast);
+    }
+
+    public void setTrailingLast(String value)
+    {
+        getWrapper().shortWait().until(ExpectedConditions.elementToBeClickable(elementCache().trailingLast));
+        getWrapper().setFormElement(elementCache().trailingLast, value);
+    }
+
     public List<String> getMetricTypeOptions()
     {
         return getWrapper()._ext4Helper.getComboBoxOptions(elementCache().metricTypeCombo);
@@ -399,6 +410,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
             throw new NoSuchElementException("Unable to find svg point with with acquired date: " + dateStr);
         }
         return point;
+    }
+
+    public int getTotalPlotCount()
+    {
+        return elementCache().findPlots().size();
     }
 
     public WebElement openExclusionBubble(String acquiredDate)
@@ -788,6 +804,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         Locator.XPathLocator scaleCombo = Locator.id("scale-combo-box");
         Locator.XPathLocator dateRangeCombo = Locator.id("daterange-combo-box");
         Locator.XPathLocator metricTypeCombo = Locator.id("metric-type-field");
+        WebElement trailingLast = Locator.id("trailingRuns-inputEl").findWhenNeeded(this);
 
         ComboBox qcPlotTypeCombo = new ComboBox.ComboBoxFinder(getDriver()).withIdPrefix("qc-plot-type-with-y-options")
                 .findWhenNeeded(this).setMatcher(Ext4Helper.TextMatchTechnique.CONTAINS).setMultiSelect(true);
