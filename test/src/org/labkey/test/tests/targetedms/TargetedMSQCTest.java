@@ -911,7 +911,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         goToProjectHome();
         log("Changing the exclusion state for one of the points");
         String acquiredDate = "2013-08-14 22:48:37";
-        changePointExclusionState(acquiredDate, QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric, 2);
+        changePointExclusionState(acquiredDate, QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric, 7);
 
         log("Setting Show Excluded Samples");
         QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
