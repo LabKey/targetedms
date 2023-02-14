@@ -349,8 +349,11 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
             clickTab("Guide Sets");
 
         DataRegionTable table = new DataRegionTable("qwp1", getDriver());
-        table.checkAllOnPage();
-        table.deleteSelectedRows();
+        if(table.getDataRowCount() > 0)
+        {
+            table.checkAllOnPage();
+            table.deleteSelectedRows();
+        }
     }
 
     public PanoramaDashboard goToDashboard()

@@ -176,8 +176,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void setTrailingLast(String value)
     {
-        getWrapper().shortWait().until(ExpectedConditions.elementToBeClickable(elementCache().trailingLast));
-        getWrapper().setFormElement(elementCache().trailingLast, value);
+        doAndWaitForUpdate(() -> getWrapper().setFormElement(elementCache().trailingLast, value));
     }
 
     public List<String> getMetricTypeOptions()
