@@ -43,6 +43,7 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
     @Before
     public void deletingGuideSet()
     {
+        goToProjectHome();
         removeAllGuideSets();
     }
 
@@ -73,6 +74,9 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         Assert.assertTrue("Y axis is not labeled correctly for " + QCPlotsWebPart.MetricType.RETENTION,
                 qcPlotsWebPart.getSVGPlotText("precursorPlot0").contains("Minutes"));
 
+        log("Verifying the count of points on the plot");
+        Assert.assertEquals("Invalid point count for all replicates", 315 , qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size());
+
         log("Verifying tooltips");
         qcPlotsWebPart.waitForPlots(7);
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate("2013-08-12 04:54:55"));
@@ -84,7 +88,7 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
                 "Replicate:\n" +
                 "3 runs average\n" +
                 "Acquired:\n" +
-                "2013-08-09 11:39:00.000 - 2013-08-12 04:54:55", toolTipText);
+                "2013-08-09 11:39:00 - 2013-08-12 04:54:55", toolTipText);
 
         log("Selecting multiple plot types with trailing mean");
         qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.LeveyJennings, QCPlotsWebPart.QCPlotType.MovingRange, QCPlotsWebPart.QCPlotType.TrailingMean);
@@ -105,7 +109,10 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
                 "Replicate:\n" +
                 "3 runs average\n" +
                 "Acquired:\n" +
-                "2013-08-11 18:34:14.000 - 2013-08-14 00:44:46", toolTipText);
+                "2013-08-11 18:34:14 - 2013-08-14 00:44:46", toolTipText);
+
+        log("Verifying the count of points on the plots with guide set");
+        Assert.assertEquals("Invalid point count for all replicates", 308 , qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size());
     }
 
     @Test
@@ -139,7 +146,11 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
                 "Replicate:\n" +
                 "3 runs average\n" +
                 "Acquired:\n" +
-                "2013-08-09 11:39:00.000 - 2013-08-12 04:54:55", toolTipText);
+                "2013-08-09 11:39:00 - 2013-08-12 04:54:55", toolTipText);
+
+        log("Verifying the count of points on the plot");
+        Assert.assertEquals("Invalid point count for all replicates", 314 ,
+                qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size());
 
         log("Verifying values with guide set");
         createGuideSetFromTable(new GuideSet("2013-08-21 04:46", "2013-08-21 13:15", "Trailing CV guide set"));
@@ -156,6 +167,11 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
                 "Replicate:\n" +
                 "3 runs average\n" +
                 "Acquired:\n" +
-                "2013-08-21 04:46:18.000 - 2013-08-21 09:07:36", toolTipText);
+                "2013-08-21 04:46:18 - 2013-08-21 09:07:36", toolTipText);
+
+        log("Verifying the count of points on the plot with guide set");
+        Assert.assertEquals("Invalid number of point count for all replicates - plots with guide set", 133 ,
+                qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size());
+
     }
 }
