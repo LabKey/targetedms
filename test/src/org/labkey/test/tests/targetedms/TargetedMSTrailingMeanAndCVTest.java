@@ -136,7 +136,7 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         qcPlotsWebPart.setTrailingLast("3");
         log("Verifying tooltips");
         qcPlotsWebPart.waitForPlots(7);
-        sleep(1000);
+//        sleep(1000); //sleep is needed for the acquired point to appear for mouseover
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate("2013-08-12 04:54:55"));
         String toolTipText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
         Assert.assertEquals("Invalid tooltip", "Peptide:\n" +
