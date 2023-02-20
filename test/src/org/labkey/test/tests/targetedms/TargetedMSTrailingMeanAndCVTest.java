@@ -17,6 +17,9 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
 {
+    private final int RUN_COUNT = 47;
+    private final int REPLICATE_COUNT = 7;
+
     @BeforeClass
     public static void initProject()
     {
@@ -50,17 +53,21 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
     @Test
     public void testTrailingMeanPlotType()
     {
+        String trailingLast;
         goToProjectHome();
         PanoramaDashboard dashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = dashboard.getQcPlotsWebPart();
         qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.TrailingMean);
 
         log("Verifying error checking on trailing last number");
-        qcPlotsWebPart.setTrailingLast("-1");
+        trailingLast = "-1";
+        qcPlotsWebPart.setTrailingLast(trailingLast);
         longWait().until(ExpectedConditions.textToBePresentInElement(Locators.labkeyError.findWhenNeeded(getDriver()),
                 "TrailingMean - Please enter a positive integer (>2) that is less than or equal to total number of available runs - 47"));
 
-        qcPlotsWebPart.setTrailingLast("48");
+        trailingLast = "48";
+        qcPlotsWebPart.setTrailingLast(trailingLast);
+        qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.LeveyJennings, QCPlotsWebPart.QCPlotType.TrailingMean);
         longWait().until(ExpectedConditions.textToBePresentInElement(Locators.labkeyError.findWhenNeeded(getDriver()),
                 "TrailingMean - The number you entered is larger than the number of available runs. Only 47 runs are used for calculation"));
         checker().verifyEquals("Incorrect plot count", REPLICATE_COUNT , qcPlotsWebPart.getPlots().size());
@@ -68,7 +75,9 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
                 Locators.labkeyError.findElements(getDriver()).size());
 
         log("Verifying y-axis value based on metric type");
-        qcPlotsWebPart.setTrailingLast("3");
+        trailingLast = "3";
+        qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.TrailingMean);
+        qcPlotsWebPart.setTrailingLast(trailingLast);
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.MASSACCURACY);
         Assert.assertTrue("Y axis is not labeled correctly for " + QCPlotsWebPart.MetricType.MASSACCURACY,
                 qcPlotsWebPart.getSVGPlotText("precursorPlot0").contains("PPM"));
@@ -78,7 +87,7 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
                 qcPlotsWebPart.getSVGPlotText("precursorPlot0").contains("Minutes"));
 
         log("Verifying the count of points on the plot");
-        Assert.assertEquals("Invalid point count for all replicates", 315 , qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size());
+        Assert.assertEquals("Invalid point count for all replicates", REPLICATE_COUNT * (RUN_COUNT - Integer.parseInt(trailingLast) + 1) , qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size());
 
         log("Verifying tooltips");
         qcPlotsWebPart.waitForPlots(7);
