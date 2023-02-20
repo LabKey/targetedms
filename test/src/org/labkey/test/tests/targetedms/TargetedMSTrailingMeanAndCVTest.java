@@ -63,6 +63,9 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         qcPlotsWebPart.setTrailingLast("48");
         longWait().until(ExpectedConditions.textToBePresentInElement(Locators.labkeyError.findWhenNeeded(getDriver()),
                 "TrailingMean - The number you entered is larger than the number of available runs. Only 47 runs are used for calculation"));
+        checker().verifyEquals("Incorrect plot count", REPLICATE_COUNT , qcPlotsWebPart.getPlots().size());
+        checker().verifyEquals("Incorrect number of times error message was displayed", REPLICATE_COUNT,
+                Locators.labkeyError.findElements(getDriver()).size());
 
         log("Verifying y-axis value based on metric type");
         qcPlotsWebPart.setTrailingLast("3");
@@ -118,25 +121,32 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
     @Test
     public void testTrailingCVPlotType()
     {
+        String trailingLast;
         goToProjectHome();
         PanoramaDashboard dashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = dashboard.getQcPlotsWebPart();
         qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.TrailingCV);
 
         log("Verifying error checking on trailing last number");
-
-        qcPlotsWebPart.setTrailingLast("-1");
+        trailingLast = "-1";
+        qcPlotsWebPart.setTrailingLast(trailingLast);
         longWait().until(ExpectedConditions.textToBePresentInElement(Locators.labkeyError.findWhenNeeded(getDriver()),
                 "TrailingCV - Please enter a positive integer (>2) that is less than or equal to total number of available runs - 47"));
 
-        qcPlotsWebPart.setTrailingLast("48");
+        trailingLast = "48";
+        qcPlotsWebPart.setTrailingLast(trailingLast);
+        qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.LeveyJennings, QCPlotsWebPart.QCPlotType.TrailingCV);
         longWait().until(ExpectedConditions.textToBePresentInElement(Locators.labkeyError.findWhenNeeded(getDriver()),
                 "TrailingCV - The number you entered is larger than the number of available runs. Only 47 runs are used for calculation"));
+        checker().verifyEquals("Incorrect plot count", REPLICATE_COUNT , qcPlotsWebPart.getPlots().size());
+        checker().verifyEquals("Incorrect number of times error message was displayed", REPLICATE_COUNT,
+                Locators.labkeyError.findElements(getDriver()).size());
 
-        qcPlotsWebPart.setTrailingLast("3");
+        trailingLast = "3";
+        qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.TrailingCV);
+        qcPlotsWebPart.setTrailingLast(trailingLast);
         log("Verifying tooltips");
         qcPlotsWebPart.waitForPlots(7);
-//        sleep(1000); //sleep is needed for the acquired point to appear for mouseover
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate("2013-08-12 04:54:55"));
         String toolTipText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
         Assert.assertEquals("Invalid tooltip", "Peptide:\n" +
@@ -149,7 +159,7 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
                 "2013-08-09 11:39:00 - 2013-08-12 04:54:55", toolTipText);
 
         log("Verifying the count of points on the plot");
-        Assert.assertEquals("Invalid point count for all replicates", 314 ,
+        Assert.assertEquals("Invalid point count for all replicates", REPLICATE_COUNT * (RUN_COUNT - Integer.parseInt(trailingLast) + 1) ,
                 qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size());
 
         log("Verifying values with guide set");
@@ -172,6 +182,5 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         log("Verifying the count of points on the plot with guide set");
         Assert.assertEquals("Invalid number of point count for all replicates - plots with guide set", 133 ,
                 qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size());
-
     }
 }
