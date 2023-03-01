@@ -1618,7 +1618,7 @@ public class TargetedMSSchema extends UserSchema
                 @Override
                 protected DataRegion createDataRegion()
                 {
-                    if (getTable() instanceof CrosstabTableInfo table)
+                    if (getTable() instanceof CrosstabTableInfo table && table.isCrosstab())
                     {
                         // get the display columns and also adjust _numRowAxisCols and _numMeasures based on
                         // the selected display columns
