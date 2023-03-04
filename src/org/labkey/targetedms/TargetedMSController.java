@@ -1420,10 +1420,10 @@ public class TargetedMSController extends SpringActionController
                 Predicate<RawMetricDataSet> withInDateRange = rawMetricDataSet -> rawMetricDataSet.getSampleFile().getAcquiredTime() != null &&
                         (qcStartDate != null &&
                         (rawMetricDataSet.getSampleFile().getAcquiredTime().after(qcStartDate)
-                                || DateUtil.getDateOnly(rawMetricDataSet.getSampleFile().getAcquiredTime()).compareTo(qcStartDate) == 0)) &&
+                                || DateUtil.getDateOnly(rawMetricDataSet.getSampleFile().getAcquiredTime()).compareTo(DateUtil.getDateOnly(qcStartDate)) == 0)) &&
                         (form.getEndDate() != null &&
                         (rawMetricDataSet.getSampleFile().getAcquiredTime().before(form.getEndDate())
-                                || DateUtil.getDateOnly(rawMetricDataSet.getSampleFile().getAcquiredTime()).compareTo(form.getEndDate()) == 0));
+                                || DateUtil.getDateOnly(rawMetricDataSet.getSampleFile().getAcquiredTime()).compareTo(DateUtil.getDateOnly(form.getEndDate())) == 0));
                 rawMetricDataSets = rawMetricDataSets
                         .stream()
                         .filter(withInDateRange)
@@ -1464,16 +1464,30 @@ public class TargetedMSController extends SpringActionController
             for (GuideSet guideSet : guideSets)
             {
                 // guideset end date should be before or equal start date
-                if (!guideSet.isDefault() &&
-                        (guideSet.getTrainingEnd().before(startDate) || DateUtil.getDateOnly(guideSet.getTrainingEnd()).compareTo(startDate) == 0))
+                if (!guideSet.isDefault())
                 {
-                    if (null == gs)
+                    // show reference guideset when
+                    // 1. startDate is after guideset
+                    // 2. startDate is between guideset date range
+                    // 3. startDate is same as guideset training start
+                    // 4. startDate is same as guideset training end
+                    boolean startDateAfterGuideSet = guideSet.getTrainingEnd().before(startDate);
+                    boolean startDateBetweenGuideSet = guideSet.getTrainingStart().before(startDate) && guideSet.getTrainingEnd().after(startDate);
+                    boolean startDateOverlapGuideSet = DateUtil.getDateOnly(guideSet.getTrainingStart()).compareTo(DateUtil.getDateOnly(startDate)) == 0;
+                    boolean endDateOverlapGuideSet = DateUtil.getDateOnly(guideSet.getTrainingEnd()).compareTo(DateUtil.getDateOnly(startDate)) == 0;
+                    if (startDateAfterGuideSet ||
+                            startDateBetweenGuideSet ||
+                            startDateOverlapGuideSet ||
+                            endDateOverlapGuideSet)
                     {
-                        gs = guideSet;
-                    }
-                    else if (guideSet.getTrainingEnd().after(gs.getTrainingEnd()))
-                    {
-                        gs = guideSet;
+                        if (null == gs)
+                        {
+                            gs = guideSet;
+                        }
+                        else if (guideSet.getTrainingEnd().after(gs.getTrainingEnd()))
+                        {
+                            gs = guideSet;
+                        }
                     }
                 }
             }
