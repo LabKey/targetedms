@@ -1473,12 +1473,12 @@ public class TargetedMSController extends SpringActionController
                     // 4. startDate is same as guideset training end
                     boolean startDateAfterGuideSet = guideSet.getTrainingEnd().before(startDate);
                     boolean startDateBetweenGuideSet = guideSet.getTrainingStart().before(startDate) && guideSet.getTrainingEnd().after(startDate);
-                    boolean startDateOverlapGuideSet = DateUtil.getDateOnly(guideSet.getTrainingStart()).compareTo(DateUtil.getDateOnly(startDate)) == 0;
-                    boolean endDateOverlapGuideSet = DateUtil.getDateOnly(guideSet.getTrainingEnd()).compareTo(DateUtil.getDateOnly(startDate)) == 0;
+                    boolean startDateOverlapGuideSetStart = DateUtil.getDateOnly(guideSet.getTrainingStart()).compareTo(DateUtil.getDateOnly(startDate)) == 0;
+                    boolean startDateOverlapGuideSetEnd = DateUtil.getDateOnly(guideSet.getTrainingEnd()).compareTo(DateUtil.getDateOnly(startDate)) == 0;
                     if (startDateAfterGuideSet ||
                             startDateBetweenGuideSet ||
-                            startDateOverlapGuideSet ||
-                            endDateOverlapGuideSet)
+                            startDateOverlapGuideSetStart ||
+                            startDateOverlapGuideSetEnd)
                     {
                         if (null == gs)
                         {
