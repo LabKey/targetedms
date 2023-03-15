@@ -208,6 +208,7 @@ public class GuideSetStats
                     {
                         // when the metric value is null (bad data), setting it to the previous value
                         row.setTrailingMean(trailingMeans[j-1]);
+                        row.setTrailingStart(trailingStartRow.getSampleFile().getAcquiredTime());
                     }
                     else
                     {
@@ -221,6 +222,7 @@ public class GuideSetStats
                     {
                         // when the metric value is null (bad data), setting it to the previous value
                         row.setTrailingCV(trailingCVs[j-1]);
+                        row.setTrailingStart(trailingStartRow.getSampleFile().getAcquiredTime());
                     }
                     else
                     {
