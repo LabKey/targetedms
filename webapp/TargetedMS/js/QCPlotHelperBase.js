@@ -692,7 +692,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             pathMouseOverFnScope: this,
             pathMouseOutFn: this.plotPointMouseOut,
             pathMouseOutFnScope: this,
-            hoverTextFn: !showDataPoints ? function() { return 'Narrow the date range to show individual data points.' } : undefined
+            hoverTextFn: !showDataPoints ? function(pathData) {
+                return pathData.group + '\nNarrow the date range to show individual data points.'
+            } : undefined
         };
 
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(combinePlotData, plotType, isCUSUMMean));
