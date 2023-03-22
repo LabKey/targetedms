@@ -693,7 +693,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             pathMouseOutFn: this.plotPointMouseOut,
             pathMouseOutFnScope: this,
             hoverTextFn: !showDataPoints ? function(pathData) {
-                return pathData.group + '\nNarrow the date range to show individual data points.'
+                return Ext4.htmlEncode(pathData.group) + '\nNarrow the date range to show individual data points.'
             } : undefined
         };
 
