@@ -1,7 +1,7 @@
 package org.labkey.targetedms.model.passport;
 
-import org.json.old.JSONArray;
-import org.json.old.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -9,13 +9,13 @@ import java.util.List;
 
 public class IPeptide
 {
+    private final List<ReplicateInfo> replicateInfo = new ArrayList<>();
+
     private String sequence;
     private int startIndex;
     private int endIndex;
     private long proteinId;
     private long panoramaPeptideId;
-
-    private List<ReplicateInfo> replicateInfo = new ArrayList<>();
 
     private double beforeIntensity;
     private double beforeTotalArea;
