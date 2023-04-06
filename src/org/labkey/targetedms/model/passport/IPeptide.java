@@ -2,6 +2,7 @@ package org.labkey.targetedms.model.passport;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.labkey.api.util.JsonUtil;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -173,7 +174,7 @@ public class IPeptide
     {
         JSONObject result = new JSONObject();
         result.put("beforeintensity", getBeforeIntensity());
-        result.put("normalizedafterintensity", getAfterIntensity());
+        JsonUtil.safePut(result, "normalizedafterintensity", getAfterIntensity());
         result.put("startindex", getStartIndex());
         result.put("endindex", getEndIndex());
         result.put("sequence", getSequence());
