@@ -7421,7 +7421,7 @@ public class TargetedMSController extends SpringActionController
 
     }
 
-    public static class ChainedVersions implements NewCustomApiForm
+    public static class ChainedVersions implements ApiJsonForm
     {
         private final Map<Integer, Integer> _runs = new HashMap<>();
 
