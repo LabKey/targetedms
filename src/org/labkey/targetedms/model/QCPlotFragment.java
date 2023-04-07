@@ -1,8 +1,9 @@
 package org.labkey.targetedms.model;
 
 import org.jetbrains.annotations.Nullable;
-import org.json.old.JSONArray;
-import org.json.old.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.labkey.api.util.JsonUtil;
 
 import java.awt.*;
 import java.util.List;
@@ -89,7 +90,7 @@ public class QCPlotFragment
             statsJSONObject.put("SeriesType", stats.getKey().getMetricSeriesIndex());
             if (includeLJ)
             {
-                statsJSONObject.put("LJStdDev", stats.getStandardDeviation());
+                JsonUtil.safePut(statsJSONObject, "LJStdDev", stats.getStandardDeviation());
                 statsJSONObject.put("LJMean", stats.getAverage());
             }
             if (includeMR)

@@ -15,8 +15,8 @@
 
 package org.labkey.targetedms.view;
 
-import org.json.old.JSONArray;
-import org.json.old.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.labkey.api.collections.ResultSetRowMapFactory;
 import org.labkey.api.data.ButtonBar;
 import org.labkey.api.data.DataRegion;
