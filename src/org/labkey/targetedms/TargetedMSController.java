@@ -43,25 +43,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
-import org.labkey.api.action.ApiJsonWriter;
-import org.labkey.api.action.ApiResponse;
-import org.labkey.api.action.ApiSimpleResponse;
-import org.labkey.api.action.ApiUsageException;
-import org.labkey.api.action.CustomApiForm;
-import org.labkey.api.action.ExportAction;
-import org.labkey.api.action.FormHandlerAction;
-import org.labkey.api.action.FormViewAction;
-import org.labkey.api.action.HasViewContext;
-import org.labkey.api.action.LabKeyError;
-import org.labkey.api.action.Marshal;
-import org.labkey.api.action.Marshaller;
-import org.labkey.api.action.MutatingApiAction;
-import org.labkey.api.action.QueryViewAction;
-import org.labkey.api.action.ReadOnlyApiAction;
-import org.labkey.api.action.ReturnUrlForm;
-import org.labkey.api.action.SimpleErrorView;
-import org.labkey.api.action.SimpleViewAction;
-import org.labkey.api.action.SpringActionController;
+import org.labkey.api.action.*;
 import org.labkey.api.admin.AdminUrls;
 import org.labkey.api.analytics.AnalyticsService;
 import org.labkey.api.attachments.DocumentConversionService;
@@ -146,6 +128,7 @@ import org.labkey.api.util.DateUtil;
 import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.HelpTopic;
 import org.labkey.api.util.HtmlString;
+import org.labkey.api.util.JsonUtil;
 import org.labkey.api.util.Link;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.util.Pair;
@@ -1420,10 +1403,10 @@ public class TargetedMSController extends SpringActionController
                 Predicate<RawMetricDataSet> withInDateRange = rawMetricDataSet -> rawMetricDataSet.getSampleFile().getAcquiredTime() != null &&
                         (qcStartDate != null &&
                         (rawMetricDataSet.getSampleFile().getAcquiredTime().after(qcStartDate)
-                                || DateUtil.getDateOnly(rawMetricDataSet.getSampleFile().getAcquiredTime()).compareTo(qcStartDate) == 0)) &&
+                                || DateUtil.getDateOnly(rawMetricDataSet.getSampleFile().getAcquiredTime()).compareTo(DateUtil.getDateOnly(qcStartDate)) == 0)) &&
                         (form.getEndDate() != null &&
                         (rawMetricDataSet.getSampleFile().getAcquiredTime().before(form.getEndDate())
-                                || DateUtil.getDateOnly(rawMetricDataSet.getSampleFile().getAcquiredTime()).compareTo(form.getEndDate()) == 0));
+                                || DateUtil.getDateOnly(rawMetricDataSet.getSampleFile().getAcquiredTime()).compareTo(DateUtil.getDateOnly(form.getEndDate())) == 0));
                 rawMetricDataSets = rawMetricDataSets
                         .stream()
                         .filter(withInDateRange)
@@ -1464,16 +1447,30 @@ public class TargetedMSController extends SpringActionController
             for (GuideSet guideSet : guideSets)
             {
                 // guideset end date should be before or equal start date
-                if (!guideSet.isDefault() &&
-                        (guideSet.getTrainingEnd().before(startDate) || DateUtil.getDateOnly(guideSet.getTrainingEnd()).compareTo(startDate) == 0))
+                if (!guideSet.isDefault())
                 {
-                    if (null == gs)
+                    // show reference guideset when
+                    // 1. startDate is after guideset
+                    // 2. startDate is between guideset date range
+                    // 3. startDate is same as guideset training start
+                    // 4. startDate is same as guideset training end
+                    boolean startDateAfterGuideSet = guideSet.getTrainingEnd().before(startDate);
+                    boolean startDateBetweenGuideSet = guideSet.getTrainingStart().before(startDate) && guideSet.getTrainingEnd().after(startDate);
+                    boolean startDateOverlapGuideSetStart = DateUtil.getDateOnly(guideSet.getTrainingStart()).equals(DateUtil.getDateOnly(startDate));
+                    boolean startDateOverlapGuideSetEnd = DateUtil.getDateOnly(guideSet.getTrainingEnd()).equals(DateUtil.getDateOnly(startDate));
+                    if (startDateAfterGuideSet ||
+                            startDateBetweenGuideSet ||
+                            startDateOverlapGuideSetStart ||
+                            startDateOverlapGuideSetEnd)
                     {
-                        gs = guideSet;
-                    }
-                    else if (guideSet.getTrainingEnd().after(gs.getTrainingEnd()))
-                    {
-                        gs = guideSet;
+                        if (null == gs)
+                        {
+                            gs = guideSet;
+                        }
+                        else if (guideSet.getTrainingEnd().after(gs.getTrainingEnd()))
+                        {
+                            gs = guideSet;
+                        }
                     }
                 }
             }
@@ -7424,20 +7421,14 @@ public class TargetedMSController extends SpringActionController
 
     }
 
-    public static class ChainedVersions implements CustomApiForm
+    public static class ChainedVersions implements ApiJsonForm
     {
-        private Map<Integer, Integer> _runs = new HashMap<>();
+        private final Map<Integer, Integer> _runs = new HashMap<>();
 
         @Override
-        public void bindProperties(Map<String,Object> properties)
+        public void bindJson(JSONObject json)
         {
-            org.json.old.JSONObject json;
-            if (properties instanceof org.json.old.JSONObject)
-                json = (org.json.old.JSONObject)properties;
-            else
-                json = new org.json.old.JSONObject(properties);
-
-            List<Map<String, Object>> list = json.getJSONArray("runs").toMapList();
+            List<Map<String, Object>> list = JsonUtil.toMapList(json.getJSONArray("runs"));
             for (Map<String, Object> entry : list)
             {
                 Integer rowId = (Integer) entry.get("RowId");

@@ -911,7 +911,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         goToProjectHome();
         log("Changing the exclusion state for one of the points");
         String acquiredDate = "2013-08-14 22:48:37";
-        changePointExclusionState(acquiredDate, QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric, 2);
+        changePointExclusionState(acquiredDate, QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric, 7);
 
         log("Setting Show Excluded Samples");
         QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
@@ -919,14 +919,14 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.setShowExcludedPoints(true);
 
         log("Verifying excluded sample is displayed");
-        qcPlotsWebPart.waitForPlots(1);
+        qcPlotsWebPart.waitForPlots(7);
         verifyExclusionButtonSelection(acquiredDate, QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric);
 
         log("Changing the metric type");
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TOTAL_PEAK);
         qcPlotsWebPart.setShowExcludedPoints(false);
 
-        qcPlotsWebPart.waitForPlots(1);
+        qcPlotsWebPart.waitForPlots(7);
         verifyExclusionButtonSelection(acquiredDate, QCPlotsWebPart.QCPlotExclusionState.Include);
     }
 

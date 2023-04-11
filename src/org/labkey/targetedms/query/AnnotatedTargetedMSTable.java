@@ -115,7 +115,7 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
                 new SQLFragment(TargetedMSManager.getSqlDialect().concatenate("a.Name", "'" + ANNOT_NAME_VALUE_SEPARATOR + "' ", "a.Value")),
                 false,
                 true,
-                "'" + ANNOT_DELIMITER + "'"));
+                ANNOT_DELIMITER));
         getAnnotationJoinSQL(annotationTableInfo, annotationFKName, annotationsSQL);
         annotationsSQL.append(".").append(pkColumnName).append(")");
         ExprColumn annotationsColumn = new ExprColumn(this, "Annotations", annotationsSQL, JdbcType.VARCHAR);
