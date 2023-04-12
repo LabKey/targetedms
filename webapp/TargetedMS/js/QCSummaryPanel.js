@@ -306,9 +306,17 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
 
                 var totalOutliers = sampleFile.LeveyJennings + sampleFile.mR + sampleFile.CUSUMm + sampleFile.CUSUMv;
 
-                var iconCls = !sampleFile.IgnoreForAllMetric ? (totalOutliers === 0 ? 'fa-file-o qc-correct' : 'fa-file qc-error') : 'fa-file-o qc-none';
+                var iconCls;
+                if (sampleFile.IgnoreForAllMetric)
+                    iconCls = 'fa-ban qc-none';
+                else if (sampleFile.LeveyJennings > 0)
+                    iconCls = 'fa-times-rectangle qc-error';
+                else if (sampleFile.mR > 0)
+                    iconCls = 'fa-warning qc-warning';
+                else
+                    iconCls = 'fa-check qc-correct';
                 html += '<tr id="' + sampleFile.calloutId + '"><td><div class="sample-file-item">'
-                        + '<span class="fa ' + iconCls + '"></span> ' + Ext4.util.Format.htmlEncode(sampleFile.ReplicateName) + '</div></td><td><div class="sample-file-item-acquired">' + Ext4.util.Format.date(sampleFile.AcquiredTime ? new Date(sampleFile.AcquiredTime) : null, LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s') + '</div></td>';
+                        + '<span class="fa ' + iconCls + '" style="width: 1em; text-align: center"></span> ' + Ext4.util.Format.htmlEncode(sampleFile.ReplicateName) + '</div></td><td><div class="sample-file-item-acquired">' + Ext4.util.Format.date(sampleFile.AcquiredTime ? new Date(sampleFile.AcquiredTime) : null, LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s') + '</div></td>';
 
                 if (sampleFile.IgnoreForAllMetric) {
                     html += '<td colspan="4"><div class="sample-file-item-total-outliers" style="text-align: center">excluded</div></td>';

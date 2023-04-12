@@ -6,6 +6,7 @@ import org.json.old.JSONObject;
 
 import java.awt.*;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Peptide for QC Plot
@@ -70,7 +71,7 @@ public class QCPlotFragment
         this.guideSetStats = guideSetStats;
     }
 
-    public JSONObject toJSON(boolean includeLJ, boolean includeMR, boolean includeMeanCusum, boolean includeVariableCusum, boolean showExcluded, boolean includeTrailingMean, boolean includeTrailingCV)
+    public JSONObject toJSON(boolean includeLJ, boolean includeMR, boolean includeMeanCusum, boolean includeVariableCusum, boolean showExcluded, boolean includeTrailingMean, boolean includeTrailingCV, Map<GuideSetKey, GuideSetStats> targetedStats)
     {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("DataType", getDataType());
@@ -111,6 +112,10 @@ public class QCPlotFragment
         {
             JSONObject dataJsonObject = new JSONObject();
             dataJsonObject.put("Value", plotData.getMetricValue());
+            if (plotData.isLeveyJenningsOutlier(targetedStats.get(plotData.getGuideSetKey())))
+            {
+                dataJsonObject.put("LJOutlier", true);
+            }
             dataJsonObject.put("SampleFileId", plotData.getSampleFile().getId());
             dataJsonObject.put("PrecursorChromInfoId", plotData.getPrecursorChromInfoId());
             boolean ignoreInQC = plotData.getSampleFile().isIgnoreInQC(plotData.getMetricId());
@@ -127,16 +132,36 @@ public class QCPlotFragment
                 if (includeMR)
                 {
                     dataJsonObject.put("MR", plotData.getmR());
+                    if (plotData.isMovingRangeOutlier(targetedStats.get(plotData.getGuideSetKey())))
+                    {
+                        dataJsonObject.put("MROutlier", true);
+                    }
                 }
                 if (includeMeanCusum)
                 {
                     dataJsonObject.put("CUSUMmN", plotData.getCUSUMmN());
                     dataJsonObject.put("CUSUMmP", plotData.getCUSUMmP());
+                    if (plotData.isCUSUMmNOutlier())
+                    {
+                        dataJsonObject.put("CUSUMmNOutlier", true);
+                    }
+                    if (plotData.isCUSUMmPOutlier())
+                    {
+                        dataJsonObject.put("CUSUMmPOutlier", true);
+                    }
                 }
                 if (includeVariableCusum)
                 {
                     dataJsonObject.put("CUSUMvP", plotData.getCUSUMvP());
                     dataJsonObject.put("CUSUMvN", plotData.getCUSUMvN());
+                    if (plotData.isCUSUMvNOutlier())
+                    {
+                        dataJsonObject.put("CUSUMvNOutlier", true);
+                    }
+                    if (plotData.isCUSUMvPOutlier())
+                    {
+                        dataJsonObject.put("CUSUMvPOutlier", true);
+                    }
                 }
                 if (includeTrailingMean)
                 {

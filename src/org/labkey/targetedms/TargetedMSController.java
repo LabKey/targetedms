@@ -92,6 +92,7 @@ import org.labkey.api.files.FileContentService;
 import org.labkey.api.files.view.FilesWebPart;
 import org.labkey.api.module.DefaultFolderType;
 import org.labkey.api.module.Module;
+import org.labkey.api.module.ModuleHtmlView;
 import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.module.ModuleProperty;
 import org.labkey.api.ms2.MS2Urls;
@@ -1120,7 +1121,11 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(Object o, BindException errors)
         {
-            return new QCSummaryWebPart(getViewContext(), null);
+            JspView<?> calendarView = new JspView<>("/org/labkey/targetedms/view/instrumentCalendar.jsp");
+            calendarView.setTitle("Calendar View");
+            calendarView.setFrame(WebPartView.FrameType.PORTAL);
+            QCSummaryWebPart summaryView = new QCSummaryWebPart(getViewContext(), null);
+            return new VBox(calendarView, summaryView);
         }
 
         @Override
@@ -1450,7 +1455,7 @@ public class TargetedMSController extends SpringActionController
             response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toQCPlotJSON).collect(Collectors.toList()));
             response.put("plotDataRows", qcPlotFragments
                     .stream()
-                    .map(qcPlotFragment -> qcPlotFragment.toJSON(form.isIncludeLJ(), form.isIncludeMR(), form.isIncludeMeanCusum(), form.isIncludeVariableCusum(), form.isShowExcluded(), form.isIncludeTrailingMeanPlot(), form.isIncludeTrailingCVPlot()))
+                    .map(qcPlotFragment -> qcPlotFragment.toJSON(form.isIncludeLJ(), form.isIncludeMR(), form.isIncludeMeanCusum(), form.isIncludeVariableCusum(), form.isShowExcluded(), form.isIncludeTrailingMeanPlot(), form.isIncludeTrailingCVPlot(), targetedStats))
                     .collect(Collectors.toList()));
             response.put("metricProps", metricMap.get(passedMetricId).toJSON());
             response.put("filterQCPoints", filterQCPoints);
