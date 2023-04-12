@@ -15,7 +15,6 @@
  */
 package org.labkey.test.pages.targetedms;
 
-import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.pages.InsertPage;
 import org.openqa.selenium.WebDriver;
@@ -34,7 +33,7 @@ public class AnnotationTypeInsertPage extends InsertPage
         Elements elements = elements();
         setFormElement(elements.name, name);
         setFormElement(elements.description, description);
-        click(Locator.xpath("//a[contains(@class, " + Locator.xq("color-" + color) + ")]"));
+        waitAndClick(Locator.xpath("//a[contains(@class, " + Locator.xq("color-" + color) + ")]"));
         clickAndWait(elements.submit);
     }
 
