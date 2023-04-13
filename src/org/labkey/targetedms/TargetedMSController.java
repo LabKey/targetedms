@@ -2639,19 +2639,12 @@ public class TargetedMSController extends SpringActionController
                         .append(TargetedMSManager.getTableInfoReplicateAnnotation(), "repAnnot")
                         .append("\n WHERE ");
                 boolean first = true;
-                for(ReplicateAnnotation annotation: annotations)
+                for (ReplicateAnnotation annotation: annotations)
                 {
-                    if(!first)
-                    {
+                    if (!first)
                         sql.append(" OR ");
-                    }
-                    sql.append(" (name = '")
-                            .append(annotation.getName())
-                            .append("'  ")
-                            .append("  AND value = '")
-                            .append(annotation.getValue())
-                            .append("')");
-
+                    sql.append(" (name = ").appendValue(annotation.getName())
+                       .append("  AND value = ").appendValue(annotation.getValue()).append(")");
                     first = false;
                 }
                 sql.append(")");
@@ -6307,11 +6300,11 @@ public class TargetedMSController extends SpringActionController
 
                     if (form.isNtermSearch())
                     {
-                        result.addCondition(new SQLFragment("ModifiedSequence LIKE '_" + form.getDeltaMassSearchStr(true) + "%' ESCAPE '!'"));
+                        result.addCondition(new SQLFragment("ModifiedSequence LIKE ").appendValue("_" + form.getDeltaMassSearchStr(true) + "%").append(" ESCAPE '!'"));
                     }
                     else if (form.isCtermSearch())
                     {
-                        result.addCondition(new SQLFragment("ModifiedSequence LIKE '%" + form.getDeltaMassSearchStr(true) + "' ESCAPE '!'"));
+                        result.addCondition(new SQLFragment("ModifiedSequence LIKE ").appendValue("%" + form.getDeltaMassSearchStr(true)).append(" ESCAPE '!'"));
                     }
                     else
                     {
@@ -6332,7 +6325,6 @@ public class TargetedMSController extends SpringActionController
                     }
                     result.setDefaultVisibleColumns(visibleColumns);
                     result.setName("Precursor");
-
                     List<TableCustomizer> customizers = TargetedMSService.get().getModificationSearchResultCustomizers();
                     for(TableCustomizer customizer : customizers)
                     {
@@ -6728,15 +6720,17 @@ public class TargetedMSController extends SpringActionController
             sqlFragment.append("\ttargetedms.GeneralPrecursor AS gp ON gp.GeneralMoleculeId = gm.Id LEFT OUTER JOIN\n");
             sqlFragment.append("\ttargetedms.peptide AS p ON p.Id = gm.Id LEFT OUTER JOIN\n");
             sqlFragment.append("\ttargetedms.molecule AS m ON m.Id = gm.Id\n");
-            sqlFragment.append("WHERE r.Deleted = ? AND r.Container = ? ");
+            sqlFragment.append("WHERE r.Deleted = ? AND r.Container = ? ")
+                .add(false)
+                .add(getContainer());
             // Only proteins (PeptideGroup) are marked as representative in "LibraryProtein" folder types. Get the Ids
             // of all the peptides of representative proteins.
-            if(folderType == FolderType.LibraryProtein)
-                sqlFragment.append("AND pg.RepresentativeDataState = ? ");
+            if (folderType == FolderType.LibraryProtein)
+                sqlFragment.append("AND pg.RepresentativeDataState = ? ").add(RepresentativeDataState.Representative.ordinal());
                 // Precursors are marked a representative in "LibraryPeptide" folder type.  Get the peptide Ids
                 // of all the representative precursors.
             else
-                sqlFragment.append("AND gp.RepresentativeDataState = ? ");
+                sqlFragment.append("AND gp.RepresentativeDataState = ? ").add(RepresentativeDataState.Representative.ordinal());
             sqlFragment.append(") AS pepCount ");
             sqlFragment.append("GROUP BY pepCount.RunDate) AS x FULL OUTER JOIN ");
             sqlFragment.append("(SELECT protCount.RunDate, COUNT(DISTINCT protCount.Id) AS ProteinCount ");
@@ -6747,17 +6741,13 @@ public class TargetedMSController extends SpringActionController
             sqlFragment.append("targetedms.Runs AS r, ");
             sqlFragment.append("targetedms.PeptideGroup AS pg ");
             sqlFragment.append("WHERE ");
-            sqlFragment.append("pg.RunId = r.Id AND pg.RepresentativeDataState = ?  AND r.Deleted = ? AND r.Container = ? ");
+            sqlFragment.append("pg.RunId = r.Id AND pg.RepresentativeDataState = ?  AND r.Deleted = ? AND r.Container = ? ")
+                .add(RepresentativeDataState.Representative.ordinal())
+                .add(false)
+                .add(getContainer());
             sqlFragment.append(") AS protCount ");
             sqlFragment.append("GROUP BY protCount.RunDate) AS y ");
-            sqlFragment.append("ON x.RunDate = y.RunDate ORDER BY COALESCE(x.RunDate,y.RunDate); ");
-
-            sqlFragment.add(false);
-            sqlFragment.add(getContainer().getId());
-            sqlFragment.add(RepresentativeDataState.Representative.ordinal());
-            sqlFragment.add(RepresentativeDataState.Representative.ordinal());
-            sqlFragment.add(false);
-            sqlFragment.add(getContainer().getId());
+            sqlFragment.append("ON x.RunDate = y.RunDate ORDER BY COALESCE(x.RunDate,y.RunDate) ");
 
             // grab data from database
             SqlSelector sqlSelector = new SqlSelector(TargetedMSSchema.getSchema(), sqlFragment);
