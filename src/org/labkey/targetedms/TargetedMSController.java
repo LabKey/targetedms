@@ -2667,12 +2667,9 @@ public class TargetedMSController extends SpringActionController
                     {
                         sql.append(" OR ");
                     }
-                    sql.append(" (name = '")
-                            .append(annotation.getName())
-                            .append("'  ")
-                            .append("  AND value = '")
-                            .append(annotation.getValue())
-                            .append("')");
+                    sql.append(" (name = ? AND value = ?)")
+                            .add(annotation.getName())
+                            .add(annotation.getValue());
 
                     first = false;
                 }
