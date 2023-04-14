@@ -21,17 +21,11 @@ package org.labkey.targetedms.parser;
  */
 public class ReplicateAnnotation extends AbstractAnnotation
 {
-    public static final String SOURCE_SKYLINE = "Skyline";
-    public static final String SOURCE_USER = "User";
-    public static final String SOURCE_AUTOQC = "AutoQC";
-
     // This is a special annotation. If set to 'true' the replicate / sample file will
     // be excluded from guide sets and not counted towards outliers in QC folders.
     public static final String IGNORE_IN_QC = "ignore_in_QC";
 
     private long _replicateId;
-
-    private String _source;
 
     public long getReplicateId()
     {
@@ -43,28 +37,8 @@ public class ReplicateAnnotation extends AbstractAnnotation
         _replicateId = replicateId;
     }
 
-    public String getSource()
-    {
-        return _source != null ? _source : SOURCE_SKYLINE;
-    }
-
-    public void setSource(String source)
-    {
-        _source = source;
-    }
-
     public boolean isIgnoreInQC()
     {
         return getName() != null && getName().equalsIgnoreCase(IGNORE_IN_QC);
-    }
-
-    public static boolean isValidSource(String source)
-    {
-        return SOURCE_SKYLINE.equals(source) || SOURCE_AUTOQC.equals(source) || SOURCE_USER.equals(source);
-    }
-
-    public static boolean isSourceSkyline(String source)
-    {
-        return SOURCE_SKYLINE.equals(source);
     }
 }

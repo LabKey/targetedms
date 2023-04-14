@@ -65,7 +65,6 @@
             </column>
             <column columnName="Name"/>
             <column columnName="Value"/>
-            <column columnName="Source"/>
             <column columnName="ReplicateId"/>
         </columns>
     </table>
