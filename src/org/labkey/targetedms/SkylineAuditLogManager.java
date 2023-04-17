@@ -157,7 +157,7 @@ public class SkylineAuditLogManager
         );
 
         SQLFragment query = new SQLFragment("SELECT count(*) docCount FROM ")
-                    .append(runsTbl.getSelectName())
+                    .append(runsTbl)
                     .append(" ")
                     .append(docFilter.getSQLFragment(TargetedMSManager.getSqlDialect()));
 
