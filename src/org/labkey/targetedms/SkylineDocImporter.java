@@ -676,7 +676,6 @@ public class SkylineDocImporter
             for (ReplicateAnnotation annotation : replicate.getAnnotations())
             {
                 annotation.setReplicateId(replicate.getId());
-                annotation.setSource(ReplicateAnnotation.SOURCE_SKYLINE);
                 if (annotation.getName().equals("Day"))
                 {
                     _hasDayAnnotation = true;

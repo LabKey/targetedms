@@ -1301,7 +1301,7 @@ public class TargetedMSSchema extends UserSchema
         }
         if (TABLE_REPLICATE_ANNOTATION.equalsIgnoreCase(name))
         {
-            return new ReplicateAnnotationTable(this, cf);
+            return new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.ReplicateFK);
         }
         if (TABLE_QC_METRIC_EXCLUSION.equalsIgnoreCase(name))
         {
@@ -1574,43 +1574,6 @@ public class TargetedMSSchema extends UserSchema
     @Override @NotNull
     public QueryView createView(ViewContext context, @NotNull QuerySettings settings, BindException errors)
     {
-        if (TABLE_REPLICATE_ANNOTATION.equalsIgnoreCase(settings.getQueryName()))
-        {
-            return new QueryView(TargetedMSSchema.this, settings, errors)
-            {
-                @Override
-                protected void addDetailsAndUpdateColumns(List<DisplayColumn> ret, TableInfo table)
-                {
-                    StringExpression urlUpdate = urlExpr(QueryAction.updateQueryRow);
-                    if (urlUpdate != null)
-                    {
-                        var update = new UpdateColumn.Impl(urlUpdate) {
-                            @Override
-                            public void renderGridCellContents(RenderContext ctx, Writer out) throws IOException
-                            {
-                                Object id = ctx.get("Id");
-                                boolean display = false;
-                                try
-                                {
-                                    int annotationId = Integer.parseInt(id.toString());
-                                    ReplicateAnnotation annotation = ReplicateManager.getReplicateAnnotation(annotationId);
-                                    if (!ReplicateAnnotation.isSourceSkyline(annotation.getSource()))
-                                    {
-                                        display = true;
-                                    }
-                                }
-                                catch (NumberFormatException ignored){}
-                                if (display)
-                                {
-                                    super.renderGridCellContents(ctx, out);
-                                }
-                            }
-                        };
-                        ret.add(0, update);
-                    }
-                }
-            };
-        }
         if ("PTMPercentsGrouped".equalsIgnoreCase(settings.getQueryName()))
         {
             return new CrosstabView(TargetedMSSchema.this, settings, errors)
