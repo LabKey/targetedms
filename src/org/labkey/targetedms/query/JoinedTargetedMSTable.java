@@ -146,4 +146,10 @@ public class JoinedTargetedMSTable extends AnnotatedTargetedMSTable
     {
         return null; //returning null so that the 'tableinfo' tables are selected and not the 'general' tables in the queries.
     }
+
+    @Override
+    public SQLFragment getSQLName()
+    {
+        return null; //returning null so that the 'tableinfo' tables are selected and not the 'general' tables in the queries.
+    }
 }
