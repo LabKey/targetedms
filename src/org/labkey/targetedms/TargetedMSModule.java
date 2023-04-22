@@ -44,7 +44,6 @@ import org.labkey.api.protein.ProteomicsModule;
 import org.labkey.api.query.QueryView;
 import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.security.permissions.ApplicationAdminPermission;
-import org.labkey.api.security.permissions.SiteAdminPermission;
 import org.labkey.api.settings.AdminConsole;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.usageMetrics.UsageMetricsService;
@@ -195,7 +194,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         MAX_TRANSITION_CHROM_INFOS_PROPERTY.setInputType(ModuleProperty.InputType.text);
         MAX_TRANSITION_CHROM_INFOS_PROPERTY.setDefaultValue(Integer.toString(DEFAULT_MAX_TRANSITION_CHROM_INFOS));
         // Issue 47774: Remove TargetedMS module properties related to reading chromatogram data.
-        // Property is can be set only at the site level
+        // Property can be set only at the site level.
         MAX_TRANSITION_CHROM_INFOS_PROPERTY.setCanSetPerContainer(false);
         MAX_TRANSITION_CHROM_INFOS_PROPERTY.setDescription("Large DIA Skyline documents may have many transition/replicate chromatograms which may not be very useful to store in the database. Panorama can skip importing them to save storage space and import time, if the number of separately configured precursors is also exceeded");
         MAX_TRANSITION_CHROM_INFOS_PROPERTY.setShowDescriptionInline(true);
@@ -205,7 +204,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         MAX_PRECURSORS_PROPERTY.setInputType(ModuleProperty.InputType.text);
         MAX_PRECURSORS_PROPERTY.setDefaultValue(Integer.toString(DEFAULT_MAX_PRECURSORS));
         // Issue 47774: Remove TargetedMS module properties related to reading chromatogram data.
-        // Property is can be set only at the site level
+        // Property can be set only at the site level.
         MAX_PRECURSORS_PROPERTY.setCanSetPerContainer(false);
         MAX_PRECURSORS_PROPERTY.setDescription("If a document has more than a specified number of precursors AND more than the separate transition/replicate chromatogram limit, Panorama will skip storing them in the database to save space and import time");
         MAX_PRECURSORS_PROPERTY.setShowDescriptionInline(true);
