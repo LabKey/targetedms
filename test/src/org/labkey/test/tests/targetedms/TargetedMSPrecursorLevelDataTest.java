@@ -38,9 +38,9 @@ public class TargetedMSPrecursorLevelDataTest extends AbstractQuantificationTest
         goToFolderManagement();
         clickAndWait(Locator.linkWithText("Module Properties"));
         setModuleProperties(Arrays.asList(
-                new ModulePropertyValue("TargetedMS", "/" + getProjectName(),
+                new ModulePropertyValue("TargetedMS", "/",
                         "TransitionChromInfo storage limit", "0"),
-                new ModulePropertyValue("TargetedMS", "/" + getProjectName(),
+                new ModulePropertyValue("TargetedMS", "/",
                         "Precursor storage limit", "0")));
 
     }
