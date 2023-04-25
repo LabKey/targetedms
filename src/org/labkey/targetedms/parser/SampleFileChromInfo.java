@@ -17,7 +17,6 @@ package org.labkey.targetedms.parser;
 
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
-import org.labkey.targetedms.TargetedMSRun;
 import org.labkey.targetedms.parser.skyd.ChromGroupHeaderInfo;
 
 import java.util.EnumSet;
@@ -45,15 +44,6 @@ public class SampleFileChromInfo extends AbstractChromInfo
         super(c);
     }
 
-
-
-    /** Always load from disk */
-    @Nullable
-    @Override
-    public Chromatogram createChromatogram(TargetedMSRun run)
-    {
-        return createChromatogram(run, true);
-    }
 
     @Nullable
     @Override
