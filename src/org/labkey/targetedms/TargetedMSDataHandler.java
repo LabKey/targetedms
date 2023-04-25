@@ -49,6 +49,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -113,6 +114,15 @@ public class TargetedMSDataHandler extends AbstractExperimentDataHandler
         {
             throw new ExperimentException(e);
         }
+    }
+
+    @Override
+    public String getFileName(ExpData data, String defaultName)
+    {
+        _log.info("Archive default: " + defaultName);
+        _log.info("Archive data path: " + data.getFilePath());
+        _log.info("Archive data canonical path: " + FileUtil.getAbsoluteCaseSensitiveFile(Objects.requireNonNull(data.getFilePath()).toFile()).getAbsolutePath());
+        return super.getFileName(data, defaultName);
     }
 
     @Override
