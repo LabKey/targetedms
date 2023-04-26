@@ -1,0 +1,20 @@
+.months-4 table.month td.day .day-content {
+    width: 3em;
+    line-height: 2.5em;
+    font-size: 14px;
+}
+
+.months-1 .calendar table.month th.month-title {
+    display: none;
+}
+
+.months-1 table.month td.day .day-content {
+    width: 4em;
+    line-height: 3.5em;
+    font-size: 14px;
+}
+
+.calendar table.month tr td, .calendar table.month tr th {
+    padding: 1px;
+    vertical-align: center;
+}

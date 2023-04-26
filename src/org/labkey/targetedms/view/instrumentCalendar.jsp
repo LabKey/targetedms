@@ -57,8 +57,8 @@
         var dataSource = calendar.getDataSource();
 
         if (event.id) {
-            for (var i in dataSource) {
-                if (dataSource[i].id == event.id) {
+            for (let i in dataSource) {
+                if (dataSource[i].id === event.id) {
                     dataSource[i].startDate = event.startDate;
                     dataSource[i].offline = event.offline;
                     dataSource[i].endDate = event.endDate;
@@ -127,19 +127,29 @@
             }
         }
 
-        let newestDate = new Date(sampleFiles[0].AcquiredTime);
-        let startDate = new Date(newestDate.getFullYear() - 1, newestDate.getMonth() + 1, newestDate.getDate())
+        let newestDate = sampleFiles.length ? new Date(sampleFiles[0].AcquiredTime) : new Date();
+        let startDate = new Date(newestDate.getFullYear() - 1, newestDate.getMonth() + 1, newestDate.getDate());
+        let monthsToShow = 1;
+
+        document.getElementById('monthNumberSelect').value = monthsToShow;
+        updateMonths();
 
         calendar = new Calendar('#calendar', {
             startDate: startDate,
             style: 'custom',
+            numberMonthsDisplayed: monthsToShow,
             enableRangeSelection: true,
             selectRange: function(e) {
-                editEvent({ startDate: e.startDate, endDate: e.endDate, offline: e.events.length ? e.events[0].offline : false, id: e.events.length ? e.events[0].id : null});
+                editEvent({
+                    startDate: e.startDate,
+                    endDate: e.endDate,
+                    offline: e.events.length ? e.events[0].offline : false,
+                    id: e.events.length ? e.events[0].id : null
+                });
             },
             mouseOnDay: function(e) {
                 if(e.events.length > 0) {
-                    var content = '';
+                    let content = '';
 
                     let separator = '';
                     for(var i in e.events) {
@@ -162,7 +172,7 @@
                 }
             },
             mouseOutDay: function(e) {
-                if(e.events.length > 0) {
+                if (e.events.length > 0) {
                     $(e.element).popover('hide');
                 }
             },
@@ -204,9 +214,28 @@
         }
     });
 
+
+    function updateMonths()
+    {
+        let monthCount = document.getElementById('monthNumberSelect').value;
+        document.getElementById('calendarWrapper').className = 'months-' + monthCount;
+        if (calendar) {
+            calendar.setNumberMonthsDisplayed(monthCount);
+        }
+    }
 </script>
 
-<div id="calendar"></div>
+<div>
+    <label for="monthNumberSelect">Display</label>: <select id="monthNumberSelect" onchange="updateMonths()">
+    <option value="1">1 month</option>
+    <option value="4">4 months</option>
+    <option value="12">12 months</option>
+</select>
+</div>
+
+<div id="calendarWrapper">
+    <div id="calendar"></div>
+</div>
 
 <div class="modal fade" id="event-modal">
     <div class="modal-dialog">
