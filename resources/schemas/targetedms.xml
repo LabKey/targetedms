@@ -1294,6 +1294,11 @@
                 <description>The date and time at which the event happened</description>
                 <formatString>DateTime</formatString>
             </column>
+            <column columnName="EndDate">
+                <columnTitle>End Date</columnTitle>
+                <description>Optionally, the date and time at which the event stopped</description>
+                <formatString>DateTime</formatString>
+            </column>
             <column columnName="QCAnnotationTypeId">
                 <columnTitle>Annotation Type</columnTitle>
                 <description>The category of the event</description>

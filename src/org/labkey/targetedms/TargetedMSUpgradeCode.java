@@ -63,6 +63,13 @@ public class TargetedMSUpgradeCode implements UpgradeCode
         ContainerManager.getSharedContainer().setActiveModules(activeModules);
     }
 
+    // called at 23.000-23.001 to add a new type. Can eventually be consolidated into the bootstrap insert above
+    @SuppressWarnings({"UnusedDeclaration"})
+    public void addInstrumentDowntimeAnnotationType(final ModuleContext moduleContext)
+    {
+        insertAnnotationType("Instrument Downtime", "CCCC00", moduleContext.getUpgradeUser());
+    }
+
     private void insertAnnotationType(String name, String color, User user)
     {
         SQLFragment sql = new SQLFragment("INSERT INTO ");

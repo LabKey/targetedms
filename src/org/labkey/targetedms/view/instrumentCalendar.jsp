@@ -128,7 +128,7 @@
         }
 
         let newestDate = new Date(sampleFiles[0].AcquiredTime);
-        let startDate = new Date(newestDate.getFullYear() - 1, newestDate.getMonth(), newestDate.getDate())
+        let startDate = new Date(newestDate.getFullYear() - 1, newestDate.getMonth() + 1, newestDate.getDate())
 
         calendar = new Calendar('#calendar', {
             startDate: startDate,
@@ -180,23 +180,14 @@
         calendar.setCustomDayRenderer(function(element, date) {
             let events = calendar.getEvents(date);
             if (events && events.length) {
-                // element.innerText = events[0].replicateNames.length;
                 let e = events[0];
-                // if ((e.greens === 0 && e.yellows ===0 && e.reds ===0) || e.id > 382)
-                if ( e.id > 382)
-                {
-                    debugger;
-                }
+
                 // Choose the best result to determine the color
                 let color = e.greens > 0 ? '0,128,0' : (e.yellows > 0 ? '240,230,140' : '139,0,0');
 
-                let darkColor = 'rgba(' + color + ', ' + 1 + ')';
-                let lightColor = 'rgba(' + color + ', ' + e.replicateNames.length / 10 + ')';
-
-                element.style.backgroundColor = lightColor;
+                element.style.backgroundColor = 'rgba(' + color + ', ' + e.replicateNames.length / 10 + ')';
                 if (e.offline) {
-                    element.style.backgroundSize = '5px 5px';
-                    element.style.backgroundImage = 'repeating-linear-gradient(0deg, ' + darkColor + ', ' + darkColor + ' 1px, ' + lightColor + ' 1px, ' + lightColor + ')';
+                    element.style.backgroundImage = 'linear-gradient(45deg, transparent 0%, transparent 80%, #333 80%, #333 100%)';
                 }
             }
         });
