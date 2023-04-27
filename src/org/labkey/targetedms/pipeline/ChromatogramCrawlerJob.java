@@ -296,7 +296,7 @@ public class ChromatogramCrawlerJob extends PipelineJob
             if (_rowsForCurrentRun++ < 5)
             {
                 PrecursorChromInfo pci = PrecursorManager.getPrecursorChromInfo(_container, id);
-                Chromatogram chromatogram = pci.createChromatogram(_run, true);
+                Chromatogram chromatogram = pci.createChromatogram(_run);
                 if (chromatogram == null)
                 {
                     _currentSummary._noChromatogramCount++;
