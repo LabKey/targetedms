@@ -42,78 +42,61 @@ public class QCFolderImporter implements FolderImporter
     }
 
     @Override
-    public boolean isValidForImportArchive(FolderImportContext ctx) throws ImportException
-    {
-        //valid only if its a Targeted MS QC folder
-        boolean isTargetedMSFolder = false;
-        boolean isQCFolder = false;
-        if (null != ctx.getXml().getFolderType() && StringUtils.isNotBlank(ctx.getXml().getFolderType().getName()))
-        {
-            if (ctx.getXml().getFolderType().getName().equalsIgnoreCase("Targeted MS"))
-                isTargetedMSFolder = true;
-        }
-        if (isTargetedMSFolder)
-        {
-            ModulePropertyType[] moduleProps = ctx.getDocument().getFolder().getModuleProperties().getModulePropertyArray();
-            List<ModulePropertyType> targetedMSModuleProps = Arrays.stream(moduleProps).filter(modulePropertyType -> modulePropertyType.getPropertyName().equals("TargetedMS Folder Type")).collect(Collectors.toList());
-            if (targetedMSModuleProps.size() == 1 && targetedMSModuleProps.get(0).getValue().equals("QC"))
-            {
-                isQCFolder = true;
-            }
-        }
-
-        return isQCFolder;
-    }
-
-    @Override
     public void process(@Nullable PipelineJob job, FolderImportContext ctx, VirtualFile root) throws Exception
     {
-        if (isValidForImportArchive(ctx))
+        //if 'PanoramaQC' folder is present in the archive
+        if (!root.listDirs().isEmpty() && root.listDirs().stream().anyMatch((name) -> name.equalsIgnoreCase(QCFolderConstants.QC_FOLDER_DIR)))
         {
-            if (null != job)
-            {
-                job.setStatus("IMPORT " + getDescription());
-            }
-
             VirtualFile panoramaQCDir = root.getDir(QCFolderConstants.QC_FOLDER_DIR);
             List<String> filesToImport = root.getDir(QCFolderConstants.QC_FOLDER_DIR).list();
-            TargetedMSSchema schema = new TargetedMSSchema(ctx.getUser(), ctx.getContainer());
 
-            //iterate through PanoramaQCSettings enum values so that files get imported in that order/ordinal, since the lookup tables need to get populated first
-            for (PanoramaQCSettings qcSetting : PanoramaQCSettings.values())
+            // if 'PanoramaQC' folder has files to import
+            if (!filesToImport.isEmpty())
             {
-                if (filesToImport.stream().filter(f -> f.equalsIgnoreCase(qcSetting.getSettingsFileName())).count() == 1)
+                if (null != job)
                 {
-                    try
-                    {
-                        long numRows;
+                    job.setStatus("IMPORT " + getDescription());
+                }
 
-                        if (qcSetting.getSettingsFileName().equalsIgnoreCase(QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME))
-                        {
-                            ctx.getLogger().info("Starting QC Plot settings import");
-                            numRows = qcSetting.importSettingsFromFile(ctx, panoramaQCDir, null, null, null, null);
-                            ctx.getLogger().info("Finished importing " + numRows + " QC Plot settings from " + qcSetting.getSettingsFileName() + " as properties.");
-                        }
-                        else
-                        {
-                            TableInfo ti = qcSetting.getTableInfo(ctx.getUser(), ctx.getContainer(), null);
-                            QueryUpdateService qus = ti.getUpdateService();
-                            BatchValidationException errors = new BatchValidationException();
+                TargetedMSSchema schema = new TargetedMSSchema(ctx.getUser(), ctx.getContainer());
 
-                            ctx.getLogger().info("Starting data import from " + qcSetting.getSettingsFileName() + " into targetedms." + qcSetting.getTableName());
-                            numRows = qcSetting.importSettingsFromFile(ctx, panoramaQCDir, schema, ti, qus, errors);
-                            ctx.getLogger().info("Finished importing " + numRows + " rows from " + qcSetting.getSettingsFileName() + " into targetedms." + qcSetting.getTableName());
-                        }
-                    }
-                    catch (IOException | DuplicateKeyException | BatchValidationException | QueryUpdateServiceException | SQLException e)
+                //iterate through PanoramaQCSettings enum values so that files get imported in that order/ordinal, since the lookup tables need to get populated first
+                for (PanoramaQCSettings qcSetting : PanoramaQCSettings.values())
+                {
+                    if (filesToImport.stream().filter(f -> f.equalsIgnoreCase(qcSetting.getSettingsFileName())).count() == 1)
                     {
-                        if (qcSetting.getSettingsFileName().equalsIgnoreCase(QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME))
+                        try
                         {
-                            throw new ImportException("Error importing QC Plot settings from " + QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME + ": " + e.getMessage(), e);
+                            long numRows;
+
+                            if (qcSetting.getSettingsFileName().equalsIgnoreCase(QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME))
+                            {
+                                ctx.getLogger().info("Starting QC Plot settings import");
+                                numRows = qcSetting.importSettingsFromFile(ctx, panoramaQCDir, null, null, null, null);
+                                ctx.getLogger().info("Finished importing " + numRows + " QC Plot settings from " + qcSetting.getSettingsFileName() + " as properties.");
+                            }
+                            else
+                            {
+                                TableInfo ti = qcSetting.getTableInfo(ctx.getUser(), ctx.getContainer(), null);
+                                QueryUpdateService qus = ti.getUpdateService();
+                                BatchValidationException errors = new BatchValidationException();
+
+                                ctx.getLogger().info("Starting data import from " + qcSetting.getSettingsFileName() + " into targetedms." + qcSetting.getTableName());
+                                numRows = qcSetting.importSettingsFromFile(ctx, panoramaQCDir, schema, ti, qus, errors);
+                                ctx.getLogger().info("Finished importing " + numRows + " rows from " + qcSetting.getSettingsFileName() + " into targetedms." + qcSetting.getTableName());
+                            }
                         }
-                        else
+                        catch (IOException | DuplicateKeyException | BatchValidationException |
+                               QueryUpdateServiceException | SQLException e)
                         {
-                            throw new ImportException("Error importing panorama qc settings from " + qcSetting.getSettingsFileName() + " into targetedms." + qcSetting.getTableName() + ": " + e.getMessage(), e);
+                            if (qcSetting.getSettingsFileName().equalsIgnoreCase(QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME))
+                            {
+                                throw new ImportException("Error importing QC Plot settings from " + QCFolderConstants.QC_PLOT_SETTINGS_PROPS_FILE_NAME + ": " + e.getMessage(), e);
+                            }
+                            else
+                            {
+                                throw new ImportException("Error importing panorama qc settings from " + qcSetting.getSettingsFileName() + " into targetedms." + qcSetting.getTableName() + ": " + e.getMessage(), e);
+                            }
                         }
                     }
                 }
