@@ -1138,10 +1138,21 @@ public class TargetedMSController extends SpringActionController
     public static class QCMetricOutliersForm
     {
         private Integer _sampleLimit;
+        private boolean _includeAnnotations = false;
 
         public Integer getSampleLimit()
         {
             return _sampleLimit;
+        }
+
+        public boolean isIncludeAnnotations()
+        {
+            return _includeAnnotations;
+        }
+
+        public void setIncludeAnnotations(boolean includeAnnotations)
+        {
+            _includeAnnotations = includeAnnotations;
         }
 
         public void setSampleLimit(Integer sampleLimit)
@@ -1163,7 +1174,7 @@ public class TargetedMSController extends SpringActionController
 
             List<QCMetricConfiguration> enabledQCMetricConfigurations = TargetedMSManager.getEnabledQCMetricConfigurations(schema);
 
-            if(enabledQCMetricConfigurations.isEmpty())
+            if (enabledQCMetricConfigurations.isEmpty())
             {
                 response.put("outliers", "no enabled qc configurations");
                 return response;
@@ -1180,6 +1191,16 @@ public class TargetedMSController extends SpringActionController
 
             response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toJSON).collect(Collectors.toList()));
             response.put("guideSets", guideSets.stream().map(x -> x.toJSON(rawMetricDataSets, metricMap, stats)).collect(Collectors.toList()));
+
+            if (form.isIncludeAnnotations())
+            {
+                TableInfo annotTable = schema.getTableOrThrow(TargetedMSSchema.TABLE_QC_ANNOTATION);
+                TableSelector ts = new TableSelector(annotTable,
+                        Set.of("Id", "Date", "EndDate", "Description"),
+                        new SimpleFilter(FieldKey.fromParts("QCAnnotationTypeId", "Name"), QCAnnotationTypeTable.INSTRUMENT_DOWNTIME),
+                        new Sort("Date"));
+                response.put("instrumentDowntimeAnnotations", ts.getMapCollection());
+            }
 
             return response;
         }

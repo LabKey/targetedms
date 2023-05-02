@@ -298,7 +298,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
         var container = params.container;
             var html = '<table class="table-condensed labkey-data-region-legacy labkey-show-borders">';
             html += '<thead><tr><td colspan="2"/><td colspan="4" style="text-align: center" class="labkey-column-header">Outliers</td></tr></thead>';
-            html += '<thead><tr><td class="labkey-column-header">Replicate Name</td><td class="labkey-column-header">Acquired</td><td class="labkey-column-header">Levey-Jennings</td><td class="labkey-column-header">Moving Range</td><td class="labkey-column-header">CUSUM</td><td class="labkey-column-header">Total</td></tr></thead>';
+            html += '<thead><tr><td class="labkey-column-header">Replicate Name</td><td class="labkey-column-header">Acquired</td><td class="labkey-column-header"><div class="fa fa-times-rectangle qc-error"></div> Levey-Jennings</td><td class="labkey-column-header"><div class="fa fa-warning qc-warning"></div> Moving Range</td><td class="labkey-column-header"><div class="fa fa-info-circle qc-info"></div> CUSUM</td><td class="labkey-column-header"><div class="fa fa-check qc-correct"></div> Total</td></tr></thead>';
             var sampleFiles = params.sampleFiles;
             Ext4.iterate(sampleFiles, function (sampleFile) {
                 // create a new div id for each sampleFile to use for the hover details callout
@@ -313,6 +313,8 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                     iconCls = 'fa-times-rectangle qc-error';
                 else if (sampleFile.mR > 0)
                     iconCls = 'fa-warning qc-warning';
+                else if (sampleFile.CUSUMm + sampleFile.CUSUMv > 0)
+                    iconCls = 'fa-info-circle qc-info';
                 else
                     iconCls = 'fa-check qc-correct';
                 html += '<tr id="' + sampleFile.calloutId + '"><td><div class="sample-file-item">'

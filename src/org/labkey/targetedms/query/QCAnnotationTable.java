@@ -40,5 +40,6 @@ public class QCAnnotationTable extends SimpleUserSchema.SimpleTable<TargetedMSSc
                 .to(TargetedMSSchema.TABLE_QC_ANNOTATION_TYPE, "Id", "Name"));
 
         appendFormatLabel(getMutableColumn("Date"));
+        appendFormatLabel(getMutableColumn("EndDate"));
     }
 }
