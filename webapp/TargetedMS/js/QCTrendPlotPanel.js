@@ -238,21 +238,26 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             scope: this,
             success: function (response) {
 
-                var runDetails = response.rows[0];
-                this.expRunDetails = {};
-                this.expRunDetails['fileName'] = runDetails.FileName;
-                this.expRunDetails['startDate'] = runDetails.StartDate;
-                this.expRunDetails['endDate'] = runDetails.EndDate;
+                if (response.rows.length === 0) {
+                    this.failureHandler({message: 'Could not find run ' + runId});
+                }
+                else {
+                    let runDetails = response.rows[0];
+                    this.expRunDetails = {};
+                    this.expRunDetails['fileName'] = runDetails.FileName;
+                    this.expRunDetails['startDate'] = runDetails.StartDate;
+                    this.expRunDetails['endDate'] = runDetails.EndDate;
 
-                Ext4.apply(this, {
-                    startDate: this.formatDate(this.expRunDetails['startDate']),
-                    endDate: this.formatDate(this.expRunDetails['endDate']),
-                    dateRangeOffset: -1
-                });
+                    Ext4.apply(this, {
+                        startDate: this.formatDate(this.expRunDetails['startDate']),
+                        endDate: this.formatDate(this.expRunDetails['endDate']),
+                        dateRangeOffset: -1
+                    });
 
-                // initialize the form panel toolbars and display the plot
-                this.add(this.initPlotFormToolbars());
-                this.displayTrendPlot();
+                    // initialize the form panel toolbars and display the plot
+                    this.add(this.initPlotFormToolbars());
+                    this.displayTrendPlot();
+                }
             },
             failure: this.failureHandler
         });
