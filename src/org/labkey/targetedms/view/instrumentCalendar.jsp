@@ -31,6 +31,7 @@
     let heatMapSource = 'sampleCount';
     let maxSampleCount = 0;
     let maxOutliers = 0;
+    let offlineAnnotationTypeId = -1;
 
     function editEvent(event) {
         $('#event-modal input[name="event-index"]').val(event.id);
@@ -43,57 +44,172 @@
             endDate = event.annotation.enddate ? dateOnly(event.annotation.enddate) : startDate;
         }
 
+
+        $('#delete-event').css('display', event.annotation ? '' : 'none');
+
         $('#event-modal input[name="event-description"]').val(event.annotation ? event.annotation.description : '');
-        $('#event-modal input[name="event-start-date"]').val(startDate.getFullYear() + '-' + (startDate.getMonth() + 1) + '-' + startDate.getDate());
-        $('#event-modal input[name="event-end-date"]').val(endDate.getFullYear() + '-' + (endDate.getMonth() + 1) + '-' + endDate.getDate());
+        $('#event-modal input[name="event-start-date"]').val(startDate.getFullYear() + '-' + (startDate.getMonth() + 1 < 10 ? '0' : '') + (startDate.getMonth() + 1) + '-' + (startDate.getDate() < 10 ? '0' : '') + startDate.getDate());
+        $('#event-modal input[name="event-multi-date"]').prop('checked', endDate && endDate.getTime() !== startDate.getTime());
+        $('#event-modal input[name="event-end-date"]').val(endDate.getFullYear() + '-' + (endDate.getMonth() + 1 < 10 ? '0' : '') + (endDate.getMonth() + 1) + '-' + (endDate.getDate() < 10 ? '0' : '') + endDate.getDate());
         $('#event-modal').modal();
     }
 
-    function deleteEvent(event) {
-        var dataSource = calendar.getDataSource();
+    function deleteEvent() {
+        const event = {
+            id: $('#event-modal input[name="event-annotationId"]').val()
+        }
 
-        calendar.setDataSource(dataSource.filter(item => item.id !== event.id));
+        LABKEY.Query.saveRows({
+            commands: [{
+                command: 'delete',
+                schemaName: 'targetedms',
+                queryName: 'QCAnnotation',
+                rows: [
+                    event
+                ]
+            } ],
+            success: function() {
+                loadData(function(data) {
+                    calendar.setDataSource(data);
+                    $('#event-modal').modal('hide');
+                })
+            }
+        })
+    }
+
+    function loadData(callback) {
+        LABKEY.Ajax.request({
+            url: LABKEY.ActionURL.buildURL('targetedms', 'GetQCMetricOutliers.api'),
+            params: {sampleLimit: this.sampleLimit, includeAnnotations: true},
+            success: function (response) {
+                var parsed = JSON.parse(response.responseText);
+                if (parsed.sampleFiles) {
+                    const sampleFiles = parsed.sampleFiles;
+                    const annotations = parsed.instrumentDowntimeAnnotations;
+                    offlineAnnotationTypeId = parsed.offlineAnnotationTypeId;
+
+                    let firstDate;
+                    let lastDate;
+                    if (sampleFiles.length) {
+                        lastDate = dateOnly(sampleFiles[0].AcquiredTime);
+                        firstDate = dateOnly(sampleFiles[sampleFiles.length - 1].AcquiredTime);
+                    }
+
+                    if (annotations.length) {
+                        let firstAnnotation = dateOnly(annotations[0].date);
+                        let lastAnnotation = annotations[annotations.length - 1].enddate ?
+                                dateOnly(annotations[annotations.length - 1].enddate) :
+                                dateOnly(annotations[annotations.length - 1].date);
+                        if (!firstDate || firstAnnotation.getTime() < firstDate.getTime()) {
+                            firstDate = firstAnnotation;
+                        }
+                        if (!lastDate || lastAnnotation.getTime() > lastDate.getTime()) {
+                            lastDate = lastAnnotation;
+                        }
+                    }
+
+                    // Hack - problem with annotation being at the end of the range
+                    firstDate.setDate(firstDate.getDate() - 1);
+                    lastDate.setDate(lastDate.getDate() + 1);
+
+                    let data = [];
+
+                    while (firstDate && firstDate.getTime() <= lastDate.getTime()) {
+                        data.push({
+                            startDate: new Date(firstDate.getTime()),
+                            endDate: new Date(firstDate.getTime()),
+                            replicateNames: [],
+                            outliers: [],
+                            id: data.length
+                        });
+                        firstDate.setDate(firstDate.getDate() + 1);
+                    }
+
+                    let currentIndex = 0;
+
+                    for (let i = sampleFiles.length - 1; i >= 0; i--) {
+                        let sampleFile = sampleFiles[i];
+                        let d = dateOnly(sampleFile.AcquiredTime);
+                        while (data[currentIndex].startDate.getTime() !== d.getTime()) {
+                            currentIndex++;
+                        }
+                        let current = data[currentIndex];
+                        current.replicateNames.push(sampleFile.ReplicateName);
+                        current.outliers.push(sampleFile.IgnoreForAllMetric ? 0 : sampleFile.LeveyJennings);
+                    }
+
+                    currentIndex = 0;
+                    for (let i = 0; i < annotations.length; i++) {
+                        let annotation = annotations[i];
+                        let d = dateOnly(annotation.date);
+                        while (data[currentIndex].startDate.getTime() !== d.getTime()) {
+                            currentIndex++;
+                        }
+                        let current = data[currentIndex];
+                        current.annotation = annotation;
+
+                        if (annotation.enddate) {
+                            let endDate = dateOnly(annotation.enddate);
+                            let endDateIndex = currentIndex + 1;
+                            while (data[endDateIndex].startDate.getTime() <= endDate.getTime()) {
+                                data[endDateIndex++].annotation = annotation;
+                            }
+                        }
+                    }
+
+
+                    data.forEach(e => {
+                        let values = e.outliers;
+
+                        // Calculate the median
+                        values.sort(function(a,b){
+                            return a-b;
+                        });
+                        let half = Math.floor(values.length / 2);
+                        e.medianOutliers = values.length === 0 ? 0 : (values.length % 2 === 0 ? (values[half - 1] + values[half]) / 2.0 : values[half]);
+
+                        maxSampleCount = Math.max(maxSampleCount, e.replicateNames.length);
+                        maxOutliers = Math.max(maxOutliers, e.medianOutliers);
+                    });
+
+                    callback(data);
+                }
+            },
+            failure: function(errorInfo) {
+                document.getElementById('calendar').innerText = 'Failed to load data';
+            }
+        });
     }
 
     function saveEvent() {
-        let statusValue = $('#event-modal select[name="event-status"]').val();
-        var event = {
-            id: $('#event-modal input[name="event-index"]').val(),
-            startDate: new Date($('#event-modal input[name="event-start-date"]').val()),
-            endDate: new Date($('#event-modal input[name="event-end-date"]').val()),
-            offline: statusValue === 'Offline'
+        const event = {
+            id: $('#event-modal input[name="event-annotationId"]').val(),
+            date: $('#event-modal input[name="event-start-date"]').val(),
+            endDate: $('#event-modal input[name="event-end-date"]').val(),
+            description: $('#event-modal input[name="event-description"]').val(),
+            qcAnnotationTypeId: offlineAnnotationTypeId
         }
 
-        var dataSource = calendar.getDataSource();
-
-        if (event.id) {
-            for (let i in dataSource) {
-                if (dataSource[i].id === event.id) {
-                    dataSource[i].startDate = event.startDate;
-                    dataSource[i].offline = event.offline;
-                    dataSource[i].endDate = event.endDate;
-                }
+        LABKEY.Query.saveRows({
+            commands: [{
+                command: event.id ? 'update' : 'insert',
+                schemaName: 'targetedms',
+                queryName: 'QCAnnotation',
+                rows: [
+                    event
+                ]
+            } ],
+            success: function() {
+                loadData(function(data) {
+                    calendar.setDataSource(data);
+                    $('#event-modal').modal('hide');
+                })
+            },
+            failure: function() {
+                // TODO - handler
             }
-        }
-        else
-        {
-            var newId = 0;
-            for(var i in dataSource) {
-                if(dataSource[i].id > newId) {
-                    newId = dataSource[i].id;
-                }
-            }
+        })
 
-            newId++;
-            event.id = newId;
-            event.medianOutliers = 0;
-            event.replicateNames = [];
-
-            dataSource.push(event);
-        }
-
-        calendar.setDataSource(dataSource);
-        $('#event-modal').modal('hide');
     }
 
     let dateOnly = function(d) {
@@ -101,89 +217,8 @@
         return new Date(dateTime.getFullYear(), dateTime.getMonth(), dateTime.getDate());
     }
 
-    let initCal = function(sampleFiles, annotations) {
-
-        let firstDate;
-        let lastDate;
-        if (sampleFiles.length) {
-            lastDate = dateOnly(sampleFiles[0].AcquiredTime);
-            firstDate = dateOnly(sampleFiles[sampleFiles.length - 1].AcquiredTime);
-        }
-
-        if (annotations.length) {
-            let firstAnnotation = dateOnly(annotations[0].date);
-            let lastAnnotation = annotations[annotations.length - 1].enddate ?
-                    dateOnly(annotations[annotations.length - 1].enddate) :
-                    dateOnly(annotations[annotations.length - 1].date);
-            if (!firstDate || firstAnnotation.getTime() < firstDate.getTime()) {
-                firstDate = firstAnnotation;
-            }
-            if (!lastDate || lastAnnotation.getTime() > lastDate.getTime()) {
-                lastDate = lastAnnotation;
-            }
-        }
-
-        let data = [];
-
-        while (firstDate && firstDate.getTime() <= lastDate.getTime()) {
-            data.push({
-                startDate: new Date(firstDate.getTime()),
-                endDate: new Date(firstDate.getTime()),
-                replicateNames: [],
-                outliers: [],
-                id: data.length
-            });
-            firstDate.setDate(firstDate.getDate() + 1);
-        }
-
-        let currentIndex = 0;
-
-        for (let i = sampleFiles.length - 1; i >= 0; i--) {
-            let sampleFile = sampleFiles[i];
-            let d = dateOnly(sampleFile.AcquiredTime);
-            while (data[currentIndex].startDate.getTime() !== d.getTime()) {
-                currentIndex++;
-            }
-            let current = data[currentIndex];
-            current.replicateNames.push(sampleFile.ReplicateName);
-            current.outliers.push(sampleFile.IgnoreForAllMetric ? 0 : sampleFile.LeveyJennings);
-        }
-
-        currentIndex = 0;
-        for (let i = 0; i < annotations.length; i++) {
-            let annotation = annotations[i];
-            let d = dateOnly(annotation.date);
-            while (data[currentIndex].startDate.getTime() !== d.getTime()) {
-                currentIndex++;
-            }
-            let current = data[currentIndex];
-            current.annotation = annotation;
-
-            if (annotation.enddate) {
-                let endDate = dateOnly(annotation.enddate);
-                let endDateIndex = currentIndex + 1;
-                while (data[endDateIndex].startDate.getTime() <= endDate.getTime()) {
-                    data[endDateIndex++].annotation = annotation;
-                }
-            }
-        }
-
-
-        data.forEach(e => {
-            let values = e.outliers;
-
-            // Calculate the median
-            values.sort(function(a,b){
-                return a-b;
-            });
-            let half = Math.floor(values.length / 2);
-            e.medianOutliers = values.length === 0 ? 0 : (values.length % 2 === 0 ? (values[half - 1] + values[half]) / 2.0 : values[half]);
-
-            maxSampleCount = Math.max(maxSampleCount, e.replicateNames.length);
-            maxOutliers = Math.max(maxOutliers, e.medianOutliers);
-        });
-
-        let newestDate = sampleFiles.length ? new Date(sampleFiles[0].AcquiredTime) : new Date();
+    loadData(function(data) {
+        let newestDate = data.length ? new Date(data[data.length - 1].startDate) : new Date();
         let startDate = newestDate;
         let monthsToShow = 1;
 
@@ -209,12 +244,17 @@
                     let content = '';
 
                     let separator = '';
-                    for(var i in e.events) {
+                    for (let i in e.events) {
                         content += separator;
                         separator = '<br/><br/>'
                         content += '<div class="event-tooltip-content">'
-                                + '<div class="event-name" style="color:' + e.events[i].color + '">' + (e.events[i].annotation ? ('Offline (' + LABKEY.Utils.encodeHtml(e.events[i].annotation.description) + ')') : 'Online') + '</div>'
-                                + '<div>' + e.events[i].replicateNames.length + ' Sample' + (e.events[i].replicateNames.length === 1 ? '' : 's') + ':</div>';
+                                + '<div class="event-name" style="color:' + e.events[i].color + '">' + (e.events[i].annotation ? ('Offline: ' + LABKEY.Utils.encodeHtml(e.events[i].annotation.description)) : 'Online') + '</div>';
+                        if (e.events[i].replicateNames.length === 0) {
+                            content += '<div>No samples</div>';
+                        }
+                        else {
+                            content += '<div>' + e.events[i].replicateNames.length + ' Sample' + (e.events[i].replicateNames.length === 1 ? '' : 's') + ':</div>';
+                        }
                         for (let j in e.events[i].replicateNames) {
                             content += '<div class="event-location">' + LABKEY.Utils.encodeHtml(e.events[i].replicateNames[j]) + ' (' + e.events[i].outliers[j] + ' outliers)</div>';
                         }
@@ -246,6 +286,10 @@
             saveEvent();
         });
 
+        $('#delete-event').click(function() {
+            deleteEvent();
+        });
+
 
         calendar.setCustomDayRenderer(function(element, date) {
             let events = calendar.getEvents(date);
@@ -253,33 +297,17 @@
                 let e = events[0];
 
                 let value = heatMapSource === 'sampleCount' ? e.replicateNames.length : e.medianOutliers;
-                let divisor = heatMapSource === 'sampleCount' ? maxSampleCount : maxOutliers;
+                if (value > 0) {
+                    let divisor = heatMapSource === 'sampleCount' ? maxSampleCount : maxOutliers;
 
-                // Choose the best result to determine the color
-                let color = '0,128,0';
-
-                element.style.backgroundColor = 'rgba(' + color + ', ' + value / divisor + ')';
+                    element.classList.add('shade' + (Math.round((value / divisor) * 19.0)));
+                }
                 if (e.annotation) {
-                    element.style.backgroundImage = 'linear-gradient(45deg, transparent 0%, transparent 50%, #3334 50%, #3334 100%)';
+                    element.classList.add('offline');
                 }
             }
         });
-    };
-
-    LABKEY.Ajax.request({
-        url: LABKEY.ActionURL.buildURL('targetedms', 'GetQCMetricOutliers.api'),
-        params: {sampleLimit: this.sampleLimit, includeAnnotations: true},
-        success: function (response) {
-            var parsed = JSON.parse(response.responseText);
-            if (parsed.sampleFiles) {
-                initCal(parsed.sampleFiles, parsed.instrumentDowntimeAnnotations);
-            }
-        },
-        failure: function(errorInfo) {
-            document.getElementById('calendar').innerText = 'Failed to load data';
-        }
     });
-
 
     function updateMonths()
     {
@@ -319,7 +347,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Event</h5>
+                <h5 class="modal-title">Instrument Offline</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -331,25 +359,33 @@
                     <div class="form-group row">
                         <label for="event-description" class="col-sm-4 control-label">Description</label>
                         <div class="col-sm-8">
-                            <input id="event-description" name="event-description" type="text" size="10" class="form-control">
+                            <input id="event-description" name="event-description" type="text" size="30" class="form-control">
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label for="min-date" class="col-sm-4 control-label">Dates</label>
-                        <div class="col-sm-4">
-                            <div class="input-group">
-                                <input id="min-date" name="event-start-date" type="text" class="form-control"> through
-                                <input name="event-end-date" type="text" class="form-control">
-                            </div>
+                        <label for="min-date" class="col-sm-4 control-label">Date</label>
+                        <div class="col-sm-8">
+                            <input id="min-date" name="event-start-date" type="text" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="min-date" class="col-sm-4 control-label">Multi-day</label>
+                        <div class="col-sm-8">
+                            <input id="multi-date" name="event-multi-date" type="checkbox" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="end-date" class="col-sm-4 control-label">End Date</label>
+                        <div class="col-sm-8">
+                            <input id="end-date" name="event-end-date" type="text" class="form-control">
                         </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="save-event">
-                    Save
-                </button>
+                <button type="button" class="btn btn-primary" id="delete-event">Delete</button>
+                <button type="button" class="btn btn-primary" id="save-event">Save</button>
             </div>
         </div>
     </div>

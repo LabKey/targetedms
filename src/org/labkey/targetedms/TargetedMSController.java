@@ -1200,6 +1200,13 @@ public class TargetedMSController extends SpringActionController
                         new SimpleFilter(FieldKey.fromParts("QCAnnotationTypeId", "Name"), QCAnnotationTypeTable.INSTRUMENT_DOWNTIME),
                         new Sort("Date"));
                 response.put("instrumentDowntimeAnnotations", ts.getMapCollection());
+
+                TableInfo annotTypesTable = TargetedMSManager.getTableInfoQCAnnotationType();
+                TableSelector ts2 = new TableSelector(annotTypesTable,
+                        Collections.singleton("Id"),
+                        new SimpleFilter(FieldKey.fromParts("Name"), QCAnnotationTypeTable.INSTRUMENT_DOWNTIME),
+                        null);
+                response.put("offlineAnnotationTypeId", ts2.getObject(Integer.class));
             }
 
             return response;
