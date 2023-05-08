@@ -19,123 +19,134 @@
     vertical-align: center;
 }
 
+.calendar table.month td.day .day-content {
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border-radius: 0;
+    border: 1px lightgray solid;
+}
+
 .calendar table.month td.day .offline {
     background-image: linear-gradient(45deg, transparent 0%, transparent 50%, #3334 50%, #3334 100%);
 }
 
-.calendar table.month td.day .shade0 {
-    background-color: rgb(0, 81, 138, 0.5);
-}
-.calendar table.month td.day .shade1 {
-    background-color: rgb(0, 102, 151, 0.5);
-}
-.calendar table.month td.day .shade2 {
-    background-color: rgb(0, 123, 159, 0.5);
-}
-.calendar table.month td.day .shade3 {
-    background-color: rgb(0, 143, 162, 0.5);
-}
-.calendar table.month td.day .shade4 {
-    background-color: rgb(49, 161, 162, 0.5);
-}
-.calendar table.month td.day .shade5 {
-    background-color: rgb(94, 179, 162, 0.5);
-}
-.calendar table.month td.day .shade6 {
-    background-color: rgb(134, 196, 164, 0.5);
-}
-.calendar table.month td.day .shade7 {
-    background-color: rgb(172, 212, 169, 0.5);
-}
-.calendar table.month td.day .shade8 {
-    background-color: rgb(210, 227, 179, 0.5);
-}
-.calendar table.month td.day .shade9 {
-    background-color: rgb(247, 242, 195, 0.5);
-}
-.calendar table.month td.day .shade10 {
-    background-color: rgb(240, 225, 174, 0.5);
-}
-.calendar table.month td.day .shade11 {
-    background-color: rgb(234, 208, 155, 0.5);
-}
-.calendar table.month td.day .shade12 {
-    background-color: rgb(228, 190, 137, 0.5);
-}
-.calendar table.month td.day .shade13 {
-    background-color: rgb(223, 172, 121, 0.5);
-}
-.calendar table.month td.day .shade14 {
-    background-color: rgb(217, 154, 108, 0.5);
-}
-.calendar table.month td.day .shade15 {
-    background-color: rgb(211, 135, 97, 0.5);
-}
-.calendar table.month td.day .shade16 {
-    background-color: rgb(204, 117, 88, 0.5);
-}
-.calendar table.month td.day .shade17 {
-    background-color: rgb(196, 98, 82, 0.5);
-}
-.calendar table.month td.day .shade18 {
-    background-color: rgb(187, 78, 78, 0.5);
+.heatmap-footer-container {
+    padding-top: 1em;
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
-.calendar table.month td.day .shade0:hover {
-    background-color: rgb(0, 81, 138, 0.7);
-}
-.calendar table.month td.day .shade1:hover {
-    background-color: rgb(0, 102, 151, 0.7);
-}
-.calendar table.month td.day .shade2:hover {
-    background-color: rgb(0, 123, 159, 0.7);
-}
-.calendar table.month td.day .shade3:hover {
-    background-color: rgb(0, 143, 162, 0.7);
-}
-.calendar table.month td.day .shade4:hover {
-    background-color: rgb(49, 161, 162, 0.7);
-}
-.calendar table.month td.day .shade5:hover {
-    background-color: rgb(94, 179, 162, 0.7);
-}
-.calendar table.month td.day .shade6:hover {
-    background-color: rgb(134, 196, 164, 0.7);
-}
-.calendar table.month td.day .shade7:hover {
-    background-color: rgb(172, 212, 169, 0.7);
-}
-.calendar table.month td.day .shade8:hover {
-    background-color: rgb(210, 227, 179, 0.7);
-}
-.calendar table.month td.day .shade9:hover {
-    background-color: rgb(247, 242, 195, 0.7);
+.heatmap-legend-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.calendar table.month td.day .shade10:hover {
-    background-color: rgb(240, 225, 174, 0.7);
+.heatmap-legend {
+    border: 1px lightgray solid;
+    display: flex;
 }
-.calendar table.month td.day .shade11:hover {
-    background-color: rgb(234, 208, 155, 0.7);
+
+.heatmap-legend-element {
+    width: 3em;
+    height: 1.5em;
 }
-.calendar table.month td.day .shade12:hover {
-    background-color: rgb(228, 190, 137, 0.7);
+
+.heatmap-legend-label {
+    width: 10em;
+    padding-left: 1em;
+    padding-right: 1em;
 }
-.calendar table.month td.day .shade13:hover {
-    background-color: rgb(223, 172, 121, 0.7);
+
+
+.heatmap-shaded {
+    color: whitesmoke;
 }
-.calendar table.month td.day .shade14:hover {
-    background-color: rgb(217, 154, 108, 0.7);
+
+.heatmap-shade0 {
+    background-color: rgba(32, 121, 0, 0.35);
 }
-.calendar table.month td.day .shade15:hover {
-    background-color: rgb(211, 135, 97, 0.7);
+.heatmap-shade1 {
+    background-color: rgba(32, 121, 0, 0.40);
 }
-.calendar table.month td.day .shade16:hover {
-    background-color: rgb(204, 117, 88, 0.7);
+.heatmap-shade2 {
+    background-color: rgba(32, 121, 0, 0.45);
 }
-.calendar table.month td.day .shade17:hover {
-    background-color: rgb(196, 98, 82, 0.7);
+.heatmap-shade3 {
+    background-color: rgba(32, 121, 0, 0.50);
 }
-.calendar table.month td.day .shade18:hover {
-    background-color: rgb(187, 78, 78, 0.7);
+.heatmap-shade4 {
+    background-color: rgba(32, 121, 0, 0.55);
+}
+.heatmap-shade5 {
+    background-color: rgba(32, 121, 0, 0.60);
+}
+.heatmap-shade6 {
+    background-color: rgba(32, 121, 0, 0.65);
+}
+.heatmap-shade7 {
+    background-color: rgba(32, 121, 0, 0.70);
+}
+.heatmap-shade8 {
+    background-color: rgba(32, 121, 0, 0.75);
+}
+.heatmap-shade9 {
+    background-color: rgba(32, 121, 0, 0.80);
+}
+.heatmap-shade10 {
+    background-color: rgba(32, 121, 0, 0.85);
+}
+.heatmap-shade11 {
+    background-color: rgba(32, 121, 0, 0.90);
+}
+.heatmap-shade12 {
+    background-color: rgba(32, 121, 0, 0.95);
+}
+.heatmap-shade13 {
+    background-color: rgba(32, 121, 0, 1.0);
+}
+
+.calendar table.month td.day .heatmap-shade0:hover {
+    background-color: rgb(16, 61, 0, 0.35);
+}
+.calendar table.month td.day .heatmap-shade1:hover {
+    background-color: rgb(16, 61, 0, 0.4);
+}
+.calendar table.month td.day .heatmap-shade2:hover {
+    background-color: rgb(16, 61, 0, 0.45);
+}
+.calendar table.month td.day .heatmap-shade3:hover {
+    background-color: rgb(16, 61, 0, 0.5);
+}
+.calendar table.month td.day .heatmap-shade4:hover {
+    background-color: rgb(16, 61, 0, 0.55);
+}
+.calendar table.month td.day .heatmap-shade5:hover {
+    background-color: rgb(16, 61, 0, 0.6);
+}
+.calendar table.month td.day .heatmap-shade6:hover {
+    background-color: rgb(16, 61, 0, 0.65);
+}
+.calendar table.month td.day .heatmap-shade7:hover {
+    background-color: rgb(16, 61, 0, 0.70);
+}
+.calendar table.month td.day .heatmap-shade8:hover {
+    background-color: rgb(16, 61, 0, 0.75);
+}
+.calendar table.month td.day .heatmap-shade9:hover {
+    background-color: rgb(16, 61, 0, 0.80);
+}
+.calendar table.month td.day .heatmap-shade10:hover {
+    background-color: rgb(16, 61, 0, 0.85);
+}
+.calendar table.month td.day .heatmap-shade11:hover {
+    background-color: rgb(16, 61, 0, 0.90);
+}
+.calendar table.month td.day .heatmap-shade12:hover {
+    background-color: rgb(16, 61, 0, 0.95);
+}
+.calendar table.month td.day .heatmap-shade13:hover {
+    background-color: rgb(16, 61, 0);
 }

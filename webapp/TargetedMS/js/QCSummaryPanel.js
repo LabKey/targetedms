@@ -52,18 +52,15 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                 container.parentOnly = containers.length == 1;
                 if (this.qcPlotPanel.qcIntrumentsArr) {
                     if (this.qcPlotPanel.qcIntrumentsArr.length > 1) {
-                        let msg = 'We recommend that each instrument use its own QC folder.';
-                        container.instrument = ' for multiple instruments: ';
-                        let separator = '';
+                        container.instrument = ' for multiple instruments: <ul>';
                         for (let index = 0; index < this.qcPlotPanel.qcIntrumentsArr.length; index++) {
                             let currentInstrument = this.qcPlotPanel.qcIntrumentsArr[index];
-                            container.instrument += separator + (currentInstrument ? currentInstrument : 'unknown instrument');
-                            separator = ', ';
+                            container.instrument += '<li>' + Ext4.util.Format.htmlEncode(currentInstrument ? currentInstrument : 'unknown instrument') + '</li>';
                         }
-                        container.instrument += '. ' + msg;
+                        container.instrument += '</ul> We recommend that each instrument use its own QC folder.';
                     }
                     else if (this.qcPlotPanel.qcIntrumentsArr.length === 1 && this.qcPlotPanel.qcIntrumentsArr[0]) {
-                        container.instrument = ' for ' + this.qcPlotPanel.qcIntrumentsArr[0];
+                        container.instrument = ' for ' + Ext4.util.Format.htmlEncode(this.qcPlotPanel.qcIntrumentsArr[0]);
                     }
                 }
                 this.add(this.getContainerSummaryView(container, hasChildren, width));
@@ -333,7 +330,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
             });
             html += '</table>';
             if (container.fileCount > sampleFiles.length) {
-                html += '<div class="qc-summary-text">Showing only the most recently imported samples. <a href="' + LABKEY.ActionURL.buildURL('targetedms', 'qcSummaryHistory.view', container.path) + '">View all</a></div>';
+                html += '<div class="qc-summary-text"><a href="' + LABKEY.ActionURL.buildURL('targetedms', 'qcSummaryHistory.view', container.path) + '">View all ' + container.fileCount + ' samples and utilization calendar <span class="fa fa-calendar"></span></a></div>';
             }
             var sampleFilesDiv = Ext4.get('qc-summary-samplefiles-' + container.id);
             sampleFilesDiv.update(html);

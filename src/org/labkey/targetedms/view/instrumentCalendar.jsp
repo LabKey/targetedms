@@ -27,11 +27,14 @@
 %>
 
 <script>
+(function() {
     let calendar = null;
     let heatMapSource = 'sampleCount';
     let maxSampleCount = 0;
     let maxOutliers = 0;
     let offlineAnnotationTypeId = -1;
+    let newestDataDate = new Date();
+    let sampleFiles = [];
 
     function editEvent(event) {
         $('#event-modal input[name="event-index"]').val(event.id);
@@ -49,7 +52,6 @@
 
         $('#event-modal input[name="event-description"]').val(event.annotation ? event.annotation.description : '');
         $('#event-modal input[name="event-start-date"]').val(startDate.getFullYear() + '-' + (startDate.getMonth() + 1 < 10 ? '0' : '') + (startDate.getMonth() + 1) + '-' + (startDate.getDate() < 10 ? '0' : '') + startDate.getDate());
-        $('#event-modal input[name="event-multi-date"]').prop('checked', endDate && endDate.getTime() !== startDate.getTime());
         $('#event-modal input[name="event-end-date"]').val(endDate.getFullYear() + '-' + (endDate.getMonth() + 1 < 10 ? '0' : '') + (endDate.getMonth() + 1) + '-' + (endDate.getDate() < 10 ? '0' : '') + endDate.getDate());
         $('#event-modal').modal();
     }
@@ -67,117 +69,124 @@
                 rows: [
                     event
                 ]
-            } ],
-            success: function() {
-                loadData(function(data) {
+            }],
+            success: function () {
+                // Don't reload the full data when only the annotations have been edited
+                loadData(function (data) {
                     calendar.setDataSource(data);
                     $('#event-modal').modal('hide');
-                })
+                }, true);
+            },
+            failure: function (errorInfo) {
+                $('#annotation-save-error').text('Error saving. ' + (errorInfo.exception ? errorInfo.exception : ''));
             }
-        })
+        });
     }
 
-    function loadData(callback) {
+    function loadData(callback, annotationsOnly) {
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetQCMetricOutliers.api'),
-            params: {sampleLimit: this.sampleLimit, includeAnnotations: true},
-            success: function (response) {
-                var parsed = JSON.parse(response.responseText);
-                if (parsed.sampleFiles) {
-                    const sampleFiles = parsed.sampleFiles;
-                    const annotations = parsed.instrumentDowntimeAnnotations;
-                    offlineAnnotationTypeId = parsed.offlineAnnotationTypeId;
-
-                    let firstDate;
-                    let lastDate;
-                    if (sampleFiles.length) {
-                        lastDate = dateOnly(sampleFiles[0].AcquiredTime);
-                        firstDate = dateOnly(sampleFiles[sampleFiles.length - 1].AcquiredTime);
-                    }
-
-                    if (annotations.length) {
-                        let firstAnnotation = dateOnly(annotations[0].date);
-                        let lastAnnotation = annotations[annotations.length - 1].enddate ?
-                                dateOnly(annotations[annotations.length - 1].enddate) :
-                                dateOnly(annotations[annotations.length - 1].date);
-                        if (!firstDate || firstAnnotation.getTime() < firstDate.getTime()) {
-                            firstDate = firstAnnotation;
-                        }
-                        if (!lastDate || lastAnnotation.getTime() > lastDate.getTime()) {
-                            lastDate = lastAnnotation;
-                        }
-                    }
-
-                    // Hack - problem with annotation being at the end of the range
-                    firstDate.setDate(firstDate.getDate() - 1);
-                    lastDate.setDate(lastDate.getDate() + 1);
-
-                    let data = [];
-
-                    while (firstDate && firstDate.getTime() <= lastDate.getTime()) {
-                        data.push({
-                            startDate: new Date(firstDate.getTime()),
-                            endDate: new Date(firstDate.getTime()),
-                            replicateNames: [],
-                            outliers: [],
-                            id: data.length
-                        });
-                        firstDate.setDate(firstDate.getDate() + 1);
-                    }
-
-                    let currentIndex = 0;
-
-                    for (let i = sampleFiles.length - 1; i >= 0; i--) {
-                        let sampleFile = sampleFiles[i];
-                        let d = dateOnly(sampleFile.AcquiredTime);
-                        while (data[currentIndex].startDate.getTime() !== d.getTime()) {
-                            currentIndex++;
-                        }
-                        let current = data[currentIndex];
-                        current.replicateNames.push(sampleFile.ReplicateName);
-                        current.outliers.push(sampleFile.IgnoreForAllMetric ? 0 : sampleFile.LeveyJennings);
-                    }
-
-                    currentIndex = 0;
-                    for (let i = 0; i < annotations.length; i++) {
-                        let annotation = annotations[i];
-                        let d = dateOnly(annotation.date);
-                        while (data[currentIndex].startDate.getTime() !== d.getTime()) {
-                            currentIndex++;
-                        }
-                        let current = data[currentIndex];
-                        current.annotation = annotation;
-
-                        if (annotation.enddate) {
-                            let endDate = dateOnly(annotation.enddate);
-                            let endDateIndex = currentIndex + 1;
-                            while (data[endDateIndex].startDate.getTime() <= endDate.getTime()) {
-                                data[endDateIndex++].annotation = annotation;
-                            }
-                        }
-                    }
-
-
-                    data.forEach(e => {
-                        let values = e.outliers;
-
-                        // Calculate the median
-                        values.sort(function(a,b){
-                            return a-b;
-                        });
-                        let half = Math.floor(values.length / 2);
-                        e.medianOutliers = values.length === 0 ? 0 : (values.length % 2 === 0 ? (values[half - 1] + values[half]) / 2.0 : values[half]);
-
-                        maxSampleCount = Math.max(maxSampleCount, e.replicateNames.length);
-                        maxOutliers = Math.max(maxOutliers, e.medianOutliers);
-                    });
-
-                    callback(data);
-                }
+            params: {
+                sampleLimit: this.sampleLimit,
+                includeAnnotations: true,
+                includeSampleInfo: annotationsOnly !== true
             },
-            failure: function(errorInfo) {
-                document.getElementById('calendar').innerText = 'Failed to load data';
-            }
+            success: function (response) {
+                const parsed = JSON.parse(response.responseText);
+                if (parsed.sampleFiles) {
+                    sampleFiles = parsed.sampleFiles;
+                }
+                const annotations = parsed.instrumentDowntimeAnnotations;
+                offlineAnnotationTypeId = parsed.offlineAnnotationTypeId;
+
+                let firstDate;
+                let lastDate;
+                if (sampleFiles.length) {
+                    lastDate = dateOnly(sampleFiles[0].AcquiredTime);
+                    firstDate = dateOnly(sampleFiles[sampleFiles.length - 1].AcquiredTime);
+                }
+
+                if (annotations.length) {
+                    let firstAnnotation = dateOnly(annotations[0].date);
+                    let lastAnnotation = annotations[annotations.length - 1].enddate ?
+                            dateOnly(annotations[annotations.length - 1].enddate) :
+                            dateOnly(annotations[annotations.length - 1].date);
+                    if (!firstDate || firstAnnotation.getTime() < firstDate.getTime()) {
+                        firstDate = firstAnnotation;
+                    }
+                    if (!lastDate || lastAnnotation.getTime() > lastDate.getTime()) {
+                        lastDate = lastAnnotation;
+                    }
+                }
+
+                // Hack - problem with annotation being at the end of the range
+                firstDate.setDate(firstDate.getDate() - 1);
+                lastDate.setDate(lastDate.getDate() + 1);
+
+                let data = [];
+
+                while (firstDate && firstDate.getTime() <= lastDate.getTime()) {
+                    data.push({
+                        startDate: new Date(firstDate.getTime()),
+                        endDate: new Date(firstDate.getTime()),
+                        replicateNames: [],
+                        outliers: [],
+                        id: data.length
+                    });
+                    firstDate.setDate(firstDate.getDate() + 1);
+                }
+
+                let currentIndex = 0;
+
+                for (let i = sampleFiles.length - 1; i >= 0; i--) {
+                    let sampleFile = sampleFiles[i];
+                    let d = dateOnly(sampleFile.AcquiredTime);
+                    while (data[currentIndex].startDate.getTime() !== d.getTime()) {
+                        currentIndex++;
+                    }
+                    let current = data[currentIndex];
+                    current.replicateNames.push(sampleFile.ReplicateName);
+                    current.outliers.push(sampleFile.IgnoreForAllMetric ? 0 : sampleFile.LeveyJennings);
+                }
+
+                currentIndex = 0;
+                for (let i = 0; i < annotations.length; i++) {
+                    let annotation = annotations[i];
+                    let d = dateOnly(annotation.date);
+                    while (data[currentIndex].startDate.getTime() !== d.getTime()) {
+                        currentIndex++;
+                    }
+                    let current = data[currentIndex];
+                    current.annotation = annotation;
+
+                    if (annotation.enddate) {
+                        let endDate = dateOnly(annotation.enddate);
+                        let endDateIndex = currentIndex + 1;
+                        while (data[endDateIndex].startDate.getTime() <= endDate.getTime()) {
+                            data[endDateIndex++].annotation = annotation;
+                        }
+                    }
+                }
+
+                data.forEach(e => {
+                    let values = e.outliers;
+
+                    // Calculate the median
+                    values.sort(function (a, b) {
+                        return a - b;
+                    });
+                    let half = Math.floor(values.length / 2);
+                    e.medianOutliers = values.length === 0 ? 0 : (values.length % 2 === 0 ? (values[half - 1] + values[half]) / 2.0 : values[half]);
+
+                    maxSampleCount = Math.max(maxSampleCount, e.replicateNames.length);
+                    maxOutliers = Math.max(maxOutliers, e.medianOutliers);
+                });
+
+                callback(data, parsed.displayConfig);
+            },
+            failure: LABKEY.Utils.getCallbackWrapper(function (errorInfo) {
+                $('#calendar').text('Failed loading data. ' + (errorInfo.exception ? errorInfo.exception : ''));
+            })
         });
     }
 
@@ -198,40 +207,52 @@
                 rows: [
                     event
                 ]
-            } ],
-            success: function() {
-                loadData(function(data) {
+            }],
+            success: function () {
+                // Don't reload the full data when only the annotations have been edited
+                loadData(function (data) {
                     calendar.setDataSource(data);
                     $('#event-modal').modal('hide');
-                })
+                }, true);
             },
-            failure: function() {
-                // TODO - handler
+            failure: function (errorInfo) {
+                $('#annotation-save-error').text('Error saving. ' + (errorInfo.exception ? errorInfo.exception : ''));
             }
         })
 
     }
 
-    let dateOnly = function(d) {
+    let dateOnly = function (d) {
         let dateTime = new Date(d);
         return new Date(dateTime.getFullYear(), dateTime.getMonth(), dateTime.getDate());
     }
 
-    loadData(function(data) {
-        let newestDate = data.length ? new Date(data[data.length - 1].startDate) : new Date();
-        let startDate = newestDate;
-        let monthsToShow = 1;
+    loadData(function (data, displayConfig) {
+        newestDataDate = data.length ? new Date(data[data.length - 1].startDate) : new Date();
+        let monthsToShow = displayConfig && displayConfig.calendarMonthsToShow ? displayConfig.calendarMonthsToShow : 1;
 
-        document.getElementById('monthNumberSelect').value = monthsToShow;
-        document.getElementById('heatMapSource').value = heatMapSource;
+        let startDate = new Date(newestDataDate);
+        startDate.setMonth(startDate.getMonth() - monthsToShow + 1);
+
+        heatMapSource = displayConfig && displayConfig.heatMapDataSource ? displayConfig.heatMapDataSource : 'sampleCount';
+
+        $('#monthNumberSelect').val(monthsToShow);
+        $('#heatMapSource').val(heatMapSource);
+
         updateMonths();
+        updateHeatmap();
 
+        $('#monthNumberSelect').on('change', updateMonths);
+        $('#heatMapSource').on('change', updateHeatmap);
+
+
+        monthNumberSelect
         calendar = new Calendar('#calendar', {
             startDate: startDate,
             style: 'custom',
             numberMonthsDisplayed: monthsToShow,
             enableRangeSelection: true,
-            selectRange: function(e) {
+            selectRange: function (e) {
                 editEvent({
                     startDate: e.startDate,
                     endDate: e.endDate,
@@ -239,8 +260,8 @@
                     id: e.events.length ? e.events[0].id : null
                 });
             },
-            mouseOnDay: function(e) {
-                if(e.events.length > 0) {
+            mouseOnDay: function (e) {
+                if (e.events.length > 0) {
                     let content = '';
 
                     let separator = '';
@@ -253,7 +274,7 @@
                             content += '<div>No samples</div>';
                         }
                         else {
-                            content += '<div>' + e.events[i].replicateNames.length + ' Sample' + (e.events[i].replicateNames.length === 1 ? '' : 's') + ':</div>';
+                            content += '<div>' + e.events[i].replicateNames.length + ' Sample' + (e.events[i].replicateNames.length === 1 ? '' : 's') + ', ' + e.events[i].medianOutliers + ' Median Outliers</div>';
                         }
                         for (let j in e.events[i].replicateNames) {
                             content += '<div class="event-location">' + LABKEY.Utils.encodeHtml(e.events[i].replicateNames[j]) + ' (' + e.events[i].outliers[j] + ' outliers)</div>';
@@ -264,43 +285,42 @@
                     $(e.element).popover({
                         trigger: 'manual',
                         container: 'body',
-                        html:true,
+                        html: true,
                         content: content
                     });
 
                     $(e.element).popover('show');
                 }
             },
-            mouseOutDay: function(e) {
+            mouseOutDay: function (e) {
                 if (e.events.length > 0) {
                     $(e.element).popover('hide');
                 }
             },
-            dayContextMenu: function(e) {
+            dayContextMenu: function (e) {
                 $(e.element).popover('hide');
             },
             dataSource: data
         });
 
-        $('#save-event').click(function() {
+        $('#save-event').click(function () {
             saveEvent();
         });
 
-        $('#delete-event').click(function() {
+        $('#delete-event').click(function () {
             deleteEvent();
         });
 
-
-        calendar.setCustomDayRenderer(function(element, date) {
+        calendar.setCustomDayRenderer(function (element, date) {
             let events = calendar.getEvents(date);
             if (events && events.length) {
                 let e = events[0];
 
-                let value = heatMapSource === 'sampleCount' ? e.replicateNames.length : e.medianOutliers;
-                if (value > 0) {
-                    let divisor = heatMapSource === 'sampleCount' ? maxSampleCount : maxOutliers;
-
-                    element.classList.add('shade' + (Math.round((value / divisor) * 19.0)));
+                if (e.replicateNames.length > 0) {
+                    let value = heatMapSource === 'sampleCount' ? e.replicateNames.length : Math.max(e.medianOutliers, 1);
+                    let divisor = heatMapSource === 'sampleCount' ? maxSampleCount : Math.max(maxOutliers, 1);
+                    element.classList.add('heatmap-shaded');
+                    element.classList.add('heatmap-shade' + (Math.round((value / divisor) * 13.0)));
                 }
                 if (e.annotation) {
                     element.classList.add('offline');
@@ -309,40 +329,131 @@
         });
     });
 
-    function updateMonths()
-    {
-        let monthCount = document.getElementById('monthNumberSelect').value;
-        document.getElementById('calendarWrapper').className = 'months-' + monthCount;
+    function saveOptions(options) {
+        if (!LABKEY.user.isGuest) {
+            LABKEY.Ajax.request({
+                url: LABKEY.ActionURL.buildURL('targetedms', 'leveyJenningsPlotOptions.api'),
+                method: 'POST',
+                params: options
+            });
+        }
+    }
+
+    function updateMonths() {
+        let monthCount = parseInt($('#monthNumberSelect').val());
+        $('#calendarWrapper').attr('class', 'months-' + monthCount);
+
+        // Initial invocation is before the calendar is initialized
         if (calendar) {
+            let originalMonthCount = calendar.getNumberMonthsDisplayed();
+
+            let startDate = null;
+
+            if (originalMonthCount < monthCount) {
+                startDate = new Date(calendar.getStartDate());
+                let endDate = new Date(calendar.getStartDate());
+                endDate.setMonth(endDate.getMonth() + monthCount - 1);
+                while (endDate.getTime() > newestDataDate.getTime()) {
+                    endDate.setMonth(endDate.getMonth() - 1);
+                    startDate.setMonth(startDate.getMonth() - 1);
+                }
+            }
+
             calendar.setNumberMonthsDisplayed(monthCount);
+            if (startDate) {
+                calendar.setStartDate(startDate);
+            }
+            saveOptions({
+                calendarMonthsToShow: monthCount
+            });
         }
     }
 
     function updateHeatmap() {
-        heatMapSource = document.getElementById('heatMapSource').value;
-        calendar.render();
+        heatMapSource = $('#heatMapSource').val();
+        if (heatMapSource === 'sampleCount') {
+            $('#heatmapLegendMax').text(maxSampleCount + ' sample' + (maxSampleCount === 1 ? '' : 's'));
+        }
+        else {
+            $('#heatmapLegendMax').text(maxOutliers + ' outlier' + (maxOutliers === 1 ? '' : 's'));
+        }
+
+        if (calendar) {
+            calendar.render();
+            saveOptions({
+                heatmapDataSource: heatMapSource
+            });
+        }
     }
+})();
 </script>
 
-<div>
+<div style="text-align: center; width: 100%">
     <label for="monthNumberSelect">Display:</label>
-    <select id="monthNumberSelect" onchange="updateMonths()">
+    <select id="monthNumberSelect">
         <option value="1">1 month</option>
         <option value="4">4 months</option>
         <option value="12">12 months</option>
     </select>
     &nbsp;&nbsp;
-    <label for="heatMapSource">Heat map data source:</label>
-    <select id="heatMapSource" onchange="updateHeatmap()">
+    <label style="padding-left: 2em" for="heatMapSource">Heat map data source:</label>
+    <select id="heatMapSource">
         <option value="sampleCount">Sample count</option>
-        <option value="outliers">Outliers</option>
+        <option value="outliers">Median outliers</option>
     </select>
+
+    <div class="calendar months-12">
+        <div class="months-container">
+            <table class="month">
+            </table>
+        </div>
+    </div>
 </div>
 
-<div id="calendarWrapper">
-    <div id="calendar"></div>
+<div id="calendarWrapper" style="min-height: 300px;">
+    <div id="calendar">
+        Loading...
+    </div>
 </div>
 
+<div class="heatmap-footer-container">
+    <div class="heatmap-legend-container">
+        <div class="heatmap-legend-label" style="text-align: right">No data</div>
+        <div class="heatmap-legend">
+            <div class="heatmap-legend-element"></div>
+            <div class="heatmap-legend-element heatmap-shade0"></div>
+            <div class="heatmap-legend-element heatmap-shade3"></div>
+            <div class="heatmap-legend-element heatmap-shade6"></div>
+            <div class="heatmap-legend-element heatmap-shade9"></div>
+            <div class="heatmap-legend-element heatmap-shade13"></div>
+        </div>
+        <div class="heatmap-legend-label" id="heatmapLegendMax">Total samples</div>
+    </div>
+
+    <div class="heatmap-legend-container">
+        Online day:
+        <div class="calendar">
+            <div class="calendar-month">
+                <table class="month">
+                    <tr>
+                        <td class="day"><div class="day-content">13</div></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        Offline day:
+        <div class="calendar">
+            <div class="calendar-month">
+                <table class="month">
+                    <tr>
+                        <td class="day"><div class="day-content offline">14</div></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        Toggle by clicking on a day or click/dragging multiple days.
+    </div>
+</div>
 <div class="modal fade" id="event-modal">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -357,28 +468,25 @@
                     <input type="hidden" name="event-index">
                     <input type="hidden" name="event-annotationId">
                     <div class="form-group row">
-                        <label for="event-description" class="col-sm-4 control-label">Description</label>
+                        <label for="event-description" class="col-sm-4 control-label">Description (required)</label>
                         <div class="col-sm-8">
                             <input id="event-description" name="event-description" type="text" size="30" class="form-control">
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label for="min-date" class="col-sm-4 control-label">Date</label>
+                        <label for="min-date" class="col-sm-4 control-label">Date (required)</label>
                         <div class="col-sm-8">
                             <input id="min-date" name="event-start-date" type="text" class="form-control">
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label for="min-date" class="col-sm-4 control-label">Multi-day</label>
-                        <div class="col-sm-8">
-                            <input id="multi-date" name="event-multi-date" type="checkbox" class="form-control">
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <label for="end-date" class="col-sm-4 control-label">End Date</label>
+                        <label for="end-date" class="col-sm-4 control-label">End Date (optional)</label>
                         <div class="col-sm-8">
                             <input id="end-date" name="event-end-date" type="text" class="form-control">
                         </div>
+                    </div>
+                    <div class="form-group row" >
+                        <div class="col-sm-12 labkey-error" style="min-height: 2em;" id="annotation-save-error"></div>
                     </div>
                 </form>
             </div>
@@ -389,6 +497,4 @@
             </div>
         </div>
     </div>
-</div>
-<div id="context-menu">
 </div>

@@ -702,7 +702,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public static class  LeveyJenningsPlotOptionsAction extends MutatingApiAction<LeveyJenningsPlotOptions>
+    public static class LeveyJenningsPlotOptionsAction extends MutatingApiAction<LeveyJenningsPlotOptions>
     {
         @Override
         public Object execute(LeveyJenningsPlotOptions form, BindException errors)
@@ -729,7 +729,7 @@ public class TargetedMSController extends SpringActionController
                 }
                 else
                 {
-                    if(properties.containsKey("selectedAnnotations") && (ReplicateManager.getReplicateAnnotationNameValues(getContainer()).size() == 0))
+                    if (properties.containsKey("selectedAnnotations") && (ReplicateManager.getReplicateAnnotationNameValues(getContainer()).size() == 0))
                     {
                         // If there are no replicate annotations in this folder anymore, remove any saved annotation filters
                         // Issue 35726: No way to clear previously saved replicate annotation values in QC plots if folder no longer contains annotations
@@ -809,6 +809,8 @@ public class TargetedMSController extends SpringActionController
         private Boolean _largePlot;
         public List<String> _selectedAnnotations;
         private Integer _trailingRuns;
+        private Integer _calendarMonthsToShow;
+        private String _heatmapDataSource;
 
         public Map<String, String> getAsMapOfStrings()
         {
@@ -835,6 +837,10 @@ public class TargetedMSController extends SpringActionController
                 valueMap.put("selectedAnnotations", getSelectedAnnotationsString());
             if (_trailingRuns != null)
                 valueMap.put("trailingRuns", Integer.toString(_trailingRuns));
+            if (_calendarMonthsToShow != null)
+                valueMap.put("calendarMonthsToShow", Integer.toString(_calendarMonthsToShow));
+            if (_heatmapDataSource != null)
+                valueMap.put("heatMapDataSource", _heatmapDataSource);
             // note: start and end date handled separately since they can be null and we want to persist that
             return valueMap;
         }
@@ -937,6 +943,26 @@ public class TargetedMSController extends SpringActionController
         public void setTrailingRuns(Integer trailingRuns)
         {
             _trailingRuns = trailingRuns;
+        }
+
+        public Integer getCalendarMonthsToShow()
+        {
+            return _calendarMonthsToShow;
+        }
+
+        public void setCalendarMonthsToShow(Integer calendarMonthsToShow)
+        {
+            _calendarMonthsToShow = calendarMonthsToShow;
+        }
+
+        public String getHeatmapDataSource()
+        {
+            return _heatmapDataSource;
+        }
+
+        public void setHeatmapDataSource(String heatmapDataSource)
+        {
+            _heatmapDataSource = heatmapDataSource;
         }
     }
 
@@ -1122,7 +1148,7 @@ public class TargetedMSController extends SpringActionController
         public ModelAndView getView(Object o, BindException errors)
         {
             JspView<?> calendarView = new JspView<>("/org/labkey/targetedms/view/instrumentCalendar.jsp");
-            calendarView.setTitle("Calendar View");
+            calendarView.setTitle("Utilization Calendar");
             calendarView.setFrame(WebPartView.FrameType.PORTAL);
             QCSummaryWebPart summaryView = new QCSummaryWebPart(getViewContext(), null);
             return new VBox(calendarView, summaryView);
@@ -1139,6 +1165,7 @@ public class TargetedMSController extends SpringActionController
     {
         private Integer _sampleLimit;
         private boolean _includeAnnotations = false;
+        private boolean _includeSampleInfo = true;
 
         public Integer getSampleLimit()
         {
@@ -1159,6 +1186,16 @@ public class TargetedMSController extends SpringActionController
         {
             _sampleLimit = sampleLimit;
         }
+
+        public boolean isIncludeSampleInfo()
+        {
+            return _includeSampleInfo;
+        }
+
+        public void setIncludeSampleInfo(boolean includeSampleInfo)
+        {
+            _includeSampleInfo = includeSampleInfo;
+        }
     }
 
     @RequiresPermission(ReadPermission.class)
@@ -1172,25 +1209,29 @@ public class TargetedMSController extends SpringActionController
 
             TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
 
-            List<QCMetricConfiguration> enabledQCMetricConfigurations = TargetedMSManager.getEnabledQCMetricConfigurations(schema);
-
-            if (enabledQCMetricConfigurations.isEmpty())
+            if (form.isIncludeSampleInfo())
             {
-                response.put("outliers", "no enabled qc configurations");
-                return response;
+                List<QCMetricConfiguration> enabledQCMetricConfigurations = TargetedMSManager.getEnabledQCMetricConfigurations(schema);
+
+                if (enabledQCMetricConfigurations.isEmpty())
+                {
+                    response.put("outliers", "no enabled qc configurations");
+                }
+                else
+                {
+                    List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
+                    Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
+
+                    List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(schema, enabledQCMetricConfigurations, null, null, Collections.emptyList(), true, false);
+
+                    Map<GuideSetKey, GuideSetStats> stats = OutlierGenerator.get().getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+
+                    List<SampleFileInfo> sampleFiles = OutlierGenerator.get().getSampleFiles(rawMetricDataSets, stats, metricMap, schema, form.getSampleLimit());
+
+                    response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toJSON).collect(Collectors.toList()));
+                    response.put("guideSets", guideSets.stream().map(x -> x.toJSON(rawMetricDataSets, metricMap, stats)).collect(Collectors.toList()));
+                }
             }
-
-            List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
-            Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
-
-            List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(schema, enabledQCMetricConfigurations, null, null, Collections.emptyList(), true, false);
-
-            Map<GuideSetKey, GuideSetStats> stats = OutlierGenerator.get().getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
-
-            List<SampleFileInfo> sampleFiles = OutlierGenerator.get().getSampleFiles(rawMetricDataSets, stats, metricMap, schema, form.getSampleLimit());
-
-            response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toJSON).collect(Collectors.toList()));
-            response.put("guideSets", guideSets.stream().map(x -> x.toJSON(rawMetricDataSets, metricMap, stats)).collect(Collectors.toList()));
 
             if (form.isIncludeAnnotations())
             {
@@ -1202,11 +1243,20 @@ public class TargetedMSController extends SpringActionController
                 response.put("instrumentDowntimeAnnotations", ts.getMapCollection());
 
                 TableInfo annotTypesTable = TargetedMSManager.getTableInfoQCAnnotationType();
+                SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("Name"), QCAnnotationTypeTable.INSTRUMENT_DOWNTIME);
+                filter.addCondition(FieldKey.fromParts("Container"), ContainerManager.getSharedContainer());
                 TableSelector ts2 = new TableSelector(annotTypesTable,
                         Collections.singleton("Id"),
-                        new SimpleFilter(FieldKey.fromParts("Name"), QCAnnotationTypeTable.INSTRUMENT_DOWNTIME),
+                        filter,
                         null);
                 response.put("offlineAnnotationTypeId", ts2.getObject(Integer.class));
+            }
+
+            PropertyManager.PropertyMap properties = PropertyManager.getWritableProperties(getUser(), getContainer(), QCFolderConstants.CATEGORY, false);
+            if (properties != null)
+            {
+                Map<String, Object> toSend = new HashMap<>(properties);
+                response.put("displayConfig", toSend);
             }
 
             return response;
