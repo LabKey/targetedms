@@ -155,40 +155,6 @@ public enum PanoramaQCSettings
                     return insertData(ctx.getUser(), ctx.getContainer(), dataWithoutDuplicates, errors, qus, getSettingsFileName(), getTableName());
                 }
             },
-    REPLICATE_ANNOTATION (TargetedMSSchema.TABLE_REPLICATE_ANNOTATION, QCFolderConstants.REPLICATE_ANNOTATION_FILE_NAME)
-            {
-                @Override
-                public void exportSettings(VirtualFile vf, Container container, User user) throws Exception
-                {
-                    TargetedMSSchema schema = new TargetedMSSchema(user, container);
-                    TableInfo ti = getTableInfo(user, container, null);
-
-                    SQLFragment sql = new SQLFragment("SELECT replicateAnnotation.ReplicateId.Name AS ReplicateId, runs.FileName AS File, replicateAnnotation.Name, replicateAnnotation.Value, replicateAnnotation.Source FROM ")
-                            .append(ti, "replicateAnnotation")
-                            .append(" INNER JOIN ")
-                            .append(TargetedMSManager.getTableInfoReplicate(), "replicate")
-                            .append(" ON replicateAnnotation.replicateId = replicate.Id")
-                            .append(" INNER JOIN ")
-                            .append(TargetedMSManager.getTableInfoRuns(), "runs")
-                            .append(" ON replicate.RunId = runs.Id")
-                            .append(" WHERE Source != 'Skyline' ");
-
-                    try (Results results = QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true))
-                    {
-                        exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
-                    }
-                }
-
-                @Override
-                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws Exception
-                {
-                    List<Map<String, Object>> tsvData = getTsvData(panoramaQCDir, getSettingsFileName());
-                    List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
-
-                    tsvData.forEach(row -> getReplicateDataWithoutDuplicates(getSettingsFileName(), getTableName(), ctx, ti, row, dataWithoutDuplicates));
-                    return insertData(ctx.getUser(), ctx.getContainer(), dataWithoutDuplicates, errors, qus, getSettingsFileName(), getTableName());
-                }
-            },
     QC_METRIC_EXCLUSION (TargetedMSSchema.TABLE_QC_METRIC_EXCLUSION, QCFolderConstants.QC_METRIC_EXCLUSION_FILE_NAME)
             {
                 @Override
