@@ -2414,7 +2414,7 @@ public class TargetedMSManager
         executor.execute("CREATE " + getSqlDialect().getTempTableKeyword() + " TABLE " +
                 moleculeGroupingsTableName + "(Grouping " + (getSqlDialect().isSqlServer() ? "NVARCHAR" : "VARCHAR") + "(300), GeneralMoleculeId BIGINT, PeptideGroupId BIGINT)");
         executor.execute("CREATE " + getSqlDialect().getTempTableKeyword() + " TABLE " +
-                areasTableName + "(Grouping " + (getSqlDialect().isSqlServer() ? "NVARCHAR" : "VARCHAR") + "(300), PeptideGroupId BIGINT, SampleFileId BIGINT, Area REAL);");
+                areasTableName + "(Grouping " + (getSqlDialect().isSqlServer() ? "NVARCHAR" : "VARCHAR") + "(300), PeptideGroupId BIGINT, SampleFileId BIGINT, Area REAL)");
 
         // Populate the temp tables
         SQLFragment precursorGroupingsSQL = new SQLFragment("INSERT INTO ").append(precursorGroupingsTableName).append("(Grouping, PrecursorId, PeptideGroupId)\n")
