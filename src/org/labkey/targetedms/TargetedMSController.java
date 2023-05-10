@@ -4437,7 +4437,9 @@ public class TargetedMSController extends SpringActionController
             // run anyway
             settings.setContainerFilterName(null);
             settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("PeptideGroupId", "RunId"), form.getId()));
-            settings.setBaseSort(new Sort("PeptideGroupId, Sequence"));
+            // Issue 47668 - need to sort on PeptideGroupId, Sequence, and SiteLocation to make sure peptides
+            // with multiple modification sites have them reported in the right order
+            settings.setBaseSort(new Sort("PeptideGroupId, Sequence, SiteLocation"));
             TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
             QueryView result = schema.createView(getViewContext(), settings, errors);
             result.setShadeAlternatingRows(false);
