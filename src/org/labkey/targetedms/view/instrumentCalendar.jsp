@@ -83,6 +83,16 @@
         });
     }
 
+    function addEvent(data, date) {
+        data.push({
+            startDate: new Date(date.getTime()),
+            endDate: new Date(date.getTime()),
+            replicateNames: [],
+            outliers: [],
+            id: data.length
+        });
+    }
+
     function loadData(callback, annotationsOnly) {
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetQCMetricOutliers.api'),
@@ -99,8 +109,8 @@
                 const annotations = parsed.instrumentDowntimeAnnotations;
                 offlineAnnotationTypeId = parsed.offlineAnnotationTypeId;
 
-                let firstDate;
-                let lastDate;
+                let firstDate = dateOnly(new Date());
+                let lastDate = dateOnly(new Date());
                 if (sampleFiles.length) {
                     lastDate = dateOnly(sampleFiles[0].AcquiredTime);
                     firstDate = dateOnly(sampleFiles[sampleFiles.length - 1].AcquiredTime);
@@ -126,13 +136,7 @@
                 let data = [];
 
                 while (firstDate && firstDate.getTime() <= lastDate.getTime()) {
-                    data.push({
-                        startDate: new Date(firstDate.getTime()),
-                        endDate: new Date(firstDate.getTime()),
-                        replicateNames: [],
-                        outliers: [],
-                        id: data.length
-                    });
+                    addEvent(data, firstDate);
                     firstDate.setDate(firstDate.getDate() + 1);
                 }
 
@@ -143,6 +147,9 @@
                     let d = dateOnly(sampleFile.AcquiredTime);
                     while (data[currentIndex].startDate.getTime() !== d.getTime()) {
                         currentIndex++;
+                        if (!data[currentIndex]) {
+                            addEvent(data, d);
+                        }
                     }
                     let current = data[currentIndex];
                     current.replicateNames.push(sampleFile.ReplicateName);
@@ -155,15 +162,25 @@
                     let d = dateOnly(annotation.date);
                     while (data[currentIndex].startDate.getTime() !== d.getTime()) {
                         currentIndex++;
+                        if (!data[currentIndex]) {
+                            addEvent(data, );
+                        }
                     }
                     let current = data[currentIndex];
                     current.annotation = annotation;
 
                     if (annotation.enddate) {
                         let endDate = dateOnly(annotation.enddate);
-                        let endDateIndex = currentIndex + 1;
+                        let endDateIndex = currentIndex;
+                        if (!data[endDateIndex]) {
+                            addEvent(data, endDate);
+                        }
                         while (data[endDateIndex].startDate.getTime() <= endDate.getTime()) {
-                            data[endDateIndex++].annotation = annotation;
+                            data[endDateIndex].annotation = annotation;
+                            endDateIndex++;
+                            if (!data[endDateIndex]) {
+                                addEvent(data, endDate);
+                            }
                         }
                     }
                 }
@@ -251,7 +268,7 @@
             startDate: startDate,
             style: 'custom',
             numberMonthsDisplayed: monthsToShow,
-            enableRangeSelection: true,
+            enableRangeSelection: LABKEY.user.canInsert,
             selectRange: function (e) {
                 editEvent({
                     startDate: e.startDate,
