@@ -16,6 +16,7 @@
 package org.labkey.targetedms.query;
 
 import org.labkey.api.data.ContainerFilter;
+import org.labkey.api.gwt.client.AuditBehaviorType;
 import org.labkey.api.query.QueryForeignKey;
 import org.labkey.api.query.SimpleUserSchema;
 import org.labkey.targetedms.TargetedMSManager;
@@ -41,5 +42,6 @@ public class QCAnnotationTable extends SimpleUserSchema.SimpleTable<TargetedMSSc
 
         appendFormatLabel(getMutableColumn("Date"));
         appendFormatLabel(getMutableColumn("EndDate"));
+        setAuditBehavior(AuditBehaviorType.DETAILED);
     }
 }
