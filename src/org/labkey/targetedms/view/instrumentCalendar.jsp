@@ -53,6 +53,7 @@
         $('#event-modal input[name="event-description"]').val(event.annotation ? event.annotation.description : '');
         $('#event-modal input[name="event-start-date"]').val(startDate.getFullYear() + '-' + (startDate.getMonth() + 1 < 10 ? '0' : '') + (startDate.getMonth() + 1) + '-' + (startDate.getDate() < 10 ? '0' : '') + startDate.getDate());
         $('#event-modal input[name="event-end-date"]').val(endDate.getFullYear() + '-' + (endDate.getMonth() + 1 < 10 ? '0' : '') + (endDate.getMonth() + 1) + '-' + (endDate.getDate() < 10 ? '0' : '') + endDate.getDate());
+        $('#annotation-save-error').text('');
         $('#event-modal').modal();
     }
 
@@ -375,6 +376,11 @@
                     startDate.setMonth(startDate.getMonth() - 1);
                 }
             }
+            else {
+                let endDate = new Date(calendar.getStartDate());
+                endDate.setMonth(endDate.getMonth() + originalMonthCount - monthCount);
+                startDate = endDate;
+            }
 
             calendar.setNumberMonthsDisplayed(monthCount);
             if (startDate) {
@@ -485,19 +491,19 @@
                     <input type="hidden" name="event-index">
                     <input type="hidden" name="event-annotationId">
                     <div class="form-group row">
-                        <label for="event-description" class="col-sm-4 control-label">Description (required)</label>
+                        <label for="event-description" class="col-sm-4 control-label" title="Required field">Description *</label>
                         <div class="col-sm-8">
                             <input id="event-description" name="event-description" type="text" size="30" class="form-control">
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label for="min-date" class="col-sm-4 control-label">Date (required)</label>
+                        <label for="min-date" class="col-sm-4 control-label" title="Required field">Date *</label>
                         <div class="col-sm-8">
                             <input id="min-date" name="event-start-date" type="text" class="form-control">
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label for="end-date" class="col-sm-4 control-label">End Date (optional)</label>
+                        <label for="end-date" class="col-sm-4 control-label">End Date</label>
                         <div class="col-sm-8">
                             <input id="end-date" name="event-end-date" type="text" class="form-control">
                         </div>
