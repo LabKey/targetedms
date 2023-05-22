@@ -145,7 +145,7 @@ public class TargetedMSQCFolderImportExport extends TargetedMSPremiumTest
         clickButton("Submit");
 
         table = new DataRegionTable("query", getDriver());
-        Assert.assertEquals("QC annotation type was not added correctly", 4, table.getDataRowCount());
+        Assert.assertEquals("QC annotation type was not added correctly", 5, table.getDataRowCount());
     }
 
     private void excludePrecursors(String projectName, int rowNum)

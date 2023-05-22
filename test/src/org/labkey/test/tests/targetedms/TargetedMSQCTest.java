@@ -493,11 +493,14 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         // check a few attributes of the multi-series all peptide plot
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
-        count = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of points for multi-series all peptide plot", pointsPerSeries * 2 * PRECURSORS.length, count);
+        // Check the total number of points plotted. Could someday validate in-range vs outliers separately
+        int closedCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
+        int openCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
+        assertEquals("Unexpected number of points for multi-series all peptide plot", pointsPerSeries * 2 * PRECURSORS.length, openCount + closedCount);
         qcPlotsWebPart.setGroupXAxisValuesByDate(true);
-        count = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of points for multi-series all peptide plot", pointsPerSeries * 2 * PRECURSORS.length, count);
+        closedCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
+        openCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
+        assertEquals("Unexpected number of points for multi-series all peptide plot", pointsPerSeries * 2 * PRECURSORS.length, openCount + closedCount);
         assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Annotations", true));
         assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Change", false), 4);
         assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Transition Area", true));
