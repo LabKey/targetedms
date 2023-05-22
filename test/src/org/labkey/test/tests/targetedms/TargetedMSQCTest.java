@@ -496,11 +496,13 @@ public class TargetedMSQCTest extends TargetedMSTest
         // Check the total number of points plotted. Could someday validate in-range vs outliers separately
         int closedCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
         int openCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of points for multi-series all peptide plot", pointsPerSeries * 2 * PRECURSORS.length, openCount + closedCount);
+        int triangleCount = qcPlotsWebPart.getPointElements("d", SvgShapes.TRIANGLE.getPathPrefix(), true).size();
+        assertEquals("Unexpected number of points for multi-series all peptide plot", pointsPerSeries * 2 * PRECURSORS.length, openCount + closedCount + triangleCount);
         qcPlotsWebPart.setGroupXAxisValuesByDate(true);
         closedCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
         openCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of points for multi-series all peptide plot", pointsPerSeries * 2 * PRECURSORS.length, openCount + closedCount);
+        triangleCount = qcPlotsWebPart.getPointElements("d", SvgShapes.TRIANGLE.getPathPrefix(), true).size();
+        assertEquals("Unexpected number of points for multi-series all peptide plot", pointsPerSeries * 2 * PRECURSORS.length, openCount + closedCount + triangleCount);
         assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Annotations", true));
         assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Change", false), 4);
         assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Transition Area", true));
