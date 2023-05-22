@@ -52,18 +52,15 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                 container.parentOnly = containers.length == 1;
                 if (this.qcPlotPanel.qcIntrumentsArr) {
                     if (this.qcPlotPanel.qcIntrumentsArr.length > 1) {
-                        let msg = 'We recommend that each instrument use its own QC folder.';
-                        container.instrument = ' for multiple instruments: ';
-                        let separator = '';
+                        container.instrument = ' for multiple instruments: <ul>';
                         for (let index = 0; index < this.qcPlotPanel.qcIntrumentsArr.length; index++) {
                             let currentInstrument = this.qcPlotPanel.qcIntrumentsArr[index];
-                            container.instrument += separator + (currentInstrument ? currentInstrument : 'unknown instrument');
-                            separator = ', ';
+                            container.instrument += '<li>' + Ext4.util.Format.htmlEncode(currentInstrument ? currentInstrument : 'unknown instrument') + '</li>';
                         }
-                        container.instrument += '. ' + msg;
+                        container.instrument += '</ul> We recommend that each instrument use its own QC folder.';
                     }
                     else if (this.qcPlotPanel.qcIntrumentsArr.length === 1 && this.qcPlotPanel.qcIntrumentsArr[0]) {
-                        container.instrument = ' for ' + this.qcPlotPanel.qcIntrumentsArr[0];
+                        container.instrument = ' for ' + Ext4.util.Format.htmlEncode(this.qcPlotPanel.qcIntrumentsArr[0]);
                     }
                 }
                 this.add(this.getContainerSummaryView(container, hasChildren, width));
@@ -298,7 +295,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
         var container = params.container;
             var html = '<table class="table-condensed labkey-data-region-legacy labkey-show-borders">';
             html += '<thead><tr><td colspan="2"/><td colspan="4" style="text-align: center" class="labkey-column-header">Outliers</td></tr></thead>';
-            html += '<thead><tr><td class="labkey-column-header">Replicate Name</td><td class="labkey-column-header">Acquired</td><td class="labkey-column-header">Levey-Jennings</td><td class="labkey-column-header">Moving Range</td><td class="labkey-column-header">CUSUM</td><td class="labkey-column-header">Total</td></tr></thead>';
+            html += '<thead><tr><td class="labkey-column-header">Replicate Name</td><td class="labkey-column-header">Acquired</td><td class="labkey-column-header"><div class="fa fa-times-rectangle qc-error" title="Error-level outliers"></div> Levey-Jennings</td><td class="labkey-column-header"><div class="fa fa-warning qc-warning" title="Warning-level outliers"></div> Moving Range</td><td class="labkey-column-header"><div class="fa fa-info-circle qc-info" title="Info-level outliers"></div> CUSUM</td><td class="labkey-column-header">Total</td></tr></thead>';
             var sampleFiles = params.sampleFiles;
             Ext4.iterate(sampleFiles, function (sampleFile) {
                 // create a new div id for each sampleFile to use for the hover details callout
@@ -306,9 +303,19 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
 
                 var totalOutliers = sampleFile.LeveyJennings + sampleFile.mR + sampleFile.CUSUMm + sampleFile.CUSUMv;
 
-                var iconCls = !sampleFile.IgnoreForAllMetric ? (totalOutliers === 0 ? 'fa-file-o qc-correct' : 'fa-file qc-error') : 'fa-file-o qc-none';
+                var iconCls;
+                if (sampleFile.IgnoreForAllMetric)
+                    iconCls = 'fa-ban qc-none';
+                else if (sampleFile.LeveyJennings > 0)
+                    iconCls = 'fa-times-rectangle qc-error';
+                else if (sampleFile.mR > 0)
+                    iconCls = 'fa-warning qc-warning';
+                else if (sampleFile.CUSUMm + sampleFile.CUSUMv > 0)
+                    iconCls = 'fa-info-circle qc-info';
+                else
+                    iconCls = 'fa-check qc-correct';
                 html += '<tr id="' + sampleFile.calloutId + '"><td><div class="sample-file-item">'
-                        + '<span class="fa ' + iconCls + '"></span> ' + Ext4.util.Format.htmlEncode(sampleFile.ReplicateName) + '</div></td><td><div class="sample-file-item-acquired">' + Ext4.util.Format.date(sampleFile.AcquiredTime ? new Date(sampleFile.AcquiredTime) : null, LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s') + '</div></td>';
+                        + '<span class="fa ' + iconCls + '" style="width: 1em; text-align: center"></span> ' + Ext4.util.Format.htmlEncode(sampleFile.ReplicateName) + '</div></td><td><div class="sample-file-item-acquired">' + Ext4.util.Format.date(sampleFile.AcquiredTime ? new Date(sampleFile.AcquiredTime) : null, LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s') + '</div></td>';
 
                 if (sampleFile.IgnoreForAllMetric) {
                     html += '<td colspan="4"><div class="sample-file-item-total-outliers" style="text-align: center">excluded</div></td>';
@@ -323,7 +330,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
             });
             html += '</table>';
             if (container.fileCount > sampleFiles.length) {
-                html += '<div class="qc-summary-text">Showing only the most recently imported samples. <a href="' + LABKEY.ActionURL.buildURL('targetedms', 'qcSummaryHistory.view', container.path) + '">View all</a></div>';
+                html += '<div class="qc-summary-text"><a href="' + LABKEY.ActionURL.buildURL('targetedms', 'qcSummaryHistory.view', container.path) + '">View all ' + container.fileCount + ' samples and utilization calendar <span class="fa fa-calendar"></span></a></div>';
             }
             var sampleFilesDiv = Ext4.get('qc-summary-samplefiles-' + container.id);
             sampleFilesDiv.update(html);

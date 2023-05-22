@@ -44,11 +44,19 @@
     font-size: 15px;
 }
 .qc-error {
-    color: red;
+    color: darkred;
+    font-size: 15px;
+}
+.qc-warning {
+    color: goldenrod;
     font-size: 15px;
 }
 .qc-correct {
-    color: green;
+    color: darkgreen;
+    font-size: 15px;
+}
+.qc-info {
+    color: darkblue;
     font-size: 15px;
 }
 

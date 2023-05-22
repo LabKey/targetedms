@@ -1,0 +1,152 @@
+.months-4 table.month td.day .day-content {
+    width: 3em;
+    line-height: 2.5em;
+    font-size: 14px;
+}
+
+.months-1 .calendar table.month th.month-title {
+    display: none;
+}
+
+.months-1 table.month td.day .day-content {
+    width: 4em;
+    line-height: 3.5em;
+    font-size: 14px;
+}
+
+.calendar table.month tr td, .calendar table.month tr th {
+    padding: 1px;
+    vertical-align: center;
+}
+
+.calendar table.month td.day .day-content {
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border-radius: 0;
+    border: 1px lightgray solid;
+}
+
+.calendar table.month td.day .offline {
+    background-image: linear-gradient(45deg, transparent 0%, transparent 50%, #3334 50%, #3334 100%);
+}
+
+.heatmap-footer-container {
+    padding-top: 1em;
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.heatmap-legend-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.heatmap-legend {
+    border: 1px lightgray solid;
+    display: flex;
+}
+
+.heatmap-legend-element {
+    width: 3em;
+    height: 1.5em;
+}
+
+.heatmap-legend-label {
+    width: 10em;
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+
+.heatmap-shaded {
+    color: whitesmoke;
+}
+
+.heatmap-shade0 {
+    background-color: rgba(32, 121, 0, 0.35);
+}
+.heatmap-shade1 {
+    background-color: rgba(32, 121, 0, 0.40);
+}
+.heatmap-shade2 {
+    background-color: rgba(32, 121, 0, 0.45);
+}
+.heatmap-shade3 {
+    background-color: rgba(32, 121, 0, 0.50);
+}
+.heatmap-shade4 {
+    background-color: rgba(32, 121, 0, 0.55);
+}
+.heatmap-shade5 {
+    background-color: rgba(32, 121, 0, 0.60);
+}
+.heatmap-shade6 {
+    background-color: rgba(32, 121, 0, 0.65);
+}
+.heatmap-shade7 {
+    background-color: rgba(32, 121, 0, 0.70);
+}
+.heatmap-shade8 {
+    background-color: rgba(32, 121, 0, 0.75);
+}
+.heatmap-shade9 {
+    background-color: rgba(32, 121, 0, 0.80);
+}
+.heatmap-shade10 {
+    background-color: rgba(32, 121, 0, 0.85);
+}
+.heatmap-shade11 {
+    background-color: rgba(32, 121, 0, 0.90);
+}
+.heatmap-shade12 {
+    background-color: rgba(32, 121, 0, 0.95);
+}
+.heatmap-shade13 {
+    background-color: rgba(32, 121, 0, 1.0);
+}
+
+.calendar table.month td.day .heatmap-shade0:hover {
+    background-color: rgb(16, 61, 0, 0.35);
+}
+.calendar table.month td.day .heatmap-shade1:hover {
+    background-color: rgb(16, 61, 0, 0.4);
+}
+.calendar table.month td.day .heatmap-shade2:hover {
+    background-color: rgb(16, 61, 0, 0.45);
+}
+.calendar table.month td.day .heatmap-shade3:hover {
+    background-color: rgb(16, 61, 0, 0.5);
+}
+.calendar table.month td.day .heatmap-shade4:hover {
+    background-color: rgb(16, 61, 0, 0.55);
+}
+.calendar table.month td.day .heatmap-shade5:hover {
+    background-color: rgb(16, 61, 0, 0.6);
+}
+.calendar table.month td.day .heatmap-shade6:hover {
+    background-color: rgb(16, 61, 0, 0.65);
+}
+.calendar table.month td.day .heatmap-shade7:hover {
+    background-color: rgb(16, 61, 0, 0.70);
+}
+.calendar table.month td.day .heatmap-shade8:hover {
+    background-color: rgb(16, 61, 0, 0.75);
+}
+.calendar table.month td.day .heatmap-shade9:hover {
+    background-color: rgb(16, 61, 0, 0.80);
+}
+.calendar table.month td.day .heatmap-shade10:hover {
+    background-color: rgb(16, 61, 0, 0.85);
+}
+.calendar table.month td.day .heatmap-shade11:hover {
+    background-color: rgb(16, 61, 0, 0.90);
+}
+.calendar table.month td.day .heatmap-shade12:hover {
+    background-color: rgb(16, 61, 0, 0.95);
+}
+.calendar table.month td.day .heatmap-shade13:hover {
+    background-color: rgb(16, 61, 0);
+}
