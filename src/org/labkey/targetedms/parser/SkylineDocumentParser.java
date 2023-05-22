@@ -2315,21 +2315,11 @@ public class SkylineDocumentParser implements AutoCloseable
             pciBySkylineSampleFileId.put(chromInfo.getSkylineSampleFileId(), chromInfo);
             if (chromatogram != null)
             {
-                // Read it out of the file on-demand, so we only load the subset that we need
-                try
-                {
-                    if (!Boolean.parseBoolean(ModuleLoader.getInstance().getModule(TargetedMSModule.class).SKIP_CHROMATOGRAM_IMPORT_PROPERTY.getEffectiveValue(_container)))
-                    {
-                        chromInfo.setChromatogram(_binaryParser.readChromatogramBytes(chromatogram));
-                    }
-                    chromInfo.setChromatogramFormat(chromatogram.getChromatogramBinaryFormat().ordinal());
-                    chromInfo.setChromatogramOffset(chromatogram.getLocationPoints());
-                    chromInfo.setChromatogramLength(chromatogram.getCompressedSize());
-                }
-                catch (DataFormatException ignored)
-                {
-                    _log.warn("Failed to extract chromatogram for " + precursor + " in replicate " + chromInfo.getReplicateName());
-                }
+                // Do not load the chromatogram bytes here since we will read them from the skyd file on-demand.
+                chromInfo.setChromatogramFormat(chromatogram.getChromatogramBinaryFormat().ordinal());
+                chromInfo.setChromatogramOffset(chromatogram.getLocationPoints());
+                chromInfo.setChromatogramLength(chromatogram.getCompressedSize());
+
                 chromInfo.setNumPoints(chromatogram.getNumPoints());
                 chromInfo.setNumTransitions(chromatogram.getNumTransitions());
                 chromInfo.setUncompressedSize(chromatogram.getUncompressedSize());
