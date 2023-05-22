@@ -8,6 +8,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     statics: {
         qcPlotTypes : ['Levey-Jennings', 'Moving Range', 'CUSUMm', 'CUSUMv', 'Trailing CV', 'Trailing Mean'],
         maxPointsPerSeries : 300,
+        shapeDomain: ['Include', 'Exclude', 'Include-Outlier', 'Exclude-Outlier']
     },
 
     showLJPlot: function() {
@@ -667,11 +668,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         let shapeDomain = [undefined, true];
         if (plotType === 'Levey-Jennings') {
             shapeProp = 'LJShape';
-            shapeDomain = ['Include', 'Exclude', 'Include-Outlier', 'Exclude-Outlier'];
+            shapeDomain = this.statics.shapeDomain;
         }
         if (plotType === 'MovingRange') {
             shapeProp = 'MRShape';
-            shapeDomain = ['Include', 'Exclude', 'Include-Outlier', 'Exclude-Outlier'];
+            shapeDomain = this.statics.shapeDomain;
         }
 
         var trendLineProps = {
@@ -783,11 +784,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         let shapeDomain = [undefined, true];
         if (plotType === 'Levey-Jennings') {
             shapeProp = 'LJShape';
-            shapeDomain = ['Include', 'Exclude', 'Include-Outlier', 'Exclude-Outlier'];
+            shapeDomain = this.statics.shapeDomain;
         }
         if (plotType === 'MovingRange') {
             shapeProp = 'MRShape';
-            shapeDomain = ['Include', 'Exclude', 'Include-Outlier', 'Exclude-Outlier'];
+            shapeDomain = this.statics.shapeDomain;
         }
 
         var trendLineProps = {
