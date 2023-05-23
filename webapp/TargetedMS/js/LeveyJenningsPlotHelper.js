@@ -155,6 +155,9 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         else {
             data['value'] = row['Value'];
         }
+
+        data.LJShape = (row.IgnoreInQC ? 'Exclude' : 'Include') + (row.LJOutlier ? '-Outlier' : '');
+
         return data;
 
     },

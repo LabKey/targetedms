@@ -221,7 +221,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     @Override
     public Double getSchemaVersion()
     {
-        return 23.001;
+        return 23.002;
     }
 
     @Override
@@ -540,6 +540,18 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
                         folderCounts.put(rs.getString("value"), rs.getLong("FolderCount")));
 
                 metric.put("folderCounts", folderCounts);
+
+                SQLFragment annotationFolderCountSQL = new SQLFragment("SELECT at.Name, COUNT(DISTINCT a.Container) AS FolderCount FROM ");
+                annotationFolderCountSQL.append(TargetedMSManager.getTableInfoQCAnnotationType(), "at");
+                annotationFolderCountSQL.append(" INNER JOIN " );
+                annotationFolderCountSQL.append(TargetedMSManager.getTableInfoQCAnnotation(), "a");
+                annotationFolderCountSQL.append(" ON at.Id = a.qcAnnotationTypeId GROUP BY at.Name");
+
+                Map<String, Long> annotationFolderCounts = new HashMap<>();
+                new SqlSelector(PropertySchema.getInstance().getSchema(), annotationFolderCountSQL).forEach(rs ->
+                        annotationFolderCounts.put(rs.getString("Name"), rs.getLong("FolderCount")));
+
+                metric.put("annotationFolderCounts", annotationFolderCounts);
 
                 return metric;
             });

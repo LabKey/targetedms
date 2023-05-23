@@ -8,6 +8,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     statics: {
         qcPlotTypes : ['Levey-Jennings', 'Moving Range', 'CUSUMm', 'CUSUMv', 'Trailing CV', 'Trailing Mean'],
         maxPointsPerSeries : 300,
+        shapeDomain: ['Include', 'Exclude', 'Include-Outlier', 'Exclude-Outlier']
     },
 
     showLJPlot: function() {
@@ -663,11 +664,22 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         }
         var showDataPoints = maxPointsPerSeries <= LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries;
 
+        let shapeProp = 'IgnoreInQC';
+        let shapeDomain = [undefined, true];
+        if (plotType === 'Levey-Jennings') {
+            shapeProp = 'LJShape';
+            shapeDomain = this.statics.shapeDomain;
+        }
+        if (plotType === 'MovingRange') {
+            shapeProp = 'MRShape';
+            shapeDomain = this.statics.shapeDomain;
+        }
+
         var trendLineProps = {
             disableRangeDisplay: disableRange,
             xTick: this.groupedX ? 'groupedXTick' : 'fullDate',
             xTickLabel: 'date',
-            shape: 'IgnoreInQC',
+            shape: shapeProp,
             combined: true,
             yAxisScale: (showLogInvalid ? 'linear' : (this.yAxisScale !== 'log' ? 'linear' : 'log')),
             valueConversion: (this.yAxisScale === 'percentDeviation' || this.yAxisScale === 'standardDeviation' ? this.yAxisScale : undefined),
@@ -676,7 +688,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             color: 'fragment',
             defaultGuideSetLabel: 'fragment',
             pointSize: 2,
-            shapeRange: [LABKEY.vis.Scale.Shape()[0] /* circle */, LABKEY.vis.Scale.DataspaceShape()[0] /* open circle */],
+            shapeRange: [LABKEY.vis.Scale.Shape()[0] /* circle */, LABKEY.vis.Scale.DataspaceShape()[0] /* open circle */, LABKEY.vis.Scale.Shape()[1], LABKEY.vis.Scale.Shape()[2]],
+            shapeDomain: shapeDomain,
             showTrendLine: true,
             showDataPoints: showDataPoints,
             mouseOverFn: this.plotPointMouseOver,
@@ -767,16 +780,28 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         var showDataPoints = precursorInfo.data ? precursorInfo.data.length <= LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries : true;
 
+        let shapeProp = 'IgnoreInQC';
+        let shapeDomain = [undefined, true];
+        if (plotType === 'Levey-Jennings') {
+            shapeProp = 'LJShape';
+            shapeDomain = this.statics.shapeDomain;
+        }
+        if (plotType === 'MovingRange') {
+            shapeProp = 'MRShape';
+            shapeDomain = this.statics.shapeDomain;
+        }
+
         var trendLineProps = {
             xTick: this.groupedX ? 'groupedXTick' : 'fullDate',
             xTickLabel: 'date',
             yAxisScale: (precursorInfo.showLogInvalid ? 'linear' : (this.yAxisScale !== 'log' ? 'linear' : 'log')),
             valueConversion: (this.yAxisScale === 'percentDeviation' || this.yAxisScale === 'standardDeviation' ? this.yAxisScale : undefined),
-            shape: 'IgnoreInQC',
+            shape: shapeProp,
             combined: false,
             pointSize: 2,
             pointIdAttr: function(row) { return row['fullDate']; },
-            shapeRange: [LABKEY.vis.Scale.Shape()[0] /* circle */, LABKEY.vis.Scale.DataspaceShape()[0] /* open circle */],
+            shapeRange: [LABKEY.vis.Scale.Shape()[0] /* circle */, LABKEY.vis.Scale.DataspaceShape()[0] /* open circle */, LABKEY.vis.Scale.Shape()[1], LABKEY.vis.Scale.Shape()[2]],
+            shapeDomain: shapeDomain,
             showTrendLine: true,
             showDataPoints: showDataPoints,
             defaultGuideSetLabel: 'fragment',

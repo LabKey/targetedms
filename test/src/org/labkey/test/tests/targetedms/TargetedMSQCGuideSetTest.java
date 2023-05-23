@@ -193,7 +193,8 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
 
         // 4 of the 5 guide sets are visible in plot region based on the initial data
         List<Pair<String, Integer>> shapeCounts = new ArrayList<>();
-        shapeCounts.add(Pair.of(SvgShapes.CIRCLE.getPathPrefix(), 47));
+        shapeCounts.add(Pair.of(SvgShapes.CIRCLE.getPathPrefix(), 289));
+        shapeCounts.add(Pair.of(SvgShapes.CIRCLE_OPEN.getPathPrefix(), 40));
         verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 4, shapeCounts, 47);
 
         // check box for group x-axis values by date and verify
@@ -207,7 +208,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         // filter plot by start/end date to check reference points without training points in view
         qcPlotsWebPart.filterQCPlots("2013-08-19", "2013-08-19", PRECURSORS.length);
         shapeCounts = new ArrayList<>();
-        shapeCounts.add(Pair.of(SvgShapes.CIRCLE.getPathPrefix(), 2));
+        shapeCounts.add(Pair.of(SvgShapes.CIRCLE.getPathPrefix(), 14));
         verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 0, shapeCounts, 2);
     }
 
@@ -366,7 +367,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         {
             String pathPrefix = shapeCount.getLeft();
             int count = qcPlotsWebPart.getPointElements("d", pathPrefix, true).size();
-            assertEquals("Unexpected guide set shape count for " + pathPrefix, shapeCount.getRight() * PRECURSORS.length, count);
+            assertEquals("Unexpected guide set shape count for " + pathPrefix, shapeCount.getRight().intValue(), count);
         }
 
         assertEquals("Unexpected number of training range rects visible", visibleTrainingRanges * PRECURSORS.length, qcPlotsWebPart.getGuideSetTrainingRectCount());

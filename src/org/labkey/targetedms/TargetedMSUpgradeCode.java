@@ -34,6 +34,7 @@ import org.labkey.api.util.StartupListener;
 import org.labkey.api.util.UnexpectedException;
 import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.targetedms.pipeline.AreaProportionRecalcJob;
+import org.labkey.targetedms.query.QCAnnotationTypeTable;
 
 import javax.servlet.ServletContext;
 import java.util.Date;
@@ -61,6 +62,13 @@ public class TargetedMSUpgradeCode implements UpgradeCode
         Set<Module> activeModules = new HashSet<>(ContainerManager.getSharedContainer().getActiveModules());
         activeModules.add(ModuleLoader.getInstance().getModule(TargetedMSModule.class));
         ContainerManager.getSharedContainer().setActiveModules(activeModules);
+    }
+
+    // called at 23.000-23.001 to add a new type. Can eventually be consolidated into the bootstrap insert above
+    @SuppressWarnings({"UnusedDeclaration"})
+    public void addInstrumentDowntimeAnnotationType(final ModuleContext moduleContext)
+    {
+        insertAnnotationType(QCAnnotationTypeTable.INSTRUMENT_DOWNTIME, "CCCC00", moduleContext.getUpgradeUser());
     }
 
     private void insertAnnotationType(String name, String color, User user)
