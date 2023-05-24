@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -554,10 +555,14 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
     {
         paretoPlotsWebPart.waitForTickLoad(guideSetNum, plotType);
 
-        List<String> ticks = paretoPlotsWebPart.getTicks(guideSetNum, plotType);
+        Set<String> ticks = paretoPlotsWebPart.getTicks(guideSetNum, plotType);
 
-        for(String metricType : ticks)
-            assertTrue("Metric Type tick '" + metricType + "' is not valid", paretoPlotsWebPart.isMetricTypeTickValid(metricType));
+        assertEquals("Wrong metrics shown in Pareto Plot", Set.of(
+                ParetoPlotsWebPart.MetricTypeTicks.FWB.toString(),
+                ParetoPlotsWebPart.MetricTypeTicks.FWHM.toString(),
+                ParetoPlotsWebPart.MetricTypeTicks.RETENTION.toString(),
+                ParetoPlotsWebPart.MetricTypeTicks.TAREA.toString()
+                ), ticks);
     }
 
     private void verifyDownloadableParetoPlots(int expectedPlotCount)

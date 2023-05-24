@@ -862,9 +862,12 @@ public class TargetedMSQCTest extends TargetedMSTest
         verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[1], "excluded");
         verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "0");
 
+        // Ensure that we've auto-hidden metrics without data
+        assertTextPresent("4 metrics");
+
         // create a guide set and verify updated QC Summary outliers info
         qcPlotsWebPart.createGuideSet(new GuideSet(sampleFileAcquiredDates[0], sampleFileAcquiredDates[1], null, 2), null);
-        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "20");
+        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "16");
 
         // change data point to only be excluded for a single metric and verify outliers changed
         changePointExclusionState(getAcquiredDateDisplayStr(sampleFileAcquiredDates[1]), QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric, 2);

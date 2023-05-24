@@ -22,8 +22,11 @@ import org.labkey.test.selenium.LazyWebElement;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCache>
 {
@@ -102,22 +105,29 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
             return _suffix;
         }
     }
-    public List<String> getTicks(int guideSetNum)
+    public Set<String> getTicks(int guideSetNum)
     {
         return getTicks(guideSetNum, ParetoPlotType.LeveyJennings);
     }
-    public List<String> getTicks(int guideSetNum, ParetoPlotType plotType)
+    public Set<String> getTicks(int guideSetNum, ParetoPlotType plotType)
     {
-        List<String> ticks = new LinkedList<>();
-        int maxIndex = 5;
-        int minIndex = 1;
+        Set<String> ticks = new LinkedHashSet<>();
+        int maxIndex = 20;
+        int index = 1;
 
-        while(minIndex <= maxIndex)
+        while (index <= maxIndex)
         {
-            String tickText = Locator.css("#paretoPlot-GuideSet-" + guideSetNum  + plotType.getIdSuffix() +
-                    " > svg > g:nth-child(1) > g.tick-text > a:nth-child(" + minIndex + ")").findElement(getDriver()).getText();
-            ticks.add(tickText);
-            minIndex++;
+            Optional<WebElement> element = Locator.css("#paretoPlot-GuideSet-" + guideSetNum  + plotType.getIdSuffix() +
+                    " > svg > g:nth-child(1) > g.tick-text > a:nth-child(" + index + ")").findOptionalElement(getDriver());
+            if (element.isPresent())
+            {
+                ticks.add(element.get().getText());
+            }
+            else
+            {
+                break;
+            }
+            index++;
         }
         return ticks;
     }
