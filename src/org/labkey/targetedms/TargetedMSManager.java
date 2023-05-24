@@ -1829,7 +1829,7 @@ public class TargetedMSManager
         }
     }
 
-    public static ArrayList<Integer> getIrtScaleIds(Container c)
+    public static List<Integer> getIrtScaleIds(Container c)
     {
         SimpleFilter conFil = SimpleFilter.createContainerFilter(c);
         return new TableSelector(TargetedMSManager.getTableInfoiRTScale().getColumn(FieldKey.fromParts("id")), conFil , null).getArrayList(Integer.class);
@@ -1841,9 +1841,9 @@ public class TargetedMSManager
         TargetedMSModule targetedMSModule = null;
         for (Module m : c.getActiveModules())
         {
-            if (m instanceof TargetedMSModule)
+            if (m instanceof TargetedMSModule tm)
             {
-                targetedMSModule = (TargetedMSModule) m;
+                targetedMSModule = tm;
             }
         }
         if (targetedMSModule == null)

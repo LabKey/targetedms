@@ -31,8 +31,7 @@ SELECT Id, FragmentType, Quantitative FROM Transition t
                                                                                                   ))
         )
 )
-UNION
-SELECT 1 AS E WHERE EXISTS (
+OR EXISTS (
 SELECT Id, FragmentType, Quantitative FROM MoleculeTransition t
 WHERE
     (Quantitative = TRUE) OR (Quantitative IS NULL AND
