@@ -40,7 +40,7 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
     public enum MetricTypeTicks
     {
         RETENTION("Retention Time"),
-        PEAK("Peak Area"),
+        TOTAL_PEAK("Total Peak Area"),
         FWHM("Full Width at Half Maximum (FWHM)"),
         FWB("Full Width at Base (FWB)"),
         LHRATIO("Light/Heavy Ratio"),
@@ -48,6 +48,7 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
         PAREA("Precursor Area"),
         TAREA("Transition Area"),
         MASSACCURACY("Mass Accuracy"),
+        TIC_AREA("TIC Area"),
         ISOTOPE_DOTP("Isotope dotp"),
         LIBRARY_DOTP("Library dotp");
 
@@ -105,13 +106,13 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
             return _suffix;
         }
     }
-    public Set<String> getTicks(int guideSetNum)
+    public List<String> getTicks(int guideSetNum)
     {
         return getTicks(guideSetNum, ParetoPlotType.LeveyJennings);
     }
-    public Set<String> getTicks(int guideSetNum, ParetoPlotType plotType)
+    public List<String> getTicks(int guideSetNum, ParetoPlotType plotType)
     {
-        Set<String> ticks = new LinkedHashSet<>();
+        List<String> ticks = new LinkedList<>();
         int maxIndex = 20;
         int index = 1;
 
