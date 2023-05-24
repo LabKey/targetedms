@@ -119,7 +119,7 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
         while (index <= maxIndex)
         {
             Optional<WebElement> element = Locator.css("#paretoPlot-GuideSet-" + guideSetNum  + plotType.getIdSuffix() +
-                    " > svg > g:nth-child(1) > g.tick-text > a:nth-child(" + index + ")").findOptionalElement(getDriver());
+                    " > svg > g:nth-child(1) > g.tick-text > a:nth-child(" + index + ") > text > title").findOptionalElement(getDriver());
             if (element.isPresent())
             {
                 ticks.add(element.get().getText());
