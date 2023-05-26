@@ -279,43 +279,34 @@
                 });
             },
             mouseOnDay: function (e) {
-                if (e.events.length > 0) {
-                    let content = '';
+                let event = e.events.length > 0 ? e.events[0] : null;
 
-                    let separator = '';
-                    for (let i in e.events) {
-                        content += separator;
-                        separator = '<br/><br/>'
-                        content += '<div class="event-tooltip-content">'
-                                + '<div class="event-name" style="color:' + e.events[i].color + '">' + (e.events[i].annotation ? ('Offline: ' + LABKEY.Utils.encodeHtml(e.events[i].annotation.description)) : 'Online') + '</div>';
-                        if (e.events[i].replicateNames.length === 0) {
-                            content += '<div>No samples</div>';
-                        }
-                        else {
-                            content += '<div>' + e.events[i].replicateNames.length + ' Sample' + (e.events[i].replicateNames.length === 1 ? '' : 's') + ', ' + e.events[i].medianOutliers + ' Median Outliers</div>';
-                        }
-                        for (let j in e.events[i].replicateNames) {
-                            content += '<div class="event-location">' + LABKEY.Utils.encodeHtml(e.events[i].replicateNames[j]) + ' (' + e.events[i].outliers[j] + ' outliers)</div>';
-                        }
-                        content += '</div>';
-                    }
+                let content = '<div class="event-tooltip-content">'
+                        + '<div class="event-name">';
+                content += (event && event.annotation ? ('Offline: ' + LABKEY.Utils.encodeHtml(event.annotation.description)) : 'Online') + '</div>';
 
-                    $(e.element).popover({
-                        trigger: 'manual',
-                        container: 'body',
-                        html: true,
-                        content: content
-                    });
-
-                    $(e.element).popover('show');
+                if (!event || event.replicateNames.length === 0) {
+                    content += '<div>No samples</div>';
                 }
+                else {
+                    content += '<div>' + e.events[0].replicateNames.length + ' Sample' + (event.replicateNames.length === 1 ? '' : 's') + ', ' + event.medianOutliers + ' Median Outliers</div>';
+                    for (let j = 0; j < event.replicateNames.length; j++) {
+                        content += '<div class="event-location">' + LABKEY.Utils.encodeHtml(event.replicateNames[j]) + ' (' + event.outliers[j] + ' outliers)</div>';
+                    }
+                }
+
+                content += '</div>';
+
+                $(e.element).popover({
+                    trigger: 'manual',
+                    container: 'body',
+                    html: true,
+                    content: content
+                });
+
+                $(e.element).popover('show');
             },
             mouseOutDay: function (e) {
-                if (e.events.length > 0) {
-                    $(e.element).popover('hide');
-                }
-            },
-            dayContextMenu: function (e) {
                 $(e.element).popover('hide');
             },
             dataSource: data
@@ -454,34 +445,24 @@
     </div>
 
     <div class="heatmap-legend-container">
-        Online day:
+        Offline:
         <div class="calendar">
             <div class="calendar-month">
                 <table class="month">
                     <tr>
-                        <td class="day"><div class="day-content">13</div></td>
+                        <td class="day" style="height: 2.5em; width: 2.5em;"><div class="day-content offline">&nbsp;</div></td>
                     </tr>
                 </table>
             </div>
         </div>
-        Offline day:
-        <div class="calendar">
-            <div class="calendar-month">
-                <table class="month">
-                    <tr>
-                        <td class="day"><div class="day-content offline">14</div></td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-        Toggle by clicking on a day or click/dragging multiple days.
+        Toggle offline/online status by clicking on a day or click/dragging multiple days.
     </div>
 </div>
 <div class="modal fade" id="event-modal">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Instrument Offline</h5>
+                <h5 class="modal-title">Instrument Offline Annotation</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -490,6 +471,15 @@
                 <form class="form-horizontal">
                     <input type="hidden" name="event-index">
                     <input type="hidden" name="event-annotationId">
+                    <div class="form-group row">
+                        <label class="col-sm-4 control-label"></label>
+                        <div class="col-sm-8">
+                            Manually annotating an instrument as being offline, whether or not it acquired samples on
+                            a particular day, helps track instrument utilization and availability.
+                            <br/>
+                            <br/>
+                        </div>
+                    </div>
                     <div class="form-group row">
                         <label for="event-description" class="col-sm-4 control-label" title="Required field">Description *</label>
                         <div class="col-sm-8">
