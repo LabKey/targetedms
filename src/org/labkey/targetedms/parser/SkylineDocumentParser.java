@@ -459,7 +459,7 @@ public class SkylineDocumentParser implements AutoCloseable
 
     public List<IrtPeptide> getiRTScaleSettings()
     {
-        return _iRTScaleSettings;
+        return Collections.unmodifiableList(_iRTScaleSettings);
     }
 
     public List<SkylineReplicate> getReplicates()

@@ -55,6 +55,7 @@ import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.exp.api.ExpProtocol;
 import org.labkey.api.exp.api.ExpRun;
 import org.labkey.api.exp.api.ExperimentService;
+import org.labkey.api.files.FileContentService;
 import org.labkey.api.module.Module;
 import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.module.ModuleProperty;
@@ -692,12 +693,11 @@ public class TargetedMSManager
             }
 
             ExpData expData = ExperimentService.get().getExpData(run.getDataId());
-            Path skylineFile = pipeRoot.resolveToNioPathFromUrl(expData.getDataFileUrl());
 
             ExpRun expRun = ExperimentService.get().createExperimentRun(container, run.getDescription());
             expRun.setProtocol(protocol);
             expRun.setJobId(jobId);
-            expRun.setFilePathRootPath(null != skylineFile ? skylineFile.getParent() : null);
+            expRun.setFilePathRootPath(FileContentService.get().getFileRootPath(container, FileContentService.ContentType.files));
             ViewBackgroundInfo info = new ViewBackgroundInfo(container, user, null);
 
             Map<ExpData, String> inputDatas = new HashMap<>();
@@ -1829,7 +1829,7 @@ public class TargetedMSManager
         }
     }
 
-    public static ArrayList<Integer> getIrtScaleIds(Container c)
+    public static List<Integer> getIrtScaleIds(Container c)
     {
         SimpleFilter conFil = SimpleFilter.createContainerFilter(c);
         return new TableSelector(TargetedMSManager.getTableInfoiRTScale().getColumn(FieldKey.fromParts("id")), conFil , null).getArrayList(Integer.class);
@@ -1841,9 +1841,9 @@ public class TargetedMSManager
         TargetedMSModule targetedMSModule = null;
         for (Module m : c.getActiveModules())
         {
-            if (m instanceof TargetedMSModule)
+            if (m instanceof TargetedMSModule tm)
             {
-                targetedMSModule = (TargetedMSModule) m;
+                targetedMSModule = tm;
             }
         }
         if (targetedMSModule == null)

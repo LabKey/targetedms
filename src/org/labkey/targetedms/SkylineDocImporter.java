@@ -266,7 +266,7 @@ public class SkylineDocImporter
         }
         catch (CancelledException e)
         {
-            addPostRollbackCommitTask("Cancelled  Skyline document import.", "Import cancelled (see pipeline log)");
+            addPostRollbackCommitTask("Cancelled Skyline document import.", "Import cancelled (see pipeline log)");
             throw e;
         }
         catch (IOException | XMLStreamException | RuntimeException | PipelineJobException | AuditLogException e)
@@ -582,6 +582,8 @@ public class SkylineDocImporter
         // See which entries matched up with data in the Skyline document
         List<IrtPeptide> matchedIrts = parser.getiRTScaleSettings().stream().filter(irt -> irt.getGeneralMoleculeId() != null).toList();
 
+        int updatedCount = 0;
+
         // Find the retention times for each tracked iRT entry in each sample file
         for (SampleFile sampleFile : replicateInfo.skylineIdSampleFileIdMap.values())
         {
@@ -595,7 +597,7 @@ public class SkylineDocImporter
                 sql.add(irtPeptide.getGeneralMoleculeId());
 
                 List<Double> retentionTimes = new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(Double.class);
-                if (retentionTimes.size() > 0)
+                if (!retentionTimes.isEmpty())
                 {
                     IrtPeptide p = new IrtPeptide();
                     p.setModifiedSequence(irtPeptide.getModifiedSequence());
@@ -617,9 +619,10 @@ public class SkylineDocImporter
                 sampleFile.setIrtCorrelation(regressionLine.getCorrelation());
 
                 Table.update(_user, TargetedMSManager.getTableInfoSampleFile(), sampleFile, sampleFile.getId());
+                updatedCount++;
             }
         }
-        _log.info("Finished calculating iRT correlations for all samples");
+        _log.info("Finished calculating iRT correlations for all samples. " + updatedCount + " had a regression line calculated.");
 
     }
 
@@ -1073,7 +1076,7 @@ public class SkylineDocImporter
     {
 
         Integer iRTScaleId = null; // Not all imports are expected to have iRT data
-        List<IrtPeptide> importScale = parser.getiRTScaleSettings();
+        List<IrtPeptide> importScale = new ArrayList<>(parser.getiRTScaleSettings());
 
         if (! importScale.isEmpty())
         {
