@@ -5,7 +5,6 @@ import org.labkey.test.Locator;
 import org.labkey.test.components.ext4.Window;
 import org.labkey.test.pages.PortalBodyPanel;
 import org.labkey.test.util.Ext4Helper;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 
 import java.util.Map;
@@ -20,25 +19,43 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
 
     public enum CustomMetricProperties
     {
-        metricName,
-        series1Schema,
-        series2Schema,
-        series1Query,
-        series2Query,
-        series1AxisLabel,
-        series2AxisLabel,
-        metricType,
-        enabledSchema,
-        enabledQuery
+        metricName("Name", false),
+        series1Schema("Series 1 Schema", true),
+        series2Schema("Series 2 Schema", true),
+        series1Query("Series 1 Query", true),
+        series2Query("Series 2 Query", true),
+        series1AxisLabel("Series 1 Axis Label", false),
+        series2AxisLabel("Series 2 Axis Label", false),
+        metricType("Metric Type", true),
+        enabledSchema("Enabled Schema", true),
+        enabledQuery("Enabled Query", true);
+
+        private final String formLabel;
+        private final boolean isSelect;
+
+        CustomMetricProperties(String formLabel, boolean isSelect)
+        {
+            this.formLabel = formLabel + ":";
+            this.isSelect = isSelect;
+        }
     }
 
     public enum TraceMetricProperties
     {
-        metricName,
-        traceName,
-        yAxisLabel,
-        timeValue,
-        traceValue
+        metricName(null, false),
+        traceName("Use Trace", true),
+        yAxisLabel(null, false),
+        timeValue(null, false),
+        traceValue(null, false);
+
+        private final String formLabel;
+        private final boolean isSelect;
+
+        TraceMetricProperties(String formLabel, boolean isSelect)
+        {
+            this.formLabel = formLabel + ":";
+            this.isSelect = isSelect;
+        }
     }
 
     public ConfigureMetricsUIPage(BaseWebDriverTest test)
@@ -67,7 +84,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
     {
         click(Locator.tagWithText("button", "Add New Custom Metric"));
         waitForElement(Ext4Helper.Locators.window("Add New Metric"));
-        Window metricWindow = new Window.WindowFinder(getDriver()).withTitle("Add New Metric").waitFor();
+        Window<?> metricWindow = new Window.WindowFinder(getDriver()).withTitle("Add New Metric").waitFor();
         editCustomMetricValues(metricWindow, metricProperties);
     }
 
@@ -75,7 +92,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
     {
         click(Locator.tagWithText("button", "Add New Trace Metric"));
         waitForElement(Ext4Helper.Locators.window("Add New Trace Metric"));
-        Window metricWindow = new Window.WindowFinder(getDriver()).withTitle("Add New Trace Metric").waitFor();
+        Window<?> metricWindow = new Window.WindowFinder(getDriver()).withTitle("Add New Trace Metric").waitFor();
         editTraceMetricValues(metricWindow, traceProperties);
     }
 
@@ -83,26 +100,20 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
     {
         waitAndClick(Locator.linkWithText(metric));
         waitForElement(Ext4Helper.Locators.window("Edit Metric"));
-        Window metricWindow = new Window.WindowFinder(getDriver()).withTitle("Edit Metric").waitFor();
+        Window<?> metricWindow = new Window.WindowFinder(getDriver()).withTitle("Edit Metric").waitFor();
         editCustomMetricValues(metricWindow, metricProperties);
     }
 
-    private void editCustomMetricValues(Window metricWindow, Map<CustomMetricProperties, String> metricProperties)
+    private void editCustomMetricValues(Window<?> metricWindow, Map<CustomMetricProperties, String> metricProperties)
     {
         metricProperties.forEach((prop, val) -> {
-            if("metricName".equals(prop.name()) || "series1AxisLabel".equals(prop.name()) || "series2AxisLabel".equals(prop.name()))
+            if(!prop.isSelect)
             {
                 setFormElement(Locator.name(prop.name()), val);
             }
-            if("series1Schema".equals(prop.name()) || "series2Schema".equals(prop.name()))
+            else
             {
-                setFormElement(Locator.name(prop.name()), val);
-                Locator.name(prop.name()).findElement(getDriver()).sendKeys(Keys.ENTER);
-                waitForFormElementToEqual(Locator.name(prop.name()), val);
-            }
-            if("series1Query".equals(prop.name()) || "series2Query".equals(prop.name()))
-            {
-                String label = "series1Query".equals(prop.name()) ? "Series 1 Query:" : "Series 2 Query:";
+                String label = prop.formLabel;
                 //adding waits does not help here, however it passes in catch block
                 try
                 {
@@ -113,37 +124,20 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
                     _ext4Helper.selectComboBoxItem(label, val);
                 }
             }
-            if("metricType".equals(prop.name()))
-            {
-                _ext4Helper.selectComboBoxItem("Metric Type:", val);
-            }
-            if("enabledSchema".equals(prop.name()))
-            {
-                _ext4Helper.selectComboBoxItem("Enabled Schema:", val);
-            }
-
-            if("enabledQuery".equals(prop.name()))
-            {
-                _ext4Helper.selectComboBoxItem("Enabled Query:", val);
-            }
         });
         clickAndWait(Ext4Helper.Locators.ext4Button("Save").findElement(metricWindow));
     }
 
-    private void editTraceMetricValues(Window metricWindow, Map<TraceMetricProperties, String> metricProperties)
+    private void editTraceMetricValues(Window<?> metricWindow, Map<TraceMetricProperties, String> metricProperties)
     {
         metricProperties.forEach((prop, val) -> {
-            if("metricName".equals(prop.name()) || "yAxisLabel".equals(prop.name()))
+            if(!prop.isSelect)
             {
                 setFormElement(Locator.name(prop.name()), val);
             }
-            if("traceName".equals(prop.name()))
+            else
             {
-                _ext4Helper.selectComboBoxItem("Use Trace:", val);
-            }
-            if("timeValue".equals(prop.name()) || "traceValue".equals(prop.name()))
-            {
-                setFormElement(Locator.name(prop.name()), val);
+                _ext4Helper.selectComboBoxItem(prop.formLabel, val);
             }
         });
         clickAndWait(Ext4Helper.Locators.ext4Button("Save").findElement(metricWindow));
