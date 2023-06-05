@@ -165,7 +165,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
             dismissTooltip();
 
             String[] typeLabels = plotTypes.stream().map(QCPlotType::getLabel).toArray(String[]::new);
-            elementCache().qcPlotTypeCombo.toggleComboBoxItems(typeLabels);
+            doAndWaitForUpdate(() -> elementCache().qcPlotTypeCombo.toggleComboBoxItems(typeLabels));
         }
     }
 
