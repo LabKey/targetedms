@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -600,18 +601,22 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void closeBubble()
     {
-        WebElement closeButton = elementCache().hopscotchBubbleClose.findElement(getDriver());
-        closeButton.click();
-        getWrapper().shortWait().until(ExpectedConditions.stalenessOf(closeButton));
+        Optional<WebElement> optCloseButton = elementCache().hopscotchBubbleClose.findOptionalElement(getDriver());
+        optCloseButton.ifPresent(closeButton -> {
+            closeButton.click();
+            getWrapper().shortWait().until(ExpectedConditions.stalenessOf(closeButton));
+        });
     }
 
     public void goToPreviousPage()
     {
+        closeBubble();
         getWrapper().doAndWaitForPageToLoad(() -> elementCache().paginationPrevBtn.findElement(this).click());
     }
 
     public void goToNextPage()
     {
+        closeBubble();
         getWrapper().doAndWaitForPageToLoad(() -> elementCache().paginationNextBtn.findElement(this).click());
     }
 
