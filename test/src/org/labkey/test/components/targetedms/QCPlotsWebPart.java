@@ -79,6 +79,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         WebElement plot = waitForPlotPanel();
 
+        closeBubble();
         action.run();
 
         getWrapper().shortWait().until(ExpectedConditions.stalenessOf(plot));
@@ -163,8 +164,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         if (!plotTypes.isEmpty())
         {
-            dismissTooltip();
-
             String[] typeLabels = plotTypes.stream().map(QCPlotType::getLabel).toArray(String[]::new);
             doAndWaitForUpdate(() -> elementCache().qcPlotTypeCombo.toggleComboBoxItems(typeLabels));
         }
