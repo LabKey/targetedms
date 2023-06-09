@@ -102,11 +102,19 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     }
 
     @LogMethod(quiet = true)
-    public void setDateRangeOffset(@LoggedParam DateRangeOffset dateRangeOffset)
+    private void setDateRangeOffset(@LoggedParam DateRangeOffset dateRangeOffset)
     {
         if (getCurrentDateRangeOffset() != dateRangeOffset)
         {
-            getWrapper()._ext4Helper.selectComboBoxItem(elementCache().dateRangeCombo, dateRangeOffset.toString());
+            Runnable selectDateRange = () -> getWrapper()._ext4Helper.selectComboBoxItem(elementCache().dateRangeCombo, dateRangeOffset.toString());
+            if (dateRangeOffset == DateRangeOffset.ALL)
+            {
+                doAndWaitForUpdate(selectDateRange);
+            }
+            else
+            {
+                selectDateRange.run();
+            }
         }
     }
 
