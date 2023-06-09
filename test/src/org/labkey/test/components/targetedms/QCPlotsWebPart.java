@@ -31,7 +31,9 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -610,8 +612,9 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         Optional<WebElement> optCloseButton = elementCache().hopscotchBubbleClose.findOptionalElement(getDriver());
         optCloseButton.ifPresent(closeButton -> {
-            closeButton.click();
-            getWrapper().shortWait().until(ExpectedConditions.stalenessOf(closeButton));
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(2));
+            wait.until(ExpectedConditions.elementToBeClickable(closeButton)).click();
+            wait.until(ExpectedConditions.stalenessOf(closeButton));
         });
     }
 
