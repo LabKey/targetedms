@@ -74,7 +74,7 @@ public class SequenceCoverageWebPart extends BodyWebPart<SequenceCoverageWebPart
     {
         if (elementCache().peptideDetailsHelp.isDisplayed())
         {
-            Locator.tagWithAttribute("img", "alt", "close").findElement(elementCache().peptideDetailsHelp).click();
+            getWrapper().shortWait().until(ExpectedConditions.elementToBeClickable(Locator.tagWithAttribute("img", "alt", "close").findElement(elementCache().peptideDetailsHelp))).click();
             getWrapper().shortWait().until(ExpectedConditions.invisibilityOf(elementCache().peptideDetailsHelp));
         }
         WebElement numLink = getWrapper().shortWait().until(ExpectedConditions.elementToBeClickable(
