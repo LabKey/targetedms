@@ -31,11 +31,14 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -78,6 +81,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         WebElement plot = waitForPlotPanel();
 
+        closeBubble();
         action.run();
 
         getWrapper().shortWait().until(ExpectedConditions.stalenessOf(plot));
@@ -100,11 +104,19 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     }
 
     @LogMethod(quiet = true)
-    public void setDateRangeOffset(@LoggedParam DateRangeOffset dateRangeOffset)
+    private void setDateRangeOffset(@LoggedParam DateRangeOffset dateRangeOffset)
     {
         if (getCurrentDateRangeOffset() != dateRangeOffset)
         {
-            getWrapper()._ext4Helper.selectComboBoxItem(elementCache().dateRangeCombo, dateRangeOffset.toString());
+            Runnable selectDateRange = () -> getWrapper()._ext4Helper.selectComboBoxItem(elementCache().dateRangeCombo, dateRangeOffset.toString());
+            if (dateRangeOffset == DateRangeOffset.ALL)
+            {
+                doAndWaitForUpdate(selectDateRange);
+            }
+            else
+            {
+                selectDateRange.run();
+            }
         }
     }
 
@@ -162,10 +174,8 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         if (!plotTypes.isEmpty())
         {
-            dismissTooltip();
-
             String[] typeLabels = plotTypes.stream().map(QCPlotType::getLabel).toArray(String[]::new);
-            elementCache().qcPlotTypeCombo.toggleComboBoxItems(typeLabels);
+            doAndWaitForUpdate(() -> elementCache().qcPlotTypeCombo.toggleComboBoxItems(typeLabels));
         }
     }
 
@@ -600,18 +610,23 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void closeBubble()
     {
-        WebElement closeButton = elementCache().hopscotchBubbleClose.findElement(getDriver());
-        closeButton.click();
-        getWrapper().shortWait().until(ExpectedConditions.stalenessOf(closeButton));
+        Optional<WebElement> optCloseButton = elementCache().hopscotchBubbleClose.findOptionalElement(getDriver());
+        optCloseButton.ifPresent(closeButton -> {
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(2));
+            wait.until(ExpectedConditions.elementToBeClickable(closeButton)).click();
+            wait.until(ExpectedConditions.stalenessOf(closeButton));
+        });
     }
 
     public void goToPreviousPage()
     {
+        closeBubble();
         getWrapper().doAndWaitForPageToLoad(() -> elementCache().paginationPrevBtn.findElement(this).click());
     }
 
     public void goToNextPage()
     {
+        closeBubble();
         getWrapper().doAndWaitForPageToLoad(() -> elementCache().paginationNextBtn.findElement(this).click());
     }
 
@@ -623,7 +638,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     public Locator.XPathLocator getBubbleContent()
     {
         Locator.XPathLocator hopscotchBubble = Locator.byClass("hopscotch-bubble-container");
-        return hopscotchBubble.append(Locator.byClass("hopscotch-bubble-content").append(Locator.byClass("hopscotch-content")));
+        return hopscotchBubble.append(Locator.byClass("hopscotch-bubble-content").append(Locator.byClass("hopscotch-content").withText()));
     }
 
     public enum Scale
