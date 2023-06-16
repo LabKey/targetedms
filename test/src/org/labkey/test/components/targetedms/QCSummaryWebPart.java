@@ -56,6 +56,12 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
         Locators.recentSampleFilesLoading.waitForElementToDisappear(this, 30000);
     }
 
+    public UtilizationCalendarWebPart gotoUtilizationCalendar()
+    {
+        getWrapper().clickAndWait(elementCache().utilizationCalendar);
+        return new UtilizationCalendarWebPart(getDriver());
+    }
+
     public Locator.XPathLocator getBubble()
     {
         return Locators.hopscotchBubble;
@@ -109,6 +115,7 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
             }
             return summaryTiles;
         }
+        final WebElement utilizationCalendar = Locator.tagWithClass("span","fa fa-calendar").findWhenNeeded(this);
     }
 
     private static abstract class Locators
@@ -121,6 +128,7 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
         static final Locator recentSampleFile = Locator.css("div.sample-file-item");
         static final Locator recentSampleFileTotalOutliers = Locator.css("div.sample-file-item-total-outliers");
         static final Locator recentSampleFileAcquired = Locator.css("div.sample-file-item-acquired");
+
     }
 
     public class QcSummaryTile extends Component
