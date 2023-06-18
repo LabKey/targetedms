@@ -3082,15 +3082,15 @@ public class SkylineDocumentParser implements AutoCloseable
         return optionalInt == null ? null : optionalInt.getValue();
     }
 
-    private static Double fromOptional(SkylineDocument.SkylineDocumentProto.OptionalDouble optionalDouble) {
+    private static Double fromOptional(com.google.protobuf.DoubleValue optionalDouble) {
         return optionalDouble == null ? null : optionalDouble.getValue();
     }
 
-    private static Double fromOptional(SkylineDocument.SkylineDocumentProto.OptionalFloat optionalFloat) {
+    private static Double fromOptional(com.google.protobuf.FloatValue optionalFloat) {
         return optionalFloat == null ? null : Double.valueOf(optionalFloat.getValue());
     }
 
-    private static String fromOptional(SkylineDocument.SkylineDocumentProto.OptionalString optionalString) {
+    private static String fromOptional(com.google.protobuf.StringValue optionalString) {
         return optionalString == null ? null : optionalString.getValue();
     }
 

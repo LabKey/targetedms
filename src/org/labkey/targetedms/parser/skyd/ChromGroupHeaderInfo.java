@@ -37,7 +37,7 @@ public class ChromGroupHeaderInfo
 //    private int startScoreIndex;
     private int numPoints;
     private int compressedSize;
-    private short flagBits;
+    private EnumSet<FlagValues> flagValues;
     private short fileIndex;
     private short textIdLen;
     private short numTransitions;
@@ -56,6 +56,31 @@ public class ChromGroupHeaderInfo
 
     public ChromGroupHeaderInfo(CacheFormatVersion cacheFormatVersion, LittleEndianInput dataInputStream)
     {
+        if (cacheFormatVersion.compareTo(CacheFormatVersion.Sixteen) > 0)
+        {
+            precursor = dataInputStream.readDouble();
+            locationPoints = dataInputStream.readLong();
+            uncompressedSize = dataInputStream.readInt();
+            startTransitionIndex = dataInputStream.readInt();
+            /*startPeakIndex =*/ dataInputStream.readInt();
+            /*startScoreIndex =*/ dataInputStream.readInt();
+            numPoints = dataInputStream.readInt();
+            compressedSize = dataInputStream.readInt();
+            startTime = Float.intBitsToFloat(dataInputStream.readInt());
+            endTime = Float.intBitsToFloat(dataInputStream.readInt());
+            /*collisionalCrossSection =*/ Float.intBitsToFloat(dataInputStream.readInt());
+            numTransitions = dataInputStream.readShort();
+            flagValues = FlagValues.fromCurrentBits(dataInputStream.readShort());
+            fileIndex = dataInputStream.readShort();
+            /*ionMobilityUnits =*/ dataInputStream.readByte();
+            /*numPeaks =*/ dataInputStream.readByte();
+            /*maxPeakIndex =*/ dataInputStream.readByte();
+            if (precursor < 0) {
+                flagValues.add(FlagValues.polarity_negative);
+                precursor = -precursor;
+            }
+            return;
+        }
         if (cacheFormatVersion.compareTo(CacheFormatVersion.Five) < 0) {
             precursor = Float.intBitsToFloat(dataInputStream.readInt());
             fileIndex = checkUShort(dataInputStream.readInt());
@@ -69,23 +94,34 @@ public class ChromGroupHeaderInfo
             compressedSize = dataInputStream.readInt();
             dataInputStream.readInt(); // ignore these four bytes
             locationPoints = dataInputStream.readLong();
-        } else {
+            flagValues = EnumSet.noneOf(FlagValues.class);
+        }
+        else if (cacheFormatVersion.compareTo(CacheFormatVersion.Sixteen) <= 0)
+        {
             textIdIndex = dataInputStream.readInt();
             startTransitionIndex = dataInputStream.readInt();
-            /*startPeakIndex =*/ dataInputStream.readInt();
-            /*startScoreIndex =*/ dataInputStream.readInt();
+            /*startPeakIndex =*/
+            dataInputStream.readInt();
+            /*startScoreIndex =*/
+            dataInputStream.readInt();
             numPoints = dataInputStream.readInt();
             compressedSize = dataInputStream.readInt();
-            flagBits = dataInputStream.readShort();
+            flagValues = FlagValues.fromLegacyBits(dataInputStream.readShort());
             fileIndex = dataInputStream.readShort();
             textIdLen = dataInputStream.readShort();
             numTransitions = dataInputStream.readShort();
-            /*numPeaks =*/ dataInputStream.readByte();
-            /*maxPeakIndex =*/ dataInputStream.readByte();
-            /*isProcessedScans =*/ dataInputStream.readByte();
-            /*align1 =*/ dataInputStream.readByte();
-            /*statusId =*/ dataInputStream.readShort();
-            /*statusRank =*/ dataInputStream.readShort();
+            /*numPeaks =*/
+            dataInputStream.readByte();
+            /*maxPeakIndex =*/
+            dataInputStream.readByte();
+            /*isProcessedScans =*/
+            dataInputStream.readByte();
+            /*align1 =*/
+            dataInputStream.readByte();
+            /*statusId =*/
+            dataInputStream.readShort();
+            /*statusRank =*/
+            dataInputStream.readShort();
             precursor = dataInputStream.readDouble();
             locationPoints = dataInputStream.readLong();
         }
@@ -121,7 +157,7 @@ public class ChromGroupHeaderInfo
     }
 
     public EnumSet<FlagValues> getFlagValues() {
-        return getFlagValues(Short.toUnsignedLong(flagBits));
+        return flagValues;
     }
 
     public static EnumSet<FlagValues> getFlagValues(long bits) {
@@ -130,25 +166,60 @@ public class ChromGroupHeaderInfo
 
     public short getFlagBits()
     {
-        return flagBits;
+        return (short) FlagValues.toLegacyBits(flagValues);
     }
 
     public enum FlagValues
     {
-        has_mass_errors,
-        has_calculated_mzs,
-        extracted_base_peak,
-        has_ms1_scan_ids,
-        has_sim_scan_ids,
-        has_frag_scan_ids,
-        polarity_negative,
-        raw_chromatograms,
+        has_mass_errors(0x01, 0x01),
+        has_calculated_mzs (0, 0x02),
+        extracted_base_peak (0x02, 0x04),
+        has_ms1_scan_ids (0x04, 0x08),
+        has_sim_scan_ids (0x08, 0x10),
+        has_frag_scan_ids(0x10, 0x20),
+        polarity_negative(0, 0x40),
+        raw_chromatograms(0x20, 0x80),
         // Three bits for ion mobility info
-        ion_mobility_type_1,
-        ion_mobility_type_2,
-        ion_mobility_type_3,
-        dda_acquisition_method,
-        extracted_qc_trace
+        ion_mobility_type_1(0, 0x100),
+        ion_mobility_type_2(0, 0x200),
+        ion_mobility_type_3(0, 0x400),
+        dda_acquisition_method(0x40, 0x800),
+        extracted_qc_trace(0x80, 0x1000);
+
+        private int currentFlagValue;
+        private int legacyFlagValue;
+        FlagValues(int currentFlagValue, int legacyFlagValue) {
+            this.currentFlagValue = currentFlagValue;
+            this.legacyFlagValue = legacyFlagValue;
+        }
+
+        public static EnumSet<FlagValues> fromLegacyBits(int bits) {
+            EnumSet<FlagValues> enumSet = EnumSet.noneOf(FlagValues.class);
+            for (FlagValues flag : FlagValues.values()) {
+                if (0 != (flag.legacyFlagValue & bits)) {
+                    enumSet.add(flag);
+                }
+            }
+            return enumSet;
+        }
+
+        public static EnumSet<FlagValues> fromCurrentBits(int bits) {
+            EnumSet<FlagValues> enumSet = EnumSet.noneOf(FlagValues.class);
+            for (FlagValues flag : FlagValues.values()) {
+                if (0 != (flag.currentFlagValue & bits)) {
+                    enumSet.add(flag);
+                }
+            }
+            return enumSet;
+        }
+
+        public static int toLegacyBits(EnumSet<FlagValues> flags) {
+            int result = 0;
+            for (FlagValues flag : flags) {
+                result |= flag.legacyFlagValue;
+            }
+            return result;
+        }
     }
 
     public static int getStructSize(CacheFormatVersion cacheFormatVersion) {
@@ -273,7 +344,7 @@ public class ChromGroupHeaderInfo
     }
 
     public boolean isNegativePolarity() {
-        return 0 != (flagBits & (1 << FlagValues.polarity_negative.ordinal()));
+        return flagValues.contains(FlagValues.polarity_negative);
     }
 
     public boolean excludesTime(double time) {
