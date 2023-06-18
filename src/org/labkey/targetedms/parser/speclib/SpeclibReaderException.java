@@ -33,11 +33,11 @@ public class SpeclibReaderException extends Exception
     {
         String libName = library.getName();
         String libFileName = FileUtil.getFileName(libFilePath);
-        StringBuilder err = new StringBuilder("Error reading from spectrum library").append(" ").append(libFileName);
+        StringBuilder err = new StringBuilder("Error reading from spectral library file ").append(libFileName);
         if(!FileUtil.getBaseName(libFileName).equals(libName))
         {
             // Append the library name if it is different from the base library file name
-            err.append(" (").append(libName).append(")");
+            err.append(" [Library name: ").append(libName).append("]");
         }
         if(cause.getMessage() != null)
         {

@@ -3063,13 +3063,13 @@ public class TargetedMSController extends SpringActionController
                             : DIV(cl("labkey-error"), UL(unsupportedLibraries.stream().map(DOM::LI)))
                     )
             ));
-            view.setTitle("Unsupported Spectrum " + (unsupportedLibraries.size() == 1 ? "Library" : "Libraries"));
+            view.setTitle("Unsupported Spectral " + (unsupportedLibraries.size() == 1 ? "Library" : "Libraries"));
             vbox.addView(view);
         }
         if(specLibErrors.size() > 0)
         {
-            HtmlView view = new HtmlView(DOM.LK.ERRORS(specLibErrors.stream().map(e -> new LabKeyError(e.getMessage())).collect(Collectors.toList())));
-            view.setTitle("Spectrum Library Errors");
+            HtmlView view = new HtmlView(DOM.LK.ERRORS(specLibErrors.stream().map(e -> new LabKeyError(e.getMessage())).distinct().collect(Collectors.toList())));
+            view.setTitle("Spectral Library Errors");
             vbox.addView(view);
             specLibErrors.forEach(e -> LOG.info(e.getMessage(), e));
         }

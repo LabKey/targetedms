@@ -15,7 +15,6 @@
 
 package org.labkey.targetedms.parser.speclib;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,15 +22,16 @@ import org.labkey.api.cache.BlockingCache;
 import org.labkey.api.cache.CacheLoader;
 import org.labkey.api.cache.CacheManager;
 import org.labkey.api.data.Container;
-import org.labkey.api.data.RuntimeSQLException;
 import org.labkey.api.pipeline.LocalDirectory;
 import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.Pair;
+import org.labkey.api.util.logging.LogHelper;
 import org.labkey.targetedms.parser.Peptide;
 import org.labkey.targetedms.view.spectrum.LibrarySpectrumMatchGetter;
 import org.sqlite.SQLiteConfig;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -65,32 +65,29 @@ public abstract class LibSpectrumReader
         }
     }
 
-    private static final Logger LOG = LogManager.getLogger(LibSpectrumReader.class);
+    private static final Logger LOG = LogHelper.getLogger(LibSpectrumReader.class, "Spectral library reader");
 
     @Nullable
     public LibSpectrum getLibSpectrum(Container container, Path libPath,
                                       String modifiedPeptide, int charge,
-                                      int redundantRefSpectrumId, String sourceFile) throws SQLException, DataFormatException
+                                      int redundantRefSpectrumId, String sourceFile) throws SQLException, DataFormatException, FileNotFoundException
     {
         return getLibSpectrum(container, libPath, new SpectrumKey(modifiedPeptide, charge, sourceFile, redundantRefSpectrumId));
     }
 
     @Nullable
     public LibSpectrum getLibSpectrum(Container container, Path libPath,
-                                      String modifiedPeptide, int charge) throws SQLException, DataFormatException
+                                      String modifiedPeptide, int charge) throws SQLException, DataFormatException, FileNotFoundException
     {
         return getLibSpectrum(container, libPath, new SpectrumKey(modifiedPeptide, charge));
     }
 
     @Nullable
-    private LibSpectrum getLibSpectrum(Container container, Path libPath, SpectrumKey key) throws SQLException, DataFormatException
+    private LibSpectrum getLibSpectrum(Container container, Path libPath, SpectrumKey key) throws SQLException, DataFormatException, FileNotFoundException
     {
         String localLibPath = key.forRedundantSpectrum()
                 ? getNonEmptyLocalLibPath(container, getRedundantLibPath(container, libPath)) // Bibliospec stores redundant spectra in a separate SQLite file
                 : getNonEmptyLocalLibPath(container, libPath);
-
-        if (null == localLibPath)
-            return null;
 
         try (Connection conn = getLibConnection(localLibPath))
         {
@@ -99,10 +96,24 @@ public abstract class LibSpectrumReader
         }
     }
 
+    /*
+     * Returns a list of retention times for the given modified peptide sequence in the spectral library file at the given path.
+     * This can be used to label peptide identifications on a chromatogram chart. An empty list is returned if the file does not
+     * exist, is a 0-byte file, or there was an error reading the library file.
+     */
     @NotNull
     public List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> getRetentionTimes(Container container, Path libPath, String modifiedPeptide)
     {
-        String libFilePath = getNonEmptyLocalLibPath(container, libPath);
+        String libFilePath = null;
+        try
+        {
+            libFilePath = getNonEmptyLocalLibPath(container, libPath);
+        }
+        catch (FileNotFoundException e)
+        {
+            LOG.debug("Unable to get the local spectral library path for '" + libPath.toString() + "' in folder " + container.getPath(), e);
+        }
+
         if (null == libFilePath)
             return Collections.emptyList();
 
@@ -113,7 +124,8 @@ public abstract class LibSpectrumReader
         }
         catch(SQLException e)
         {
-            throw new RuntimeSQLException(e);
+            LOG.debug("Error reading spectral library file '" + libFilePath + "' in folder " + container.getPath(), e);
+            return Collections.emptyList();
         }
     }
 
@@ -202,8 +214,8 @@ public abstract class LibSpectrumReader
                 }
             };
 
-    @Nullable
-    static String getNonEmptyLocalLibPath(Container container, Path libPath)
+    @NotNull
+    static String getNonEmptyLocalLibPath(Container container, Path libPath) throws FileNotFoundException
     {
         String libPathString;
         // If lib is in cloud, copy it locally to read
@@ -216,8 +228,7 @@ public abstract class LibSpectrumReader
             }
             else
             {
-                LOG.debug("Unable to copy " + libPath + " to local file, referenced from " + container.getPath());
-                return null;
+                throw new FileNotFoundException("Unable to copy '" + libPath + "' to local file.");
             }
         }
         else
@@ -227,13 +238,11 @@ public abstract class LibSpectrumReader
         File f = new File(libPathString);
         if(!f.exists())
         {
-            LOG.debug("Library file not found: " + libPathString + ", referenced from container " + container.getPath());
-            return null;
+            throw new FileNotFoundException("Library file " + f.getName() + " is missing from the Skyline document archive (sky.zip file).");
         }
         if(f.length() == 0)
         {
-            LOG.debug("Found 0 byte library file: " + libPathString + ", referenced from container " + container.getPath());
-            return null;
+            throw new FileNotFoundException("Library file " + f.getName() + " is available but it has no data.");
         }
         return libPathString;
     }

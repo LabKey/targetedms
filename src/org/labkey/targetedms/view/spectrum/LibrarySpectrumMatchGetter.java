@@ -41,6 +41,7 @@ import org.labkey.targetedms.query.ModificationManager;
 import org.labkey.targetedms.query.PeptideManager;
 import org.labkey.targetedms.query.PrecursorManager;
 
+import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -60,7 +61,7 @@ public class LibrarySpectrumMatchGetter
 {
     private static final int CACHE_SIZE = 10;
 
-    private static BlockingCache<PrecursorKey, List<PeptideIdRtInfo>> _peptideIdRtsCache =
+    private static final BlockingCache<PrecursorKey, List<PeptideIdRtInfo>> _peptideIdRtsCache =
             CacheManager.getBlockingCache(CACHE_SIZE, CacheManager.DAY, "TargetedMS peptide ID retention times",
                     (precursor, argument) -> {
                         if (!(argument instanceof Container))
@@ -153,7 +154,7 @@ public class LibrarySpectrumMatchGetter
                 {
                     spectrum = reader.getLibSpectrum(container, libFilePath, precursor.getModifiedSequence(), precursor.getCharge());
                 }
-                catch (SQLException | DataFormatException e)
+                catch (SQLException | DataFormatException | FileNotFoundException e)
                 {
                     errors.add(new SpeclibReaderException(e, library, libFilePath));
                     continue;
@@ -191,7 +192,7 @@ public class LibrarySpectrumMatchGetter
                     return makeLibrarySpectrumMatch(spectrum, run, peptide, precursor, library);
                 }
             }
-            catch (SQLException | DataFormatException e)
+            catch (SQLException | DataFormatException | FileNotFoundException e)
             {
                 throw new SpeclibReaderException(e, library, libFilePath);
             }
