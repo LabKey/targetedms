@@ -233,6 +233,7 @@
     <instrument id="MS:1003028" name="Orbitrap Exploris 480" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Exploris 480 Quadrupole Orbitrap MS."/>
     <instrument id="MS:1000642" name="MALDI LTQ XL" vendor="Thermo Scientific" description="Thermo Scientific MALDI LTQ XL MS."/>
     <instrument id="MS:1000643" name="MALDI LTQ Orbitrap" vendor="Thermo Scientific" description="Thermo Scientific MALDI LTQ Orbitrap MS."/>
+    <instrument id="MS:1003378" name="Orbitrap Astral" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Astral mass spectrometer contains three mass analyzers: a quadrupole analyzer, an Orbitrap analyzer, and the Astral analyzer."/>
     <instrument id="MS:1000637" name="ITQ 1100" vendor="Thermo Scientific" description="Thermo Scientific ITQ 1100 GC-MS."/>
     <instrument id="MS:1000638" name="LTQ XL ETD" vendor="Thermo Scientific" description="Thermo Scientific LTQ XL MS with ETD."/>
     <instrument id="MS:1000635" name="ITQ 700" vendor="Thermo Scientific" description="Thermo Scientific ITQ 700 GC-MS."/>
