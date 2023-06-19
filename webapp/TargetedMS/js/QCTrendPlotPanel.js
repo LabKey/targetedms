@@ -1635,7 +1635,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 var guideSetEndIndex = guideSetTrainingData[0]['EndIndex'];
                 this.getSvgElForPlot(plot).selectAll("line.separator").data([{'StartIndex': guideSetEndIndex + 1, 'EndIndex': guideSetEndIndex + 1}])
                         .enter().append("line").attr("class", "separator")
-                        .attr('x1', xSep).attr('y1', yRange[0]).attr('x2', xSep).attr('y2', (yRange[0] - yRange[1]) - 110)
+                        .attr('x1', xSep).attr('y1', yRange[0]).attr('x2', xSep).attr('y2', yRange[1])
                         .attr('stroke', '#000000').attr('stroke-opacity', 1)
                         .attr('fill', '#000000').attr('fill-opacity', 1);
             }
