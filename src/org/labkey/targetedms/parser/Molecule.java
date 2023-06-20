@@ -162,7 +162,17 @@ public class Molecule extends GeneralMolecule
             }
         }
         return true;
+    }
 
+    @Override
+    public boolean targetMatches(Target target)
+    {
+        if (target.getName() != null && !target.getName().equals(getName()))
+        {
+            return false;
+        }
+        // TODO(nicksh): maybe need do some more matching?
+        return true;
     }
 
     public String getName()

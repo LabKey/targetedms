@@ -62,6 +62,7 @@ public class ChromGroupHeaderInfo
             locationPoints = dataInputStream.readLong();
             uncompressedSize = dataInputStream.readInt();
             startTransitionIndex = dataInputStream.readInt();
+            textIdIndex = dataInputStream.readInt();
             /*startPeakIndex =*/ dataInputStream.readInt();
             /*startScoreIndex =*/ dataInputStream.readInt();
             numPoints = dataInputStream.readInt();

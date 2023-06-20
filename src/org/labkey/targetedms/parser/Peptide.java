@@ -213,6 +213,12 @@ public class Peptide extends GeneralMolecule
         return modifiedSequencesMatch(getPeptideModifiedSequence(), textId);
     }
 
+    @Override
+    public boolean targetMatches(Target target)
+    {
+        return modifiedSequencesMatch(getPeptideModifiedSequence(), target.getModifiedPeptideSequence());
+    }
+
     public static class Modification extends SkylineEntity
     {
         private long _peptideId;

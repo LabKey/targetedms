@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.exp.api.DataType;
 import org.labkey.api.pipeline.PipelineJobException;
+import org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass;
 import org.labkey.targetedms.parser.skyd.CacheFormat;
 import org.labkey.targetedms.parser.skyd.CacheFormatVersion;
 import org.labkey.targetedms.parser.skyd.CacheHeaderStruct;
@@ -64,6 +65,7 @@ public class SkylineBinaryParser
     private ChromGroupHeaderInfo[] _chromatograms;
     private float[] _allPeaksRt;
     private byte[] _seqBytes;
+    private ChromatogramGroupId[] _chromatogramGroupIds;
 
 
     /** Newest supported version */
@@ -350,11 +352,23 @@ public class SkylineBinaryParser
         }
     }
 
-    public String getTextId(ChromGroupHeaderInfo chromGroupHeaderInfo) {
+    public ChromatogramGroupId getTextId(ChromGroupHeaderInfo chromGroupHeaderInfo) {
+        if (_chromatogramGroupIds != null) {
+            int index = chromGroupHeaderInfo.getTextIdIndex();
+            if (index < 0) {
+                return null;
+            }
+            return _chromatogramGroupIds[index];
+        }
         if (0 == chromGroupHeaderInfo.getTextIdLen()) {
             return null;
         }
-        return new String(_seqBytes, chromGroupHeaderInfo.getTextIdIndex(), chromGroupHeaderInfo.getTextIdLen(), _cacheFormat.getCharset());
+        Target target = Target.fromChromatogramTextId(new String(_seqBytes, chromGroupHeaderInfo.getTextIdIndex(),
+                chromGroupHeaderInfo.getTextIdLen(), _cacheFormat.getCharset()));
+        if (target == null) {
+            return null;
+        }
+        return new ChromatogramGroupId(target);
     }
 
     public String getFilePath(ChromGroupHeaderInfo chromGroupHeaderInfo) {

@@ -48,5 +48,5 @@ public enum CacheFormatVersion
         }
         return values()[i];
     }
-    public static final CacheFormatVersion CURRENT = Fifteen;
+    public static final CacheFormatVersion CURRENT = Eighteen;
 }
