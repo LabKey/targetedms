@@ -16,10 +16,10 @@
  */
 %>
 
+<%@ page import="org.json.JSONObject" %>
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.JspView" %>
 <%@ page import="org.labkey.api.view.template.ClientDependencies" %>
-<%@ page import="org.json.old.JSONObject" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 
 <%

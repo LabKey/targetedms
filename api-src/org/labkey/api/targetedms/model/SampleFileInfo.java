@@ -1,8 +1,8 @@
 package org.labkey.api.targetedms.model;
 
 import org.jetbrains.annotations.NotNull;
-import org.json.old.JSONArray;
-import org.json.old.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.Date;
 import java.util.Map;

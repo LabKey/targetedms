@@ -1,11 +1,13 @@
 package org.labkey.targetedms.model;
 
 import org.jetbrains.annotations.Nullable;
-import org.json.old.JSONArray;
-import org.json.old.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.labkey.api.util.JsonUtil;
 
 import java.awt.*;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Peptide for QC Plot
@@ -70,7 +72,7 @@ public class QCPlotFragment
         this.guideSetStats = guideSetStats;
     }
 
-    public JSONObject toJSON(boolean includeLJ, boolean includeMR, boolean includeMeanCusum, boolean includeVariableCusum, boolean showExcluded)
+    public JSONObject toJSON(boolean includeLJ, boolean includeMR, boolean includeMeanCusum, boolean includeVariableCusum, boolean showExcluded, boolean includeTrailingMean, boolean includeTrailingCV, Map<GuideSetKey, GuideSetStats> targetedStats)
     {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("DataType", getDataType());
@@ -89,7 +91,7 @@ public class QCPlotFragment
             statsJSONObject.put("SeriesType", stats.getKey().getMetricSeriesIndex());
             if (includeLJ)
             {
-                statsJSONObject.put("LJStdDev", stats.getStandardDeviation());
+                JsonUtil.safePut(statsJSONObject, "LJStdDev", stats.getStandardDeviation());
                 statsJSONObject.put("LJMean", stats.getAverage());
             }
             if (includeMR)
@@ -111,6 +113,10 @@ public class QCPlotFragment
         {
             JSONObject dataJsonObject = new JSONObject();
             dataJsonObject.put("Value", plotData.getMetricValue());
+            if (plotData.isLeveyJenningsOutlier(targetedStats.get(plotData.getGuideSetKey())))
+            {
+                dataJsonObject.put("LJOutlier", true);
+            }
             dataJsonObject.put("SampleFileId", plotData.getSampleFile().getId());
             dataJsonObject.put("PrecursorChromInfoId", plotData.getPrecursorChromInfoId());
             boolean ignoreInQC = plotData.getSampleFile().isIgnoreInQC(plotData.getMetricId());
@@ -127,16 +133,48 @@ public class QCPlotFragment
                 if (includeMR)
                 {
                     dataJsonObject.put("MR", plotData.getmR());
+                    if (plotData.isMovingRangeOutlier(targetedStats.get(plotData.getGuideSetKey())))
+                    {
+                        dataJsonObject.put("MROutlier", true);
+                    }
                 }
                 if (includeMeanCusum)
                 {
                     dataJsonObject.put("CUSUMmN", plotData.getCUSUMmN());
                     dataJsonObject.put("CUSUMmP", plotData.getCUSUMmP());
+                    if (plotData.isCUSUMmNOutlier())
+                    {
+                        dataJsonObject.put("CUSUMmNOutlier", true);
+                    }
+                    if (plotData.isCUSUMmPOutlier())
+                    {
+                        dataJsonObject.put("CUSUMmPOutlier", true);
+                    }
                 }
                 if (includeVariableCusum)
                 {
                     dataJsonObject.put("CUSUMvP", plotData.getCUSUMvP());
                     dataJsonObject.put("CUSUMvN", plotData.getCUSUMvN());
+                    if (plotData.isCUSUMvNOutlier())
+                    {
+                        dataJsonObject.put("CUSUMvNOutlier", true);
+                    }
+                    if (plotData.isCUSUMvPOutlier())
+                    {
+                        dataJsonObject.put("CUSUMvPOutlier", true);
+                    }
+                }
+                if (includeTrailingMean)
+                {
+                    dataJsonObject.put("TrailingMean", plotData.getTrailingMean());
+                }
+                if (includeTrailingCV)
+                {
+                    dataJsonObject.put("TrailingCV", plotData.getTrailingCV());
+                }
+                if (includeTrailingMean || includeTrailingCV)
+                {
+                    dataJsonObject.put("TrailingStartDate", plotData.getTrailingStart());
                 }
                 dataJsonArray.put(dataJsonObject);
             }

@@ -12,8 +12,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         }
     },
 
-    processLJGuideSetData : function(plotDataRows)
-    {
+    processLJGuideSetData : function(plotDataRows) {
         this.guideSetDataMap = {};
         this.defaultGuideSet = {};
         Ext4.each(plotDataRows, function(plotDataRow) {
@@ -64,8 +63,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
     setLJSeriesMinMax: function(dataObject, row) {
         // track the min and max data so we can get the range for including the QC annotations
         var val = row['value'];
-        if (LABKEY.vis.isValid(val))
-        {
+        if (LABKEY.vis.isValid(val)) {
             if (dataObject.min == null || val < dataObject.min) {
                 dataObject.min = val;
             }
@@ -73,8 +71,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
                 dataObject.max = val;
             }
 
-            if (this.yAxisScale == 'log' && val <= 0)
-            {
+            if (this.yAxisScale == 'log' && val <= 0) {
                 dataObject.showLogInvalid = true;
             }
 
@@ -82,11 +79,9 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
             var sd = LABKEY.vis.isValid(row['stdDev']) ? row['stdDev'] : 0;
 
             // Issue 28462: don't include the +/-3 stddev error bars in min/max calculation when it isn't being plotted
-            if (!this.singlePlot && LABKEY.vis.isValid(mean))
-            {
+            if (!this.singlePlot && LABKEY.vis.isValid(mean)) {
                 var minSd = (mean - (3 * sd));
-                if (dataObject.showLogInvalid == undefined && this.yAxisScale == 'log' && minSd <= 0)
-                {
+                if (dataObject.showLogInvalid == undefined && this.yAxisScale == 'log' && minSd <= 0) {
                     // Avoid setting our scale to be negative based on the three standard deviations to avoid messing up log plots
                     dataObject.showLogWarning = true;
                     for (var i = 2; i >= 0; i--)
@@ -106,32 +101,26 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
                 }
             }
         }
-        else if (this.isMultiSeries())
-        {
+        else if (this.isMultiSeries()) {
             // check if either of the y-axis metric values are invalid for a log scale
             var val1 = row['value_series1'],
                     val2 = row['value_series2'];
-            if (dataObject.showLogInvalid == undefined && this.yAxisScale == 'log')
-            {
-                if ((LABKEY.vis.isValid(val1) && val1 <= 0) || (LABKEY.vis.isValid(val2) && val2 <= 0))
-                {
+            if (dataObject.showLogInvalid == undefined && this.yAxisScale == 'log') {
+                if ((LABKEY.vis.isValid(val1) && val1 <= 0) || (LABKEY.vis.isValid(val2) && val2 <= 0)) {
                     dataObject.showLogInvalid = true;
                 }
             }
         }
     },
 
-    getLJPlotTypeProperties: function(precursorInfo)
-    {
+    getLJPlotTypeProperties: function(precursorInfo) {
         var plotProperties = {};
         // some properties are specific to whether or not we are showing multiple y-axis series
-        if (this.isMultiSeries())
-        {
+        if (this.isMultiSeries()) {
             plotProperties['value'] = 'value_series1';
             plotProperties['valueRight'] = 'value_series2';
         }
-        else
-        {
+        else {
             plotProperties['value'] = 'value';
             plotProperties['mean'] = 'mean';
             plotProperties['stdDev'] = 'stdDev';
@@ -140,8 +129,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         return plotProperties;
     },
 
-    getLJInitFragmentPlotData: function()
-    {
+    getLJInitFragmentPlotData: function() {
         return {
             min: null,
             max: null
@@ -152,25 +140,24 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
     {
         var data = {};
         // if a guideSetId is defined for this row, include the guide set stats values in the data object
-        if (Ext4.isDefined(row['GuideSetId']) && row['GuideSetId'] > 0)
-        {
+        if (Ext4.isDefined(row['GuideSetId']) && row['GuideSetId'] > 0) {
             var gs = this.guideSetDataMap[row['GuideSetId']];
-            if (Ext4.isDefined(gs) && gs.Series[fragment]&& gs.Series[fragment][seriesType])
-            {
+            if (Ext4.isDefined(gs) && gs.Series[fragment]&& gs.Series[fragment][seriesType]) {
                 data['mean'] = gs.Series[fragment][seriesType]['Mean'];
                 data['stdDev'] = gs.Series[fragment][seriesType]['StdDev'];
             }
         }
 
-        if (this.isMultiSeries())
-        {
+        if (this.isMultiSeries()) {
             data['value_' + seriesType] = row['Value'];
             data['value_' + seriesType + 'Title'] = metricProps[seriesType + 'Label'];
         }
-        else
-        {
+        else {
             data['value'] = row['Value'];
         }
+
+        data.LJShape = (row.IgnoreInQC ? 'Exclude' : 'Include') + (row.LJOutlier ? '-Outlier' : '');
+
         return data;
 
     },

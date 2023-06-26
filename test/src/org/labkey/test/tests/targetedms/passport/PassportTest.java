@@ -22,33 +22,25 @@ import org.labkey.test.Locator;
 import org.labkey.test.categories.Daily;
 import org.labkey.test.util.APIUserHelper;
 import org.labkey.test.util.LogMethod;
-import org.labkey.test.util.UIContainerHelper;
 
 import java.util.List;
 
 @Category({Daily.class})
 public class PassportTest  extends PassportTestPart
 {
-    public PassportTest()
-    {
-        // We want to use the UI when creating the project/folder so that we can verify that we get the wizard
-        // that has the extra steps
-        setContainerHelper(new UIContainerHelper(this));
-    }
-
 
     @Test
     public void testSteps()
     {
         APIUserHelper h = new APIUserHelper(this);
-        h.createUser(user);
+        h.createUser(NORMAL_USER);
 
         setupProject();
         testAsSuperAdmin();
         testAsNormalUser();
     }
 
-    @LogMethod(category = LogMethod.MethodType.VERIFICATION)
+    @LogMethod
     protected void testAsSuperAdmin()
     {
         signIn();
@@ -106,10 +98,10 @@ public class PassportTest  extends PassportTestPart
         assertElementPresent(Locator.xpath("//td[contains(@class, 'feature-turn')]"), 6);
     }
 
-    @LogMethod(category = LogMethod.MethodType.VERIFICATION)
+    @LogMethod
     protected void testAsNormalUser()
     {
-        impersonate("normaluser@gmail.com");
+        impersonate(NORMAL_USER);
         clickProject(getProjectName());
         testNormalStuff();
 

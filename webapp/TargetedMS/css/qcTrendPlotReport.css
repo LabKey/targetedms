@@ -1,3 +1,13 @@
+.outliers-toggle {
+    opacity: 0.4;
+    padding-top: 10px;
+    position: absolute;
+}
+
+.outliers-toggle:hover {
+    opacity: 1;
+    cursor: pointer;
+}
 
 .tiledPlotPanel {
     min-height: 50px;

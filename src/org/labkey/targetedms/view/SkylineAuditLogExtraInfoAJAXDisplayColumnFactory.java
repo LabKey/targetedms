@@ -1,6 +1,6 @@
 package org.labkey.targetedms.view;
 
-import org.json.old.JSONObject;
+import org.json.JSONObject;
 import org.labkey.api.data.AJAXDetailsDisplayColumn;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.Container;
@@ -32,5 +32,4 @@ public class SkylineAuditLogExtraInfoAJAXDisplayColumnFactory implements Display
             }
         };
     }
-
 }

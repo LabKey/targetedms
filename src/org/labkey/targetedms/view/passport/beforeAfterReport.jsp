@@ -1,16 +1,11 @@
 <%@ page import="org.labkey.api.settings.AppProps" %>
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.JspView" %>
-<%@ page import="org.labkey.targetedms.model.passport.IKeyword" %>
-<%@ page import="org.labkey.targetedms.model.passport.IProtein" %>
-<%@ page import="java.util.ArrayList" %>
-<%@ page import="java.util.List" %>
 <%@ page import="org.labkey.api.view.template.ClientDependencies" %>
 <%@ page import="org.labkey.targetedms.TargetedMSController" %>
 <%@ page import="org.labkey.targetedms.model.passport.IPeptide" %>
-<%@ page import="org.labkey.api.util.HtmlString" %>
+<%@ page import="org.labkey.targetedms.model.passport.IProtein" %>
 <%@ taglib prefix="labkey" uri="http://www.labkey.org/taglib" %>
-
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 
 <%
@@ -53,7 +48,7 @@
     <!--START IMPORTS-->
 
 <script type="text/javascript">
-    var proteinJSON = <%=protein.getJSON(true).getJavaScriptFragment(2)%>
+    var proteinJSON = <%=json(protein.getJSON(true), 2)%>
     document.addEventListener("DOMContentLoaded", function() {
         protein.initialize();
     });

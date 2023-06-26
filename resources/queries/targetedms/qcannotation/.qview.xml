@@ -2,6 +2,7 @@
     <columns>
         <column name="Description" />
         <column name="Date" />
+        <column name="EndDate" />
         <column name="QCAnnotationTypeId" />
         <column name="Container" />
         <column name="Created" />

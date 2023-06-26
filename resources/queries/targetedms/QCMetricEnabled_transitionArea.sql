@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 -- Approximate the checks in GeneralTransition.isQuantitative()
+-- We need to check both the proteomics and small molecule data. Use two separate EXISTS subqueries so we stop as
+-- soon as we find any data
+SELECT 1 AS E WHERE EXISTS (
 SELECT Id, FragmentType, Quantitative FROM Transition t
     WHERE
         (Quantitative = TRUE) OR (Quantitative IS NULL AND
@@ -27,9 +30,8 @@ SELECT Id, FragmentType, Quantitative FROM Transition t
                                                                                                   WHERE AcquisitionMethod IS NULL OR AcquisitionMethod != 'DDA'
                                                                                                   ))
         )
-
-UNION
-
+)
+OR EXISTS (
 SELECT Id, FragmentType, Quantitative FROM MoleculeTransition t
 WHERE
     (Quantitative = TRUE) OR (Quantitative IS NULL AND
@@ -43,3 +45,4 @@ WHERE
                                                                                                   WHERE AcquisitionMethod IS NULL OR AcquisitionMethod != 'DDA'
                                                                                                   ))
     )
+)

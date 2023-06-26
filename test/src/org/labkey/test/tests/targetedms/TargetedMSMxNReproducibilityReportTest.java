@@ -11,6 +11,8 @@ import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.targetedms.ConnectionSource;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,6 +68,7 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
                 getGraphCount("EAEDL[+7.0]QVGQVE"));
 
         log("Verifying the value type");
+        waitFor(() -> getSelectedOptionText(Locator.name("valueType")).equals("Normalized"), 2_000);
         checker().verifyEquals("The Value Type drop-down is not defaulted correct", "Normalized",
                 getSelectedOptionText(Locator.name("valueType")));
         selectOptionByText(Locator.name("valueType"), "Calibrated");
@@ -143,17 +146,23 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
         log("Verifying the FOM values");
         waitForElement(Locator.css("span.labkey-wp-title-text").withText("Figures of Merit"));
         checker().verifyTrue("Incorrect peptide", isElementPresent(Locator.tagWithText("h3", "Calibration Curve: VIFDANAPVAVR")));
-        checker().verifyEquals("Incorrect Lower limit of quantitation", "1.0",
-                Locator.tagWithId("td", "lloq-stat").findElement(getDriver()).getText());
-        checker().verifyEquals("Incorrect Upper limit of quantitation", "10.0",
-                Locator.tagWithId("td", "uloq-stat").findElement(getDriver()).getText());
+        shortWait().withMessage("Lower limit of quantitation")
+                .until(ExpectedConditions.textToBe(Locator.tagWithId("td", "lloq-stat"), "1.0"));
+        shortWait().withMessage("Lower limit of quantitation")
+                .until(ExpectedConditions.textToBe(Locator.tagWithId("td", "uloq-stat"), "10.0"));
+        checker().screenShotIfNewError("calibration_curves");
         clickAndWait(Locator.linkWithText("Show Details"));
 
         log("Verifying only 3 samples for displayed");
         waitForText("Blank+IS__VIFonly");
+        WebElement fomEl = Locator.tagWithId("div", "fom-sampleList").withText().waitForElement(getDriver(), 2_000);
         checker().verifyEquals("More than 3 samples displayed",
-                "Blank+IS__VIFonly\n" + "Blank+IS__VIFonly (2)\n" + "Cal 1_0_20 ng_mL_VIFonly\n" + "and 22 more",
-                Locator.tagWithId("div", "fom-sampleList").findElement(getDriver()).getText());
+                """
+                        Blank+IS__VIFonly
+                        Blank+IS__VIFonly (2)
+                        Cal 1_0_20 ng_mL_VIFonly
+                        and 22 more""",
+                fomEl.getText());
 
         log("Verifying the downloaded file");
         File exportedExcel = clickAndWaitForDownload(Locator.linkWithId("targetedms-fom-export"));

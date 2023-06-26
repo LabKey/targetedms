@@ -125,18 +125,18 @@ public class GuideSetStats
             }
             else if (roundValues)
             {
-                result.add((double) Math.round(value * 10000.0d) / 10000.0d);
+                result.add(Math.round(value * 10000.0d) / 10000.0d);
             }
             else
             {
-                result.add(value.doubleValue());
+                result.add(value);
             }
         }
 
         return result.toArray(new Double[0]);
     }
 
-    public void calculateStats()
+    public void calculateStats(Integer trailingRuns)
     {
         _locked = true;
 
@@ -157,8 +157,18 @@ public class GuideSetStats
         List<RawMetricDataSet> includedRows = allRows.stream().filter(x -> !x.getSampleFile().isIgnoreInQC(x.getMetricId())).collect(Collectors.toList());
 
         Double[] metricVals = getValues(includedRows, true, true);
+        Double[] metricValsForTrailing = getValues(includedRows, false, true);
 
         Double[] mRs = Stats.getMovingRanges(metricVals, false, null);
+
+        Double[] trailingMeans = null;
+        Double[] trailingCVs = null;
+
+        if (trailingRuns != null)
+        {
+            trailingMeans = Stats.getTrailingMeans(metricValsForTrailing, trailingRuns);
+            trailingCVs = Stats.getTrailingCVs(metricValsForTrailing, trailingRuns);
+        }
 
         double[] positiveCUSUMm = Stats.getCUSUMS(metricVals, false, false, false, null);
         double[] negativeCUSUMm = Stats.getCUSUMS(metricVals, true, false, false, null);
@@ -180,6 +190,54 @@ public class GuideSetStats
                 row.setCUSUMmN(negativeCUSUMm[i]);
                 row.setCUSUMvP(positiveCUSUMv[i]);
                 row.setCUSUMvN(negativeCUSUMv[i]);
+            }
+        }
+        // start trailingCVs and trailingMeans from number of trailingRuns after the beginning
+        int j = 0; // index to traverse trailingMeans and trailingCVs array
+        if (null != trailingRuns)
+        {
+            for (int i = trailingRuns-1; i < includedRows.size(); i++)
+            {
+                RawMetricDataSet row = includedRows.get(i);
+                RawMetricDataSet trailingStartRow = includedRows.get(j);
+                if (trailingMeans.length > 0 && j < trailingMeans.length)
+                {
+                    if (row.getMetricValue() == null)
+                    {
+                        if (j != 0)
+                        {
+                            // when the metric value is null (missing data), setting it to the previous value
+                            row.setTrailingMean(trailingMeans[j - 1]);
+                        }
+                    }
+                    else
+                    {
+                        row.setTrailingMean(trailingMeans[j]);
+                    }
+                    row.setTrailingStart(trailingStartRow.getSampleFile().getAcquiredTime());
+                }
+                if (trailingCVs.length > 0 && j < trailingCVs.length)
+                {
+                    if (row.getMetricValue() == null)
+                    {
+                        if (j != 0)
+                        {
+                            // when the metric value is null (missing data), setting it to the previous value
+                            row.setTrailingCV(trailingCVs[j - 1]);
+                        }
+                    }
+                    else
+                    {
+                        row.setTrailingCV(trailingCVs[j]);
+                    }
+                    row.setTrailingStart(trailingStartRow.getSampleFile().getAcquiredTime());
+                }
+                if (row.getMetricValue() != null)
+                {
+                    // when the metric value is null (bad data), the corresponding trailing mean/cv is set to the previous trailing mean/cv
+                    // so only move forward for the actual metric values
+                    j++;
+                }
             }
         }
     }

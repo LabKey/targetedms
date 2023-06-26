@@ -22,8 +22,11 @@ import org.labkey.test.selenium.LazyWebElement;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCache>
 {
@@ -37,7 +40,7 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
     public enum MetricTypeTicks
     {
         RETENTION("Retention Time"),
-        PEAK("Peak Area"),
+        TOTAL_PEAK("Total Peak Area"),
         FWHM("Full Width at Half Maximum (FWHM)"),
         FWB("Full Width at Base (FWB)"),
         LHRATIO("Light/Heavy Ratio"),
@@ -45,6 +48,7 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
         PAREA("Precursor Area"),
         TAREA("Transition Area"),
         MASSACCURACY("Mass Accuracy"),
+        TIC_AREA("TIC Area"),
         ISOTOPE_DOTP("Isotope dotp"),
         LIBRARY_DOTP("Library dotp");
 
@@ -109,15 +113,22 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
     public List<String> getTicks(int guideSetNum, ParetoPlotType plotType)
     {
         List<String> ticks = new LinkedList<>();
-        int maxIndex = 5;
-        int minIndex = 1;
+        int maxIndex = 20;
+        int index = 1;
 
-        while(minIndex <= maxIndex)
+        while (index <= maxIndex)
         {
-            String tickText = Locator.css("#paretoPlot-GuideSet-" + guideSetNum  + plotType.getIdSuffix() +
-                    " > svg > g:nth-child(1) > g.tick-text > a:nth-child(" + minIndex + ")").findElement(getDriver()).getText();
-            ticks.add(tickText);
-            minIndex++;
+            Optional<WebElement> element = Locator.css("#paretoPlot-GuideSet-" + guideSetNum  + plotType.getIdSuffix() +
+                    " > svg > g:nth-child(1) > g.tick-text > a:nth-child(" + index + ") > text > title").findOptionalElement(getDriver());
+            if (element.isPresent())
+            {
+                ticks.add(element.get().getText());
+            }
+            else
+            {
+                break;
+            }
+            index++;
         }
         return ticks;
     }

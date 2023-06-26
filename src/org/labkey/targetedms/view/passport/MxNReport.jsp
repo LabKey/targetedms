@@ -1,10 +1,8 @@
-<%@ page import="org.labkey.api.settings.ExperimentalFeatureService" %>
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.JspView" %>
 <%@ page import="org.labkey.api.view.template.ClientDependencies" %>
 <%@ page import="org.labkey.targetedms.TargetedMSController" %>
 <%@ page import="org.labkey.targetedms.model.passport.IProtein" %>
-<%@ page import="org.labkey.api.settings.AppProps" %>
 <%@ taglib prefix="labkey" uri="http://www.labkey.org/taglib" %>
 
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
@@ -32,12 +30,11 @@
 <%
     JspView<?> me = (JspView<?>) HttpView.currentView();
     IProtein protein = (IProtein)me.getModelBean();
-    String questionMark = ExperimentalFeatureService.get().isFeatureEnabled(AppProps.EXPERIMENTAL_NO_QUESTION_MARK_URL) ? "?" : "";
 %>
     <!--START IMPORTS-->
 
 <script type="text/javascript">
-    var proteinJSON = <%=protein.getJSON(false).getJavaScriptFragment(2)%>
+    var proteinJSON = <%=json(protein.getJSON(false), 2)%>
     document.addEventListener("DOMContentLoaded", function() {
         LABKEY.Query.selectRows({
             schemaName: 'targetedms',
@@ -53,9 +50,9 @@
             sort: 'AcquiredTime'
         });
     });
-    var precursorChromatogramUrl = "<%=h(urlFor(TargetedMSController.PrecursorChromatogramChartAction.class) + questionMark)%>";
-    var moleculeChromatogramUrl = "<%=h(urlFor(TargetedMSController.GeneralMoleculeChromatogramChartAction.class) + questionMark)%>";
-    var showPeptideUrl = "<%=h(urlFor(TargetedMSController.ShowPeptideAction.class) + questionMark)%>";
+    var precursorChromatogramUrl = "<%=h(urlFor(TargetedMSController.PrecursorChromatogramChartAction.class))%>?";
+    var moleculeChromatogramUrl = "<%=h(urlFor(TargetedMSController.GeneralMoleculeChromatogramChartAction.class))%>?";
+    var showPeptideUrl = "<%=h(urlFor(TargetedMSController.ShowPeptideAction.class))%>?";
 </script>
 <!--END IMPORTS-->
 

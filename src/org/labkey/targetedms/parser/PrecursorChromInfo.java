@@ -22,8 +22,6 @@ import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.util.UnexpectedException;
 import org.labkey.api.util.logging.LogHelper;
-import org.labkey.targetedms.TargetedMSModule;
-import org.labkey.targetedms.TargetedMSRun;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -403,13 +401,6 @@ public class PrecursorChromInfo extends AbstractChromInfo implements Comparable<
         }
 
         return result;
-    }
-
-    /** Use the module property to decide whether to try fetching from disk*/
-    @Nullable @Override
-    public Chromatogram createChromatogram(TargetedMSRun run)
-    {
-        return createChromatogram(run, Boolean.parseBoolean(TargetedMSModule.PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY.getEffectiveValue(getContainer())));
     }
 
     @Override

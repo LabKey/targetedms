@@ -19,6 +19,7 @@ package org.labkey.targetedms;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DbScope;
 import org.labkey.api.exp.ExperimentException;
@@ -69,12 +70,12 @@ public class TargetedMSDataHandler extends AbstractExperimentDataHandler
     }
 
     @Override
-    public void importFile(ExpData data, File dataFile, ViewBackgroundInfo info, Logger log, XarContext context) throws ExperimentException
+    public void importFile(@NotNull ExpData data, File dataFile, @NotNull ViewBackgroundInfo info, @NotNull Logger log, @NotNull XarContext context) throws ExperimentException
     {
         importFile(data, dataFile != null ? dataFile.toPath() : null, info, log, context);
     }
     @Override
-    public void importFile(ExpData data, Path dataFile, ViewBackgroundInfo info, Logger log, XarContext context) throws ExperimentException
+    public void importFile(ExpData data, Path dataFile, ViewBackgroundInfo info, @NotNull Logger log, @NotNull XarContext context) throws ExperimentException
     {
         String description = data.getFile().getName();
         SkylineDocImporter importer = new SkylineDocImporter(info.getUser(), context.getContainer(), description,
@@ -161,23 +162,25 @@ public class TargetedMSDataHandler extends AbstractExperimentDataHandler
     @Override
     public void runMoved(ExpData newData, Container container, Container targetContainer, String oldRunLSID, String newRunLSID, User user, int oldDataRowID) throws ExperimentException
     {
+        super.runMoved(newData, container, targetContainer, oldRunLSID, newRunLSID, user, oldDataRowID);
         TargetedMSService.FolderType sourceFolderType = TargetedMSManager.getFolderType(container);
         TargetedMSService.FolderType targetFolderType = TargetedMSManager.getFolderType(targetContainer);
 
-        if(sourceFolderType != TargetedMSService.FolderType.Experiment || targetFolderType != TargetedMSService.FolderType.Experiment)
+        if ((sourceFolderType != TargetedMSService.FolderType.Experiment && sourceFolderType != TargetedMSService.FolderType.ExperimentMAM)
+                || (targetFolderType != TargetedMSService.FolderType.Experiment && targetFolderType != TargetedMSService.FolderType.ExperimentMAM))
         {
             StringBuilder error = new StringBuilder();
-            if(sourceFolderType != TargetedMSService.FolderType.Experiment)
+            if (sourceFolderType != TargetedMSService.FolderType.Experiment && sourceFolderType != TargetedMSService.FolderType.ExperimentMAM)
             {
                 error.append("Source folder \"").append(container.getPath()).append("\" is")
                 .append((sourceFolderType == null) ? " not a Panorama type folder. " : " a \"" + sourceFolderType.name() + "\" folder. ");
             }
-            if(targetFolderType != TargetedMSService.FolderType.Experiment)
+            if (targetFolderType != TargetedMSService.FolderType.Experiment && targetFolderType != TargetedMSService.FolderType.ExperimentMAM)
             {
                 error.append("Target folder \"").append(targetContainer.getPath()).append("\" is")
                 .append((targetFolderType == null) ? " not a Panorama type folder. " : " a \"" + targetFolderType.name() + "\" folder. ");
             }
-            error.append("Runs can only be moved between Panorama \"Experimental Data\" folders. For other folder types please delete the run in the source folder and import it in the target folder.");
+            error.append("Runs can only be moved between Panorama \"Experimental Data\" or \"Multi-Attribute Method\" folders. For other folder types please delete the run in the source folder and import it in the target folder.");
             throw new ExperimentException(error.toString());
         }
 
@@ -333,7 +336,7 @@ public class TargetedMSDataHandler extends AbstractExperimentDataHandler
         if ("zip".equals(ext))
         {
             String firstExt = FileUtil.getExtension(FileUtil.getBaseName(url));     // See if it's sky.zip
-            if (null != firstExt && "sky".equalsIgnoreCase(firstExt))
+            if ("sky".equalsIgnoreCase(firstExt))
                 return Priority.HIGH;
 
             if (TargetedMSManager.getRunByDataId(data.getRowId(), data.getContainer()) != null)

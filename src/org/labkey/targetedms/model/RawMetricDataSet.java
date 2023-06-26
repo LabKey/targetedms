@@ -22,6 +22,7 @@ import org.labkey.api.visualization.Stats;
 import org.labkey.targetedms.chart.LabelFactory;
 
 import java.text.DecimalFormat;
+import java.util.Date;
 
 public class RawMetricDataSet
 {
@@ -39,7 +40,9 @@ public class RawMetricDataSet
     Double cusumMN;
     Double cusumVP;
     Double cusumVN;
-
+    Double trailingMean;
+    Double trailingCV;
+    Date trailingStart;
     PrecursorInfo _precursor;
 
     private GuideSetKey _guideSetKey;
@@ -389,4 +392,35 @@ public class RawMetricDataSet
             counts.setCUSUMvN(counts.getCUSUMvN() + 1);
         }
     }
+
+    public Double getTrailingMean()
+    {
+        return trailingMean;
+    }
+
+    public void setTrailingMean(Double trailingMean)
+    {
+        this.trailingMean = trailingMean;
+    }
+
+    public Double getTrailingCV()
+    {
+        return trailingCV;
+    }
+
+    public void setTrailingCV(Double trailingCV)
+    {
+        this.trailingCV = trailingCV;
+    }
+
+    public Date getTrailingStart()
+    {
+        return trailingStart;
+    }
+
+    public void setTrailingStart(Date trailingStart)
+    {
+        this.trailingStart = trailingStart;
+    }
+
 }

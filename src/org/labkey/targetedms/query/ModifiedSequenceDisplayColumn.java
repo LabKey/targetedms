@@ -213,6 +213,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
             keys.add(FieldKey.fromString(super.getParentFieldKey(), "Decoy"));
             keys.add(FieldKey.fromString(super.getParentFieldKey(), "StandardType"));
             keys.add(FieldKey.fromString(super.getParentFieldKey(), "PeptideGroupId/RunId"));
+            keys.add(FieldKey.fromString(super.getParentFieldKey(), "PeptideGroupId"));
             if (_showNextAndPrevious)
             {
                 keys.add(_previousAAFieldKey);
@@ -228,6 +229,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
             String sequence = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "Sequence"), String.class);
 
             Long runId = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PeptideGroupId/RunId"), Long.class);
+            Long peptideGroupId = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PeptideGroupId"), Long.class);
 
             Boolean decoy = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "Decoy"), Boolean.class);
             if(decoy == null)  decoy = Boolean.FALSE;
@@ -245,7 +247,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
             }
             else
             {
-                _cellData = getHtmlMaker().getPeptideHtml(peptideId, sequence, peptideModifiedSequence, runId, previousAA, nextAA, _useParens);
+                _cellData = getHtmlMaker().getPeptideHtml(peptideId, peptideGroupId, sequence, peptideModifiedSequence, runId, previousAA, nextAA, _useParens);
                 _iconPath = IconFactory.getPeptideIconPath(peptideId, runId, decoy, standardType);
             }
         }
@@ -274,6 +276,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
             keys.add(FieldKey.fromString(super.getParentFieldKey(), "PeptideId/Sequence"));
             keys.add(FieldKey.fromString(super.getParentFieldKey(), "IsotopeLabelId"));
             keys.add(FieldKey.fromString(super.getParentFieldKey(), "PeptideId/PeptideGroupId/RunId"));
+            keys.add(FieldKey.fromString(super.getParentFieldKey(), "PeptideId/PeptideGroupId"));
         }
 
         @Override
@@ -284,6 +287,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
             String sequence = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PeptideId/Sequence"), String.class);
             Long isotopeLabelId = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "IsotopeLabelId"), Long.class);
             Long runId = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PeptideId/PeptideGroupId/RunId"), Long.class);
+            Long peptideGroupId = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PeptideId/PeptideGroupId"), Long.class);
             Boolean decoy = ctx.get(FieldKey.fromString(super.getParentFieldKey(), "PeptideId/Decoy"), Boolean.class);
             if(decoy == null) decoy = Boolean.FALSE;
 
@@ -296,6 +300,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
             else
             {
                 _cellData = getHtmlMaker().getPrecursorHtml(peptideId,
+                        peptideGroupId,
                         isotopeLabelId,
                         precursorModifiedSequence,
                         runId);

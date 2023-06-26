@@ -43,27 +43,11 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
-import org.labkey.api.action.ApiJsonWriter;
-import org.labkey.api.action.ApiResponse;
-import org.labkey.api.action.ApiSimpleResponse;
-import org.labkey.api.action.ApiUsageException;
-import org.labkey.api.action.CustomApiForm;
-import org.labkey.api.action.ExportAction;
-import org.labkey.api.action.FormHandlerAction;
-import org.labkey.api.action.FormViewAction;
-import org.labkey.api.action.HasViewContext;
-import org.labkey.api.action.LabKeyError;
-import org.labkey.api.action.Marshal;
-import org.labkey.api.action.Marshaller;
-import org.labkey.api.action.MutatingApiAction;
-import org.labkey.api.action.QueryViewAction;
-import org.labkey.api.action.ReadOnlyApiAction;
-import org.labkey.api.action.ReturnUrlForm;
-import org.labkey.api.action.SimpleErrorView;
-import org.labkey.api.action.SimpleViewAction;
-import org.labkey.api.action.SpringActionController;
+import org.labkey.api.action.*;
 import org.labkey.api.admin.AdminUrls;
 import org.labkey.api.analytics.AnalyticsService;
+import org.labkey.api.attachments.DocumentConversionService;
+import org.labkey.api.attachments.SvgSource;
 import org.labkey.api.audit.AuditLogService;
 import org.labkey.api.audit.provider.SiteSettingsAuditProvider;
 import org.labkey.api.data.CompareType;
@@ -90,6 +74,7 @@ import org.labkey.api.files.FileContentService;
 import org.labkey.api.files.view.FilesWebPart;
 import org.labkey.api.module.DefaultFolderType;
 import org.labkey.api.module.Module;
+import org.labkey.api.module.ModuleHtmlView;
 import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.module.ModuleProperty;
 import org.labkey.api.ms2.MS2Urls;
@@ -120,8 +105,10 @@ import org.labkey.api.reports.model.ViewCategoryManager;
 import org.labkey.api.reports.report.RedirectReport;
 import org.labkey.api.reports.report.ReportDescriptor;
 import org.labkey.api.security.ActionNames;
+import org.labkey.api.security.Group;
 import org.labkey.api.security.RequiresLogin;
 import org.labkey.api.security.RequiresPermission;
+import org.labkey.api.security.SecurityManager;
 import org.labkey.api.security.User;
 import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.security.permissions.ApplicationAdminPermission;
@@ -142,6 +129,7 @@ import org.labkey.api.util.DateUtil;
 import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.HelpTopic;
 import org.labkey.api.util.HtmlString;
+import org.labkey.api.util.JsonUtil;
 import org.labkey.api.util.Link;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.util.Pair;
@@ -165,7 +153,6 @@ import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.WebPartView;
 import org.labkey.api.view.template.ClientDependency;
 import org.labkey.api.view.template.PageConfig;
-import org.labkey.api.visualization.VisualizationService;
 import org.labkey.targetedms.chart.ChromatogramChartMakerFactory;
 import org.labkey.targetedms.chart.ComparisonChartMaker;
 import org.labkey.targetedms.chromlib.ChromatogramLibraryUtils;
@@ -268,7 +255,6 @@ import static org.labkey.api.util.DOM.Attribute.method;
 import static org.labkey.api.util.DOM.Attribute.src;
 import static org.labkey.api.util.DOM.Attribute.width;
 import static org.labkey.api.util.DOM.DIV;
-import static org.labkey.api.util.DOM.P;
 import static org.labkey.api.util.DOM.SPAN;
 import static org.labkey.api.util.DOM.TD;
 import static org.labkey.api.util.DOM.TR;
@@ -466,7 +452,7 @@ public class TargetedMSController extends SpringActionController
 
     }
 
-    public static void addDashboardTab(String tab, Container c, String[] includeWebParts)
+    public static void addDashboardTab(String tab, Container c, String... includeWebParts)
     {
         ArrayList<Portal.WebPart> newWebParts = new ArrayList<>();
         for(String name: includeWebParts)
@@ -476,13 +462,7 @@ public class TargetedMSController extends SpringActionController
         }
 
         Portal.saveParts(c, tab, newWebParts);
-        if (DefaultFolderType.DEFAULT_DASHBOARD.equals(tab))
-        {
-            // Save webparts to both pages, otherwise the TARGETED_MS_SETUP webpart gets copied over from
-            // portal.default to DefaultDashboard
-            Portal.saveParts(c, Portal.DEFAULT_PORTAL_PAGE_ID, newWebParts); // this will remove the TARGETED_MS_SETUP
-        }
-        else
+        if (!DefaultFolderType.DEFAULT_DASHBOARD.equals(tab))
         {
             Portal.addProperty(c, tab, Portal.PROP_CUSTOMTAB);
         }
@@ -705,7 +685,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public static class  LeveyJenningsPlotOptionsAction extends MutatingApiAction<LeveyJenningsPlotOptions>
+    public static class LeveyJenningsPlotOptionsAction extends MutatingApiAction<LeveyJenningsPlotOptions>
     {
         @Override
         public Object execute(LeveyJenningsPlotOptions form, BindException errors)
@@ -732,7 +712,7 @@ public class TargetedMSController extends SpringActionController
                 }
                 else
                 {
-                    if(properties.containsKey("selectedAnnotations") && (ReplicateManager.getReplicateAnnotationNameValues(getContainer()).size() == 0))
+                    if (properties.containsKey("selectedAnnotations") && (ReplicateManager.getReplicateAnnotationNameValues(getContainer()).size() == 0))
                     {
                         // If there are no replicate annotations in this folder anymore, remove any saved annotation filters
                         // Issue 35726: No way to clear previously saved replicate annotation values in QC plots if folder no longer contains annotations
@@ -811,6 +791,9 @@ public class TargetedMSController extends SpringActionController
         private List<String> _plotTypes;
         private Boolean _largePlot;
         public List<String> _selectedAnnotations;
+        private Integer _trailingRuns;
+        private Integer _calendarMonthsToShow;
+        private String _heatmapDataSource;
 
         public Map<String, String> getAsMapOfStrings()
         {
@@ -835,6 +818,12 @@ public class TargetedMSController extends SpringActionController
                 valueMap.put("largePlot", Boolean.toString(_largePlot));
             if(_selectedAnnotations != null)
                 valueMap.put("selectedAnnotations", getSelectedAnnotationsString());
+            if (_trailingRuns != null)
+                valueMap.put("trailingRuns", Integer.toString(_trailingRuns));
+            if (_calendarMonthsToShow != null)
+                valueMap.put("calendarMonthsToShow", Integer.toString(_calendarMonthsToShow));
+            if (_heatmapDataSource != null)
+                valueMap.put("heatMapDataSource", _heatmapDataSource);
             // note: start and end date handled separately since they can be null and we want to persist that
             return valueMap;
         }
@@ -927,6 +916,36 @@ public class TargetedMSController extends SpringActionController
         public String getSelectedAnnotationsString()
         {
             return StringUtils.join(_selectedAnnotations, ",");
+        }
+
+        public Integer getTrailingRuns()
+        {
+            return _trailingRuns;
+        }
+
+        public void setTrailingRuns(Integer trailingRuns)
+        {
+            _trailingRuns = trailingRuns;
+        }
+
+        public Integer getCalendarMonthsToShow()
+        {
+            return _calendarMonthsToShow;
+        }
+
+        public void setCalendarMonthsToShow(Integer calendarMonthsToShow)
+        {
+            _calendarMonthsToShow = calendarMonthsToShow;
+        }
+
+        public String getHeatmapDataSource()
+        {
+            return _heatmapDataSource;
+        }
+
+        public void setHeatmapDataSource(String heatmapDataSource)
+        {
+            _heatmapDataSource = heatmapDataSource;
         }
     }
 
@@ -1111,7 +1130,11 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(Object o, BindException errors)
         {
-            return new QCSummaryWebPart(getViewContext(), null);
+            JspView<?> calendarView = new JspView<>("/org/labkey/targetedms/view/instrumentCalendar.jsp");
+            calendarView.setTitle("Utilization Calendar");
+            calendarView.setFrame(WebPartView.FrameType.PORTAL);
+            QCSummaryWebPart summaryView = new QCSummaryWebPart(getViewContext(), null);
+            return new VBox(calendarView, summaryView);
         }
 
         @Override
@@ -1124,15 +1147,37 @@ public class TargetedMSController extends SpringActionController
     public static class QCMetricOutliersForm
     {
         private Integer _sampleLimit;
+        private boolean _includeAnnotations = false;
+        private boolean _includeSampleInfo = true;
 
         public Integer getSampleLimit()
         {
             return _sampleLimit;
         }
 
+        public boolean isIncludeAnnotations()
+        {
+            return _includeAnnotations;
+        }
+
+        public void setIncludeAnnotations(boolean includeAnnotations)
+        {
+            _includeAnnotations = includeAnnotations;
+        }
+
         public void setSampleLimit(Integer sampleLimit)
         {
             _sampleLimit = sampleLimit;
+        }
+
+        public boolean isIncludeSampleInfo()
+        {
+            return _includeSampleInfo;
+        }
+
+        public void setIncludeSampleInfo(boolean includeSampleInfo)
+        {
+            _includeSampleInfo = includeSampleInfo;
         }
     }
 
@@ -1147,25 +1192,55 @@ public class TargetedMSController extends SpringActionController
 
             TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
 
-            List<QCMetricConfiguration> enabledQCMetricConfigurations = TargetedMSManager.getEnabledQCMetricConfigurations(schema);
-
-            if(enabledQCMetricConfigurations.isEmpty())
+            if (form.isIncludeSampleInfo())
             {
-                response.put("outliers", "no enabled qc configurations");
-                return response;
+                List<QCMetricConfiguration> enabledQCMetricConfigurations = TargetedMSManager.getEnabledQCMetricConfigurations(schema);
+
+                if (enabledQCMetricConfigurations.isEmpty())
+                {
+                    response.put("outliers", "no enabled qc configurations");
+                }
+                else
+                {
+                    List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
+                    Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
+
+                    List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(schema, enabledQCMetricConfigurations, null, null, Collections.emptyList(), true, false);
+
+                    Map<GuideSetKey, GuideSetStats> stats = OutlierGenerator.get().getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+
+                    List<SampleFileInfo> sampleFiles = OutlierGenerator.get().getSampleFiles(rawMetricDataSets, stats, metricMap, schema, form.getSampleLimit());
+
+                    response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toJSON).collect(Collectors.toList()));
+                    response.put("guideSets", guideSets.stream().map(x -> x.toJSON(rawMetricDataSets, metricMap, stats)).collect(Collectors.toList()));
+                }
             }
 
-            List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
-            Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
+            if (form.isIncludeAnnotations())
+            {
+                TableInfo annotTable = schema.getTableOrThrow(TargetedMSSchema.TABLE_QC_ANNOTATION);
+                TableSelector ts = new TableSelector(annotTable,
+                        Set.of("Id", "Date", "EndDate", "Description"),
+                        new SimpleFilter(FieldKey.fromParts("QCAnnotationTypeId", "Name"), QCAnnotationTypeTable.INSTRUMENT_DOWNTIME),
+                        new Sort("Date"));
+                response.put("instrumentDowntimeAnnotations", ts.getMapCollection());
 
-            List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(schema, enabledQCMetricConfigurations, null, null, Collections.emptyList(), true, false);
+                TableInfo annotTypesTable = TargetedMSManager.getTableInfoQCAnnotationType();
+                SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("Name"), QCAnnotationTypeTable.INSTRUMENT_DOWNTIME);
+                filter.addCondition(FieldKey.fromParts("Container"), ContainerManager.getSharedContainer());
+                TableSelector ts2 = new TableSelector(annotTypesTable,
+                        Collections.singleton("Id"),
+                        filter,
+                        null);
+                response.put("offlineAnnotationTypeId", ts2.getObject(Integer.class));
+            }
 
-            Map<GuideSetKey, GuideSetStats> stats = OutlierGenerator.get().getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
-
-            List<SampleFileInfo> sampleFiles = OutlierGenerator.get().getSampleFiles(rawMetricDataSets, stats, metricMap, schema, form.getSampleLimit());
-
-            response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toJSON).collect(Collectors.toList()));
-            response.put("guideSets", guideSets.stream().map(x -> x.toJSON(rawMetricDataSets, metricMap, stats)).collect(Collectors.toList()));
+            PropertyManager.PropertyMap properties = PropertyManager.getWritableProperties(getUser(), getContainer(), QCFolderConstants.CATEGORY, false);
+            if (properties != null)
+            {
+                Map<String, Object> toSend = new HashMap<>(properties);
+                response.put("displayConfig", toSend);
+            }
 
             return response;
         }
@@ -1184,6 +1259,9 @@ public class TargetedMSController extends SpringActionController
         private boolean _showExcluded;
         private boolean _showReferenceGS;
         private boolean _showExcludedPrecursors;
+        private int _trailingRuns = 10;
+        private boolean includeTrailingMeanPlot;
+        private boolean includeTrailingCVPlot;
 
         public int getMetricId()
         {
@@ -1294,6 +1372,36 @@ public class TargetedMSController extends SpringActionController
         {
             _showExcludedPrecursors = showExcludedPrecursors;
         }
+
+        public int getTrailingRuns()
+        {
+            return _trailingRuns;
+        }
+
+        public void setTrailingRuns(int trailingRuns)
+        {
+            _trailingRuns = trailingRuns;
+        }
+
+        public boolean isIncludeTrailingMeanPlot()
+        {
+            return includeTrailingMeanPlot;
+        }
+
+        public void setIncludeTrailingMeanPlot(boolean includeTrailingMeanPlot)
+        {
+            this.includeTrailingMeanPlot = includeTrailingMeanPlot;
+        }
+
+        public boolean isIncludeTrailingCVPlot()
+        {
+            return includeTrailingCVPlot;
+        }
+
+        public void setIncludeTrailingCVPlot(boolean includeTrailingCVPlot)
+        {
+            this.includeTrailingCVPlot = includeTrailingCVPlot;
+        }
     }
 
     /**
@@ -1357,7 +1465,15 @@ public class TargetedMSController extends SpringActionController
 
             // always query for the full range
             List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(schema, qcMetricConfigurations, qcFolderStartDate, qcFolderEndDate, form.getSelectedAnnotations(), form.isShowExcluded(), form.isShowExcludedPrecursors());
-            Map<GuideSetKey, GuideSetStats> stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+            Map<GuideSetKey, GuideSetStats> stats;
+            if ((form.includeTrailingCVPlot || form.includeTrailingMeanPlot) && form._trailingRuns > 2)
+            {
+                stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())), form._trailingRuns);
+            }
+            else
+            {
+                stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+            }
             boolean zoomedRange = qcFolderStartDate != null &&
                     qcFolderEndDate != null && rangeStartDate != null && form.getEndDate() != null &&
                     (DateUtil.getDateOnly(qcFolderStartDate).compareTo(rangeStartDate) != 0 ||
@@ -1370,10 +1486,10 @@ public class TargetedMSController extends SpringActionController
                 Predicate<RawMetricDataSet> withInDateRange = rawMetricDataSet -> rawMetricDataSet.getSampleFile().getAcquiredTime() != null &&
                         (qcStartDate != null &&
                         (rawMetricDataSet.getSampleFile().getAcquiredTime().after(qcStartDate)
-                                || DateUtil.getDateOnly(rawMetricDataSet.getSampleFile().getAcquiredTime()).compareTo(qcStartDate) == 0)) &&
+                                || DateUtil.getDateOnly(rawMetricDataSet.getSampleFile().getAcquiredTime()).compareTo(DateUtil.getDateOnly(qcStartDate)) == 0)) &&
                         (form.getEndDate() != null &&
                         (rawMetricDataSet.getSampleFile().getAcquiredTime().before(form.getEndDate())
-                                || DateUtil.getDateOnly(rawMetricDataSet.getSampleFile().getAcquiredTime()).compareTo(form.getEndDate()) == 0));
+                                || DateUtil.getDateOnly(rawMetricDataSet.getSampleFile().getAcquiredTime()).compareTo(DateUtil.getDateOnly(form.getEndDate())) == 0));
                 rawMetricDataSets = rawMetricDataSets
                         .stream()
                         .filter(withInDateRange)
@@ -1400,7 +1516,7 @@ public class TargetedMSController extends SpringActionController
             response.put("sampleFiles", sampleFiles.stream().map(SampleFileInfo::toQCPlotJSON).collect(Collectors.toList()));
             response.put("plotDataRows", qcPlotFragments
                     .stream()
-                    .map(qcPlotFragment -> qcPlotFragment.toJSON(form.isIncludeLJ(), form.isIncludeMR(), form.isIncludeMeanCusum(), form.isIncludeVariableCusum(), form.isShowExcluded()))
+                    .map(qcPlotFragment -> qcPlotFragment.toJSON(form.isIncludeLJ(), form.isIncludeMR(), form.isIncludeMeanCusum(), form.isIncludeVariableCusum(), form.isShowExcluded(), form.isIncludeTrailingMeanPlot(), form.isIncludeTrailingCVPlot(), targetedStats))
                     .collect(Collectors.toList()));
             response.put("metricProps", metricMap.get(passedMetricId).toJSON());
             response.put("filterQCPoints", filterQCPoints);
@@ -1414,16 +1530,30 @@ public class TargetedMSController extends SpringActionController
             for (GuideSet guideSet : guideSets)
             {
                 // guideset end date should be before or equal start date
-                if (!guideSet.isDefault() &&
-                        (guideSet.getTrainingEnd().before(startDate) || DateUtil.getDateOnly(guideSet.getTrainingEnd()).compareTo(startDate) == 0))
+                if (!guideSet.isDefault())
                 {
-                    if (null == gs)
+                    // show reference guideset when
+                    // 1. startDate is after guideset
+                    // 2. startDate is between guideset date range
+                    // 3. startDate is same as guideset training start
+                    // 4. startDate is same as guideset training end
+                    boolean startDateAfterGuideSet = guideSet.getTrainingEnd().before(startDate);
+                    boolean startDateBetweenGuideSet = guideSet.getTrainingStart().before(startDate) && guideSet.getTrainingEnd().after(startDate);
+                    boolean startDateOverlapGuideSetStart = DateUtil.getDateOnly(guideSet.getTrainingStart()).equals(DateUtil.getDateOnly(startDate));
+                    boolean startDateOverlapGuideSetEnd = DateUtil.getDateOnly(guideSet.getTrainingEnd()).equals(DateUtil.getDateOnly(startDate));
+                    if (startDateAfterGuideSet ||
+                            startDateBetweenGuideSet ||
+                            startDateOverlapGuideSetStart ||
+                            startDateOverlapGuideSetEnd)
                     {
-                        gs = guideSet;
-                    }
-                    else if (guideSet.getTrainingEnd().after(gs.getTrainingEnd()))
-                    {
-                        gs = guideSet;
+                        if (null == gs)
+                        {
+                            gs = guideSet;
+                        }
+                        else if (guideSet.getTrainingEnd().after(gs.getTrainingEnd()))
+                        {
+                            gs = guideSet;
+                        }
                     }
                 }
             }
@@ -1720,7 +1850,7 @@ public class TargetedMSController extends SpringActionController
         }
         else if ("pdf".equalsIgnoreCase(form.getFormat()))
         {
-            VisualizationService.get().renderSvgAsPdf(renderSVG(form, chart), filename + ".pdf", getViewContext().getResponse());
+            DocumentConversionService.get().svgToPdf(SvgSource.of(renderSVG(form, chart)), filename + ".pdf", getViewContext().getResponse());
         }
         else
         {
@@ -2592,19 +2722,12 @@ public class TargetedMSController extends SpringActionController
                         .append(TargetedMSManager.getTableInfoReplicateAnnotation(), "repAnnot")
                         .append("\n WHERE ");
                 boolean first = true;
-                for(ReplicateAnnotation annotation: annotations)
+                for (ReplicateAnnotation annotation: annotations)
                 {
-                    if(!first)
-                    {
+                    if (!first)
                         sql.append(" OR ");
-                    }
-                    sql.append(" (name = '")
-                            .append(annotation.getName())
-                            .append("'  ")
-                            .append("  AND value = '")
-                            .append(annotation.getValue())
-                            .append("')");
-
+                    sql.append(" (name = ").appendValue(annotation.getName())
+                       .append("  AND value = ").appendValue(annotation.getValue()).append(")");
                     first = false;
                 }
                 sql.append(")");
@@ -4366,6 +4489,48 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
+    public class ShowEarlyStagePTMReportAction extends ShowRunSingleDetailsAction<RunDetailsForm>
+    {
+        public ShowEarlyStagePTMReportAction()
+        {
+            super(RunDetailsForm.class, "Early Stage PTM Report", "earlyStagePtmReport");
+        }
+
+        @Override
+        protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
+        {
+            QuerySettings settings = new QuerySettings(getViewContext(), _dataRegionName, "PTMPercentsGrouped")
+            {
+                @Override
+                protected QueryDefinition createQueryDef(UserSchema schema)
+                {
+                    QueryDefinition queryDef = super.createQueryDef(schema);
+
+                    String queryName = "PTMPercentsGrouped" + form.getId();
+                    QueryDefinition tempDef = QueryService.get().createQueryDef(getUser(), getContainer(), schema.getSchemaPath(), queryName);
+                    tempDef.setIsHidden(true);
+                    tempDef.setIsTemporary(true);
+                    tempDef.setSql(queryDef.getSql() + " IN (SELECT sf.SampleName FROM targetedms.SampleFile sf WHERE sf.ReplicateId.RunId = " + form.getId() + ")");
+                    tempDef.setMetadataXml(queryDef.getMetadataXml());
+
+                    return tempDef;
+                }
+            };
+            // Issue 40731- prevent expensive cross-folder queries when the results will always be scoped to the current
+            // run anyway
+            settings.setContainerFilterName(null);
+            settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("PeptideGroupId", "RunId"), form.getId()));
+            // Issue 47668 - need to sort on PeptideGroupId, Sequence, and SiteLocation to make sure peptides
+            // with multiple modification sites have them reported in the right order
+            settings.setBaseSort(new Sort("PeptideGroupId, Sequence, SiteLocation"));
+            TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+            QueryView result = schema.createView(getViewContext(), settings, errors);
+            result.setShadeAlternatingRows(false);
+            return result;
+        }
+    }
+
+    @RequiresPermission(ReadPermission.class)
     public class ShowPeptideMapAction extends ShowRunSingleDetailsAction<RunDetailsForm>
     {
         public ShowPeptideMapAction()
@@ -5936,7 +6101,19 @@ public class TargetedMSController extends SpringActionController
                 String url = data.getWebDavURL(FileContentService.PathType.full);
                 if (url != null)
                 {
-                    ByteArrayInputStream inputStream = new ByteArrayInputStream(url.getBytes(StringUtilsLabKey.DEFAULT_CHARSET));
+                    String lineSeparator = "\r\n";
+                    StringBuilder text = new StringBuilder(url);
+                    if (run.getDocumentSize() != null)
+                    {
+                        text.append(lineSeparator).append("FileSize:").append(run.getDocumentSize()); // Size of the .sky.zip in bytes
+                    }
+                    if (!getContainer().hasPermission(SecurityManager.getGroup(Group.groupGuests), ReadPermission.class))
+                    {
+                        // Add the username of the downloading user if this container is not public
+                        text.append(lineSeparator).append("DownloadingUser:").append(getUser().getEmail());
+                    }
+
+                    ByteArrayInputStream inputStream = new ByteArrayInputStream(text.toString().getBytes(StringUtilsLabKey.DEFAULT_CHARSET));
                     PageFlowUtil.streamFile(getViewContext().getResponse(), Collections.emptyMap(), baseFileName + ".skyp", inputStream, true);
                 }
                 else
@@ -6208,11 +6385,11 @@ public class TargetedMSController extends SpringActionController
 
                     if (form.isNtermSearch())
                     {
-                        result.addCondition(new SQLFragment("ModifiedSequence LIKE '_" + form.getDeltaMassSearchStr(true) + "%' ESCAPE '!'"));
+                        result.addCondition(new SQLFragment("ModifiedSequence LIKE ").appendValue("_" + form.getDeltaMassSearchStr(true) + "%").append(" ESCAPE '!'"));
                     }
                     else if (form.isCtermSearch())
                     {
-                        result.addCondition(new SQLFragment("ModifiedSequence LIKE '%" + form.getDeltaMassSearchStr(true) + "' ESCAPE '!'"));
+                        result.addCondition(new SQLFragment("ModifiedSequence LIKE ").appendValue("%" + form.getDeltaMassSearchStr(true)).append(" ESCAPE '!'"));
                     }
                     else
                     {
@@ -6233,7 +6410,6 @@ public class TargetedMSController extends SpringActionController
                     }
                     result.setDefaultVisibleColumns(visibleColumns);
                     result.setName("Precursor");
-
                     List<TableCustomizer> customizers = TargetedMSService.get().getModificationSearchResultCustomizers();
                     for(TableCustomizer customizer : customizers)
                     {
@@ -6629,15 +6805,17 @@ public class TargetedMSController extends SpringActionController
             sqlFragment.append("\ttargetedms.GeneralPrecursor AS gp ON gp.GeneralMoleculeId = gm.Id LEFT OUTER JOIN\n");
             sqlFragment.append("\ttargetedms.peptide AS p ON p.Id = gm.Id LEFT OUTER JOIN\n");
             sqlFragment.append("\ttargetedms.molecule AS m ON m.Id = gm.Id\n");
-            sqlFragment.append("WHERE r.Deleted = ? AND r.Container = ? ");
+            sqlFragment.append("WHERE r.Deleted = ? AND r.Container = ? ")
+                .add(false)
+                .add(getContainer());
             // Only proteins (PeptideGroup) are marked as representative in "LibraryProtein" folder types. Get the Ids
             // of all the peptides of representative proteins.
-            if(folderType == FolderType.LibraryProtein)
-                sqlFragment.append("AND pg.RepresentativeDataState = ? ");
+            if (folderType == FolderType.LibraryProtein)
+                sqlFragment.append("AND pg.RepresentativeDataState = ? ").add(RepresentativeDataState.Representative.ordinal());
                 // Precursors are marked a representative in "LibraryPeptide" folder type.  Get the peptide Ids
                 // of all the representative precursors.
             else
-                sqlFragment.append("AND gp.RepresentativeDataState = ? ");
+                sqlFragment.append("AND gp.RepresentativeDataState = ? ").add(RepresentativeDataState.Representative.ordinal());
             sqlFragment.append(") AS pepCount ");
             sqlFragment.append("GROUP BY pepCount.RunDate) AS x FULL OUTER JOIN ");
             sqlFragment.append("(SELECT protCount.RunDate, COUNT(DISTINCT protCount.Id) AS ProteinCount ");
@@ -6648,17 +6826,13 @@ public class TargetedMSController extends SpringActionController
             sqlFragment.append("targetedms.Runs AS r, ");
             sqlFragment.append("targetedms.PeptideGroup AS pg ");
             sqlFragment.append("WHERE ");
-            sqlFragment.append("pg.RunId = r.Id AND pg.RepresentativeDataState = ?  AND r.Deleted = ? AND r.Container = ? ");
+            sqlFragment.append("pg.RunId = r.Id AND pg.RepresentativeDataState = ?  AND r.Deleted = ? AND r.Container = ? ")
+                .add(RepresentativeDataState.Representative.ordinal())
+                .add(false)
+                .add(getContainer());
             sqlFragment.append(") AS protCount ");
             sqlFragment.append("GROUP BY protCount.RunDate) AS y ");
-            sqlFragment.append("ON x.RunDate = y.RunDate ORDER BY COALESCE(x.RunDate,y.RunDate); ");
-
-            sqlFragment.add(false);
-            sqlFragment.add(getContainer().getId());
-            sqlFragment.add(RepresentativeDataState.Representative.ordinal());
-            sqlFragment.add(RepresentativeDataState.Representative.ordinal());
-            sqlFragment.add(false);
-            sqlFragment.add(getContainer().getId());
+            sqlFragment.append("ON x.RunDate = y.RunDate ORDER BY COALESCE(x.RunDate,y.RunDate) ");
 
             // grab data from database
             SqlSelector sqlSelector = new SqlSelector(TargetedMSSchema.getSchema(), sqlFragment);
@@ -7322,20 +7496,14 @@ public class TargetedMSController extends SpringActionController
 
     }
 
-    public static class ChainedVersions implements CustomApiForm
+    public static class ChainedVersions implements ApiJsonForm
     {
-        private Map<Integer, Integer> _runs = new HashMap<>();
+        private final Map<Integer, Integer> _runs = new HashMap<>();
 
         @Override
-        public void bindProperties(Map<String,Object> properties)
+        public void bindJson(JSONObject json)
         {
-            org.json.old.JSONObject json;
-            if (properties instanceof org.json.old.JSONObject)
-                json = (org.json.old.JSONObject)properties;
-            else
-                json = new org.json.old.JSONObject(properties);
-
-            List<Map<String, Object>> list = json.getJSONArray("runs").toMapList();
+            List<Map<String, Object>> list = JsonUtil.toMapList(json.getJSONArray("runs"));
             for (Map<String, Object> entry : list)
             {
                 Integer rowId = (Integer) entry.get("RowId");

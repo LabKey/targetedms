@@ -101,6 +101,9 @@ Ext4.define("LABKEY.targetedms.MovingRangePlotHelper", {
         {
             data['MR'] = this.formatValue(row['MR']);
         }
+
+        data.MRShape = (row.IgnoreInQC ? 'Exclude' : 'Include') + (row.MROutlier ? '-Outlier' : '');
+
         return data;
     },
 

@@ -17,6 +17,7 @@ package org.labkey.targetedms.query;
 
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.data.ContainerFilter;
+import org.labkey.api.gwt.client.AuditBehaviorType;
 import org.labkey.api.query.DefaultQueryUpdateService;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.QueryForeignKey;
@@ -33,6 +34,7 @@ public class QCMetricExclusionTable extends TargetedMSTable
     {
         super(TargetedMSSchema.getSchema().getTable(TargetedMSSchema.TABLE_QC_METRIC_EXCLUSION),
                 schema, cf, TargetedMSSchema.ContainerJoinType.ReplicateFK);
+        setAuditBehavior(AuditBehaviorType.DETAILED);
 
         getMutableColumn(FieldKey.fromParts("MetricId")).setFk(new QueryForeignKey(schema, cf, schema, getUserSchema().getContainer(), TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, "Id", "Name")
         {

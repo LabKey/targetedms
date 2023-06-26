@@ -1,0 +1,26 @@
+<query xmlns="http://labkey.org/data/xml/query">
+    <metadata>
+        <tables xmlns="http://labkey.org/data/xml">
+            <table tableName="PTMPercentsGroupedPrepivot" tableDbType="TABLE">
+                <columns>
+                    <column columnName="PeptideModifiedSequence">
+                        <displayColumnFactory>
+                            <className>org.labkey.targetedms.query.ModifiedSequenceDisplayColumn$PeptideDisplayColumnFactory</className>
+                            <properties>
+                                <property name="showNextAndPrevious">true</property>
+                                <property name="useParens">true</property>
+                            </properties>
+                        </displayColumnFactory>
+                        <columnTitle>Sequence</columnTitle>
+                    </column>
+                    <column columnName="PeptideGroupId">
+                        <columnTitle>Chain</columnTitle>
+                    </column>
+                    <column columnName="Sequence">
+                        <columnTitle>UnmodifiedSequence</columnTitle>
+                    </column>
+                </columns>
+            </table>
+        </tables>
+    </metadata>
+</query>

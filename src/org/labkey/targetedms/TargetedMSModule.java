@@ -30,7 +30,6 @@ import org.labkey.api.data.PropertySchema;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.UpgradeCode;
-import org.labkey.api.exp.ExperimentRunType;
 import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.files.DirectoryPattern;
 import org.labkey.api.files.FileContentService;
@@ -67,6 +66,7 @@ import org.labkey.targetedms.chart.ReplicateLabelMinimizer;
 import org.labkey.targetedms.datasource.MsDataSourceUtil;
 import org.labkey.targetedms.folderImport.QCFolderImporter;
 import org.labkey.targetedms.folderImport.QCFolderWriterFactory;
+import org.labkey.targetedms.parser.Protein;
 import org.labkey.targetedms.parser.SampleFile;
 import org.labkey.targetedms.parser.skyaudit.SkylineAuditLogParser;
 import org.labkey.targetedms.passport.PassportController;
@@ -103,7 +103,6 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     // Protocol prefix for importing .zip archives from Skyline
     public static final String IMPORT_SKYZIP_PROTOCOL_OBJECT_PREFIX = "TargetedMS.ImportSkyZip";
 
-    public static final ExperimentRunType EXP_RUN_TYPE = new TargetedMSExperimentRunType();
     public static final String TARGETED_MS_SETUP = "Targeted MS Setup";
     public static final String TARGETED_MS_CHROMATOGRAM_LIBRARY_DOWNLOAD = "Chromatogram Library Download";
     public static final String TARGETED_MS_PRECURSOR_VIEW = "Targeted MS Precursor View";
@@ -148,15 +147,13 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
 
     public static final String[] QC_FOLDER_WEB_PARTS = new String[] {TARGETED_MS_QC_SUMMARY, TARGETED_MS_QC_PLOTS};
 
-    public static ModuleProperty FOLDER_TYPE_PROPERTY;
-    public static ModuleProperty SKIP_CHROMATOGRAM_IMPORT_PROPERTY;
-    public static ModuleProperty PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY;
-    public static ModuleProperty SKYLINE_AUDIT_LEVEL_PROPERTY;
-    public static ModuleProperty MAX_TRANSITION_CHROM_INFOS_PROPERTY;
+    public final ModuleProperty FOLDER_TYPE_PROPERTY;
+    public final ModuleProperty SKYLINE_AUDIT_LEVEL_PROPERTY;
+    public final ModuleProperty MAX_TRANSITION_CHROM_INFOS_PROPERTY;
     public static final int DEFAULT_MAX_TRANSITION_CHROM_INFOS = 100_000;
-    public static ModuleProperty MAX_PRECURSORS_PROPERTY;
+    public final ModuleProperty MAX_PRECURSORS_PROPERTY;
     public static final int DEFAULT_MAX_PRECURSORS = 1_000;
-    public static ModuleProperty AUTO_QC_PING_TIMEOUT_PROPERTY;
+    public final ModuleProperty AUTO_QC_PING_TIMEOUT_PROPERTY;
 
     public TargetedMSModule()
     {
@@ -167,21 +164,6 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         FOLDER_TYPE_PROPERTY.setShowDescriptionInline(true);
         addModuleProperty(FOLDER_TYPE_PROPERTY);
 
-        List<ModuleProperty.Option> options = List.of(
-            new ModuleProperty.Option("Enabled", Boolean.TRUE.toString()),
-            new ModuleProperty.Option("Disabled", Boolean.FALSE.toString())
-        );
-        // Set up the properties for controlling how chromatograms are managed in DB vs files
-        SKIP_CHROMATOGRAM_IMPORT_PROPERTY = new ModuleProperty(this, "Skip chromatogram import into database");
-        SKIP_CHROMATOGRAM_IMPORT_PROPERTY.setInputType(ModuleProperty.InputType.combo);
-        SKIP_CHROMATOGRAM_IMPORT_PROPERTY.setOptions(options);
-        SKIP_CHROMATOGRAM_IMPORT_PROPERTY.setDefaultValue(Boolean.toString(false));
-        SKIP_CHROMATOGRAM_IMPORT_PROPERTY.setCanSetPerContainer(true);
-        SKIP_CHROMATOGRAM_IMPORT_PROPERTY.setDescription("Skyline stores chromatograms in SKYD files. Panorama can import them into its database, or leave them to be loaded from the file on demand");
-        SKIP_CHROMATOGRAM_IMPORT_PROPERTY.setShowDescriptionInline(true);
-        addModuleProperty(SKIP_CHROMATOGRAM_IMPORT_PROPERTY);
-
-        //------------------------
         List<ModuleProperty.Option> auditOptions = List.of(
             new ModuleProperty.Option("0 - No Verification", "0"),
             new ModuleProperty.Option("1 - Hash Verification", "1"),
@@ -201,15 +183,6 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         addModuleProperty(SKYLINE_AUDIT_LEVEL_PROPERTY);
         //------------------------rr
 
-        PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY = new ModuleProperty(this, "Prefer loading chromatograms from SKYD file when possible");
-        PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY.setInputType(ModuleProperty.InputType.combo);
-        PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY.setOptions(options);
-        PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY.setDefaultValue(Boolean.toString(false));
-        PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY.setCanSetPerContainer(true);
-        PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY.setDescription("Skyline stores chromatograms in SKYD files. Panorama can load them directly from the file, when preset, even if they have been previously imported into the database.");
-        PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY.setShowDescriptionInline(true);
-        addModuleProperty(PREFER_SKYD_FILE_CHROMATOGRAMS_PROPERTY);
-
         // setup the QC Summary webpart AutoQCPing timeout
         AUTO_QC_PING_TIMEOUT_PROPERTY = new ModuleProperty(this, "TargetedMS AutoQCPing Timeout");
         AUTO_QC_PING_TIMEOUT_PROPERTY.setDescription("The number of minutes before the most recent AutoQCPing indicator is considered stale.");
@@ -221,7 +194,9 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         MAX_TRANSITION_CHROM_INFOS_PROPERTY = new ModuleProperty(this, "TransitionChromInfo storage limit");
         MAX_TRANSITION_CHROM_INFOS_PROPERTY.setInputType(ModuleProperty.InputType.text);
         MAX_TRANSITION_CHROM_INFOS_PROPERTY.setDefaultValue(Integer.toString(DEFAULT_MAX_TRANSITION_CHROM_INFOS));
-        MAX_TRANSITION_CHROM_INFOS_PROPERTY.setCanSetPerContainer(true);
+        // Issue 47774: Remove TargetedMS module properties related to reading chromatogram data.
+        // Property can be set only at the site level.
+        MAX_TRANSITION_CHROM_INFOS_PROPERTY.setCanSetPerContainer(false);
         MAX_TRANSITION_CHROM_INFOS_PROPERTY.setDescription("Large DIA Skyline documents may have many transition/replicate chromatograms which may not be very useful to store in the database. Panorama can skip importing them to save storage space and import time, if the number of separately configured precursors is also exceeded");
         MAX_TRANSITION_CHROM_INFOS_PROPERTY.setShowDescriptionInline(true);
         addModuleProperty(MAX_TRANSITION_CHROM_INFOS_PROPERTY);
@@ -229,7 +204,9 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         MAX_PRECURSORS_PROPERTY = new ModuleProperty(this, "Precursor storage limit");
         MAX_PRECURSORS_PROPERTY.setInputType(ModuleProperty.InputType.text);
         MAX_PRECURSORS_PROPERTY.setDefaultValue(Integer.toString(DEFAULT_MAX_PRECURSORS));
-        MAX_PRECURSORS_PROPERTY.setCanSetPerContainer(true);
+        // Issue 47774: Remove TargetedMS module properties related to reading chromatogram data.
+        // Property can be set only at the site level.
+        MAX_PRECURSORS_PROPERTY.setCanSetPerContainer(false);
         MAX_PRECURSORS_PROPERTY.setDescription("If a document has more than a specified number of precursors AND more than the separate transition/replicate chromatogram limit, Panorama will skip storing them in the database to save space and import time");
         MAX_PRECURSORS_PROPERTY.setShowDescriptionInline(true);
         addModuleProperty(MAX_PRECURSORS_PROPERTY);
@@ -245,7 +222,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     @Override
     public Double getSchemaVersion()
     {
-        return 22.010;
+        return 23.003;
     }
 
     @Override
@@ -565,6 +542,18 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
 
                 metric.put("folderCounts", folderCounts);
 
+                SQLFragment annotationFolderCountSQL = new SQLFragment("SELECT at.Name, COUNT(DISTINCT a.Container) AS FolderCount FROM ");
+                annotationFolderCountSQL.append(TargetedMSManager.getTableInfoQCAnnotationType(), "at");
+                annotationFolderCountSQL.append(" INNER JOIN " );
+                annotationFolderCountSQL.append(TargetedMSManager.getTableInfoQCAnnotation(), "a");
+                annotationFolderCountSQL.append(" ON at.Id = a.qcAnnotationTypeId GROUP BY at.Name");
+
+                Map<String, Long> annotationFolderCounts = new HashMap<>();
+                new SqlSelector(PropertySchema.getInstance().getSchema(), annotationFolderCountSQL).forEach(rs ->
+                        annotationFolderCounts.put(rs.getString("Name"), rs.getLong("FolderCount")));
+
+                metric.put("annotationFolderCounts", annotationFolderCounts);
+
                 return metric;
             });
         }
@@ -596,7 +585,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         ExperimentService.get().registerExperimentRunTypeSource(container -> {
             if (container == null || container.getActiveModules().contains(TargetedMSModule.this))
             {
-                return Collections.singleton(EXP_RUN_TYPE);
+                return Collections.singleton(TargetedMSService.get().getExperimentRunType());
             }
             return Collections.emptySet();
         });

@@ -49,7 +49,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -223,7 +226,6 @@ public class TargetedMSQCTest extends TargetedMSTest
         goToProjectHome();
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        qcPlotsWebPart.waitForPlots(2, false);
         scrollIntoView(Locator.tagWithText("span","FFVAPFPEVFGK ++, 692.8686"));
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate(date));
         waitForElement(qcPlotsWebPart.getBubble());
@@ -299,8 +301,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertElementPresent(qcPlotsWebPart.getLegendItemLocator("+/-3 x Std Dev", true));
 
         // test that plot0_plotType_1 (CUSUMm) does not change from linear
-        qcPlotsWebPart.checkPlotType(CUSUMm, true);
-        qcPlotsWebPart.waitForPlots(2, true);
+        qcPlotsWebPart.checkPlotType(CUSUMm);
         initialSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1");
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LOG);
         assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1")));
@@ -348,7 +349,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         // verify that on refresh, the selections are persisted to the inputs
         refresh();
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        qcPlotsWebPart.waitForPlots(1, true);
+        qcPlotsWebPart.waitForPlots(1);
         assertEquals("Metric Type not round tripped as expected", QCPlotsWebPart.MetricType.TOTAL_PEAK, qcPlotsWebPart.getCurrentMetricType());
         assertEquals("Y-Axis Scale not round tripped as expected", QCPlotsWebPart.Scale.PERCENT_OF_MEAN, qcPlotsWebPart.getCurrentScale());
         assertTrue("Group X-Axis not round tripped as expected", qcPlotsWebPart.isGroupXAxisValuesByDateChecked());
@@ -360,25 +361,21 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertEquals("Unexpected number of points for initial data date range", 21, count);
 
         // test plot type selection persistence
-        qcPlotsWebPart.checkAllPlotTypes(false);
-        List<QCPlotsWebPart.QCPlotType> selectedPlotTypes = new ArrayList<>();
+        Set<QCPlotsWebPart.QCPlotType> selectedPlotTypes = new HashSet<>();
         selectedPlotTypes.add(MovingRange);
         selectedPlotTypes.add(CUSUMm);
-        qcPlotsWebPart.checkPlotType(selectedPlotTypes.get(0), true);
-        qcPlotsWebPart.checkPlotType(selectedPlotTypes.get(1), true);
-        qcPlotsWebPart.waitForPlots(2, true);
+        qcPlotsWebPart.setQCPlotTypes(selectedPlotTypes.toArray(QCPlotsWebPart.QCPlotType[]::new));
+        qcPlotsWebPart.waitForPlots(2);
 
         // test plot type selection is persisted
         refresh();
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        qcPlotsWebPart.waitForPlots(2, true);
-        assertEquals("QC Plot Type not round tripped as expected", true, qcPlotsWebPart.isPlotTypeSelected(selectedPlotTypes.get(0)));
-        assertEquals("QC Plot Type not round tripped as expected", true, qcPlotsWebPart.isPlotTypeSelected(selectedPlotTypes.get(1)));
+        qcPlotsWebPart.waitForPlots(2);
+        assertEquals("QC Plot Type not round tripped as expected", selectedPlotTypes, qcPlotsWebPart.getCurrentQCPlotTypes());
 
         // impersonate a different user in this container and verify that initial form fields used
         impersonate(USER);
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        qcPlotsWebPart.waitForPlots(1, false);
         assertEquals("Metric Type not set to default value", QCPlotsWebPart.MetricType.RETENTION, qcPlotsWebPart.getCurrentMetricType());
         assertEquals("Y-Axis Scale not set to default value", QCPlotsWebPart.Scale.LINEAR, qcPlotsWebPart.getCurrentScale());
         assertFalse("Group X-Axis not set to default value", qcPlotsWebPart.isGroupXAxisValuesByDateChecked());
@@ -388,7 +385,6 @@ public class TargetedMSQCTest extends TargetedMSTest
         stopImpersonating();
         goToProjectHome();
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        qcPlotsWebPart.waitForPlots(1, false);
 
         // reset plot type selection
         qcPlotsWebPart.resetInitialQCPlotFields();
@@ -413,7 +409,6 @@ public class TargetedMSQCTest extends TargetedMSTest
         createGuideSetFromTable(new GuideSet("2013-08-09", "2013-08-28", "all initial data points"));
         clickTab("Panorama Dashboard");
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        qcPlotsWebPart.waitForPlots(1, false);
         assertEquals("Y-axis Scale selection wasn't persisted", QCPlotsWebPart.Scale.LOG, qcPlotsWebPart.getCurrentScale());
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TOTAL_PEAK);
         assertEquals("Unexpected number of plots with invalid log scale.", 0, qcPlotsWebPart.getLogScaleInvalidCount());
@@ -432,18 +427,17 @@ public class TargetedMSQCTest extends TargetedMSTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
 
         log("Verify Plot Types and Legends");
-        qcPlotsWebPart.checkAllPlotTypes(false);
-        qcPlotsWebPart.checkPlotType(LeveyJennings, true);
-        qcPlotsWebPart.waitForPlots(PRECURSORS.length, true);
+        qcPlotsWebPart.setQCPlotTypes(LeveyJennings);
+        qcPlotsWebPart.waitForPlots(PRECURSORS.length);
 
-        qcPlotsWebPart.checkPlotType(MovingRange, true);
-        qcPlotsWebPart.waitForPlots(PRECURSORS.length * 2, true);
+        qcPlotsWebPart.checkPlotType(MovingRange);
+        qcPlotsWebPart.waitForPlots(PRECURSORS.length * 2);
 
         assertElementNotPresent(qcPlotsWebPart.getLegendItemLocator("CUSUM Group", true));
 
-        qcPlotsWebPart.checkPlotType(CUSUMm, true);
-        qcPlotsWebPart.checkPlotType(QCPlotsWebPart.QCPlotType.CUSUMv, true);
-        qcPlotsWebPart.waitForPlots(PRECURSORS.length * 4, true);
+        qcPlotsWebPart.checkPlotType(CUSUMm);
+        qcPlotsWebPart.checkPlotType(QCPlotsWebPart.QCPlotType.CUSUMv);
+        qcPlotsWebPart.waitForPlots(PRECURSORS.length * 4);
 
         assertElementPresent(qcPlotsWebPart.getLegendItemLocator("CUSUM Group", true));
 
@@ -461,20 +455,9 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         for (QCPlotsWebPart.QCPlotType plotType : QCPlotsWebPart.QCPlotType.values())
         {
-            qcPlotsWebPart.waitForPlots(1, false);
-            if (qcPlotsWebPart.isGroupXAxisValuesByDateChecked())
-            {
-                qcPlotsWebPart.setGroupXAxisValuesByDate(false);
-                qcPlotsWebPart.waitForPlots();
-            }
-            if (qcPlotsWebPart.isShowAllPeptidesInSinglePlotChecked())
-            {
-                qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false, PRECURSORS.length);
-                qcPlotsWebPart.waitForPlots();
-            }
-            qcPlotsWebPart.checkAllPlotTypes(false);
-            qcPlotsWebPart.checkPlotType(plotType, true);
-            qcPlotsWebPart.waitForPlots(1, false);
+            qcPlotsWebPart.setGroupXAxisValuesByDate(false);
+            qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false, PRECURSORS.length);
+            qcPlotsWebPart.setQCPlotTypes(plotType);
 
             testEachMultiSeriesQCPlot(plotType);
         }
@@ -485,7 +468,13 @@ public class TargetedMSQCTest extends TargetedMSTest
     @LogMethod
     private void testEachMultiSeriesQCPlot(@LoggedParam QCPlotsWebPart.QCPlotType plotType)
     {
-        log("Test plot type " + plotType.getLongLabel());
+        if (!plotType.isStandardPointCount())
+        {
+            log("Skipping plot type " + plotType.getLabel());
+            return;
+        }
+
+        log("Test plot type " + plotType.getLabel());
 
         String yLeftColor = "#66C2A5";
         String yRightColor = "#FC8D62";
@@ -496,8 +485,6 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        refresh();
-        qcPlotsWebPart.waitForPlots(1, false);
         // check that there are two series per plot by doing a point count by color
         int count = qcPlotsWebPart.getPointElements("fill", yLeftColor, false).size();
         assertEquals("Unexpected number of points for yLeft metric", pointsPerSeries * PRECURSORS.length, count);
@@ -506,11 +493,16 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         // check a few attributes of the multi-series all peptide plot
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
-        count = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of points for multi-series all peptide plot", pointsPerSeries * 2 * PRECURSORS.length, count);
+        // Check the total number of points plotted. Could someday validate in-range vs outliers separately
+        int closedCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
+        int openCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
+        int triangleCount = qcPlotsWebPart.getPointElements("d", SvgShapes.TRIANGLE.getPathPrefix(), true).size();
+        assertEquals("Unexpected number of points for multi-series all peptide plot", pointsPerSeries * 2 * PRECURSORS.length, openCount + closedCount + triangleCount);
         qcPlotsWebPart.setGroupXAxisValuesByDate(true);
-        count = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of points for multi-series all peptide plot", pointsPerSeries * 2 * PRECURSORS.length, count);
+        closedCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
+        openCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
+        triangleCount = qcPlotsWebPart.getPointElements("d", SvgShapes.TRIANGLE.getPathPrefix(), true).size();
+        assertEquals("Unexpected number of points for multi-series all peptide plot", pointsPerSeries * 2 * PRECURSORS.length, openCount + closedCount + triangleCount);
         assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Annotations", true));
         assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Change", false), 4);
         assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Transition Area", true));
@@ -531,11 +523,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.filterQCPlotsToInitialData(PRECURSORS.length, true);
 
-        qcPlotsWebPart.setDateRangeOffset(QCPlotsWebPart.DateRangeOffset.CUSTOM);
-        qcPlotsWebPart.setStartDate("2014-08-09");
-        qcPlotsWebPart.setEndDate("2014-08-27");
-        qcPlotsWebPart.applyRange();
-        qcPlotsWebPart.waitForPlots(0, true);
+        qcPlotsWebPart.filterQCPlots("2014-08-09", "2014-08-27", 0);
 
         // reset to avoid test case dependency
         qcPlotsWebPart.resetInitialQCPlotFields();
@@ -664,23 +652,11 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         for (QCPlotsWebPart.QCPlotType plotType : QCPlotsWebPart.QCPlotType.values())
         {
-            qcPlotsWebPart.waitForPlots(1, false);
+            qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false, PRECURSORS.length);
+            qcPlotsWebPart.setGroupXAxisValuesByDate(false);
+            qcPlotsWebPart.setQCPlotTypes(plotType);
 
-            if (qcPlotsWebPart.isShowAllPeptidesInSinglePlotChecked())
-            {
-                qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false, PRECURSORS.length);
-                qcPlotsWebPart.waitForPlots();
-            }
-            if (qcPlotsWebPart.isGroupXAxisValuesByDateChecked())
-            {
-                qcPlotsWebPart.setGroupXAxisValuesByDate(false);
-                qcPlotsWebPart.waitForPlots();
-            }
-            qcPlotsWebPart.checkAllPlotTypes(false);
-            qcPlotsWebPart.checkPlotType(plotType, true);
-            qcPlotsWebPart.waitForPlots(1, false);
-
-            testEachCombinedPlots(plotType);
+            testEachCombinedPlots(qcPlotsWebPart, plotType);
         }
         // reset to avoid test case dependency
         qcPlotsWebPart.resetInitialQCPlotFields();
@@ -697,7 +673,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         log("Verifying TIC Area QC Plots");
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TICAREA);
-        qcPlotsWebPart.waitForPlots(1, true);
+        qcPlotsWebPart.waitForPlots(1);
         String ticPlotSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
         assertFalse(ticPlotSVGText.isEmpty());
 
@@ -708,7 +684,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         log("Verifying tic_area information in hover plot");
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TICAREA);
-        qcPlotsWebPart.waitForPlots(1, true);
+        qcPlotsWebPart.waitForPlots(1);
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate(acquiredDate));
         waitForElement(qcPlotsWebPart.getBubble());
         String ticAreahoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
@@ -725,9 +701,15 @@ public class TargetedMSQCTest extends TargetedMSTest
         portalHelper.exitAdminMode();
     }
 
-    private void testEachCombinedPlots(QCPlotsWebPart.QCPlotType plotType)
+    private void testEachCombinedPlots(QCPlotsWebPart qcPlotsWebPart, QCPlotsWebPart.QCPlotType plotType)
     {
-        log("Testing combined plot for " + plotType.getLongLabel());
+        if (!plotType.isStandardPointCount())
+        {
+            log("Skipping plot type " + plotType.getLabel());
+            return;
+        }
+
+        log("Testing combined plot for " + plotType.getLabel());
         int count;
         int expectedNumPointsPerSeries = 47;
         if (plotType == CUSUMm || plotType == QCPlotsWebPart.QCPlotType.CUSUMv)
@@ -735,11 +717,6 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         // Use the same color assignments that Skyline generates for multi-molecule plots
         String[] legendItemColors = new String[]{"#755538", "#A1A4AD", "#E2A0AF", "#ED8CFF", "#D19D00", "#70A783", "#00625F"};
-
-        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
-        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        refresh();
-        qcPlotsWebPart.waitForPlots(1, false);
 
         //select "Show All Peptides in Single Plot"
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
@@ -795,13 +772,13 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         QCPlotsWebPart qcPlotsWebPart = new QCPlotsWebPart(this.getWrappedDriver());
         int currentPagePlotCount = 50;
-        qcPlotsWebPart.waitForPlots(currentPagePlotCount, true);
+        qcPlotsWebPart.waitForPlots(currentPagePlotCount);
         assertTrue("Unexpected overflow warning text", qcPlotsWebPart.getPaginationText().startsWith("Showing 1 - 50 of 91 precursors"));
 
         // go to the second page of plots
         qcPlotsWebPart.goToNextPage();
         currentPagePlotCount = 41;
-        qcPlotsWebPart.waitForPlots(currentPagePlotCount, true);
+        qcPlotsWebPart.waitForPlots(currentPagePlotCount);
         assertTrue("Unexpected overflow warning text", qcPlotsWebPart.getPaginationText().startsWith("Showing 51 - 91 of 91 precursors"));
 
         //select "Show All Peptides in Single Plot"
@@ -861,7 +838,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.setShowExcludedPoints(true);
-        qcPlotsWebPart.waitForPlots(2, true);
+        qcPlotsWebPart.waitForPlots(2);
 
         int includedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
         assertEquals("Unexpected number of included data points in plot SVG", 6, includedPointCount);
@@ -881,9 +858,12 @@ public class TargetedMSQCTest extends TargetedMSTest
         verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[1], "excluded");
         verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "0");
 
+        // Ensure that we've auto-hidden metrics without data
+        assertTextPresent("4 metrics");
+
         // create a guide set and verify updated QC Summary outliers info
         qcPlotsWebPart.createGuideSet(new GuideSet(sampleFileAcquiredDates[0], sampleFileAcquiredDates[1], null, 2), null);
-        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "20");
+        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "16");
 
         // change data point to only be excluded for a single metric and verify outliers changed
         changePointExclusionState(getAcquiredDateDisplayStr(sampleFileAcquiredDates[1]), QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric, 2);
@@ -907,8 +887,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         log("Enabling Moving range along with Levey-Jennings");
-        qcPlotsWebPart.checkPlotType(MovingRange, true);
-        qcPlotsWebPart.waitForPlots(1, false);
+        qcPlotsWebPart.checkPlotType(MovingRange);
 
         log("Verifying standard deviations plots");
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.STANDARD_DEVIATIONS);
@@ -927,6 +906,34 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertTrue("New plot is not as expected for percent of mean (y-axis) values", svgPlotText.contains("9095100105110115"));
     }
 
+    /*
+       Test coverage : Issue 45701: Samples excluded for single metric don't get hidden in QC plots
+    */
+    @Test
+    public void testSamplesExcludedForSingleMetric()
+    {
+        goToProjectHome();
+        log("Changing the exclusion state for one of the points");
+        String acquiredDate = "2013-08-14 22:48:37";
+        changePointExclusionState(acquiredDate, QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric, 7);
+
+        log("Setting Show Excluded Samples");
+        QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
+        assertTrue("Acquired date " + acquiredDate + " should have been excluded", verifyAcquiredDateIsNotDisplayed(acquiredDate));
+        qcPlotsWebPart.setShowExcludedPoints(true);
+
+        log("Verifying excluded sample is displayed");
+        qcPlotsWebPart.waitForPlots(7);
+        verifyExclusionButtonSelection(acquiredDate, QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric);
+
+        log("Changing the metric type");
+        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TOTAL_PEAK);
+        qcPlotsWebPart.setShowExcludedPoints(false);
+
+        qcPlotsWebPart.waitForPlots(7);
+        verifyExclusionButtonSelection(acquiredDate, QCPlotsWebPart.QCPlotExclusionState.Include);
+    }
+
     private void verifyQCSummarySampleFileOutliers(String acquiredDate, String outlierInfo)
     {
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
@@ -939,6 +946,21 @@ public class TargetedMSQCTest extends TargetedMSTest
     private String getAcquiredDateDisplayStr(String acquiredDate)
     {
         return acquiredDate.replaceAll("/", "-");
+    }
+
+    private boolean verifyAcquiredDateIsNotDisplayed(String acquiredDate)
+    {
+        QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
+        try
+        {
+            qcPlotsWebPart.openExclusionBubble(acquiredDate);
+        }
+        catch (NoSuchElementException e)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private void verifyExclusionButtonSelection(String acquiredDate, QCPlotsWebPart.QCPlotExclusionState state)
@@ -962,7 +984,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         }
         else
             qcPlotsWebPart.closeBubble();
-        qcPlotsWebPart.waitForPlots(waitForPlotCount, true);
+        qcPlotsWebPart.waitForPlots(waitForPlotCount);
     }
 
     @LogMethod

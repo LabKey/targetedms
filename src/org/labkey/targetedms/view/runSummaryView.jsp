@@ -55,6 +55,9 @@
     ActionURL ptmReportAction = new ActionURL(TargetedMSController.ShowPTMReportAction.class, getContainer());
     ptmReportAction.addParameter("id", run.getId());
 
+    ActionURL ptmEarlyStageReportAction = new ActionURL(TargetedMSController.ShowEarlyStagePTMReportAction.class, getContainer());
+    ptmEarlyStageReportAction.addParameter("id", run.getId());
+
     ActionURL peptideMapAction = new ActionURL(TargetedMSController.ShowPeptideMapAction.class, getContainer());
     peptideMapAction.addParameter("id", run.getId());
 
@@ -104,6 +107,7 @@
         <% if (TargetedMSService.get().getFolderType(run.getContainer()) == TargetedMSService.FolderType.ExperimentMAM && run.getPeptideCount() > 0) { %>
             &nbsp;-&nbsp;
             <a href="<%= h(ptmReportAction) %>">PTM Report</a>,
+            <a href="<%= h(ptmEarlyStageReportAction) %>">Early Stage PTM Report</a>,
             <a href="<%= h(peptideMapAction) %>">Peptide Map</a>
         <% } %>
     </div>

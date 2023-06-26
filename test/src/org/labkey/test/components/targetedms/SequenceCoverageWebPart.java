@@ -2,7 +2,6 @@ package org.labkey.test.components.targetedms;
 
 
 import org.labkey.test.Locator;
-import org.labkey.test.WebDriverWrapper;
 import org.labkey.test.components.BodyWebPart;
 import org.labkey.test.components.html.SelectWrapper;
 import org.openqa.selenium.WebDriver;
@@ -75,17 +74,16 @@ public class SequenceCoverageWebPart extends BodyWebPart<SequenceCoverageWebPart
     {
         if (elementCache().peptideDetailsHelp.isDisplayed())
         {
-            Locator.tagWithAttribute("img", "alt", "close").findElement(elementCache().peptideDetailsHelp).click();
+            getWrapper().shortWait().until(ExpectedConditions.elementToBeClickable(Locator.tagWithAttribute("img", "alt", "close").findElement(elementCache().peptideDetailsHelp))).click();
             getWrapper().shortWait().until(ExpectedConditions.invisibilityOf(elementCache().peptideDetailsHelp));
         }
         WebElement numLink = getWrapper().shortWait().until(ExpectedConditions.elementToBeClickable(
                 Locator.tagWithAttributeContaining("a", "id", "helpPopup").withText(value).childTag("div")));
-        WebDriverWrapper.waitFor(() -> {
-            numLink.click();
-            return elementCache().peptideDetailsHelp.isDisplayed();
-        }, "Peptide details tooltip did not appear", 5000);
+        getWrapper().mouseOver(numLink);
+        numLink.click();
+        getWrapper().shortWait().until(ExpectedConditions.visibilityOf(elementCache().peptideDetailsHelp));
 
-        return Locator.id("helpDivBody").findElement(elementCache().peptideDetailsHelp).getText();
+        return Locator.id("helpDivBody").withText().waitForElement(elementCache().peptideDetailsHelp, 1_000).getText();
     }
 
     public SequenceCoverageWebPart doAndWaitForUpdate(Runnable runnable)
@@ -100,7 +98,7 @@ public class SequenceCoverageWebPart extends BodyWebPart<SequenceCoverageWebPart
         return new Elements();
     }
 
-    public class Elements extends BodyWebPart.ElementCache
+    public class Elements extends BodyWebPart<?>.ElementCache
     {
         final Select displayBy = SelectWrapper.Select(Locator.name("peptideSettings")).findWhenNeeded(this);
         final Select replicate = SelectWrapper.Select(Locator.name("replicateSettings")).findWhenNeeded(this);

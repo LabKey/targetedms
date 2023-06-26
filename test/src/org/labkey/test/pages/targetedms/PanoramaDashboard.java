@@ -30,16 +30,13 @@ public class PanoramaDashboard extends PortalBodyPanel
     public QCPlotsWebPart getQcPlotsWebPart()
     {
         getQcSummaryWebPart(); // Wait for page layout to stabilize. Prevents errant tooltips.
-        return new QCPlotsWebPart(getDriver());
+        QCPlotsWebPart qcPlotsWebPart = new QCPlotsWebPart(getDriver());
+        qcPlotsWebPart.waitForReady();
+        return qcPlotsWebPart;
     }
 
     public QCSummaryWebPart getQcSummaryWebPart()
     {
         return new QCSummaryWebPart(getDriver());
-    }
-
-    public QCSummaryWebPart getQcSummaryWebPart(int index)
-    {
-        return new QCSummaryWebPart(getDriver(), index);
     }
 }

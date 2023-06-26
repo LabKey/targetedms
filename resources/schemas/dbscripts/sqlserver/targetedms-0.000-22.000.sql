@@ -5009,3 +5009,179 @@ GO
 ALTER TABLE targetedms.PrecursorChromInfo ADD TransitionChromatogramIndices IMAGE;
 
 ALTER TABLE targetedms.PrecursorChromInfo ADD BestMassErrorPPM Real;
+
+/* 21.xxx SQL scripts */
+
+UPDATE targetedms.transitionpredictionsettings SET CePredictorId = NULL WHERE CePredictorId NOT IN (SELECT Id FROM targetedms.Predictor);
+UPDATE targetedms.transitionpredictionsettings SET DpPredictorId = NULL WHERE DpPredictorId NOT IN (SELECT Id FROM targetedms.Predictor);
+
+ALTER TABLE targetedms.transitionpredictionsettings ADD CONSTRAINT FK_TransitionPredictionSettings_PredictorCe FOREIGN KEY (CePredictorId) REFERENCES targetedms.Predictor(Id);
+ALTER TABLE targetedms.transitionpredictionsettings ADD CONSTRAINT FK_TransitionPredictionSettings_PredictorDp FOREIGN KEY (DpPredictorId) REFERENCES targetedms.Predictor(Id);
+
+CREATE INDEX IX_TransitionPredictionSettings_CePredictorId ON targetedms.transitionpredictionsettings(CePredictorId);
+CREATE INDEX IX_TransitionPredictionSettings_DpPredictorId ON targetedms.transitionpredictionsettings(DpPredictorId);
+
+DROP INDEX targetedms.TransitionOptimization.IX_TransitionOptimization_TransitionId;
+GO
+ALTER TABLE targetedms.TransitionOptimization DROP CONSTRAINT FK_TransitionOptimization_TransitionId;
+GO
+ALTER TABLE targetedms.TransitionOptimization ADD CONSTRAINT FK_TransitionOptimization_TransitionId FOREIGN KEY (TransitionId) REFERENCES targetedms.GeneralTransition(Id);
+GO
+CREATE INDEX IX_TransitionOptimization_TransitionId ON targetedms.TransitionOptimization (TransitionId);
+GO
+
+UPDATE targetedms.PrecursorChromInfo SET IonMobilityType = 'drift_time_ms'
+    WHERE IonMobilityType IS NULL AND (DriftTimeMS1 IS NOT NULL OR DriftTimeFragment IS NOT NULL OR DriftTimeWindow IS NOT NULL);
+UPDATE targetedms.PrecursorChromInfo SET IonMobilityMS1 = DriftTimeMS1
+    WHERE IonMobilityMS1 IS NULL AND DriftTimeMS1 IS NOT NULL;
+UPDATE targetedms.PrecursorChromInfo SET IonMobilityFragment = DriftTimeFragment
+    WHERE IonMobilityFragment IS NULL AND DriftTimeFragment IS NOT NULL;
+UPDATE targetedms.PrecursorChromInfo SET IonMobilityWindow = DriftTimeWindow
+    WHERE IonMobilityWindow IS NULL AND DriftTimeWindow IS NOT NULL;
+
+ALTER TABLE targetedms.PrecursorChromInfo DROP COLUMN DriftTimeMS1, DriftTimeFragment, DriftTimeWindow;
+
+UPDATE targetedms.TransitionChromInfo SET IonMobilityType = 'drift_time_ms'
+    WHERE IonMobilityType IS NULL AND (DriftTime IS NOT NULL OR DriftTimeWindow IS NOT NULL);
+UPDATE targetedms.TransitionChromInfo SET IonMobility = DriftTime
+    WHERE IonMobility IS NULL AND DriftTime IS NOT NULL;
+UPDATE targetedms.TransitionChromInfo SET IonMobilityWindow = DriftTimeWindow
+    WHERE IonMobilityWindow IS NULL AND DriftTimeWindow IS NOT NULL;
+
+ALTER TABLE targetedms.TransitionChromInfo DROP COLUMN DriftTime, DriftTimeWindow;
+
+ALTER TABLE targetedms.peptidegroup ALTER COLUMN label NVARCHAR(255);
+
+ALTER TABLE targetedms.QCMetricConfiguration ADD TraceValue REAL;
+ALTER TABLE targetedms.QCMetricConfiguration ADD TimeValue REAL;
+ALTER TABLE targetedms.QCMetricConfiguration ADD TraceName NVARCHAR(200);
+GO
+
+CREATE TABLE targetedms.QCTraceMetricValues
+(
+    Id              INT IDENTITY(1, 1) NOT NULL ,
+    metric          INT,
+    value           REAL,
+    sampleFileId    BIGINT,
+
+    CONSTRAINT PK_QCTraceMetricValues PRIMARY KEY (Id),
+    CONSTRAINT FK_QCTraceMetricValues_Metric FOREIGN KEY (metric) REFERENCES targetedms.QCMetricConfiguration(Id),
+    CONSTRAINT FK_QCTraceMetricValues_SampleFile FOREIGN KEY (sampleFileId) REFERENCES targetedms.SampleFile(Id)
+);
+
+CREATE INDEX IX_QCTraceMetricValues_SampleFile ON targetedms.QCTraceMetricValues(sampleFileId);
+CREATE INDEX IX_QCTraceMetricValues_Metric ON targetedms.QCTraceMetricValues(metric);
+GO
+
+ALTER TABLE targetedms.QCMetricConfiguration ADD YAxisLabel1 NVARCHAR(200);
+ALTER TABLE targetedms.QCMetricConfiguration ADD YAxisLabel2 NVARCHAR(200);
+GO
+
+UPDATE targetedms.QCMetricConfiguration
+SET YAxisLabel1 = 'Minutes'
+WHERE Name = 'Full Width at Base (FWB)';
+
+UPDATE targetedms.QCMetricConfiguration
+SET YAxisLabel1 = 'Minutes'
+WHERE Name = 'Full Width at Half Maximum (FWHM)';
+
+UPDATE targetedms.QCMetricConfiguration
+SET YAxisLabel1 = 'Ratio'
+WHERE Name = 'Light/Heavy Ratio';
+
+UPDATE targetedms.QCMetricConfiguration
+SET YAxisLabel1 = 'PPM'
+WHERE Name = 'Mass Accuracy';
+
+UPDATE targetedms.QCMetricConfiguration
+SET YAxisLabel1 = 'Area'
+WHERE Name = 'Peak Area';
+
+UPDATE targetedms.QCMetricConfiguration
+SET YAxisLabel1 = 'Minutes'
+WHERE Name = 'Retention Time';
+
+UPDATE targetedms.QCMetricConfiguration
+SET YAxisLabel1 = 'Precursor Area'
+WHERE Name = 'Transition & Precursor Areas';
+
+UPDATE targetedms.QCMetricConfiguration
+SET YAxisLabel2 = 'Transition Area'
+WHERE Name = 'Transition & Precursor Areas';
+
+UPDATE targetedms.QCMetricConfiguration
+SET YAxisLabel1 = 'Area'
+WHERE Name = 'TIC Area';
+
+UPDATE targetedms.QCMetricConfiguration
+SET YAxisLabel1 = 'Ratio'
+WHERE Name = 'Transition/Precursor Area Ratio';
+
+-- FileNameHint for a Skyline document with a "document" library will be one character more than the name of the .sky file
+-- Look at PeptideSettingsParser.getDocumentLibrary()
+-- Example:      Stergachis-SupplementaryData_2_a.sky
+-- FileNameHint: Stergachis-SupplementaryData_2_a.blib
+-- Current limit on the targetedms.runs FileName column that stores the name of the .sky.zip file (e.g. Stergachis-SupplementaryData_2_a.sky.zip)
+-- is 300. Set FileNameHint to be the same.
+ALTER TABLE targetedms.spectrumlibrary ALTER COLUMN FileNameHint NVARCHAR(300);
+
+-- Users can enter a comma-separated list of amino acids for both structural and isotopic modifications in Skyline.
+-- If they enter all 20 standard amino acids plus O (Pyrrolysine) and U (Selenocysteine) the length of the string
+-- we need to store in the AminoAcid column will be 64: A, C, D, E, F, G, H, I, K, L, M, N, O, P, Q, R, S, T, U, V, W, Y
+ALTER TABLE targetedms.IsotopeModification ALTER COLUMN AminoAcid NVARCHAR(100);
+ALTER TABLE targetedms.StructuralModification ALTER COLUMN AminoAcid NVARCHAR(100);
+
+EXEC core.executeJavaInitializationCode 'recalculateAreaProportions';
+
+ALTER TABLE targetedms.SampleFile ADD IRTSlope REAL;
+ALTER TABLE targetedms.SampleFile ADD IRTIntercept REAL;
+ALTER TABLE targetedms.SampleFile ADD IRTCorrelation REAL;
+GO
+
+declare @rootIdentity ENTITYID;
+select @rootIdentity = [EntityId] FROM [core].[Containers] WHERE Parent is null
+
+INSERT INTO targetedms.QCMetricConfiguration (Container, Name, Series1Label, Series1SchemaName, Series1QueryName, PrecursorScoped, EnabledQueryName, EnabledSchemaName) VALUES
+    (@rootIdentity, 'iRT Slope', 'iRT Slope', 'targetedms', 'QCRunMetric_iRTSlope', 0, 'QCRunMetricEnabled_iRTSlope', 'targetedms');
+
+INSERT INTO targetedms.QCMetricConfiguration (Container, Name, Series1Label, Series1SchemaName, Series1QueryName, PrecursorScoped, EnabledQueryName, EnabledSchemaName) VALUES
+    (@rootIdentity, 'iRT Intercept', 'iRT Intercept', 'targetedms', 'QCRunMetric_iRTIntercept', 0, 'QCRunMetricEnabled_iRTIntercept', 'targetedms');
+
+INSERT INTO targetedms.QCMetricConfiguration (Container, Name, Series1Label, Series1SchemaName, Series1QueryName, PrecursorScoped, EnabledQueryName, EnabledSchemaName) VALUES
+    (@rootIdentity, 'iRT Correlation', 'iRT Correlation', 'targetedms', 'QCRunMetric_iRTCorrelation', 0, 'QCRunMetricEnabled_iRTCorrelation', 'targetedms');
+
+UPDATE targetedms.QCMetricConfiguration SET EnabledQueryName = 'QCRunMetricEnabled_ticArea', EnabledSchemaName = 'targetedms' WHERE Name = 'TIC Area';
+UPDATE targetedms.QCMetricConfiguration SET EnabledQueryName = 'QCMetricEnabled_massAccuracy', EnabledSchemaName = 'targetedms' WHERE Name = 'Mass Accuracy';
+
+INSERT INTO targetedms.QCMetricConfiguration (Container, Name, Series1Label, Series1SchemaName, Series1QueryName, PrecursorScoped) VALUES
+    (@rootIdentity, 'Precursor Area', 'Precursor Area', 'targetedms', 'QCMetric_precursorArea', 1);
+
+INSERT INTO targetedms.QCMetricConfiguration (Container, Name, Series1Label, Series1SchemaName, Series1QueryName, PrecursorScoped, EnabledQueryName, EnabledSchemaName) VALUES
+    (@rootIdentity, 'Transition Area', 'Transition Area', 'targetedms', 'QCMetric_transitionArea', 1, 'QCMetricEnabled_transitionArea', 'targetedms');
+
+UPDATE
+    targetedms.QCMetricConfiguration
+SET
+    Name = 'Total Peak Area (Precursor + Transition)',
+    EnabledQueryName = 'QCMetricEnabled_transitionArea',
+    EnabledSchemaName = 'targetedms',
+    Series1Label = 'Total Peak Area'
+WHERE Name = 'Peak Area' OR Name = 'Total Peak Area (Precursor + Transition)';
+
+UPDATE
+    targetedms.QCMetricConfiguration
+SET
+    EnabledQueryName = 'QCMetricEnabled_transitionArea',
+    EnabledSchemaName = 'targetedms'
+WHERE Name = 'Transition/Precursor Area Ratio';
+
+UPDATE
+    targetedms.QCMetricConfiguration
+SET
+    EnabledQueryName = 'QCMetricEnabled_transitionArea',
+    EnabledSchemaName = 'targetedms'
+WHERE Name = 'Transition & Precursor Areas';
+
+ALTER TABLE targetedms.PrecursorChromInfo ADD
+    TotalAreaMs1 REAL,
+    TotalAreaFragment REAL;

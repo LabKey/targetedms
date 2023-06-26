@@ -152,7 +152,7 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
         checker().verifyEquals("Incorrect guideSet information", guideSetTitle, qcPlotsWebPart.getGuideSetTrainingRectTitle(2));
         checker().screenShotIfNewError("InitialRangeFiltering");
 
-        String testStartDate = "2013-08-19";
+        String testStartDate = "2013-08-18";
         String testEndDate = "2013-08-27";
         qcPlotsWebPart.filterQCPlots(testStartDate, testEndDate, 7);
 

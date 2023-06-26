@@ -150,6 +150,13 @@ public class DocTransitionsTableInfo extends AbstractGeneralTransitionTableInfo
                     return o == null ? null : o.toString();
                 }
 
+                @Override
+                public Object getExcelCompatibleValue(RenderContext ctx)
+                {
+                    // Return the fragment ion name with extended characters, if any. Example: z• (z+1) and z′ (z+2) ions.
+                    return getValue(ctx, true);
+                }
+
                 @Override @NotNull
                 public HtmlString getFormattedHtml(RenderContext ctx)
                 {

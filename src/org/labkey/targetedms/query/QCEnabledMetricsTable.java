@@ -40,8 +40,8 @@ public class QCEnabledMetricsTable extends SimpleUserSchema.SimpleTable<Targeted
     public QCEnabledMetricsTable(TargetedMSSchema schema, ContainerFilter cf)
     {
         super(schema, TargetedMSManager.getTableInfoQCEnabledMetrics(), cf);
-        TargetedMSTable.fixupLookups(this);
         wrapAllColumns(true);
+        TargetedMSTable.fixupLookups(this);
     }
 
     @Override

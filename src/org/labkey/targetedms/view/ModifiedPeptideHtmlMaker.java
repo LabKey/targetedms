@@ -30,9 +30,12 @@ import org.labkey.targetedms.query.ModificationManager;
 import org.labkey.targetedms.query.PeptideGroupManager;
 import org.labkey.targetedms.query.PeptideManager;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,6 +50,7 @@ public class ModifiedPeptideHtmlMaker
     // Used to get the display color for label types.
     private final Map<Long, Long> _firstIsotopeLabelIdInDocMap;
 
+    /** RunId -> all proteins in that run */
     private final Map<Long, List<Protein>> _proteins = new HashMap<>();
 
     private final static String[] HEX_PADDING = new String[] {
@@ -72,20 +76,20 @@ public class ModifiedPeptideHtmlMaker
 
     public HtmlString getPrecursorHtml(Peptide peptide, Precursor precursor, Long runId)
     {
-        return getPrecursorHtml(peptide.getId(), precursor.getIsotopeLabelId(), precursor.getModifiedSequence(), runId);
+        return getPrecursorHtml(peptide.getId(), peptide.getPeptideGroupId(), precursor.getIsotopeLabelId(), precursor.getModifiedSequence(), runId);
     }
 
-    public HtmlString getPrecursorHtml(long peptideId, long isotopeLabelId, String precursorModifiedSequence, Long runId)
+    public HtmlString getPrecursorHtml(long peptideId, Long peptideGroupId, long isotopeLabelId, String precursorModifiedSequence, Long runId)
     {
-        return getHtml(peptideId, isotopeLabelId, precursorModifiedSequence, runId, null, null, false);
+        return getHtml(peptideId, peptideGroupId, isotopeLabelId, precursorModifiedSequence, runId, null, null, false);
     }
 
     public HtmlString getPeptideHtml(Peptide peptide, Long runId)
     {
-        return getPeptideHtml(peptide.getId(), peptide.getSequence(), peptide.getPeptideModifiedSequence(), runId, null, null, false);
+        return getPeptideHtml(peptide.getId(), peptide.getPeptideGroupId(), peptide.getSequence(), peptide.getPeptideModifiedSequence(), runId, null, null, false);
     }
 
-    public HtmlString getPeptideHtml(long peptideId, String sequence, String peptideModifiedSequence, Long runId, @Nullable String previousAA, @Nullable String nextAA, boolean useParens)
+    public HtmlString getPeptideHtml(long peptideId, Long peptideGroupId, String sequence, String peptideModifiedSequence, Long runId, @Nullable String previousAA, @Nullable String nextAA, boolean useParens)
     {
         String altSequence = peptideModifiedSequence;
         if(StringUtils.isBlank(altSequence))
@@ -93,10 +97,10 @@ public class ModifiedPeptideHtmlMaker
             altSequence = sequence;
         }
 
-        return getHtml(peptideId, null, altSequence, runId, previousAA, nextAA, useParens);
+        return getHtml(peptideId, peptideGroupId, null, altSequence, runId, previousAA, nextAA, useParens);
     }
 
-    private HtmlString getHtml(long peptideId, @Nullable Long isotopeLabelId, String altSequence, Long runId, @Nullable String previousAA, @Nullable String nextAA, boolean useParens)
+    private HtmlString getHtml(long peptideId, @Nullable Long peptideGroupId, @Nullable Long isotopeLabelId, String altSequence, Long runId, @Nullable String previousAA, @Nullable String nextAA, boolean useParens)
     {
         Long firstIsotopeLabelIdInDoc = null;
         if(runId != null)
@@ -139,7 +143,33 @@ public class ModifiedPeptideHtmlMaker
 
         CrossLinkedPeptideInfo crossLink = new CrossLinkedPeptideInfo(altSequence);
 
-        renderSequence(crossLink.getBaseSequence(), filterModIndices(strModIndices, 0), isotopeModIndices, result, labelModColor, useParens, previousAA, nextAA);
+        List<Protein> proteins = runId == null ? Collections.emptyList() : _proteins.computeIfAbsent(runId, id -> PeptideGroupManager.getProteinsForRun(runId));
+
+        Set<Integer> cdrIndices = new HashSet<>();
+        if (peptideGroupId != null)
+        {
+            Optional<Protein> match = proteins.stream().filter(p -> p.getPeptideGroupId() == peptideGroupId.intValue()).findFirst();
+            if (match.isPresent())
+            {
+                Protein protein = match.get();
+                String sequence = protein.getSequence();
+                if (sequence != null && sequence.contains(crossLink.getBaseSequence().getUnmodified()))
+                {
+                    // CDR ranges are one-based to make comparisons easy by doing the same for the peptide start/end indices
+                    int peptideStartIndex = sequence.indexOf(crossLink.getBaseSequence().getUnmodified()) + 1;
+                    int peptideEndIndex = peptideStartIndex + crossLink.getBaseSequence().getUnmodified().length();
+                    for (Pair<Integer, Integer> cdrRange : protein.getCdrRangesList())
+                    {
+                        for (int i = Math.max(cdrRange.first, peptideStartIndex); i <= Math.min(cdrRange.second, peptideEndIndex); i++)
+                        {
+                            cdrIndices.add(i - peptideStartIndex);
+                        }
+                    }
+                }
+            }
+        }
+
+        renderSequence(crossLink.getBaseSequence(), filterModIndices(strModIndices, 0), isotopeModIndices, result, labelModColor, useParens, previousAA, nextAA, cdrIndices);
 
         // If we have cross-linking info, show those peptides too
         for (CrossLinkedPeptideInfo.PeptideSequence extraSequence : crossLink.getExtraSequences())
@@ -149,7 +179,6 @@ public class ModifiedPeptideHtmlMaker
             result.append("<br />\n");
             if (runId != null)
             {
-                List<Protein> proteins = _proteins.computeIfAbsent(runId, id -> PeptideGroupManager.getProteinsForRun(runId));
                 Protein matchingProtein = extraSequence.findMatch(proteins);
                 if (matchingProtein != null)
                 {
@@ -179,7 +208,7 @@ public class ModifiedPeptideHtmlMaker
                     }
                 }
             }
-            renderSequence(extraSequence, filterModIndices(strModIndices, extraSequence.getPeptideIndex()), isotopeModIndices, result, labelModColor, useParens, previousAA, nextAA);
+            renderSequence(extraSequence, filterModIndices(strModIndices, extraSequence.getPeptideIndex()), isotopeModIndices, result, labelModColor, useParens, previousAA, nextAA, Collections.emptySet());
         }
 
         result.append("</div>");
@@ -196,7 +225,7 @@ public class ModifiedPeptideHtmlMaker
         return strModIndices.stream().filter(x -> x.first == peptideIndex).map(x -> x.second).collect(Collectors.toSet());
     }
 
-    private void renderSequence(CrossLinkedPeptideInfo.PeptideSequence sequenceInfo, Set<Integer> strModIndices, Set<Integer> isotopeModIndices, StringBuilder result, String labelModColor, boolean useParens, @Nullable String previousAA, @Nullable String nextAA)
+    private void renderSequence(CrossLinkedPeptideInfo.PeptideSequence sequenceInfo, Set<Integer> strModIndices, Set<Integer> isotopeModIndices, StringBuilder result, String labelModColor, boolean useParens, @Nullable String previousAA, @Nullable String nextAA, Set<Integer> cdrIndices)
     {
         if (previousAA != null)
         {
@@ -215,11 +244,16 @@ public class ModifiedPeptideHtmlMaker
             boolean isStrModified = strModIndices != null && strModIndices.contains(i);
             boolean isIsotopeModified = isotopeModIndices != null && isotopeModIndices.contains(i);
             boolean isCrossLinked = sequenceInfo.isCrossLinked(i);
+            boolean isCDR = cdrIndices.contains(i);
 
-            if(isIsotopeModified || isStrModified || isCrossLinked)
+            if (isIsotopeModified || isStrModified || isCrossLinked || isCDR)
             {
-                StringBuilder style = new StringBuilder("style='font-weight:bold;");
-                if(isIsotopeModified)
+                StringBuilder style = new StringBuilder("style='");
+                if (isIsotopeModified || isStrModified || isCrossLinked)
+                {
+                    style.append("font-weight:bold;");
+                }
+                if (isIsotopeModified)
                 {
                     style.append("color:").append(labelModColor).append(";");
                 }
@@ -227,9 +261,13 @@ public class ModifiedPeptideHtmlMaker
                 {
                     style.append("color:").append("green").append(";");
                 }
-                if(isStrModified)
+                if (isStrModified)
                 {
                     style.append("text-decoration:underline;");
+                }
+                if (isCDR)
+                {
+                    style.append("background-color:lightgrey;");
                 }
                 style.append("'");
                 result.append("<span ").append(style).append(">").append(sequence.charAt(i)).append("</span>");

@@ -47,7 +47,7 @@ public class LibInfoDao implements Dao<LibInfo>
             sql.append(" (");
             sql.append(getInsertColumnSql());
             sql.append(")");
-            sql.append(" VALUES (?,?,?,?,?,?,?,?,?);");
+            sql.append(" VALUES (?,?,?,?,?,?,?,?,?)");
 
             try (PreparedStatement stmt = connection.prepareStatement(sql.toString()))
             {

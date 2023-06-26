@@ -46,6 +46,8 @@ import java.util.Map;
 */
 public class QCAnnotationTypeTable extends SimpleUserSchema.SimpleTable<TargetedMSSchema>
 {
+    public static final String INSTRUMENT_DOWNTIME = "Instrument Downtime";
+
     public QCAnnotationTypeTable(TargetedMSSchema schema, ContainerFilter cf)
     {
         super(schema, TargetedMSManager.getTableInfoQCAnnotationType(), cf);

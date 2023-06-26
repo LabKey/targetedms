@@ -1,6 +1,6 @@
 package org.labkey.targetedms.view;
 
-import org.json.old.JSONObject;
+import org.json.JSONObject;
 import org.labkey.api.data.Container;
 import org.labkey.api.security.User;
 import org.labkey.api.view.JspView;

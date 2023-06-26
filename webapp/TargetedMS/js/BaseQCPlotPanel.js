@@ -19,13 +19,11 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
         return undefined;
     },
 
-    isMultiSeries : function(metricId)
-    {
+    isMultiSeries : function(metricId) {
         var metric = Ext4.isNumber(this.metric) ? this.metric : metricId;
-        if (Ext4.isNumber(metric))
-        {
+        if (Ext4.isNumber(metric)) {
             var metricProps = this.getMetricPropsById(metric);
-            if(metricProps) {
+            if (metricProps) {
                 return Ext4.isDefined(metricProps.series2SchemaName) && Ext4.isDefined(metricProps.series2QueryName);
             }
         }

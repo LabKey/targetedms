@@ -106,6 +106,7 @@
     <instrument id="MS:1002591" name="Triple Quad 3500" vendor="SCIEX" description="SCIEX Triple Quad 3500."/>
     <instrument id="MS:1002592" name="Triple Quad 4500" vendor="SCIEX" description="SCIEX Triple Quad 4500."/>
     <instrument id="MS:1002590" name="API 365" vendor="SCIEX" description="Applied Biosystems/MDS SCIEX API 365 MS."/>
+    <instrument id="MS:1003293" name="ZenoTOF 7600" vendor="SCIEX" description="SCIEX ZenoTOF 7600."/>
     <instrument id="MS:1000145" name="API 2000" vendor="SCIEX" description="Applied Biosystems/MDS SCIEX API 2000 MS."/>
     <instrument id="MS:1000144" name="API 150EX Prep" vendor="SCIEX" description="Applied Biosystems/MDS SCIEX API 150EX Prep MS."/>
     <instrument id="MS:1000147" name="API 4000" vendor="SCIEX" description="Applied Biosystems/MDS SCIEX API 4000 MS."/>
@@ -209,6 +210,7 @@
     <instrument id="MS:1003029" name="Orbitrap Eclipse" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Eclipse mass spectrometer with Tribrid architecture consisting of quadrupole mass filter, linear ion trap and Orbitrap mass analyzers."/>
     <instrument id="MS:1002874" name="TSQ Altis" vendor="Thermo Scientific" description="Thermo Scientific TSQ Altis Triple Quadrupole MS."/>
     <instrument id="MS:1000447" name="LTQ" vendor="Thermo Scientific" description="Finnigan LTQ MS."/>
+    <instrument id="MS:1003292" name="TSQ Altis Plus" vendor="Thermo Scientific" description="Thermo Scientific TSQ Altis Plus Triple Quadrupole MS."/>
     <instrument id="MS:1002835" name="LTQ Orbitrap Classic" vendor="Thermo Scientific" description="Thermo Fisher Scientific LTQ Orbitrap Classic."/>
     <instrument id="MS:1001908" name="ISQ" vendor="Thermo Scientific" description="Thermo Scientific ISQ single quadrupole MS with the ExtractraBrite source."/>
     <instrument id="MS:1003094" name="Orbitrap Exploris 240" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Exploris 240 Quadrupole Orbitrap MS."/>
@@ -249,6 +251,7 @@
     <instrument id="MS:1000622" name="Surveyor PDA" vendor="Thermo Scientific" description="Surveyor PDA."/>
     <instrument id="MS:1002732" name="Orbitrap Fusion Lumos" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Fusion Lumos mass spectrometer with Tribrid architecture consisting of quadrupole mass filter, linear ion trap and Orbitrap mass analyzers."/>
     <instrument id="MS:1003245" name="Q Exactive UHMR" vendor="Thermo Scientific" description="Thermo Scientific Q Exactive UHMR (Ultra High Mass Range) Hybrid Quadrupole Orbitrap MS."/>
+    <instrument id="MS:1003356" name="Orbitrap Ascend" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Ascend mass spectrometer with Tribrid architecture consisting of quadrupole mass filter, linear ion trap and Orbitrap mass analyzers."/>
     <instrument id="MS:1000743" name="TSQ Quantum Ultra AM" vendor="Thermo Scientific" description="Thermo Scientific TSQ Quantum Ultra AM."/>
     <instrument id="MS:1002416" name="Orbitrap Fusion" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Fusion."/>
     <instrument id="MS:1002417" name="Orbitrap Fusion ETD" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Fusion with ETD."/>

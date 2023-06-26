@@ -1,7 +1,7 @@
 package org.labkey.api.targetedms.model;
 
 import org.jetbrains.annotations.NotNull;
-import org.json.old.JSONObject;
+import org.json.JSONObject;
 
 public class OutlierCounts
 {

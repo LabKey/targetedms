@@ -15,7 +15,7 @@
  */
 package org.labkey.targetedms.model;
 
-import org.json.old.JSONObject;
+import org.json.JSONObject;
 import org.labkey.api.data.Entity;
 import org.labkey.api.targetedms.model.OutlierCounts;
 import org.labkey.api.util.Pair;
@@ -135,5 +135,4 @@ public class GuideSet extends Entity
 
         return jsonObject;
     }
-
 }

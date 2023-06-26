@@ -58,6 +58,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class TargetedMSServiceImpl implements TargetedMSService
 {
+    private final ExperimentRunType EXP_RUN_TYPE = new TargetedMSExperimentRunType();
+
     // CopyOnWriteArrayList is a thread-safe variant of ArrayList in which all mutative operations (add, set, and so on)
     // are implemented by making a fresh copy of the underlying array.
     private final List<SkylineDocumentImportListener> _skylineDocumentImportListeners = new CopyOnWriteArrayList<>();
@@ -249,7 +251,7 @@ public class TargetedMSServiceImpl implements TargetedMSService
     @Override
     public ExperimentRunType getExperimentRunType()
     {
-        return TargetedMSModule.EXP_RUN_TYPE;
+        return EXP_RUN_TYPE;
     }
 
     @Override

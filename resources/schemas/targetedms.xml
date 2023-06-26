@@ -65,7 +65,6 @@
             </column>
             <column columnName="Name"/>
             <column columnName="Value"/>
-            <column columnName="Source"/>
             <column columnName="ReplicateId"/>
         </columns>
     </table>
@@ -1292,6 +1291,11 @@
             <column columnName="Date">
                 <columnTitle>Date and Time</columnTitle>
                 <description>The date and time at which the event happened</description>
+                <formatString>DateTime</formatString>
+            </column>
+            <column columnName="EndDate">
+                <columnTitle>End Date</columnTitle>
+                <description>Optionally, the date and time at which the event stopped</description>
                 <formatString>DateTime</formatString>
             </column>
             <column columnName="QCAnnotationTypeId">

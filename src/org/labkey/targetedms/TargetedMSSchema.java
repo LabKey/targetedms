@@ -19,7 +19,7 @@ package org.labkey.targetedms;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.old.JSONObject;
+import org.json.JSONObject;
 import org.labkey.api.collections.CaseInsensitiveHashMap;
 import org.labkey.api.collections.CaseInsensitiveHashSet;
 import org.labkey.api.data.*;
@@ -27,6 +27,7 @@ import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.exp.query.ExpRunTable;
 import org.labkey.api.exp.query.ExpSchema;
 import org.labkey.api.module.Module;
+import org.labkey.api.query.CrosstabView;
 import org.labkey.api.query.CustomView;
 import org.labkey.api.query.DefaultSchema;
 import org.labkey.api.query.DetailsURL;
@@ -49,6 +50,7 @@ import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.HtmlString;
+import org.labkey.api.util.Pair;
 import org.labkey.api.util.StringExpression;
 import org.labkey.api.util.UnexpectedException;
 import org.labkey.api.view.ActionURL;
@@ -1299,7 +1301,7 @@ public class TargetedMSSchema extends UserSchema
         }
         if (TABLE_REPLICATE_ANNOTATION.equalsIgnoreCase(name))
         {
-            return new ReplicateAnnotationTable(this, cf);
+            return new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.ReplicateFK);
         }
         if (TABLE_QC_METRIC_EXCLUSION.equalsIgnoreCase(name))
         {
@@ -1572,40 +1574,38 @@ public class TargetedMSSchema extends UserSchema
     @Override @NotNull
     public QueryView createView(ViewContext context, @NotNull QuerySettings settings, BindException errors)
     {
-        if(TABLE_REPLICATE_ANNOTATION.equalsIgnoreCase(settings.getQueryName()))
+        if ("PTMPercentsGrouped".equalsIgnoreCase(settings.getQueryName()))
         {
-            return new QueryView(TargetedMSSchema.this, settings, errors)
+            return new CrosstabView(TargetedMSSchema.this, settings, errors)
             {
                 @Override
-                protected void addDetailsAndUpdateColumns(List<DisplayColumn> ret, TableInfo table)
+                protected DataRegion createDataRegion()
                 {
-                    StringExpression urlUpdate = urlExpr(QueryAction.updateQueryRow);
-                    if (urlUpdate != null)
+                    if (getTable() instanceof CrosstabTableInfo table && table.isCrosstab())
                     {
-                        var update = new UpdateColumn.Impl(urlUpdate) {
+                        // get the display columns and also adjust _numRowAxisCols and _numMeasures based on
+                        // the selected display columns
+                        getDisplayColumns();
+
+                        CrosstabDataRegion rgn = new CrosstabDataRegion(table.getSettings(), _numRowAxisCols, _numMeasures, _numMemberMeasures)
+                        {
+                            private final Map<String, Pair<Boolean, String>> _metadata = PTMPercentsGroupedCustomizer.getSampleMetadata(table);
                             @Override
-                            public void renderGridCellContents(RenderContext ctx, Writer out) throws IOException
+                            protected String getMemberCaptionWithUrl(String caption, String url)
                             {
-                                Object id = ctx.get("Id");
-                                boolean display = false;
-                                try
+                                if (_metadata.containsKey(caption))
                                 {
-                                    int annotationId = Integer.parseInt(id.toString());
-                                    ReplicateAnnotation annotation = ReplicateManager.getReplicateAnnotation(annotationId);
-                                    if (!ReplicateAnnotation.isSourceSkyline(annotation.getSource()))
-                                    {
-                                        display = true;
-                                    }
+                                    caption = _metadata.get(caption).getValue();
                                 }
-                                catch (NumberFormatException ignored){}
-                                if (display)
-                                {
-                                    super.renderGridCellContents(ctx, out);
-                                }
+                                return super.getMemberCaptionWithUrl(caption, url);
                             }
                         };
-                        ret.add(0, update);
+                        configureDataRegion(rgn);
+
+                        return rgn;
                     }
+
+                    return super.createDataRegion();
                 }
             };
         }

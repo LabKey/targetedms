@@ -19,7 +19,6 @@ import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestFileUtils;
 import org.labkey.test.TestTimeoutException;
-import org.labkey.test.util.APIContainerHelper;
 import org.labkey.test.util.ApiPermissionsHelper;
 import org.labkey.test.util.FileBrowserHelper;
 import org.labkey.test.util.LogMethod;
@@ -33,7 +32,7 @@ import java.nio.file.Paths;
 
 public abstract class PassportTestPart extends BaseWebDriverTest
 {
-    public static final String user = "normaluser@gmail.com";
+    protected static final String NORMAL_USER = "normaluser@passport.test";
 
     @Override
     protected String getProjectName()
@@ -41,16 +40,15 @@ public abstract class PassportTestPart extends BaseWebDriverTest
         return "PassportTest";
     }
 
-    @LogMethod(category = LogMethod.MethodType.SETUP)
+    @LogMethod
     protected void setupProject()
     {
-        new APIContainerHelper(this).createProject(getProjectName(), "Collaboration");
+        _containerHelper.createProject(getProjectName(), "Collaboration");
         ApiPermissionsHelper h = new ApiPermissionsHelper(this);
-        h.addMemberToRole(user, "Reader", PermissionsHelper.MemberType.user);
+        h.addMemberToRole(NORMAL_USER, "Reader", PermissionsHelper.MemberType.user);
 
         goToFolderManagement().
                 goToFolderTypeTab().
-                enableModule("TargetedMS").
                 enableModule("Pipeline").
                 enableModule("Query").
                 enableModule("TargetedMS").
@@ -58,11 +56,11 @@ public abstract class PassportTestPart extends BaseWebDriverTest
 
         goToProjectHome();
         PortalHelper ph = new PortalHelper(this);
+        ph.enterAdminMode();
         ph.removeWebPart("Messages");
         ph.removeWebPart("Wiki");
         ph.removeWebPart("Pages");
         ph.addWebPart("Passport");
-        ph.enterAdminMode();
         ph.addTab("Pipeline");
         ph.addWebPart("Pipeline Files");
         ph.renameTab("Start Page", "Passport");
@@ -104,15 +102,7 @@ public abstract class PassportTestPart extends BaseWebDriverTest
     protected void doCleanup(boolean afterTest) throws TestTimeoutException
     {
         deleteProject(getProjectName(), afterTest);
-        try
-        {
-            _userHelper.deleteUser(user);
-        } catch(Throwable t) { log("User did not exist: " + user);;}
+        _userHelper.deleteUsers(false, NORMAL_USER);
     }
 
-    @Override
-    public BrowserType bestBrowser()
-    {
-        return BrowserType.CHROME;
-    }
 }

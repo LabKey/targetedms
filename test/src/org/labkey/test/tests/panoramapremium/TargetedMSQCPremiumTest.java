@@ -4,6 +4,7 @@
  */
 package org.labkey.test.tests.panoramapremium;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -223,14 +224,14 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         PanoramaDashboard dashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = dashboard.getQcPlotsWebPart();
         _ext4Helper.selectComboBoxItem(Locator.id("metric-type-field"), metricName);
-        qcPlotsWebPart.waitForPlots(1, true);
+        qcPlotsWebPart.waitForPlots(1);
         String pressurePlotSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
         assertFalse("Pressure trace plot is not present", pressurePlotSVGText.isEmpty());
         assertTrue("Y axis label is not correct or present", pressurePlotSVGText.contains(yAxisLabel));
         mouseOver(qcPlotsWebPart.getPointByAcquiredDate("2009-11-03 19:37:28"));
         waitForElement(qcPlotsWebPart.getBubble());
-        String pressureTracehoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
-        assertTrue("Wrong value present", pressureTracehoverText.contains("7.363"));
+        String pressureTracehoverText = waitForElementToBeVisible(qcPlotsWebPart.getBubbleContent()).getText();
+        Assertions.assertThat(pressureTracehoverText).as("Tooltip value").contains("7.363");
 
         log("Delete run and verify trace metric values are deleted");
         clickTab("Runs");
@@ -255,7 +256,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         PanoramaDashboard panoramaDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = panoramaDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TOTAL_PEAK);
-        qcPlotsWebPart.checkPlotType(CUSUMm, true);
+        qcPlotsWebPart.checkPlotType(CUSUMm);
         qcPlotsWebPart.setShowExcludedPoints(true);
         qcPlotsWebPart.saveAsDefaultView();
 

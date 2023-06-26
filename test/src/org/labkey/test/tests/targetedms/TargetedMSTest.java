@@ -62,7 +62,8 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
     protected enum SvgShapes
     {
         CIRCLE("M0,2A2"),
-        CIRCLE_OPEN("M0-2");
+        CIRCLE_OPEN("M0-2"),
+        TRIANGLE("M0,2L2");
 
         private String _pathPrefix;
         SvgShapes(String pathPrefix)
@@ -349,8 +350,11 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
             clickTab("Guide Sets");
 
         DataRegionTable table = new DataRegionTable("qwp1", getDriver());
-        table.checkAllOnPage();
-        table.deleteSelectedRows();
+        if(table.getDataRowCount() > 0)
+        {
+            table.checkAllOnPage();
+            table.deleteSelectedRows();
+        }
     }
 
     public PanoramaDashboard goToDashboard()

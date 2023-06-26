@@ -151,7 +151,7 @@ public class GeneralMoleculePrecursorChromatogramsTableInfo extends FilteredTabl
         sql.append("\n, Id AS preciId");
         sql.append(" FROM ");
         sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
-        sql.append(" WHERE " + precursorIdKey + ".GeneralMoleculeId=").append(generalMolecule.getId());
+        sql.append(" WHERE " + precursorIdKey + ".GeneralMoleculeId=").appendValue(generalMolecule.getId());
         sql.append(" AND OptimizationStep IS NULL "); // Ignore precursorChromInfos for optimization peaks (e.g. Collision energy optimization)
 
         form.appendReplicateFilters(sql, "SampleFileId.ReplicateId");

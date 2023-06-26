@@ -38,6 +38,7 @@ import org.labkey.api.data.TableSelector;
 import org.labkey.api.exp.XarContext;
 import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.exp.api.ExperimentService;
+import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.pipeline.CancelledException;
 import org.labkey.api.pipeline.LocalDirectory;
 import org.labkey.api.pipeline.PipeRoot;
@@ -265,7 +266,7 @@ public class SkylineDocImporter
         }
         catch (CancelledException e)
         {
-            addPostRollbackCommitTask("Cancelled  Skyline document import.", "Import cancelled (see pipeline log)");
+            addPostRollbackCommitTask("Cancelled Skyline document import.", "Import cancelled (see pipeline log)");
             throw e;
         }
         catch (IOException | XMLStreamException | RuntimeException | PipelineJobException | AuditLogException e)
@@ -411,10 +412,11 @@ public class SkylineDocImporter
 
             if (!parser.shouldSaveTransitionChromInfos())
             {
+                TargetedMSModule targetedMSModule = ModuleLoader.getInstance().getModule(TargetedMSModule.class);
                 _log.info("None of the " + parser.getTransitionChromInfoCount() + " TransitionChromInfos in the file " +
                         "were imported because they exceed the limit of " +
-                        TargetedMSModule.MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(_container) + " and there are more than " +
-                        TargetedMSModule.MAX_PRECURSORS_PROPERTY.getEffectiveValue(_container) + " precursors");
+                        targetedMSModule.MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(_container) + " and there are more than " +
+                        targetedMSModule.MAX_PRECURSORS_PROPERTY.getEffectiveValue(_container) + " precursors");
                 SQLFragment whereClause = new SQLFragment("WHERE r.Id = ?", _runId);
 
                 // Clear out any of the TransitionChromInfo and related tables that we inserted before we exceeded
@@ -580,6 +582,8 @@ public class SkylineDocImporter
         // See which entries matched up with data in the Skyline document
         List<IrtPeptide> matchedIrts = parser.getiRTScaleSettings().stream().filter(irt -> irt.getGeneralMoleculeId() != null).toList();
 
+        int updatedCount = 0;
+
         // Find the retention times for each tracked iRT entry in each sample file
         for (SampleFile sampleFile : replicateInfo.skylineIdSampleFileIdMap.values())
         {
@@ -593,7 +597,7 @@ public class SkylineDocImporter
                 sql.add(irtPeptide.getGeneralMoleculeId());
 
                 List<Double> retentionTimes = new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(Double.class);
-                if (retentionTimes.size() > 0)
+                if (!retentionTimes.isEmpty())
                 {
                     IrtPeptide p = new IrtPeptide();
                     p.setModifiedSequence(irtPeptide.getModifiedSequence());
@@ -615,9 +619,10 @@ public class SkylineDocImporter
                 sampleFile.setIrtCorrelation(regressionLine.getCorrelation());
 
                 Table.update(_user, TargetedMSManager.getTableInfoSampleFile(), sampleFile, sampleFile.getId());
+                updatedCount++;
             }
         }
-        _log.info("Finished calculating iRT correlations for all samples");
+        _log.info("Finished calculating iRT correlations for all samples. " + updatedCount + " had a regression line calculated.");
 
     }
 
@@ -674,7 +679,6 @@ public class SkylineDocImporter
             for (ReplicateAnnotation annotation : replicate.getAnnotations())
             {
                 annotation.setReplicateId(replicate.getId());
-                annotation.setSource(ReplicateAnnotation.SOURCE_SKYLINE);
                 if (annotation.getName().equals("Day"))
                 {
                     _hasDayAnnotation = true;
@@ -1072,7 +1076,7 @@ public class SkylineDocImporter
     {
 
         Integer iRTScaleId = null; // Not all imports are expected to have iRT data
-        List<IrtPeptide> importScale = parser.getiRTScaleSettings();
+        List<IrtPeptide> importScale = new ArrayList<>(parser.getiRTScaleSettings());
 
         if (! importScale.isEmpty())
         {

@@ -14,6 +14,7 @@
  */
 package org.labkey.test.tests.targetedms;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.Locator;
@@ -34,14 +35,24 @@ public class TargetedMSPrecursorLevelDataTest extends AbstractQuantificationTest
         return "TargetedMSProject";
     }
     public void setUsePrecursorLevelData() {
+        setStorageLimitModuleProperties("0", "0");
+    }
+
+    /**
+     * Sets the values of the site-level module properties: "TransitionChromInfo storage limit" and "Precursor storage limit".
+     * The values should be set back to defaults {@link #setDefaultStorageLimits} after the test completes.
+     * @param transitionStorageLimit
+     * @param precursorStorageLimit
+     */
+    private void setStorageLimitModuleProperties(String transitionStorageLimit, String precursorStorageLimit) {
         goToProjectHome();
         goToFolderManagement();
         clickAndWait(Locator.linkWithText("Module Properties"));
         setModuleProperties(Arrays.asList(
-                new ModulePropertyValue("TargetedMS", "/" + getProjectName(),
-                        "TransitionChromInfo storage limit", "0"),
-                new ModulePropertyValue("TargetedMS", "/" + getProjectName(),
-                        "Precursor storage limit", "0")));
+                new ModulePropertyValue("TargetedMS", "/",
+                        "TransitionChromInfo storage limit", transitionStorageLimit),
+                new ModulePropertyValue("TargetedMS", "/",
+                        "Precursor storage limit",  precursorStorageLimit)));
 
     }
     @Test
@@ -57,5 +68,11 @@ public class TargetedMSPrecursorLevelDataTest extends AbstractQuantificationTest
         fom.setCalc("Blank plus 2 * SD");
 
         runScenario("MergedDocuments", "none", "linear", fom);
+    }
+
+    @After
+    public void setDefaultStorageLimits()
+    {
+        setStorageLimitModuleProperties("", "");
     }
 }

@@ -28,7 +28,7 @@ import org.labkey.api.exp.api.ExpProtocol;
  */
 public class TargetedMSExperimentRunType extends ExperimentRunType
 {
-    private String[] _protocolPrefixes;
+    private final String[] _protocolPrefixes;
 
     public TargetedMSExperimentRunType()
     {

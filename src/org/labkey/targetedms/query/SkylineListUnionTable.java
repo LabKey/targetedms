@@ -68,13 +68,13 @@ public class SkylineListUnionTable extends VirtualTable<SkylineListSchema>
             separator = "\nUNION\n";
             String innerAlias = "list" + table._listDefinition.getId();
             result.append(" SELECT ");
-            result.append(table._listDefinition.getRunId()).append(" AS RunId ");
+            result.appendValue(table._listDefinition.getRunId()).append(" AS RunId ");
             for (ColumnInfo colInfo : table.getColumns())
             {
                 result.append(",\n ");
                 result.append(colInfo.getValueSql(innerAlias));
                 result.append(" AS ");
-                result.append(getSqlDialect().makeLegalIdentifier(colInfo.getAlias()));
+                result.appendIdentifier(getSqlDialect().makeLegalIdentifier(colInfo.getAlias()));
             }
             result.append(" FROM ");
             result.append(table.getFromSQL(innerAlias));

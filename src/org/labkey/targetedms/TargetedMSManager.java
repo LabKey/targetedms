@@ -55,7 +55,9 @@ import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.exp.api.ExpProtocol;
 import org.labkey.api.exp.api.ExpRun;
 import org.labkey.api.exp.api.ExperimentService;
+import org.labkey.api.files.FileContentService;
 import org.labkey.api.module.Module;
+import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.module.ModuleProperty;
 import org.labkey.api.pipeline.LocalDirectory;
 import org.labkey.api.pipeline.PipeRoot;
@@ -76,6 +78,7 @@ import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.util.FileUtil;
+import org.labkey.api.util.Pair;
 import org.labkey.api.util.StringUtilsLabKey;
 import org.labkey.api.util.logging.LogHelper;
 import org.labkey.api.view.NotFoundException;
@@ -690,12 +693,11 @@ public class TargetedMSManager
             }
 
             ExpData expData = ExperimentService.get().getExpData(run.getDataId());
-            Path skylineFile = pipeRoot.resolveToNioPathFromUrl(expData.getDataFileUrl());
 
             ExpRun expRun = ExperimentService.get().createExperimentRun(container, run.getDescription());
             expRun.setProtocol(protocol);
             expRun.setJobId(jobId);
-            expRun.setFilePathRootPath(null != skylineFile ? skylineFile.getParent() : null);
+            expRun.setFilePathRootPath(FileContentService.get().getFileRootPath(container, FileContentService.ContentType.files));
             ViewBackgroundInfo info = new ViewBackgroundInfo(container, user, null);
 
             Map<ExpData, String> inputDatas = new HashMap<>();
@@ -1827,7 +1829,7 @@ public class TargetedMSManager
         }
     }
 
-    public static ArrayList<Integer> getIrtScaleIds(Container c)
+    public static List<Integer> getIrtScaleIds(Container c)
     {
         SimpleFilter conFil = SimpleFilter.createContainerFilter(c);
         return new TableSelector(TargetedMSManager.getTableInfoiRTScale().getColumn(FieldKey.fromParts("id")), conFil , null).getArrayList(Integer.class);
@@ -1839,9 +1841,9 @@ public class TargetedMSManager
         TargetedMSModule targetedMSModule = null;
         for (Module m : c.getActiveModules())
         {
-            if (m instanceof TargetedMSModule)
+            if (m instanceof TargetedMSModule tm)
             {
-                targetedMSModule = (TargetedMSModule) m;
+                targetedMSModule = tm;
             }
         }
         if (targetedMSModule == null)
@@ -2008,7 +2010,8 @@ public class TargetedMSManager
 
         try
         {
-            timeoutValue = Integer.parseInt(TargetedMSModule.AUTO_QC_PING_TIMEOUT_PROPERTY.getEffectiveValue(container));
+            timeoutValue = Integer.parseInt(ModuleLoader.getInstance().getModule(TargetedMSModule.class)
+                    .AUTO_QC_PING_TIMEOUT_PROPERTY.getEffectiveValue(container));
         }
         catch (NumberFormatException e)
         {
@@ -2135,6 +2138,11 @@ public class TargetedMSManager
             TableInfo metricsTable = targetedMSSchema.getTableOrThrow("qcMetricsConfig", null);
             List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, new SimpleFilter(FieldKey.fromParts("Enabled"), false, CompareType.NEQ_OR_NULL), new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
             List<QCMetricConfiguration> result = new ArrayList<>();
+
+            // We may encounter the same query to see if metrics are enabled more than once, so remember the values
+            // so we don't have to requery
+            Map<Pair<String, String>, Boolean> enabledQueries = new HashMap<>();
+
             for (QCMetricConfiguration metric : metrics)
             {
                 if (metric.getEnabled() == null)
@@ -2146,25 +2154,32 @@ public class TargetedMSManager
                     }
                     else
                     {
-                        QuerySchema enabledSchema = TargetedMSSchema.SCHEMA_NAME.equalsIgnoreCase(metric.getEnabledSchemaName()) ? targetedMSSchema : targetedMSSchema.getDefaultSchema().getSchema(metric.getEnabledSchemaName());
-                        if (enabledSchema != null)
+                        Pair<String, String> schemaQuery = new Pair<>(metric.getEnabledSchemaName(), metric.getEnabledQueryName());
+                        Boolean enabled = enabledQueries.computeIfAbsent(schemaQuery, p ->
                         {
-                            TableInfo enabledQuery = enabledSchema.getTable(metric.getEnabledQueryName(), null);
-                            if (enabledQuery != null)
+                            QuerySchema enabledSchema = TargetedMSSchema.SCHEMA_NAME.equalsIgnoreCase(metric.getEnabledSchemaName()) ? targetedMSSchema : targetedMSSchema.getDefaultSchema().getSchema(metric.getEnabledSchemaName());
+                            if (enabledSchema != null)
                             {
-                                if (new TableSelector(enabledQuery).exists())
+                                TableInfo enabledQuery = enabledSchema.getTable(metric.getEnabledQueryName(), null);
+                                if (enabledQuery != null)
                                 {
-                                    result.add(metric);
+                                    return new TableSelector(enabledQuery).exists();
+                                }
+                                else
+                                {
+                                    _log.warn("Could not find query " + metric.getEnabledSchemaName() + "." + metric.getEnabledQueryName() + " to determine if metric " + metric.getName() + " should be enabled in container " + c.getPath());
                                 }
                             }
                             else
                             {
-                                _log.warn("Could not find query " + metric.getEnabledSchemaName() + "." + metric.getEnabledQueryName() + " to determine if metric " + metric.getName() + " should be enabled in container " + c.getPath());
+                                _log.warn("Could not find schema " + metric.getEnabledSchemaName() + " to determine if metric " + metric.getName() + " should be enabled in container " + c.getPath());
                             }
-                        }
-                        else
+                            return false;
+                        });
+
+                        if (enabled)
                         {
-                            _log.warn("Could not find schema " + metric.getEnabledSchemaName() + " to determine if metric " + metric.getName() + " should be enabled in container " + c.getPath());
+                            result.add(metric);
                         }
                     }
                 }
@@ -2399,7 +2414,7 @@ public class TargetedMSManager
         executor.execute("CREATE " + getSqlDialect().getTempTableKeyword() + " TABLE " +
                 moleculeGroupingsTableName + "(Grouping " + (getSqlDialect().isSqlServer() ? "NVARCHAR" : "VARCHAR") + "(300), GeneralMoleculeId BIGINT, PeptideGroupId BIGINT)");
         executor.execute("CREATE " + getSqlDialect().getTempTableKeyword() + " TABLE " +
-                areasTableName + "(Grouping " + (getSqlDialect().isSqlServer() ? "NVARCHAR" : "VARCHAR") + "(300), PeptideGroupId BIGINT, SampleFileId BIGINT, Area REAL);");
+                areasTableName + "(Grouping " + (getSqlDialect().isSqlServer() ? "NVARCHAR" : "VARCHAR") + "(300), PeptideGroupId BIGINT, SampleFileId BIGINT, Area REAL)");
 
         // Populate the temp tables
         SQLFragment precursorGroupingsSQL = new SQLFragment("INSERT INTO ").append(precursorGroupingsTableName).append("(Grouping, PrecursorId, PeptideGroupId)\n")
