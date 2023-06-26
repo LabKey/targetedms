@@ -22,6 +22,7 @@
     <instrument id="MS:1003005" name="timsTOF Pro" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF Pro."/>
     <instrument id="MS:1003231" name="timsTOF SCP" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF SCP."/>
     <instrument id="MS:1003230" name="timsTOF Pro 2" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF Pro 2."/>
+    <instrument id="MS:1003383" name="timsTOF Ultra" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF Ultra."/>
     <instrument id="MS:1002279" name="maXis 4G" vendor="Bruker Daltonics maXis series" description="Bruker Daltonics' maXis 4G: ESI Q-TOF, Nanospray, APCI, APPI, GC-APCI, CaptiveSpray."/>
     <instrument id="MS:1001541" name="maXis" vendor="Bruker Daltonics maXis series" description="Bruker Daltonics' maXis: ESI Q-TOF, Nanospray, APCI, APPI."/>
     <instrument id="MS:1003004" name="maXis II" vendor="Bruker Daltonics maXis series" description="Bruker Daltonics' maXis II."/>
@@ -152,8 +153,10 @@
     <instrument id="MS:1002726" name="SYNAPT G2-Si" vendor="Waters" description="Waters Corporation SYNAPT G2-Si orthogonal acceleration time-of-flight mass spectrometer."/>
     <instrument id="MS:1000150" name="Auto Spec Ultima NT" vendor="Waters" description="Waters magnetic sector based AutoSpec Ultima NT MS."/>
     <instrument id="MS:1000159" name="GCT" vendor="Waters" description="Waters oa-ToF based GCT."/>
+    <instrument id="MS:1003381" name="ACQUITY RDa Detector" vendor="Waters" description="Waters Corporation RDa time-of-flight mass detector."/>
     <instrument id="MS:1001764" name="ACQUITY UPLC I-Class" vendor="Waters" description="Waters LC-system ACQUITY UPLC I-Class."/>
     <instrument id="MS:1001765" name="ACQUITY UPLC Systems with 2D Technology" vendor="Waters" description="Waters LC-system ACQUITY UPLC Systems with 2D Technology."/>
+    <instrument id="MS:1003380" name="Xevo G3 QTof" vendor="Waters" description="Waters Corporation Xevo G3 QTof quadrupole time-of-flight mass spectrometer."/>
     <instrument id="MS:1001763" name="ACQUITY UPLC H-Class Bio" vendor="Waters" description="Waters LC-system ACQUITY UPLC H-Class Bio."/>
     <instrument id="MS:1001762" name="ACQUITY UPLC H-Class" vendor="Waters" description="Waters LC-system ACQUITY UPLC H-Class."/>
     <instrument id="MS:1001768" name="nanoACQUITY UPLC with HDX Technology" vendor="Waters" description="Waters LC-system nanoACQUITY UPLC with HDX Technology."/>
