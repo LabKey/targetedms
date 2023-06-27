@@ -1,12 +1,14 @@
 package org.labkey.test.components.targetedms;
 
 import org.jetbrains.annotations.Nullable;
+import org.junit.Assert;
 import org.labkey.test.Locator;
 import org.labkey.test.Locators;
 import org.labkey.test.components.BodyWebPart;
 import org.labkey.test.components.bootstrap.ModalDialog;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarWebPart.Elements>
 {
@@ -34,7 +36,6 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
     {
         getWrapper().doAndWaitForElementToRefresh(() -> getWrapper().selectOptionByValue(elementCache().display, value),
                 elementCache().yearTitle, getWrapper().shortWait());
-
         return this;
     }
 
@@ -56,43 +57,38 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
 
     public String getDisplayedMonth()
     {
-        return elementCache().yearTitle.findWhenNeeded(elementCache().calendar).getText();
+        return elementCache().yearTitle.findWhenNeeded(elementCache().calendar.findWhenNeeded(this)).getText();
     }
 
-    public UtilizationCalendarWebPart markOffline(String startDate, String description)
+    public UtilizationCalendarWebPart markOffline(String startDate, @Nullable String endDate, @Nullable String description)
     {
-        return markOffline(startDate, startDate, description);
-    }
-
-    public UtilizationCalendarWebPart markOffline(String startDate, String endDate, String description)
-    {
-        ModalDialog offlineAnnotationDialog = clickDate(startDate);
-        getWrapper().setFormElement(Locator.name("event-description").findElement(offlineAnnotationDialog.getComponentElement()), description);
-        getWrapper().setFormElement(Locator.name("event-start-date").findElement(offlineAnnotationDialog.getComponentElement()), startDate);
-        getWrapper().setFormElement(Locator.name("event-end-date").findElement(offlineAnnotationDialog.getComponentElement()), endDate);
-        offlineAnnotationDialog.dismiss("Save", 0);
+        ModalDialog modalDialog = clickDate(startDate);
+        getWrapper().setFormElement(Locator.name("event-description").findElement(modalDialog.getComponentElement()), description);
+        getWrapper().setFormElement(Locator.name("event-end-date").findElement(modalDialog.getComponentElement()), endDate);
+        modalDialog.dismiss("Save", 0);
         return this;
     }
 
-    public String getValidationErrorMsg(String startDate, @Nullable String endDate, @Nullable String description)
+    public UtilizationCalendarWebPart markOfflineExpectingError(String startDate, @Nullable String endDate, @Nullable String description, String errorMsg)
     {
         ModalDialog modalDialog = clickDate(startDate);
-        getWrapper().setFormElement(Locator.name("event-start-date").findElement(modalDialog.getComponentElement()), startDate);
         if (description != null)
             getWrapper().setFormElement(Locator.name("event-description").findElement(modalDialog.getComponentElement()), description);
         if (endDate != null)
             getWrapper().setFormElement(Locator.name("event-end-date").findElement(modalDialog.getComponentElement()), endDate);
         modalDialog.dismiss("Save", 0);
-        String errorMsg = Locators.labkeyError.findElement(modalDialog.getComponentElement()).getText();
+        getWrapper().shortWait().until(ExpectedConditions
+                .visibilityOfNestedElementsLocatedBy(modalDialog.getComponentElement(), Locators.labkeyError));
+        Assert.assertEquals("Incorrect validation message", errorMsg, Locators.labkeyError.findElement(modalDialog.getComponentElement()).getText());
         modalDialog.dismiss("Cancel", 0);
-        return errorMsg;
+        return this;
     }
 
     public ModalDialog clickDate(String date)
     {
         String clickDate = date.substring(date.lastIndexOf("-") + 1, date.length());
         getWrapper().log("Clicking " + clickDate + " to update the status");
-        elementCache().dayLoc.withText(clickDate).findElement(elementCache().calendar).click();
+        elementCache().dayLoc.withText(clickDate).findElement(elementCache().calendar.findWhenNeeded(this)).click();
         return new ModalDialog.ModalDialogFinder(getDriver()).withTitle("Instrument Offline Annotation").waitFor();
     }
 
@@ -100,6 +96,25 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
     {
         String day = date.substring(date.lastIndexOf("-") + 1, date.length());
         return getWrapper().isElementPresent(elementCache().offlineDayLoc.withText(day));
+    }
+
+    public UtilizationCalendarWebPart markOnline(String date)
+    {
+        if (isOffline(date))
+        {
+            ModalDialog modalDialog = clickDate(date);
+            modalDialog.dismiss("Delete", 0);
+        }
+        return this;
+    }
+
+    public String getToolTipText(String date)
+    {
+        String day = date.substring(date.lastIndexOf("-") + 1, date.length());
+        getWrapper().log("Clicking " + day + " to update the status");
+        getWrapper().sleep(500);
+        getWrapper().mouseOver(elementCache().dayLoc.withText(day).findElement(elementCache().calendar.findWhenNeeded(this)));
+        return getWrapper().waitForElement(elementCache().tooltip).getText();
     }
 
     @Override
@@ -112,11 +127,13 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
     {
         private final WebElement display = Locator.id("monthNumberSelect").findWhenNeeded(this);
         private final WebElement heatMap = Locator.id("heatMapSource").findWhenNeeded(this);
-        private final WebElement calendar = Locator.tagWithId("div", "calendar").findWhenNeeded(this);
+        private final Locator calendar = Locator.tagWithId("div", "calendar");
         private final Locator yearTitle = Locator.tagWithClass("th", "year-title");
         private final Locator dayLoc = Locator.tagWithClassContaining("div", "day-content");
 
         private final Locator offlineDayLoc = Locator.tagWithClassContaining("div", "day-content offline");
+
+        private final Locator tooltip = Locator.tagWithAttribute("div", "role", "tooltip");
 
     }
 }
