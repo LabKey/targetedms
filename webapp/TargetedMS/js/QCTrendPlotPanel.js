@@ -1200,11 +1200,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         // Filter on start/end dates
         var separator = " WHERE ";
         if (config.StartDate) {
-            annotationSql += separator + "Date >= '" + config.StartDate + "'";
+            annotationSql += separator + "CAST(Date AS Date) >= '" + config.StartDate + "'";
             separator = " AND ";
         }
         if (config.EndDate) {
-            annotationSql += separator + "Date <= '" + config.EndDate + "'";
+            annotationSql += separator + "CAST(Date AS Date) <= '" + config.EndDate + "'";
         }
 
         LABKEY.Query.executeSql({

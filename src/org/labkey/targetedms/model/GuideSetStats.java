@@ -15,11 +15,9 @@
  */
 package org.labkey.targetedms.model;
 
-import org.labkey.api.util.DateUtil;
 import org.labkey.api.visualization.Stats;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -127,11 +125,11 @@ public class GuideSetStats
             }
             else if (roundValues)
             {
-                result.add((double) Math.round(value * 10000.0d) / 10000.0d);
+                result.add(Math.round(value * 10000.0d) / 10000.0d);
             }
             else
             {
-                result.add(value.doubleValue());
+                result.add(value);
             }
         }
 
@@ -202,33 +200,37 @@ public class GuideSetStats
             {
                 RawMetricDataSet row = includedRows.get(i);
                 RawMetricDataSet trailingStartRow = includedRows.get(j);
-                if (trailingMeans != null && trailingMeans.length > 0 && j < trailingMeans.length)
+                if (trailingMeans.length > 0 && j < trailingMeans.length)
                 {
                     if (row.getMetricValue() == null)
                     {
-                        // when the metric value is null (bad data), setting it to the previous value
-                        row.setTrailingMean(trailingMeans[j-1]);
-                        row.setTrailingStart(trailingStartRow.getSampleFile().getAcquiredTime());
+                        if (j != 0)
+                        {
+                            // when the metric value is null (missing data), setting it to the previous value
+                            row.setTrailingMean(trailingMeans[j - 1]);
+                        }
                     }
                     else
                     {
                         row.setTrailingMean(trailingMeans[j]);
-                        row.setTrailingStart(trailingStartRow.getSampleFile().getAcquiredTime());
                     }
+                    row.setTrailingStart(trailingStartRow.getSampleFile().getAcquiredTime());
                 }
-                if (trailingCVs != null && trailingCVs.length > 0 && j < trailingCVs.length)
+                if (trailingCVs.length > 0 && j < trailingCVs.length)
                 {
                     if (row.getMetricValue() == null)
                     {
-                        // when the metric value is null (bad data), setting it to the previous value
-                        row.setTrailingCV(trailingCVs[j-1]);
-                        row.setTrailingStart(trailingStartRow.getSampleFile().getAcquiredTime());
+                        if (j != 0)
+                        {
+                            // when the metric value is null (missing data), setting it to the previous value
+                            row.setTrailingCV(trailingCVs[j - 1]);
+                        }
                     }
                     else
                     {
                         row.setTrailingCV(trailingCVs[j]);
-                        row.setTrailingStart(trailingStartRow.getSampleFile().getAcquiredTime());
                     }
+                    row.setTrailingStart(trailingStartRow.getSampleFile().getAcquiredTime());
                 }
                 if (row.getMetricValue() != null)
                 {
