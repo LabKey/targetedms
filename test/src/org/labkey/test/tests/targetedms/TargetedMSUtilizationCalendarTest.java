@@ -60,7 +60,6 @@ public class TargetedMSUtilizationCalendarTest extends TargetedMSTest
                 .markOfflineExpectingError("2013-08-2", "2013-0802", null, "Error saving. Could not convert value '2013-0802' (String) for Timestamp field 'EndDate'")
                 .markOfflineExpectingError("2013-08-2", "2013-08-01", null, "Error saving. End date cannot be before the start date");
 
-
         log("Marking single day offline");
         String offlineDate = "2013-08-13";
         utilizationCalendar.markOffline(offlineDate, offlineDate, "Offline for single day");
@@ -129,6 +128,8 @@ public class TargetedMSUtilizationCalendarTest extends TargetedMSTest
                 "Q_Exactive_08_14_2013_JGB_76 (1 outliers)\n" +
                 "Q_Exactive_08_14_2013_JGB_78 (1 outliers)", utilizationCalendar.getToolTipText(startDate));
 
+        refresh();
+        utilizationCalendar = new UtilizationCalendarWebPart(getDriver());
         utilizationCalendar.setHeatMap("Median outliers");
         startDate = "2013-08-12";
         Assert.assertEquals("Incorrect Median outliers information for " + startDate, "Online\n" +

@@ -77,7 +77,7 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
         if (endDate != null)
             getWrapper().setFormElement(Locator.name("event-end-date").findElement(modalDialog.getComponentElement()), endDate);
         modalDialog.dismiss("Save", 0);
-        getWrapper().shortWait().until(ExpectedConditions
+        getWrapper().longWait().until(ExpectedConditions
                 .visibilityOfNestedElementsLocatedBy(modalDialog.getComponentElement(), Locators.labkeyError));
         Assert.assertEquals("Incorrect validation message", errorMsg, Locators.labkeyError.findElement(modalDialog.getComponentElement()).getText());
         modalDialog.dismiss("Cancel", 0);
@@ -112,7 +112,6 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
     {
         String day = date.substring(date.lastIndexOf("-") + 1, date.length());
         getWrapper().log("Clicking " + day + " to update the status");
-        getWrapper().mouseOut();
         getWrapper().sleep(500);
         getWrapper().mouseOver(elementCache().dayLoc.withText(day).findElement(elementCache().calendar.findWhenNeeded(this)));
         return getWrapper().waitForElement(elementCache().tooltip).getText();
