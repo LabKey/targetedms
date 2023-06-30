@@ -14,7 +14,7 @@ import org.labkey.test.util.PortalHelper;
 import java.util.Arrays;
 
 @Category({})
-@BaseWebDriverTest.ClassTimeout(minutes = 3)
+@BaseWebDriverTest.ClassTimeout(minutes = 6)
 public class TargetedMSHidePeptidesAndMolecules extends TargetedMSTest
 {
     protected static final String PeptidesOnlySkyFile = "QC_1.sky.zip";

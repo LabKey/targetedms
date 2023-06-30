@@ -65,7 +65,7 @@ public class TargetedMSIsotopologueTest extends TargetedMSPremiumTest
 
         log("Verifying isotopologue is present while configuring the metric");
         qcPlotsWebPart.clickMenuItem("Configure QC Metrics");
-        assertTextPresent("Isotopologue Accuracy", "Isotopologue LOD", "Isotopologue LOQ", "Isotopologue Regression RSquared");
+        waitForText("Isotopologue Accuracy", "Isotopologue LOD", "Isotopologue LOQ", "Isotopologue Regression RSquared");
 
         log("Verifying that two new metric properties are added");
         clickButton("Add New Custom Metric", 0);

@@ -523,11 +523,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.filterQCPlotsToInitialData(PRECURSORS.length, true);
 
-        qcPlotsWebPart.setDateRangeOffset(QCPlotsWebPart.DateRangeOffset.CUSTOM);
-        qcPlotsWebPart.setStartDate("2014-08-09");
-        qcPlotsWebPart.setEndDate("2014-08-27");
-        qcPlotsWebPart.applyRange();
-        qcPlotsWebPart.waitForPlots(0);
+        qcPlotsWebPart.filterQCPlots("2014-08-09", "2014-08-27", 0);
 
         // reset to avoid test case dependency
         qcPlotsWebPart.resetInitialQCPlotFields();

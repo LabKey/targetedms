@@ -140,7 +140,20 @@ class ChromatogramChartMaker
             @Override
             public StringBuffer format(double number, StringBuffer toAppendTo, FieldPosition pos)
             {
-                String pattern = (yAxis.getUpperBound() - yAxis.getLowerBound()) / chromatogramDataset.getIntensityScale() > 100 ? "#,##0" : "#,##0.0";
+                double max = (yAxis.getUpperBound() - yAxis.getLowerBound()) / chromatogramDataset.getIntensityScale();
+                String pattern;
+                if (max > 10_000)
+                {
+                    pattern = "0.###E0";
+                }
+                else if (max > 100)
+                {
+                    pattern = "#,##0";
+                }
+                else
+                {
+                    pattern = "#,##0.0";
+                }
                 // Display the scaled value in the tick label.
                 return toAppendTo.append(new DecimalFormat(pattern).format(number / chromatogramDataset.getIntensityScale()));
             }
