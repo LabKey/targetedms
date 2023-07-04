@@ -76,6 +76,7 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
             getWrapper().setFormElement(Locator.name("event-description").findElement(modalDialog.getComponentElement()), description);
         if (endDate != null)
             getWrapper().setFormElement(Locator.name("event-end-date").findElement(modalDialog.getComponentElement()), endDate);
+        getWrapper().longWait().until(ExpectedConditions.elementToBeClickable(Locator.button("Save")));
         modalDialog.dismiss("Save", 0);
         getWrapper().longWait().until(ExpectedConditions
                 .visibilityOfNestedElementsLocatedBy(modalDialog.getComponentElement(), Locators.labkeyError));
