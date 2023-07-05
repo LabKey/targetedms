@@ -78,10 +78,9 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
             getWrapper().setFormElement(Locator.name("event-end-date").findElement(modalDialog.getComponentElement()), endDate);
         getWrapper().longWait().until(ExpectedConditions.elementToBeClickable(Locator.button("Save")));
         modalDialog.dismiss("Save", 0);
-        getWrapper().sleep(1000);
         getWrapper().longWait().until(ExpectedConditions
-                .visibilityOfNestedElementsLocatedBy(modalDialog.getComponentElement(), Locators.labkeyError));
-        Assert.assertEquals("Incorrect validation message", errorMsg, Locators.labkeyError.findElement(modalDialog.getComponentElement()).getText());
+                .visibilityOfNestedElementsLocatedBy(modalDialog.getComponentElement(), elementCache().error_msg));
+        Assert.assertEquals("Incorrect validation message", errorMsg, elementCache().error_msg.findElement(modalDialog.getComponentElement()).getText());
         modalDialog.dismiss("Cancel", 0);
         return this;
     }
@@ -136,6 +135,7 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
         private final Locator offlineDayLoc = Locator.tagWithClassContaining("div", "day-content offline");
 
         private final Locator tooltip = Locator.tagWithAttribute("div", "role", "tooltip");
+        private final Locator error_msg = Locator.id("annotation-save-error");
 
     }
 }
