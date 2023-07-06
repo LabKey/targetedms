@@ -1,6 +1,7 @@
 package org.labkey.targetedms.folderImport;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jasper.tagplugins.jstl.core.Import;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.admin.FolderImportContext;
@@ -42,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public enum PanoramaQCSettings
 {
@@ -52,7 +52,7 @@ public enum PanoramaQCSettings
                 public void exportSettings(VirtualFile vf, Container container, User user) throws Exception
                 {
                     TableInfo ti = getTableInfo(user, container, null);
-                    List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ColumnInfo::isUserEditable).collect(Collectors.toList());
+                    List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ColumnInfo::isUserEditable).toList();
                     SimpleFilter filter = SimpleFilter.createContainerFilter(container); //only export the ones that are defined in current container (and not the ones from the root container)
 
                     try(Results results = QueryService.get().select(ti, userEditableCols, filter, null))
@@ -81,7 +81,7 @@ public enum PanoramaQCSettings
                 }
 
                 @Override
-                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws Exception
+                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws ImportException, IOException
                 {
                     List<Map<String, Object>> tsvData = getTsvData(panoramaQCDir, getSettingsFileName());
                     List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
@@ -102,7 +102,7 @@ public enum PanoramaQCSettings
                 {
                     ContainerFilter cf = ContainerFilter.getContainerFilterByName(ContainerFilter.Type.CurrentPlusProjectAndShared.name(), container, user);
                     TableInfo ti = getTableInfo(user, container, cf);
-                    List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ColumnInfo::isUserEditable).collect(Collectors.toList());
+                    List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ColumnInfo::isUserEditable).toList();
 
                     try (Results results = QueryService.get().select(ti, userEditableCols, null, null))
                     {
@@ -111,7 +111,7 @@ public enum PanoramaQCSettings
                 }
 
                 @Override
-                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws Exception
+                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws ImportException, IOException
                 {
                     TableInfo tinfo = getTableInfo(ctx.getUser(), ctx.getContainer(), ContainerFilter.getContainerFilterByName(ContainerFilter.Type.CurrentPlusProjectAndShared.name(), ctx.getContainer(), ctx.getUser()));
                     return importSettings(ctx, tinfo, getSettingsFileName(), panoramaQCDir, errors, qus);
@@ -139,7 +139,7 @@ public enum PanoramaQCSettings
                 }
 
                 @Override
-                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws Exception
+                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws ImportException, IOException
                 {
                     List<Map<String, Object>> tsvData = getTsvData(panoramaQCDir, getSettingsFileName());
                     List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
@@ -181,7 +181,7 @@ public enum PanoramaQCSettings
                 }
 
                 @Override
-                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws Exception
+                public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws ImportException, IOException
                 {
                     List<Map<String, Object>> tsvData = getTsvData(panoramaQCDir, getSettingsFileName());
                     List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
@@ -194,7 +194,7 @@ public enum PanoramaQCSettings
                             metricId = getRowIdFromName(metricName, getSettingsFileName(), getTableName(), TargetedMSSchema.TABLE_QC_METRIC_CONFIGURATION, Collections.singleton("Id"), new SimpleFilter(FieldKey.fromParts("Name"), metricName), ctx.getUser(), ctx.getContainer(), null);
                         }
                         row.put("MetricId", metricId);
-                        getReplicateDataWithoutDuplicates(getSettingsFileName(), getTableName(), ctx, ti, row, dataWithoutDuplicates);
+                        getReplicateDataWithoutDuplicates(ctx, ti, row, dataWithoutDuplicates);
                     });
                     return insertData(ctx.getUser(), ctx.getContainer(), dataWithoutDuplicates, errors, qus, getSettingsFileName(), getTableName());
                 }
@@ -316,7 +316,7 @@ public enum PanoramaQCSettings
     public void exportSettings(VirtualFile vf, Container container, User user) throws Exception
     {
         TableInfo ti = getTableInfo(user, container, null);
-        List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ColumnInfo::isUserEditable).collect(Collectors.toList());
+        List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ColumnInfo::isUserEditable).toList();
 
         try (Results results = QueryService.get().select(ti, userEditableCols, null, null))
         {
@@ -324,7 +324,7 @@ public enum PanoramaQCSettings
         }
     }
 
-    protected void exportSettingsToTSV(VirtualFile vf, Results results, String fileName, String tableName) throws Exception
+    protected void exportSettingsToTSV(VirtualFile vf, Results results, String fileName, String tableName) throws ImportException
     {
         try
         {
@@ -359,8 +359,7 @@ public enum PanoramaQCSettings
 
     protected Integer getRowIdFromName(String name, String fileName, String targetTable, String lookupTableName, Set<String> colNames, SimpleFilter filter, User user, Container c, ContainerFilter cf)
     {
-        TableInfo ti = getTableInfo(user, c, lookupTableName, cf);
-        Integer value = new TableSelector(ti, colNames, filter, null).getObject(Integer.class);
+        Integer value = getNullableRowIdFromName(lookupTableName, colNames, filter, user, c, cf);
         if (null == value)
         {
             String msg = "Error resolving '" + name + "' to its corresponding Id. Id not found in lookup table targetedms." + lookupTableName + ". ";
@@ -376,49 +375,52 @@ public enum PanoramaQCSettings
         return value;
     }
 
-    protected void getReplicateDataWithoutDuplicates(String settingsFileName, String targetTable, FolderImportContext ctx, TableInfo ti, Map<String, Object> row, List<Map<String, Object>> dataWithoutDuplicates)
+    protected Integer getNullableRowIdFromName(String lookupTableName, Set<String> colNames, SimpleFilter filter, User user, Container c, ContainerFilter cf)
+    {
+        TableInfo ti = getTableInfo(user, c, lookupTableName, cf);
+        return new TableSelector(ti, colNames, filter, null).getObject(Integer.class);
+    }
+
+    protected void getReplicateDataWithoutDuplicates(FolderImportContext ctx, TableInfo ti, Map<String, Object> row, List<Map<String, Object>> dataWithoutDuplicates)
     {
         String replicateName = (String) row.get("ReplicateId");
         String file = (String) row.get("File");
         SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("Name"), replicateName);
         filter.addCondition(FieldKey.fromString("RunId/FileName"), file);
-        Integer replicateId = getRowIdFromName(replicateName, settingsFileName, targetTable, TargetedMSSchema.TABLE_REPLICATE, Collections.singleton("Id"), filter, ctx.getUser(), ctx.getContainer(), null);
-        row.put("ReplicateId", replicateId);
-
-        //filter on values being imported to identify duplicates
-        filter = new SimpleFilter();
-        String logMsg = "A row containing [";
-        int count = 0;
-        for(String col : row.keySet())
+        Integer replicateId = getNullableRowIdFromName(TargetedMSSchema.TABLE_REPLICATE, Collections.singleton("Id"), filter, ctx.getUser(), ctx.getContainer(), null);
+        if (replicateId == null)
         {
-            if (col.equalsIgnoreCase("File"))
-                continue;
-
-            if (null == row.get(col))
-                filter.addCondition(FieldKey.fromParts(col), row.get(col), CompareType.ISBLANK);
-            else
-            {
-                // Without this check, getting an error if there is a mismatch between a Text column type and value (Ex. if col type is a varchar and value is numeric):
-                // ERROR: ExecutingSelector; bad SQL grammar []; nested exception is org.postgresql.util.PSQLException:
-                // ERROR: operator does not exist: character varying = integer
-                if (ti.getColumn(col).getJdbcType().isText() && !(row.get(col) instanceof String))
-                    filter.addCondition(FieldKey.fromParts(col), "'" + row.get(col) + "'");
-                else
-                    filter.addCondition(FieldKey.fromParts(col), row.get(col));
-            }
-
-            logMsg += col + ": '" + row.get(col) + "'" + (count == row.size()-2 ? "" : ", ") ;
-            ++count;
-        }
-
-        if (new TableSelector(ti, filter, null).exists())
-        {
-            logMsg += "] values already exists. Skipping";
-            ctx.getLogger().info(logMsg);
+            ctx.getLogger().info("No replicate '" + replicateName + "' found for exclusion. Skipping.");
         }
         else
         {
-            dataWithoutDuplicates.add(row);
+            row.put("ReplicateId", replicateId);
+
+            //filter on values being imported to identify duplicates
+            filter = new SimpleFilter();
+            String logMsg = "A row containing [";
+            int count = 0;
+            for (Map.Entry<String, Object> entry : row.entrySet())
+            {
+                String col = entry.getKey();
+                if (col.equalsIgnoreCase("File"))
+                    continue;
+
+                addToFilter(ti, filter, entry, col);
+
+                logMsg += col + ": '" + entry.getValue() + "'" + (count == row.size() - 2 ? "" : ", ");
+                ++count;
+            }
+
+            if (new TableSelector(ti, filter, null).exists())
+            {
+                logMsg += "] values already exists. Skipping";
+                ctx.getLogger().info(logMsg);
+            }
+            else
+            {
+                dataWithoutDuplicates.add(row);
+            }
         }
     }
 
@@ -428,23 +430,11 @@ public enum PanoramaQCSettings
         SimpleFilter filter = new SimpleFilter();
         String logMsg = "A row containing [";
         int count = 0;
-        for(String col : row.keySet())
+        for (Map.Entry<String, Object> entry : row.entrySet())
         {
-            if (null == row.get(col))
-            {
-                filter.addCondition(FieldKey.fromParts(col), row.get(col), CompareType.ISBLANK);
-            }
-            else
-            {
-                // Without this check, getting an error if there is a mismatch between a Text column type and value (Ex. if col type is a varchar and value is numeric):
-                // ERROR: ExecutingSelector; bad SQL grammar []; nested exception is org.postgresql.util.PSQLException:
-                // ERROR: operator does not exist: character varying = integer
-                if (ti.getColumn(col).getJdbcType().isText() && !(row.get(col) instanceof String))
-                    filter.addCondition(FieldKey.fromParts(col), "'" + row.get(col) + "'");
-                else
-                    filter.addCondition(FieldKey.fromParts(col), row.get(col));
-            }
-            logMsg += col + ": '" + row.get(col) + "'" + (count == row.size()-1 ? "" : ", ");
+            String col = entry.getKey();
+            addToFilter(ti, filter, entry, col);
+            logMsg += col + ": '" + entry.getValue() + "'" + (count == row.size()-1 ? "" : ", ");
             ++count;
         }
         if (new TableSelector(ti, row.keySet(), filter, null).getRowCount() > 0)
@@ -458,12 +448,30 @@ public enum PanoramaQCSettings
         }
     }
 
-    public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws Exception
+    private void addToFilter(TableInfo ti, SimpleFilter filter, Map.Entry<String, Object> entry, String col)
+    {
+        if (null == entry.getValue())
+        {
+            filter.addCondition(FieldKey.fromParts(col), null, CompareType.ISBLANK);
+        }
+        else
+        {
+            // Without this check, getting an error if there is a mismatch between a Text column type and value (Ex. if col type is a varchar and value is numeric):
+            // ERROR: ExecutingSelector; bad SQL grammar []; nested exception is org.postgresql.util.PSQLException:
+            // ERROR: operator does not exist: character varying = integer
+            if (ti.getColumn(col).getJdbcType().isText() && !(entry.getValue() instanceof String))
+                filter.addCondition(FieldKey.fromParts(col), "'" + entry.getValue() + "'");
+            else
+                filter.addCondition(FieldKey.fromParts(col), entry.getValue());
+        }
+    }
+
+    public int importSettingsFromFile(FolderImportContext ctx, VirtualFile panoramaQCDir, @Nullable TargetedMSSchema schema, @Nullable TableInfo ti, @Nullable QueryUpdateService qus, @Nullable BatchValidationException errors) throws ImportException, IOException
     {
         return importSettings(ctx, ti, _settingsFileName, panoramaQCDir, errors, qus);
     }
 
-    protected int importSettings(FolderImportContext ctx, TableInfo tinfo, String settingsFileName, VirtualFile panoramaQCDir, @Nullable BatchValidationException errors, @Nullable QueryUpdateService qus) throws Exception
+    protected int importSettings(FolderImportContext ctx, TableInfo tinfo, String settingsFileName, VirtualFile panoramaQCDir, @Nullable BatchValidationException errors, @Nullable QueryUpdateService qus) throws ImportException, IOException
     {
         List<Map<String, Object>> tsvData = getTsvData(panoramaQCDir, settingsFileName);
         List<Map<String, Object>> dataWithoutDuplicates = new ArrayList<>();
@@ -481,9 +489,9 @@ public enum PanoramaQCSettings
     }
 
     protected int insertData(User user, Container container, List<Map<String, Object>> dataWithoutDuplicates, BatchValidationException errors,
-                             QueryUpdateService qus, String settingsFileName, String tableName) throws Exception
+                             QueryUpdateService qus, String settingsFileName, String tableName) throws ImportException
     {
-        if (dataWithoutDuplicates.size() > 0)
+        if (!dataWithoutDuplicates.isEmpty())
         {
             if (qus != null)
             {
