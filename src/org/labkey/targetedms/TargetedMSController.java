@@ -1223,7 +1223,16 @@ public class TargetedMSController extends SpringActionController
                         Set.of("Id", "Date", "EndDate", "Description"),
                         new SimpleFilter(FieldKey.fromParts("QCAnnotationTypeId", "Name"), QCAnnotationTypeTable.INSTRUMENT_DOWNTIME),
                         new Sort("Date"));
-                response.put("instrumentDowntimeAnnotations", ts.getMapCollection());
+                response.put("instrumentDowntimeAnnotations",
+                        // Translate the map to get consistent casing for key values across databases
+                        ts.getMapCollection().stream().map(row -> {
+                            Map<String, Object> transformedRow = new HashMap<>();
+                            transformedRow.put("id", row.get("id"));
+                            transformedRow.put("date", row.get("date"));
+                            transformedRow.put("enddate", row.get("enddate"));
+                            transformedRow.put("description", row.get("description"));
+                            return transformedRow;
+                        }).toList());
 
                 TableInfo annotTypesTable = TargetedMSManager.getTableInfoQCAnnotationType();
                 SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("Name"), QCAnnotationTypeTable.INSTRUMENT_DOWNTIME);
