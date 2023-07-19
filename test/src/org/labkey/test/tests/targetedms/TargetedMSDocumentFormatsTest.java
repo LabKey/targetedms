@@ -52,6 +52,13 @@ public class TargetedMSDocumentFormatsTest extends TargetedMSTest
     }
 
     @Test
+    public void test15Document()
+    {
+        goToProjectHome(getProjectName());
+        importData(SAMPLEDATA_FOLDER + "DocumentSerializerTest_v1.5.sky.zip", ++JOB_COUNT);
+    }
+
+    @Test
     public void testNormalDocument()
     {
         goToProjectHome(getProjectName());
