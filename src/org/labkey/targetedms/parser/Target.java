@@ -134,6 +134,24 @@ public class Target
         if (parts.size() > 1)
         {
             target.formula = parts.get(1);
+            int ichSlash = target.formula.indexOf("/");
+            if (ichSlash > 0)
+            {
+                // Check to see if formula is actually two masses separated by a slash
+                try
+                {
+                    double monoMass = Double.parseDouble(target.formula.substring(0, ichSlash));
+                    double averageMass = Double.parseDouble(target.formula.substring(ichSlash + 1));
+
+                    target.formula = null;
+                    target.monoMass = monoMass;
+                    target.averageMass = averageMass;
+                }
+                catch (Exception e)
+                {
+                    // Not masses: must be a real formula
+                }
+            }
         }
         return target;
 

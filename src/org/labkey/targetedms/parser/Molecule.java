@@ -167,11 +167,33 @@ public class Molecule extends GeneralMolecule
     @Override
     public boolean targetMatches(Target target)
     {
-        if (target.getName() != null && !target.getName().equals(getName()))
+        if (target.getName() != null)
         {
-            return false;
+            String name = getCustomIonName();
+            if (name == null) {
+                name = "";
+            }
+            if (!name.equals(target.getName()))
+            {
+                return false;
+            }
         }
-        // TODO(nicksh): maybe need do some more matching?
+        if (StringUtils.isEmpty(target.getFormula()))
+        {
+            String expectedText = String.format("%.9f/%.9f", getMassMonoisotopic(), getMassAverage());
+            String actualText = String.format("%.9f/%.9f", target.getMonoMass(), target.getAverageMass());
+            if (!expectedText.equals(actualText))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (!target.getFormula().equals(getIonFormula()))
+            {
+                return false;
+            }
+        }
         return true;
     }
 
