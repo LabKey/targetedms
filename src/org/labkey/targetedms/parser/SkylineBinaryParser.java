@@ -363,8 +363,13 @@ public class SkylineBinaryParser
         if (0 == chromGroupHeaderInfo.getTextIdLen()) {
             return null;
         }
-        Target target = Target.fromChromatogramTextId(new String(_seqBytes, chromGroupHeaderInfo.getTextIdIndex(),
-                chromGroupHeaderInfo.getTextIdLen(), _cacheFormat.getCharset()));
+        String textId = new String(_seqBytes, chromGroupHeaderInfo.getTextIdIndex(),
+                chromGroupHeaderInfo.getTextIdLen(), _cacheFormat.getCharset());
+        if (chromGroupHeaderInfo.getFlagValues().contains(ChromGroupHeaderInfo.FlagValues.extracted_qc_trace))
+        {
+            return ChromatogramGroupId.forQcTraceName(textId);
+        }
+        Target target = Target.fromChromatogramTextId(textId);
         if (target == null) {
             return null;
         }
