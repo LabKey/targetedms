@@ -29,6 +29,7 @@ import org.labkey.remoteapi.query.Sort;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 @Category({})
 public class TargetedMSDocumentFormatsTest extends TargetedMSTest
@@ -49,6 +50,15 @@ public class TargetedMSDocumentFormatsTest extends TargetedMSTest
     {
         goToProjectHome(getProjectName());
         importData(SAMPLEDATA_FOLDER + "DocumentSerializerTest_36.sky.zip", ++JOB_COUNT);
+    }
+
+    @Test
+    public void test15Document() throws Exception
+    {
+        goToProjectHome(getProjectName());
+        String filename = "DocumentSerializerTest_v1.5.sky.zip";
+        importData(SAMPLEDATA_FOLDER + filename, ++JOB_COUNT);
+        Assert.assertEquals(0, countMissingChromatograms(filename));
     }
 
     @Test
@@ -170,5 +180,18 @@ public class TargetedMSDocumentFormatsTest extends TargetedMSTest
             Assert.assertEquals("Wrong Mz for precursor " + index, precursorMz, (Double)row.getValue("PrecursorId/Mz"), 0.0001);
             Assert.assertEquals("Wrong Mz for transition " + index, transitionMz[index++], (Double)row.getValue("Mz"), 0.0001);
         }
+    }
+
+    private int countMissingChromatograms(String file) throws Exception
+    {
+        Connection cn = createDefaultConnection();
+
+        List<Filter> filters = List.of(
+            new Filter("TransitionId/PrecursorId/PeptideId/PeptideGroupId/RunId/Name", file, Filter.Operator.EQUAL),
+            new Filter("ChromatogramIndex", -1, Filter.Operator.EQUAL                ));
+        SelectRowsCommand cmd = new SelectRowsCommand("targetedms", "TransitionChromInfo");
+        cmd.setFilters(filters);
+        cmd.setColumns(List.of("Id"));
+        return cmd.execute(cn, getCurrentContainerPath()).getRows().size();
     }
 }

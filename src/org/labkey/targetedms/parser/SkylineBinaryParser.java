@@ -212,11 +212,12 @@ public class SkylineBinaryParser
     }
 
     @NotNull
-    private ChromTransition[] parseTransitions(long position, int count) throws IOException
+    private ChromTransition[] parseTransitions(int transitionIndex, int transitionCount) throws IOException
     {
+        var chromTransitionSerializer = _cacheFormat.chromTransitionSerializer();
+        long position = _cacheHeaderStruct.getLocationTransitions() + ((long) chromTransitionSerializer.getItemSizeOnDisk() * transitionIndex);
         _channel.position(position);
-        return _cacheFormat.chromTransitionSerializer()
-                .readArray(Channels.newInputStream(_channel), count);
+        return chromTransitionSerializer.readArray(Channels.newInputStream(_channel), transitionCount);
     }
 
     private void parseChromatograms() throws IOException
@@ -255,16 +256,12 @@ public class SkylineBinaryParser
                 return match;
         }
 
-        var start = header.getStartTransitionIndex();
         var numChromTransitions = header.getNumTransitions();
-        var end = start + numChromTransitions;
-        var chromTransitionPosition = _cacheHeaderStruct.getLocationTransitions() + ((long) _cacheHeaderStruct.getChromTransitionSize() * start);
         ChromTransition[] chromTransitions;
 
         try
         {
-            _channel.position(_cacheHeaderStruct.getLocationTransitions() + ((long) _cacheHeaderStruct.getChromTransitionSize() * start));
-             chromTransitions = parseTransitions(chromTransitionPosition, numChromTransitions);
+             chromTransitions = getTransitions(header);
         }
         catch (IOException e)
         {
@@ -337,17 +334,9 @@ public class SkylineBinaryParser
         return byteArrayOutputStream.toByteArray();
     }
 
-    public ChromTransition[] getTransitions(ChromGroupHeaderInfo chromGroupHeaderInfo)
+    public ChromTransition[] getTransitions(ChromGroupHeaderInfo chromGroupHeaderInfo) throws IOException
     {
-        var chromTransitionPosition = _cacheHeaderStruct.getLocationTransitions() + ((long) _cacheHeaderStruct.getChromTransitionSize() * chromGroupHeaderInfo.getStartTransitionIndex());
-        try
-        {
-            return parseTransitions(chromTransitionPosition, chromGroupHeaderInfo.getNumTransitions());
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return parseTransitions(chromGroupHeaderInfo.getStartTransitionIndex(), chromGroupHeaderInfo.getNumTransitions());
     }
 
     public String getTextId(ChromGroupHeaderInfo chromGroupHeaderInfo) {
