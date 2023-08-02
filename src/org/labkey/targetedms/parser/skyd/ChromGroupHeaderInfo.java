@@ -76,13 +76,15 @@ public class ChromGroupHeaderInfo
             /*ionMobilityUnits =*/ dataInputStream.readByte();
             /*numPeaks =*/ dataInputStream.readByte();
             /*maxPeakIndex =*/ dataInputStream.readByte();
-            if (precursor < 0) {
+            if (precursor < 0)
+            {
                 flagValues.add(FlagValues.polarity_negative);
                 precursor = -precursor;
             }
             return;
         }
-        if (cacheFormatVersion.compareTo(CacheFormatVersion.Five) < 0) {
+        if (cacheFormatVersion.compareTo(CacheFormatVersion.Five) < 0)
+        {
             precursor = Float.intBitsToFloat(dataInputStream.readInt());
             fileIndex = checkUShort(dataInputStream.readInt());
             numTransitions = checkUShort(dataInputStream.readInt());
@@ -126,11 +128,14 @@ public class ChromGroupHeaderInfo
             precursor = dataInputStream.readDouble();
             locationPoints = dataInputStream.readLong();
         }
-        if (cacheFormatVersion.compareTo(CacheFormatVersion.Eleven) < 0) {
+        if (cacheFormatVersion.compareTo(CacheFormatVersion.Eleven) < 0)
+        {
             uncompressedSize = -1;
             startTime = NULL_PLACEHOLDER;
             endTime = NULL_PLACEHOLDER;
-        } else {
+        }
+        else
+        {
             uncompressedSize = dataInputStream.readInt();
             startTime = Float.intBitsToFloat(dataInputStream.readInt());
             endTime = Float.intBitsToFloat(dataInputStream.readInt());
@@ -189,22 +194,32 @@ public class ChromGroupHeaderInfo
 
         private int currentFlagValue;
         private int legacyFlagValue;
-        FlagValues(int currentFlagValue, int legacyFlagValue) {
+
+        /**
+         * @param currentFlagValue the value that the flag has in current (skyd format 18 or greater, Skyline 23_1) skyd files.
+         * @param legacyFlagValue the value that the flag used to have in older skyd files.
+         */
+        FlagValues(int currentFlagValue, int legacyFlagValue)
+        {
             this.currentFlagValue = currentFlagValue;
             this.legacyFlagValue = legacyFlagValue;
         }
 
-        public static EnumSet<FlagValues> fromLegacyBits(int bits) {
+        public static EnumSet<FlagValues> fromLegacyBits(int bits)
+        {
             EnumSet<FlagValues> enumSet = EnumSet.noneOf(FlagValues.class);
-            for (FlagValues flag : FlagValues.values()) {
-                if (0 != (flag.legacyFlagValue & bits)) {
+            for (FlagValues flag : FlagValues.values())
+            {
+                if (0 != (flag.legacyFlagValue & bits))
+                {
                     enumSet.add(flag);
                 }
             }
             return enumSet;
         }
 
-        public static EnumSet<FlagValues> fromCurrentBits(int bits) {
+        public static EnumSet<FlagValues> fromCurrentBits(int bits)
+        {
             EnumSet<FlagValues> enumSet = EnumSet.noneOf(FlagValues.class);
             for (FlagValues flag : FlagValues.values()) {
                 if (0 != (flag.currentFlagValue & bits)) {

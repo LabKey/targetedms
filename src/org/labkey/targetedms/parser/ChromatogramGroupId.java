@@ -28,7 +28,8 @@ public class ChromatogramGroupId
     private ChromatogramGroupId()
     {
     }
-    public ChromatogramGroupId(Target target) {
+    public ChromatogramGroupId(Target target)
+    {
         _target = target;
     }
 
@@ -42,7 +43,8 @@ public class ChromatogramGroupId
         return _qcTraceName;
     }
 
-    public static ChromatogramGroupId forQcTraceName(String qcTraceName) {
+    public static ChromatogramGroupId forQcTraceName(String qcTraceName)
+    {
         ChromatogramGroupId chromatogramGroupId = new ChromatogramGroupId();
         chromatogramGroupId._qcTraceName = qcTraceName;
         return chromatogramGroupId;

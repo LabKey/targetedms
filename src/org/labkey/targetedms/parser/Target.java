@@ -39,7 +39,8 @@ public class Target
 
     }
 
-    public Target(ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target proto) {
+    public Target(ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target proto)
+    {
         modifiedPeptideSequence = proto.getModifiedPeptideSequence();
         formula = proto.getFormula();
         monoMass = proto.getMonoMass();
@@ -107,7 +108,8 @@ public class Target
         return kegg;
     }
 
-    public static Target fromChromatogramTextId(String textId) {
+    public static Target fromChromatogramTextId(String textId)
+    {
         Target target = new Target();
         if (!textId.startsWith("#"))
         {
