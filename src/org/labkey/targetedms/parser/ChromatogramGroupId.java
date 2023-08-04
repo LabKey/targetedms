@@ -53,6 +53,7 @@ public class ChromatogramGroupId
     public static List<ChromatogramGroupId> fromProtos(ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto proto)
     {
         List<Target> targets = new ArrayList<>();
+        // Make one-based lookups easy
         targets.add(null);
         for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target target : proto.getTargetsList()) {
             targets.add(new Target(target));
