@@ -55,11 +55,13 @@ public class ChromatogramGroupId
         List<Target> targets = new ArrayList<>();
         // Make one-based lookups easy
         targets.add(null);
-        for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target target : proto.getTargetsList()) {
+        for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target target : proto.getTargetsList())
+        {
             targets.add(new Target(target));
         }
         List<ChromatogramGroupId> list = new ArrayList<>();
-        for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupId chromatogramGroupId : proto.getChromatogramGroupIdsList()) {
+        for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupId chromatogramGroupId : proto.getChromatogramGroupIdsList())
+        {
             list.add(new ChromatogramGroupId(targets.get(chromatogramGroupId.getTargetIndex())));
         }
         return list;

@@ -170,7 +170,8 @@ public class Molecule extends GeneralMolecule
         if (target.getName() != null)
         {
             String name = getCustomIonName();
-            if (name == null) {
+            if (name == null)
+            {
                 name = "";
             }
             if (!name.equals(target.getName()))

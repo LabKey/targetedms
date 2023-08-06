@@ -362,7 +362,8 @@ public class SkylineBinaryParser
         if (_chromatogramGroupIds != null)
         {
             int index = chromGroupHeaderInfo.getTextIdIndex();
-            if (index < 0) {
+            if (index < 0)
+            {
                 return null;
             }
             return _chromatogramGroupIds.get(index);
@@ -378,7 +379,8 @@ public class SkylineBinaryParser
             return ChromatogramGroupId.forQcTraceName(textId);
         }
         Target target = Target.fromChromatogramTextId(textId);
-        if (target == null) {
+        if (target == null)
+        {
             return null;
         }
         return new ChromatogramGroupId(target);
