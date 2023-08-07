@@ -15,11 +15,13 @@
  */
 package org.labkey.targetedms.parser;
 
+import com.google.protobuf.CodedInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.exp.api.DataType;
 import org.labkey.api.pipeline.PipelineJobException;
+import org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass;
 import org.labkey.targetedms.parser.skyd.CacheFormat;
 import org.labkey.targetedms.parser.skyd.CacheFormatVersion;
 import org.labkey.targetedms.parser.skyd.CacheHeaderStruct;
@@ -64,6 +66,7 @@ public class SkylineBinaryParser
     private ChromGroupHeaderInfo[] _chromatograms;
     private float[] _allPeaksRt;
     private byte[] _seqBytes;
+    private List<ChromatogramGroupId> _chromatogramGroupIds;
 
 
     /** Newest supported version */
@@ -117,6 +120,7 @@ public class SkylineBinaryParser
             return;
         }
 
+        parseChromatogramGroupIds();
         parseFiles();
         parsePeaks();
         _log.debug("Starting to load chromatogram headers");
@@ -209,6 +213,20 @@ public class SkylineBinaryParser
         {
             _allPeaksRt[i] = chromPeaks[i].getRetentionTime();
         }
+    }
+
+    private void parseChromatogramGroupIds() throws IOException
+    {
+        if (_cacheFormat.getFormatVersion().compareTo(CacheFormatVersion.Eighteen) < 0)
+        {
+            return;
+        }
+        _channel.position(_cacheHeaderStruct.getLocationTextIdBytes());
+        ByteBuffer byteBuffer = ByteBuffer.allocate(_cacheHeaderStruct.getNumTextIdBytes());
+        IOUtils.readFully(_channel, byteBuffer);
+        byteBuffer.position(0);
+        var protos = ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.parseFrom(byteBuffer);
+        _chromatogramGroupIds = ChromatogramGroupId.fromProtos(protos);
     }
 
     @NotNull
@@ -339,11 +357,33 @@ public class SkylineBinaryParser
         return parseTransitions(chromGroupHeaderInfo.getStartTransitionIndex(), chromGroupHeaderInfo.getNumTransitions());
     }
 
-    public String getTextId(ChromGroupHeaderInfo chromGroupHeaderInfo) {
-        if (0 == chromGroupHeaderInfo.getTextIdLen()) {
+    public ChromatogramGroupId getTextId(ChromGroupHeaderInfo chromGroupHeaderInfo)
+    {
+        if (_chromatogramGroupIds != null)
+        {
+            int index = chromGroupHeaderInfo.getTextIdIndex();
+            if (index < 0)
+            {
+                return null;
+            }
+            return _chromatogramGroupIds.get(index);
+        }
+        if (0 == chromGroupHeaderInfo.getTextIdLen())
+        {
             return null;
         }
-        return new String(_seqBytes, chromGroupHeaderInfo.getTextIdIndex(), chromGroupHeaderInfo.getTextIdLen(), _cacheFormat.getCharset());
+        String textId = new String(_seqBytes, chromGroupHeaderInfo.getTextIdIndex(),
+                chromGroupHeaderInfo.getTextIdLen(), _cacheFormat.getCharset());
+        if (chromGroupHeaderInfo.getFlagValues().contains(ChromGroupHeaderInfo.FlagValues.extracted_qc_trace))
+        {
+            return ChromatogramGroupId.forQcTraceName(textId);
+        }
+        Target target = Target.fromChromatogramTextId(textId);
+        if (target == null)
+        {
+            return null;
+        }
+        return new ChromatogramGroupId(target);
     }
 
     public String getFilePath(ChromGroupHeaderInfo chromGroupHeaderInfo) {

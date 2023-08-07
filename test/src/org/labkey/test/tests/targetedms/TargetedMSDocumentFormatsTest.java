@@ -181,6 +181,14 @@ public class TargetedMSDocumentFormatsTest extends TargetedMSTest
             Assert.assertEquals("Wrong Mz for transition " + index, transitionMz[index++], (Double)row.getValue("Mz"), 0.0001);
         }
     }
+    @Test
+    public void testVersion23Point1Format() throws Exception
+    {
+        goToProjectHome(getProjectName());
+        String fileName = "Version23_1_Test.sky.zip";
+        importData(SAMPLEDATA_FOLDER + fileName, ++JOB_COUNT);
+        Assert.assertEquals(0, countMissingChromatograms(fileName));
+    }
 
     private int countMissingChromatograms(String file) throws Exception
     {
