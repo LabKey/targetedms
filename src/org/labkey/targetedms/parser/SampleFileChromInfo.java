@@ -103,7 +103,7 @@ public class SampleFileChromInfo extends AbstractChromInfo
                 // We didn't start capturing these flags at import time until 22.3
                 if (_flags != null)
                 {
-                    EnumSet<ChromGroupHeaderInfo.FlagValues> flagValues = ChromGroupHeaderInfo.getFlagValues(_flags);
+                    EnumSet<ChromGroupHeaderInfo.FlagValues> flagValues = ChromGroupHeaderInfo.FlagValues.fromLegacyBits(_flags);
                     if (flagValues.contains(ChromGroupHeaderInfo.FlagValues.extracted_base_peak))
                     {
                         _title = "Base Peak Chromatogram";

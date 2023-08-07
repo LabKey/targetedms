@@ -43,6 +43,17 @@ public class TargetedMSSkydTextIdTest extends TargetedMSTest
     {
         return "TargetedMSSkydTextIdTest";
     }
+    @Test
+    public void testUploadSmMolSkydFile() throws Exception
+    {
+        verifyUploadSmMolSkydFile("SmMolSkydTest.sky.zip");
+    }
+
+    @Test
+    public void testUploadSmMolSkydFile23_1() throws Exception
+    {
+        verifyUploadSmMolSkydFile("SmMolSkydTest23_1.sky.zip");
+    }
 
     /**
      * Tests uploading a small molecule document and verifies that chromatograms exists for all of the molecules.
@@ -51,14 +62,13 @@ public class TargetedMSSkydTextIdTest extends TargetedMSTest
      * The test verifies that each molecule has chromatograms in both of the replicates, and that the number
      * of chromatograms in each replicate is the same.
      */
-    @Test
-    public void testUploadSmMolSkydFile() throws Exception
+    public void verifyUploadSmMolSkydFile(String skydFilename) throws Exception
     {
         goToProjectHome();
-        setupSubfolder(getProjectName(), "Small molecules", FolderType.Experiment);
-        importData("SmMolSkydTest.sky.zip");
+        setupSubfolder(getProjectName(), "Small molecules " + skydFilename, FolderType.Experiment);
+        importData(skydFilename);
         clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
-        clickAndWait(Locator.xpath("//a[text()='SmMolSkydTest.sky.zip']"));
+        clickAndWait(Locator.xpath("//a[text()='" + skydFilename + "']"));
 
         // Get a list of the details hrefs for all eight molecules.
         Locator molDetailsLocator = Locator.xpath("//a[nobr/img[@title='Molecule Details']]");
@@ -73,19 +83,28 @@ public class TargetedMSSkydTextIdTest extends TargetedMSTest
                 "FU2_2017_0915_RJ_06_1ab_50");
     }
 
+    @Test
+    public void testUploadHighPrecModSkydFile() throws Exception
+    {
+        verifyUploadHighPrecModSkydFile("HighPrecModSkydTest.sky.zip");
+    }
+    @Test
+    public void testUploadHighPrecModSkydFile23_1() throws Exception
+    {
+        verifyUploadHighPrecModSkydFile("HighPrecModSkydTest23_1.sky.zip");
+    }
     /**
      * Tests uploading a Skyline document where one of the first replicate was imported before Skyline started
      * using high precision modifications, and the second replicate uses high precision modifications.
      * The text id's in the .skyd file only match the modified sequences in the .sky file for the second replicate,
      * but the logic in "Peptide.textIdMatches" enables Panorama to find all of the chromatograms.
      */
-    @Test
-    public void testUploadHighPrecModSkydFile() throws Exception
+    public void verifyUploadHighPrecModSkydFile(String skydFilename) throws Exception
     {
-        setupSubfolder(getProjectName(), "High Precision Peptide Modifications", FolderType.Experiment);
-        importData("HighPrecModSkydTest.sky.zip");
+        setupSubfolder(getProjectName(), "High Precision Peptide Modifications " + skydFilename, FolderType.Experiment);
+        importData(skydFilename);
         clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
-        clickAndWait(Locator.xpath("//a[text()='HighPrecModSkydTest.sky.zip']"));
+        clickAndWait(Locator.xpath("//a[text()='" + skydFilename + "']"));
 
         // Get a list of the details hrefs for all eight molecules.
         Locator molDetailsLocator = Locator.xpath("//a[nobr/img[@title='Peptide Details']]");

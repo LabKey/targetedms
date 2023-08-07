@@ -35,6 +35,9 @@ public enum CacheFormatVersion
     Thirteen, // Adds total ion current to CachedFileHeaderStruct
     Fourteen, // Adds sample id to CachedFileHeaderStruct
     Fifteen, // Add import time to CachedFileHeaderStruct
+    Sixteen, // Skewness and kurtosis
+    Seventeen, // ChromTransition.getOptimizationStep
+    Eighteen, // Spectrum class filters
     UnknownFutureVersion;
     public static CacheFormatVersion fromInteger(int i) {
         if (i <= Zero.ordinal()) {
@@ -45,5 +48,5 @@ public enum CacheFormatVersion
         }
         return values()[i];
     }
-    public static final CacheFormatVersion CURRENT = Fifteen;
+    public static final CacheFormatVersion CURRENT = Eighteen;
 }

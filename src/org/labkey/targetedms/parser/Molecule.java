@@ -162,7 +162,40 @@ public class Molecule extends GeneralMolecule
             }
         }
         return true;
+    }
 
+    @Override
+    public boolean targetMatches(Target target)
+    {
+        if (target.getName() != null)
+        {
+            String name = getCustomIonName();
+            if (name == null)
+            {
+                name = "";
+            }
+            if (!name.equals(target.getName()))
+            {
+                return false;
+            }
+        }
+        if (StringUtils.isEmpty(target.getFormula()))
+        {
+            String expectedText = String.format("%.9f/%.9f", getMassMonoisotopic(), getMassAverage());
+            String actualText = String.format("%.9f/%.9f", target.getMonoMass(), target.getAverageMass());
+            if (!expectedText.equals(actualText))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (!target.getFormula().equals(getIonFormula()))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     public String getName()

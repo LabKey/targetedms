@@ -27,7 +27,7 @@ public class ChromTransition
     private float _driftTime;
     private float _driftTimeExtractionWidth;
     private short _flagBits;
-    private short _align1;
+    private short _optimizationStep;
 
     public ChromTransition(CacheFormatVersion cacheFormatVersion, LittleEndianInput dataInputStream)
     {
@@ -37,14 +37,14 @@ public class ChromTransition
             _product = dataInputStream.readDouble();
             _extractionWidth = Float.intBitsToFloat(dataInputStream.readInt());
             _flagBits = dataInputStream.readShort();
-            _align1 = dataInputStream.readShort();
+            _optimizationStep = dataInputStream.readShort();
         } else {
             _product = dataInputStream.readDouble();
             _extractionWidth = Float.intBitsToFloat(dataInputStream.readInt());
             _driftTime = Float.intBitsToFloat(dataInputStream.readInt());
             _driftTimeExtractionWidth = Float.intBitsToFloat(dataInputStream.readInt());
             _flagBits = dataInputStream.readShort();
-            _align1 = dataInputStream.readShort();
+            _optimizationStep = dataInputStream.readShort();
         }
     }
 
@@ -63,6 +63,10 @@ public class ChromTransition
             return new SignedMz(Math.abs(_product), true);
         }
         return new SignedMz(Math.abs(_product), false);
+    }
+
+    public int getOptimizationStep() {
+        return _optimizationStep;
     }
 
     public boolean isMissingMassErrors() {

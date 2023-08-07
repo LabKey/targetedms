@@ -31,6 +31,10 @@ import java.nio.channels.SeekableByteChannel;
 public class CacheHeaderStruct
 {
     // Version 12 fields after this point
+
+    // Note that these sizes will all be zero in .skyd files which are older than version 12.
+    // In older .skyd files the way to determine the sizes of the structs is to call a methods
+    // such as "ChromPeak.getStructSize(CacheFormatVersion)"
     int chromPeakSize;
     int chromTransitionSize;
     int chromGroupHeaderSize;
@@ -144,11 +148,6 @@ public class CacheHeaderStruct
             return 88;
         }
         return 108;
-    }
-
-    public int getChromTransitionSize()
-    {
-        return chromTransitionSize;
     }
 
     public static StructSerializer<CacheHeaderStruct> getStructSerializer(CacheFormatVersion cacheFormatVersion) {
