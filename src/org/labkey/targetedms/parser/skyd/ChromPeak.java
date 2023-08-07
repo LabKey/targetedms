@@ -30,6 +30,12 @@ public class ChromPeak
     private float _fwhm;
     private int _flagBits;
     private short _pointsAcross;
+    private float _stdDev;
+    private float _skewness;
+    private float _kurtosis;
+    private float _shapeCorrelation;
+
+    private static final int FLAGVALUE_HAS_PEAK_SHAPE = 0x80;
 
     public ChromPeak(LittleEndianInput dataInputStream)
     {
@@ -42,13 +48,20 @@ public class ChromPeak
         _fwhm = Float.intBitsToFloat(dataInputStream.readInt());
         _flagBits = dataInputStream.readInt();
         _pointsAcross = dataInputStream.readShort();
+        _stdDev = Float.intBitsToFloat(dataInputStream.readInt());
+        _skewness = Float.intBitsToFloat(dataInputStream.readInt());
+        _kurtosis = Float.intBitsToFloat(dataInputStream.readInt());
+        _shapeCorrelation = Float.intBitsToFloat(dataInputStream.readInt());
     }
 
     public static int getStructSize(CacheFormatVersion cacheFormatVersion) {
         if (cacheFormatVersion.compareTo(CacheFormatVersion.Twelve) < 0) {
             return 32;
         }
-        return 36;
+        if (cacheFormatVersion.compareTo(CacheFormatVersion.Sixteen) < 0) {
+            return 36;
+        }
+        return 52;
     }
 
     public float getRetentionTime()
@@ -84,5 +97,24 @@ public class ChromPeak
     public float getFwhm()
     {
         return _fwhm;
+    }
+
+    public Float getStdDev() {
+        return hasPeakShape() ? _stdDev : null;
+    }
+    public Float getSkewness() {
+        return hasPeakShape() ? _skewness : null;
+    }
+
+    public Float getKurtosis() {
+        return hasPeakShape() ? _kurtosis : null;
+    }
+
+    public Float getShapeCorrelation() {
+        return hasPeakShape() ? _shapeCorrelation : null;
+    }
+
+    public boolean hasPeakShape() {
+        return 0 != (_flagBits & FLAGVALUE_HAS_PEAK_SHAPE);
     }
 }
