@@ -163,7 +163,7 @@ public class SkylineDocumentParser implements AutoCloseable
     private static final String LINKED_FRAGMENT_ION = "linked_fragment_ion";
 
     private static final double MIN_SUPPORTED_VERSION = 1.2;
-    public static final double MAX_SUPPORTED_VERSION = 22.13;
+    public static final double MAX_SUPPORTED_VERSION = 23.1;
 
     private static final Pattern XML_ID_REGEX = Pattern.compile("\"/^[:_A-Za-z][-.:_A-Za-z0-9]*$/\"");
     private static final String XML_ID_FIRST_CHARS = ":_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -3082,15 +3082,15 @@ public class SkylineDocumentParser implements AutoCloseable
         return optionalInt == null ? null : optionalInt.getValue();
     }
 
-    private static Double fromOptional(SkylineDocument.SkylineDocumentProto.OptionalDouble optionalDouble) {
+    private static Double fromOptional(com.google.protobuf.DoubleValue optionalDouble) {
         return optionalDouble == null ? null : optionalDouble.getValue();
     }
 
-    private static Double fromOptional(SkylineDocument.SkylineDocumentProto.OptionalFloat optionalFloat) {
+    private static Double fromOptional(com.google.protobuf.FloatValue optionalFloat) {
         return optionalFloat == null ? null : Double.valueOf(optionalFloat.getValue());
     }
 
-    private static String fromOptional(SkylineDocument.SkylineDocumentProto.OptionalString optionalString) {
+    private static String fromOptional(com.google.protobuf.StringValue optionalString) {
         return optionalString == null ? null : optionalString.getValue();
     }
 
@@ -3197,7 +3197,11 @@ public class SkylineDocumentParser implements AutoCloseable
                     info.setSampleFileId(sampleFile.getId());
                     info.setStartTime(chromatogram.getStartTime());
                     info.setEndTime(chromatogram.getEndTime());
-                    info.setTextId(_binaryParser.getTextId(chromatogram));
+                    ChromatogramGroupId chromatogramGroupId = _binaryParser.getTextId(chromatogram);
+                    if (chromatogramGroupId != null)
+                    {
+                        info.setTextId(chromatogramGroupId.getQcTraceName());
+                    }
                     info.setChromatogramFormat(chromatogram.getChromatogramBinaryFormat().ordinal());
                     info.setChromatogramOffset(chromatogram.getLocationPoints());
                     info.setChromatogramLength(chromatogram.getCompressedSize());
@@ -3247,8 +3251,8 @@ public class SkylineDocumentParser implements AutoCloseable
             {
                 ChromGroupHeaderInfo chrom = _binaryParser.getChromatograms()[i++];
                 // Sequence matching for extracted chromatogram data added in v1.5
-                String chromTextId = _binaryParser.getTextId(chrom);
-                if (chromTextId != null && !molecule.textIdMatches(chromTextId))
+                ChromatogramGroupId chromTextId = _binaryParser.getTextId(chrom);
+                if (chromTextId != null && !molecule.targetMatches(chromTextId.getTarget()))
                     continue;
 
                 // If explicit retention time info is available, use that to discard obvious mismatches

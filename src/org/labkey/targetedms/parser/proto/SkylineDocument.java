@@ -45,43 +45,6 @@ public final class SkylineDocument {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private SkylineDocumentProto(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_descriptor;
@@ -513,7 +476,6 @@ public final class SkylineDocument {
        * <code>ION_TYPE_zHH = 10;</code>
        */
       ION_TYPE_zHH(10),
-
       UNRECOGNIZED(-1),
       ;
 
@@ -553,6 +515,14 @@ public final class SkylineDocument {
        * <code>ION_TYPE_custom = 8;</code>
        */
       public static final int ION_TYPE_custom_VALUE = 8;
+      /**
+       * <code>ION_TYPE_zH = 9;</code>
+       */
+      public static final int ION_TYPE_zH_VALUE = 9;
+      /**
+       * <code>ION_TYPE_zHH = 10;</code>
+       */
+      public static final int ION_TYPE_zHH_VALUE = 10;
 
 
       public final int getNumber() {
@@ -838,67 +808,6 @@ public final class SkylineDocument {
       getUnknownFields() {
         return this.unknownFields;
       }
-      private Annotations(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        int mutable_bitField0_ = 0;
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                note_ = s;
-                break;
-              }
-              case 16: {
-
-                color_ = input.readInt32();
-                break;
-              }
-              case 26: {
-                if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                  values_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValue>();
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                values_.add(
-                    input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValue.parser(), extensionRegistry));
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          if (((mutable_bitField0_ & 0x00000001) != 0)) {
-            values_ = java.util.Collections.unmodifiableList(values_);
-          }
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_Annotations_descriptor;
@@ -1015,7 +924,7 @@ public final class SkylineDocument {
       @java.lang.Override
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        if (!getNoteBytes().isEmpty()) {
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(note_)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 1, note_);
         }
         if (color_ != 0) {
@@ -1024,7 +933,7 @@ public final class SkylineDocument {
         for (int i = 0; i < values_.size(); i++) {
           output.writeMessage(3, values_.get(i));
         }
-        unknownFields.writeTo(output);
+        getUnknownFields().writeTo(output);
       }
 
       @java.lang.Override
@@ -1033,7 +942,7 @@ public final class SkylineDocument {
         if (size != -1) return size;
 
         size = 0;
-        if (!getNoteBytes().isEmpty()) {
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(note_)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, note_);
         }
         if (color_ != 0) {
@@ -1044,7 +953,7 @@ public final class SkylineDocument {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(3, values_.get(i));
         }
-        size += unknownFields.getSerializedSize();
+        size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
         return size;
       }
@@ -1065,7 +974,7 @@ public final class SkylineDocument {
             != other.getColor()) return false;
         if (!getValuesList()
             .equals(other.getValuesList())) return false;
-        if (!unknownFields.equals(other.unknownFields)) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
       }
 
@@ -1084,7 +993,7 @@ public final class SkylineDocument {
           hash = (37 * hash) + VALUES_FIELD_NUMBER;
           hash = (53 * hash) + getValuesList().hashCode();
         }
-        hash = (29 * hash) + unknownFields.hashCode();
+        hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
       }
@@ -1201,19 +1110,13 @@ public final class SkylineDocument {
 
         // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations.newBuilder()
         private Builder() {
-          maybeForceBuilderInitialization();
+
         }
 
         private Builder(
             com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-            getValuesFieldBuilder();
-          }
+
         }
         @java.lang.Override
         public Builder clear() {
@@ -1224,10 +1127,11 @@ public final class SkylineDocument {
 
           if (valuesBuilder_ == null) {
             values_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000001);
           } else {
+            values_ = null;
             valuesBuilder_.clear();
           }
+          bitField0_ = (bitField0_ & ~0x00000001);
           return this;
         }
 
@@ -1347,7 +1251,7 @@ public final class SkylineDocument {
               }
             }
           }
-          this.mergeUnknownFields(other.unknownFields);
+          this.mergeUnknownFields(other.getUnknownFields());
           onChanged();
           return this;
         }
@@ -1362,17 +1266,53 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations parsedMessage = null;
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
           try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 10: {
+                  note_ = input.readStringRequireUtf8();
+
+                  break;
+                } // case 10
+                case 16: {
+                  color_ = input.readInt32();
+
+                  break;
+                } // case 16
+                case 26: {
+                  org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValue m =
+                      input.readMessage(
+                          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValue.parser(),
+                          extensionRegistry);
+                  if (valuesBuilder_ == null) {
+                    ensureValuesIsMutable();
+                    values_.add(m);
+                  } else {
+                    valuesBuilder_.addMessage(m);
+                  }
+                  break;
+                } // case 26
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
+            onChanged();
+          } // finally
           return this;
         }
         private int bitField0_;
@@ -1756,7 +1696,18 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new Annotations(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
@@ -1832,55 +1783,6 @@ public final class SkylineDocument {
       public final com.google.protobuf.UnknownFieldSet
       getUnknownFields() {
         return this.unknownFields;
-      }
-      private AnnotationValue(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                name_ = s;
-                break;
-              }
-              case 18: {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                textValue_ = s;
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
       }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
@@ -1985,13 +1887,13 @@ public final class SkylineDocument {
       @java.lang.Override
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        if (!getNameBytes().isEmpty()) {
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
         }
-        if (!getTextValueBytes().isEmpty()) {
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(textValue_)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 2, textValue_);
         }
-        unknownFields.writeTo(output);
+        getUnknownFields().writeTo(output);
       }
 
       @java.lang.Override
@@ -2000,13 +1902,13 @@ public final class SkylineDocument {
         if (size != -1) return size;
 
         size = 0;
-        if (!getNameBytes().isEmpty()) {
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
         }
-        if (!getTextValueBytes().isEmpty()) {
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(textValue_)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, textValue_);
         }
-        size += unknownFields.getSerializedSize();
+        size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
         return size;
       }
@@ -2025,7 +1927,7 @@ public final class SkylineDocument {
             .equals(other.getName())) return false;
         if (!getTextValue()
             .equals(other.getTextValue())) return false;
-        if (!unknownFields.equals(other.unknownFields)) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
       }
 
@@ -2040,7 +1942,7 @@ public final class SkylineDocument {
         hash = (53 * hash) + getName().hashCode();
         hash = (37 * hash) + TEXTVALUE_FIELD_NUMBER;
         hash = (53 * hash) + getTextValue().hashCode();
-        hash = (29 * hash) + unknownFields.hashCode();
+        hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
       }
@@ -2157,18 +2059,13 @@ public final class SkylineDocument {
 
         // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValue.newBuilder()
         private Builder() {
-          maybeForceBuilderInitialization();
+
         }
 
         private Builder(
             com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-          }
+
         }
         @java.lang.Override
         public Builder clear() {
@@ -2261,7 +2158,7 @@ public final class SkylineDocument {
             textValue_ = other.textValue_;
             onChanged();
           }
-          this.mergeUnknownFields(other.unknownFields);
+          this.mergeUnknownFields(other.getUnknownFields());
           onChanged();
           return this;
         }
@@ -2276,17 +2173,40 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValue parsedMessage = null;
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
           try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 10: {
+                  name_ = input.readStringRequireUtf8();
+
+                  break;
+                } // case 10
+                case 18: {
+                  textValue_ = input.readStringRequireUtf8();
+
+                  break;
+                } // case 18
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValue) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
+            onChanged();
+          } // finally
           return this;
         }
 
@@ -2474,7 +2394,18 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new AnnotationValue(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
@@ -2511,19 +2442,19 @@ public final class SkylineDocument {
       int getFileIndexInReplicate();
 
       /**
-       * <code>.SkylineDocumentProto.OptionalFloat massError = 3;</code>
+       * <code>.google.protobuf.FloatValue massError = 3;</code>
        * @return Whether the massError field is set.
        */
       boolean hasMassError();
       /**
-       * <code>.SkylineDocumentProto.OptionalFloat massError = 3;</code>
+       * <code>.google.protobuf.FloatValue massError = 3;</code>
        * @return The massError.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat getMassError();
+      com.google.protobuf.FloatValue getMassError();
       /**
-       * <code>.SkylineDocumentProto.OptionalFloat massError = 3;</code>
+       * <code>.google.protobuf.FloatValue massError = 3;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloatOrBuilder getMassErrorOrBuilder();
+      com.google.protobuf.FloatValueOrBuilder getMassErrorOrBuilder();
 
       /**
        * <code>float retentionTime = 4;</code>
@@ -2544,34 +2475,34 @@ public final class SkylineDocument {
       float getEndRetentionTime();
 
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble ionMobility = 7;</code>
+       * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
        * @return Whether the ionMobility field is set.
        */
       boolean hasIonMobility();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble ionMobility = 7;</code>
+       * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
        * @return The ionMobility.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getIonMobility();
+      com.google.protobuf.DoubleValue getIonMobility();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble ionMobility = 7;</code>
+       * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getIonMobilityOrBuilder();
+      com.google.protobuf.DoubleValueOrBuilder getIonMobilityOrBuilder();
 
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble ionMobilityWindow = 8;</code>
+       * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
        * @return Whether the ionMobilityWindow field is set.
        */
       boolean hasIonMobilityWindow();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble ionMobilityWindow = 8;</code>
+       * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
        * @return The ionMobilityWindow.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getIonMobilityWindow();
+      com.google.protobuf.DoubleValue getIonMobilityWindow();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble ionMobilityWindow = 8;</code>
+       * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getIonMobilityWindowOrBuilder();
+      com.google.protobuf.DoubleValueOrBuilder getIonMobilityWindowOrBuilder();
 
       /**
        * <code>float area = 9;</code>
@@ -2689,6 +2620,36 @@ public final class SkylineDocument {
        * @return The forcedIntegration.
        */
       boolean getForcedIntegration();
+
+      /**
+       * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
+       * @return Whether the peakShapeValues field is set.
+       */
+      boolean hasPeakShapeValues();
+      /**
+       * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
+       * @return The peakShapeValues.
+       */
+      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues getPeakShapeValues();
+      /**
+       * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
+       */
+      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValuesOrBuilder getPeakShapeValuesOrBuilder();
+
+      /**
+       * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
+       * @return Whether the ionMobilityCollisionCrossSection field is set.
+       */
+      boolean hasIonMobilityCollisionCrossSection();
+      /**
+       * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
+       * @return The ionMobilityCollisionCrossSection.
+       */
+      com.google.protobuf.DoubleValue getIonMobilityCollisionCrossSection();
+      /**
+       * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
+       */
+      com.google.protobuf.DoubleValueOrBuilder getIonMobilityCollisionCrossSectionOrBuilder();
     }
     /**
      * Protobuf type {@code SkylineDocumentProto.TransitionPeak}
@@ -2720,196 +2681,6 @@ public final class SkylineDocument {
       getUnknownFields() {
         return this.unknownFields;
       }
-      private TransitionPeak(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 8: {
-
-                replicateIndex_ = input.readInt32();
-                break;
-              }
-              case 16: {
-
-                fileIndexInReplicate_ = input.readInt32();
-                break;
-              }
-              case 26: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.Builder subBuilder = null;
-                if (massError_ != null) {
-                  subBuilder = massError_.toBuilder();
-                }
-                massError_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(massError_);
-                  massError_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 37: {
-
-                retentionTime_ = input.readFloat();
-                break;
-              }
-              case 45: {
-
-                startRetentionTime_ = input.readFloat();
-                break;
-              }
-              case 53: {
-
-                endRetentionTime_ = input.readFloat();
-                break;
-              }
-              case 58: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder subBuilder = null;
-                if (ionMobility_ != null) {
-                  subBuilder = ionMobility_.toBuilder();
-                }
-                ionMobility_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(ionMobility_);
-                  ionMobility_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 66: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder subBuilder = null;
-                if (ionMobilityWindow_ != null) {
-                  subBuilder = ionMobilityWindow_.toBuilder();
-                }
-                ionMobilityWindow_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(ionMobilityWindow_);
-                  ionMobilityWindow_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 77: {
-
-                area_ = input.readFloat();
-                break;
-              }
-              case 85: {
-
-                backgroundArea_ = input.readFloat();
-                break;
-              }
-              case 93: {
-
-                height_ = input.readFloat();
-                break;
-              }
-              case 101: {
-
-                fwhm_ = input.readFloat();
-                break;
-              }
-              case 104: {
-
-                isFwhmDegenerate_ = input.readBool();
-                break;
-              }
-              case 112: {
-                int rawValue = input.readEnum();
-
-                truncated_ = rawValue;
-                break;
-              }
-              case 120: {
-                int rawValue = input.readEnum();
-
-                identified_ = rawValue;
-                break;
-              }
-              case 128: {
-
-                rank_ = input.readInt32();
-                break;
-              }
-              case 136: {
-
-                rankByLevel_ = input.readInt32();
-                break;
-              }
-              case 146: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt.Builder subBuilder = null;
-                if (pointsAcrossPeak_ != null) {
-                  subBuilder = pointsAcrossPeak_.toBuilder();
-                }
-                pointsAcrossPeak_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(pointsAcrossPeak_);
-                  pointsAcrossPeak_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 152: {
-                int rawValue = input.readEnum();
-
-                userSet_ = rawValue;
-                break;
-              }
-              case 184: {
-
-                optimizationStep_ = input.readSInt32();
-                break;
-              }
-              case 194: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations.Builder subBuilder = null;
-                if (annotations_ != null) {
-                  subBuilder = annotations_.toBuilder();
-                }
-                annotations_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(annotations_);
-                  annotations_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 200: {
-
-                forcedIntegration_ = input.readBool();
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_TransitionPeak_descriptor;
@@ -2921,6 +2692,694 @@ public final class SkylineDocument {
         return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_TransitionPeak_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.class, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.Builder.class);
+      }
+
+      public interface PeakShapeValuesOrBuilder extends
+          // @@protoc_insertion_point(interface_extends:SkylineDocumentProto.TransitionPeak.PeakShapeValues)
+          com.google.protobuf.MessageOrBuilder {
+
+        /**
+         * <code>float stdDev = 1;</code>
+         * @return The stdDev.
+         */
+        float getStdDev();
+
+        /**
+         * <code>float skewness = 2;</code>
+         * @return The skewness.
+         */
+        float getSkewness();
+
+        /**
+         * <code>float kurtosis = 3;</code>
+         * @return The kurtosis.
+         */
+        float getKurtosis();
+
+        /**
+         * <code>float shapeCorrelation = 4;</code>
+         * @return The shapeCorrelation.
+         */
+        float getShapeCorrelation();
+      }
+      /**
+       * Protobuf type {@code SkylineDocumentProto.TransitionPeak.PeakShapeValues}
+       */
+      public static final class PeakShapeValues extends
+          com.google.protobuf.GeneratedMessageV3 implements
+          // @@protoc_insertion_point(message_implements:SkylineDocumentProto.TransitionPeak.PeakShapeValues)
+          PeakShapeValuesOrBuilder {
+      private static final long serialVersionUID = 0L;
+        // Use PeakShapeValues.newBuilder() to construct.
+        private PeakShapeValues(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+          super(builder);
+        }
+        private PeakShapeValues() {
+        }
+
+        @java.lang.Override
+        @SuppressWarnings({"unused"})
+        protected java.lang.Object newInstance(
+            UnusedPrivateParameter unused) {
+          return new PeakShapeValues();
+        }
+
+        @java.lang.Override
+        public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+          return this.unknownFields;
+        }
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_TransitionPeak_PeakShapeValues_descriptor;
+        }
+
+        @java.lang.Override
+        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_TransitionPeak_PeakShapeValues_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.class, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.Builder.class);
+        }
+
+        public static final int STDDEV_FIELD_NUMBER = 1;
+        private float stdDev_;
+        /**
+         * <code>float stdDev = 1;</code>
+         * @return The stdDev.
+         */
+        @java.lang.Override
+        public float getStdDev() {
+          return stdDev_;
+        }
+
+        public static final int SKEWNESS_FIELD_NUMBER = 2;
+        private float skewness_;
+        /**
+         * <code>float skewness = 2;</code>
+         * @return The skewness.
+         */
+        @java.lang.Override
+        public float getSkewness() {
+          return skewness_;
+        }
+
+        public static final int KURTOSIS_FIELD_NUMBER = 3;
+        private float kurtosis_;
+        /**
+         * <code>float kurtosis = 3;</code>
+         * @return The kurtosis.
+         */
+        @java.lang.Override
+        public float getKurtosis() {
+          return kurtosis_;
+        }
+
+        public static final int SHAPECORRELATION_FIELD_NUMBER = 4;
+        private float shapeCorrelation_;
+        /**
+         * <code>float shapeCorrelation = 4;</code>
+         * @return The shapeCorrelation.
+         */
+        @java.lang.Override
+        public float getShapeCorrelation() {
+          return shapeCorrelation_;
+        }
+
+        private byte memoizedIsInitialized = -1;
+        @java.lang.Override
+        public final boolean isInitialized() {
+          byte isInitialized = memoizedIsInitialized;
+          if (isInitialized == 1) return true;
+          if (isInitialized == 0) return false;
+
+          memoizedIsInitialized = 1;
+          return true;
+        }
+
+        @java.lang.Override
+        public void writeTo(com.google.protobuf.CodedOutputStream output)
+                            throws java.io.IOException {
+          if (java.lang.Float.floatToRawIntBits(stdDev_) != 0) {
+            output.writeFloat(1, stdDev_);
+          }
+          if (java.lang.Float.floatToRawIntBits(skewness_) != 0) {
+            output.writeFloat(2, skewness_);
+          }
+          if (java.lang.Float.floatToRawIntBits(kurtosis_) != 0) {
+            output.writeFloat(3, kurtosis_);
+          }
+          if (java.lang.Float.floatToRawIntBits(shapeCorrelation_) != 0) {
+            output.writeFloat(4, shapeCorrelation_);
+          }
+          getUnknownFields().writeTo(output);
+        }
+
+        @java.lang.Override
+        public int getSerializedSize() {
+          int size = memoizedSize;
+          if (size != -1) return size;
+
+          size = 0;
+          if (java.lang.Float.floatToRawIntBits(stdDev_) != 0) {
+            size += com.google.protobuf.CodedOutputStream
+              .computeFloatSize(1, stdDev_);
+          }
+          if (java.lang.Float.floatToRawIntBits(skewness_) != 0) {
+            size += com.google.protobuf.CodedOutputStream
+              .computeFloatSize(2, skewness_);
+          }
+          if (java.lang.Float.floatToRawIntBits(kurtosis_) != 0) {
+            size += com.google.protobuf.CodedOutputStream
+              .computeFloatSize(3, kurtosis_);
+          }
+          if (java.lang.Float.floatToRawIntBits(shapeCorrelation_) != 0) {
+            size += com.google.protobuf.CodedOutputStream
+              .computeFloatSize(4, shapeCorrelation_);
+          }
+          size += getUnknownFields().getSerializedSize();
+          memoizedSize = size;
+          return size;
+        }
+
+        @java.lang.Override
+        public boolean equals(final java.lang.Object obj) {
+          if (obj == this) {
+           return true;
+          }
+          if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues)) {
+            return super.equals(obj);
+          }
+          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues other = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues) obj;
+
+          if (java.lang.Float.floatToIntBits(getStdDev())
+              != java.lang.Float.floatToIntBits(
+                  other.getStdDev())) return false;
+          if (java.lang.Float.floatToIntBits(getSkewness())
+              != java.lang.Float.floatToIntBits(
+                  other.getSkewness())) return false;
+          if (java.lang.Float.floatToIntBits(getKurtosis())
+              != java.lang.Float.floatToIntBits(
+                  other.getKurtosis())) return false;
+          if (java.lang.Float.floatToIntBits(getShapeCorrelation())
+              != java.lang.Float.floatToIntBits(
+                  other.getShapeCorrelation())) return false;
+          if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+          return true;
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+          if (memoizedHashCode != 0) {
+            return memoizedHashCode;
+          }
+          int hash = 41;
+          hash = (19 * hash) + getDescriptor().hashCode();
+          hash = (37 * hash) + STDDEV_FIELD_NUMBER;
+          hash = (53 * hash) + java.lang.Float.floatToIntBits(
+              getStdDev());
+          hash = (37 * hash) + SKEWNESS_FIELD_NUMBER;
+          hash = (53 * hash) + java.lang.Float.floatToIntBits(
+              getSkewness());
+          hash = (37 * hash) + KURTOSIS_FIELD_NUMBER;
+          hash = (53 * hash) + java.lang.Float.floatToIntBits(
+              getKurtosis());
+          hash = (37 * hash) + SHAPECORRELATION_FIELD_NUMBER;
+          hash = (53 * hash) + java.lang.Float.floatToIntBits(
+              getShapeCorrelation());
+          hash = (29 * hash) + getUnknownFields().hashCode();
+          memoizedHashCode = hash;
+          return hash;
+        }
+
+        public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues parseFrom(
+            java.nio.ByteBuffer data)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data);
+        }
+        public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues parseFrom(
+            java.nio.ByteBuffer data,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data, extensionRegistry);
+        }
+        public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues parseFrom(
+            com.google.protobuf.ByteString data)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data);
+        }
+        public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues parseFrom(
+            com.google.protobuf.ByteString data,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data, extensionRegistry);
+        }
+        public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues parseFrom(byte[] data)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data);
+        }
+        public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues parseFrom(
+            byte[] data,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data, extensionRegistry);
+        }
+        public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues parseFrom(java.io.InputStream input)
+            throws java.io.IOException {
+          return com.google.protobuf.GeneratedMessageV3
+              .parseWithIOException(PARSER, input);
+        }
+        public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues parseFrom(
+            java.io.InputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          return com.google.protobuf.GeneratedMessageV3
+              .parseWithIOException(PARSER, input, extensionRegistry);
+        }
+        public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues parseDelimitedFrom(java.io.InputStream input)
+            throws java.io.IOException {
+          return com.google.protobuf.GeneratedMessageV3
+              .parseDelimitedWithIOException(PARSER, input);
+        }
+        public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues parseDelimitedFrom(
+            java.io.InputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          return com.google.protobuf.GeneratedMessageV3
+              .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+        }
+        public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues parseFrom(
+            com.google.protobuf.CodedInputStream input)
+            throws java.io.IOException {
+          return com.google.protobuf.GeneratedMessageV3
+              .parseWithIOException(PARSER, input);
+        }
+        public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues parseFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          return com.google.protobuf.GeneratedMessageV3
+              .parseWithIOException(PARSER, input, extensionRegistry);
+        }
+
+        @java.lang.Override
+        public Builder newBuilderForType() { return newBuilder(); }
+        public static Builder newBuilder() {
+          return DEFAULT_INSTANCE.toBuilder();
+        }
+        public static Builder newBuilder(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues prototype) {
+          return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+        }
+        @java.lang.Override
+        public Builder toBuilder() {
+          return this == DEFAULT_INSTANCE
+              ? new Builder() : new Builder().mergeFrom(this);
+        }
+
+        @java.lang.Override
+        protected Builder newBuilderForType(
+            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          Builder builder = new Builder(parent);
+          return builder;
+        }
+        /**
+         * Protobuf type {@code SkylineDocumentProto.TransitionPeak.PeakShapeValues}
+         */
+        public static final class Builder extends
+            com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+            // @@protoc_insertion_point(builder_implements:SkylineDocumentProto.TransitionPeak.PeakShapeValues)
+            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValuesOrBuilder {
+          public static final com.google.protobuf.Descriptors.Descriptor
+              getDescriptor() {
+            return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_TransitionPeak_PeakShapeValues_descriptor;
+          }
+
+          @java.lang.Override
+          protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+              internalGetFieldAccessorTable() {
+            return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_TransitionPeak_PeakShapeValues_fieldAccessorTable
+                .ensureFieldAccessorsInitialized(
+                    org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.class, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.Builder.class);
+          }
+
+          // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.newBuilder()
+          private Builder() {
+
+          }
+
+          private Builder(
+              com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+            super(parent);
+
+          }
+          @java.lang.Override
+          public Builder clear() {
+            super.clear();
+            stdDev_ = 0F;
+
+            skewness_ = 0F;
+
+            kurtosis_ = 0F;
+
+            shapeCorrelation_ = 0F;
+
+            return this;
+          }
+
+          @java.lang.Override
+          public com.google.protobuf.Descriptors.Descriptor
+              getDescriptorForType() {
+            return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_TransitionPeak_PeakShapeValues_descriptor;
+          }
+
+          @java.lang.Override
+          public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues getDefaultInstanceForType() {
+            return org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.getDefaultInstance();
+          }
+
+          @java.lang.Override
+          public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues build() {
+            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues result = buildPartial();
+            if (!result.isInitialized()) {
+              throw newUninitializedMessageException(result);
+            }
+            return result;
+          }
+
+          @java.lang.Override
+          public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues buildPartial() {
+            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues result = new org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues(this);
+            result.stdDev_ = stdDev_;
+            result.skewness_ = skewness_;
+            result.kurtosis_ = kurtosis_;
+            result.shapeCorrelation_ = shapeCorrelation_;
+            onBuilt();
+            return result;
+          }
+
+          @java.lang.Override
+          public Builder clone() {
+            return super.clone();
+          }
+          @java.lang.Override
+          public Builder setField(
+              com.google.protobuf.Descriptors.FieldDescriptor field,
+              java.lang.Object value) {
+            return super.setField(field, value);
+          }
+          @java.lang.Override
+          public Builder clearField(
+              com.google.protobuf.Descriptors.FieldDescriptor field) {
+            return super.clearField(field);
+          }
+          @java.lang.Override
+          public Builder clearOneof(
+              com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+            return super.clearOneof(oneof);
+          }
+          @java.lang.Override
+          public Builder setRepeatedField(
+              com.google.protobuf.Descriptors.FieldDescriptor field,
+              int index, java.lang.Object value) {
+            return super.setRepeatedField(field, index, value);
+          }
+          @java.lang.Override
+          public Builder addRepeatedField(
+              com.google.protobuf.Descriptors.FieldDescriptor field,
+              java.lang.Object value) {
+            return super.addRepeatedField(field, value);
+          }
+          @java.lang.Override
+          public Builder mergeFrom(com.google.protobuf.Message other) {
+            if (other instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues) {
+              return mergeFrom((org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues)other);
+            } else {
+              super.mergeFrom(other);
+              return this;
+            }
+          }
+
+          public Builder mergeFrom(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues other) {
+            if (other == org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.getDefaultInstance()) return this;
+            if (other.getStdDev() != 0F) {
+              setStdDev(other.getStdDev());
+            }
+            if (other.getSkewness() != 0F) {
+              setSkewness(other.getSkewness());
+            }
+            if (other.getKurtosis() != 0F) {
+              setKurtosis(other.getKurtosis());
+            }
+            if (other.getShapeCorrelation() != 0F) {
+              setShapeCorrelation(other.getShapeCorrelation());
+            }
+            this.mergeUnknownFields(other.getUnknownFields());
+            onChanged();
+            return this;
+          }
+
+          @java.lang.Override
+          public final boolean isInitialized() {
+            return true;
+          }
+
+          @java.lang.Override
+          public Builder mergeFrom(
+              com.google.protobuf.CodedInputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws java.io.IOException {
+            if (extensionRegistry == null) {
+              throw new java.lang.NullPointerException();
+            }
+            try {
+              boolean done = false;
+              while (!done) {
+                int tag = input.readTag();
+                switch (tag) {
+                  case 0:
+                    done = true;
+                    break;
+                  case 13: {
+                    stdDev_ = input.readFloat();
+
+                    break;
+                  } // case 13
+                  case 21: {
+                    skewness_ = input.readFloat();
+
+                    break;
+                  } // case 21
+                  case 29: {
+                    kurtosis_ = input.readFloat();
+
+                    break;
+                  } // case 29
+                  case 37: {
+                    shapeCorrelation_ = input.readFloat();
+
+                    break;
+                  } // case 37
+                  default: {
+                    if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                      done = true; // was an endgroup tag
+                    }
+                    break;
+                  } // default:
+                } // switch (tag)
+              } // while (!done)
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              throw e.unwrapIOException();
+            } finally {
+              onChanged();
+            } // finally
+            return this;
+          }
+
+          private float stdDev_ ;
+          /**
+           * <code>float stdDev = 1;</code>
+           * @return The stdDev.
+           */
+          @java.lang.Override
+          public float getStdDev() {
+            return stdDev_;
+          }
+          /**
+           * <code>float stdDev = 1;</code>
+           * @param value The stdDev to set.
+           * @return This builder for chaining.
+           */
+          public Builder setStdDev(float value) {
+            
+            stdDev_ = value;
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>float stdDev = 1;</code>
+           * @return This builder for chaining.
+           */
+          public Builder clearStdDev() {
+            
+            stdDev_ = 0F;
+            onChanged();
+            return this;
+          }
+
+          private float skewness_ ;
+          /**
+           * <code>float skewness = 2;</code>
+           * @return The skewness.
+           */
+          @java.lang.Override
+          public float getSkewness() {
+            return skewness_;
+          }
+          /**
+           * <code>float skewness = 2;</code>
+           * @param value The skewness to set.
+           * @return This builder for chaining.
+           */
+          public Builder setSkewness(float value) {
+            
+            skewness_ = value;
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>float skewness = 2;</code>
+           * @return This builder for chaining.
+           */
+          public Builder clearSkewness() {
+            
+            skewness_ = 0F;
+            onChanged();
+            return this;
+          }
+
+          private float kurtosis_ ;
+          /**
+           * <code>float kurtosis = 3;</code>
+           * @return The kurtosis.
+           */
+          @java.lang.Override
+          public float getKurtosis() {
+            return kurtosis_;
+          }
+          /**
+           * <code>float kurtosis = 3;</code>
+           * @param value The kurtosis to set.
+           * @return This builder for chaining.
+           */
+          public Builder setKurtosis(float value) {
+            
+            kurtosis_ = value;
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>float kurtosis = 3;</code>
+           * @return This builder for chaining.
+           */
+          public Builder clearKurtosis() {
+            
+            kurtosis_ = 0F;
+            onChanged();
+            return this;
+          }
+
+          private float shapeCorrelation_ ;
+          /**
+           * <code>float shapeCorrelation = 4;</code>
+           * @return The shapeCorrelation.
+           */
+          @java.lang.Override
+          public float getShapeCorrelation() {
+            return shapeCorrelation_;
+          }
+          /**
+           * <code>float shapeCorrelation = 4;</code>
+           * @param value The shapeCorrelation to set.
+           * @return This builder for chaining.
+           */
+          public Builder setShapeCorrelation(float value) {
+            
+            shapeCorrelation_ = value;
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>float shapeCorrelation = 4;</code>
+           * @return This builder for chaining.
+           */
+          public Builder clearShapeCorrelation() {
+            
+            shapeCorrelation_ = 0F;
+            onChanged();
+            return this;
+          }
+          @java.lang.Override
+          public final Builder setUnknownFields(
+              final com.google.protobuf.UnknownFieldSet unknownFields) {
+            return super.setUnknownFields(unknownFields);
+          }
+
+          @java.lang.Override
+          public final Builder mergeUnknownFields(
+              final com.google.protobuf.UnknownFieldSet unknownFields) {
+            return super.mergeUnknownFields(unknownFields);
+          }
+
+
+          // @@protoc_insertion_point(builder_scope:SkylineDocumentProto.TransitionPeak.PeakShapeValues)
+        }
+
+        // @@protoc_insertion_point(class_scope:SkylineDocumentProto.TransitionPeak.PeakShapeValues)
+        private static final org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues DEFAULT_INSTANCE;
+        static {
+          DEFAULT_INSTANCE = new org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues();
+        }
+
+        public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues getDefaultInstance() {
+          return DEFAULT_INSTANCE;
+        }
+
+        private static final com.google.protobuf.Parser<PeakShapeValues>
+            PARSER = new com.google.protobuf.AbstractParser<PeakShapeValues>() {
+          @java.lang.Override
+          public PeakShapeValues parsePartialFrom(
+              com.google.protobuf.CodedInputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws com.google.protobuf.InvalidProtocolBufferException {
+            Builder builder = newBuilder();
+            try {
+              builder.mergeFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              throw e.setUnfinishedMessage(builder.buildPartial());
+            } catch (com.google.protobuf.UninitializedMessageException e) {
+              throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+            } catch (java.io.IOException e) {
+              throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                  .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
+          }
+        };
+
+        public static com.google.protobuf.Parser<PeakShapeValues> parser() {
+          return PARSER;
+        }
+
+        @java.lang.Override
+        public com.google.protobuf.Parser<PeakShapeValues> getParserForType() {
+          return PARSER;
+        }
+
+        @java.lang.Override
+        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues getDefaultInstanceForType() {
+          return DEFAULT_INSTANCE;
+        }
+
       }
 
       public static final int REPLICATEINDEX_FIELD_NUMBER = 1;
@@ -2946,9 +3405,9 @@ public final class SkylineDocument {
       }
 
       public static final int MASSERROR_FIELD_NUMBER = 3;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat massError_;
+      private com.google.protobuf.FloatValue massError_;
       /**
-       * <code>.SkylineDocumentProto.OptionalFloat massError = 3;</code>
+       * <code>.google.protobuf.FloatValue massError = 3;</code>
        * @return Whether the massError field is set.
        */
       @java.lang.Override
@@ -2956,18 +3415,18 @@ public final class SkylineDocument {
         return massError_ != null;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalFloat massError = 3;</code>
+       * <code>.google.protobuf.FloatValue massError = 3;</code>
        * @return The massError.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat getMassError() {
-        return massError_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.getDefaultInstance() : massError_;
+      public com.google.protobuf.FloatValue getMassError() {
+        return massError_ == null ? com.google.protobuf.FloatValue.getDefaultInstance() : massError_;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalFloat massError = 3;</code>
+       * <code>.google.protobuf.FloatValue massError = 3;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloatOrBuilder getMassErrorOrBuilder() {
+      public com.google.protobuf.FloatValueOrBuilder getMassErrorOrBuilder() {
         return getMassError();
       }
 
@@ -3005,9 +3464,9 @@ public final class SkylineDocument {
       }
 
       public static final int IONMOBILITY_FIELD_NUMBER = 7;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble ionMobility_;
+      private com.google.protobuf.DoubleValue ionMobility_;
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble ionMobility = 7;</code>
+       * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
        * @return Whether the ionMobility field is set.
        */
       @java.lang.Override
@@ -3015,25 +3474,25 @@ public final class SkylineDocument {
         return ionMobility_ != null;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble ionMobility = 7;</code>
+       * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
        * @return The ionMobility.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getIonMobility() {
-        return ionMobility_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : ionMobility_;
+      public com.google.protobuf.DoubleValue getIonMobility() {
+        return ionMobility_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : ionMobility_;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble ionMobility = 7;</code>
+       * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getIonMobilityOrBuilder() {
+      public com.google.protobuf.DoubleValueOrBuilder getIonMobilityOrBuilder() {
         return getIonMobility();
       }
 
       public static final int IONMOBILITYWINDOW_FIELD_NUMBER = 8;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble ionMobilityWindow_;
+      private com.google.protobuf.DoubleValue ionMobilityWindow_;
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble ionMobilityWindow = 8;</code>
+       * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
        * @return Whether the ionMobilityWindow field is set.
        */
       @java.lang.Override
@@ -3041,18 +3500,18 @@ public final class SkylineDocument {
         return ionMobilityWindow_ != null;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble ionMobilityWindow = 8;</code>
+       * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
        * @return The ionMobilityWindow.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getIonMobilityWindow() {
-        return ionMobilityWindow_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : ionMobilityWindow_;
+      public com.google.protobuf.DoubleValue getIonMobilityWindow() {
+        return ionMobilityWindow_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : ionMobilityWindow_;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble ionMobilityWindow = 8;</code>
+       * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getIonMobilityWindowOrBuilder() {
+      public com.google.protobuf.DoubleValueOrBuilder getIonMobilityWindowOrBuilder() {
         return getIonMobilityWindow();
       }
 
@@ -3264,6 +3723,58 @@ public final class SkylineDocument {
         return forcedIntegration_;
       }
 
+      public static final int PEAKSHAPEVALUES_FIELD_NUMBER = 26;
+      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues_;
+      /**
+       * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
+       * @return Whether the peakShapeValues field is set.
+       */
+      @java.lang.Override
+      public boolean hasPeakShapeValues() {
+        return peakShapeValues_ != null;
+      }
+      /**
+       * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
+       * @return The peakShapeValues.
+       */
+      @java.lang.Override
+      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues getPeakShapeValues() {
+        return peakShapeValues_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.getDefaultInstance() : peakShapeValues_;
+      }
+      /**
+       * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
+       */
+      @java.lang.Override
+      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValuesOrBuilder getPeakShapeValuesOrBuilder() {
+        return getPeakShapeValues();
+      }
+
+      public static final int IONMOBILITYCOLLISIONCROSSSECTION_FIELD_NUMBER = 27;
+      private com.google.protobuf.DoubleValue ionMobilityCollisionCrossSection_;
+      /**
+       * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
+       * @return Whether the ionMobilityCollisionCrossSection field is set.
+       */
+      @java.lang.Override
+      public boolean hasIonMobilityCollisionCrossSection() {
+        return ionMobilityCollisionCrossSection_ != null;
+      }
+      /**
+       * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
+       * @return The ionMobilityCollisionCrossSection.
+       */
+      @java.lang.Override
+      public com.google.protobuf.DoubleValue getIonMobilityCollisionCrossSection() {
+        return ionMobilityCollisionCrossSection_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : ionMobilityCollisionCrossSection_;
+      }
+      /**
+       * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
+       */
+      @java.lang.Override
+      public com.google.protobuf.DoubleValueOrBuilder getIonMobilityCollisionCrossSectionOrBuilder() {
+        return getIonMobilityCollisionCrossSection();
+      }
+
       private byte memoizedIsInitialized = -1;
       @java.lang.Override
       public final boolean isInitialized() {
@@ -3287,13 +3798,13 @@ public final class SkylineDocument {
         if (massError_ != null) {
           output.writeMessage(3, getMassError());
         }
-        if (retentionTime_ != 0F) {
+        if (java.lang.Float.floatToRawIntBits(retentionTime_) != 0) {
           output.writeFloat(4, retentionTime_);
         }
-        if (startRetentionTime_ != 0F) {
+        if (java.lang.Float.floatToRawIntBits(startRetentionTime_) != 0) {
           output.writeFloat(5, startRetentionTime_);
         }
-        if (endRetentionTime_ != 0F) {
+        if (java.lang.Float.floatToRawIntBits(endRetentionTime_) != 0) {
           output.writeFloat(6, endRetentionTime_);
         }
         if (ionMobility_ != null) {
@@ -3302,16 +3813,16 @@ public final class SkylineDocument {
         if (ionMobilityWindow_ != null) {
           output.writeMessage(8, getIonMobilityWindow());
         }
-        if (area_ != 0F) {
+        if (java.lang.Float.floatToRawIntBits(area_) != 0) {
           output.writeFloat(9, area_);
         }
-        if (backgroundArea_ != 0F) {
+        if (java.lang.Float.floatToRawIntBits(backgroundArea_) != 0) {
           output.writeFloat(10, backgroundArea_);
         }
-        if (height_ != 0F) {
+        if (java.lang.Float.floatToRawIntBits(height_) != 0) {
           output.writeFloat(11, height_);
         }
-        if (fwhm_ != 0F) {
+        if (java.lang.Float.floatToRawIntBits(fwhm_) != 0) {
           output.writeFloat(12, fwhm_);
         }
         if (isFwhmDegenerate_ != false) {
@@ -3344,7 +3855,13 @@ public final class SkylineDocument {
         if (forcedIntegration_ != false) {
           output.writeBool(25, forcedIntegration_);
         }
-        unknownFields.writeTo(output);
+        if (peakShapeValues_ != null) {
+          output.writeMessage(26, getPeakShapeValues());
+        }
+        if (ionMobilityCollisionCrossSection_ != null) {
+          output.writeMessage(27, getIonMobilityCollisionCrossSection());
+        }
+        getUnknownFields().writeTo(output);
       }
 
       @java.lang.Override
@@ -3365,15 +3882,15 @@ public final class SkylineDocument {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(3, getMassError());
         }
-        if (retentionTime_ != 0F) {
+        if (java.lang.Float.floatToRawIntBits(retentionTime_) != 0) {
           size += com.google.protobuf.CodedOutputStream
             .computeFloatSize(4, retentionTime_);
         }
-        if (startRetentionTime_ != 0F) {
+        if (java.lang.Float.floatToRawIntBits(startRetentionTime_) != 0) {
           size += com.google.protobuf.CodedOutputStream
             .computeFloatSize(5, startRetentionTime_);
         }
-        if (endRetentionTime_ != 0F) {
+        if (java.lang.Float.floatToRawIntBits(endRetentionTime_) != 0) {
           size += com.google.protobuf.CodedOutputStream
             .computeFloatSize(6, endRetentionTime_);
         }
@@ -3385,19 +3902,19 @@ public final class SkylineDocument {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(8, getIonMobilityWindow());
         }
-        if (area_ != 0F) {
+        if (java.lang.Float.floatToRawIntBits(area_) != 0) {
           size += com.google.protobuf.CodedOutputStream
             .computeFloatSize(9, area_);
         }
-        if (backgroundArea_ != 0F) {
+        if (java.lang.Float.floatToRawIntBits(backgroundArea_) != 0) {
           size += com.google.protobuf.CodedOutputStream
             .computeFloatSize(10, backgroundArea_);
         }
-        if (height_ != 0F) {
+        if (java.lang.Float.floatToRawIntBits(height_) != 0) {
           size += com.google.protobuf.CodedOutputStream
             .computeFloatSize(11, height_);
         }
-        if (fwhm_ != 0F) {
+        if (java.lang.Float.floatToRawIntBits(fwhm_) != 0) {
           size += com.google.protobuf.CodedOutputStream
             .computeFloatSize(12, fwhm_);
         }
@@ -3441,7 +3958,15 @@ public final class SkylineDocument {
           size += com.google.protobuf.CodedOutputStream
             .computeBoolSize(25, forcedIntegration_);
         }
-        size += unknownFields.getSerializedSize();
+        if (peakShapeValues_ != null) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(26, getPeakShapeValues());
+        }
+        if (ionMobilityCollisionCrossSection_ != null) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(27, getIonMobilityCollisionCrossSection());
+        }
+        size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
         return size;
       }
@@ -3519,7 +4044,17 @@ public final class SkylineDocument {
         }
         if (getForcedIntegration()
             != other.getForcedIntegration()) return false;
-        if (!unknownFields.equals(other.unknownFields)) return false;
+        if (hasPeakShapeValues() != other.hasPeakShapeValues()) return false;
+        if (hasPeakShapeValues()) {
+          if (!getPeakShapeValues()
+              .equals(other.getPeakShapeValues())) return false;
+        }
+        if (hasIonMobilityCollisionCrossSection() != other.hasIonMobilityCollisionCrossSection()) return false;
+        if (hasIonMobilityCollisionCrossSection()) {
+          if (!getIonMobilityCollisionCrossSection()
+              .equals(other.getIonMobilityCollisionCrossSection())) return false;
+        }
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
       }
 
@@ -3593,7 +4128,15 @@ public final class SkylineDocument {
         hash = (37 * hash) + FORCEDINTEGRATION_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
             getForcedIntegration());
-        hash = (29 * hash) + unknownFields.hashCode();
+        if (hasPeakShapeValues()) {
+          hash = (37 * hash) + PEAKSHAPEVALUES_FIELD_NUMBER;
+          hash = (53 * hash) + getPeakShapeValues().hashCode();
+        }
+        if (hasIonMobilityCollisionCrossSection()) {
+          hash = (37 * hash) + IONMOBILITYCOLLISIONCROSSSECTION_FIELD_NUMBER;
+          hash = (53 * hash) + getIonMobilityCollisionCrossSection().hashCode();
+        }
+        hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
       }
@@ -3710,18 +4253,13 @@ public final class SkylineDocument {
 
         // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.newBuilder()
         private Builder() {
-          maybeForceBuilderInitialization();
+
         }
 
         private Builder(
             com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-          }
+
         }
         @java.lang.Override
         public Builder clear() {
@@ -3790,6 +4328,18 @@ public final class SkylineDocument {
           }
           forcedIntegration_ = false;
 
+          if (peakShapeValuesBuilder_ == null) {
+            peakShapeValues_ = null;
+          } else {
+            peakShapeValues_ = null;
+            peakShapeValuesBuilder_ = null;
+          }
+          if (ionMobilityCollisionCrossSectionBuilder_ == null) {
+            ionMobilityCollisionCrossSection_ = null;
+          } else {
+            ionMobilityCollisionCrossSection_ = null;
+            ionMobilityCollisionCrossSectionBuilder_ = null;
+          }
           return this;
         }
 
@@ -3858,6 +4408,16 @@ public final class SkylineDocument {
             result.annotations_ = annotationsBuilder_.build();
           }
           result.forcedIntegration_ = forcedIntegration_;
+          if (peakShapeValuesBuilder_ == null) {
+            result.peakShapeValues_ = peakShapeValues_;
+          } else {
+            result.peakShapeValues_ = peakShapeValuesBuilder_.build();
+          }
+          if (ionMobilityCollisionCrossSectionBuilder_ == null) {
+            result.ionMobilityCollisionCrossSection_ = ionMobilityCollisionCrossSection_;
+          } else {
+            result.ionMobilityCollisionCrossSection_ = ionMobilityCollisionCrossSectionBuilder_.build();
+          }
           onBuilt();
           return result;
         }
@@ -3972,7 +4532,13 @@ public final class SkylineDocument {
           if (other.getForcedIntegration() != false) {
             setForcedIntegration(other.getForcedIntegration());
           }
-          this.mergeUnknownFields(other.unknownFields);
+          if (other.hasPeakShapeValues()) {
+            mergePeakShapeValues(other.getPeakShapeValues());
+          }
+          if (other.hasIonMobilityCollisionCrossSection()) {
+            mergeIonMobilityCollisionCrossSection(other.getIonMobilityCollisionCrossSection());
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
           onChanged();
           return this;
         }
@@ -3987,17 +4553,164 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak parsedMessage = null;
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
           try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 8: {
+                  replicateIndex_ = input.readInt32();
+
+                  break;
+                } // case 8
+                case 16: {
+                  fileIndexInReplicate_ = input.readInt32();
+
+                  break;
+                } // case 16
+                case 26: {
+                  input.readMessage(
+                      getMassErrorFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 26
+                case 37: {
+                  retentionTime_ = input.readFloat();
+
+                  break;
+                } // case 37
+                case 45: {
+                  startRetentionTime_ = input.readFloat();
+
+                  break;
+                } // case 45
+                case 53: {
+                  endRetentionTime_ = input.readFloat();
+
+                  break;
+                } // case 53
+                case 58: {
+                  input.readMessage(
+                      getIonMobilityFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 58
+                case 66: {
+                  input.readMessage(
+                      getIonMobilityWindowFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 66
+                case 77: {
+                  area_ = input.readFloat();
+
+                  break;
+                } // case 77
+                case 85: {
+                  backgroundArea_ = input.readFloat();
+
+                  break;
+                } // case 85
+                case 93: {
+                  height_ = input.readFloat();
+
+                  break;
+                } // case 93
+                case 101: {
+                  fwhm_ = input.readFloat();
+
+                  break;
+                } // case 101
+                case 104: {
+                  isFwhmDegenerate_ = input.readBool();
+
+                  break;
+                } // case 104
+                case 112: {
+                  truncated_ = input.readEnum();
+
+                  break;
+                } // case 112
+                case 120: {
+                  identified_ = input.readEnum();
+
+                  break;
+                } // case 120
+                case 128: {
+                  rank_ = input.readInt32();
+
+                  break;
+                } // case 128
+                case 136: {
+                  rankByLevel_ = input.readInt32();
+
+                  break;
+                } // case 136
+                case 146: {
+                  input.readMessage(
+                      getPointsAcrossPeakFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 146
+                case 152: {
+                  userSet_ = input.readEnum();
+
+                  break;
+                } // case 152
+                case 184: {
+                  optimizationStep_ = input.readSInt32();
+
+                  break;
+                } // case 184
+                case 194: {
+                  input.readMessage(
+                      getAnnotationsFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 194
+                case 200: {
+                  forcedIntegration_ = input.readBool();
+
+                  break;
+                } // case 200
+                case 210: {
+                  input.readMessage(
+                      getPeakShapeValuesFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 210
+                case 218: {
+                  input.readMessage(
+                      getIonMobilityCollisionCrossSectionFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 218
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
+            onChanged();
+          } // finally
           return this;
         }
 
@@ -4063,31 +4776,31 @@ public final class SkylineDocument {
           return this;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat massError_;
+        private com.google.protobuf.FloatValue massError_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloatOrBuilder> massErrorBuilder_;
+            com.google.protobuf.FloatValue, com.google.protobuf.FloatValue.Builder, com.google.protobuf.FloatValueOrBuilder> massErrorBuilder_;
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat massError = 3;</code>
+         * <code>.google.protobuf.FloatValue massError = 3;</code>
          * @return Whether the massError field is set.
          */
         public boolean hasMassError() {
           return massErrorBuilder_ != null || massError_ != null;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat massError = 3;</code>
+         * <code>.google.protobuf.FloatValue massError = 3;</code>
          * @return The massError.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat getMassError() {
+        public com.google.protobuf.FloatValue getMassError() {
           if (massErrorBuilder_ == null) {
-            return massError_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.getDefaultInstance() : massError_;
+            return massError_ == null ? com.google.protobuf.FloatValue.getDefaultInstance() : massError_;
           } else {
             return massErrorBuilder_.getMessage();
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat massError = 3;</code>
+         * <code>.google.protobuf.FloatValue massError = 3;</code>
          */
-        public Builder setMassError(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat value) {
+        public Builder setMassError(com.google.protobuf.FloatValue value) {
           if (massErrorBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -4101,10 +4814,10 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat massError = 3;</code>
+         * <code>.google.protobuf.FloatValue massError = 3;</code>
          */
         public Builder setMassError(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.Builder builderForValue) {
+            com.google.protobuf.FloatValue.Builder builderForValue) {
           if (massErrorBuilder_ == null) {
             massError_ = builderForValue.build();
             onChanged();
@@ -4115,13 +4828,13 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat massError = 3;</code>
+         * <code>.google.protobuf.FloatValue massError = 3;</code>
          */
-        public Builder mergeMassError(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat value) {
+        public Builder mergeMassError(com.google.protobuf.FloatValue value) {
           if (massErrorBuilder_ == null) {
             if (massError_ != null) {
               massError_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.newBuilder(massError_).mergeFrom(value).buildPartial();
+                com.google.protobuf.FloatValue.newBuilder(massError_).mergeFrom(value).buildPartial();
             } else {
               massError_ = value;
             }
@@ -4133,7 +4846,7 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat massError = 3;</code>
+         * <code>.google.protobuf.FloatValue massError = 3;</code>
          */
         public Builder clearMassError() {
           if (massErrorBuilder_ == null) {
@@ -4147,33 +4860,33 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat massError = 3;</code>
+         * <code>.google.protobuf.FloatValue massError = 3;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.Builder getMassErrorBuilder() {
+        public com.google.protobuf.FloatValue.Builder getMassErrorBuilder() {
           
           onChanged();
           return getMassErrorFieldBuilder().getBuilder();
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat massError = 3;</code>
+         * <code>.google.protobuf.FloatValue massError = 3;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloatOrBuilder getMassErrorOrBuilder() {
+        public com.google.protobuf.FloatValueOrBuilder getMassErrorOrBuilder() {
           if (massErrorBuilder_ != null) {
             return massErrorBuilder_.getMessageOrBuilder();
           } else {
             return massError_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.getDefaultInstance() : massError_;
+                com.google.protobuf.FloatValue.getDefaultInstance() : massError_;
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat massError = 3;</code>
+         * <code>.google.protobuf.FloatValue massError = 3;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloatOrBuilder> 
+            com.google.protobuf.FloatValue, com.google.protobuf.FloatValue.Builder, com.google.protobuf.FloatValueOrBuilder> 
             getMassErrorFieldBuilder() {
           if (massErrorBuilder_ == null) {
             massErrorBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloatOrBuilder>(
+                com.google.protobuf.FloatValue, com.google.protobuf.FloatValue.Builder, com.google.protobuf.FloatValueOrBuilder>(
                     getMassError(),
                     getParentForChildren(),
                     isClean());
@@ -4275,31 +4988,31 @@ public final class SkylineDocument {
           return this;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble ionMobility_;
+        private com.google.protobuf.DoubleValue ionMobility_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> ionMobilityBuilder_;
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> ionMobilityBuilder_;
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobility = 7;</code>
+         * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
          * @return Whether the ionMobility field is set.
          */
         public boolean hasIonMobility() {
           return ionMobilityBuilder_ != null || ionMobility_ != null;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobility = 7;</code>
+         * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
          * @return The ionMobility.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getIonMobility() {
+        public com.google.protobuf.DoubleValue getIonMobility() {
           if (ionMobilityBuilder_ == null) {
-            return ionMobility_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : ionMobility_;
+            return ionMobility_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : ionMobility_;
           } else {
             return ionMobilityBuilder_.getMessage();
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobility = 7;</code>
+         * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
          */
-        public Builder setIonMobility(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder setIonMobility(com.google.protobuf.DoubleValue value) {
           if (ionMobilityBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -4313,10 +5026,10 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobility = 7;</code>
+         * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
          */
         public Builder setIonMobility(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder builderForValue) {
+            com.google.protobuf.DoubleValue.Builder builderForValue) {
           if (ionMobilityBuilder_ == null) {
             ionMobility_ = builderForValue.build();
             onChanged();
@@ -4327,13 +5040,13 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobility = 7;</code>
+         * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
          */
-        public Builder mergeIonMobility(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder mergeIonMobility(com.google.protobuf.DoubleValue value) {
           if (ionMobilityBuilder_ == null) {
             if (ionMobility_ != null) {
               ionMobility_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.newBuilder(ionMobility_).mergeFrom(value).buildPartial();
+                com.google.protobuf.DoubleValue.newBuilder(ionMobility_).mergeFrom(value).buildPartial();
             } else {
               ionMobility_ = value;
             }
@@ -4345,7 +5058,7 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobility = 7;</code>
+         * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
          */
         public Builder clearIonMobility() {
           if (ionMobilityBuilder_ == null) {
@@ -4359,33 +5072,33 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobility = 7;</code>
+         * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder getIonMobilityBuilder() {
+        public com.google.protobuf.DoubleValue.Builder getIonMobilityBuilder() {
           
           onChanged();
           return getIonMobilityFieldBuilder().getBuilder();
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobility = 7;</code>
+         * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getIonMobilityOrBuilder() {
+        public com.google.protobuf.DoubleValueOrBuilder getIonMobilityOrBuilder() {
           if (ionMobilityBuilder_ != null) {
             return ionMobilityBuilder_.getMessageOrBuilder();
           } else {
             return ionMobility_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : ionMobility_;
+                com.google.protobuf.DoubleValue.getDefaultInstance() : ionMobility_;
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobility = 7;</code>
+         * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> 
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getIonMobilityFieldBuilder() {
           if (ionMobilityBuilder_ == null) {
             ionMobilityBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder>(
+                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
                     getIonMobility(),
                     getParentForChildren(),
                     isClean());
@@ -4394,31 +5107,31 @@ public final class SkylineDocument {
           return ionMobilityBuilder_;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble ionMobilityWindow_;
+        private com.google.protobuf.DoubleValue ionMobilityWindow_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> ionMobilityWindowBuilder_;
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> ionMobilityWindowBuilder_;
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobilityWindow = 8;</code>
+         * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
          * @return Whether the ionMobilityWindow field is set.
          */
         public boolean hasIonMobilityWindow() {
           return ionMobilityWindowBuilder_ != null || ionMobilityWindow_ != null;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobilityWindow = 8;</code>
+         * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
          * @return The ionMobilityWindow.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getIonMobilityWindow() {
+        public com.google.protobuf.DoubleValue getIonMobilityWindow() {
           if (ionMobilityWindowBuilder_ == null) {
-            return ionMobilityWindow_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : ionMobilityWindow_;
+            return ionMobilityWindow_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : ionMobilityWindow_;
           } else {
             return ionMobilityWindowBuilder_.getMessage();
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobilityWindow = 8;</code>
+         * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
          */
-        public Builder setIonMobilityWindow(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder setIonMobilityWindow(com.google.protobuf.DoubleValue value) {
           if (ionMobilityWindowBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -4432,10 +5145,10 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobilityWindow = 8;</code>
+         * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
          */
         public Builder setIonMobilityWindow(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder builderForValue) {
+            com.google.protobuf.DoubleValue.Builder builderForValue) {
           if (ionMobilityWindowBuilder_ == null) {
             ionMobilityWindow_ = builderForValue.build();
             onChanged();
@@ -4446,13 +5159,13 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobilityWindow = 8;</code>
+         * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
          */
-        public Builder mergeIonMobilityWindow(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder mergeIonMobilityWindow(com.google.protobuf.DoubleValue value) {
           if (ionMobilityWindowBuilder_ == null) {
             if (ionMobilityWindow_ != null) {
               ionMobilityWindow_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.newBuilder(ionMobilityWindow_).mergeFrom(value).buildPartial();
+                com.google.protobuf.DoubleValue.newBuilder(ionMobilityWindow_).mergeFrom(value).buildPartial();
             } else {
               ionMobilityWindow_ = value;
             }
@@ -4464,7 +5177,7 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobilityWindow = 8;</code>
+         * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
          */
         public Builder clearIonMobilityWindow() {
           if (ionMobilityWindowBuilder_ == null) {
@@ -4478,33 +5191,33 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobilityWindow = 8;</code>
+         * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder getIonMobilityWindowBuilder() {
+        public com.google.protobuf.DoubleValue.Builder getIonMobilityWindowBuilder() {
           
           onChanged();
           return getIonMobilityWindowFieldBuilder().getBuilder();
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobilityWindow = 8;</code>
+         * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getIonMobilityWindowOrBuilder() {
+        public com.google.protobuf.DoubleValueOrBuilder getIonMobilityWindowOrBuilder() {
           if (ionMobilityWindowBuilder_ != null) {
             return ionMobilityWindowBuilder_.getMessageOrBuilder();
           } else {
             return ionMobilityWindow_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : ionMobilityWindow_;
+                com.google.protobuf.DoubleValue.getDefaultInstance() : ionMobilityWindow_;
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble ionMobilityWindow = 8;</code>
+         * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> 
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getIonMobilityWindowFieldBuilder() {
           if (ionMobilityWindowBuilder_ == null) {
             ionMobilityWindowBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder>(
+                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
                     getIonMobilityWindow(),
                     getParentForChildren(),
                     isClean());
@@ -5191,6 +5904,244 @@ public final class SkylineDocument {
           onChanged();
           return this;
         }
+
+        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues_;
+        private com.google.protobuf.SingleFieldBuilderV3<
+            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValuesOrBuilder> peakShapeValuesBuilder_;
+        /**
+         * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
+         * @return Whether the peakShapeValues field is set.
+         */
+        public boolean hasPeakShapeValues() {
+          return peakShapeValuesBuilder_ != null || peakShapeValues_ != null;
+        }
+        /**
+         * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
+         * @return The peakShapeValues.
+         */
+        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues getPeakShapeValues() {
+          if (peakShapeValuesBuilder_ == null) {
+            return peakShapeValues_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.getDefaultInstance() : peakShapeValues_;
+          } else {
+            return peakShapeValuesBuilder_.getMessage();
+          }
+        }
+        /**
+         * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
+         */
+        public Builder setPeakShapeValues(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues value) {
+          if (peakShapeValuesBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            peakShapeValues_ = value;
+            onChanged();
+          } else {
+            peakShapeValuesBuilder_.setMessage(value);
+          }
+
+          return this;
+        }
+        /**
+         * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
+         */
+        public Builder setPeakShapeValues(
+            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.Builder builderForValue) {
+          if (peakShapeValuesBuilder_ == null) {
+            peakShapeValues_ = builderForValue.build();
+            onChanged();
+          } else {
+            peakShapeValuesBuilder_.setMessage(builderForValue.build());
+          }
+
+          return this;
+        }
+        /**
+         * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
+         */
+        public Builder mergePeakShapeValues(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues value) {
+          if (peakShapeValuesBuilder_ == null) {
+            if (peakShapeValues_ != null) {
+              peakShapeValues_ =
+                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.newBuilder(peakShapeValues_).mergeFrom(value).buildPartial();
+            } else {
+              peakShapeValues_ = value;
+            }
+            onChanged();
+          } else {
+            peakShapeValuesBuilder_.mergeFrom(value);
+          }
+
+          return this;
+        }
+        /**
+         * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
+         */
+        public Builder clearPeakShapeValues() {
+          if (peakShapeValuesBuilder_ == null) {
+            peakShapeValues_ = null;
+            onChanged();
+          } else {
+            peakShapeValues_ = null;
+            peakShapeValuesBuilder_ = null;
+          }
+
+          return this;
+        }
+        /**
+         * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
+         */
+        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.Builder getPeakShapeValuesBuilder() {
+          
+          onChanged();
+          return getPeakShapeValuesFieldBuilder().getBuilder();
+        }
+        /**
+         * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
+         */
+        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValuesOrBuilder getPeakShapeValuesOrBuilder() {
+          if (peakShapeValuesBuilder_ != null) {
+            return peakShapeValuesBuilder_.getMessageOrBuilder();
+          } else {
+            return peakShapeValues_ == null ?
+                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.getDefaultInstance() : peakShapeValues_;
+          }
+        }
+        /**
+         * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
+         */
+        private com.google.protobuf.SingleFieldBuilderV3<
+            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValuesOrBuilder> 
+            getPeakShapeValuesFieldBuilder() {
+          if (peakShapeValuesBuilder_ == null) {
+            peakShapeValuesBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValuesOrBuilder>(
+                    getPeakShapeValues(),
+                    getParentForChildren(),
+                    isClean());
+            peakShapeValues_ = null;
+          }
+          return peakShapeValuesBuilder_;
+        }
+
+        private com.google.protobuf.DoubleValue ionMobilityCollisionCrossSection_;
+        private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> ionMobilityCollisionCrossSectionBuilder_;
+        /**
+         * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
+         * @return Whether the ionMobilityCollisionCrossSection field is set.
+         */
+        public boolean hasIonMobilityCollisionCrossSection() {
+          return ionMobilityCollisionCrossSectionBuilder_ != null || ionMobilityCollisionCrossSection_ != null;
+        }
+        /**
+         * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
+         * @return The ionMobilityCollisionCrossSection.
+         */
+        public com.google.protobuf.DoubleValue getIonMobilityCollisionCrossSection() {
+          if (ionMobilityCollisionCrossSectionBuilder_ == null) {
+            return ionMobilityCollisionCrossSection_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : ionMobilityCollisionCrossSection_;
+          } else {
+            return ionMobilityCollisionCrossSectionBuilder_.getMessage();
+          }
+        }
+        /**
+         * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
+         */
+        public Builder setIonMobilityCollisionCrossSection(com.google.protobuf.DoubleValue value) {
+          if (ionMobilityCollisionCrossSectionBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ionMobilityCollisionCrossSection_ = value;
+            onChanged();
+          } else {
+            ionMobilityCollisionCrossSectionBuilder_.setMessage(value);
+          }
+
+          return this;
+        }
+        /**
+         * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
+         */
+        public Builder setIonMobilityCollisionCrossSection(
+            com.google.protobuf.DoubleValue.Builder builderForValue) {
+          if (ionMobilityCollisionCrossSectionBuilder_ == null) {
+            ionMobilityCollisionCrossSection_ = builderForValue.build();
+            onChanged();
+          } else {
+            ionMobilityCollisionCrossSectionBuilder_.setMessage(builderForValue.build());
+          }
+
+          return this;
+        }
+        /**
+         * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
+         */
+        public Builder mergeIonMobilityCollisionCrossSection(com.google.protobuf.DoubleValue value) {
+          if (ionMobilityCollisionCrossSectionBuilder_ == null) {
+            if (ionMobilityCollisionCrossSection_ != null) {
+              ionMobilityCollisionCrossSection_ =
+                com.google.protobuf.DoubleValue.newBuilder(ionMobilityCollisionCrossSection_).mergeFrom(value).buildPartial();
+            } else {
+              ionMobilityCollisionCrossSection_ = value;
+            }
+            onChanged();
+          } else {
+            ionMobilityCollisionCrossSectionBuilder_.mergeFrom(value);
+          }
+
+          return this;
+        }
+        /**
+         * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
+         */
+        public Builder clearIonMobilityCollisionCrossSection() {
+          if (ionMobilityCollisionCrossSectionBuilder_ == null) {
+            ionMobilityCollisionCrossSection_ = null;
+            onChanged();
+          } else {
+            ionMobilityCollisionCrossSection_ = null;
+            ionMobilityCollisionCrossSectionBuilder_ = null;
+          }
+
+          return this;
+        }
+        /**
+         * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
+         */
+        public com.google.protobuf.DoubleValue.Builder getIonMobilityCollisionCrossSectionBuilder() {
+          
+          onChanged();
+          return getIonMobilityCollisionCrossSectionFieldBuilder().getBuilder();
+        }
+        /**
+         * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
+         */
+        public com.google.protobuf.DoubleValueOrBuilder getIonMobilityCollisionCrossSectionOrBuilder() {
+          if (ionMobilityCollisionCrossSectionBuilder_ != null) {
+            return ionMobilityCollisionCrossSectionBuilder_.getMessageOrBuilder();
+          } else {
+            return ionMobilityCollisionCrossSection_ == null ?
+                com.google.protobuf.DoubleValue.getDefaultInstance() : ionMobilityCollisionCrossSection_;
+          }
+        }
+        /**
+         * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
+         */
+        private com.google.protobuf.SingleFieldBuilderV3<
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
+            getIonMobilityCollisionCrossSectionFieldBuilder() {
+          if (ionMobilityCollisionCrossSectionBuilder_ == null) {
+            ionMobilityCollisionCrossSectionBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
+                    getIonMobilityCollisionCrossSection(),
+                    getParentForChildren(),
+                    isClean());
+            ionMobilityCollisionCrossSection_ = null;
+          }
+          return ionMobilityCollisionCrossSectionBuilder_;
+        }
         @java.lang.Override
         public final Builder setUnknownFields(
             final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -5224,7 +6175,18 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TransitionPeak(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
@@ -5300,56 +6262,6 @@ public final class SkylineDocument {
       getUnknownFields() {
         return this.unknownFields;
       }
-      private TransitionResults(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        int mutable_bitField0_ = 0;
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                  peaks_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak>();
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                peaks_.add(
-                    input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.parser(), extensionRegistry));
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          if (((mutable_bitField0_ & 0x00000001) != 0)) {
-            peaks_ = java.util.Collections.unmodifiableList(peaks_);
-          }
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_TransitionResults_descriptor;
@@ -5420,7 +6332,7 @@ public final class SkylineDocument {
         for (int i = 0; i < peaks_.size(); i++) {
           output.writeMessage(1, peaks_.get(i));
         }
-        unknownFields.writeTo(output);
+        getUnknownFields().writeTo(output);
       }
 
       @java.lang.Override
@@ -5433,7 +6345,7 @@ public final class SkylineDocument {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(1, peaks_.get(i));
         }
-        size += unknownFields.getSerializedSize();
+        size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
         return size;
       }
@@ -5450,7 +6362,7 @@ public final class SkylineDocument {
 
         if (!getPeaksList()
             .equals(other.getPeaksList())) return false;
-        if (!unknownFields.equals(other.unknownFields)) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
       }
 
@@ -5465,7 +6377,7 @@ public final class SkylineDocument {
           hash = (37 * hash) + PEAKS_FIELD_NUMBER;
           hash = (53 * hash) + getPeaksList().hashCode();
         }
-        hash = (29 * hash) + unknownFields.hashCode();
+        hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
       }
@@ -5582,29 +6494,24 @@ public final class SkylineDocument {
 
         // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResults.newBuilder()
         private Builder() {
-          maybeForceBuilderInitialization();
+
         }
 
         private Builder(
             com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-            getPeaksFieldBuilder();
-          }
+
         }
         @java.lang.Override
         public Builder clear() {
           super.clear();
           if (peaksBuilder_ == null) {
             peaks_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000001);
           } else {
+            peaks_ = null;
             peaksBuilder_.clear();
           }
+          bitField0_ = (bitField0_ & ~0x00000001);
           return this;
         }
 
@@ -5715,7 +6622,7 @@ public final class SkylineDocument {
               }
             }
           }
-          this.mergeUnknownFields(other.unknownFields);
+          this.mergeUnknownFields(other.getUnknownFields());
           onChanged();
           return this;
         }
@@ -5730,17 +6637,43 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResults parsedMessage = null;
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
           try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 10: {
+                  org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak m =
+                      input.readMessage(
+                          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.parser(),
+                          extensionRegistry);
+                  if (peaksBuilder_ == null) {
+                    ensurePeaksIsMutable();
+                    peaks_.add(m);
+                  } else {
+                    peaksBuilder_.addMessage(m);
+                  }
+                  break;
+                } // case 10
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResults) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
+            onChanged();
+          } // finally
           return this;
         }
         private int bitField0_;
@@ -6017,7 +6950,18 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TransitionResults(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
@@ -6042,26 +6986,26 @@ public final class SkylineDocument {
         com.google.protobuf.MessageOrBuilder {
 
       /**
-       * <code>.SkylineDocumentProto.OptionalString formula = 1;</code>
+       * <code>.google.protobuf.StringValue formula = 1;</code>
        * @return Whether the formula field is set.
        */
       boolean hasFormula();
       /**
-       * <code>.SkylineDocumentProto.OptionalString formula = 1;</code>
+       * <code>.google.protobuf.StringValue formula = 1;</code>
        * @return The formula.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getFormula();
+      com.google.protobuf.StringValue getFormula();
       /**
-       * <code>.SkylineDocumentProto.OptionalString formula = 1;</code>
+       * <code>.google.protobuf.StringValue formula = 1;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder getFormulaOrBuilder();
+      com.google.protobuf.StringValueOrBuilder getFormulaOrBuilder();
 
       /**
        * <pre>
        * See also: averageMass = 27;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalDouble averageMassH = 2;</code>
+       * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
        * @return Whether the averageMassH field is set.
        */
       boolean hasAverageMassH();
@@ -6070,25 +7014,25 @@ public final class SkylineDocument {
        * See also: averageMass = 27;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalDouble averageMassH = 2;</code>
+       * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
        * @return The averageMassH.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getAverageMassH();
+      com.google.protobuf.DoubleValue getAverageMassH();
       /**
        * <pre>
        * See also: averageMass = 27;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalDouble averageMassH = 2;</code>
+       * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getAverageMassHOrBuilder();
+      com.google.protobuf.DoubleValueOrBuilder getAverageMassHOrBuilder();
 
       /**
        * <pre>
        * See also:  monoMass = 28;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalDouble monoMassH = 3;</code>
+       * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
        * @return Whether the monoMassH field is set.
        */
       boolean hasMonoMassH();
@@ -6097,25 +7041,25 @@ public final class SkylineDocument {
        * See also:  monoMass = 28;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalDouble monoMassH = 3;</code>
+       * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
        * @return The monoMassH.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getMonoMassH();
+      com.google.protobuf.DoubleValue getMonoMassH();
       /**
        * <pre>
        * See also:  monoMass = 28;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalDouble monoMassH = 3;</code>
+       * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getMonoMassHOrBuilder();
+      com.google.protobuf.DoubleValueOrBuilder getMonoMassHOrBuilder();
 
       /**
        * <pre>
        * See also: custom_ion_id = 30;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalString custom_ion_name = 6;</code>
+       * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
        * @return Whether the customIonName field is set.
        */
       boolean hasCustomIonName();
@@ -6124,33 +7068,33 @@ public final class SkylineDocument {
        * See also: custom_ion_id = 30;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalString custom_ion_name = 6;</code>
+       * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
        * @return The customIonName.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getCustomIonName();
+      com.google.protobuf.StringValue getCustomIonName();
       /**
        * <pre>
        * See also: custom_ion_id = 30;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalString custom_ion_name = 6;</code>
+       * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder getCustomIonNameOrBuilder();
+      com.google.protobuf.StringValueOrBuilder getCustomIonNameOrBuilder();
 
       /**
-       * <code>.SkylineDocumentProto.OptionalString measured_ion_name = 7;</code>
+       * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
        * @return Whether the measuredIonName field is set.
        */
       boolean hasMeasuredIonName();
       /**
-       * <code>.SkylineDocumentProto.OptionalString measured_ion_name = 7;</code>
+       * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
        * @return The measuredIonName.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getMeasuredIonName();
+      com.google.protobuf.StringValue getMeasuredIonName();
       /**
-       * <code>.SkylineDocumentProto.OptionalString measured_ion_name = 7;</code>
+       * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder getMeasuredIonNameOrBuilder();
+      com.google.protobuf.StringValueOrBuilder getMeasuredIonNameOrBuilder();
 
       /**
        * <code>.SkylineDocumentProto.OptionalInt decoyMassShift = 8;</code>
@@ -6189,19 +7133,19 @@ public final class SkylineDocument {
       org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalIntOrBuilder getIsotopeDistRankOrBuilder();
 
       /**
-       * <code>.SkylineDocumentProto.OptionalFloat isotopeDistProportion = 12;</code>
+       * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
        * @return Whether the isotopeDistProportion field is set.
        */
       boolean hasIsotopeDistProportion();
       /**
-       * <code>.SkylineDocumentProto.OptionalFloat isotopeDistProportion = 12;</code>
+       * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
        * @return The isotopeDistProportion.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat getIsotopeDistProportion();
+      com.google.protobuf.FloatValue getIsotopeDistProportion();
       /**
-       * <code>.SkylineDocumentProto.OptionalFloat isotopeDistProportion = 12;</code>
+       * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloatOrBuilder getIsotopeDistProportionOrBuilder();
+      com.google.protobuf.FloatValueOrBuilder getIsotopeDistProportionOrBuilder();
 
       /**
        * <code>sint32 fragmentOrdinal = 13;</code>
@@ -6265,34 +7209,34 @@ public final class SkylineDocument {
       double getProductMz();
 
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble collisionEnergy = 21;</code>
+       * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
        * @return Whether the collisionEnergy field is set.
        */
       boolean hasCollisionEnergy();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble collisionEnergy = 21;</code>
+       * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
        * @return The collisionEnergy.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getCollisionEnergy();
+      com.google.protobuf.DoubleValue getCollisionEnergy();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble collisionEnergy = 21;</code>
+       * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getCollisionEnergyOrBuilder();
+      com.google.protobuf.DoubleValueOrBuilder getCollisionEnergyOrBuilder();
 
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble declusteringPotential = 22;</code>
+       * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
        * @return Whether the declusteringPotential field is set.
        */
       boolean hasDeclusteringPotential();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble declusteringPotential = 22;</code>
+       * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
        * @return The declusteringPotential.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getDeclusteringPotential();
+      com.google.protobuf.DoubleValue getDeclusteringPotential();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble declusteringPotential = 22;</code>
+       * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getDeclusteringPotentialOrBuilder();
+      com.google.protobuf.DoubleValueOrBuilder getDeclusteringPotentialOrBuilder();
 
       /**
        * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 23;</code>
@@ -6360,64 +7304,64 @@ public final class SkylineDocument {
       org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResultsOrBuilder getResultsOrBuilder();
 
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble averageMass = 27;</code>
+       * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
        * @return Whether the averageMass field is set.
        */
       boolean hasAverageMass();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble averageMass = 27;</code>
+       * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
        * @return The averageMass.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getAverageMass();
+      com.google.protobuf.DoubleValue getAverageMass();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble averageMass = 27;</code>
+       * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getAverageMassOrBuilder();
+      com.google.protobuf.DoubleValueOrBuilder getAverageMassOrBuilder();
 
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble monoMass = 28;</code>
+       * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
        * @return Whether the monoMass field is set.
        */
       boolean hasMonoMass();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble monoMass = 28;</code>
+       * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
        * @return The monoMass.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getMonoMass();
+      com.google.protobuf.DoubleValue getMonoMass();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble monoMass = 28;</code>
+       * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getMonoMassOrBuilder();
+      com.google.protobuf.DoubleValueOrBuilder getMonoMassOrBuilder();
 
       /**
-       * <code>.SkylineDocumentProto.OptionalString adduct = 29;</code>
+       * <code>.google.protobuf.StringValue adduct = 29;</code>
        * @return Whether the adduct field is set.
        */
       boolean hasAdduct();
       /**
-       * <code>.SkylineDocumentProto.OptionalString adduct = 29;</code>
+       * <code>.google.protobuf.StringValue adduct = 29;</code>
        * @return The adduct.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getAdduct();
+      com.google.protobuf.StringValue getAdduct();
       /**
-       * <code>.SkylineDocumentProto.OptionalString adduct = 29;</code>
+       * <code>.google.protobuf.StringValue adduct = 29;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder getAdductOrBuilder();
+      com.google.protobuf.StringValueOrBuilder getAdductOrBuilder();
 
       /**
-       * <code>.SkylineDocumentProto.OptionalString molecule_id = 30;</code>
+       * <code>.google.protobuf.StringValue molecule_id = 30;</code>
        * @return Whether the moleculeId field is set.
        */
       boolean hasMoleculeId();
       /**
-       * <code>.SkylineDocumentProto.OptionalString molecule_id = 30;</code>
+       * <code>.google.protobuf.StringValue molecule_id = 30;</code>
        * @return The moleculeId.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getMoleculeId();
+      com.google.protobuf.StringValue getMoleculeId();
       /**
-       * <code>.SkylineDocumentProto.OptionalString molecule_id = 30;</code>
+       * <code>.google.protobuf.StringValue molecule_id = 30;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder getMoleculeIdOrBuilder();
+      com.google.protobuf.StringValueOrBuilder getMoleculeIdOrBuilder();
 
       /**
        * <code>bool not_quantitative = 31;</code>
@@ -6426,79 +7370,79 @@ public final class SkylineDocument {
       boolean getNotQuantitative();
 
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitCollisionEnergy = 32;</code>
+       * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
        * @return Whether the explicitCollisionEnergy field is set.
        */
       boolean hasExplicitCollisionEnergy();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitCollisionEnergy = 32;</code>
+       * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
        * @return The explicitCollisionEnergy.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getExplicitCollisionEnergy();
+      com.google.protobuf.DoubleValue getExplicitCollisionEnergy();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitCollisionEnergy = 32;</code>
+       * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getExplicitCollisionEnergyOrBuilder();
+      com.google.protobuf.DoubleValueOrBuilder getExplicitCollisionEnergyOrBuilder();
 
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitIonMobilityHighEnergyOffset = 33;</code>
+       * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
        * @return Whether the explicitIonMobilityHighEnergyOffset field is set.
        */
       boolean hasExplicitIonMobilityHighEnergyOffset();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitIonMobilityHighEnergyOffset = 33;</code>
+       * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
        * @return The explicitIonMobilityHighEnergyOffset.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getExplicitIonMobilityHighEnergyOffset();
+      com.google.protobuf.DoubleValue getExplicitIonMobilityHighEnergyOffset();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitIonMobilityHighEnergyOffset = 33;</code>
+       * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getExplicitIonMobilityHighEnergyOffsetOrBuilder();
+      com.google.protobuf.DoubleValueOrBuilder getExplicitIonMobilityHighEnergyOffsetOrBuilder();
 
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitSLens = 34;</code>
+       * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
        * @return Whether the explicitSLens field is set.
        */
       boolean hasExplicitSLens();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitSLens = 34;</code>
+       * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
        * @return The explicitSLens.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getExplicitSLens();
+      com.google.protobuf.DoubleValue getExplicitSLens();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitSLens = 34;</code>
+       * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getExplicitSLensOrBuilder();
+      com.google.protobuf.DoubleValueOrBuilder getExplicitSLensOrBuilder();
 
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitConeVoltage = 35;</code>
+       * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
        * @return Whether the explicitConeVoltage field is set.
        */
       boolean hasExplicitConeVoltage();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitConeVoltage = 35;</code>
+       * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
        * @return The explicitConeVoltage.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getExplicitConeVoltage();
+      com.google.protobuf.DoubleValue getExplicitConeVoltage();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitConeVoltage = 35;</code>
+       * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getExplicitConeVoltageOrBuilder();
+      com.google.protobuf.DoubleValueOrBuilder getExplicitConeVoltageOrBuilder();
 
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitDeclusteringPotential = 36;</code>
+       * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
        * @return Whether the explicitDeclusteringPotential field is set.
        */
       boolean hasExplicitDeclusteringPotential();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitDeclusteringPotential = 36;</code>
+       * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
        * @return The explicitDeclusteringPotential.
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getExplicitDeclusteringPotential();
+      com.google.protobuf.DoubleValue getExplicitDeclusteringPotential();
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitDeclusteringPotential = 36;</code>
+       * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
        */
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getExplicitDeclusteringPotentialOrBuilder();
+      com.google.protobuf.DoubleValueOrBuilder getExplicitDeclusteringPotentialOrBuilder();
 
       /**
        * <code>bool orphanedCrosslinkIon = 37;</code>
@@ -6560,410 +7504,6 @@ public final class SkylineDocument {
       getUnknownFields() {
         return this.unknownFields;
       }
-      private Transition(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        int mutable_bitField0_ = 0;
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder subBuilder = null;
-                if (formula_ != null) {
-                  subBuilder = formula_.toBuilder();
-                }
-                formula_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(formula_);
-                  formula_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 18: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder subBuilder = null;
-                if (averageMassH_ != null) {
-                  subBuilder = averageMassH_.toBuilder();
-                }
-                averageMassH_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(averageMassH_);
-                  averageMassH_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 26: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder subBuilder = null;
-                if (monoMassH_ != null) {
-                  subBuilder = monoMassH_.toBuilder();
-                }
-                monoMassH_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(monoMassH_);
-                  monoMassH_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 50: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder subBuilder = null;
-                if (customIonName_ != null) {
-                  subBuilder = customIonName_.toBuilder();
-                }
-                customIonName_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(customIonName_);
-                  customIonName_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 58: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder subBuilder = null;
-                if (measuredIonName_ != null) {
-                  subBuilder = measuredIonName_.toBuilder();
-                }
-                measuredIonName_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(measuredIonName_);
-                  measuredIonName_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 66: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt.Builder subBuilder = null;
-                if (decoyMassShift_ != null) {
-                  subBuilder = decoyMassShift_.toBuilder();
-                }
-                decoyMassShift_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(decoyMassShift_);
-                  decoyMassShift_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 72: {
-
-                massIndex_ = input.readSInt32();
-                break;
-              }
-              case 90: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt.Builder subBuilder = null;
-                if (isotopeDistRank_ != null) {
-                  subBuilder = isotopeDistRank_.toBuilder();
-                }
-                isotopeDistRank_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(isotopeDistRank_);
-                  isotopeDistRank_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 98: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.Builder subBuilder = null;
-                if (isotopeDistProportion_ != null) {
-                  subBuilder = isotopeDistProportion_.toBuilder();
-                }
-                isotopeDistProportion_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(isotopeDistProportion_);
-                  isotopeDistProportion_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 104: {
-
-                fragmentOrdinal_ = input.readSInt32();
-                break;
-              }
-              case 113: {
-
-                calcNeutralMass_ = input.readDouble();
-                break;
-              }
-              case 120: {
-
-                charge_ = input.readSInt32();
-                break;
-              }
-              case 128: {
-
-                cleavageAa_ = input.readInt32();
-                break;
-              }
-              case 137: {
-
-                lostMass_ = input.readDouble();
-                break;
-              }
-              case 146: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations.Builder subBuilder = null;
-                if (annotations_ != null) {
-                  subBuilder = annotations_.toBuilder();
-                }
-                annotations_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(annotations_);
-                  annotations_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 153: {
-
-                precursorMz_ = input.readDouble();
-                break;
-              }
-              case 161: {
-
-                productMz_ = input.readDouble();
-                break;
-              }
-              case 170: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder subBuilder = null;
-                if (collisionEnergy_ != null) {
-                  subBuilder = collisionEnergy_.toBuilder();
-                }
-                collisionEnergy_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(collisionEnergy_);
-                  collisionEnergy_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 178: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder subBuilder = null;
-                if (declusteringPotential_ != null) {
-                  subBuilder = declusteringPotential_.toBuilder();
-                }
-                declusteringPotential_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(declusteringPotential_);
-                  declusteringPotential_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 186: {
-                if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                  losses_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss>();
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                losses_.add(
-                    input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.parser(), extensionRegistry));
-                break;
-              }
-              case 192: {
-                int rawValue = input.readEnum();
-
-                fragmentType_ = rawValue;
-                break;
-              }
-              case 202: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLibInfo.Builder subBuilder = null;
-                if (libInfo_ != null) {
-                  subBuilder = libInfo_.toBuilder();
-                }
-                libInfo_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLibInfo.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(libInfo_);
-                  libInfo_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 210: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResults.Builder subBuilder = null;
-                if (results_ != null) {
-                  subBuilder = results_.toBuilder();
-                }
-                results_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResults.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(results_);
-                  results_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 218: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder subBuilder = null;
-                if (averageMass_ != null) {
-                  subBuilder = averageMass_.toBuilder();
-                }
-                averageMass_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(averageMass_);
-                  averageMass_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 226: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder subBuilder = null;
-                if (monoMass_ != null) {
-                  subBuilder = monoMass_.toBuilder();
-                }
-                monoMass_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(monoMass_);
-                  monoMass_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 234: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder subBuilder = null;
-                if (adduct_ != null) {
-                  subBuilder = adduct_.toBuilder();
-                }
-                adduct_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(adduct_);
-                  adduct_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 242: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder subBuilder = null;
-                if (moleculeId_ != null) {
-                  subBuilder = moleculeId_.toBuilder();
-                }
-                moleculeId_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(moleculeId_);
-                  moleculeId_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 248: {
-
-                notQuantitative_ = input.readBool();
-                break;
-              }
-              case 258: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder subBuilder = null;
-                if (explicitCollisionEnergy_ != null) {
-                  subBuilder = explicitCollisionEnergy_.toBuilder();
-                }
-                explicitCollisionEnergy_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(explicitCollisionEnergy_);
-                  explicitCollisionEnergy_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 266: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder subBuilder = null;
-                if (explicitIonMobilityHighEnergyOffset_ != null) {
-                  subBuilder = explicitIonMobilityHighEnergyOffset_.toBuilder();
-                }
-                explicitIonMobilityHighEnergyOffset_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(explicitIonMobilityHighEnergyOffset_);
-                  explicitIonMobilityHighEnergyOffset_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 274: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder subBuilder = null;
-                if (explicitSLens_ != null) {
-                  subBuilder = explicitSLens_.toBuilder();
-                }
-                explicitSLens_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(explicitSLens_);
-                  explicitSLens_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 282: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder subBuilder = null;
-                if (explicitConeVoltage_ != null) {
-                  subBuilder = explicitConeVoltage_.toBuilder();
-                }
-                explicitConeVoltage_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(explicitConeVoltage_);
-                  explicitConeVoltage_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 290: {
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder subBuilder = null;
-                if (explicitDeclusteringPotential_ != null) {
-                  subBuilder = explicitDeclusteringPotential_.toBuilder();
-                }
-                explicitDeclusteringPotential_ = input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.parser(), extensionRegistry);
-                if (subBuilder != null) {
-                  subBuilder.mergeFrom(explicitDeclusteringPotential_);
-                  explicitDeclusteringPotential_ = subBuilder.buildPartial();
-                }
-
-                break;
-              }
-              case 296: {
-
-                orphanedCrosslinkIon_ = input.readBool();
-                break;
-              }
-              case 306: {
-                if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                  linkedIons_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon>();
-                  mutable_bitField0_ |= 0x00000002;
-                }
-                linkedIons_.add(
-                    input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon.parser(), extensionRegistry));
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          if (((mutable_bitField0_ & 0x00000001) != 0)) {
-            losses_ = java.util.Collections.unmodifiableList(losses_);
-          }
-          if (((mutable_bitField0_ & 0x00000002) != 0)) {
-            linkedIons_ = java.util.Collections.unmodifiableList(linkedIons_);
-          }
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_Transition_descriptor;
@@ -6978,9 +7518,9 @@ public final class SkylineDocument {
       }
 
       public static final int FORMULA_FIELD_NUMBER = 1;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString formula_;
+      private com.google.protobuf.StringValue formula_;
       /**
-       * <code>.SkylineDocumentProto.OptionalString formula = 1;</code>
+       * <code>.google.protobuf.StringValue formula = 1;</code>
        * @return Whether the formula field is set.
        */
       @java.lang.Override
@@ -6988,29 +7528,29 @@ public final class SkylineDocument {
         return formula_ != null;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalString formula = 1;</code>
+       * <code>.google.protobuf.StringValue formula = 1;</code>
        * @return The formula.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getFormula() {
-        return formula_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.getDefaultInstance() : formula_;
+      public com.google.protobuf.StringValue getFormula() {
+        return formula_ == null ? com.google.protobuf.StringValue.getDefaultInstance() : formula_;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalString formula = 1;</code>
+       * <code>.google.protobuf.StringValue formula = 1;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder getFormulaOrBuilder() {
+      public com.google.protobuf.StringValueOrBuilder getFormulaOrBuilder() {
         return getFormula();
       }
 
       public static final int AVERAGEMASSH_FIELD_NUMBER = 2;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble averageMassH_;
+      private com.google.protobuf.DoubleValue averageMassH_;
       /**
        * <pre>
        * See also: averageMass = 27;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalDouble averageMassH = 2;</code>
+       * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
        * @return Whether the averageMassH field is set.
        */
       @java.lang.Override
@@ -7022,33 +7562,33 @@ public final class SkylineDocument {
        * See also: averageMass = 27;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalDouble averageMassH = 2;</code>
+       * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
        * @return The averageMassH.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getAverageMassH() {
-        return averageMassH_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : averageMassH_;
+      public com.google.protobuf.DoubleValue getAverageMassH() {
+        return averageMassH_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : averageMassH_;
       }
       /**
        * <pre>
        * See also: averageMass = 27;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalDouble averageMassH = 2;</code>
+       * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getAverageMassHOrBuilder() {
+      public com.google.protobuf.DoubleValueOrBuilder getAverageMassHOrBuilder() {
         return getAverageMassH();
       }
 
       public static final int MONOMASSH_FIELD_NUMBER = 3;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble monoMassH_;
+      private com.google.protobuf.DoubleValue monoMassH_;
       /**
        * <pre>
        * See also:  monoMass = 28;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalDouble monoMassH = 3;</code>
+       * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
        * @return Whether the monoMassH field is set.
        */
       @java.lang.Override
@@ -7060,33 +7600,33 @@ public final class SkylineDocument {
        * See also:  monoMass = 28;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalDouble monoMassH = 3;</code>
+       * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
        * @return The monoMassH.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getMonoMassH() {
-        return monoMassH_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : monoMassH_;
+      public com.google.protobuf.DoubleValue getMonoMassH() {
+        return monoMassH_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : monoMassH_;
       }
       /**
        * <pre>
        * See also:  monoMass = 28;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalDouble monoMassH = 3;</code>
+       * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getMonoMassHOrBuilder() {
+      public com.google.protobuf.DoubleValueOrBuilder getMonoMassHOrBuilder() {
         return getMonoMassH();
       }
 
       public static final int CUSTOM_ION_NAME_FIELD_NUMBER = 6;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString customIonName_;
+      private com.google.protobuf.StringValue customIonName_;
       /**
        * <pre>
        * See also: custom_ion_id = 30;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalString custom_ion_name = 6;</code>
+       * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
        * @return Whether the customIonName field is set.
        */
       @java.lang.Override
@@ -7098,29 +7638,29 @@ public final class SkylineDocument {
        * See also: custom_ion_id = 30;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalString custom_ion_name = 6;</code>
+       * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
        * @return The customIonName.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getCustomIonName() {
-        return customIonName_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.getDefaultInstance() : customIonName_;
+      public com.google.protobuf.StringValue getCustomIonName() {
+        return customIonName_ == null ? com.google.protobuf.StringValue.getDefaultInstance() : customIonName_;
       }
       /**
        * <pre>
        * See also: custom_ion_id = 30;
        * </pre>
        *
-       * <code>.SkylineDocumentProto.OptionalString custom_ion_name = 6;</code>
+       * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder getCustomIonNameOrBuilder() {
+      public com.google.protobuf.StringValueOrBuilder getCustomIonNameOrBuilder() {
         return getCustomIonName();
       }
 
       public static final int MEASURED_ION_NAME_FIELD_NUMBER = 7;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString measuredIonName_;
+      private com.google.protobuf.StringValue measuredIonName_;
       /**
-       * <code>.SkylineDocumentProto.OptionalString measured_ion_name = 7;</code>
+       * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
        * @return Whether the measuredIonName field is set.
        */
       @java.lang.Override
@@ -7128,18 +7668,18 @@ public final class SkylineDocument {
         return measuredIonName_ != null;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalString measured_ion_name = 7;</code>
+       * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
        * @return The measuredIonName.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getMeasuredIonName() {
-        return measuredIonName_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.getDefaultInstance() : measuredIonName_;
+      public com.google.protobuf.StringValue getMeasuredIonName() {
+        return measuredIonName_ == null ? com.google.protobuf.StringValue.getDefaultInstance() : measuredIonName_;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalString measured_ion_name = 7;</code>
+       * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder getMeasuredIonNameOrBuilder() {
+      public com.google.protobuf.StringValueOrBuilder getMeasuredIonNameOrBuilder() {
         return getMeasuredIonName();
       }
 
@@ -7207,9 +7747,9 @@ public final class SkylineDocument {
       }
 
       public static final int ISOTOPEDISTPROPORTION_FIELD_NUMBER = 12;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat isotopeDistProportion_;
+      private com.google.protobuf.FloatValue isotopeDistProportion_;
       /**
-       * <code>.SkylineDocumentProto.OptionalFloat isotopeDistProportion = 12;</code>
+       * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
        * @return Whether the isotopeDistProportion field is set.
        */
       @java.lang.Override
@@ -7217,18 +7757,18 @@ public final class SkylineDocument {
         return isotopeDistProportion_ != null;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalFloat isotopeDistProportion = 12;</code>
+       * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
        * @return The isotopeDistProportion.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat getIsotopeDistProportion() {
-        return isotopeDistProportion_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.getDefaultInstance() : isotopeDistProportion_;
+      public com.google.protobuf.FloatValue getIsotopeDistProportion() {
+        return isotopeDistProportion_ == null ? com.google.protobuf.FloatValue.getDefaultInstance() : isotopeDistProportion_;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalFloat isotopeDistProportion = 12;</code>
+       * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloatOrBuilder getIsotopeDistProportionOrBuilder() {
+      public com.google.protobuf.FloatValueOrBuilder getIsotopeDistProportionOrBuilder() {
         return getIsotopeDistProportion();
       }
 
@@ -7340,9 +7880,9 @@ public final class SkylineDocument {
       }
 
       public static final int COLLISIONENERGY_FIELD_NUMBER = 21;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble collisionEnergy_;
+      private com.google.protobuf.DoubleValue collisionEnergy_;
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble collisionEnergy = 21;</code>
+       * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
        * @return Whether the collisionEnergy field is set.
        */
       @java.lang.Override
@@ -7350,25 +7890,25 @@ public final class SkylineDocument {
         return collisionEnergy_ != null;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble collisionEnergy = 21;</code>
+       * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
        * @return The collisionEnergy.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getCollisionEnergy() {
-        return collisionEnergy_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : collisionEnergy_;
+      public com.google.protobuf.DoubleValue getCollisionEnergy() {
+        return collisionEnergy_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : collisionEnergy_;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble collisionEnergy = 21;</code>
+       * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getCollisionEnergyOrBuilder() {
+      public com.google.protobuf.DoubleValueOrBuilder getCollisionEnergyOrBuilder() {
         return getCollisionEnergy();
       }
 
       public static final int DECLUSTERINGPOTENTIAL_FIELD_NUMBER = 22;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble declusteringPotential_;
+      private com.google.protobuf.DoubleValue declusteringPotential_;
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble declusteringPotential = 22;</code>
+       * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
        * @return Whether the declusteringPotential field is set.
        */
       @java.lang.Override
@@ -7376,18 +7916,18 @@ public final class SkylineDocument {
         return declusteringPotential_ != null;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble declusteringPotential = 22;</code>
+       * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
        * @return The declusteringPotential.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getDeclusteringPotential() {
-        return declusteringPotential_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : declusteringPotential_;
+      public com.google.protobuf.DoubleValue getDeclusteringPotential() {
+        return declusteringPotential_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : declusteringPotential_;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble declusteringPotential = 22;</code>
+       * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getDeclusteringPotentialOrBuilder() {
+      public com.google.protobuf.DoubleValueOrBuilder getDeclusteringPotentialOrBuilder() {
         return getDeclusteringPotential();
       }
 
@@ -7503,9 +8043,9 @@ public final class SkylineDocument {
       }
 
       public static final int AVERAGEMASS_FIELD_NUMBER = 27;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble averageMass_;
+      private com.google.protobuf.DoubleValue averageMass_;
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble averageMass = 27;</code>
+       * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
        * @return Whether the averageMass field is set.
        */
       @java.lang.Override
@@ -7513,25 +8053,25 @@ public final class SkylineDocument {
         return averageMass_ != null;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble averageMass = 27;</code>
+       * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
        * @return The averageMass.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getAverageMass() {
-        return averageMass_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : averageMass_;
+      public com.google.protobuf.DoubleValue getAverageMass() {
+        return averageMass_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : averageMass_;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble averageMass = 27;</code>
+       * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getAverageMassOrBuilder() {
+      public com.google.protobuf.DoubleValueOrBuilder getAverageMassOrBuilder() {
         return getAverageMass();
       }
 
       public static final int MONOMASS_FIELD_NUMBER = 28;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble monoMass_;
+      private com.google.protobuf.DoubleValue monoMass_;
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble monoMass = 28;</code>
+       * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
        * @return Whether the monoMass field is set.
        */
       @java.lang.Override
@@ -7539,25 +8079,25 @@ public final class SkylineDocument {
         return monoMass_ != null;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble monoMass = 28;</code>
+       * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
        * @return The monoMass.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getMonoMass() {
-        return monoMass_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : monoMass_;
+      public com.google.protobuf.DoubleValue getMonoMass() {
+        return monoMass_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : monoMass_;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble monoMass = 28;</code>
+       * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getMonoMassOrBuilder() {
+      public com.google.protobuf.DoubleValueOrBuilder getMonoMassOrBuilder() {
         return getMonoMass();
       }
 
       public static final int ADDUCT_FIELD_NUMBER = 29;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString adduct_;
+      private com.google.protobuf.StringValue adduct_;
       /**
-       * <code>.SkylineDocumentProto.OptionalString adduct = 29;</code>
+       * <code>.google.protobuf.StringValue adduct = 29;</code>
        * @return Whether the adduct field is set.
        */
       @java.lang.Override
@@ -7565,25 +8105,25 @@ public final class SkylineDocument {
         return adduct_ != null;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalString adduct = 29;</code>
+       * <code>.google.protobuf.StringValue adduct = 29;</code>
        * @return The adduct.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getAdduct() {
-        return adduct_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.getDefaultInstance() : adduct_;
+      public com.google.protobuf.StringValue getAdduct() {
+        return adduct_ == null ? com.google.protobuf.StringValue.getDefaultInstance() : adduct_;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalString adduct = 29;</code>
+       * <code>.google.protobuf.StringValue adduct = 29;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder getAdductOrBuilder() {
+      public com.google.protobuf.StringValueOrBuilder getAdductOrBuilder() {
         return getAdduct();
       }
 
       public static final int MOLECULE_ID_FIELD_NUMBER = 30;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString moleculeId_;
+      private com.google.protobuf.StringValue moleculeId_;
       /**
-       * <code>.SkylineDocumentProto.OptionalString molecule_id = 30;</code>
+       * <code>.google.protobuf.StringValue molecule_id = 30;</code>
        * @return Whether the moleculeId field is set.
        */
       @java.lang.Override
@@ -7591,18 +8131,18 @@ public final class SkylineDocument {
         return moleculeId_ != null;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalString molecule_id = 30;</code>
+       * <code>.google.protobuf.StringValue molecule_id = 30;</code>
        * @return The moleculeId.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getMoleculeId() {
-        return moleculeId_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.getDefaultInstance() : moleculeId_;
+      public com.google.protobuf.StringValue getMoleculeId() {
+        return moleculeId_ == null ? com.google.protobuf.StringValue.getDefaultInstance() : moleculeId_;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalString molecule_id = 30;</code>
+       * <code>.google.protobuf.StringValue molecule_id = 30;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder getMoleculeIdOrBuilder() {
+      public com.google.protobuf.StringValueOrBuilder getMoleculeIdOrBuilder() {
         return getMoleculeId();
       }
 
@@ -7618,9 +8158,9 @@ public final class SkylineDocument {
       }
 
       public static final int EXPLICITCOLLISIONENERGY_FIELD_NUMBER = 32;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble explicitCollisionEnergy_;
+      private com.google.protobuf.DoubleValue explicitCollisionEnergy_;
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitCollisionEnergy = 32;</code>
+       * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
        * @return Whether the explicitCollisionEnergy field is set.
        */
       @java.lang.Override
@@ -7628,25 +8168,25 @@ public final class SkylineDocument {
         return explicitCollisionEnergy_ != null;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitCollisionEnergy = 32;</code>
+       * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
        * @return The explicitCollisionEnergy.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getExplicitCollisionEnergy() {
-        return explicitCollisionEnergy_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : explicitCollisionEnergy_;
+      public com.google.protobuf.DoubleValue getExplicitCollisionEnergy() {
+        return explicitCollisionEnergy_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : explicitCollisionEnergy_;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitCollisionEnergy = 32;</code>
+       * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getExplicitCollisionEnergyOrBuilder() {
+      public com.google.protobuf.DoubleValueOrBuilder getExplicitCollisionEnergyOrBuilder() {
         return getExplicitCollisionEnergy();
       }
 
       public static final int EXPLICITIONMOBILITYHIGHENERGYOFFSET_FIELD_NUMBER = 33;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble explicitIonMobilityHighEnergyOffset_;
+      private com.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset_;
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitIonMobilityHighEnergyOffset = 33;</code>
+       * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
        * @return Whether the explicitIonMobilityHighEnergyOffset field is set.
        */
       @java.lang.Override
@@ -7654,25 +8194,25 @@ public final class SkylineDocument {
         return explicitIonMobilityHighEnergyOffset_ != null;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitIonMobilityHighEnergyOffset = 33;</code>
+       * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
        * @return The explicitIonMobilityHighEnergyOffset.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getExplicitIonMobilityHighEnergyOffset() {
-        return explicitIonMobilityHighEnergyOffset_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : explicitIonMobilityHighEnergyOffset_;
+      public com.google.protobuf.DoubleValue getExplicitIonMobilityHighEnergyOffset() {
+        return explicitIonMobilityHighEnergyOffset_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : explicitIonMobilityHighEnergyOffset_;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitIonMobilityHighEnergyOffset = 33;</code>
+       * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getExplicitIonMobilityHighEnergyOffsetOrBuilder() {
+      public com.google.protobuf.DoubleValueOrBuilder getExplicitIonMobilityHighEnergyOffsetOrBuilder() {
         return getExplicitIonMobilityHighEnergyOffset();
       }
 
       public static final int EXPLICITSLENS_FIELD_NUMBER = 34;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble explicitSLens_;
+      private com.google.protobuf.DoubleValue explicitSLens_;
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitSLens = 34;</code>
+       * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
        * @return Whether the explicitSLens field is set.
        */
       @java.lang.Override
@@ -7680,25 +8220,25 @@ public final class SkylineDocument {
         return explicitSLens_ != null;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitSLens = 34;</code>
+       * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
        * @return The explicitSLens.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getExplicitSLens() {
-        return explicitSLens_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : explicitSLens_;
+      public com.google.protobuf.DoubleValue getExplicitSLens() {
+        return explicitSLens_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : explicitSLens_;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitSLens = 34;</code>
+       * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getExplicitSLensOrBuilder() {
+      public com.google.protobuf.DoubleValueOrBuilder getExplicitSLensOrBuilder() {
         return getExplicitSLens();
       }
 
       public static final int EXPLICITCONEVOLTAGE_FIELD_NUMBER = 35;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble explicitConeVoltage_;
+      private com.google.protobuf.DoubleValue explicitConeVoltage_;
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitConeVoltage = 35;</code>
+       * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
        * @return Whether the explicitConeVoltage field is set.
        */
       @java.lang.Override
@@ -7706,25 +8246,25 @@ public final class SkylineDocument {
         return explicitConeVoltage_ != null;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitConeVoltage = 35;</code>
+       * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
        * @return The explicitConeVoltage.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getExplicitConeVoltage() {
-        return explicitConeVoltage_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : explicitConeVoltage_;
+      public com.google.protobuf.DoubleValue getExplicitConeVoltage() {
+        return explicitConeVoltage_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : explicitConeVoltage_;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitConeVoltage = 35;</code>
+       * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getExplicitConeVoltageOrBuilder() {
+      public com.google.protobuf.DoubleValueOrBuilder getExplicitConeVoltageOrBuilder() {
         return getExplicitConeVoltage();
       }
 
       public static final int EXPLICITDECLUSTERINGPOTENTIAL_FIELD_NUMBER = 36;
-      private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble explicitDeclusteringPotential_;
+      private com.google.protobuf.DoubleValue explicitDeclusteringPotential_;
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitDeclusteringPotential = 36;</code>
+       * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
        * @return Whether the explicitDeclusteringPotential field is set.
        */
       @java.lang.Override
@@ -7732,18 +8272,18 @@ public final class SkylineDocument {
         return explicitDeclusteringPotential_ != null;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitDeclusteringPotential = 36;</code>
+       * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
        * @return The explicitDeclusteringPotential.
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getExplicitDeclusteringPotential() {
-        return explicitDeclusteringPotential_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : explicitDeclusteringPotential_;
+      public com.google.protobuf.DoubleValue getExplicitDeclusteringPotential() {
+        return explicitDeclusteringPotential_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : explicitDeclusteringPotential_;
       }
       /**
-       * <code>.SkylineDocumentProto.OptionalDouble explicitDeclusteringPotential = 36;</code>
+       * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
        */
       @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getExplicitDeclusteringPotentialOrBuilder() {
+      public com.google.protobuf.DoubleValueOrBuilder getExplicitDeclusteringPotentialOrBuilder() {
         return getExplicitDeclusteringPotential();
       }
 
@@ -7842,7 +8382,7 @@ public final class SkylineDocument {
         if (fragmentOrdinal_ != 0) {
           output.writeSInt32(13, fragmentOrdinal_);
         }
-        if (calcNeutralMass_ != 0D) {
+        if (java.lang.Double.doubleToRawLongBits(calcNeutralMass_) != 0) {
           output.writeDouble(14, calcNeutralMass_);
         }
         if (charge_ != 0) {
@@ -7851,16 +8391,16 @@ public final class SkylineDocument {
         if (cleavageAa_ != 0) {
           output.writeInt32(16, cleavageAa_);
         }
-        if (lostMass_ != 0D) {
+        if (java.lang.Double.doubleToRawLongBits(lostMass_) != 0) {
           output.writeDouble(17, lostMass_);
         }
         if (annotations_ != null) {
           output.writeMessage(18, getAnnotations());
         }
-        if (precursorMz_ != 0D) {
+        if (java.lang.Double.doubleToRawLongBits(precursorMz_) != 0) {
           output.writeDouble(19, precursorMz_);
         }
-        if (productMz_ != 0D) {
+        if (java.lang.Double.doubleToRawLongBits(productMz_) != 0) {
           output.writeDouble(20, productMz_);
         }
         if (collisionEnergy_ != null) {
@@ -7917,7 +8457,7 @@ public final class SkylineDocument {
         for (int i = 0; i < linkedIons_.size(); i++) {
           output.writeMessage(38, linkedIons_.get(i));
         }
-        unknownFields.writeTo(output);
+        getUnknownFields().writeTo(output);
       }
 
       @java.lang.Override
@@ -7966,7 +8506,7 @@ public final class SkylineDocument {
           size += com.google.protobuf.CodedOutputStream
             .computeSInt32Size(13, fragmentOrdinal_);
         }
-        if (calcNeutralMass_ != 0D) {
+        if (java.lang.Double.doubleToRawLongBits(calcNeutralMass_) != 0) {
           size += com.google.protobuf.CodedOutputStream
             .computeDoubleSize(14, calcNeutralMass_);
         }
@@ -7978,7 +8518,7 @@ public final class SkylineDocument {
           size += com.google.protobuf.CodedOutputStream
             .computeInt32Size(16, cleavageAa_);
         }
-        if (lostMass_ != 0D) {
+        if (java.lang.Double.doubleToRawLongBits(lostMass_) != 0) {
           size += com.google.protobuf.CodedOutputStream
             .computeDoubleSize(17, lostMass_);
         }
@@ -7986,11 +8526,11 @@ public final class SkylineDocument {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(18, getAnnotations());
         }
-        if (precursorMz_ != 0D) {
+        if (java.lang.Double.doubleToRawLongBits(precursorMz_) != 0) {
           size += com.google.protobuf.CodedOutputStream
             .computeDoubleSize(19, precursorMz_);
         }
-        if (productMz_ != 0D) {
+        if (java.lang.Double.doubleToRawLongBits(productMz_) != 0) {
           size += com.google.protobuf.CodedOutputStream
             .computeDoubleSize(20, productMz_);
         }
@@ -8066,7 +8606,7 @@ public final class SkylineDocument {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(38, linkedIons_.get(i));
         }
-        size += unknownFields.getSerializedSize();
+        size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
         return size;
       }
@@ -8220,7 +8760,7 @@ public final class SkylineDocument {
             != other.getOrphanedCrosslinkIon()) return false;
         if (!getLinkedIonsList()
             .equals(other.getLinkedIonsList())) return false;
-        if (!unknownFields.equals(other.unknownFields)) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
       }
 
@@ -8355,7 +8895,7 @@ public final class SkylineDocument {
           hash = (37 * hash) + LINKEDIONS_FIELD_NUMBER;
           hash = (53 * hash) + getLinkedIonsList().hashCode();
         }
-        hash = (29 * hash) + unknownFields.hashCode();
+        hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
       }
@@ -8472,20 +9012,13 @@ public final class SkylineDocument {
 
         // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Transition.newBuilder()
         private Builder() {
-          maybeForceBuilderInitialization();
+
         }
 
         private Builder(
             com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-            getLossesFieldBuilder();
-            getLinkedIonsFieldBuilder();
-          }
+
         }
         @java.lang.Override
         public Builder clear() {
@@ -8574,10 +9107,11 @@ public final class SkylineDocument {
           }
           if (lossesBuilder_ == null) {
             losses_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000001);
           } else {
+            losses_ = null;
             lossesBuilder_.clear();
           }
+          bitField0_ = (bitField0_ & ~0x00000001);
           fragmentType_ = 0;
 
           if (libInfoBuilder_ == null) {
@@ -8652,10 +9186,11 @@ public final class SkylineDocument {
 
           if (linkedIonsBuilder_ == null) {
             linkedIons_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
+            linkedIons_ = null;
             linkedIonsBuilder_.clear();
           }
+          bitField0_ = (bitField0_ & ~0x00000002);
           return this;
         }
 
@@ -9021,7 +9556,7 @@ public final class SkylineDocument {
               }
             }
           }
-          this.mergeUnknownFields(other.unknownFields);
+          this.mergeUnknownFields(other.getUnknownFields());
           onChanged();
           return this;
         }
@@ -9036,46 +9571,294 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Transition parsedMessage = null;
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
           try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 10: {
+                  input.readMessage(
+                      getFormulaFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 10
+                case 18: {
+                  input.readMessage(
+                      getAverageMassHFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 18
+                case 26: {
+                  input.readMessage(
+                      getMonoMassHFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 26
+                case 50: {
+                  input.readMessage(
+                      getCustomIonNameFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 50
+                case 58: {
+                  input.readMessage(
+                      getMeasuredIonNameFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 58
+                case 66: {
+                  input.readMessage(
+                      getDecoyMassShiftFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 66
+                case 72: {
+                  massIndex_ = input.readSInt32();
+
+                  break;
+                } // case 72
+                case 90: {
+                  input.readMessage(
+                      getIsotopeDistRankFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 90
+                case 98: {
+                  input.readMessage(
+                      getIsotopeDistProportionFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 98
+                case 104: {
+                  fragmentOrdinal_ = input.readSInt32();
+
+                  break;
+                } // case 104
+                case 113: {
+                  calcNeutralMass_ = input.readDouble();
+
+                  break;
+                } // case 113
+                case 120: {
+                  charge_ = input.readSInt32();
+
+                  break;
+                } // case 120
+                case 128: {
+                  cleavageAa_ = input.readInt32();
+
+                  break;
+                } // case 128
+                case 137: {
+                  lostMass_ = input.readDouble();
+
+                  break;
+                } // case 137
+                case 146: {
+                  input.readMessage(
+                      getAnnotationsFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 146
+                case 153: {
+                  precursorMz_ = input.readDouble();
+
+                  break;
+                } // case 153
+                case 161: {
+                  productMz_ = input.readDouble();
+
+                  break;
+                } // case 161
+                case 170: {
+                  input.readMessage(
+                      getCollisionEnergyFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 170
+                case 178: {
+                  input.readMessage(
+                      getDeclusteringPotentialFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 178
+                case 186: {
+                  org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss m =
+                      input.readMessage(
+                          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.parser(),
+                          extensionRegistry);
+                  if (lossesBuilder_ == null) {
+                    ensureLossesIsMutable();
+                    losses_.add(m);
+                  } else {
+                    lossesBuilder_.addMessage(m);
+                  }
+                  break;
+                } // case 186
+                case 192: {
+                  fragmentType_ = input.readEnum();
+
+                  break;
+                } // case 192
+                case 202: {
+                  input.readMessage(
+                      getLibInfoFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 202
+                case 210: {
+                  input.readMessage(
+                      getResultsFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 210
+                case 218: {
+                  input.readMessage(
+                      getAverageMassFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 218
+                case 226: {
+                  input.readMessage(
+                      getMonoMassFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 226
+                case 234: {
+                  input.readMessage(
+                      getAdductFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 234
+                case 242: {
+                  input.readMessage(
+                      getMoleculeIdFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 242
+                case 248: {
+                  notQuantitative_ = input.readBool();
+
+                  break;
+                } // case 248
+                case 258: {
+                  input.readMessage(
+                      getExplicitCollisionEnergyFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 258
+                case 266: {
+                  input.readMessage(
+                      getExplicitIonMobilityHighEnergyOffsetFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 266
+                case 274: {
+                  input.readMessage(
+                      getExplicitSLensFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 274
+                case 282: {
+                  input.readMessage(
+                      getExplicitConeVoltageFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 282
+                case 290: {
+                  input.readMessage(
+                      getExplicitDeclusteringPotentialFieldBuilder().getBuilder(),
+                      extensionRegistry);
+
+                  break;
+                } // case 290
+                case 296: {
+                  orphanedCrosslinkIon_ = input.readBool();
+
+                  break;
+                } // case 296
+                case 306: {
+                  org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon m =
+                      input.readMessage(
+                          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon.parser(),
+                          extensionRegistry);
+                  if (linkedIonsBuilder_ == null) {
+                    ensureLinkedIonsIsMutable();
+                    linkedIons_.add(m);
+                  } else {
+                    linkedIonsBuilder_.addMessage(m);
+                  }
+                  break;
+                } // case 306
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Transition) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
+            onChanged();
+          } // finally
           return this;
         }
         private int bitField0_;
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString formula_;
+        private com.google.protobuf.StringValue formula_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder> formulaBuilder_;
+            com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder> formulaBuilder_;
         /**
-         * <code>.SkylineDocumentProto.OptionalString formula = 1;</code>
+         * <code>.google.protobuf.StringValue formula = 1;</code>
          * @return Whether the formula field is set.
          */
         public boolean hasFormula() {
           return formulaBuilder_ != null || formula_ != null;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString formula = 1;</code>
+         * <code>.google.protobuf.StringValue formula = 1;</code>
          * @return The formula.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getFormula() {
+        public com.google.protobuf.StringValue getFormula() {
           if (formulaBuilder_ == null) {
-            return formula_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.getDefaultInstance() : formula_;
+            return formula_ == null ? com.google.protobuf.StringValue.getDefaultInstance() : formula_;
           } else {
             return formulaBuilder_.getMessage();
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString formula = 1;</code>
+         * <code>.google.protobuf.StringValue formula = 1;</code>
          */
-        public Builder setFormula(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString value) {
+        public Builder setFormula(com.google.protobuf.StringValue value) {
           if (formulaBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -9089,10 +9872,10 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString formula = 1;</code>
+         * <code>.google.protobuf.StringValue formula = 1;</code>
          */
         public Builder setFormula(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder builderForValue) {
+            com.google.protobuf.StringValue.Builder builderForValue) {
           if (formulaBuilder_ == null) {
             formula_ = builderForValue.build();
             onChanged();
@@ -9103,13 +9886,13 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString formula = 1;</code>
+         * <code>.google.protobuf.StringValue formula = 1;</code>
          */
-        public Builder mergeFormula(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString value) {
+        public Builder mergeFormula(com.google.protobuf.StringValue value) {
           if (formulaBuilder_ == null) {
             if (formula_ != null) {
               formula_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.newBuilder(formula_).mergeFrom(value).buildPartial();
+                com.google.protobuf.StringValue.newBuilder(formula_).mergeFrom(value).buildPartial();
             } else {
               formula_ = value;
             }
@@ -9121,7 +9904,7 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString formula = 1;</code>
+         * <code>.google.protobuf.StringValue formula = 1;</code>
          */
         public Builder clearFormula() {
           if (formulaBuilder_ == null) {
@@ -9135,33 +9918,33 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString formula = 1;</code>
+         * <code>.google.protobuf.StringValue formula = 1;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder getFormulaBuilder() {
+        public com.google.protobuf.StringValue.Builder getFormulaBuilder() {
           
           onChanged();
           return getFormulaFieldBuilder().getBuilder();
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString formula = 1;</code>
+         * <code>.google.protobuf.StringValue formula = 1;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder getFormulaOrBuilder() {
+        public com.google.protobuf.StringValueOrBuilder getFormulaOrBuilder() {
           if (formulaBuilder_ != null) {
             return formulaBuilder_.getMessageOrBuilder();
           } else {
             return formula_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.getDefaultInstance() : formula_;
+                com.google.protobuf.StringValue.getDefaultInstance() : formula_;
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString formula = 1;</code>
+         * <code>.google.protobuf.StringValue formula = 1;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder> 
+            com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder> 
             getFormulaFieldBuilder() {
           if (formulaBuilder_ == null) {
             formulaBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder>(
+                com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder>(
                     getFormula(),
                     getParentForChildren(),
                     isClean());
@@ -9170,15 +9953,15 @@ public final class SkylineDocument {
           return formulaBuilder_;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble averageMassH_;
+        private com.google.protobuf.DoubleValue averageMassH_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> averageMassHBuilder_;
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> averageMassHBuilder_;
         /**
          * <pre>
          * See also: averageMass = 27;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble averageMassH = 2;</code>
+         * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
          * @return Whether the averageMassH field is set.
          */
         public boolean hasAverageMassH() {
@@ -9189,12 +9972,12 @@ public final class SkylineDocument {
          * See also: averageMass = 27;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble averageMassH = 2;</code>
+         * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
          * @return The averageMassH.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getAverageMassH() {
+        public com.google.protobuf.DoubleValue getAverageMassH() {
           if (averageMassHBuilder_ == null) {
-            return averageMassH_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : averageMassH_;
+            return averageMassH_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : averageMassH_;
           } else {
             return averageMassHBuilder_.getMessage();
           }
@@ -9204,9 +9987,9 @@ public final class SkylineDocument {
          * See also: averageMass = 27;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble averageMassH = 2;</code>
+         * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
          */
-        public Builder setAverageMassH(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder setAverageMassH(com.google.protobuf.DoubleValue value) {
           if (averageMassHBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -9224,10 +10007,10 @@ public final class SkylineDocument {
          * See also: averageMass = 27;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble averageMassH = 2;</code>
+         * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
          */
         public Builder setAverageMassH(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder builderForValue) {
+            com.google.protobuf.DoubleValue.Builder builderForValue) {
           if (averageMassHBuilder_ == null) {
             averageMassH_ = builderForValue.build();
             onChanged();
@@ -9242,13 +10025,13 @@ public final class SkylineDocument {
          * See also: averageMass = 27;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble averageMassH = 2;</code>
+         * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
          */
-        public Builder mergeAverageMassH(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder mergeAverageMassH(com.google.protobuf.DoubleValue value) {
           if (averageMassHBuilder_ == null) {
             if (averageMassH_ != null) {
               averageMassH_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.newBuilder(averageMassH_).mergeFrom(value).buildPartial();
+                com.google.protobuf.DoubleValue.newBuilder(averageMassH_).mergeFrom(value).buildPartial();
             } else {
               averageMassH_ = value;
             }
@@ -9264,7 +10047,7 @@ public final class SkylineDocument {
          * See also: averageMass = 27;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble averageMassH = 2;</code>
+         * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
          */
         public Builder clearAverageMassH() {
           if (averageMassHBuilder_ == null) {
@@ -9282,9 +10065,9 @@ public final class SkylineDocument {
          * See also: averageMass = 27;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble averageMassH = 2;</code>
+         * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder getAverageMassHBuilder() {
+        public com.google.protobuf.DoubleValue.Builder getAverageMassHBuilder() {
           
           onChanged();
           return getAverageMassHFieldBuilder().getBuilder();
@@ -9294,14 +10077,14 @@ public final class SkylineDocument {
          * See also: averageMass = 27;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble averageMassH = 2;</code>
+         * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getAverageMassHOrBuilder() {
+        public com.google.protobuf.DoubleValueOrBuilder getAverageMassHOrBuilder() {
           if (averageMassHBuilder_ != null) {
             return averageMassHBuilder_.getMessageOrBuilder();
           } else {
             return averageMassH_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : averageMassH_;
+                com.google.protobuf.DoubleValue.getDefaultInstance() : averageMassH_;
           }
         }
         /**
@@ -9309,14 +10092,14 @@ public final class SkylineDocument {
          * See also: averageMass = 27;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble averageMassH = 2;</code>
+         * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> 
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getAverageMassHFieldBuilder() {
           if (averageMassHBuilder_ == null) {
             averageMassHBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder>(
+                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
                     getAverageMassH(),
                     getParentForChildren(),
                     isClean());
@@ -9325,15 +10108,15 @@ public final class SkylineDocument {
           return averageMassHBuilder_;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble monoMassH_;
+        private com.google.protobuf.DoubleValue monoMassH_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> monoMassHBuilder_;
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> monoMassHBuilder_;
         /**
          * <pre>
          * See also:  monoMass = 28;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble monoMassH = 3;</code>
+         * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
          * @return Whether the monoMassH field is set.
          */
         public boolean hasMonoMassH() {
@@ -9344,12 +10127,12 @@ public final class SkylineDocument {
          * See also:  monoMass = 28;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble monoMassH = 3;</code>
+         * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
          * @return The monoMassH.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getMonoMassH() {
+        public com.google.protobuf.DoubleValue getMonoMassH() {
           if (monoMassHBuilder_ == null) {
-            return monoMassH_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : monoMassH_;
+            return monoMassH_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : monoMassH_;
           } else {
             return monoMassHBuilder_.getMessage();
           }
@@ -9359,9 +10142,9 @@ public final class SkylineDocument {
          * See also:  monoMass = 28;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble monoMassH = 3;</code>
+         * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
          */
-        public Builder setMonoMassH(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder setMonoMassH(com.google.protobuf.DoubleValue value) {
           if (monoMassHBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -9379,10 +10162,10 @@ public final class SkylineDocument {
          * See also:  monoMass = 28;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble monoMassH = 3;</code>
+         * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
          */
         public Builder setMonoMassH(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder builderForValue) {
+            com.google.protobuf.DoubleValue.Builder builderForValue) {
           if (monoMassHBuilder_ == null) {
             monoMassH_ = builderForValue.build();
             onChanged();
@@ -9397,13 +10180,13 @@ public final class SkylineDocument {
          * See also:  monoMass = 28;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble monoMassH = 3;</code>
+         * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
          */
-        public Builder mergeMonoMassH(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder mergeMonoMassH(com.google.protobuf.DoubleValue value) {
           if (monoMassHBuilder_ == null) {
             if (monoMassH_ != null) {
               monoMassH_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.newBuilder(monoMassH_).mergeFrom(value).buildPartial();
+                com.google.protobuf.DoubleValue.newBuilder(monoMassH_).mergeFrom(value).buildPartial();
             } else {
               monoMassH_ = value;
             }
@@ -9419,7 +10202,7 @@ public final class SkylineDocument {
          * See also:  monoMass = 28;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble monoMassH = 3;</code>
+         * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
          */
         public Builder clearMonoMassH() {
           if (monoMassHBuilder_ == null) {
@@ -9437,9 +10220,9 @@ public final class SkylineDocument {
          * See also:  monoMass = 28;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble monoMassH = 3;</code>
+         * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder getMonoMassHBuilder() {
+        public com.google.protobuf.DoubleValue.Builder getMonoMassHBuilder() {
           
           onChanged();
           return getMonoMassHFieldBuilder().getBuilder();
@@ -9449,14 +10232,14 @@ public final class SkylineDocument {
          * See also:  monoMass = 28;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble monoMassH = 3;</code>
+         * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getMonoMassHOrBuilder() {
+        public com.google.protobuf.DoubleValueOrBuilder getMonoMassHOrBuilder() {
           if (monoMassHBuilder_ != null) {
             return monoMassHBuilder_.getMessageOrBuilder();
           } else {
             return monoMassH_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : monoMassH_;
+                com.google.protobuf.DoubleValue.getDefaultInstance() : monoMassH_;
           }
         }
         /**
@@ -9464,14 +10247,14 @@ public final class SkylineDocument {
          * See also:  monoMass = 28;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalDouble monoMassH = 3;</code>
+         * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> 
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getMonoMassHFieldBuilder() {
           if (monoMassHBuilder_ == null) {
             monoMassHBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder>(
+                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
                     getMonoMassH(),
                     getParentForChildren(),
                     isClean());
@@ -9480,15 +10263,15 @@ public final class SkylineDocument {
           return monoMassHBuilder_;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString customIonName_;
+        private com.google.protobuf.StringValue customIonName_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder> customIonNameBuilder_;
+            com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder> customIonNameBuilder_;
         /**
          * <pre>
          * See also: custom_ion_id = 30;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalString custom_ion_name = 6;</code>
+         * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
          * @return Whether the customIonName field is set.
          */
         public boolean hasCustomIonName() {
@@ -9499,12 +10282,12 @@ public final class SkylineDocument {
          * See also: custom_ion_id = 30;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalString custom_ion_name = 6;</code>
+         * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
          * @return The customIonName.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getCustomIonName() {
+        public com.google.protobuf.StringValue getCustomIonName() {
           if (customIonNameBuilder_ == null) {
-            return customIonName_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.getDefaultInstance() : customIonName_;
+            return customIonName_ == null ? com.google.protobuf.StringValue.getDefaultInstance() : customIonName_;
           } else {
             return customIonNameBuilder_.getMessage();
           }
@@ -9514,9 +10297,9 @@ public final class SkylineDocument {
          * See also: custom_ion_id = 30;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalString custom_ion_name = 6;</code>
+         * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
          */
-        public Builder setCustomIonName(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString value) {
+        public Builder setCustomIonName(com.google.protobuf.StringValue value) {
           if (customIonNameBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -9534,10 +10317,10 @@ public final class SkylineDocument {
          * See also: custom_ion_id = 30;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalString custom_ion_name = 6;</code>
+         * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
          */
         public Builder setCustomIonName(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder builderForValue) {
+            com.google.protobuf.StringValue.Builder builderForValue) {
           if (customIonNameBuilder_ == null) {
             customIonName_ = builderForValue.build();
             onChanged();
@@ -9552,13 +10335,13 @@ public final class SkylineDocument {
          * See also: custom_ion_id = 30;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalString custom_ion_name = 6;</code>
+         * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
          */
-        public Builder mergeCustomIonName(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString value) {
+        public Builder mergeCustomIonName(com.google.protobuf.StringValue value) {
           if (customIonNameBuilder_ == null) {
             if (customIonName_ != null) {
               customIonName_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.newBuilder(customIonName_).mergeFrom(value).buildPartial();
+                com.google.protobuf.StringValue.newBuilder(customIonName_).mergeFrom(value).buildPartial();
             } else {
               customIonName_ = value;
             }
@@ -9574,7 +10357,7 @@ public final class SkylineDocument {
          * See also: custom_ion_id = 30;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalString custom_ion_name = 6;</code>
+         * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
          */
         public Builder clearCustomIonName() {
           if (customIonNameBuilder_ == null) {
@@ -9592,9 +10375,9 @@ public final class SkylineDocument {
          * See also: custom_ion_id = 30;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalString custom_ion_name = 6;</code>
+         * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder getCustomIonNameBuilder() {
+        public com.google.protobuf.StringValue.Builder getCustomIonNameBuilder() {
           
           onChanged();
           return getCustomIonNameFieldBuilder().getBuilder();
@@ -9604,14 +10387,14 @@ public final class SkylineDocument {
          * See also: custom_ion_id = 30;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalString custom_ion_name = 6;</code>
+         * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder getCustomIonNameOrBuilder() {
+        public com.google.protobuf.StringValueOrBuilder getCustomIonNameOrBuilder() {
           if (customIonNameBuilder_ != null) {
             return customIonNameBuilder_.getMessageOrBuilder();
           } else {
             return customIonName_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.getDefaultInstance() : customIonName_;
+                com.google.protobuf.StringValue.getDefaultInstance() : customIonName_;
           }
         }
         /**
@@ -9619,14 +10402,14 @@ public final class SkylineDocument {
          * See also: custom_ion_id = 30;
          * </pre>
          *
-         * <code>.SkylineDocumentProto.OptionalString custom_ion_name = 6;</code>
+         * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder> 
+            com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder> 
             getCustomIonNameFieldBuilder() {
           if (customIonNameBuilder_ == null) {
             customIonNameBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder>(
+                com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder>(
                     getCustomIonName(),
                     getParentForChildren(),
                     isClean());
@@ -9635,31 +10418,31 @@ public final class SkylineDocument {
           return customIonNameBuilder_;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString measuredIonName_;
+        private com.google.protobuf.StringValue measuredIonName_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder> measuredIonNameBuilder_;
+            com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder> measuredIonNameBuilder_;
         /**
-         * <code>.SkylineDocumentProto.OptionalString measured_ion_name = 7;</code>
+         * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
          * @return Whether the measuredIonName field is set.
          */
         public boolean hasMeasuredIonName() {
           return measuredIonNameBuilder_ != null || measuredIonName_ != null;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString measured_ion_name = 7;</code>
+         * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
          * @return The measuredIonName.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getMeasuredIonName() {
+        public com.google.protobuf.StringValue getMeasuredIonName() {
           if (measuredIonNameBuilder_ == null) {
-            return measuredIonName_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.getDefaultInstance() : measuredIonName_;
+            return measuredIonName_ == null ? com.google.protobuf.StringValue.getDefaultInstance() : measuredIonName_;
           } else {
             return measuredIonNameBuilder_.getMessage();
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString measured_ion_name = 7;</code>
+         * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
          */
-        public Builder setMeasuredIonName(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString value) {
+        public Builder setMeasuredIonName(com.google.protobuf.StringValue value) {
           if (measuredIonNameBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -9673,10 +10456,10 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString measured_ion_name = 7;</code>
+         * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
          */
         public Builder setMeasuredIonName(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder builderForValue) {
+            com.google.protobuf.StringValue.Builder builderForValue) {
           if (measuredIonNameBuilder_ == null) {
             measuredIonName_ = builderForValue.build();
             onChanged();
@@ -9687,13 +10470,13 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString measured_ion_name = 7;</code>
+         * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
          */
-        public Builder mergeMeasuredIonName(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString value) {
+        public Builder mergeMeasuredIonName(com.google.protobuf.StringValue value) {
           if (measuredIonNameBuilder_ == null) {
             if (measuredIonName_ != null) {
               measuredIonName_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.newBuilder(measuredIonName_).mergeFrom(value).buildPartial();
+                com.google.protobuf.StringValue.newBuilder(measuredIonName_).mergeFrom(value).buildPartial();
             } else {
               measuredIonName_ = value;
             }
@@ -9705,7 +10488,7 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString measured_ion_name = 7;</code>
+         * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
          */
         public Builder clearMeasuredIonName() {
           if (measuredIonNameBuilder_ == null) {
@@ -9719,33 +10502,33 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString measured_ion_name = 7;</code>
+         * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder getMeasuredIonNameBuilder() {
+        public com.google.protobuf.StringValue.Builder getMeasuredIonNameBuilder() {
           
           onChanged();
           return getMeasuredIonNameFieldBuilder().getBuilder();
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString measured_ion_name = 7;</code>
+         * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder getMeasuredIonNameOrBuilder() {
+        public com.google.protobuf.StringValueOrBuilder getMeasuredIonNameOrBuilder() {
           if (measuredIonNameBuilder_ != null) {
             return measuredIonNameBuilder_.getMessageOrBuilder();
           } else {
             return measuredIonName_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.getDefaultInstance() : measuredIonName_;
+                com.google.protobuf.StringValue.getDefaultInstance() : measuredIonName_;
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString measured_ion_name = 7;</code>
+         * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder> 
+            com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder> 
             getMeasuredIonNameFieldBuilder() {
           if (measuredIonNameBuilder_ == null) {
             measuredIonNameBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder>(
+                com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder>(
                     getMeasuredIonName(),
                     getParentForChildren(),
                     isClean());
@@ -10023,31 +10806,31 @@ public final class SkylineDocument {
           return isotopeDistRankBuilder_;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat isotopeDistProportion_;
+        private com.google.protobuf.FloatValue isotopeDistProportion_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloatOrBuilder> isotopeDistProportionBuilder_;
+            com.google.protobuf.FloatValue, com.google.protobuf.FloatValue.Builder, com.google.protobuf.FloatValueOrBuilder> isotopeDistProportionBuilder_;
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat isotopeDistProportion = 12;</code>
+         * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
          * @return Whether the isotopeDistProportion field is set.
          */
         public boolean hasIsotopeDistProportion() {
           return isotopeDistProportionBuilder_ != null || isotopeDistProportion_ != null;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat isotopeDistProportion = 12;</code>
+         * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
          * @return The isotopeDistProportion.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat getIsotopeDistProportion() {
+        public com.google.protobuf.FloatValue getIsotopeDistProportion() {
           if (isotopeDistProportionBuilder_ == null) {
-            return isotopeDistProportion_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.getDefaultInstance() : isotopeDistProportion_;
+            return isotopeDistProportion_ == null ? com.google.protobuf.FloatValue.getDefaultInstance() : isotopeDistProportion_;
           } else {
             return isotopeDistProportionBuilder_.getMessage();
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat isotopeDistProportion = 12;</code>
+         * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
          */
-        public Builder setIsotopeDistProportion(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat value) {
+        public Builder setIsotopeDistProportion(com.google.protobuf.FloatValue value) {
           if (isotopeDistProportionBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -10061,10 +10844,10 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat isotopeDistProportion = 12;</code>
+         * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
          */
         public Builder setIsotopeDistProportion(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.Builder builderForValue) {
+            com.google.protobuf.FloatValue.Builder builderForValue) {
           if (isotopeDistProportionBuilder_ == null) {
             isotopeDistProportion_ = builderForValue.build();
             onChanged();
@@ -10075,13 +10858,13 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat isotopeDistProportion = 12;</code>
+         * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
          */
-        public Builder mergeIsotopeDistProportion(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat value) {
+        public Builder mergeIsotopeDistProportion(com.google.protobuf.FloatValue value) {
           if (isotopeDistProportionBuilder_ == null) {
             if (isotopeDistProportion_ != null) {
               isotopeDistProportion_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.newBuilder(isotopeDistProportion_).mergeFrom(value).buildPartial();
+                com.google.protobuf.FloatValue.newBuilder(isotopeDistProportion_).mergeFrom(value).buildPartial();
             } else {
               isotopeDistProportion_ = value;
             }
@@ -10093,7 +10876,7 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat isotopeDistProportion = 12;</code>
+         * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
          */
         public Builder clearIsotopeDistProportion() {
           if (isotopeDistProportionBuilder_ == null) {
@@ -10107,33 +10890,33 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat isotopeDistProportion = 12;</code>
+         * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.Builder getIsotopeDistProportionBuilder() {
+        public com.google.protobuf.FloatValue.Builder getIsotopeDistProportionBuilder() {
           
           onChanged();
           return getIsotopeDistProportionFieldBuilder().getBuilder();
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat isotopeDistProportion = 12;</code>
+         * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloatOrBuilder getIsotopeDistProportionOrBuilder() {
+        public com.google.protobuf.FloatValueOrBuilder getIsotopeDistProportionOrBuilder() {
           if (isotopeDistProportionBuilder_ != null) {
             return isotopeDistProportionBuilder_.getMessageOrBuilder();
           } else {
             return isotopeDistProportion_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.getDefaultInstance() : isotopeDistProportion_;
+                com.google.protobuf.FloatValue.getDefaultInstance() : isotopeDistProportion_;
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalFloat isotopeDistProportion = 12;</code>
+         * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloatOrBuilder> 
+            com.google.protobuf.FloatValue, com.google.protobuf.FloatValue.Builder, com.google.protobuf.FloatValueOrBuilder> 
             getIsotopeDistProportionFieldBuilder() {
           if (isotopeDistProportionBuilder_ == null) {
             isotopeDistProportionBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloatOrBuilder>(
+                com.google.protobuf.FloatValue, com.google.protobuf.FloatValue.Builder, com.google.protobuf.FloatValueOrBuilder>(
                     getIsotopeDistProportion(),
                     getParentForChildren(),
                     isClean());
@@ -10490,31 +11273,31 @@ public final class SkylineDocument {
           return this;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble collisionEnergy_;
+        private com.google.protobuf.DoubleValue collisionEnergy_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> collisionEnergyBuilder_;
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> collisionEnergyBuilder_;
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble collisionEnergy = 21;</code>
+         * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
          * @return Whether the collisionEnergy field is set.
          */
         public boolean hasCollisionEnergy() {
           return collisionEnergyBuilder_ != null || collisionEnergy_ != null;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble collisionEnergy = 21;</code>
+         * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
          * @return The collisionEnergy.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getCollisionEnergy() {
+        public com.google.protobuf.DoubleValue getCollisionEnergy() {
           if (collisionEnergyBuilder_ == null) {
-            return collisionEnergy_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : collisionEnergy_;
+            return collisionEnergy_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : collisionEnergy_;
           } else {
             return collisionEnergyBuilder_.getMessage();
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble collisionEnergy = 21;</code>
+         * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
          */
-        public Builder setCollisionEnergy(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder setCollisionEnergy(com.google.protobuf.DoubleValue value) {
           if (collisionEnergyBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -10528,10 +11311,10 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble collisionEnergy = 21;</code>
+         * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
          */
         public Builder setCollisionEnergy(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder builderForValue) {
+            com.google.protobuf.DoubleValue.Builder builderForValue) {
           if (collisionEnergyBuilder_ == null) {
             collisionEnergy_ = builderForValue.build();
             onChanged();
@@ -10542,13 +11325,13 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble collisionEnergy = 21;</code>
+         * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
          */
-        public Builder mergeCollisionEnergy(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder mergeCollisionEnergy(com.google.protobuf.DoubleValue value) {
           if (collisionEnergyBuilder_ == null) {
             if (collisionEnergy_ != null) {
               collisionEnergy_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.newBuilder(collisionEnergy_).mergeFrom(value).buildPartial();
+                com.google.protobuf.DoubleValue.newBuilder(collisionEnergy_).mergeFrom(value).buildPartial();
             } else {
               collisionEnergy_ = value;
             }
@@ -10560,7 +11343,7 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble collisionEnergy = 21;</code>
+         * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
          */
         public Builder clearCollisionEnergy() {
           if (collisionEnergyBuilder_ == null) {
@@ -10574,33 +11357,33 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble collisionEnergy = 21;</code>
+         * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder getCollisionEnergyBuilder() {
+        public com.google.protobuf.DoubleValue.Builder getCollisionEnergyBuilder() {
           
           onChanged();
           return getCollisionEnergyFieldBuilder().getBuilder();
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble collisionEnergy = 21;</code>
+         * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getCollisionEnergyOrBuilder() {
+        public com.google.protobuf.DoubleValueOrBuilder getCollisionEnergyOrBuilder() {
           if (collisionEnergyBuilder_ != null) {
             return collisionEnergyBuilder_.getMessageOrBuilder();
           } else {
             return collisionEnergy_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : collisionEnergy_;
+                com.google.protobuf.DoubleValue.getDefaultInstance() : collisionEnergy_;
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble collisionEnergy = 21;</code>
+         * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> 
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getCollisionEnergyFieldBuilder() {
           if (collisionEnergyBuilder_ == null) {
             collisionEnergyBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder>(
+                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
                     getCollisionEnergy(),
                     getParentForChildren(),
                     isClean());
@@ -10609,31 +11392,31 @@ public final class SkylineDocument {
           return collisionEnergyBuilder_;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble declusteringPotential_;
+        private com.google.protobuf.DoubleValue declusteringPotential_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> declusteringPotentialBuilder_;
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> declusteringPotentialBuilder_;
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble declusteringPotential = 22;</code>
+         * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
          * @return Whether the declusteringPotential field is set.
          */
         public boolean hasDeclusteringPotential() {
           return declusteringPotentialBuilder_ != null || declusteringPotential_ != null;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble declusteringPotential = 22;</code>
+         * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
          * @return The declusteringPotential.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getDeclusteringPotential() {
+        public com.google.protobuf.DoubleValue getDeclusteringPotential() {
           if (declusteringPotentialBuilder_ == null) {
-            return declusteringPotential_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : declusteringPotential_;
+            return declusteringPotential_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : declusteringPotential_;
           } else {
             return declusteringPotentialBuilder_.getMessage();
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble declusteringPotential = 22;</code>
+         * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
          */
-        public Builder setDeclusteringPotential(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder setDeclusteringPotential(com.google.protobuf.DoubleValue value) {
           if (declusteringPotentialBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -10647,10 +11430,10 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble declusteringPotential = 22;</code>
+         * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
          */
         public Builder setDeclusteringPotential(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder builderForValue) {
+            com.google.protobuf.DoubleValue.Builder builderForValue) {
           if (declusteringPotentialBuilder_ == null) {
             declusteringPotential_ = builderForValue.build();
             onChanged();
@@ -10661,13 +11444,13 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble declusteringPotential = 22;</code>
+         * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
          */
-        public Builder mergeDeclusteringPotential(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder mergeDeclusteringPotential(com.google.protobuf.DoubleValue value) {
           if (declusteringPotentialBuilder_ == null) {
             if (declusteringPotential_ != null) {
               declusteringPotential_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.newBuilder(declusteringPotential_).mergeFrom(value).buildPartial();
+                com.google.protobuf.DoubleValue.newBuilder(declusteringPotential_).mergeFrom(value).buildPartial();
             } else {
               declusteringPotential_ = value;
             }
@@ -10679,7 +11462,7 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble declusteringPotential = 22;</code>
+         * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
          */
         public Builder clearDeclusteringPotential() {
           if (declusteringPotentialBuilder_ == null) {
@@ -10693,33 +11476,33 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble declusteringPotential = 22;</code>
+         * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder getDeclusteringPotentialBuilder() {
+        public com.google.protobuf.DoubleValue.Builder getDeclusteringPotentialBuilder() {
           
           onChanged();
           return getDeclusteringPotentialFieldBuilder().getBuilder();
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble declusteringPotential = 22;</code>
+         * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getDeclusteringPotentialOrBuilder() {
+        public com.google.protobuf.DoubleValueOrBuilder getDeclusteringPotentialOrBuilder() {
           if (declusteringPotentialBuilder_ != null) {
             return declusteringPotentialBuilder_.getMessageOrBuilder();
           } else {
             return declusteringPotential_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : declusteringPotential_;
+                com.google.protobuf.DoubleValue.getDefaultInstance() : declusteringPotential_;
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble declusteringPotential = 22;</code>
+         * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> 
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getDeclusteringPotentialFieldBuilder() {
           if (declusteringPotentialBuilder_ == null) {
             declusteringPotentialBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder>(
+                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
                     getDeclusteringPotential(),
                     getParentForChildren(),
                     isClean());
@@ -11260,31 +12043,31 @@ public final class SkylineDocument {
           return resultsBuilder_;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble averageMass_;
+        private com.google.protobuf.DoubleValue averageMass_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> averageMassBuilder_;
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> averageMassBuilder_;
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble averageMass = 27;</code>
+         * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
          * @return Whether the averageMass field is set.
          */
         public boolean hasAverageMass() {
           return averageMassBuilder_ != null || averageMass_ != null;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble averageMass = 27;</code>
+         * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
          * @return The averageMass.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getAverageMass() {
+        public com.google.protobuf.DoubleValue getAverageMass() {
           if (averageMassBuilder_ == null) {
-            return averageMass_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : averageMass_;
+            return averageMass_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : averageMass_;
           } else {
             return averageMassBuilder_.getMessage();
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble averageMass = 27;</code>
+         * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
          */
-        public Builder setAverageMass(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder setAverageMass(com.google.protobuf.DoubleValue value) {
           if (averageMassBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -11298,10 +12081,10 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble averageMass = 27;</code>
+         * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
          */
         public Builder setAverageMass(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder builderForValue) {
+            com.google.protobuf.DoubleValue.Builder builderForValue) {
           if (averageMassBuilder_ == null) {
             averageMass_ = builderForValue.build();
             onChanged();
@@ -11312,13 +12095,13 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble averageMass = 27;</code>
+         * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
          */
-        public Builder mergeAverageMass(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder mergeAverageMass(com.google.protobuf.DoubleValue value) {
           if (averageMassBuilder_ == null) {
             if (averageMass_ != null) {
               averageMass_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.newBuilder(averageMass_).mergeFrom(value).buildPartial();
+                com.google.protobuf.DoubleValue.newBuilder(averageMass_).mergeFrom(value).buildPartial();
             } else {
               averageMass_ = value;
             }
@@ -11330,7 +12113,7 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble averageMass = 27;</code>
+         * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
          */
         public Builder clearAverageMass() {
           if (averageMassBuilder_ == null) {
@@ -11344,33 +12127,33 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble averageMass = 27;</code>
+         * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder getAverageMassBuilder() {
+        public com.google.protobuf.DoubleValue.Builder getAverageMassBuilder() {
           
           onChanged();
           return getAverageMassFieldBuilder().getBuilder();
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble averageMass = 27;</code>
+         * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getAverageMassOrBuilder() {
+        public com.google.protobuf.DoubleValueOrBuilder getAverageMassOrBuilder() {
           if (averageMassBuilder_ != null) {
             return averageMassBuilder_.getMessageOrBuilder();
           } else {
             return averageMass_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : averageMass_;
+                com.google.protobuf.DoubleValue.getDefaultInstance() : averageMass_;
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble averageMass = 27;</code>
+         * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> 
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getAverageMassFieldBuilder() {
           if (averageMassBuilder_ == null) {
             averageMassBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder>(
+                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
                     getAverageMass(),
                     getParentForChildren(),
                     isClean());
@@ -11379,31 +12162,31 @@ public final class SkylineDocument {
           return averageMassBuilder_;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble monoMass_;
+        private com.google.protobuf.DoubleValue monoMass_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> monoMassBuilder_;
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> monoMassBuilder_;
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble monoMass = 28;</code>
+         * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
          * @return Whether the monoMass field is set.
          */
         public boolean hasMonoMass() {
           return monoMassBuilder_ != null || monoMass_ != null;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble monoMass = 28;</code>
+         * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
          * @return The monoMass.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getMonoMass() {
+        public com.google.protobuf.DoubleValue getMonoMass() {
           if (monoMassBuilder_ == null) {
-            return monoMass_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : monoMass_;
+            return monoMass_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : monoMass_;
           } else {
             return monoMassBuilder_.getMessage();
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble monoMass = 28;</code>
+         * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
          */
-        public Builder setMonoMass(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder setMonoMass(com.google.protobuf.DoubleValue value) {
           if (monoMassBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -11417,10 +12200,10 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble monoMass = 28;</code>
+         * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
          */
         public Builder setMonoMass(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder builderForValue) {
+            com.google.protobuf.DoubleValue.Builder builderForValue) {
           if (monoMassBuilder_ == null) {
             monoMass_ = builderForValue.build();
             onChanged();
@@ -11431,13 +12214,13 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble monoMass = 28;</code>
+         * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
          */
-        public Builder mergeMonoMass(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder mergeMonoMass(com.google.protobuf.DoubleValue value) {
           if (monoMassBuilder_ == null) {
             if (monoMass_ != null) {
               monoMass_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.newBuilder(monoMass_).mergeFrom(value).buildPartial();
+                com.google.protobuf.DoubleValue.newBuilder(monoMass_).mergeFrom(value).buildPartial();
             } else {
               monoMass_ = value;
             }
@@ -11449,7 +12232,7 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble monoMass = 28;</code>
+         * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
          */
         public Builder clearMonoMass() {
           if (monoMassBuilder_ == null) {
@@ -11463,33 +12246,33 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble monoMass = 28;</code>
+         * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder getMonoMassBuilder() {
+        public com.google.protobuf.DoubleValue.Builder getMonoMassBuilder() {
           
           onChanged();
           return getMonoMassFieldBuilder().getBuilder();
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble monoMass = 28;</code>
+         * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getMonoMassOrBuilder() {
+        public com.google.protobuf.DoubleValueOrBuilder getMonoMassOrBuilder() {
           if (monoMassBuilder_ != null) {
             return monoMassBuilder_.getMessageOrBuilder();
           } else {
             return monoMass_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : monoMass_;
+                com.google.protobuf.DoubleValue.getDefaultInstance() : monoMass_;
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble monoMass = 28;</code>
+         * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> 
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getMonoMassFieldBuilder() {
           if (monoMassBuilder_ == null) {
             monoMassBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder>(
+                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
                     getMonoMass(),
                     getParentForChildren(),
                     isClean());
@@ -11498,31 +12281,31 @@ public final class SkylineDocument {
           return monoMassBuilder_;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString adduct_;
+        private com.google.protobuf.StringValue adduct_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder> adductBuilder_;
+            com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder> adductBuilder_;
         /**
-         * <code>.SkylineDocumentProto.OptionalString adduct = 29;</code>
+         * <code>.google.protobuf.StringValue adduct = 29;</code>
          * @return Whether the adduct field is set.
          */
         public boolean hasAdduct() {
           return adductBuilder_ != null || adduct_ != null;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString adduct = 29;</code>
+         * <code>.google.protobuf.StringValue adduct = 29;</code>
          * @return The adduct.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getAdduct() {
+        public com.google.protobuf.StringValue getAdduct() {
           if (adductBuilder_ == null) {
-            return adduct_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.getDefaultInstance() : adduct_;
+            return adduct_ == null ? com.google.protobuf.StringValue.getDefaultInstance() : adduct_;
           } else {
             return adductBuilder_.getMessage();
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString adduct = 29;</code>
+         * <code>.google.protobuf.StringValue adduct = 29;</code>
          */
-        public Builder setAdduct(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString value) {
+        public Builder setAdduct(com.google.protobuf.StringValue value) {
           if (adductBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -11536,10 +12319,10 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString adduct = 29;</code>
+         * <code>.google.protobuf.StringValue adduct = 29;</code>
          */
         public Builder setAdduct(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder builderForValue) {
+            com.google.protobuf.StringValue.Builder builderForValue) {
           if (adductBuilder_ == null) {
             adduct_ = builderForValue.build();
             onChanged();
@@ -11550,13 +12333,13 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString adduct = 29;</code>
+         * <code>.google.protobuf.StringValue adduct = 29;</code>
          */
-        public Builder mergeAdduct(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString value) {
+        public Builder mergeAdduct(com.google.protobuf.StringValue value) {
           if (adductBuilder_ == null) {
             if (adduct_ != null) {
               adduct_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.newBuilder(adduct_).mergeFrom(value).buildPartial();
+                com.google.protobuf.StringValue.newBuilder(adduct_).mergeFrom(value).buildPartial();
             } else {
               adduct_ = value;
             }
@@ -11568,7 +12351,7 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString adduct = 29;</code>
+         * <code>.google.protobuf.StringValue adduct = 29;</code>
          */
         public Builder clearAdduct() {
           if (adductBuilder_ == null) {
@@ -11582,33 +12365,33 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString adduct = 29;</code>
+         * <code>.google.protobuf.StringValue adduct = 29;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder getAdductBuilder() {
+        public com.google.protobuf.StringValue.Builder getAdductBuilder() {
           
           onChanged();
           return getAdductFieldBuilder().getBuilder();
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString adduct = 29;</code>
+         * <code>.google.protobuf.StringValue adduct = 29;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder getAdductOrBuilder() {
+        public com.google.protobuf.StringValueOrBuilder getAdductOrBuilder() {
           if (adductBuilder_ != null) {
             return adductBuilder_.getMessageOrBuilder();
           } else {
             return adduct_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.getDefaultInstance() : adduct_;
+                com.google.protobuf.StringValue.getDefaultInstance() : adduct_;
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString adduct = 29;</code>
+         * <code>.google.protobuf.StringValue adduct = 29;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder> 
+            com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder> 
             getAdductFieldBuilder() {
           if (adductBuilder_ == null) {
             adductBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder>(
+                com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder>(
                     getAdduct(),
                     getParentForChildren(),
                     isClean());
@@ -11617,31 +12400,31 @@ public final class SkylineDocument {
           return adductBuilder_;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString moleculeId_;
+        private com.google.protobuf.StringValue moleculeId_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder> moleculeIdBuilder_;
+            com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder> moleculeIdBuilder_;
         /**
-         * <code>.SkylineDocumentProto.OptionalString molecule_id = 30;</code>
+         * <code>.google.protobuf.StringValue molecule_id = 30;</code>
          * @return Whether the moleculeId field is set.
          */
         public boolean hasMoleculeId() {
           return moleculeIdBuilder_ != null || moleculeId_ != null;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString molecule_id = 30;</code>
+         * <code>.google.protobuf.StringValue molecule_id = 30;</code>
          * @return The moleculeId.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getMoleculeId() {
+        public com.google.protobuf.StringValue getMoleculeId() {
           if (moleculeIdBuilder_ == null) {
-            return moleculeId_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.getDefaultInstance() : moleculeId_;
+            return moleculeId_ == null ? com.google.protobuf.StringValue.getDefaultInstance() : moleculeId_;
           } else {
             return moleculeIdBuilder_.getMessage();
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString molecule_id = 30;</code>
+         * <code>.google.protobuf.StringValue molecule_id = 30;</code>
          */
-        public Builder setMoleculeId(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString value) {
+        public Builder setMoleculeId(com.google.protobuf.StringValue value) {
           if (moleculeIdBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -11655,10 +12438,10 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString molecule_id = 30;</code>
+         * <code>.google.protobuf.StringValue molecule_id = 30;</code>
          */
         public Builder setMoleculeId(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder builderForValue) {
+            com.google.protobuf.StringValue.Builder builderForValue) {
           if (moleculeIdBuilder_ == null) {
             moleculeId_ = builderForValue.build();
             onChanged();
@@ -11669,13 +12452,13 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString molecule_id = 30;</code>
+         * <code>.google.protobuf.StringValue molecule_id = 30;</code>
          */
-        public Builder mergeMoleculeId(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString value) {
+        public Builder mergeMoleculeId(com.google.protobuf.StringValue value) {
           if (moleculeIdBuilder_ == null) {
             if (moleculeId_ != null) {
               moleculeId_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.newBuilder(moleculeId_).mergeFrom(value).buildPartial();
+                com.google.protobuf.StringValue.newBuilder(moleculeId_).mergeFrom(value).buildPartial();
             } else {
               moleculeId_ = value;
             }
@@ -11687,7 +12470,7 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString molecule_id = 30;</code>
+         * <code>.google.protobuf.StringValue molecule_id = 30;</code>
          */
         public Builder clearMoleculeId() {
           if (moleculeIdBuilder_ == null) {
@@ -11701,33 +12484,33 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString molecule_id = 30;</code>
+         * <code>.google.protobuf.StringValue molecule_id = 30;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder getMoleculeIdBuilder() {
+        public com.google.protobuf.StringValue.Builder getMoleculeIdBuilder() {
           
           onChanged();
           return getMoleculeIdFieldBuilder().getBuilder();
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString molecule_id = 30;</code>
+         * <code>.google.protobuf.StringValue molecule_id = 30;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder getMoleculeIdOrBuilder() {
+        public com.google.protobuf.StringValueOrBuilder getMoleculeIdOrBuilder() {
           if (moleculeIdBuilder_ != null) {
             return moleculeIdBuilder_.getMessageOrBuilder();
           } else {
             return moleculeId_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.getDefaultInstance() : moleculeId_;
+                com.google.protobuf.StringValue.getDefaultInstance() : moleculeId_;
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalString molecule_id = 30;</code>
+         * <code>.google.protobuf.StringValue molecule_id = 30;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder> 
+            com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder> 
             getMoleculeIdFieldBuilder() {
           if (moleculeIdBuilder_ == null) {
             moleculeIdBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder>(
+                com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder>(
                     getMoleculeId(),
                     getParentForChildren(),
                     isClean());
@@ -11767,31 +12550,31 @@ public final class SkylineDocument {
           return this;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble explicitCollisionEnergy_;
+        private com.google.protobuf.DoubleValue explicitCollisionEnergy_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> explicitCollisionEnergyBuilder_;
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> explicitCollisionEnergyBuilder_;
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitCollisionEnergy = 32;</code>
+         * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
          * @return Whether the explicitCollisionEnergy field is set.
          */
         public boolean hasExplicitCollisionEnergy() {
           return explicitCollisionEnergyBuilder_ != null || explicitCollisionEnergy_ != null;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitCollisionEnergy = 32;</code>
+         * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
          * @return The explicitCollisionEnergy.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getExplicitCollisionEnergy() {
+        public com.google.protobuf.DoubleValue getExplicitCollisionEnergy() {
           if (explicitCollisionEnergyBuilder_ == null) {
-            return explicitCollisionEnergy_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : explicitCollisionEnergy_;
+            return explicitCollisionEnergy_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : explicitCollisionEnergy_;
           } else {
             return explicitCollisionEnergyBuilder_.getMessage();
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitCollisionEnergy = 32;</code>
+         * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
          */
-        public Builder setExplicitCollisionEnergy(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder setExplicitCollisionEnergy(com.google.protobuf.DoubleValue value) {
           if (explicitCollisionEnergyBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -11805,10 +12588,10 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitCollisionEnergy = 32;</code>
+         * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
          */
         public Builder setExplicitCollisionEnergy(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder builderForValue) {
+            com.google.protobuf.DoubleValue.Builder builderForValue) {
           if (explicitCollisionEnergyBuilder_ == null) {
             explicitCollisionEnergy_ = builderForValue.build();
             onChanged();
@@ -11819,13 +12602,13 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitCollisionEnergy = 32;</code>
+         * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
          */
-        public Builder mergeExplicitCollisionEnergy(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder mergeExplicitCollisionEnergy(com.google.protobuf.DoubleValue value) {
           if (explicitCollisionEnergyBuilder_ == null) {
             if (explicitCollisionEnergy_ != null) {
               explicitCollisionEnergy_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.newBuilder(explicitCollisionEnergy_).mergeFrom(value).buildPartial();
+                com.google.protobuf.DoubleValue.newBuilder(explicitCollisionEnergy_).mergeFrom(value).buildPartial();
             } else {
               explicitCollisionEnergy_ = value;
             }
@@ -11837,7 +12620,7 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitCollisionEnergy = 32;</code>
+         * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
          */
         public Builder clearExplicitCollisionEnergy() {
           if (explicitCollisionEnergyBuilder_ == null) {
@@ -11851,33 +12634,33 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitCollisionEnergy = 32;</code>
+         * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder getExplicitCollisionEnergyBuilder() {
+        public com.google.protobuf.DoubleValue.Builder getExplicitCollisionEnergyBuilder() {
           
           onChanged();
           return getExplicitCollisionEnergyFieldBuilder().getBuilder();
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitCollisionEnergy = 32;</code>
+         * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getExplicitCollisionEnergyOrBuilder() {
+        public com.google.protobuf.DoubleValueOrBuilder getExplicitCollisionEnergyOrBuilder() {
           if (explicitCollisionEnergyBuilder_ != null) {
             return explicitCollisionEnergyBuilder_.getMessageOrBuilder();
           } else {
             return explicitCollisionEnergy_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : explicitCollisionEnergy_;
+                com.google.protobuf.DoubleValue.getDefaultInstance() : explicitCollisionEnergy_;
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitCollisionEnergy = 32;</code>
+         * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> 
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getExplicitCollisionEnergyFieldBuilder() {
           if (explicitCollisionEnergyBuilder_ == null) {
             explicitCollisionEnergyBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder>(
+                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
                     getExplicitCollisionEnergy(),
                     getParentForChildren(),
                     isClean());
@@ -11886,31 +12669,31 @@ public final class SkylineDocument {
           return explicitCollisionEnergyBuilder_;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble explicitIonMobilityHighEnergyOffset_;
+        private com.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> explicitIonMobilityHighEnergyOffsetBuilder_;
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> explicitIonMobilityHighEnergyOffsetBuilder_;
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitIonMobilityHighEnergyOffset = 33;</code>
+         * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
          * @return Whether the explicitIonMobilityHighEnergyOffset field is set.
          */
         public boolean hasExplicitIonMobilityHighEnergyOffset() {
           return explicitIonMobilityHighEnergyOffsetBuilder_ != null || explicitIonMobilityHighEnergyOffset_ != null;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitIonMobilityHighEnergyOffset = 33;</code>
+         * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
          * @return The explicitIonMobilityHighEnergyOffset.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getExplicitIonMobilityHighEnergyOffset() {
+        public com.google.protobuf.DoubleValue getExplicitIonMobilityHighEnergyOffset() {
           if (explicitIonMobilityHighEnergyOffsetBuilder_ == null) {
-            return explicitIonMobilityHighEnergyOffset_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : explicitIonMobilityHighEnergyOffset_;
+            return explicitIonMobilityHighEnergyOffset_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : explicitIonMobilityHighEnergyOffset_;
           } else {
             return explicitIonMobilityHighEnergyOffsetBuilder_.getMessage();
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitIonMobilityHighEnergyOffset = 33;</code>
+         * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
          */
-        public Builder setExplicitIonMobilityHighEnergyOffset(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder setExplicitIonMobilityHighEnergyOffset(com.google.protobuf.DoubleValue value) {
           if (explicitIonMobilityHighEnergyOffsetBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -11924,10 +12707,10 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitIonMobilityHighEnergyOffset = 33;</code>
+         * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
          */
         public Builder setExplicitIonMobilityHighEnergyOffset(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder builderForValue) {
+            com.google.protobuf.DoubleValue.Builder builderForValue) {
           if (explicitIonMobilityHighEnergyOffsetBuilder_ == null) {
             explicitIonMobilityHighEnergyOffset_ = builderForValue.build();
             onChanged();
@@ -11938,13 +12721,13 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitIonMobilityHighEnergyOffset = 33;</code>
+         * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
          */
-        public Builder mergeExplicitIonMobilityHighEnergyOffset(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder mergeExplicitIonMobilityHighEnergyOffset(com.google.protobuf.DoubleValue value) {
           if (explicitIonMobilityHighEnergyOffsetBuilder_ == null) {
             if (explicitIonMobilityHighEnergyOffset_ != null) {
               explicitIonMobilityHighEnergyOffset_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.newBuilder(explicitIonMobilityHighEnergyOffset_).mergeFrom(value).buildPartial();
+                com.google.protobuf.DoubleValue.newBuilder(explicitIonMobilityHighEnergyOffset_).mergeFrom(value).buildPartial();
             } else {
               explicitIonMobilityHighEnergyOffset_ = value;
             }
@@ -11956,7 +12739,7 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitIonMobilityHighEnergyOffset = 33;</code>
+         * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
          */
         public Builder clearExplicitIonMobilityHighEnergyOffset() {
           if (explicitIonMobilityHighEnergyOffsetBuilder_ == null) {
@@ -11970,33 +12753,33 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitIonMobilityHighEnergyOffset = 33;</code>
+         * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder getExplicitIonMobilityHighEnergyOffsetBuilder() {
+        public com.google.protobuf.DoubleValue.Builder getExplicitIonMobilityHighEnergyOffsetBuilder() {
           
           onChanged();
           return getExplicitIonMobilityHighEnergyOffsetFieldBuilder().getBuilder();
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitIonMobilityHighEnergyOffset = 33;</code>
+         * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getExplicitIonMobilityHighEnergyOffsetOrBuilder() {
+        public com.google.protobuf.DoubleValueOrBuilder getExplicitIonMobilityHighEnergyOffsetOrBuilder() {
           if (explicitIonMobilityHighEnergyOffsetBuilder_ != null) {
             return explicitIonMobilityHighEnergyOffsetBuilder_.getMessageOrBuilder();
           } else {
             return explicitIonMobilityHighEnergyOffset_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : explicitIonMobilityHighEnergyOffset_;
+                com.google.protobuf.DoubleValue.getDefaultInstance() : explicitIonMobilityHighEnergyOffset_;
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitIonMobilityHighEnergyOffset = 33;</code>
+         * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> 
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getExplicitIonMobilityHighEnergyOffsetFieldBuilder() {
           if (explicitIonMobilityHighEnergyOffsetBuilder_ == null) {
             explicitIonMobilityHighEnergyOffsetBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder>(
+                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
                     getExplicitIonMobilityHighEnergyOffset(),
                     getParentForChildren(),
                     isClean());
@@ -12005,31 +12788,31 @@ public final class SkylineDocument {
           return explicitIonMobilityHighEnergyOffsetBuilder_;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble explicitSLens_;
+        private com.google.protobuf.DoubleValue explicitSLens_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> explicitSLensBuilder_;
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> explicitSLensBuilder_;
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitSLens = 34;</code>
+         * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
          * @return Whether the explicitSLens field is set.
          */
         public boolean hasExplicitSLens() {
           return explicitSLensBuilder_ != null || explicitSLens_ != null;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitSLens = 34;</code>
+         * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
          * @return The explicitSLens.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getExplicitSLens() {
+        public com.google.protobuf.DoubleValue getExplicitSLens() {
           if (explicitSLensBuilder_ == null) {
-            return explicitSLens_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : explicitSLens_;
+            return explicitSLens_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : explicitSLens_;
           } else {
             return explicitSLensBuilder_.getMessage();
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitSLens = 34;</code>
+         * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
          */
-        public Builder setExplicitSLens(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder setExplicitSLens(com.google.protobuf.DoubleValue value) {
           if (explicitSLensBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -12043,10 +12826,10 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitSLens = 34;</code>
+         * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
          */
         public Builder setExplicitSLens(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder builderForValue) {
+            com.google.protobuf.DoubleValue.Builder builderForValue) {
           if (explicitSLensBuilder_ == null) {
             explicitSLens_ = builderForValue.build();
             onChanged();
@@ -12057,13 +12840,13 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitSLens = 34;</code>
+         * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
          */
-        public Builder mergeExplicitSLens(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder mergeExplicitSLens(com.google.protobuf.DoubleValue value) {
           if (explicitSLensBuilder_ == null) {
             if (explicitSLens_ != null) {
               explicitSLens_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.newBuilder(explicitSLens_).mergeFrom(value).buildPartial();
+                com.google.protobuf.DoubleValue.newBuilder(explicitSLens_).mergeFrom(value).buildPartial();
             } else {
               explicitSLens_ = value;
             }
@@ -12075,7 +12858,7 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitSLens = 34;</code>
+         * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
          */
         public Builder clearExplicitSLens() {
           if (explicitSLensBuilder_ == null) {
@@ -12089,33 +12872,33 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitSLens = 34;</code>
+         * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder getExplicitSLensBuilder() {
+        public com.google.protobuf.DoubleValue.Builder getExplicitSLensBuilder() {
           
           onChanged();
           return getExplicitSLensFieldBuilder().getBuilder();
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitSLens = 34;</code>
+         * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getExplicitSLensOrBuilder() {
+        public com.google.protobuf.DoubleValueOrBuilder getExplicitSLensOrBuilder() {
           if (explicitSLensBuilder_ != null) {
             return explicitSLensBuilder_.getMessageOrBuilder();
           } else {
             return explicitSLens_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : explicitSLens_;
+                com.google.protobuf.DoubleValue.getDefaultInstance() : explicitSLens_;
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitSLens = 34;</code>
+         * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> 
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getExplicitSLensFieldBuilder() {
           if (explicitSLensBuilder_ == null) {
             explicitSLensBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder>(
+                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
                     getExplicitSLens(),
                     getParentForChildren(),
                     isClean());
@@ -12124,31 +12907,31 @@ public final class SkylineDocument {
           return explicitSLensBuilder_;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble explicitConeVoltage_;
+        private com.google.protobuf.DoubleValue explicitConeVoltage_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> explicitConeVoltageBuilder_;
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> explicitConeVoltageBuilder_;
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitConeVoltage = 35;</code>
+         * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
          * @return Whether the explicitConeVoltage field is set.
          */
         public boolean hasExplicitConeVoltage() {
           return explicitConeVoltageBuilder_ != null || explicitConeVoltage_ != null;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitConeVoltage = 35;</code>
+         * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
          * @return The explicitConeVoltage.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getExplicitConeVoltage() {
+        public com.google.protobuf.DoubleValue getExplicitConeVoltage() {
           if (explicitConeVoltageBuilder_ == null) {
-            return explicitConeVoltage_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : explicitConeVoltage_;
+            return explicitConeVoltage_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : explicitConeVoltage_;
           } else {
             return explicitConeVoltageBuilder_.getMessage();
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitConeVoltage = 35;</code>
+         * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
          */
-        public Builder setExplicitConeVoltage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder setExplicitConeVoltage(com.google.protobuf.DoubleValue value) {
           if (explicitConeVoltageBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -12162,10 +12945,10 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitConeVoltage = 35;</code>
+         * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
          */
         public Builder setExplicitConeVoltage(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder builderForValue) {
+            com.google.protobuf.DoubleValue.Builder builderForValue) {
           if (explicitConeVoltageBuilder_ == null) {
             explicitConeVoltage_ = builderForValue.build();
             onChanged();
@@ -12176,13 +12959,13 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitConeVoltage = 35;</code>
+         * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
          */
-        public Builder mergeExplicitConeVoltage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder mergeExplicitConeVoltage(com.google.protobuf.DoubleValue value) {
           if (explicitConeVoltageBuilder_ == null) {
             if (explicitConeVoltage_ != null) {
               explicitConeVoltage_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.newBuilder(explicitConeVoltage_).mergeFrom(value).buildPartial();
+                com.google.protobuf.DoubleValue.newBuilder(explicitConeVoltage_).mergeFrom(value).buildPartial();
             } else {
               explicitConeVoltage_ = value;
             }
@@ -12194,7 +12977,7 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitConeVoltage = 35;</code>
+         * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
          */
         public Builder clearExplicitConeVoltage() {
           if (explicitConeVoltageBuilder_ == null) {
@@ -12208,33 +12991,33 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitConeVoltage = 35;</code>
+         * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder getExplicitConeVoltageBuilder() {
+        public com.google.protobuf.DoubleValue.Builder getExplicitConeVoltageBuilder() {
           
           onChanged();
           return getExplicitConeVoltageFieldBuilder().getBuilder();
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitConeVoltage = 35;</code>
+         * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getExplicitConeVoltageOrBuilder() {
+        public com.google.protobuf.DoubleValueOrBuilder getExplicitConeVoltageOrBuilder() {
           if (explicitConeVoltageBuilder_ != null) {
             return explicitConeVoltageBuilder_.getMessageOrBuilder();
           } else {
             return explicitConeVoltage_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : explicitConeVoltage_;
+                com.google.protobuf.DoubleValue.getDefaultInstance() : explicitConeVoltage_;
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitConeVoltage = 35;</code>
+         * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> 
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getExplicitConeVoltageFieldBuilder() {
           if (explicitConeVoltageBuilder_ == null) {
             explicitConeVoltageBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder>(
+                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
                     getExplicitConeVoltage(),
                     getParentForChildren(),
                     isClean());
@@ -12243,31 +13026,31 @@ public final class SkylineDocument {
           return explicitConeVoltageBuilder_;
         }
 
-        private org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble explicitDeclusteringPotential_;
+        private com.google.protobuf.DoubleValue explicitDeclusteringPotential_;
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> explicitDeclusteringPotentialBuilder_;
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> explicitDeclusteringPotentialBuilder_;
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitDeclusteringPotential = 36;</code>
+         * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
          * @return Whether the explicitDeclusteringPotential field is set.
          */
         public boolean hasExplicitDeclusteringPotential() {
           return explicitDeclusteringPotentialBuilder_ != null || explicitDeclusteringPotential_ != null;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitDeclusteringPotential = 36;</code>
+         * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
          * @return The explicitDeclusteringPotential.
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getExplicitDeclusteringPotential() {
+        public com.google.protobuf.DoubleValue getExplicitDeclusteringPotential() {
           if (explicitDeclusteringPotentialBuilder_ == null) {
-            return explicitDeclusteringPotential_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : explicitDeclusteringPotential_;
+            return explicitDeclusteringPotential_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : explicitDeclusteringPotential_;
           } else {
             return explicitDeclusteringPotentialBuilder_.getMessage();
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitDeclusteringPotential = 36;</code>
+         * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
          */
-        public Builder setExplicitDeclusteringPotential(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder setExplicitDeclusteringPotential(com.google.protobuf.DoubleValue value) {
           if (explicitDeclusteringPotentialBuilder_ == null) {
             if (value == null) {
               throw new NullPointerException();
@@ -12281,10 +13064,10 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitDeclusteringPotential = 36;</code>
+         * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
          */
         public Builder setExplicitDeclusteringPotential(
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder builderForValue) {
+            com.google.protobuf.DoubleValue.Builder builderForValue) {
           if (explicitDeclusteringPotentialBuilder_ == null) {
             explicitDeclusteringPotential_ = builderForValue.build();
             onChanged();
@@ -12295,13 +13078,13 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitDeclusteringPotential = 36;</code>
+         * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
          */
-        public Builder mergeExplicitDeclusteringPotential(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble value) {
+        public Builder mergeExplicitDeclusteringPotential(com.google.protobuf.DoubleValue value) {
           if (explicitDeclusteringPotentialBuilder_ == null) {
             if (explicitDeclusteringPotential_ != null) {
               explicitDeclusteringPotential_ =
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.newBuilder(explicitDeclusteringPotential_).mergeFrom(value).buildPartial();
+                com.google.protobuf.DoubleValue.newBuilder(explicitDeclusteringPotential_).mergeFrom(value).buildPartial();
             } else {
               explicitDeclusteringPotential_ = value;
             }
@@ -12313,7 +13096,7 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitDeclusteringPotential = 36;</code>
+         * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
          */
         public Builder clearExplicitDeclusteringPotential() {
           if (explicitDeclusteringPotentialBuilder_ == null) {
@@ -12327,33 +13110,33 @@ public final class SkylineDocument {
           return this;
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitDeclusteringPotential = 36;</code>
+         * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder getExplicitDeclusteringPotentialBuilder() {
+        public com.google.protobuf.DoubleValue.Builder getExplicitDeclusteringPotentialBuilder() {
           
           onChanged();
           return getExplicitDeclusteringPotentialFieldBuilder().getBuilder();
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitDeclusteringPotential = 36;</code>
+         * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
          */
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder getExplicitDeclusteringPotentialOrBuilder() {
+        public com.google.protobuf.DoubleValueOrBuilder getExplicitDeclusteringPotentialOrBuilder() {
           if (explicitDeclusteringPotentialBuilder_ != null) {
             return explicitDeclusteringPotentialBuilder_.getMessageOrBuilder();
           } else {
             return explicitDeclusteringPotential_ == null ?
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance() : explicitDeclusteringPotential_;
+                com.google.protobuf.DoubleValue.getDefaultInstance() : explicitDeclusteringPotential_;
           }
         }
         /**
-         * <code>.SkylineDocumentProto.OptionalDouble explicitDeclusteringPotential = 36;</code>
+         * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
          */
         private com.google.protobuf.SingleFieldBuilderV3<
-            org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder> 
+            com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getExplicitDeclusteringPotentialFieldBuilder() {
           if (explicitDeclusteringPotentialBuilder_ == null) {
             explicitDeclusteringPotentialBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder>(
+                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
                     getExplicitDeclusteringPotential(),
                     getParentForChildren(),
                     isClean());
@@ -12665,7 +13448,18 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new Transition(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
@@ -12685,986 +13479,6 @@ public final class SkylineDocument {
 
     }
 
-    public interface OptionalFloatOrBuilder extends
-        // @@protoc_insertion_point(interface_extends:SkylineDocumentProto.OptionalFloat)
-        com.google.protobuf.MessageOrBuilder {
-
-      /**
-       * <code>float value = 1;</code>
-       * @return The value.
-       */
-      float getValue();
-    }
-    /**
-     * Protobuf type {@code SkylineDocumentProto.OptionalFloat}
-     */
-    public static final class OptionalFloat extends
-        com.google.protobuf.GeneratedMessageV3 implements
-        // @@protoc_insertion_point(message_implements:SkylineDocumentProto.OptionalFloat)
-        OptionalFloatOrBuilder {
-    private static final long serialVersionUID = 0L;
-      // Use OptionalFloat.newBuilder() to construct.
-      private OptionalFloat(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
-        super(builder);
-      }
-      private OptionalFloat() {
-      }
-
-      @java.lang.Override
-      @SuppressWarnings({"unused"})
-      protected java.lang.Object newInstance(
-          UnusedPrivateParameter unused) {
-        return new OptionalFloat();
-      }
-
-      @java.lang.Override
-      public final com.google.protobuf.UnknownFieldSet
-      getUnknownFields() {
-        return this.unknownFields;
-      }
-      private OptionalFloat(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 13: {
-
-                value_ = input.readFloat();
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_OptionalFloat_descriptor;
-      }
-
-      @java.lang.Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_OptionalFloat_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.class, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.Builder.class);
-      }
-
-      public static final int VALUE_FIELD_NUMBER = 1;
-      private float value_;
-      /**
-       * <code>float value = 1;</code>
-       * @return The value.
-       */
-      @java.lang.Override
-      public float getValue() {
-        return value_;
-      }
-
-      private byte memoizedIsInitialized = -1;
-      @java.lang.Override
-      public final boolean isInitialized() {
-        byte isInitialized = memoizedIsInitialized;
-        if (isInitialized == 1) return true;
-        if (isInitialized == 0) return false;
-
-        memoizedIsInitialized = 1;
-        return true;
-      }
-
-      @java.lang.Override
-      public void writeTo(com.google.protobuf.CodedOutputStream output)
-                          throws java.io.IOException {
-        if (value_ != 0F) {
-          output.writeFloat(1, value_);
-        }
-        unknownFields.writeTo(output);
-      }
-
-      @java.lang.Override
-      public int getSerializedSize() {
-        int size = memoizedSize;
-        if (size != -1) return size;
-
-        size = 0;
-        if (value_ != 0F) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeFloatSize(1, value_);
-        }
-        size += unknownFields.getSerializedSize();
-        memoizedSize = size;
-        return size;
-      }
-
-      @java.lang.Override
-      public boolean equals(final java.lang.Object obj) {
-        if (obj == this) {
-         return true;
-        }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat)) {
-          return super.equals(obj);
-        }
-        org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat other = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat) obj;
-
-        if (java.lang.Float.floatToIntBits(getValue())
-            != java.lang.Float.floatToIntBits(
-                other.getValue())) return false;
-        if (!unknownFields.equals(other.unknownFields)) return false;
-        return true;
-      }
-
-      @java.lang.Override
-      public int hashCode() {
-        if (memoizedHashCode != 0) {
-          return memoizedHashCode;
-        }
-        int hash = 41;
-        hash = (19 * hash) + getDescriptor().hashCode();
-        hash = (37 * hash) + VALUE_FIELD_NUMBER;
-        hash = (53 * hash) + java.lang.Float.floatToIntBits(
-            getValue());
-        hash = (29 * hash) + unknownFields.hashCode();
-        memoizedHashCode = hash;
-        return hash;
-      }
-
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat parseFrom(
-          java.nio.ByteBuffer data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat parseFrom(
-          java.nio.ByteBuffer data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat parseFrom(
-          com.google.protobuf.ByteString data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat parseFrom(
-          com.google.protobuf.ByteString data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat parseFrom(byte[] data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat parseFrom(
-          byte[] data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat parseFrom(java.io.InputStream input)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat parseFrom(
-          java.io.InputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input, extensionRegistry);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat parseDelimitedFrom(java.io.InputStream input)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseDelimitedWithIOException(PARSER, input);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat parseDelimitedFrom(
-          java.io.InputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat parseFrom(
-          com.google.protobuf.CodedInputStream input)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat parseFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input, extensionRegistry);
-      }
-
-      @java.lang.Override
-      public Builder newBuilderForType() { return newBuilder(); }
-      public static Builder newBuilder() {
-        return DEFAULT_INSTANCE.toBuilder();
-      }
-      public static Builder newBuilder(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat prototype) {
-        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
-      }
-      @java.lang.Override
-      public Builder toBuilder() {
-        return this == DEFAULT_INSTANCE
-            ? new Builder() : new Builder().mergeFrom(this);
-      }
-
-      @java.lang.Override
-      protected Builder newBuilderForType(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
-        Builder builder = new Builder(parent);
-        return builder;
-      }
-      /**
-       * Protobuf type {@code SkylineDocumentProto.OptionalFloat}
-       */
-      public static final class Builder extends
-          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-          // @@protoc_insertion_point(builder_implements:SkylineDocumentProto.OptionalFloat)
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloatOrBuilder {
-        public static final com.google.protobuf.Descriptors.Descriptor
-            getDescriptor() {
-          return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_OptionalFloat_descriptor;
-        }
-
-        @java.lang.Override
-        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-            internalGetFieldAccessorTable() {
-          return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_OptionalFloat_fieldAccessorTable
-              .ensureFieldAccessorsInitialized(
-                  org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.class, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.Builder.class);
-        }
-
-        // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.newBuilder()
-        private Builder() {
-          maybeForceBuilderInitialization();
-        }
-
-        private Builder(
-            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
-          super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-          }
-        }
-        @java.lang.Override
-        public Builder clear() {
-          super.clear();
-          value_ = 0F;
-
-          return this;
-        }
-
-        @java.lang.Override
-        public com.google.protobuf.Descriptors.Descriptor
-            getDescriptorForType() {
-          return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_OptionalFloat_descriptor;
-        }
-
-        @java.lang.Override
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat getDefaultInstanceForType() {
-          return org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.getDefaultInstance();
-        }
-
-        @java.lang.Override
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat build() {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat result = buildPartial();
-          if (!result.isInitialized()) {
-            throw newUninitializedMessageException(result);
-          }
-          return result;
-        }
-
-        @java.lang.Override
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat buildPartial() {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat result = new org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat(this);
-          result.value_ = value_;
-          onBuilt();
-          return result;
-        }
-
-        @java.lang.Override
-        public Builder clone() {
-          return super.clone();
-        }
-        @java.lang.Override
-        public Builder setField(
-            com.google.protobuf.Descriptors.FieldDescriptor field,
-            java.lang.Object value) {
-          return super.setField(field, value);
-        }
-        @java.lang.Override
-        public Builder clearField(
-            com.google.protobuf.Descriptors.FieldDescriptor field) {
-          return super.clearField(field);
-        }
-        @java.lang.Override
-        public Builder clearOneof(
-            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-          return super.clearOneof(oneof);
-        }
-        @java.lang.Override
-        public Builder setRepeatedField(
-            com.google.protobuf.Descriptors.FieldDescriptor field,
-            int index, java.lang.Object value) {
-          return super.setRepeatedField(field, index, value);
-        }
-        @java.lang.Override
-        public Builder addRepeatedField(
-            com.google.protobuf.Descriptors.FieldDescriptor field,
-            java.lang.Object value) {
-          return super.addRepeatedField(field, value);
-        }
-        @java.lang.Override
-        public Builder mergeFrom(com.google.protobuf.Message other) {
-          if (other instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat) {
-            return mergeFrom((org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat)other);
-          } else {
-            super.mergeFrom(other);
-            return this;
-          }
-        }
-
-        public Builder mergeFrom(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat other) {
-          if (other == org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat.getDefaultInstance()) return this;
-          if (other.getValue() != 0F) {
-            setValue(other.getValue());
-          }
-          this.mergeUnknownFields(other.unknownFields);
-          onChanged();
-          return this;
-        }
-
-        @java.lang.Override
-        public final boolean isInitialized() {
-          return true;
-        }
-
-        @java.lang.Override
-        public Builder mergeFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat parsedMessage = null;
-          try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat) e.getUnfinishedMessage();
-            throw e.unwrapIOException();
-          } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
-          return this;
-        }
-
-        private float value_ ;
-        /**
-         * <code>float value = 1;</code>
-         * @return The value.
-         */
-        @java.lang.Override
-        public float getValue() {
-          return value_;
-        }
-        /**
-         * <code>float value = 1;</code>
-         * @param value The value to set.
-         * @return This builder for chaining.
-         */
-        public Builder setValue(float value) {
-          
-          value_ = value;
-          onChanged();
-          return this;
-        }
-        /**
-         * <code>float value = 1;</code>
-         * @return This builder for chaining.
-         */
-        public Builder clearValue() {
-          
-          value_ = 0F;
-          onChanged();
-          return this;
-        }
-        @java.lang.Override
-        public final Builder setUnknownFields(
-            final com.google.protobuf.UnknownFieldSet unknownFields) {
-          return super.setUnknownFields(unknownFields);
-        }
-
-        @java.lang.Override
-        public final Builder mergeUnknownFields(
-            final com.google.protobuf.UnknownFieldSet unknownFields) {
-          return super.mergeUnknownFields(unknownFields);
-        }
-
-
-        // @@protoc_insertion_point(builder_scope:SkylineDocumentProto.OptionalFloat)
-      }
-
-      // @@protoc_insertion_point(class_scope:SkylineDocumentProto.OptionalFloat)
-      private static final org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat DEFAULT_INSTANCE;
-      static {
-        DEFAULT_INSTANCE = new org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat();
-      }
-
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat getDefaultInstance() {
-        return DEFAULT_INSTANCE;
-      }
-
-      private static final com.google.protobuf.Parser<OptionalFloat>
-          PARSER = new com.google.protobuf.AbstractParser<OptionalFloat>() {
-        @java.lang.Override
-        public OptionalFloat parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          return new OptionalFloat(input, extensionRegistry);
-        }
-      };
-
-      public static com.google.protobuf.Parser<OptionalFloat> parser() {
-        return PARSER;
-      }
-
-      @java.lang.Override
-      public com.google.protobuf.Parser<OptionalFloat> getParserForType() {
-        return PARSER;
-      }
-
-      @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalFloat getDefaultInstanceForType() {
-        return DEFAULT_INSTANCE;
-      }
-
-    }
-
-    public interface OptionalDoubleOrBuilder extends
-        // @@protoc_insertion_point(interface_extends:SkylineDocumentProto.OptionalDouble)
-        com.google.protobuf.MessageOrBuilder {
-
-      /**
-       * <code>double value = 1;</code>
-       * @return The value.
-       */
-      double getValue();
-    }
-    /**
-     * Protobuf type {@code SkylineDocumentProto.OptionalDouble}
-     */
-    public static final class OptionalDouble extends
-        com.google.protobuf.GeneratedMessageV3 implements
-        // @@protoc_insertion_point(message_implements:SkylineDocumentProto.OptionalDouble)
-        OptionalDoubleOrBuilder {
-    private static final long serialVersionUID = 0L;
-      // Use OptionalDouble.newBuilder() to construct.
-      private OptionalDouble(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
-        super(builder);
-      }
-      private OptionalDouble() {
-      }
-
-      @java.lang.Override
-      @SuppressWarnings({"unused"})
-      protected java.lang.Object newInstance(
-          UnusedPrivateParameter unused) {
-        return new OptionalDouble();
-      }
-
-      @java.lang.Override
-      public final com.google.protobuf.UnknownFieldSet
-      getUnknownFields() {
-        return this.unknownFields;
-      }
-      private OptionalDouble(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 9: {
-
-                value_ = input.readDouble();
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_OptionalDouble_descriptor;
-      }
-
-      @java.lang.Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_OptionalDouble_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.class, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder.class);
-      }
-
-      public static final int VALUE_FIELD_NUMBER = 1;
-      private double value_;
-      /**
-       * <code>double value = 1;</code>
-       * @return The value.
-       */
-      @java.lang.Override
-      public double getValue() {
-        return value_;
-      }
-
-      private byte memoizedIsInitialized = -1;
-      @java.lang.Override
-      public final boolean isInitialized() {
-        byte isInitialized = memoizedIsInitialized;
-        if (isInitialized == 1) return true;
-        if (isInitialized == 0) return false;
-
-        memoizedIsInitialized = 1;
-        return true;
-      }
-
-      @java.lang.Override
-      public void writeTo(com.google.protobuf.CodedOutputStream output)
-                          throws java.io.IOException {
-        if (value_ != 0D) {
-          output.writeDouble(1, value_);
-        }
-        unknownFields.writeTo(output);
-      }
-
-      @java.lang.Override
-      public int getSerializedSize() {
-        int size = memoizedSize;
-        if (size != -1) return size;
-
-        size = 0;
-        if (value_ != 0D) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeDoubleSize(1, value_);
-        }
-        size += unknownFields.getSerializedSize();
-        memoizedSize = size;
-        return size;
-      }
-
-      @java.lang.Override
-      public boolean equals(final java.lang.Object obj) {
-        if (obj == this) {
-         return true;
-        }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble)) {
-          return super.equals(obj);
-        }
-        org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble other = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble) obj;
-
-        if (java.lang.Double.doubleToLongBits(getValue())
-            != java.lang.Double.doubleToLongBits(
-                other.getValue())) return false;
-        if (!unknownFields.equals(other.unknownFields)) return false;
-        return true;
-      }
-
-      @java.lang.Override
-      public int hashCode() {
-        if (memoizedHashCode != 0) {
-          return memoizedHashCode;
-        }
-        int hash = 41;
-        hash = (19 * hash) + getDescriptor().hashCode();
-        hash = (37 * hash) + VALUE_FIELD_NUMBER;
-        hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
-            java.lang.Double.doubleToLongBits(getValue()));
-        hash = (29 * hash) + unknownFields.hashCode();
-        memoizedHashCode = hash;
-        return hash;
-      }
-
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble parseFrom(
-          java.nio.ByteBuffer data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble parseFrom(
-          java.nio.ByteBuffer data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble parseFrom(
-          com.google.protobuf.ByteString data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble parseFrom(
-          com.google.protobuf.ByteString data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble parseFrom(byte[] data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble parseFrom(
-          byte[] data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble parseFrom(java.io.InputStream input)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble parseFrom(
-          java.io.InputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input, extensionRegistry);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble parseDelimitedFrom(java.io.InputStream input)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseDelimitedWithIOException(PARSER, input);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble parseDelimitedFrom(
-          java.io.InputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble parseFrom(
-          com.google.protobuf.CodedInputStream input)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble parseFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input, extensionRegistry);
-      }
-
-      @java.lang.Override
-      public Builder newBuilderForType() { return newBuilder(); }
-      public static Builder newBuilder() {
-        return DEFAULT_INSTANCE.toBuilder();
-      }
-      public static Builder newBuilder(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble prototype) {
-        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
-      }
-      @java.lang.Override
-      public Builder toBuilder() {
-        return this == DEFAULT_INSTANCE
-            ? new Builder() : new Builder().mergeFrom(this);
-      }
-
-      @java.lang.Override
-      protected Builder newBuilderForType(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
-        Builder builder = new Builder(parent);
-        return builder;
-      }
-      /**
-       * Protobuf type {@code SkylineDocumentProto.OptionalDouble}
-       */
-      public static final class Builder extends
-          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-          // @@protoc_insertion_point(builder_implements:SkylineDocumentProto.OptionalDouble)
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDoubleOrBuilder {
-        public static final com.google.protobuf.Descriptors.Descriptor
-            getDescriptor() {
-          return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_OptionalDouble_descriptor;
-        }
-
-        @java.lang.Override
-        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-            internalGetFieldAccessorTable() {
-          return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_OptionalDouble_fieldAccessorTable
-              .ensureFieldAccessorsInitialized(
-                  org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.class, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.Builder.class);
-        }
-
-        // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.newBuilder()
-        private Builder() {
-          maybeForceBuilderInitialization();
-        }
-
-        private Builder(
-            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
-          super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-          }
-        }
-        @java.lang.Override
-        public Builder clear() {
-          super.clear();
-          value_ = 0D;
-
-          return this;
-        }
-
-        @java.lang.Override
-        public com.google.protobuf.Descriptors.Descriptor
-            getDescriptorForType() {
-          return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_OptionalDouble_descriptor;
-        }
-
-        @java.lang.Override
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getDefaultInstanceForType() {
-          return org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance();
-        }
-
-        @java.lang.Override
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble build() {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble result = buildPartial();
-          if (!result.isInitialized()) {
-            throw newUninitializedMessageException(result);
-          }
-          return result;
-        }
-
-        @java.lang.Override
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble buildPartial() {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble result = new org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble(this);
-          result.value_ = value_;
-          onBuilt();
-          return result;
-        }
-
-        @java.lang.Override
-        public Builder clone() {
-          return super.clone();
-        }
-        @java.lang.Override
-        public Builder setField(
-            com.google.protobuf.Descriptors.FieldDescriptor field,
-            java.lang.Object value) {
-          return super.setField(field, value);
-        }
-        @java.lang.Override
-        public Builder clearField(
-            com.google.protobuf.Descriptors.FieldDescriptor field) {
-          return super.clearField(field);
-        }
-        @java.lang.Override
-        public Builder clearOneof(
-            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-          return super.clearOneof(oneof);
-        }
-        @java.lang.Override
-        public Builder setRepeatedField(
-            com.google.protobuf.Descriptors.FieldDescriptor field,
-            int index, java.lang.Object value) {
-          return super.setRepeatedField(field, index, value);
-        }
-        @java.lang.Override
-        public Builder addRepeatedField(
-            com.google.protobuf.Descriptors.FieldDescriptor field,
-            java.lang.Object value) {
-          return super.addRepeatedField(field, value);
-        }
-        @java.lang.Override
-        public Builder mergeFrom(com.google.protobuf.Message other) {
-          if (other instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble) {
-            return mergeFrom((org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble)other);
-          } else {
-            super.mergeFrom(other);
-            return this;
-          }
-        }
-
-        public Builder mergeFrom(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble other) {
-          if (other == org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble.getDefaultInstance()) return this;
-          if (other.getValue() != 0D) {
-            setValue(other.getValue());
-          }
-          this.mergeUnknownFields(other.unknownFields);
-          onChanged();
-          return this;
-        }
-
-        @java.lang.Override
-        public final boolean isInitialized() {
-          return true;
-        }
-
-        @java.lang.Override
-        public Builder mergeFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble parsedMessage = null;
-          try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble) e.getUnfinishedMessage();
-            throw e.unwrapIOException();
-          } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
-          return this;
-        }
-
-        private double value_ ;
-        /**
-         * <code>double value = 1;</code>
-         * @return The value.
-         */
-        @java.lang.Override
-        public double getValue() {
-          return value_;
-        }
-        /**
-         * <code>double value = 1;</code>
-         * @param value The value to set.
-         * @return This builder for chaining.
-         */
-        public Builder setValue(double value) {
-          
-          value_ = value;
-          onChanged();
-          return this;
-        }
-        /**
-         * <code>double value = 1;</code>
-         * @return This builder for chaining.
-         */
-        public Builder clearValue() {
-          
-          value_ = 0D;
-          onChanged();
-          return this;
-        }
-        @java.lang.Override
-        public final Builder setUnknownFields(
-            final com.google.protobuf.UnknownFieldSet unknownFields) {
-          return super.setUnknownFields(unknownFields);
-        }
-
-        @java.lang.Override
-        public final Builder mergeUnknownFields(
-            final com.google.protobuf.UnknownFieldSet unknownFields) {
-          return super.mergeUnknownFields(unknownFields);
-        }
-
-
-        // @@protoc_insertion_point(builder_scope:SkylineDocumentProto.OptionalDouble)
-      }
-
-      // @@protoc_insertion_point(class_scope:SkylineDocumentProto.OptionalDouble)
-      private static final org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble DEFAULT_INSTANCE;
-      static {
-        DEFAULT_INSTANCE = new org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble();
-      }
-
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getDefaultInstance() {
-        return DEFAULT_INSTANCE;
-      }
-
-      private static final com.google.protobuf.Parser<OptionalDouble>
-          PARSER = new com.google.protobuf.AbstractParser<OptionalDouble>() {
-        @java.lang.Override
-        public OptionalDouble parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          return new OptionalDouble(input, extensionRegistry);
-        }
-      };
-
-      public static com.google.protobuf.Parser<OptionalDouble> parser() {
-        return PARSER;
-      }
-
-      @java.lang.Override
-      public com.google.protobuf.Parser<OptionalDouble> getParserForType() {
-        return PARSER;
-      }
-
-      @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalDouble getDefaultInstanceForType() {
-        return DEFAULT_INSTANCE;
-      }
-
-    }
-
     public interface OptionalIntOrBuilder extends
         // @@protoc_insertion_point(interface_extends:SkylineDocumentProto.OptionalInt)
         com.google.protobuf.MessageOrBuilder {
@@ -13676,6 +13490,11 @@ public final class SkylineDocument {
       int getValue();
     }
     /**
+     * <pre>
+     * Note that this is different from google.protobuf.IntValue because this
+     * uses sint32 instead of int32 and is therefore more efficient at encoding negative numbers
+     * </pre>
+     *
      * Protobuf type {@code SkylineDocumentProto.OptionalInt}
      */
     public static final class OptionalInt extends
@@ -13701,48 +13520,6 @@ public final class SkylineDocument {
       public final com.google.protobuf.UnknownFieldSet
       getUnknownFields() {
         return this.unknownFields;
-      }
-      private OptionalInt(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 8: {
-
-                value_ = input.readSInt32();
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
       }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
@@ -13785,7 +13562,7 @@ public final class SkylineDocument {
         if (value_ != 0) {
           output.writeSInt32(1, value_);
         }
-        unknownFields.writeTo(output);
+        getUnknownFields().writeTo(output);
       }
 
       @java.lang.Override
@@ -13798,7 +13575,7 @@ public final class SkylineDocument {
           size += com.google.protobuf.CodedOutputStream
             .computeSInt32Size(1, value_);
         }
-        size += unknownFields.getSerializedSize();
+        size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
         return size;
       }
@@ -13815,7 +13592,7 @@ public final class SkylineDocument {
 
         if (getValue()
             != other.getValue()) return false;
-        if (!unknownFields.equals(other.unknownFields)) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
       }
 
@@ -13828,7 +13605,7 @@ public final class SkylineDocument {
         hash = (19 * hash) + getDescriptor().hashCode();
         hash = (37 * hash) + VALUE_FIELD_NUMBER;
         hash = (53 * hash) + getValue();
-        hash = (29 * hash) + unknownFields.hashCode();
+        hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
       }
@@ -13924,6 +13701,11 @@ public final class SkylineDocument {
         return builder;
       }
       /**
+       * <pre>
+       * Note that this is different from google.protobuf.IntValue because this
+       * uses sint32 instead of int32 and is therefore more efficient at encoding negative numbers
+       * </pre>
+       *
        * Protobuf type {@code SkylineDocumentProto.OptionalInt}
        */
       public static final class Builder extends
@@ -13945,18 +13727,13 @@ public final class SkylineDocument {
 
         // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt.newBuilder()
         private Builder() {
-          maybeForceBuilderInitialization();
+
         }
 
         private Builder(
             com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-          }
+
         }
         @java.lang.Override
         public Builder clear() {
@@ -14041,7 +13818,7 @@ public final class SkylineDocument {
           if (other.getValue() != 0) {
             setValue(other.getValue());
           }
-          this.mergeUnknownFields(other.unknownFields);
+          this.mergeUnknownFields(other.getUnknownFields());
           onChanged();
           return this;
         }
@@ -14056,17 +13833,35 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt parsedMessage = null;
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
           try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 8: {
+                  value_ = input.readSInt32();
+
+                  break;
+                } // case 8
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
+            onChanged();
+          } // finally
           return this;
         }
 
@@ -14133,7 +13928,18 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new OptionalInt(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
@@ -14148,574 +13954,6 @@ public final class SkylineDocument {
 
       @java.lang.Override
       public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt getDefaultInstanceForType() {
-        return DEFAULT_INSTANCE;
-      }
-
-    }
-
-    public interface OptionalStringOrBuilder extends
-        // @@protoc_insertion_point(interface_extends:SkylineDocumentProto.OptionalString)
-        com.google.protobuf.MessageOrBuilder {
-
-      /**
-       * <code>string value = 1;</code>
-       * @return The value.
-       */
-      java.lang.String getValue();
-      /**
-       * <code>string value = 1;</code>
-       * @return The bytes for value.
-       */
-      com.google.protobuf.ByteString
-          getValueBytes();
-    }
-    /**
-     * Protobuf type {@code SkylineDocumentProto.OptionalString}
-     */
-    public static final class OptionalString extends
-        com.google.protobuf.GeneratedMessageV3 implements
-        // @@protoc_insertion_point(message_implements:SkylineDocumentProto.OptionalString)
-        OptionalStringOrBuilder {
-    private static final long serialVersionUID = 0L;
-      // Use OptionalString.newBuilder() to construct.
-      private OptionalString(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
-        super(builder);
-      }
-      private OptionalString() {
-        value_ = "";
-      }
-
-      @java.lang.Override
-      @SuppressWarnings({"unused"})
-      protected java.lang.Object newInstance(
-          UnusedPrivateParameter unused) {
-        return new OptionalString();
-      }
-
-      @java.lang.Override
-      public final com.google.protobuf.UnknownFieldSet
-      getUnknownFields() {
-        return this.unknownFields;
-      }
-      private OptionalString(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                value_ = s;
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
-      public static final com.google.protobuf.Descriptors.Descriptor
-          getDescriptor() {
-        return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_OptionalString_descriptor;
-      }
-
-      @java.lang.Override
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-          internalGetFieldAccessorTable() {
-        return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_OptionalString_fieldAccessorTable
-            .ensureFieldAccessorsInitialized(
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.class, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder.class);
-      }
-
-      public static final int VALUE_FIELD_NUMBER = 1;
-      private volatile java.lang.Object value_;
-      /**
-       * <code>string value = 1;</code>
-       * @return The value.
-       */
-      @java.lang.Override
-      public java.lang.String getValue() {
-        java.lang.Object ref = value_;
-        if (ref instanceof java.lang.String) {
-          return (java.lang.String) ref;
-        } else {
-          com.google.protobuf.ByteString bs = 
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          value_ = s;
-          return s;
-        }
-      }
-      /**
-       * <code>string value = 1;</code>
-       * @return The bytes for value.
-       */
-      @java.lang.Override
-      public com.google.protobuf.ByteString
-          getValueBytes() {
-        java.lang.Object ref = value_;
-        if (ref instanceof java.lang.String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          value_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-
-      private byte memoizedIsInitialized = -1;
-      @java.lang.Override
-      public final boolean isInitialized() {
-        byte isInitialized = memoizedIsInitialized;
-        if (isInitialized == 1) return true;
-        if (isInitialized == 0) return false;
-
-        memoizedIsInitialized = 1;
-        return true;
-      }
-
-      @java.lang.Override
-      public void writeTo(com.google.protobuf.CodedOutputStream output)
-                          throws java.io.IOException {
-        if (!getValueBytes().isEmpty()) {
-          com.google.protobuf.GeneratedMessageV3.writeString(output, 1, value_);
-        }
-        unknownFields.writeTo(output);
-      }
-
-      @java.lang.Override
-      public int getSerializedSize() {
-        int size = memoizedSize;
-        if (size != -1) return size;
-
-        size = 0;
-        if (!getValueBytes().isEmpty()) {
-          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, value_);
-        }
-        size += unknownFields.getSerializedSize();
-        memoizedSize = size;
-        return size;
-      }
-
-      @java.lang.Override
-      public boolean equals(final java.lang.Object obj) {
-        if (obj == this) {
-         return true;
-        }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString)) {
-          return super.equals(obj);
-        }
-        org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString other = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString) obj;
-
-        if (!getValue()
-            .equals(other.getValue())) return false;
-        if (!unknownFields.equals(other.unknownFields)) return false;
-        return true;
-      }
-
-      @java.lang.Override
-      public int hashCode() {
-        if (memoizedHashCode != 0) {
-          return memoizedHashCode;
-        }
-        int hash = 41;
-        hash = (19 * hash) + getDescriptor().hashCode();
-        hash = (37 * hash) + VALUE_FIELD_NUMBER;
-        hash = (53 * hash) + getValue().hashCode();
-        hash = (29 * hash) + unknownFields.hashCode();
-        memoizedHashCode = hash;
-        return hash;
-      }
-
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString parseFrom(
-          java.nio.ByteBuffer data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString parseFrom(
-          java.nio.ByteBuffer data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString parseFrom(
-          com.google.protobuf.ByteString data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString parseFrom(
-          com.google.protobuf.ByteString data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString parseFrom(byte[] data)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString parseFrom(
-          byte[] data,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        return PARSER.parseFrom(data, extensionRegistry);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString parseFrom(java.io.InputStream input)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString parseFrom(
-          java.io.InputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input, extensionRegistry);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString parseDelimitedFrom(java.io.InputStream input)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseDelimitedWithIOException(PARSER, input);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString parseDelimitedFrom(
-          java.io.InputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString parseFrom(
-          com.google.protobuf.CodedInputStream input)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input);
-      }
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString parseFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws java.io.IOException {
-        return com.google.protobuf.GeneratedMessageV3
-            .parseWithIOException(PARSER, input, extensionRegistry);
-      }
-
-      @java.lang.Override
-      public Builder newBuilderForType() { return newBuilder(); }
-      public static Builder newBuilder() {
-        return DEFAULT_INSTANCE.toBuilder();
-      }
-      public static Builder newBuilder(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString prototype) {
-        return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
-      }
-      @java.lang.Override
-      public Builder toBuilder() {
-        return this == DEFAULT_INSTANCE
-            ? new Builder() : new Builder().mergeFrom(this);
-      }
-
-      @java.lang.Override
-      protected Builder newBuilderForType(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
-        Builder builder = new Builder(parent);
-        return builder;
-      }
-      /**
-       * Protobuf type {@code SkylineDocumentProto.OptionalString}
-       */
-      public static final class Builder extends
-          com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-          // @@protoc_insertion_point(builder_implements:SkylineDocumentProto.OptionalString)
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalStringOrBuilder {
-        public static final com.google.protobuf.Descriptors.Descriptor
-            getDescriptor() {
-          return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_OptionalString_descriptor;
-        }
-
-        @java.lang.Override
-        protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-            internalGetFieldAccessorTable() {
-          return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_OptionalString_fieldAccessorTable
-              .ensureFieldAccessorsInitialized(
-                  org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.class, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.Builder.class);
-        }
-
-        // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.newBuilder()
-        private Builder() {
-          maybeForceBuilderInitialization();
-        }
-
-        private Builder(
-            com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
-          super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-          }
-        }
-        @java.lang.Override
-        public Builder clear() {
-          super.clear();
-          value_ = "";
-
-          return this;
-        }
-
-        @java.lang.Override
-        public com.google.protobuf.Descriptors.Descriptor
-            getDescriptorForType() {
-          return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_OptionalString_descriptor;
-        }
-
-        @java.lang.Override
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getDefaultInstanceForType() {
-          return org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.getDefaultInstance();
-        }
-
-        @java.lang.Override
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString build() {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString result = buildPartial();
-          if (!result.isInitialized()) {
-            throw newUninitializedMessageException(result);
-          }
-          return result;
-        }
-
-        @java.lang.Override
-        public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString buildPartial() {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString result = new org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString(this);
-          result.value_ = value_;
-          onBuilt();
-          return result;
-        }
-
-        @java.lang.Override
-        public Builder clone() {
-          return super.clone();
-        }
-        @java.lang.Override
-        public Builder setField(
-            com.google.protobuf.Descriptors.FieldDescriptor field,
-            java.lang.Object value) {
-          return super.setField(field, value);
-        }
-        @java.lang.Override
-        public Builder clearField(
-            com.google.protobuf.Descriptors.FieldDescriptor field) {
-          return super.clearField(field);
-        }
-        @java.lang.Override
-        public Builder clearOneof(
-            com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-          return super.clearOneof(oneof);
-        }
-        @java.lang.Override
-        public Builder setRepeatedField(
-            com.google.protobuf.Descriptors.FieldDescriptor field,
-            int index, java.lang.Object value) {
-          return super.setRepeatedField(field, index, value);
-        }
-        @java.lang.Override
-        public Builder addRepeatedField(
-            com.google.protobuf.Descriptors.FieldDescriptor field,
-            java.lang.Object value) {
-          return super.addRepeatedField(field, value);
-        }
-        @java.lang.Override
-        public Builder mergeFrom(com.google.protobuf.Message other) {
-          if (other instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString) {
-            return mergeFrom((org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString)other);
-          } else {
-            super.mergeFrom(other);
-            return this;
-          }
-        }
-
-        public Builder mergeFrom(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString other) {
-          if (other == org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString.getDefaultInstance()) return this;
-          if (!other.getValue().isEmpty()) {
-            value_ = other.value_;
-            onChanged();
-          }
-          this.mergeUnknownFields(other.unknownFields);
-          onChanged();
-          return this;
-        }
-
-        @java.lang.Override
-        public final boolean isInitialized() {
-          return true;
-        }
-
-        @java.lang.Override
-        public Builder mergeFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws java.io.IOException {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString parsedMessage = null;
-          try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString) e.getUnfinishedMessage();
-            throw e.unwrapIOException();
-          } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
-          return this;
-        }
-
-        private java.lang.Object value_ = "";
-        /**
-         * <code>string value = 1;</code>
-         * @return The value.
-         */
-        public java.lang.String getValue() {
-          java.lang.Object ref = value_;
-          if (!(ref instanceof java.lang.String)) {
-            com.google.protobuf.ByteString bs =
-                (com.google.protobuf.ByteString) ref;
-            java.lang.String s = bs.toStringUtf8();
-            value_ = s;
-            return s;
-          } else {
-            return (java.lang.String) ref;
-          }
-        }
-        /**
-         * <code>string value = 1;</code>
-         * @return The bytes for value.
-         */
-        public com.google.protobuf.ByteString
-            getValueBytes() {
-          java.lang.Object ref = value_;
-          if (ref instanceof String) {
-            com.google.protobuf.ByteString b = 
-                com.google.protobuf.ByteString.copyFromUtf8(
-                    (java.lang.String) ref);
-            value_ = b;
-            return b;
-          } else {
-            return (com.google.protobuf.ByteString) ref;
-          }
-        }
-        /**
-         * <code>string value = 1;</code>
-         * @param value The value to set.
-         * @return This builder for chaining.
-         */
-        public Builder setValue(
-            java.lang.String value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  
-          value_ = value;
-          onChanged();
-          return this;
-        }
-        /**
-         * <code>string value = 1;</code>
-         * @return This builder for chaining.
-         */
-        public Builder clearValue() {
-          
-          value_ = getDefaultInstance().getValue();
-          onChanged();
-          return this;
-        }
-        /**
-         * <code>string value = 1;</code>
-         * @param value The bytes for value to set.
-         * @return This builder for chaining.
-         */
-        public Builder setValueBytes(
-            com.google.protobuf.ByteString value) {
-          if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-          
-          value_ = value;
-          onChanged();
-          return this;
-        }
-        @java.lang.Override
-        public final Builder setUnknownFields(
-            final com.google.protobuf.UnknownFieldSet unknownFields) {
-          return super.setUnknownFields(unknownFields);
-        }
-
-        @java.lang.Override
-        public final Builder mergeUnknownFields(
-            final com.google.protobuf.UnknownFieldSet unknownFields) {
-          return super.mergeUnknownFields(unknownFields);
-        }
-
-
-        // @@protoc_insertion_point(builder_scope:SkylineDocumentProto.OptionalString)
-      }
-
-      // @@protoc_insertion_point(class_scope:SkylineDocumentProto.OptionalString)
-      private static final org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString DEFAULT_INSTANCE;
-      static {
-        DEFAULT_INSTANCE = new org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString();
-      }
-
-      public static org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getDefaultInstance() {
-        return DEFAULT_INSTANCE;
-      }
-
-      private static final com.google.protobuf.Parser<OptionalString>
-          PARSER = new com.google.protobuf.AbstractParser<OptionalString>() {
-        @java.lang.Override
-        public OptionalString parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          return new OptionalString(input, extensionRegistry);
-        }
-      };
-
-      public static com.google.protobuf.Parser<OptionalString> parser() {
-        return PARSER;
-      }
-
-      @java.lang.Override
-      public com.google.protobuf.Parser<OptionalString> getParserForType() {
-        return PARSER;
-      }
-
-      @java.lang.Override
-      public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalString getDefaultInstanceForType() {
         return DEFAULT_INSTANCE;
       }
 
@@ -14813,81 +14051,6 @@ public final class SkylineDocument {
       public final com.google.protobuf.UnknownFieldSet
       getUnknownFields() {
         return this.unknownFields;
-      }
-      private TransitionLoss(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                formula_ = s;
-                break;
-              }
-              case 17: {
-
-                monoisotopicMass_ = input.readDouble();
-                break;
-              }
-              case 25: {
-
-                averageMass_ = input.readDouble();
-                break;
-              }
-              case 32: {
-                int rawValue = input.readEnum();
-
-                lossInclusion_ = rawValue;
-                break;
-              }
-              case 42: {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                modificationName_ = s;
-                break;
-              }
-              case 48: {
-
-                lossIndex_ = input.readInt32();
-                break;
-              }
-              case 56: {
-
-                charge_ = input.readInt32();
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
       }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
@@ -15055,19 +14218,19 @@ public final class SkylineDocument {
       @java.lang.Override
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        if (!getFormulaBytes().isEmpty()) {
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(formula_)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 1, formula_);
         }
-        if (monoisotopicMass_ != 0D) {
+        if (java.lang.Double.doubleToRawLongBits(monoisotopicMass_) != 0) {
           output.writeDouble(2, monoisotopicMass_);
         }
-        if (averageMass_ != 0D) {
+        if (java.lang.Double.doubleToRawLongBits(averageMass_) != 0) {
           output.writeDouble(3, averageMass_);
         }
         if (lossInclusion_ != org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LossInclusion.Library.getNumber()) {
           output.writeEnum(4, lossInclusion_);
         }
-        if (!getModificationNameBytes().isEmpty()) {
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(modificationName_)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 5, modificationName_);
         }
         if (lossIndex_ != 0) {
@@ -15076,7 +14239,7 @@ public final class SkylineDocument {
         if (charge_ != 0) {
           output.writeInt32(7, charge_);
         }
-        unknownFields.writeTo(output);
+        getUnknownFields().writeTo(output);
       }
 
       @java.lang.Override
@@ -15085,14 +14248,14 @@ public final class SkylineDocument {
         if (size != -1) return size;
 
         size = 0;
-        if (!getFormulaBytes().isEmpty()) {
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(formula_)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, formula_);
         }
-        if (monoisotopicMass_ != 0D) {
+        if (java.lang.Double.doubleToRawLongBits(monoisotopicMass_) != 0) {
           size += com.google.protobuf.CodedOutputStream
             .computeDoubleSize(2, monoisotopicMass_);
         }
-        if (averageMass_ != 0D) {
+        if (java.lang.Double.doubleToRawLongBits(averageMass_) != 0) {
           size += com.google.protobuf.CodedOutputStream
             .computeDoubleSize(3, averageMass_);
         }
@@ -15100,7 +14263,7 @@ public final class SkylineDocument {
           size += com.google.protobuf.CodedOutputStream
             .computeEnumSize(4, lossInclusion_);
         }
-        if (!getModificationNameBytes().isEmpty()) {
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(modificationName_)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, modificationName_);
         }
         if (lossIndex_ != 0) {
@@ -15111,7 +14274,7 @@ public final class SkylineDocument {
           size += com.google.protobuf.CodedOutputStream
             .computeInt32Size(7, charge_);
         }
-        size += unknownFields.getSerializedSize();
+        size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
         return size;
       }
@@ -15141,7 +14304,7 @@ public final class SkylineDocument {
             != other.getLossIndex()) return false;
         if (getCharge()
             != other.getCharge()) return false;
-        if (!unknownFields.equals(other.unknownFields)) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
       }
 
@@ -15168,7 +14331,7 @@ public final class SkylineDocument {
         hash = (53 * hash) + getLossIndex();
         hash = (37 * hash) + CHARGE_FIELD_NUMBER;
         hash = (53 * hash) + getCharge();
-        hash = (29 * hash) + unknownFields.hashCode();
+        hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
       }
@@ -15285,18 +14448,13 @@ public final class SkylineDocument {
 
         // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.newBuilder()
         private Builder() {
-          maybeForceBuilderInitialization();
+
         }
 
         private Builder(
             com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-          }
+
         }
         @java.lang.Override
         public Builder clear() {
@@ -15419,7 +14577,7 @@ public final class SkylineDocument {
           if (other.getCharge() != 0) {
             setCharge(other.getCharge());
           }
-          this.mergeUnknownFields(other.unknownFields);
+          this.mergeUnknownFields(other.getUnknownFields());
           onChanged();
           return this;
         }
@@ -15434,17 +14592,65 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss parsedMessage = null;
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
           try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 10: {
+                  formula_ = input.readStringRequireUtf8();
+
+                  break;
+                } // case 10
+                case 17: {
+                  monoisotopicMass_ = input.readDouble();
+
+                  break;
+                } // case 17
+                case 25: {
+                  averageMass_ = input.readDouble();
+
+                  break;
+                } // case 25
+                case 32: {
+                  lossInclusion_ = input.readEnum();
+
+                  break;
+                } // case 32
+                case 42: {
+                  modificationName_ = input.readStringRequireUtf8();
+
+                  break;
+                } // case 42
+                case 48: {
+                  lossIndex_ = input.readInt32();
+
+                  break;
+                } // case 48
+                case 56: {
+                  charge_ = input.readInt32();
+
+                  break;
+                } // case 56
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
+            onChanged();
+          } // finally
           return this;
         }
 
@@ -15810,7 +15016,18 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TransitionLoss(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
@@ -15873,53 +15090,6 @@ public final class SkylineDocument {
       getUnknownFields() {
         return this.unknownFields;
       }
-      private TransitionLibInfo(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 8: {
-
-                rank_ = input.readInt32();
-                break;
-              }
-              case 21: {
-
-                intensity_ = input.readFloat();
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_TransitionLibInfo_descriptor;
@@ -15972,10 +15142,10 @@ public final class SkylineDocument {
         if (rank_ != 0) {
           output.writeInt32(1, rank_);
         }
-        if (intensity_ != 0F) {
+        if (java.lang.Float.floatToRawIntBits(intensity_) != 0) {
           output.writeFloat(2, intensity_);
         }
-        unknownFields.writeTo(output);
+        getUnknownFields().writeTo(output);
       }
 
       @java.lang.Override
@@ -15988,11 +15158,11 @@ public final class SkylineDocument {
           size += com.google.protobuf.CodedOutputStream
             .computeInt32Size(1, rank_);
         }
-        if (intensity_ != 0F) {
+        if (java.lang.Float.floatToRawIntBits(intensity_) != 0) {
           size += com.google.protobuf.CodedOutputStream
             .computeFloatSize(2, intensity_);
         }
-        size += unknownFields.getSerializedSize();
+        size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
         return size;
       }
@@ -16012,7 +15182,7 @@ public final class SkylineDocument {
         if (java.lang.Float.floatToIntBits(getIntensity())
             != java.lang.Float.floatToIntBits(
                 other.getIntensity())) return false;
-        if (!unknownFields.equals(other.unknownFields)) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
       }
 
@@ -16028,7 +15198,7 @@ public final class SkylineDocument {
         hash = (37 * hash) + INTENSITY_FIELD_NUMBER;
         hash = (53 * hash) + java.lang.Float.floatToIntBits(
             getIntensity());
-        hash = (29 * hash) + unknownFields.hashCode();
+        hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
       }
@@ -16145,18 +15315,13 @@ public final class SkylineDocument {
 
         // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLibInfo.newBuilder()
         private Builder() {
-          maybeForceBuilderInitialization();
+
         }
 
         private Builder(
             com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-          }
+
         }
         @java.lang.Override
         public Builder clear() {
@@ -16247,7 +15412,7 @@ public final class SkylineDocument {
           if (other.getIntensity() != 0F) {
             setIntensity(other.getIntensity());
           }
-          this.mergeUnknownFields(other.unknownFields);
+          this.mergeUnknownFields(other.getUnknownFields());
           onChanged();
           return this;
         }
@@ -16262,17 +15427,40 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLibInfo parsedMessage = null;
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
           try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 8: {
+                  rank_ = input.readInt32();
+
+                  break;
+                } // case 8
+                case 21: {
+                  intensity_ = input.readFloat();
+
+                  break;
+                } // case 21
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLibInfo) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
+            onChanged();
+          } // finally
           return this;
         }
 
@@ -16370,7 +15558,18 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TransitionLibInfo(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
@@ -16446,56 +15645,6 @@ public final class SkylineDocument {
       getUnknownFields() {
         return this.unknownFields;
       }
-      private TransitionData(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        int mutable_bitField0_ = 0;
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                  transitions_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Transition>();
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                transitions_.add(
-                    input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Transition.parser(), extensionRegistry));
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          if (((mutable_bitField0_ & 0x00000001) != 0)) {
-            transitions_ = java.util.Collections.unmodifiableList(transitions_);
-          }
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_SkylineDocumentProto_TransitionData_descriptor;
@@ -16566,7 +15715,7 @@ public final class SkylineDocument {
         for (int i = 0; i < transitions_.size(); i++) {
           output.writeMessage(1, transitions_.get(i));
         }
-        unknownFields.writeTo(output);
+        getUnknownFields().writeTo(output);
       }
 
       @java.lang.Override
@@ -16579,7 +15728,7 @@ public final class SkylineDocument {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(1, transitions_.get(i));
         }
-        size += unknownFields.getSerializedSize();
+        size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
         return size;
       }
@@ -16596,7 +15745,7 @@ public final class SkylineDocument {
 
         if (!getTransitionsList()
             .equals(other.getTransitionsList())) return false;
-        if (!unknownFields.equals(other.unknownFields)) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
       }
 
@@ -16611,7 +15760,7 @@ public final class SkylineDocument {
           hash = (37 * hash) + TRANSITIONS_FIELD_NUMBER;
           hash = (53 * hash) + getTransitionsList().hashCode();
         }
-        hash = (29 * hash) + unknownFields.hashCode();
+        hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
       }
@@ -16728,29 +15877,24 @@ public final class SkylineDocument {
 
         // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionData.newBuilder()
         private Builder() {
-          maybeForceBuilderInitialization();
+
         }
 
         private Builder(
             com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-            getTransitionsFieldBuilder();
-          }
+
         }
         @java.lang.Override
         public Builder clear() {
           super.clear();
           if (transitionsBuilder_ == null) {
             transitions_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000001);
           } else {
+            transitions_ = null;
             transitionsBuilder_.clear();
           }
+          bitField0_ = (bitField0_ & ~0x00000001);
           return this;
         }
 
@@ -16861,7 +16005,7 @@ public final class SkylineDocument {
               }
             }
           }
-          this.mergeUnknownFields(other.unknownFields);
+          this.mergeUnknownFields(other.getUnknownFields());
           onChanged();
           return this;
         }
@@ -16876,17 +16020,43 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionData parsedMessage = null;
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
           try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 10: {
+                  org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Transition m =
+                      input.readMessage(
+                          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Transition.parser(),
+                          extensionRegistry);
+                  if (transitionsBuilder_ == null) {
+                    ensureTransitionsIsMutable();
+                    transitions_.add(m);
+                  } else {
+                    transitionsBuilder_.addMessage(m);
+                  }
+                  break;
+                } // case 10
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionData) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
+            onChanged();
+          } // finally
           return this;
         }
         private int bitField0_;
@@ -17163,7 +16333,18 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TransitionData(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
@@ -17281,83 +16462,6 @@ public final class SkylineDocument {
       public final com.google.protobuf.UnknownFieldSet
       getUnknownFields() {
         return this.unknownFields;
-      }
-      private LinkedIon(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        int mutable_bitField0_ = 0;
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 8: {
-                int rawValue = input.readEnum();
-
-                ionType_ = rawValue;
-                break;
-              }
-              case 16: {
-
-                ordinal_ = input.readInt32();
-                break;
-              }
-              case 24: {
-
-                modificationIndex_ = input.readInt32();
-                break;
-              }
-              case 34: {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                modificationName_ = s;
-                break;
-              }
-              case 42: {
-                if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                  children_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon>();
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                children_.add(
-                    input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon.parser(), extensionRegistry));
-                break;
-              }
-              case 56: {
-
-                orphan_ = input.readBool();
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          if (((mutable_bitField0_ & 0x00000001) != 0)) {
-            children_ = java.util.Collections.unmodifiableList(children_);
-          }
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
       }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
@@ -17525,7 +16629,7 @@ public final class SkylineDocument {
         if (modificationIndex_ != 0) {
           output.writeInt32(3, modificationIndex_);
         }
-        if (!getModificationNameBytes().isEmpty()) {
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(modificationName_)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 4, modificationName_);
         }
         for (int i = 0; i < children_.size(); i++) {
@@ -17534,7 +16638,7 @@ public final class SkylineDocument {
         if (orphan_ != false) {
           output.writeBool(7, orphan_);
         }
-        unknownFields.writeTo(output);
+        getUnknownFields().writeTo(output);
       }
 
       @java.lang.Override
@@ -17555,7 +16659,7 @@ public final class SkylineDocument {
           size += com.google.protobuf.CodedOutputStream
             .computeInt32Size(3, modificationIndex_);
         }
-        if (!getModificationNameBytes().isEmpty()) {
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(modificationName_)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, modificationName_);
         }
         for (int i = 0; i < children_.size(); i++) {
@@ -17566,7 +16670,7 @@ public final class SkylineDocument {
           size += com.google.protobuf.CodedOutputStream
             .computeBoolSize(7, orphan_);
         }
-        size += unknownFields.getSerializedSize();
+        size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
         return size;
       }
@@ -17592,7 +16696,7 @@ public final class SkylineDocument {
             .equals(other.getChildrenList())) return false;
         if (getOrphan()
             != other.getOrphan()) return false;
-        if (!unknownFields.equals(other.unknownFields)) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
       }
 
@@ -17618,7 +16722,7 @@ public final class SkylineDocument {
         hash = (37 * hash) + ORPHAN_FIELD_NUMBER;
         hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
             getOrphan());
-        hash = (29 * hash) + unknownFields.hashCode();
+        hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
       }
@@ -17735,19 +16839,13 @@ public final class SkylineDocument {
 
         // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon.newBuilder()
         private Builder() {
-          maybeForceBuilderInitialization();
+
         }
 
         private Builder(
             com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-            getChildrenFieldBuilder();
-          }
+
         }
         @java.lang.Override
         public Builder clear() {
@@ -17762,10 +16860,11 @@ public final class SkylineDocument {
 
           if (childrenBuilder_ == null) {
             children_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000001);
           } else {
+            children_ = null;
             childrenBuilder_.clear();
           }
+          bitField0_ = (bitField0_ & ~0x00000001);
           orphan_ = false;
 
           return this;
@@ -17899,7 +16998,7 @@ public final class SkylineDocument {
           if (other.getOrphan() != false) {
             setOrphan(other.getOrphan());
           }
-          this.mergeUnknownFields(other.unknownFields);
+          this.mergeUnknownFields(other.getUnknownFields());
           onChanged();
           return this;
         }
@@ -17914,17 +17013,68 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon parsedMessage = null;
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
           try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 8: {
+                  ionType_ = input.readEnum();
+
+                  break;
+                } // case 8
+                case 16: {
+                  ordinal_ = input.readInt32();
+
+                  break;
+                } // case 16
+                case 24: {
+                  modificationIndex_ = input.readInt32();
+
+                  break;
+                } // case 24
+                case 34: {
+                  modificationName_ = input.readStringRequireUtf8();
+
+                  break;
+                } // case 34
+                case 42: {
+                  org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon m =
+                      input.readMessage(
+                          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon.parser(),
+                          extensionRegistry);
+                  if (childrenBuilder_ == null) {
+                    ensureChildrenIsMutable();
+                    children_.add(m);
+                  } else {
+                    childrenBuilder_.addMessage(m);
+                  }
+                  break;
+                } // case 42
+                case 56: {
+                  orphan_ = input.readBool();
+
+                  break;
+                } // case 56
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
+            onChanged();
+          } // finally
           return this;
         }
         private int bitField0_;
@@ -18424,7 +17574,18 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new LinkedIon(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
@@ -18458,7 +17619,7 @@ public final class SkylineDocument {
     @java.lang.Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -18467,7 +17628,7 @@ public final class SkylineDocument {
       if (size != -1) return size;
 
       size = 0;
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -18482,7 +17643,7 @@ public final class SkylineDocument {
       }
       org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto other = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto) obj;
 
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -18493,7 +17654,7 @@ public final class SkylineDocument {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptor().hashCode();
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -18610,18 +17771,13 @@ public final class SkylineDocument {
 
       // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
@@ -18700,7 +17856,7 @@ public final class SkylineDocument {
 
       public Builder mergeFrom(org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto other) {
         if (other == org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.getDefaultInstance()) return this;
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -18715,17 +17871,30 @@ public final class SkylineDocument {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       @java.lang.Override
@@ -18761,7 +17930,18 @@ public final class SkylineDocument {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new SkylineDocumentProto(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -18971,125 +18151,6 @@ public final class SkylineDocument {
     getUnknownFields() {
       return this.unknownFields;
     }
-    private LibraryKeyProto(
-        com.google.protobuf.CodedInputStream input,
-        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-        throws com.google.protobuf.InvalidProtocolBufferException {
-      this();
-      if (extensionRegistry == null) {
-        throw new java.lang.NullPointerException();
-      }
-      int mutable_bitField0_ = 0;
-      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-          com.google.protobuf.UnknownFieldSet.newBuilder();
-      try {
-        boolean done = false;
-        while (!done) {
-          int tag = input.readTag();
-          switch (tag) {
-            case 0:
-              done = true;
-              break;
-            case 8: {
-              int rawValue = input.readEnum();
-
-              keyType_ = rawValue;
-              break;
-            }
-            case 18: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              modifiedSequence_ = s;
-              break;
-            }
-            case 24: {
-
-              charge_ = input.readInt32();
-              break;
-            }
-            case 34: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              moleculeName_ = s;
-              break;
-            }
-            case 42: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              chemicalFormula_ = s;
-              break;
-            }
-            case 50: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              inChiKey_ = s;
-              break;
-            }
-            case 58: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              otherKeys_ = s;
-              break;
-            }
-            case 66: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              adduct_ = s;
-              break;
-            }
-            case 73: {
-
-              precursorMz_ = input.readDouble();
-              break;
-            }
-            case 81: {
-
-              retentionTime_ = input.readDouble();
-              break;
-            }
-            case 90: {
-              java.lang.String s = input.readStringRequireUtf8();
-              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                crosslinkedSequences_ = new com.google.protobuf.LazyStringArrayList();
-                mutable_bitField0_ |= 0x00000001;
-              }
-              crosslinkedSequences_.add(s);
-              break;
-            }
-            case 98: {
-              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
-                crosslinkers_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Crosslinker>();
-                mutable_bitField0_ |= 0x00000002;
-              }
-              crosslinkers_.add(
-                  input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Crosslinker.parser(), extensionRegistry));
-              break;
-            }
-            default: {
-              if (!parseUnknownField(
-                  input, unknownFields, extensionRegistry, tag)) {
-                done = true;
-              }
-              break;
-            }
-          }
-        }
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(this);
-      } catch (java.io.IOException e) {
-        throw new com.google.protobuf.InvalidProtocolBufferException(
-            e).setUnfinishedMessage(this);
-      } finally {
-        if (((mutable_bitField0_ & 0x00000001) != 0)) {
-          crosslinkedSequences_ = crosslinkedSequences_.getUnmodifiableView();
-        }
-        if (((mutable_bitField0_ & 0x00000002) != 0)) {
-          crosslinkers_ = java.util.Collections.unmodifiableList(crosslinkers_);
-        }
-        this.unknownFields = unknownFields.build();
-        makeExtensionsImmutable();
-      }
-    }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
       return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_LibraryKeyProto_descriptor;
@@ -19298,62 +18359,6 @@ public final class SkylineDocument {
       getUnknownFields() {
         return this.unknownFields;
       }
-      private Crosslinker(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        int mutable_bitField0_ = 0;
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 10: {
-                java.lang.String s = input.readStringRequireUtf8();
-
-                name_ = s;
-                break;
-              }
-              case 18: {
-                if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                  positions_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Positions>();
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                positions_.add(
-                    input.readMessage(org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Positions.parser(), extensionRegistry));
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          if (((mutable_bitField0_ & 0x00000001) != 0)) {
-            positions_ = java.util.Collections.unmodifiableList(positions_);
-          }
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_LibraryKeyProto_Crosslinker_descriptor;
@@ -19459,13 +18464,13 @@ public final class SkylineDocument {
       @java.lang.Override
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        if (!getNameBytes().isEmpty()) {
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 1, name_);
         }
         for (int i = 0; i < positions_.size(); i++) {
           output.writeMessage(2, positions_.get(i));
         }
-        unknownFields.writeTo(output);
+        getUnknownFields().writeTo(output);
       }
 
       @java.lang.Override
@@ -19474,14 +18479,14 @@ public final class SkylineDocument {
         if (size != -1) return size;
 
         size = 0;
-        if (!getNameBytes().isEmpty()) {
+        if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(name_)) {
           size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, name_);
         }
         for (int i = 0; i < positions_.size(); i++) {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(2, positions_.get(i));
         }
-        size += unknownFields.getSerializedSize();
+        size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
         return size;
       }
@@ -19500,7 +18505,7 @@ public final class SkylineDocument {
             .equals(other.getName())) return false;
         if (!getPositionsList()
             .equals(other.getPositionsList())) return false;
-        if (!unknownFields.equals(other.unknownFields)) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
       }
 
@@ -19517,7 +18522,7 @@ public final class SkylineDocument {
           hash = (37 * hash) + POSITIONS_FIELD_NUMBER;
           hash = (53 * hash) + getPositionsList().hashCode();
         }
-        hash = (29 * hash) + unknownFields.hashCode();
+        hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
       }
@@ -19634,19 +18639,13 @@ public final class SkylineDocument {
 
         // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Crosslinker.newBuilder()
         private Builder() {
-          maybeForceBuilderInitialization();
+
         }
 
         private Builder(
             com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-            getPositionsFieldBuilder();
-          }
+
         }
         @java.lang.Override
         public Builder clear() {
@@ -19655,10 +18654,11 @@ public final class SkylineDocument {
 
           if (positionsBuilder_ == null) {
             positions_ = java.util.Collections.emptyList();
-            bitField0_ = (bitField0_ & ~0x00000001);
           } else {
+            positions_ = null;
             positionsBuilder_.clear();
           }
+          bitField0_ = (bitField0_ & ~0x00000001);
           return this;
         }
 
@@ -19774,7 +18774,7 @@ public final class SkylineDocument {
               }
             }
           }
-          this.mergeUnknownFields(other.unknownFields);
+          this.mergeUnknownFields(other.getUnknownFields());
           onChanged();
           return this;
         }
@@ -19789,17 +18789,48 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Crosslinker parsedMessage = null;
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
           try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 10: {
+                  name_ = input.readStringRequireUtf8();
+
+                  break;
+                } // case 10
+                case 18: {
+                  org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Positions m =
+                      input.readMessage(
+                          org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Positions.parser(),
+                          extensionRegistry);
+                  if (positionsBuilder_ == null) {
+                    ensurePositionsIsMutable();
+                    positions_.add(m);
+                  } else {
+                    positionsBuilder_.addMessage(m);
+                  }
+                  break;
+                } // case 18
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Crosslinker) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
+            onChanged();
+          } // finally
           return this;
         }
         private int bitField0_;
@@ -20152,7 +19183,18 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new Crosslinker(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
@@ -20221,68 +19263,6 @@ public final class SkylineDocument {
       getUnknownFields() {
         return this.unknownFields;
       }
-      private Positions(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        this();
-        if (extensionRegistry == null) {
-          throw new java.lang.NullPointerException();
-        }
-        int mutable_bitField0_ = 0;
-        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
-            com.google.protobuf.UnknownFieldSet.newBuilder();
-        try {
-          boolean done = false;
-          while (!done) {
-            int tag = input.readTag();
-            switch (tag) {
-              case 0:
-                done = true;
-                break;
-              case 8: {
-                if (!((mutable_bitField0_ & 0x00000001) != 0)) {
-                  position_ = newIntList();
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                position_.addInt(input.readInt32());
-                break;
-              }
-              case 10: {
-                int length = input.readRawVarint32();
-                int limit = input.pushLimit(length);
-                if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
-                  position_ = newIntList();
-                  mutable_bitField0_ |= 0x00000001;
-                }
-                while (input.getBytesUntilLimit() > 0) {
-                  position_.addInt(input.readInt32());
-                }
-                input.popLimit(limit);
-                break;
-              }
-              default: {
-                if (!parseUnknownField(
-                    input, unknownFields, extensionRegistry, tag)) {
-                  done = true;
-                }
-                break;
-              }
-            }
-          }
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(this);
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(
-              e).setUnfinishedMessage(this);
-        } finally {
-          if (((mutable_bitField0_ & 0x00000001) != 0)) {
-            position_.makeImmutable(); // C
-          }
-          this.unknownFields = unknownFields.build();
-          makeExtensionsImmutable();
-        }
-      }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
         return org.labkey.targetedms.parser.proto.SkylineDocument.internal_static_LibraryKeyProto_Positions_descriptor;
@@ -20346,7 +19326,7 @@ public final class SkylineDocument {
         for (int i = 0; i < position_.size(); i++) {
           output.writeInt32NoTag(position_.getInt(i));
         }
-        unknownFields.writeTo(output);
+        getUnknownFields().writeTo(output);
       }
 
       @java.lang.Override
@@ -20369,7 +19349,7 @@ public final class SkylineDocument {
           }
           positionMemoizedSerializedSize = dataSize;
         }
-        size += unknownFields.getSerializedSize();
+        size += getUnknownFields().getSerializedSize();
         memoizedSize = size;
         return size;
       }
@@ -20386,7 +19366,7 @@ public final class SkylineDocument {
 
         if (!getPositionList()
             .equals(other.getPositionList())) return false;
-        if (!unknownFields.equals(other.unknownFields)) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
       }
 
@@ -20401,7 +19381,7 @@ public final class SkylineDocument {
           hash = (37 * hash) + POSITION_FIELD_NUMBER;
           hash = (53 * hash) + getPositionList().hashCode();
         }
-        hash = (29 * hash) + unknownFields.hashCode();
+        hash = (29 * hash) + getUnknownFields().hashCode();
         memoizedHashCode = hash;
         return hash;
       }
@@ -20518,18 +19498,13 @@ public final class SkylineDocument {
 
         // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Positions.newBuilder()
         private Builder() {
-          maybeForceBuilderInitialization();
+
         }
 
         private Builder(
             com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
           super(parent);
-          maybeForceBuilderInitialization();
-        }
-        private void maybeForceBuilderInitialization() {
-          if (com.google.protobuf.GeneratedMessageV3
-                  .alwaysUseFieldBuilders) {
-          }
+
         }
         @java.lang.Override
         public Builder clear() {
@@ -20626,7 +19601,7 @@ public final class SkylineDocument {
             }
             onChanged();
           }
-          this.mergeUnknownFields(other.unknownFields);
+          this.mergeUnknownFields(other.getUnknownFields());
           onChanged();
           return this;
         }
@@ -20641,17 +19616,46 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Positions parsedMessage = null;
+          if (extensionRegistry == null) {
+            throw new java.lang.NullPointerException();
+          }
           try {
-            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                case 8: {
+                  int v = input.readInt32();
+                  ensurePositionIsMutable();
+                  position_.addInt(v);
+                  break;
+                } // case 8
+                case 10: {
+                  int length = input.readRawVarint32();
+                  int limit = input.pushLimit(length);
+                  ensurePositionIsMutable();
+                  while (input.getBytesUntilLimit() > 0) {
+                    position_.addInt(input.readInt32());
+                  }
+                  input.popLimit(limit);
+                  break;
+                } // case 10
+                default: {
+                  if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                    done = true; // was an endgroup tag
+                  }
+                  break;
+                } // default:
+              } // switch (tag)
+            } // while (!done)
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Positions) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
-            if (parsedMessage != null) {
-              mergeFrom(parsedMessage);
-            }
-          }
+            onChanged();
+          } // finally
           return this;
         }
         private int bitField0_;
@@ -20767,7 +19771,18 @@ public final class SkylineDocument {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws com.google.protobuf.InvalidProtocolBufferException {
-          return new Positions(input, extensionRegistry);
+          Builder builder = newBuilder();
+          try {
+            builder.mergeFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(builder.buildPartial());
+          } catch (com.google.protobuf.UninitializedMessageException e) {
+            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                .setUnfinishedMessage(builder.buildPartial());
+          }
+          return builder.buildPartial();
         }
       };
 
@@ -21159,31 +20174,31 @@ public final class SkylineDocument {
       if (keyType_ != org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.KeyType.peptide.getNumber()) {
         output.writeEnum(1, keyType_);
       }
-      if (!getModifiedSequenceBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(modifiedSequence_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, modifiedSequence_);
       }
       if (charge_ != 0) {
         output.writeInt32(3, charge_);
       }
-      if (!getMoleculeNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(moleculeName_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 4, moleculeName_);
       }
-      if (!getChemicalFormulaBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(chemicalFormula_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 5, chemicalFormula_);
       }
-      if (!getInChiKeyBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(inChiKey_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 6, inChiKey_);
       }
-      if (!getOtherKeysBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(otherKeys_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 7, otherKeys_);
       }
-      if (!getAdductBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(adduct_)) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 8, adduct_);
       }
-      if (precursorMz_ != 0D) {
+      if (java.lang.Double.doubleToRawLongBits(precursorMz_) != 0) {
         output.writeDouble(9, precursorMz_);
       }
-      if (retentionTime_ != 0D) {
+      if (java.lang.Double.doubleToRawLongBits(retentionTime_) != 0) {
         output.writeDouble(10, retentionTime_);
       }
       for (int i = 0; i < crosslinkedSequences_.size(); i++) {
@@ -21192,7 +20207,7 @@ public final class SkylineDocument {
       for (int i = 0; i < crosslinkers_.size(); i++) {
         output.writeMessage(12, crosslinkers_.get(i));
       }
-      unknownFields.writeTo(output);
+      getUnknownFields().writeTo(output);
     }
 
     @java.lang.Override
@@ -21205,33 +20220,33 @@ public final class SkylineDocument {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(1, keyType_);
       }
-      if (!getModifiedSequenceBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(modifiedSequence_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, modifiedSequence_);
       }
       if (charge_ != 0) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(3, charge_);
       }
-      if (!getMoleculeNameBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(moleculeName_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, moleculeName_);
       }
-      if (!getChemicalFormulaBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(chemicalFormula_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, chemicalFormula_);
       }
-      if (!getInChiKeyBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(inChiKey_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(6, inChiKey_);
       }
-      if (!getOtherKeysBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(otherKeys_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(7, otherKeys_);
       }
-      if (!getAdductBytes().isEmpty()) {
+      if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(adduct_)) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, adduct_);
       }
-      if (precursorMz_ != 0D) {
+      if (java.lang.Double.doubleToRawLongBits(precursorMz_) != 0) {
         size += com.google.protobuf.CodedOutputStream
           .computeDoubleSize(9, precursorMz_);
       }
-      if (retentionTime_ != 0D) {
+      if (java.lang.Double.doubleToRawLongBits(retentionTime_) != 0) {
         size += com.google.protobuf.CodedOutputStream
           .computeDoubleSize(10, retentionTime_);
       }
@@ -21247,7 +20262,7 @@ public final class SkylineDocument {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(12, crosslinkers_.get(i));
       }
-      size += unknownFields.getSerializedSize();
+      size += getUnknownFields().getSerializedSize();
       memoizedSize = size;
       return size;
     }
@@ -21287,7 +20302,7 @@ public final class SkylineDocument {
           .equals(other.getCrosslinkedSequencesList())) return false;
       if (!getCrosslinkersList()
           .equals(other.getCrosslinkersList())) return false;
-      if (!unknownFields.equals(other.unknownFields)) return false;
+      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -21328,7 +20343,7 @@ public final class SkylineDocument {
         hash = (37 * hash) + CROSSLINKERS_FIELD_NUMBER;
         hash = (53 * hash) + getCrosslinkersList().hashCode();
       }
-      hash = (29 * hash) + unknownFields.hashCode();
+      hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
       return hash;
     }
@@ -21445,19 +20460,13 @@ public final class SkylineDocument {
 
       // Construct using org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.newBuilder()
       private Builder() {
-        maybeForceBuilderInitialization();
+
       }
 
       private Builder(
           com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
         super(parent);
-        maybeForceBuilderInitialization();
-      }
-      private void maybeForceBuilderInitialization() {
-        if (com.google.protobuf.GeneratedMessageV3
-                .alwaysUseFieldBuilders) {
-          getCrosslinkersFieldBuilder();
-        }
+
       }
       @java.lang.Override
       public Builder clear() {
@@ -21486,10 +20495,11 @@ public final class SkylineDocument {
         bitField0_ = (bitField0_ & ~0x00000001);
         if (crosslinkersBuilder_ == null) {
           crosslinkers_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
         } else {
+          crosslinkers_ = null;
           crosslinkersBuilder_.clear();
         }
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -21661,7 +20671,7 @@ public final class SkylineDocument {
             }
           }
         }
-        this.mergeUnknownFields(other.unknownFields);
+        this.mergeUnknownFields(other.getUnknownFields());
         onChanged();
         return this;
       }
@@ -21676,17 +20686,99 @@ public final class SkylineDocument {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto parsedMessage = null;
+        if (extensionRegistry == null) {
+          throw new java.lang.NullPointerException();
+        }
         try {
-          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              case 8: {
+                keyType_ = input.readEnum();
+
+                break;
+              } // case 8
+              case 18: {
+                modifiedSequence_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 18
+              case 24: {
+                charge_ = input.readInt32();
+
+                break;
+              } // case 24
+              case 34: {
+                moleculeName_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 34
+              case 42: {
+                chemicalFormula_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 42
+              case 50: {
+                inChiKey_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 50
+              case 58: {
+                otherKeys_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 58
+              case 66: {
+                adduct_ = input.readStringRequireUtf8();
+
+                break;
+              } // case 66
+              case 73: {
+                precursorMz_ = input.readDouble();
+
+                break;
+              } // case 73
+              case 81: {
+                retentionTime_ = input.readDouble();
+
+                break;
+              } // case 81
+              case 90: {
+                java.lang.String s = input.readStringRequireUtf8();
+                ensureCrosslinkedSequencesIsMutable();
+                crosslinkedSequences_.add(s);
+                break;
+              } // case 90
+              case 98: {
+                org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Crosslinker m =
+                    input.readMessage(
+                        org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Crosslinker.parser(),
+                        extensionRegistry);
+                if (crosslinkersBuilder_ == null) {
+                  ensureCrosslinkersIsMutable();
+                  crosslinkers_.add(m);
+                } else {
+                  crosslinkersBuilder_.addMessage(m);
+                }
+                break;
+              } // case 98
+              default: {
+                if (!super.parseUnknownField(input, extensionRegistry, tag)) {
+                  done = true; // was an endgroup tag
+                }
+                break;
+              } // default:
+            } // switch (tag)
+          } // while (!done)
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
-          if (parsedMessage != null) {
-            mergeFrom(parsedMessage);
-          }
-        }
+          onChanged();
+        } // finally
         return this;
       }
       private int bitField0_;
@@ -22676,7 +21768,18 @@ public final class SkylineDocument {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-        return new LibraryKeyProto(input, extensionRegistry);
+        Builder builder = newBuilder();
+        try {
+          builder.mergeFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(builder.buildPartial());
+        } catch (com.google.protobuf.UninitializedMessageException e) {
+          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(e)
+              .setUnfinishedMessage(builder.buildPartial());
+        }
+        return builder.buildPartial();
       }
     };
 
@@ -22717,6 +21820,11 @@ public final class SkylineDocument {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_SkylineDocumentProto_TransitionPeak_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_SkylineDocumentProto_TransitionPeak_PeakShapeValues_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_SkylineDocumentProto_TransitionPeak_PeakShapeValues_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_SkylineDocumentProto_TransitionResults_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -22727,25 +21835,10 @@ public final class SkylineDocument {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_SkylineDocumentProto_Transition_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_SkylineDocumentProto_OptionalFloat_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_SkylineDocumentProto_OptionalFloat_fieldAccessorTable;
-  private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_SkylineDocumentProto_OptionalDouble_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_SkylineDocumentProto_OptionalDouble_fieldAccessorTable;
-  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_SkylineDocumentProto_OptionalInt_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_SkylineDocumentProto_OptionalInt_fieldAccessorTable;
-  private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_SkylineDocumentProto_OptionalString_descriptor;
-  private static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_SkylineDocumentProto_OptionalString_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_SkylineDocumentProto_TransitionLoss_descriptor;
   private static final 
@@ -22790,127 +21883,129 @@ public final class SkylineDocument {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\025SkylineDocument.proto\"\277\037\n\024SkylineDocum" +
-      "entProto\032a\n\013Annotations\022\014\n\004note\030\001 \001(\t\022\r\n" +
-      "\005color\030\002 \001(\005\0225\n\006values\030\003 \003(\0132%.SkylineDo" +
-      "cumentProto.AnnotationValue\0322\n\017Annotatio" +
-      "nValue\022\014\n\004name\030\001 \001(\t\022\021\n\ttextValue\030\002 \001(\t\032" +
-      "\227\006\n\016TransitionPeak\022\026\n\016replicateIndex\030\001 \001" +
-      "(\005\022\034\n\024fileIndexInReplicate\030\002 \001(\005\0226\n\tmass" +
-      "Error\030\003 \001(\0132#.SkylineDocumentProto.Optio" +
-      "nalFloat\022\025\n\rretentionTime\030\004 \001(\002\022\032\n\022start" +
-      "RetentionTime\030\005 \001(\002\022\030\n\020endRetentionTime\030" +
-      "\006 \001(\002\0229\n\013ionMobility\030\007 \001(\0132$.SkylineDocu" +
-      "mentProto.OptionalDouble\022?\n\021ionMobilityW" +
-      "indow\030\010 \001(\0132$.SkylineDocumentProto.Optio" +
-      "nalDouble\022\014\n\004area\030\t \001(\002\022\026\n\016backgroundAre" +
-      "a\030\n \001(\002\022\016\n\006height\030\013 \001(\002\022\014\n\004fwhm\030\014 \001(\002\022\030\n" +
-      "\020isFwhmDegenerate\030\r \001(\010\0225\n\ttruncated\030\016 \001" +
-      "(\0162\".SkylineDocumentProto.OptionalBool\022<" +
-      "\n\nidentified\030\017 \001(\0162(.SkylineDocumentProt" +
-      "o.PeakIdentification\022\014\n\004rank\030\020 \001(\005\022\023\n\013ra" +
-      "nkByLevel\030\021 \001(\005\022;\n\020pointsAcrossPeak\030\022 \001(" +
-      "\0132!.SkylineDocumentProto.OptionalInt\022.\n\007" +
-      "userSet\030\023 \001(\0162\035.SkylineDocumentProto.Use" +
-      "rSet\022\030\n\020optimizationStep\030\027 \001(\021\0226\n\013annota" +
-      "tions\030\030 \001(\0132!.SkylineDocumentProto.Annot" +
-      "ations\022\031\n\021forcedIntegration\030\031 \001(\010\032H\n\021Tra" +
-      "nsitionResults\0223\n\005peaks\030\001 \003(\0132$.SkylineD" +
-      "ocumentProto.TransitionPeak\032\353\r\n\nTransiti" +
-      "on\0225\n\007formula\030\001 \001(\0132$.SkylineDocumentPro" +
-      "to.OptionalString\022:\n\014averageMassH\030\002 \001(\0132" +
-      "$.SkylineDocumentProto.OptionalDouble\0227\n" +
-      "\tmonoMassH\030\003 \001(\0132$.SkylineDocumentProto." +
-      "OptionalDouble\022=\n\017custom_ion_name\030\006 \001(\0132" +
-      "$.SkylineDocumentProto.OptionalString\022?\n" +
-      "\021measured_ion_name\030\007 \001(\0132$.SkylineDocume" +
-      "ntProto.OptionalString\0229\n\016decoyMassShift" +
-      "\030\010 \001(\0132!.SkylineDocumentProto.OptionalIn" +
-      "t\022\021\n\tmassIndex\030\t \001(\021\022:\n\017isotopeDistRank\030" +
-      "\013 \001(\0132!.SkylineDocumentProto.OptionalInt" +
-      "\022B\n\025isotopeDistProportion\030\014 \001(\0132#.Skylin" +
-      "eDocumentProto.OptionalFloat\022\027\n\017fragment" +
-      "Ordinal\030\r \001(\021\022\031\n\021calc_neutral_mass\030\016 \001(\001" +
-      "\022\016\n\006charge\030\017 \001(\021\022\022\n\ncleavageAa\030\020 \001(\005\022\020\n\010" +
-      "lostMass\030\021 \001(\001\0226\n\013annotations\030\022 \001(\0132!.Sk" +
-      "ylineDocumentProto.Annotations\022\023\n\013precur" +
-      "sorMz\030\023 \001(\001\022\021\n\tproductMz\030\024 \001(\001\022=\n\017collis" +
-      "ionEnergy\030\025 \001(\0132$.SkylineDocumentProto.O" +
-      "ptionalDouble\022C\n\025declusteringPotential\030\026" +
-      " \001(\0132$.SkylineDocumentProto.OptionalDoub" +
-      "le\0224\n\006losses\030\027 \003(\0132$.SkylineDocumentProt" +
-      "o.TransitionLoss\0223\n\014fragmentType\030\030 \001(\0162\035" +
-      ".SkylineDocumentProto.IonType\0228\n\007libInfo" +
-      "\030\031 \001(\0132\'.SkylineDocumentProto.Transition" +
-      "LibInfo\0228\n\007results\030\032 \001(\0132\'.SkylineDocume" +
-      "ntProto.TransitionResults\0229\n\013averageMass" +
-      "\030\033 \001(\0132$.SkylineDocumentProto.OptionalDo" +
-      "uble\0226\n\010monoMass\030\034 \001(\0132$.SkylineDocument" +
-      "Proto.OptionalDouble\0224\n\006adduct\030\035 \001(\0132$.S" +
-      "kylineDocumentProto.OptionalString\0229\n\013mo" +
-      "lecule_id\030\036 \001(\0132$.SkylineDocumentProto.O" +
-      "ptionalString\022\030\n\020not_quantitative\030\037 \001(\010\022" +
-      "E\n\027explicitCollisionEnergy\030  \001(\0132$.Skyli" +
-      "neDocumentProto.OptionalDouble\022Q\n#explic" +
-      "itIonMobilityHighEnergyOffset\030! \001(\0132$.Sk" +
-      "ylineDocumentProto.OptionalDouble\022;\n\rexp" +
-      "licitSLens\030\" \001(\0132$.SkylineDocumentProto." +
-      "OptionalDouble\022A\n\023explicitConeVoltage\030# " +
-      "\001(\0132$.SkylineDocumentProto.OptionalDoubl" +
-      "e\022K\n\035explicitDeclusteringPotential\030$ \001(\013" +
-      "2$.SkylineDocumentProto.OptionalDouble\022\034" +
+      "\n\025SkylineDocument.proto\032\036google/protobuf" +
+      "/wrappers.proto\"\330\037\n\024SkylineDocumentProto" +
+      "\032a\n\013Annotations\022\014\n\004note\030\001 \001(\t\022\r\n\005color\030\002" +
+      " \001(\005\0225\n\006values\030\003 \003(\0132%.SkylineDocumentPr" +
+      "oto.AnnotationValue\0322\n\017AnnotationValue\022\014" +
+      "\n\004name\030\001 \001(\t\022\021\n\ttextValue\030\002 \001(\t\032\367\007\n\016Tran" +
+      "sitionPeak\022\026\n\016replicateIndex\030\001 \001(\005\022\034\n\024fi" +
+      "leIndexInReplicate\030\002 \001(\005\022.\n\tmassError\030\003 " +
+      "\001(\0132\033.google.protobuf.FloatValue\022\025\n\rrete" +
+      "ntionTime\030\004 \001(\002\022\032\n\022startRetentionTime\030\005 " +
+      "\001(\002\022\030\n\020endRetentionTime\030\006 \001(\002\0221\n\013ionMobi" +
+      "lity\030\007 \001(\0132\034.google.protobuf.DoubleValue" +
+      "\0227\n\021ionMobilityWindow\030\010 \001(\0132\034.google.pro" +
+      "tobuf.DoubleValue\022\014\n\004area\030\t \001(\002\022\026\n\016backg" +
+      "roundArea\030\n \001(\002\022\016\n\006height\030\013 \001(\002\022\014\n\004fwhm\030" +
+      "\014 \001(\002\022\030\n\020isFwhmDegenerate\030\r \001(\010\0225\n\ttrunc" +
+      "ated\030\016 \001(\0162\".SkylineDocumentProto.Option" +
+      "alBool\022<\n\nidentified\030\017 \001(\0162(.SkylineDocu" +
+      "mentProto.PeakIdentification\022\014\n\004rank\030\020 \001" +
+      "(\005\022\023\n\013rankByLevel\030\021 \001(\005\022;\n\020pointsAcrossP" +
+      "eak\030\022 \001(\0132!.SkylineDocumentProto.Optiona" +
+      "lInt\022.\n\007userSet\030\023 \001(\0162\035.SkylineDocumentP" +
+      "roto.UserSet\022\030\n\020optimizationStep\030\027 \001(\021\0226" +
+      "\n\013annotations\030\030 \001(\0132!.SkylineDocumentPro" +
+      "to.Annotations\022\031\n\021forcedIntegration\030\031 \001(" +
+      "\010\022M\n\017peakShapeValues\030\032 \001(\01324.SkylineDocu" +
+      "mentProto.TransitionPeak.PeakShapeValues" +
+      "\022F\n ionMobilityCollisionCrossSection\030\033 \001" +
+      "(\0132\034.google.protobuf.DoubleValue\032_\n\017Peak" +
+      "ShapeValues\022\016\n\006stdDev\030\001 \001(\002\022\020\n\010skewness\030" +
+      "\002 \001(\002\022\020\n\010kurtosis\030\003 \001(\002\022\030\n\020shapeCorrelat" +
+      "ion\030\004 \001(\002\032H\n\021TransitionResults\0223\n\005peaks\030" +
+      "\001 \003(\0132$.SkylineDocumentProto.TransitionP" +
+      "eak\032\343\014\n\nTransition\022-\n\007formula\030\001 \001(\0132\034.go" +
+      "ogle.protobuf.StringValue\0222\n\014averageMass" +
+      "H\030\002 \001(\0132\034.google.protobuf.DoubleValue\022/\n" +
+      "\tmonoMassH\030\003 \001(\0132\034.google.protobuf.Doubl" +
+      "eValue\0225\n\017custom_ion_name\030\006 \001(\0132\034.google" +
+      ".protobuf.StringValue\0227\n\021measured_ion_na" +
+      "me\030\007 \001(\0132\034.google.protobuf.StringValue\0229" +
+      "\n\016decoyMassShift\030\010 \001(\0132!.SkylineDocument" +
+      "Proto.OptionalInt\022\021\n\tmassIndex\030\t \001(\021\022:\n\017" +
+      "isotopeDistRank\030\013 \001(\0132!.SkylineDocumentP" +
+      "roto.OptionalInt\022:\n\025isotopeDistProportio" +
+      "n\030\014 \001(\0132\033.google.protobuf.FloatValue\022\027\n\017" +
+      "fragmentOrdinal\030\r \001(\021\022\031\n\021calc_neutral_ma" +
+      "ss\030\016 \001(\001\022\016\n\006charge\030\017 \001(\021\022\022\n\ncleavageAa\030\020" +
+      " \001(\005\022\020\n\010lostMass\030\021 \001(\001\0226\n\013annotations\030\022 " +
+      "\001(\0132!.SkylineDocumentProto.Annotations\022\023" +
+      "\n\013precursorMz\030\023 \001(\001\022\021\n\tproductMz\030\024 \001(\001\0225" +
+      "\n\017collisionEnergy\030\025 \001(\0132\034.google.protobu" +
+      "f.DoubleValue\022;\n\025declusteringPotential\030\026" +
+      " \001(\0132\034.google.protobuf.DoubleValue\0224\n\006lo" +
+      "sses\030\027 \003(\0132$.SkylineDocumentProto.Transi" +
+      "tionLoss\0223\n\014fragmentType\030\030 \001(\0162\035.Skyline" +
+      "DocumentProto.IonType\0228\n\007libInfo\030\031 \001(\0132\'" +
+      ".SkylineDocumentProto.TransitionLibInfo\022" +
+      "8\n\007results\030\032 \001(\0132\'.SkylineDocumentProto." +
+      "TransitionResults\0221\n\013averageMass\030\033 \001(\0132\034" +
+      ".google.protobuf.DoubleValue\022.\n\010monoMass" +
+      "\030\034 \001(\0132\034.google.protobuf.DoubleValue\022,\n\006" +
+      "adduct\030\035 \001(\0132\034.google.protobuf.StringVal" +
+      "ue\0221\n\013molecule_id\030\036 \001(\0132\034.google.protobu" +
+      "f.StringValue\022\030\n\020not_quantitative\030\037 \001(\010\022" +
+      "=\n\027explicitCollisionEnergy\030  \001(\0132\034.googl" +
+      "e.protobuf.DoubleValue\022I\n#explicitIonMob" +
+      "ilityHighEnergyOffset\030! \001(\0132\034.google.pro" +
+      "tobuf.DoubleValue\0223\n\rexplicitSLens\030\" \001(\013" +
+      "2\034.google.protobuf.DoubleValue\0229\n\023explic" +
+      "itConeVoltage\030# \001(\0132\034.google.protobuf.Do" +
+      "ubleValue\022C\n\035explicitDeclusteringPotenti" +
+      "al\030$ \001(\0132\034.google.protobuf.DoubleValue\022\034" +
       "\n\024orphanedCrosslinkIon\030% \001(\010\0223\n\nlinkedIo" +
       "ns\030& \003(\0132\037.SkylineDocumentProto.LinkedIo" +
-      "n\032\036\n\rOptionalFloat\022\r\n\005value\030\001 \001(\002\032\037\n\016Opt" +
-      "ionalDouble\022\r\n\005value\030\001 \001(\001\032\034\n\013OptionalIn" +
-      "t\022\r\n\005value\030\001 \001(\021\032\037\n\016OptionalString\022\r\n\005va" +
-      "lue\030\001 \001(\t\032\311\001\n\016TransitionLoss\022\017\n\007formula\030" +
-      "\001 \001(\t\022\030\n\020monoisotopicMass\030\002 \001(\001\022\023\n\013avera" +
-      "geMass\030\003 \001(\001\022:\n\rlossInclusion\030\004 \001(\0162#.Sk" +
-      "ylineDocumentProto.LossInclusion\022\030\n\020modi" +
-      "ficationName\030\005 \001(\t\022\021\n\tlossIndex\030\006 \001(\005\022\016\n" +
-      "\006charge\030\007 \001(\005\0324\n\021TransitionLibInfo\022\014\n\004ra" +
-      "nk\030\001 \001(\005\022\021\n\tintensity\030\002 \001(\002\032G\n\016Transitio" +
-      "nData\0225\n\013transitions\030\001 \003(\0132 .SkylineDocu" +
-      "mentProto.Transition\032\304\001\n\tLinkedIon\022.\n\007io" +
-      "nType\030\001 \001(\0162\035.SkylineDocumentProto.IonTy" +
-      "pe\022\017\n\007ordinal\030\002 \001(\005\022\031\n\021modificationIndex" +
-      "\030\003 \001(\005\022\030\n\020modificationName\030\004 \001(\t\0221\n\010chil" +
-      "dren\030\005 \003(\0132\037.SkylineDocumentProto.Linked" +
-      "Ion\022\016\n\006orphan\030\007 \001(\010\"x\n\007UserSet\022\022\n\016USER_S" +
-      "ET_FALSE\020\000\022\021\n\rUSER_SET_TRUE\020\001\022\025\n\021USER_SE" +
-      "T_IMPORTED\020\002\022\031\n\025USER_SET_REINTEGRATED\020\003\022" +
-      "\024\n\020USER_SET_MATCHED\020\004\"Z\n\014OptionalBool\022\031\n" +
-      "\025OPTIONAL_BOOL_MISSING\020\000\022\026\n\022OPTIONAL_BOO" +
-      "L_TRUE\020\001\022\027\n\023OPTIONAL_BOOL_FALSE\020\002\"r\n\022Pea" +
-      "kIdentification\022\035\n\031PEAK_IDENTIFICATION_F" +
-      "ALSE\020\000\022\034\n\030PEAK_IDENTIFICATION_TRUE\020\001\022\037\n\033" +
-      "PEAK_IDENTIFICATION_ALIGNED\020\002\"\254\001\n\007IonTyp" +
-      "e\022\024\n\020ION_TYPE_unknown\020\000\022\016\n\nION_TYPE_a\020\001\022" +
-      "\016\n\nION_TYPE_b\020\002\022\016\n\nION_TYPE_c\020\003\022\016\n\nION_T" +
-      "YPE_x\020\004\022\016\n\nION_TYPE_y\020\005\022\016\n\nION_TYPE_z\020\006\022" +
-      "\026\n\022ION_TYPE_precursor\020\007\022\023\n\017ION_TYPE_cust" +
-      "om\020\010\"3\n\rLossInclusion\022\013\n\007Library\020\000\022\t\n\005Ne" +
-      "ver\020\001\022\n\n\006Always\020\002\"\200\004\n\017LibraryKeyProto\022)\n" +
-      "\007keyType\030\001 \001(\0162\030.LibraryKeyProto.KeyType" +
-      "\022\030\n\020modifiedSequence\030\002 \001(\t\022\016\n\006charge\030\003 \001" +
-      "(\005\022\024\n\014moleculeName\030\004 \001(\t\022\027\n\017chemicalForm" +
-      "ula\030\005 \001(\t\022\020\n\010inChiKey\030\006 \001(\t\022\021\n\totherKeys" +
-      "\030\007 \001(\t\022\016\n\006adduct\030\010 \001(\t\022\023\n\013precursorMz\030\t " +
-      "\001(\001\022\025\n\rretentionTime\030\n \001(\001\022\034\n\024crosslinke" +
-      "dSequences\030\013 \003(\t\0222\n\014crosslinkers\030\014 \003(\0132\034" +
-      ".LibraryKeyProto.Crosslinker\032J\n\013Crosslin" +
-      "ker\022\014\n\004name\030\001 \001(\t\022-\n\tpositions\030\002 \003(\0132\032.L" +
-      "ibraryKeyProto.Positions\032\035\n\tPositions\022\020\n" +
-      "\010position\030\001 \003(\005\"K\n\007KeyType\022\013\n\007peptide\020\000\022" +
-      "\022\n\016small_molecule\020\001\022\020\n\014precursor_mz\020\002\022\r\n" +
-      "\tcrosslink\020\003BG\n\"org.labkey.targetedms.pa" +
-      "rser.proto\252\002 pwiz.Skyline.Model.Serializ" +
-      "ationb\006proto3"
+      "n\032\034\n\013OptionalInt\022\r\n\005value\030\001 \001(\021\032\311\001\n\016Tran" +
+      "sitionLoss\022\017\n\007formula\030\001 \001(\t\022\030\n\020monoisoto" +
+      "picMass\030\002 \001(\001\022\023\n\013averageMass\030\003 \001(\001\022:\n\rlo" +
+      "ssInclusion\030\004 \001(\0162#.SkylineDocumentProto" +
+      ".LossInclusion\022\030\n\020modificationName\030\005 \001(\t" +
+      "\022\021\n\tlossIndex\030\006 \001(\005\022\016\n\006charge\030\007 \001(\005\0324\n\021T" +
+      "ransitionLibInfo\022\014\n\004rank\030\001 \001(\005\022\021\n\tintens" +
+      "ity\030\002 \001(\002\032G\n\016TransitionData\0225\n\013transitio" +
+      "ns\030\001 \003(\0132 .SkylineDocumentProto.Transiti" +
+      "on\032\304\001\n\tLinkedIon\022.\n\007ionType\030\001 \001(\0162\035.Skyl" +
+      "ineDocumentProto.IonType\022\017\n\007ordinal\030\002 \001(" +
+      "\005\022\031\n\021modificationIndex\030\003 \001(\005\022\030\n\020modifica" +
+      "tionName\030\004 \001(\t\0221\n\010children\030\005 \003(\0132\037.Skyli" +
+      "neDocumentProto.LinkedIon\022\016\n\006orphan\030\007 \001(" +
+      "\010\"x\n\007UserSet\022\022\n\016USER_SET_FALSE\020\000\022\021\n\rUSER" +
+      "_SET_TRUE\020\001\022\025\n\021USER_SET_IMPORTED\020\002\022\031\n\025US" +
+      "ER_SET_REINTEGRATED\020\003\022\024\n\020USER_SET_MATCHE" +
+      "D\020\004\"Z\n\014OptionalBool\022\031\n\025OPTIONAL_BOOL_MIS" +
+      "SING\020\000\022\026\n\022OPTIONAL_BOOL_TRUE\020\001\022\027\n\023OPTION" +
+      "AL_BOOL_FALSE\020\002\"r\n\022PeakIdentification\022\035\n" +
+      "\031PEAK_IDENTIFICATION_FALSE\020\000\022\034\n\030PEAK_IDE" +
+      "NTIFICATION_TRUE\020\001\022\037\n\033PEAK_IDENTIFICATIO" +
+      "N_ALIGNED\020\002\"\317\001\n\007IonType\022\024\n\020ION_TYPE_unkn" +
+      "own\020\000\022\016\n\nION_TYPE_a\020\001\022\016\n\nION_TYPE_b\020\002\022\016\n" +
+      "\nION_TYPE_c\020\003\022\016\n\nION_TYPE_x\020\004\022\016\n\nION_TYP" +
+      "E_y\020\005\022\016\n\nION_TYPE_z\020\006\022\026\n\022ION_TYPE_precur" +
+      "sor\020\007\022\023\n\017ION_TYPE_custom\020\010\022\017\n\013ION_TYPE_z" +
+      "H\020\t\022\020\n\014ION_TYPE_zHH\020\n\"3\n\rLossInclusion\022\013" +
+      "\n\007Library\020\000\022\t\n\005Never\020\001\022\n\n\006Always\020\002\"\200\004\n\017L" +
+      "ibraryKeyProto\022)\n\007keyType\030\001 \001(\0162\030.Librar" +
+      "yKeyProto.KeyType\022\030\n\020modifiedSequence\030\002 " +
+      "\001(\t\022\016\n\006charge\030\003 \001(\005\022\024\n\014moleculeName\030\004 \001(" +
+      "\t\022\027\n\017chemicalFormula\030\005 \001(\t\022\020\n\010inChiKey\030\006" +
+      " \001(\t\022\021\n\totherKeys\030\007 \001(\t\022\016\n\006adduct\030\010 \001(\t\022" +
+      "\023\n\013precursorMz\030\t \001(\001\022\025\n\rretentionTime\030\n " +
+      "\001(\001\022\034\n\024crosslinkedSequences\030\013 \003(\t\0222\n\014cro" +
+      "sslinkers\030\014 \003(\0132\034.LibraryKeyProto.Crossl" +
+      "inker\032J\n\013Crosslinker\022\014\n\004name\030\001 \001(\t\022-\n\tpo" +
+      "sitions\030\002 \003(\0132\032.LibraryKeyProto.Position" +
+      "s\032\035\n\tPositions\022\020\n\010position\030\001 \003(\005\"K\n\007KeyT" +
+      "ype\022\013\n\007peptide\020\000\022\022\n\016small_molecule\020\001\022\020\n\014" +
+      "precursor_mz\020\002\022\r\n\tcrosslink\020\003BG\n\"org.lab" +
+      "key.targetedms.parser.proto\252\002 pwiz.Skyli" +
+      "ne.Model.Serializationb\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
+          com.google.protobuf.WrappersProto.getDescriptor(),
         });
     internal_static_SkylineDocumentProto_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -22935,7 +22030,13 @@ public final class SkylineDocument {
     internal_static_SkylineDocumentProto_TransitionPeak_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SkylineDocumentProto_TransitionPeak_descriptor,
-        new java.lang.String[] { "ReplicateIndex", "FileIndexInReplicate", "MassError", "RetentionTime", "StartRetentionTime", "EndRetentionTime", "IonMobility", "IonMobilityWindow", "Area", "BackgroundArea", "Height", "Fwhm", "IsFwhmDegenerate", "Truncated", "Identified", "Rank", "RankByLevel", "PointsAcrossPeak", "UserSet", "OptimizationStep", "Annotations", "ForcedIntegration", });
+        new java.lang.String[] { "ReplicateIndex", "FileIndexInReplicate", "MassError", "RetentionTime", "StartRetentionTime", "EndRetentionTime", "IonMobility", "IonMobilityWindow", "Area", "BackgroundArea", "Height", "Fwhm", "IsFwhmDegenerate", "Truncated", "Identified", "Rank", "RankByLevel", "PointsAcrossPeak", "UserSet", "OptimizationStep", "Annotations", "ForcedIntegration", "PeakShapeValues", "IonMobilityCollisionCrossSection", });
+    internal_static_SkylineDocumentProto_TransitionPeak_PeakShapeValues_descriptor =
+      internal_static_SkylineDocumentProto_TransitionPeak_descriptor.getNestedTypes().get(0);
+    internal_static_SkylineDocumentProto_TransitionPeak_PeakShapeValues_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_SkylineDocumentProto_TransitionPeak_PeakShapeValues_descriptor,
+        new java.lang.String[] { "StdDev", "Skewness", "Kurtosis", "ShapeCorrelation", });
     internal_static_SkylineDocumentProto_TransitionResults_descriptor =
       internal_static_SkylineDocumentProto_descriptor.getNestedTypes().get(3);
     internal_static_SkylineDocumentProto_TransitionResults_fieldAccessorTable = new
@@ -22948,50 +22049,32 @@ public final class SkylineDocument {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SkylineDocumentProto_Transition_descriptor,
         new java.lang.String[] { "Formula", "AverageMassH", "MonoMassH", "CustomIonName", "MeasuredIonName", "DecoyMassShift", "MassIndex", "IsotopeDistRank", "IsotopeDistProportion", "FragmentOrdinal", "CalcNeutralMass", "Charge", "CleavageAa", "LostMass", "Annotations", "PrecursorMz", "ProductMz", "CollisionEnergy", "DeclusteringPotential", "Losses", "FragmentType", "LibInfo", "Results", "AverageMass", "MonoMass", "Adduct", "MoleculeId", "NotQuantitative", "ExplicitCollisionEnergy", "ExplicitIonMobilityHighEnergyOffset", "ExplicitSLens", "ExplicitConeVoltage", "ExplicitDeclusteringPotential", "OrphanedCrosslinkIon", "LinkedIons", });
-    internal_static_SkylineDocumentProto_OptionalFloat_descriptor =
-      internal_static_SkylineDocumentProto_descriptor.getNestedTypes().get(5);
-    internal_static_SkylineDocumentProto_OptionalFloat_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_SkylineDocumentProto_OptionalFloat_descriptor,
-        new java.lang.String[] { "Value", });
-    internal_static_SkylineDocumentProto_OptionalDouble_descriptor =
-      internal_static_SkylineDocumentProto_descriptor.getNestedTypes().get(6);
-    internal_static_SkylineDocumentProto_OptionalDouble_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_SkylineDocumentProto_OptionalDouble_descriptor,
-        new java.lang.String[] { "Value", });
     internal_static_SkylineDocumentProto_OptionalInt_descriptor =
-      internal_static_SkylineDocumentProto_descriptor.getNestedTypes().get(7);
+      internal_static_SkylineDocumentProto_descriptor.getNestedTypes().get(5);
     internal_static_SkylineDocumentProto_OptionalInt_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SkylineDocumentProto_OptionalInt_descriptor,
         new java.lang.String[] { "Value", });
-    internal_static_SkylineDocumentProto_OptionalString_descriptor =
-      internal_static_SkylineDocumentProto_descriptor.getNestedTypes().get(8);
-    internal_static_SkylineDocumentProto_OptionalString_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_SkylineDocumentProto_OptionalString_descriptor,
-        new java.lang.String[] { "Value", });
     internal_static_SkylineDocumentProto_TransitionLoss_descriptor =
-      internal_static_SkylineDocumentProto_descriptor.getNestedTypes().get(9);
+      internal_static_SkylineDocumentProto_descriptor.getNestedTypes().get(6);
     internal_static_SkylineDocumentProto_TransitionLoss_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SkylineDocumentProto_TransitionLoss_descriptor,
         new java.lang.String[] { "Formula", "MonoisotopicMass", "AverageMass", "LossInclusion", "ModificationName", "LossIndex", "Charge", });
     internal_static_SkylineDocumentProto_TransitionLibInfo_descriptor =
-      internal_static_SkylineDocumentProto_descriptor.getNestedTypes().get(10);
+      internal_static_SkylineDocumentProto_descriptor.getNestedTypes().get(7);
     internal_static_SkylineDocumentProto_TransitionLibInfo_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SkylineDocumentProto_TransitionLibInfo_descriptor,
         new java.lang.String[] { "Rank", "Intensity", });
     internal_static_SkylineDocumentProto_TransitionData_descriptor =
-      internal_static_SkylineDocumentProto_descriptor.getNestedTypes().get(11);
+      internal_static_SkylineDocumentProto_descriptor.getNestedTypes().get(8);
     internal_static_SkylineDocumentProto_TransitionData_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SkylineDocumentProto_TransitionData_descriptor,
         new java.lang.String[] { "Transitions", });
     internal_static_SkylineDocumentProto_LinkedIon_descriptor =
-      internal_static_SkylineDocumentProto_descriptor.getNestedTypes().get(12);
+      internal_static_SkylineDocumentProto_descriptor.getNestedTypes().get(9);
     internal_static_SkylineDocumentProto_LinkedIon_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SkylineDocumentProto_LinkedIon_descriptor,
@@ -23014,6 +22097,7 @@ public final class SkylineDocument {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_LibraryKeyProto_Positions_descriptor,
         new java.lang.String[] { "Position", });
+    com.google.protobuf.WrappersProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)
