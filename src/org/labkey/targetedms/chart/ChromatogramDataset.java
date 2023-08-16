@@ -1614,7 +1614,15 @@ public abstract class ChromatogramDataset
             {
                 GeneralMolecule gm = entry.getKey();
 
-                XYSeries series = new XYSeries(gm.getTextId(), true, false);
+                // Issue 48258:Some very old docs have duplicate molecule names
+                String seriesName = gm.getTextId();
+                int suffix = 1;
+                while (hasSeries(_jfreeDataset, seriesName))
+                {
+                    seriesName = gm.getTextId() + " " + (++suffix);
+                }
+
+                XYSeries series = new XYSeries(seriesName, true, false);
                 _jfreeDataset.addSeries(series);
                 _seriesColors.put(i, ColorGenerator.getColor(gm.getTextId(), _seriesColors.values()));
 
@@ -1650,6 +1658,18 @@ public abstract class ChromatogramDataset
             double padding = (fullRange._maxRt - fullRange._minRt) * 0.1;
             _minDisplayRt = fullRange.getMinRt() - padding;
             _maxDisplayRt = fullRange.getMaxRt() + padding;
+        }
+
+        private boolean hasSeries(XYSeriesCollection jfreeDataset, String seriesName)
+        {
+            for (XYSeries series : (List<XYSeries>)jfreeDataset.getSeries())
+            {
+                if (seriesName.equals(series.getKey()))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private RtRange getChromatogramRange(GeneralMolecule generalMolecule, List<PrecursorChromInfoPlus> chromInfos)

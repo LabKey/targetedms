@@ -304,6 +304,8 @@ Ext4.define('LABKEY.targetedms.CalibrationCurve', {
     },
 
     formatLegendValue: function (value, exp) {
+        if (value == null)
+            return 'NaN';
         var rounded = Math.round(value * 100000) / 100000;
         // Use scientific notation if the number is large or very small
         if (exp && (rounded > 10000 || rounded < -10000 || (rounded > -0.00001 && rounded < 0.00001)))

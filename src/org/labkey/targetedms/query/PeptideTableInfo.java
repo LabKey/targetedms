@@ -47,10 +47,12 @@ public class PeptideTableInfo extends AbstractGeneralMoleculeTableInfo
         addColumn(modSeqCol);
 
         var structuralModCol = WrappedColumnInfo.wrapAsCopy(this, FieldKey.fromParts("StructuralModifications"), getColumn("Id"), null, null);
+        structuralModCol.setKeyField(false);
         structuralModCol.setFk(new MultiValuedForeignKey(new QueryForeignKey.Builder(getUserSchema(), getContainerFilter()).table(TargetedMSSchema.TABLE_PEPTIDE_STRUCTURAL_MODIFICATION), "StructuralModId"));
         addColumn(structuralModCol);
 
         var isotopeModCol = WrappedColumnInfo.wrapAsCopy(this, FieldKey.fromParts("IsotopeModifications"), getColumn("Id"), null, null);
+        isotopeModCol.setKeyField(false);
         isotopeModCol.setFk(new MultiValuedForeignKey(new QueryForeignKey.Builder(getUserSchema(), getContainerFilter()).table(TargetedMSSchema.TABLE_PEPTIDE_ISOTOPE_MODIFICATION), "IsotopeModId"));
         addColumn(isotopeModCol);
 

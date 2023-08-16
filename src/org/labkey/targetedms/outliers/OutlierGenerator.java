@@ -541,25 +541,33 @@ public class OutlierGenerator
         for (Map.Entry<Long, QCPlotFragment> entry : fragmentsByPrecursorId.entrySet())
         {
             long precursorId = entry.getKey();
-            // It could be either a small molecule or a peptide, so look up both options
-            GeneralMolecule molecule;
+            // It could be either a small molecule or a peptide, so look up both options. There's also a small
+            // chance that it's been deleted
+            GeneralMolecule molecule = null;
             GeneralPrecursor<?> precursor = PrecursorManager.getPrecursor(c, precursorId, u);
             if (precursor == null)
             {
                 precursor = MoleculePrecursorManager.getPrecursor(c, precursorId, u);
-                molecule = MoleculeManager.getMolecule(c, precursor.getGeneralMoleculeId());
+                if (precursor != null)
+                {
+                    molecule = MoleculeManager.getMolecule(c, precursor.getGeneralMoleculeId());
+                }
             }
             else
             {
                 molecule = PeptideManager.getPeptide(c, precursor.getGeneralMoleculeId());
             }
-            // Choose the color, remembering it so that we can avoid ones that are too similar to each other.
 
-            // We need a separate color per precursor. Use the molecule's text ID, and rely on the similarity comparison
-            // to ensure additional precursors for a single molecule get unique colors.
-            Color color = ColorGenerator.getColor(molecule.getTextId(), seriesColors);
-            entry.getValue().setSeriesColor(color);
-            seriesColors.add(color);
+            if (molecule != null)
+            {
+                // Choose the color, remembering it so that we can avoid ones that are too similar to each other.
+
+                // We need a separate color per precursor. Use the molecule's text ID, and rely on the similarity comparison
+                // to ensure additional precursors for a single molecule get unique colors.
+                Color color = ColorGenerator.getColor(molecule.getTextId(), seriesColors);
+                entry.getValue().setSeriesColor(color);
+                seriesColors.add(color);
+            }
         }
 
         qcPlotFragments.sort(Comparator.comparing(QCPlotFragment::getSeriesLabel));

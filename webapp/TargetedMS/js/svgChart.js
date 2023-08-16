@@ -19,6 +19,9 @@ if (!LABKEY.targetedms.SVGChart) {
             LABKEY.Ajax.request({
                 url: url,
                 scope: this,
+                failure: function() {
+                    targetElement.innerText = 'Failed to load';
+                },
                 success: function (xhr) {
                     var parsedResponse = JSON.parse(xhr.responseText);
 
