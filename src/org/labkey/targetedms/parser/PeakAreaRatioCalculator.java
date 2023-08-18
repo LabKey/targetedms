@@ -342,7 +342,7 @@ public class PeakAreaRatioCalculator
         }
     }
 
-    private class LabelRatioAreas
+    private static class LabelRatioAreas
     {
         private Double _numeratorArea;
         private Double _denominatorArea;

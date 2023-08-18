@@ -64,7 +64,7 @@ public class SkylineListTable extends AbstractTableInfo
         return new SQLFragment("SELECT Id FROM targetedms.ListItem WHERE ListDefinitionId = " + _listDefinition.getId());
     }
 
-    class ListColumnInfo extends BaseColumnInfo
+    static class ListColumnInfo extends BaseColumnInfo
     {
         ListColumn _listColumn;
         public ListColumnInfo(SkylineListTable listTable, ListColumn listColumn, boolean pk)

@@ -114,7 +114,7 @@ public class CalibrationCurveDataSet {
     /**
      * Created by nicksh on 4/15/2016.
      */
-    public class Replicate extends ReplicateData {
+    public static class Replicate extends ReplicateData {
         private SampleType sampleType;
         private Double analyteConcentration;
         private double sampleDilutionFactor;

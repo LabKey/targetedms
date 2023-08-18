@@ -1443,9 +1443,9 @@ public class TargetedMSController extends SpringActionController
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
             GuideSet closestOutOfRangeGuideSet;
             var rangeStartDate = form.getStartDate();
-            if (form.isShowReferenceGS() && !guideSets.isEmpty())
+            if (form.isShowReferenceGS() && !guideSets.isEmpty() && rangeStartDate != null)
             {
-                closestOutOfRangeGuideSet = getClosestPastGuideSet(guideSets, form.getStartDate());
+                closestOutOfRangeGuideSet = getClosestPastGuideSet(guideSets, rangeStartDate);
                 if (null != closestOutOfRangeGuideSet)
                 {
                     rangeStartDate = closestOutOfRangeGuideSet.getTrainingStart();
@@ -2863,7 +2863,7 @@ public class TargetedMSController extends SpringActionController
     // Action to display small molecule details page
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class ShowMoleculeAction extends SimpleViewAction<ChromatogramForm>
+    public static class ShowMoleculeAction extends SimpleViewAction<ChromatogramForm>
     {
         private TargetedMSRun _run; // save for use in appendNavTrail
         private String _customIonName;
@@ -3064,7 +3064,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class LibrarySpectrumDataAction extends ReadOnlyApiAction<SpectrumDataForm>
+    public static class LibrarySpectrumDataAction extends ReadOnlyApiAction<SpectrumDataForm>
     {
         @Override
         public Object execute(SpectrumDataForm form, BindException errors)
@@ -3194,7 +3194,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(UpdatePermission.class)
-    public class AutoQCPingAction extends MutatingApiAction<Object>
+    public static class AutoQCPingAction extends MutatingApiAction<Object>
     {
         @Override
         public Object execute(Object o, BindException errors)
@@ -3232,7 +3232,7 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
-    private abstract class ShowSummaryChartAction<FORM> extends ExportAction<FORM>
+    private abstract static class ShowSummaryChartAction<FORM> extends ExportAction<FORM>
     {
         PeptideGroup _peptideGrp = null;
         Peptide _peptide = null;
@@ -3709,7 +3709,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(InsertPermission.class)
-    public class SkylineDocUploadOptionsAction extends FormViewAction<SkylinePipelinePathForm>
+    public static class SkylineDocUploadOptionsAction extends FormViewAction<SkylinePipelinePathForm>
     {
         @Override
         public void validateCommand(SkylinePipelinePathForm form, Errors errors)
@@ -3822,7 +3822,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresLogin
-    public class GetMaxSupportedVersionsAction extends ReadOnlyApiAction<Object>
+    public static class GetMaxSupportedVersionsAction extends ReadOnlyApiAction<Object>
     {
         @Override
         public ApiResponse execute(Object object, BindException errors)
@@ -3891,7 +3891,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class ShowPKAction extends SimpleViewAction<GeneralMoleculeForm>
+    public static class ShowPKAction extends SimpleViewAction<GeneralMoleculeForm>
     {
         private TargetedMSRun _run;  // save for use in appendNavTrail
         private GeneralMolecule _molecule;
@@ -3938,7 +3938,7 @@ public class TargetedMSController extends SpringActionController
 
     @RequiresPermission(ReadPermission.class)
     @Marshal(Marshaller.Jackson)
-    public class PharmacokineticsOptionsAction extends MutatingApiAction<PKOptions>
+    public static class PharmacokineticsOptionsAction extends MutatingApiAction<PKOptions>
     {
         private static final String CATEGORY = "TargetedMSPharmacokineticsOptions";
         private static final char SEPARATOR = '|';
@@ -4315,7 +4315,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class ShowInstrumentAction extends QueryViewAction<InstrumentForm, QueryView>
+    public static class ShowInstrumentAction extends QueryViewAction<InstrumentForm, QueryView>
     {
         public ShowInstrumentAction()
         {
@@ -4622,7 +4622,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class ShowSkylineAuditLogExtraInfoAJAXAction extends SimpleViewAction<SkylineAuditLogExtraInfoForm>
+    public static class ShowSkylineAuditLogExtraInfoAJAXAction extends SimpleViewAction<SkylineAuditLogExtraInfoForm>
     {
         @Override
         public ModelAndView getView(SkylineAuditLogExtraInfoForm form, BindException errors)
@@ -5362,7 +5362,7 @@ public class TargetedMSController extends SpringActionController
     // Action to show a protein detail page
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class ShowProteinAJAXAction extends SimpleViewAction<ProteinForm>
+    public static class ShowProteinAJAXAction extends SimpleViewAction<ProteinForm>
     {
         @Override
         public ModelAndView getView(ProteinForm form, BindException errors) throws Exception
@@ -5542,7 +5542,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(InsertPermission.class)
-    public class ProteinConflictPeptidesAjaxAction extends ReadOnlyApiAction<ProteinPeptidesForm>
+    public static class ProteinConflictPeptidesAjaxAction extends ReadOnlyApiAction<ProteinPeptidesForm>
     {
         @Override
         public ApiResponse execute(ProteinPeptidesForm proteinPeptidesForm, BindException errors)
@@ -5727,7 +5727,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(InsertPermission.class)
-    public class PrecursorConflictTransitionsAjaxAction extends ReadOnlyApiAction<ConflictPrecursorsForm>
+    public static class PrecursorConflictTransitionsAjaxAction extends ReadOnlyApiAction<ConflictPrecursorsForm>
     {
         @Override
         public ApiResponse execute(ConflictPrecursorsForm conflictPrecursorsForm, BindException errors)
@@ -5797,7 +5797,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(InsertPermission.class)
-    public class ResolveConflictAction extends FormHandlerAction<ResolveConflictForm>
+    public static class ResolveConflictAction extends FormHandlerAction<ResolveConflictForm>
     {
         @Override
         public void validateCommand(ResolveConflictForm target, Errors errors)
@@ -6169,7 +6169,7 @@ public class TargetedMSController extends SpringActionController
         }
     }
     @RequiresPermission(ReadPermission.class)
-    public class DownloadChromLibraryAction extends SimpleViewAction<DownloadForm>
+    public static class DownloadChromLibraryAction extends SimpleViewAction<DownloadForm>
     {
         @Override
         public ModelAndView getView(DownloadForm form, BindException errors) throws Exception
@@ -6238,7 +6238,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(InsertPermission.class)
-    public class IsLibraryCurrentAction extends ReadOnlyApiAction<LibraryDetailsForm>
+    public static class IsLibraryCurrentAction extends ReadOnlyApiAction<LibraryDetailsForm>
     {
         @Override
         public ApiResponse execute(LibraryDetailsForm form, BindException errors) throws Exception
@@ -6343,7 +6343,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class ModificationSearchAction extends QueryViewAction<ModificationSearchForm, QueryView>
+    public static class ModificationSearchAction extends QueryViewAction<ModificationSearchForm, QueryView>
     {
         public ModificationSearchAction()
         {
@@ -6762,7 +6762,7 @@ public class TargetedMSController extends SpringActionController
     // - viewable from the chromatogramLibraryDownload.jsp webpart
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class GraphLibraryStatisticsAction extends ExportAction<Object>
+    public static class GraphLibraryStatisticsAction extends ExportAction<Object>
     {
         @Override
         public void export(Object o, HttpServletResponse response, BindException errors) throws Exception
@@ -7237,7 +7237,7 @@ public class TargetedMSController extends SpringActionController
     }
 
 
-    public class RenameBean
+    public static class RenameBean
     {
         public TargetedMSRun run;
         public String description;
@@ -7276,7 +7276,7 @@ public class TargetedMSController extends SpringActionController
     // BEGIN Method building (link versions) actions
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public class GetLinkVersionsAction extends ReadOnlyApiAction<SelectedRowIdsForm>
+    public static class GetLinkVersionsAction extends ReadOnlyApiAction<SelectedRowIdsForm>
     {
         @Override
         public Object execute(SelectedRowIdsForm form, BindException errors)
@@ -7324,7 +7324,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(UpdatePermission.class)
-    public class RemoveLinkVersionAction extends MutatingApiAction<RowIdForm>
+    public static class RemoveLinkVersionAction extends MutatingApiAction<RowIdForm>
     {
         @Override
         public void validateForm(RowIdForm form, Errors errors)
@@ -7390,7 +7390,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(UpdatePermission.class)
-    public class SaveLinkVersionsAction extends MutatingApiAction<ChainedVersions>
+    public static class SaveLinkVersionsAction extends MutatingApiAction<ChainedVersions>
     {
         @Override
         public void validateForm(ChainedVersions form, Errors errors)
@@ -7629,7 +7629,7 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class ShowFiguresOfMeritAction extends SimpleViewAction<GeneralMoleculeForm>
+    public static class ShowFiguresOfMeritAction extends SimpleViewAction<GeneralMoleculeForm>
     {
         private FiguresOfMeritView _figuresOfMeritView;
 

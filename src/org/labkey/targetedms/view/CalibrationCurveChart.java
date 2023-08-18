@@ -21,6 +21,7 @@ import org.json.JSONObject;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.security.User;
+import org.labkey.api.util.JsonUtil;
 import org.labkey.api.view.NotFoundException;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSRun;
@@ -128,11 +129,11 @@ public class CalibrationCurveChart
 
         // Get calibration curve data
         JSONObject jsonCurve = new JSONObject();
-        jsonCurve.put("slope", calibrationCurve.getSlope());
-        jsonCurve.put("intercept", calibrationCurve.getIntercept());
+        JsonUtil.safePut(jsonCurve, "slope", calibrationCurve.getSlope());
+        JsonUtil.safePut(jsonCurve, "intercept", calibrationCurve.getIntercept());
         jsonCurve.put("count", calibrationCurve.getPointCount());
-        jsonCurve.put("rSquared", calibrationCurve.getRSquared());
-        jsonCurve.put("quadraticCoefficient", calibrationCurve.getQuadraticCoefficient());
+        JsonUtil.safePut(jsonCurve, "rSquared", calibrationCurve.getRSquared());
+        JsonUtil.safePut(jsonCurve, "quadraticCoefficient", calibrationCurve.getQuadraticCoefficient());
         jsonCurve.put("errorMessage", calibrationCurve.getErrorMessage());
         jsonCurve.put("msLevel", quantificationSettings.getMsLevel());
         jsonCurve.put("normalizationMethod", quantificationSettings.getNormalizationMethod());

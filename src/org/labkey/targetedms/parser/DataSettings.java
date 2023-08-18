@@ -121,9 +121,9 @@ public class DataSettings
         }
 
         AnnotationDefinition annot = new AnnotationDefinition(
-                                        name,
-                                        targets,
-                                        annotationType, lookup);
+                name,
+                targets,
+                annotationType, lookup);
         _annotationDefinitions.put(name, annot);
 
         for(AnnotationTarget target: annot.getTargets())
@@ -205,7 +205,7 @@ public class DataSettings
         return settingsList;
     }
 
-    private class AnnotationDefinition
+    private static class AnnotationDefinition
     {
         private final String _name;
         private final AnnotationType _type;

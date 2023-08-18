@@ -84,7 +84,7 @@ public class QCNotificationSender implements SkylineDocumentImportListener
         }
     }
 
-    private class EmailSubjectAndBody
+    private static class EmailSubjectAndBody
     {
         int recentOutliers;
         String msgBody;

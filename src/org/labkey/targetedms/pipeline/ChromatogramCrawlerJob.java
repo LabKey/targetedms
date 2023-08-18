@@ -248,7 +248,7 @@ public class ChromatogramCrawlerJob extends PipelineJob
         }
     }
 
-    private class PrecursorChromInfoHandler
+    private static class PrecursorChromInfoHandler
     {
         private final Container _container;
         private SampleFile _sampleFile;
