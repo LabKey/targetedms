@@ -393,7 +393,7 @@ public class MsDataSourceUtil
             cleanDatabase();
 
             _user = TestContext.get().getUser();
-            _container = ContainerManager.ensureContainer(JunitUtil.getTestContainer(), FOLDER_NAME);
+            _container = ContainerManager.ensureContainer(JunitUtil.getTestContainer(), FOLDER_NAME, _user);
 
             // Create an entry in the targetedms.runs table
             _run = createRun();
