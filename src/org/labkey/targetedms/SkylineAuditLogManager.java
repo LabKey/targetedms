@@ -429,8 +429,8 @@ public class SkylineAuditLogManager
         {
             UnitTestUtil.cleanupDatabase(_docGUID);
             _user = TestContext.get().getUser();
-            _container = ContainerManager.ensureContainer(JunitUtil.getTestContainer(), FOLDER_NAME);
-            _container2 = ContainerManager.ensureContainer(JunitUtil.getTestContainer(), FOLDER_NAME2);
+            _container = ContainerManager.ensureContainer(JunitUtil.getTestContainer(), FOLDER_NAME, TestContext.get().getUser());
+            _container2 = ContainerManager.ensureContainer(JunitUtil.getTestContainer(), FOLDER_NAME2, TestContext.get().getUser());
         }
 
         private AuditLogTree persistALogFile(String filePath, TargetedMSRun run) throws IOException, AuditLogException
