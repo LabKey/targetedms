@@ -59,7 +59,7 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
         log("Clicking on the protein");
         clickAndWait(reproducibilityReportLink());
 
-        waitForElement(Locator.tagWithName("a", "Protein"));
+        waitForElement(Locator.tagWithId("a", "Protein"));
 
         checker().verifyTrue("Reproducibility Report is not present", isTextPresent("Reproducibility Report"));
         checker().verifyEquals("Incorrect number of graphs for EAEDLQVGQVE", getPrecursorChromeInfoCount("EAEDLQVGQVE"),
