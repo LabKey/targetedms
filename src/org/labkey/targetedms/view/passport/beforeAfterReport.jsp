@@ -47,7 +47,7 @@
     %>
     <!--START IMPORTS-->
 
-<script type="text/javascript">
+<script type="text/javascript" nonce="<%=getScriptNonce()%>">
     var proteinJSON = <%=json(protein.getJSON(true), 2)%>
     document.addEventListener("DOMContentLoaded", function() {
         protein.initialize();

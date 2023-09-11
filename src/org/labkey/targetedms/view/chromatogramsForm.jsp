@@ -91,7 +91,7 @@
         font-size:10px;
     }
 </style>
-<script type="text/javascript">
+<script type="text/javascript" nonce="<%=getScriptNonce()%>">
 
 +function($){
 

@@ -42,7 +42,7 @@
 <%
     String elementId = "targetedmsCalibrationCurve";
 %>
-<script type="text/javascript">
+<script type="text/javascript" nonce="<%=getScriptNonce()%>">
 
     var calibrationCurvePlot;
 

@@ -48,7 +48,7 @@
 %>
 <div id=<%=q(renderId)%>></div>
 
-<script type="text/javascript">
+<script type="text/javascript" nonce="<%=getScriptNonce()%>">
 
     Ext4.onReady(function(){
 

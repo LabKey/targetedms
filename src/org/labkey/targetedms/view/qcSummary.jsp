@@ -39,7 +39,7 @@
 
 <div style="min-height: 160px;" id=<%=q(qcSummaryId)%> ></div>
 
-<script type="text/javascript">
+<script type="text/javascript" nonce="<%=getScriptNonce()%>">
     Ext4.onReady(function()
     {
         Ext4.create('LABKEY.targetedms.QCSummary', {

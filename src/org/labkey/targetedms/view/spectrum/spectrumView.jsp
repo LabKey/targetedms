@@ -49,7 +49,7 @@
 <!-- PLACE HOLDER DIV FOR THE SPECTRUM -->
 <div id="<%=h(lorikeetOptionsId)%>"></div>
 <div id="<%=h(bean.getLorikeetId())%>"></div>
-<script type="text/javascript">
+<script type="text/javascript" nonce="<%=getScriptNonce()%>">
 
 +function($){
 Ext4.onReady(function () {

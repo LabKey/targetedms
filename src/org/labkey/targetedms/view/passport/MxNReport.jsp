@@ -33,7 +33,7 @@
 %>
     <!--START IMPORTS-->
 
-<script type="text/javascript">
+<script type="text/javascript" nonce="<%=getScriptNonce()%>">
     var proteinJSON = <%=json(protein.getJSON(false), 2)%>
     document.addEventListener("DOMContentLoaded", function() {
         LABKEY.Query.selectRows({
