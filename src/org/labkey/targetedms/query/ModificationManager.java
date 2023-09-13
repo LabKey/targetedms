@@ -15,8 +15,8 @@
 
 package org.labkey.targetedms.query;
 
+import org.labkey.api.cache.Cache;
 import org.labkey.api.cache.CacheManager;
-import org.labkey.api.data.DatabaseCache;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.Selector;
 import org.labkey.api.data.SimpleFilter;
@@ -41,16 +41,11 @@ import java.util.Set;
 
 import static org.labkey.targetedms.TargetedMSManager.getSchema;
 
-/**
- * User: vsharma
- * Date: 5/2/12
- * Time: 1:26 PM
- */
 public class ModificationManager
 {
-    private static int CACHE_SIZE = 10; // Cache results for upto 10 runs.
-    private static PeptideStrModIndexes _peptideStrModIndexes = new PeptideStrModIndexes();
-    private static PeptideIsotopeModIndexes _peptideIsotopeModIndexes = new PeptideIsotopeModIndexes();
+    private static final int CACHE_SIZE = 10; // Cache results for up to 10 runs.
+    private static final Cache<String, Map<Long, Set<Pair<Integer, Integer>>>> PEPTIDE_STR_MOD_INDEXES = CacheManager.getCache(CACHE_SIZE, CacheManager.DAY, "Peptide structural modification indexes");
+    private static final Cache<String, Map<Pair<Long,Long>, Set<Integer>>> PEPTIDE_ISOTOPE_MOD_INDEXES = CacheManager.getCache(CACHE_SIZE, CacheManager.DAY, "Peptide isotope modification indexes");
 
     private ModificationManager() {}
 
@@ -350,7 +345,7 @@ public class ModificationManager
         return Collections.unmodifiableMap(peptideModIndexMap);
     }
 
-    /** Pair is the index of the crosslinked peptide (or 0 for non-crosslinked peptides) and the amino acid index */
+    /** Pair is the index of the cross-linked peptide (or 0 for non-cross-linked peptides) and the amino acid index */
     public static Set<Pair<Integer, Integer>> getStructuralModIndexes(long peptideId, Long runId)
     {
         if(runId == null)
@@ -360,7 +355,7 @@ public class ModificationManager
         }
         else
         {
-            Map<Long, Set<Pair<Integer, Integer>>> modIndexesForRun = _peptideStrModIndexes.get(String.valueOf(runId), null, (runId1, argument) -> getPeptideStructuralModIndexMap(Long.valueOf(runId1)));
+            Map<Long, Set<Pair<Integer, Integer>>> modIndexesForRun = PEPTIDE_STR_MOD_INDEXES.get(String.valueOf(runId), null, (runId1, argument) -> getPeptideStructuralModIndexMap(Long.valueOf(runId1)));
             return modIndexesForRun.getOrDefault(peptideId, Collections.emptySet());
         }
     }
@@ -374,7 +369,7 @@ public class ModificationManager
         }
         else
         {
-            Map<Pair<Long,Long>, Set<Integer>> modIndexesForRun = _peptideIsotopeModIndexes.get(String.valueOf(runId), null,
+            Map<Pair<Long,Long>, Set<Integer>> modIndexesForRun = PEPTIDE_ISOTOPE_MOD_INDEXES.get(String.valueOf(runId), null,
                     (runId1, argument) -> getPeptideIsotopeModIndexMap(Long.valueOf(runId1)));
 
             return modIndexesForRun.get(new Pair<>(peptideId, isotopeLabelId));
@@ -388,24 +383,8 @@ public class ModificationManager
 
         for(Long runId: deletedRunIds)
         {
-            _peptideIsotopeModIndexes.remove(String.valueOf(runId));
-            _peptideStrModIndexes.remove(String.valueOf(runId));
-        }
-    }
-
-    private static class PeptideIsotopeModIndexes extends DatabaseCache<String, Map<Pair<Long,Long>, Set<Integer>>>
-    {
-        public PeptideIsotopeModIndexes()
-        {
-            super(TargetedMSManager.getSchema().getScope(), CACHE_SIZE, CacheManager.DAY, "Peptide isotope modification indexes");
-        }
-    }
-
-    private static class PeptideStrModIndexes extends DatabaseCache<String, Map<Long, Set<Pair<Integer, Integer>>>>
-    {
-        public PeptideStrModIndexes()
-        {
-            super(TargetedMSManager.getSchema().getScope(), CACHE_SIZE, CacheManager.DAY, "Peptide structural modification indexes");
+            PEPTIDE_ISOTOPE_MOD_INDEXES.remove(String.valueOf(runId));
+            PEPTIDE_STR_MOD_INDEXES.remove(String.valueOf(runId));
         }
     }
 }
