@@ -16,10 +16,9 @@
 package org.labkey.targetedms.query;
 
 import org.jetbrains.annotations.Nullable;
-import org.labkey.api.cache.CacheLoader;
+import org.labkey.api.cache.Cache;
 import org.labkey.api.cache.CacheManager;
 import org.labkey.api.data.Container;
-import org.labkey.api.data.DatabaseCache;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.dialect.SqlDialect;
@@ -33,15 +32,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-/**
- * User: vsharma
- * Date: 5/2/12
- * Time: 1:19 PM
- */
 public class PeptideManager
 {
     private static final int CACHE_SIZE = 10;
-    private static PeptideIdsWithSpectra _peptideIdsWithSpectra = new PeptideIdsWithSpectra();
+    private static final Cache<String, Set<Long>> PEPTIDE_IDS_WITH_SPECTRA = CacheManager.getCache(CACHE_SIZE, CacheManager.DAY, "Peptide IDs with library spectra");
 
     private PeptideManager() {}
 
@@ -157,7 +151,7 @@ public class PeptideManager
         var sqlDialect = TargetedMSManager.getSqlDialect();
 
         SQLFragment sql = new SQLFragment("SELECT X.Sequence, X.PeptideModifiedSequence AS ModifiedSequence, ");
-        sql.append(appendLog10IntensitySql(sqlDialect) + " AS Intensity, " + appendLog10ConfidenceSql(sqlDialect) + " AS Confidence, ");
+        sql.append(appendLog10IntensitySql(sqlDialect)).append(" AS Intensity, ").append(appendLog10ConfidenceSql(sqlDialect)).append(" AS Confidence, ");
         sql.append(" MAX(X.Intensity) AS RawIntensity, MAX(X.Confidence) AS RawConfidence FROM ");
         sql.append("(SELECT pep.Sequence, pep.PeptideModifiedSequence, ");
         sql.append(" CASE WHEN SUM(TotalArea) IS NULL OR SUM(TotalArea) < 1 THEN 1 ELSE SUM(TotalArea) END AS Intensity, ");
@@ -190,72 +184,6 @@ public class PeptideManager
         sql.append(" GROUP BY X.Sequence, X.PeptideModifiedSequence ");
 
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PeptideCharacteristic.class);
-    }
-
-    public static Double getMinRetentionTime(long peptideId)
-    {
-        SQLFragment sql = new SQLFragment("SELECT MIN(preci.MinStartTime) FROM ");
-        sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "preci");
-        sql.append(", ");
-        sql.append(TargetedMSManager.getTableInfoGeneralMoleculeChromInfo(), "gmci");
-        sql.append(" WHERE ");
-        sql.append("gmci.Id=preci.GeneralMoleculeChromInfoId");
-        sql.append(" AND ");
-        sql.append("gmci.GeneralMoleculeId=?");
-        sql.add(peptideId);
-
-        return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Double.class);
-    }
-
-    public static Double getMaxRetentionTime(long peptideId)
-    {
-        SQLFragment sql = new SQLFragment("SELECT MAX(preci.MaxEndTime) FROM ");
-        sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "preci");
-        sql.append(", ");
-        sql.append(TargetedMSManager.getTableInfoGeneralMoleculeChromInfo(), "gmci");
-        sql.append(" WHERE ");
-        sql.append("gmci.Id=preci.GeneralMoleculeChromInfoId");
-        sql.append(" AND ");
-        sql.append("gmci.GeneralMoleculeId=?");
-        sql.add(peptideId);
-
-        return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Double.class);
-    }
-
-    public static Double getMinRetentionTime(long peptideId, long sampleFileId)
-    {
-        SQLFragment sql = new SQLFragment("SELECT MIN(preci.MinStartTime) FROM ");
-        sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "preci");
-        sql.append(", ");
-        sql.append(TargetedMSManager.getTableInfoGeneralMoleculeChromInfo(), "gmci");
-        sql.append(" WHERE ");
-        sql.append("gmci.Id=preci.GeneralMoleculeChromInfoId");
-        sql.append(" AND ");
-        sql.append("gmci.GeneralMoleculeId=?");
-        sql.append(" AND ");
-        sql.append("preci.SampleFileId = ?");
-        sql.add(peptideId);
-        sql.add(sampleFileId);
-
-        return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Double.class);
-    }
-
-    public static Double getMaxRetentionTime(long peptideId, long sampleFileId)
-    {
-        SQLFragment sql = new SQLFragment("SELECT MAX(preci.MaxEndTime) FROM ");
-        sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "preci");
-        sql.append(", ");
-        sql.append(TargetedMSManager.getTableInfoGeneralMoleculeChromInfo(), "gmci");
-        sql.append(" WHERE ");
-        sql.append("gmci.Id=preci.GeneralMoleculeChromInfoId");
-        sql.append(" AND ");
-        sql.append("gmci.GeneralMoleculeId=?");
-        sql.append(" AND ");
-        sql.append("preci.SampleFileId = ?");
-        sql.add(peptideId);
-        sql.add(sampleFileId);
-
-        return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Double.class);
     }
 
     public static boolean hasSpectrumLibraryInformation(long peptideId, Long runId)
@@ -332,13 +260,11 @@ public class PeptideManager
             sql.append("gp.GeneralMoleculeId=?");
             sql.add(peptideId);
 
-
             return new SqlSelector(TargetedMSManager.getSchema(), sql).exists();
-
         }
         else
         {
-            Set<Long> peptideIds = _peptideIdsWithSpectra.get(String.valueOf(runId), null, (CacheLoader<String, Set<Long>>) (runId1, argument) -> {
+            Set<Long> peptideIds = PEPTIDE_IDS_WITH_SPECTRA.get(String.valueOf(runId), null, (runId1, argument) -> {
                 SQLFragment sql = new SQLFragment("SELECT DISTINCT pep.Id FROM ");
                 sql.append(TargetedMSManager.getTableInfoBibliospec(), "bib");
                 sql.append(" , ");
@@ -438,17 +364,9 @@ public class PeptideManager
 
     public static void removeRunCachedResults(List<Long> deletedRunIds)
     {
-        for(Long runId: deletedRunIds)
+        for (Long runId: deletedRunIds)
         {
-            _peptideIdsWithSpectra.remove(String.valueOf(runId));
-        }
-    }
-
-    private static class PeptideIdsWithSpectra extends DatabaseCache<String, Set<Long>>
-    {
-        public PeptideIdsWithSpectra()
-        {
-            super(TargetedMSManager.getSchema().getScope(), CACHE_SIZE, CacheManager.DAY, "Peptide IDs with library spectra");
+            PEPTIDE_IDS_WITH_SPECTRA.remove(String.valueOf(runId));
         }
     }
 }

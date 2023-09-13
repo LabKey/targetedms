@@ -20,9 +20,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Assert;
 import org.junit.Test;
+import org.labkey.api.cache.Cache;
 import org.labkey.api.cache.CacheManager;
 import org.labkey.api.data.Container;
-import org.labkey.api.data.DatabaseCache;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.Sort;
@@ -39,7 +39,6 @@ import org.labkey.targetedms.chart.ChromatogramDataset.RtRange;
 import org.labkey.targetedms.model.PrecursorChromInfoLitePlus;
 import org.labkey.targetedms.model.PrecursorChromInfoPlus;
 import org.labkey.targetedms.parser.GeneralPrecursor;
-import org.labkey.targetedms.parser.GeneralTransition;
 import org.labkey.targetedms.parser.GeneralTransition.IonType;
 import org.labkey.targetedms.parser.Precursor;
 import org.labkey.targetedms.parser.PrecursorChromInfo;
@@ -56,17 +55,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 
-/**
- * User: vsharma
- * Date: 5/2/12
- * Time: 1:08 PM
- */
 public class PrecursorManager
 {
-    private static final int CACHE_SIZE = 10; // Cache results for upto 10 runs.
-    private static final PrecursorIdsWithChromatograms _precursorIdsWithChromatograms = new PrecursorIdsWithChromatograms();
-    private static final PrecursorIdsWithSpectra _precursorIdsWithSpectra = new PrecursorIdsWithSpectra();
-
+    private static final int CACHE_SIZE = 10; // Cache results for up to 10 runs.
+    private static final Cache<String, Set<Long>> PRECURSOR_IDS_WITH_CHROMATOGRAMS = CacheManager.getCache(CACHE_SIZE, CacheManager.DAY, "Precursors having chromatograms");
+    private static final Cache<String, Set<Long>> PRECURSOR_IDS_WITH_SPECTRA = CacheManager.getCache(CACHE_SIZE, CacheManager.DAY, "Precursors having library spectra");
 
     private PrecursorManager() {}
 
@@ -584,7 +577,7 @@ public class PrecursorManager
         }
         else
         {
-            Set<Long> precursorIds = _precursorIdsWithChromatograms.get(String.valueOf(runId), null, (runId1, argument) -> {
+            Set<Long> precursorIds = PRECURSOR_IDS_WITH_CHROMATOGRAMS.get(String.valueOf(runId), null, (runId1, argument) -> {
                 SQLFragment sql = new SQLFragment("SELECT DISTINCT pci.PrecursorId FROM ");
                 sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
                 sql.append(" , ");
@@ -647,7 +640,7 @@ public class PrecursorManager
         }
         else
         {
-            Set<Long> precursorIds = _precursorIdsWithSpectra.get(String.valueOf(runId), null, (runId1, argument) -> {
+            Set<Long> precursorIds = PRECURSOR_IDS_WITH_SPECTRA.get(String.valueOf(runId), null, (runId1, argument) -> {
                 SQLFragment sql = new SQLFragment("SELECT DISTINCT bib.PrecursorId FROM ");
                 sql.append(TargetedMSManager.getTableInfoBibliospec(), "bib");
                 sql.append(" , ");
@@ -708,8 +701,8 @@ public class PrecursorManager
     {
         for(Long runId: deletedRunIds)
         {
-            _precursorIdsWithChromatograms.remove(String.valueOf(runId));
-            _precursorIdsWithSpectra.remove(String.valueOf(runId));
+            PRECURSOR_IDS_WITH_CHROMATOGRAMS.remove(String.valueOf(runId));
+            PRECURSOR_IDS_WITH_SPECTRA.remove(String.valueOf(runId));
         }
     }
 
@@ -766,22 +759,6 @@ public class PrecursorManager
             // transitions for the precursor are quantitative. We will try to get the min start and max end
             // retention times from the transition chrom infos instead.
             return TransitionManager.getTransitionPeakRtRange(pci.getId());
-        }
-    }
-
-    private static class PrecursorIdsWithSpectra extends DatabaseCache<String, Set<Long>>
-    {
-       public PrecursorIdsWithSpectra()
-        {
-            super(TargetedMSManager.getSchema().getScope(), CACHE_SIZE, CacheManager.DAY, "Precursors having library spectra");
-        }
-    }
-
-    private static class PrecursorIdsWithChromatograms extends DatabaseCache<String, Set<Long>>
-    {
-        public PrecursorIdsWithChromatograms()
-        {
-            super(TargetedMSManager.getSchema().getScope(), CACHE_SIZE, CacheManager.DAY, "Precursors having chromatograms");
         }
     }
 

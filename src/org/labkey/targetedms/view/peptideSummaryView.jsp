@@ -20,6 +20,7 @@
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.JspView" %>
 <%@ page import="org.labkey.targetedms.TargetedMSController" %>
+<%@ page import="org.labkey.targetedms.TargetedMSRun" %>
 <%@ page import="org.labkey.targetedms.parser.PeptideSettings" %>
 <%@ page import="org.labkey.targetedms.parser.Precursor" %>
 <%@ page import="org.labkey.targetedms.view.IconFactory" %>
@@ -27,7 +28,6 @@
 <%@ page import="org.labkey.targetedms.view.PrecursorHtmlMaker" %>
 <%@ page import="java.util.HashMap" %>
 <%@ page import="java.util.Map" %>
-<%@ page import="org.labkey.targetedms.TargetedMSRun" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 <%
     JspView<TargetedMSController.PeptideChromatogramsViewBean> me = (JspView<TargetedMSController.PeptideChromatogramsViewBean>) HttpView.currentView();
