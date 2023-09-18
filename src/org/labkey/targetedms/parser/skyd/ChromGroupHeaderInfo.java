@@ -56,7 +56,7 @@ public class ChromGroupHeaderInfo
 
     public ChromGroupHeaderInfo(CacheFormatVersion cacheFormatVersion, LittleEndianInput dataInputStream)
     {
-        if (cacheFormatVersion.compareTo(CacheFormatVersion.Sixteen) > 0)
+        if (cacheFormatVersion.compareTo(CacheFormatVersion.Seventeen) > 0)
         {
             precursor = dataInputStream.readDouble();
             locationPoints = dataInputStream.readLong();
@@ -99,8 +99,9 @@ public class ChromGroupHeaderInfo
             locationPoints = dataInputStream.readLong();
             flagValues = EnumSet.noneOf(FlagValues.class);
         }
-        else if (cacheFormatVersion.compareTo(CacheFormatVersion.Sixteen) <= 0)
+        else
         {
+            // Versions 5 through 17
             textIdIndex = dataInputStream.readInt();
             startTransitionIndex = dataInputStream.readInt();
             /*startPeakIndex =*/
