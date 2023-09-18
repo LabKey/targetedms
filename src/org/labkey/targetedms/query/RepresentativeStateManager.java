@@ -308,7 +308,7 @@ public class RepresentativeStateManager
         sql.append(StringUtils.join(stdPepGrpIdsInRun, ","));
         sql.append(")");
         sql.append(")");
-        sql.append(" AND pg.RepresentativeDataState=").append(RepresentativeDataState.Representative.ordinal());
+        sql.append(" AND pg.RepresentativeDataState=").appendValue(RepresentativeDataState.Representative.ordinal());
 
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(Long.class);
     }

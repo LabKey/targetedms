@@ -91,7 +91,7 @@ public class TransitionProteinSearchViewProvider implements QueryViewProvider<Pr
                     for (int seqId : form.getSeqId())
                     {
                         sql.append(separator);
-                        sql.append(seqId);
+                        sql.appendValue(seqId);
                         separator = ",";
                     }
                     sql.append(")");
