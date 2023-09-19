@@ -687,7 +687,7 @@ public class TargetedMSSchema extends UserSchema
                 "\nFROM " + TargetedMSManager.getTableInfoRuns() + " tmsRuns " +
                 "\nWHERE tmsRuns.ExperimentRunLSID = " + ExprColumn.STR_TABLE_ALIAS + ".LSID AND tmsRuns.Deleted = ?)");
         sql.add(Boolean.FALSE);
-        var skyDocDetailColumn = new ExprColumn(result, "File", sql, JdbcType.INTEGER);
+        var skyDocDetailColumn = new ExprColumn(result, "File", sql, JdbcType.BIGINT);
 
         ActionURL url = TargetedMSController.getShowRunURL(getContainer());
 
