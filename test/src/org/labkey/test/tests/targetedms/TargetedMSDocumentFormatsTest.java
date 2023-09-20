@@ -189,6 +189,14 @@ public class TargetedMSDocumentFormatsTest extends TargetedMSTest
         importData(SAMPLEDATA_FOLDER + fileName, ++JOB_COUNT);
         Assert.assertEquals(0, countMissingChromatograms(fileName));
     }
+    @Test
+    public void testSkyd17Format() throws Exception
+    {
+        goToProjectHome(getProjectName());
+        String fileName = "Skyd17Test.sky.zip";
+        importData(SAMPLEDATA_FOLDER + fileName, ++JOB_COUNT);
+        Assert.assertEquals(0, countMissingChromatograms(fileName));
+    }
 
     private int countMissingChromatograms(String file) throws Exception
     {
