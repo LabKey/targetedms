@@ -273,7 +273,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 // this.filterPoints - object to store left and right indices to truncate for a series for custom date range
                 // when showing reference guide set
 
-                if (this.filterQCPoints && !this.groupedX) {
+                if (this.filterQCPoints) {
                     if (!this.filterPoints) {
                         this.filterPoints = {};
                     }
@@ -346,7 +346,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     },
 
     renderPlots: function() {
-        if (this.filterQCPoints && !this.groupedX) {
+        if (this.filterQCPoints) {
             this.truncateOutOfRangeQCPoints();
         }
         // do not persist plot options in qc folder if changed after coming through experimental folder link
