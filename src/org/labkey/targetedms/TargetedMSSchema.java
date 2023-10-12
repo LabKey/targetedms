@@ -1742,35 +1742,33 @@ public class TargetedMSSchema extends UserSchema
 
         if (result == null && StringUtils.startsWithIgnoreCase(queryName, QUERY_PTM_PERCENTS_PREFIX))
         {
-            String runIdString = queryName.substring(QUERY_PTM_PERCENTS_PREFIX.length());
-            try
-            {
-                int runId = Integer.parseInt(runIdString);
-                QueryDefinition queryDef = Objects.requireNonNull(getQueryDef("PTMPercents"));
-                result = QueryService.get().createQueryDef(getUser(), getContainer(), getSchemaPath(), queryName);
-                result.setSql(queryDef.getSql() + " IN (SELECT sf.SampleName FROM targetedms.SampleFile sf WHERE sf.ReplicateId.RunId = " + runId + ")");
-                result.setMetadataXml(queryDef.getMetadataXml());
-            }
-            catch (NumberFormatException ignored) {}
+            result = createRunScopedPTMQuery(QUERY_PTM_PERCENTS_PREFIX, "PTMPercents", queryName);
         }
 
         if (result == null && StringUtils.startsWithIgnoreCase(queryName, QUERY_PTM_PERCENTS_GROUPED_PREFIX))
         {
-            String runIdString = queryName.substring(QUERY_PTM_PERCENTS_GROUPED_PREFIX.length());
-            try
-            {
-                int runId = Integer.parseInt(runIdString);
-                QueryDefinition queryDef = Objects.requireNonNull(getQueryDef("PTMPercentsGrouped"));
-                result = QueryService.get().createQueryDef(getUser(), getContainer(), getSchemaPath(), queryName);
-                result.setSql(queryDef.getSql() + " IN (SELECT sf.SampleName FROM targetedms.SampleFile sf WHERE sf.ReplicateId.RunId = " + runId + ")");
-                result.setMetadataXml(queryDef.getMetadataXml());
-            }
-            catch (NumberFormatException ignored) {}
+            result = createRunScopedPTMQuery(QUERY_PTM_PERCENTS_GROUPED_PREFIX, "PTMPercentsGrouped", queryName);
         }
         return result;
     }
 
-
+    private QueryDefinition createRunScopedPTMQuery(String prefix, String baseQueryName, String queryName)
+    {
+        String runIdString = queryName.substring(prefix.length());
+        try
+        {
+            long runId = Long.parseLong(runIdString);
+            QueryDefinition queryDef = Objects.requireNonNull(getQueryDef(baseQueryName));
+            QueryDefinition result = QueryService.get().createQueryDef(getUser(), getContainer(), getSchemaPath(), queryName);
+            result.setSql(queryDef.getSql() + " IN (SELECT sf.SampleName FROM targetedms.SampleFile sf WHERE sf.ReplicateId.RunId = " + runId + ")");
+            result.setMetadataXml(queryDef.getMetadataXml());
+            return result;
+        }
+        catch (NumberFormatException ignored)
+        {
+            return null;
+        }
+    }
 
     public static class ChromatogramDisplayColumn extends DataColumn
     {
