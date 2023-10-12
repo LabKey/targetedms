@@ -35,10 +35,10 @@ import org.labkey.api.query.ExprColumn;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.LookupForeignKey;
-import org.labkey.api.query.QueryAction;
 import org.labkey.api.query.QueryDefinition;
 import org.labkey.api.query.QueryForeignKey;
 import org.labkey.api.query.QuerySchema;
+import org.labkey.api.query.QueryService;
 import org.labkey.api.query.QuerySettings;
 import org.labkey.api.query.QueryView;
 import org.labkey.api.query.SchemaKey;
@@ -51,7 +51,6 @@ import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.HtmlString;
 import org.labkey.api.util.Pair;
-import org.labkey.api.util.StringExpression;
 import org.labkey.api.util.UnexpectedException;
 import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.PopupMenu;
@@ -60,7 +59,6 @@ import org.labkey.api.view.template.ClientDependency;
 import org.labkey.panoramapremium.query.QCEmailNotificationsTable;
 import org.labkey.targetedms.parser.Chromatogram;
 import org.labkey.targetedms.parser.ChromatogramBinaryFormat;
-import org.labkey.targetedms.parser.ReplicateAnnotation;
 import org.labkey.targetedms.parser.SkylineBinaryParser;
 import org.labkey.targetedms.query.*;
 import org.labkey.targetedms.view.FontAwesomeLinkColumn;
@@ -78,6 +76,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Consumer;
@@ -190,6 +189,8 @@ public class TargetedMSSchema extends UserSchema
     public static final String TABLE_SKYLINE_AUDITLOG_MESSAGE = "AuditLogMessage";
 
     public static final String TABLE_SKYLINE_AUDITLOG_PREFIX = "AuditLog_Run";
+    public static final String QUERY_PTM_PERCENTS_PREFIX = "PTMPercents_";
+    public static final String QUERY_PTM_PERCENTS_GROUPED_PREFIX = "PTMPercentsGrouped_";
 
     public static final String TABLE_LIST_DEFINITION = "ListDefinition";
     public static final String TABLE_LIST_COLUMN_DEFINITION = "ListColumnDefinition";
@@ -1733,6 +1734,43 @@ public class TargetedMSSchema extends UserSchema
     {
         return getAllTableNames(true);
     }
+
+    @Override
+    public QueryDefinition getQueryDef(@NotNull String queryName)
+    {
+        QueryDefinition result = super.getQueryDef(queryName);
+
+        if (result == null && StringUtils.startsWithIgnoreCase(queryName, QUERY_PTM_PERCENTS_PREFIX))
+        {
+            String runIdString = queryName.substring(QUERY_PTM_PERCENTS_PREFIX.length());
+            try
+            {
+                int runId = Integer.parseInt(runIdString);
+                QueryDefinition queryDef = Objects.requireNonNull(getQueryDef("PTMPercents"));
+                result = QueryService.get().createQueryDef(getUser(), getContainer(), getSchemaPath(), queryName);
+                result.setSql(queryDef.getSql() + " IN (SELECT sf.SampleName FROM targetedms.SampleFile sf WHERE sf.ReplicateId.RunId = " + runId + ")");
+                result.setMetadataXml(queryDef.getMetadataXml());
+            }
+            catch (NumberFormatException ignored) {}
+        }
+
+        if (result == null && StringUtils.startsWithIgnoreCase(queryName, QUERY_PTM_PERCENTS_GROUPED_PREFIX))
+        {
+            String runIdString = queryName.substring(QUERY_PTM_PERCENTS_GROUPED_PREFIX.length());
+            try
+            {
+                int runId = Integer.parseInt(runIdString);
+                QueryDefinition queryDef = Objects.requireNonNull(getQueryDef("PTMPercentsGrouped"));
+                result = QueryService.get().createQueryDef(getUser(), getContainer(), getSchemaPath(), queryName);
+                result.setSql(queryDef.getSql() + " IN (SELECT sf.SampleName FROM targetedms.SampleFile sf WHERE sf.ReplicateId.RunId = " + runId + ")");
+                result.setMetadataXml(queryDef.getMetadataXml());
+            }
+            catch (NumberFormatException ignored) {}
+        }
+        return result;
+    }
+
+
 
     public static class ChromatogramDisplayColumn extends DataColumn
     {

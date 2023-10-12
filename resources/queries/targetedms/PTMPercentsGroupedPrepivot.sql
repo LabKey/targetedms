@@ -11,7 +11,8 @@ SELECT p1.Modification,
        PreviousAA @hidden,
        NextAA @hidden,
        p1.SampleName,
-       p1.SiteLocation,
+       p1.AminoAcid,
+       p1.Location,
        p1.PeptideGroupId
 
 FROM
@@ -19,22 +20,21 @@ FROM
     (SELECT StructuralModId                                                                  AS Modification,
             SUM(ModifiedAreaProportion)                                                      AS PercentModified,
             MIN(Id)                                                                          AS Id,
-            PeptideModifiedSequence,
+            MAX(PeptideModifiedSequence) AS PeptideModifiedSequence,
             Sequence @hidden,
             PreviousAA @hidden,
             NextAA @hidden,
             SampleName,
             StartIndex,
             IndexAA,
-            -- Explicitly cast for SQLServer to avoid trying to add as numeric types
-            SUBSTRING(Sequence, IndexAA + 1, 1) || CAST(StartIndex + IndexAA + 1 AS VARCHAR) AS SiteLocation,
+            SUBSTRING(Sequence, IndexAA + 1, 1) AS AminoAcid,
+            StartIndex + IndexAA + 1 AS Location,
             PeptideGroupId
      FROM PTMPercentsPrepivot
      GROUP BY SampleName,
               Sequence,
               PreviousAA,
               NextAA,
-              PeptideModifiedSequence,
               StartIndex,
               PeptideGroupId,
               IndexAA,
@@ -45,11 +45,12 @@ FROM
     -- Second, calculate total percent across all modifications for each amino acid
     (SELECT
          SUM(ModifiedAreaProportion) AS TotalPercentModified,
-         COUNT(*) AS ModificationCount,
+         COUNT(DISTINCT StructuralModId) AS ModificationCount,
          SampleName,
          Sequence,
          PeptideGroupId,
-         SUBSTRING(Sequence, IndexAA + 1, 1) || CAST(StartIndex + IndexAA + 1 AS VARCHAR) AS SiteLocation,
+         SUBSTRING(Sequence, IndexAA + 1, 1) AS AminoAcid,
+         StartIndex + IndexAA + 1 AS Location,
      FROM PTMPercentsPrepivot
      GROUP BY SampleName,
               Sequence,
@@ -60,7 +61,8 @@ FROM
     ON p1.SampleName = p2.SampleName AND
        p1.Sequence = p2.Sequence AND
        p1.PeptideGroupId = p2.PeptideGroupId AND
-       p1.SiteLocation = p2.SiteLocation
+       p1.AminoAcid = p2.AminoAcid AND
+       p1.Location = p2.Location
 
     INNER JOIN
 
@@ -69,22 +71,24 @@ FROM
                     MIN(TotalPercentModified) AS MinPercentModified,
                     Sequence,
                     PeptideGroupId,
-                    SiteLocation
+                    AminoAcid,
+                    Location
              FROM (SELECT SUM(ModifiedAreaProportion)                                                      AS TotalPercentModified,
                           SampleName                                                                       AS SampleName2,
                           Sequence,
                           PeptideGroupId,
-                          SUBSTRING(Sequence, IndexAA + 1, 1) ||
-                          CAST(StartIndex + IndexAA + 1 AS VARCHAR)                                        AS SiteLocation,
+                          SUBSTRING(Sequence, IndexAA + 1, 1) AS AminoAcid,
+                          StartIndex + IndexAA + 1 AS Location,
                    FROM PTMPercentsPrepivot
                    GROUP BY SampleName,
                             Sequence,
                             PeptideGroupId,
                             IndexAA,
                             StartIndex) x
-             GROUP BY Sequence, PeptideGroupId, SiteLocation
+             GROUP BY Sequence, PeptideGroupId, AminoAcid, Location
              ) p3
 
     ON p1.Sequence = p3.Sequence AND
        p1.PeptideGroupId = p3.PeptideGroupId AND
-       p1.SiteLocation = p3.SiteLocation
+       p1.AminoAcid = p3.AminoAcid AND
+       p1.Location = p3.Location

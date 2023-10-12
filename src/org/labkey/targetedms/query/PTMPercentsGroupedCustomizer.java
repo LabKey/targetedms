@@ -14,14 +14,16 @@ import org.labkey.api.data.MutableColumnInfo;
 import org.labkey.api.data.RenderContext;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SimpleFilter;
+import org.labkey.api.data.Sort;
 import org.labkey.api.data.SqlSelector;
-import org.labkey.api.data.TableCustomizer;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.util.Pair;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.parser.Protein;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -31,9 +33,9 @@ import java.util.Set;
 /**
  * Customizes the set of columns available on a pivot query that operates on samples, hiding all of the pivot values
  * that aren't part of the run that's being filtered on. This lets you view a single document's worth of data
- * without seeing empty columns for all of the other samples in the same container.
+ * without seeing empty columns for all the other samples in the same container.
  */
-public class PTMPercentsGroupedCustomizer implements TableCustomizer
+public class PTMPercentsGroupedCustomizer extends PTMPercentsCustomizer
 {
 
     private static final String QUERY_NAME_PREFIX = "PTMPercentsGrouped";
@@ -42,7 +44,7 @@ public class PTMPercentsGroupedCustomizer implements TableCustomizer
     @SuppressWarnings("unused")
     public PTMPercentsGroupedCustomizer(MultiValuedMap<String, String> props)
     {
-
+        super(props);
     }
 
     private FieldKey getCountFieldKey(ColumnInfo columnInfo)
@@ -50,8 +52,39 @@ public class PTMPercentsGroupedCustomizer implements TableCustomizer
         return FieldKey.fromString(columnInfo.getFieldKey().getParent(), "ModificationCount");
     }
 
+    /** These are the sorts we need to span rows, because we know that the related rows will be adjacent to each other */
+    public static final List<FieldKey> EXPECTED_SORTS = Collections.unmodifiableList(Arrays.asList(
+            FieldKey.fromParts("PeptideGroupId"),
+            FieldKey.fromParts("Sequence"),
+            FieldKey.fromParts("SiteLocation")
+    ));
+
+    /** Sorts that are safe because they overlap with the expected sorts in terms of grouping rows together */
+    public static final List<FieldKey> ALLOWABLE_SORTS = Collections.unmodifiableList(Arrays.asList(
+            FieldKey.fromParts("PeptideGroupId", "Label"),
+            FieldKey.fromParts("Location"),
+            FieldKey.fromParts("AminoAcid")
+    ));
+
     private int getRowSpan(ColumnInfo columnInfo, RenderContext ctx)
     {
+        List<Sort.SortField> sortFields = ctx.getBaseSort().getSortList();
+
+        // Only span rows if we're sorted as expected. Related to ticket 48873
+        List<FieldKey> neededSorts = new ArrayList<>(EXPECTED_SORTS);
+        for (Sort.SortField sortField : sortFields)
+        {
+            neededSorts.remove(sortField.getFieldKey());
+            if (neededSorts.isEmpty())
+            {
+                break;
+            }
+            if (!EXPECTED_SORTS.contains(sortField.getFieldKey()) && !ALLOWABLE_SORTS.contains(sortField.getFieldKey()))
+            {
+                return 1;
+            }
+        }
+
         Integer targetCount = ctx.get(getCountFieldKey(columnInfo), Integer.class);
         if (targetCount != null && targetCount > 1)
         {
@@ -81,6 +114,8 @@ public class PTMPercentsGroupedCustomizer implements TableCustomizer
                     col.getName().equalsIgnoreCase("PeptideGroupId") ||
                     col.getName().equalsIgnoreCase("PeptideModifiedSequence") ||
                     col.getName().equalsIgnoreCase("MaxPercentModified") ||
+                    col.getName().equalsIgnoreCase("AminoAcid") ||
+                    col.getName().equalsIgnoreCase("Location") ||
                     col.getName().equalsIgnoreCase("SiteLocation"))
             {
 
@@ -127,6 +162,8 @@ public class PTMPercentsGroupedCustomizer implements TableCustomizer
                 col.setDisplayColumnFactory(factory);
             }
         }
+
+        super.customize(tableInfo);
     }
 
     @NotNull
@@ -148,7 +185,7 @@ public class PTMPercentsGroupedCustomizer implements TableCustomizer
         return proteins;
     }
 
-    /** Key is the sample name, value is pair of boolean (stressed or not) and description, both annotation-based */
+    /** Key is the sample name, value is a pair of boolean (stressed or not) and description, both annotation-based */
     public static Map<String, Pair<Boolean, String>> getSampleMetadata(TableInfo tableInfo)
     {
         SQLFragment sql = new SQLFragment("SELECT DISTINCT sf.SampleName, raStressed.Value AS Stressed, COALESCE(raDescription.Value, sf.SampleName) AS Description FROM ");

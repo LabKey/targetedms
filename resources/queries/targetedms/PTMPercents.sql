@@ -10,6 +10,8 @@ SELECT
   SampleName,
   -- Explicitly cast for SQLServer to avoid trying to add as numeric types
   SUBSTRING(Sequence, IndexAA + 1, 1) || CAST(StartIndex + IndexAA + 1 AS VARCHAR) AS SiteLocation,
+  SUBSTRING(Sequence, IndexAA + 1, 1) AS AminoAcid,
+  StartIndex + IndexAA + 1 AS Location,
   PeptideGroupId
 FROM PTMPercentsPrepivot
 GROUP BY
