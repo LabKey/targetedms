@@ -20,7 +20,7 @@ public class TargetedMSUtilizationCalendarTest extends TargetedMSTest
     @Override
     protected @Nullable String getProjectName()
     {
-        return getCurrentTestClass().getSimpleName() + " Project";
+        return TargetedMSUtilizationCalendarTest.class.getSimpleName() + " Project";
     }
 
     @BeforeClass
@@ -113,27 +113,30 @@ public class TargetedMSUtilizationCalendarTest extends TargetedMSTest
                 .gotoUtilizationCalendar();
 
         String startDate = "2013-08-21";
-        Assert.assertEquals("Incorrect Sample count information for " + startDate, "Online\n" +
-                "12 Samples, 0 Median Outliers\n" +
-                "Q_Exactive_08_14_2013_JGB_65 (0 outliers)\n" +
-                "Q_Exactive_08_14_2013_JGB_66 (0 outliers)\n" +
-                "Q_Exactive_08_14_2013_JGB_67 (0 outliers)\n" +
-                "Q_Exactive_08_14_2013_JGB_68 (0 outliers)\n" +
-                "Q_Exactive_08_14_2013_JGB_69 (0 outliers)\n" +
-                "Q_Exactive_08_14_2013_JGB_70 (0 outliers)\n" +
-                "Q_Exactive_08_14_2013_JGB_71 (0 outliers)\n" +
-                "Q_Exactive_08_14_2013_JGB_72 (0 outliers)\n" +
-                "Q_Exactive_08_14_2013_JGB_74 (0 outliers)\n" +
-                "Q_Exactive_08_14_2013_JGB_75 (0 outliers)\n" +
-                "Q_Exactive_08_14_2013_JGB_76 (1 outliers)\n" +
-                "Q_Exactive_08_14_2013_JGB_78 (1 outliers)", utilizationCalendar.getToolTipText(startDate));
+        Assert.assertEquals("Incorrect Sample count information for " + startDate, """
+                Online
+                12 Samples, 0 Median Outliers
+                Q_Exactive_08_14_2013_JGB_65 (0 outliers)
+                Q_Exactive_08_14_2013_JGB_66 (0 outliers)
+                Q_Exactive_08_14_2013_JGB_67 (0 outliers)
+                Q_Exactive_08_14_2013_JGB_68 (0 outliers)
+                Q_Exactive_08_14_2013_JGB_69 (0 outliers)
+                Q_Exactive_08_14_2013_JGB_70 (0 outliers)
+                Q_Exactive_08_14_2013_JGB_71 (0 outliers)
+                Q_Exactive_08_14_2013_JGB_72 (0 outliers)
+                Q_Exactive_08_14_2013_JGB_74 (0 outliers)
+                Q_Exactive_08_14_2013_JGB_75 (0 outliers)
+                Q_Exactive_08_14_2013_JGB_76 (1 outliers)
+                Q_Exactive_08_14_2013_JGB_78 (1 outliers)""",
+                utilizationCalendar.getToolTipText(startDate));
 
-        refresh();
         utilizationCalendar = new UtilizationCalendarWebPart(getDriver());
         utilizationCalendar.setHeatMap("Median outliers");
         startDate = "2013-08-12";
-        Assert.assertEquals("Incorrect Median outliers information for " + startDate, "Online\n" +
-                "1 Sample, 28 Median Outliers\n" +
-                "Q_Exactive_08_09_2013_JGB_38 (28 outliers)", utilizationCalendar.getToolTipText(startDate));
+        Assert.assertEquals("Incorrect Median outliers information for " + startDate, """
+                Online
+                1 Sample, 28 Median Outliers
+                Q_Exactive_08_09_2013_JGB_38 (28 outliers)""",
+                utilizationCalendar.getToolTipText(startDate));
     }
 }

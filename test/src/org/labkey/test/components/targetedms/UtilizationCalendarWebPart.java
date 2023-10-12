@@ -3,7 +3,7 @@ package org.labkey.test.components.targetedms;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Assert;
 import org.labkey.test.Locator;
-import org.labkey.test.Locators;
+import org.labkey.test.WebDriverWrapper;
 import org.labkey.test.components.BodyWebPart;
 import org.labkey.test.components.bootstrap.ModalDialog;
 import org.openqa.selenium.WebDriver;
@@ -22,7 +22,7 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
 
     public void waitForPage()
     {
-        getWrapper().waitFor(() -> elementCache().yearTitle.isDisplayed(this),
+        WebDriverWrapper.waitFor(() -> elementCache().yearTitle.isDisplayed(this),
                 "Calendar did not load on time",
                 getWrapper().defaultWaitForPage);
     }
@@ -86,7 +86,7 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
 
     public ModalDialog clickDate(String date)
     {
-        String clickDate = date.substring(date.lastIndexOf("-") + 1, date.length());
+        String clickDate = date.substring(date.lastIndexOf("-") + 1);
         getWrapper().log("Clicking " + clickDate + " to update the status");
         elementCache().dayLoc.withText(clickDate).findElement(elementCache().calendar.findWhenNeeded(this)).click();
         return new ModalDialog.ModalDialogFinder(getDriver()).withTitle("Instrument Offline Annotation").waitFor();
@@ -94,7 +94,7 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
 
     public boolean isOffline(String date)
     {
-        String day = date.substring(date.lastIndexOf("-") + 1, date.length());
+        String day = date.substring(date.lastIndexOf("-") + 1);
         return getWrapper().isElementPresent(elementCache().offlineDayLoc.withText(day));
     }
 
@@ -110,9 +110,13 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
 
     public String getToolTipText(String date)
     {
-        String day = date.substring(date.lastIndexOf("-") + 1, date.length());
+        // Dismiss any previous tooltip
+        getWrapper().mouseOver(elementCache().yearTitle);
+        getWrapper().shortWait().until(ExpectedConditions.invisibilityOfElementLocated(elementCache().tooltip));
+
+        String day = date.substring(date.lastIndexOf("-") + 1);
         getWrapper().log("Clicking " + day + " to update the status");
-        getWrapper().sleep(500);
+        WebDriverWrapper.sleep(500);
         getWrapper().mouseOver(elementCache().dayLoc.withText(day).findElement(elementCache().calendar.findWhenNeeded(this)));
         return getWrapper().waitForElement(elementCache().tooltip).getText();
     }
