@@ -1575,7 +1575,8 @@ public class TargetedMSSchema extends UserSchema
     @Override @NotNull
     public QueryView createView(ViewContext context, @NotNull QuerySettings settings, BindException errors)
     {
-        if ("PTMPercentsGrouped".equalsIgnoreCase(settings.getQueryName()) || settings.getQueryName().toLowerCase().startsWith(QUERY_PTM_PERCENTS_GROUPED_PREFIX.toLowerCase()))
+        String queryName = settings.getQueryName();
+        if (queryName != null && ("PTMPercentsGrouped".equalsIgnoreCase(queryName) || queryName.toLowerCase().startsWith(QUERY_PTM_PERCENTS_GROUPED_PREFIX.toLowerCase())))
         {
             return new CrosstabView(TargetedMSSchema.this, settings, errors)
             {
