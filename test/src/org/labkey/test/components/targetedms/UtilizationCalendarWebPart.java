@@ -34,6 +34,7 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
 
     public UtilizationCalendarWebPart setDisplay(String value)
     {
+        dismissTooltip();
         getWrapper().doAndWaitForElementToRefresh(() -> getWrapper().selectOptionByValue(elementCache().display, value),
                 elementCache().yearTitle, getWrapper().shortWait());
         return this;
@@ -46,8 +47,15 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
 
     public UtilizationCalendarWebPart setHeatMap(String value)
     {
+        dismissTooltip();
         getWrapper().selectOptionByText(elementCache().heatMap, value);
         return this;
+    }
+
+    private void dismissTooltip()
+    {
+        getWrapper().mouseOver(elementCache().yearTitle);
+        getWrapper().shortWait().until(ExpectedConditions.invisibilityOfElementLocated(elementCache().tooltip));
     }
 
     public String getHeatMap()
@@ -110,10 +118,6 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
 
     public String getToolTipText(String date)
     {
-        // Dismiss any previous tooltip
-        getWrapper().mouseOver(elementCache().yearTitle);
-        getWrapper().shortWait().until(ExpectedConditions.invisibilityOfElementLocated(elementCache().tooltip));
-
         String day = date.substring(date.lastIndexOf("-") + 1);
         getWrapper().log("Clicking " + day + " to update the status");
         WebDriverWrapper.sleep(500);
