@@ -20,6 +20,7 @@ import org.labkey.api.data.TableInfo;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.util.Pair;
 import org.labkey.targetedms.TargetedMSManager;
+import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.parser.Protein;
 
 import java.util.ArrayList;
@@ -37,9 +38,6 @@ import java.util.Set;
  */
 public class PTMPercentsGroupedCustomizer extends PTMPercentsCustomizer
 {
-
-    private static final String QUERY_NAME_PREFIX = "PTMPercentsGrouped";
-
     /** Referenced from query XML metadata */
     @SuppressWarnings("unused")
     public PTMPercentsGroupedCustomizer(MultiValuedMap<String, String> props)
@@ -171,13 +169,13 @@ public class PTMPercentsGroupedCustomizer extends PTMPercentsCustomizer
     {
         List<Protein> proteins = Collections.emptyList();
 
-        // Table name should be PTMPercentsGroupedX, where X is the runId
+        // Table name should be PTMPercentsGrouped_X, where X is the runId
         String tableName = tableInfo.getName();
-        if (tableName.toLowerCase().startsWith(QUERY_NAME_PREFIX.toLowerCase()))
+        if (tableName.toLowerCase().startsWith(TargetedMSSchema.QUERY_PTM_PERCENTS_GROUPED_PREFIX.toLowerCase()))
         {
             try
             {
-                int runId = Integer.parseInt(tableName.substring(QUERY_NAME_PREFIX.length()));
+                long runId = Long.parseLong(tableName.substring(TargetedMSSchema.QUERY_PTM_PERCENTS_GROUPED_PREFIX.length()));
                 proteins = PeptideGroupManager.getProteinsForRun(runId);
             }
             catch (NumberFormatException ignored) {}
