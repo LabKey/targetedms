@@ -20,7 +20,7 @@ public class TargetedMSUtilizationCalendarTest extends TargetedMSTest
     @Override
     protected @Nullable String getProjectName()
     {
-        return TargetedMSUtilizationCalendarTest.class.getSimpleName() + " Project";
+        return getClass().getSimpleName() + " Project";
     }
 
     @BeforeClass
