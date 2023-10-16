@@ -2,6 +2,7 @@
     <metadata>
         <tables xmlns="http://labkey.org/data/xml">
             <table tableName="PTMPercents" tableDbType="TABLE">
+                <javaCustomizer class="org.labkey.targetedms.query.PTMPercentsCustomizer" />
                 <columns>
                     <column columnName="PeptideModifiedSequence">
                         <displayColumnFactory>
