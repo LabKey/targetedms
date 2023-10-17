@@ -38,6 +38,8 @@ public class TargetedMSMAMTest extends TargetedMSTest
     @Test
     public void testSteps()
     {
+        goToProjectHome();
+
         clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
         clickAndWait(Locator.linkContainingText(SKY_FILE));
 
@@ -62,6 +64,8 @@ public class TargetedMSMAMTest extends TargetedMSTest
     @Test
     public void testCrossLinkedPeptideMap()
     {
+        goToProjectHome();
+
         clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
         clickAndWait(Locator.linkContainingText(CROSS_LINKED_SKY_FILE));
 
