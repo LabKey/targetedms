@@ -16,8 +16,8 @@ package org.labkey.targetedms.parser;
 
 public class TimeIntensities
 {
-    private float[] _times;
-    private float[] _intensities;
+    private final float[] _times;
+    private final float[] _intensities;
     public TimeIntensities(float[] times, float[] intensities) {
         _times = times;
         _intensities = intensities;
@@ -36,7 +36,7 @@ public class TimeIntensities
     public TimeIntensities interpolate(float[] timesNew)
     {
         float[] intensNew = new float[timesNew.length];
-        if (timesNew.length == 0)
+        if (timesNew.length == 0 || _intensities.length == 0)
         {
             return new TimeIntensities(timesNew, intensNew);
         }
@@ -48,7 +48,6 @@ public class TimeIntensities
             double intenNext;
             float time = _times[i];
             float inten = _intensities[i];
-            double totalInten = inten;
 
             // Continue enumerating points until one is encountered
             // that has a greater time value than the point being assigned.

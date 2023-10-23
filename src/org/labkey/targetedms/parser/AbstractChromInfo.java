@@ -56,7 +56,7 @@ public abstract class AbstractChromInfo extends ChromInfo<PrecursorChromInfoAnno
 
     private static final Logger LOG = LogManager.getLogger(AbstractChromInfo.class);
 
-    private static final BlockingCache<Tuple3<Path, Long, Integer>, byte[]> ON_DEMAND_CHROM_CACHE = new BlockingCache<>(CacheManager.getCache(100, CacheManager.HOUR, "SKYD chromatogram cache"), (key, argument) -> {
+    private static final BlockingCache<Tuple3<Path, Long, Integer>, CachedBytes> ON_DEMAND_CHROM_CACHE = new BlockingCache<>(CacheManager.getCache(100, CacheManager.HOUR, "SKYD chromatogram cache"), (key, argument) -> {
         Path path = key.first;
         long offset = key.second;
         int length = key.third;
@@ -71,7 +71,7 @@ public abstract class AbstractChromInfo extends ChromInfo<PrecursorChromInfoAnno
             byteBuffer.position(0);
             byte[] results = byteBuffer.array();
             LOG.debug("Finished loading from " + path + ", offset " + offset + ", length " + length + " in " + (System.currentTimeMillis() - startTime) + "ms");
-            return results;
+            return new CachedBytes(results);
         }
         catch (NoSuchFileException e)
         {
@@ -98,6 +98,20 @@ public abstract class AbstractChromInfo extends ChromInfo<PrecursorChromInfoAnno
 
     public AbstractChromInfo()
     {
+    }
+
+    /**
+     * Simple wrapper so we don't get warnings from CacheManager about caching a mutable array.
+     * We trust callers not to mess with the bytes since they won't be, say, sorting or filtering them
+     */
+    public static class CachedBytes
+    {
+        public final byte[] _bytes;
+
+        public CachedBytes(byte[] bytes)
+        {
+            _bytes = bytes;
+        }
     }
 
     public AbstractChromInfo(Container c)
@@ -228,19 +242,19 @@ public abstract class AbstractChromInfo extends ChromInfo<PrecursorChromInfoAnno
                 else
                 {
                     LOG.debug("Attempting to fetch chromatogram bytes (possibly cached) from " + skydPath + " for " + this);
-                    byte[] diskBytes = ON_DEMAND_CHROM_CACHE.get(new Tuple3<>(skydPath, _chromatogramOffset, _chromatogramLength));
+                    CachedBytes diskBytes = ON_DEMAND_CHROM_CACHE.get(new Tuple3<>(skydPath, _chromatogramOffset, _chromatogramLength));
                     if (diskBytes == null)
                     {
                         status = Chromatogram.SourceStatus.skydMissing;
                     }
-                    else if (databaseBytes != null && !Arrays.equals(databaseBytes, diskBytes))
+                    else if (databaseBytes != null && !Arrays.equals(databaseBytes, diskBytes._bytes))
                     {
-                        LOG.error("Chromatogram bytes for " + this + " do not match between .skyd and DB. Using database copy. Lengths: " + diskBytes.length + " vs " + databaseBytes.length);
+                        LOG.error("Chromatogram bytes for " + this + " do not match between .skyd and DB. Using database copy. Lengths: " + diskBytes._bytes.length + " vs " + databaseBytes.length);
                         status = Chromatogram.SourceStatus.mismatch;
                     }
                     else
                     {
-                        compressedBytes = diskBytes;
+                        compressedBytes = diskBytes._bytes;
                         status = databaseBytes == null ? Chromatogram.SourceStatus.diskOnly : Chromatogram.SourceStatus.match;
                     }
                 }
