@@ -68,6 +68,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     endDate: null,
     groupedX: false,
     singlePlot: false,
+    showDataPoints: false,
+    showExpRunRange: false,
     showExcluded: false,
     showExcludedPrecursors: false,
     showReferenceGS: true,
@@ -1066,8 +1068,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (!this.createGuideSetToggleButton) {
             this.createGuideSetToggleButton = Ext4.create('Ext.button.Button', {
                 text: 'Create Guide Set',
-                tooltip: 'Enable/disable guide set creation mode',
-                disabled: this.groupedX || this.singlePlot || this.isMultiSeries() || this.showExpRunRange,
+                tooltip: 'Enable/disable guide set creation mode. Supported for separate plots, not grouped by date, when ' + LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries + ' or fewer samples are shown',
+                disabled: !this.canCreateGuideSetFromPlot(),
                 enableToggle: true,
                 handler: function(btn) {
                     this.setBrushingEnabled(btn.pressed);
@@ -1079,9 +1081,13 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return this.createGuideSetToggleButton;
     },
 
+    canCreateGuideSetFromPlot : function() {
+        return !(this.groupedX || this.singlePlot || this.isMultiSeries() || this.showExpRunRange || !this.showDataPoints);
+    },
+
     setBrushingEnabled : function(enabled) {
         // we don't currently allow creation of guide sets in single plot mode, grouped x-axis mode, multi series mode or when showingExpRunRange
-        this.getGuideSetCreateButton().setDisabled(this.groupedX || this.singlePlot || this.isMultiSeries() || this.showExpRunRange);
+        this.getGuideSetCreateButton().setDisabled(!this.canCreateGuideSetFromPlot());
 
         this.enableBrushing = enabled;
         this.clearPlotBrush();
@@ -1425,24 +1431,24 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         this.plotBrushSelection = {plot: plot, points: selectedPoints};
 
         // add the guide set create and cancel buttons over the brushed region
-        if (selectedPoints.length > 0) {
-            var me = this;
-            var xMid = extent[0][0] + (extent[1][0] - extent[0][0]) / 2;
+        var me = this;
+        var xMid = extent[0][0] + (extent[1][0] - extent[0][0]) / 2;
 
+        if (selectedPoints.length > 0) {
             var createBtn = this.createGuideSetSvgButton(plot, 'Create', xMid - 57, 50);
             createBtn.on('click', function() {
                 me.createGuideSetBtnClick();
             });
-
-            var cancelBtn = this.createGuideSetSvgButton(plot, 'Cancel', xMid + 3, 49);
-            cancelBtn.on('click', function () {
-                me.clearPlotBrush(plot);
-                plot.clearBrush();
-                me.setBrushingEnabled(false);
-            });
-
-            this.bringSvgElementToFront(plot, "g.guideset-svg-button");
         }
+
+        var cancelBtn = this.createGuideSetSvgButton(plot, 'Cancel', xMid + 3, 49);
+        cancelBtn.on('click', function () {
+            me.clearPlotBrush(plot);
+            plot.clearBrush();
+            me.setBrushingEnabled(false);
+        });
+
+        this.bringSvgElementToFront(plot, "g.guideset-svg-button");
     },
 
     plotBrushClearEvent : function(data, plot) {

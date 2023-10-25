@@ -3838,7 +3838,18 @@ public class TargetedMSController extends SpringActionController
 
     private JspView<?> getSummaryView(RunDetailsForm form, TargetedMSRun run)
     {
-        Set<Integer> ids = Collections.singleton(ExperimentService.get().getExpRun(run.getExperimentRunLSID()).getRowId());
+        String lsid = run.getExperimentRunLSID();
+        if (lsid == null)
+        {
+            throw new NotFoundException("Document is not fully loaded and initialized");
+        }
+        ExpRun expRun = ExperimentService.get().getExpRun(lsid);
+        if (expRun == null)
+        {
+            throw new NotFoundException("Document is not fully loaded and initialized");
+        }
+
+        Set<Integer> ids = Collections.singleton(expRun.getRowId());
 
         RunDetailsBean bean = new RunDetailsBean();
         bean.setForm(form);
