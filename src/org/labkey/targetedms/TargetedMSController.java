@@ -569,7 +569,7 @@ public class TargetedMSController extends SpringActionController
                 {
                     try
                     {
-                        Files.createDirectories(rawFileDir);
+                        FileUtil.createDirectories(rawFileDir);
                     }
                     catch (IOException e)
                     {
