@@ -259,7 +259,7 @@ public class TargetedMSDataHandler extends AbstractExperimentDataHandler
                     if (Files.exists(sourceDir) && Files.isDirectory(sourceDir))
                     {
                         if (!Files.exists(destDir))
-                            Files.createDirectory(destDir);
+                            FileUtil.createDirectory(destDir);
                         if (Files.isDirectory(destDir))
                         {
                             try (Stream<Path> paths = Files.list(sourceDir))
