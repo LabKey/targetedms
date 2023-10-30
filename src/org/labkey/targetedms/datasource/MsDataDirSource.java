@@ -14,6 +14,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.stream.Stream;
 
 abstract class MsDataDirSource extends MsDataSource
 {
@@ -55,9 +56,9 @@ abstract class MsDataDirSource extends MsDataSource
 
     private boolean hasExpectedDirContents(@NotNull Path path)
     {
-        try
+        try (Stream<Path> pathStream = Files.list(path))
         {
-            return Files.list(path).anyMatch(this::isExpectedDirContent);
+            return pathStream.anyMatch(this::isExpectedDirContent);
         }
         catch (IOException e)
         {

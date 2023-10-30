@@ -104,7 +104,6 @@ import org.labkey.targetedms.query.GuideSetTable;
 import org.labkey.targetedms.query.ModificationManager;
 import org.labkey.targetedms.query.PeptideManager;
 import org.labkey.targetedms.query.PrecursorManager;
-import org.labkey.targetedms.query.ReplicateManager;
 import org.labkey.targetedms.query.RepresentativeStateManager;
 
 import java.io.IOException;
@@ -659,7 +658,7 @@ public class TargetedMSManager
         return PipelineService.get().getJobId(user, container, job.getJobGUID());
     }
 
-    public static ExpRun ensureWrapped(TargetedMSRun run, User user, PipeRoot pipeRoot, Integer jobId) throws ExperimentException
+    public static void ensureWrapped(TargetedMSRun run, User user, Integer jobId) throws ExperimentException
     {
         ExpRun expRun;
         if (run.getExperimentRunLSID() != null)
@@ -667,13 +666,13 @@ public class TargetedMSManager
             expRun = ExperimentService.get().getExpRun(run.getExperimentRunLSID());
             if (expRun != null && expRun.getContainer().equals(run.getContainer()))
             {
-                return expRun;
+                return;
             }
         }
-        return wrapRun(run, user, pipeRoot, jobId);
+        wrapRun(run, user, jobId);
     }
 
-    private static ExpRun wrapRun(TargetedMSRun run, User user, PipeRoot pipeRoot, Integer jobId) throws ExperimentException
+    private static void wrapRun(TargetedMSRun run, User user, Integer jobId) throws ExperimentException
     {
         try (DbScope.Transaction transaction = ExperimentService.get().getSchema().getScope().ensureTransaction())
         {
@@ -751,7 +750,6 @@ public class TargetedMSManager
             }
 
             transaction.commit();
-            return expRun;
         }
     }
 
@@ -788,7 +786,7 @@ public class TargetedMSManager
 
     public static void deleteRun(Container container, User user, TargetedMSRun run)
     {
-        deleteRuns(Arrays.asList(run.getRunId()), container, user);
+        deleteRuns(Arrays.asList(run.getRunId()), container, user, false);
         deleteiRTscales(container);
     }
 
@@ -919,7 +917,7 @@ public class TargetedMSManager
 
     public static void markRunsNotRepresentative(Container container, RunRepresentativeDataState representativeState)
     {
-        Collection<Long> representativeRunIds = null;
+        Collection<Long> representativeRunIds = Collections.emptyList();
 
         if(representativeState == RunRepresentativeDataState.Representative_Protein)
         {
@@ -930,7 +928,7 @@ public class TargetedMSManager
             representativeRunIds = getPeptideRepresentativeRunIds(container);
         }
 
-        if(representativeRunIds == null || representativeRunIds.size() == 0)
+        if (representativeRunIds.isEmpty())
         {
             return;
         }
@@ -1067,7 +1065,7 @@ public class TargetedMSManager
             }
         }
 
-        deleteRuns(runIds, c, user);
+        deleteRuns(runIds, c, user, true);
 
         for (ExpRun run : experimentRunsToDelete)
         {
@@ -1080,60 +1078,68 @@ public class TargetedMSManager
      * Pulled out into separate method so could be called by itself from data handlers
      * @param runIds targetedms.run.id values
      */
-    public static void deleteRuns(List<Long> runIds, Container c, User user)
+    public static void deleteRuns(List<Long> runIds, Container c, User user, boolean containerDeletion)
     {
         List<Long> cantDelete = new ArrayList<>();
         List<TargetedMSRun> runsToDelete = new ArrayList<>();
-        for(long runId: runIds)
+        for (long runId: runIds)
         {
             TargetedMSRun run = getRun(runId);
             if (run == null || run.isDeleted())
             {
                 continue;
             }
-            if(!run.getContainer().equals(c) && !run.getContainer().hasPermission(user, DeletePermission.class))
+            if (!run.getContainer().equals(c) && !run.getContainer().hasPermission(user, DeletePermission.class))
             {
                cantDelete.add(runId);
             }
             runsToDelete.add(run);
         }
 
-        if(cantDelete.size() > 0)
+        if (!cantDelete.isEmpty())
         {
             throw new UnauthorizedException("User does not have permissions to delete run " + (cantDelete.size() > 1 ? "Ids" : "Id")
                     + " " + StringUtils.join(cantDelete, ',')
                     + ". " + (cantDelete.size() > 1 ? "They are" : "It is") + " not in container " + c.getName());
         }
 
+        Set<Container> containers = new HashSet<>();
+
         for (TargetedMSRun run : runsToDelete)
         {
-            // Revert the representative state if any of the runs are representative at the protein or peptide level.
-            if(run.isRepresentative())
+            // Don't bother migrating the representative state if the whole container is getting deleted
+            if (!containerDeletion)
             {
-                PipeRoot root = PipelineService.get().getPipelineRootSetting(run.getContainer());
-                if (null != root)
+                // Revert the representative state if any of the runs are representative at the protein or peptide level.
+                if (run.isRepresentative())
                 {
-                    LocalDirectory localDirectory = LocalDirectory.create(root, MODULE_NAME);
-                    try
+                    PipeRoot root = PipelineService.get().getPipelineRootSetting(run.getContainer());
+                    if (null != root)
                     {
-                        RepresentativeStateManager.setRepresentativeState(user, run.getContainer(), localDirectory, run, RunRepresentativeDataState.NotRepresentative);
+                        LocalDirectory localDirectory = LocalDirectory.create(root, MODULE_NAME);
+                        try
+                        {
+                            RepresentativeStateManager.setRepresentativeState(user, run.getContainer(), localDirectory, run, RunRepresentativeDataState.NotRepresentative);
+                        }
+                        finally
+                        {
+                            localDirectory.cleanUpLocalDirectory();
+                        }
                     }
-                    finally
+                    else
                     {
-                        localDirectory.cleanUpLocalDirectory();
+                        throw new RuntimeException("Pipeline root not found.");
                     }
-                }
-                else
-                {
-                    throw new RuntimeException("Pipeline root not found.");
                 }
             }
 
-            // We may have deleted the last set of data for a given metric
-            TargetedMSManager.get().clearCachedEnabledQCMetrics(run.getContainer());
+            containers.add(run.getContainer());
         }
 
-        // Mark all of the runs for deletion
+        // We may have deleted the last set of data for a given metric
+        containers.forEach(c2 -> TargetedMSManager.get().clearCachedEnabledQCMetrics(c2));
+
+        // Mark all the runs for deletion
         SQLFragment markDeleted = new SQLFragment("UPDATE " + getTableInfoRuns() + " SET ExperimentRunLSID = NULL, DataId = NULL, SkydDataId = NULL, Deleted=?, Modified=? ", Boolean.TRUE, new Date());
         SimpleFilter where = new SimpleFilter();
         where.addInClause(FieldKey.fromParts("Id"), runIds);
@@ -1143,7 +1149,7 @@ public class TargetedMSManager
         try
         {   //deleting audit log data for these runs.
             SkylineAuditLogManager auditMgr = new SkylineAuditLogManager(c, null);
-            for(Long runId : runIds)
+            for (Long runId : runIds)
                 auditMgr.deleteDocumentVersionLog(runId);
         }
         catch (AuditLogException e)
@@ -1278,7 +1284,7 @@ public class TargetedMSManager
         SQLFragment sql = new SQLFragment("( SELECT rep.").append(selectColumn).append(" FROM targetedms.replicate rep ");
         sql.append(" LEFT OUTER JOIN targetedms.samplefile sf ON rep.Id = sf.ReplicateId ");
         sql.append(" INNER JOIN targetedms.runs r on rep.runId = r.Id ");
-        sql.append(" WHERE r.container = ").append(container);
+        sql.append(" WHERE r.container = ").appendValue(container);
         sql.append(" AND sf.ReplicateId IS NULL )"); // No sample files for this replicate
         return sql.getSQL();
     }
@@ -1654,7 +1660,7 @@ public class TargetedMSManager
         // Get a list of deleted runs
         SQLFragment sql = new SQLFragment("SELECT Id FROM " + getTableInfoRuns() + " WHERE Deleted =  ?", true);
         List<Long> deletedRunIds = new SqlSelector(getSchema(), sql).getArrayList(Long.class);
-        if(deletedRunIds.size() > 0)
+        if(!deletedRunIds.isEmpty())
         {
             ModificationManager.removeRunCachedResults(deletedRunIds);
             PeptideManager.removeRunCachedResults(deletedRunIds);
@@ -1871,7 +1877,7 @@ public class TargetedMSManager
 
     public static void renameRun(long runId, String newDescription, User user) throws BatchValidationException
     {
-        if (newDescription == null || newDescription.length() == 0)
+        if (newDescription == null || newDescription.isEmpty())
             return;
 
         new SqlExecutor(getSchema()).execute("UPDATE " + getTableInfoRuns() + " SET Description=? WHERE Id = ?",
@@ -2214,19 +2220,23 @@ public class TargetedMSManager
 
     public static int getMaxTransitionCount(long moleculeId)
     {
-        SQLFragment maxTransitionSQL = new SQLFragment("select MAX(c) FROM\n" +
-                "(\n" +
-                "select pci.id, COUNT(DISTINCT tci.Id) AS C FROM \n");
+        SQLFragment maxTransitionSQL = new SQLFragment("""
+                select MAX(c) FROM
+                (
+                select pci.id, COUNT(DISTINCT tci.Id) AS C FROM\s
+                """);
         maxTransitionSQL.append(TargetedMSManager.getTableInfoTransitionChromInfo(), "tci");
         maxTransitionSQL.append(" INNER JOIN \n");
         maxTransitionSQL.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
         maxTransitionSQL.append(" ON tci.precursorchrominfoid = pci.id INNER JOIN \n");
         maxTransitionSQL.append(TargetedMSManager.getTableInfoGeneralMoleculeChromInfo(), "gmci");
-        maxTransitionSQL.append(" ON pci.generalmoleculechrominfoid = gmci.id \n" +
-                "WHERE\n" +
-                "gmci.generalmoleculeid = ?\n" +
-                "GROUP BY pci.id\n" +
-                ") x\n");
+        maxTransitionSQL.append("""
+                 ON pci.generalmoleculechrominfoid = gmci.id\s
+                WHERE
+                gmci.generalmoleculeid = ?
+                GROUP BY pci.id
+                ) x
+                """);
         maxTransitionSQL.add(moleculeId);
 
         Integer maxCount = new SqlSelector(getSchema(), maxTransitionSQL).getObject(Integer.class);
@@ -2235,16 +2245,20 @@ public class TargetedMSManager
 
     public static int getMaxTransitionCountForPrecursor(long precursorId)
     {
-        SQLFragment maxTransitionSQL = new SQLFragment("select MAX(c) FROM\n" +
-                "(\n" +
-                "select pci.id, COUNT(DISTINCT tci.Id) AS C FROM \n");
+        SQLFragment maxTransitionSQL = new SQLFragment("""
+                select MAX(c) FROM
+                (
+                select pci.id, COUNT(DISTINCT tci.Id) AS C FROM\s
+                """);
         maxTransitionSQL.append(TargetedMSManager.getTableInfoTransitionChromInfo(), "tci");
         maxTransitionSQL.append(" INNER JOIN \n");
         maxTransitionSQL.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
         maxTransitionSQL.append(" ON tci.precursorchrominfoid = pci.id \n");
-        maxTransitionSQL.append(" WHERE pci.precursorid = ?\n" +
-                "GROUP BY pci.id\n" +
-                ") x\n");
+        maxTransitionSQL.append("""
+                 WHERE pci.precursorid = ?
+                GROUP BY pci.id
+                ) x
+                """);
         maxTransitionSQL.add(precursorId);
 
         Integer maxCount = new SqlSelector(getSchema(), maxTransitionSQL).getObject(Integer.class);
@@ -2508,24 +2522,6 @@ public class TargetedMSManager
                 .getObject(TransitionSettings.Predictor.class);
     }
 
-    public static List<TransitionSettings.Predictor> getPredictors(long runId)
-    {
-        List<TransitionSettings.Predictor> predictors = new ArrayList<>();
-        List<Replicate> replicates = ReplicateManager.getReplicatesForRun(runId);
-        replicates.forEach(replicate -> {
-            if (null != replicate.getCePredictorId())
-            {
-                predictors.add(getReplicatePredictor(replicate.getCePredictorId()));
-            }
-
-            if (null != replicate.getDpPredictorId())
-            {
-                predictors.add(getReplicatePredictor(replicate.getDpPredictorId()));
-            }
-        });
-        return predictors;
-    }
-
     private static List<Long> getPredictorsToDelete()
     {
         SQLFragment sql = new SQLFragment("Select Id FROM " + getTableInfoPredictor() + " WHERE " +
@@ -2637,7 +2633,7 @@ public class TargetedMSManager
         sql.append(" FROM ").append(getTableInfoSampleFile(), "sf");
         sql.append(" INNER JOIN ").append(getTableInfoReplicate(), "rep").append(" ON sf.ReplicateId = rep.Id ");
         sql.append(" INNER JOIN ").append(getTableInfoRuns(), "r").append(" ON rep.RunId = r.Id ");
-        sql.append(" WHERE r.Container = ").append(container);
+        sql.append(" WHERE r.Container = ").appendValue(container);
 
         return new SqlSelector(getSchema(), sql).getMap();
     }

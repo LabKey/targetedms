@@ -268,6 +268,8 @@ import static org.labkey.targetedms.TargetedMSModule.PEPTIDE_TAB_WEB_PARTS;
 import static org.labkey.targetedms.TargetedMSModule.PROTEIN_TAB_NAME;
 import static org.labkey.targetedms.TargetedMSModule.PROTEIN_TAB_WEB_PARTS;
 import static org.labkey.targetedms.TargetedMSModule.QC_FOLDER_WEB_PARTS;
+import static org.labkey.targetedms.TargetedMSSchema.QUERY_PTM_PERCENTS_GROUPED_PREFIX;
+import static org.labkey.targetedms.TargetedMSSchema.QUERY_PTM_PERCENTS_PREFIX;
 
 public class TargetedMSController extends SpringActionController
 {
@@ -567,7 +569,7 @@ public class TargetedMSController extends SpringActionController
                 {
                     try
                     {
-                        Files.createDirectories(rawFileDir);
+                        FileUtil.createDirectories(rawFileDir);
                     }
                     catch (IOException e)
                     {
@@ -3836,7 +3838,18 @@ public class TargetedMSController extends SpringActionController
 
     private JspView<?> getSummaryView(RunDetailsForm form, TargetedMSRun run)
     {
-        Set<Integer> ids = Collections.singleton(ExperimentService.get().getExpRun(run.getExperimentRunLSID()).getRowId());
+        String lsid = run.getExperimentRunLSID();
+        if (lsid == null)
+        {
+            throw new NotFoundException("Document is not fully loaded and initialized");
+        }
+        ExpRun expRun = ExperimentService.get().getExpRun(lsid);
+        if (expRun == null)
+        {
+            throw new NotFoundException("Document is not fully loaded and initialized");
+        }
+
+        Set<Integer> ids = Collections.singleton(expRun.getRowId());
 
         RunDetailsBean bean = new RunDetailsBean();
         bean.setForm(form);
@@ -4470,23 +4483,9 @@ public class TargetedMSController extends SpringActionController
         @Override
         protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
         {
-            QuerySettings settings = new QuerySettings(getViewContext(), _dataRegionName, "PTMPercents")
-            {
-                @Override
-                protected QueryDefinition createQueryDef(UserSchema schema)
-                {
-                    QueryDefinition queryDef = super.createQueryDef(schema);
 
-                    String queryName = "PTMPercents" + form.getId();
-                    QueryDefinition tempDef = QueryService.get().createQueryDef(getUser(), getContainer(), schema.getSchemaPath(), queryName);
-                    tempDef.setIsHidden(true);
-                    tempDef.setIsTemporary(true);
-                    tempDef.setSql(queryDef.getSql() + " IN (SELECT sf.SampleName FROM targetedms.SampleFile sf WHERE sf.ReplicateId.RunId = " + form.getId() + ")");
-                    tempDef.setMetadataXml(queryDef.getMetadataXml());
-
-                    return tempDef;
-                }
-            };
+            String queryName = QUERY_PTM_PERCENTS_PREFIX + form.getId();
+            QuerySettings settings = new QuerySettings(getViewContext(), _dataRegionName, queryName);
             // Issue 40731- prevent expensive cross-folder queries when the results will always be scoped to the current
             // run anyway
             settings.setContainerFilterName(null);
@@ -4508,30 +4507,21 @@ public class TargetedMSController extends SpringActionController
         @Override
         protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
         {
-            QuerySettings settings = new QuerySettings(getViewContext(), _dataRegionName, "PTMPercentsGrouped")
-            {
-                @Override
-                protected QueryDefinition createQueryDef(UserSchema schema)
-                {
-                    QueryDefinition queryDef = super.createQueryDef(schema);
-
-                    String queryName = "PTMPercentsGrouped" + form.getId();
-                    QueryDefinition tempDef = QueryService.get().createQueryDef(getUser(), getContainer(), schema.getSchemaPath(), queryName);
-                    tempDef.setIsHidden(true);
-                    tempDef.setIsTemporary(true);
-                    tempDef.setSql(queryDef.getSql() + " IN (SELECT sf.SampleName FROM targetedms.SampleFile sf WHERE sf.ReplicateId.RunId = " + form.getId() + ")");
-                    tempDef.setMetadataXml(queryDef.getMetadataXml());
-
-                    return tempDef;
-                }
-            };
+            String queryName = QUERY_PTM_PERCENTS_GROUPED_PREFIX + form.getId();
+            QuerySettings settings = new QuerySettings(getViewContext(), _dataRegionName, queryName);
             // Issue 40731- prevent expensive cross-folder queries when the results will always be scoped to the current
             // run anyway
             settings.setContainerFilterName(null);
             settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("PeptideGroupId", "RunId"), form.getId()));
             // Issue 47668 - need to sort on PeptideGroupId, Sequence, and SiteLocation to make sure peptides
             // with multiple modification sites have them reported in the right order
-            settings.setBaseSort(new Sort("PeptideGroupId, Sequence, SiteLocation"));
+            Sort sort = new Sort();
+            for (FieldKey sortField : PTMPercentsGroupedCustomizer.EXPECTED_SORTS)
+            {
+                sort.appendSortColumn(sortField, Sort.SortDirection.ASC, false);
+            }
+            sort.appendSortColumn(FieldKey.fromParts("Modification"), Sort.SortDirection.ASC, false);
+            settings.setBaseSort(sort);
             TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
             QueryView result = schema.createView(getViewContext(), settings, errors);
             result.setShadeAlternatingRows(false);

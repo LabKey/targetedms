@@ -93,7 +93,7 @@ public class SkylineListTable extends AbstractTableInfo
                     break;
             }
             sqlFragment.append(new SQLFragment(" FROM targetedms.ListItemValue WHERE ListItemId = " + tableAliasName +".Id AND ColumnIndex = ")
-                    .append(_listColumn.getColumnIndex())).append(")");
+                    .appendValue(_listColumn.getColumnIndex())).append(")");
             return sqlFragment;
         }
     }

@@ -273,7 +273,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 // this.filterPoints - object to store left and right indices to truncate for a series for custom date range
                 // when showing reference guide set
 
-                if (this.filterQCPoints && !this.groupedX) {
+                if (this.filterQCPoints) {
                     if (!this.filterPoints) {
                         this.filterPoints = {};
                     }
@@ -318,6 +318,14 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             }
         }
 
+        var maxPointsPerSeries = 0;
+        for (var i = 0; i < this.precursors.length; i++) {
+            if (this.fragmentPlotData[this.precursors[i]]) {
+                maxPointsPerSeries = Math.max(this.fragmentPlotData[this.precursors[i]].data.length, maxPointsPerSeries);
+            }
+        }
+        this.showDataPoints = maxPointsPerSeries <= LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries;
+
         if (this.showExpRunRange && this.filterPoints) {
 
             for (let i = 0; i < plotDataRows.length; i++) {
@@ -346,7 +354,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     },
 
     renderPlots: function() {
-        if (this.filterQCPoints && !this.groupedX) {
+        if (this.filterQCPoints) {
             this.truncateOutOfRangeQCPoints();
         }
         // do not persist plot options in qc folder if changed after coming through experimental folder link
@@ -360,6 +368,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         }
 
         this.setLoadingMsg();
+        this.setBrushingEnabled(false);
         this.setPlotWidth(this.plotDivId);
 
         var addedPlot = false;
@@ -656,14 +665,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             disableRange = false;
         }
 
-        var maxPointsPerSeries = 0;
-        for (var i = 0; i < this.precursors.length; i++) {
-            if (this.fragmentPlotData[this.precursors[i]]) {
-                maxPointsPerSeries = Math.max(this.fragmentPlotData[this.precursors[i]].data.length, maxPointsPerSeries);
-            }
-        }
-        var showDataPoints = maxPointsPerSeries <= LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries;
-
         let shapeProp = 'IgnoreInQC';
         let shapeDomain = [undefined, true];
         if (plotType === 'Levey-Jennings') {
@@ -691,7 +692,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             shapeRange: [LABKEY.vis.Scale.Shape()[0] /* circle */, LABKEY.vis.Scale.DataspaceShape()[0] /* open circle */, LABKEY.vis.Scale.Shape()[1], LABKEY.vis.Scale.Shape()[2]],
             shapeDomain: shapeDomain,
             showTrendLine: true,
-            showDataPoints: showDataPoints,
+            showDataPoints: this.showDataPoints,
             mouseOverFn: this.plotPointMouseOver,
             mouseOverFnScope: this,
             mouseOutFn: this.plotPointMouseOut,
@@ -705,7 +706,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             pathMouseOverFnScope: this,
             pathMouseOutFn: this.plotPointMouseOut,
             pathMouseOutFnScope: this,
-            hoverTextFn: !showDataPoints ? function(pathData) {
+            hoverTextFn: !this.showDataPoints ? function(pathData) {
                 return Ext4.htmlEncode(pathData.group) + '\nNarrow the date range to show individual data points.'
             } : undefined
         };

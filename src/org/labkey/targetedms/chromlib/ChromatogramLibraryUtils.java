@@ -187,7 +187,7 @@ public class ChromatogramLibraryUtils
         File localDir = localDirectory.getLocalDirectoryFile();
         Path chromLibDir = localDir.toPath().resolve(CHROM_LIB_FILE_DIR);
         if(!Files.exists(chromLibDir))
-            Files.createDirectory(chromLibDir);
+            FileUtil.createDirectory(chromLibDir);
         return chromLibDir.resolve(
                         FileUtil.makeFileNameWithTimestamp(CHROM_LIB_FILE_BASE_NAME+"_"+container.getRowId()+"_rev"+revision,
                                                            CHROM_LIB_FILE_EXT));
@@ -203,7 +203,7 @@ public class ChromatogramLibraryUtils
         Path chromLibDir = root.getRootNioPath().resolve(CHROM_LIB_FILE_DIR);
         if(!Files.exists(chromLibDir) && createLibDir)
         {
-            Files.createDirectory(chromLibDir);
+            FileUtil.createDirectory(chromLibDir);
         }
         return chromLibDir;
     }

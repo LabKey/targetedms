@@ -1,6 +1,9 @@
 SELECT
     PeptideGroupId,
-    SiteLocation,
+    -- Explicitly cast for SQLServer to avoid trying to add as numeric types
+    AminoAcid || CAST(Location AS VARCHAR) AS SiteLocation,
+    AminoAcid,
+    Location,
     PeptideModifiedSequence,
     Sequence @hidden,
     -- We have a special rule for this C-term modification - we're actually interested in the _unmodified_ percentage
@@ -26,7 +29,8 @@ GROUP BY
     NextAA,
     PeptideModifiedSequence,
     PeptideGroupId,
-    SiteLocation,
+    AminoAcid,
+    Location,
     Modification.Name,
     ModificationCount
 PIVOT PercentModified, TotalPercentModified BY SampleName

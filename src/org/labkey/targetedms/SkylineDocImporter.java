@@ -2331,7 +2331,7 @@ public class SkylineDocImporter
                 try
                 {
                     if (!Files.exists(targetParentPath))
-                        Files.createDirectory(targetParentPath);
+                        FileUtil.createDirectory(targetParentPath);
 
                     ExpData skydData = run.getSkydDataId() == null ? null : ExperimentService.get().getExpData(run.getSkydDataId());
                     if (skydData != null)
