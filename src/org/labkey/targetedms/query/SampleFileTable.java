@@ -182,15 +182,16 @@ public class SampleFileTable extends TargetedMSTable
 
             if (matchingContainers.size() == 1 && matchingSampleTypeLSIDs.size() == 1)
             {
+                Container matchingContainer = matchingContainers.iterator().next();
                 ExpSampleType sampleType = SampleTypeService.get().getSampleType(matchingSampleTypeLSIDs.iterator().next());
                 if (sampleType != null)
                 {
-                    ActionURL sampleUrl = PageFlowUtil.urlProvider(ExperimentUrls.class, true).getMaterialDetailsBaseURL(sampleType.getContainer(), SAMPLE_FIELD_KEY + "/RowId");
+                    ActionURL sampleUrl = PageFlowUtil.urlProvider(ExperimentUrls.class, true).getMaterialDetailsBaseURL(matchingContainer, SAMPLE_FIELD_KEY + "/RowId");
                     DetailsURL url = new DetailsURL(sampleUrl, "rowId", FieldKey.fromParts(SAMPLE_FIELD_KEY, "RowId"));
                     url.setContainerContext(new ContainerContext.FieldKeyContext(FieldKey.fromParts(SAMPLE_FIELD_KEY, "Folder"), true), false);
                     url.setStrictContainerContextEval(true);
 
-                    return new QueryForeignKey.Builder(new SamplesSchema(getUserSchema().getUser(), matchingContainers.iterator().next()), null).
+                    return new QueryForeignKey.Builder(new SamplesSchema(getUserSchema().getUser(), matchingContainer), null).
                             table(sampleType.getName()).
                             key("Name").
                             url(url).
