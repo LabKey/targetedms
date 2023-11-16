@@ -35,7 +35,7 @@ public class PeptideTransitionsView extends DocumentTransitionsView
     {
         super(ctx, schema, queryName, runId, !forExport,
                 new QueryNestingOption(FieldKey.fromParts("PrecursorId", "PeptideId", "PeptideGroupId"),
-                        FieldKey.fromParts("PrecursorId", "PeptideId", "PeptideGroupId", "Id"), null), DATAREGION_NAME, TITLE);
+                        FieldKey.fromParts("PrecursorId", "PeptideId", "PeptideGroupId", "Id")), DATAREGION_NAME, TITLE);
     }
 
     /**

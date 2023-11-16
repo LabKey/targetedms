@@ -35,7 +35,7 @@ public class SmallMoleculeTransitionsView extends DocumentTransitionsView
     {
         super(ctx, schema, queryName, runId, !forExport,
                 new QueryNestingOption(FieldKey.fromParts("MoleculePrecursorId", "MoleculeId", "PeptideGroupId"),
-                        FieldKey.fromParts("MoleculePrecursorId", "MoleculeId", "PeptideGroupId", "Id"), null), DATAREGION_NAME, TITLE);
+                        FieldKey.fromParts("MoleculePrecursorId", "MoleculeId", "PeptideGroupId", "Id")), DATAREGION_NAME, TITLE);
     }
 
     /**

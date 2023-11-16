@@ -35,7 +35,7 @@ public abstract class QuantificationView extends DocumentPrecursorsView
     {
         super(ctx, schema, tableName, form.getId(), forExport,
                 new QueryNestingOption(FieldKey.fromParts("PeptideGroupId"),
-                        FieldKey.fromParts("PeptideGroupId", "Id"), null), dataRegionName);
+                        FieldKey.fromParts("PeptideGroupId", "Id")), dataRegionName);
         setAllowableContainerFilterTypes();
         getSettings().setContainerFilterName(null);
     }

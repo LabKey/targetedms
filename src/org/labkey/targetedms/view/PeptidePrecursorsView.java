@@ -36,7 +36,7 @@ public class PeptidePrecursorsView extends DocumentPrecursorsView
     {
         super(ctx, schema, queryName, runId, !forExport,
                 new QueryNestingOption(FieldKey.fromParts("PeptideId", "PeptideGroupId"),
-                        FieldKey.fromParts("PeptideId", "PeptideGroupId", "Id"), null), DATAREGION_NAME);
+                        FieldKey.fromParts("PeptideId", "PeptideGroupId", "Id")), DATAREGION_NAME);
         setTitle(TITLE);
 
     }
