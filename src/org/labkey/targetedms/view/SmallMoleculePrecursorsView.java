@@ -35,7 +35,7 @@ public class SmallMoleculePrecursorsView extends DocumentPrecursorsView
     {
         super(ctx, schema, queryName, runId, !forExport,
                 new QueryNestingOption(FieldKey.fromParts("MoleculeId", "PeptideGroupId"),
-                        FieldKey.fromParts("MoleculeId", "PeptideGroupId", "Id"), null), DATAREGION_NAME);
+                        FieldKey.fromParts("MoleculeId", "PeptideGroupId", "Id")), DATAREGION_NAME);
         setTitle(TITLE);
     }
 
