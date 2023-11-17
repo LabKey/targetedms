@@ -58,7 +58,7 @@
     div.protein_details {padding:3px;}
 </style>
 
-<script type="text/javascript">
+<script type="text/javascript" nonce="<%=getScriptNonce()%>">
     var $ = jQuery.noConflict();
     var table;
 

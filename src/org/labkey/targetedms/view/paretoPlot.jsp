@@ -41,7 +41,7 @@
 
 <div id=<%=q(tiledPlotPanelId)%> class="tiledPlotPanel"></div>
 
-<script type="text/javascript">
+<script type="text/javascript" nonce="<%=getScriptNonce()%>">
 
         function init() {
             var tiledPlotPanelId = <%=q(tiledPlotPanelId)%>;

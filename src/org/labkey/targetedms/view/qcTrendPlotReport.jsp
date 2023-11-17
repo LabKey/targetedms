@@ -59,7 +59,7 @@
 <div id=<%=q(plotPaginationPanelId)%> class="plotPaginationHeaderPanel"></div>
 <div id=<%=q(plotPanelId)%> class="tiledPlotPanel"></div>
 
-<script type="text/javascript">
+<script type="text/javascript" nonce="<%=getScriptNonce()%>">
         function init() {
             var reportPanelId = <%=q(reportPanelId)%>;
             var plotPanelId = <%=q(plotPanelId)%>;

@@ -24,7 +24,7 @@
     TargetedMSController.SkylinePipelinePathForm form = (TargetedMSController.SkylinePipelinePathForm)HttpView.currentModel();
     ActionURL targetURL = new ActionURL(TargetedMSController.SkylineDocUploadAction.class, getContainer());
 %>
-<script type="text/javascript">
+<script type="text/javascript" nonce="<%=getScriptNonce()%>">
     Ext.onReady(function() {
 
         Ext.select('.repr_cb').on('click', function(event, target) {

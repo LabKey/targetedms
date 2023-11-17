@@ -26,7 +26,7 @@
     }
 %>
 
-<script>
+<script type="text/javascript" nonce="<%=getScriptNonce()%>">
 (function() {
     let calendar = null;
     let heatMapSource = 'sampleCount';

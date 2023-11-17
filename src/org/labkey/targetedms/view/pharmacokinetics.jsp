@@ -101,7 +101,7 @@
     </labkey:panel>
     <%}%>
 </div>
-<script type="application/javascript">
+    <script type="text/javascript" nonce="<%=getScriptNonce()%>">
     +function ($) {
 
         var moleculeId = <%=molecule.getId()%>;
