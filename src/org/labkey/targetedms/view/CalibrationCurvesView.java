@@ -56,7 +56,7 @@ public class CalibrationCurvesView extends QuantificationView
 
         if (isSmallMolecule())
         {
-            getSettings().setBaseSort(new Sort("GeneralMoleculeId/CustomIonName"));
+            getSettings().setBaseSort(new Sort("GeneralMoleculeId/Molecule"));
         }
         else
         {
