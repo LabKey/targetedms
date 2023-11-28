@@ -23,6 +23,7 @@
     <instrument id="MS:1003231" name="timsTOF SCP" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF SCP."/>
     <instrument id="MS:1003230" name="timsTOF Pro 2" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF Pro 2."/>
     <instrument id="MS:1003383" name="timsTOF Ultra" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF Ultra."/>
+    <instrument id="MS:1003397" name="timsTOF fleX MALDI-2" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF fleX MALDI-2."/>
     <instrument id="MS:1002279" name="maXis 4G" vendor="Bruker Daltonics maXis series" description="Bruker Daltonics' maXis 4G: ESI Q-TOF, Nanospray, APCI, APPI, GC-APCI, CaptiveSpray."/>
     <instrument id="MS:1001541" name="maXis" vendor="Bruker Daltonics maXis series" description="Bruker Daltonics' maXis: ESI Q-TOF, Nanospray, APCI, APPI."/>
     <instrument id="MS:1003004" name="maXis II" vendor="Bruker Daltonics maXis series" description="Bruker Daltonics' maXis II."/>
@@ -206,6 +207,7 @@
     <instrument id="MS:1000174" name="MAT900XP Trap" vendor="Finnigan MAT" description="ThermoFinnigan MAT900XP Trap MS."/>
     <instrument id="MS:1000173" name="MAT900XP" vendor="Finnigan MAT" description="ThermoFinnigan MAT900XP MS."/>
     <instrument id="MS:1000172" name="MAT253" vendor="Finnigan MAT" description="ThermoFinnigan MAT253 MS."/>
+    <instrument id="MS:1003395" name="Q Exactive GC Orbitrap" vendor="Thermo Fisher Scientific" description="Q Exactive GC Orbitrap GC-MS/MS hybrid quadrupole Orbitrap mass spectrometer."/>
     <instrument id="MS:1000448" name="LTQ FT" vendor="Thermo Scientific" description="Finnigan LTQ FT MS."/>
     <instrument id="MS:1000641" name="DSQ II" vendor="Thermo Scientific" description="Thermo Scientific DSQ II GC-MS."/>
     <instrument id="MS:1000449" name="LTQ Orbitrap" vendor="Thermo Scientific" description="Finnigan LTQ Orbitrap MS."/>
@@ -299,6 +301,7 @@
     <instrument id="MS:1000468" name="6110 Quadrupole LC/MS" vendor="Agilent" description="The 6110 Quadrupole LC/MS system is a Agilent liquid chromatography instrument combined with an entry level single quadrupole mass spectrometer from the 6100 Series of Agilent quadrupole mass spectrometers. 6110 Quadrupole mass spectrometer has m/z range of 10-1500 and 2500 u/s scan speed. It proves useful for wide range of SIM quantitative applications."/>
     <instrument id="MS:1002801" name="6495B Triple Quadrupole LC/MS" vendor="Agilent" description="The 6495B Quadrupole LC/MS system is a Agilent liquid chromatography instrument combined with a Agilent triple quadrupole mass spectrometer."/>
     <instrument id="MS:1002800" name="6495A Triple Quadrupole LC/MS" vendor="Agilent" description="The 6495A Quadrupole LC/MS system is a Agilent liquid chromatography instrument combined with a Agilent triple quadrupole mass spectrometer."/>
+    <instrument id="MS:1003396" name="8890 GC/MS" vendor="Agilent" description="Agilent 8890 Gas Chromatograph System."/>
     <instrument id="MS:1002792" name="6560 Q-TOF LC/MS" vendor="Agilent" description="The 6560 Quadrupole Time-of-Flight LC/MS is a Agilent liquid chromatography instrument combined with a Agilent time of flight mass spectrometer."/>
     <instrument id="MS:1002793" name="6570 Q-TOF LC/MS" vendor="Agilent" description="The 6570 Quadrupole Time-of-Flight LC/MS is a Agilent liquid chromatography instrument combined with a Agilent time of flight mass spectrometer."/>
     <instrument id="MS:1002790" name="6542 Q-TOF LC/MS" vendor="Agilent" description="The 6542 Quadrupole Time-of-Flight LC/MS is a Agilent liquid chromatography instrument combined with a Agilent time of flight mass spectrometer."/>
