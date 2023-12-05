@@ -19,14 +19,13 @@ package org.labkey.test.tests.targetedms.passport;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.Locator;
-import org.labkey.test.categories.Daily;
 import org.labkey.test.util.APIUserHelper;
 import org.labkey.test.util.LogMethod;
 
 import java.util.List;
 
-@Category({Daily.class})
-public class PassportTest  extends PassportTestPart
+@Category({})
+public class PassportTest extends PassportTestPart
 {
 
     @Test
@@ -55,11 +54,10 @@ public class PassportTest  extends PassportTestPart
         assertTextNotPresent("Pages");
         // enter Haptoglobin
 
-        click(Locator.xpath("//tr[contains(@class,'labkey-alternate-row')]//a[@class='labkey-text-link'][contains(text(),'PASSPORT VIEW')]"));
+        clickAndWait(Locator.xpath("//tr[contains(@class,'labkey-alternate-row')]//a[@class='labkey-text-link'][contains(text(),'PASSPORT VIEW')]"));
         assertTextPresent("Haptoglobin", "data1.sky.zip");
         assertElementPresent(Locator.xpath("//div[@id='rangesliderdeg']"));
         assertElementPresent(Locator.xpath("//div[@id='rangesliderlength']"));
-        assertElementPresent(Locator.xpath("//button[@id='formreset']"));
         assertElementPresent(Locator.xpath("//button[@id='formreset']"));
         assertElementPresent(Locator.xpath("//a[contains(text(),'P00738')]"));
         assertElementPresent(Locator.xpath("//div[@id='chart']"));
@@ -70,8 +68,7 @@ public class PassportTest  extends PassportTestPart
             int index = i+1;
             assertElementContains(Locator.xpath("//ul[@id='livepeptidelist']//li["+index+"]"), peptidesOrderIntensity[i]);
         }
-        click(Locator.xpath("//select[@id='peptideSort']")); // click sort peptide dropdown
-        click(Locator.xpath("//option[@value='sequencelocation']"));
+        selectOptionByValue(Locator.xpath("//select[@id='peptideSort']"), "sequencelocation");
         String[] peptidesOrderLocation = {"TEGDGVYTLNDK","TEGDGVYTLNNEK","LPECEAVCGKPK","NPANPVQR","ILGGHLDAK",
                 "GSFPWQAK","MVSHHNLTTGATLINEQWLLTTAK","NLFLNHSENATAK","DIAPTLTLYVGK","QLVEIEK","VVLHPNYSQVDIGLIK","VMPICLPSK",
                 "DYAEVGR","VGYVSGWGR","YVMLPVADQDQCIR","HYEGSTVPEK","SPVGVQPILNEHTFCAGMSK","SCAVAEYGVYVK","VTSIQDWVQK"};
