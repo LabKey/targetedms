@@ -1,0 +1,1 @@
+ALTER TABLE targetedms.AutoQCPing ADD SoftwareVersion VARCHAR(100);

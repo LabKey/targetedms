@@ -223,6 +223,10 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
         {
             var modifiedFormatted = Ext4.util.Format.date(new Date(autoQC.modified), LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s');
             content = autoQC.isRecent ? 'AutoQC pinged recently on ' + modifiedFormatted : 'AutoQC last pinged on ' + modifiedFormatted;
+            if (autoQC.softwareVersion)
+            {
+                content += "<br/>Version: " + autoQC.softwareVersion;
+            }
         }
 
         content = '<div>' + content + '</div><br/>' + this.getAutoQCSetupInfo();
