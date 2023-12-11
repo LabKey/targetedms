@@ -225,7 +225,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
             content = autoQC.isRecent ? 'AutoQC pinged recently on ' + modifiedFormatted : 'AutoQC last pinged on ' + modifiedFormatted;
             if (autoQC.softwareVersion)
             {
-                content += "<br/>Version: " + autoQC.softwareVersion;
+                content += "<br/>Version: " + LABKEY.Utils.encodeHtml(autoQC.softwareVersion);
             }
         }
 

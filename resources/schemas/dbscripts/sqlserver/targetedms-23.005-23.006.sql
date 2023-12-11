@@ -1,1 +1,1 @@
-ALTER TABLE targetedms.AutoQCPing ADD SoftwareVersion VARCHAR(100);
+ALTER TABLE targetedms.AutoQCPing ADD SoftwareVersion NVARCHAR(100);
