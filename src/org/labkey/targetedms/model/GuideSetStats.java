@@ -176,6 +176,7 @@ public class GuideSetStats
         double[] positiveCUSUMv = Stats.getCUSUMS(metricVals, false, true, false, null);
         double[] negativeCUSUMv = Stats.getCUSUMS(metricVals, true, true, false, null);
 
+        int j = 0; // index to traverse trailingMeans and trailingCVs array
         for (int i = 0; i < includedRows.size(); i++)
         {
             RawMetricDataSet row = includedRows.get(i);
@@ -191,15 +192,9 @@ public class GuideSetStats
                 row.setCUSUMvP(positiveCUSUMv[i]);
                 row.setCUSUMvN(negativeCUSUMv[i]);
             }
-        }
-        // start trailingCVs and trailingMeans from number of trailingRuns after the beginning
-        int j = 0; // index to traverse trailingMeans and trailingCVs array
-        if (null != trailingRuns)
-        {
-            for (int i = trailingRuns-1; i < includedRows.size(); i++)
+            RawMetricDataSet trailingStartRow = includedRows.get(j);
+            if (null != trailingRuns)
             {
-                RawMetricDataSet row = includedRows.get(i);
-                RawMetricDataSet trailingStartRow = includedRows.get(j);
                 if (trailingMeans.length > 0 && j < trailingMeans.length)
                 {
                     if (row.getMetricValue() == null)
