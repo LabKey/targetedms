@@ -192,6 +192,7 @@ public class GuideSetStats
                 row.setCUSUMvP(positiveCUSUMv[i]);
                 row.setCUSUMvN(negativeCUSUMv[i]);
             }
+
             RawMetricDataSet trailingStartRow = includedRows.get(j);
             if (null != trailingRuns)
             {
