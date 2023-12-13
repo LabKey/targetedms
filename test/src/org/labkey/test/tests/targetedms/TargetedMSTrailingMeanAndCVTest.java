@@ -87,7 +87,7 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
                 qcPlotsWebPart.getSVGPlotText("precursorPlot0").contains("Minutes"));
 
         log("Verifying the count of points on the plot");
-        Assert.assertEquals("Invalid point count for all replicates", REPLICATE_COUNT * (RUN_COUNT - Integer.parseInt(trailingLast) + 1) , qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size());
+        Assert.assertEquals("Invalid point count for all replicates", REPLICATE_COUNT * RUN_COUNT, qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size());
 
         log("Verifying tooltips");
         qcPlotsWebPart.waitForPlots(7);
@@ -100,7 +100,7 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
                 "Replicate:\n" +
                 "3 runs average\n" +
                 "Acquired:\n" +
-                "2013-08-09 11:39:00 - 2013-08-12 04:54:55", toolTipText);
+                "2013-08-09 11:39 - 2013-08-12 04:54", toolTipText);
 
         log("Selecting multiple plot types with trailing mean");
         qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.LeveyJennings, QCPlotsWebPart.QCPlotType.MovingRange, QCPlotsWebPart.QCPlotType.TrailingMean);
@@ -121,10 +121,10 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
                 "Replicate:\n" +
                 "3 runs average\n" +
                 "Acquired:\n" +
-                "2013-08-11 18:34:14 - 2013-08-14 00:44:46", toolTipText);
+                "2013-08-11 18:34 - 2013-08-14 00:44", toolTipText);
 
         log("Verifying the count of points on the plots with guide set");
-        Assert.assertEquals("Invalid point count for all replicates", 308 , qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size());
+        Assert.assertEquals("Invalid point count for all replicates", 322 , qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size());
     }
 
     @Test
