@@ -182,7 +182,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         var tempData; // temp variable to store data for setting the date
         let foundTrue = false
-        let trainingSeqIdx = 1;
+        let trainingSeqIdx = 1; // this index is used for displaying the average number of runs in tooltip (QCPlotHoverPanel.js L110)
         for (var i = this.pagingStartIndex; i < this.pagingEndIndex; i++) {
             var plotDataRow = plotDataRows[i];
             tempData = plotDataRow;

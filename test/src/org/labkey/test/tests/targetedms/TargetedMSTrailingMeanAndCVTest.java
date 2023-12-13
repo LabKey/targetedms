@@ -165,10 +165,10 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
                 "Replicate:\n" +
                 "3 runs average\n" +
                 "Acquired:\n" +
-                "2013-08-09 11:39:00 - 2013-08-12 04:54:55", toolTipText);
+                "2013-08-09 11:39 - 2013-08-12 04:54", toolTipText);
         qcPlotsWebPart.closeBubble();
         log("Verifying the count of points on the plot");
-        Assert.assertEquals("Invalid point count for all replicates", REPLICATE_COUNT * (RUN_COUNT - Integer.parseInt(trailingLast) + 1) -1 ,
+        Assert.assertEquals("Invalid point count for all replicates", REPLICATE_COUNT * RUN_COUNT,
                 qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size());
 
         log("Verifying values with guide set");
@@ -186,11 +186,11 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
                 "Replicate:\n" +
                 "3 runs average\n" +
                 "Acquired:\n" +
-                "2013-08-21 04:46:18 - 2013-08-21 09:07:36", toolTipText);
+                "2013-08-21 04:46 - 2013-08-21 09:07", toolTipText);
         qcPlotsWebPart.closeBubble();
 
         log("Verifying the count of points on the plot with guide set");
-        Assert.assertEquals("Invalid number of point count for all replicates - plots with guide set", 133 ,
+        Assert.assertEquals("Invalid number of point count for all replicates - plots with guide set", REPLICATE_COUNT * RUN_COUNT ,
                 qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size());
     }
 }
