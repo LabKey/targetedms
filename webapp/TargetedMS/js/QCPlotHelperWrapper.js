@@ -348,6 +348,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         if (this.showTrailingMeanPlot() || this.showTrailingCVPlot()) {
             data['TrailingStartDate'] = row['TrailingStartDate'];
             data['TrailingEndDate'] = row['TrailingEndDate'];
+            data['TrainingSeqIdx'] = row['TrainingSeqIdx'];
+            data['InsideGuideSet'] = row['InsideGuideSet'];
         }
 
         return data;

@@ -25,6 +25,7 @@ public class GuideSetStats
 {
     private final GuideSetKey _key;
     private final GuideSet _guideSet;
+    private int _trainingSeqIndex;
 
     /** Rows that define the normal range for this guide set */
     private final List<RawMetricDataSet> _trainingRows = new ArrayList<>();
@@ -48,6 +49,7 @@ public class GuideSetStats
     {
         _key = key;
         _guideSet = guideSet;
+        _trainingSeqIndex = 0;
     }
 
     public double getStandardDeviation()
@@ -102,6 +104,7 @@ public class GuideSetStats
                 _guideSet.getTrainingStart().compareTo(row.getSampleFile().getAcquiredTime()) <= 0 &&
                 (_guideSet.getTrainingEnd() == null || _guideSet.getTrainingEnd().compareTo(row.getSampleFile().getAcquiredTime()) >= 0))
         {
+            row.setInsideGuideSet(true);
             _trainingRows.add(row);
         }
         else
@@ -177,6 +180,7 @@ public class GuideSetStats
         double[] negativeCUSUMv = Stats.getCUSUMS(metricVals, true, true, false, null);
 
         int j = 0; // index to traverse trailingMeans and trailingCVs array
+        int start = 0;
         for (int i = 0; i < includedRows.size(); i++)
         {
             RawMetricDataSet row = includedRows.get(i);
@@ -193,7 +197,7 @@ public class GuideSetStats
                 row.setCUSUMvN(negativeCUSUMv[i]);
             }
 
-            RawMetricDataSet trailingStartRow = includedRows.get(j);
+            RawMetricDataSet trailingStartRow = includedRows.get(start);
             if (null != trailingRuns)
             {
                 if (trailingMeans.length > 0 && j < trailingMeans.length)
@@ -233,6 +237,10 @@ public class GuideSetStats
                     // when the metric value is null (bad data), the corresponding trailing mean/cv is set to the previous trailing mean/cv
                     // so only move forward for the actual metric values
                     j++;
+                }
+                if (j >= trailingRuns)
+                {
+                    start++;
                 }
             }
         }
