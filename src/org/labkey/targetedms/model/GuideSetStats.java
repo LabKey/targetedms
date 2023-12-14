@@ -25,7 +25,6 @@ public class GuideSetStats
 {
     private final GuideSetKey _key;
     private final GuideSet _guideSet;
-    private int _trainingSeqIndex;
 
     /** Rows that define the normal range for this guide set */
     private final List<RawMetricDataSet> _trainingRows = new ArrayList<>();
@@ -49,7 +48,6 @@ public class GuideSetStats
     {
         _key = key;
         _guideSet = guideSet;
-        _trainingSeqIndex = 0;
     }
 
     public double getStandardDeviation()
