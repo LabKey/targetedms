@@ -34,7 +34,7 @@ import org.labkey.targetedms.chart.ColorGenerator;
 import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
-import org.labkey.targetedms.model.QCMetricConfiguration;
+import org.labkey.api.targetedms.model.QCMetricConfiguration;
 import org.labkey.targetedms.model.QCPlotFragment;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.model.SampleFileQCMetadata;
@@ -270,6 +270,9 @@ public class OutlierGenerator
             Map<Long, Object> excludedPrecursorIds = new HashMap<>();
             Map<Long, RawMetricDataSet.PrecursorInfo> precursors = loadPrecursors(schema, excludedPrecursorIds, showExcludedPrecursors);
 
+            Map<Integer, QCMetricConfiguration> metrics = new HashMap<>();
+            TargetedMSManager.getAllQCMetricConfigurations(schema).forEach(m -> metrics.put(m.getId(), m));
+
             try (ResultSet rs = new SqlSelector(TargetedMSManager.getSchema(), sql).getResultSet(false))
             {
                 while (rs.next())
@@ -294,7 +297,7 @@ public class OutlierGenerator
                     RawMetricDataSet row = new RawMetricDataSet(sampleFiles.get(sampleFileId), precursor);
 
                     row.setMetricSeriesIndex(rs.getInt("MetricSeriesIndex"));
-                    row.setMetricId(rs.getInt("MetricId"));
+                    row.setMetric(metrics.get(rs.getInt("MetricId")));
                     row.setSeriesLabel(rs.getString("SeriesLabel"));
                     row.setPrecursorChromInfoId(getLong(rs, "PrecursorChromInfoId"));
                     row.setMetricValue(getDouble(rs, "MetricValue"));
@@ -463,7 +466,7 @@ public class OutlierGenerator
                 dataRow.increment(sampleFile, stats);
 
                 String metricLabel = getMetricLabel(metrics, dataRow);
-                dataRow.increment(sampleFile.getMetricCounts(metricLabel, dataRow.getMetricId()), stats);
+                dataRow.increment(sampleFile.getMetricCounts(metricLabel, dataRow.getMetric()), stats);
             }
         }
 

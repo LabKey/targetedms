@@ -1,0 +1,15 @@
+<query xmlns="http://labkey.org/data/xml/query">
+    <metadata>
+        <tables xmlns="http://labkey.org/data/xml">
+            <table tableName="QCMetricsConfig" tableDbType="NOT_IN_DB">
+                <columns>
+                    <column columnName="EffectiveStatus" wrappedColumnName="Status">
+                        <displayColumnFactory>
+                            <className>org.labkey.targetedms.query.QCMetricStatusDisplayColumnFactory</className>
+                        </displayColumnFactory>
+                    </column>
+                </columns>
+            </table>
+        </tables>
+    </metadata>
+</query>

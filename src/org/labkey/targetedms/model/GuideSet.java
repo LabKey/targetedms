@@ -18,6 +18,7 @@ package org.labkey.targetedms.model;
 import org.json.JSONObject;
 import org.labkey.api.data.Entity;
 import org.labkey.api.targetedms.model.OutlierCounts;
+import org.labkey.api.targetedms.model.QCMetricConfiguration;
 import org.labkey.api.util.Pair;
 import org.labkey.targetedms.outliers.OutlierGenerator;
 
@@ -117,7 +118,7 @@ public class GuideSet extends Entity
             {
                 String metricLabel = OutlierGenerator.get().getMetricLabel(metrics, dataRow);
 
-                OutlierCounts counts = allMetricOutliers.computeIfAbsent(new Pair<>(dataRow.getMetricId(), metricLabel), x -> new OutlierCounts(dataRow.getMetricId()));
+                OutlierCounts counts = allMetricOutliers.computeIfAbsent(new Pair<>(dataRow.getMetricId(), metricLabel), x -> new OutlierCounts(dataRow.getMetric()));
                 GuideSetStats s = stats.get(dataRow.getGuideSetKey());
                 dataRow.increment(counts, s);
             }

@@ -61,7 +61,7 @@ import org.labkey.targetedms.SkylinePort.Irt.RegressionLine;
 import org.labkey.targetedms.SkylinePort.Irt.RetentionTimeProviderImpl;
 import org.labkey.targetedms.calculations.RunQuantifier;
 import org.labkey.targetedms.calculations.quantification.RegressionFit;
-import org.labkey.targetedms.model.QCMetricConfiguration;
+import org.labkey.api.targetedms.model.QCMetricConfiguration;
 import org.labkey.targetedms.parser.*;
 import org.labkey.targetedms.parser.list.ListData;
 import org.labkey.targetedms.parser.skyaudit.AuditLogException;

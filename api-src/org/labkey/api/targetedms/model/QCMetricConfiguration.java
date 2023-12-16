@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.labkey.targetedms.model;
+package org.labkey.api.targetedms.model;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -31,12 +31,14 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
     private boolean _precursorScoped;
     private String _enabledQueryName;
     private String _enabledSchemaName;
-    private Boolean _enabled;
+    private QCMetricStatus _status;
     private String _traceName;
     private Double _timeValue;
     private Double _traceValue;
     private String _yAxisLabel1;
     private String _yAxisLabel2;
+    private Double _upperBound;
+    private Double _lowerBound;
 
     public int getId()
     {
@@ -137,14 +139,14 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
         _enabledQueryName = enabledQueryName;
     }
 
-    public Boolean getEnabled()
+    public QCMetricStatus getStatus()
     {
-        return _enabled;
+        return _status;
     }
 
-    public void setEnabled(Boolean enabled)
+    public void setStatus(QCMetricStatus status)
     {
-        _enabled = enabled;
+        _status = status;
     }
 
     public String getEnabledSchemaName()
@@ -207,6 +209,26 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
         _yAxisLabel2 = yAxisLabel2;
     }
 
+    public Double getUpperBound()
+    {
+        return _upperBound;
+    }
+
+    public void setUpperBound(Double upperBound)
+    {
+        _upperBound = upperBound;
+    }
+
+    public Double getLowerBound()
+    {
+        return _lowerBound;
+    }
+
+    public void setLowerBound(Double lowerBound)
+    {
+        _lowerBound = lowerBound;
+    }
+
     public JSONObject toJSON(){
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("id", _id);
@@ -215,6 +237,7 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
         jsonObject.put("series1SchemaName", _series1SchemaName);
         jsonObject.put("series1QueryName",  _series1QueryName);
         jsonObject.put("precursorScoped",  _precursorScoped);
+        jsonObject.put("metricStatus", getStatus() == null ? QCMetricStatus.DEFAULT.toString() : getStatus().toString());
         if (_series2Label != null) {
             jsonObject.put("series2Label",      _series2Label);
         }
@@ -244,6 +267,12 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
         }
         if (_yAxisLabel2 != null) {
             jsonObject.put("yAxisLabel2", _yAxisLabel2);
+        }
+        if (_lowerBound != null) {
+            jsonObject.put("lowerBound", _lowerBound);
+        }
+        if (_upperBound != null) {
+            jsonObject.put("upperBound", _upperBound);
         }
 
         return jsonObject;

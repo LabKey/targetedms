@@ -1556,7 +1556,7 @@
     <table tableName="QCEnabledMetrics" tableDbType="TABLE">
         <columns>
             <column columnName="metric"/>
-            <column columnName="enabled"/>
+            <column columnName="Status"/>
             <column columnName="lowerBound"/>
             <column columnName="upperBound"/>
             <column columnName="cusumLimit"/>

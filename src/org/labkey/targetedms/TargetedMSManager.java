@@ -87,7 +87,8 @@ import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
-import org.labkey.targetedms.model.QCMetricConfiguration;
+import org.labkey.api.targetedms.model.QCMetricConfiguration;
+import org.labkey.api.targetedms.model.QCMetricStatus;
 import org.labkey.targetedms.model.QCTraceMetricValues;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.model.passport.IKeyword;
@@ -2137,33 +2138,31 @@ public class TargetedMSManager
         return Math.log(value.doubleValue()) / Math.log(2);
     }
 
-    public static List<QCMetricConfiguration> getEnabledQCMetricConfigurations(TargetedMSSchema targetedMSSchema)
+    public static List<QCMetricConfiguration> getAllQCMetricConfigurations(TargetedMSSchema schema)
     {
-        return _metricCache.get(targetedMSSchema.getContainer(), null, (c, argument) ->
+        return _metricCache.get(schema.getContainer(), null, (c, argument) ->
         {
-            TableInfo metricsTable = targetedMSSchema.getTableOrThrow("qcMetricsConfig", null);
-            List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, new SimpleFilter(FieldKey.fromParts("Enabled"), false, CompareType.NEQ_OR_NULL), new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
-            List<QCMetricConfiguration> result = new ArrayList<>();
+            TableInfo metricsTable = schema.getTableOrThrow("qcMetricsConfig", null);
+            List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, new SimpleFilter(FieldKey.fromParts("Status"), QCMetricStatus.Disabled.toString(), CompareType.NEQ_OR_NULL), new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
 
-            // We may encounter the same query to see if metrics are enabled more than once, so remember the values
+            // We may encounter the same query to see if metrics have data more than once, so remember the values
             // so we don't have to requery
-            Map<Pair<String, String>, Boolean> enabledQueries = new HashMap<>();
+            Map<Pair<String, String>, Boolean> hasDataQueries = new HashMap<>();
 
             for (QCMetricConfiguration metric : metrics)
             {
-                if (metric.getEnabled() == null)
+                if (metric.getStatus() == null)
                 {
                     if (metric.getEnabledQueryName() == null || metric.getEnabledSchemaName() == null)
                     {
-                        // Metrics without a query to define their default enabled status are on by default
-                        result.add(metric);
+                        metric.setStatus(QCMetricStatus.DEFAULT);
                     }
                     else
                     {
                         Pair<String, String> schemaQuery = new Pair<>(metric.getEnabledSchemaName(), metric.getEnabledQueryName());
-                        Boolean enabled = enabledQueries.computeIfAbsent(schemaQuery, p ->
+                        boolean hasData = hasDataQueries.computeIfAbsent(schemaQuery, p ->
                         {
-                            QuerySchema enabledSchema = TargetedMSSchema.SCHEMA_NAME.equalsIgnoreCase(metric.getEnabledSchemaName()) ? targetedMSSchema : targetedMSSchema.getDefaultSchema().getSchema(metric.getEnabledSchemaName());
+                            QuerySchema enabledSchema = TargetedMSSchema.SCHEMA_NAME.equalsIgnoreCase(metric.getEnabledSchemaName()) ? schema : schema.getDefaultSchema().getSchema(metric.getEnabledSchemaName());
                             if (enabledSchema != null)
                             {
                                 TableInfo enabledQuery = enabledSchema.getTable(metric.getEnabledQueryName(), null);
@@ -2183,21 +2182,33 @@ public class TargetedMSManager
                             return false;
                         });
 
-                        if (enabled)
+                        if (!hasData)
                         {
-                            result.add(metric);
+                            metric.setStatus(QCMetricStatus.NoData);
                         }
                     }
                 }
-                else
+                if (metric.getStatus() == null)
                 {
-                    result.add(metric);
+                    metric.setStatus(QCMetricStatus.DEFAULT);
                 }
             }
             // Ensure we get a case-insensitive sort regardless of DB collation
-            Collections.sort(result);
-            return Collections.unmodifiableList(result);
+            Collections.sort(metrics);
+            return Collections.unmodifiableList(metrics);
         });
+    }
+    public static List<QCMetricConfiguration> getEnabledQCMetricConfigurations(TargetedMSSchema schema)
+    {
+        List<QCMetricConfiguration> result = new ArrayList<>();
+        for (QCMetricConfiguration metric : getAllQCMetricConfigurations(schema))
+        {
+            if (metric.getStatus() != QCMetricStatus.Disabled && metric.getStatus() != QCMetricStatus.NoData)
+            {
+                result.add(metric);
+            }
+        }
+        return Collections.unmodifiableList(result);
     }
 
     public List<SampleFileInfo> getSampleFileInfos(Container container, User user, Integer sampleFileLimit)

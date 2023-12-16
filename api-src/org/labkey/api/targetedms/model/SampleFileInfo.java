@@ -90,9 +90,9 @@ public class SampleFileInfo extends OutlierCounts
         return result;
     }
 
-    public OutlierCounts getMetricCounts(String metricLabel, int metricId)
+    public OutlierCounts getMetricCounts(String metricLabel, QCMetricConfiguration metric)
     {
-        return byMetric.computeIfAbsent(metricLabel, x -> new OutlierCounts(metricId));
+        return byMetric.computeIfAbsent(metricLabel, x -> new OutlierCounts(metric));
     }
 
     @Override @NotNull

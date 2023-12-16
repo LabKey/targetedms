@@ -664,6 +664,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         else if (this.yAxisScale === 'standardDeviation' && plotType === LABKEY.vis.TrendingLinePlotType.LeveyJennings) {
             disableRange = false;
         }
+        else if (plotType === LABKEY.vis.TrendingLinePlotType.LeveyJennings && (metricProps.upperBound !== undefined || metricProps.lowerBound !== undefined)) {
+            disableRange = false;
+        }
 
         let shapeProp = 'IgnoreInQC';
         let shapeDomain = [undefined, true];
@@ -708,7 +711,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             pathMouseOutFnScope: this,
             hoverTextFn: !this.showDataPoints ? function(pathData) {
                 return Ext4.htmlEncode(pathData.group) + '\nNarrow the date range to show individual data points.'
-            } : undefined
+            } : undefined,
+            lowerBound: metricProps.lowerBound,
+            upperBound: metricProps.upperBound
         };
 
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(combinePlotData, plotType, isCUSUMMean));
@@ -811,7 +816,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             mouseOverFnScope: this,
             position: this.groupedX ? 'sequential' : undefined,
             disableRangeDisplay: this.isMultiSeries(),
-            hoverTextFn: !showDataPoints ? function() { return 'Narrow the date range to show individual data points.' } : undefined
+            hoverTextFn: !showDataPoints ? function() { return 'Narrow the date range to show individual data points.' } : undefined,
+            lowerBound: metricProps.lowerBound,
+            upperBound: metricProps.upperBound
         };
 
         // lines are not separated when indices are not present

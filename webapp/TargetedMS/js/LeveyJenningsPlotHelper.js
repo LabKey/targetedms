@@ -184,30 +184,55 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
     getLJLegend: function () {
         var ljLegend = [];
 
-        if ((!this.singlePlot || this.yAxisScale === 'standardDeviation') && !this.getMetricPropsById(this.metric).series2Label) {
-            ljLegend.push({
-                text: 'Levey-Jennings',
+        if (!this.getMetricPropsById(this.metric).series2Label) {
+            let metricInfo = this.getMetricPropsById(this.metric);
+
+            if (metricInfo.metricStatus === 'ValueCutoff') {
+                if (metricInfo.upperBound !== undefined && metricInfo.upperBound !== null) {
+                    ljLegend.push({
+                        text: 'Upper: ' + metricInfo.upperBound,
+                        color: 'red',
+                        shape: LABKEY.vis.TrendingLineShape.meanLJ
+                    });
+                }
+                if (metricInfo.lowerBound !== undefined && metricInfo.lowerBound !== null) {
+                    ljLegend.push({
+                        text: 'Lower: ' + metricInfo.lowerBound,
+                        color: 'red',
+                        shape: LABKEY.vis.TrendingLineShape.meanLJ
+                    });
+                }
+            }
+
+            if (!this.singlePlot || this.yAxisScale === 'standardDeviation') {
+                ljLegend.push({
+                    text: '+/-3 x Std Dev',
+                    color: 'red',
+                    shape: LABKEY.vis.TrendingLineShape.stdDevLJ
+                });
+                ljLegend.push({
+                    text: '+/-2 x Std Dev',
+                    color: 'blue',
+                    shape: LABKEY.vis.TrendingLineShape.stdDevLJ
+                });
+                ljLegend.push({
+                    text: '+/-1 x Std Dev',
+                    color: 'green',
+                    shape: LABKEY.vis.TrendingLineShape.stdDevLJ
+                });
+                ljLegend.push({
+                    text: 'Mean',
+                    color: 'darkgrey',
+                    shape: LABKEY.vis.TrendingLineShape.meanLJ
+                });
+            }
+        }
+
+        if (ljLegend.length > 0)
+        {
+            ljLegend.splice(0, 0, {
+                text: 'Cutoffs',
                 separator: true
-            });
-            ljLegend.push({
-                text: '+/-3 x Std Dev',
-                color: 'red',
-                shape: LABKEY.vis.TrendingLineShape.stdDevLJ
-            });
-            ljLegend.push({
-                text: '+/-2 x Std Dev',
-                color: 'blue',
-                shape: LABKEY.vis.TrendingLineShape.stdDevLJ
-            });
-            ljLegend.push({
-                text: '+/-1 x Std Dev',
-                color: 'green',
-                shape: LABKEY.vis.TrendingLineShape.stdDevLJ
-            });
-            ljLegend.push({
-                text: 'Mean',
-                color: 'darkgrey',
-                shape: LABKEY.vis.TrendingLineShape.meanLJ
             });
         }
         return ljLegend;

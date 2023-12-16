@@ -5,25 +5,27 @@ import org.json.JSONObject;
 
 public class OutlierCounts
 {
-    private final Integer _metricId;
+    private final QCMetricConfiguration _metric;
     private int _CUSUMmP;
     private int _CUSUMvP;
     private int _CUSUMmN;
     private int _CUSUMvN;
     private int _mR;
     private int _leveyJennings;
+    private int _valueCutoff;
 
     /** Total number of data points under consideration */
     private int _totalCount;
+    private int _totalConfiguredOutlierCount;
 
     public OutlierCounts()
     {
-        _metricId = null;
+        _metric = null;
     }
 
-    public OutlierCounts(int metricId)
+    public OutlierCounts(QCMetricConfiguration metric)
     {
-        _metricId = metricId;
+        _metric = metric;
     }
 
     public int getCUSUMm()
@@ -41,9 +43,9 @@ public class OutlierCounts
         return _CUSUMmN;
     }
 
-    public void setCUSUMmN(int CUSUMmN)
+    public void incrementCUSUMmN()
     {
-        _CUSUMmN = CUSUMmN;
+        _CUSUMmN++;
     }
 
     public int getCUSUMmP()
@@ -51,9 +53,9 @@ public class OutlierCounts
         return _CUSUMmP;
     }
 
-    public void setCUSUMmP(int CUSUMmP)
+    public void incrementCUSUMmP()
     {
-        _CUSUMmP = CUSUMmP;
+        _CUSUMmP++;
     }
 
     public int getCUSUMvP()
@@ -61,9 +63,9 @@ public class OutlierCounts
         return _CUSUMvP;
     }
 
-    public void setCUSUMvP(int CUSUMvP)
+    public void incrementCUSUMvP()
     {
-        _CUSUMvP = CUSUMvP;
+        _CUSUMvP++;
     }
 
     public int getCUSUMvN()
@@ -71,9 +73,9 @@ public class OutlierCounts
         return _CUSUMvN;
     }
 
-    public void setCUSUMvN(int CUSUMvN)
+    public void incrementCUSUMvN()
     {
-        _CUSUMvN = CUSUMvN;
+        _CUSUMvN++;
     }
 
     public int getmR()
@@ -81,9 +83,9 @@ public class OutlierCounts
         return _mR;
     }
 
-    public void setmR(int mR)
+    public void incrementMR()
     {
-        _mR = mR;
+        _mR++;
     }
 
     public int getLeveyJennings()
@@ -91,9 +93,13 @@ public class OutlierCounts
         return _leveyJennings;
     }
 
-    public void setLeveyJennings(int leveyJennings)
+    public void incrementLeveyJennings(QCMetricConfiguration metric)
     {
-        _leveyJennings = leveyJennings;
+        _leveyJennings++;
+        if (metric != null && metric.getStatus() == QCMetricStatus.LeveyJennings)
+        {
+            _totalConfiguredOutlierCount++;
+        }
     }
 
     public int getTotalCount()
@@ -101,9 +107,28 @@ public class OutlierCounts
         return _totalCount;
     }
 
-    public void setTotalCount(int totalCount)
+    public void incrementTotalCount()
     {
-        this._totalCount = totalCount;
+        _totalCount++;
+    }
+
+    public int getTotalConfiguredOutlierCount()
+    {
+        return _totalConfiguredOutlierCount;
+    }
+
+    public int getValueCutoff()
+    {
+        return _valueCutoff;
+    }
+
+    public void incrementValueCutoff(QCMetricConfiguration metric)
+    {
+        _valueCutoff++;
+        if (metric != null && metric.getStatus() == QCMetricStatus.ValueCutoff)
+        {
+            _totalConfiguredOutlierCount++;
+        }
     }
 
     @NotNull
@@ -119,9 +144,12 @@ public class OutlierCounts
         jsonObject.put("CUSUMvP", getCUSUMvP());
         jsonObject.put("mR", getmR());
         jsonObject.put("LeveyJennings", getLeveyJennings());
-        if (_metricId != null)
+        jsonObject.put("ValueCutoff", getValueCutoff());
+        jsonObject.put("TotalConfiguredOutlierCount", getTotalConfiguredOutlierCount());
+        if (_metric != null)
         {
-            jsonObject.put("MetricId", _metricId);
+            jsonObject.put("MetricId", _metric.getId());
+            jsonObject.put("MetricStatus", _metric.getStatus());
         }
 
         return jsonObject;

@@ -18,6 +18,8 @@ package org.labkey.targetedms.model;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.targetedms.model.OutlierCounts;
+import org.labkey.api.targetedms.model.QCMetricConfiguration;
+import org.labkey.api.targetedms.model.QCMetricStatus;
 import org.labkey.api.visualization.Stats;
 import org.labkey.targetedms.chart.LabelFactory;
 
@@ -30,7 +32,7 @@ public class RawMetricDataSet
 
     String seriesLabel;
     Double metricValue;
-    int metricId;
+    QCMetricConfiguration metric;
     int metricSeriesIndex;
 
     Long precursorChromInfoId;
@@ -211,12 +213,17 @@ public class RawMetricDataSet
 
     public int getMetricId()
     {
-        return metricId;
+        return metric.getId();
     }
 
-    public void setMetricId(int metricId)
+    public QCMetricConfiguration getMetric()
     {
-        this.metricId = metricId;
+        return metric;
+    }
+
+    public void setMetric(QCMetricConfiguration metric)
+    {
+        this.metric = metric;
     }
 
     public int getMetricSeriesIndex()
@@ -233,7 +240,7 @@ public class RawMetricDataSet
     {
         if (_guideSetKey == null)
         {
-            _guideSetKey = new GuideSetKey(getMetricId(), getMetricSeriesIndex(), _sampleFile.getGuideSetId(), getSeriesLabel());
+            _guideSetKey = new GuideSetKey(metric, getMetricSeriesIndex(), _sampleFile.getGuideSetId(), getSeriesLabel());
         }
         return _guideSetKey;
     }
@@ -334,6 +341,19 @@ public class RawMetricDataSet
         return metricValue > upperLimit || metricValue < lowerLimit || (Double.isNaN(stat.getStandardDeviation()) && metricValue != stat.getAverage());
     }
 
+    public boolean isValueCutoffOutlier(GuideSetStats stat)
+    {
+        if (stat == null || _sampleFile.isIgnoreInQC(stat.getKey().getMetricId()) || metricValue == null || metric.getStatus() != QCMetricStatus.ValueCutoff)
+        {
+            return false;
+        }
+
+        Double upperBound = metric.getUpperBound();
+        Double lowerBound = metric.getLowerBound();
+
+        return (upperBound != null && metricValue > upperBound) || (lowerBound != null && metricValue < lowerBound);
+    }
+
     public boolean isMovingRangeOutlier(GuideSetStats stat)
     {
         return  stat != null && !_sampleFile.isIgnoreInQC(getMetricId()) && mR != null && mR > Stats.MOVING_RANGE_UPPER_LIMIT_WEIGHT * stat.getMovingRangeAverage();
@@ -366,30 +386,34 @@ public class RawMetricDataSet
 
     public void increment(@NotNull OutlierCounts counts, @NotNull GuideSetStats stats)
     {
-        counts.setTotalCount(counts.getTotalCount() + 1);
+        counts.incrementTotalCount();
         if (isLeveyJenningsOutlier(stats))
         {
-            counts.setLeveyJennings(counts.getLeveyJennings() + 1);
+            counts.incrementLeveyJennings(stats.getKey().getMetric());
+        }
+        if (isValueCutoffOutlier(stats))
+        {
+            counts.incrementValueCutoff(stats.getKey().getMetric());
         }
         if (isMovingRangeOutlier(stats))
         {
-            counts.setmR(counts.getmR() + 1);
+            counts.incrementMR();
         }
         if (isCUSUMmPOutlier())
         {
-            counts.setCUSUMmP(counts.getCUSUMmP() + 1);
+            counts.incrementCUSUMmP();
         }
         if (isCUSUMmNOutlier())
         {
-            counts.setCUSUMmN(counts.getCUSUMmN() + 1);
+            counts.incrementCUSUMmN();
         }
         if (isCUSUMvPOutlier())
         {
-            counts.setCUSUMvP(counts.getCUSUMvP() + 1);
+            counts.incrementCUSUMvP();
         }
         if (isCUSUMvNOutlier())
         {
-            counts.setCUSUMvN(counts.getCUSUMvN() + 1);
+            counts.incrementCUSUMvN();
         }
     }
 
