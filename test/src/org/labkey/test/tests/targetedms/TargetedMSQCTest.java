@@ -59,6 +59,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.CUSUMm;
+import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.CUSUMv;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.LeveyJennings;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.MovingRange;
 
@@ -396,7 +397,10 @@ public class TargetedMSQCTest extends TargetedMSTest
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.filterQCPlotsToInitialData(PRECURSORS.length, true);
-        qcPlotsWebPart.checkAllPlotTypes(true);
+        qcPlotsWebPart.checkPlotType(LeveyJennings);
+        qcPlotsWebPart.checkPlotType(MovingRange);
+        qcPlotsWebPart.checkPlotType(CUSUMm);
+        qcPlotsWebPart.checkPlotType(CUSUMv);
 
         // if metric has negative values and we pick log y-axis scale, we should revert to linear scale and show message
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.MASSACCURACY);

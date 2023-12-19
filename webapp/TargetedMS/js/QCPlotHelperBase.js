@@ -181,6 +181,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
 
         var tempData; // temp variable to store data for setting the date
+        let foundTrue = false
+        let trainingSeqIdx = 1; // this index is used for displaying the average number of runs in tooltip (QCPlotHoverPanel.js L110)
         for (var i = this.pagingStartIndex; i < this.pagingEndIndex; i++) {
             var plotDataRow = plotDataRows[i];
             tempData = plotDataRow;
@@ -196,6 +198,20 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 plotData['ReplicateName'] = sampleFile['ReplicateName'];
                 plotData['InGuideSetTrainingRange'] = sampleFile['InGuideSetTrainingRange'];
 
+                var gs = this.guideSetDataMap[plotData['GuideSetId']];
+
+                if (Ext4.isDefined(gs) && gs.Series[fragment]) {
+                    if (plotData['InsideGuideSet']) {
+                        if (!foundTrue) {
+                            foundTrue = true;
+                            trainingSeqIdx = 1;
+                        }
+                    } else {
+                        foundTrue = false;
+                    }
+                    plotData['TrainingSeqIdx'] = trainingSeqIdx;
+                    trainingSeqIdx++
+                }
                 var data = this.processPlotDataRow(plotData, plotDataRow, fragment, metricProps);
                 this.fragmentPlotData[fragment].data.push(data);
                 this.fragmentPlotData[fragment].precursorScoped = metricProps.precursorScoped;

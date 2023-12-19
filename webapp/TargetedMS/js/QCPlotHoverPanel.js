@@ -104,7 +104,15 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
         }
 
         if (hideExclusionAndPointClickLinks) {
-            this.add(this.getPlotPointDetailField('Replicate', this.trailingRuns + " runs average"));
+            let numOfRunsAverage = 0;
+            // check if guide set is present
+           if (this.pointData['inGuideSetTrainingRange'] !== undefined) {
+               numOfRunsAverage = this.trailingRuns > this.pointData['TrainingSeqIdx'] ? this.pointData['TrainingSeqIdx'] : this.trailingRuns
+           }
+           else {
+               numOfRunsAverage = this.trailingRuns > this.pointData['seqValue'] + 1 ? this.pointData['seqValue'] + 1 : this.trailingRuns;
+           }
+            this.add(this.getPlotPointDetailField('Replicate', numOfRunsAverage + " runs average"));
             this.add(this.getPlotPointDetailField('Acquired', this.trailingStartDate + " - " + this.trailingEndDate));
         }
         else {

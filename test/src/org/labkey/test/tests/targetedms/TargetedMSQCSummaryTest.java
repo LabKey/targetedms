@@ -17,6 +17,7 @@ package org.labkey.test.tests.targetedms;
 
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -257,6 +258,15 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         validateAutoQCStatus(MAIN_SUMMARY, Arrays.asList("qc-correct", "fa-check-circle"), "AutoQC pinged recently on " + mainFolderLastPingDate);
         validateAutoQCStatus(SUB_FOLDER02, Arrays.asList("qc-correct", "fa-check-circle"), "AutoQC pinged recently on " + subfolder2LastPingDate);
 
+        log("Ping to simulate AutoQC checking in with the AutoQC Loader version.");
+        String autoQCLoaderVersion = "AutoQC Loader 22.1.0.122";
+        mainFolderLastPingDate = doAutoQCPing(null, autoQCLoaderVersion);
+        log("Need to refresh the page to see the updated status with the software version.");
+        refresh();
+        waitForElements(Locator.tagWithClass("div", "sample-file-item"), 6);
+        validateAutoQCStatus(MAIN_SUMMARY, Arrays.asList("qc-correct", "fa-check-circle"), "AutoQC pinged recently on " + mainFolderLastPingDate + "Version: " + autoQCLoaderVersion);
+
+
 
         log("Now wait for ping limit to occur.");
         sleep(QCPING_WAIT);
@@ -381,8 +391,17 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
 
     private String doAutoQCPing(@Nullable String subFolder)
     {
+        return doAutoQCPing(subFolder, new AutoQCPing());
+    }
+
+    private String doAutoQCPing(@Nullable String subFolder, String softwareVersion)
+    {
+        return doAutoQCPing(subFolder, new AutoQCPing(softwareVersion));
+    }
+
+    private String doAutoQCPing(@Nullable String subFolder, AutoQCPing aqcp)
+    {
         Connection cn = createDefaultConnection();
-        AutoQCPing aqcp = new AutoQCPing();
         CommandResponse cr;
         String folderPath = getProjectName();
 
@@ -394,7 +413,7 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         try
         {
             cr = aqcp.execute(cn, folderPath);
-            String lastPingedDate = cr.getProperty("Modified");
+            String lastPingedDate = cr.getProperty("modified");
             Date date = new SimpleDateFormat(BUBBLE_TIME_FORMAT).parse(lastPingedDate);
             return FastDateFormat.getInstance(BUBBLE_TIME_FORMAT).format(date);
         }
@@ -406,9 +425,29 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
 
     public class AutoQCPing extends PostCommand<CommandResponse>
     {
+        private String _softwareVersion;
+
         public AutoQCPing()
         {
+            this(null);
+        }
+
+        public AutoQCPing(String softwareVersion)
+        {
             super("targetedms", "autoqcping");
+            _softwareVersion = softwareVersion;
+        }
+
+        @Override
+        public JSONObject getJsonObject()
+        {
+            if (_softwareVersion != null)
+            {
+                JSONObject json = new JSONObject();
+                json.put("softwareVersion", _softwareVersion);
+                return json;
+            }
+            return super.getJsonObject();
         }
     }
 }
