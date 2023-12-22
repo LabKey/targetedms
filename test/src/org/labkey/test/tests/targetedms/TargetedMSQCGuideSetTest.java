@@ -48,8 +48,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -227,7 +225,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         assertEquals("Wrong number of Pareto plots", 20, paretoPlotsWebPart.getNumOfParetoPlots());
         verifyDownloadableParetoPlots(paretoPlotsWebPart.getNumOfParetoPlots());
 
-        ParetoPlotsWebPart.ParetoPlotType plotType = ParetoPlotsWebPart.ParetoPlotType.LeveyJennings;
+        ParetoPlotsWebPart.ParetoPlotType plotType = ParetoPlotsWebPart.ParetoPlotType.MetricValue;
         int guideSetId = 4;
         log("Verifying Pareto Plots for " + plotType.getLabel());
         assertEquals("Wrong number of non-conformers for PA", 69, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 0));
@@ -352,7 +350,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         ParetoPlotPage paretoPage = new ParetoPlotPage(getDriver());
         ParetoPlotsWebPart paretoPlotsWebPart = paretoPage.getParetoPlotsWebPart();
 
-        verifyTicksOnPlots(paretoPlotsWebPart, 1, ParetoPlotsWebPart.ParetoPlotType.LeveyJennings,
+        verifyTicksOnPlots(paretoPlotsWebPart, 1, ParetoPlotsWebPart.ParetoPlotType.MetricValue,
                         ParetoPlotsWebPart.MetricTypeTicks.FWB,
                         ParetoPlotsWebPart.MetricTypeTicks.FWHM,
                         ParetoPlotsWebPart.MetricTypeTicks.RETENTION,
@@ -611,7 +609,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
 
     private void verifyNavigationToPanoramaDashboard(int guideSetNum, int barPlotNum, QCPlotsWebPart.MetricType metricType, Boolean checkEndDate)
     {
-        verifyNavigationToPanoramaDashboard(guideSetNum, QCPlotsWebPart.QCPlotType.LeveyJennings, barPlotNum, metricType, checkEndDate);
+        verifyNavigationToPanoramaDashboard(guideSetNum, QCPlotsWebPart.QCPlotType.MetricValue, barPlotNum, metricType, checkEndDate);
     }
 
     private void verifyNavigationToPanoramaDashboard(int guideSetNum, QCPlotsWebPart.QCPlotType plotType, int barPlotNum, QCPlotsWebPart.MetricType metricType, Boolean checkEndDate)

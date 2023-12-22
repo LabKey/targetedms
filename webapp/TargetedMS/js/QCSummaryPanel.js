@@ -142,7 +142,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                     '<div class="qc-summary-text">No data found.</div><div>&nbsp;</div>' + this.getAutoQCSetupInfo(),
                 '<tpl elseif="docCount &gt; 0 && LABKEY.user.isAdmin">',
                     '<div class="qc-summary-text">',
-                        '<a href="{path:this.getSampleFileLink}">{fileCount} sample file{fileCount:this.pluralize}</a> ' +
+                        '<a href="{path:this.getSampleFileLink}">{fileCount} replicate{fileCount:this.pluralize}</a> ' +
                             'tracking <a href="{path:this.getPrecursorConfigLink}">{precursorCount} precursor{precursorCount:this.pluralize}</a> ' +
                             'with <a href="{path:this.getMetricConfigLink}">{metricCount} metric{metricCount:this.pluralize}</a> {instrument}',
                     '</div>',
@@ -304,7 +304,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                 // create a new div id for each sampleFile to use for the hover details callout
                 sampleFile.calloutId = Ext4.id();
 
-                var totalOutliers = sampleFile.TotalConfiguredOutlierCount;
+                var totalOutliers = sampleFile.Value;
 
                 var iconCls;
                 if (sampleFile.IgnoreForAllMetric)
@@ -326,7 +326,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
             });
             html += '</table>';
             if (container.fileCount > sampleFiles.length) {
-                html += '<div class="qc-summary-text"><a href="' + LABKEY.ActionURL.buildURL('targetedms', 'qcSummaryHistory.view', container.path) + '">View all ' + container.fileCount + ' samples and utilization calendar <span class="fa fa-calendar"></span></a></div>';
+                html += '<div class="qc-summary-text"><a href="' + LABKEY.ActionURL.buildURL('targetedms', 'qcSummaryHistory.view', container.path) + '">View all ' + container.fileCount + ' replicates and utilization calendar <span class="fa fa-calendar"></span></a></div>';
             }
             var sampleFilesDiv = Ext4.get('qc-summary-samplefiles-' + container.id);
             sampleFilesDiv.update(html);
@@ -367,8 +367,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                                 '<td class="labkey-column-header" colspan="8" style="text-align: center">Outliers</td>' +
                             '</tr>' +
                             '<tr>' +
-                                '<td class="labkey-column-header outlier-column-header" rowspan="2" style="vertical-align: bottom">Value Range</td>' +
-                                '<td class="labkey-column-header outlier-column-header" rowspan="2" style="vertical-align: bottom">Levey-Jennings</td>' +
+                                '<td class="labkey-column-header outlier-column-header" rowspan="2" style="vertical-align: bottom">Value</td>' +
                                 '<td class="labkey-column-header outlier-column-header" rowspan="2" style="vertical-align: bottom">&nbsp;&nbsp;&nbsp;&nbsp;</td>' +
                                 '<td class="labkey-column-header outlier-column-header" rowspan="2" style="vertical-align: bottom">Moving Range</td>' +
                                 '<td class="labkey-column-header" colspan="4" style="text-align: center">CUSUM</td>' +
@@ -391,8 +390,9 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                     content += '<td style="text-align: center" colspan="7"><em>not included in QC</em></td>';
                 }
                 else {
-                    content += '<td style="text-align: right">' + (item.MetricStatus === 'ValueCutoff' ? this.getSampleDetailOutlierDisplayValue(item, 'ValueCutoff') : '') + '</td>';
-                    content += '<td style="text-align: right">' + this.getSampleDetailOutlierDisplayValue(item, 'LeveyJennings') + '</td>';
+                    content += '<td style="text-align: right">' +
+                            (item.MetricStatus === 'PlotOnly' ? 'N/A' : this.getSampleDetailOutlierDisplayValue(item, 'Value')) +
+                            '</td>';
                     content += '<td></td>';
                     content += '<td style="text-align: right">' + this.getSampleDetailOutlierDisplayValue(item, 'mR') + '</td>';
                     content += '<td style="text-align: right">' + this.getSampleDetailOutlierDisplayValue(item, 'CUSUMmN') + '</td>';
@@ -405,8 +405,8 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
             }, this);
 
             content += '<tr class="' + (rowCount % 2 === 0 ? 'labkey-alternate-row' : 'labkey-row') + '">';
-            content += '<td class="outlier-metric-label"><b>Total</b></td>';
-            content += '<td style="text-align: right" colspan="2"><strong>' + this.getSampleDetailOutlierDisplayValue(sampleFile, 'TotalConfiguredOutlierCount') + '</strong></td>';
+            content += '<td class="outlier-metric-label">Total</td>';
+            content += '<td style="text-align: right">' + this.getSampleDetailOutlierDisplayValue(sampleFile, 'Value') + '</td>';
             content += '</tr>';
 
             content += '</tbody>';
@@ -454,10 +454,6 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
 
     getSampleDetailOutlierDisplayValue : function(item, variable) {
         var value = item[variable];
-        if (item.MetricStatus === variable)
-        {
-            return '<strong>' + (value || 0) + '</strong>';
-        }
         return value || 0
     },
     

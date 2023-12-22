@@ -329,22 +329,13 @@ public class RawMetricDataSet
         this.cusumVN = d;
     }
 
-    public boolean isLeveyJenningsOutlier(GuideSetStats stat)
+    public boolean isValueOutlier(GuideSetStats stat)
     {
-        if (stat == null || _sampleFile.isIgnoreInQC(stat.getKey().getMetricId()) || metricValue == null)
-        {
-            return false;
-        }
-
-        double upperLimit = stat.getAverage() + stat.getStandardDeviation() * 3;
-        double lowerLimit = stat.getAverage() - stat.getStandardDeviation() * 3;
-
-        return metricValue > upperLimit || metricValue < lowerLimit || (Double.isNaN(stat.getStandardDeviation()) && metricValue != stat.getAverage());
-    }
-
-    public boolean isValueCutoffOutlier(GuideSetStats stat)
-    {
-        if (stat == null || _sampleFile.isIgnoreInQC(stat.getKey().getMetricId()) || metricValue == null || metric.getStatus() != QCMetricStatus.ValueCutoff)
+        if (stat == null ||
+                _sampleFile.isIgnoreInQC(stat.getKey().getMetricId()) ||
+                metricValue == null ||
+                metric.getStatus() == QCMetricStatus.PlotOnly ||
+                metric.getStatus() == QCMetricStatus.Disabled)
         {
             return false;
         }
@@ -352,7 +343,17 @@ public class RawMetricDataSet
         Double upperBound = metric.getUpperBound();
         Double lowerBound = metric.getLowerBound();
 
-        return (upperBound != null && metricValue > upperBound) || (lowerBound != null && metricValue < lowerBound);
+        if (metric.getStatus() == QCMetricStatus.ValueCutoff)
+        {
+            return (upperBound != null && metricValue > upperBound) || (lowerBound != null && metricValue < lowerBound);
+        }
+        else
+        {
+            double upperLimit = stat.getAverage() + stat.getStandardDeviation() * (upperBound == null ? 3 : upperBound.doubleValue());
+            double lowerLimit = stat.getAverage() + stat.getStandardDeviation() * (lowerBound == null ? -3 : lowerBound.doubleValue());
+
+            return metricValue > upperLimit || metricValue < lowerLimit || (Double.isNaN(stat.getStandardDeviation()) && metricValue != stat.getAverage());
+        }
     }
 
     public boolean isMovingRangeOutlier(GuideSetStats stat)
@@ -388,13 +389,9 @@ public class RawMetricDataSet
     public void increment(@NotNull OutlierCounts counts, @NotNull GuideSetStats stats)
     {
         counts.incrementTotalCount();
-        if (isLeveyJenningsOutlier(stats))
+        if (isValueOutlier(stats))
         {
-            counts.incrementLeveyJennings(stats.getKey().getMetric());
-        }
-        if (isValueCutoffOutlier(stats))
-        {
-            counts.incrementValueCutoff(stats.getKey().getMetric());
+            counts.incrementValue();
         }
         if (isMovingRangeOutlier(stats))
         {

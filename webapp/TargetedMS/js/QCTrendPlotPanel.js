@@ -60,7 +60,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     // properties specific to this TargetedMS QC plot implementation
     yAxisScale: 'linear',
     metric: null,
-    plotTypes: ['Levey-Jennings'],
+    plotTypes: ['Metric Value'],
     dateRangeOffset: 0,
     minAcquiredTime: null,
     maxAcquiredTime: null,
@@ -114,7 +114,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     else if (value != undefined && value.length > 0 && !isNaN(Number(value))) {
                         value = +value;
                     }
-                    else if (key == 'plotTypes') { // convert string to array
+                    else if (key === 'plotTypes') { // convert string to array
+                        // We've renamed this plot type in the UI and need to map previously saved values
+                        value = value.replace('Levey-Jennings', 'Metric Value');
                         value = value.split(',');
                     }
                     if(key === 'selectedAnnotations') {

@@ -42,7 +42,7 @@
                 }
                 else {
                     qcMetricsTable += '<td>' + '<select name=\"' + LABKEY.Utils.encodeHtml(row.name) + '\" id=\"' + "select-" + row.id + '\">' +
-                            '<option value="LeveyJennings" ' + (row.EffectiveStatus === 'LeveyJennings' ? 'selected' : '') + '>Levey-Jennings (+/- 3 standard deviations)</option>' +
+                            '<option value="LeveyJennings" ' + (row.EffectiveStatus === 'LeveyJennings' ? 'selected' : '') + '>Levey-Jennings (+/- standard deviations)</option>' +
                             '<option value="ValueCutoff" ' + (row.EffectiveStatus === 'ValueCutoff' ? 'selected' : '') + '>Fixed value cutoff</option>' +
                             '<option value="PlotOnly" ' + (row.EffectiveStatus === 'PlotOnly' ? 'selected' : '') + '>No outliers</option>' +
                             '<option value="Disabled" ' + (row.EffectiveStatus === 'Disabled' ? 'selected' : '') + '>Disabled</option>' +
@@ -81,9 +81,10 @@
 
         function refreshBoundsInputs(qcMetrics) {
             jQuery.each(qcMetrics, function (index, row) {
-                let valueCutoff = jQuery('#select-' + row.id).val() === 'ValueCutoff';
-                jQuery('#upper-' + row.id).css('visibility', valueCutoff ? 'visible' : 'hidden');
-                jQuery('#lower-' + row.id).css('visibility', valueCutoff ? 'visible' : 'hidden');
+                let type = jQuery('#select-' + row.id).val();
+                let showBounds = type === LABKEY.targetedms.MetricStatus.ValueCutoff || type === LABKEY.targetedms.MetricStatus.LeveyJennings;
+                jQuery('#upper-' + row.id).css('visibility', showBounds ? 'visible' : 'hidden');
+                jQuery('#lower-' + row.id).css('visibility', showBounds ? 'visible' : 'hidden');
             });
         }
 
@@ -219,10 +220,8 @@
 
             createRecord: function(metricRow, newStatus) {
                 const result = {metric: metricRow.metric, Status: newStatus};
-                if (newStatus === 'ValueCutoff') {
-                    result.upperBound = jQuery("#upper-" + metricRow.metric)[0].value;
-                    result.lowerBound = jQuery("#lower-" + metricRow.metric)[0].value;
-                }
+                result.upperBound = jQuery("#upper-" + metricRow.metric)[0].value;
+                result.lowerBound = jQuery("#lower-" + metricRow.metric)[0].value;
                 return result;
             },
 
@@ -237,22 +236,10 @@
                     if (!selectInputs.length > 0) {
                         return;
                     }
-                    const stringValue = selectInputs[0].value;
-                    let newValue;
-                    switch (stringValue) {
-                        // Levey-Jennings is the default
-                        case 'LeveyJennings' : newValue = null; break;
-                        default : newValue = stringValue; break;
-                    }
+                    const newValue = selectInputs[0].value;
                     // See if there's an existing row
                     if (metricRow.Inserted) {
-
-                        if (newValue === null) {
-                            recordsToDelete.push({metric: metricRow.metric});
-                        }
-                        else if (newValue !== metricRow.EffectiveStatus) {
-                            recordsToUpdate.push(this.createRecord(metricRow, newValue));
-                        }
+                        recordsToUpdate.push(this.createRecord(metricRow, newValue));
                     }
                     else if (newValue !== null) {
                         recordsToInsert.push(this.createRecord(metricRow, newValue));

@@ -7,8 +7,9 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
     extend: 'LABKEY.targetedms.QCPlotHelperBase',
     statics: {
         tooltips: {
-            'Levey-Jennings' : 'A Levey-Jennings plot plots quality control data to give a visual indication of whether a laboratory test is working well.' +
-            'The distance from the mean (expected value) is measured in standard deviations (SD).'
+            'Metric Value' : 'A metric value plot shows the raw value of the metric. It may be compared against fixed ' +
+                    'upper and lower bounds to identify outliers, or use a Levey-Jennings-style comparison based on the ' +
+                    'number of standard deviations (SD) it differs from the metric\'s mean value.'
         }
     },
 
@@ -113,7 +114,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         }
     },
 
-    getLJPlotTypeProperties: function(precursorInfo) {
+    getLJPlotTypeProperties: function(precursorInfo, metricProps) {
         var plotProperties = {};
         // some properties are specific to whether or not we are showing multiple y-axis series
         if (this.isMultiSeries()) {
@@ -126,6 +127,11 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
             plotProperties['stdDev'] = 'stdDev';
             plotProperties['yAxisDomain'] = [precursorInfo.min, precursorInfo.max];
         }
+
+        plotProperties['lowerBound'] = metricProps.lowerBound;
+        plotProperties['upperBound'] = metricProps.upperBound;
+        plotProperties['boundType'] = metricProps.metricStatus === LABKEY.targetedms.MetricStatus.ValueCutoff ? 'absolute' : 'stddev'
+
         return plotProperties;
     },
 
@@ -156,7 +162,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
             data['value'] = row['Value'];
         }
 
-        data.LJShape = (row.IgnoreInQC ? 'Exclude' : 'Include') + (row.LJOutlier ? '-Outlier' : '');
+        data.LJShape = (row.IgnoreInQC ? 'Exclude' : 'Include') + (row.ValueOutlier ? '-Outlier' : '');
 
         return data;
 
@@ -187,39 +193,46 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         if (!this.getMetricPropsById(this.metric).series2Label) {
             let metricInfo = this.getMetricPropsById(this.metric);
 
-            if (metricInfo.metricStatus === 'ValueCutoff') {
-                if (metricInfo.upperBound !== undefined && metricInfo.upperBound !== null) {
+            if (metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.ValueCutoff) {
+                if (Number.isFinite(metricInfo.upperBound)) {
                     ljLegend.push({
                         text: 'Upper: ' + metricInfo.upperBound,
                         color: 'red',
-                        shape: LABKEY.vis.TrendingLineShape.meanLJ
+                        shape: LABKEY.vis.TrendingLineShape.stdDevLJ
                     });
                 }
-                if (metricInfo.lowerBound !== undefined && metricInfo.lowerBound !== null) {
+                if (Number.isFinite(metricInfo.lowerBound)) {
                     ljLegend.push({
                         text: 'Lower: ' + metricInfo.lowerBound,
                         color: 'red',
-                        shape: LABKEY.vis.TrendingLineShape.meanLJ
+                        shape: LABKEY.vis.TrendingLineShape.stdDevLJ
                     });
                 }
             }
 
-            if (!this.singlePlot || this.yAxisScale === 'standardDeviation') {
-                ljLegend.push({
-                    text: '+/-3 x Std Dev',
-                    color: 'red',
-                    shape: LABKEY.vis.TrendingLineShape.stdDevLJ
-                });
-                ljLegend.push({
-                    text: '+/-2 x Std Dev',
-                    color: 'blue',
-                    shape: LABKEY.vis.TrendingLineShape.stdDevLJ
-                });
-                ljLegend.push({
-                    text: '+/-1 x Std Dev',
-                    color: 'green',
-                    shape: LABKEY.vis.TrendingLineShape.stdDevLJ
-                });
+            if ( (metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.LeveyJennings || metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.PlotOnly) &&
+                    (!this.singlePlot || this.yAxisScale === 'standardDeviation')) {
+
+                let upper = Number.isFinite(metricInfo.upperBound) ? metricInfo.upperBound : 3;
+                let lower = Number.isFinite(metricInfo.lowerBound) ? metricInfo.lowerBound : -3;
+
+                if (lower === upper * -1) {
+                    ljLegend.push({
+                        text: '+/- ' + upper + ' Std Dev',
+                        color: 'red',
+                        shape: LABKEY.vis.TrendingLineShape.stdDevLJ
+                    });
+                }
+                else {
+                    ljLegend.push({
+                        text: (upper > 0 ? '+' : '') + upper + '/' + (lower > 0 ? '+' : '') + lower + ' Std Dev',
+                        color: 'red',
+                        shape: LABKEY.vis.TrendingLineShape.stdDevLJ
+                    });
+                }
+            }
+
+            if (!this.singlePlot) {
                 ljLegend.push({
                     text: 'Mean',
                     color: 'darkgrey',
@@ -231,7 +244,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         if (ljLegend.length > 0)
         {
             ljLegend.splice(0, 0, {
-                text: 'Cutoffs',
+                text: '',
                 separator: true
             });
         }

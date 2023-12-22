@@ -84,27 +84,21 @@ public class QCEnabledMetricsTable extends SimpleUserSchema.SimpleTable<Targeted
 
             private static void validateBounds(Map<String, Object> row) throws ValidationException
             {
-                if (!QCMetricStatus.ValueCutoff.toString().equalsIgnoreCase(Objects.toString(row.get("Status"))))
+                Double upperBound = ConvertHelper.convert(row.get("upperBound"), Double.class);
+                Double lowerBound = ConvertHelper.convert(row.get("lowerBound"), Double.class);
+
+                if (QCMetricStatus.LeveyJennings.toString().equalsIgnoreCase(Objects.toString(row.get("Status"))))
                 {
-                    row.put("upperBound", null);
-                    row.put("lowerBound", null);
-                }
-                else
-                {
-                    Object upperObject = row.get("upperBound");
-                    Object lowerObject = row.get("lowerBound");
-                    if (upperObject == null && lowerObject == null)
+                    if (upperBound == null ^ lowerBound == null)
                     {
-                        throw new ValidationException("For value cutoffs, please provide a value for the upper and/or lower bound");
+                        throw new ValidationException("For Levey-Jennings configuration, if you provide an upper bound you must also provide a lower bound, and vice versa");
                     }
-                    if (upperObject != null && lowerObject != null)
+                }
+                if (upperBound != null && lowerBound != null)
+                {
+                    if (upperBound < lowerBound)
                     {
-                        double upperBound = ConvertHelper.convert(row.get("upperBound"), Double.class);
-                        double lowerBound = ConvertHelper.convert(row.get("lowerBound"), Double.class);
-                        if (upperBound < lowerBound)
-                        {
-                            throw new ValidationException("Upper bound must be greater than lower bound");
-                        }
+                        throw new ValidationException("Upper bound must be greater than lower bound");
                     }
                 }
             }

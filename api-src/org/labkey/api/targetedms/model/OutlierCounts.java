@@ -11,12 +11,11 @@ public class OutlierCounts
     private int _CUSUMmN;
     private int _CUSUMvN;
     private int _mR;
-    private int _leveyJennings;
-    private int _valueCutoff;
+    /** Either Levey-Jennings or value cutoff, depending on config */
+    private int _value;
 
     /** Total number of data points under consideration */
     private int _totalCount;
-    private int _totalConfiguredOutlierCount;
 
     public OutlierCounts()
     {
@@ -88,18 +87,14 @@ public class OutlierCounts
         _mR++;
     }
 
-    public int getLeveyJennings()
+    public int getValue()
     {
-        return _leveyJennings;
+        return _value;
     }
 
-    public void incrementLeveyJennings(QCMetricConfiguration metric)
+    public void incrementValue()
     {
-        _leveyJennings++;
-        if (metric != null && metric.getStatus() == QCMetricStatus.LeveyJennings)
-        {
-            _totalConfiguredOutlierCount++;
-        }
+        _value++;
     }
 
     public int getTotalCount()
@@ -110,25 +105,6 @@ public class OutlierCounts
     public void incrementTotalCount()
     {
         _totalCount++;
-    }
-
-    public int getTotalConfiguredOutlierCount()
-    {
-        return _totalConfiguredOutlierCount;
-    }
-
-    public int getValueCutoff()
-    {
-        return _valueCutoff;
-    }
-
-    public void incrementValueCutoff(QCMetricConfiguration metric)
-    {
-        _valueCutoff++;
-        if (metric != null && metric.getStatus() == QCMetricStatus.ValueCutoff)
-        {
-            _totalConfiguredOutlierCount++;
-        }
     }
 
     @NotNull
@@ -143,9 +119,7 @@ public class OutlierCounts
         jsonObject.put("CUSUMvN", getCUSUMvN());
         jsonObject.put("CUSUMvP", getCUSUMvP());
         jsonObject.put("mR", getmR());
-        jsonObject.put("LeveyJennings", getLeveyJennings());
-        jsonObject.put("ValueCutoff", getValueCutoff());
-        jsonObject.put("TotalConfiguredOutlierCount", getTotalConfiguredOutlierCount());
+        jsonObject.put("Value", getValue());
         if (_metric != null)
         {
             jsonObject.put("MetricId", _metric.getId());

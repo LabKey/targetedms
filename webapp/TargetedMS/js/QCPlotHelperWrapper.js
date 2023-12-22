@@ -29,7 +29,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
                 return 'Trailing CV';
             }
             else
-                return 'Levey-Jennings';
+                return 'Metric Value';
         }
     },
 
@@ -102,7 +102,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
 
                 var plotIndex = 0;
                 // add a new panel for each plot so we can add the title to the frame
-                if (this.showLJPlot()) {
+                if (this.showMetricValuePlot()) {
                     this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex++], i, precursorInfo, metricProps, LABKEY.vis.TrendingLinePlotType.LeveyJennings, undefined, me);
                 }
                 if (this.showMovingRangePlot()) {
@@ -195,7 +195,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         if (legendMargin > 300)
             legendMargin = 300;
 
-        if (this.showLJPlot()) {
+        if (this.showMetricValuePlot()) {
             this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex++], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.LeveyJennings);
         }
         if (this.showMovingRangePlot()) {
@@ -220,7 +220,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
 
     setSeriesMinMax: function(dataObject, row) {
         // track the min and max data so we can get the range for including the QC annotations
-        if (this.showLJPlot)
+        if (this.showMetricValuePlot)
             this.setLJSeriesMinMax(dataObject, row);
         if (this.showMovingRangePlot())
             this.setMovingRangeSeriesMinMax(dataObject, row);
@@ -234,7 +234,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
             this.setTrailingCVMinMax(dataObject, row);
     },
 
-    getPlotTypeProperties: function(precursorInfo, plotType, isMean) {
+    getPlotTypeProperties: function(precursorInfo, plotType, isMean, metricProps) {
         if (plotType === LABKEY.vis.TrendingLinePlotType.MovingRange)
             return this.getMovingRangePlotTypeProperties(precursorInfo);
         else if (plotType === LABKEY.vis.TrendingLinePlotType.CUSUM)
@@ -244,7 +244,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         else if (plotType === LABKEY.vis.TrendingLinePlotType.TrailingCV)
             return this.getTrailingCVPlotTypeProperties(precursorInfo);
         else
-            return this.getLJPlotTypeProperties(precursorInfo);
+            return this.getLJPlotTypeProperties(precursorInfo, metricProps);
     },
 
     getInitFragmentPlotData: function(fragment, dataType, mz, color)
@@ -264,7 +264,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
 
     getInitPlotMinMaxData: function() {
         var plotData = {};
-        if (this.showLJPlot()) {
+        if (this.showMetricValuePlot()) {
             Ext4.apply(plotData, this.getLJInitFragmentPlotData());
         }
         if (this.showMovingRangePlot()) {
@@ -327,7 +327,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
             }
         }
 
-        if (this.showLJPlot()) {
+        if (this.showMetricValuePlot()) {
             Ext4.apply(data, this.processLJPlotDataRow(row, fragment, seriesType, metricProps));
         }
         if (this.showMovingRangePlot()) {
@@ -364,7 +364,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
 
     processCombinedPlotMinMax: function(combinePlotData, precursorInfo)
     {
-        if (this.showLJPlot())
+        if (this.showMetricValuePlot())
         {
             this.processLJCombinedMinMax(combinePlotData, precursorInfo);
         }

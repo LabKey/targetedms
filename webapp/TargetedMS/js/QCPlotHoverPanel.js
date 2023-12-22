@@ -299,7 +299,7 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
             href: this.metricProps.precursorScoped ? url + '#ChromInfo' + this.pointData['PrecursorChromInfoId'] : this.viewDocumentURL
         }) + ' ' +
             LABKEY.Utils.textLink({
-                text: 'View Sample File',
+                text: 'View Replicate',
                 href: LABKEY.ActionURL.buildURL('targetedms', 'showSampleFile', LABKEY.ActionURL.getContainer(), {id: this.pointData['SampleFileId']})
             });
     },

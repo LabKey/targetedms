@@ -113,9 +113,9 @@ public class QCPlotFragment
         {
             JSONObject dataJsonObject = new JSONObject();
             dataJsonObject.put("Value", plotData.getMetricValue());
-            if (plotData.isLeveyJenningsOutlier(targetedStats.get(plotData.getGuideSetKey())))
+            if (plotData.isValueOutlier(targetedStats.get(plotData.getGuideSetKey())))
             {
-                dataJsonObject.put("LJOutlier", true);
+                dataJsonObject.put("ValueOutlier", true);
             }
             dataJsonObject.put("SampleFileId", plotData.getSampleFile().getId());
             dataJsonObject.put("PrecursorChromInfoId", plotData.getPrecursorChromInfoId());

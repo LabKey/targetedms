@@ -60,7 +60,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.CUSUMm;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.CUSUMv;
-import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.LeveyJennings;
+import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.MetricValue;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.MovingRange;
 
 @Category({})
@@ -431,7 +431,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
 
         log("Verify Plot Types and Legends");
-        qcPlotsWebPart.setQCPlotTypes(LeveyJennings);
+        qcPlotsWebPart.setQCPlotTypes(MetricValue);
         qcPlotsWebPart.waitForPlots(PRECURSORS.length);
 
         qcPlotsWebPart.checkPlotType(MovingRange);

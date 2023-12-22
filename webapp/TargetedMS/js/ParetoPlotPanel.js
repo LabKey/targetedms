@@ -47,14 +47,14 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
                 CUSUMm: {count: 0, data: []},
                 CUSUMv: {count: 0, data: []},
                 mR: {count: 0, data: []},
-                LeveyJennings: {count: 0, data: []}
+                Value: {count: 0, data: []}
             };
 
             Ext4.iterate(guideSet.MetricCounts, function(metricName, data) {
                 this.addOutlierToCounts(guideSet, data, metricName,'CUSUMm', 'CUSUMm', true);
                 this.addOutlierToCounts(guideSet, data, metricName, 'CUSUMv', 'CUSUMv', true);
                 this.addOutlierToCounts(guideSet, data, metricName, 'mR', 'Moving Range', true);
-                this.addOutlierToCounts(guideSet, data, metricName, 'LeveyJennings', 'Levey-Jennings', true);
+                this.addOutlierToCounts(guideSet, data, metricName, 'Value', 'Levey-Jennings', true);
             }, this);
 
             Ext4.iterate(guideSet.stats, function(outlierType, data) {
@@ -93,11 +93,11 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
         var guideSetCount = 1;
         Ext4.each(guideSets, function(guideSetData) {
             var id = "paretoPlot-GuideSet-"+guideSetCount;
+            const dateFormat = LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i';
+            var title = "Training Start: " + Ext4.util.Format.date(new Date(guideSetData.TrainingStart), dateFormat)
+                    + (guideSetData.ReferenceEnd ? " - Reference End: " + Ext4.util.Format.date(new Date(guideSetData.ReferenceEnd), dateFormat) : " - Training End: " + Ext4.util.Format.date(new Date(guideSetData.TrainingEnd), dateFormat));
 
-            var title = "Training Start: " + guideSetData.TrainingStart
-                    + (guideSetData.ReferenceEnd ? " - Reference End: " + guideSetData.ReferenceEnd : " - Training End: " + guideSetData.TrainingEnd);
-
-            var plotIdSuffix = '', plotType = "Levey-Jennings", plotWp = 'pareto-plot-wp', plotData = guideSetData.stats.LeveyJennings.data, plotMaxY = guideSetData.stats.LeveyJennings.maxOutliers;
+            var plotIdSuffix = '', plotType = "Metric Value", plotWp = 'pareto-plot-wp', plotData = guideSetData.stats.Value.data, plotMaxY = guideSetData.stats.Value.maxOutliers;
             var webpartTitleBase = "Guide Set " + guideSetCount + ' ';
             this.addEachParetoPlot(id, webpartTitleBase, plotType, plotWp, title, "ParetoPlot-Guide Set "+guideSetCount + plotIdSuffix, plotData, plotMaxY);
 

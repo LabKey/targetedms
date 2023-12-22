@@ -67,7 +67,7 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
 
         trailingLast = "48";
         qcPlotsWebPart.setTrailingLast(trailingLast);
-        qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.LeveyJennings, QCPlotsWebPart.QCPlotType.TrailingMean);
+        qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.MetricValue, QCPlotsWebPart.QCPlotType.TrailingMean);
         longWait().until(ExpectedConditions.textToBePresentInElement(Locators.labkeyError.findWhenNeeded(getDriver()),
                 "TrailingMean - The number you entered is larger than the number of available runs. Only 47 runs are used for calculation"));
         checker().verifyEquals("Incorrect plot count", REPLICATE_COUNT , qcPlotsWebPart.getPlots().size());
@@ -103,7 +103,7 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
                 "2013-08-09 11:39 - 2013-08-12 04:54", toolTipText);
 
         log("Selecting multiple plot types with trailing mean");
-        qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.LeveyJennings, QCPlotsWebPart.QCPlotType.MovingRange, QCPlotsWebPart.QCPlotType.TrailingMean);
+        qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.MetricValue, QCPlotsWebPart.QCPlotType.MovingRange, QCPlotsWebPart.QCPlotType.TrailingMean);
         Assert.assertEquals("Incorrect number of plots displayed when multiple plot type are selected", 21, qcPlotsWebPart.getTotalPlotCount());
 
         log("Verifying values with guide set");
@@ -144,7 +144,7 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
 
         trailingLast = "48";
         qcPlotsWebPart.setTrailingLast(trailingLast);
-        qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.LeveyJennings, QCPlotsWebPart.QCPlotType.TrailingCV);
+        qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.MetricValue, QCPlotsWebPart.QCPlotType.TrailingCV);
         longWait().until(ExpectedConditions.textToBePresentInElement(Locators.labkeyError.findWhenNeeded(getDriver()),
                 "TrailingCV - The number you entered is larger than the number of available runs. Only 47 runs are used for calculation"));
         checker().verifyEquals("Incorrect plot count", REPLICATE_COUNT , qcPlotsWebPart.getPlots().size());

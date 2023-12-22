@@ -36,6 +36,7 @@
         dependencies.add("targetedms/css/qcTrendPlotReport.css");
         dependencies.add("targetedms/js/QCPlotHelperBase.js");
         dependencies.add("targetedms/js/QCPlotLegendHelper.js");
+        dependencies.add("targetedms/js/misc.js");
         dependencies.add("targetedms/js/LeveyJenningsPlotHelper.js");
         dependencies.add("targetedms/js/TrailingMeanPlotHelper.js");
         dependencies.add("targetedms/js/TrailingCVPlotHelper.js");
@@ -122,8 +123,8 @@
         }
 
         function  getPlotTypeHelpTooltip(plotTypeName) {
-            if (plotTypeName === 'Levey-Jennings')
-                return LABKEY.targetedms.LeveyJenningsPlotHelper.tooltips['Levey-Jennings'];
+            if (plotTypeName === 'Metric Value')
+                return LABKEY.targetedms.LeveyJenningsPlotHelper.tooltips['Metric Value'];
             else if (plotTypeName === 'Moving Range')
                 return LABKEY.targetedms.MovingRangePlotHelper.tooltips['Moving Range'];
             else if (plotTypeName === 'CUSUMm')
