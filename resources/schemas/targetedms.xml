@@ -1453,6 +1453,7 @@
             <column columnName="Container">
                 <columnTitle>Folder</columnTitle>
             </column>
+            <column columnName="SoftwareVersion" />
             <column columnName="Created">
                 <formatString>DateTime</formatString>
             </column>

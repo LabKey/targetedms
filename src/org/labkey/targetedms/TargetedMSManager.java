@@ -84,6 +84,7 @@ import org.labkey.api.util.logging.LogHelper;
 import org.labkey.api.view.NotFoundException;
 import org.labkey.api.view.UnauthorizedException;
 import org.labkey.api.view.ViewBackgroundInfo;
+import org.labkey.targetedms.model.AutoQCPingData;
 import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
@@ -2006,8 +2007,14 @@ public class TargetedMSManager
 
     public Map<String, Object> getAutoQCPingMap(Container container)
     {
+        AutoQCPingData data = getAutoQCPingData(container);
+        return data != null ? data.toMap() : null;
+    }
+
+    public AutoQCPingData getAutoQCPingData(Container container)
+    {
         TableInfo table = TargetedMSManager.getTableInfoAutoQCPing();
-        return new TableSelector(table, SimpleFilter.createContainerFilter(container), null).getMap();
+        return new TableSelector(table, SimpleFilter.createContainerFilter(container), null).getObject(AutoQCPingData.class);
     }
 
     // return the ModuleProperty value for "AUTO_QC_PING_TIMEOUT"

@@ -159,6 +159,7 @@ import org.labkey.targetedms.conflict.ConflictPrecursor;
 import org.labkey.targetedms.conflict.ConflictProtein;
 import org.labkey.targetedms.conflict.ConflictTransition;
 import org.labkey.targetedms.folderImport.QCFolderConstants;
+import org.labkey.targetedms.model.AutoQCPingData;
 import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
@@ -3192,26 +3193,45 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(UpdatePermission.class)
-    public static class AutoQCPingAction extends MutatingApiAction<Object>
+    public static class AutoQCPingAction extends MutatingApiAction<AutoQcPingForm>
     {
         @Override
-        public Object execute(Object o, BindException errors)
+        public Object execute(AutoQcPingForm form, BindException errors)
         {
             // Get current record, if present
-            Map<String, Object> currentRow = TargetedMSManager.get().getAutoQCPingMap(getContainer());
+            AutoQCPingData currentRow = TargetedMSManager.get().getAutoQCPingData(getContainer());
             if (currentRow == null)
             {
                 // Add a new record for this container
-                currentRow = Table.insert(getUser(), TargetedMSManager.getTableInfoAutoQCPing(), Collections.singletonMap("Container", getContainer()));
+                AutoQCPingData rowData = new AutoQCPingData();
+                rowData.setContainer(getContainer());
+                rowData.setSoftwareVersion(form.getSoftwareVersion());
+                currentRow = Table.insert(getUser(), TargetedMSManager.getTableInfoAutoQCPing(), rowData);
             }
             else
             {
                 // Update the current one with the new timestamp
+                currentRow.setSoftwareVersion(form.getSoftwareVersion());
                 currentRow = Table.update(getUser(), TargetedMSManager.getTableInfoAutoQCPing(), currentRow, getContainer());
             }
 
             // Just return the full record back to the caller
-            return new ApiSimpleResponse(currentRow);
+            return new ApiSimpleResponse(currentRow.toMap());
+        }
+    }
+
+    private static class AutoQcPingForm
+    {
+        private String _softwareVersion;
+
+        public String getSoftwareVersion()
+        {
+            return _softwareVersion;
+        }
+
+        public void setSoftwareVersion(String softwareVersion)
+        {
+            _softwareVersion = softwareVersion;
         }
     }
 

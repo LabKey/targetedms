@@ -102,6 +102,7 @@ public class GuideSetStats
                 _guideSet.getTrainingStart().compareTo(row.getSampleFile().getAcquiredTime()) <= 0 &&
                 (_guideSet.getTrainingEnd() == null || _guideSet.getTrainingEnd().compareTo(row.getSampleFile().getAcquiredTime()) >= 0))
         {
+            row.setInsideGuideSet(true);
             _trainingRows.add(row);
         }
         else
@@ -176,6 +177,8 @@ public class GuideSetStats
         double[] positiveCUSUMv = Stats.getCUSUMS(metricVals, false, true, false, null);
         double[] negativeCUSUMv = Stats.getCUSUMS(metricVals, true, true, false, null);
 
+        int j = 0; // index to traverse trailingMeans and trailingCVs array
+        int start = 0;
         for (int i = 0; i < includedRows.size(); i++)
         {
             RawMetricDataSet row = includedRows.get(i);
@@ -191,15 +194,10 @@ public class GuideSetStats
                 row.setCUSUMvP(positiveCUSUMv[i]);
                 row.setCUSUMvN(negativeCUSUMv[i]);
             }
-        }
-        // start trailingCVs and trailingMeans from number of trailingRuns after the beginning
-        int j = 0; // index to traverse trailingMeans and trailingCVs array
-        if (null != trailingRuns)
-        {
-            for (int i = trailingRuns-1; i < includedRows.size(); i++)
+
+            RawMetricDataSet trailingStartRow = includedRows.get(start);
+            if (null != trailingRuns)
             {
-                RawMetricDataSet row = includedRows.get(i);
-                RawMetricDataSet trailingStartRow = includedRows.get(j);
                 if (trailingMeans.length > 0 && j < trailingMeans.length)
                 {
                     if (row.getMetricValue() == null)
@@ -237,6 +235,10 @@ public class GuideSetStats
                     // when the metric value is null (bad data), the corresponding trailing mean/cv is set to the previous trailing mean/cv
                     // so only move forward for the actual metric values
                     j++;
+                }
+                if (j >= trailingRuns)
+                {
+                    start++;
                 }
             }
         }

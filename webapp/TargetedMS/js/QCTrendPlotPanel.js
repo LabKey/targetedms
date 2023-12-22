@@ -1307,8 +1307,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }
 
         let trailingRuns = this.trailingRuns;
-        let trailingStartDate = Ext4.util.Format.date(row['TrailingStartDate'], 'Y-m-d H:i:s');
-        let trailingEndDate = Ext4.util.Format.date(row['fullDate'], 'Y-m-d H:i:s');
+        let trailingStartDate = Ext4.util.Format.date(row['TrailingStartDate'], 'Y-m-d H:i');
+        let trailingEndDate = Ext4.util.Format.date(row['fullDate'], 'Y-m-d H:i');
 
         showHoverTask.delay(500, function() {
             var calloutMgr = hopscotch.getCalloutManager(),

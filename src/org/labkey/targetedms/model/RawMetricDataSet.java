@@ -46,6 +46,7 @@ public class RawMetricDataSet
     Double trailingCV;
     Date trailingStart;
     PrecursorInfo _precursor;
+    boolean insideGuideSet;
 
     private GuideSetKey _guideSetKey;
 
@@ -447,4 +448,13 @@ public class RawMetricDataSet
         this.trailingStart = trailingStart;
     }
 
+    public boolean isInsideGuideSet()
+    {
+        return insideGuideSet;
+    }
+
+    public void setInsideGuideSet(boolean insideGuideSet)
+    {
+        this.insideGuideSet = insideGuideSet;
+    }
 }
