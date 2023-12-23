@@ -18,11 +18,10 @@ package org.labkey.targetedms.parser.skyaudit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.module.ModuleLoader;
 import org.labkey.targetedms.TargetedMSModule;
-
-import javax.annotation.Nullable;
 
 /**
  * This class determines security level of the current Skyline document upload operation
