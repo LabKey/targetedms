@@ -78,38 +78,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         }
     },
 
-    zoomDateRangeForTrailingGraphs: function (precursorInfo) {
-        let precursors = this.deepCloneObject(precursorInfo);
-        if (Object.keys(this.guideSetDataMap).length !== 0) {
-            let firstGuideSetStartDate = new Date();
-            // setting to tomorrow's date
-            firstGuideSetStartDate.setDate(firstGuideSetStartDate.getDate() + 1);
-            Ext4.Object.each(this.guideSetDataMap, function (id, gs) {
-                if (new Date(gs.TrainingStart).getTime() < firstGuideSetStartDate.getTime()) {
-                    firstGuideSetStartDate = new Date(gs.TrainingStart);
-                }
-            });
-
-            for (let ind = 0 ; ind < precursors.data.length; ind++) {
-                let data = precursors.data[ind];
-                if (new Date(data.fullDate).getTime() < firstGuideSetStartDate.getTime()) {
-                    precursors.data.splice(ind, 1);
-                    ind--;
-                }
-            }
-        }
-        else {
-            for (let ind = 0 ; ind < precursors.data.length; ind++) {
-                let data = precursors.data[ind];
-                if (!data.TrailingMean && !data.TrailingCV) {
-                    precursors.data.splice(ind, 1);
-                    ind--;
-                }
-            }
-        }
-        return precursors;
-    },
-
     addIndividualPrecursorPlots : function() {
         var addedPlot = false,
                 metricProps = this.getMetricPropsById(this.metric),
@@ -147,10 +115,10 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
                     this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex], i, precursorInfo, metricProps, LABKEY.vis.TrendingLinePlotType.CUSUM, false, me);
                 }
                 if (this.showTrailingMeanPlot()) {
-                    this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex++], i, this.zoomDateRangeForTrailingGraphs(precursorInfo), metricProps, LABKEY.vis.TrendingLinePlotType.TrailingMean, undefined, me);
+                    this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex++], i, precursorInfo, metricProps, LABKEY.vis.TrendingLinePlotType.TrailingMean, undefined, me);
                 }
                 if (this.showTrailingCVPlot()) {
-                    this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex++], i, this.zoomDateRangeForTrailingGraphs(precursorInfo), metricProps, LABKEY.vis.TrendingLinePlotType.TrailingCV, undefined, me);
+                    this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex++], i, precursorInfo, metricProps, LABKEY.vis.TrendingLinePlotType.TrailingCV, undefined, me);
                 }
             }
         }
@@ -380,6 +348,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         if (this.showTrailingMeanPlot() || this.showTrailingCVPlot()) {
             data['TrailingStartDate'] = row['TrailingStartDate'];
             data['TrailingEndDate'] = row['TrailingEndDate'];
+            data['TrainingSeqIdx'] = row['TrainingSeqIdx'];
+            data['InsideGuideSet'] = row['InsideGuideSet'];
         }
 
         return data;

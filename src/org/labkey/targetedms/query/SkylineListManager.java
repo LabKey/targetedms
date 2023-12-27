@@ -96,7 +96,7 @@ public class SkylineListManager
         fragment.append(" WHERE t.RunId IN (SELECT Id FROM ");
         fragment.append(TargetedMSSchema.getSchema().getTable(TargetedMSSchema.TABLE_RUNS), "r");
         fragment.append(new SQLFragment(" WHERE StatusId = ? AND deleted = ? AND ", SkylineDocImporter.STATUS_SUCCESS, Boolean.FALSE));
-        fragment.append(containerFilter.getSQLFragment(getListDefTable().getSchema(), new SQLFragment("Container"), container));
+        fragment.append(containerFilter.getSQLFragment(getListDefTable().getSchema(), new SQLFragment("Container")));
         fragment.append(") ORDER BY t.Name, t.RunId DESC");
         return new SqlSelector(TargetedMSSchema.getSchema(), fragment).getArrayList(ListDefinition.class);
     }
@@ -115,7 +115,7 @@ public class SkylineListManager
 
         SQLFragment sqlFragmentContainer = new SQLFragment("(SELECT CONTAINER FROM " + TargetedMSManager.getTableInfoRuns() + " WHERE Id = ?)", runId);
         fragment.append(" AND ");
-        fragment.append(containerFilter.getSQLFragment(TargetedMSSchema.getSchema(), sqlFragmentContainer, container));
+        fragment.append(containerFilter.getSQLFragment(TargetedMSSchema.getSchema(), sqlFragmentContainer));
 
         for (ListDefinition listDefinition : new SqlSelector(TargetedMSSchema.getSchema(), fragment).getCollection(ListDefinition.class))
         {

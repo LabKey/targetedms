@@ -176,6 +176,7 @@ public class QCPlotFragment
                 {
                     dataJsonObject.put("TrailingStartDate", plotData.getTrailingStart());
                 }
+                dataJsonObject.put("InsideGuideSet", plotData.isInsideGuideSet());
                 dataJsonArray.put(dataJsonObject);
             }
         }
