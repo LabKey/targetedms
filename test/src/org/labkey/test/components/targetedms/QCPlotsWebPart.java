@@ -832,6 +832,8 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
                 .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
         Checkbox showExcludedPrecursors = new Checkbox(Locator.css("#show-excluded-precursors input")
                 .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
+        Checkbox showSDLines = new Checkbox(Locator.css("#show-sd-lines")
+                .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
 
 
         WebElement plotPanel = Locator.css("div.tiledPlotPanel").findWhenNeeded(this);

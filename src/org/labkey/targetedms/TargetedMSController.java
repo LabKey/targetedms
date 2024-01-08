@@ -793,6 +793,7 @@ public class TargetedMSController extends SpringActionController
         private Integer _trailingRuns;
         private Integer _calendarMonthsToShow;
         private String _heatmapDataSource;
+        private Boolean _showSDLines;
 
         public Map<String, String> getAsMapOfStrings()
         {
@@ -823,6 +824,8 @@ public class TargetedMSController extends SpringActionController
                 valueMap.put("calendarMonthsToShow", Integer.toString(_calendarMonthsToShow));
             if (_heatmapDataSource != null)
                 valueMap.put("heatMapDataSource", _heatmapDataSource);
+            if (_showSDLines != null)
+                valueMap.put("showSDLines", Boolean.toString(_showSDLines));
             // note: start and end date handled separately since they can be null and we want to persist that
             return valueMap;
         }
@@ -945,6 +948,16 @@ public class TargetedMSController extends SpringActionController
         public void setHeatmapDataSource(String heatmapDataSource)
         {
             _heatmapDataSource = heatmapDataSource;
+        }
+
+        public Boolean getShowSDLines()
+        {
+            return _showSDLines;
+        }
+
+        public void setShowSDLines(Boolean showSDLines)
+        {
+            _showSDLines = showSDLines;
         }
     }
 
@@ -1270,6 +1283,7 @@ public class TargetedMSController extends SpringActionController
         private int _trailingRuns = 10;
         private boolean includeTrailingMeanPlot;
         private boolean includeTrailingCVPlot;
+        private boolean _showSDLines;
 
         public int getMetricId()
         {
@@ -1409,6 +1423,16 @@ public class TargetedMSController extends SpringActionController
         public void setIncludeTrailingCVPlot(boolean includeTrailingCVPlot)
         {
             this.includeTrailingCVPlot = includeTrailingCVPlot;
+        }
+
+        public boolean isShowSDLines()
+        {
+            return _showSDLines;
+        }
+
+        public void setShowSDLines(boolean showSDLines)
+        {
+            _showSDLines = showSDLines;
         }
     }
 
