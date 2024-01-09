@@ -299,7 +299,8 @@ public class TargetedMSQCTest extends TargetedMSTest
             }
         }
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LINEAR);
-        assertElementPresent(qcPlotsWebPart.getLegendItemLocator("+/-3 x Std Dev", true));
+        qcPlotsWebPart.setShowSDLines(true);
+        assertElementPresent(qcPlotsWebPart.getLegendItemLocator("+/- 3 Std Dev", true));
 
         // test that plot0_plotType_1 (CUSUMm) does not change from linear
         qcPlotsWebPart.checkPlotType(CUSUMm);
@@ -397,7 +398,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.filterQCPlotsToInitialData(PRECURSORS.length, true);
-        qcPlotsWebPart.checkPlotType(LeveyJennings);
+        qcPlotsWebPart.checkPlotType(MetricValue);
         qcPlotsWebPart.checkPlotType(MovingRange);
         qcPlotsWebPart.checkPlotType(CUSUMm);
         qcPlotsWebPart.checkPlotType(CUSUMv);
