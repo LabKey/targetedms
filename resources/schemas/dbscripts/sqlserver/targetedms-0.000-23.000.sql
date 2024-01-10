@@ -5185,3 +5185,193 @@ WHERE Name = 'Transition & Precursor Areas';
 ALTER TABLE targetedms.PrecursorChromInfo ADD
     TotalAreaMs1 REAL,
     TotalAreaFragment REAL;
+
+/* 22.xxx SQL scripts */
+
+ALTER TABLE targetedms.SampleFileChromInfo
+    ADD Flags INT;
+
+CREATE TABLE targetedms.ExcludedPrecursors
+(
+    rowId INT IDENTITY(1, 1) NOT NULL,
+    ModifiedSequence NVARCHAR(300),
+    Mz FLOAT,
+    Charge INT,
+    CustomIonName NVARCHAR(100),
+    IonFormula NVARCHAR(100),
+    MassMonoisotopic FLOAT,
+    MassAverage FLOAT,
+    Container ENTITYID NOT NULL,
+
+    CONSTRAINT PK_EXCLUDEDPRECURSORS_ROWID PRIMARY KEY (rowId),
+    CONSTRAINT FK_EXCLUDEDPRECURSORS_CONTAINER FOREIGN KEY (Container) REFERENCES core.Containers(EntityId)
+);
+GO
+
+CREATE INDEX IX_EXCLUDEDPRECURSORS_CONTAINER ON targetedms.ExcludedPrecursors (Container);
+GO
+
+-- Junction table between Run and AuditLogEntry
+CREATE TABLE targetedms.RunAuditLogEntry
+(
+    RowId                   INT IDENTITY(1, 1) NOT NULL,
+    VersionId               BIGINT NOT NULL,
+    AuditLogEntryId         INT NOT NULL,
+    Created                 DATETIME,
+    CreatedBy               USERID,
+    Modified                DATETIME,
+    ModifiedBy              USERID,
+
+    CONSTRAINT PK_RUNAUDITLOGENTRY PRIMARY KEY (RowId),
+    CONSTRAINT FK_RUNAUDITLOGENTRY_RUN FOREIGN KEY (VersionId) REFERENCES targetedms.runs(id),
+    CONSTRAINT FK_RUNAUDITLOGENTRY_AUDITLOGENTRY FOREIGN KEY (AuditLogEntryId) REFERENCES targetedms.AuditLogEntry(entryId)
+);
+GO
+
+CREATE UNIQUE INDEX UQ_TARGETEDMS_RUNAUDITLOGENTRY_RUN_AUDITLOGENTRY ON targetedms.RunAuditLogEntry(VersionId, AuditLogEntryId);
+GO
+
+-- Populate from existing AuditLogEntry and Run data
+INSERT INTO targetedms.RunAuditLogEntry (AuditLogEntryId, VersionId, Created, CreatedBy, Modified, ModifiedBy)
+SELECT ale.EntryId AS AuditLogEntryId, ale.VersionId, r.Created, r.CreatedBy, r.Modified, r.ModifiedBy FROM targetedms.AuditLogEntry ale                                                                                                                                  LEFT JOIN targetedms.Runs r ON ale.VersionId = r.id
+WHERE ale.VersionId IS NOT NULL
+    GO
+
+-- VersionId no longer needed on AuditLogEntry
+EXEC core.fn_dropifexists 'AuditLogEntry', 'targetedms', 'INDEX', 'uix_auditLogEntry_version';
+EXEC core.fn_dropifexists 'AuditLogEntry', 'targetedms', 'CONSTRAINT', 'fk_auditLogEntry_runs';
+GO
+
+ALTER TABLE targetedms.AuditLogEntry DROP COLUMN VersionId;
+GO
+
+declare @rootIdentity ENTITYID;
+select @rootIdentity = [EntityId] FROM [core].[Containers] WHERE Parent is null
+
+INSERT INTO targetedms.QCMetricConfiguration (Container, Name, Series1Label, Series1SchemaName, Series1QueryName, PrecursorScoped, EnabledQueryName, EnabledSchemaName) VALUES
+    (@rootIdentity, 'Library dotp', 'Library dotp', 'targetedms', 'QCMetric_libraryDotp', 1, 'QCMetricEnabled_libraryDotp', 'targetedms');
+
+INSERT INTO targetedms.QCMetricConfiguration (Container, Name, Series1Label, Series1SchemaName, Series1QueryName, PrecursorScoped, EnabledQueryName, EnabledSchemaName) VALUES
+    (@rootIdentity, 'Isotope dotp', 'Isotope dotp', 'targetedms', 'QCMetric_isotopeDotp', 1, 'QCMetricEnabled_isotopeDotp', 'targetedms');
+
+-- Reparent table if it exists in PanoramaPremium schema
+IF OBJECT_ID(N'PanoramaPremium.QCEmailNotifications', N'U') IS NOT NULL BEGIN
+   DROP INDEX IX_PanoramaPremium_qcEmailNotifications_Container ON PanoramaPremium.QCEmailNotifications;
+   ALTER SCHEMA targetedms TRANSFER PanoramaPremium.QCEmailNotifications;
+   DROP SCHEMA PanoramaPremium;
+END;
+GO
+
+-- Create it if we didn't have one to repurpose
+IF OBJECT_ID(N'targetedms.QCEmailNotifications', N'U') IS NULL BEGIN
+    CREATE TABLE targetedms.QCEmailNotifications
+    (
+        userId          USERID,
+        enabled         BIT,
+        outliers        INTEGER,
+        samples         INTEGER,
+
+        Created         DATETIME,
+        CreatedBy       USERID,
+        Modified        DATETIME,
+        ModifiedBy      USERID,
+        Container       ENTITYID NOT NULL,
+
+        CONSTRAINT PK_QCEmailNotifications PRIMARY KEY (userId, Container),
+        CONSTRAINT FK_QCEmailNotifications FOREIGN KEY (Container) REFERENCES core.Containers(EntityId)
+    );
+END;
+
+-- Create an index either way
+CREATE INDEX IX_qcEmailNotifications_Container ON targetedms.QCEmailNotifications (Container);
+
+ALTER TABLE targetedms.StructuralModification ADD CrossLinker BIT;
+GO
+UPDATE targetedms.StructuralModification SET CrossLinker = 0;
+ALTER TABLE targetedms.StructuralModification ALTER COLUMN CrossLinker BIT NOT NULL;
+
+ALTER TABLE targetedms.PeptideStructuralModification ADD PeptideIndex SMALLINT;
+GO
+UPDATE targetedms.PeptideStructuralModification SET PeptideIndex = 0;
+ALTER TABLE targetedms.PeptideStructuralModification ALTER COLUMN PeptideIndex SMALLINT NOT NULL;
+
+-- Accommodate new Skyline protein group features that create very long preferred names
+ALTER TABLE targetedms.PeptideGroup ALTER COLUMN PreferredName NVARCHAR(MAX);
+
+DROP TABLE targetedms.Protein;
+GO
+
+CREATE TABLE targetedms.Protein
+(
+    Id BIGINT IDENTITY(1, 1) NOT NULL,
+    PeptideGroupId BIGINT NOT NULL,
+    Label NVARCHAR(512) NOT NULL,
+    Description NVARCHAR(MAX),
+    SequenceId INTEGER,
+    Note NVARCHAR(MAX),
+    Name NVARCHAR(512),
+    Accession NVARCHAR(200),
+    PreferredName NVARCHAR(MAX),
+    Gene NVARCHAR(2000),
+    Species NVARCHAR(255),
+    AltDescription NVARCHAR(MAX),
+
+    CONSTRAINT PK_Protein PRIMARY KEY (Id)
+);
+GO
+
+INSERT INTO targetedms.Protein (PeptideGroupId, Label, Description, SequenceId, Note, Name, Accession,
+                                PreferredName, Gene, Species, AltDescription)
+SELECT
+    pg.Id,
+    pg.Label,
+    pg.Description,
+    pg.SequenceId,
+    pg.Note,
+    pg.Name,
+    pg.Accession,
+    pg.PreferredName,
+    pg.Gene,
+    pg.Species,
+    pg.AltDescription
+FROM
+    targetedms.PeptideGroup pg
+WHERE pg.Id IN (
+    SELECT gm.PeptideGroupId FROM
+        targetedms.GeneralMolecule gm
+    INNER JOIN
+        targetedms.Peptide p ON gm.Id = p.Id
+);
+
+DROP INDEX targetedms.peptidegroup.IX_PeptideGroup_SequenceId;
+DROP INDEX targetedms.peptidegroup.IX_PeptideGroup_Label;
+
+ALTER TABLE targetedms.peptidegroup DROP CONSTRAINT FK_PeptideGroup_Sequences;
+
+ALTER TABLE targetedms.PeptideGroup
+    DROP COLUMN SequenceId;
+ALTER TABLE targetedms.PeptideGroup
+    DROP COLUMN Accession;
+ALTER TABLE targetedms.PeptideGroup
+    DROP COLUMN PreferredName;
+ALTER TABLE targetedms.PeptideGroup
+    DROP COLUMN Gene;
+ALTER TABLE targetedms.PeptideGroup
+    DROP COLUMN Species;
+
+ALTER TABLE targetedms.PeptideGroup
+    ADD DecoyMatchProportion FLOAT;
+
+ALTER TABLE targetedms.PeptideGroup
+    ALTER COLUMN Name NVARCHAR(MAX);
+ALTER TABLE targetedms.PeptideGroup
+    ALTER COLUMN Label NVARCHAR(MAX);
+
+CREATE INDEX IX_Protein_Label ON targetedms.Protein(Label);
+CREATE INDEX IX_Protein_PeptideGroupId ON targetedms.Protein(PeptideGroupId);
+CREATE INDEX IX_Protein_SequenceId ON targetedms.Protein(SequenceId);
+ALTER TABLE targetedms.Protein ADD CONSTRAINT FK_Protein_PeptideGroup FOREIGN KEY (PeptideGroupId) REFERENCES targetedms.PeptideGroup(Id);
+ALTER TABLE targetedms.Protein ADD CONSTRAINT FK_Protein_Sequences FOREIGN KEY(SequenceId) REFERENCES prot.Sequences (seqid);
+
+ALTER TABLE targetedms.AuditLogMessage
+    DROP COLUMN ExpandedText;
