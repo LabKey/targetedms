@@ -369,6 +369,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         selectedPlotTypes.add(CUSUMm);
         qcPlotsWebPart.setQCPlotTypes(selectedPlotTypes.toArray(QCPlotsWebPart.QCPlotType[]::new));
         qcPlotsWebPart.waitForPlots(2);
+        qcPlotsWebPart.setShowSDLines(true);
 
         // test plot type selection is persisted
         refresh();
@@ -384,6 +385,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertFalse("Group X-Axis not set to default value", qcPlotsWebPart.isGroupXAxisValuesByDateChecked());
         assertFalse("Show All Peptides not set to default value", qcPlotsWebPart.isShowAllPeptidesInSinglePlotChecked());
         assertEquals("Date Range Offset not set to default value", QCPlotsWebPart.DateRangeOffset.LAST_180_DAYS, qcPlotsWebPart.getCurrentDateRangeOffset());
+        assertTrue("Show SD Lines not checked", qcPlotsWebPart.isShowSDLinesChecked());
 
         stopImpersonating();
         goToProjectHome();

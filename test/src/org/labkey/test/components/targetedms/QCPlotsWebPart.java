@@ -268,6 +268,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         elementCache().showSDLines.set(check);
     }
 
+    public boolean isShowSDLinesChecked()
+    {
+        return elementCache().showSDLines.isChecked();
+    }
+
     public boolean isShowReferenceGuideSetChecked()
     {
         return elementCache().showReferenceGuideSet.isChecked();
