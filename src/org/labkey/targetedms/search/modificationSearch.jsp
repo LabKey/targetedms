@@ -46,7 +46,7 @@
 
     String renderId = "modification-search-form-" + getRequestScopedUID();
 %>
-<div id=<%=q(renderId)%>></div>
+<div id="<%=h(renderId)%>"></div>
 
 <script type="text/javascript">
 
