@@ -148,7 +148,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                     '</div>',
                 '<tpl elseif="docCount &gt; 0">',
                     '<div class="qc-summary-text">',
-                        '<a href="{path:this.getSampleFileLink}">{fileCount} sample file{fileCount:this.pluralize}</a> ' +
+                        '<a href="{path:this.getSampleFileLink}">{fileCount} replicate{fileCount:this.pluralize}</a> ' +
                         'tracking {precursorCount} precursor{precursorCount:this.pluralize} with {metricCount} metric{metricCount:this.pluralize} {instrument}',
                     '</div>',
                 '</tpl>',
