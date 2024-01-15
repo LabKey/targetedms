@@ -436,6 +436,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         log("Verify Plot Types and Legends");
         qcPlotsWebPart.setQCPlotTypes(MetricValue);
+        qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false);
         qcPlotsWebPart.waitForPlots(PRECURSORS.length);
 
         qcPlotsWebPart.checkPlotType(MovingRange);
