@@ -55,9 +55,9 @@
     String plotPaginationPanelId = "plotPaginationPanel-" + uid;
 %>
 
-<div id=<%=q(reportPanelId)%>></div>
-<div id=<%=q(plotPaginationPanelId)%> class="plotPaginationHeaderPanel"></div>
-<div id=<%=q(plotPanelId)%> class="tiledPlotPanel"></div>
+<div id="<%=h(reportPanelId)%>"></div>
+<div id="<%=h(plotPaginationPanelId)%>" class="plotPaginationHeaderPanel"></div>
+<div id="<%=h(plotPanelId)%>" class="tiledPlotPanel"></div>
 
 <script type="text/javascript" nonce="<%=getScriptNonce()%>">
         function init() {
