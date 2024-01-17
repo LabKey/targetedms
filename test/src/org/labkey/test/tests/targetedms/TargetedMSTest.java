@@ -15,6 +15,7 @@
  */
 package org.labkey.test.tests.targetedms;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.BeforeClass;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
@@ -133,9 +134,7 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         // The SQLite driver for the Chromatogram library code chokes on paths with certain characters on OSX. We don't have
         // any real deployments on OSX, so just avoid using those characters on dev machines and rely on TeamCity
         // to keep things happy on the platforms we actually use on production
-        String osName = System.getProperty("os.name").toLowerCase();
-        boolean isMacOs = osName.startsWith("mac os x");
-        if (isMacOs)
+        if (SystemUtils.IS_OS_MAC)
         {
             return "TargetedMSProject";
         }
