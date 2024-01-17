@@ -39,7 +39,7 @@
     String tiledPlotPanelId = "tiledPlotPanel-" + getRequestScopedUID();
 %>
 
-<div id=<%=q(tiledPlotPanelId)%> class="tiledPlotPanel"></div>
+<div id="<%=h(tiledPlotPanelId)%>" class="tiledPlotPanel"></div>
 
 <script type="text/javascript" nonce="<%=getScriptNonce()%>">
 
