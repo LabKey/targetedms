@@ -383,7 +383,11 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
             var rowCount = 0;
             Ext4.each(sampleFile.Metrics, function (item)
             {
-                var href = LABKEY.ActionURL.buildURL('project', 'begin', item.ContainerPath, {metric: item.MetricId});
+                // pass replicate id here so that the outlier details can be displayed in the context of the replicate
+                let urlParams = {};
+                urlParams['replicateId'] = sampleFile.SampleId;
+                urlParams['metricId'] = item.MetricId;
+                let href = LABKEY.ActionURL.buildURL('project', 'begin', item.ContainerPath, urlParams);
                 content += '<tr class="' + (rowCount % 2 === 0 ? 'labkey-alternate-row' : 'labkey-row') + '">';
                 content += '<td class="outlier-metric-label"><a href="' + href + '">' + Ext4.util.Format.htmlEncode(item.MetricLabel) + '</a></td>';
                 if (item.IgnoreInQC) {

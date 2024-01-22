@@ -119,7 +119,12 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         plotsConfig.trailingRuns = this.trailingRuns;
         plotsConfig.includeTrailingMeanPlot = this.showTrailingMeanPlot();
         plotsConfig.includeTrailingCVPlot = this.showTrailingCVPlot();
-        plotsConfig.showSDLines = this.showSDLines;
+        plotsConfig.hideSDLines = this.hideSDLines;
+
+        let urlParams = LABKEY.ActionURL.getParameters();
+        if (parseInt(urlParams['replicateId']) > 0) {
+            plotsConfig.replicateId = parseInt(urlParams['replicateId']);
+        }
 
         var config = this.getReportConfig()
 
@@ -733,8 +738,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(combinePlotData, plotType, isCUSUMMean, metricProps));
 
-        if (this.showSDLines) {
-            trendLineProps.showSDLines = true;
+        if (this.hideSDLines) {
+            trendLineProps.hideSDLines = true;
         }
 
         // Suppress the mean line for multi-series plots
@@ -847,8 +852,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             trendLineProps.groupBy = "ReferenceRangeSeries";
         }
 
-        if (this.showSDLines) {
-            trendLineProps.showSDLines = true;
+        if (this.hideSDLines) {
+            trendLineProps.hideSDLines = true;
         }
 
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(precursorInfo, plotType, isCUSUMMean, metricProps));
@@ -932,6 +937,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         }
 
         this.addGuideSetTrainingRangeToPlot(plot, precursorInfo);
+
+        let urlParams = LABKEY.ActionURL.getParameters();
+        if (parseInt(urlParams['replicateId']) > 0) {
+            this.highlightOutliersForClickedReplicate(plot, precursorInfo, parseInt(urlParams['replicateId']));
+        }
 
         var extraMargin = this.showInPlotLegends() ? 0 : 10 * this.longestLegendText;
         this.attachPlotExportIcons(id, mainTitle + '-' + this.precursors[precursorIndex] + '-' + this.getMetricPropsById(this.metric).series1Label, plotIndex, this.getPlotWidth(), extraMargin);

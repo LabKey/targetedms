@@ -73,7 +73,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     showExcluded: false,
     showExcludedPrecursors: false,
     showReferenceGS: true,
-    showSDLines: false,
+    hideSDLines: true,
     plotWidth: null,
     enableBrushing: false,
     havePlotOptionsChanged: false,
@@ -427,7 +427,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
             toolbarItems.push(this.getShowExcludedPrecursorsCheckbox());
             toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
-            toolbarItems.push(this.getShowSDLines());
+            toolbarItems.push(this.getShowSDLinesCheckBox());
 
             this.otherPlotOptionsToolbar = Ext4.create('Ext.toolbar.Toolbar', {
                 ui: 'footer',
@@ -1027,16 +1027,16 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return this.showExcludedPrecursorsCheckbox;
     },
 
-    getShowSDLines: function () {
+    getShowSDLinesCheckBox: function () {
         if (!this.showSDLinesCheckBox) {
             this.showSDLinesCheckBox = Ext4.create('Ext.form.field.Checkbox', {
                id: 'show-sd-lines',
                boxLabel: 'Show +-1/2 SD Lines',
-                checked: this.showSDLines,
+                checked: !this.hideSDLines,
                 listeners: {
                     scope: this,
                     change: function(cb, newValue, oldValue) {
-                        this.showSDLines = newValue;
+                        this.hideSDLines = !newValue;
                         this.havePlotOptionsChanged = true;
 
                         this.setLoadingMsg();
@@ -1535,6 +1535,82 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         toolbarMsg.up('toolbar').setVisible(this.enableBrushing);
     },
 
+    highlightOutliersForClickedReplicate: function(plot, precursorInfo, replicateId) {
+        // for each precursor in precursorInfo
+        let me = this;
+
+        let binWidth = (plot.grid.rightEdge - plot.grid.leftEdge) / (plot.scales.x.scale.domain().length);
+        let yRange = plot.scales.yLeft.range;
+
+        let xAcc = function (d) {
+            return plot.scales.x.scale(d.StartIndex) - (binWidth/2);
+        };
+
+        let widthAcc = function (d) {
+            return plot.scales.x.scale(d.EndIndex) - plot.scales.x.scale(d.StartIndex) + binWidth;
+        };
+
+        let firstOutlier;
+        let lastOutlier;
+
+        // find the data point for the clicked replicate
+        for (let j = 0; j < precursorInfo.data.length; j++) {
+            let data = precursorInfo.data[j];
+            if (data.ReplicateId === replicateId) {
+                let clickedReplicateData = [];
+                clickedReplicateData.push({
+                    'EndIndex': j,
+                    'StartIndex': j
+                })
+                if (!firstOutlier) {
+                    firstOutlier = j;
+                }
+                if (!lastOutlier) {
+                    lastOutlier = j;
+                }
+                else if (j > lastOutlier) {
+                    lastOutlier = j;
+                }
+
+                let outlierRect = "rect.outlier-" + j;
+
+                let color;
+                if (data.LJShape.indexOf('Outlier') > -1) {
+                    color = '#C50000FF';
+                }
+                else {
+                    color = '#64f341';
+                }
+
+                me.getSvgElForPlot(plot).selectAll(outlierRect).data(clickedReplicateData)
+                        .enter().append("rect").attr("class", "outlier-"+j)
+                        .attr('x', xAcc).attr('y', yRange[1])
+                        .attr('width', widthAcc).attr('height', yRange[0] - yRange[1])
+                        .attr('stroke', color).attr('stroke-opacity', 0.1)
+                        .attr('fill', color).attr('fill-opacity', 0.1);
+
+                this.sendSvgElementToBack(plot, outlierRect);
+            }
+        }
+
+        // the date range of the plots may need to be adjusted to ensure the replicate is in view
+        if (firstOutlier !== undefined && lastOutlier !== undefined) {
+            let startIndex = firstOutlier - 10;
+            let endIndex = lastOutlier + 10;
+
+            if (startIndex < 0) {
+                startIndex = 0;
+            }
+            if (endIndex > precursorInfo.data.length) {
+                endIndex = precursorInfo.data.length;
+            }
+
+            this.startDateField.setValue(precursorInfo.data[startIndex].FullDate);
+            this.endDateField.setValue(precursorInfo.data[endIndex].FullDate);
+        }
+
+    },
+
     addGuideSetTrainingRangeToPlot : function(plot, precursorInfo) {
         var me = this;
         var guideSetTrainingData = [];
@@ -2017,7 +2093,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             selectedAnnotations: annotationsProp,
             showExcludedPrecursors: this.showExcludedPrecursors,
             trailingRuns: this.trailingRuns,
-            showSDLines: this.showSDLines
+            hideSDLines: this.hideSDLines
         };
 
         // set start and end date to null unless we are

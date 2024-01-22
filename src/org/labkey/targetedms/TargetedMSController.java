@@ -793,7 +793,7 @@ public class TargetedMSController extends SpringActionController
         private Integer _trailingRuns;
         private Integer _calendarMonthsToShow;
         private String _heatmapDataSource;
-        private Boolean _showSDLines;
+        private Boolean _hideSDLines;
 
         public Map<String, String> getAsMapOfStrings()
         {
@@ -824,8 +824,8 @@ public class TargetedMSController extends SpringActionController
                 valueMap.put("calendarMonthsToShow", Integer.toString(_calendarMonthsToShow));
             if (_heatmapDataSource != null)
                 valueMap.put("heatMapDataSource", _heatmapDataSource);
-            if (_showSDLines != null)
-                valueMap.put("showSDLines", Boolean.toString(_showSDLines));
+            if (_hideSDLines != null)
+                valueMap.put("hideSDLines", Boolean.toString(_hideSDLines));
             // note: start and end date handled separately since they can be null and we want to persist that
             return valueMap;
         }
@@ -950,14 +950,14 @@ public class TargetedMSController extends SpringActionController
             _heatmapDataSource = heatmapDataSource;
         }
 
-        public Boolean getShowSDLines()
+        public Boolean getHideSDLines()
         {
-            return _showSDLines;
+            return _hideSDLines;
         }
 
-        public void setShowSDLines(Boolean showSDLines)
+        public void setHideSDLines(Boolean hideSDLines)
         {
-            _showSDLines = showSDLines;
+            _hideSDLines = hideSDLines;
         }
     }
 
@@ -1283,7 +1283,8 @@ public class TargetedMSController extends SpringActionController
         private int _trailingRuns = 10;
         private boolean includeTrailingMeanPlot;
         private boolean includeTrailingCVPlot;
-        private boolean _showSDLines;
+        private boolean _hideSDLines;
+        private Integer _replicateId;
 
         public int getMetricId()
         {
@@ -1425,14 +1426,24 @@ public class TargetedMSController extends SpringActionController
             this.includeTrailingCVPlot = includeTrailingCVPlot;
         }
 
-        public boolean isShowSDLines()
+        public boolean isHideSDLines()
         {
-            return _showSDLines;
+            return _hideSDLines;
         }
 
-        public void setShowSDLines(boolean showSDLines)
+        public void setHideSDLines(boolean hideSDLines)
         {
-            _showSDLines = showSDLines;
+            _hideSDLines = hideSDLines;
+        }
+
+        public Integer getReplicateId()
+        {
+            return _replicateId;
+        }
+
+        public void setReplicateId(Integer replicateId)
+        {
+            _replicateId = replicateId;
         }
     }
 
@@ -1509,7 +1520,8 @@ public class TargetedMSController extends SpringActionController
             boolean zoomedRange = qcFolderStartDate != null &&
                     qcFolderEndDate != null && rangeStartDate != null && form.getEndDate() != null &&
                     (DateUtil.getDateOnly(qcFolderStartDate).compareTo(rangeStartDate) != 0 ||
-                    DateUtil.getDateOnly(qcFolderEndDate).compareTo(form.getEndDate()) != 0);
+                    DateUtil.getDateOnly(qcFolderEndDate).compareTo(form.getEndDate()) != 0) ||
+                    form.getReplicateId() != null;
             Map<GuideSetKey, GuideSetStats> targetedStats;
 
             if (zoomedRange)
