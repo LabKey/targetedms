@@ -69,4 +69,4 @@
         <option value="linear" selected>Linear</option>
         <option value="log">Log</option>
     </select>
-</div><div id=<%=q(elementId)%> class="calibration-curve"></div>
+</div><div id="<%=h(elementId)%>" class="calibration-curve"></div>
