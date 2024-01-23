@@ -1550,9 +1550,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             return plot.scales.x.scale(d.EndIndex) - plot.scales.x.scale(d.StartIndex) + binWidth;
         };
 
-        let firstOutlier;
-        let lastOutlier;
-
         // find the data point for the clicked replicate
         for (let j = 0; j < precursorInfo.data.length; j++) {
             let data = precursorInfo.data[j];
@@ -1562,15 +1559,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     'EndIndex': j,
                     'StartIndex': j
                 })
-                if (!firstOutlier) {
-                    firstOutlier = j;
-                }
-                if (!lastOutlier) {
-                    lastOutlier = j;
-                }
-                else if (j > lastOutlier) {
-                    lastOutlier = j;
-                }
 
                 let outlierRect = "rect.outlier-" + j;
 
@@ -1591,22 +1579,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
                 this.sendSvgElementToBack(plot, outlierRect);
             }
-        }
-
-        // the date range of the plots may need to be adjusted to ensure the replicate is in view
-        if (firstOutlier !== undefined && lastOutlier !== undefined) {
-            let startIndex = firstOutlier - 10;
-            let endIndex = lastOutlier + 10;
-
-            if (startIndex < 0) {
-                startIndex = 0;
-            }
-            if (endIndex > precursorInfo.data.length) {
-                endIndex = precursorInfo.data.length;
-            }
-
-            this.startDateField.setValue(precursorInfo.data[startIndex].FullDate);
-            this.endDateField.setValue(precursorInfo.data[endIndex].FullDate);
         }
 
     },
