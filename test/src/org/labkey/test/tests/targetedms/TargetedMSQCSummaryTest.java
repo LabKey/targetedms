@@ -228,7 +228,7 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         setAutoQCPingTimeOut(QCPING_TIMEOUT);
 
         waitForElements(Locator.tagWithClass("div", "sample-file-item"), 6);
-        tempStringList01.put("Q_Exactive_08_23_2013_JGB_58", "27");
+        tempStringList01.put("Q_Exactive_08_23_2013_JGB_58", "26");
         tempStringList01.put("Q_Exactive_08_23_2013_JGB_51", "26");
         tempStringList01.put("Q_Exactive_08_23_2013_JGB_37", "31");
         tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_58", "Acquired: 2013-08-27 14:45"));

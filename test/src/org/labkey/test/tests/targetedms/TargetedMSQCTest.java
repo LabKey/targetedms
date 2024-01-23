@@ -405,7 +405,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         // if metric has negative values and we pick log y-axis scale, we should revert to linear scale and show message
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR);
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LOG);
-        assertEquals("Unexpected number of plots with invalid log scale.", 3, qcPlotsWebPart.getLogScaleInvalidCount());
+        assertEquals("Unexpected number of plots with invalid log scale.", 5, qcPlotsWebPart.getLogScaleInvalidCount());
         assertEquals("Unexpected number of plots with invalid log scale.", 0, qcPlotsWebPart.getLogScaleWarningCount());
         assertEquals("Unexpected number of plots with log scale 0 value replacement warning.", PRECURSORS.length, qcPlotsWebPart.getLogScaleEpsilonWarningCount());
 

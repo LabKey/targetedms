@@ -123,7 +123,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
 
     private void createQueries()
     {
-        List<String> metricNames = Arrays.asList("retentionTime", "peakArea", "fwhm", "fwb", "lhRatio", "transitionPrecursorRatio", "massAccuracy", "transitionArea", "precursorArea");
+        List<String> metricNames = Arrays.asList("retentionTime", "peakArea", "fwhm", "fwb", "lhRatio", "transitionPrecursorRatio", "massErrorPrecursor", "massErrorTransition", "transitionArea", "precursorArea");
         for (String metricName : metricNames)
         {
             String sql = "SELECT gs.RowId AS GuideSetId, gs.TrainingStart, gs.TrainingEnd, gs.ReferenceEnd, \n" +
