@@ -48,8 +48,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -242,7 +240,8 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
                 ParetoPlotsWebPart.MetricTypeTicks.TOTAL_PEAK,
                 ParetoPlotsWebPart.MetricTypeTicks.PAREA,
                 ParetoPlotsWebPart.MetricTypeTicks.TAREA,
-                ParetoPlotsWebPart.MetricTypeTicks.MASSACCURACY,
+                ParetoPlotsWebPart.MetricTypeTicks.TRANSITION_MASS_ERROR,
+                ParetoPlotsWebPart.MetricTypeTicks.PRECURSOR_MASS_ERROR,
                 ParetoPlotsWebPart.MetricTypeTicks.TPAREARATIO,
                 ParetoPlotsWebPart.MetricTypeTicks.RETENTION,
                 ParetoPlotsWebPart.MetricTypeTicks.FWHM,
@@ -271,7 +270,8 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
                 ParetoPlotsWebPart.MetricTypeTicks.TAREA,
                 ParetoPlotsWebPart.MetricTypeTicks.FWB,
                 ParetoPlotsWebPart.MetricTypeTicks.PAREA,
-                ParetoPlotsWebPart.MetricTypeTicks.MASSACCURACY,
+                ParetoPlotsWebPart.MetricTypeTicks.TRANSITION_MASS_ERROR,
+                ParetoPlotsWebPart.MetricTypeTicks.PRECURSOR_MASS_ERROR,
                 ParetoPlotsWebPart.MetricTypeTicks.RETENTION,
                 ParetoPlotsWebPart.MetricTypeTicks.FWHM,
                 ParetoPlotsWebPart.MetricTypeTicks.ISOTOPE_DOTP,
@@ -290,7 +290,8 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
                 ParetoPlotsWebPart.MetricTypeTicks.TAREA,
                 ParetoPlotsWebPart.MetricTypeTicks.FWB,
                 ParetoPlotsWebPart.MetricTypeTicks.ISOTOPE_DOTP,
-                ParetoPlotsWebPart.MetricTypeTicks.MASSACCURACY,
+                ParetoPlotsWebPart.MetricTypeTicks.TRANSITION_MASS_ERROR,
+                ParetoPlotsWebPart.MetricTypeTicks.PRECURSOR_MASS_ERROR,
                 ParetoPlotsWebPart.MetricTypeTicks.PAREA,
                 ParetoPlotsWebPart.MetricTypeTicks.RETENTION,
                 ParetoPlotsWebPart.MetricTypeTicks.TIC_AREA,
@@ -311,7 +312,8 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         verifyTicksOnPlots(paretoPlotsWebPart, guideSetId, plotType,
                 ParetoPlotsWebPart.MetricTypeTicks.TOTAL_PEAK,
                 ParetoPlotsWebPart.MetricTypeTicks.PAREA,
-                ParetoPlotsWebPart.MetricTypeTicks.MASSACCURACY,
+                ParetoPlotsWebPart.MetricTypeTicks.TRANSITION_MASS_ERROR,
+                ParetoPlotsWebPart.MetricTypeTicks.PRECURSOR_MASS_ERROR,
                 ParetoPlotsWebPart.MetricTypeTicks.TAREA,
                 ParetoPlotsWebPart.MetricTypeTicks.TPAREARATIO,
                 ParetoPlotsWebPart.MetricTypeTicks.ISOTOPE_DOTP,

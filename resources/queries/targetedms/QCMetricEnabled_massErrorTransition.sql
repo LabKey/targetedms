@@ -1,0 +1,1 @@
+SELECT Id FROM targetedms.TransitionChromInfo WHERE MassErrorPPM IS NOT NULL AND TransitionId.Charge IS NOT NULL

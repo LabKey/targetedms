@@ -274,7 +274,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         List<QCPlotsWebPart.MetricType> metricTypeWithData =
                 Arrays.asList(QCPlotsWebPart.MetricType.TOTAL_PEAK, QCPlotsWebPart.MetricType.RETENTION, QCPlotsWebPart.MetricType.FWHM,
                         QCPlotsWebPart.MetricType.FWB, QCPlotsWebPart.MetricType.TPAREARATIO, QCPlotsWebPart.MetricType.TPAREAS,
-                        QCPlotsWebPart.MetricType.MASSACCURACY, QCPlotsWebPart.MetricType.TICAREA);
+                        QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR, QCPlotsWebPart.MetricType.TICAREA);
 
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
@@ -403,7 +403,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.checkPlotType(CUSUMv);
 
         // if metric has negative values and we pick log y-axis scale, we should revert to linear scale and show message
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.MASSACCURACY);
+        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR);
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LOG);
         assertEquals("Unexpected number of plots with invalid log scale.", 3, qcPlotsWebPart.getLogScaleInvalidCount());
         assertEquals("Unexpected number of plots with invalid log scale.", 0, qcPlotsWebPart.getLogScaleWarningCount());
