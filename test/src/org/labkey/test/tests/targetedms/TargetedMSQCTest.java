@@ -407,7 +407,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LOG);
         assertEquals("Unexpected number of plots with invalid log scale.", 5, qcPlotsWebPart.getLogScaleInvalidCount());
         assertEquals("Unexpected number of plots with invalid log scale.", 0, qcPlotsWebPart.getLogScaleWarningCount());
-        assertEquals("Unexpected number of plots with log scale 0 value replacement warning.", PRECURSORS.length, qcPlotsWebPart.getLogScaleEpsilonWarningCount());
+        assertEquals("Unexpected number of plots with log scale 0 value replacement warning.", 6, qcPlotsWebPart.getLogScaleEpsilonWarningCount());
 
         // if the guide set expected range error bar goes beyond zero, show log plot message about it
         createGuideSetFromTable(new GuideSet("2013-08-09", "2013-08-28", "all initial data points"));
