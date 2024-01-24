@@ -1520,20 +1520,69 @@ public class TargetedMSController extends SpringActionController
             boolean zoomedRange = qcFolderStartDate != null &&
                     qcFolderEndDate != null && rangeStartDate != null && form.getEndDate() != null &&
                     (DateUtil.getDateOnly(qcFolderStartDate).compareTo(rangeStartDate) != 0 ||
-                    DateUtil.getDateOnly(qcFolderEndDate).compareTo(form.getEndDate()) != 0) ||
-                    form.getReplicateId() != null;
+                    DateUtil.getDateOnly(qcFolderEndDate).compareTo(form.getEndDate()) != 0);
             Map<GuideSetKey, GuideSetStats> targetedStats;
 
-            if (zoomedRange)
+            if (form.getReplicateId() != null && zoomedRange)
+            {
+                int replicateIdx = -1;
+                for (int i = 0; i < rawMetricDataSets.size(); i++)
+                {
+                    RawMetricDataSet rawMetricDataSet = rawMetricDataSets.get(i);
+                    if (rawMetricDataSet.getSampleFile().getId() == form.getReplicateId())
+                    {
+                        // need replicateIdx to get the replicate acquired time
+                        replicateIdx = i;
+                        break;
+                    }
+                }
+                // grab the replicate 10 before and after
+                if (replicateIdx > -1)
+                {
+                    Date replicateAcquiredTime = rawMetricDataSets.get(replicateIdx).getSampleFile().getAcquiredTime();
+                    if (replicateAcquiredTime.after(form.getStartDate()) && replicateAcquiredTime.before(form.getEndDate()))
+                    {
+                        Predicate<RawMetricDataSet> withInDateRange = getTargetedPredicate(qcStartDate, form.getEndDate());
+                        rawMetricDataSets = rawMetricDataSets
+                                .stream()
+                                .filter(withInDateRange)
+                                .collect(Collectors.toList());
+                        targetedStats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+                    }
+                    else if (replicateAcquiredTime.after(form.getStartDate()))
+                    {
+                        Date endDate = rawMetricDataSets.get(replicateIdx).getSampleFile().getAcquiredTime();
+                        Predicate<RawMetricDataSet> withInDateRange = getTargetedPredicate(qcStartDate, endDate);
+                        rawMetricDataSets = rawMetricDataSets
+                                .stream()
+                                .filter(withInDateRange)
+                                .collect(Collectors.toList());
+                        targetedStats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+                    }
+                    else if (replicateAcquiredTime.before(form.getEndDate()))
+                    {
+                        Date startDate = rawMetricDataSets.get(replicateIdx).getSampleFile().getAcquiredTime();
+                        Predicate<RawMetricDataSet> withInDateRange = getTargetedPredicate(startDate, form.getEndDate());
+                        rawMetricDataSets = rawMetricDataSets
+                                .stream()
+                                .filter(withInDateRange)
+                                .collect(Collectors.toList());
+                        targetedStats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+                    }
+                    else
+                    {
+                        targetedStats = stats;
+                    }
+                }
+                else
+                {
+                    targetedStats = stats;
+                }
+            }
+            else if (zoomedRange)
             {
                 // filter the stats for targeted range
-                Predicate<RawMetricDataSet> withInDateRange = rawMetricDataSet -> rawMetricDataSet.getSampleFile().getAcquiredTime() != null &&
-                        (qcStartDate != null &&
-                        (rawMetricDataSet.getSampleFile().getAcquiredTime().after(qcStartDate)
-                                || DateUtil.getDateOnly(rawMetricDataSet.getSampleFile().getAcquiredTime()).compareTo(DateUtil.getDateOnly(qcStartDate)) == 0)) &&
-                        (form.getEndDate() != null &&
-                        (rawMetricDataSet.getSampleFile().getAcquiredTime().before(form.getEndDate())
-                                || DateUtil.getDateOnly(rawMetricDataSet.getSampleFile().getAcquiredTime()).compareTo(DateUtil.getDateOnly(form.getEndDate())) == 0));
+                Predicate<RawMetricDataSet> withInDateRange = getTargetedPredicate(qcStartDate, form.getEndDate());
                 rawMetricDataSets = rawMetricDataSets
                         .stream()
                         .filter(withInDateRange)
@@ -1566,6 +1615,19 @@ public class TargetedMSController extends SpringActionController
             response.put("filterQCPoints", filterQCPoints);
 
             return response;
+        }
+
+
+        private Predicate<RawMetricDataSet> getTargetedPredicate(Date qcStartDate, Date qcEndDate)
+        {
+            return rawMetricDataSet -> rawMetricDataSet.getSampleFile().getAcquiredTime() != null &&
+                    (qcStartDate != null &&
+                            (rawMetricDataSet.getSampleFile().getAcquiredTime().after(qcStartDate)
+                                    || DateUtil.getDateOnly(rawMetricDataSet.getSampleFile().getAcquiredTime()).compareTo(DateUtil.getDateOnly(qcStartDate)) == 0)) &&
+                    (qcEndDate != null &&
+                            (rawMetricDataSet.getSampleFile().getAcquiredTime().before(qcEndDate)
+                                    || DateUtil.getDateOnly(rawMetricDataSet.getSampleFile().getAcquiredTime()).compareTo(DateUtil.getDateOnly(qcEndDate)) == 0));
+
         }
 
         private GuideSet getClosestPastGuideSet(List<GuideSet> guideSets, Date startDate)
