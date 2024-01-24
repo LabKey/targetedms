@@ -228,12 +228,12 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         setAutoQCPingTimeOut(QCPING_TIMEOUT);
 
         waitForElements(Locator.tagWithClass("div", "sample-file-item"), 6);
-        tempStringList01.put("Q_Exactive_08_23_2013_JGB_58", "27");
-        tempStringList01.put("Q_Exactive_08_23_2013_JGB_51", "26");
-        tempStringList01.put("Q_Exactive_08_23_2013_JGB_37", "31");
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_58", "Acquired: 2013-08-27 14:45"));
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_51", "Acquired: 2013-08-27 03:19"));
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_37", "Acquired: 2013-08-26 04:27"));
+        tempStringList01.put("Q_Exactive_08_23_2013_JGB_58", "0");
+        tempStringList01.put("Q_Exactive_08_23_2013_JGB_51", "0");
+        tempStringList01.put("Q_Exactive_08_23_2013_JGB_37", "1");
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_58", "acquired 2013-08-27 14:45"));
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_51", "acquired 2013-08-27 03:19"));
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_37", "acquired 2013-08-26 04:27"));
         validateSampleFile(0, tempStringList01, tempStringList02);
 
         validateAutoQCStatus(MAIN_SUMMARY, Arrays.asList("qc-none", "fa-circle-o"), "AutoQC has never pinged this folder");
@@ -290,9 +290,9 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         waitForRecentSampleFiles(6);
 
         tempStringList01.clear();
-        tempStringList01.put("Q_Exactive_08_23_2013_JGB_58", "2");
-        tempStringList01.put("Q_Exactive_08_23_2013_JGB_51", "4");
-        tempStringList01.put("Q_Exactive_08_23_2013_JGB_37", "1");
+        tempStringList01.put("Q_Exactive_08_23_2013_JGB_58", "1");
+        tempStringList01.put("Q_Exactive_08_23_2013_JGB_51", "0");
+        tempStringList01.put("Q_Exactive_08_23_2013_JGB_37", "0");
 
         tempStringList02.clear();
         tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_58", "Full Width at Half Maximum (FWHM) 1 1 0 0 0 0"));
