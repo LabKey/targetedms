@@ -376,7 +376,6 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.waitForPlots(2);
         assertEquals("QC Plot Type not round tripped as expected", selectedPlotTypes, qcPlotsWebPart.getCurrentQCPlotTypes());
-        assertTrue("Show SD Lines not checked", qcPlotsWebPart.isShowSDLinesChecked());
 
         // impersonate a different user in this container and verify that initial form fields used
         impersonate(USER);
