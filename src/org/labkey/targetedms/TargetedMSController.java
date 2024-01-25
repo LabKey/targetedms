@@ -744,6 +744,7 @@ public class TargetedMSController extends SpringActionController
         {
             PropertyManager.PropertyMap current = PropertyManager.getProperties(getUser(), getContainer(), QCFolderConstants.CATEGORY);
             PropertyManager.PropertyMap defaults = PropertyManager.getWritableProperties(getContainer(), QCFolderConstants.CATEGORY, true);
+            defaults.clear(); // Clear the map. There may be properties that are no longer applicable (e.g. selectedAnnotations, startDate, endDate).
             defaults.putAll(current);
             defaults.save();
 
