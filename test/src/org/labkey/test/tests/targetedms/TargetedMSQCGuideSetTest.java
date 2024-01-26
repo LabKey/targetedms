@@ -194,7 +194,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         // 4 of the 5 guide sets are visible in plot region based on the initial data
         List<Pair<String, Integer>> shapeCounts = new ArrayList<>();
         shapeCounts.add(Pair.of(SvgShapes.CIRCLE.getPathPrefix(), 289));
-        shapeCounts.add(Pair.of(SvgShapes.CIRCLE_OPEN.getPathPrefix(), 40));
+        shapeCounts.add(Pair.of(SvgShapes.TRIANGLE.getPathPrefix(), 40));
         verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 4, shapeCounts, 47);
 
         // check box for group x-axis values by date and verify
