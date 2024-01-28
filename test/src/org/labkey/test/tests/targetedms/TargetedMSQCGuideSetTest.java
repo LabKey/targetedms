@@ -485,8 +485,8 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         gs.addStats(new GuideSetStats("fwb", 1, PRECURSORS[0], 0.29160022735595703, null));
         gs.addStats(new GuideSetStats("lhRatio", 0));
         gs.addStats(new GuideSetStats("transitionPrecursorRatio", 1, PRECURSORS[0], 0.06410326063632965, null));
-        gs.addStats(new GuideSetStats("massErrorPrecursor", 1, PRECURSORS[0], -0.0025051420088857412, null));
-        gs.addStats(new GuideSetStats("massErrorTransition", 1, PRECURSORS[0], -0.0025051420088857412, null));
+        gs.addStats(new GuideSetStats("massErrorPrecursor", 1, PRECURSORS[0], 0.0, null));
+        gs.addStats(new GuideSetStats("massErrorTransition", 1, PRECURSORS[0], 2.5, null));
         gs.addStats(new GuideSetStats("transitionArea", 1, PRECURSORS[0], 6.99620416E8, null));
         gs.addStats(new GuideSetStats("precursorArea", 1, PRECURSORS[0], 1.0913959936E10, null));
 
