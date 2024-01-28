@@ -229,19 +229,20 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         int guideSetId = 4;
         log("Verifying Pareto Plots for " + plotType.getLabel());
         assertEquals("Wrong number of non-conformers for PA", 69, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 0));
-        assertEquals("Wrong number of non-conformers for P Area", 64, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 1));
-        assertEquals("Wrong number of non-conformers for T Area", 60, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 2));
-        assertEquals("Wrong number of non-conformers for MA", 57, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 3));
-        assertEquals("Wrong number of non-conformers for T/P Ratio", 29, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 4));
-        assertEquals("Wrong number of non-conformers for RT", 16, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 5));
-        assertEquals("Wrong number of non-conformers for FWHM", 13, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 6));
-        assertEquals("Wrong number of non-conformers for FWB", 7, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 7));
+        assertEquals("Wrong number of non-conformers for P Mass Error", 65, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 1));
+        assertEquals("Wrong number of non-conformers for P Area", 64, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 2));
+        assertEquals("Wrong number of non-conformers for T Area", 60, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 3));
+        assertEquals("Wrong number of non-conformers for T Mass Error", 49, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 4));
+        assertEquals("Wrong number of non-conformers for T/P Ratio", 29, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 5));
+        assertEquals("Wrong number of non-conformers for RT", 16, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 6));
+        assertEquals("Wrong number of non-conformers for FWHM", 13, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 7));
+        assertEquals("Wrong number of non-conformers for FWB", 7, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 8));
         verifyTicksOnPlots(paretoPlotsWebPart, guideSetId, plotType,
                 ParetoPlotsWebPart.MetricTypeTicks.TOTAL_PEAK,
+                ParetoPlotsWebPart.MetricTypeTicks.PRECURSOR_MASS_ERROR,
                 ParetoPlotsWebPart.MetricTypeTicks.PAREA,
                 ParetoPlotsWebPart.MetricTypeTicks.TAREA,
                 ParetoPlotsWebPart.MetricTypeTicks.TRANSITION_MASS_ERROR,
-                ParetoPlotsWebPart.MetricTypeTicks.PRECURSOR_MASS_ERROR,
                 ParetoPlotsWebPart.MetricTypeTicks.TPAREARATIO,
                 ParetoPlotsWebPart.MetricTypeTicks.RETENTION,
                 ParetoPlotsWebPart.MetricTypeTicks.FWHM,
@@ -255,29 +256,30 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         waitForElement(Locator.css("svg"));
         plotType = ParetoPlotsWebPart.ParetoPlotType.MovingRange;
         log("Verifying non-conformers for " + plotType.getLabel());
-        assertEquals("Wrong number of non-conformers for PA", 37, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 0));
-        assertEquals("Wrong number of non-conformers for T Area", 34, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 1));
-        assertEquals("Wrong number of non-conformers for FWB", 30, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 2));
-        assertEquals("Wrong number of non-conformers for P Area", 30, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 3));
-        assertEquals("Wrong number of non-conformers for MA", 21, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 4));
-        assertEquals("Wrong number of non-conformers for RT", 17, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 5));
-        assertEquals("Wrong number of non-conformers for FWHM", 12, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 6));
-        assertEquals("Wrong number of non-conformers for Isotope dotp", 5, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 7));
-        assertEquals("Wrong number of non-conformers for area ratio", 4, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 8));
-        assertEquals("Wrong number of non-conformers for TIC area", 2, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 9));
+        assertEquals("Wrong number of non-conformers for P Mass Error", 40, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 0));
+        assertEquals("Wrong number of non-conformers for PA", 37, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 1));
+        assertEquals("Wrong number of non-conformers for T Area", 34, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 2));
+        assertEquals("Wrong number of non-conformers for FWB", 30, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 3));
+        assertEquals("Wrong number of non-conformers for P Area", 30, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 4));
+        assertEquals("Wrong number of non-conformers for T Mass Error MA", 29, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 5));
+        assertEquals("Wrong number of non-conformers for RT", 17, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 6));
+        assertEquals("Wrong number of non-conformers for FWHM", 12, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 7));
+        assertEquals("Wrong number of non-conformers for Isotope dotp", 5, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 8));
+        assertEquals("Wrong number of non-conformers for area ratio", 4, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 9));
+        assertEquals("Wrong number of non-conformers for TIC area", 2, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 10));
         verifyTicksOnPlots(paretoPlotsWebPart, guideSetId, plotType,
+                ParetoPlotsWebPart.MetricTypeTicks.PRECURSOR_MASS_ERROR,
                 ParetoPlotsWebPart.MetricTypeTicks.TOTAL_PEAK,
                 ParetoPlotsWebPart.MetricTypeTicks.TAREA,
                 ParetoPlotsWebPart.MetricTypeTicks.FWB,
                 ParetoPlotsWebPart.MetricTypeTicks.PAREA,
                 ParetoPlotsWebPart.MetricTypeTicks.TRANSITION_MASS_ERROR,
-                ParetoPlotsWebPart.MetricTypeTicks.PRECURSOR_MASS_ERROR,
                 ParetoPlotsWebPart.MetricTypeTicks.RETENTION,
                 ParetoPlotsWebPart.MetricTypeTicks.FWHM,
                 ParetoPlotsWebPart.MetricTypeTicks.ISOTOPE_DOTP,
                 ParetoPlotsWebPart.MetricTypeTicks.TPAREARATIO,
                 ParetoPlotsWebPart.MetricTypeTicks.TIC_AREA);
-        verifyNavigationToPanoramaDashboard(guideSetId, QCPlotsWebPart.QCPlotType.MovingRange, 0, QCPlotsWebPart.MetricType.TOTAL_PEAK, true);
+        verifyNavigationToPanoramaDashboard(guideSetId, QCPlotsWebPart.QCPlotType.MovingRange, 0, QCPlotsWebPart.MetricType.PRECURSOR_MASS_ERROR, true);
 
         clickAndWait(Locator.linkWithText("Pareto Plot")); //go to Pareto Plot tab
         waitForElement(Locator.css("svg"));
@@ -290,12 +292,12 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
                 ParetoPlotsWebPart.MetricTypeTicks.TAREA,
                 ParetoPlotsWebPart.MetricTypeTicks.FWB,
                 ParetoPlotsWebPart.MetricTypeTicks.ISOTOPE_DOTP,
-                ParetoPlotsWebPart.MetricTypeTicks.TRANSITION_MASS_ERROR,
-                ParetoPlotsWebPart.MetricTypeTicks.PRECURSOR_MASS_ERROR,
                 ParetoPlotsWebPart.MetricTypeTicks.PAREA,
+                ParetoPlotsWebPart.MetricTypeTicks.PRECURSOR_MASS_ERROR,
                 ParetoPlotsWebPart.MetricTypeTicks.RETENTION,
                 ParetoPlotsWebPart.MetricTypeTicks.TIC_AREA,
                 ParetoPlotsWebPart.MetricTypeTicks.TOTAL_PEAK,
+                ParetoPlotsWebPart.MetricTypeTicks.TRANSITION_MASS_ERROR,
                 ParetoPlotsWebPart.MetricTypeTicks.TPAREARATIO);
         verifyNavigationToPanoramaDashboard(guideSetId, QCPlotsWebPart.QCPlotType.CUSUMv, 0, QCPlotsWebPart.MetricType.FWHM, true);
 
@@ -306,14 +308,16 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         log("Verifying non-conformers for " + plotType.getLabel());
         assertEquals("Wrong number of non-conformers for PA", "CUSUM-: 3 CUSUM+: 4 Total: 7", paretoPlotsWebPart.getPlotBarTooltip(guideSetId, plotType, 0));
         assertEquals("Wrong number of non-conformers for P Area", "CUSUM-: 2 CUSUM+: 4 Total: 6", paretoPlotsWebPart.getPlotBarTooltip(guideSetId, plotType, 1));
-        assertEquals("Wrong number of non-conformers for MA", "CUSUM-: 0 CUSUM+: 5 Total: 5", paretoPlotsWebPart.getPlotBarTooltip(guideSetId, plotType, 2));
-        assertEquals("Wrong number of non-conformers for T Area", "CUSUM-: 4 CUSUM+: 0 Total: 4", paretoPlotsWebPart.getPlotBarTooltip(guideSetId, plotType, 3));
-        assertEquals("Wrong number of non-conformers for T/P Ratio", "CUSUM-: 3 CUSUM+: 1 Total: 4", paretoPlotsWebPart.getPlotBarTooltip(guideSetId, plotType, 4));
+        assertEquals("Wrong number of non-conformers for P Mass Error", "CUSUM-: 0 CUSUM+: 6 Total: 6", paretoPlotsWebPart.getPlotBarTooltip(guideSetId, plotType, 2));
+        assertEquals("Wrong number of non-conformers for T Mass Error", "CUSUM-: 2 CUSUM+: 4 Total: 6", paretoPlotsWebPart.getPlotBarTooltip(guideSetId, plotType, 3));
+        assertEquals("Wrong number of non-conformers for T Area", "CUSUM-: 4 CUSUM+: 0 Total: 4", paretoPlotsWebPart.getPlotBarTooltip(guideSetId, plotType, 4));
+        assertEquals("Wrong number of non-conformers for T/P Ratio", "CUSUM-: 3 CUSUM+: 1 Total: 4", paretoPlotsWebPart.getPlotBarTooltip(guideSetId, plotType, 5));
+        assertEquals("Wrong number of non-conformers for Isotope dtop", "CUSUM-: 1 CUSUM+: 0 Total: 1", paretoPlotsWebPart.getPlotBarTooltip(guideSetId, plotType, 6));
         verifyTicksOnPlots(paretoPlotsWebPart, guideSetId, plotType,
                 ParetoPlotsWebPart.MetricTypeTicks.TOTAL_PEAK,
                 ParetoPlotsWebPart.MetricTypeTicks.PAREA,
-                ParetoPlotsWebPart.MetricTypeTicks.TRANSITION_MASS_ERROR,
                 ParetoPlotsWebPart.MetricTypeTicks.PRECURSOR_MASS_ERROR,
+                ParetoPlotsWebPart.MetricTypeTicks.TRANSITION_MASS_ERROR,
                 ParetoPlotsWebPart.MetricTypeTicks.TAREA,
                 ParetoPlotsWebPart.MetricTypeTicks.TPAREARATIO,
                 ParetoPlotsWebPart.MetricTypeTicks.ISOTOPE_DOTP,
@@ -501,8 +505,8 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         gs.addStats(new GuideSetStats("fwb", 10, PRECURSORS[1], 0.32562103271484377, 0.02468766649130722));
         gs.addStats(new GuideSetStats("lhRatio", 0));
         gs.addStats(new GuideSetStats("transitionPrecursorRatio", 10, PRECURSORS[1], 0.16636697351932525, 0.024998646348985));
-        gs.addStats(new GuideSetStats("massErrorPrecursor", 10, PRECURSORS[1], -0.14503030776977538, 0.5113428116648383));
-        gs.addStats(new GuideSetStats("massErrorTransition", 10, PRECURSORS[1], -0.14503030776977538, 0.5113428116648383));
+        gs.addStats(new GuideSetStats("massErrorPrecursor", 10, PRECURSORS[1], 3.609999966621399, 0.8924996018727984));
+        gs.addStats(new GuideSetStats("massErrorTransition", 10, PRECURSORS[1], 2.05, 2.5448204452171983));
         gs.addStats(new GuideSetStats("transitionArea", 10, PRECURSORS[1], 4.086185472E10, 6.243547152656243E9));
         gs.addStats(new GuideSetStats("precursorArea", 10, PRECURSORS[1], 2.52211666944E11, 5.881135711787484E10));
 
@@ -517,8 +521,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         gs.addStats(new GuideSetStats("fwb", 4, PRECURSORS[2], 0.2592000961303711, 0.013227298183650286));
         gs.addStats(new GuideSetStats("lhRatio", 0));
         gs.addStats(new GuideSetStats("transitionPrecursorRatio", 4, PRECURSORS[2], 0.0, 0.0));
-        gs.addStats(new GuideSetStats("massErrorPrecursor", 4, PRECURSORS[2], 1.7878320217132568, 0.09473514310269647));
-        gs.addStats(new GuideSetStats("massErrorTransition", 4, PRECURSORS[2], 1.7878320217132568, 0.09473514310269647));
+        gs.addStats(new GuideSetStats("massErrorPrecursor", 4, PRECURSORS[2], 2.224999964237213, 0.09574272322665602));
         gs.addStats(new GuideSetStats("transitionArea", 4, PRECURSORS[2], 0.0, 0.0));
         gs.addStats(new GuideSetStats("precursorArea", 4, PRECURSORS[2], 1.1564451584E10, 1.5713148731374376E9));
 
@@ -533,8 +536,8 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         gs.addStats(new GuideSetStats("fwb", 2, PRECURSORS[3], 0.21870040893554688, 0.011455850600049085));
         gs.addStats(new GuideSetStats("lhRatio", 0));
         gs.addStats(new GuideSetStats("transitionPrecursorRatio", 2, PRECURSORS[3], 0.06426714546978474, 0.02016935064728605));
-        gs.addStats(new GuideSetStats("massErrorPrecursor", 2, PRECURSORS[3], 1.6756309866905212, 0.23667992679147354));
-        gs.addStats(new GuideSetStats("massErrorTransition", 2, PRECURSORS[3], 1.6756309866905212, 0.23667992679147354));
+        gs.addStats(new GuideSetStats("massErrorPrecursor", 2, PRECURSORS[3], 2.850000023841858, 0.21213200063848545));
+        gs.addStats(new GuideSetStats("massErrorTransition", 2, PRECURSORS[3], 4.700000047683716, 0.14142155854218236));
         gs.addStats(new GuideSetStats("transitionArea", 2, PRECURSORS[3], 3.376995072E9, 9.104153900486555E8));
         gs.addStats(new GuideSetStats("precursorArea", 2, PRECURSORS[3], 5.2929908736E10, 2.4452091904685783E9));
 
