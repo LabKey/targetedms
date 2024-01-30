@@ -848,10 +848,10 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.setShowExcludedPoints(true);
         qcPlotsWebPart.waitForPlots(2);
 
+        int excludedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
+        assertEquals("Unexpected number of excluded data points in plot SVG", 6, excludedPointCount);
         int includedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of included data points in plot SVG", 6, includedPointCount);
-        int excludedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.TRIANGLE.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of included data points in plot SVG", 0, excludedPointCount);
+        assertEquals("Unexpected number of included data points in plot SVG", 0, includedPointCount);
 
         // verify that the plot data points are excluded and then change the state to re-include it
         String acquiredDateStr = getAcquiredDateDisplayStr(sampleFileAcquiredDates[0]);
