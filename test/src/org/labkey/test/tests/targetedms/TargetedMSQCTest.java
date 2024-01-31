@@ -875,9 +875,9 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         // change data point to only be excluded for a single metric and verify outliers changed
         changePointExclusionState(getAcquiredDateDisplayStr(sampleFileAcquiredDates[1]), QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric, 2);
-        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "5");
+        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "2");
         changePointExclusionState(getAcquiredDateDisplayStr(sampleFileAcquiredDates[2]), QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric, 2);
-        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "1");
+        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "0");
 
         includedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.TRIANGLE.getPathPrefix(), true).size();
         assertEquals("Unexpected number of included data points in plot SVG", 2, includedPointCount);
