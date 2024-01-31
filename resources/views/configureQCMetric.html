@@ -22,7 +22,7 @@
                                 '<tr>' +
                                     '<td class="labkey-column-header">Name</td>' +
                                     '<td class="labkey-column-header">Type</td>' +
-                                    '<td class="labkey-column-header">Status</td>' +
+                                    '<td class="labkey-column-header">Metric Usage</td>' +
                                     '<td class="labkey-column-header">Lower bound</td>' +
                                     '<td class="labkey-column-header">Upper bound</td>' +
                                 '</tr>';
@@ -44,8 +44,8 @@
                     qcMetricsTable += '<td>' + '<select name=\"' + LABKEY.Utils.encodeHtml(row.name) + '\" id=\"' + "select-" + row.id + '\">' +
                             '<option value="LeveyJennings" ' + (row.EffectiveStatus === 'LeveyJennings' ? 'selected' : '') + '>Levey-Jennings (+/- standard deviations)</option>' +
                             '<option value="ValueCutoff" ' + (row.EffectiveStatus === 'ValueCutoff' ? 'selected' : '') + '>Fixed value cutoff</option>' +
-                            '<option value="PlotOnly" ' + (row.EffectiveStatus === 'PlotOnly' ? 'selected' : '') + '>No outliers</option>' +
-                            '<option value="Disabled" ' + (row.EffectiveStatus === 'Disabled' ? 'selected' : '') + '>Disabled</option>' +
+                            '<option value="PlotOnly" ' + (row.EffectiveStatus === 'PlotOnly' ? 'selected' : '') + '>Show metric in plots, but don\'t identify outliers</option>' +
+                            '<option value="Disabled" ' + (row.EffectiveStatus === 'Disabled' ? 'selected' : '') + '>Disabled, completely hide the metric</option>' +
                             '</select>' +
                             '</td>';
                 }
