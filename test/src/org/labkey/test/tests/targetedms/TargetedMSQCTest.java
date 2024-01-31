@@ -871,7 +871,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         // create a guide set and verify updated QC Summary outliers info
         qcPlotsWebPart.createGuideSet(new GuideSet(sampleFileAcquiredDates[0], sampleFileAcquiredDates[1], null, 2), null);
-        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "16");
+        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "8");
 
         // change data point to only be excluded for a single metric and verify outliers changed
         changePointExclusionState(getAcquiredDateDisplayStr(sampleFileAcquiredDates[1]), QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric, 2);
@@ -879,10 +879,10 @@ public class TargetedMSQCTest extends TargetedMSTest
         changePointExclusionState(getAcquiredDateDisplayStr(sampleFileAcquiredDates[2]), QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric, 2);
         verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "1");
 
-        includedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
+        includedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.TRIANGLE.getPathPrefix(), true).size();
         assertEquals("Unexpected number of included data points in plot SVG", 2, includedPointCount);
-        excludedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of included data points in plot SVG", 4, excludedPointCount);
+        excludedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
+        assertEquals("Unexpected number of excluded data points in plot SVG", 4, excludedPointCount);
     }
 
     /*
