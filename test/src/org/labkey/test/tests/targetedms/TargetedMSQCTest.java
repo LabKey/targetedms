@@ -880,9 +880,9 @@ public class TargetedMSQCTest extends TargetedMSTest
         verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "0");
 
         includedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of included data points in plot SVG", 2, includedPointCount);
+        assertEquals("Unexpected number of included data points in plot SVG", 4, includedPointCount);
         excludedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of excluded data points in plot SVG", 4, excludedPointCount);
+        assertEquals("Unexpected number of excluded data points in plot SVG", 2, excludedPointCount);
     }
 
     /*
