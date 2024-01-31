@@ -1563,7 +1563,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 let outlierRect = "rect.outlier-" + j;
 
                 let color;
-                if (data.LJShape.indexOf('Outlier') > -1) {
+                if (data && data.LJShape && data.LJShape.indexOf('Outlier') > -1) {
                     color = '#C50000FF';
                 }
                 else {
