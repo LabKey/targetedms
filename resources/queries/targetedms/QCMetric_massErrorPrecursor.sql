@@ -16,5 +16,5 @@
 SELECT
   Id AS PrecursorChromInfoId,
   SampleFileId AS SampleFileId,
-  AverageMassErrorPPM AS MetricValue
+  BestMassErrorPPM AS MetricValue
 FROM PrecursorChromInfo

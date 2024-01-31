@@ -129,7 +129,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         assertEquals("Mismatch in the expected number of notification", 1, notifications.getEmailCount());
         EmailRecordTable.EmailMessage message = notifications.getMessageWithSubjectContaining("Panorama QC Notification");
         notifications.clickMessage(message);
-        assertTextPresent("38 outliers"); //Total outliers
+        assertTextPresent("40 outliers"); //Total outliers
 
         //Added additional verification as part of isotoplogue story
         qcDashboard = goToDashboard();

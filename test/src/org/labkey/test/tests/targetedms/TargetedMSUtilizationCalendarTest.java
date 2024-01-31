@@ -124,8 +124,8 @@ public class TargetedMSUtilizationCalendarTest extends TargetedMSTest
                 Q_Exactive_08_14_2013_JGB_70 (0 outliers)
                 Q_Exactive_08_14_2013_JGB_71 (0 outliers)
                 Q_Exactive_08_14_2013_JGB_72 (0 outliers)
-                Q_Exactive_08_14_2013_JGB_74 (0 outliers)
-                Q_Exactive_08_14_2013_JGB_75 (0 outliers)
+                Q_Exactive_08_14_2013_JGB_74 (1 outliers)
+                Q_Exactive_08_14_2013_JGB_75 (1 outliers)
                 Q_Exactive_08_14_2013_JGB_76 (1 outliers)
                 Q_Exactive_08_14_2013_JGB_78 (1 outliers)""",
                 utilizationCalendar.getToolTipText(startDate));
