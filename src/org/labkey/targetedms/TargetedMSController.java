@@ -204,8 +204,8 @@ import org.springframework.web.servlet.ModelAndView;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
