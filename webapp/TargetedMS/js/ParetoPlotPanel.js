@@ -54,7 +54,7 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
                 this.addOutlierToCounts(guideSet, data, metricName,'CUSUMm', 'CUSUMm', true);
                 this.addOutlierToCounts(guideSet, data, metricName, 'CUSUMv', 'CUSUMv', true);
                 this.addOutlierToCounts(guideSet, data, metricName, 'mR', 'Moving Range', true);
-                this.addOutlierToCounts(guideSet, data, metricName, 'Value', 'Levey-Jennings', true);
+                this.addOutlierToCounts(guideSet, data, metricName, 'Value', 'Metric Value', true);
             }, this);
 
             Ext4.iterate(guideSet.stats, function(outlierType, data) {
