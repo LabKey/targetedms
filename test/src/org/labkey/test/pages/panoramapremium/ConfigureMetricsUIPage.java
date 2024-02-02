@@ -65,7 +65,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
 
     public ConfigureMetricsUIPage enableMetric(String metric)
     {
-        selectOptionByText(Locator.name(metric),"Enabled");
+        selectOptionByText(Locator.name(metric),"Levey-Jennings (+/- standard deviations)");
         return this;
     }
 
