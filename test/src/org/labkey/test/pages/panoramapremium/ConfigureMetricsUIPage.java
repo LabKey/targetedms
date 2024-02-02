@@ -71,7 +71,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
 
     public ConfigureMetricsUIPage disableMetric(String metric)
     {
-        selectOptionByText(Locator.name(metric),"Disabled");
+        selectOptionByText(Locator.name(metric),"Disabled, completely hide the metric");
         return this;
     }
 

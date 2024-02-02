@@ -61,7 +61,7 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
 
         log("Verifying links does not navigate to SM application");
         navigateToFolder(getProjectName(), TargetedMS_SubFolder);
-        waitAndClickAndWait(Locator.linkContainingText("sample files"));
+        waitAndClickAndWait(Locator.linkContainingText("replicates"));
         assertTextPresent(s1, s2, s3);
         assertElementNotPresent(Locator.linkWithText(s1));
         assertElementNotPresent(Locator.linkWithText(s2));
