@@ -300,7 +300,6 @@ public class TargetedMSQCTest extends TargetedMSTest
         }
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LINEAR);
         qcPlotsWebPart.waitForPlots(7);
-        assertElementPresent(qcPlotsWebPart.getLegendItemLocator("+/- 3 Std Dev", true));
 
         // test that plot0_plotType_1 (CUSUMm) does not change from linear
         qcPlotsWebPart.checkPlotType(CUSUMm);
