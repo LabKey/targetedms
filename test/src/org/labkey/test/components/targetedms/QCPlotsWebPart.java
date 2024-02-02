@@ -263,16 +263,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         elementCache().showExcludedPrecursors.set(check);
     }
 
-    public void setShowSDLines(boolean check)
-    {
-        elementCache().showSDLines.set(check);
-    }
-
-    public boolean isShowSDLinesChecked()
-    {
-        return elementCache().showSDLines.isChecked();
-    }
-
     public boolean isShowReferenceGuideSetChecked()
     {
         return elementCache().showReferenceGuideSet.isChecked();
@@ -842,8 +832,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         Checkbox showReferenceGuideSet = new Checkbox(Locator.css("#show-oorange-gs input")
                 .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
         Checkbox showExcludedPrecursors = new Checkbox(Locator.css("#show-excluded-precursors input")
-                .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
-        Checkbox showSDLines = new Checkbox(Locator.css("#show-sd-lines")
                 .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
 
 

@@ -211,7 +211,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
             }
 
             if ( (metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.LeveyJennings || metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.PlotOnly) &&
-                    (!this.singlePlot || this.yAxisScale === 'standardDeviation')) {
+                    (!this.singlePlot && this.yAxisScale === 'standardDeviation')) {
 
                 let upper = Number.isFinite(metricInfo.upperBound) ? metricInfo.upperBound : 3;
                 let lower = Number.isFinite(metricInfo.lowerBound) ? metricInfo.lowerBound : -3;

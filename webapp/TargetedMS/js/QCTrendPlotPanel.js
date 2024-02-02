@@ -73,7 +73,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     showExcluded: false,
     showExcludedPrecursors: false,
     showReferenceGS: true,
-    hideSDLines: true,
     plotWidth: null,
     enableBrushing: false,
     havePlotOptionsChanged: false,
@@ -426,8 +425,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             toolbarItems.push(this.getShowReferenceCheckbox());
             toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
             toolbarItems.push(this.getShowExcludedPrecursorsCheckbox());
-            toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
-            toolbarItems.push(this.getShowSDLinesCheckBox());
 
             this.otherPlotOptionsToolbar = Ext4.create('Ext.toolbar.Toolbar', {
                 ui: 'footer',
@@ -1025,27 +1022,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }
 
         return this.showExcludedPrecursorsCheckbox;
-    },
-
-    getShowSDLinesCheckBox: function () {
-        if (!this.showSDLinesCheckBox) {
-            this.showSDLinesCheckBox = Ext4.create('Ext.form.field.Checkbox', {
-               id: 'show-sd-lines',
-               boxLabel: 'Show +-1/2 SD Lines',
-                checked: !this.hideSDLines,
-                listeners: {
-                    scope: this,
-                    change: function(cb, newValue, oldValue) {
-                        this.hideSDLines = !newValue;
-                        this.havePlotOptionsChanged = true;
-
-                        this.setLoadingMsg();
-                        this.getAnnotationData();
-                    }
-                }
-            });
-        }
-        return this.showSDLinesCheckBox;
     },
 
     resetFilterPointsIndices: function() {
@@ -2064,8 +2040,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             dateRangeOffset: this.dateRangeOffset,
             selectedAnnotations: annotationsProp,
             showExcludedPrecursors: this.showExcludedPrecursors,
-            trailingRuns: this.trailingRuns,
-            hideSDLines: this.hideSDLines
+            trailingRuns: this.trailingRuns
         };
 
         // set start and end date to null unless we are

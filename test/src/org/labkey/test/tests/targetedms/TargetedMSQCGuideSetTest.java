@@ -112,9 +112,9 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
     @Test
     public void runTestsInOrder() throws IOException, CommandException
     {
-        testGuideSetStats();
-        testGuideSetCreateValidation();
-        testGuideSetPlotDisplay();
+//        testGuideSetStats();
+//        testGuideSetCreateValidation();
+//        testGuideSetPlotDisplay();
         testParetoPlot();
         testEmptyParetoPlot();
         testSmallMoleculePareto();

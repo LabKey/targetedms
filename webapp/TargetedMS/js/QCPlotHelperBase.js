@@ -119,7 +119,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         plotsConfig.trailingRuns = this.trailingRuns;
         plotsConfig.includeTrailingMeanPlot = this.showTrailingMeanPlot();
         plotsConfig.includeTrailingCVPlot = this.showTrailingCVPlot();
-        plotsConfig.hideSDLines = this.hideSDLines;
 
         let urlParams = LABKEY.ActionURL.getParameters();
         if (parseInt(urlParams['replicateId']) > 0) {
@@ -738,10 +737,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(combinePlotData, plotType, isCUSUMMean, metricProps));
 
-        if (this.hideSDLines) {
-            trendLineProps.hideSDLines = true;
-        }
-
         // Suppress the mean line for multi-series plots
         trendLineProps.mean = undefined;
 
@@ -850,10 +845,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         if (this.filterQCPoints && this.filterPoints) {
             trendLineProps.lineColor = '#000000';
             trendLineProps.groupBy = "ReferenceRangeSeries";
-        }
-
-        if (this.hideSDLines) {
-            trendLineProps.hideSDLines = true;
         }
 
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(precursorInfo, plotType, isCUSUMMean, metricProps));
