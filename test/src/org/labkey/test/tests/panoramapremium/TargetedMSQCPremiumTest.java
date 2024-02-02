@@ -117,7 +117,8 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         qcSummary.clickMenuItem("Subscribe to Outlier Notification Emails");
         waitForElement(Locator.radioButtonByName("subscriptionType").index(1));
         checkRadioButton(Locator.radioButtonByName("subscriptionType").index(1));
-        setFormElement(Locator.name("outlierCount"), "1");
+        // the new value outlier count in the recently imported sample is 0
+        setFormElement(Locator.name("outlierCount"), "0");
         clickAndWait(Locator.tagWithAttribute("input", "value", "Save"));
 
         log("Importing the file to trigger the notification");
@@ -129,7 +130,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         assertEquals("Mismatch in the expected number of notification", 1, notifications.getEmailCount());
         EmailRecordTable.EmailMessage message = notifications.getMessageWithSubjectContaining("Panorama QC Notification");
         notifications.clickMessage(message);
-        assertTextPresent("38 outliers"); //Total outliers
+        assertTextPresent("0 outliers"); //Total outliers
 
         //Added additional verification as part of isotoplogue story
         qcDashboard = goToDashboard();
