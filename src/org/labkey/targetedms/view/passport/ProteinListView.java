@@ -16,8 +16,8 @@ import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.passport.PassportController;
 import org.springframework.validation.Errors;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 public class ProteinListView extends QueryView
 {

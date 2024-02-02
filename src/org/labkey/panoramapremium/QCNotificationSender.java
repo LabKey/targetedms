@@ -20,7 +20,7 @@ import org.labkey.api.util.PageFlowUtil;
 import org.labkey.panoramapremium.model.UserSubscription;
 import org.labkey.targetedms.TargetedMSManager;
 
-import javax.mail.Message;
+import jakarta.mail.Message;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;

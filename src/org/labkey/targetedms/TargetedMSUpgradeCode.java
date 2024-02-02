@@ -36,7 +36,7 @@ import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.targetedms.pipeline.AreaProportionRecalcJob;
 import org.labkey.targetedms.query.QCAnnotationTypeTable;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;

@@ -1,9 +1,9 @@
 package org.labkey.targetedms.SkylinePort.Irt;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 import org.labkey.targetedms.IrtPeptide;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;

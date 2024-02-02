@@ -16,6 +16,8 @@
 package org.labkey.targetedms;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,8 +49,6 @@ import org.labkey.targetedms.parser.skyaudit.SkylineAuditLogParser;
 import org.labkey.targetedms.parser.skyaudit.SkylineAuditLogSecurityManager;
 import org.labkey.targetedms.parser.skyaudit.UnitTestUtil;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
