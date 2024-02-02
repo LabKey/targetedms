@@ -299,7 +299,6 @@ public class TargetedMSQCTest extends TargetedMSTest
             }
         }
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LINEAR);
-        qcPlotsWebPart.setShowSDLines(true);
         qcPlotsWebPart.waitForPlots(7);
         assertElementPresent(qcPlotsWebPart.getLegendItemLocator("+/- 3 Std Dev", true));
 
@@ -369,7 +368,6 @@ public class TargetedMSQCTest extends TargetedMSTest
         selectedPlotTypes.add(CUSUMm);
         qcPlotsWebPart.setQCPlotTypes(selectedPlotTypes.toArray(QCPlotsWebPart.QCPlotType[]::new));
         qcPlotsWebPart.waitForPlots(2);
-        qcPlotsWebPart.setShowSDLines(true);
 
         // test plot type selection is persisted
         refresh();
