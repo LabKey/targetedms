@@ -103,7 +103,7 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
         _containerHelper.disableModules("SampleManagement");
 
         navigateToFolder(getProjectName(), TargetedMS_SubFolder);
-        waitAndClickAndWait(Locator.linkContainingText("sample files"));
+        waitAndClickAndWait(Locator.linkContainingText("replicates"));
         clickAndWait(Locator.linkWithText(s1));
         checker().verifyTrue("Sample link navigated to sample manager application when disabled at folder level",
                 getCurrentRelativeURL(false).contains(WebTestHelper.buildRelativeUrl("experiment", getProjectName() + "/" + Sample_Manager_Subfolder, "showMaterial")));
