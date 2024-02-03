@@ -1,1 +1,1 @@
-SELECT Id FROM targetedms.PrecursorChromInfo WHERE IsotopeDotp IS NOT NULL
+SELECT 1 AS E WHERE EXISTS (SELECT Id FROM targetedms.PrecursorChromInfo WHERE IsotopeDotp IS NOT NULL)
