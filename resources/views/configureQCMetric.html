@@ -38,7 +38,7 @@
                 qcMetricsTable += '<td>' + (row.PrecursorScoped ? 'Precursor' : 'Run') + '</td>';
 
                 if (row.EffectiveStatus === 'NoData') {
-                    qcMetricsTable += '<td>No data in this folder</td>';
+                    qcMetricsTable += '<td id=\"' + LABKEY.Utils.encodeHtml(row.name) + '\">No data in this folder</td>';
                 }
                 else {
                     qcMetricsTable += '<td>' + '<select name=\"' + LABKEY.Utils.encodeHtml(row.name) + '\" id=\"' + "select-" + row.id + '\">' +
