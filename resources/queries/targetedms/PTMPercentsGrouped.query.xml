@@ -10,6 +10,7 @@
                             <properties>
                                 <property name="showNextAndPrevious">true</property>
                                 <property name="useParens">true</property>
+                                <property name="modificationSite">SiteLocation</property>
                             </properties>
                         </displayColumnFactory>
                         <columnTitle>Sequence</columnTitle>

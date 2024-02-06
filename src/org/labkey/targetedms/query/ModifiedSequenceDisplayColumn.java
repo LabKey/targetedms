@@ -16,12 +16,16 @@
 package org.labkey.targetedms.query;
 
 import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.logging.log4j.Logger;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.DisplayColumn;
 import org.labkey.api.data.DisplayColumnFactory;
 import org.labkey.api.data.RenderContext;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.util.HtmlString;
+import org.labkey.api.util.Pair;
+import org.labkey.api.util.logging.LogHelper;
+import org.labkey.targetedms.parser.Protein;
 import org.labkey.targetedms.view.IconFactory;
 import org.labkey.targetedms.view.ModifiedPeptideHtmlMaker;
 
@@ -29,16 +33,15 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
-
 
 /**
  * User: vsharma
- * Date: 4/23/12
- * Time: 2:34 PM
  */
 public abstract class ModifiedSequenceDisplayColumn extends IconColumn
 {
+    private static final Logger LOG = LogHelper.getLogger(ModifiedSequenceDisplayColumn.class, "Wires up formatting for peptide sequences");
     private final ModifiedPeptideHtmlMaker _htmlMaker;
     String _iconPath;
     HtmlString _cellData;
@@ -120,11 +123,20 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
         return _cellData;
     }
 
+    /**
+     * Supports a number of properties that can be configured via .query.xml metadata:
+     * showNextAndPrevious: true/false whether to show the adjacent amino acids as well as the peptide sequence itself
+     * useParens: true/false whether to surround the adjacent amino acids in parentheses (if not, separate by dots)
+     * exportFormatted: true/false whether to export HTML or plaintext for the sequence
+     * _modificationSite: name of column to use for the amino acid and index within the protein for the sole site to format as modified
+     */
     public static class PeptideDisplayColumnFactory implements DisplayColumnFactory
     {
         private boolean _exportStrippedHtml = false;
         private boolean _showNextAndPrevious = false;
         private boolean _useParens = false;
+        /** Optionally, the name of the column that identifies the animo acid and index within the protein to highlight as modified */
+        private String _modificationSite;
 
         public PeptideDisplayColumnFactory()
         {
@@ -135,6 +147,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
             _showNextAndPrevious = getBooleanProperty(map, "showNextAndPrevious", _showNextAndPrevious);
             _useParens = getBooleanProperty(map, "useParens", _useParens);
             _exportStrippedHtml = getBooleanProperty(map, "exportFormatted", _exportStrippedHtml);
+            _modificationSite = map == null || map.get("modificationSite").isEmpty() ? null : map.get("modificationSite").iterator().next();
         }
 
         private boolean getBooleanProperty(MultiValuedMap<String, String> map, String propertyName, boolean defaultValue)
@@ -150,7 +163,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
         @Override
         public DisplayColumn createRenderer(ColumnInfo colInfo)
         {
-            return new ModifiedSequenceDisplayColumn.PeptideCol(colInfo, _showNextAndPrevious, _useParens, _exportStrippedHtml);
+            return new ModifiedSequenceDisplayColumn.PeptideCol(colInfo, _showNextAndPrevious, _useParens, _exportStrippedHtml, _modificationSite);
         }
     }
 
@@ -158,19 +171,21 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
     {
         private final boolean _showNextAndPrevious;
         private final boolean _useParens;
+        private final String _modificationSite;
         private final FieldKey _previousAAFieldKey;
         private final FieldKey _nextAAFieldKey;
 
         public PeptideCol(ColumnInfo colInfo)
         {
-            this(colInfo, false, false, false);
+            this(colInfo, false, false, false, null);
         }
 
-        public PeptideCol(ColumnInfo colInfo, boolean showNextAndPrevious, boolean useParens, boolean exportStrippedHtml)
+        public PeptideCol(ColumnInfo colInfo, boolean showNextAndPrevious, boolean useParens, boolean exportStrippedHtml, String modificationSite)
         {
             super(colInfo);
             _showNextAndPrevious = showNextAndPrevious;
             _useParens = useParens;
+            _modificationSite = modificationSite;
             _exportAsStrippedHtml = exportStrippedHtml;
 
             _previousAAFieldKey = FieldKey.fromString(getParentFieldKey(), "PreviousAa");
@@ -214,6 +229,10 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
             keys.add(FieldKey.fromString(super.getParentFieldKey(), "StandardType"));
             keys.add(FieldKey.fromString(super.getParentFieldKey(), "PeptideGroupId/RunId"));
             keys.add(FieldKey.fromString(super.getParentFieldKey(), "PeptideGroupId"));
+            if (_modificationSite != null)
+            {
+                keys.add(FieldKey.fromString(super.getParentFieldKey(), _modificationSite));
+            }
             if (_showNextAndPrevious)
             {
                 keys.add(_previousAAFieldKey);
@@ -241,13 +260,49 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
 
             String peptideModifiedSequence = (String)getValue(ctx);
 
-            if(peptideId == null || sequence == null || runId == null)
+            if (peptideId == null || sequence == null || runId == null)
             {
                 _cellData = HtmlString.of(peptideModifiedSequence);
             }
             else
             {
-                _cellData = getHtmlMaker().getPeptideHtml(peptideId, peptideGroupId, sequence, peptideModifiedSequence, runId, previousAA, nextAA, _useParens);
+                Set<Pair<Integer, Integer>> strModIndices = null;
+                if (_modificationSite != null)
+                {
+                    String modificationSite = ctx.get(FieldKey.fromString(super.getParentFieldKey(), _modificationSite), String.class);
+                    if (modificationSite != null && modificationSite.length() >= 2)
+                    {
+                        char aa = modificationSite.charAt(0);
+                        String indexString = modificationSite.substring(1);
+                        try
+                        {
+                            int index = Integer.parseInt(indexString);
+                            Protein p = getHtmlMaker().getProtein(peptideGroupId, runId);
+                            if (p != null && p.getSequence() != null)
+                            {
+                                int startIndex = p.getSequence().indexOf(sequence);
+                                int aaIndex = index - startIndex - 1;
+
+                                if (sequence.charAt(aaIndex) == aa)
+                                {
+                                    peptideModifiedSequence = sequence;
+                                    strModIndices = new HashSet<>();
+                                    strModIndices.add(Pair.of(0, aaIndex));
+                                }
+                                else
+                                {
+                                    LOG.debug("Modified residue didn't match for " + modificationSite + " on peptide " + sequence);
+                                }
+                            }
+                        }
+                        catch (NumberFormatException ignored)
+                        {
+                            LOG.debug("Bad modificationSite value: " + modificationSite);
+                        }
+                    }
+                }
+
+                _cellData = getHtmlMaker().getPeptideHtml(peptideId, peptideGroupId, sequence, peptideModifiedSequence, runId, previousAA, nextAA, _useParens, strModIndices);
                 _iconPath = IconFactory.getPeptideIconPath(peptideId, runId, decoy, standardType);
             }
         }

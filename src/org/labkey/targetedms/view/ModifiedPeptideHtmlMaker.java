@@ -81,26 +81,51 @@ public class ModifiedPeptideHtmlMaker
 
     public HtmlString getPrecursorHtml(long peptideId, Long peptideGroupId, long isotopeLabelId, String precursorModifiedSequence, Long runId)
     {
-        return getHtml(peptideId, peptideGroupId, isotopeLabelId, precursorModifiedSequence, runId, null, null, false);
+        return getHtml(peptideId, peptideGroupId, isotopeLabelId, precursorModifiedSequence, runId, null, null, false, null);
     }
 
     public HtmlString getPeptideHtml(Peptide peptide, Long runId)
     {
-        return getPeptideHtml(peptide.getId(), peptide.getPeptideGroupId(), peptide.getSequence(), peptide.getPeptideModifiedSequence(), runId, null, null, false);
+        return getPeptideHtml(peptide.getId(), peptide.getPeptideGroupId(), peptide.getSequence(), peptide.getPeptideModifiedSequence(), runId, null, null, false, null);
     }
 
-    public HtmlString getPeptideHtml(long peptideId, Long peptideGroupId, String sequence, String peptideModifiedSequence, Long runId, @Nullable String previousAA, @Nullable String nextAA, boolean useParens)
+    public HtmlString getPeptideHtml(long peptideId, Long peptideGroupId, String sequence, String peptideModifiedSequence, Long runId, @Nullable String previousAA, @Nullable String nextAA, boolean useParens, @Nullable Set<Pair<Integer, Integer>> strModIndices)
     {
         String altSequence = peptideModifiedSequence;
-        if(StringUtils.isBlank(altSequence))
+        if (StringUtils.isBlank(altSequence))
         {
             altSequence = sequence;
         }
 
-        return getHtml(peptideId, peptideGroupId, null, altSequence, runId, previousAA, nextAA, useParens);
+        return getHtml(peptideId, peptideGroupId, null, altSequence, runId, previousAA, nextAA, useParens, strModIndices);
     }
 
-    private HtmlString getHtml(long peptideId, @Nullable Long peptideGroupId, @Nullable Long isotopeLabelId, String altSequence, Long runId, @Nullable String previousAA, @Nullable String nextAA, boolean useParens)
+    public List<Protein> getProteins(Long runId)
+    {
+        return runId == null ? Collections.emptyList() : _proteins.computeIfAbsent(runId, id -> PeptideGroupManager.getProteinsForRun(runId));
+    }
+
+    public Protein getProtein(Long peptideGroupId, Long runId)
+    {
+        List<Protein> proteins = getProteins(runId);
+
+        if (peptideGroupId != null)
+        {
+            Optional<Protein> match = proteins.stream().filter(p -> p.getPeptideGroupId() == peptideGroupId.intValue()).findFirst();
+            if (match.isPresent())
+            {
+                return match.get();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param strModIndices optionally, the 0-based index of the amino acid that should be formatted as modified. First
+     *                      value of the pair is the index of the cross-linked peptide (0 for non-cross linked
+     *                      peptides), and the second value is the index of the AA
+     */
+    private HtmlString getHtml(long peptideId, @Nullable Long peptideGroupId, @Nullable Long isotopeLabelId, String altSequence, Long runId, @Nullable String previousAA, @Nullable String nextAA, boolean useParens, @Nullable Set<Pair<Integer, Integer>> strModIndices)
     {
         Long firstIsotopeLabelIdInDoc = null;
         if(runId != null)
@@ -118,7 +143,10 @@ public class ModifiedPeptideHtmlMaker
 
         boolean showPreviousNext = previousAA != null || nextAA != null;
 
-        Set<Pair<Integer, Integer>> strModIndices = ModificationManager.getStructuralModIndexes(peptideId, runId);
+        if (strModIndices == null)
+        {
+            strModIndices = ModificationManager.getStructuralModIndexes(peptideId, runId);
+        }
         Set<Integer> isotopeModIndices = null;
         if(isotopeLabelId != null)
         {
@@ -143,27 +171,21 @@ public class ModifiedPeptideHtmlMaker
 
         CrossLinkedPeptideInfo crossLink = new CrossLinkedPeptideInfo(altSequence);
 
-        List<Protein> proteins = runId == null ? Collections.emptyList() : _proteins.computeIfAbsent(runId, id -> PeptideGroupManager.getProteinsForRun(runId));
-
         Set<Integer> cdrIndices = new HashSet<>();
-        if (peptideGroupId != null)
+        Protein protein = getProtein(peptideGroupId, runId);
+        if (protein != null)
         {
-            Optional<Protein> match = proteins.stream().filter(p -> p.getPeptideGroupId() == peptideGroupId.intValue()).findFirst();
-            if (match.isPresent())
+            String sequence = protein.getSequence();
+            if (sequence != null && sequence.contains(crossLink.getBaseSequence().getUnmodified()))
             {
-                Protein protein = match.get();
-                String sequence = protein.getSequence();
-                if (sequence != null && sequence.contains(crossLink.getBaseSequence().getUnmodified()))
+                // CDR ranges are one-based to make comparisons easy by doing the same for the peptide start/end indices
+                int peptideStartIndex = sequence.indexOf(crossLink.getBaseSequence().getUnmodified()) + 1;
+                int peptideEndIndex = peptideStartIndex + crossLink.getBaseSequence().getUnmodified().length();
+                for (Pair<Integer, Integer> cdrRange : protein.getCdrRangesList())
                 {
-                    // CDR ranges are one-based to make comparisons easy by doing the same for the peptide start/end indices
-                    int peptideStartIndex = sequence.indexOf(crossLink.getBaseSequence().getUnmodified()) + 1;
-                    int peptideEndIndex = peptideStartIndex + crossLink.getBaseSequence().getUnmodified().length();
-                    for (Pair<Integer, Integer> cdrRange : protein.getCdrRangesList())
+                    for (int i = Math.max(cdrRange.first, peptideStartIndex); i <= Math.min(cdrRange.second, peptideEndIndex); i++)
                     {
-                        for (int i = Math.max(cdrRange.first, peptideStartIndex); i <= Math.min(cdrRange.second, peptideEndIndex); i++)
-                        {
-                            cdrIndices.add(i - peptideStartIndex);
-                        }
+                        cdrIndices.add(i - peptideStartIndex);
                     }
                 }
             }
@@ -179,7 +201,7 @@ public class ModifiedPeptideHtmlMaker
             result.append("<br />\n");
             if (runId != null)
             {
-                Protein matchingProtein = extraSequence.findMatch(proteins);
+                Protein matchingProtein = extraSequence.findMatch(getProteins(runId));
                 if (matchingProtein != null)
                 {
                     String proteinSequence = matchingProtein.getSequence();
@@ -213,7 +235,7 @@ public class ModifiedPeptideHtmlMaker
 
         result.append("</div>");
 
-        if(error.length() > 0)
+        if (!error.isEmpty())
         {
             result.append("<div style='color:red;'>").append(PageFlowUtil.filter(error.toString())).append("</div>");
         }
