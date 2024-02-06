@@ -303,7 +303,10 @@ public class ModificationManager
             modIndexes.add(Pair.of(peptideIndex, indexAA));
         });
 
-        return Collections.unmodifiableMap(peptideModIndexMap);
+        Map<Long, Set<Pair<Integer, Integer>>> immutableMap = new HashMap<>();
+        peptideModIndexMap.forEach((k, v) -> immutableMap.put(k, Collections.unmodifiableSet(v)));
+
+        return Collections.unmodifiableMap(immutableMap);
     }
 
     /**

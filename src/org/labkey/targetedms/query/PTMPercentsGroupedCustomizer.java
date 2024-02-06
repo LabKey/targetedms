@@ -53,14 +53,14 @@ public class PTMPercentsGroupedCustomizer extends PTMPercentsCustomizer
     /** These are the sorts we need to span rows, because we know that the related rows will be adjacent to each other */
     public static final List<FieldKey> EXPECTED_SORTS = Collections.unmodifiableList(Arrays.asList(
             FieldKey.fromParts("PeptideGroupId"),
-            FieldKey.fromParts("Sequence"),
-            FieldKey.fromParts("SiteLocation")
+            FieldKey.fromParts("Location"),
+            FieldKey.fromParts("Sequence")
     ));
 
     /** Sorts that are safe because they overlap with the expected sorts in terms of grouping rows together */
     public static final List<FieldKey> ALLOWABLE_SORTS = Collections.unmodifiableList(Arrays.asList(
             FieldKey.fromParts("PeptideGroupId", "Label"),
-            FieldKey.fromParts("Location"),
+            FieldKey.fromParts("SiteLocation"),
             FieldKey.fromParts("AminoAcid")
     ));
 
