@@ -22,11 +22,9 @@ import org.labkey.test.selenium.LazyWebElement;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCache>
 {
@@ -47,7 +45,8 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
         TPAREARATIO("Transition/Precursor Area Ratio"),
         PAREA("Precursor Area"),
         TAREA("Transition Area"),
-        MASSACCURACY("Mass Accuracy"),
+        PRECURSOR_MASS_ERROR("Precursor Mass Error"),
+        TRANSITION_MASS_ERROR("Transition Mass Error"),
         TIC_AREA("TIC Area"),
         ISOTOPE_DOTP("Isotope dotp"),
         LIBRARY_DOTP("Library dotp");
