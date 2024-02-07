@@ -732,7 +732,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             pathMouseOutFnScope: this,
             hoverTextFn: !this.showDataPoints ? function(pathData) {
                 return Ext4.htmlEncode(pathData.group) + '\nNarrow the date range to show individual data points.'
-            } : undefined
+            } : undefined,
+            hideSDLines: true
         };
 
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(combinePlotData, plotType, isCUSUMMean, metricProps));
@@ -838,7 +839,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             mouseOverFnScope: this,
             position: this.groupedX ? 'sequential' : undefined,
             disableRangeDisplay: this.isMultiSeries(),
-            hoverTextFn: !showDataPoints ? function() { return 'Narrow the date range to show individual data points.' } : undefined
+            hoverTextFn: !showDataPoints ? function() { return 'Narrow the date range to show individual data points.' } : undefined,
+            hideSDLines: true,
         };
 
         // lines are not separated when indices are not present
