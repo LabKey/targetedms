@@ -1425,9 +1425,8 @@ public class TargetedMSController extends SpringActionController
         @Override
         protected ObjectMapper createRequestObjectMapper()
         {
-            SimpleDateFormat df = new SimpleDateFormat("y-M-d");
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.setDateFormat(df);
+            ObjectMapper mapper = JsonUtil.createDefaultMapper();
+            mapper.setDateFormat(new SimpleDateFormat("y-M-d"));
             return mapper;
         }
 
