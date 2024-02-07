@@ -395,7 +395,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                 }
                 else {
                     content += '<td style="text-align: right">' +
-                            (item.MetricStatus === 'PlotOnly' ? 'N/A' : this.getSampleDetailOutlierDisplayValue(item, 'Value')) +
+                            (item.MetricStatus === LABKEY.targetedms.MetricStatus.PlotOnly ? 'N/A' : this.getSampleDetailOutlierDisplayValue(item, 'Value')) +
                             '</td>';
                     content += '<td></td>';
                     content += '<td style="text-align: right">' + this.getSampleDetailOutlierDisplayValue(item, 'mR') + '</td>';
