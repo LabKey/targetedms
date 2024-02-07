@@ -45,7 +45,8 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
         TPAREARATIO("Transition/Precursor Area Ratio"),
         PAREA("Precursor Area"),
         TAREA("Transition Area"),
-        MASSACCURACY("Mass Accuracy"),
+        PRECURSOR_MASS_ERROR("Precursor Mass Error"),
+        TRANSITION_MASS_ERROR("Transition Mass Error"),
         TIC_AREA("TIC Area"),
         ISOTOPE_DOTP("Isotope dotp"),
         LIBRARY_DOTP("Library dotp");

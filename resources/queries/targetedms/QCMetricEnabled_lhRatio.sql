@@ -1,1 +1,1 @@
-SELECT Id FROM targetedms.PrecursorAreaRatio
+SELECT 1 AS E WHERE EXISTS (SELECT Id FROM targetedms.PrecursorAreaRatio)
