@@ -93,7 +93,7 @@
             <%for(Precursor precursor: bean.getPrecursorList())
             {%>
                  <div>
-                     <%=text(PrecursorHtmlMaker.getHtml(bean.getPeptide(),
+                     <%=unsafe(PrecursorHtmlMaker.getHtml(bean.getPeptide(),
                                                     precursor,
                                                     labelIdMap.get(precursor.getIsotopeLabelId()),
                                                     bean.getRun().getId())

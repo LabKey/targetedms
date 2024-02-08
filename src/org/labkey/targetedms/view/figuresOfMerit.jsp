@@ -147,7 +147,7 @@
         this.sampleFiles = <%=q(bean.getSampleFiles())%>;
         this.runId = <%=bean.getRunId()%>;
         this.biasLimit = <%=bean.getMaxLOQBias()%>;  // percent
-        this.cvLimit = <%=text(bean.getMaxLOQCV() == null ? "null" : Double.toString(bean.getMaxLOQCV()))%>;  // percent, can be null, in which case CV is ignored as a criteria
+        this.cvLimit = <%=unsafe(bean.getMaxLOQCV() == null ? "null" : Double.toString(bean.getMaxLOQCV()))%>;  // percent, can be null, in which case CV is ignored as a criteria
         this.lodCalculation = <%=q(bean.getLODCalculation())%>;  // 'none', etc
         this.xlsExport = [];
         this.title = "Molecule ID: " + this.moleculeId;
