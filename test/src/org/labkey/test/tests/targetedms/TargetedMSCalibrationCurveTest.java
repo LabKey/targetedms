@@ -53,7 +53,7 @@ public class TargetedMSCalibrationCurveTest extends AbstractQuantificationTest
         fom.setLod("0.11");
         fom.setCalc("Blank plus 2 * SD");
 
-        runScenario("MergedDocuments", "none", fom);
+        runScenario("MergedDocuments", "none", "linear", fom);
         testCalibrationCurveMoleculePrecursorsByReplicate();
     }
 
@@ -70,14 +70,14 @@ public class TargetedMSCalibrationCurveTest extends AbstractQuantificationTest
         fom.setLod("0.10");
         fom.setCalc("Blank plus 3 * SD");
 
-        runScenario("CalibrationTest", "none", fom);
+        runScenario("CalibrationTest", "none", "quadratic", fom);
         testCalibrationCurvePrecursorsByReplicate();
     }
 
     @Test
     public void testCalibrationExcludeScenario() throws Exception
     {
-        runScenario("CalibrationExcludedTest", "none", null);
+        runScenario("CalibrationExcludedTest", "none", "linear", null);
     }
 
     @Test
@@ -91,13 +91,25 @@ public class TargetedMSCalibrationCurveTest extends AbstractQuantificationTest
         fom.setLod("-5.84");
         fom.setCalc("Blank plus 2 * SD");
 
-        runScenario("p180test_calibration_DukeApril2016", "1/x", fom);
+        runScenario("p180test_calibration_DukeApril2016", "1/x", "linear", fom);
     }
 
     @Test
     public void testDilutionFactorScenario() throws Exception
     {
-        runScenario("DilutionFactorTest", "1/(x*x)", null);
+        runScenario("DilutionFactorTest", "1/(x*x)", "linear",null);
+    }
+
+    @Test
+    public void testBilinearFit() throws Exception
+    {
+        runScenario("BilinearCalibrationTest", "none", "bilinear",null);
+    }
+
+    @Test
+    public void testLinearInLogSpace() throws Exception
+    {
+        runScenario("LinearInLogSpace", "none", "linear_in_log_space", null);
     }
 
     @Test

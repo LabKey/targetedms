@@ -265,7 +265,7 @@ public class AbstractQuantificationTest extends TargetedMSTest
         assertTrue("Empty pdf downloaded [" + file.getName() + "]", file.length() > 0);
     }
 
-    protected void runScenario(String scenario, String expectedWeighting, @Nullable FiguresOfMerit fom) throws Exception
+    protected void runScenario(String scenario, String expectedWeighting, String expectedRegressionFit, @Nullable FiguresOfMerit fom) throws Exception
     {
         setupSubfolder(getProjectName(), scenario, FolderType.Experiment);
         importData(SAMPLEDATA_FOLDER + scenario + ".sky.zip");
@@ -353,7 +353,7 @@ public class AbstractQuantificationTest extends TargetedMSTest
                 "Unknown",
                 "Excluded",
                 "Calibration Curve",
-                "Regression Fit: " + (quadratic?"quadratic":"linear"),
+                "Regression Fit: " + expectedRegressionFit,
                 "Norm. Method: ratio_to_heavy",
                 "Regression Weighting: " + expectedWeighting,
                 "MS Level: All"

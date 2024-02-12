@@ -60,6 +60,7 @@ import org.labkey.api.view.template.ClientDependency;
 import org.labkey.panoramapremium.PanoramaPremiumController;
 import org.labkey.panoramapremium.QCNotificationSender;
 import org.labkey.panoramapremium.View.QCSummaryMenuCustomizer;
+import org.labkey.targetedms.calculations.quantification.RegressionFit;
 import org.labkey.targetedms.chart.ComparisonCategory;
 import org.labkey.targetedms.chart.ReplicateLabelMinimizer;
 import org.labkey.targetedms.datasource.MsDataSourceUtil;
@@ -667,7 +668,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
             TargetedMSController.TestCase.class,
             PrecursorManager.TestCase.class,
             CrossLinkedPeptideInfo.TestCase.class,
-            Protein.TestCase.class
+            RegressionFit.TestCase.class
         );
     }
 

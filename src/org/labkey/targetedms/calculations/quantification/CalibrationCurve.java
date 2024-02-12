@@ -14,13 +14,21 @@
  */
 package org.labkey.targetedms.calculations.quantification;
 
-public class CalibrationCurve {
+import org.jetbrains.annotations.Nullable;
+
+public class CalibrationCurve implements Cloneable {
     private Double slope;
     private Double intercept;
+    private Double turningPoint;
     private Integer pointCount;
     private Double quadraticCoefficient;
     private Double rSquared;
     private String errorMessage;
+    private RegressionFit regressionFit;
+
+    public CalibrationCurve(RegressionFit regressionFit) {
+        this.regressionFit = regressionFit;
+    }
 
     public double getSlope() {
         return slope == null ? 0 : slope;
@@ -38,12 +46,24 @@ public class CalibrationCurve {
         return intercept == null ? 0 : intercept;
     }
 
+
     public boolean hasIntercept() {
         return intercept != null;
     }
 
     public void setIntercept(Double intercept) {
         this.intercept = intercept;
+    }
+    public double getTurningPoint()
+    {
+        return turningPoint  == null ? 0 : turningPoint;
+    }
+    public boolean hasTurningPoint() {
+        return turningPoint != null;
+    }
+    public void setTurningPoint(Double turningPoint)
+    {
+        this.turningPoint = turningPoint;
     }
 
     public int getPointCount() {
@@ -88,30 +108,25 @@ public class CalibrationCurve {
 
     public Double getY(double x)
     {
-        if (hasQuadraticCoefficient())
-        {
-            return x*x*getQuadraticCoefficient() + x*getSlope() + getIntercept();
-        }
-        return x*getSlope() + getIntercept();
+        return regressionFit.getY(this, x);
     }
 
+    @Nullable
     public Double getX(double y)
     {
-        if (hasQuadraticCoefficient())
-        {
-            double discriminant = getSlope()*getSlope()- 4*getQuadraticCoefficient()*(getIntercept() - y);
-            if (discriminant < 0)
-            {
-                return Double.NaN;
-            }
-            double sqrtDiscriminant = Math.sqrt(discriminant);
-            return (-getSlope() + sqrtDiscriminant)/2/getQuadraticCoefficient();
-        }
-        return (y - getIntercept())/getSlope();
+        return regressionFit.getX(this, y);
+    }
+
+    public RegressionFit getRegressionFit() {
+        return regressionFit;
+    }
+
+    public void setRegressionFit(RegressionFit regressionFit) {
+        this.regressionFit = regressionFit;
     }
 
     public static CalibrationCurve forNoExternalStandards() {
-        CalibrationCurve calibrationCurve = new CalibrationCurve();
+        CalibrationCurve calibrationCurve = new CalibrationCurve(RegressionFit.NONE);
         calibrationCurve.setPointCount(0);
         calibrationCurve.setSlope(1.0);
         return calibrationCurve;
