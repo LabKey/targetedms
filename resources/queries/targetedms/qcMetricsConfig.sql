@@ -27,9 +27,11 @@ SELECT
        qmc.Container, -- including to lock out editing pre-configured qc metrics,
        qmc.EnabledQueryName,
        qmc.EnabledSchemaName,
-       qem.Enabled,
+       qem.Status,
        CASE WHEN qem.metric IS NULL THEN FALSE
             ELSE TRUE END AS Inserted,
+       COALESCE(qem.lowerBound, CASE WHEN qem.Status IS NULL OR qem.Status = 'LeveyJennings' THEN -3 END) AS lowerBound,
+       COALESCE(qem.upperBound, CASE WHEN qem.Status IS NULL OR qem.Status = 'LeveyJennings' THEN 3 END) AS upperBound,
        qmc.TraceValue,
        qmc.TimeValue,
        qmc.TraceName,

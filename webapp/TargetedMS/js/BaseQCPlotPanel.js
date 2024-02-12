@@ -12,7 +12,7 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
 
     getMetricPropsById: function(id) {
         for (var i = 0; i < this.metricPropArr.length; i++) {
-            if (this.metricPropArr[i].id == id) {
+            if (this.metricPropArr[i].id === id) {
                 return this.metricPropArr[i];
             }
         }

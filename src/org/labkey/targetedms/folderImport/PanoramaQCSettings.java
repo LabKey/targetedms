@@ -68,7 +68,7 @@ public enum PanoramaQCSettings
                 {
                     TargetedMSSchema schema = new TargetedMSSchema(user, container);
                     TableInfo ti = getTableInfo(user, container, null);
-                    SQLFragment sql = new SQLFragment("SELECT qcMetricConfig.Name AS metric, qcEnabledMetrics.enabled, qcEnabledMetrics.lowerBound, qcEnabledMetrics.upperBound, qcEnabledMetrics.cusumLimit FROM ")
+                    SQLFragment sql = new SQLFragment("SELECT qcMetricConfig.Name AS metric, qcEnabledMetrics.status, qcEnabledMetrics.lowerBound, qcEnabledMetrics.upperBound, qcEnabledMetrics.cusumLimit FROM ")
                             .append(ti, "qcEnabledMetrics")
                             .append(" INNER JOIN ")
                             .append(TargetedMSManager.getTableInfoQCMetricConfiguration(), "qcMetricConfig")

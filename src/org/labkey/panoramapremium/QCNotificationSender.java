@@ -62,9 +62,9 @@ public class QCNotificationSender implements SkylineDocumentImportListener
                     {
                         sampleCount++;
 
-                        if (sampleFileInfoDetails.getLeveyJennings() > 0 || sampleFileInfoDetails.getmR() > 0 || sampleFileInfoDetails.getCUSUMm() > 0 || sampleFileInfoDetails.getCUSUMv() > 0)
+                        if (sampleFileInfoDetails.getValue() > 0)
                         {
-                            totalOutliers += sampleFileInfoDetails.getLeveyJennings() + sampleFileInfoDetails.getmR() + sampleFileInfoDetails.getCUSUMm() + sampleFileInfoDetails.getCUSUMv();
+                            totalOutliers += sampleFileInfoDetails.getValue();
                             samplesToEmail.add(sampleFileInfoDetails);
                         }
 
@@ -145,65 +145,65 @@ public class QCNotificationSender implements SkylineDocumentImportListener
         {
             html.append("<h4>").append(PageFlowUtil.filter(sampleFileInfoDetails.getSampleFile())).append(" - ");
 
-            var totalOutliers = sampleFileInfoDetails.getLeveyJennings() + sampleFileInfoDetails.getmR() + sampleFileInfoDetails.getCUSUMm() + sampleFileInfoDetails.getCUSUMv();
+            var totalOutliers = sampleFileInfoDetails.getValue();
             if (totalOutliers > 0)
             {
-                html.append(sampleFileInfoDetails.getLeveyJennings()).append("Levey-Jennings outliers, ");
-                html.append(totalOutliers).append(" total outliers");
+                html.append(sampleFileInfoDetails.getValue()).append("metric value outliers, ");
             }
             else
             {
-                html.append("no outliers");
+                html.append("no metric value outliers");
             }
             html.append("</h4>\n");
             html.append("<p>Acquired ").append(DateUtil.formatDateTime(container, sampleFileInfoDetails.getAcquiredTime())).append("</p>");
             html.append("<table style=\"border: 1px solid #d3d3d3;\"><thead><tr><td style=\"border: 1px solid #d3d3d3;\"></td><td  style=\"border: 1px solid #d3d3d3;\" colspan=\"7\" align=\"center\">Outliers</td></tr>")
                     .append("<tr>")
                     .append("<td style=\"border: 1px solid #d3d3d3;\"></td><td style=\"border: 1px solid #d3d3d3;\"></td>")
+                    .append("<td style=\"border: 1px solid #d3d3d3;\"></td><td style=\"border: 1px solid #d3d3d3;\"></td>")
                     .append("<td style=\"border: 1px solid #d3d3d3;\"></td><td style=\"border: 1px solid #d3d3d3;\" colspan=\"4\" align=\"center\">CUSUM</td>")
                     .append("<td style=\"border: 1px solid #d3d3d3;\"></td>")
                     .append("</tr>")
                     .append("<tr>")
                     .append("<td style=\"border: 1px solid #d3d3d3;\">Metric</td>")
-                    .append("<td style=\"border: 1px solid #d3d3d3;\">Levey-Jennings</td>")
+                    .append("<td style=\"border: 1px solid #d3d3d3;\">Value</td>")
+                    .append("<td style=\"border: 1px solid #d3d3d3;\">&nbsp;&nbsp;&nbsp;</td>")
                     .append("<td style=\"border: 1px solid #d3d3d3;\">Moving Range</td>")
                     .append("<td style=\"border: 1px solid #d3d3d3;\" title=\"Mean CUSUM-\">Mean-</td>")
                     .append("<td style=\"border: 1px solid #d3d3d3;\" title=\"Mean CUSUM+\">Mean+</td>")
                     .append("<td style=\"border: 1px solid #d3d3d3;\" title=\"Variability CUSUM-\">Variability-</td>")
                     .append("<td style=\"border: 1px solid #d3d3d3;\" title=\"Variability CUSUM+\">Variability+</td>")
-                    .append("<td style=\"border: 1px solid #d3d3d3;\" title=\"Total\"><b>Total</b></td>")
                     .append("</tr>")
                     .append("</thead><tbody>");
 
             sampleFileInfoDetails.getByMetric().forEach((key, outlier) -> {
-                var outlierTotal = outlier.getLeveyJennings() + outlier.getmR() + outlier.getCUSUMmN() + outlier.getCUSUMmP() + outlier.getCUSUMvN() + outlier.getCUSUMvP();
+                var outlierTotal = outlier.getValue() + outlier.getmR() + outlier.getCUSUMmN() + outlier.getCUSUMmP() + outlier.getCUSUMvN() + outlier.getCUSUMvP();
                 html.append("<tr>")
                         .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(PageFlowUtil.filter(key)).append("</td>")
-                        .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(outlier.getLeveyJennings() > 0 ? "<b>" : "").append(PageFlowUtil.filter(outlier.getLeveyJennings())).append("</td>").append(outlier.getLeveyJennings() > 0 ? "</b>" : "")
-                        .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(outlier.getmR() > 0 ? "<b>" : "").append(PageFlowUtil.filter(outlier.getmR())).append("</td>").append(outlier.getmR() > 0 ? "</b>" : "")
-                        .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(outlier.getCUSUMmN() > 0 ? "<b>" : "").append(PageFlowUtil.filter(outlier.getCUSUMmN())).append("</td>").append(outlier.getCUSUMmN() > 0 ? "</b>" : "")
-                        .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(outlier.getCUSUMmP() > 0 ? "<b>" : "").append(PageFlowUtil.filter(outlier.getCUSUMmP())).append("</td>").append(outlier.getCUSUMmP() > 0 ? "</b>" : "")
-                        .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(outlier.getCUSUMvN() > 0 ? "<b>" : "").append(PageFlowUtil.filter(outlier.getCUSUMvN())).append("</td>").append(outlier.getCUSUMvN() > 0 ? "</b>" : "")
-                        .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(outlier.getCUSUMvP() > 0 ? "<b>" : "").append(PageFlowUtil.filter(outlier.getCUSUMvP())).append("</td>").append(outlier.getCUSUMvP() > 0 ? "</b>" : "")
-                        .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append("<b>").append(PageFlowUtil.filter(outlierTotal)).append("</b>").append("</td>");
+                        .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(PageFlowUtil.filter(outlier.getValue())).append("</td>")
+                        .append("<td />")
+                        .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(PageFlowUtil.filter(outlier.getmR())).append("</td>")
+                        .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(PageFlowUtil.filter(outlier.getCUSUMmN())).append("</td>")
+                        .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(PageFlowUtil.filter(outlier.getCUSUMmP())).append("</td>")
+                        .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(PageFlowUtil.filter(outlier.getCUSUMvN())).append("</td>")
+                        .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(PageFlowUtil.filter(outlier.getCUSUMvP())).append("</td>");
                 html.append("</tr>");
             });
 
             // Remember the total for the most recent import
             if (emailSubjectAndBody.getRecentOutliers() == 0)
             {
-                emailSubjectAndBody.setRecentOutliers(sampleFileInfoDetails.getLeveyJennings() + sampleFileInfoDetails.getmR() + sampleFileInfoDetails.getCUSUMmN() + sampleFileInfoDetails.getCUSUMmP() + sampleFileInfoDetails.getCUSUMvN() + sampleFileInfoDetails.getCUSUMvP());
+                emailSubjectAndBody.setRecentOutliers(sampleFileInfoDetails.getValue());
             }
 
             html.append("<tr>")
                     .append("<td style=\"border: 1px solid #d3d3d3;\"><b>Total</b></td>")
-                    .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(sampleFileInfoDetails.getLeveyJennings() > 0 ? "<b>" : "").append(PageFlowUtil.filter(sampleFileInfoDetails.getLeveyJennings())).append("</td>").append(sampleFileInfoDetails.getLeveyJennings() > 0 ? "</b>" : "")
-                    .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(sampleFileInfoDetails.getmR() > 0 ? "<b>" : "").append(PageFlowUtil.filter(sampleFileInfoDetails.getmR())).append("</td>").append(sampleFileInfoDetails.getmR() > 0 ? "</b>" : "")
-                    .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(sampleFileInfoDetails.getCUSUMmN() > 0 ? "<b>" : "").append(PageFlowUtil.filter(sampleFileInfoDetails.getCUSUMmN())).append("</td>").append(sampleFileInfoDetails.getCUSUMmN() > 0 ? "</b>" : "")
-                    .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(sampleFileInfoDetails.getCUSUMmP() > 0 ? "<b>" : "").append(PageFlowUtil.filter(sampleFileInfoDetails.getCUSUMmP())).append("</td>").append(sampleFileInfoDetails.getCUSUMmP() > 0 ? "</b>" : "")
-                    .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(sampleFileInfoDetails.getCUSUMvN() > 0 ? "<b>" : "").append(PageFlowUtil.filter(sampleFileInfoDetails.getCUSUMvN())).append("</td>").append(sampleFileInfoDetails.getCUSUMvN() > 0 ? "</b>" : "")
-                    .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(sampleFileInfoDetails.getCUSUMvP() > 0 ? "<b>" : "").append(PageFlowUtil.filter(sampleFileInfoDetails.getCUSUMvP())).append("</td>").append(sampleFileInfoDetails.getCUSUMvP() > 0 ? "</b>" : "")
-                    .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append( "<b>").append(PageFlowUtil.filter(totalOutliers)).append( "</b>").append("</td>");
+                    .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(PageFlowUtil.filter(sampleFileInfoDetails.getValue())).append("</td>")
+                    .append("<td />")
+                    .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(PageFlowUtil.filter(sampleFileInfoDetails.getmR())).append("</td>")
+                    .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(PageFlowUtil.filter(sampleFileInfoDetails.getCUSUMmN())).append("</td>")
+                    .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(PageFlowUtil.filter(sampleFileInfoDetails.getCUSUMmP())).append("</td>")
+                    .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(PageFlowUtil.filter(sampleFileInfoDetails.getCUSUMvN())).append("</td>")
+                    .append("<td style=\"border: 1px solid #d3d3d3; text-align: right;\">").append(PageFlowUtil.filter(sampleFileInfoDetails.getCUSUMvP())).append("</td>");
             html.append("</tr>");
 
             html.append("</tbody></table><br/>");

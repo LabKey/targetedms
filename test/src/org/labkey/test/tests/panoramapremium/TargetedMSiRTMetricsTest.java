@@ -62,17 +62,12 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
         verifyMetricNotPresent(qcPlotsWebPart, "iRT Intercept");
         verifyMetricNotPresent(qcPlotsWebPart, "iRT Slope");
 
-        log("Enabling the metric values");
+        log("Verify no data for iRT metric in Configure Metrics UI");
         ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
-        configureUI.enableMetric("iRT Correlation");
-        configureUI.enableMetric("iRT Intercept");
-        configureUI.enableMetric("iRT Slope");
+        configureUI.verifyNoDataForMetric("iRT Correlation");
+        configureUI.verifyNoDataForMetric("iRT Intercept");
+        configureUI.verifyNoDataForMetric("iRT Slope");
         configureUI.clickSave();
-
-        log("Verifying iRT metric present after enabling");
-        verifyMetricIsPresent(qcPlotsWebPart, "iRT Correlation");
-        verifyMetricIsPresent(qcPlotsWebPart, "iRT Intercept");
-        verifyMetricIsPresent(qcPlotsWebPart, "iRT Slope");
     }
 
     @Test
@@ -127,7 +122,7 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
         QCSummaryWebPart qcSummaryWebPart = qcDashboard.getQcSummaryWebPart();
         QCSummaryWebPart.QcSummaryTile qcSummaryTile = qcSummaryWebPart.getQcSummaryTiles().get(0);
         mouseOver(qcSummaryTile.getRecentSampleFiles().get(0));
-        final WebElement bubble = waitForElement(qcSummaryWebPart.getBubble().withDescendant(Locator.byClass("hopscotch-title").withText("sample8_R03")));
+        final WebElement bubble = waitForElement(qcSummaryWebPart.getBubble().withDescendant(Locator.linkWithText("sample8_R03")));
         checker().verifyTrue("iRT Correlation missing in tooltip", Locator.linkWithText("iRT Correlation").existsIn(bubble));
         checker().verifyTrue("iRT Intercept missing in tooltip", Locator.linkWithText("iRT Intercept").existsIn(bubble));
         checker().verifyTrue("iRT Slope missing in tooltip", Locator.linkWithText("iRT Slope").existsIn(bubble));

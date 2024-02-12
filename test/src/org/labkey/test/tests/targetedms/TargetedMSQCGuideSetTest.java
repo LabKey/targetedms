@@ -194,7 +194,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         // 4 of the 5 guide sets are visible in plot region based on the initial data
         List<Pair<String, Integer>> shapeCounts = new ArrayList<>();
         shapeCounts.add(Pair.of(SvgShapes.CIRCLE.getPathPrefix(), 289));
-        shapeCounts.add(Pair.of(SvgShapes.CIRCLE_OPEN.getPathPrefix(), 40));
+        shapeCounts.add(Pair.of(SvgShapes.TRIANGLE.getPathPrefix(), 40));
         verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 4, shapeCounts, 47);
 
         // check box for group x-axis values by date and verify
@@ -225,7 +225,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         assertEquals("Wrong number of Pareto plots", 20, paretoPlotsWebPart.getNumOfParetoPlots());
         verifyDownloadableParetoPlots(paretoPlotsWebPart.getNumOfParetoPlots());
 
-        ParetoPlotsWebPart.ParetoPlotType plotType = ParetoPlotsWebPart.ParetoPlotType.LeveyJennings;
+        ParetoPlotsWebPart.ParetoPlotType plotType = ParetoPlotsWebPart.ParetoPlotType.MetricValue;
         int guideSetId = 4;
         log("Verifying Pareto Plots for " + plotType.getLabel());
         assertEquals("Wrong number of non-conformers for PA", 69, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 0));
@@ -358,7 +358,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         ParetoPlotPage paretoPage = new ParetoPlotPage(getDriver());
         ParetoPlotsWebPart paretoPlotsWebPart = paretoPage.getParetoPlotsWebPart();
 
-        verifyTicksOnPlots(paretoPlotsWebPart, 1, ParetoPlotsWebPart.ParetoPlotType.LeveyJennings,
+        verifyTicksOnPlots(paretoPlotsWebPart, 1, ParetoPlotsWebPart.ParetoPlotType.MetricValue,
                         ParetoPlotsWebPart.MetricTypeTicks.FWB,
                         ParetoPlotsWebPart.MetricTypeTicks.FWHM,
                         ParetoPlotsWebPart.MetricTypeTicks.RETENTION,
@@ -423,7 +423,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         }
 
         assertEquals("Unexpected number of training range rects visible", visibleTrainingRanges * PRECURSORS.length, qcPlotsWebPart.getGuideSetTrainingRectCount());
-        assertEquals("Unexpected number of error bar elements", axisTickCount * PRECURSORS.length * 4, qcPlotsWebPart.getGuideSetErrorBarPathCount());
+        assertEquals("Unexpected number of error bar elements", axisTickCount * PRECURSORS.length * 3, qcPlotsWebPart.getGuideSetErrorBarPathCount());
     }
 
     private void validateGuideSetStats(GuideSet gs) throws IOException, CommandException
@@ -621,7 +621,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
 
     private void verifyNavigationToPanoramaDashboard(int guideSetNum, int barPlotNum, QCPlotsWebPart.MetricType metricType, Boolean checkEndDate)
     {
-        verifyNavigationToPanoramaDashboard(guideSetNum, QCPlotsWebPart.QCPlotType.LeveyJennings, barPlotNum, metricType, checkEndDate);
+        verifyNavigationToPanoramaDashboard(guideSetNum, QCPlotsWebPart.QCPlotType.MetricValue, barPlotNum, metricType, checkEndDate);
     }
 
     private void verifyNavigationToPanoramaDashboard(int guideSetNum, QCPlotsWebPart.QCPlotType plotType, int barPlotNum, QCPlotsWebPart.MetricType metricType, Boolean checkEndDate)

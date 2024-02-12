@@ -169,7 +169,7 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
             waitForLoad();
             String qcSummary = getComponentElement().getText();
 
-            Pattern filePattern = Pattern.compile("(\\d+) sample file");
+            Pattern filePattern = Pattern.compile("(\\d+) replicate");
             Matcher fileMatcher = filePattern.matcher(qcSummary);
             _fileCount = fileMatcher.find() ? Integer.parseInt(fileMatcher.group(1)) : 0;
 

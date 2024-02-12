@@ -1,28 +1,37 @@
 package org.labkey.targetedms.model;
 
+import org.jetbrains.annotations.NotNull;
+import org.labkey.api.targetedms.model.QCMetricConfiguration;
+
 import java.util.Objects;
 
 public class GuideSetKey
 {
-    private final int _metricId;
+    private final QCMetricConfiguration _metric;
     private final int _metricSeriesIndex;
 
     private final int _guideSetId;
     private final String _seriesLabel;
     private final int _hashCode;
 
-    public GuideSetKey(int metricId, int metricSeriesIndex, int guideSetId, String seriesLabel)
+    public GuideSetKey(QCMetricConfiguration metric, int metricSeriesIndex, int guideSetId, String seriesLabel)
     {
-        _metricId = metricId;
+        _metric = metric;
         _metricSeriesIndex = metricSeriesIndex;
         _guideSetId = guideSetId;
         _seriesLabel = seriesLabel;
-        _hashCode = Objects.hash(_metricId, _metricSeriesIndex, _guideSetId, _seriesLabel);
+        _hashCode = Objects.hash(_metric.getId(), _metricSeriesIndex, _guideSetId, _seriesLabel);
     }
 
     public int getMetricId()
     {
-        return _metricId;
+        return _metric.getId();
+    }
+
+    @NotNull
+    public QCMetricConfiguration getMetric()
+    {
+        return _metric;
     }
 
     public int getMetricSeriesIndex()
@@ -46,7 +55,7 @@ public class GuideSetKey
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GuideSetKey that = (GuideSetKey) o;
-        return _metricId == that._metricId &&
+        return _metric.getId() == that._metric.getId() &&
                 _metricSeriesIndex == that._metricSeriesIndex &&
                 _guideSetId == that._guideSetId &&
                 Objects.equals(_seriesLabel, that._seriesLabel);
@@ -61,6 +70,6 @@ public class GuideSetKey
     @Override
     public String toString()
     {
-        return "GuideSet: " + getGuideSetId() + ", Metric: " + _metricId + "." + _metricSeriesIndex + ", Series: " + _seriesLabel;
+        return "GuideSet: " + getGuideSetId() + ", Metric: " + _metric.getId() + "." + _metricSeriesIndex + ", Series: " + _seriesLabel;
     }
 }

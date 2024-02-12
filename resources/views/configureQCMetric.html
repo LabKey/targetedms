@@ -1,6 +1,6 @@
 <p style="width: 800px">
     Configure the metrics to be tracked for quality control and system suitability. Metrics can be enabled and disabled
-    in each folder. Metrics set to "Auto" will automatically enable based on the available data in the current folder.
+    in each folder.
 </p>
 
 <div id="qcMetricsTable"></div>
@@ -20,29 +20,40 @@
 
             qcMetricsTable += '<table class="labkey-data-region-legacy labkey-show-borders">' +
                                 '<tr>' +
-                                    '<td class="labkey-column-header">Status</td>' +
                                     '<td class="labkey-column-header">Name</td>' +
                                     '<td class="labkey-column-header">Type</td>' +
+                                    '<td class="labkey-column-header">Metric usage</td>' +
+                                    '<td class="labkey-column-header">Lower bound</td>' +
+                                    '<td class="labkey-column-header">Upper bound</td>' +
                                 '</tr>';
 
             jQuery.each(qcMetrics, function (index, row) {
                 var rowClass = index % 2 === 1 ? "labkey-row" : "labkey-alternate-row";
-                configRows.push({metric: row.id, name: row.name, Enabled: row.Enabled, Inserted: row.Inserted});
+                configRows.push({metric: row.id, name: row.name, Status: row.Status, Inserted: row.Inserted});
                 var editLock = row.Container === LABKEY.container.id;
 
                 qcMetricsTable += '<tr class="' + rowClass + '">';
 
-                qcMetricsTable += '<td>' + '<select name=\"' + LABKEY.Utils.encodeHtml(row.name) + '\" id=\"' +  "select-"+ row.id  +  '\">' +
-                            '<option value="true" ' + (row.Enabled ? 'selected' : '') + '>Enabled</option>' +
-                            '<option value="" ' + (row.Enabled == null ? 'selected' : '') + '>Auto</option>' +
-                            '<option value="false" ' + (row.Enabled === false ? 'selected' : '') + '>Disabled</option>' +
-                        '</select>' +
-                        '</td>';
+                qcMetricsTable += '<td>' + (editLock ? '<a id="editLink' + row.id + '" href="#">' : '' ) + LABKEY.Utils.encodeHtml(row.name) + '</td>' + (editLock ? '</a>' : '' );
+                qcMetricsTable += '<td>' + (row.PrecursorScoped ? 'Precursor' : 'Run') + '</td>';
 
-                qcMetricsTable += '<td>' + (editLock ? '<a id="editLink' + index + '" href="#">' : '' ) + LABKEY.Utils.encodeHtml(row.name) + '</td>' + (editLock ? '</a>' : '' );
-                qcMetricsTable += '<td>' + (row.PrecursorScoped ? 'Precursor' : 'Run') + '</td>' +
-                        '</tr>';
+                if (row.EffectiveStatus === 'NoData') {
+                    qcMetricsTable += '<td id=\"' + LABKEY.Utils.encodeHtml(row.name) + '\">No data in this folder</td>';
+                }
+                else {
+                    qcMetricsTable += '<td>' + '<select name=\"' + LABKEY.Utils.encodeHtml(row.name) + '\" id=\"' + "select-" + row.id + '\">' +
+                            '<option value="LeveyJennings" ' + (row.EffectiveStatus === 'LeveyJennings' ? 'selected' : '') + '>Levey-Jennings (+/- standard deviations)</option>' +
+                            '<option value="ValueCutoff" ' + (row.EffectiveStatus === 'ValueCutoff' ? 'selected' : '') + '>Fixed value cutoff</option>' +
+                            '<option value="PlotOnly" ' + (row.EffectiveStatus === 'PlotOnly' ? 'selected' : '') + '>Show metric in plots, but don\'t identify outliers</option>' +
+                            '<option value="Disabled" ' + (row.EffectiveStatus === 'Disabled' ? 'selected' : '') + '>Disabled, completely hide the metric</option>' +
+                            '</select>' +
+                            '</td>';
+                }
 
+                qcMetricsTable += '<td><input size="8" name="' + LABKEY.Utils.encodeHtml(row.name) + '-lower" id="lower-' + row.id + '" value="' + (row.lowerBound !== undefined && row.lowerBound !== null ? row.lowerBound : '' ) +'"></td>';
+                qcMetricsTable += '<td><input size="8" name="' + LABKEY.Utils.encodeHtml(row.name) + '-upper" id="upper-' + row.id + '" value="' + (row.upperBound !== undefined && row.upperBound !== null ? row.upperBound : '' ) +'"></td>';
+
+                qcMetricsTable += '</tr>';
             });
 
             qcMetricsTable += '</table>' + '<br>' +
@@ -54,12 +65,26 @@
 
             jQuery('#qcMetricsTable').html(qcMetricsTable);
 
+            refreshBoundsInputs(qcMetrics);
+
             jQuery.each(qcMetrics, function (index, row) {
-                jQuery('#editLink' + index).click(function (e) {
+                jQuery('#editLink' + row.id).click(function (e) {
                     e.preventDefault();
-                    LABKEY.internal.ConfigureQCMetrics.editMetric(jQuery('#editLink' + index).text());
+                    LABKEY.internal.ConfigureQCMetrics.editMetric(jQuery('#editLink' + row.id).text());
                     return false;
-                })
+                });
+                jQuery('#select-' + row.id).change(function (e) {
+                    refreshBoundsInputs(qcMetrics);
+                });
+            });
+        }
+
+        function refreshBoundsInputs(qcMetrics) {
+            jQuery.each(qcMetrics, function (index, row) {
+                let type = jQuery('#select-' + row.id).val();
+                let showBounds = type === LABKEY.targetedms.MetricStatus.ValueCutoff || type === LABKEY.targetedms.MetricStatus.LeveyJennings;
+                jQuery('#upper-' + row.id).css('visibility', showBounds ? 'visible' : 'hidden');
+                jQuery('#lower-' + row.id).css('visibility', showBounds ? 'visible' : 'hidden');
             });
         }
 
@@ -90,15 +115,15 @@
                 });
             },
 
-            onError: function(exception, responseObj){
+            onError: function(exception, responseObj, response2){
                 console.error(arguments);
 
-                var msg = LABKEY.Utils.getMsgFromError(responseObj, exception, {
+                var msg = LABKEY.Utils.getMsgFromError(response2, exception, {
                     showExceptionClass: false,
                     msgPrefix: 'Error: '
                 });
 
-                jQuery('#qcMetricsError').html('<p>' + msg + '</p>');
+                jQuery('#qcMetricsError').text(msg);
             },
 
             editMetric: function (metricName) {
@@ -193,32 +218,33 @@
                 }
             },
 
+            createRecord: function(metricRow, newStatus) {
+                const result = {metric: metricRow.metric, Status: newStatus};
+                result.upperBound = jQuery("#upper-" + metricRow.metric)[0].value;
+                result.lowerBound = jQuery("#lower-" + metricRow.metric)[0].value;
+                return result;
+            },
+
             save: function () {
-                var recordsToInsert = [];
-                var recordsToUpdate = [];
+                const recordsToInsert = [];
+                const recordsToUpdate = [];
+                const recordsToDelete = [];
 
                 LABKEY.internal.ConfigureQCMetrics.rowsBeforeSave.forEach(function (metricRow) {
 
-                    var stringValue = jQuery('#select-' + metricRow.metric)[0].value;
-                    var newValue;
-                    switch (stringValue) {
-                        case '' : newValue = null; break;
-                        case 'true' : newValue = true; break;
-                        case 'false' : newValue = false; break;
+                    const selectInputs = jQuery('#select-' + metricRow.metric);
+                    if (!selectInputs.length > 0) {
+                        return;
                     }
+                    const newValue = selectInputs[0].value;
+                    // See if there's an existing row
                     if (metricRow.Inserted) {
-                        //metric unchecked now
-                        if(newValue !== metricRow.Enabled) {
-                            recordsToUpdate.push({metric: metricRow.metric, Enabled: newValue});
-                        }
-
-                        metricRow.Enabled = newValue;
+                        recordsToUpdate.push(this.createRecord(metricRow, newValue));
                     }
-                    else {
-                        recordsToInsert.push({metric: metricRow.metric, Enabled: newValue});
-                        metricRow.Inserted = true;
+                    else if (newValue !== null) {
+                        recordsToInsert.push(this.createRecord(metricRow, newValue));
                     }
-                });
+                }, this);
 
                 var rowsToUpsert = false;
                 var commands = [];
@@ -239,6 +265,16 @@
                         queryName: 'qcenabledmetrics',
                         command: 'update',
                         rows: recordsToUpdate
+                    });
+                    rowsToUpsert = true;
+                }
+
+                if (recordsToDelete.length > 0) {
+                    commands.push({
+                        schemaName: 'targetedms',
+                        queryName: 'qcenabledmetrics',
+                        command: 'delete',
+                        rows: recordsToDelete
                     });
                     rowsToUpsert = true;
                 }

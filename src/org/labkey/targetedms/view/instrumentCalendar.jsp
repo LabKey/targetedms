@@ -154,7 +154,7 @@
                     }
                     let current = data[currentIndex];
                     current.replicateNames.push(sampleFile.ReplicateName);
-                    current.outliers.push(sampleFile.IgnoreForAllMetric ? 0 : sampleFile.LeveyJennings);
+                    current.outliers.push(sampleFile.IgnoreForAllMetric ? 0 : sampleFile.Value);
                 }
 
                 currentIndex = 0;

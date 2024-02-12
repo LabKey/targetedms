@@ -1,5 +1,6 @@
 package org.labkey.test.pages.panoramapremium;
 
+import org.junit.Assert;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.components.ext4.Window;
@@ -65,14 +66,19 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
 
     public ConfigureMetricsUIPage enableMetric(String metric)
     {
-        selectOptionByText(Locator.name(metric),"Enabled");
+        selectOptionByText(Locator.name(metric),"Levey-Jennings (+/- standard deviations)");
         return this;
     }
 
     public ConfigureMetricsUIPage disableMetric(String metric)
     {
-        selectOptionByText(Locator.name(metric),"Disabled");
+        selectOptionByText(Locator.name(metric),"Disabled, completely hide the metric");
         return this;
+    }
+
+    public void verifyNoDataForMetric(String metricName)
+    {
+        Assert.assertEquals("Data should not be present for this metric - " + metricName, getText(Locator.id(metricName)), "No data in this folder");
     }
 
     public void clickSave()

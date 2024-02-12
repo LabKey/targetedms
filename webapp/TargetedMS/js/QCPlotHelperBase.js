@@ -6,13 +6,13 @@
 Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
     statics: {
-        qcPlotTypes : ['Levey-Jennings', 'Moving Range', 'CUSUMm', 'CUSUMv', 'Trailing CV', 'Trailing Mean'],
+        qcPlotTypes : ['Metric Value', 'Moving Range', 'CUSUMm', 'CUSUMv', 'Trailing CV', 'Trailing Mean'],
         maxPointsPerSeries : 300,
         shapeDomain: ['Include', 'Exclude', 'Include-Outlier', 'Exclude-Outlier']
     },
 
-    showLJPlot: function() {
-        return this.isPlotTypeSelected('Levey-Jennings');
+    showMetricValuePlot: function() {
+        return this.isPlotTypeSelected('Metric Value');
     },
 
     showMovingRangePlot: function() {
@@ -108,7 +108,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         // pass includeTrailingCV or includeTrailingMean in plotsConfig
         var plotsConfig = {};
         plotsConfig.metricId = this.metric;
-        plotsConfig.includeLJ = this.showLJPlot();
+        plotsConfig.includeLJ = this.showMetricValuePlot();
         plotsConfig.includeMR = this.showMovingRangePlot();
         plotsConfig.includeMeanCusum = this.showMeanCUSUMPlot();
         plotsConfig.includeVariableCusum = this.showVariableCUSUMPlot();
@@ -119,6 +119,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         plotsConfig.trailingRuns = this.trailingRuns;
         plotsConfig.includeTrailingMeanPlot = this.showTrailingMeanPlot();
         plotsConfig.includeTrailingCVPlot = this.showTrailingCVPlot();
+
+        let urlParams = LABKEY.ActionURL.getParameters();
+        if (parseInt(urlParams['replicateId']) > 0) {
+            plotsConfig.replicateId = parseInt(urlParams['replicateId']);
+        }
 
         var config = this.getReportConfig()
 
@@ -167,7 +172,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         // process the data to shape it for the JS LeveyJenningsPlot API call
         this.fragmentPlotData = {};
 
-        if (this.showLJPlot()) {
+        if (this.showMetricValuePlot()) {
             this.processLJGuideSetData(plotDataRows);
         }
         if (this.showMovingRangePlot() || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot() || this.showTrailingMeanPlot() || this.showTrailingCVPlot()) {
@@ -680,16 +685,19 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         else if (this.yAxisScale === 'standardDeviation' && plotType === LABKEY.vis.TrendingLinePlotType.LeveyJennings) {
             disableRange = false;
         }
+        else if (plotType === LABKEY.vis.TrendingLinePlotType.LeveyJennings && (metricProps.upperBound !== undefined || metricProps.lowerBound !== undefined)) {
+            disableRange = false;
+        }
 
         let shapeProp = 'IgnoreInQC';
         let shapeDomain = [undefined, true];
         if (plotType === 'Levey-Jennings') {
             shapeProp = 'LJShape';
-            shapeDomain = this.statics.shapeDomain;
+            shapeDomain = this.statics().shapeDomain;
         }
         if (plotType === 'MovingRange') {
             shapeProp = 'MRShape';
-            shapeDomain = this.statics.shapeDomain;
+            shapeDomain = this.statics().shapeDomain;
         }
 
         var trendLineProps = {
@@ -724,10 +732,14 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             pathMouseOutFnScope: this,
             hoverTextFn: !this.showDataPoints ? function(pathData) {
                 return Ext4.htmlEncode(pathData.group) + '\nNarrow the date range to show individual data points.'
-            } : undefined
+            } : undefined,
+            hideSDLines: true
         };
 
-        Ext4.apply(trendLineProps, this.getPlotTypeProperties(combinePlotData, plotType, isCUSUMMean));
+        Ext4.apply(trendLineProps, this.getPlotTypeProperties(combinePlotData, plotType, isCUSUMMean, metricProps));
+
+        // Suppress the mean line for multi-series plots
+        trendLineProps.mean = undefined;
 
         var mainTitle = LABKEY.targetedms.QCPlotHelperWrapper.getQCPlotTypeLabel(plotType, isCUSUMMean);
 
@@ -801,11 +813,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         let shapeDomain = [undefined, true];
         if (plotType === 'Levey-Jennings') {
             shapeProp = 'LJShape';
-            shapeDomain = this.statics.shapeDomain;
+            shapeDomain = this.statics().shapeDomain;
         }
         if (plotType === 'MovingRange') {
             shapeProp = 'MRShape';
-            shapeDomain = this.statics.shapeDomain;
+            shapeDomain = this.statics().shapeDomain;
         }
 
         var trendLineProps = {
@@ -827,7 +839,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             mouseOverFnScope: this,
             position: this.groupedX ? 'sequential' : undefined,
             disableRangeDisplay: this.isMultiSeries(),
-            hoverTextFn: !showDataPoints ? function() { return 'Narrow the date range to show individual data points.' } : undefined
+            hoverTextFn: !showDataPoints ? function() { return 'Narrow the date range to show individual data points.' } : undefined,
+            hideSDLines: true,
         };
 
         // lines are not separated when indices are not present
@@ -836,7 +849,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             trendLineProps.groupBy = "ReferenceRangeSeries";
         }
 
-        Ext4.apply(trendLineProps, this.getPlotTypeProperties(precursorInfo, plotType, isCUSUMMean));
+        Ext4.apply(trendLineProps, this.getPlotTypeProperties(precursorInfo, plotType, isCUSUMMean, metricProps));
 
         var plotLegendData = this.getAdditionalPlotLegend(plotType);
         if (Ext4.isArray(this.legendData)) {
@@ -917,6 +930,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         }
 
         this.addGuideSetTrainingRangeToPlot(plot, precursorInfo);
+
+        let urlParams = LABKEY.ActionURL.getParameters();
+        if (parseInt(urlParams['replicateId']) > 0) {
+            this.highlightOutliersForClickedReplicate(plot, precursorInfo, parseInt(urlParams['replicateId']));
+        }
 
         var extraMargin = this.showInPlotLegends() ? 0 : 10 * this.longestLegendText;
         this.attachPlotExportIcons(id, mainTitle + '-' + this.precursors[precursorIndex] + '-' + this.getMetricPropsById(this.metric).series1Label, plotIndex, this.getPlotWidth(), extraMargin);

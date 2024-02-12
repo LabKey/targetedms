@@ -60,7 +60,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.CUSUMm;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.CUSUMv;
-import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.LeveyJennings;
+import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.MetricValue;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.MovingRange;
 
 @Category({})
@@ -299,7 +299,7 @@ public class TargetedMSQCTest extends TargetedMSTest
             }
         }
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LINEAR);
-        assertElementPresent(qcPlotsWebPart.getLegendItemLocator("+/-3 x Std Dev", true));
+        qcPlotsWebPart.waitForPlots(7);
 
         // test that plot0_plotType_1 (CUSUMm) does not change from linear
         qcPlotsWebPart.checkPlotType(CUSUMm);
@@ -397,7 +397,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.filterQCPlotsToInitialData(PRECURSORS.length, true);
-        qcPlotsWebPart.checkPlotType(LeveyJennings);
+        qcPlotsWebPart.checkPlotType(MetricValue);
         qcPlotsWebPart.checkPlotType(MovingRange);
         qcPlotsWebPart.checkPlotType(CUSUMm);
         qcPlotsWebPart.checkPlotType(CUSUMv);
@@ -431,7 +431,8 @@ public class TargetedMSQCTest extends TargetedMSTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
 
         log("Verify Plot Types and Legends");
-        qcPlotsWebPart.setQCPlotTypes(LeveyJennings);
+        qcPlotsWebPart.setQCPlotTypes(MetricValue);
+        qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false);
         qcPlotsWebPart.waitForPlots(PRECURSORS.length);
 
         qcPlotsWebPart.checkPlotType(MovingRange);
@@ -844,10 +845,10 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.setShowExcludedPoints(true);
         qcPlotsWebPart.waitForPlots(2);
 
-        int includedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of included data points in plot SVG", 6, includedPointCount);
         int excludedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of included data points in plot SVG", 0, excludedPointCount);
+        assertEquals("Unexpected number of excluded data points in plot SVG", 6, excludedPointCount);
+        int includedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
+        assertEquals("Unexpected number of included data points in plot SVG", 0, includedPointCount);
 
         // verify that the plot data points are excluded and then change the state to re-include it
         String acquiredDateStr = getAcquiredDateDisplayStr(sampleFileAcquiredDates[0]);
@@ -867,18 +868,18 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         // create a guide set and verify updated QC Summary outliers info
         qcPlotsWebPart.createGuideSet(new GuideSet(sampleFileAcquiredDates[0], sampleFileAcquiredDates[1], null, 2), null);
-        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "16");
+        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "8");
 
         // change data point to only be excluded for a single metric and verify outliers changed
         changePointExclusionState(getAcquiredDateDisplayStr(sampleFileAcquiredDates[1]), QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric, 2);
-        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "5");
+        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "2");
         changePointExclusionState(getAcquiredDateDisplayStr(sampleFileAcquiredDates[2]), QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric, 2);
-        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "1");
+        verifyQCSummarySampleFileOutliers(sampleFileAcquiredDates[2], "0");
 
-        includedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of included data points in plot SVG", 2, includedPointCount);
-        excludedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of included data points in plot SVG", 4, excludedPointCount);
+        includedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
+        assertEquals("Unexpected number of included data points in plot SVG", 4, includedPointCount);
+        excludedPointCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
+        assertEquals("Unexpected number of excluded data points in plot SVG", 2, excludedPointCount);
     }
 
     /*

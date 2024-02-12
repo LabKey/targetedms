@@ -5,25 +5,26 @@ import org.json.JSONObject;
 
 public class OutlierCounts
 {
-    private final Integer _metricId;
+    private final QCMetricConfiguration _metric;
     private int _CUSUMmP;
     private int _CUSUMvP;
     private int _CUSUMmN;
     private int _CUSUMvN;
     private int _mR;
-    private int _leveyJennings;
+    /** Either Levey-Jennings or value cutoff, depending on config */
+    private int _value;
 
     /** Total number of data points under consideration */
     private int _totalCount;
 
     public OutlierCounts()
     {
-        _metricId = null;
+        _metric = null;
     }
 
-    public OutlierCounts(int metricId)
+    public OutlierCounts(QCMetricConfiguration metric)
     {
-        _metricId = metricId;
+        _metric = metric;
     }
 
     public int getCUSUMm()
@@ -41,9 +42,9 @@ public class OutlierCounts
         return _CUSUMmN;
     }
 
-    public void setCUSUMmN(int CUSUMmN)
+    public void incrementCUSUMmN()
     {
-        _CUSUMmN = CUSUMmN;
+        _CUSUMmN++;
     }
 
     public int getCUSUMmP()
@@ -51,9 +52,9 @@ public class OutlierCounts
         return _CUSUMmP;
     }
 
-    public void setCUSUMmP(int CUSUMmP)
+    public void incrementCUSUMmP()
     {
-        _CUSUMmP = CUSUMmP;
+        _CUSUMmP++;
     }
 
     public int getCUSUMvP()
@@ -61,9 +62,9 @@ public class OutlierCounts
         return _CUSUMvP;
     }
 
-    public void setCUSUMvP(int CUSUMvP)
+    public void incrementCUSUMvP()
     {
-        _CUSUMvP = CUSUMvP;
+        _CUSUMvP++;
     }
 
     public int getCUSUMvN()
@@ -71,9 +72,9 @@ public class OutlierCounts
         return _CUSUMvN;
     }
 
-    public void setCUSUMvN(int CUSUMvN)
+    public void incrementCUSUMvN()
     {
-        _CUSUMvN = CUSUMvN;
+        _CUSUMvN++;
     }
 
     public int getmR()
@@ -81,19 +82,19 @@ public class OutlierCounts
         return _mR;
     }
 
-    public void setmR(int mR)
+    public void incrementMR()
     {
-        _mR = mR;
+        _mR++;
     }
 
-    public int getLeveyJennings()
+    public int getValue()
     {
-        return _leveyJennings;
+        return _value;
     }
 
-    public void setLeveyJennings(int leveyJennings)
+    public void incrementValue()
     {
-        _leveyJennings = leveyJennings;
+        _value++;
     }
 
     public int getTotalCount()
@@ -101,9 +102,9 @@ public class OutlierCounts
         return _totalCount;
     }
 
-    public void setTotalCount(int totalCount)
+    public void incrementTotalCount()
     {
-        this._totalCount = totalCount;
+        _totalCount++;
     }
 
     @NotNull
@@ -118,10 +119,11 @@ public class OutlierCounts
         jsonObject.put("CUSUMvN", getCUSUMvN());
         jsonObject.put("CUSUMvP", getCUSUMvP());
         jsonObject.put("mR", getmR());
-        jsonObject.put("LeveyJennings", getLeveyJennings());
-        if (_metricId != null)
+        jsonObject.put("Value", getValue());
+        if (_metric != null)
         {
-            jsonObject.put("MetricId", _metricId);
+            jsonObject.put("MetricId", _metric.getId());
+            jsonObject.put("MetricStatus", _metric.getStatus());
         }
 
         return jsonObject;

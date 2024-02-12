@@ -178,7 +178,7 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         assertEquals("Unexpected number of points", 2 * sampleFileCount, getQCPlotPointCount());
 
         // remove a sample file
-        clickAndWait(Locator.linkWithText(sampleFileCount + " sample files"));
+        clickAndWait(Locator.linkWithText(sampleFileCount + " replicates"));
         DataRegionTable table = new DataRegionTable("query", getDriver());
         // Delete the oldest sample (of three), which are sorted in reverse chronological order
         table.checkCheckbox(2);
@@ -197,12 +197,12 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         List<List<String>> tempStringList02 = new ArrayList<>();
         tempStringList01.put("25fmol_Pepmix_spike_SRM_1601_04", "0");
         tempStringList01.put("25fmol_Pepmix_spike_SRM_1601_03", "0");
-        tempStringList02.add(Arrays.asList("25fmol_Pepmix_spike_SRM_1601_04", "Acquired: 2015-01-16 15:08"));
-        tempStringList02.add(Arrays.asList("25fmol_Pepmix_spike_SRM_1601_03", "Acquired: 2015-01-16 12:47"));
+        tempStringList02.add(Arrays.asList("25fmol_Pepmix_spike_SRM_1601_04", "acquired 2015-01-16 15:08"));
+        tempStringList02.add(Arrays.asList("25fmol_Pepmix_spike_SRM_1601_03", "acquired 2015-01-16 12:47"));
         validateSampleFile(0, tempStringList01, tempStringList02);
 
         // remove all sample files
-        clickAndWait(Locator.linkWithText(sampleFileCount + " sample files"));
+        clickAndWait(Locator.linkWithText(sampleFileCount + " replicates"));
         table.checkAllOnPage();
         doAndWaitForPageToLoad(() -> {
             table.clickHeaderButton("Delete");
@@ -210,7 +210,7 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         });
         sampleFileCount = 0;
         clickTab("Panorama Dashboard");
-        waitForElement(Locator.linkWithText(sampleFileCount + " sample files"));
+        waitForElement(Locator.linkWithText(sampleFileCount + " replicates"));
         assertElementNotPresent(Locator.tagWithClass("div", "sample-file-item"));
         assertElementPresent(Locator.tagContainingText("div", "No data found."));
     }
@@ -228,12 +228,12 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         setAutoQCPingTimeOut(QCPING_TIMEOUT);
 
         waitForElements(Locator.tagWithClass("div", "sample-file-item"), 6);
-        tempStringList01.put("Q_Exactive_08_23_2013_JGB_58", "28");
-        tempStringList01.put("Q_Exactive_08_23_2013_JGB_51", "25");
-        tempStringList01.put("Q_Exactive_08_23_2013_JGB_37", "29");
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_58", "Acquired: 2013-08-27 14:45"));
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_51", "Acquired: 2013-08-27 03:19"));
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_37", "Acquired: 2013-08-26 04:27"));
+        tempStringList01.put("Q_Exactive_08_23_2013_JGB_58", "0");
+        tempStringList01.put("Q_Exactive_08_23_2013_JGB_51", "0");
+        tempStringList01.put("Q_Exactive_08_23_2013_JGB_37", "1");
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_58", "acquired 2013-08-27 14:45"));
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_51", "acquired 2013-08-27 03:19"));
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_37", "acquired 2013-08-26 04:27"));
         validateSampleFile(0, tempStringList01, tempStringList02);
 
         validateAutoQCStatus(MAIN_SUMMARY, Arrays.asList("qc-none", "fa-circle-o"), "AutoQC has never pinged this folder");
@@ -290,9 +290,9 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         waitForRecentSampleFiles(6);
 
         tempStringList01.clear();
-        tempStringList01.put("Q_Exactive_08_23_2013_JGB_58", "2");
-        tempStringList01.put("Q_Exactive_08_23_2013_JGB_51", "6");
-        tempStringList01.put("Q_Exactive_08_23_2013_JGB_37", "1");
+        tempStringList01.put("Q_Exactive_08_23_2013_JGB_58", "1");
+        tempStringList01.put("Q_Exactive_08_23_2013_JGB_51", "0");
+        tempStringList01.put("Q_Exactive_08_23_2013_JGB_37", "0");
 
         tempStringList02.clear();
         tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_58", "Full Width at Half Maximum (FWHM) 1 1 0 0 0 0"));

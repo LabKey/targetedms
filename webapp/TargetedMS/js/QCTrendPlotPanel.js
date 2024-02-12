@@ -60,7 +60,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     // properties specific to this TargetedMS QC plot implementation
     yAxisScale: 'linear',
     metric: null,
-    plotTypes: ['Levey-Jennings'],
+    plotTypes: ['Metric Value'],
     dateRangeOffset: 0,
     minAcquiredTime: null,
     maxAcquiredTime: null,
@@ -114,7 +114,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     else if (value != undefined && value.length > 0 && !isNaN(Number(value))) {
                         value = +value;
                     }
-                    else if (key == 'plotTypes') { // convert string to array
+                    else if (key === 'plotTypes') { // convert string to array
+                        // We've renamed this plot type in the UI and need to map previously saved values
+                        value = value.replace('Levey-Jennings', 'Metric Value');
                         value = value.split(',');
                     }
                     if(key === 'selectedAnnotations') {
@@ -1507,6 +1509,54 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     toggleGuideSetMsgDisplay : function() {
         var toolbarMsg = this.down('#GuideSetMessageToolBar');
         toolbarMsg.up('toolbar').setVisible(this.enableBrushing);
+    },
+
+    highlightOutliersForClickedReplicate: function(plot, precursorInfo, replicateId) {
+        // for each precursor in precursorInfo
+        let me = this;
+
+        let binWidth = (plot.grid.rightEdge - plot.grid.leftEdge) / (plot.scales.x.scale.domain().length);
+        let yRange = plot.scales.yLeft.range;
+
+        let xAcc = function (d) {
+            return plot.scales.x.scale(d.StartIndex) - (binWidth/2);
+        };
+
+        let widthAcc = function (d) {
+            return plot.scales.x.scale(d.EndIndex) - plot.scales.x.scale(d.StartIndex) + binWidth;
+        };
+
+        // find the data point for the clicked replicate
+        for (let j = 0; j < precursorInfo.data.length; j++) {
+            let data = precursorInfo.data[j];
+            if (data.ReplicateId === replicateId) {
+                let clickedReplicateData = [];
+                clickedReplicateData.push({
+                    'EndIndex': j,
+                    'StartIndex': j
+                })
+
+                let outlierRect = "rect.outlier-" + j;
+
+                let color;
+                if (data && data.LJShape && data.LJShape.indexOf('Outlier') > -1) {
+                    color = '#C50000FF';
+                }
+                else {
+                    color = '#64f341';
+                }
+
+                me.getSvgElForPlot(plot).selectAll(outlierRect).data(clickedReplicateData)
+                        .enter().append("rect").attr("class", "outlier-"+j)
+                        .attr('x', xAcc).attr('y', yRange[1])
+                        .attr('width', widthAcc).attr('height', yRange[0] - yRange[1])
+                        .attr('stroke', color).attr('stroke-opacity', 0.1)
+                        .attr('fill', color).attr('fill-opacity', 0.1);
+
+                this.sendSvgElementToBack(plot, outlierRect);
+            }
+        }
+
     },
 
     addGuideSetTrainingRangeToPlot : function(plot, precursorInfo) {

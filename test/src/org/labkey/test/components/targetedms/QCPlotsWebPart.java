@@ -262,6 +262,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         elementCache().showExcludedPrecursors.set(check);
     }
+
     public boolean isShowReferenceGuideSetChecked()
     {
         return elementCache().showReferenceGuideSet.isChecked();
@@ -345,7 +346,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         // revert to the initial form values if any of them have changed
         setMetricType(MetricType.RETENTION);
         setDateRangeOffset(DateRangeOffset.ALL);
-        setQCPlotTypes(QCPlotsWebPart.QCPlotType.LeveyJennings);
+        setQCPlotTypes(QCPlotsWebPart.QCPlotType.MetricValue);
         setScale(QCPlotsWebPart.Scale.LINEAR);
         setGroupXAxisValuesByDate(false);
         setShowAllPeptidesInSinglePlot(false);
@@ -705,7 +706,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public enum QCPlotType
     {
-        LeveyJennings("Levey-Jennings", "", true),
+        MetricValue("Metric Value", "", true),
         MovingRange("Moving Range", "_mR", true),
         CUSUMm("CUSUMm", "_CUSUMm", true),
         CUSUMv("CUSUMv", "_CUSUMv", true),

@@ -81,7 +81,7 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
     }
     public enum ParetoPlotType
     {
-        LeveyJennings("Levey-Jennings", ""),
+        MetricValue("Metric Value", ""),
         MovingRange("Moving Range", "_mR"),
         CUSUMm("Mean CUSUM", "_CUSUMm"),
         CUSUMv("Variability CUSUM", "_CUSUMv");
@@ -107,7 +107,7 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
     }
     public List<String> getTicks(int guideSetNum)
     {
-        return getTicks(guideSetNum, ParetoPlotType.LeveyJennings);
+        return getTicks(guideSetNum, ParetoPlotType.MetricValue);
     }
     public List<String> getTicks(int guideSetNum, ParetoPlotType plotType)
     {
@@ -144,7 +144,7 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
 
     public int getPlotBarHeight(int guideSetId, int barPlotNum)
     {
-        return getPlotBarHeight(guideSetId, ParetoPlotType.LeveyJennings, barPlotNum);
+        return getPlotBarHeight(guideSetId, ParetoPlotType.MetricValue, barPlotNum);
     }
 
     public int getPlotBarHeight(int guideSetId, ParetoPlotType plotType, int barPlotNum)
@@ -168,7 +168,7 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
 
     public void waitForTickLoad(int guideSetNum)
     {
-        waitForTickLoad(guideSetNum, ParetoPlotType.LeveyJennings);
+        waitForTickLoad(guideSetNum, ParetoPlotType.MetricValue);
     }
 
     public void waitForTickLoad(int guideSetNum, ParetoPlotType plotType)
