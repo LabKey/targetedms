@@ -334,14 +334,15 @@ public class Peptide extends GeneralMolecule
 
     public static boolean modifiedSequencesMatch(String modSeq1, String modSeq2)
     {
+        if (modSeq1 == null || modSeq2 == null || modSeq1.startsWith("#") || modSeq2.startsWith("#"))
+        {
+            return false;
+        }
         if (modSeq1.equals(modSeq2))
         {
             return true;
         }
-        if (modSeq1.startsWith("#") || modSeq2.startsWith("#"))
-        {
-            return false;
-        }
+
         List<Pair<Integer, String>> mods1 = new ArrayList<>();
         String unmodSeq1 = stripModifications(modSeq1, mods1);
         List<Pair<Integer, String>> mods2 = new ArrayList<>();
