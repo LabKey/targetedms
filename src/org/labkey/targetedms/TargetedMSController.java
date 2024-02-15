@@ -1131,6 +1131,7 @@ public class TargetedMSController extends SpringActionController
         public ModelAndView getView(Object o, BindException errors)
         {
             JspView<?> calendarView = new JspView<>("/org/labkey/targetedms/view/instrumentCalendar.jsp");
+            calendarView.addClientDependency(ClientDependency.fromPath("TargetedMS/js/misc.js"));
             calendarView.setTitle("Utilization Calendar");
             calendarView.setFrame(WebPartView.FrameType.PORTAL);
             QCSummaryWebPart summaryView = new QCSummaryWebPart(getViewContext(), null);
