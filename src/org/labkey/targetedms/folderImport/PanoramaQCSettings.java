@@ -127,9 +127,8 @@ public enum PanoramaQCSettings
                     SQLFragment sql = new SQLFragment("SELECT qcAnnotationType.Name AS QCAnnotationTypeId, qcAnnotation.Description, qcAnnotation.Date FROM ")
                             .append(ti, "qcAnnotation")
                             .append(" INNER JOIN ")
-                            .append(" (SELECT * FROM targetedms.qcAnnotationType ")
-                            .append(" UNION ")
-                            .append(" SELECT * FROM \"Shared\".targetedms.qcannotationtype) qcAnnotationType")
+                            .append(" (SELECT * FROM targetedms.qcAnnotationType[ContainerFilter='CurrentPlusProjectAndShared'] ")
+                            .append(" ) qcAnnotationType")
                             .append(" ON qcAnnotation.QCAnnotationTypeId = qcAnnotationType.Id");
 
                     try (Results results = QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true))
