@@ -995,7 +995,7 @@ public class TargetedMSQCTest extends TargetedMSTest
     @LogMethod
     private void verifyUploadReport(String... reportText)
     {
-        beginAt(getCurrentContainerPath() + "/pipeline-status-showList.view?");
+        beginAt(getCurrentContainerPath() + "/pipeline-status-showList.view");
         waitForRunningPipelineJobs(MAX_WAIT_SECONDS * 1000);
 
         PipelineStatusTable statusTable = new PipelineStatusTable(this);
