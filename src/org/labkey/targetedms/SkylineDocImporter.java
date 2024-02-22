@@ -1935,14 +1935,14 @@ public class SkylineDocImporter
             precursorChromInfo.setSampleFileId(sampleFile.getId());
             precursorChromInfo.setGeneralMoleculeChromInfoId(sampleFileIdGeneralMolChromInfoIdMap.get(sampleFile.getId()));
 
-             insertPrecursorChromInfo(precursorChromInfo);
+            insertPrecursorChromInfo(precursorChromInfo);
 
             sampleFilePrecursorChromInfoIdMap.put(sampleFileKey, precursorChromInfo.getId());
 
             for (PrecursorChromInfoAnnotation annotation : precursorChromInfo.getAnnotations())
             {
                 annotation.setPrecursorChromInfoId(precursorChromInfo.getId());
-                 insertPrecursorChromInfoAnnotation(annotation);
+                insertPrecursorChromInfoAnnotation(annotation);
             }
         }
 
