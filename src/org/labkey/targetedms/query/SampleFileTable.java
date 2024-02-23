@@ -29,7 +29,6 @@ import org.labkey.api.data.LazyForeignKey;
 import org.labkey.api.data.RenderContext;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SqlSelector;
-import org.labkey.api.data.Table;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.data.dialect.SqlDialect;
@@ -47,7 +46,6 @@ import org.labkey.api.query.ExprColumn;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.InvalidKeyException;
 import org.labkey.api.query.QueryForeignKey;
-import org.labkey.api.query.QueryService;
 import org.labkey.api.query.QueryUpdateService;
 import org.labkey.api.query.QueryUpdateServiceException;
 import org.labkey.api.security.User;
@@ -309,8 +307,8 @@ public class SampleFileTable extends TargetedMSTable
                 Object id = oldRowMap.get("id");
                 if (id != null)
                 {
-                    int convertedId = Integer.parseInt(id.toString());
-                    TargetedMSManager.purgeDeletedSampleFiles(convertedId);
+                    long convertedId = Long.parseLong(id.toString());
+                    TargetedMSManager.purgeDeletedSampleFiles(Collections.singletonList(convertedId));
                 }
                 return super.deleteRow(user, container, oldRowMap);
             }
