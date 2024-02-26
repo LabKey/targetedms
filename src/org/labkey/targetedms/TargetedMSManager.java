@@ -1451,56 +1451,61 @@ public class TargetedMSManager
     }
 
     /**
-     * @return the file path of the import file containing the sample
+     * @return the file paths of the Skyline documents containing the given sample files
      */
     @Nullable
-    public static String deleteSampleFileAndDependencies(long sampleFileId)
+    public static List<String> deleteSampleFilesAndDependencies(List<Long> sampleFileIds)
     {
-        purgeDeletedSampleFiles(sampleFileId);
+        purgeDeletedSampleFiles(sampleFileIds);
 
-        String file = getSampleFileUploadFile(sampleFileId);
+        List<String> files = sampleFileIds.stream().map(sampleFileId -> getSampleFileUploadFile(sampleFileId)).collect(Collectors.toList());
 
-        execute("DELETE FROM " + getTableInfoSampleFile() + " WHERE Id = " + sampleFileId);
+        execute(getSqlDialect().appendInClauseSql(new SQLFragment("DELETE FROM " + getTableInfoSampleFile() + " WHERE Id "), sampleFileIds));
 
-        return file;
+        return files;
     }
 
-    public static void purgeDeletedSampleFiles(long sampleFileId)
+    public static void purgeDeletedSampleFiles(List<Long> sampleFileIds)
     {
+        if (sampleFileIds == null || sampleFileIds.isEmpty())
+            return;
+
+        SQLFragment whereClause = getSqlDialect().appendInClauseSql(new SQLFragment(" WHERE SampleFileId "), sampleFileIds);
+
         // Delete from TransitionChromInfoAnnotation (dependent of TransitionChromInfo)
-        execute(getDependentSampleFileDeleteSql(getTableInfoTransitionChromInfoAnnotation(), "TransitionChromInfoId", getTableInfoTransitionChromInfo()), sampleFileId);
+        execute(getDependentSampleFileDeleteSql(getTableInfoTransitionChromInfoAnnotation(), "TransitionChromInfoId", getTableInfoTransitionChromInfo(), whereClause));
 
         // Delete from TransitionAreaRatio (dependent of TransitionChromInfo)
-        execute(getDependentSampleFileDeleteSql(getTableInfoTransitionAreaRatio(), "TransitionChromInfoId", getTableInfoTransitionChromInfo()), sampleFileId);
+        execute(getDependentSampleFileDeleteSql(getTableInfoTransitionAreaRatio(), "TransitionChromInfoId", getTableInfoTransitionChromInfo(), whereClause));
 
         // Delete from TransitionChromInfo
-        execute("DELETE FROM " + getTableInfoTransitionChromInfo() + " WHERE SampleFileId = ?", sampleFileId);
+        execute(new SQLFragment("DELETE FROM ").append(getTableInfoTransitionChromInfo()).append(whereClause));
 
         // Delete from PrecursorChromInfoAnnotation (dependent of PrecursorChromInfo)
-        execute(getDependentSampleFileDeleteSql(getTableInfoPrecursorChromInfoAnnotation(), "PrecursorChromInfoId", getTableInfoPrecursorChromInfo()), sampleFileId);
+        execute(getDependentSampleFileDeleteSql(getTableInfoPrecursorChromInfoAnnotation(), "PrecursorChromInfoId", getTableInfoPrecursorChromInfo(), whereClause));
 
         // Delete from PrecursorAreaRatio (dependent of PrecursorChromInfo)
-        execute(getDependentSampleFileDeleteSql(getTableInfoPrecursorAreaRatio(), "PrecursorChromInfoId", getTableInfoPrecursorChromInfo()), sampleFileId);
+        execute(getDependentSampleFileDeleteSql(getTableInfoPrecursorAreaRatio(), "PrecursorChromInfoId", getTableInfoPrecursorChromInfo(), whereClause));
 
         // Delete from PrecursorChromInfo
-        execute("DELETE FROM " + getTableInfoPrecursorChromInfo() + " WHERE SampleFileId = ?", sampleFileId);
+        execute(new SQLFragment("DELETE FROM ").append(getTableInfoPrecursorChromInfo()).append(whereClause));
 
         // Delete from PeptideAreaRatio (dependent of PeptideChromInfo)
-        execute(getDependentSampleFileDeleteSql(getTableInfoPeptideAreaRatio(), "PeptideChromInfoId", getTableInfoGeneralMoleculeChromInfo()), sampleFileId);
+        execute(getDependentSampleFileDeleteSql(getTableInfoPeptideAreaRatio(), "PeptideChromInfoId", getTableInfoGeneralMoleculeChromInfo(), whereClause));
 
         // Delete from PeptideChromInfo
-        execute("DELETE FROM " + getTableInfoGeneralMoleculeChromInfo() + " WHERE SampleFileId = ?", sampleFileId);
+        execute(new SQLFragment("DELETE FROM ").append(getTableInfoGeneralMoleculeChromInfo()).append(whereClause));
 
         // Delete from QCTraceMetricValues
-        execute("DELETE FROM " + getTableQCTraceMetricValues() + " WHERE SampleFileId = ?", sampleFileId);
+        execute(new SQLFragment("DELETE FROM ").append(getTableQCTraceMetricValues()).append(whereClause));
 
         // Delete from SampleFileChromInfo
-        execute("DELETE FROM " + getTableInfoSampleFileChromInfo() + " WHERE SampleFileId = ?", sampleFileId);
+        execute(new SQLFragment("DELETE FROM ").append(getTableInfoSampleFileChromInfo()).append(whereClause));
     }
 
-    private static String getDependentSampleFileDeleteSql(TableInfo fromTable, String fromFk, TableInfo dependentTable)
+    private static SQLFragment getDependentSampleFileDeleteSql(TableInfo fromTable, String fromFk, TableInfo dependentTable, SQLFragment whereClause)
     {
-        return "DELETE FROM " + fromTable + " WHERE " + fromFk + " IN (SELECT Id FROM " + dependentTable + " WHERE SampleFileId = ?)";
+        return new SQLFragment("DELETE FROM " + fromTable + " WHERE " + fromFk + " IN (SELECT Id FROM " + dependentTable).append(whereClause).append(")");
     }
 
     /** Actually delete runs that have been marked as deleted from the database */
@@ -1711,6 +1716,15 @@ public class TargetedMSManager
                 " INNER JOIN " + getTableInfoRuns() + " r ON pg.RunId = r.Id ").append(whereClause).append(")"));
     }
 
+    public static void deleteSampleFileDependent(TableInfo tableInfo, SQLFragment whereClause)
+    {
+        execute(new SQLFragment(" DELETE FROM ").append(tableInfo).append(" WHERE SampleFileId IN ")
+                .append(" (SELECT sf.Id FROM ").append(getTableInfoSampleFile(), "sf")
+                .append(" INNER JOIN ").append(getTableInfoReplicate(), "rep").append(" ON rep.Id = sf.ReplicateId ")
+                .append(" INNER JOIN ").append(getTableInfoRuns(), "r").append(" ON rep.RunId = r.Id ")
+                .append(whereClause).append(")"));
+    }
+
     private static void deleteGeneralPrecursorDependent(TableInfo tableInfo, String colName)
     {
         execute(" DELETE FROM " + tableInfo +
@@ -1754,11 +1768,7 @@ public class TargetedMSManager
 
     private static void deleteSampleFileDependent(TableInfo tableInfo)
     {
-        execute(" DELETE FROM " + tableInfo +
-                " WHERE SampleFileId IN (SELECT sf.Id FROM " + getTableInfoSampleFile() + " sf " +
-                " INNER JOIN " + getTableInfoReplicate() + " rep ON rep.Id = sf.ReplicateId "+
-                " INNER JOIN " + getTableInfoRuns() + " r ON rep.RunId = r.Id " +
-                " WHERE r.Deleted = ?)", true);
+        deleteSampleFileDependent(tableInfo, new SQLFragment(" WHERE r.Deleted = ?", true));
     }
 
     private static void deleteTransitionPredictionSettingsDependent()

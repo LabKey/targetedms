@@ -26,8 +26,8 @@
                                   +         '<option value="4" ' + (userSubscription ? (userSubscription.samples === 4 && userSubscription.enabled ? "selected":"") :"" ) + '>four most</option>'
                                   +         '<option value="5" ' + (userSubscription ? (userSubscription.samples === 5 && userSubscription.enabled ? "selected":"") :"" ) + '>five most</option>'
                                   +     '</select> '
-                                  +     'recently imported samples each have at least '
-                                  +     '<input type="number" style="width: 3em" min="0" name="outlierCount"/> outliers'
+                                  +     'recently imported samples each have '
+                                  +     '<input type="number" style="width: 3em" min="0" name="outlierCount" value="0"/> or more outliers'
                                   +  '</p>'
                                   + '<input type="button" value="Save" class="labkey-button primary"  onclick="LABKEY.internal.SubscribeQCNotification.onSave()"/> '
                                   + '<input type="button" value="Cancel" class="labkey-button" onclick="LABKEY.internal.SubscribeQCNotification.onCancel()" />' ;

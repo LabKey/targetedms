@@ -53,7 +53,7 @@ public class QCNotificationSender implements SkylineDocumentImportListener
 
                 userSubscriptions.forEach(userSubscription -> {
                     int totalOutliers = 0;
-                    int totalOutlierSubscribed = userSubscription.getOutliers();
+                    int totalOutlierSubscribed = userSubscription.getOutliers() == null ? 0 : userSubscription.getOutliers();
                     int sampleCount = 0;
 
                     List<SampleFileInfo> samplesToEmail = new ArrayList<>();

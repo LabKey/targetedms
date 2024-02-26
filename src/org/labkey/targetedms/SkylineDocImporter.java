@@ -423,7 +423,8 @@ public class SkylineDocImporter
                 // the max
                 TargetedMSManager.deleteTransitionChromInfoDependent(TargetedMSManager.getTableInfoTransitionChromInfoAnnotation(), whereClause);
                 TargetedMSManager.deleteTransitionChromInfoDependent(TargetedMSManager.getTableInfoTransitionAreaRatio(), whereClause);
-                TargetedMSManager.deleteGeneralTransitionDependent(getTableInfoTransitionChromInfo(), "TransitionId", whereClause);
+                TargetedMSManager.deleteSampleFileDependent(getTableInfoTransitionChromInfo(), whereClause);
+                _log.info("Cleared rows from TransitionChromInfo and related tables.");
 
                 // Since we don't have the TransitionChromInfos to use for the indices, copy them from the temp table
                 // into PrecursorChromInfo (but filter to only touch the rows where we have matches in the temp table)
@@ -705,30 +706,36 @@ public class SkylineDocImporter
     private void deleteOldSampleFiles(ReplicateInfo replicateInfo)
     {
         int total = replicateInfo.oldSamplesToDelete.values().stream().mapToInt(Set::size).sum();
-        int s = 0;
         IProgressStatus status = _progressMonitor.getQcCleanupProgressTracker();
-        for(Map.Entry<String, Set<SampleFile>> entry: replicateInfo.oldSamplesToDelete.entrySet())
-        {
-            for (SampleFile existingSample : entry.getValue())
-            {
-                String srcFile = TargetedMSManager.deleteSampleFileAndDependencies(existingSample.getId());
-                _log.debug(String.format("Updating previously imported data for sample file %s in QC folder. %d of %d", entry.getKey(), ++s, total));
 
-                if (null != srcFile)
+        if (total == 0)
+        {
+            status.complete("Did not find any older sample file data to delete.");
+            return;
+        }
+
+        _log.info(String.format("Updating previously imported data for the following sample files in the QC folder. %d old sample files were found.", total));
+        replicateInfo.oldSamplesToDelete.keySet().forEach(key -> _log.debug(String.format("  %s", key)));
+
+        List<Long> existingSamples = new ArrayList<>(total);
+        replicateInfo.oldSamplesToDelete.forEach((key, value) -> value.forEach(existingSample -> existingSamples.add(existingSample.getId())));
+
+        List<String> srcFiles = TargetedMSManager.deleteSampleFilesAndDependencies(existingSamples);
+        for (String srcFile: srcFiles)
+        {
+            if (null != srcFile)
+            {
+                try
                 {
-                    try
-                    {
-                        replicateInfo.potentiallyUnusedFiles.add(new URI(srcFile));
-                    }
-                    catch (URISyntaxException e)
-                    {
-                        _log.error("Unable to delete file " + srcFile + ". May be an invalid path. This file is no longer needed on the server.");
-                    }
+                    replicateInfo.potentiallyUnusedFiles.add(new URI(srcFile));
                 }
-                status.updateProgress(s, total);
+                catch (URISyntaxException e)
+                {
+                    _log.error("Unable to delete file " + srcFile + ". May be an invalid path. This file is no longer needed on the server.");
+                }
             }
         }
-        status.complete(total > 0 ? "Done updating previously imported sample file data." : "Did not find any older sample file data to delete.");
+        status.complete("Done updating previously imported sample file data.");
     }
 
     @NotNull
