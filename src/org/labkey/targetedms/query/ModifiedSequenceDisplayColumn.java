@@ -283,7 +283,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
                                 int startIndex = p.getSequence().indexOf(sequence);
                                 int aaIndex = index - startIndex - 1;
 
-                                if (sequence.charAt(aaIndex) == aa)
+                                if (sequence.length() > aaIndex && sequence.charAt(aaIndex) == aa)
                                 {
                                     peptideModifiedSequence = sequence;
                                     strModIndices = new HashSet<>();
@@ -291,13 +291,13 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
                                 }
                                 else
                                 {
-                                    LOG.debug("Modified residue didn't match for " + modificationSite + " on peptide " + sequence);
+                                    LOG.debug("Modified residue didn't match for " + modificationSite + " on peptide " + sequence + " in document " + runId);
                                 }
                             }
                         }
                         catch (NumberFormatException ignored)
                         {
-                            LOG.debug("Bad modificationSite value: " + modificationSite);
+                            LOG.debug("Bad modificationSite value: " + modificationSite + " in document " + runId);
                         }
                     }
                 }
