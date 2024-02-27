@@ -291,7 +291,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
                                 }
                                 else
                                 {
-                                    LOG.debug("Modified residue didn't match for " + modificationSite + " on peptide " + sequence + " in document " + runId);
+                                    LOG.debug("Modified residue didn't match for " + modificationSite + " at calculated index " + aaIndex + " on peptide " + sequence + " in document " + runId);
                                 }
                             }
                         }
