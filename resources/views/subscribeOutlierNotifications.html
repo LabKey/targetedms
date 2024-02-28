@@ -29,10 +29,18 @@
                                   +     'recently imported samples each have '
                                   +     '<input type="number" style="width: 3em" min="0" name="outlierCount" value="0"/> or more outliers'
                                   +  '</p>'
-                                  + '<input type="button" value="Save" class="labkey-button primary"  onclick="LABKEY.internal.SubscribeQCNotification.onSave()"/> '
-                                  + '<input type="button" value="Cancel" class="labkey-button" onclick="LABKEY.internal.SubscribeQCNotification.onCancel()" />' ;
+                                  + '<input type="button" value="Save" class="labkey-button primary" id="saveButton" /> '
+                                  + '<input type="button" value="Cancel" class="labkey-button" id="cancelButton" />' ;
 
             jQuery('#userSubscriptionDiv').html(userSubscriptionHtml);
+
+            jQuery('#saveButton').click(function() {
+                LABKEY.internal.SubscribeQCNotification.onSave();
+            });
+            jQuery('#cancelButton').click(function() {
+                LABKEY.internal.SubscribeQCNotification.onCancel();
+            });
+
 
             if(userSubscription && userSubscription.outliers && userSubscription.enabled)
             {

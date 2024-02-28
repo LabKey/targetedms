@@ -57,15 +57,28 @@
             });
 
             qcMetricsTable += '</table>' + '<br>' +
-                    '<button type="button" class="labkey-button primary" onclick="LABKEY.internal.ConfigureQCMetrics.save()" style="margin-right: 20px;">Save</button>' +
-                    '<button type="button" class="labkey-button" onclick="LABKEY.internal.ConfigureQCMetrics.resetQCMetrics()" style="margin-right: 20px;">Cancel</button>' +
-                    '<button type="button" class="labkey-button" onclick="LABKEY.internal.ConfigureQCMetrics.addNewMetric(\'custom\')" style="margin-right: 20px;">Add New Custom Metric</button>' +
-                    '<button type="button" class="labkey-button" onclick="LABKEY.internal.ConfigureQCMetrics.addNewMetric(\'trace\')">Add New Trace Metric</button>' +
+                    '<button type="button" class="labkey-button primary" id="saveButton" style="margin-right: 20px;">Save</button>' +
+                    '<button type="button" class="labkey-button" id="cancelButton" style="margin-right: 20px;">Cancel</button>' +
+                    '<button type="button" class="labkey-button" id="createNewCustomMetricButton" style="margin-right: 20px;">Add New Custom Metric</button>' +
+                    '<button type="button" class="labkey-button" id="createNewTraceMetricButton">Add New Trace Metric</button>' +
                     '</form>';
 
             jQuery('#qcMetricsTable').html(qcMetricsTable);
 
             refreshBoundsInputs(qcMetrics);
+
+            jQuery('#saveButton').click(function() {
+                LABKEY.internal.ConfigureQCMetrics.save();
+            });
+            jQuery('#cancelButton').click(function() {
+                LABKEY.internal.ConfigureQCMetrics.resetQCMetrics();
+            });
+            jQuery('#createNewCustomMetricButton').click(function() {
+                LABKEY.internal.ConfigureQCMetrics.addNewMetric('custom');
+            });
+            jQuery('#createNewTraceMetricButton').click(function() {
+                LABKEY.internal.ConfigureQCMetrics.addNewMetric('trace')
+            });
 
             jQuery.each(qcMetrics, function (index, row) {
                 jQuery('#editLink' + row.id).click(function (e) {

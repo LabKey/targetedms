@@ -32,6 +32,7 @@ import org.labkey.api.util.StringUtilsLabKey;
 import org.labkey.api.util.URLHelper;
 import org.labkey.api.view.NavTree;
 import org.labkey.api.view.ViewContext;
+import org.labkey.api.view.template.PageConfig;
 import org.labkey.targetedms.query.ChromatogramGridQuerySettings;
 
 import java.io.IOException;
@@ -117,7 +118,9 @@ public class ChromatogramsDataRegion extends DataRegion
     {
         super.renderTable(ctx, out);
 
-        out.write("\n<script type=\"text/javascript\">\n");
+        out.write("\n<script type=\"text/javascript\" nonce=\"");
+        out.write(PageFlowUtil.filter(PageConfig.getScriptNonceHeader(ctx.getRequest())));
+        out.write("\">");
         out.write("LABKEY.DataRegions[" + PageFlowUtil.jsString(getName()) + "].refreshPlots = function() {\n");
         out.write("  const svgInfos = " + _svgs.toString() + ";\n");
         out.write("  for (let i = 0; i < svgInfos.length; i++) {\n");
