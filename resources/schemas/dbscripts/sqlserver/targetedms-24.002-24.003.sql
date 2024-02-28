@@ -1,5 +1,4 @@
-ALTER TABLE targetedms.TransitionChromInfo
-    ADD Skewness DOUBLE PRECISION,
-    ADD Kurtosis DOUBLE PRECISION,
-    ADD StdDev DOUBLE PRECISION,
-    ADD ShapeCorrelation DOUBLE PRECISION;
+ALTER TABLE targetedms.TransitionChromInfo ADD Skewness DOUBLE PRECISION;
+ALTER TABLE targetedms.TransitionChromInfo ADD Kurtosis DOUBLE PRECISION;
+ALTER TABLE targetedms.TransitionChromInfo ADD StdDev DOUBLE PRECISION;
+ALTER TABLE targetedms.TransitionChromInfo ADD ShapeCorrelation DOUBLE PRECISION;
