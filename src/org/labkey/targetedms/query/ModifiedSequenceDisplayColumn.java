@@ -280,8 +280,16 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
                             Protein p = getHtmlMaker().getProtein(peptideGroupId, runId);
                             if (p != null && p.getSequence() != null)
                             {
-                                int startIndex = p.getSequence().indexOf(sequence);
-                                int aaIndex = index - startIndex - 1;
+                                int startIndex = -1;
+                                int aaIndex;
+                                // The peptide may be repeated in the protein sequence so look for a match
+                                // in the right range
+                                do
+                                {
+                                    startIndex = p.getSequence().indexOf(sequence, startIndex + 1);
+                                    aaIndex = index - startIndex - 1;
+                                }
+                                while (aaIndex > sequence.length());
 
                                 if (sequence.length() > aaIndex && sequence.charAt(aaIndex) == aa)
                                 {
