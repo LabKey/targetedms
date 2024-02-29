@@ -46,9 +46,13 @@ public class TransitionChromInfo extends ChromInfo<TransitionChromInfoAnnotation
     private Double _ionMobility;
     private Double _ionMobilityWindow;
     private String _ionMobilityType;
-    private Integer Rank;
-    private Integer RankByLevel;
-    private Boolean ForcedIntegration;
+    private Integer _rank;
+    private Integer _rankByLevel;
+    private Boolean _forcedIntegration;
+    private Double _skewness;
+    private Double _kurtosis;
+    private Double _stdDev;
+    private Double _shapeCorrelation;
 
     public long getTransitionId()
     {
@@ -287,31 +291,71 @@ public class TransitionChromInfo extends ChromInfo<TransitionChromInfoAnnotation
 
     public Integer getRank()
     {
-        return Rank;
+        return _rank;
     }
 
     public void setRank(Integer rank)
     {
-        Rank = rank;
+        _rank = rank;
     }
 
     public Integer getRankByLevel()
     {
-        return RankByLevel;
+        return _rankByLevel;
     }
 
     public void setRankByLevel(Integer rankByLevel)
     {
-        RankByLevel = rankByLevel;
+        _rankByLevel = rankByLevel;
     }
 
     public Boolean getForcedIntegration()
     {
-        return ForcedIntegration;
+        return _forcedIntegration;
     }
 
     public void setForcedIntegration(Boolean forcedIntegration)
     {
-        ForcedIntegration = forcedIntegration;
+        _forcedIntegration = forcedIntegration;
+    }
+
+    public Double getSkewness()
+    {
+        return _skewness;
+    }
+
+    public void setSkewness(Double skewness)
+    {
+        _skewness = skewness;
+    }
+
+    public Double getKurtosis()
+    {
+        return _kurtosis;
+    }
+
+    public void setKurtosis(Double kurtosis)
+    {
+        _kurtosis = kurtosis;
+    }
+
+    public Double getStdDev()
+    {
+        return _stdDev;
+    }
+
+    public void setStdDev(Double stdDev)
+    {
+        _stdDev = stdDev;
+    }
+
+    public Double getShapeCorrelation()
+    {
+        return _shapeCorrelation;
+    }
+
+    public void setShapeCorrelation(Double shapeCorrelation)
+    {
+        _shapeCorrelation = shapeCorrelation;
     }
 }

@@ -2113,7 +2113,7 @@ public class SkylineDocImporter
         try
         {
             _transitionChromInfoStmt = ensureStatement(_transitionChromInfoStmt,
-                    "INSERT INTO targetedms.transitionchrominfo(transitionid, samplefileid, precursorchrominfoid, retentiontime, starttime, endtime, height, area, background, fwhm, fwhmdegenerate, truncated, peakrank, optimizationstep, note, chromatogramindex, masserrorppm, userset, identified, pointsacrosspeak, ccs, ionmobility, ionmobilitywindow, ionmobilitytype, rank, rankbylevel, forcedintegration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO targetedms.transitionchrominfo(transitionid, samplefileid, precursorchrominfoid, retentiontime, starttime, endtime, height, area, background, fwhm, fwhmdegenerate, truncated, peakrank, optimizationstep, note, chromatogramindex, masserrorppm, userset, identified, pointsacrosspeak, ccs, ionmobility, ionmobilitywindow, ionmobilitytype, rank, rankbylevel, forcedintegration, skewness, kurtosis, stddev, shapecorrelation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     true);
 
             int index = 1;
@@ -2143,7 +2143,12 @@ public class SkylineDocImporter
             _transitionChromInfoStmt.setString(index++, transChromInfo.getIonMobilityType());
             setInteger(_transitionChromInfoStmt, index++, transChromInfo.getRank());
             setInteger(_transitionChromInfoStmt, index++, transChromInfo.getRankByLevel());
-            setBoolean(_transitionChromInfoStmt, index, transChromInfo.getForcedIntegration());
+            setBoolean(_transitionChromInfoStmt, index++, transChromInfo.getForcedIntegration());
+
+            setDouble(_transitionChromInfoStmt, index++, transChromInfo.getSkewness());
+            setDouble(_transitionChromInfoStmt, index++, transChromInfo.getKurtosis());
+            setDouble(_transitionChromInfoStmt, index++, transChromInfo.getStdDev());
+            setDouble(_transitionChromInfoStmt, index, transChromInfo.getShapeCorrelation());
 
             try (ResultSet rs = TargetedMSManager.getSqlDialect().executeWithResults(_transitionChromInfoStmt))
             {

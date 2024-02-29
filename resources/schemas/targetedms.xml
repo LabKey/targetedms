@@ -735,6 +735,10 @@
             <column columnName="Rank"/>
             <column columnName="RankByLevel"/>
             <column columnName="ForcedIntegration"/>
+            <column columnName="Skewness"/>
+            <column columnName="Kurtosis"/>
+            <column columnName="StdDev"/>
+            <column columnName="ShapeCorrelation"/>
         </columns>
     </table>
     <table tableName="Enzyme" tableDbType="TABLE">

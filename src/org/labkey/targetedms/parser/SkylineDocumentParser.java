@@ -69,7 +69,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.zip.DataFormatException;
 
 /**
  * Parses the .sky XML file format, building up an in-memory representation of its contents.
@@ -173,7 +172,7 @@ public class SkylineDocumentParser implements AutoCloseable
 
     private static final String ID = "id";
 
-    public static final Pattern oldModMassPattern = Pattern.compile("(\\[[+-]\\d+)\\]"); // e.g. KVN[-17]KTES[+80]K will match [-17] and [+80]
+    public static final Pattern oldModMassPattern = Pattern.compile("(\\[[+-]\\d+)]"); // e.g. KVN[-17]KTES[+80]K will match [-17] and [+80]
 
     private final static double OPTIMIZE_SHIFT_SIZE = 0.01;
 
@@ -568,7 +567,7 @@ public class SkylineDocumentParser implements AutoCloseable
 
     private void updateReplicateAnnotations()
     {
-        if(_replicateList == null || _replicateList.size() == 0)
+        if(_replicateList == null || _replicateList.isEmpty())
             return;
         for(SkylineReplicate replicate: _replicateList) {
 
@@ -595,7 +594,7 @@ public class SkylineDocumentParser implements AutoCloseable
                 addMissingBooleanAnnotation(missingReplAnnotations, missingAnotName, new ReplicateAnnotation());
             }
 
-            if(missingReplAnnotations.size() > 0)
+            if(!missingReplAnnotations.isEmpty())
             {
                 List<ReplicateAnnotation> combinedAnnotations = new ArrayList<>(annotations);
                 combinedAnnotations.addAll(missingReplAnnotations);
@@ -699,9 +698,8 @@ public class SkylineDocumentParser implements AutoCloseable
 
     private List<Object> makeColumnData(DataSettings.AnnotationType annotationType, String persistedString)
     {
-        try
+        try (TabLoader tabLoader = new TabLoader(persistedString, false))
         {
-            TabLoader tabLoader = new TabLoader(persistedString, false);
             tabLoader.parseAsCSV();
             String[][] lines = tabLoader.getFirstNLines(1);
             if (lines.length == 0)
@@ -710,15 +708,14 @@ public class SkylineDocumentParser implements AutoCloseable
             }
             List<String> values = Arrays.asList(lines[0]);
 
-            switch (annotationType)
+            return switch (annotationType)
             {
-                case true_false:
-                    return values.stream().map(v->"1".equals(v) ? Boolean.TRUE : Boolean.FALSE).collect(Collectors.toList());
-                case number:
-                    return values.stream().map(v->StringUtils.isEmpty(v) ? null : Double.parseDouble(v)).collect(Collectors.toList());
-                default:
-                    return values.stream().map(v->StringUtils.isEmpty(v) ? null : v).collect(Collectors.toList());
-            }
+                case true_false ->
+                        values.stream().map(v -> "1".equals(v) ? Boolean.TRUE : Boolean.FALSE).collect(Collectors.toList());
+                case number ->
+                        values.stream().map(v -> StringUtils.isEmpty(v) ? null : Double.parseDouble(v)).collect(Collectors.toList());
+                default -> values.stream().map(v -> StringUtils.isEmpty(v) ? null : v).collect(Collectors.toList());
+            };
         }
         catch (IOException ioException)
         {
@@ -927,7 +924,7 @@ public class SkylineDocumentParser implements AutoCloseable
             }
         }
 
-        if (text.length() == 0)
+        if (text.isEmpty())
         {
             throw new XMLStreamException("No text content for <" + ATOM_PERCENT_ENRICHMENT + "> element, should contain a percent value");
         }
@@ -1253,7 +1250,7 @@ public class SkylineDocumentParser implements AutoCloseable
                 result.append(reader.getText());
             }
         }
-        return result.length() == 0 ? null : result.toString();
+        return result.isEmpty() ? null : result.toString();
     }
 
     public boolean hasNextPeptideGroup() throws XMLStreamException
@@ -1706,7 +1703,7 @@ public class SkylineDocumentParser implements AutoCloseable
                 result.append(reader.getText());
             }
         }
-        return result.length() == 0 ? null : result.toString();
+        return result.isEmpty() ? null : result.toString();
     }
 
     private Peptide.IsotopeModification readIsotopeModification(XMLStreamReader reader, String isotopeLabel)
@@ -1946,8 +1943,6 @@ public class SkylineDocumentParser implements AutoCloseable
      * because TransitionChromInfos do not get saved for large documents.
      *
      * Also: populate TotalAreaMs1 and TotalAreaFragment
-     *
-     * @param precursor
      */
     private void computePrecursorChromInfoValues(GeneralPrecursor<?> precursor)
     {
@@ -2284,7 +2279,7 @@ public class SkylineDocumentParser implements AutoCloseable
             complexFragmentIonName.addChild(readLinkedIon(child));
         }
         ComplexFragmentIonName.ModificationSite modificationSite = null;
-        if (linkedIon.getModificationName().length() > 0) {
+        if (!linkedIon.getModificationName().isEmpty()) {
             modificationSite = new ComplexFragmentIonName.ModificationSite(linkedIon.getModificationIndex(), linkedIon.getModificationName());
         }
         return Pair.of(modificationSite, complexFragmentIonName);
@@ -2889,7 +2884,7 @@ public class SkylineDocumentParser implements AutoCloseable
             // Boolean types are omitted if they're false, so consider it to be "true"
             annotation.setValue(Boolean.TRUE.toString());
         }
-        else if (value.length() > 0)
+        else if (!value.isEmpty())
         {
             annotation.setValue(value.toString());
         }
@@ -2952,6 +2947,11 @@ public class SkylineDocumentParser implements AutoCloseable
         chromInfo.setRank(XmlUtil.readIntegerAttribute(reader, "rank"));
         chromInfo.setRankByLevel(XmlUtil.readIntegerAttribute(reader, "rank_by_level"));
         chromInfo.setForcedIntegration(XmlUtil.readBooleanAttribute(reader, "forced_integration"));
+
+        chromInfo.setSkewness(XmlUtil.readDoubleAttribute(reader, "skewness"));
+        chromInfo.setKurtosis(XmlUtil.readDoubleAttribute(reader, "kurtosis"));
+        chromInfo.setStdDev(XmlUtil.readDoubleAttribute(reader, "std_dev"));
+        chromInfo.setShapeCorrelation(XmlUtil.readDoubleAttribute(reader, "shape_correlation"));
 
         while(reader.hasNext())
         {
@@ -3027,6 +3027,12 @@ public class SkylineDocumentParser implements AutoCloseable
             chromInfo.setPeakRank(transitionPeak.getRank());
             chromInfo.setUserSet(userSetToString(transitionPeak.getUserSet()));
             chromInfo.setPointsAcrossPeak(fromOptional(transitionPeak.getPointsAcrossPeak()));
+
+            chromInfo.setSkewness((double) transitionPeak.getPeakShapeValues().getSkewness());
+            chromInfo.setKurtosis((double) transitionPeak.getPeakShapeValues().getKurtosis());
+            chromInfo.setStdDev((double) transitionPeak.getPeakShapeValues().getStdDev());
+            chromInfo.setShapeCorrelation((double) transitionPeak.getPeakShapeValues().getShapeCorrelation());
+
             if (!StringUtils.isEmpty(transitionPeak.getAnnotations().getNote())) {
                 chromInfo.setNote(transitionPeak.getAnnotations().getNote());
             }
@@ -3394,7 +3400,7 @@ public class SkylineDocumentParser implements AutoCloseable
         }
 
         @Override
-        public int read(@NotNull byte[] b) throws IOException
+        public int read(byte @NotNull [] b) throws IOException
         {
             int read = super.read(b);
             _bytesRead += read;
@@ -3402,7 +3408,7 @@ public class SkylineDocumentParser implements AutoCloseable
         }
 
         @Override
-        public int read(@NotNull byte[] b, int off, int len) throws IOException
+        public int read(byte @NotNull [] b, int off, int len) throws IOException
         {
             int read = super.read(b, off, len);
             _bytesRead += read;
