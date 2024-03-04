@@ -1531,6 +1531,7 @@ public class TargetedMSManager
                 " ( Id BIGINT NOT NULL PRIMARY KEY )");
 
         SQLFragment insertSql = new SQLFragment("INSERT INTO ").append(tempTableName)
+                .append(" (Id) ")
                 .append(" (SELECT Id FROM ").append(tableInfo)
                 .append(whereClause)
                 .append(") ");
