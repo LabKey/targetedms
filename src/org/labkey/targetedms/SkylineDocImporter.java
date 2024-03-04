@@ -716,7 +716,7 @@ public class SkylineDocImporter
         }
 
         _log.info(String.format("Updating previously imported data for %d old sample files.", total));
-        _log.debug(String.format("Data for the following old sample files were found in the QC folder:", total));
+        _log.debug("Found data for the following old sample files in the QC folder:");
         replicateInfo.oldSamplesToDelete.keySet().forEach(key -> _log.debug(String.format("  %s", key)));
 
         List<Long> existingSamples = new ArrayList<>(total);
