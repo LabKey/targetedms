@@ -1037,7 +1037,7 @@ public class TargetedMSController extends SpringActionController
             autoQCPingMap.put("isRecent", lastModified.getTime() >= timeoutMinutesAgo);
         }
         properties.put("autoQCPing", autoQCPingMap);
-        TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+        TargetedMSSchema schema = new TargetedMSSchema(getUser(), container);
         properties.put("metricCount", TargetedMSManager.getEnabledQCMetricConfigurations(schema).size());
 
         return properties;

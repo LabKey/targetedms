@@ -93,11 +93,11 @@
             <%for(Precursor precursor: bean.getPrecursorList())
             {%>
                  <div>
-                     <%=unsafe(PrecursorHtmlMaker.getHtml(bean.getPeptide(),
+                     <%=PrecursorHtmlMaker.getHtml(bean.getPeptide(),
                                                     precursor,
                                                     labelIdMap.get(precursor.getIsotopeLabelId()),
                                                     bean.getRun().getId())
-                     )%>
+                     %>
 
                      <% String imgUrl = IconFactory.getPrecursorIconPath(precursor.getId(), bean.getPeptide().isDecoyPeptide()); %>
                      <a href="<%=h(precursorDetailsUrl.replaceParameter("id", precursor.getId()))%>">
