@@ -1482,7 +1482,7 @@ public class TargetedMSManager
         execute(getTempChromInfoIdsDependentDeleteSql(getTableInfoTransitionAreaRatio(), "TransitionChromInfoId", transitionChromInfoIdsTempTableName));
 
         // Delete from TransitionChromInfo
-        execute(new SQLFragment("DELETE FROM ").append(getTableInfoTransitionChromInfo()).append(whereClause));
+        execute(getTempChromInfoIdsDependentDeleteSql(getTableInfoTransitionChromInfo(), "Id", transitionChromInfoIdsTempTableName));
 
         // Delete the temporary table
         new SqlExecutor(TargetedMSSchema.getSchema()).execute("DROP TABLE " + transitionChromInfoIdsTempTableName);
@@ -1500,7 +1500,7 @@ public class TargetedMSManager
         execute(getTempChromInfoIdsDependentDeleteSql(getTableInfoPrecursorAreaRatio(), "PrecursorChromInfoId", precursorChromInfoIdsTempTableName));
 
         // Delete from PrecursorChromInfo
-        execute(new SQLFragment("DELETE FROM ").append(getTableInfoPrecursorChromInfo()).append(whereClause));
+        execute(getTempChromInfoIdsDependentDeleteSql(getTableInfoPrecursorChromInfo(), "Id", precursorChromInfoIdsTempTableName));
 
         // Delete the temporary table
         new SqlExecutor(TargetedMSSchema.getSchema()).execute("DROP TABLE " + precursorChromInfoIdsTempTableName);
