@@ -1383,27 +1383,12 @@ public class TargetedMSSchema extends UserSchema
         {
             TargetedMSTable result = new AnnotatedTargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.SampleFileFK,
                     TargetedMSManager.getTableInfoTransitionChromInfoAnnotation(), "TransitionChromInfoId", "Transition Result", "transition_result");
-            TargetedMSSchema targetedMSSchema = this;
 
             var transitionId = result.getMutableColumnOrThrow("TransitionId");
-            transitionId.setFk(new LookupForeignKey("Id")
-            {
-                @Override
-                public TableInfo getLookupTableInfo()
-                {
-                    return new DocTransitionsTableInfo(targetedMSSchema, cf);
-                }
-            });
+            transitionId.setFk(new TargetedMSForeignKey(this, TABLE_TRANSITION, cf));
 
             var moleculeTransitionId = result.wrapColumn("MoleculeTransitionId", result.getRealTable().getColumn(transitionId.getFieldKey()));
-            moleculeTransitionId.setFk(new LookupForeignKey("Id")
-            {
-                @Override
-                public TableInfo getLookupTableInfo()
-                {
-                    return new MoleculeTransitionsTableInfo(targetedMSSchema, cf, false);
-                }
-            });
+            moleculeTransitionId.setFk(new TargetedMSForeignKey(this, TABLE_MOLECULE_TRANSITION, cf));
             result.addColumn(moleculeTransitionId);
 
             // Add a link to view the chromatogram an individual transition
@@ -1438,16 +1423,9 @@ public class TargetedMSSchema extends UserSchema
         {
             TargetedMSTable result = new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.TransitionFK);
             TargetedMSSchema targetedMSSchema = this;
-            result.getMutableColumnOrThrow("TransitionId").setFk(new LookupForeignKey("Id")
-            {
-                @Override
-                public TableInfo getLookupTableInfo()
-                {
-                    return new DocTransitionsTableInfo(targetedMSSchema, cf);
-                }
-            });
+            result.getMutableColumnOrThrow("TransitionId").setFk(new TargetedMSForeignKey(this, TABLE_TRANSITION, cf));
             result.addWrapColumn("MoleculeTransition", result.getRealTable().getColumn("TransitionId")).
-                    setFk(new QueryForeignKey(new QueryForeignKey.Builder(this, cf).table(TABLE_MOLECULE_TRANSITION)));
+                    setFk(new TargetedMSForeignKey(this, TABLE_MOLECULE_TRANSITION, cf));
 
             return result;
         }
