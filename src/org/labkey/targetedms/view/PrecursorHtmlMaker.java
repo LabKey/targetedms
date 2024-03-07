@@ -15,6 +15,7 @@
 
 package org.labkey.targetedms.view;
 
+import org.labkey.api.util.DOM;
 import org.labkey.api.util.Formats;
 import org.labkey.api.util.HtmlString;
 import org.labkey.targetedms.TargetedMSSchema;
@@ -32,31 +33,26 @@ public class PrecursorHtmlMaker
 {
     private PrecursorHtmlMaker() {}
 
-    public static String getHtml(Peptide peptide, Precursor precursor, String isotopeLabel, long runId)
+    public static HtmlString getHtml(Peptide peptide, Precursor precursor, String isotopeLabel, long runId)
     {
-        StringBuilder html = new StringBuilder();
-        html.append(new ModifiedPeptideHtmlMaker().getPrecursorHtml(peptide, precursor, runId));
-        html.append("<span>");
-        html.append(" - ").append(Formats.f4.format(precursor.getMz()));
-        html.append(LabelFactory.getChargeLabel(precursor.getCharge()));
+        StringBuilder body = new StringBuilder(" - ")
+                .append(Formats.f4.format(precursor.getMz()))
+                .append(LabelFactory.getChargeLabel(precursor.getCharge()));
         if(!PeptideSettings.IsotopeLabel.LIGHT.equalsIgnoreCase(isotopeLabel))
         {
-            html.append(" (").append(isotopeLabel).append(")");
+            body.append(" (").append(isotopeLabel).append(")");
         }
-        html.append("</span>");
 
-        return html.toString();
+        return DOM.createHtmlFragment(
+                new ModifiedPeptideHtmlMaker().getPrecursorHtml(peptide, precursor, runId),
+                DOM.SPAN(body));
     }
 
     public static HtmlString getModSeqChargeHtml(ModifiedPeptideHtmlMaker modifiedPeptideHtmlMaker, Precursor precursor,
                                              long runId, TargetedMSSchema schema)
     {
-        StringBuilder html = new StringBuilder();
-        html.append(modifiedPeptideHtmlMaker.getPrecursorHtml(precursor, runId, schema));
-        html.append("<span>");
-        html.append(LabelFactory.getChargeLabel(precursor.getCharge()));
-        html.append("</span>");
-
-        return HtmlString.unsafe(html.toString());
+        return DOM.createHtmlFragment(
+                modifiedPeptideHtmlMaker.getPrecursorHtml(precursor, runId, schema),
+                DOM.SPAN(LabelFactory.getChargeLabel(precursor.getCharge())));
     }
 }
