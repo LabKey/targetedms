@@ -1471,29 +1471,49 @@ public class TargetedMSManager
 
         SQLFragment whereClause = getSqlDialect().appendInClauseSql(new SQLFragment(" WHERE SampleFileId "), sampleFileIds);
 
+        // --- Delete from TransitionChromInfo and dependent tables ---
+        // Create a temporary table that will contain the TransitionChromInfo Ids to be deleted.
+        String transitionChromInfoIdsTempTableName = createTempChromInfoIdsTable(getTableInfoTransitionChromInfo(), "TransitionChromInfoIds", whereClause);
+
         // Delete from TransitionChromInfoAnnotation (dependent of TransitionChromInfo)
-        execute(getDependentSampleFileDeleteSql(getTableInfoTransitionChromInfoAnnotation(), "TransitionChromInfoId", getTableInfoTransitionChromInfo(), whereClause));
+        execute(getTempChromInfoIdsDependentDeleteSql(getTableInfoTransitionChromInfoAnnotation(), "TransitionChromInfoId", transitionChromInfoIdsTempTableName));
 
         // Delete from TransitionAreaRatio (dependent of TransitionChromInfo)
-        execute(getDependentSampleFileDeleteSql(getTableInfoTransitionAreaRatio(), "TransitionChromInfoId", getTableInfoTransitionChromInfo(), whereClause));
+        execute(getTempChromInfoIdsDependentDeleteSql(getTableInfoTransitionAreaRatio(), "TransitionChromInfoId", transitionChromInfoIdsTempTableName));
 
         // Delete from TransitionChromInfo
-        execute(new SQLFragment("DELETE FROM ").append(getTableInfoTransitionChromInfo()).append(whereClause));
+        execute(getTempChromInfoIdsDependentDeleteSql(getTableInfoTransitionChromInfo(), "Id", transitionChromInfoIdsTempTableName));
+
+        // Delete the temporary table
+        new SqlExecutor(TargetedMSSchema.getSchema()).execute("DROP TABLE " + transitionChromInfoIdsTempTableName);
+        _log.debug("Deleted old data from TransitionChromInfo and dependent tables.");
+
+
+        // --- Delete from PrecursorChromInfo and dependent tables ---
+        // Create a temporary table that will contain the PrecursorChromInfo Ids to be deleted.
+        String precursorChromInfoIdsTempTableName = createTempChromInfoIdsTable(getTableInfoPrecursorChromInfo(), "PrecursorChromInfoIds", whereClause);
 
         // Delete from PrecursorChromInfoAnnotation (dependent of PrecursorChromInfo)
-        execute(getDependentSampleFileDeleteSql(getTableInfoPrecursorChromInfoAnnotation(), "PrecursorChromInfoId", getTableInfoPrecursorChromInfo(), whereClause));
+        execute(getTempChromInfoIdsDependentDeleteSql(getTableInfoPrecursorChromInfoAnnotation(), "PrecursorChromInfoId", precursorChromInfoIdsTempTableName));
 
         // Delete from PrecursorAreaRatio (dependent of PrecursorChromInfo)
-        execute(getDependentSampleFileDeleteSql(getTableInfoPrecursorAreaRatio(), "PrecursorChromInfoId", getTableInfoPrecursorChromInfo(), whereClause));
+        execute(getTempChromInfoIdsDependentDeleteSql(getTableInfoPrecursorAreaRatio(), "PrecursorChromInfoId", precursorChromInfoIdsTempTableName));
 
         // Delete from PrecursorChromInfo
-        execute(new SQLFragment("DELETE FROM ").append(getTableInfoPrecursorChromInfo()).append(whereClause));
+        execute(getTempChromInfoIdsDependentDeleteSql(getTableInfoPrecursorChromInfo(), "Id", precursorChromInfoIdsTempTableName));
 
-        // Delete from PeptideAreaRatio (dependent of PeptideChromInfo)
+        // Delete the temporary table
+        new SqlExecutor(TargetedMSSchema.getSchema()).execute("DROP TABLE " + precursorChromInfoIdsTempTableName);
+        _log.debug("Deleted old data from PrecursorChromInfo and dependent tables.");
+
+
+        // Delete from PeptideAreaRatio (dependent of GeneralMoleculeChromInfo)
         execute(getDependentSampleFileDeleteSql(getTableInfoPeptideAreaRatio(), "PeptideChromInfoId", getTableInfoGeneralMoleculeChromInfo(), whereClause));
 
-        // Delete from PeptideChromInfo
+        // Delete from GeneralMoleculeChromInfo
         execute(new SQLFragment("DELETE FROM ").append(getTableInfoGeneralMoleculeChromInfo()).append(whereClause));
+        _log.debug("Deleted old data from GeneralMoleculeChromInfo and dependent tables.");
+
 
         // Delete from QCTraceMetricValues
         execute(new SQLFragment("DELETE FROM ").append(getTableQCTraceMetricValues()).append(whereClause));
@@ -1502,9 +1522,31 @@ public class TargetedMSManager
         execute(new SQLFragment("DELETE FROM ").append(getTableInfoSampleFileChromInfo()).append(whereClause));
     }
 
+    private static String createTempChromInfoIdsTable(TableInfo tableInfo, String tempTableNamePrefix, SQLFragment whereClause)
+    {
+        final String suffix = StringUtilsLabKey.getPaddedUniquifier(9);
+        final String tempTableName = TargetedMSManager.getSqlDialect().getTempTablePrefix() +  tempTableNamePrefix + suffix;
+        new SqlExecutor(TargetedMSSchema.getSchema()).execute("CREATE " +
+                TargetedMSManager.getSqlDialect().getTempTableKeyword() + " TABLE " + tempTableName +
+                " ( Id BIGINT NOT NULL PRIMARY KEY )");
+
+        SQLFragment insertSql = new SQLFragment("INSERT INTO ").append(tempTableName)
+                .append(" (Id) ")
+                .append(" (SELECT Id FROM ").append(tableInfo)
+                .append(whereClause)
+                .append(") ");
+        new SqlExecutor(getSchema()).execute(insertSql);
+        return tempTableName;
+    }
+
     private static SQLFragment getDependentSampleFileDeleteSql(TableInfo fromTable, String fromFk, TableInfo dependentTable, SQLFragment whereClause)
     {
         return new SQLFragment("DELETE FROM " + fromTable + " WHERE " + fromFk + " IN (SELECT Id FROM " + dependentTable).append(whereClause).append(")");
+    }
+
+    private static SQLFragment getTempChromInfoIdsDependentDeleteSql(TableInfo fromTable, String fromFk, String tempIdsTable)
+    {
+        return new SQLFragment("DELETE FROM " + fromTable + " WHERE " + fromFk + " IN (SELECT Id FROM " + tempIdsTable).append(")");
     }
 
     /** Actually delete runs that have been marked as deleted from the database */
@@ -2449,15 +2491,13 @@ public class TargetedMSManager
 
         // Populate the temp tables
         SQLFragment precursorGroupingsSQL = new SQLFragment("INSERT INTO ").append(precursorGroupingsTableName).append("(Grouping, PrecursorId, PeptideGroupId)\n")
-                .append("SELECT DISTINCT COALESCE(gm.AttributeGroupId, p.Sequence, m.CustomIonName, m.IonFormula) AS Grouping, pci.PrecursorId, gm.PeptideGroupId \n")
-                .append(" FROM ").append(getTableInfoPrecursorChromInfo(), "pci").append(" INNER JOIN \n")
-                .append(getTableInfoGeneralPrecursor(), "gp").append(" ON gp.Id = pci.PrecursorId INNER JOIN \n")
+                .append("SELECT DISTINCT COALESCE(gm.AttributeGroupId, p.Sequence, m.CustomIonName, m.IonFormula) AS Grouping, gp.Id, gm.PeptideGroupId \n")
+                .append(" FROM ").append(getTableInfoGeneralPrecursor(), "gp").append(" INNER JOIN \n")
                 .append(getTableInfoGeneralMolecule(), "gm").append(" ON gp.GeneralMoleculeId = gm.Id LEFT OUTER JOIN \n")
                 .append(getTableInfoMolecule(), "m").append(" ON gm.Id = m.Id LEFT OUTER JOIN \n").append(getTableInfoPeptide(), "p")
                 .append(" ON p.id = gp.generalmoleculeid");
         precursorGroupingsSQL.append(" INNER JOIN \n")
-                .append(getTableInfoSampleFile(), "sf").append(" ON sf.Id = pci.SampleFileId INNER JOIN \n")
-                .append(getTableInfoReplicate(), "r").append(" ON sf.ReplicateId = r.Id AND r.RunId = ?");
+                .append(getTableInfoPeptideGroup(), "pg").append(" ON pg.Id = gm.peptideGroupId AND pg.RunId = ? \n");
         precursorGroupingsSQL.add(run.getId());
         executor.execute(precursorGroupingsSQL);
 
