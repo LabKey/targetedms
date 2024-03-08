@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-SELECT
-    pci.Id AS PrecursorChromInfoId,
-    SampleFileId AS SampleFileId,
-    -- Use the error from the most intense transition associated with the precursor
-    (SELECT
-         MassErrorPPM
-     FROM TransitionChromInfo tci
-     WHERE TransitionId.Charge IS NOT NULL AND
-           tci.PrecursorChromInfoId = pci.Id AND
-           Area IS NOT NULL
-     ORDER BY Area DESC, Id LIMIT 1) AS MetricValue
-FROM PrecursorChromInfo pci
+SELECT * FROM (
+                  SELECT
+                      pci.Id AS PrecursorChromInfoId,
+                      SampleFileId AS SampleFileId,
+                      -- Use the error from the most intense transition associated with the precursor
+                      (SELECT COALESCE(MassErrorPPM, -1000) AS MetricValue
+                       FROM TransitionChromInfo tci
+                       WHERE TransitionId.Charge IS NOT NULL
+                         AND tci.PrecursorChromInfoId = pci.Id
+                         AND Area IS NOT NULL
+                       ORDER BY Area DESC, Id LIMIT 1) AS MetricValue FROM PrecursorChromInfo pci
+ ) X
+WHERE MetricValue IS NOT NULL
