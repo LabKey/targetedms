@@ -34,6 +34,8 @@ public class TargetedMSAuditLogTest extends TargetedMSTest
         setupFolder(FolderType.QC);
         _userHelper.createUser(USER);
         importData(AuditTrail_FILE);
+        startSystemMaintenance("Database");
+        waitForSystemMaintenanceCompletion();
     }
 
     @Test
