@@ -356,6 +356,34 @@ public class RawMetricDataSet
         }
     }
 
+    public boolean isMeanDeviationOutlier(GuideSetStats stat)
+    {
+        if (stat == null ||
+                _sampleFile.isIgnoreInQC(stat.getKey().getMetricId()) ||
+                metricValue == null ||
+                metric.getStatus() == QCMetricStatus.PlotOnly ||
+                metric.getStatus() == QCMetricStatus.Disabled)
+        {
+            return false;
+        }
+
+        if (metric.getStatus() == QCMetricStatus.MeanDeviationCutOff)
+        {
+            Double upperBound = metric.getUpperBound();
+            Double lowerBound = metric.getLowerBound();
+
+            // compare against the mean plus or minus the upper and lower bounds
+            double upperLimit = stat.getAverage() + upperBound.doubleValue();
+            double lowerLimit = stat.getAverage() + lowerBound.doubleValue();
+
+            return metricValue > upperLimit || metricValue < lowerLimit;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     public boolean isMovingRangeOutlier(GuideSetStats stat)
     {
         return  stat != null && !_sampleFile.isIgnoreInQC(getMetricId()) && mR != null && mR > Stats.MOVING_RANGE_UPPER_LIMIT_WEIGHT * stat.getMovingRangeAverage();
@@ -390,6 +418,10 @@ public class RawMetricDataSet
     {
         counts.incrementTotalCount();
         if (isValueOutlier(stats))
+        {
+            counts.incrementValue();
+        }
+        if (isMeanDeviationOutlier(stats))
         {
             counts.incrementValue();
         }

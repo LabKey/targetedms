@@ -44,6 +44,7 @@
                     qcMetricsTable += '<td>' + '<select name=\"' + LABKEY.Utils.encodeHtml(row.name) + '\" id=\"' + "select-" + row.id + '\">' +
                             '<option value="LeveyJennings" ' + (row.EffectiveStatus === 'LeveyJennings' ? 'selected' : '') + '>Levey-Jennings (+/- standard deviations)</option>' +
                             '<option value="ValueCutoff" ' + (row.EffectiveStatus === 'ValueCutoff' ? 'selected' : '') + '>Fixed value cutoff</option>' +
+                            '<option value="MeanDeviationCutoff" ' + (row.EffectiveStatus === 'MeanDeviationCutoff' ? 'selected' : '') + '>Fixed deviation from mean</option>' +
                             '<option value="PlotOnly" ' + (row.EffectiveStatus === 'PlotOnly' ? 'selected' : '') + '>Show metric in plots, but don\'t identify outliers</option>' +
                             '<option value="Disabled" ' + (row.EffectiveStatus === 'Disabled' ? 'selected' : '') + '>Disabled, completely hide the metric</option>' +
                             '</select>' +
