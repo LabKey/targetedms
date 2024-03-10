@@ -42,9 +42,6 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
         log("Creating one test QC folder with same data");
         setUpFolder(QC_FOLDER_1, FolderType.QC);
         importData(SKY_FILE_QC);
-
-        startSystemMaintenance("Database");
-        waitForSystemMaintenanceCompletion();
     }
 
     @Override

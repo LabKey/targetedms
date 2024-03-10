@@ -233,6 +233,9 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         _fileBrowserHelper.importFile(fileName, "Import Skyline Results");
         waitForText("Skyline document import");
         waitForPipelineJobsToComplete(jobCount, file, expectError);
+
+        startSystemMaintenance("Database");
+        waitForSystemMaintenanceCompletion();
     }
 
     protected void verifyRunSummaryCountsSmallMol(int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
