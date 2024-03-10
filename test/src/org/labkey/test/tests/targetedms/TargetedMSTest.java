@@ -237,7 +237,7 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         startSystemMaintenance("Database");
         waitForSystemMaintenanceCompletion();
 
-        goToDashboard();
+        goToProjectHome();
     }
 
     protected void verifyRunSummaryCountsSmallMol(int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
