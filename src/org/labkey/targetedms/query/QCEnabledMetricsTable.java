@@ -101,7 +101,7 @@ public class QCEnabledMetricsTable extends SimpleUserSchema.SimpleTable<Targeted
                         throw new ValidationException("Upper bound must be greater than lower bound");
                     }
                 }
-                if (QCMetricStatus.MeanDeviationCutOff.toString().equalsIgnoreCase(Objects.toString(row.get("Status"))))
+                if (QCMetricStatus.MeanDeviationCutoff.toString().equalsIgnoreCase(Objects.toString(row.get("Status"))))
                 {
                     if (upperBound == null)
                     {

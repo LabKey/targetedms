@@ -30,8 +30,7 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
         return false;
     },
 
-    getPlotWebPartHeader: function(wp, title)
-    {
+    getPlotWebPartHeader: function(wp, title) {
         var html = '<br/>' +
                 '<table class="labkey-wp ' + wp + '">' +
                 ' <tr class="labkey-wp-header">' +
@@ -42,8 +41,7 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
         return html;
     },
 
-    addPlotWebPartToPlotDiv: function (id, title, div, wp)
-    {
+    addPlotWebPartToPlotDiv: function (id, title, div, wp) {
         var html = this.getPlotWebPartHeader(wp, title);
             html += '<tr>' +
                     '     <td class="labkey-wp-body">' +
@@ -54,8 +52,7 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
         Ext4.get(div).insertHtml('beforeEnd', html);
     },
 
-    addPlotsToPlotDiv: function(ids, title, div, wp)
-    {
+    addPlotsToPlotDiv: function(ids, title, div, wp) {
         var html = this.getPlotWebPartHeader(wp, title);
 
         Ext4.each(ids, function(plotId){
@@ -67,10 +64,8 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
         Ext4.get(div).insertHtml('beforeEnd', html);
     },
 
-    setPlotWidth: function (div)
-    {
-        if (this.plotWidth == null)
-        {
+    setPlotWidth: function (div) {
+        if (this.plotWidth == null) {
             // set the width of the plot webparts based on the first labkey-wp-body element
             this.plotWidth = 900;
             var spacer = 33;
@@ -83,8 +78,7 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
         }
     },
 
-    attachPlotExportIcons : function(id, plotTitle, plotIndex, plotWidth, extraMargin)
-    {
+    attachPlotExportIcons : function(id, plotTitle, plotIndex, plotWidth, extraMargin) {
         this.createExportIcon(id, 'fa-file-pdf-o', 'Export to PDF', 0, plotIndex, plotWidth, function(){
             this.exportChartToImage(id, extraMargin, LABKEY.vis.SVGConverter.FORMAT_PDF, plotTitle);
         });
@@ -94,8 +88,7 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
         });
     },
 
-    createExportIcon : function(divId, iconCls, tooltip, indexFromLeft, plotIndex, plotWidth, callbackFn)
-    {
+    createExportIcon : function(divId, iconCls, tooltip, indexFromLeft, plotIndex, plotWidth, callbackFn) {
         var leftPositionPx = (indexFromLeft * 30) + 60,
             exportIconDivId = divId + iconCls,
             html = '<div id="' + exportIconDivId + '" class="export-icon" title="' + Ext4.util.Format.htmlEncode(tooltip) + '" style="left: ' + leftPositionPx + 'px;">'
@@ -106,15 +99,13 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
         Ext4.get(exportIconDivId).on('click', callbackFn, this);
     },
 
-    exportChartToImage : function(svgDivId, extraMargin, type, fileName)
-    {
+    exportChartToImage : function(svgDivId, extraMargin, type, fileName) {
         var svgStr = this.getExportSVGStr(svgDivId, extraMargin),
             exportType = type || LABKEY.vis.SVGConverter.FORMAT_PDF;
         LABKEY.vis.SVGConverter.convert(svgStr, exportType, fileName);
     },
 
-    getExportSVGStr: function(svgDivId, extraWidth)
-    {
+    getExportSVGStr: function(svgDivId, extraWidth) {
         var svgEls = Ext4.get(svgDivId).select('svg');
         var targetSvg = svgEls.elements[0];
         var oldWidth = targetSvg.getBoundingClientRect().width;

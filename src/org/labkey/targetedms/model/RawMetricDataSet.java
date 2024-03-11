@@ -367,7 +367,7 @@ public class RawMetricDataSet
             return false;
         }
 
-        if (metric.getStatus() == QCMetricStatus.MeanDeviationCutOff)
+        if (metric.getStatus() == QCMetricStatus.MeanDeviationCutoff)
         {
             Double upperBound = metric.getUpperBound();
             Double lowerBound = metric.getLowerBound();

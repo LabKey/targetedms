@@ -96,7 +96,7 @@
         function refreshBoundsInputs(qcMetrics) {
             jQuery.each(qcMetrics, function (index, row) {
                 let type = jQuery('#select-' + row.id).val();
-                let showBounds = type === LABKEY.targetedms.MetricStatus.ValueCutoff || type === LABKEY.targetedms.MetricStatus.LeveyJennings;
+                let showBounds = type === LABKEY.targetedms.MetricStatus.ValueCutoff || type === LABKEY.targetedms.MetricStatus.LeveyJennings || type === LABKEY.targetedms.MetricStatus.MeanDeviationCutoff;
                 jQuery('#upper-' + row.id).css('visibility', showBounds ? 'visible' : 'hidden');
                 jQuery('#lower-' + row.id).css('visibility', showBounds ? 'visible' : 'hidden');
             });
