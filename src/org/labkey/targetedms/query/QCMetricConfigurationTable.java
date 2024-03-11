@@ -16,6 +16,7 @@
 package org.labkey.targetedms.query;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.ContainerManager;
@@ -109,9 +110,9 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
         }
 
         @Override
-        protected Map<String, Object> updateRow(User user, Container container, Map<String, Object> row, @NotNull Map<String, Object> oldRow) throws InvalidKeyException, ValidationException, QueryUpdateServiceException, SQLException
+        protected Map<String, Object> updateRow(User user, Container container, Map<String, Object> row, @NotNull Map<String, Object> oldRow, @Nullable Map<Enum, Object> configParameters) throws InvalidKeyException, ValidationException, QueryUpdateServiceException, SQLException
         {
-            var updatedRow = super.updateRow(user, container, row, oldRow);
+            var updatedRow = super.updateRow(user, container, row, oldRow, configParameters);
             var metricId = (int) updatedRow.get("Id");
             deleteTraceValueForMetric(metricId, container);
             TargetedMSManager.get().clearCachedEnabledQCMetrics(container);
