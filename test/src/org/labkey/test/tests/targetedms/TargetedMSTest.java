@@ -236,6 +236,8 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
 
         pushLocation();
 
+        // Run DB maintenance to help get a better execution plan. Otherwise, automated tests
+        // can time out because they choose a very inefficient plan.
         startSystemMaintenance("Database");
         waitForSystemMaintenanceCompletion();
 
