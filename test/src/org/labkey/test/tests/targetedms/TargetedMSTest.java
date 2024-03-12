@@ -310,7 +310,7 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         waitForElement(Locator.xpath("//div[@id ='retentionTimesGraph']/div[normalize-space()='" + title + "']"));
     }
 
-    protected void verifyQcSummary(int docCount, int sampleFileCount, int precursorCount)
+    protected void verifyQcSummary(int sampleFileCount, int precursorCount)
     {
         QCSummaryWebPart qcSummaryWebPart = new PanoramaDashboard(this).getQcSummaryWebPart();
         verifyQcSummary(qcSummaryWebPart.getQcSummaryTiles().get(0), null, sampleFileCount, precursorCount);
