@@ -169,7 +169,13 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
             data['value'] = row['Value'];
         }
 
-        data.LJShape = (row.IgnoreInQC ? 'Exclude' : 'Include') + (row.ValueOutlier ? '-Outlier' : '');
+        data.LJShape = (row.IgnoreInQC ? 'Exclude' : 'Include');
+        if (metricProps.metricStatus === LABKEY.targetedms.MetricStatus.MeanDeviationCutoff) {
+            data.LJShape += (row.MeanDeviationOutlier ? '-Outlier' : '');
+        }
+        else {
+            data.LJShape += (row.ValueOutlier ? '-Outlier' : '');
+        }
 
         return data;
 
