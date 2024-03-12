@@ -233,6 +233,15 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         _fileBrowserHelper.importFile(fileName, "Import Skyline Results");
         waitForText("Skyline document import");
         waitForPipelineJobsToComplete(jobCount, file, expectError);
+
+        pushLocation();
+
+        // Run DB maintenance to help get a better execution plan. Otherwise, automated tests
+        // can time out because they choose a very inefficient plan.
+        startSystemMaintenance("Database");
+        waitForSystemMaintenanceCompletion();
+
+        popLocation();
     }
 
     protected void verifyRunSummaryCountsSmallMol(int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
@@ -301,7 +310,7 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         waitForElement(Locator.xpath("//div[@id ='retentionTimesGraph']/div[normalize-space()='" + title + "']"));
     }
 
-    protected void verifyQcSummary(int docCount, int sampleFileCount, int precursorCount)
+    protected void verifyQcSummary(int sampleFileCount, int precursorCount)
     {
         QCSummaryWebPart qcSummaryWebPart = new PanoramaDashboard(this).getQcSummaryWebPart();
         verifyQcSummary(qcSummaryWebPart.getQcSummaryTiles().get(0), null, sampleFileCount, precursorCount);
