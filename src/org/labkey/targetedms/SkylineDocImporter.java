@@ -589,21 +589,22 @@ public class SkylineDocImporter
         for (SampleFile sampleFile : replicateInfo.skylineIdSampleFileIdMap.values())
         {
             List<IrtPeptide> observed = new ArrayList<>();
+
+            SQLFragment sql = new SQLFragment("SELECT GeneralMoleculeId, RetentionTime FROM ");
+            sql.append(TargetedMSManager.getTableInfoGeneralMoleculeChromInfo(), "gmci");
+            sql.append(" WHERE gmci.SampleFileId = ? AND RetentionTime IS NOT NULL");
+            sql.add(sampleFile.getId());
+            Map<Long, Float> rtValuesMap = new SqlSelector(TargetedMSManager.getSchema(), sql).getValueMap();
+
             for (IrtPeptide irtPeptide : matchedIrts)
             {
-                SQLFragment sql = new SQLFragment("SELECT RetentionTime FROM ");
-                sql.append(TargetedMSManager.getTableInfoGeneralMoleculeChromInfo(), "gmci");
-                sql.append(" WHERE gmci.SampleFileId = ? AND gmci.GeneralMoleculeId = ? AND RetentionTime IS NOT NULL");
-                sql.add(sampleFile.getId());
-                sql.add(irtPeptide.getGeneralMoleculeId());
-
-                List<Double> retentionTimes = new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(Double.class);
-                if (!retentionTimes.isEmpty())
+                Float rt = rtValuesMap.get(irtPeptide.getGeneralMoleculeId());
+                if (rt != null)
                 {
                     IrtPeptide p = new IrtPeptide();
                     p.setModifiedSequence(irtPeptide.getModifiedSequence());
                     p.setiRTStandard(irtPeptide.isiRTStandard());
-                    p.setiRTValue(retentionTimes.get(0));
+                    p.setiRTValue(rt);
                     observed.add(p);
                 }
             }
