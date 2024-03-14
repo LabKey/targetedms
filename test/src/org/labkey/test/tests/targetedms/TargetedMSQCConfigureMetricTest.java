@@ -68,16 +68,8 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSTest
         goToProjectHome();
         QCSummaryWebPart qcSummary = new PanoramaDashboard(this).getQcSummaryWebPart();
         List<QCSummaryWebPart.QcSummaryTile> subFolderTile = qcSummary.getQcSummaryTiles();
-        if (subFolderTile.get(1).getFolderName().equals(SUBFOLDER_1))
-        {
-            Assert.assertEquals("Incorrect metric displayed for " + subFolderTile.get(1).getFolderName(), 9, subFolderTile.get(1).getMetricsCount());
-            Assert.assertEquals("Incorrect metric displayed for " + subFolderTile.get(2).getFolderName(), 11, subFolderTile.get(2).getMetricsCount());
-        }
-        else
-        {
-            Assert.assertEquals("Incorrect metric displayed for " + subFolderTile.get(1).getFolderName(), 11, subFolderTile.get(1).getMetricsCount());
-            Assert.assertEquals("Incorrect metric displayed for " + subFolderTile.get(2).getFolderName(), 9, subFolderTile.get(2).getMetricsCount());
-        }
+        Assert.assertEquals("Incorrect metric displayed for " + subFolderTile.get(1).getFolderName(), 9, subFolderTile.get(1).getMetricsCount());
+        Assert.assertEquals("Incorrect metric displayed for " + subFolderTile.get(2).getFolderName(), 11, subFolderTile.get(2).getMetricsCount());
     }
 
     @Override
