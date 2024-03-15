@@ -101,7 +101,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.labkey.targetedms.TargetedMSManager.getTableInfoPrecursorChromInfo;
 import static org.labkey.targetedms.TargetedMSManager.getTableInfoTransitionChromInfo;
 
 /**
@@ -156,11 +155,12 @@ public class SkylineDocImporter
     private transient PreparedStatement _precursorAnnotationStmt;
     private transient PreparedStatement _transitionChromInfoStmt;
     private transient PreparedStatement _precursorChromInfoStmt;
-    private transient PreparedStatement _precursorChromInfoIndicesStmt;
     private File _auditLogFile;
 
     private final Set<String> _missingLibraries = new HashSet<>();
     private boolean _hasDayAnnotation;
+
+    private boolean _shouldSaveTransitionChromInfos = true;
 
     @JsonCreator
     private SkylineDocImporter(@JsonProperty("_expData") ExpData expData, @JsonProperty("_context") XarContext context,
@@ -318,20 +318,12 @@ public class SkylineDocImporter
 
         TargetedMSService.FolderType folderType = TargetedMSManager.getFolderType(run.getContainer());
 
+        // To prevent giant DIA documents from overwhelming the DB, we skip importing TransitionChromInfos if the
+        // the TransitionChromInfos and precursors in the document exceed the set limit.
+        _shouldSaveTransitionChromInfos = documentIsWithinLimits(f, run.getContainer(), _log);
+
         try (SkylineDocumentParser parser = new SkylineDocumentParser(f, _log, run.getContainer(), _progressMonitor.getParserProgressTracker()))
         {
-            // Persist all of the indices into the chromatograms from the SKYD file separately. We need to retain it
-            // at the PrecursorChromInfo level if we end up not storing the TransitionChromInfos. We will update the
-            // PrecursorChromInfo to include the data if we end up needing it.
-            final String suffix = StringUtilsLabKey.getPaddedUniquifier(9);
-            final String precursorChromInfoIndicesTempTableName = TargetedMSManager.getSqlDialect().getTempTablePrefix() +  "PrecursorChromInfoIndices" + suffix;
-            new SqlExecutor(TargetedMSSchema.getSchema()).execute("CREATE " +
-                    TargetedMSManager.getSqlDialect().getTempTableKeyword() + " TABLE " + precursorChromInfoIndicesTempTableName + " ( " +
-                    "\tPrecursorChromInfoId BIGINT NOT NULL PRIMARY KEY,\n" +
-                    "\tIndices " + TargetedMSManager.getSqlDialect().getBinaryDataType() +
-                    ")");
-            _precursorChromInfoIndicesStmt = ensureStatement(null,"INSERT INTO " + precursorChromInfoIndicesTempTableName + "(PrecursorChromInfoId, Indices) VALUES (?, ?)", false);
-
             run.setFormatVersion(parser.getFormatVersion());
             run.setSoftwareVersion(parser.getSoftwareVersion());
 
@@ -410,32 +402,14 @@ public class SkylineDocImporter
                 }
             }
 
-            if (!parser.shouldSaveTransitionChromInfos())
+            if (!_shouldSaveTransitionChromInfos)
             {
                 TargetedMSModule targetedMSModule = ModuleLoader.getInstance().getModule(TargetedMSModule.class);
                 _log.info("None of the " + parser.getTransitionChromInfoCount() + " TransitionChromInfos in the file " +
                         "were imported because they exceed the limit of " +
                         targetedMSModule.MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(_container) + " and there are more than " +
                         targetedMSModule.MAX_PRECURSORS_PROPERTY.getEffectiveValue(_container) + " precursors");
-                SQLFragment whereClause = new SQLFragment("WHERE r.Id = ?", _runId);
-
-                // Clear out any of the TransitionChromInfo and related tables that we inserted before we exceeded
-                // the max
-                TargetedMSManager.deleteTransitionChromInfoDependent(TargetedMSManager.getTableInfoTransitionChromInfoAnnotation(), whereClause);
-                TargetedMSManager.deleteTransitionChromInfoDependent(TargetedMSManager.getTableInfoTransitionAreaRatio(), whereClause);
-                TargetedMSManager.deleteSampleFileDependent(getTableInfoTransitionChromInfo(), whereClause);
-                _log.info("Cleared rows from TransitionChromInfo and related tables.");
-
-                // Since we don't have the TransitionChromInfos to use for the indices, copy them from the temp table
-                // into PrecursorChromInfo (but filter to only touch the rows where we have matches in the temp table)
-                int updated = new SqlExecutor(TargetedMSSchema.getSchema()).execute("UPDATE " + getTableInfoPrecursorChromInfo() + " " +
-                            "SET TransitionChromatogramIndices = (SELECT Indices FROM " + precursorChromInfoIndicesTempTableName +
-                        " WHERE Id = PrecursorChromInfoId) WHERE Id IN (SELECT PrecursorChromInfoId FROM " + precursorChromInfoIndicesTempTableName + ")");
-                _log.info("Updated " + updated + " PrecursorChromInfos with transition chromatogram index information");
             }
-
-            // We're done with this table now, used or not
-            new SqlExecutor(TargetedMSSchema.getSchema()).execute("DROP TABLE " + precursorChromInfoIndicesTempTableName);
 
             // Done parsing document
             _progressMonitor.getParserProgressTracker().complete("Done parsing Skyline document.");
@@ -544,8 +518,6 @@ public class SkylineDocImporter
         }
         finally
         {
-            if (_precursorChromInfoIndicesStmt != null) { try { _precursorChromInfoIndicesStmt.close(); } catch (SQLException ignored) {} }
-            _precursorChromInfoIndicesStmt = null;
             if (_transitionChromInfoAnnotationStmt != null) { try { _transitionChromInfoAnnotationStmt.close(); } catch (SQLException ignored) {} }
             _transitionChromInfoAnnotationStmt = null;
             if (_transitionAnnotationStmt != null) { try { _transitionAnnotationStmt.close(); } catch (SQLException ignored) {} }
@@ -1669,7 +1641,7 @@ public class SkylineDocImporter
             }
         }
 
-        insertTransitionChromInfos(gt.getId(), moleculeTransition.getChromInfoList(), skylineIdSampleFileIdMap, sampleFilePrecursorChromInfoIdMap, parser);
+        insertTransitionChromInfos(gt.getId(), moleculeTransition.getChromInfoList(), skylineIdSampleFileIdMap, sampleFilePrecursorChromInfoIdMap);
     }
 
     private void insertTransitionAnnotation(List<TransitionAnnotation> annotations, long id)
@@ -1819,7 +1791,7 @@ public class SkylineDocImporter
         }
 
         // transition results
-        insertTransitionChromInfos(gt.getId(), transition.getChromInfoList(), skylineIdSampleFileIdMap, sampleFilePrecursorChromInfoIdMap, parser);
+        insertTransitionChromInfos(gt.getId(), transition.getChromInfoList(), skylineIdSampleFileIdMap, sampleFilePrecursorChromInfoIdMap);
 
         // transition neutral losses
         for (TransitionLoss loss : transition.getNeutralLosses())
@@ -1953,10 +1925,9 @@ public class SkylineDocImporter
 
     private void insertTransitionChromInfos(long gtId, List<TransitionChromInfo> transitionChromInfos,
                                             Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap,
-                                            Map<SampleFileOptStepKey, Long> sampleFilePrecursorChromInfoIdMap,
-                                            SkylineDocumentParser parser)
+                                            Map<SampleFileOptStepKey, Long> sampleFilePrecursorChromInfoIdMap)
     {
-        if (!parser.shouldSaveTransitionChromInfos())
+        if (!_shouldSaveTransitionChromInfos)
         {
             // Bail out and don't persist to the DB
             return;
@@ -2164,8 +2135,8 @@ public class SkylineDocImporter
         try
         {
             _precursorChromInfoStmt = ensureStatement(_precursorChromInfoStmt,
-                    "INSERT INTO targetedms.precursorchrominfo( precursorid, samplefileid, generalmoleculechrominfoid, bestretentiontime, minstarttime, maxendtime, totalarea, totalbackground, maxfwhm, peakcountratio, numtruncated, librarydotp, optimizationstep, note, chromatogram, numtransitions, numpoints, maxheight, isotopedotp, averagemasserrorppm, bestmasserrorppm, userset, uncompressedsize, identified, container, chromatogramformat, chromatogramoffset, chromatogramlength, qvalue, zscore, ccs, ionmobilityms1, ionmobilityfragment, ionmobilitywindow, ionmobilitytype, totalAreaMs1, totalAreaFragment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    true);
+                "INSERT INTO targetedms.precursorchrominfo( precursorid, samplefileid, generalmoleculechrominfoid, bestretentiontime, minstarttime, maxendtime, totalarea, totalbackground, maxfwhm, peakcountratio, numtruncated, librarydotp, optimizationstep, note, chromatogram, numtransitions, numpoints, maxheight, isotopedotp, averagemasserrorppm, bestmasserrorppm, userset, uncompressedsize, identified, container, chromatogramformat, chromatogramoffset, chromatogramlength, qvalue, zscore, ccs, ionmobilityms1, ionmobilityfragment, ionmobilitywindow, ionmobilitytype, totalAreaMs1, totalAreaFragment, TransitionChromatogramIndices ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )",
+                true);
 
             int index = 1;
             _precursorChromInfoStmt.setLong(index++, preChromInfo.getPrecursorId());
@@ -2206,21 +2177,21 @@ public class SkylineDocImporter
             setDouble(_precursorChromInfoStmt, index++, preChromInfo.getTotalAreaMs1());
             setDouble(_precursorChromInfoStmt, index++, preChromInfo.getTotalAreaFragment());
 
+            byte[] indices = preChromInfo.getTransitionChromatogramIndices(); // Indices into the chromatograms read from the SKYD file
+            if (!_shouldSaveTransitionChromInfos && indices != null)
+            {
+                // Persist all the indices into the PrecursorChromInfo table since we are not saving any TransitionChromInfos.
+                _precursorChromInfoStmt.setBinaryStream(index++, new ByteArrayInputStream(indices), indices.length);
+            }
+            else
+            {
+                _precursorChromInfoStmt.setNull(index++, Types.VARBINARY);
+            }
+
             try (ResultSet rs = TargetedMSManager.getSqlDialect().executeWithResults(_precursorChromInfoStmt))
             {
                 rs.next();
                 preChromInfo.setId(rs.getLong(1));
-            }
-
-            // Persist all of the indices into the chromatograms from the SKYD file separately. We need to retain it
-            // at the PrecursorChromInfo level if we end up not storing the TransitionChromInfos. We will update the
-            // PrecursorChromInfo to include the data if we end up needing it.
-            byte[] indices = preChromInfo.getTransitionChromatogramIndices();
-            if (indices != null)
-            {
-                _precursorChromInfoIndicesStmt.setLong(1, preChromInfo.getId());
-                _precursorChromInfoIndicesStmt.setBinaryStream(2, new ByteArrayInputStream(indices), indices.length);
-                _precursorChromInfoIndicesStmt.execute();
             }
         }
         catch (SQLException e)
@@ -3035,5 +3006,52 @@ public class SkylineDocImporter
             var qcTraceMetricValues = TargetedMSManager.calculateTraceMetricValues(qcMetricConfigurations, run);
             qcTraceMetricValues.forEach(qcTraceMetricValue -> Table.insert(_user, TargetedMSManager.getTableQCTraceMetricValues(), qcTraceMetricValue));
         }
+    }
+
+    private boolean documentIsWithinLimits(File file, Container container, Logger log) throws XMLStreamException, IOException
+    {
+        int maxPrecursors;
+        int maxTransitionChromInfos;
+        TargetedMSModule targetedMSModule = ModuleLoader.getInstance().getModule(TargetedMSModule.class);
+        try
+        {
+            maxPrecursors = Integer.parseInt(targetedMSModule.MAX_PRECURSORS_PROPERTY.getEffectiveValue(container));
+        }
+        catch (NumberFormatException e)
+        {
+            maxPrecursors = TargetedMSModule.DEFAULT_MAX_PRECURSORS;
+            log.warn("Unable to parse MAX_PRECURSORS_PROPERTY value: {}, defaulting to {}",
+                    targetedMSModule.MAX_PRECURSORS_PROPERTY.getEffectiveValue(container),
+                    maxPrecursors);
+        }
+        try
+        {
+            maxTransitionChromInfos = Integer.parseInt(targetedMSModule.MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(container));
+        }
+        catch (NumberFormatException e)
+        {
+            maxTransitionChromInfos = TargetedMSModule.DEFAULT_MAX_TRANSITION_CHROM_INFOS;
+            log.warn("Unable to parse MAX_TRANSITION_CHROM_INFOS_PROPERTY value: {}, defaulting to {}",
+                    targetedMSModule.MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(container),
+                    maxTransitionChromInfos);
+        }
+
+        log.info("Reading Skyline file, " + file.getName() + ", to determine if the TransitionChromInfos in the document should be stored...");
+        boolean documentWithinLimits;
+        try (TransitionChromInfoAndPrecursorTally tally = new TransitionChromInfoAndPrecursorTally(file, log, maxTransitionChromInfos, maxPrecursors))
+        {
+            documentWithinLimits = tally.isWithinLimits();
+        }
+        if (documentWithinLimits)
+        {
+            log.info("TransitionChromInfo counts or precursor counts are within the allowed limits. TransitionChromInfos will be stored");
+        }
+        else
+        {
+            log.info("TransitionChromInfos in the document exceed the limit of " + maxTransitionChromInfos +
+                            ", and there are more than " + maxPrecursors + " precursors." +
+                            " TransitionChromInfos will not be stored.");
+        }
+        return documentWithinLimits;
     }
 }
