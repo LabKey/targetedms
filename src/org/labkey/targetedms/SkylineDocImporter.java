@@ -2135,7 +2135,7 @@ public class SkylineDocImporter
         try
         {
             _precursorChromInfoStmt = ensureStatement(_precursorChromInfoStmt,
-                "INSERT INTO targetedms.precursorchrominfo( precursorid, samplefileid, generalmoleculechrominfoid, bestretentiontime, minstarttime, maxendtime, totalarea, totalbackground, maxfwhm, peakcountratio, numtruncated, librarydotp, optimizationstep, note, chromatogram, numtransitions, numpoints, maxheight, isotopedotp, averagemasserrorppm, bestmasserrorppm, userset, uncompressedsize, identified, container, chromatogramformat, chromatogramoffset, chromatogramlength, qvalue, zscore, ccs, ionmobilityms1, ionmobilityfragment, ionmobilitywindow, ionmobilitytype, totalAreaMs1, totalAreaFragment, TransitionChromatogramIndices ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )",
+                "INSERT INTO targetedms.precursorchrominfo( precursorid, samplefileid, generalmoleculechrominfoid, bestretentiontime, minstarttime, maxendtime, totalarea, totalbackground, maxfwhm, peakcountratio, numtruncated, librarydotp, optimizationstep, note, chromatogram, numtransitions, numpoints, maxheight, isotopedotp, averagemasserrorppm, bestmasserrorppm, userset, uncompressedsize, identified, container, chromatogramformat, chromatogramoffset, chromatogramlength, qvalue, zscore, ccs, ionmobilityms1, ionmobilityfragment, ionmobilitywindow, ionmobilitytype, totalAreaMs1, totalAreaFragment, TransitionChromatogramIndices ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 true);
 
             int index = 1;
@@ -3036,12 +3036,11 @@ public class SkylineDocImporter
                     maxTransitionChromInfos);
         }
 
+        // To prevent giant DIA documents from overwhelming the DB, we skip importing TransitionChromInfos if the document
+        // has more than 100,000 AND has more than 1,000 precursors. We use both because a document may have a lot of
+        // replicates, so the TransitionChromInfo count by itself isn't sufficient to do the desired screening
         log.info("Reading Skyline file, " + file.getName() + ", to determine if the TransitionChromInfos in the document should be stored...");
-        boolean documentWithinLimits;
-        try (TransitionChromInfoAndPrecursorTally tally = new TransitionChromInfoAndPrecursorTally(file, log, maxTransitionChromInfos, maxPrecursors))
-        {
-            documentWithinLimits = tally.isWithinLimits();
-        }
+        boolean documentWithinLimits = new TransitionChromInfoAndPrecursorTally(maxTransitionChromInfos, maxPrecursors).isWithinLimits(file, log);
         if (documentWithinLimits)
         {
             log.info("TransitionChromInfo counts or precursor counts are within the allowed limits. TransitionChromInfos will be stored");

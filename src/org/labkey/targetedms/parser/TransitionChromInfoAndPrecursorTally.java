@@ -12,48 +12,66 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Base64;
 
-public class TransitionChromInfoAndPrecursorTally implements AutoCloseable
+public class TransitionChromInfoAndPrecursorTally
 {
-    private final XMLStreamReader _reader;
-    private final FileInputStream _inputStream;
-    private final Logger _log;
-
     private final int _maxTransitionChromInfos; // max allowed count for TransitionChromInfos
     private final int _maxPrecursors; // max allowed count for precursors
 
-    // Tally the precursor and TransitionChromInfo counts in the document.
+    // Tally of the precursors and TransitionChromInfos in the document.
     private int _precursorCount;
     private int _transitionChromInfoCount;
 
 
-    public TransitionChromInfoAndPrecursorTally(File file, Logger log, int maxTransitionChromInfos, int maxPrecursors) throws XMLStreamException, IOException
+    public TransitionChromInfoAndPrecursorTally(int maxTransitionChromInfos, int maxPrecursors)
     {
-        _log = log;
         _maxTransitionChromInfos = maxTransitionChromInfos;
         _maxPrecursors = maxPrecursors;
-
-        _inputStream = new FileInputStream(file);
-        XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-        _reader = inputFactory.createXMLStreamReader(_inputStream);
-        getCounts(_reader);
     }
 
-    /** @return false if we've equalled or exceeded the maximum allowed counts for TransitionChromInfo and precursors. */
-    public boolean isWithinLimits()
+    // Reads the given file and returns true if the Precursor and TransitionChromInfo counts in the file are within
+    // the limits.
+    public boolean isWithinLimits(File file, Logger log) throws XMLStreamException, IOException
     {
-         // To prevent giant DIA documents from overwhelming the DB, we skip importing TransitionChromInfos if the document
-         // has more than 100,000 AND has more than 1,000 precursors. We use both because a document may have a lot of
-         // replicates, so the TransitionChromInfo count by itself isn't sufficient to do the desired screening
+        _precursorCount = 0;
+        _transitionChromInfoCount = 0;
+
+        XMLStreamReader reader;
+        try (FileInputStream inputStream = new FileInputStream(file))
+        {
+            reader = XMLInputFactory.newInstance().createXMLStreamReader(inputStream);
+            try
+            {
+                readCounts(reader);
+            }
+            finally
+            {
+                try
+                {
+                    reader.close();
+                }
+                catch (XMLStreamException e)
+                {
+                    log.warn("An exception was thrown while trying to close the XML reader", e);
+                }
+            }
+        }
+
+        return isWithinLimits();
+    }
+
+    // Return false if we've equalled or exceeded the maximum allowed counts for TransitionChromInfos AND precursors.
+    private boolean isWithinLimits()
+    {
         return _transitionChromInfoCount < _maxTransitionChromInfos || _precursorCount < _maxPrecursors;
     }
 
-    private void getCounts(XMLStreamReader reader) throws XMLStreamException
+    private void readCounts(XMLStreamReader reader) throws XMLStreamException
     {
-        // Tally the precursor and TransitionChromInfo counts in the document until the end of the document
+        // Tally the precursor and TransitionChromInfo counts in the document. Read until the end of the document
         // or until we exceed the thresholds.
         while(reader.hasNext()) {
 
-            int evtType = _reader.next();
+            int evtType = reader.next();
 
             if (XmlUtil.isStartElement(reader, evtType, SkylineDocumentParser.PRECURSOR))
             {
@@ -85,10 +103,7 @@ public class TransitionChromInfoAndPrecursorTally implements AutoCloseable
             String elementText = reader.getElementText();
             byte[] bytes = Base64.getDecoder().decode(elementText);
             SkylineDocument.SkylineDocumentProto.TransitionData transitionData = SkylineDocument.SkylineDocumentProto.TransitionData.parseFrom(bytes);
-            for (SkylineDocument.SkylineDocumentProto.Transition transitionProto : transitionData.getTransitionsList())
-            {
-                _transitionChromInfoCount += transitionProto.getResults().getPeaksCount();
-            }
+            transitionData.getTransitionsList().forEach(transition -> _transitionChromInfoCount += transition.getResults().getPeaksCount());
         }
         catch (Exception e)
         {
@@ -98,36 +113,16 @@ public class TransitionChromInfoAndPrecursorTally implements AutoCloseable
 
     private void readTransitionResultsData(XMLStreamReader reader)
     {
-        try {
+        try
+        {
             String strContent = reader.getElementText();
-            byte[] data = Base64.getDecoder().decode(strContent);
-            SkylineDocument.SkylineDocumentProto.TransitionResults transitionResults
-                    = SkylineDocument.SkylineDocumentProto.TransitionResults.parseFrom(data);
+            byte[] bytes = Base64.getDecoder().decode(strContent);
+            SkylineDocument.SkylineDocumentProto.TransitionResults transitionResults = SkylineDocument.SkylineDocumentProto.TransitionResults.parseFrom(bytes);
             _transitionChromInfoCount += transitionResults.getPeaksCount();
         }
-        catch (Exception e) {
+        catch (Exception e)
+        {
             throw UnexpectedException.wrap(e);
-        }
-    }
-
-    @Override
-    public void close()
-    {
-        if (_reader != null) try
-        {
-            _reader.close();
-        }
-        catch (XMLStreamException e)
-        {
-            _log.error(e);
-        }
-        if(_inputStream != null) try
-        {
-            _inputStream.close();
-        }
-        catch(IOException e)
-        {
-            _log.error(e);
         }
     }
 }
