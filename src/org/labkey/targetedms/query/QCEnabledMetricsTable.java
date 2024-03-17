@@ -111,6 +111,10 @@ public class QCEnabledMetricsTable extends SimpleUserSchema.SimpleTable<Targeted
                     {
                         throw new ValidationException("For Mean Deviation Cut-Off configuration, you must provide a lower bound");
                     }
+                    if (upperBound <= 0)
+                    {
+                        throw new ValidationException("For Mean Deviation Cut-Off configuration, the upper bound must be greater than 0");
+                    }
                     if (lowerBound >= 0)
                     {
                         throw new ValidationException("For Mean Deviation Cut-Off configuration, the lower bound must be less than 0");

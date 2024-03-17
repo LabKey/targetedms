@@ -347,31 +347,8 @@ public class RawMetricDataSet
         {
             return (upperBound != null && metricValue > upperBound) || (lowerBound != null && metricValue < lowerBound);
         }
-        else
+        else if (metric.getStatus() == QCMetricStatus.MeanDeviationCutoff)
         {
-            double upperLimit = stat.getAverage() + stat.getStandardDeviation() * (upperBound == null ? 3 : upperBound.doubleValue());
-            double lowerLimit = stat.getAverage() + stat.getStandardDeviation() * (lowerBound == null ? -3 : lowerBound.doubleValue());
-
-            return metricValue > upperLimit || metricValue < lowerLimit || (Double.isNaN(stat.getStandardDeviation()) && metricValue != stat.getAverage());
-        }
-    }
-
-    public boolean isMeanDeviationOutlier(GuideSetStats stat)
-    {
-        if (stat == null ||
-                _sampleFile.isIgnoreInQC(stat.getKey().getMetricId()) ||
-                metricValue == null ||
-                metric.getStatus() == QCMetricStatus.PlotOnly ||
-                metric.getStatus() == QCMetricStatus.Disabled)
-        {
-            return false;
-        }
-
-        if (metric.getStatus() == QCMetricStatus.MeanDeviationCutoff)
-        {
-            Double upperBound = metric.getUpperBound();
-            Double lowerBound = metric.getLowerBound();
-
             // compare against the mean plus or minus the upper and lower bounds
             double upperLimit = stat.getAverage() + upperBound.doubleValue();
             double lowerLimit = stat.getAverage() + lowerBound.doubleValue();
@@ -380,7 +357,10 @@ public class RawMetricDataSet
         }
         else
         {
-            return false;
+            double upperLimit = stat.getAverage() + stat.getStandardDeviation() * (upperBound == null ? 3 : upperBound.doubleValue());
+            double lowerLimit = stat.getAverage() + stat.getStandardDeviation() * (lowerBound == null ? -3 : lowerBound.doubleValue());
+
+            return metricValue > upperLimit || metricValue < lowerLimit || (Double.isNaN(stat.getStandardDeviation()) && metricValue != stat.getAverage());
         }
     }
 
@@ -418,10 +398,6 @@ public class RawMetricDataSet
     {
         counts.incrementTotalCount();
         if (isValueOutlier(stats))
-        {
-            counts.incrementValue();
-        }
-        if (isMeanDeviationOutlier(stats))
         {
             counts.incrementValue();
         }

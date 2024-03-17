@@ -117,10 +117,6 @@ public class QCPlotFragment
             {
                 dataJsonObject.put("ValueOutlier", true);
             }
-            if (plotData.isMeanDeviationOutlier(targetedStats.get(plotData.getGuideSetKey())))
-            {
-                dataJsonObject.put("MeanDeviationOutlier", true);
-            }
             dataJsonObject.put("SampleFileId", plotData.getSampleFile().getId());
             dataJsonObject.put("PrecursorChromInfoId", plotData.getPrecursorChromInfoId());
             boolean ignoreInQC = plotData.getSampleFile().isIgnoreInQC(plotData.getMetricId());

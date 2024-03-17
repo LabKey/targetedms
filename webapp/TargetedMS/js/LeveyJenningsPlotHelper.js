@@ -131,13 +131,13 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         plotProperties['lowerBound'] = metricProps.lowerBound;
         plotProperties['upperBound'] = metricProps.upperBound;
         if (metricProps.metricStatus === LABKEY.targetedms.MetricStatus.ValueCutoff) {
-            plotProperties['boundType'] = 'absolute';
+            plotProperties['boundType'] = LABKEY.vis.PlotProperties.BoundType.Absolute;
         }
         else if (metricProps.metricStatus === LABKEY.targetedms.MetricStatus.MeanDeviationCutoff) {
-            plotProperties['boundType'] = 'meanDev';
+            plotProperties['boundType'] = LABKEY.vis.PlotProperties.BoundType.MeanDeviation;
         }
         else {
-            plotProperties['boundType'] = 'stddev';
+            plotProperties['boundType'] = LABKEY.vis.PlotProperties.BoundType.StandardDeviation;
         }
         return plotProperties;
     },
@@ -169,13 +169,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
             data['value'] = row['Value'];
         }
 
-        data.LJShape = (row.IgnoreInQC ? 'Exclude' : 'Include');
-        if (metricProps.metricStatus === LABKEY.targetedms.MetricStatus.MeanDeviationCutoff) {
-            data.LJShape += (row.MeanDeviationOutlier ? '-Outlier' : '');
-        }
-        else {
-            data.LJShape += (row.ValueOutlier ? '-Outlier' : '');
-        }
+        data.LJShape = (row.IgnoreInQC ? 'Exclude' : 'Include') + (row.ValueOutlier ? '-Outlier' : '');
 
         return data;
 
