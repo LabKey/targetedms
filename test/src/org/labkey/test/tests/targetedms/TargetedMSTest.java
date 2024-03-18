@@ -255,7 +255,6 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         waitForSystemMaintenanceCompletion();
 
         beginAt(currentUrl);
-        // popLocation(); // This results in: WARNING: pushing/popping locations can be hard to debug, please use beginAt(WebTestHelper.buildURL()) if possible.
 
         if (impersonatedUser != null)
         {
