@@ -48,16 +48,7 @@ public class MoleculePrecursorManager
     {
         SQLFragment sql = new SQLFragment("SELECT pre.* FROM ");
         sql.append(new MoleculePrecursorTableInfo(schema, null, true), "pre");
-        sql.append(", ");
-        sql.append(new MoleculeTableInfo(schema, null, true), "mol");
-        sql.append(", ");
-        sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
-        sql.append(", ");
-        sql.append(TargetedMSManager.getTableInfoRuns(), "r");
-        sql.append(" WHERE pre.GeneralMoleculeId = mol.Id AND ");
-        sql.append("mol.PeptideGroupId = pg.Id AND pg.RunId = r.Id AND r.Deleted = ? AND r.Container = ? AND pre.Id = ?");
-        sql.add(false);
-        sql.add(schema.getContainer().getId());
+        sql.append(" WHERE pre.Id = ?");
         sql.add(id);
 
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(MoleculePrecursor.class);
