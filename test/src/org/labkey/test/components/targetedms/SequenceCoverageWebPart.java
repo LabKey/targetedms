@@ -80,7 +80,6 @@ public class SequenceCoverageWebPart extends BodyWebPart<SequenceCoverageWebPart
         WebElement numLink = getWrapper().shortWait().until(ExpectedConditions.elementToBeClickable(
                 Locator.tagWithClass("a", "_helpPopup").withText(value).childTag("div")));
         getWrapper().mouseOver(numLink);
-        numLink.click();
         getWrapper().shortWait().until(ExpectedConditions.visibilityOf(elementCache().peptideDetailsHelp));
 
         return Locator.id("helpDivBody").withText().waitForElement(elementCache().peptideDetailsHelp, 1_000).getText();
