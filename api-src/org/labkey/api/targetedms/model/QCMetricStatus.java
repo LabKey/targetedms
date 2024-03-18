@@ -4,6 +4,7 @@ public enum QCMetricStatus
 {
     LeveyJennings,
     ValueCutoff,
+    MeanDeviationCutoff,
     PlotOnly,
     Disabled,
     NoData;

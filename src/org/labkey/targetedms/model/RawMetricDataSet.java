@@ -347,6 +347,14 @@ public class RawMetricDataSet
         {
             return (upperBound != null && metricValue > upperBound) || (lowerBound != null && metricValue < lowerBound);
         }
+        else if (metric.getStatus() == QCMetricStatus.MeanDeviationCutoff)
+        {
+            // compare against the mean plus or minus the upper and lower bounds
+            double upperLimit = stat.getAverage() + upperBound.doubleValue();
+            double lowerLimit = stat.getAverage() + lowerBound.doubleValue();
+
+            return metricValue > upperLimit || metricValue < lowerLimit;
+        }
         else
         {
             double upperLimit = stat.getAverage() + stat.getStandardDeviation() * (upperBound == null ? 3 : upperBound.doubleValue());

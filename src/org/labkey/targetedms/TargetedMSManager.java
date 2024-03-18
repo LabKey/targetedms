@@ -2202,7 +2202,8 @@ public class TargetedMSManager
         return _metricCache.get(schema.getContainer(), null, (c, argument) ->
         {
             TableInfo metricsTable = schema.getTableOrThrow("qcMetricsConfig", null);
-            List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, new SimpleFilter(FieldKey.fromParts("Status"), QCMetricStatus.Disabled.toString(), CompareType.NEQ_OR_NULL), new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
+            SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("Status"), QCMetricStatus.Disabled.toString(), CompareType.NEQ_OR_NULL);
+            List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, filter, new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
 
             // We may encounter the same query to see if metrics have data more than once, so remember the values
             // so we don't have to requery
