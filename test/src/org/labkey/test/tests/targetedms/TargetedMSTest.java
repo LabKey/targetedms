@@ -239,7 +239,6 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
 
     private void runDbMaintenance()
     {
-        // pushLocation(); // This results in: WARNING: pushing/popping locations can be hard to debug, please use beginAt(WebTestHelper.buildURL()) if possible.
         String currentUrl = getCurrentRelativeURL();
         String impersonatedUser = null;
         if (!isUserSystemAdmin() && isImpersonating())
