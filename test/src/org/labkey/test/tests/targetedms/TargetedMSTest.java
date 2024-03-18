@@ -234,14 +234,34 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         waitForText("Skyline document import");
         waitForPipelineJobsToComplete(jobCount, file, expectError);
 
-        pushLocation();
+        runDbMaintenance();
+    }
+
+    private void runDbMaintenance()
+    {
+        // pushLocation(); // This results in: WARNING: pushing/popping locations can be hard to debug, please use beginAt(WebTestHelper.buildURL()) if possible.
+        String currentUrl = getCurrentRelativeURL();
+        String impersonatedUser = null;
+        if (!isUserSystemAdmin() && isImpersonating())
+        {
+            // If the user being impersonated is not a system admin, we will not be able to run DB maintenance.
+            // Stop impersonating if this is the case.
+            impersonatedUser = getCurrentUser();
+            stopImpersonating();
+        }
 
         // Run DB maintenance to help get a better execution plan. Otherwise, automated tests
         // can time out because they choose a very inefficient plan.
         startSystemMaintenance("Database");
         waitForSystemMaintenanceCompletion();
 
-        popLocation();
+        beginAt(currentUrl);
+        // popLocation(); // This results in: WARNING: pushing/popping locations can be hard to debug, please use beginAt(WebTestHelper.buildURL()) if possible.
+
+        if (impersonatedUser != null)
+        {
+            impersonate(impersonatedUser);
+        }
     }
 
     protected void verifyRunSummaryCountsSmallMol(int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
