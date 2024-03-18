@@ -5,16 +5,17 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.BaseWebDriverTest;
-import org.labkey.test.components.targetedms.ConfigureQCMetricsWebPart;
 import org.labkey.test.components.targetedms.QCSummaryWebPart;
+import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
+import org.labkey.test.tests.panoramapremium.TargetedMSPremiumTest;
 
 import java.util.Arrays;
 import java.util.List;
 
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 2)
-public class TargetedMSQCConfigureMetricTest extends TargetedMSTest
+public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
 {
     private final static String SUBFOLDER_1 = "QC Subfolder 1";
     private final static String SUBFOLDER_2 = "QC_Subfolder_2";
@@ -48,10 +49,10 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSTest
         importData(SProCoP_FILE);
         navigateToFolder(getProjectName(), SUBFOLDER_1);
         new PanoramaDashboard(this).getQcSummaryWebPart().clickMenuItem("Configure QC Metrics");
-        ConfigureQCMetricsWebPart configureQCMetrics = new ConfigureQCMetricsWebPart(getDriver());
-        configureQCMetrics.configureMetric("Precursor Area", "Disabled")
-                .configureMetric("Retention Time", "Disabled")
-                .configureMetric("Transition Area", "Disabled")
+        ConfigureMetricsUIPage configureQCMetrics = new ConfigureMetricsUIPage(this);
+        configureQCMetrics.disableMetric("Precursor Area")
+                .disableMetric("Retention Time")
+                .disableMetric("Transition Area")
                 .clickSave();
 
         log("Create subfolder, import data and configure custom metrics in " + SUBFOLDER_2);
@@ -60,8 +61,8 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSTest
         importData(SProCoP_FILE);
         navigateToFolder(getProjectName(), SUBFOLDER_2);
         new PanoramaDashboard(this).getQcSummaryWebPart().clickMenuItem("Configure QC Metrics");
-        configureQCMetrics = new ConfigureQCMetricsWebPart(getDriver());
-        configureQCMetrics.configureMetric("Precursor Area", "Disabled")
+        configureQCMetrics = new ConfigureMetricsUIPage(this);
+        configureQCMetrics.disableMetric("Precursor Area")
                 .clickSave();
 
         log("Verify the data is displayed correctly on parent folder");
