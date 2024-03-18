@@ -120,21 +120,6 @@ public class QCEnabledMetricsTable extends SimpleUserSchema.SimpleTable<Targeted
                         throw new ValidationException("For Mean Deviation Cut-Off configuration, the lower bound must be less than 0");
                     }
                 }
-                if (QCMetricStatus.MeanDeviationCutOff.toString().equalsIgnoreCase(Objects.toString(row.get("Status"))))
-                {
-                    if (upperBound == null)
-                    {
-                        throw new ValidationException("For Mean Deviation Cut-Off configuration, you must provide an upper bound");
-                    }
-                    if (lowerBound == null)
-                    {
-                        throw new ValidationException("For Mean Deviation Cut-Off configuration, you must provide a lower bound");
-                    }
-                    if (lowerBound >= 0)
-                    {
-                        throw new ValidationException("For Mean Deviation Cut-Off configuration, the lower bound must be less than 0");
-                    }
-                }
             }
 
             @Override
