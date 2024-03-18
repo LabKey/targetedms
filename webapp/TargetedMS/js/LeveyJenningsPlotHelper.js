@@ -130,8 +130,15 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
 
         plotProperties['lowerBound'] = metricProps.lowerBound;
         plotProperties['upperBound'] = metricProps.upperBound;
-        plotProperties['boundType'] = metricProps.metricStatus === LABKEY.targetedms.MetricStatus.ValueCutoff ? 'absolute' : 'stddev'
-
+        if (metricProps.metricStatus === LABKEY.targetedms.MetricStatus.ValueCutoff) {
+            plotProperties['boundType'] = LABKEY.vis.PlotProperties.BoundType.Absolute;
+        }
+        else if (metricProps.metricStatus === LABKEY.targetedms.MetricStatus.MeanDeviationCutoff) {
+            plotProperties['boundType'] = LABKEY.vis.PlotProperties.BoundType.MeanDeviation;
+        }
+        else {
+            plotProperties['boundType'] = LABKEY.vis.PlotProperties.BoundType.StandardDeviation;
+        }
         return plotProperties;
     },
 
@@ -193,7 +200,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         if (!this.getMetricPropsById(this.metric).series2Label) {
             let metricInfo = this.getMetricPropsById(this.metric);
 
-            if (metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.ValueCutoff) {
+            if (metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.ValueCutoff || metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.MeanDeviationCutoff) {
                 if (Number.isFinite(metricInfo.upperBound)) {
                     ljLegend.push({
                         text: 'Upper: ' + metricInfo.upperBound,
