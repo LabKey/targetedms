@@ -549,7 +549,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         // File has results from 3 sample files.
         importData(QC_1_FILE, 1);
         clickFolder(subFolderName);
-        verifyQcSummary(1, 3, precursors.size());
+        verifyQcSummary(3, precursors.size());
 
         // Upload QC_2.sky.zip
         // File has results from 3 sample files but two of these are the same as the ones in QC_1.sky.zip.
@@ -560,7 +560,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         // in a QC folder was causing an exception in the code that calculates area ratios.
         importData(QC_2_FILE, 2);
         clickFolder(subFolderName);
-        verifyQcSummary(2, 4, precursors.size());
+        verifyQcSummary(4, precursors.size());
 
         // verify if the new start/stop date ranges based on the runs added in this test
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
@@ -614,7 +614,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         clickFolder(subFolderName);
         importData(QC_4_FILE, 3);
         clickFolder(subFolderName);
-        verifyQcSummary(2, 4, precursors.size());
+        verifyQcSummary(4, precursors.size());
 
         // Ensure QC-2 samples have been overwritten by QC-4
         goToSchemaBrowser();
@@ -773,7 +773,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         importData(SKY_FILE_SMALLMOL_PEP);
         clickFolder(subFolderName);
-        verifyQcSummary(1, 5, 186);
+        verifyQcSummary(5, 186);
 
         QCPlotsWebPart qcPlotsWebPart = new QCPlotsWebPart(this.getWrappedDriver());
         int currentPagePlotCount = 50;
@@ -817,7 +817,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         importData(QC_1a_FILE);
         clickFolder(subFolderName);
-        verifyQcSummary(1, 3, 2);
+        verifyQcSummary(3, 2);
 
         //confirm 3 exclusions
         DataRegionTable drt = getSchemaBrowserDataView("targetedms", "QCMetricExclusion");
@@ -828,7 +828,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         importData(QC_1b_FILE, 2);
         clickFolder(subFolderName);
-        verifyQcSummary(1, 3, 2);
+        verifyQcSummary(3, 2);
 
         drt = getSchemaBrowserDataView("targetedms", "QCMetricExclusion");
         assertEquals("Wrong count", 3, drt.getDataRowCount());

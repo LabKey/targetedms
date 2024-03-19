@@ -232,6 +232,33 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         _fileBrowserHelper.importFile(fileName, "Import Skyline Results");
         waitForText("Skyline document import");
         waitForPipelineJobsToComplete(jobCount, file, expectError);
+
+        runDbMaintenance();
+    }
+
+    private void runDbMaintenance()
+    {
+        String currentUrl = getCurrentRelativeURL();
+        String impersonatedUser = null;
+        if (!isUserSystemAdmin() && isImpersonating())
+        {
+            // If the user being impersonated is not a system admin, we will not be able to run DB maintenance.
+            // Stop impersonating if this is the case.
+            impersonatedUser = getCurrentUser();
+            stopImpersonating();
+        }
+
+        // Run DB maintenance to help get a better execution plan. Otherwise, automated tests
+        // can time out because they choose a very inefficient plan.
+        startSystemMaintenance("Database");
+        waitForSystemMaintenanceCompletion();
+
+        beginAt(currentUrl);
+
+        if (impersonatedUser != null)
+        {
+            impersonate(impersonatedUser);
+        }
     }
 
     protected void verifyRunSummaryCountsSmallMol(int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
@@ -300,7 +327,7 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         waitForElement(Locator.xpath("//div[@id ='retentionTimesGraph']/div[normalize-space()='" + title + "']"));
     }
 
-    protected void verifyQcSummary(int docCount, int sampleFileCount, int precursorCount)
+    protected void verifyQcSummary(int sampleFileCount, int precursorCount)
     {
         QCSummaryWebPart qcSummaryWebPart = new PanoramaDashboard(this).getQcSummaryWebPart();
         verifyQcSummary(qcSummaryWebPart.getQcSummaryTiles().get(0), null, sampleFileCount, precursorCount);

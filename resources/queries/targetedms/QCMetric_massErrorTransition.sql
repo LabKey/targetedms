@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-SELECT
-  tci.PrecursorChromInfoId AS PrecursorChromInfoId,
-  SampleFileId AS SampleFileId,
-  MAX(MassErrorPPM) AS MetricValue
-FROM (
-    SELECT MAX(Area) AS Area, PrecursorChromInfoId FROM TransitionChromInfo WHERE TransitionId.Charge IS NOT NULL GROUP BY PrecursorChromInfoId
-) AS MaxTransition
-INNER JOIN TransitionChromInfo tci ON MaxTransition.Area = tci.Area and MaxTransition.PrecursorChromInfoId = tci.PrecursorChromInfoId
-GROUP BY tci.PrecursorChromInfoId, SampleFileId
+SELECT * FROM (
+                  SELECT
+                      pci.Id AS PrecursorChromInfoId,
+                      SampleFileId AS SampleFileId,
+                      -- Use the error from the most intense transition associated with the precursor
+                      (SELECT COALESCE(MassErrorPPM, -1000) AS MetricValue
+                       FROM TransitionChromInfo tci
+                       WHERE TransitionId.Charge IS NOT NULL
+                         AND tci.PrecursorChromInfoId = pci.Id
+                         AND Area IS NOT NULL
+                       ORDER BY Area DESC, Id LIMIT 1) AS MetricValue FROM PrecursorChromInfo pci
+ ) X
+WHERE MetricValue IS NOT NULL
