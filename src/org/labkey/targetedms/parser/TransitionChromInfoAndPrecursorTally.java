@@ -88,11 +88,6 @@ public class TransitionChromInfoAndPrecursorTally
                 readTransitionData(reader);
                 if (!isWithinLimits()) break;
             }
-            else if (XmlUtil.isStartElement(reader, evtType, SkylineDocumentParser.RESULTS_DATA))
-            {
-                readTransitionResultsData(reader);
-                if (!isWithinLimits()) break;
-            }
         }
     }
 
@@ -104,21 +99,6 @@ public class TransitionChromInfoAndPrecursorTally
             byte[] bytes = Base64.getDecoder().decode(elementText);
             SkylineDocument.SkylineDocumentProto.TransitionData transitionData = SkylineDocument.SkylineDocumentProto.TransitionData.parseFrom(bytes);
             transitionData.getTransitionsList().forEach(transition -> _transitionChromInfoCount += transition.getResults().getPeaksCount());
-        }
-        catch (Exception e)
-        {
-            throw UnexpectedException.wrap(e);
-        }
-    }
-
-    private void readTransitionResultsData(XMLStreamReader reader)
-    {
-        try
-        {
-            String strContent = reader.getElementText();
-            byte[] bytes = Base64.getDecoder().decode(strContent);
-            SkylineDocument.SkylineDocumentProto.TransitionResults transitionResults = SkylineDocument.SkylineDocumentProto.TransitionResults.parseFrom(bytes);
-            _transitionChromInfoCount += transitionResults.getPeaksCount();
         }
         catch (Exception e)
         {
