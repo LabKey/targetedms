@@ -145,6 +145,7 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
         private String _folderName;
         private Integer _fileCount;
         private Integer _precursorCount;
+        private Integer _metricsCount;
         private final int _index;
 
         protected QcSummaryTile(WebElement el, int index)
@@ -176,6 +177,10 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
             Pattern precursorPattern = Pattern.compile("(\\d+) precursor");
             Matcher precursorMatcher = precursorPattern.matcher(qcSummary);
             _precursorCount = precursorMatcher.find() ? Integer.parseInt(precursorMatcher.group(1)) : 0;
+
+            Pattern metricPattern = Pattern.compile("(\\d+) metric");
+            Matcher metricMatcher = metricPattern.matcher(qcSummary);
+            _metricsCount = metricMatcher.find() ? Integer.parseInt(metricMatcher.group(1)) : 0;
         }
 
         public String getFolderName()
@@ -197,6 +202,13 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
             if (_precursorCount == null)
                 readSummary();
             return _precursorCount;
+        }
+
+        public int getMetricsCount()
+        {
+            if(_metricsCount == null)
+                readSummary();
+            return _metricsCount;
         }
 
         public boolean hasNoSkylineDocuments()
