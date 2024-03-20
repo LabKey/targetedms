@@ -26,7 +26,6 @@ import org.labkey.api.data.Container;
 import org.labkey.api.data.RuntimeSQLException;
 import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.exp.api.ExperimentService;
-import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.reader.TabLoader;
 import org.labkey.api.security.User;
 import org.labkey.api.util.FileUtil;
@@ -37,7 +36,6 @@ import org.labkey.api.util.Tuple3;
 import org.labkey.api.util.UnexpectedException;
 import org.labkey.targetedms.IrtPeptide;
 import org.labkey.targetedms.SkylineDocImporter.IProgressStatus;
-import org.labkey.targetedms.TargetedMSModule;
 import org.labkey.targetedms.chromlib.ConnectionSource;
 import org.labkey.targetedms.parser.GeneralTransition.IonType;
 import org.labkey.targetedms.parser.list.ListColumn;
@@ -105,7 +103,7 @@ public class SkylineDocumentParser implements AutoCloseable
     private static final String MOLECULE = "molecule";
     private static final String NOTE = "note";
     private static final String ATTRIBUTE_GROUP_ID = "attribute_group_id";
-    private static final String PRECURSOR = "precursor";
+    public static final String PRECURSOR = "precursor";
     private static final String TRANSITION = "transition";
     private static final String PRECURSOR_MZ = "precursor_mz";
     private static final String ANNOTATION = "annotation";
@@ -117,7 +115,7 @@ public class SkylineDocumentParser implements AutoCloseable
     private static final String DECLUSTERING_POTENTIAL = "declustering_potential";
     private static final String LOSSES = "losses";
     private static final String NEUTRAL_LOSS = "neutral_loss";
-    private static final String TRANSITION_PEAK = "transition_peak";
+    public static final String TRANSITION_PEAK = "transition_peak";
     private static final String TRANSITION_LIB_INFO = "transition_lib_info";
     private static final String PRECURSOR_PEAK = "precursor_peak";
     private static final String PEPTIDE_RESULT = "peptide_result";
@@ -157,7 +155,7 @@ public class SkylineDocumentParser implements AutoCloseable
     private static final String NEUTRAL_MASS_AVERAGE = "neutral_mass_average";
     private static final String GROUP_COMPARISON = "group_comparison";
     private static final String CHARGE = "charge" ;
-    private static final String TRANSITION_DATA = "transition_data";
+    public static final String TRANSITION_DATA = "transition_data";
     private static final String LINKED_FRAGMENT_ION = "linked_fragment_ion";
 
     private static final double MIN_SUPPORTED_VERSION = 1.2;
@@ -185,14 +183,6 @@ public class SkylineDocumentParser implements AutoCloseable
 
     /** Tally the transition/replicate combinations so that we can avoid storing huge DIA-type runs in the DB */
     private int _transitionChromInfoCount;
-
-    /**
-     * To prevent giant DIA documents from overwhelming the DB, we skip importing TransitionChromInfos if the document
-     * has more than 100,000 AND has more than 1,000 precursors. We use both because a document may have a lot of
-     * replicates, so the TransitionChromInfo count by itself isn't sufficient to do the desired screening
-     */
-    private int _maxTransitionChromInfos;
-    private int _maxPrecursors;
 
     /** Null if we haven't found a SKYD to parse */
     @Nullable
@@ -241,37 +231,6 @@ public class SkylineDocumentParser implements AutoCloseable
         _reader = inputFactory.createXMLStreamReader(_inputStream);
         _log = log;
         readDocumentVersion(_reader);
-
-        TargetedMSModule targetedMSModule = ModuleLoader.getInstance().getModule(TargetedMSModule.class);
-        try
-        {
-            _maxPrecursors = Integer.parseInt(targetedMSModule.MAX_PRECURSORS_PROPERTY.getEffectiveValue(container));
-        }
-        catch (NumberFormatException e)
-        {
-            _maxPrecursors = TargetedMSModule.DEFAULT_MAX_PRECURSORS;
-            _log.warn("Unable to parse MAX_PRECURSORS_PROPERTY value: {}, defaulting to {}",
-                    targetedMSModule.MAX_PRECURSORS_PROPERTY.getEffectiveValue(container),
-                    _maxPrecursors);
-        }
-        try
-        {
-            _maxTransitionChromInfos = Integer.parseInt(targetedMSModule.MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(container));
-        }
-        catch (NumberFormatException e)
-        {
-            _maxTransitionChromInfos = TargetedMSModule.DEFAULT_MAX_TRANSITION_CHROM_INFOS;
-            _log.warn("Unable to parse MAX_TRANSITION_CHROM_INFOS_PROPERTY value: {}, defaulting to {}",
-                    targetedMSModule.MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(container),
-                    _maxTransitionChromInfos);
-        }
-    }
-
-    /** @return false if we've exceeded the maximum count of TransitionChromInfos that we want to store for a run,
-     * or true if we're below the threshold and should retain them */
-    public boolean shouldSaveTransitionChromInfos()
-    {
-        return _transitionChromInfoCount < _maxTransitionChromInfos || _precursorCount < _maxPrecursors;
     }
 
     @Override

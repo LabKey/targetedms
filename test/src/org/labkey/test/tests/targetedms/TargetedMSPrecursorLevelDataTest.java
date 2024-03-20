@@ -38,23 +38,6 @@ public class TargetedMSPrecursorLevelDataTest extends AbstractQuantificationTest
         setStorageLimitModuleProperties("0", "0");
     }
 
-    /**
-     * Sets the values of the site-level module properties: "TransitionChromInfo storage limit" and "Precursor storage limit".
-     * The values should be set back to defaults {@link #setDefaultStorageLimits} after the test completes.
-     * @param transitionStorageLimit
-     * @param precursorStorageLimit
-     */
-    private void setStorageLimitModuleProperties(String transitionStorageLimit, String precursorStorageLimit) {
-        goToProjectHome();
-        goToFolderManagement();
-        clickAndWait(Locator.linkWithText("Module Properties"));
-        setModuleProperties(Arrays.asList(
-                new ModulePropertyValue("TargetedMS", "/",
-                        "TransitionChromInfo storage limit", transitionStorageLimit),
-                new ModulePropertyValue("TargetedMS", "/",
-                        "Precursor storage limit",  precursorStorageLimit)));
-
-    }
     @Test
     public void testUsingPrecursorLevelData() throws Exception
     {
