@@ -69,7 +69,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.zip.DataFormatException;
 
 /**
  * Parses the .sky XML file format, building up an in-memory representation of its contents.
@@ -159,7 +158,6 @@ public class SkylineDocumentParser implements AutoCloseable
     private static final String GROUP_COMPARISON = "group_comparison";
     private static final String CHARGE = "charge" ;
     private static final String TRANSITION_DATA = "transition_data";
-    private static final String RESULTS_DATA = "results_data";
     private static final String LINKED_FRAGMENT_ION = "linked_fragment_ion";
 
     private static final double MIN_SUPPORTED_VERSION = 1.2;
@@ -2633,9 +2631,6 @@ public class SkylineDocumentParser implements AutoCloseable
                     chromInfoList.add(chromInfo);
                 }
             }
-            else if (XmlUtil.isStartElement(reader, evtType, RESULTS_DATA)) {
-                chromInfoList.addAll(readTransitionResultsData(reader));
-            }
             else if (XmlUtil.isStartElement(reader, evtType, TRANSITION_LIB_INFO))
             {
                 transition.setRank(XmlUtil.readIntegerAttribute(reader, "rank"));
@@ -2747,9 +2742,6 @@ public class SkylineDocumentParser implements AutoCloseable
                 {
                     chromInfoList.add(chromInfo);
                 }
-            }
-            else if (XmlUtil.isStartElement(reader, evtType, RESULTS_DATA)) {
-                chromInfoList.addAll(readTransitionResultsData(reader));
             }
             else if (XmlUtil.isStartElement(reader, evtType, LOSSES))
             {
@@ -2980,20 +2972,6 @@ public class SkylineDocumentParser implements AutoCloseable
         }
 
         return chromInfo;
-    }
-
-    private List<TransitionChromInfo> readTransitionResultsData(XMLStreamReader reader)
-    {
-        try {
-            String strContent = reader.getElementText();
-            byte[] data = Base64.getDecoder().decode(strContent);
-            SkylineDocument.SkylineDocumentProto.TransitionResults transitionResults
-                    = SkylineDocument.SkylineDocumentProto.TransitionResults.parseFrom(data);
-            return makeTransitionChromInfos(transitionResults);
-        }
-        catch (Exception e) {
-            throw UnexpectedException.wrap(e);
-        }
     }
 
     private List<TransitionChromInfo> makeTransitionChromInfos(
