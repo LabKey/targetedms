@@ -169,7 +169,7 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
 
         clickFolder(FOLDER_2A);
         waitForRecentSampleFiles(3);
-        verifyQcSummary(1, sampleFileCount, 2);
+        verifyQcSummary(sampleFileCount, 2);
 
         // verify the initial set of QC plot points
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
@@ -189,7 +189,7 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         sampleFileCount--;
         PanoramaDashboard panoramaDashboard = goToDashboard();
         panoramaDashboard.getQcSummaryWebPart().waitForRecentSampleFiles(2);
-        verifyQcSummary(1, sampleFileCount, 2);
+        verifyQcSummary(sampleFileCount, 2);
         assertEquals("Unexpected number of points", 2 * sampleFileCount, getQCPlotPointCount());
 
         log("Validate the recently loaded file content is correct.");
