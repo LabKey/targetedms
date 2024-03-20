@@ -57,6 +57,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -329,8 +330,9 @@ public class OutlierGenerator
 
         Collection<ExcludedPrecursor> excludedPrecursors = new TableSelector(schema.getTable("ExcludedPrecursors")).getCollection(ExcludedPrecursor.class);
 
-        // First the proteomics side
-        try (ResultSet rs = new TableSelector(schema.getTable(TargetedMSSchema.TABLE_PRECURSOR)).getResultSet(false))
+        // First the proteomics side, passing a minimal list of columns to simplify the query and execution plan
+        try (ResultSet rs = new TableSelector(schema.getTable(TargetedMSSchema.TABLE_PRECURSOR),
+                new LinkedHashSet<>(List.of("Id", "MZ", "Charge", "ModifiedSequence"))).getResultSet(false))
         {
             while (rs.next())
             {
@@ -348,8 +350,9 @@ public class OutlierGenerator
             }
         }
 
-        // And now the small molecules
-        try (ResultSet rs = new TableSelector(schema.getTable(TargetedMSSchema.TABLE_MOLECULE_PRECURSOR)).getResultSet(false))
+        // And now the small molecules, passing a minimal list of columns to simplify the query and execution plan
+        try (ResultSet rs = new TableSelector(schema.getTable(TargetedMSSchema.TABLE_MOLECULE_PRECURSOR),
+                new LinkedHashSet<>(List.of("Id", "MZ", "Charge", "CustomIonName", "IonFormula", "massMonoisotopic", "massAverage"))).getResultSet(false))
         {
             while (rs.next())
             {
