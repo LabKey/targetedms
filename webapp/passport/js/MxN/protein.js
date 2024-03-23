@@ -642,8 +642,17 @@ protein =
 
             summaryDataTable.forEach(function(row, index) {
                 const commonRows = '<tr' + (row.enabled ? '' : ' style="text-decoration: line-through; background-color: LightGray"') + '>' +
-                        '<td colspan="2"><input type="radio" ' + (row.precursorId === protein.selectedPrecursor.PrecursorId ? 'checked="true"' : '') + ' name="precursorRadio" id="precursorRadio' + row.precursorId + '" onclick="protein.selectPrecursor(' + row.precursorId + ', true)" /><a href="#chrom' + row.precursorChromInfoId + '" onclick="protein.selectPrecursor(' + row.precursorId + ', true)">' + LABKEY.Utils.encodeHtml(row.sequence) + '</a></td>' +
+                        '<td colspan="2"><input type="radio" ' + (row.precursorId === protein.selectedPrecursor.PrecursorId ? 'checked="true"' : '') + ' name="precursorRadio" id="precursorRadio' + row.precursorId + '"/><a href="#chrom' + row.precursorChromInfoId + '" id="precursorAnchor' + row.precursorId + '">' + LABKEY.Utils.encodeHtml(row.sequence) + '</a></td>' +
                         '<td>' + LABKEY.Utils.encodeHtml(protein.renderCharge(row.charge)) + '</td>';
+
+                $("#precursorRadio" + row.precursorId).on("click", function() {
+                    protein.selectPrecursor(row.precursorId, true);
+                });
+                $("#precursorAnchor" + row.precursorId).on("click", function() {
+                    protein.selectPrecursor(row.precursorId, true);
+                });
+
+
 
                 tableHTML += commonRows +
                         '<td style="text-align: right">' + LABKEY.Utils.encodeHtml(row.mz.toFixed(4)) + '</td>' +
