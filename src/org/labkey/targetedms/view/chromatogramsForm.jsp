@@ -497,7 +497,7 @@
 }(jQuery);
 </script>
 <div id="headContainer">
-    <% addHandler("showChartHeadContainer", "onclick", "showChart()"); %>
+    <% addHandler("showChartHeadContainer", "click", "showChart()"); %>
     <div id="showChartHeadContainer" style="margin-bottom: 10px;"><img id="showGraphImg" src="<%=getWebappURL("_images/plus.gif")%>"> <strong>Display Chart Settings</strong></div>
     <div id="formContainer" style="float:left; width:550px; height: 160px; padding-bottom: 25px; display: none;"></div>
     <div id="allFilters" style="float:left; display: none;">
