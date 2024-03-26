@@ -93,11 +93,6 @@
 </style>
 <script type="text/javascript" nonce="<%=getScriptNonce()%>">
 
-    LABKEY.Utils.onReady(function() {
-        document.getElementById("clear-rep")['onclick'] = clearReplicates;
-        document.getElementById("clear-annot")['onclick'] = clearAnnotations;
-    });
-
 +function($){
 
     var hiddenFields;
@@ -281,6 +276,9 @@
                 }
             ],
         });
+
+        document.getElementById("clear-rep")['onclick'] = clearReplicates;
+        document.getElementById("clear-annot")['onclick'] = clearAnnotations;
 
         // This has to happen after form is rendered.
         form.getForm().findField("annotationsFilter").setValue(selectedAnnotationsFilterList);
