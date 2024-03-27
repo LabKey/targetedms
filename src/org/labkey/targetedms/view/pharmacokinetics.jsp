@@ -52,7 +52,7 @@
     %>
     <labkey:panel title="<%=subgroupTitle%>" type="portal">
         <div id="targetedms-fom-export" class="export-icon" data-toggle="tooltip" title="Export to Excel">
-            <%=iconLink("fa fa-file-excel-o", "", null).onClick("exportExcel('" + h(subgroup) + "')") %>
+            <%=iconLink("fa fa-file-excel-o", "", null).onClick("exportExcel('" + subgroup + "')") %>
         </div>
 
         <labkey:panel title="Statistics">
@@ -82,7 +82,7 @@
                 <span id="nonIVC0Controls-Warn-<%=h(subgroup)%>" class="labkey-error"><h4>WARNING: Please enter a non-IV C0 and recalculate.</h4></span>
                 non-IV C0
                 <input type="number" id="nonIVC0-<%=h(subgroup)%>" label="non-IV C0"/>
-                <% addHandler("btnNonIVC0-"+h(subgroup), "click", "updateStatsForNonIVC0('"+ h(subgroup) + "')"); %>
+                <% addHandler("btnNonIVC0-"+h(subgroup), "click", "updateStatsForNonIVC0('"+ subgroup + "')"); %>
                 <button id="btnNonIVC0-<%=h(subgroup)%>">Recalculate</button>
             </div>
         </labkey:panel>
