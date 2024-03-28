@@ -233,7 +233,7 @@
                 {
                     xtype: 'displayfield',
                     name: "hideReplicates",
-                    value:'<a style="color:#069; cursor:pointer;" id="clear-rep" onclick="clearReplicates()">Clear</a>',
+                    value:'<a style="color:#069; cursor:pointer;" id="clear-rep"">Clear</a>',
                     style:'margin-left:15px;'
                 },
                 {
@@ -257,7 +257,7 @@
                 },
                 {
                     xtype: 'displayfield',
-                    value:'<a style="color:#069; cursor:pointer;" id="clear-annot" onclick="clearAnnotations()">Clear</a>',
+                    value:'<a style="color:#069; cursor:pointer;" id="clear-annot">Clear</a>',
                     style:'margin-left:15px;',
                     name: "hideAnnotations"
                 },
@@ -276,6 +276,9 @@
                 }
             ],
         });
+
+        document.getElementById("clear-rep")['onclick'] = clearReplicates;
+        document.getElementById("clear-annot")['onclick'] = clearAnnotations;
 
         // This has to happen after form is rendered.
         form.getForm().findField("annotationsFilter").setValue(selectedAnnotationsFilterList);
@@ -320,11 +323,15 @@
         <%}%>
 
         // appendFilterItem adds a filter table row & column to the appropriate parent filter box.
-        function appendFilterItem(element, displayValue, parentTable, id)
-        {
-            if(displayValue != null)
-            {
-                element.append("<tr id=\'"+id+"\'><td class="+"item"+"><img src='<%=getWebappURL("_images/delete.png")%>' style='width:10px; height:10px; margin-right:3px;' onclick=\"deleteFilter(this, \'"+parentTable+"\')\">"+displayValue+"</td></tr>");
+        function appendFilterItem(element, displayValue, parentTable, id) {
+            if(displayValue != null) {
+                let deleteIconId = 'delete-' + id;
+                let newRowContent = "<tr id=\'"+id+"\'><td class="+"item"+"><img id=\'"+deleteIconId+"\' src='<%=getWebappURL("_images/delete.png")%>' style='width:10px; height:10px; margin-right:3px;'>"+displayValue+"</td></tr>";
+                element.append(newRowContent);
+
+                document.getElementById(deleteIconId).addEventListener('click', function() {
+                    deleteFilter(this, parentTable);
+                });
             }
         }
 
@@ -488,7 +495,8 @@
 }(jQuery);
 </script>
 <div id="headContainer">
-    <div onclick="showChart()" style="margin-bottom: 10px;"><img id="showGraphImg" src="<%=getWebappURL("_images/plus.gif")%>"> <strong>Display Chart Settings</strong></div>
+    <% addHandler("showChartHeadContainer", "click", "showChart()"); %>
+    <div id="showChartHeadContainer" style="margin-bottom: 10px;"><img id="showGraphImg" src="<%=getWebappURL("_images/plus.gif")%>"> <strong>Display Chart Settings</strong></div>
     <div id="formContainer" style="float:left; width:550px; height: 160px; padding-bottom: 25px; display: none;"></div>
     <div id="allFilters" style="float:left; display: none;">
 

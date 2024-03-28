@@ -32,7 +32,7 @@ Ext4.define('Ext.ux.CheckCombo', {
         Ext4.apply(this.listConfig, {
             tpl: new Ext4.XTemplate(
                     '<ul><tpl for=".">',
-                    '<li role="option" class="' + Ext4.baseCSSPrefix + 'boundlist-item" onmouseover="createPlotTypeTooltip(event.currentTarget, event.target.textContent)" onmouseout="destroyPlotTypeTooltip()"><span class="' + Ext4.baseCSSPrefix + 'combo-checker"></span>',
+                    '<li role="option" class="' + Ext4.baseCSSPrefix + 'boundlist-item"><span class="' + Ext4.baseCSSPrefix + 'combo-checker"></span>',
                     '&nbsp;{[this.getDisplayText(values, "' + this.displayField + '", "' + (Ext4.isDefined(this.nullCaption) ? this.nullCaption : "[none]") + '")]}',
                     '</li></tpl></ul>',
                     {
@@ -75,6 +75,23 @@ Ext4.define('Ext.ux.CheckCombo', {
             onDestroy: function() {
                 Ext4.destroyMembers(this, 'pagingToolbar', 'outerEl', 'listEl');
                 this.callParent();
+            }
+        });
+
+        this.on({
+            expand: function(combo) {
+                var boundList = combo.getPicker();
+
+                boundList.getEl().on({
+                    mouseover: function(event, target) {
+                        createPlotTypeTooltip(event.currentTarget, target.textContent);
+                    },
+                    mouseout: function() {
+                        destroyPlotTypeTooltip();
+                    },
+                    delegate: "." + Ext4.baseCSSPrefix + 'boundlist-item',
+                    scope: this
+                });
             }
         });
 

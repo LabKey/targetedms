@@ -59,13 +59,15 @@
 
 <div style="width: 100%; text-align: center">
     <label for="calCurveXScale">X-axis:</label>
-    <select id="calCurveXScale"onchange="calibrationCurvePlot.refreshPlot();">
+    <% addHandler("calCurveXScale", "change", "calibrationCurvePlot.refreshPlot()"); %>
+    <select id="calCurveXScale">
         <option value="linear" selected>Linear</option>
         <option value="log">Log</option>
     </select>
     &nbsp;&nbsp;
     <label for="calCurveYScale">Y-axis:</label>
-    <select id="calCurveYScale" onchange="calibrationCurvePlot.refreshPlot();">
+    <% addHandler("calCurveYScale", "change", "calibrationCurvePlot.refreshPlot()"); %>
+    <select id="calCurveYScale">
         <option value="linear" selected>Linear</option>
         <option value="log">Log</option>
     </select>
