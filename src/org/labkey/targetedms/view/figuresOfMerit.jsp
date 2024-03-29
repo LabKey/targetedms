@@ -189,7 +189,7 @@
             html += samples.reduce(function(list, file, index) {
                 var extra = index >= displayLimit ? ' class="hiddenSample" style="display: none"' : '';
                 if (index === displayLimit) {
-                    list += '<div onClick="expandSampleList();" id="sampleExpando">and ' + (samples.length - displayLimit) + ' more <i class="fa fa-caret-down" ></i></div>';
+                    list += '<div id="sampleExpando">and ' + (samples.length - displayLimit) + ' more <i class="fa fa-caret-down" ></i></div>';
                 }
                 return list + '<div' + extra + '>' + LABKEY.Utils.encodeHtml(file) + '</div>';
                 }, "");
@@ -228,6 +228,7 @@
         var displayHeader = function(sampleType) {
             var samples = this.sampleFiles.split(", ");
             $('#fom-sampleList').html(getSampleFilesHtml(samples));
+            $('#sampleExpando').click(this.expandSampleList);
 
             // Add title to export
             if (this.xlsExport.length < 1) {
