@@ -205,7 +205,10 @@ public class SampleFileTable extends TargetedMSTable
         urlParams.put("id", "Id");
         DetailsURL detailsURL = new DetailsURL(url, urlParams);
         setDetailsURL(detailsURL);
-        getMutableColumn("ReplicateId").setURL(detailsURL);
+        getMutableColumnOrThrow("ReplicateId").setURL(detailsURL);
+        getMutableColumnOrThrow("ReplicateId").setFk(new TargetedMSForeignKey(schema, TargetedMSSchema.TABLE_REPLICATE, cf));
+
+        getMutableColumnOrThrow("InstrumentId").setFk(new TargetedMSForeignKey(schema, TargetedMSSchema.TABLE_INSTRUMENT, cf));
 
 
         // Add a column to display the file name extracted from the value in the sampleFile.FilePath column
