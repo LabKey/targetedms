@@ -9,8 +9,6 @@ import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.pages.PortalBodyPanel;
 import org.labkey.test.util.Ext4Helper;
 import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.support.ui.ExpectedCondition;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.util.Map;
 
