@@ -1,9 +1,11 @@
 package org.labkey.test.pages.panoramapremium;
 
+import org.jetbrains.annotations.Nullable;
 import org.junit.Assert;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.components.ext4.Window;
+import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.pages.PortalBodyPanel;
 import org.labkey.test.util.Ext4Helper;
 import org.openqa.selenium.NoSuchElementException;
@@ -64,16 +66,55 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         super(test.getDriver());
     }
 
-    public ConfigureMetricsUIPage enableMetric(String metric)
+    public ConfigureMetricsUIPage setLeveyJennings(String metric, @Nullable String lowerBound, @Nullable String upperBound)
     {
-        selectOptionByText(Locator.name(metric),"Levey-Jennings (+/- standard deviations)");
+        selectOptionByText(Locator.name(metric), "Levey-Jennings (+/- standard deviations)");
+        if (lowerBound != null)
+            setFormElement(Locator.name(metric + "-lower"), lowerBound);
+        if (upperBound != null)
+            setFormElement(Locator.name(metric + "-upper"), upperBound);
         return this;
     }
 
     public ConfigureMetricsUIPage disableMetric(String metric)
     {
-        selectOptionByText(Locator.name(metric),"Disabled, completely hide the metric");
+        selectOptionByText(Locator.name(metric), "Disabled, completely hide the metric");
         return this;
+    }
+
+    public ConfigureMetricsUIPage setFixedDeviationFromMean(QCPlotsWebPart.MetricType metric, @Nullable String lowerBound, @Nullable String upperBound)
+    {
+        selectOptionByText(Locator.name(metric.toString()), "Fixed deviation from mean");
+        if (lowerBound != null)
+            setFormElement(Locator.name(metric + "-lower"), lowerBound);
+        if (upperBound != null)
+            setFormElement(Locator.name(metric + "-upper"), upperBound);
+        return this;
+    }
+
+    public ConfigureMetricsUIPage setFixedValueCutOff(QCPlotsWebPart.MetricType metric, @Nullable String lowerBound, @Nullable String upperBound)
+    {
+        selectOptionByText(Locator.name(metric.toString()), "Fixed value cutoff");
+        if (lowerBound != null)
+            setFormElement(Locator.name(metric + "-lower"), lowerBound);
+        if (upperBound != null)
+            setFormElement(Locator.name(metric + "-upper"), upperBound);
+        return this;
+    }
+
+    public ConfigureMetricsUIPage setShowMetricNoOutlier(QCPlotsWebPart.MetricType metric)
+    {
+        selectOptionByText(Locator.name(metric.toString()), "Show metric in plots, but don't identify outliers");
+        return this;
+    }
+
+    public String getLowerBound(String metric)
+    {
+        return Locator.name(metric + "-lower").findElement(getDriver()).getText();
+    }
+    public String getUpperBound(String metric)
+    {
+        return Locator.name(metric + "-upper").findElement(getDriver()).getText();
     }
 
     public void verifyNoDataForMetric(String metricName)
@@ -84,6 +125,12 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
     public void clickSave()
     {
         clickAndWait(Locator.buttonContainingText("Save"));
+    }
+
+    public String clickSaveExpectingError()
+    {
+        Locator.buttonContainingText("Save").findElement(getDriver()).click();
+        return waitForElement(Locator.id("qcMetricsError")).getText();
     }
 
     public void addNewCustomMetric(Map<CustomMetricProperties, String> metricProperties)

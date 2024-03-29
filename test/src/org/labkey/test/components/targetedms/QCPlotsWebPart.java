@@ -789,6 +789,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         IRTINTERCEPT("iRT Intercept"),
         IRTSLOPE("iRT Slope"),
         IRTCORRELATION("iRT Correlation"),
+        ISOTOPE_DOTP("Isotope dotp"),
         TICAREA("TIC Area");
 
         private final String _text;
