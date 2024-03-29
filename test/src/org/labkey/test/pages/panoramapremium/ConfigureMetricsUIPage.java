@@ -9,6 +9,8 @@ import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.pages.PortalBodyPanel;
 import org.labkey.test.util.Ext4Helper;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.util.Map;
 
@@ -130,7 +132,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
     public String clickSaveExpectingError()
     {
         Locator.buttonContainingText("Save").findElement(getDriver()).click();
-        return waitForElement(Locator.id("qcMetricsError")).getText();
+        return waitForElement(Locator.id("qcMetricsError"), WAIT_FOR_PAGE).getText();
     }
 
     public void addNewCustomMetric(Map<CustomMetricProperties, String> metricProperties)
