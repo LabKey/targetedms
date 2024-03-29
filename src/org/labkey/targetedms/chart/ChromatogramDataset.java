@@ -291,7 +291,7 @@ public abstract class ChromatogramDataset
         @Override
         List<PrecursorChromInfoPlus> getPrecursorChromInfosForGeneralMolecule()
         {
-            return PrecursorManager.getPrecursorChromInfosForPeptide(_generalMoleculeId, _sampleFileId, _user, _container);
+            return PrecursorManager.getPrecursorChromInfosForPeptide(_generalMoleculeId, _sampleFileId, _container);
         }
 
         @Override
@@ -772,7 +772,7 @@ public abstract class ChromatogramDataset
             List<PrecursorChromInfoPlus> precursorChromInfoList = PrecursorManager.getPrecursorChromInfosForGeneralMoleculeChromInfo(
                     _precursorChromInfo.getGeneralMoleculeChromInfoId(),
                     _precursorChromInfo.getPrecursorId(),
-                    _precursorChromInfo.getSampleFileId(), _user, _container);
+                    _precursorChromInfo.getSampleFileId(), _container);
 
             precursorChromInfoList.sort((o1, o2) ->
             {
@@ -1544,7 +1544,7 @@ public abstract class ChromatogramDataset
             }
             for (Peptide peptide : PeptideManager.getPeptidesForGroup(_group.getId()))
             {
-                List<PrecursorChromInfoPlus> chromInfos = PrecursorManager.getPrecursorChromInfosForPeptide(peptide.getId(), _sampleFile.getId(), _user, _container);
+                List<PrecursorChromInfoPlus> chromInfos = PrecursorManager.getPrecursorChromInfosForPeptide(peptide.getId(), _sampleFile.getId(), _container);
                 if (!chromInfos.isEmpty())
                 {
                     _allMolecules.put(peptide, chromInfos);
