@@ -78,7 +78,7 @@ public class ComparisonChartMaker
         }
 
         List<PrecursorChromInfoLitePlus> pciPlusList = getInputData(peptideGroup, replicateId, peptide, precursor, chartConfig.second, user, container);
-        if (pciPlusList == null || pciPlusList.size() == 0)
+        if (pciPlusList == null || pciPlusList.isEmpty())
         {
             return null;
         }
@@ -92,19 +92,6 @@ public class ComparisonChartMaker
                                          String groupByAnnotation, String filterByAnnotation,
                                          boolean cvValues, boolean logValues, User user, Container container)
     {
-        String title;
-        ComparisonDataset.ChartType chartType;
-        if (molecule == null)
-        {
-            title = peptideGroup.getLabel();
-            chartType = ComparisonDataset.ChartType.MOLECULE_COMPARISON;
-        }
-        else
-        {
-            title = molecule.getCustomIonName();
-            chartType = ComparisonDataset.ChartType.REPLICATE_COMPARISON;
-        }
-
         String yLabel = cvValues ? "Peak Area CV(%)" : "Peak Area ";
         if(cvValues && logValues){
             yLabel = "Log Peak Area CV(%)";
@@ -113,13 +100,14 @@ public class ComparisonChartMaker
             yLabel =   "Log Peak Area";
         }
 
-        List<PrecursorChromInfoLitePlus> pciPlusList = getInputData(peptideGroup, replicateId, molecule, precursor, chartType, user, container);
-        if (pciPlusList == null || pciPlusList.size() == 0)
+        var titleAndType = getTitleAndType(peptideGroup, molecule);
+        List<PrecursorChromInfoLitePlus> pciPlusList = getInputData(peptideGroup, replicateId, molecule, precursor, titleAndType.second, user, container);
+        if (pciPlusList == null || pciPlusList.isEmpty())
         {
             return null;
         }
 
-        return makeChart(peptideGroup, title, chartType, pciPlusList, groupByAnnotation, filterByAnnotation, cvValues, logValues,
+        return makeChart(peptideGroup, titleAndType.first, titleAndType.second, pciPlusList, groupByAnnotation, filterByAnnotation, cvValues, logValues,
                 new ComparisonDataset.PeakAreasSeriesItemMaker(), yLabel, true, user, container);
     }
 
@@ -144,7 +132,7 @@ public class ComparisonChartMaker
     {
         Pair<String, ComparisonDataset.ChartType> chartConfig = getChartConfig(peptideGroup, peptide);
         List<PrecursorChromInfoLitePlus> pciPlusList = getInputData(peptideGroup, replicateId, peptide, precursor, chartConfig.second, user, container);
-        if (pciPlusList == null || pciPlusList.size() == 0)
+        if (pciPlusList == null || pciPlusList.isEmpty())
         {
             return null;
         }
@@ -153,31 +141,28 @@ public class ComparisonChartMaker
                                        filterByAnnotation,  value, cvValues, user, container);
     }
 
+    private Pair<String, ComparisonDataset.ChartType> getTitleAndType(PeptideGroup peptideGroup, Molecule molecule)
+    {
+        if (molecule == null)
+        {
+            return Pair.of(peptideGroup.getLabel(), ComparisonDataset.ChartType.MOLECULE_COMPARISON);
+        }
+        return Pair.of(molecule.getCustomIonName(), ComparisonDataset.ChartType.REPLICATE_COMPARISON);
+    }
+
     public JFreeChart makeRetentionTimesChart(long replicateId, PeptideGroup peptideGroup,
                                           Molecule molecule, MoleculePrecursor precursor,
                                           String groupByAnnotation, String filterByAnnotation, String value, boolean cvValues,
                                           User user, Container container)
     {
-        String title;
-        ComparisonDataset.ChartType chartType;
-        if (molecule == null)
-        {
-            title = peptideGroup.getLabel();
-            chartType = ComparisonDataset.ChartType.MOLECULE_COMPARISON;
-        }
-        else
-        {
-            title = molecule.getCustomIonName();
-            chartType = ComparisonDataset.ChartType.REPLICATE_COMPARISON;
-        }
-
-        List<PrecursorChromInfoLitePlus> pciPlusList = getInputData(peptideGroup, replicateId, molecule, precursor, chartType, user, container);
-        if (pciPlusList == null || pciPlusList.size() == 0)
+        var titleAndType = getTitleAndType(peptideGroup, molecule);
+        List<PrecursorChromInfoLitePlus> pciPlusList = getInputData(peptideGroup, replicateId, molecule, precursor, titleAndType.second, user, container);
+        if (pciPlusList == null || pciPlusList.isEmpty())
         {
             return null;
         }
 
-        return makeRetentionTimesChart(peptideGroup, title, chartType, pciPlusList, groupByAnnotation,
+        return makeRetentionTimesChart(peptideGroup, titleAndType.first, titleAndType.second, pciPlusList, groupByAnnotation,
                                        filterByAnnotation,  value, cvValues, user, container);
     }
 
@@ -357,10 +342,10 @@ public class ComparisonChartMaker
         }
         else
         {
-            pciPlusList = getPrecursorChromInfo(peptide, precursor, user, container);
+            pciPlusList = getPrecursorChromInfo(peptide, precursor, container);
         }
 
-        if (pciPlusList.size() == 0)
+        if (pciPlusList.isEmpty())
         {
             return null;
         }
@@ -381,7 +366,7 @@ public class ComparisonChartMaker
             pciPlusList = getPrecursorChromInfo(molecule, precursor, user, container);
         }
 
-        if (pciPlusList.size() == 0)
+        if (pciPlusList.isEmpty())
         {
             return null;
         }
@@ -398,7 +383,7 @@ public class ComparisonChartMaker
         if(replicateId == 0)
         {
             if (asProteomics)
-                return PrecursorManager.getChromInfosLitePlusForPeptideGroup(peptideGroup.getId(), user, container);
+                return PrecursorManager.getChromInfosLitePlusForPeptideGroup(peptideGroup.getId(), container);
             else
                 return MoleculePrecursorManager.getChromInfosLitePlusForPeptideGroup(peptideGroup.getId(), user, container);
         }
@@ -416,7 +401,7 @@ public class ComparisonChartMaker
                 // chromatograms for this precursor from a single sample file.
                 List<PrecursorChromInfoLitePlus> samplePrecChromInfos;
                 if (asProteomics)
-                    samplePrecChromInfos = PrecursorManager.getChromInfosLitePlusForPeptideGroup(peptideGroup.getId(), file.getId(), user, container);
+                    samplePrecChromInfos = PrecursorManager.getChromInfosLitePlusForPeptideGroup(peptideGroup.getId(), file.getId(), container);
                 else
                     samplePrecChromInfos = MoleculePrecursorManager.getChromInfosLitePlusForPeptideGroup(peptideGroup.getId(), file.getId(), user, container);
 
@@ -426,10 +411,10 @@ public class ComparisonChartMaker
         }
     }
 
-    private List<PrecursorChromInfoLitePlus> getPrecursorChromInfo(Peptide peptide, Precursor precursor, User user, Container container)
+    private List<PrecursorChromInfoLitePlus> getPrecursorChromInfo(Peptide peptide, Precursor precursor, Container container)
     {
-        return precursor == null ? PrecursorManager.getChromInfosLitePlusForPeptide(peptide.getId(), user, container) :
-                                   PrecursorManager.getChromInfosLitePlusForPrecursor(precursor.getId(), user, container);
+        return precursor == null ? PrecursorManager.getChromInfosLitePlusForPeptide(peptide.getId(), container) :
+                                   PrecursorManager.getChromInfosLitePlusForPrecursor(precursor.getId(), container);
     }
 
     private List<PrecursorChromInfoLitePlus> getPrecursorChromInfo(Molecule molecule, MoleculePrecursor precursor, User user, Container container)
