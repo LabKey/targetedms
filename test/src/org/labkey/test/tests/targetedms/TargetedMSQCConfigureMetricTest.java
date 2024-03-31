@@ -103,7 +103,7 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
                 configureQCMetrics.clickSaveExpectingError());
 
         configureQCMetrics.setFixedDeviationFromMean(metricType, "-2", "0");
-        Assert.assertEquals("Incorrect error for negative upper bound",
+        Assert.assertEquals("Incorrect error for zero upper bound",
                 "Error: For Mean Deviation Cut-Off configuration, the upper bound must be greater than 0",
                 configureQCMetrics.clickSaveExpectingError());
 
