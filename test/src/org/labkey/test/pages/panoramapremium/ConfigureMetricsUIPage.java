@@ -1,5 +1,6 @@
 package org.labkey.test.pages.panoramapremium;
 
+import org.apache.xmlbeans.impl.xb.xsdschema.FieldDocument;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Assert;
 import org.labkey.test.BaseWebDriverTest;
@@ -130,7 +131,10 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
     public String clickSaveExpectingError()
     {
         Locator.buttonContainingText("Save").findElement(getDriver()).click();
-        return waitForElement(Locator.id("qcMetricsError"), WAIT_FOR_PAGE).getText();
+        Locator.XPathLocator errorMsgId = Locator.id("qcMetricsError");
+        waitForElement(errorMsgId);
+        waitFor(() -> !errorMsgId.findElement(getDriver()).getText().isEmpty() , WAIT_FOR_PAGE);
+        return errorMsgId.findElement(getDriver()).getText();
     }
 
     public void addNewCustomMetric(Map<CustomMetricProperties, String> metricProperties)

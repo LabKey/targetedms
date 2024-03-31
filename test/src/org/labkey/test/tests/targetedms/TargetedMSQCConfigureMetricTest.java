@@ -11,6 +11,7 @@ import org.labkey.test.components.targetedms.QCSummaryWebPart;
 import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
 import org.labkey.test.tests.panoramapremium.TargetedMSPremiumTest;
+import org.openqa.selenium.WebElement;
 
 import java.util.Arrays;
 import java.util.List;
@@ -178,7 +179,9 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
         scrollIntoView(Locator.tagContainingText("div", replicate));
         mouseOver(Locator.tagContainingText("div", replicate));
         waitForElement(qcSummaryWebPart.getBubble());
-        String bubbleContent = waitForElement(qcSummaryWebPart.getBubbleContent()).getText();
+        WebElement bubbleContentEl = qcSummaryWebPart.getBubbleContent().findElement(getDriver());
+        waitFor(()-> !bubbleContentEl.getText().isEmpty(), WAIT_FOR_PAGE);
+        String bubbleContent = bubbleContentEl.getText();
         log("Bubble content " + bubbleContent);
         Assert.assertTrue("Outlier count for metric " + metricType + "is not correct",
                         Pattern.compile(Pattern.quote(metricType + " " + count), Pattern.CASE_INSENSITIVE).matcher(bubbleContent).find());
