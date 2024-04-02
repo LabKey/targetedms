@@ -94,7 +94,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
 
         //re-enabling peak area metric
         goToConfigureMetricsUI();
-        configureUI.enableMetric(metric);
+        configureUI.setLeveyJennings(metric, null, null);
         clickAndWait(Locator.buttonContainingText("Save"));
         impersonate(USER);
         log("Verifying Configure QC Metrics Menu option not present for non admin");

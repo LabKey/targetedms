@@ -2121,7 +2121,7 @@ public class TargetedMSController extends SpringActionController
             ChromatogramsDataRegion dRegion = new ChromatogramsDataRegion(getViewContext(), tableInfo,
                     ChromatogramsDataRegion.PRECURSOR_CHROM_DATA_REGION, form.isSplitGraph(), canBeSplitView);
 
-            pageToSelectedChromatogram(form, dRegion, PrecursorManager.getChromInfosLitePlusForPrecursor(form.getId(), getUser(), getContainer()));
+            pageToSelectedChromatogram(form, dRegion, PrecursorManager.getChromInfosLitePlusForPrecursor(form.getId(), getContainer()));
 
             GridView gridView = new ChromatogramGridView(dRegion, errors);
             gridView.setFrame(WebPartView.FrameType.PORTAL);

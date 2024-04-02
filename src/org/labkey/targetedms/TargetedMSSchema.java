@@ -1199,7 +1199,9 @@ public class TargetedMSSchema extends UserSchema
 
         if (TABLE_REPLICATE.equalsIgnoreCase(name))
         {
-            return new AnnotatedTargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.RunFK, TargetedMSManager.getTableInfoReplicateAnnotation(), "ReplicateId", "Replicate", "replicate");
+            AnnotatedTargetedMSTable result = new AnnotatedTargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.RunFK, TargetedMSManager.getTableInfoReplicateAnnotation(), "ReplicateId", "Replicate", "replicate");
+            result.getMutableColumnOrThrow("RunId").setFk(new TargetedMSForeignKey(this, TABLE_RUNS, cf));
+            return result;
         }
 
         // Tables that have a FK to targetedms.Runs

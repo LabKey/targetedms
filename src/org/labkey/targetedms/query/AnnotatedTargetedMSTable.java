@@ -214,7 +214,7 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
      */
     protected static Pair<SQLFragment, DataSettings.AnnotationType> generateSQL(TableInfo annotationTableInfo, String annotationFKName, String pkColumnName, AnnotationSettingForTyping annotationSetting, SqlDialect dialect)
     {
-        SQLFragment sql = new SQLFragment("(SELECT ", annotationSetting.getName());
+        SQLFragment sql = new SQLFragment("(SELECT ");
         DataSettings.AnnotationType annotationType = DataSettings.AnnotationType.text;
 
         if (annotationSetting.getMaxType().equals(annotationSetting.getMinType()))
@@ -243,7 +243,7 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
         }
 
         getAnnotationJoinSQL(annotationTableInfo, annotationFKName, sql);
-        sql.append(".").append(pkColumnName).append(" AND a.name = ?)");
+        sql.append(".").append(pkColumnName).append(" AND a.name = ").appendStringLiteral(annotationSetting.getName(), annotationTableInfo.getSqlDialect()).append(")");
 
         return Pair.of(sql, annotationType);
     }

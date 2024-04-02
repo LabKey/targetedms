@@ -234,32 +234,32 @@ public class PrecursorManager
         throw new IllegalStateException("Cannot get summary for precursor "+precursorId);
     }
 
-    public static List<PrecursorChromInfoLitePlus> getChromInfosLitePlusForPeptideGroup(long peptideGroupId, User user, Container container)
+    public static List<PrecursorChromInfoLitePlus> getChromInfosLitePlusForPeptideGroup(long peptideGroupId, Container container)
     {
-        return getChromInfosLitePlusForPeptideGroup(peptideGroupId, 0, user, container);
+        return getChromInfosLitePlusForPeptideGroup(peptideGroupId, 0, container);
     }
 
-    public static List<PrecursorChromInfoLitePlus> getChromInfosLitePlusForPeptideGroup(long peptideGroupId, long sampleFileId, User user, Container container)
+    public static List<PrecursorChromInfoLitePlus> getChromInfosLitePlusForPeptideGroup(long peptideGroupId, long sampleFileId, Container container)
     {
-        return getPrecursorChromInfoLitePlusList(peptideGroupId, true, false, sampleFileId, user, container);
+        return getPrecursorChromInfoLitePlusList(peptideGroupId, true, false, sampleFileId, container);
     }
 
-    public static List<PrecursorChromInfoLitePlus> getChromInfosLitePlusForPeptide(long peptideId, User user, Container container)
+    public static List<PrecursorChromInfoLitePlus> getChromInfosLitePlusForPeptide(long peptideId, Container container)
     {
-        return getPrecursorChromInfoLitePlusList(peptideId, false, false, 0, user, container);
+        return getPrecursorChromInfoLitePlusList(peptideId, false, false, 0, container);
     }
 
-    public static List<PrecursorChromInfoLitePlus> getChromInfosLitePlusForPrecursor(long precursorId, User user, Container container)
+    public static List<PrecursorChromInfoLitePlus> getChromInfosLitePlusForPrecursor(long precursorId, Container container)
     {
-        return getPrecursorChromInfoLitePlusList(precursorId, false, true, 0, user, container);
+        return getPrecursorChromInfoLitePlusList(precursorId, false, true, 0, container);
     }
 
-    public static List<PrecursorChromInfoPlus> getPrecursorChromInfosForPeptide(long peptideId, long sampleFileId, User user, Container container)
+    public static List<PrecursorChromInfoPlus> getPrecursorChromInfosForPeptide(long peptideId, long sampleFileId, Container container)
     {
         SQLFragment sql = new SQLFragment("SELECT ");
-        sql.append("pci.* , pg.Label AS groupName, pep.Sequence, pep.PeptideModifiedSequence, prec.ModifiedSequence, prec.Charge, label.Name AS isotopeLabel, label.Id AS isotopeLabelId");
+        sql.append("pci.* , pg.Label AS groupName, pep.Sequence, pep.PeptideModifiedSequence, prec.ModifiedSequence, gp.Charge, label.Name AS isotopeLabel, label.Id AS isotopeLabelId");
         sql.append(" FROM ");
-        joinTablesForPrecursorChromInfo(sql, user, container);
+        joinTablesForPrecursorChromInfo(sql, container);
         sql.append(" WHERE ");
         sql.append("pep.Id=? ");
         sql.add(peptideId);
@@ -275,13 +275,13 @@ public class PrecursorManager
     }
 
     public static List<PrecursorChromInfoPlus> getPrecursorChromInfosForGeneralMoleculeChromInfo(long gmChromInfoId, long precursorId,
-                                                                                                 long sampleFileId, User user,
+                                                                                                 long sampleFileId,
                                                                                                  Container container)
     {
         SQLFragment sql = new SQLFragment("SELECT ");
-        sql.append("pci.* , pg.Label AS groupName, pep.Sequence, pep.PeptideModifiedSequence, prec.ModifiedSequence, prec.Charge, label.Name AS isotopeLabel, label.Id AS isotopeLabelId");
+        sql.append("pci.* , pg.Label AS groupName, pep.Sequence, pep.PeptideModifiedSequence, prec.ModifiedSequence, gp.Charge, label.Name AS isotopeLabel, label.Id AS isotopeLabelId");
         sql.append(" FROM ");
-        joinTablesForPrecursorChromInfo(sql, user, container);
+        joinTablesForPrecursorChromInfo(sql, container);
         sql.append(" WHERE ");
         sql.append("pci.GeneralMoleculeChromInfoId=? ");
         sql.add(gmChromInfoId);
@@ -299,38 +299,49 @@ public class PrecursorManager
         return  new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PrecursorChromInfoPlus.class);
     }
 
-    private static void joinTablesForPrecursorChromInfo(SQLFragment sql, User user, Container container)
+    private static void joinTablesForPrecursorChromInfo(SQLFragment sql, Container container)
     {
-        TargetedMSSchema schema = new TargetedMSSchema(user, container);
-
         sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
         sql.append(" INNER JOIN ");
-        sql.append(new PeptideTableInfo(schema, null, true), "pep");
+        sql.append(TargetedMSManager.getTableInfoRuns(), "runs");
         sql.append(" ON ");
-        sql.append("pg.Id = pep.PeptideGroupId ");
+        sql.append("pg.RunId = runs.Id AND runs.Container = ? ");
+        sql.add(container);
         sql.append(" INNER JOIN ");
-        sql.append(new PrecursorTableInfo(schema, null, true), "prec");
+        sql.append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm");
         sql.append(" ON ");
-        sql.append("pep.Id = prec.GeneralMoleculeId ");
+        sql.append("gm.PeptideGroupId = pg.Id ");
         sql.append(" INNER JOIN ");
-        sql.append(new PrecursorChromInfoTable(schema, null), "pci");
+        sql.append(TargetedMSManager.getTableInfoPeptide(), "pep");
+        sql.append(" ON ");
+        sql.append("pep.Id = gm.Id ");
+        sql.append(" INNER JOIN ");
+        sql.append(TargetedMSManager.getTableInfoGeneralPrecursor(), "gp");
+        sql.append(" ON ");
+        sql.append("gp.GeneralMoleculeId = gm.Id ");
+        sql.append(" INNER JOIN ");
+        sql.append(TargetedMSManager.getTableInfoPrecursor(), "prec");
+        sql.append(" ON ");
+        sql.append("gp.Id = prec.Id ");
+        sql.append(" INNER JOIN ");
+        sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
         sql.append(" ON ");
         sql.append("prec.Id = pci.PrecursorId ");
         sql.append(" INNER JOIN ");
         sql.append(TargetedMSManager.getTableInfoIsotopeLabel(), "label");
         sql.append(" ON ");
-        sql.append("prec.IsotopeLabelId = label.Id ");
+        sql.append("gp.IsotopeLabelId = label.Id ");
     }
 
     private static List<PrecursorChromInfoLitePlus> getPrecursorChromInfoLitePlusList(long id, boolean forPeptideGroup,
                                                                                       boolean forPrecursor, long sampleFileId,
-                                                                                      User user, Container container)
+                                                                                      Container container)
     {
         SQLFragment sql = new SQLFragment("SELECT ");
         sql.append("pci.id, pci.precursorId, pci.sampleFileId, pci.bestRetentionTime, pci.minStartTime, pci.maxEndTime, pci.TotalArea, pci.maxfwhm, pci.maxHeight");
-        sql.append(", pg.Label AS groupName, pep.Sequence, pep.PeptideModifiedSequence, prec.ModifiedSequence, prec.Charge, label.Name AS isotopeLabel, label.Id AS isotopeLabelId");
+        sql.append(", pg.Label AS groupName, pep.Sequence, pep.PeptideModifiedSequence, prec.ModifiedSequence, gp.Charge, label.Name AS isotopeLabel, label.Id AS isotopeLabelId");
         sql.append(" FROM ");
-        joinTablesForPrecursorChromInfo(sql, user, container);
+        joinTablesForPrecursorChromInfo(sql, container);
         sql.append(" WHERE ");
         if(forPeptideGroup)
         {
