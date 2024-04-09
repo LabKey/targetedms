@@ -98,7 +98,8 @@
         <td>
             <% if (!bean.getMinimize()) { %>
                 <div class="export-icon" data-toggle="tooltip" title="Export to Excel">
-                    <a id="targetedms-fom-export" href="javascript:exportExcel()"><i class="fa fa-file-excel-o"></i> Export to Excel</a>
+                    <%= iconLink("fa fa-file-excel-o", "Export to Excel", null).onClick("exportExcel();")%>
+                    <%= link("Export to Excel").id("targetedms-fom-export").onClick("exportExcel();")%>
                 </div>
             <% } else { %>
                 <%= link("Show Details", new ActionURL(TargetedMSController.ShowFiguresOfMeritAction.class, getContainer()).addParameter("GeneralMoleculeId", bean.getGeneralMoleculeId()))%>
