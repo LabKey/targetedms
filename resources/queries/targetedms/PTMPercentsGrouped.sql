@@ -18,7 +18,7 @@ SELECT
     (CASE WHEN Modification.Name = 'Lys-loss (Protein C-term K)' THEN (1 - MIN(MinPercentModified)) ELSE MAX(MaxPercentModified) END) AS MaxPercentModified,
     (CASE WHEN Modification.Name = 'Lys-loss (Protein C-term K)' THEN (1 - SUM(PercentModified)) ELSE SUM(PercentModified) END) AS PercentModified,
     (CASE WHEN Modification.Name = 'Lys-loss (Protein C-term K)' THEN (1 - SUM(TotalPercentModified)) ELSE SUM(TotalPercentModified) END) AS TotalPercentModified,
-    ModificationCount @hidden
+    MAX(ModificationCount) AS ModificationCount @hidden
 
 FROM
     PTMPercentsGroupedPrepivot
@@ -31,6 +31,5 @@ GROUP BY
     PeptideGroupId,
     AminoAcid,
     Location,
-    Modification.Name,
-    ModificationCount
+    Modification.Name
 PIVOT PercentModified, TotalPercentModified BY SampleName
