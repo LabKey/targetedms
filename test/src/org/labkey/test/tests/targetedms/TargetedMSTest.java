@@ -18,6 +18,7 @@ package org.labkey.test.tests.targetedms;
 import org.junit.BeforeClass;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
+import org.labkey.test.ModulePropertyValue;
 import org.labkey.test.TestFileUtils;
 import org.labkey.test.TestProperties;
 import org.labkey.test.TestTimeoutException;
@@ -388,6 +389,24 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
     {
         clickTab("Panorama Dashboard");
         return new PanoramaDashboard(this);
+    }
+
+    /**
+     * Sets the values of the site-level module properties: "TransitionChromInfo storage limit" and "Precursor storage limit".
+     * The values should be set back to defaults after the test completes.
+     * @param transitionStorageLimit
+     * @param precursorStorageLimit
+     */
+    protected void setStorageLimitModuleProperties(String transitionStorageLimit, String precursorStorageLimit) {
+        goToProjectHome();
+        goToFolderManagement();
+        clickAndWait(Locator.linkWithText("Module Properties"));
+        setModuleProperties(Arrays.asList(
+                new ModulePropertyValue("TargetedMS", "/",
+                        "TransitionChromInfo storage limit", transitionStorageLimit),
+                new ModulePropertyValue("TargetedMS", "/",
+                        "Precursor storage limit",  precursorStorageLimit)));
+
     }
 
     @Override
