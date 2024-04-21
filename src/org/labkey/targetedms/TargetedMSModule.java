@@ -67,6 +67,7 @@ import org.labkey.targetedms.folderImport.QCFolderImporter;
 import org.labkey.targetedms.folderImport.QCFolderWriterFactory;
 import org.labkey.targetedms.parser.Protein;
 import org.labkey.targetedms.parser.SampleFile;
+import org.labkey.targetedms.parser.SpectrumFilter;
 import org.labkey.targetedms.parser.skyaudit.SkylineAuditLogParser;
 import org.labkey.targetedms.passport.PassportController;
 import org.labkey.targetedms.pipeline.TargetedMSPipelineProvider;
@@ -221,7 +222,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     @Override
     public Double getSchemaVersion()
     {
-        return 24.003;
+        return 24.004;
     }
 
     @Override
@@ -667,7 +668,8 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
             TargetedMSController.TestCase.class,
             PrecursorManager.TestCase.class,
             CrossLinkedPeptideInfo.TestCase.class,
-            Protein.TestCase.class
+            Protein.TestCase.class,
+            SpectrumFilter.TestCase.class
         );
     }
 

@@ -17,6 +17,7 @@
 package org.labkey.targetedms.parser;
 
 import com.google.common.collect.Iterables;
+import com.google.protobuf.InvalidProtocolBufferException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -65,6 +66,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -159,6 +161,7 @@ public class SkylineDocumentParser implements AutoCloseable
     private static final String CHARGE = "charge" ;
     private static final String TRANSITION_DATA = "transition_data";
     private static final String LINKED_FRAGMENT_ION = "linked_fragment_ion";
+    private static final String SPECTRUM_FILTER = "spectrum_filter";
 
     private static final double MIN_SUPPORTED_VERSION = 1.2;
     public static final double MAX_SUPPORTED_VERSION = 23.1;
@@ -1920,6 +1923,8 @@ public class SkylineDocumentParser implements AutoCloseable
                 annotations.add(readAnnotation(reader, new PrecursorAnnotation()));
             else if (XmlUtil.isStartElement(reader, evtType, NOTE))
                 moleculePrecursor.setNote(readNote(reader));
+            else if (XmlUtil.isStartElement(reader, evtType, SPECTRUM_FILTER))
+                moleculePrecursor.setSpectrumFilter(SpectrumFilter.parse(reader).toByteArray());
         }
 
         List<ChromGroupHeaderInfo> chromatograms = tryLoadChromatogram(moleculeTransitionList, molecule, moleculePrecursor, _matchTolerance);
@@ -2123,6 +2128,10 @@ public class SkylineDocumentParser implements AutoCloseable
             else if (XmlUtil.isStartElement(reader, evtType, NOTE))
             {
                 precursor.setNote(readNote(reader));
+            }
+            else if (XmlUtil.isStartElement(reader, evtType, SPECTRUM_FILTER))
+            {
+                precursor.setSpectrumFilter(SpectrumFilter.parse(reader).toByteArray());
             }
         }
 
@@ -3237,8 +3246,22 @@ public class SkylineDocumentParser implements AutoCloseable
                 ChromGroupHeaderInfo chrom = _binaryParser.getChromatograms()[i++];
                 // Sequence matching for extracted chromatogram data added in v1.5
                 ChromatogramGroupId chromTextId = _binaryParser.getTextId(chrom);
-                if (chromTextId != null && !molecule.targetMatches(chromTextId.getTarget()))
-                    continue;
+                if (chromTextId != null) {
+                    if (!molecule.targetMatches(chromTextId.getTarget()))
+                        continue;
+                    try
+                    {
+                        SpectrumFilter spectrumFilter = SpectrumFilter.fromByteArray(precursor.getSpectrumFilter());
+                        if (!Objects.equals(spectrumFilter, chromTextId.getSpectrumFilter())) {
+                            continue;
+                        }
+                    }
+                    catch (InvalidProtocolBufferException e)
+                    {
+                        _log.warn("Error parsing spectrum filter {}", e);
+                        return Collections.emptyList();
+                    }
+                }
 
                 // If explicit retention time info is available, use that to discard obvious mismatches
                 if (explicitRT == null || !chrom.excludesTime(explicitRT))

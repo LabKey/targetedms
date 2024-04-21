@@ -58,6 +58,10 @@ public class PeakAreaRatioCalculator
 
         for(Precursor precursor: _peptide.getPrecursorList())
         {
+            if  (precursor.getSpectrumFilter() != null)
+            {
+                continue;
+            }
             for(PrecursorChromInfo precursorChromInfo : precursor.getChromInfoList())
             {
                 if(precursorChromInfo.isOptimizationPeak())

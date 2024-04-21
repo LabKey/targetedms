@@ -38,6 +38,7 @@ public class GeneralPrecursor<TransitionType extends GeneralTransition> extends 
     private Double _explicitCcsSqa;
     private Double _explicitCompensationVoltage;
     private Double _precursorConcentration;
+    private byte[] _spectrumFilter;
 
     public long getGeneralMoleculeId()
     {
@@ -212,5 +213,15 @@ public class GeneralPrecursor<TransitionType extends GeneralTransition> extends 
     public void setPrecursorConcentration(Double precursorConcentration)
     {
         _precursorConcentration = precursorConcentration;
+    }
+
+    public byte[] getSpectrumFilter()
+    {
+        return _spectrumFilter;
+    }
+
+    public void setSpectrumFilter(byte[] spectrumFilter)
+    {
+        _spectrumFilter = spectrumFilter;
     }
 }

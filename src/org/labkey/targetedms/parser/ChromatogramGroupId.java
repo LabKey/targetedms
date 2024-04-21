@@ -24,13 +24,15 @@ public class ChromatogramGroupId
 {
     private Target _target;
     private String _qcTraceName;
+    private SpectrumFilter _spectrumFilter;
 
     private ChromatogramGroupId()
     {
     }
-    public ChromatogramGroupId(Target target)
+    public ChromatogramGroupId(Target target, SpectrumFilter spectrumFilter)
     {
         _target = target;
+        _spectrumFilter = spectrumFilter;
     }
 
     public Target getTarget()
@@ -43,6 +45,11 @@ public class ChromatogramGroupId
         return _qcTraceName;
     }
 
+    public SpectrumFilter getSpectrumFilter()
+    {
+        return _spectrumFilter;
+    }
+
     public static ChromatogramGroupId forQcTraceName(String qcTraceName)
     {
         ChromatogramGroupId chromatogramGroupId = new ChromatogramGroupId();
@@ -53,16 +60,22 @@ public class ChromatogramGroupId
     public static List<ChromatogramGroupId> fromProtos(ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto proto)
     {
         List<Target> targets = new ArrayList<>();
+        List<SpectrumFilter> spectrumFilters = new ArrayList<>();
         // Make one-based lookups easy
         targets.add(null);
+        spectrumFilters.add(null);
+
         for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target target : proto.getTargetsList())
         {
             targets.add(new Target(target));
         }
+        for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter spectrumFilter : proto.getFiltersList()) {
+            spectrumFilters.add(SpectrumFilter.fromProtocolMessage(spectrumFilter));
+        }
         List<ChromatogramGroupId> list = new ArrayList<>();
         for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupId chromatogramGroupId : proto.getChromatogramGroupIdsList())
         {
-            list.add(new ChromatogramGroupId(targets.get(chromatogramGroupId.getTargetIndex())));
+            list.add(new ChromatogramGroupId(targets.get(chromatogramGroupId.getTargetIndex()), spectrumFilters.get(chromatogramGroupId.getTargetIndex())));
         }
         return list;
     }
