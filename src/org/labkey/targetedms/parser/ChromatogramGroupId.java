@@ -19,6 +19,7 @@ import org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ChromatogramGroupId
 {
@@ -60,22 +61,26 @@ public class ChromatogramGroupId
     public static List<ChromatogramGroupId> fromProtos(ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto proto)
     {
         List<Target> targets = new ArrayList<>();
-        List<SpectrumFilter> spectrumFilters = new ArrayList<>();
         // Make one-based lookups easy
         targets.add(null);
-        spectrumFilters.add(null);
+
+        List<SpectrumFilter.FilterClause> filterClauses = new ArrayList<>();
 
         for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target target : proto.getTargetsList())
         {
             targets.add(new Target(target));
         }
-        for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter spectrumFilter : proto.getFiltersList()) {
-            spectrumFilters.add(SpectrumFilter.fromProtocolMessage(spectrumFilter));
+        for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter spectrumFilter : proto.getFiltersList()) 
+        {
+            filterClauses.add(SpectrumFilter.FilterClause.fromProtocolMessage(spectrumFilter));
         }
         List<ChromatogramGroupId> list = new ArrayList<>();
         for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupId chromatogramGroupId : proto.getChromatogramGroupIdsList())
         {
-            list.add(new ChromatogramGroupId(targets.get(chromatogramGroupId.getTargetIndex()), spectrumFilters.get(chromatogramGroupId.getTargetIndex())));
+            SpectrumFilter spectrumFilter = SpectrumFilter.fromFilterClauses(
+                    chromatogramGroupId.getFilterIndexesList().stream()
+                    .map(filterClauses::get).collect(Collectors.toList())).orElse(null);
+            list.add(new ChromatogramGroupId(targets.get(chromatogramGroupId.getTargetIndex()), spectrumFilter));
         }
         return list;
     }

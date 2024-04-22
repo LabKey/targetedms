@@ -1904,7 +1904,7 @@ public class SkylineDocumentParser implements AutoCloseable
         String charge = reader.getAttributeValue(null, CHARGE);
         if(null != charge)
             moleculePrecursor.setCharge(Integer.parseInt(charge));
-
+        List<SpectrumFilter.FilterClause> spectrumFilterClauses = new ArrayList<>();
         while(reader.hasNext())
         {
             int evtType = reader.next();
@@ -1924,9 +1924,10 @@ public class SkylineDocumentParser implements AutoCloseable
             else if (XmlUtil.isStartElement(reader, evtType, NOTE))
                 moleculePrecursor.setNote(readNote(reader));
             else if (XmlUtil.isStartElement(reader, evtType, SPECTRUM_FILTER))
-                moleculePrecursor.setSpectrumFilter(SpectrumFilter.parse(reader).toByteArray());
+                spectrumFilterClauses.add(SpectrumFilter.FilterClause.parse(reader));
         }
-
+        moleculePrecursor.setSpectrumFilter(SpectrumFilter.fromFilterClauses(spectrumFilterClauses)
+                .map(SpectrumFilter::toByteArray).orElse(null));
         List<ChromGroupHeaderInfo> chromatograms = tryLoadChromatogram(moleculeTransitionList, molecule, moleculePrecursor, _matchTolerance);
         populateChromInfoChromatograms(moleculePrecursor, chromatograms);
 
@@ -2081,7 +2082,7 @@ public class SkylineDocumentParser implements AutoCloseable
         precursor.setExplicitCcsSqa(XmlUtil.readDoubleAttribute(reader, "explicit_ccs_sqa"));
         precursor.setExplicitCompensationVoltage(XmlUtil.readDoubleAttribute(reader, "explicit_compensation_voltage"));
         precursor.setPrecursorConcentration(XmlUtil.readDoubleAttribute(reader, "precursor_concentration"));
-
+        List<SpectrumFilter.FilterClause> spectrumFilterClauses = new ArrayList<>();
         while (reader.hasNext()) {
 
             int evtType = reader.next();
@@ -2131,9 +2132,12 @@ public class SkylineDocumentParser implements AutoCloseable
             }
             else if (XmlUtil.isStartElement(reader, evtType, SPECTRUM_FILTER))
             {
-                precursor.setSpectrumFilter(SpectrumFilter.parse(reader).toByteArray());
+                spectrumFilterClauses.add(SpectrumFilter.FilterClause.parse(reader));
             }
         }
+
+        precursor.setSpectrumFilter(SpectrumFilter.fromFilterClauses(spectrumFilterClauses)
+                .map(SpectrumFilter::toByteArray).orElse(null));
 
         // Boolean type annotations are not listed in the .sky file if their value was false.
         // We would still like to store them in the database.
@@ -3246,13 +3250,15 @@ public class SkylineDocumentParser implements AutoCloseable
                 ChromGroupHeaderInfo chrom = _binaryParser.getChromatograms()[i++];
                 // Sequence matching for extracted chromatogram data added in v1.5
                 ChromatogramGroupId chromTextId = _binaryParser.getTextId(chrom);
-                if (chromTextId != null) {
+                if (chromTextId != null) 
+                {
                     if (!molecule.targetMatches(chromTextId.getTarget()))
                         continue;
                     try
                     {
                         SpectrumFilter spectrumFilter = SpectrumFilter.fromByteArray(precursor.getSpectrumFilter());
-                        if (!Objects.equals(spectrumFilter, chromTextId.getSpectrumFilter())) {
+                        if (!Objects.equals(spectrumFilter, chromTextId.getSpectrumFilter())) 
+                        {
                             continue;
                         }
                     }
