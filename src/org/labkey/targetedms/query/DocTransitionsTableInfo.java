@@ -46,7 +46,7 @@ public class DocTransitionsTableInfo extends AbstractGeneralTransitionTableInfo
 
     public DocTransitionsTableInfo(final TargetedMSSchema schema, ContainerFilter cf, boolean omitAnnotations)
     {
-        super(schema, TargetedMSManager.getTableInfoTransition(), cf, omitAnnotations);
+        super(schema, TargetedMSManager.getTableInfoTransition(), cf, omitAnnotations, TargetedMSSchema.ContainerJoinType.PrecursorFK);
 
         setDescription(TargetedMSManager.getTableInfoTransition().getDescription());
 
