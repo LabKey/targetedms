@@ -36,7 +36,7 @@ public class MoleculeTransitionsTableInfo extends AbstractGeneralTransitionTable
 {
     public MoleculeTransitionsTableInfo(final TargetedMSSchema schema, ContainerFilter cf, boolean omitAnnotations)
     {
-        super(schema, TargetedMSManager.getTableInfoMoleculeTransition(), cf, omitAnnotations);
+        super(schema, TargetedMSManager.getTableInfoMoleculeTransition(), cf, omitAnnotations, TargetedMSSchema.ContainerJoinType.MoleculePrecursorFK);
 
         setDescription(TargetedMSManager.getTableInfoMoleculeTransition().getDescription());
 
