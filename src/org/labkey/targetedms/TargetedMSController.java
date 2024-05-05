@@ -1206,7 +1206,7 @@ public class TargetedMSController extends SpringActionController
                     List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
                     Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
 
-                    List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(schema, enabledQCMetricConfigurations, null, null, Collections.emptyList(), true, false);
+                    List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(schema, enabledQCMetricConfigurations, null, null, Collections.emptyList(), true, false, true);
 
                     Map<GuideSetKey, GuideSetStats> stats = OutlierGenerator.get().getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
 
@@ -1484,7 +1484,7 @@ public class TargetedMSController extends SpringActionController
             Date qcFolderEndDate = (Date) qcFolderDateRange.get("endDate");
 
             // always query for the full range
-            List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(schema, qcMetricConfigurations, qcFolderStartDate, qcFolderEndDate, form.getSelectedAnnotations(), form.isShowExcluded(), form.isShowExcludedPrecursors());
+            List<RawMetricDataSet> rawMetricDataSets = generator.getRawMetricDataSets(schema, qcMetricConfigurations, qcFolderStartDate, qcFolderEndDate, form.getSelectedAnnotations(), form.isShowExcluded(), form.isShowExcludedPrecursors(), false);
             Map<GuideSetKey, GuideSetStats> stats;
             if ((form.includeTrailingCVPlot || form.includeTrailingMeanPlot) && form._trailingRuns > 2)
             {
