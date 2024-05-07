@@ -841,6 +841,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             disableRangeDisplay: this.isMultiSeries(),
             hoverTextFn: !showDataPoints ? function() { return 'Narrow the date range to show individual data points.' } : undefined,
             hideSDLines: true,
+            showBoundLines: metricProps.metricStatus !== LABKEY.targetedms.MetricStatus.PlotOnly
         };
 
         // lines are not separated when indices are not present
