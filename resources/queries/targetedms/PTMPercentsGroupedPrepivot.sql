@@ -1,10 +1,16 @@
 
-SELECT p1.Modification,
-       p1.PercentModified,
-       TotalPercentModified,
+SELECT
+    -- We have a special rule for this C-term modification - we're actually interested in the _unmodified_ percentage
+       (CASE WHEN p1.Modification.Name = 'Lys-loss (Protein C-term K)' THEN 'C-term K' ELSE p1.Modification.Name END) AS Modification,
+
+    -- Normally we want to show the max percentage modified across all replicates (5%, 10%, 20% -> 20% as the worst case)
+    -- However, for this one special modification, we invert the percentage. So 95% -> 5%, 90% -> 10%, 80% -> 20%. Thus,
+    -- we need to find the one with the lowest value, which becomes the highest percentage when we subtract it from 100%.
+       (CASE WHEN p1.Modification.Name = 'Lys-loss (Protein C-term K)' THEN (1 - TotalPercentModified) ELSE TotalPercentModified END) AS TotalPercentModified,
+       (CASE WHEN p1.Modification.Name = 'Lys-loss (Protein C-term K)' THEN (1 - PercentModified) ELSE PercentModified END) AS PercentModified,
+       (CASE WHEN p1.Modification.Name = 'Lys-loss (Protein C-term K)' THEN (1 - p3.MinPercentModified) ELSE p3.MaxPercentModified END) AS MaxPercentModified,
        p2.ModificationCount,
-       p3.MaxPercentModified,
-       p3.MinPercentModified,
+
        Id AS Id @hidden,
        PeptideModifiedSequence,
        p1.Sequence @hidden,
@@ -13,7 +19,12 @@ SELECT p1.Modification,
        p1.SampleName,
        p1.AminoAcid,
        p1.Location,
-       p1.PeptideGroupId
+       p1.PeptideGroupId,
+
+       p1.PeptideGroupId.RunId AS RunId,
+
+       CAST(NULL AS BOOLEAN) IsCdr,
+       CAST(NULL AS VARCHAR) Risk
 
 FROM
     -- First, calculate the percentage for each individual modification

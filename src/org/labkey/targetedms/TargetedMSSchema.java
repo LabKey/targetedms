@@ -1588,15 +1588,18 @@ public class TargetedMSSchema extends UserSchema
                         // the selected display columns
                         getDisplayColumns();
 
+                        Long runId = PTMPercentsGroupedCustomizer.getRunId(getTable());
+
                         CrosstabDataRegion rgn = new CrosstabDataRegion(table.getSettings(), _numRowAxisCols, _numMeasures, _numMemberMeasures)
                         {
-                            private final Map<String, Pair<Boolean, String>> _metadata = PTMPercentsGroupedCustomizer.getSampleMetadata(table);
+                            private final Map<Pair<String, Long>, Pair<Boolean, String>> _metadata = PTMPercentsGroupedCustomizer.getSampleMetadata(getContainer());
                             @Override
                             protected String getMemberCaptionWithUrl(String caption, String url)
                             {
-                                if (_metadata.containsKey(caption))
+                                var key = Pair.of(caption, runId);
+                                if (_metadata.containsKey(key))
                                 {
-                                    caption = _metadata.get(caption).getValue();
+                                    caption = _metadata.get(key).getValue();
                                 }
                                 return super.getMemberCaptionWithUrl(caption, url);
                             }
