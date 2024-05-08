@@ -38,6 +38,9 @@ class CDRConditionalFormattingDisplayColumnFactory implements DisplayColumnFacto
             return null;
         }
 
+        // Apply different cutoffs when the peptide is part of the complementarity determining region (CDR)
+        // for the antibody. If it's in the region we're significantly more stringent about how much
+        // of a PTM we consider medium or high risk.
         double highCutoff = inCDR ? 0.1 : 0.3;
         double mediumCutoff = inCDR ? 0.05 : 0.15;
 
