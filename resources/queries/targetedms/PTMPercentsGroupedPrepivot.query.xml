@@ -14,11 +14,27 @@
                         </displayColumnFactory>
                         <columnTitle>Sequence</columnTitle>
                     </column>
-                    <column columnName="PeptideGroupId">
-                        <columnTitle>Chain</columnTitle>
+                    <column columnName="TotalPercentModified">
+                        <formatString>0.00%</formatString>
+                    </column>
+                    <column columnName="PercentModified">
+                        <formatString>0.00%</formatString>
+                    </column>
+                    <column columnName="MaxPercentModified">
+                        <formatString>0.00%</formatString>
                     </column>
                     <column columnName="Sequence">
                         <columnTitle>UnmodifiedSequence</columnTitle>
+                    </column>
+                    <column columnName="IsCdr">
+                        <displayColumnFactory>
+                           <className>org.labkey.targetedms.query.CDRDisplayColumnFactory</className>
+                        </displayColumnFactory>
+                    </column>
+                    <column columnName="Risk">
+                        <displayColumnFactory>
+                           <className>org.labkey.targetedms.query.PTMRiskDisplayColumnFactory</className>
+                        </displayColumnFactory>
                     </column>
                 </columns>
             </table>
