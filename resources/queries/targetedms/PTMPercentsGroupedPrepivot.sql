@@ -23,7 +23,7 @@ SELECT
 
        p1.PeptideGroupId.RunId AS RunId,
 
-       CAST(NULL AS BOOLEAN) IsCdr,
+       CAST(NULL AS VARCHAR) IsCdr,
        CAST(NULL AS VARCHAR) Risk
 
 FROM
