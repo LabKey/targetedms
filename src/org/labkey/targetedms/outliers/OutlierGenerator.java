@@ -150,18 +150,18 @@ public class OutlierGenerator
         return sql.toString();
     }
 
-    private Map<String, QCMetricConfiguration> getPreferredMetrics(List<QCMetricConfiguration> configurations, boolean forOutliers)
+    private Map<String, QCMetricConfiguration> getPreferredMetrics(List<QCMetricConfiguration> configurations, boolean forOutlierSummary)
     {
         Map<String, QCMetricConfiguration> preferredConfigs = new LinkedHashMap<>();
         // Deduplicate for metrics that are shown both standalone and paired with another
         for (QCMetricConfiguration configuration : configurations)
         {
             String label1 = configuration.getSeries1Label();
-            retainIfPreferred(preferredConfigs, configuration, label1, configurations, forOutliers);
+            retainIfPreferred(preferredConfigs, configuration, label1, configurations, forOutlierSummary);
             String label2 = configuration.getSeries2Label();
             if (label2 != null)
             {
-                retainIfPreferred(preferredConfigs, configuration, label2, configurations, forOutliers);
+                retainIfPreferred(preferredConfigs, configuration, label2, configurations, forOutlierSummary);
             }
         }
         return preferredConfigs;
@@ -170,14 +170,14 @@ public class OutlierGenerator
     /** @return LabKey SQL to fetch all the values for the specified metrics */
     private String queryContainerSampleFileRawData(List<QCMetricConfiguration> configurations, Date startDate,
                                                    Date endDate, List<AnnotationGroup> annotationGroups,
-                                                   boolean showExcluded, boolean forOutliers)
+                                                   boolean showExcluded, boolean forOutlierSummary)
     {
         // Copy so that we can use our preferred sort
         configurations = new ArrayList<>(configurations);
         // Sort to make sure we have deterministic behavior in a given container
         configurations.sort(Comparator.comparingInt(QCMetricConfiguration::getId));
 
-        Map<String, QCMetricConfiguration> preferredConfigs = getPreferredMetrics(configurations, forOutliers);
+        Map<String, QCMetricConfiguration> preferredConfigs = getPreferredMetrics(configurations, forOutlierSummary);
         
         StringBuilder sql = new StringBuilder();
 
@@ -266,7 +266,7 @@ public class OutlierGenerator
         }
     }
 
-    public List<RawMetricDataSet> getRawMetricDataSets(TargetedMSSchema schema, List<QCMetricConfiguration> configurations, Date startDate, Date endDate, List<AnnotationGroup> annotationGroups, boolean showExcluded, boolean showExcludedPrecursors, boolean forOutliers)
+    public List<RawMetricDataSet> getRawMetricDataSets(TargetedMSSchema schema, List<QCMetricConfiguration> configurations, Date startDate, Date endDate, List<AnnotationGroup> annotationGroups, boolean showExcluded, boolean showExcludedPrecursors, boolean forOutlierSummary)
     {
         List<RawMetricDataSet> result = new ArrayList<>();
 
@@ -279,7 +279,7 @@ public class OutlierGenerator
             sampleFiles.put(sf.getId(), sf);
         }
 
-        String labkeySQL = queryContainerSampleFileRawData(configurations, startDate, endDate, annotationGroups, showExcluded, forOutliers);
+        String labkeySQL = queryContainerSampleFileRawData(configurations, startDate, endDate, annotationGroups, showExcluded, forOutlierSummary);
 
         // Use strictColumnList = false to avoid a potentially expensive injected join for the Container via lookups
         TableInfo ti = QueryService.get().createTable(schema, labkeySQL, null, true);
