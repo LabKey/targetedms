@@ -41,4 +41,3 @@ FROM
       qcmetricconfiguration qmc
 FULL JOIN   qcenabledmetrics qem
        ON   qem.metric=qmc.id
-WHERE qmc.Series2QueryName IS NULL -- hide paired metric configs in configureQCMetric.html
