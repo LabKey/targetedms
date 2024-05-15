@@ -156,12 +156,22 @@ public class OutlierGenerator
         // Deduplicate for metrics that are shown both standalone and paired with another
         for (QCMetricConfiguration configuration : configurations)
         {
-            String label1 = configuration.getSeries1Label();
-            retainIfPreferred(preferredConfigs, configuration, label1, configurations, forOutlierSummary);
-            String label2 = configuration.getSeries2Label();
-            if (label2 != null)
+            if (forOutlierSummary)
             {
-                retainIfPreferred(preferredConfigs, configuration, label2, configurations, forOutlierSummary);
+                if (configuration.getSeries2Label() == null)
+                {
+                    preferredConfigs.put(configuration.getSeries1Label(), configuration);
+                }
+            }
+            else
+            {
+                String label1 = configuration.getSeries1Label();
+                retainIfPreferred(preferredConfigs, configuration, label1);
+                String label2 = configuration.getSeries2Label();
+                if (label2 != null)
+                {
+                    retainIfPreferred(preferredConfigs, configuration, label2);
+                }
             }
         }
         return preferredConfigs;
@@ -238,31 +248,12 @@ public class OutlierGenerator
     }
 
     /** Prefer the standalone variant of a metric if it's also part of a paired config so that we avoid double-counting */
-    private void retainIfPreferred(Map<String, QCMetricConfiguration> preferredConfigs, QCMetricConfiguration configuration, String label, List<QCMetricConfiguration> configurations, boolean forOutliers)
+    private void retainIfPreferred(Map<String, QCMetricConfiguration> preferredConfigs, QCMetricConfiguration configuration, String label)
     {
         QCMetricConfiguration existingConfig1 = preferredConfigs.get(label);
         if (existingConfig1 == null || existingConfig1.getSeries2Label() == null)
         {
-            if (forOutliers)
-            {
-                if (configuration.getName().equalsIgnoreCase(label))
-                {
-                    preferredConfigs.put(label, configuration);
-                }
-                else
-                {
-                    configurations.forEach(c -> {
-                        if (c.getName().equalsIgnoreCase(label))
-                        {
-                            preferredConfigs.put(label, c);
-                        }
-                    });
-                }
-            }
-            else
-            {
-                preferredConfigs.put(label, configuration);
-            }
+            preferredConfigs.put(label, configuration);
         }
     }
 
