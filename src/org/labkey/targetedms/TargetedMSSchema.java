@@ -317,7 +317,7 @@ public class TargetedMSSchema extends UserSchema
                 return FieldKey.fromParts("GeneralMoleculeChromInfoId", "GeneralMoleculeId", "PeptideGroupId", "RunId", "Container");
             }
         },
-        GeneralPrecursorFK
+        PrecursorFK
         {
             @Override
             public SQLFragment getSQL()
@@ -333,7 +333,26 @@ public class TargetedMSSchema extends UserSchema
             @Override
             public FieldKey getContainerFieldKey()
             {
-                return FieldKey.fromParts("GeneralPrecursorId", "GeneralMoleculeId", "PeptideGroupId", "RunId", "Container");
+                return FieldKey.fromParts("PrecursorId", "PeptideId", "PeptideGroupId", "RunId", "Container");
+            }
+        },
+        MoleculePrecursorFK
+        {
+            @Override
+            public SQLFragment getSQL()
+            {
+                SQLFragment sql = new SQLFragment();
+                sql.append(makeInnerJoin(TargetedMSManager.getTableInfoGeneralPrecursor(), "pre", "GeneralPrecursorId"));
+                sql.append(makeInnerJoin(TargetedMSManager.getTableInfoGeneralMolecule(), "gm", "pre.GeneralMoleculeId"));
+                sql.append(makeInnerJoin(TargetedMSManager.getTableInfoPeptideGroup(), "pg", "gm.PeptideGroupId"));
+                sql.append(getJoinToRunsTable("pg"));
+                return sql;
+
+            }
+            @Override
+            public FieldKey getContainerFieldKey()
+            {
+                return FieldKey.fromParts("PrecursorId", "PeptideId", "PeptideGroupId", "RunId", "Container");
             }
         },
         GeneralTransitionFK
@@ -370,7 +389,7 @@ public class TargetedMSSchema extends UserSchema
                 return FieldKey.fromParts("PrecursorChromInfoId", "Container");
             }
         },
-        PrecursorFK
+        SpectraLibraryPrecursorFK
         {
             @Override
             public SQLFragment getSQL()
@@ -385,7 +404,7 @@ public class TargetedMSSchema extends UserSchema
             @Override
             public FieldKey getContainerFieldKey()
             {
-                return FieldKey.fromParts("PrecursorId", "GeneralMoleculeId", "PeptideGroupId", "RunId", "Container");
+                return FieldKey.fromParts("PrecursorId", "PeptideId", "PeptideGroupId", "RunId", "Container");
             }
         },
         PrecursorTableFK
@@ -1497,7 +1516,7 @@ public class TargetedMSSchema extends UserSchema
             TABLE_SPECTRAST_LIB_INFO.equalsIgnoreCase(name) ||
             TABLE_CHROMATOGRAM_LIB_INFO.equalsIgnoreCase(name))
         {
-            return new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.PrecursorFK);
+            return new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.SpectraLibraryPrecursorFK);
         }
 
         if (TABLE_KEYWORD_CATEGORIES.equalsIgnoreCase(name) ||
@@ -1569,15 +1588,18 @@ public class TargetedMSSchema extends UserSchema
                         // the selected display columns
                         getDisplayColumns();
 
+                        Long runId = PTMPercentsGroupedCustomizer.getRunId(getTable());
+
                         CrosstabDataRegion rgn = new CrosstabDataRegion(table.getSettings(), _numRowAxisCols, _numMeasures, _numMemberMeasures)
                         {
-                            private final Map<String, Pair<Boolean, String>> _metadata = PTMPercentsGroupedCustomizer.getSampleMetadata(table);
+                            private final Map<Pair<String, Long>, Pair<Boolean, String>> _metadata = PTMPercentsGroupedCustomizer.getSampleMetadata(getContainer());
                             @Override
                             protected String getMemberCaptionWithUrl(String caption, String url)
                             {
-                                if (_metadata.containsKey(caption))
+                                var key = Pair.of(caption, runId);
+                                if (_metadata.containsKey(key))
                                 {
-                                    caption = _metadata.get(caption).getValue();
+                                    caption = _metadata.get(key).getValue();
                                 }
                                 return super.getMemberCaptionWithUrl(caption, url);
                             }

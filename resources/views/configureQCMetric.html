@@ -121,6 +121,10 @@
                     sort: 'name',
                     scope: this,
                     success: function (result) {
+                        // remove all paired metric configs
+                        result.rows = result.rows.filter(function(row) {
+                            return row.Series2QueryName === null;
+                        });
                         result.rows.sort(function(row1, row2) { return row1.name.toLowerCase().localeCompare(row2.name.toLowerCase()); });
                         qcMetrics = result.rows;
                         showQCMetrics();

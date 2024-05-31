@@ -53,7 +53,7 @@
     .filter
     {
         background-color:#fff;
-        padding:0px 1px 0px 1px;
+        padding:0 1px 0 1px;
         margin:0;
         border:1px solid #ccc;
         border-radius:3px;
@@ -124,7 +124,7 @@
         });
 
         // syncMargin is the negative margin-left of the syncX and syncY fields.  If the filters are not being displayed
-        // the sync fields slide under the width/heigh fields.
+        // the sync fields slide under the width/height fields.
         var syncMargin;
         <%if(replicateAnnotationList.size() > 1 || replicatesList.size()  > 1){%>
           syncMargin = 130;
@@ -297,7 +297,7 @@
             var id;
             for(var a = 0; a < replicateStore.getCount(); a++)
             {
-                if(replicateStore.data.items[a].data.replicateId == selectedReplicatesFilterList[i])
+                if(replicateStore.data.items[a].data.replicateId === selectedReplicatesFilterList[i])
                 {
                     val = replicateStore.data.items[a].data.replicateName;
                     id = replicateStore.data.items[a].data.replicateId;
@@ -311,12 +311,12 @@
         manageFilterListVisibility();
 
         // Hides multi-select combo boxes if there is only one or zero values in its value store.
-        <%if(replicatesList == null || replicatesList.size() <= 1){%>
+        <%if(replicatesList.size() <= 1){%>
             form.getForm().findField("replicatesFilter").hide();
             form.getForm().findField("hideReplicates").hide();
             hiddenFields++;
         <%}%>
-        <%if( replicateAnnotationList == null || replicateAnnotationList.size() <= 1){%>
+        <%if( replicateAnnotationList.size() <= 1){%>
             form.getForm().findField("annotationsFilter").hide();
             form.getForm().findField("hideAnnotations").hide();
             hiddenFields++;
@@ -326,7 +326,7 @@
         function appendFilterItem(element, displayValue, parentTable, id) {
             if(displayValue != null) {
                 let deleteIconId = 'delete-' + id;
-                let newRowContent = "<tr id=\'"+id+"\'><td class="+"item"+"><img id=\'"+deleteIconId+"\' src='<%=getWebappURL("_images/delete.png")%>' style='width:10px; height:10px; margin-right:3px;'>"+displayValue+"</td></tr>";
+                let newRowContent = "<tr id=\""+LABKEY.Utils.encodeHtml(id)+"\"><td class=\"item\"><img id=\""+LABKEY.Utils.encodeHtml(deleteIconId)+"\" src='<%=getWebappURL("_images/delete.png")%>' style='width:10px; height:10px; margin-right:3px;'>"+LABKEY.Utils.encodeHtml(displayValue)+"</td></tr>";
                 element.append(newRowContent);
 
                 document.getElementById(deleteIconId).addEventListener('click', function() {
@@ -344,15 +344,15 @@
                 {
                     for (var i = 0; i < newValues.length; i++)
                     {
-                        if(oldValues.indexOf(newValues[i]) == -1)
+                        if(oldValues.indexOf(newValues[i]) === -1)
                         {
                             var val;
                             var id;
-                            if(parentId == "replicateFilters")
+                            if(parentId === "replicateFilters")
                             {
                                 for(var a = 0; a < replicateStore.getCount(); a++)
                                 {
-                                    if(replicateStore.data.items[a].data.replicateId == newValues[i])
+                                    if(replicateStore.data.items[a].data.replicateId === newValues[i])
                                     {
                                         val = replicateStore.data.items[a].data.replicateName;
                                         id =    replicateStore.data.items[a].data.replicateId;
@@ -371,14 +371,14 @@
                 else if(newValues.length < oldValues.length)
                 {
                     for (var j = 0; j < oldValues.length; j++) {
-                        if(newValues.indexOf(oldValues[j]) == -1)
+                        if(newValues.indexOf(oldValues[j]) === -1)
                         {
                             var textValue = oldValues[j];
-                            if(parentId == "replicateFilters")
+                            if(parentId === "replicateFilters")
                             {
                                 for(var a = 0; a < replicateStore.getCount(); a++)
                                 {
-                                    if(replicateStore.data.items[a].data.replicateId == oldValues[j])
+                                    if(replicateStore.data.items[a].data.replicateId === oldValues[j])
                                     {
                                         textValue = replicateStore.data.items[a].data.replicateName;
                                     }
@@ -400,7 +400,7 @@
 
     // Finds element that contains text value.  Searches all children of node.
     function findByText(node, text) {
-        if(node.nodeValue == text) {
+        if(node.nodeValue === text) {
             return node.parentNode;
         }
 
@@ -431,7 +431,7 @@
     // Manages the visibility of the filter lists in the UI.
     function manageFilterListVisibility()
     {
-        if($('#replicateFilters').text().replace(/\s+/g, '') == '')
+        if($('#replicateFilters').text().replace(/\s+/g, '') === '')
         {
               $('#reptitle').hide();
         }
@@ -440,7 +440,7 @@
             $('#reptitle').show();
         }
 
-        if($('#annotationFilters').text().replace(/\s+/g, '') == '')
+        if($('#annotationFilters').text().replace(/\s+/g, '') === '')
         {
             $('#annottitle').hide();
         }
@@ -453,21 +453,22 @@
     // Triggered by onclick() function in each list element in the [-](delete) button.
     deleteFilter = function (el, parentTable)
     {
-        var values;
-        var formId;
-        var id = el.parentElement.parentElement.id;
-        if(parentTable == "annotationFilters")
-        {
-            values = form.getForm().findField("annotationsFilter").getValue();
-            formId =    "annotationsFilter";
-        }
-        else
-        {
-            values = form.getForm().findField("replicatesFilter").getValue();
-            formId = "replicatesFilter";
-        }
+        let values;
+        let formId;
         if(null != el)
         {
+            const id = el.parentElement.parentElement.id;
+            if(parentTable === "annotationFilters")
+            {
+                values = form.getForm().findField("annotationsFilter").getValue();
+                formId = "annotationsFilter";
+            }
+            else
+            {
+                values = form.getForm().findField("replicatesFilter").getValue();
+                formId = "replicatesFilter";
+            }
+
             var index = values.indexOf(id);
             values.splice(index, 1);
             el.parentElement.parentElement.parentNode.removeChild( el.parentElement.parentElement );
