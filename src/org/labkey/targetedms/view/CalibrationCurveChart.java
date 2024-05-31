@@ -137,6 +137,9 @@ public class CalibrationCurveChart
         jsonCurve.put("errorMessage", calibrationCurve.getErrorMessage());
         jsonCurve.put("msLevel", quantificationSettings.getMsLevel());
         jsonCurve.put("normalizationMethod", quantificationSettings.getNormalizationMethod());
+        // Consider (nicksh): This should probably be changed to:
+        // RegressionFit.parse(quantificationSettings.getRegressionFit()).Label
+        // so that it says "Linear in Log Space" instead of "linear_in_log_space"
         jsonCurve.put("regressionFit", quantificationSettings.getRegressionFit());
         jsonCurve.put("regressionWeighting", quantificationSettings.getRegressionWeighting());
         jsonCurve.put("units", quantificationSettings.getUnits());

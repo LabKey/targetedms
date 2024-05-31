@@ -50,7 +50,7 @@ public class TargetedMSPrecursorLevelDataTest extends AbstractQuantificationTest
         fom.setLod("0.11");
         fom.setCalc("Blank plus 2 * SD");
 
-        runScenario("MergedDocuments", "none", fom);
+        runScenario("MergedDocuments", "none", "linear", fom);
     }
 
     @After
