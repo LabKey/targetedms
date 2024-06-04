@@ -5220,9 +5220,9 @@ public class TargetedMSController extends SpringActionController
             List<PeptideCharacteristic> modifiedPeptideCharacteristics = new ArrayList<>(PeptideManager.getModifiedPeptideCharacteristics(group.getId(), replicateId));;
 
             List<Replicate> replicates = ReplicateManager.getReplicatesForRun(run.getRunId());
-            List<org.labkey.api.ms.Replicate> msReplicates = new ArrayList<>();
+            List<org.labkey.api.protein.Replicate> msReplicates = new ArrayList<>();
             replicates.forEach(replicate -> {
-                var rep = new org.labkey.api.ms.Replicate();
+                var rep = new org.labkey.api.protein.Replicate();
                 rep.setName(replicate.getName());
                 rep.setId(replicate.getId());
                 msReplicates.add(rep);
