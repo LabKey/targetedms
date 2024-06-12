@@ -20,6 +20,7 @@
     <instrument id="MS:1003229" name="timsTOF" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF."/>
     <instrument id="MS:1003124" name="timsTOF fleX" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF fleX"/>
     <instrument id="MS:1003005" name="timsTOF Pro" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF Pro."/>
+    <instrument id="MS:1003404" name="timsTOF HT" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF HT."/>
     <instrument id="MS:1003231" name="timsTOF SCP" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF SCP."/>
     <instrument id="MS:1003230" name="timsTOF Pro 2" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF Pro 2."/>
     <instrument id="MS:1003383" name="timsTOF Ultra" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF Ultra."/>
@@ -259,6 +260,7 @@
     <instrument id="MS:1003245" name="Q Exactive UHMR" vendor="Thermo Scientific" description="Thermo Scientific Q Exactive UHMR (Ultra High Mass Range) Hybrid Quadrupole Orbitrap MS."/>
     <instrument id="MS:1003356" name="Orbitrap Ascend" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Ascend mass spectrometer with Tribrid architecture consisting of quadrupole mass filter, linear ion trap and Orbitrap mass analyzers."/>
     <instrument id="MS:1000743" name="TSQ Quantum Ultra AM" vendor="Thermo Scientific" description="Thermo Scientific TSQ Quantum Ultra AM."/>
+    <instrument id="MS:1003409" name="Stellar" vendor="Thermo Scientific" description="Thermo Scientific Stellar mass spectrometer contains a quadrupole mass filter, a collision cell, and a quadrupole linear ion trap mass analyzer."/>
     <instrument id="MS:1002416" name="Orbitrap Fusion" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Fusion."/>
     <instrument id="MS:1002417" name="Orbitrap Fusion ETD" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Fusion with ETD."/>
     <instrument id="MS:1002418" name="TSQ Quantiva" vendor="Thermo Scientific" description="Thermo Scientific TSQ Quantiva MS."/>
