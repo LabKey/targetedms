@@ -16,11 +16,11 @@
  */
 %>
 <%@ taglib prefix="labkey" uri="http://www.labkey.org/taglib" %>
-<%@ page import="org.labkey.api.ms2.MS2Urls" %>
 <%@ page import="org.labkey.api.protein.PeptideSearchForm" %>
+<%@ page import="org.labkey.api.protein.ProteinService" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 
-<labkey:form action="<%=urlProvider(MS2Urls.class).getPepSearchUrl(getContainer())%>" method="get">
+<labkey:form action="<%=ProteinService.get().getPeptideSearchUrl(getContainer())%>" method="get">
     <table class="lk-fields-table">
         <tr>
             <td class="labkey-form-label"><label for="pepSeq">Peptide sequence</label> *<%=helpPopup("Peptide Sequence", "Enter the peptide sequence to find, or multiple sequences separated by commas. Use * to match any sequence of characters.")%></td>
