@@ -84,11 +84,12 @@ public class TransitionProteinSearchViewProvider implements QueryViewProvider<Pr
                 sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
 
                 sql.append(" ON p.PeptideGroupId = pg.Id WHERE ((");
-                if (form.getSeqId().length > 0)
+                int[] seqIds = form.getSeqId();
+                if (seqIds.length > 0)
                 {
                     sql.append("p.SequenceId IN (");
                     String separator = "";
-                    for (int seqId : form.getSeqId())
+                    for (int seqId : seqIds)
                     {
                         sql.append(separator);
                         sql.appendValue(seqId);

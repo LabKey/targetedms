@@ -76,7 +76,6 @@ import org.labkey.api.module.DefaultFolderType;
 import org.labkey.api.module.Module;
 import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.module.ModuleProperty;
-import org.labkey.api.ms2.MS2Urls;
 import org.labkey.api.pipeline.LocalDirectory;
 import org.labkey.api.pipeline.PipeRoot;
 import org.labkey.api.pipeline.PipelineJob;
@@ -5469,7 +5468,7 @@ public class TargetedMSController extends SpringActionController
                     peptideCharacteristics.add(peptideCharacteristic);
                 }
                 ProteinService proteinService = ProteinService.get();
-                ActionURL searchURL = urlProvider(MS2Urls.class).getProteinSearchUrl(getContainer());
+                ActionURL searchURL = ProteinService.get().getProteinSearchUrl(getContainer());
                 searchURL.addParameter("seqId", selectedProtein.getSequenceId().intValue());
                 searchURL.addParameter("identifier", group.getLabel());
                 getViewContext().getResponse().getWriter().write("<a href=\"" + searchURL + "\">Search for other references to this protein</a><br/>");
