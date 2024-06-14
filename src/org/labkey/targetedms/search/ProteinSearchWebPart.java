@@ -17,7 +17,7 @@
 package org.labkey.targetedms.search;
 
 import org.labkey.api.module.ModuleLoader;
-import org.labkey.api.protein.ProteinSearchForm;
+import org.labkey.api.protein.search.ProteinSearchForm;
 import org.labkey.api.protein.ProteinService;
 import org.labkey.api.view.JspView;
 import org.labkey.api.view.ViewContext;

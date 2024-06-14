@@ -22,7 +22,7 @@ import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.TableCustomizer;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.module.ModuleLoader;
-import org.labkey.api.protein.PeptideSearchForm;
+import org.labkey.api.protein.search.PeptideSearchForm;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.QuerySettings;
 import org.labkey.api.query.QueryView;

@@ -23,7 +23,7 @@ import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.TableCustomizer;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.module.ModuleLoader;
-import org.labkey.api.protein.ProteinSearchForm;
+import org.labkey.api.protein.search.ProteinSearchForm;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.QuerySettings;
@@ -84,11 +84,12 @@ public class TransitionProteinSearchViewProvider implements QueryViewProvider<Pr
                 sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
 
                 sql.append(" ON p.PeptideGroupId = pg.Id WHERE ((");
-                if (form.getSeqId().length > 0)
+                int[] seqIds = form.getSeqId();
+                if (seqIds.length > 0)
                 {
                     sql.append("p.SequenceId IN (");
                     String separator = "";
-                    for (int seqId : form.getSeqId())
+                    for (int seqId : seqIds)
                     {
                         sql.append(separator);
                         sql.appendValue(seqId);
