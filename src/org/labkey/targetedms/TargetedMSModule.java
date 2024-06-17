@@ -119,6 +119,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     public static final String TARGETED_MS_PARETO_PLOT = "Targeted MS Pareto Plot";
     public static final String TARGETED_MS_CALIBRATION_CURVE = "Targeted MS Calibration Curve";
     public static final String TARGETED_MS_FIGURES_OF_MERIT = "Targeted MS Figures of Merit";
+    public static final String TARGETED_MS_OUTLIER_HEATMAP_SUMMARY_VIEW = "Outlier Heatmap Summary View";
 
     public static final String PEPTIDE_TAB_NAME = "Peptides";
     public static final String PROTEIN_TAB_NAME = "Proteins";
@@ -470,6 +471,15 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
                 public boolean isAvailable(Container c, String scope, String location)
                 {
                     return false;
+                }
+            },
+
+            new BaseWebPartFactory(TARGETED_MS_OUTLIER_HEATMAP_SUMMARY_VIEW)
+            {
+                @Override
+                public WebPartView<?> getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
+                {
+                    return new JspView<>("/org/labkey/targetedms/view/outlierHeatmapSummary.jsp");
                 }
             }
         );
