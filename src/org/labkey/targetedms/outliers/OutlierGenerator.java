@@ -35,6 +35,7 @@ import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
 import org.labkey.api.targetedms.model.QCMetricConfiguration;
+import org.labkey.targetedms.model.PeptideOutliers;
 import org.labkey.targetedms.model.QCPlotFragment;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.model.SampleFileQCMetadata;
@@ -594,6 +595,27 @@ public class OutlierGenerator
 
         qcPlotFragments.sort(Comparator.comparing(QCPlotFragment::getSeriesLabel));
         return qcPlotFragments;
+    }
+
+    public List<PeptideOutliers> getPeptideOutliers(List<RawMetricDataSet> rawMetricData)
+    {
+        List<PeptideOutliers> peptideOutliers = new ArrayList<>();
+        Map<String, List<RawMetricDataSet>> rawMetricDataSetMapByLabel = new HashMap<>();
+        for (RawMetricDataSet rawMetricDataSet : rawMetricData)
+        {
+            rawMetricDataSetMapByLabel.computeIfAbsent(rawMetricDataSet.getSeriesLabel(), label -> new ArrayList<>());
+            rawMetricDataSetMapByLabel.get(rawMetricDataSet.getSeriesLabel()).add(rawMetricDataSet);
+        }
+
+        for (Map.Entry<String, List<RawMetricDataSet>> entry : rawMetricDataSetMapByLabel.entrySet())
+        {
+            PeptideOutliers peptideOutlier = new PeptideOutliers();
+            peptideOutlier.setPeptide(entry.getKey());
+            peptideOutliers.add(peptideOutlier);
+        }
+
+        peptideOutliers.sort(Comparator.comparing(PeptideOutliers::getPeptide));
+        return peptideOutliers;
     }
 
     public static class AnnotationGroup

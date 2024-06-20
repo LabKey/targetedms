@@ -1,5 +1,21 @@
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 <%@ page import="org.labkey.api.view.template.ClientDependencies" %>
+<%@ page import="org.json.JSONObject" %>
+<%@ page import="org.labkey.api.view.JspView" %>
+<%@ page import="org.labkey.api.view.HttpView" %>
+<%
+    JspView<JSONObject> me = (JspView<JSONObject>) HttpView.currentView();
+    JSONObject bean = me.getModelBean();
+%>
+
+<%!
+    @Override
+    public void addClientDependencies(ClientDependencies dependencies)
+    {
+        dependencies.add("Ext4");
+        dependencies.add("internal/jQuery");
+    }
+%>
 
 <style>
   .date-picker-container {
@@ -78,47 +94,70 @@
 </div>
 
 
-<table id="heatmap-table" class="heatmap-table">
-    <thead>
-    <tr>
-        <th>Category</th>
-        <th>Value</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr><td>Item 1</td><td>50</td></tr>
-    <tr><td>Item 2</td><td>40</td></tr>
-    <tr><td>Item 3</td><td>30</td></tr>
-    <tr><td>Item 4</td><td>20</td></tr>
-    <tr><td>Item 5</td><td>10</td></tr>
-    </tbody>
-</table>
+<%--<table id="heatmap-table" class="heatmap-table">--%>
+<%--    <thead>--%>
+<%--    <tr>--%>
+<%--        <th>Category</th>--%>
+<%--        <th>Value</th>--%>
+<%--    </tr>--%>
+<%--    </thead>--%>
+<%--    <tbody>--%>
+<%--    <tr><td>Item 1</td><td>50</td></tr>--%>
+<%--    <tr><td>Item 2</td><td>40</td></tr>--%>
+<%--    <tr><td>Item 3</td><td>30</td></tr>--%>
+<%--    <tr><td>Item 4</td><td>20</td></tr>--%>
+<%--    <tr><td>Item 5</td><td>10</td></tr>--%>
+<%--    </tbody>--%>
+<%--</table>--%>
 
+<div id="table-container">
+
+
+</div>
 <script type="text/javascript" nonce="<%=getScriptNonce()%>">
 
-    function getColor(value, min, max) {
-        const percent = (value - min) / (max - min);
-        const red = 255;
-        const green = Math.floor(255 * (1 - percent));
-        const blue = Math.floor(255 * (1 - percent));
-        return 'rgb(' + red + ',' + green + ',' + blue + ')';
+    const heatmapData = [{
+        category: 'Category 1',
+        value: 50
+    }, {
+        category: 'Category 2',
+        value: 40
+    }, {
+        category: 'Category 3',
+        value: 30
+    }, {
+        category: 'Category 4',
+        value: 20
+    }, {
+        category: 'Category 5',
+        value: 10
+    }];
+
+    function generateTable(data) {
+        const tableContainer = document.getElementById('table-container');
+        let tableHTML = '<table id="heatmap-table" class="heatmap-table">';
+        tableHTML += '<thead><tr><th>Category</th><th>Value</th></tr></thead><tbody>';
+
+        data.forEach(row => {
+            tableHTML += "<tr><td>" + row.category + "</td><td>" + row.value + "</td></tr>";
+        });
+
+        tableHTML += '</tbody></table>';
+        tableContainer.innerHTML = tableHTML;
+
+        applyHeatmapColors();
     }
 
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const dateRangeSelect = document.getElementById('date-range');
-        const datePickerContainer = document.getElementById('date-picker-container');
-
-        dateRangeSelect.addEventListener('change', function () {
-            if (dateRangeSelect.value == '-1') {  // Custom range selected
-                datePickerContainer.style.display = 'block';
-            } else {
-                datePickerContainer.style.display = 'none';
+    function getData() {
+        LABKEY.Ajax.request({
+            url: LABKEY.ActionURL.buildURL('targetedms', 'GetPeptideOutliers.api'),
+            success: function (response) {
+                generateTable(heatmapData);
             }
         });
-    });
+    }
 
-    document.addEventListener('DOMContentLoaded', function () {
+    function applyHeatmapColors() {
         const table = document.getElementById('heatmap-table');
         const values = [];
 
@@ -140,11 +179,33 @@
             for (let cell of row.cells) {
                 const value = parseFloat(cell.textContent);
                 if (!isNaN(value)) {
-                    debugger
                     cell.style.backgroundColor = getColor(value, min, max);
                 }
             }
         }
+    }
+
+    function getColor(value, min, max) {
+        const percent = (value - min) / (max - min);
+        const red = 255;
+        const green = Math.floor(255 * (1 - percent));
+        const blue = Math.floor(255 * (1 - percent));
+        return 'rgb(' + red + ',' + green + ',' + blue + ')';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const dateRangeSelect = document.getElementById('date-range');
+        const datePickerContainer = document.getElementById('date-picker-container');
+
+        dateRangeSelect.addEventListener('change', function () {
+            if (dateRangeSelect.value == '-1') {  // Custom range selected
+                datePickerContainer.style.display = 'block';
+            } else {
+                datePickerContainer.style.display = 'none';
+            }
+        });
     });
+
+    Ext4.onReady(getData);
 
 </script>

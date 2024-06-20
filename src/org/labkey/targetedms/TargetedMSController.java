@@ -1255,6 +1255,29 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
+    public static class PeptideOutliersForm
+    {
+
+    }
+
+    @RequiresPermission(ReadPermission.class)
+    public static class GetPeptideOutliersAction extends ReadOnlyApiAction<PeptideOutliersForm>
+    {
+        @Override
+        public Object execute(PeptideOutliersForm form, BindException errors)
+        {
+            ApiSimpleResponse response = new ApiSimpleResponse();
+            TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+
+            OutlierGenerator outlierGenerator = OutlierGenerator.get();
+            List<QCMetricConfiguration> enabledQCMetricConfigurations = TargetedMSManager.getEnabledQCMetricConfigurations(schema);
+            List<RawMetricDataSet> rawMetricDataSets = outlierGenerator.getRawMetricDataSets(schema, enabledQCMetricConfigurations, null, null, Collections.emptyList(), true, false, true);
+            outlierGenerator.getPeptideOutliers(rawMetricDataSets);
+
+            return response;
+        }
+    }
+
     public static class QCPlotsDataForm
     {
         private int _metricId;
