@@ -204,7 +204,6 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         //waitForText("1 - 7 of 7");
         assertTextPresentInThisOrder("Protein Search", "Matching Proteins (1)", "Targeted MS Proteins");
 
-        clickAndWait(Locator.id("expandCollapse-ProteinSearchProteinMatches"), 0); // Search results are hidden by default.
         DataRegionTable potentialProteins = new DataRegionTable("PotentialProteins", this);
         assertEquals(1, potentialProteins.getDataRowCount());
         String bestName = potentialProteins.getDataAsText(0, "BestName");
