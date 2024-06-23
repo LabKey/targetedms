@@ -223,7 +223,7 @@ public class SpectrumFilter
         {
             return ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.Predicate.newBuilder()
                     .setPropertyPath(getColumn()).setOperation(_filterOperationMap.get(getOperation()))
-                    .setOperand(_operand).build();
+                    .setOperand(_operand == null ? "" : _operand).build();
         }
 
         @Override
@@ -252,15 +252,15 @@ public class SpectrumFilter
             String xml = String.join("\n",
                     "      <precursor charge=\"2\" modified_sequence=\"ESDTSYVSLK\">",
                     "        <spectrum_filter>",
-                    "          <filter column=\"MsLevel\" opname=\"isNotEmpty\" />",
+                    "          <filter column=\"MsLevel\" opname=\"isnotnullorblank\" />",
                     "          <filter column=\"MsLevel\" opname=\">\" operand=\"3\" />",
                     "        </spectrum_filter>",
                     "        <spectrum_filter>",
-                    "          <filter column=\"MsLevel\" opname=\"isNotEmpty\" />",
+                    "          <filter column=\"MsLevel\" opname=\"isnotnullorblank\" />",
                     "          <filter column=\"MsLevel\" opname=\"&lt;\" operand=\"2\" />",
                     "        </spectrum_filter>",
                     "        <bibliospec_spectrum_info count_measured=\"1\" />",
-                    "      </precursor");
+                    "      </precursor>");
             XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StringReader(xml));
             int bibliospecSpectrumInfoCount = 0;
             List<FilterClause> clauses = new ArrayList<>();
@@ -284,12 +284,12 @@ public class SpectrumFilter
             SpectrumFilter spectrumFilter = new SpectrumFilter(clauses);
             Assert.assertEquals(1, bibliospecSpectrumInfoCount);
             Assert.assertNotNull(spectrumFilter);
-            Assert.assertEquals(3, spectrumFilter.getFilterClauses().size());
+            Assert.assertEquals(2, spectrumFilter.getFilterClauses().size());
             byte[] bytes = spectrumFilter.toByteArray();
             SpectrumFilter spectrumFilterRoundTrip = SpectrumFilter.fromByteArray(bytes);
             Assert.assertNotNull(spectrumFilterRoundTrip);
             Assert.assertEquals(spectrumFilter.getFilterClauses().size(), spectrumFilterRoundTrip.getFilterClauses().size());
-            Assert.assertEquals(Arrays.asList(spectrumFilter.toByteArray()), Arrays.asList(spectrumFilterRoundTrip.toByteArray()));
+            Assert.assertArrayEquals(spectrumFilter.toByteArray(), spectrumFilterRoundTrip.toByteArray());
         }
     }
 }
