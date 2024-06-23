@@ -23,7 +23,7 @@ import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.TableCustomizer;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.module.ModuleLoader;
-import org.labkey.api.protein.ProteinService;
+import org.labkey.api.protein.search.ProteinSearchForm;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.QuerySettings;
@@ -46,7 +46,7 @@ import java.util.List;
 * User: jeckels
 * Date: May 10, 2012
 */
-public class TransitionProteinSearchViewProvider implements QueryViewProvider<ProteinService.ProteinSearchForm>
+public class TransitionProteinSearchViewProvider implements QueryViewProvider<ProteinSearchForm>
 {
     @Override
     public String getDataRegionName()
@@ -56,7 +56,7 @@ public class TransitionProteinSearchViewProvider implements QueryViewProvider<Pr
 
     @Nullable
     @Override
-    public QueryView createView(ViewContext viewContext, final ProteinService.ProteinSearchForm form, BindException errors)
+    public QueryView createView(ViewContext viewContext, final ProteinSearchForm form, BindException errors)
     {
         if (! viewContext.getContainer().getActiveModules().contains(ModuleLoader.getInstance().getModule(TargetedMSModule.class)))
             return null;  // only enable this view if the TargetedMSModule is active
@@ -84,11 +84,12 @@ public class TransitionProteinSearchViewProvider implements QueryViewProvider<Pr
                 sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
 
                 sql.append(" ON p.PeptideGroupId = pg.Id WHERE ((");
-                if (form.getSeqId().length > 0)
+                int[] seqIds = form.getSeqId();
+                if (seqIds.length > 0)
                 {
                     sql.append("p.SequenceId IN (");
                     String separator = "";
-                    for (int seqId : form.getSeqId())
+                    for (int seqId : seqIds)
                     {
                         sql.append(separator);
                         sql.appendValue(seqId);

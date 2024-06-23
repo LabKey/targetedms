@@ -22,7 +22,7 @@ import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.TableCustomizer;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.module.ModuleLoader;
-import org.labkey.api.protein.ProteinService;
+import org.labkey.api.protein.search.PeptideSearchForm;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.QuerySettings;
 import org.labkey.api.query.QueryView;
@@ -42,7 +42,7 @@ import java.util.List;
 * User: jeckels
 * Date: May 10, 2012
 */
-public class TransitionPeptideSearchViewProvider implements QueryViewProvider<ProteinService.PeptideSearchForm>
+public class TransitionPeptideSearchViewProvider implements QueryViewProvider<PeptideSearchForm>
 {
     @Override
     public String getDataRegionName()
@@ -52,7 +52,7 @@ public class TransitionPeptideSearchViewProvider implements QueryViewProvider<Pr
 
     @Nullable
     @Override
-    public QueryView createView(ViewContext viewContext, final ProteinService.PeptideSearchForm form, BindException errors)
+    public QueryView createView(ViewContext viewContext, final PeptideSearchForm form, BindException errors)
     {
         if (! viewContext.getContainer().getActiveModules().contains(ModuleLoader.getInstance().getModule(TargetedMSModule.class)))
             return null;  // only enable this view if the TargetedMSModule is active
