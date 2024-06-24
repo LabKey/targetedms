@@ -614,6 +614,7 @@ public class OutlierGenerator
 
         for (Map.Entry<String, List<RawMetricDataSet>> entry : rawMetricDataSetMapByLabel.entrySet())
         {
+            int totalOutliers = 0;
             PeptideOutliers peptideOutlier = new PeptideOutliers();
             Map<String, Integer> outlierCountsPerMetric = new HashMap<>();
             peptideOutlier.setPeptide(entry.getKey());
@@ -622,10 +623,12 @@ public class OutlierGenerator
                 outlierCountsPerMetric.putIfAbsent(rawMetricDataSet.getMetric().getName(), 0);
                 if (rawMetricDataSet.isValueOutlier(stats.get(rawMetricDataSet.getGuideSetKey())))
                 {
+                    totalOutliers++;
                     outlierCountsPerMetric.put(rawMetricDataSet.getMetric().getName(), outlierCountsPerMetric.get(rawMetricDataSet.getMetric().getName()) + 1);
                 }
             }
             peptideOutlier.setOutlierCountsPerMetric(outlierCountsPerMetric);
+            peptideOutlier.setTotalOutliers(totalOutliers);
             peptideOutliers.add(peptideOutlier);
         }
 

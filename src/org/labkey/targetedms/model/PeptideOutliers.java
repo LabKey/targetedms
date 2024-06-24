@@ -6,16 +6,20 @@ import org.json.JSONObject;
 
 import java.util.Map;
 
+@Setter
+@Getter
 public class PeptideOutliers
 {
-    @Getter @Setter private String peptide;
-    @Getter @Setter Map<String, Integer> outlierCountsPerMetric;
+    private String peptide;
+    Map<String, Integer> outlierCountsPerMetric;
+    private int totalOutliers;
 
     public JSONObject toJSON()
     {
         JSONObject json = new JSONObject();
         json.put("peptide", peptide);
         json.put("outlierCountsPerMetric", outlierCountsPerMetric);
+        json.put("totalOutliers", totalOutliers);
         return json;
     }
 }

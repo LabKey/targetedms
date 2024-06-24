@@ -93,6 +93,8 @@
     <div class="legend-label arrow-left">&nbsp; &nbsp;No Outliers</div>
     <div class="legend"></div>
     <div class="legend-label arrow-right">Most Outliers &nbsp; &nbsp;</div>
+    <div>Total Replicates : </div>
+    <div id="total-replicates"></div>
 </div>
 
 <div id="table-container">
@@ -154,12 +156,20 @@
 
         tableHTML += '</tr></thead><tbody>';
 
+        let totalOutliersByMetric = {};
         for (let i = 0; i < data.peptideOutliers.length; i++) {
             tableHTML += '<tr><td>' + data.peptideOutliers[i].peptide + '</td>';
+
             for (let j = 0; j < data.metrics.length; j++) {
                 let metric = data.metrics[j];
                 if (data.peptideOutliers[i].outlierCountsPerMetric[metric]) {
                     tableHTML += '<td>' + data.peptideOutliers[i].outlierCountsPerMetric[metric] + '</td>';
+                    if (!totalOutliersByMetric[metric]) {
+                        totalOutliersByMetric[metric] = 0;
+                    }
+
+                    totalOutliersByMetric[metric] += data.peptideOutliers[i].outlierCountsPerMetric[metric];
+
                 }
                 else {
                     tableHTML += '<td>0</td>';
@@ -168,7 +178,15 @@
             tableHTML += '</tr>';
         }
 
-
+        tableHTML += '<tr><td><b>Total</b></td>';
+        for (let i = 0; i < data.metrics.length; i++) {
+            if (totalOutliersByMetric[data.metrics[i]]) {
+                tableHTML += '<td><b>' + totalOutliersByMetric[data.metrics[i]] + '</b></td>';
+            }
+            else {
+                tableHTML += '<td><b>0</b></td>';
+            }
+        }
         tableHTML += '</tbody></table>';
         tableContainer.innerHTML = tableHTML;
 
@@ -190,6 +208,7 @@
             },
             success: function (response) {
                 const parsed = JSON.parse(response.responseText);
+                document.getElementById('total-replicates').textContent = parsed.replicatesCount
                 generateTable(parsed);
             }
         });
@@ -199,10 +218,11 @@
         const table = document.getElementById('heatmap-table');
         const values = [];
 
-        // Extract values from table cells
-        for (let row of table.rows) {
-            for (let cell of row.cells) {
-                const value = parseFloat(cell.textContent);
+        // Extract values from table cells, excluding the last row (totals row)
+        for (let i = 1; i < table.rows.length - 1; i++) { // start from 1 to skip header
+            const row = table.rows[i];
+            for (let j = 1; j < row.cells.length; j++) { // start from 1 to skip the first column
+                const value = parseFloat(row.cells[j].textContent);
                 if (!isNaN(value)) {
                     values.push(value);
                 }
@@ -212,12 +232,13 @@
         const min = Math.min(...values);
         const max = Math.max(...values);
 
-        // Apply colors based on values
-        for (let row of table.rows) {
-            for (let cell of row.cells) {
-                const value = parseFloat(cell.textContent);
+        // Apply colors based on values, excluding the last row (totals row)
+        for (let i = 1; i < table.rows.length - 1; i++) { // start from 1 to skip header
+            const row = table.rows[i];
+            for (let j = 1; j < row.cells.length; j++) { // start from 1 to skip the first column
+                const value = parseFloat(row.cells[j].textContent);
                 if (!isNaN(value)) {
-                    cell.style.backgroundColor = getColor(value, min, max);
+                    row.cells[j].style.backgroundColor = getColor(value, min, max);
                 }
             }
         }
