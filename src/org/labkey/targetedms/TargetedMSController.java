@@ -7662,7 +7662,7 @@ public class TargetedMSController extends SpringActionController
                 ViewCategory category = ViewCategoryManager.getInstance().ensureViewCategory(getContainer(), getUser(), categoryParts);
                 rd.setCategoryId(category.getRowId());
 
-                ReportService.get().saveReport(getViewContext(), rd.getReportName(), report);
+                ReportService.get().saveReportEx(getViewContext(), rd.getReportName(), report);
             }
 
             ApiSimpleResponse response = new ApiSimpleResponse();
