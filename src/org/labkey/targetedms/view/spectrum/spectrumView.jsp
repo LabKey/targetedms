@@ -29,7 +29,7 @@
     {
         dependencies.add("Ext4");
         dependencies.add("internal/jQuery");
-        dependencies.add("MS2/lorikeet");
+        dependencies.add("protein/lorikeet");
     }
 %>
 
