@@ -82,8 +82,10 @@
 
 <div id="date-picker-container" class="date-picker-container">
     <label for="start-date">Start Date:</label>
+    <% addHandler("start-date", "change", "customDateRange()"); %>
     <input type="date" id="start-date">
     <label for="end-date">End Date:</label>
+    <% addHandler("end-date", "change", "customDateRange()"); %>
     <input type="date" id="end-date">
 </div>
 
@@ -95,26 +97,51 @@
 
 <div id="table-container">
 
-
 </div>
 <script type="text/javascript" nonce="<%=getScriptNonce()%>">
+    let startDate;
+    let endDate;
+    let minDate;
+    let maxDate;
 
-    const heatmapData = [{
-        category: 'Category 1',
-        value: 50
-    }, {
-        category: 'Category 2',
-        value: 40
-    }, {
-        category: 'Category 3',
-        value: 30
-    }, {
-        category: 'Category 4',
-        value: 20
-    }, {
-        category: 'Category 5',
-        value: 10
-    }];
+    function getMinMaxDate() {
+        LABKEY.Query.executeSql({
+            schemaName: 'targetedms',
+            sql: 'SELECT MIN(AcquiredTime) AS MinAcquiredTime, MAX(AcquiredTime) AS MaxAcquiredTime, count(*) AS runs FROM SampleFile',
+            success: function(data) {
+                if (data.rows.length === 0 || !data.rows[0]['MinAcquiredTime']) {
+                    Ext4.get(plotPanelId).update("No data found. Please upload runs using the Data Pipeline or directly from Skyline.");
+                }
+                else {
+                    startDate = data.rows[0]['MinAcquiredTime'] ? new Date(data.rows[0]['MinAcquiredTime']) : null;
+                    minDate = data.rows[0]['MinAcquiredTime'] ? new Date(data.rows[0]['MinAcquiredTime']) : null;
+                    endDate = data.rows[0]['MaxAcquiredTime'] ? new Date(data.rows[0]['MaxAcquiredTime']) : null;
+                    maxDate = data.rows[0]['MaxAcquiredTime'] ? new Date(data.rows[0]['MaxAcquiredTime']) : null;
+                    getData();
+                }
+            },
+            failure: function(response) {
+                Ext4.get(plotPanelId).update("<span class='labkey-error'>Error: " + response.exception + "</span>");
+            }
+        });
+    }
+
+    function calculateStartDateByOffset(offset) {
+        if (offset > 0) {
+            var startDateByOffset = maxDate ? new Date(maxDate) : new Date();
+            startDateByOffset.setDate(startDateByOffset.getDate() - offset);
+            return startDateByOffset;
+        }
+
+        return minDate;
+    }
+
+    function calculateEndDateByOffset(offset) {
+        if (offset > 0)
+            return maxDate ? maxDate : new Date();
+
+        return maxDate;
+    }
 
     function generateTable(data) {
         const tableContainer = document.getElementById('table-container');
@@ -148,9 +175,19 @@
         applyHeatmapColors();
     }
 
+    function init() {
+        if (!startDate || !endDate) {
+            getMinMaxDate();
+        }
+    }
+
     function getData() {
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetPeptideOutliers.api'),
+            params: {
+                startDate: startDate,
+                endDate: endDate
+            },
             success: function (response) {
                 const parsed = JSON.parse(response.responseText);
                 generateTable(parsed);
@@ -194,6 +231,18 @@
         return 'rgb(' + red + ',' + green + ',' + blue + ')';
     }
 
+    function customDateRange() {
+        if (document.getElementById("start-date").value) {
+            startDate = new Date(document.getElementById("start-date").value);
+        }
+        if (document.getElementById("end-date").value) {
+            endDate = new Date(document.getElementById("end-date").value);
+        }
+        if (document.getElementById("start-date").value && document.getElementById("end-date").value) {
+            getData();
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         const dateRangeSelect = document.getElementById('date-range');
         const datePickerContainer = document.getElementById('date-picker-container');
@@ -203,10 +252,13 @@
                 datePickerContainer.style.display = 'block';
             } else {
                 datePickerContainer.style.display = 'none';
+                startDate = new Date(calculateStartDateByOffset(parseInt(dateRangeSelect.value)));
+                endDate = new Date(calculateEndDateByOffset(parseInt(dateRangeSelect.value)));
+                getData();
             }
         });
     });
 
-    Ext4.onReady(getData);
+    Ext4.onReady(init);
 
 </script>

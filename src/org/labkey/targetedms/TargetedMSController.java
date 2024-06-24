@@ -1317,7 +1317,28 @@ public class TargetedMSController extends SpringActionController
 
     public static class PeptideOutliersForm
     {
+        private Date _startDate;
+        private Date _endDate;
 
+        public Date getStartDate()
+        {
+            return _startDate;
+        }
+
+        public void setStartDate(Date startDate)
+        {
+            _startDate = startDate;
+        }
+
+        public Date getEndDate()
+        {
+            return _endDate;
+        }
+
+        public void setEndDate(Date endDate)
+        {
+            _endDate = endDate;
+        }
     }
 
     @RequiresPermission(ReadPermission.class)
@@ -1332,7 +1353,7 @@ public class TargetedMSController extends SpringActionController
             OutlierGenerator outlierGenerator = OutlierGenerator.get();
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
             List<QCMetricConfiguration> enabledQCMetricConfigurations = TargetedMSManager.getEnabledQCMetricConfigurations(schema);
-            List<RawMetricDataSet> rawMetricDataSets = outlierGenerator.getRawMetricDataSets(schema, enabledQCMetricConfigurations, null, null, Collections.emptyList(), true, false, true);
+            List<RawMetricDataSet> rawMetricDataSets = outlierGenerator.getRawMetricDataSets(schema, enabledQCMetricConfigurations, form.getStartDate(), form.getEndDate(), Collections.emptyList(), true, false, true);
             Map<GuideSetKey, GuideSetStats> stats = outlierGenerator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
             response.put("peptideOutliers", outlierGenerator.getPeptideOutliers(rawMetricDataSets, stats).stream().map(PeptideOutliers::toJSON).collect(Collectors.toList()));
             response.put("metrics", enabledQCMetricConfigurations.stream().map(QCMetricConfiguration::getName).collect(Collectors.toList()));
