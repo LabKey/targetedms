@@ -463,6 +463,11 @@ public class OutlierGenerator
         return result;
     }
 
+//    public GuideSetStats getGuideSetStats(List<RawMetricDataSet> rawMetricData)
+//    {
+//
+//    }
+
     /**
      * @param metrics id to QC metric  */
     public List<SampleFileInfo> getSampleFiles(List<RawMetricDataSet> dataRows, Map<GuideSetKey, GuideSetStats> allStats, Map<Integer, QCMetricConfiguration> metrics, TargetedMSSchema schema, Integer limit)
@@ -597,7 +602,7 @@ public class OutlierGenerator
         return qcPlotFragments;
     }
 
-    public List<PeptideOutliers> getPeptideOutliers(List<RawMetricDataSet> rawMetricData)
+    public List<PeptideOutliers> getPeptideOutliers(List<RawMetricDataSet> rawMetricData, Map<GuideSetKey, GuideSetStats> stats)
     {
         List<PeptideOutliers> peptideOutliers = new ArrayList<>();
         Map<String, List<RawMetricDataSet>> rawMetricDataSetMapByLabel = new HashMap<>();
@@ -610,7 +615,17 @@ public class OutlierGenerator
         for (Map.Entry<String, List<RawMetricDataSet>> entry : rawMetricDataSetMapByLabel.entrySet())
         {
             PeptideOutliers peptideOutlier = new PeptideOutliers();
+            Map<String, Integer> outlierCountsPerMetric = new HashMap<>();
             peptideOutlier.setPeptide(entry.getKey());
+            for (RawMetricDataSet rawMetricDataSet : entry.getValue())
+            {
+                outlierCountsPerMetric.putIfAbsent(rawMetricDataSet.getMetric().getName(), 0);
+                if (rawMetricDataSet.isValueOutlier(stats.get(rawMetricDataSet.getGuideSetKey())))
+                {
+                    outlierCountsPerMetric.put(rawMetricDataSet.getMetric().getName(), outlierCountsPerMetric.get(rawMetricDataSet.getMetric().getName()) + 1);
+                }
+            }
+            peptideOutlier.setOutlierCountsPerMetric(outlierCountsPerMetric);
             peptideOutliers.add(peptideOutlier);
         }
 

@@ -88,27 +88,10 @@
 </div>
 
 <div class="legend-container">
-    <div class="legend-label arrow-left">No Outliers</div>
+    <div class="legend-label arrow-left">&nbsp; &nbsp;No Outliers</div>
     <div class="legend"></div>
-    <div class="legend-label arrow-right">Most Outliers</div>
+    <div class="legend-label arrow-right">Most Outliers &nbsp; &nbsp;</div>
 </div>
-
-
-<%--<table id="heatmap-table" class="heatmap-table">--%>
-<%--    <thead>--%>
-<%--    <tr>--%>
-<%--        <th>Category</th>--%>
-<%--        <th>Value</th>--%>
-<%--    </tr>--%>
-<%--    </thead>--%>
-<%--    <tbody>--%>
-<%--    <tr><td>Item 1</td><td>50</td></tr>--%>
-<%--    <tr><td>Item 2</td><td>40</td></tr>--%>
-<%--    <tr><td>Item 3</td><td>30</td></tr>--%>
-<%--    <tr><td>Item 4</td><td>20</td></tr>--%>
-<%--    <tr><td>Item 5</td><td>10</td></tr>--%>
-<%--    </tbody>--%>
-<%--</table>--%>
 
 <div id="table-container">
 
@@ -136,11 +119,28 @@
     function generateTable(data) {
         const tableContainer = document.getElementById('table-container');
         let tableHTML = '<table id="heatmap-table" class="heatmap-table">';
-        tableHTML += '<thead><tr><th>Category</th><th>Value</th></tr></thead><tbody>';
+        tableHTML += '<thead><tr><th></th>';
 
-        data.forEach(row => {
-            tableHTML += "<tr><td>" + row.category + "</td><td>" + row.value + "</td></tr>";
-        });
+        for (let i = 0; i < data.metrics.length; i++) {
+            tableHTML += '<th>' + data.metrics[i] + '</th>';
+        }
+
+        tableHTML += '</tr></thead><tbody>';
+
+        for (let i = 0; i < data.peptideOutliers.length; i++) {
+            tableHTML += '<tr><td>' + data.peptideOutliers[i].peptide + '</td>';
+            for (let j = 0; j < data.metrics.length; j++) {
+                let metric = data.metrics[j];
+                if (data.peptideOutliers[i].outlierCountsPerMetric[metric]) {
+                    tableHTML += '<td>' + data.peptideOutliers[i].outlierCountsPerMetric[metric] + '</td>';
+                }
+                else {
+                    tableHTML += '<td>0</td>';
+                }
+            }
+            tableHTML += '</tr>';
+        }
+
 
         tableHTML += '</tbody></table>';
         tableContainer.innerHTML = tableHTML;
@@ -152,7 +152,8 @@
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetPeptideOutliers.api'),
             success: function (response) {
-                generateTable(heatmapData);
+                const parsed = JSON.parse(response.responseText);
+                generateTable(parsed);
             }
         });
     }
