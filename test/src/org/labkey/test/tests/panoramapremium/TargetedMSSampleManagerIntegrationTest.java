@@ -91,6 +91,7 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
                 getCurrentRelativeURL(false).contains(WebTestHelper.buildRelativeUrl("sampleManager", getProjectName() + "/" + Sample_Manager_Subfolder, "app")));
 
         log("Navigating back to labkey server");
+        waitForElementToBeVisible(Locator.linkWithText("Assays"));
         click(Locator.linkWithText("Assays"));
         waitAndClick(Locator.linkContainingText("Skyline Documents"));
         waitAndClickAndWait(Locator.linkWithText(SProCoP_FILE_ANNOTATED));
