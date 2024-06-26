@@ -36,13 +36,14 @@ import org.labkey.api.files.FileContentService;
 import org.labkey.api.module.FolderTypeManager;
 import org.labkey.api.module.Module;
 import org.labkey.api.module.ModuleContext;
+import org.labkey.api.module.ModuleHtmlView;
 import org.labkey.api.module.ModuleProperty;
 import org.labkey.api.module.SpringModule;
 import org.labkey.api.pipeline.PipelineService;
-import org.labkey.api.protein.search.MSSearchWebpart;
-import org.labkey.api.protein.search.ProteinSearchForm;
 import org.labkey.api.protein.ProteinService;
 import org.labkey.api.protein.ProteomicsModule;
+import org.labkey.api.protein.search.MSSearchWebpart;
+import org.labkey.api.protein.search.ProteinSearchForm;
 import org.labkey.api.query.QueryView;
 import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.security.permissions.ApplicationAdminPermission;
@@ -479,7 +480,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
                 @Override
                 public WebPartView<?> getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
                 {
-                    return new JspView<>("/org/labkey/targetedms/view/outlierHeatmapSummary.jsp");
+                    return ModuleHtmlView.get(getModule(), "outlierHeatmapSummary");
                 }
             }
         );
