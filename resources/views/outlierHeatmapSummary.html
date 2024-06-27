@@ -251,7 +251,10 @@
             for (let j = 1; j < row.cells.length; j++) { // start from 1 to skip the first column
                 const value = parseFloat(row.cells[j].textContent);
                 if (!isNaN(value)) {
-                    row.cells[j].style.backgroundColor = getColor(value, min, max);
+                    const bgColor = getColor(value, min, max);
+                    const textColor = getContrastColor(bgColor);
+                    row.cells[j].style.backgroundColor = bgColor;
+                    row.cells[j].style.color = textColor;
                 }
             }
         }
@@ -263,6 +266,18 @@
         const green = Math.floor(255 * (1 - percent));
         const blue = Math.floor(255 * (1 - percent));
         return 'rgb(' + red + ',' + green + ',' + blue + ')';
+    }
+
+    function getContrastColor(bgColor) {
+        const color = bgColor.match(/\d+/g);
+        const r = parseInt(color[0]);
+        const g = parseInt(color[1]);
+        const b = parseInt(color[2]);
+
+        // Calculate the luminance
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+        return luminance > 0.5 ? 'black' : 'white';
     }
 
     function customDateRange() {
