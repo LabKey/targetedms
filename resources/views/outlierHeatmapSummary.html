@@ -11,10 +11,15 @@
     margin-top: 20px;
   }
   .legend {
-    flex-grow: 1;
-    height: 30px;
-    background: linear-gradient(to right, white, red);
-    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 10px;
+  }
+  .legend-square {
+    width: 20px;
+    height: 20px;
+    margin-right: 2px;
   }
   .legend-label {
     width: 150px;
@@ -70,7 +75,7 @@
 
 <div class="legend-container">
     <div class="legend-label arrow-left">&nbsp; &nbsp;No Outliers</div>
-    <div class="legend"></div>
+    <div id="legend" class="legend"></div>
     <div class="legend-label arrow-right">Most Outliers &nbsp; &nbsp;</div>
     <div>Total Replicates : </div>
     <div id="total-replicates"></div>
@@ -84,6 +89,27 @@
     let endDate;
     let minDate;
     let maxDate;
+
+    function generateLegend() {
+        const legendContainer = document.getElementById('legend');
+        const numSquares = 20;
+        const minColor = [255, 255, 255];
+        const maxColor = [255, 0, 0];
+
+        for (let i = 0; i < numSquares; i++) {
+            const ratio = i / (numSquares - 1);
+            const red = Math.round(minColor[0] + ratio * (maxColor[0] - minColor[0]));
+            const green = Math.round(minColor[1] + ratio * (maxColor[1] - minColor[1]));
+            const blue = Math.round(minColor[2] + ratio * (maxColor[2] - minColor[2]));
+            const color = `rgb(${red}, ${green}, ${blue})`;
+
+            const square = document.createElement('div');
+            square.className = 'legend-square';
+            square.style.backgroundColor = color;
+
+            legendContainer.appendChild(square);
+        }
+    }
 
     function getMinMaxDate() {
         LABKEY.Query.executeSql({
@@ -176,6 +202,7 @@
         tableContainer.innerHTML = tableHTML;
 
         applyHeatmapColors();
+        generateLegend();
     }
 
     function init() {
