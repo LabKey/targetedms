@@ -104,6 +104,7 @@
             const color = `rgb(${red}, ${green}, ${blue})`;
 
             const square = document.createElement('div');
+            square.id = 'legend-square-' + i;
             square.className = 'legend-square';
             square.style.backgroundColor = color;
 
@@ -202,7 +203,9 @@
         tableContainer.innerHTML = tableHTML;
 
         applyHeatmapColors();
-        generateLegend();
+        if (document.getElementById('legend').children.length === 0) {
+            generateLegend();
+        }
     }
 
     function init() {
@@ -218,7 +221,7 @@
             },
             success: function (response) {
                 const parsed = JSON.parse(response.responseText);
-                document.getElementById('total-replicates').textContent = parsed.replicatesCount
+                document.getElementById('total-replicates').innerHTML = '&nbsp' +  parsed.replicatesCount;
                 generateTable(parsed);
             }
         });
