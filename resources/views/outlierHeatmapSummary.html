@@ -94,10 +94,16 @@
                     Ext4.get(plotPanelId).update("No data found. Please upload runs using the Data Pipeline or directly from Skyline.");
                 }
                 else {
-                    startDate = data.rows[0]['MinAcquiredTime'] ? new Date(data.rows[0]['MinAcquiredTime']) : null;
+                    if (startDate === null || endDate === null) {
+                        startDate = data.rows[0]['MinAcquiredTime'] ? new Date(data.rows[0]['MinAcquiredTime']) : null;
+                        endDate = data.rows[0]['MaxAcquiredTime'] ? new Date(data.rows[0]['MaxAcquiredTime']) : null;
+                    }
                     minDate = data.rows[0]['MinAcquiredTime'] ? new Date(data.rows[0]['MinAcquiredTime']) : null;
-                    endDate = data.rows[0]['MaxAcquiredTime'] ? new Date(data.rows[0]['MaxAcquiredTime']) : null;
                     maxDate = data.rows[0]['MaxAcquiredTime'] ? new Date(data.rows[0]['MaxAcquiredTime']) : null;
+                    if (dateRangeOffset !== -1) {
+                        startDate = calculateStartDateByOffset(dateRangeOffset);
+                        endDate = calculateEndDateByOffset(dateRangeOffset);
+                    }
                     getData();
                 }
             },
@@ -173,9 +179,7 @@
     }
 
     function init() {
-        if (!startDate || !endDate) {
-            getMinMaxDate();
-        }
+        getInitialDateRange();
     }
 
     function getData() {
@@ -233,14 +237,79 @@
 
     function customDateRange() {
         if (document.getElementById("start-date").value) {
-            startDate = new Date(document.getElementById("start-date").value);
+            startDate = formatDate(document.getElementById("start-date").value);
         }
         if (document.getElementById("end-date").value) {
-            endDate = new Date(document.getElementById("end-date").value);
+            endDate = formatDate(document.getElementById("end-date").value);
         }
         if (document.getElementById("start-date").value && document.getElementById("end-date").value) {
+            console.log("Custom date range selected " + startDate + " " + endDate);
+            persistDateRange(-1);
             getData();
         }
+    }
+
+    function formatDate(d, includeTime) {
+        if (d instanceof Date) {
+            if (includeTime) {
+                return Ext4.util.Format.date(d, 'Y-m-d H:i:s');
+            }
+            else {
+                return Ext4.util.Format.date(d, 'Y-m-d');
+            }
+        }
+        else if (typeof(d) === 'string' && (d.length === 19 || d.length === 23)) {
+            // support format of strings like "2013-08-27 14:45:49" or "2013-08-16 20:26:28.000"
+            return includeTime ? d : d.substring(0, d.indexOf(' '));
+        }
+        else {
+            return d;
+        }
+    }
+
+    function getInitialDateRange() {
+        LABKEY.Ajax.request({
+            url: LABKEY.ActionURL.buildURL('targetedms', 'leveyJenningsPlotOptions.api'),
+            method: 'POST',
+            scope: this,
+            success: LABKEY.Utils.getCallbackWrapper(function(response) {
+                // convert the boolean and integer values from strings
+                var initValues = {};
+                Ext4.iterate(response.properties, function(key, value) {
+                    if (key === 'startDate') {
+                        startDate = formatDate(value);
+                    }
+                    if (key === 'endDate') {
+                        endDate = formatDate(value);
+                    }
+
+                    if (key === 'dateRangeOffset') {
+                        dateRangeOffset = parseInt(value);
+                    }
+
+                });
+
+                if (dateRangeOffset ===-1 && startDate && endDate) {
+                    const datePickerContainer = document.getElementById('date-picker-container');
+                    document.getElementById('date-range').value = '-1';
+                    datePickerContainer.style.display = 'block';
+                    document.getElementById('start-date').value = formatDate(startDate);
+                    document.getElementById('end-date').value = formatDate(endDate);
+                }
+                else {
+                    document.getElementById('date-range').value = dateRangeOffset;
+                }
+                getMinMaxDate();
+            }, this, false)
+        });
+    }
+
+    function persistDateRange(dateRangeOffset) {
+        LABKEY.Ajax.request({
+            url: LABKEY.ActionURL.buildURL('targetedms', 'leveyJenningsPlotOptions.api'),
+            method: 'POST',
+            params: { startDate: startDate, endDate: endDate, dateRangeOffset: dateRangeOffset },
+        });
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -250,14 +319,20 @@
         const endDateInput = document.getElementById('end-date');
 
         dateRangeSelect.addEventListener('change', function () {
-            if (dateRangeSelect.value == '-1') {  // Custom range selected
+            if (dateRangeSelect.value === '-1') {  // Custom range selected
                 datePickerContainer.style.display = 'block';
+                if (startDateInput.value && endDateInput.value) {
+                    startDate = formatDate(startDateInput.value);
+                    endDate = formatDate(endDateInput.value);
+                    getData();
+                }
             } else {
                 datePickerContainer.style.display = 'none';
-                startDate = new Date(calculateStartDateByOffset(parseInt(dateRangeSelect.value)));
-                endDate = new Date(calculateEndDateByOffset(parseInt(dateRangeSelect.value)));
+                startDate = formatDate(calculateStartDateByOffset(parseInt(dateRangeSelect.value)));
+                endDate = formatDate(calculateEndDateByOffset(parseInt(dateRangeSelect.value)));
                 getData();
             }
+            persistDateRange(parseInt(dateRangeSelect.value));
         });
 
         startDateInput.addEventListener('change', function () {
