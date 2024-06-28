@@ -463,11 +463,6 @@ public class OutlierGenerator
         return result;
     }
 
-//    public GuideSetStats getGuideSetStats(List<RawMetricDataSet> rawMetricData)
-//    {
-//
-//    }
-
     /**
      * @param metrics id to QC metric  */
     public List<SampleFileInfo> getSampleFiles(List<RawMetricDataSet> dataRows, Map<GuideSetKey, GuideSetStats> allStats, Map<Integer, QCMetricConfiguration> metrics, TargetedMSSchema schema, Integer limit)

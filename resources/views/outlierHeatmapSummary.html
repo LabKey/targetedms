@@ -240,9 +240,9 @@
         const values = [];
 
         // Extract values from table cells, excluding the last row (totals row)
-        for (let i = 1; i < table.rows.length - 1; i++) { // start from 1 to skip header
+        for (let i = 1; i < table.rows.length - 1; i++) { // skip header
             const row = table.rows[i];
-            for (let j = 1; j < row.cells.length - 1; j++) { // start from 1 to skip the first and last column
+            for (let j = 1; j < row.cells.length - 1; j++) { // skip the first and last column
                 const value = parseFloat(row.cells[j].textContent);
                 if (!isNaN(value)) {
                     values.push(value);
@@ -254,9 +254,9 @@
         const max = Math.max(...values);
 
         // Apply colors based on values, excluding the last row (totals row)
-        for (let i = 1; i < table.rows.length - 1; i++) { // start from 1 to skip header
+        for (let i = 1; i < table.rows.length - 1; i++) { // skip header
             const row = table.rows[i];
-            for (let j = 1; j < row.cells.length - 1; j++) { // start from 1 to skip the first and last column
+            for (let j = 1; j < row.cells.length - 1; j++) { // skip the first and last column
                 const value = parseFloat(row.cells[j].textContent);
                 if (!isNaN(value)) {
                     const bgColor = getColor(value, min, max);
@@ -326,8 +326,6 @@
             method: 'POST',
             scope: this,
             success: LABKEY.Utils.getCallbackWrapper(function(response) {
-                // convert the boolean and integer values from strings
-                var initValues = {};
                 Ext4.iterate(response.properties, function(key, value) {
                     if (key === 'startDate') {
                         startDate = formatDate(value);
