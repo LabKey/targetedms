@@ -165,6 +165,7 @@
         for (let i = 0; i < data.metrics.length; i++) {
             tableHTML += '<th>' + data.metrics[i] + '</th>';
         }
+        tableHTML += '<th><b>Total</b></th>';
 
         tableHTML += '</tr></thead><tbody>';
 
@@ -186,19 +187,26 @@
                 else {
                     tableHTML += '<td>0</td>';
                 }
+
+                if (j === data.metrics.length - 1) {
+                    tableHTML += '<td><b>' + data.peptideOutliers[i].totalOutliers + '</b></td>';
+                }
             }
             tableHTML += '</tr>';
         }
 
         tableHTML += '<tr><td><b>Total</b></td>';
+        let sumOfOutliers = 0;
         for (let i = 0; i < data.metrics.length; i++) {
             if (totalOutliersByMetric[data.metrics[i]]) {
+                sumOfOutliers += totalOutliersByMetric[data.metrics[i]];
                 tableHTML += '<td><b>' + totalOutliersByMetric[data.metrics[i]] + '</b></td>';
             }
             else {
                 tableHTML += '<td><b>0</b></td>';
             }
         }
+        tableHTML += '<td><b>' + sumOfOutliers + '</b></td>';
         tableHTML += '</tbody></table>';
         tableContainer.innerHTML = tableHTML;
 
@@ -234,7 +242,7 @@
         // Extract values from table cells, excluding the last row (totals row)
         for (let i = 1; i < table.rows.length - 1; i++) { // start from 1 to skip header
             const row = table.rows[i];
-            for (let j = 1; j < row.cells.length; j++) { // start from 1 to skip the first column
+            for (let j = 1; j < row.cells.length - 1; j++) { // start from 1 to skip the first and last column
                 const value = parseFloat(row.cells[j].textContent);
                 if (!isNaN(value)) {
                     values.push(value);
@@ -248,7 +256,7 @@
         // Apply colors based on values, excluding the last row (totals row)
         for (let i = 1; i < table.rows.length - 1; i++) { // start from 1 to skip header
             const row = table.rows[i];
-            for (let j = 1; j < row.cells.length; j++) { // start from 1 to skip the first column
+            for (let j = 1; j < row.cells.length - 1; j++) { // start from 1 to skip the first and last column
                 const value = parseFloat(row.cells[j].textContent);
                 if (!isNaN(value)) {
                     const bgColor = getColor(value, min, max);
