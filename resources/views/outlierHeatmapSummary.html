@@ -229,7 +229,7 @@
             },
             success: function (response) {
                 const parsed = JSON.parse(response.responseText);
-                document.getElementById('total-replicates').innerHTML = '&nbsp' +  parsed.replicatesCount;
+                document.getElementById('total-replicates').innerHTML = '&nbsp;' +  parsed.replicatesCount;
                 generateTable(parsed);
             }
         });
@@ -296,7 +296,6 @@
             endDate = formatDate(document.getElementById("end-date").value);
         }
         if (document.getElementById("start-date").value && document.getElementById("end-date").value) {
-            console.log("Custom date range selected " + startDate + " " + endDate);
             persistDateRange(-1);
             getData();
         }
