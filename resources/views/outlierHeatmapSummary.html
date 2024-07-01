@@ -135,7 +135,7 @@
                 }
             },
             failure: function(response) {
-                Ext4.get(plotPanelId).update("<span class='labkey-error'>Error: " + response.exception + "</span>");
+                Ext4.get(plotPanelId).update("<span class='labkey-error'>Error: " + LABKEY.Utils.encodeHtml(response.exception) + "</span>");
             }
         });
     }
@@ -163,7 +163,7 @@
         tableHTML += '<thead><tr><th></th>';
 
         for (let i = 0; i < data.metrics.length; i++) {
-            tableHTML += '<th>' + data.metrics[i] + '</th>';
+            tableHTML += '<th>' + LABKEY.Utils.encodeHtml(data.metrics[i]) + '</th>';
         }
         tableHTML += '<th><b>Total</b></th>';
 
@@ -171,7 +171,7 @@
 
         let totalOutliersByMetric = {};
         for (let i = 0; i < data.peptideOutliers.length; i++) {
-            tableHTML += '<tr><td>' + data.peptideOutliers[i].peptide + '</td>';
+            tableHTML += '<tr><td>' + LABKEY.Utils.encodeHtml(data.peptideOutliers[i].peptide) + '</td>';
 
             for (let j = 0; j < data.metrics.length; j++) {
                 let metric = data.metrics[j];
@@ -189,7 +189,7 @@
                 }
 
                 if (j === data.metrics.length - 1) {
-                    tableHTML += '<td><b>' + data.peptideOutliers[i].totalOutliers + '</b></td>';
+                    tableHTML += '<td><b>' + LABKEY.Utils.encodeHtml(data.peptideOutliers[i].totalOutliers) + '</b></td>';
                 }
             }
             tableHTML += '</tr>';
@@ -200,7 +200,7 @@
         for (let i = 0; i < data.metrics.length; i++) {
             if (totalOutliersByMetric[data.metrics[i]]) {
                 sumOfOutliers += totalOutliersByMetric[data.metrics[i]];
-                tableHTML += '<td><b>' + totalOutliersByMetric[data.metrics[i]] + '</b></td>';
+                tableHTML += '<td><b>' + LABKEY.Utils.encodeHtml(totalOutliersByMetric[data.metrics[i]]) + '</b></td>';
             }
             else {
                 tableHTML += '<td><b>0</b></td>';
@@ -229,7 +229,7 @@
             },
             success: function (response) {
                 const parsed = JSON.parse(response.responseText);
-                document.getElementById('total-replicates').innerHTML = '&nbsp;' +  parsed.replicatesCount;
+                document.getElementById('total-replicates').innerHTML = '&nbsp;' +  LABKEY.Utils.encodeHtml(parsed.replicatesCount);
                 generateTable(parsed);
             }
         });
