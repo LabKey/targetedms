@@ -35,6 +35,7 @@ import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
 import org.labkey.api.targetedms.model.QCMetricConfiguration;
+import org.labkey.targetedms.model.PeptideOutliers;
 import org.labkey.targetedms.model.QCPlotFragment;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.model.SampleFileQCMetadata;
@@ -594,6 +595,40 @@ public class OutlierGenerator
 
         qcPlotFragments.sort(Comparator.comparing(QCPlotFragment::getSeriesLabel));
         return qcPlotFragments;
+    }
+
+    public List<PeptideOutliers> getPeptideOutliers(List<RawMetricDataSet> rawMetricData, Map<GuideSetKey, GuideSetStats> stats)
+    {
+        List<PeptideOutliers> peptideOutliers = new ArrayList<>();
+        Map<String, List<RawMetricDataSet>> rawMetricDataSetMapByLabel = new HashMap<>();
+        for (RawMetricDataSet rawMetricDataSet : rawMetricData)
+        {
+            rawMetricDataSetMapByLabel.computeIfAbsent(rawMetricDataSet.getSeriesLabel(), label -> new ArrayList<>());
+            rawMetricDataSetMapByLabel.get(rawMetricDataSet.getSeriesLabel()).add(rawMetricDataSet);
+        }
+
+        for (Map.Entry<String, List<RawMetricDataSet>> entry : rawMetricDataSetMapByLabel.entrySet())
+        {
+            int totalOutliers = 0;
+            PeptideOutliers peptideOutlier = new PeptideOutliers();
+            Map<String, Integer> outlierCountsPerMetric = new HashMap<>();
+            peptideOutlier.setPeptide(entry.getKey());
+            for (RawMetricDataSet rawMetricDataSet : entry.getValue())
+            {
+                outlierCountsPerMetric.putIfAbsent(rawMetricDataSet.getMetric().getName(), 0);
+                if (rawMetricDataSet.isValueOutlier(stats.get(rawMetricDataSet.getGuideSetKey())))
+                {
+                    totalOutliers++;
+                    outlierCountsPerMetric.put(rawMetricDataSet.getMetric().getName(), outlierCountsPerMetric.get(rawMetricDataSet.getMetric().getName()) + 1);
+                }
+            }
+            peptideOutlier.setOutlierCountsPerMetric(outlierCountsPerMetric);
+            peptideOutlier.setTotalOutliers(totalOutliers);
+            peptideOutliers.add(peptideOutlier);
+        }
+
+        peptideOutliers.sort(Comparator.comparing(PeptideOutliers::getPeptide));
+        return peptideOutliers;
     }
 
     public static class AnnotationGroup

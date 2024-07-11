@@ -36,13 +36,14 @@ import org.labkey.api.files.FileContentService;
 import org.labkey.api.module.FolderTypeManager;
 import org.labkey.api.module.Module;
 import org.labkey.api.module.ModuleContext;
+import org.labkey.api.module.ModuleHtmlView;
 import org.labkey.api.module.ModuleProperty;
 import org.labkey.api.module.SpringModule;
 import org.labkey.api.pipeline.PipelineService;
-import org.labkey.api.protein.search.MSSearchWebpart;
-import org.labkey.api.protein.search.ProteinSearchForm;
 import org.labkey.api.protein.ProteinService;
 import org.labkey.api.protein.ProteomicsModule;
+import org.labkey.api.protein.search.MSSearchWebpart;
+import org.labkey.api.protein.search.ProteinSearchForm;
 import org.labkey.api.query.QueryView;
 import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.security.permissions.ApplicationAdminPermission;
@@ -119,6 +120,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     public static final String TARGETED_MS_PARETO_PLOT = "Targeted MS Pareto Plot";
     public static final String TARGETED_MS_CALIBRATION_CURVE = "Targeted MS Calibration Curve";
     public static final String TARGETED_MS_FIGURES_OF_MERIT = "Targeted MS Figures of Merit";
+    public static final String TARGETED_MS_OUTLIER_HEATMAP_SUMMARY_VIEW = "Outlier Heatmap Summary View";
 
     public static final String PEPTIDE_TAB_NAME = "Peptides";
     public static final String PROTEIN_TAB_NAME = "Proteins";
@@ -470,6 +472,15 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
                 public boolean isAvailable(Container c, String scope, String location)
                 {
                     return false;
+                }
+            },
+
+            new BaseWebPartFactory(TARGETED_MS_OUTLIER_HEATMAP_SUMMARY_VIEW)
+            {
+                @Override
+                public WebPartView<?> getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
+                {
+                    return ModuleHtmlView.get(getModule(), "outlierHeatmapSummary");
                 }
             }
         );

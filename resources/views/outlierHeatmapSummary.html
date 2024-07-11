@@ -1,0 +1,400 @@
+<style>
+  .date-picker-container {
+    display: none;
+    margin-top: 10px;
+  }
+
+  .legend-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  .legend {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 10px;
+  }
+  .legend-square {
+    width: 20px;
+    height: 20px;
+    margin-right: 2px;
+  }
+  .legend-label {
+    width: 150px;
+    text-align: center;
+
+  }
+  .arrow-left::before, .arrow-right::after {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+  }
+  .arrow-left::before {
+    border-width: 15px 20px 15px 0;
+    border-color: transparent black transparent transparent;
+  }
+  .arrow-right::after {
+    border-width: 15px 0 15px 20px;
+    border-color: transparent black transparent black;
+  }
+
+  .heatmap-table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .heatmap-table th, .heatmap-table td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: center;
+  }
+</style>
+
+<label for="date-range">Date Range:</label>
+<select id="date-range">
+    <option value="0">All dates</option>
+    <option value="7">Last 7 days</option>
+    <option value="15">Last 15 days</option>
+    <option value="30">Last 30 days</option>
+    <option value="90">Last 90 days</option>
+    <option value="180">Last 180 days</option>
+    <option value="365">Last 365 days</option>
+    <option value="-1">Custom range</option>
+</select>
+
+<div id="date-picker-container" class="date-picker-container">
+    <label for="start-date">Start Date:</label>
+    <input type="date" id="start-date">
+    <label for="end-date">End Date:</label>
+    <input type="date" id="end-date">
+</div>
+
+<div class="legend-container">
+    <div class="legend-label arrow-left">&nbsp; &nbsp;No Outliers</div>
+    <div id="legend" class="legend"></div>
+    <div class="legend-label arrow-right">Most Outliers &nbsp; &nbsp;</div>
+    <div>Total Replicates : </div>
+    <div id="total-replicates"></div>
+</div>
+
+<div id="table-container">
+
+</div>
+<script type="text/javascript" nonce="<%=getScriptNonce()%>">
+    let startDate;
+    let endDate;
+    let minDate;
+    let maxDate;
+
+    function generateLegend() {
+        const legendContainer = document.getElementById('legend');
+        const numSquares = 20;
+        const minColor = [255, 255, 255];
+        const maxColor = [255, 0, 0];
+
+        for (let i = 0; i < numSquares; i++) {
+            const ratio = i / (numSquares - 1);
+            const red = Math.round(minColor[0] + ratio * (maxColor[0] - minColor[0]));
+            const green = Math.round(minColor[1] + ratio * (maxColor[1] - minColor[1]));
+            const blue = Math.round(minColor[2] + ratio * (maxColor[2] - minColor[2]));
+            const color = `rgb(${red}, ${green}, ${blue})`;
+
+            const square = document.createElement('div');
+            square.id = 'legend-square-' + i;
+            square.className = 'legend-square';
+            square.style.backgroundColor = color;
+
+            legendContainer.appendChild(square);
+        }
+    }
+
+    function getMinMaxDate() {
+        LABKEY.Query.executeSql({
+            schemaName: 'targetedms',
+            sql: 'SELECT MIN(AcquiredTime) AS MinAcquiredTime, MAX(AcquiredTime) AS MaxAcquiredTime, count(*) AS runs FROM SampleFile',
+            success: function(data) {
+                if (data.rows.length === 0 || !data.rows[0]['MinAcquiredTime']) {
+                    Ext4.get(plotPanelId).update("No data found. Please upload runs using the Data Pipeline or directly from Skyline.");
+                }
+                else {
+                    if (startDate === null || endDate === null) {
+                        startDate = data.rows[0]['MinAcquiredTime'] ? new Date(data.rows[0]['MinAcquiredTime']) : null;
+                        endDate = data.rows[0]['MaxAcquiredTime'] ? new Date(data.rows[0]['MaxAcquiredTime']) : null;
+                    }
+                    minDate = data.rows[0]['MinAcquiredTime'] ? new Date(data.rows[0]['MinAcquiredTime']) : null;
+                    maxDate = data.rows[0]['MaxAcquiredTime'] ? new Date(data.rows[0]['MaxAcquiredTime']) : null;
+                    if (dateRangeOffset !== -1) {
+                        startDate = calculateStartDateByOffset(dateRangeOffset);
+                        endDate = calculateEndDateByOffset(dateRangeOffset);
+                    }
+                    getData();
+                }
+            },
+            failure: function(response) {
+                Ext4.get(plotPanelId).update("<span class='labkey-error'>Error: " + LABKEY.Utils.encodeHtml(response.exception) + "</span>");
+            }
+        });
+    }
+
+    function calculateStartDateByOffset(offset) {
+        if (offset > 0) {
+            var startDateByOffset = maxDate ? new Date(maxDate) : new Date();
+            startDateByOffset.setDate(startDateByOffset.getDate() - offset);
+            return startDateByOffset;
+        }
+
+        return minDate;
+    }
+
+    function calculateEndDateByOffset(offset) {
+        if (offset > 0)
+            return maxDate ? maxDate : new Date();
+
+        return maxDate;
+    }
+
+    function generateTable(data) {
+        const tableContainer = document.getElementById('table-container');
+        let tableHTML = '<table id="heatmap-table" class="heatmap-table">';
+        tableHTML += '<thead><tr><th></th>';
+
+        for (let i = 0; i < data.metrics.length; i++) {
+            tableHTML += '<th>' + LABKEY.Utils.encodeHtml(data.metrics[i]) + '</th>';
+        }
+        tableHTML += '<th><b>Total</b></th>';
+
+        tableHTML += '</tr></thead><tbody>';
+
+        let totalOutliersByMetric = {};
+        for (let i = 0; i < data.peptideOutliers.length; i++) {
+            tableHTML += '<tr><td>' + LABKEY.Utils.encodeHtml(data.peptideOutliers[i].peptide) + '</td>';
+
+            for (let j = 0; j < data.metrics.length; j++) {
+                let metric = data.metrics[j];
+                if (data.peptideOutliers[i].outlierCountsPerMetric[metric]) {
+                    tableHTML += '<td>' + data.peptideOutliers[i].outlierCountsPerMetric[metric] + '</td>';
+                    if (!totalOutliersByMetric[metric]) {
+                        totalOutliersByMetric[metric] = 0;
+                    }
+
+                    totalOutliersByMetric[metric] += data.peptideOutliers[i].outlierCountsPerMetric[metric];
+
+                }
+                else {
+                    tableHTML += '<td>0</td>';
+                }
+
+                if (j === data.metrics.length - 1) {
+                    tableHTML += '<td><b>' + LABKEY.Utils.encodeHtml(data.peptideOutliers[i].totalOutliers) + '</b></td>';
+                }
+            }
+            tableHTML += '</tr>';
+        }
+
+        tableHTML += '<tr><td><b>Total</b></td>';
+        let sumOfOutliers = 0;
+        for (let i = 0; i < data.metrics.length; i++) {
+            if (totalOutliersByMetric[data.metrics[i]]) {
+                sumOfOutliers += totalOutliersByMetric[data.metrics[i]];
+                tableHTML += '<td><b>' + LABKEY.Utils.encodeHtml(totalOutliersByMetric[data.metrics[i]]) + '</b></td>';
+            }
+            else {
+                tableHTML += '<td><b>0</b></td>';
+            }
+        }
+        tableHTML += '<td><b>' + sumOfOutliers + '</b></td>';
+        tableHTML += '</tbody></table>';
+        tableContainer.innerHTML = tableHTML;
+
+        applyHeatmapColors();
+        if (document.getElementById('legend').children.length === 0) {
+            generateLegend();
+        }
+    }
+
+    function init() {
+        getInitialDateRange();
+    }
+
+    function getData() {
+        LABKEY.Ajax.request({
+            url: LABKEY.ActionURL.buildURL('targetedms', 'GetPeptideOutliers.api'),
+            params: {
+                startDate: startDate,
+                endDate: endDate
+            },
+            success: function (response) {
+                const parsed = JSON.parse(response.responseText);
+                document.getElementById('total-replicates').innerHTML = '&nbsp;' +  LABKEY.Utils.encodeHtml(parsed.replicatesCount);
+                generateTable(parsed);
+            }
+        });
+    }
+
+    function applyHeatmapColors() {
+        const table = document.getElementById('heatmap-table');
+        const values = [];
+
+        // Extract values from table cells, excluding the last row (totals row)
+        for (let i = 1; i < table.rows.length - 1; i++) { // skip header
+            const row = table.rows[i];
+            for (let j = 1; j < row.cells.length - 1; j++) { // skip the first and last column
+                const value = parseFloat(row.cells[j].textContent);
+                if (!isNaN(value)) {
+                    values.push(value);
+                }
+            }
+        }
+
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+
+        // Apply colors based on values, excluding the last row (totals row)
+        for (let i = 1; i < table.rows.length - 1; i++) { // skip header
+            const row = table.rows[i];
+            for (let j = 1; j < row.cells.length - 1; j++) { // skip the first and last column
+                const value = parseFloat(row.cells[j].textContent);
+                if (!isNaN(value)) {
+                    const bgColor = getColor(value, min, max);
+                    const textColor = getContrastColor(bgColor);
+                    row.cells[j].style.backgroundColor = bgColor;
+                    row.cells[j].style.color = textColor;
+                }
+            }
+        }
+    }
+
+    function getColor(value, min, max) {
+        const percent = (value - min) / (max - min);
+        const red = 255;
+        const green = Math.floor(255 * (1 - percent));
+        const blue = Math.floor(255 * (1 - percent));
+        return 'rgb(' + red + ',' + green + ',' + blue + ')';
+    }
+
+    function getContrastColor(bgColor) {
+        const color = bgColor.match(/\d+/g);
+        const r = parseInt(color[0]);
+        const g = parseInt(color[1]);
+        const b = parseInt(color[2]);
+
+        // Calculate the luminance
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+        return luminance > 0.5 ? 'black' : 'white';
+    }
+
+    function customDateRange() {
+        if (document.getElementById("start-date").value) {
+            startDate = formatDate(document.getElementById("start-date").value);
+        }
+        if (document.getElementById("end-date").value) {
+            endDate = formatDate(document.getElementById("end-date").value);
+        }
+        if (document.getElementById("start-date").value && document.getElementById("end-date").value) {
+            persistDateRange(-1);
+            getData();
+        }
+    }
+
+    function formatDate(d, includeTime) {
+        if (d instanceof Date) {
+            if (includeTime) {
+                return Ext4.util.Format.date(d, 'Y-m-d H:i:s');
+            }
+            else {
+                return Ext4.util.Format.date(d, 'Y-m-d');
+            }
+        }
+        else if (typeof(d) === 'string' && (d.length === 19 || d.length === 23)) {
+            // support format of strings like "2013-08-27 14:45:49" or "2013-08-16 20:26:28.000"
+            return includeTime ? d : d.substring(0, d.indexOf(' '));
+        }
+        else {
+            return d;
+        }
+    }
+
+    function getInitialDateRange() {
+        LABKEY.Ajax.request({
+            url: LABKEY.ActionURL.buildURL('targetedms', 'leveyJenningsPlotOptions.api'),
+            method: 'POST',
+            scope: this,
+            success: LABKEY.Utils.getCallbackWrapper(function(response) {
+                Ext4.iterate(response.properties, function(key, value) {
+                    if (key === 'startDate') {
+                        startDate = formatDate(value);
+                    }
+                    if (key === 'endDate') {
+                        endDate = formatDate(value);
+                    }
+
+                    if (key === 'dateRangeOffset') {
+                        dateRangeOffset = parseInt(value);
+                    }
+
+                });
+
+                if (dateRangeOffset ===-1 && startDate && endDate) {
+                    const datePickerContainer = document.getElementById('date-picker-container');
+                    document.getElementById('date-range').value = '-1';
+                    datePickerContainer.style.display = 'block';
+                    document.getElementById('start-date').value = formatDate(startDate);
+                    document.getElementById('end-date').value = formatDate(endDate);
+                }
+                else {
+                    document.getElementById('date-range').value = dateRangeOffset;
+                }
+                getMinMaxDate();
+            }, this, false)
+        });
+    }
+
+    function persistDateRange(dateRangeOffset) {
+        LABKEY.Ajax.request({
+            url: LABKEY.ActionURL.buildURL('targetedms', 'leveyJenningsPlotOptions.api'),
+            method: 'POST',
+            params: { startDate: startDate, endDate: endDate, dateRangeOffset: dateRangeOffset },
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const dateRangeSelect = document.getElementById('date-range');
+        const datePickerContainer = document.getElementById('date-picker-container');
+        const startDateInput = document.getElementById('start-date');
+        const endDateInput = document.getElementById('end-date');
+
+        dateRangeSelect.addEventListener('change', function () {
+            if (dateRangeSelect.value === '-1') {  // Custom range selected
+                datePickerContainer.style.display = 'block';
+                if (startDateInput.value && endDateInput.value) {
+                    startDate = formatDate(startDateInput.value);
+                    endDate = formatDate(endDateInput.value);
+                    getData();
+                }
+            } else {
+                datePickerContainer.style.display = 'none';
+                startDate = formatDate(calculateStartDateByOffset(parseInt(dateRangeSelect.value)));
+                endDate = formatDate(calculateEndDateByOffset(parseInt(dateRangeSelect.value)));
+                getData();
+            }
+            persistDateRange(parseInt(dateRangeSelect.value));
+        });
+
+        startDateInput.addEventListener('change', function () {
+            customDateRange();
+        });
+
+        endDateInput.addEventListener('change', function () {
+            customDateRange();
+        });
+
+    });
+
+    Ext4.onReady(init);
+
+</script>

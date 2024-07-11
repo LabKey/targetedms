@@ -18,6 +18,8 @@ package org.labkey.targetedms;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keypoint.PngEncoder;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGeneratorContext;
 import org.apache.batik.svggen.SVGGraphics2D;
@@ -43,7 +45,25 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
-import org.labkey.api.action.*;
+import org.labkey.api.action.ApiJsonForm;
+import org.labkey.api.action.ApiJsonWriter;
+import org.labkey.api.action.ApiResponse;
+import org.labkey.api.action.ApiSimpleResponse;
+import org.labkey.api.action.ApiUsageException;
+import org.labkey.api.action.ExportAction;
+import org.labkey.api.action.FormHandlerAction;
+import org.labkey.api.action.FormViewAction;
+import org.labkey.api.action.HasViewContext;
+import org.labkey.api.action.LabKeyError;
+import org.labkey.api.action.Marshal;
+import org.labkey.api.action.Marshaller;
+import org.labkey.api.action.MutatingApiAction;
+import org.labkey.api.action.QueryViewAction;
+import org.labkey.api.action.ReadOnlyApiAction;
+import org.labkey.api.action.ReturnUrlForm;
+import org.labkey.api.action.SimpleErrorView;
+import org.labkey.api.action.SimpleViewAction;
+import org.labkey.api.action.SpringActionController;
 import org.labkey.api.admin.AdminUrls;
 import org.labkey.api.analytics.AnalyticsService;
 import org.labkey.api.attachments.DocumentConversionService;
@@ -115,6 +135,7 @@ import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.targetedms.TargetedMSUrls;
+import org.labkey.api.targetedms.model.QCMetricConfiguration;
 import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.util.Button;
 import org.labkey.api.util.ConfigurationException;
@@ -162,8 +183,8 @@ import org.labkey.targetedms.model.AutoQCPingData;
 import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
+import org.labkey.targetedms.model.PeptideOutliers;
 import org.labkey.targetedms.model.PrecursorChromInfoLitePlus;
-import org.labkey.api.targetedms.model.QCMetricConfiguration;
 import org.labkey.targetedms.model.QCPlotFragment;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.model.passport.IKeyword;
@@ -191,9 +212,50 @@ import org.labkey.targetedms.parser.list.ListDefinition;
 import org.labkey.targetedms.parser.skyaudit.AuditLogEntry;
 import org.labkey.targetedms.parser.speclib.SpeclibReaderException;
 import org.labkey.targetedms.pipeline.ChromatogramCrawlerJob;
-import org.labkey.targetedms.query.*;
+import org.labkey.targetedms.query.ChromatogramDisplayColumnFactory;
+import org.labkey.targetedms.query.ConflictResultsManager;
+import org.labkey.targetedms.query.GroupChromatogramsTableInfo;
+import org.labkey.targetedms.query.IsotopeLabelManager;
+import org.labkey.targetedms.query.LibraryManager;
+import org.labkey.targetedms.query.ModificationManager;
+import org.labkey.targetedms.query.ModifiedSequenceDisplayColumn;
+import org.labkey.targetedms.query.MoleculeManager;
+import org.labkey.targetedms.query.MoleculePrecursorManager;
+import org.labkey.targetedms.query.PTMPercentsGroupedCustomizer;
+import org.labkey.targetedms.query.PeptideChromatogramsTableInfo;
+import org.labkey.targetedms.query.PeptideGroupManager;
+import org.labkey.targetedms.query.PeptideManager;
+import org.labkey.targetedms.query.PrecursorChromatogramsTableInfo;
+import org.labkey.targetedms.query.PrecursorManager;
+import org.labkey.targetedms.query.QCAnnotationTypeTable;
+import org.labkey.targetedms.query.ReplicateManager;
+import org.labkey.targetedms.query.SampleFileTable;
+import org.labkey.targetedms.query.SkylineListManager;
+import org.labkey.targetedms.query.SkylineListSchema;
+import org.labkey.targetedms.query.TargetedMSTable;
+import org.labkey.targetedms.query.TransitionManager;
 import org.labkey.targetedms.search.ModificationSearchWebPart;
-import org.labkey.targetedms.view.*;
+import org.labkey.targetedms.view.CalibrationCurveChart;
+import org.labkey.targetedms.view.CalibrationCurveView;
+import org.labkey.targetedms.view.CalibrationCurvesView;
+import org.labkey.targetedms.view.ChromatogramGridView;
+import org.labkey.targetedms.view.ChromatogramsDataRegion;
+import org.labkey.targetedms.view.DocumentPrecursorsView;
+import org.labkey.targetedms.view.DocumentTransitionsView;
+import org.labkey.targetedms.view.DocumentView;
+import org.labkey.targetedms.view.FiguresOfMeritView;
+import org.labkey.targetedms.view.GroupComparisonView;
+import org.labkey.targetedms.view.InstrumentSummaryWebPart;
+import org.labkey.targetedms.view.LibraryQueryViewWebPart;
+import org.labkey.targetedms.view.ModifiedPeptideHtmlMaker;
+import org.labkey.targetedms.view.MoleculePrecursorChromatogramsView;
+import org.labkey.targetedms.view.PeptidePrecursorChromatogramsView;
+import org.labkey.targetedms.view.PeptidePrecursorsView;
+import org.labkey.targetedms.view.PeptideTransitionsView;
+import org.labkey.targetedms.view.QCSummaryWebPart;
+import org.labkey.targetedms.view.SmallMoleculePrecursorsView;
+import org.labkey.targetedms.view.SmallMoleculeTransitionsView;
+import org.labkey.targetedms.view.TargetedMsRunListView;
 import org.labkey.targetedms.view.spectrum.LibrarySpectrumMatch;
 import org.labkey.targetedms.view.spectrum.LibrarySpectrumMatchGetter;
 import org.labkey.targetedms.view.spectrum.PeptideSpectrumView;
@@ -203,8 +265,6 @@ import org.springframework.web.servlet.ModelAndView;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -1251,6 +1311,53 @@ public class TargetedMSController extends SpringActionController
                 response.put("displayConfig", toSend);
             }
 
+            return response;
+        }
+    }
+
+    public static class PeptideOutliersForm
+    {
+        private Date _startDate;
+        private Date _endDate;
+
+        public Date getStartDate()
+        {
+            return _startDate;
+        }
+
+        public void setStartDate(Date startDate)
+        {
+            _startDate = startDate;
+        }
+
+        public Date getEndDate()
+        {
+            return _endDate;
+        }
+
+        public void setEndDate(Date endDate)
+        {
+            _endDate = endDate;
+        }
+    }
+
+    @RequiresPermission(ReadPermission.class)
+    public static class GetPeptideOutliersAction extends ReadOnlyApiAction<PeptideOutliersForm>
+    {
+        @Override
+        public Object execute(PeptideOutliersForm form, BindException errors)
+        {
+            ApiSimpleResponse response = new ApiSimpleResponse();
+            TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+
+            OutlierGenerator outlierGenerator = OutlierGenerator.get();
+            List<GuideSet> guideSets = TargetedMSManager.getGuideSets(getContainer(), getUser());
+            List<QCMetricConfiguration> enabledQCMetricConfigurations = TargetedMSManager.getEnabledQCMetricConfigurations(schema);
+            List<RawMetricDataSet> rawMetricDataSets = outlierGenerator.getRawMetricDataSets(schema, enabledQCMetricConfigurations, form.getStartDate(), form.getEndDate(), Collections.emptyList(), true, false, true);
+            Map<GuideSetKey, GuideSetStats> stats = outlierGenerator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+            response.put("peptideOutliers", outlierGenerator.getPeptideOutliers(rawMetricDataSets, stats).stream().map(PeptideOutliers::toJSON).collect(Collectors.toList()));
+            response.put("metrics", enabledQCMetricConfigurations.stream().map(QCMetricConfiguration::getName).collect(Collectors.toList()));
+            response.put("replicatesCount", TargetedMSService.get().getSampleFiles(getContainer(), getUser(), null).size());
             return response;
         }
     }
