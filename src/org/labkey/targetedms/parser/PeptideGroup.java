@@ -15,6 +15,7 @@
 
 package org.labkey.targetedms.parser;
 
+import org.apache.commons.lang3.StringUtils;
 import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.targetedms.query.PeptideGroupManager;
 
@@ -30,6 +31,8 @@ import java.util.stream.Collectors;
  */
 public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
 {
+    private static final int MAX_LENGTH = 1050;
+
     private long _runId;
 
     private String _label;
@@ -64,7 +67,7 @@ public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
 
     public void setLabel(String label)
     {
-        _label = label;
+        _label = StringUtils.truncate(label, MAX_LENGTH);
     }
 
     public String getName()
@@ -74,7 +77,7 @@ public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
 
     public void setName(String name)
     {
-        _name = name;
+        _name = StringUtils.truncate(name, MAX_LENGTH);
     }
 
     public String getDescription()
@@ -84,7 +87,7 @@ public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
 
     public void setDescription(String description)
     {
-        _description = description;
+        _description = StringUtils.truncate(description, MAX_LENGTH);
     }
 
     public boolean isDecoy()
@@ -153,7 +156,7 @@ public class PeptideGroup extends AnnotatedEntity<PeptideGroupAnnotation>
 
     public void setAltDescription(String altDescription)
     {
-        _altDescription = altDescription;
+        _altDescription = StringUtils.truncate(altDescription, MAX_LENGTH);
     }
 
     public Protein addSingleProtein()
