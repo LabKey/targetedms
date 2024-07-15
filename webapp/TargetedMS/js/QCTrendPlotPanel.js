@@ -1551,7 +1551,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         .attr('x', xAcc).attr('y', yRange[1])
                         .attr('width', widthAcc).attr('height', yRange[0] - yRange[1])
                         .attr('stroke', color).attr('stroke-opacity', 0.1)
-                        .attr('fill', color).attr('fill-opacity', 0.1);
+                        .attr('fill', color).attr('fill-opacity', 0.1)
+                        .append("title")
+                        .text(function (d) {
+                            return "Selected replicate: " + Ext4.String.htmlEncode(plot.data[d.EndIndex].ReplicateName);
+                        });
 
                 this.sendSvgElementToBack(plot, outlierRect);
             }
