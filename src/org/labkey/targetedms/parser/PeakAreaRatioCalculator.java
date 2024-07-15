@@ -60,6 +60,9 @@ public class PeakAreaRatioCalculator
         {
             if  (precursor.getSpectrumFilter() != null)
             {
+                // Ideally, ratios would be calculated separately between Precursors with the same Spectrum Filter.
+                // However, we only store one ratio in the database for each Peptide, so we just skip precursors
+                // which have a Spectrum Filter.
                 continue;
             }
             for(PrecursorChromInfo precursorChromInfo : precursor.getChromInfoList())
