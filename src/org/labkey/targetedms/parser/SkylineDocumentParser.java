@@ -3113,6 +3113,7 @@ public class SkylineDocumentParser implements AutoCloseable
         {
             return Collections.emptyList();
         }
+        int traceMetricIndex = 1;
         for (ChromGroupHeaderInfo chromatogram : _binaryParser.getChromatograms())
         {
             // Sample-scoped chromatograms have a magic precursor MZ value
@@ -3144,7 +3145,14 @@ public class SkylineDocumentParser implements AutoCloseable
                     ChromatogramGroupId chromatogramGroupId = _binaryParser.getTextId(chromatogram);
                     if (chromatogramGroupId != null)
                     {
-                        info.setTextId(chromatogramGroupId.getQcTraceName());
+                        if (chromatogramGroupId.getQcTraceName() == null && chromatogram.getFlagValues().contains(ChromGroupHeaderInfo.FlagValues.extracted_qc_trace))
+                        {
+                            info.setTextId("QC Trace " + traceMetricIndex++);
+                        }
+                        else
+                        {
+                            info.setTextId(chromatogramGroupId.getQcTraceName());
+                        }
                     }
                     info.setChromatogramFormat(chromatogram.getChromatogramBinaryFormat().ordinal());
                     info.setChromatogramOffset(chromatogram.getLocationPoints());
