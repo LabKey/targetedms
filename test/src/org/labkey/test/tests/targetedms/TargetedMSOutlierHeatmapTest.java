@@ -5,6 +5,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.BaseWebDriverTest;
+import org.labkey.test.Locator;
 import org.labkey.test.components.targetedms.OutlierHeatmapSummaryWebPart;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
@@ -50,7 +51,7 @@ public class TargetedMSOutlierHeatmapTest extends TargetedMSTest
     }
 
     @Test
-    public void testHeatMapColorAndValues()
+    public void testHeatMapColorAndValues() throws InterruptedException
     {
         log("Updating the Metric type values");
         goToProjectHome();
@@ -67,7 +68,7 @@ public class TargetedMSOutlierHeatmapTest extends TargetedMSTest
         Assert.assertEquals("Incorrect total replicate count", "47", outlierHeatmap.getTotalReplicateCount().trim());
 
         log("Verify data range: " + OutlierHeatmapSummaryWebPart.HeatmapDateRange.Last_7_Days);
-        outlierHeatmap.setDateRange(OutlierHeatmapSummaryWebPart.HeatmapDateRange.Last_7_Days);
+        outlierHeatmap.setDateRange(OutlierHeatmapSummaryWebPart.HeatmapDateRange.Last_7_Days, true);
         Assert.assertEquals("Incorrect outlier count for " + QCPlotsWebPart.MetricType.FWHM, "1",
                 outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.FWHM).getText());
 
@@ -80,9 +81,10 @@ public class TargetedMSOutlierHeatmapTest extends TargetedMSTest
                 outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.RETENTION).getAttribute("style").contains("background-color: rgb(255, 182, 182)"));
 
         log("Verify Custom date range");
-        outlierHeatmap.setDateRange(OutlierHeatmapSummaryWebPart.HeatmapDateRange.Custom_Range)
-                .setStartDate("08/01/2013")
-                .setEndDate("08/15/2013");
+        outlierHeatmap.setDateRange(OutlierHeatmapSummaryWebPart.HeatmapDateRange.Custom_Range, false);
+        outlierHeatmap.setStartDate("2013-08-01");
+        outlierHeatmap.setEndDate("2013-08-15");
+        click(Locator.tagContainingText("div", "No Outliers"));
         Assert.assertEquals("Incorrect outlier count for " + QCPlotsWebPart.MetricType.PRECURSOR_AREA, "11",
                 outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.FWHM).getText());
     }

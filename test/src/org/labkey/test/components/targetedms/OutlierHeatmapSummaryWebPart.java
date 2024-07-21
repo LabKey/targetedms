@@ -28,10 +28,18 @@ public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSumm
                 getWrapper().longWaitForPage);
     }
 
-    public OutlierHeatmapSummaryWebPart setDateRange(HeatmapDateRange value)
+    public OutlierHeatmapSummaryWebPart setDateRange(HeatmapDateRange value, boolean waitForReferesh)
     {
-        doAndWaitForElementToRefresh(() -> elementCache().dateRange.selectByVisibleText(value.getLabel()),
-                elementCache().heatmapLoc, getWrapper().defaultWaitForPage);
+        if (waitForReferesh)
+        {
+            doAndWaitForElementToRefresh(() -> elementCache().dateRange.selectByVisibleText(value.getLabel()),
+                    elementCache().heatmapLoc, getWrapper().defaultWaitForPage);
+        }
+        else
+        {
+            elementCache().dateRange.selectByVisibleText(value.getLabel());
+        }
+
         return this;
     }
 
@@ -43,7 +51,9 @@ public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSumm
 
     public OutlierHeatmapSummaryWebPart setEndDate(String value)
     {
-        elementCache().endDate.set(value);
+        doAndWaitForElementToRefresh(() -> elementCache().endDate.set(value),
+                elementCache().heatmapLoc, getWrapper().defaultWaitForPage);
+
         return this;
     }
 
