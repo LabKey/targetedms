@@ -1521,6 +1521,8 @@ public class SkylineDocImporter
                         {
                             if (precursor.getIsotopeLabelId() != numLabelId)
                                 continue;
+                            if (precursor.getSpectrumFilter() != null)
+                                continue;
 
                             PrecursorAreaRatio pRatio = areaRatioCalculator.getPrecursorAreaRatio(sampleFile.getId(),
                                     precursor,

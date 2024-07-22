@@ -198,6 +198,14 @@ public class TargetedMSDocumentFormatsTest extends TargetedMSTest
         Assert.assertEquals(0, countMissingChromatograms(fileName));
     }
 
+    @Test
+    public void testSpectrumFilterDocument() throws Exception {
+        goToProjectHome(getProjectName());
+        String fileName = "SpectrumFilterTest.sky.zip";
+        importData(SAMPLEDATA_FOLDER + fileName, ++JOB_COUNT);
+        Assert.assertEquals(0, countMissingChromatograms(fileName));
+    }
+
     private int countMissingChromatograms(String file) throws Exception
     {
         Connection cn = createDefaultConnection();
