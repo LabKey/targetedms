@@ -9,6 +9,7 @@ import org.labkey.test.components.html.Table;
 import org.labkey.test.util.DataRegionTable;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 
 public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSummaryWebPart.Elements>
@@ -28,9 +29,9 @@ public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSumm
                 getWrapper().longWaitForPage);
     }
 
-    public OutlierHeatmapSummaryWebPart setDateRange(HeatmapDateRange value, boolean waitForReferesh)
+    public OutlierHeatmapSummaryWebPart setDateRange(HeatmapDateRange value, boolean waitForRefresh)
     {
-        if (waitForReferesh)
+        if (waitForRefresh)
         {
             doAndWaitForElementToRefresh(() -> elementCache().dateRange.selectByVisibleText(value.getLabel()),
                     elementCache().heatmapLoc, getWrapper().defaultWaitForPage);
@@ -65,6 +66,15 @@ public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSumm
     public int getMetricIndex(QCPlotsWebPart.MetricType metricType)
     {
        return elementCache().heatmapTable.getTableHeaderIndex(metricType.toString());
+    }
+
+    public void doAndWaitForTableUpdate(Runnable function)
+    {
+        Locator beforeTable = elementCache().heatmapLoc;
+        getWrapper().doAndWaitForElementToRefresh(() -> {
+            function.run();
+            clearElementCache();
+        }, beforeTable, getWrapper().shortWait());
     }
 
     public String getTotalReplicateCount()

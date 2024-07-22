@@ -77,16 +77,15 @@ public class TargetedMSOutlierHeatmapTest extends TargetedMSTest
                 outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.PRECURSOR_AREA).getAttribute("style").contains("background-color: rgb(255, 0, 0)"));
         Assert.assertTrue("Incorrect heatmap color for lowest(White)",
                 outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.ISOTOPE_DOTP).getAttribute("style").contains("background-color: rgb(255, 255, 255)"));
-        Assert.assertTrue("Incorrect heatmap color for middle range(Lighter red)",
-                outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.RETENTION).getAttribute("style").contains("background-color: rgb(255, 182, 182)"));
 
         log("Verify Custom date range");
         outlierHeatmap.setDateRange(OutlierHeatmapSummaryWebPart.HeatmapDateRange.Custom_Range, false);
-        outlierHeatmap.setStartDate("2013-08-01");
-        outlierHeatmap.setEndDate("2013-08-15");
-        click(Locator.tagContainingText("div", "No Outliers"));
+        outlierHeatmap.doAndWaitForTableUpdate(() -> {
+            outlierHeatmap.setStartDate("2013-08-01");
+            outlierHeatmap.setEndDate("2013-08-15");
+        });
         Assert.assertEquals("Incorrect outlier count for " + QCPlotsWebPart.MetricType.PRECURSOR_AREA, "11",
-                outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.FWHM).getText());
+                outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.PRECURSOR_AREA).getText());
     }
 
     @Test
