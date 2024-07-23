@@ -9,6 +9,7 @@ import org.labkey.test.components.html.Table;
 import org.labkey.test.util.DataRegionTable;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 
 public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSummaryWebPart.Elements>
@@ -28,17 +29,11 @@ public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSumm
                 getWrapper().longWaitForPage);
     }
 
-    public OutlierHeatmapSummaryWebPart setDateRange(HeatmapDateRange value, boolean waitForReferesh)
+    public OutlierHeatmapSummaryWebPart setDateRange(HeatmapDateRange value)
     {
-        if (waitForReferesh)
-        {
-            doAndWaitForElementToRefresh(() -> elementCache().dateRange.selectByVisibleText(value.getLabel()),
-                    elementCache().heatmapLoc, getWrapper().defaultWaitForPage);
-        }
-        else
-        {
-            elementCache().dateRange.selectByVisibleText(value.getLabel());
-        }
+
+        doAndWaitForElementToRefresh(() -> elementCache().dateRange.selectByVisibleText(value.getLabel()),
+                elementCache().heatmapLoc, getWrapper().defaultWaitForPage);
 
         return this;
     }
@@ -57,6 +52,16 @@ public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSumm
         return this;
     }
 
+    public OutlierHeatmapSummaryWebPart setCustomDateRange(String startDate, String endDate)
+    {
+        elementCache().dateRange.selectByVisibleText(HeatmapDateRange.Custom_Range.getLabel());
+        doAndWaitForTableUpdate(() -> {
+            setStartDate(startDate);
+            setEndDate(endDate);
+        });
+        return this;
+    }
+
     public WebElement getCellElement(int rowIndex, QCPlotsWebPart.MetricType metricType)
     {
         return elementCache().heatmapTable.getDataAsElement(rowIndex, getMetricIndex(metricType));
@@ -64,18 +69,28 @@ public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSumm
 
     public int getMetricIndex(QCPlotsWebPart.MetricType metricType)
     {
-       return elementCache().heatmapTable.getTableHeaderIndex(metricType.toString());
+        return elementCache().heatmapTable.getTableHeaderIndex(metricType.toString());
+    }
+
+    public void doAndWaitForTableUpdate(Runnable function)
+    {
+        Locator beforeTable = elementCache().heatmapLoc;
+        getWrapper().doAndWaitForElementToRefresh(() -> {
+            function.run();
+            clearElementCache();
+        }, beforeTable, getWrapper().shortWait());
     }
 
     public String getTotalReplicateCount()
     {
-       return elementCache().replicateCount.getText();
+        return elementCache().replicateCount.getText();
     }
 
     public Table getHeatmapTable()
     {
         return elementCache().heatmapTable;
     }
+
     @Override
     protected OutlierHeatmapSummaryWebPart.Elements newElementCache()
     {
@@ -108,11 +123,11 @@ public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSumm
 
     public class Elements extends BodyWebPart<?>.ElementCache
     {
-        final Select dateRange = SelectWrapper.Select(Locator.id("date-range")).refindWhenNeeded(this);
-        final Input startDate = new Input(Locator.id("start-date").refindWhenNeeded(this), getDriver());
-        final Input endDate = new Input(Locator.id("end-date").refindWhenNeeded(this), getDriver());
+        final Select dateRange = SelectWrapper.Select(Locator.id("date-range")).findWhenNeeded(this);
+        final Input startDate = new Input(Locator.id("start-date").findWhenNeeded(this), getDriver());
+        final Input endDate = new Input(Locator.id("end-date").findWhenNeeded(this), getDriver());
         final Locator heatmapLoc = Locator.id("heatmap-table");
         final Table heatmapTable = new Table(getDriver(), heatmapLoc.refindWhenNeeded(this));
-        final WebElement replicateCount = Locator.id("total-replicates").refindWhenNeeded(this);
+        final WebElement replicateCount = Locator.id("total-replicates").findWhenNeeded(this);
     }
 }
