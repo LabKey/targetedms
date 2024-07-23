@@ -736,6 +736,10 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             hideSDLines: true
         };
 
+
+        if (plotType === 'Levey-Jennings') {
+            trendLineProps.showBoundLines = false;
+        }
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(combinePlotData, plotType, isCUSUMMean, metricProps));
 
         // Suppress the mean line for multi-series plots
