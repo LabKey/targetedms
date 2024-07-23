@@ -29,17 +29,11 @@ public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSumm
                 getWrapper().longWaitForPage);
     }
 
-    public OutlierHeatmapSummaryWebPart setDateRange(HeatmapDateRange value, boolean waitForRefresh)
+    public OutlierHeatmapSummaryWebPart setDateRange(HeatmapDateRange value)
     {
-        if (waitForRefresh)
-        {
-            doAndWaitForElementToRefresh(() -> elementCache().dateRange.selectByVisibleText(value.getLabel()),
-                    elementCache().heatmapLoc, getWrapper().defaultWaitForPage);
-        }
-        else
-        {
-            elementCache().dateRange.selectByVisibleText(value.getLabel());
-        }
+
+        doAndWaitForElementToRefresh(() -> elementCache().dateRange.selectByVisibleText(value.getLabel()),
+                elementCache().heatmapLoc, getWrapper().defaultWaitForPage);
 
         return this;
     }
@@ -58,6 +52,16 @@ public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSumm
         return this;
     }
 
+    public OutlierHeatmapSummaryWebPart setCustomDateRange(String startDate, String endDate)
+    {
+        elementCache().dateRange.selectByVisibleText(HeatmapDateRange.Custom_Range.getLabel());
+        doAndWaitForTableUpdate(() -> {
+            setStartDate(startDate);
+            setEndDate(endDate);
+        });
+        return this;
+    }
+
     public WebElement getCellElement(int rowIndex, QCPlotsWebPart.MetricType metricType)
     {
         return elementCache().heatmapTable.getDataAsElement(rowIndex, getMetricIndex(metricType));
@@ -65,7 +69,7 @@ public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSumm
 
     public int getMetricIndex(QCPlotsWebPart.MetricType metricType)
     {
-       return elementCache().heatmapTable.getTableHeaderIndex(metricType.toString());
+        return elementCache().heatmapTable.getTableHeaderIndex(metricType.toString());
     }
 
     public void doAndWaitForTableUpdate(Runnable function)
@@ -79,13 +83,14 @@ public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSumm
 
     public String getTotalReplicateCount()
     {
-       return elementCache().replicateCount.getText();
+        return elementCache().replicateCount.getText();
     }
 
     public Table getHeatmapTable()
     {
         return elementCache().heatmapTable;
     }
+
     @Override
     protected OutlierHeatmapSummaryWebPart.Elements newElementCache()
     {

@@ -67,7 +67,7 @@ public class TargetedMSOutlierHeatmapTest extends TargetedMSTest
         Assert.assertEquals("Incorrect total replicate count", "47", outlierHeatmap.getTotalReplicateCount().trim());
 
         log("Verify data range: " + OutlierHeatmapSummaryWebPart.HeatmapDateRange.Last_7_Days);
-        outlierHeatmap.setDateRange(OutlierHeatmapSummaryWebPart.HeatmapDateRange.Last_7_Days, true);
+        outlierHeatmap.setDateRange(OutlierHeatmapSummaryWebPart.HeatmapDateRange.Last_7_Days);
         Assert.assertEquals("Incorrect outlier count for " + QCPlotsWebPart.MetricType.FWHM, "1",
                 outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.FWHM).getText());
 
@@ -78,11 +78,7 @@ public class TargetedMSOutlierHeatmapTest extends TargetedMSTest
                 outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.ISOTOPE_DOTP).getCssValue("background-color"));
 
         log("Verify Custom date range");
-        outlierHeatmap.setDateRange(OutlierHeatmapSummaryWebPart.HeatmapDateRange.Custom_Range, false);
-        outlierHeatmap.doAndWaitForTableUpdate(() -> {
-            outlierHeatmap.setStartDate("2013-08-01");
-            outlierHeatmap.setEndDate("2013-08-15");
-        });
+        outlierHeatmap.setCustomDateRange("2013-08-01","2013-08-15");
         Assert.assertEquals("Incorrect outlier count for " + QCPlotsWebPart.MetricType.PRECURSOR_AREA, "11",
                 outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.PRECURSOR_AREA).getText());
     }
