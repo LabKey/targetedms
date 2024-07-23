@@ -5,7 +5,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.BaseWebDriverTest;
-import org.labkey.test.Locator;
 import org.labkey.test.components.targetedms.OutlierHeatmapSummaryWebPart;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
@@ -51,7 +50,7 @@ public class TargetedMSOutlierHeatmapTest extends TargetedMSTest
     }
 
     @Test
-    public void testHeatMapColorAndValues() throws InterruptedException
+    public void testHeatMapColorAndValues()
     {
         log("Updating the Metric type values");
         goToProjectHome();
@@ -73,10 +72,10 @@ public class TargetedMSOutlierHeatmapTest extends TargetedMSTest
                 outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.FWHM).getText());
 
         log("Verify heatmap colors");
-        Assert.assertTrue("Incorrect heatmap color for highest(Red)",
-                outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.PRECURSOR_AREA).getAttribute("style").contains("background-color: rgb(255, 0, 0)"));
-        Assert.assertTrue("Incorrect heatmap color for lowest(White)",
-                outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.ISOTOPE_DOTP).getAttribute("style").contains("background-color: rgb(255, 255, 255)"));
+        Assert.assertEquals("Incorrect heatmap color for highest(Red)", "rgb(255, 0, 0)",
+                outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.PRECURSOR_AREA).getCssValue("background-color"));
+        Assert.assertEquals("Incorrect heatmap color for lowest(White)", "rgb(255, 255, 255)",
+                outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.ISOTOPE_DOTP).getCssValue("background-color"));
 
         log("Verify Custom date range");
         outlierHeatmap.setDateRange(OutlierHeatmapSummaryWebPart.HeatmapDateRange.Custom_Range, false);
