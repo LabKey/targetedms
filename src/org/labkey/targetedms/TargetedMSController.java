@@ -1325,7 +1325,7 @@ public class TargetedMSController extends SpringActionController
             return _startDate;
         }
 
-        public void setStartDate(Date startDate)
+        public void setStartDate(java.sql.Date startDate)
         {
             _startDate = startDate;
         }
@@ -1335,7 +1335,7 @@ public class TargetedMSController extends SpringActionController
             return _endDate;
         }
 
-        public void setEndDate(Date endDate)
+        public void setEndDate(java.sql.Date endDate)
         {
             _endDate = endDate;
         }

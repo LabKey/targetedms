@@ -224,8 +224,8 @@
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetPeptideOutliers.api'),
             params: {
-                startDate: startDate,
-                endDate: endDate
+                startDate: formatDate(startDate, true),
+                endDate: formatDate(endDate, true)
             },
             success: function (response) {
                 const parsed = JSON.parse(response.responseText);
