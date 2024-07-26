@@ -19,18 +19,21 @@ import org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ChromatogramGroupId
 {
     private Target _target;
     private String _qcTraceName;
+    private SpectrumFilter _spectrumFilter;
 
     private ChromatogramGroupId()
     {
     }
-    public ChromatogramGroupId(Target target)
+    public ChromatogramGroupId(Target target, SpectrumFilter spectrumFilter)
     {
         _target = target;
+        _spectrumFilter = spectrumFilter;
     }
 
     public Target getTarget()
@@ -41,6 +44,11 @@ public class ChromatogramGroupId
     public String getQcTraceName()
     {
         return _qcTraceName;
+    }
+
+    public SpectrumFilter getSpectrumFilter()
+    {
+        return _spectrumFilter;
     }
 
     public static ChromatogramGroupId forQcTraceName(String qcTraceName)
@@ -55,14 +63,24 @@ public class ChromatogramGroupId
         List<Target> targets = new ArrayList<>();
         // Make one-based lookups easy
         targets.add(null);
+
+        List<SpectrumFilter.FilterClause> filterClauses = new ArrayList<>();
+
         for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target target : proto.getTargetsList())
         {
             targets.add(new Target(target));
         }
+        for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter spectrumFilter : proto.getFiltersList()) 
+        {
+            filterClauses.add(SpectrumFilter.FilterClause.fromProtocolMessage(spectrumFilter));
+        }
         List<ChromatogramGroupId> list = new ArrayList<>();
         for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupId chromatogramGroupId : proto.getChromatogramGroupIdsList())
         {
-            list.add(new ChromatogramGroupId(targets.get(chromatogramGroupId.getTargetIndex())));
+            SpectrumFilter spectrumFilter = SpectrumFilter.fromFilterClauses(
+                    chromatogramGroupId.getFilterIndexesList().stream()
+                    .map(filterClauses::get).collect(Collectors.toList())).orElse(null);
+            list.add(new ChromatogramGroupId(targets.get(chromatogramGroupId.getTargetIndex()), spectrumFilter));
         }
         return list;
     }

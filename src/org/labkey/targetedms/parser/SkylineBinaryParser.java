@@ -383,7 +383,7 @@ public class SkylineBinaryParser
         {
             return null;
         }
-        return new ChromatogramGroupId(target);
+        return new ChromatogramGroupId(target, null);
     }
 
     public String getFilePath(ChromGroupHeaderInfo chromGroupHeaderInfo) {

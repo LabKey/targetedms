@@ -217,11 +217,10 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
                 }
             }
 
+            let upper = Number.isFinite(metricInfo.upperBound) ? metricInfo.upperBound : 3;
+            let lower = Number.isFinite(metricInfo.lowerBound) ? metricInfo.lowerBound : -3;
             if ( (metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.LeveyJennings || metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.PlotOnly) &&
                     (!this.singlePlot && this.yAxisScale === 'standardDeviation')) {
-
-                let upper = Number.isFinite(metricInfo.upperBound) ? metricInfo.upperBound : 3;
-                let lower = Number.isFinite(metricInfo.lowerBound) ? metricInfo.lowerBound : -3;
 
                 if (lower === upper * -1) {
                     ljLegend.push({
@@ -245,6 +244,23 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
                     color: 'darkgrey',
                     shape: LABKEY.vis.TrendingLineShape.meanLJ
                 });
+            }
+
+            if (this.singlePlot && this.yAxisScale === 'standardDeviation' && metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.LeveyJennings) {
+                if (lower === upper * -1) {
+                    ljLegend.push({
+                        text: '+/- ' + upper + ' Std Dev',
+                        color: 'red',
+                        shape: LABKEY.vis.TrendingLineShape.stdDevLJ
+                    });
+                }
+                else {
+                    ljLegend.push({
+                        text: (upper > 0 ? '+' : '') + upper + '/' + (lower > 0 ? '+' : '') + lower + ' Std Dev',
+                        color: 'red',
+                        shape: LABKEY.vis.TrendingLineShape.stdDevLJ
+                    });
+                }
             }
         }
 
