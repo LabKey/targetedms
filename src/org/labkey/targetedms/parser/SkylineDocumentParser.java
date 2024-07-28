@@ -1945,7 +1945,7 @@ public class SkylineDocumentParser implements AutoCloseable
 
             if(tciList != null && !tciList.isEmpty())
             {
-                double maxHeight = 0.0;
+                double maxArea = 0.0;
                 Double bestMassError = null;
                 for(Tuple3<TransitionChromInfo, Boolean, Integer> tciInfo: tciList)
                 {
@@ -1953,10 +1953,10 @@ public class SkylineDocumentParser implements AutoCloseable
                     Boolean quantitative = tciInfo.second;
                     Integer msLevel = tciInfo.third;
 
-                    Double height = tci.getHeight();
-                    if(quantitative && height != null && height > maxHeight)
+                    Double area = tci.getArea();
+                    if(quantitative && area != null && area > maxArea)
                     {
-                        maxHeight = tci.getHeight();
+                        maxArea = area;
                         bestMassError = tci.getMassErrorPPM();
                     }
                     if (quantitative && tci.getArea() != null)
