@@ -64,7 +64,7 @@
 <div class="legend-container">
     <div class="legend-label">&nbsp; &nbsp;No Outliers</div>
     <div id="legend" class="legend"></div>
-    <div class="legend-label">Most Outliers &nbsp; &nbsp;</div>
+    <div class="legend-label" id="max-outliers"></div>
     <div>Total Replicates : </div>
     <div id="total-replicates"></div>
 </div>
@@ -243,7 +243,7 @@
 
         const min = Math.min(...values);
         const max = Math.max(...values);
-
+        document.getElementById('max-outliers').innerHTML = '&nbsp;' +  max + ' Outliers';
         // Apply colors based on values, excluding the last row (totals row)
         for (let i = 1; i < table.rows.length - 1; i++) { // skip header
             const row = table.rows[i];
