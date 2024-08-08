@@ -481,7 +481,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
                 @Override
                 public WebPartView<?> getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
                 {
-                    return ModuleHtmlView.get(getModule(), "outlierHeatmapSummary");
+                    return ModuleHtmlView.get(getModule(), "peptideSummary");
                 }
             }
         );

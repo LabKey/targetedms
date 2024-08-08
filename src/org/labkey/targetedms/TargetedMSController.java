@@ -94,6 +94,7 @@ import org.labkey.api.files.FileContentService;
 import org.labkey.api.files.view.FilesWebPart;
 import org.labkey.api.module.DefaultFolderType;
 import org.labkey.api.module.Module;
+import org.labkey.api.module.ModuleHtmlView;
 import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.module.ModuleProperty;
 import org.labkey.api.pipeline.LocalDirectory;
@@ -1194,7 +1195,8 @@ public class TargetedMSController extends SpringActionController
             calendarView.setTitle("Utilization Calendar");
             calendarView.setFrame(WebPartView.FrameType.PORTAL);
             QCSummaryWebPart summaryView = new QCSummaryWebPart(getViewContext(), null);
-            return new VBox(calendarView, summaryView);
+            ModuleHtmlView replicateSummary = ModuleHtmlView.get(ModuleLoader.getInstance().getModule(TargetedMSModule.class), "peptideSummary");
+            return new VBox(calendarView, replicateSummary, summaryView);
         }
 
         @Override

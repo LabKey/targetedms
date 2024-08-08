@@ -1,4 +1,4 @@
-<view xmlns="http://labkey.org/data/xml/view" title="Outlier Heatmap Summary">
+<view xmlns="http://labkey.org/data/xml/view" title="Peptide/Molecule Summary">
     <dependencies>
         <dependency path="internal/jQuery"/>
         <dependency path="Ext4"/>

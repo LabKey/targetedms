@@ -6,17 +6,15 @@ import org.labkey.test.components.BodyWebPart;
 import org.labkey.test.components.html.Input;
 import org.labkey.test.components.html.SelectWrapper;
 import org.labkey.test.components.html.Table;
-import org.labkey.test.util.DataRegionTable;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 
-public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSummaryWebPart.Elements>
+public class PeptideSummaryWebPart extends BodyWebPart<PeptideSummaryWebPart.Elements>
 {
-    public static final String DEFAULT_TITLE = "Outlier Heatmap Summary";
+    public static final String DEFAULT_TITLE = "Peptide/Molecule Summary";
 
-    public OutlierHeatmapSummaryWebPart(WebDriver driver)
+    public PeptideSummaryWebPart(WebDriver driver)
     {
         super(driver, DEFAULT_TITLE);
         waitForTable();
@@ -25,11 +23,11 @@ public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSumm
     public void waitForTable()
     {
         WebDriverWrapper.waitFor(() -> elementCache().heatmapLoc.isDisplayed(this),
-                "Outlier Heatmap did not load on time",
+                "Peptide/Molecule Heatmap did not load on time",
                 getWrapper().longWaitForPage);
     }
 
-    public OutlierHeatmapSummaryWebPart setDateRange(HeatmapDateRange value)
+    public PeptideSummaryWebPart setDateRange(HeatmapDateRange value)
     {
 
         doAndWaitForElementToRefresh(() -> elementCache().dateRange.selectByVisibleText(value.getLabel()),
@@ -38,13 +36,13 @@ public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSumm
         return this;
     }
 
-    public OutlierHeatmapSummaryWebPart setStartDate(String value)
+    public PeptideSummaryWebPart setStartDate(String value)
     {
         elementCache().startDate.set(value);
         return this;
     }
 
-    public OutlierHeatmapSummaryWebPart setEndDate(String value)
+    public PeptideSummaryWebPart setEndDate(String value)
     {
         doAndWaitForElementToRefresh(() -> elementCache().endDate.set(value),
                 elementCache().heatmapLoc, getWrapper().defaultWaitForPage);
@@ -52,7 +50,7 @@ public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSumm
         return this;
     }
 
-    public OutlierHeatmapSummaryWebPart setCustomDateRange(String startDate, String endDate)
+    public PeptideSummaryWebPart setCustomDateRange(String startDate, String endDate)
     {
         elementCache().dateRange.selectByVisibleText(HeatmapDateRange.Custom_Range.getLabel());
         doAndWaitForTableUpdate(() -> {
@@ -92,9 +90,9 @@ public class OutlierHeatmapSummaryWebPart extends BodyWebPart<OutlierHeatmapSumm
     }
 
     @Override
-    protected OutlierHeatmapSummaryWebPart.Elements newElementCache()
+    protected PeptideSummaryWebPart.Elements newElementCache()
     {
-        return new OutlierHeatmapSummaryWebPart.Elements();
+        return new PeptideSummaryWebPart.Elements();
     }
 
     public enum HeatmapDateRange
