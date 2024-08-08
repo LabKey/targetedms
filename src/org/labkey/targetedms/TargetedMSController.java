@@ -1359,7 +1359,7 @@ public class TargetedMSController extends SpringActionController
             Map<GuideSetKey, GuideSetStats> stats = outlierGenerator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
             response.put("peptideOutliers", outlierGenerator.getPeptideOutliers(rawMetricDataSets, stats).stream().map(PeptideOutliers::toJSON).collect(Collectors.toList()));
             response.put("metrics", enabledQCMetricConfigurations.stream().map(QCMetricConfiguration::getName).collect(Collectors.toList()));
-            response.put("replicatesCount", TargetedMSService.get().getSampleFiles(getContainer(), getUser(), null).size());
+            response.put("replicatesCount", TargetedMSService.get().getSampleFiles(getContainer(), getUser(), form.getStartDate(), form.getEndDate()).size());
             return response;
         }
     }

@@ -31,6 +31,7 @@ import org.labkey.api.targetedms.model.SampleFilePath;
 import org.labkey.api.view.ViewBackgroundInfo;
 
 import java.nio.file.Path;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -77,6 +78,7 @@ public interface TargetedMSService
     void registerTargetedMSFolderTypeListener(TargetedMSFolderTypeListener listener);
     List<TargetedMSFolderTypeListener> getTargetedMSFolderTypeListeners();
     List<SampleFileInfo> getSampleFiles(Container container, User user, Integer sampleFileLimit);
+    List<SampleFileInfo> getSampleFiles(Container container, User user, Date startDate, Date endDate);
     TargetedMSService.FolderType getFolderType(Container container);
 
     ExperimentRunType getExperimentRunType();

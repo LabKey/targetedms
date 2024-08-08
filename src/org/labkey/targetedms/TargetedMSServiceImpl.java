@@ -48,6 +48,7 @@ import org.labkey.targetedms.query.ReplicateManager;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -114,6 +115,18 @@ public class TargetedMSServiceImpl implements TargetedMSService
     public List<SampleFileInfo> getSampleFiles(Container container, User user, Integer sampleFileLimit)
     {
         return TargetedMSManager.get().getSampleFileInfos(container, user, sampleFileLimit);
+    }
+
+    @Override
+    public List<SampleFileInfo> getSampleFiles(Container container, User user, Date startDate, Date endDate)
+    {
+        List<SampleFileInfo> sampleFileInfos = TargetedMSManager.get().getSampleFileInfos(container, user, null);
+        if (!sampleFileInfos.isEmpty())
+        {
+            return  sampleFileInfos.stream().filter(sampleFileInfo -> sampleFileInfo.getAcquiredTime().after(startDate) && sampleFileInfo.getAcquiredTime().before(endDate)).toList();
+        }
+
+        return Collections.emptyList();
     }
 
     @Override
