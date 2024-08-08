@@ -8,38 +8,26 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 20px;
   }
   .legend {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 0 10px;
+    border: 1px lightgray solid;
   }
-  .legend-square {
-    width: 20px;
-    height: 20px;
-    margin-right: 2px;
-  }
-  .legend-label {
-    width: 150px;
-    text-align: center;
 
+  .legend-square {
+    width: 3em;
+    height: 1.5em;
   }
-  .arrow-left::before, .arrow-right::after {
-    content: '';
-    display: inline-block;
-    width: 0;
-    height: 0;
-    border-style: solid;
+
+  .legend-label {
+    width: 10em;
+    padding-left: 1em;
+    padding-right: 1em;
   }
-  .arrow-left::before {
-    border-width: 15px 20px 15px 0;
-    border-color: transparent black transparent transparent;
-  }
-  .arrow-right::after {
-    border-width: 15px 0 15px 20px;
-    border-color: transparent black transparent black;
+
+  .heatmap-legend-element {
+    width: 3em;
+    height: 1.5em;
   }
 
   .heatmap-table {
@@ -93,16 +81,16 @@
 
     function generateLegend() {
         const legendContainer = document.getElementById('legend');
-        const numSquares = 20;
-        const minColor = [255, 255, 255];
-        const maxColor = [255, 0, 0];
+        const numSquares = 6;
+        let alpha = 1.0;
 
         for (let i = 0; i < numSquares; i++) {
             const ratio = i / (numSquares - 1);
-            const red = Math.round(minColor[0] + ratio * (maxColor[0] - minColor[0]));
-            const green = Math.round(minColor[1] + ratio * (maxColor[1] - minColor[1]));
-            const blue = Math.round(minColor[2] + ratio * (maxColor[2] - minColor[2]));
-            const color = `rgb(${red}, ${green}, ${blue})`;
+            const red = 255;
+            const green = 0;
+            const blue = 0;
+            alpha = 1.0 - (0.2 * (numSquares - i - 1));
+            const color = `rgb(${red}, ${green}, ${blue}, ${alpha})`;
 
             const square = document.createElement('div');
             square.id = 'legend-square-' + i;
