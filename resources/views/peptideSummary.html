@@ -81,6 +81,7 @@
     <div id="total-replicates"></div>
 </div>
 
+<span id="fom-loading">Loading...<i class="fa fa-spinner fa-pulse"></i></span>
 <div id="table-container">
 
 </div>
@@ -158,6 +159,7 @@
     }
 
     function generateTable(data) {
+        $('#fom-loading').hide();
         const tableContainer = document.getElementById('table-container');
         let tableHTML = '<table id="heatmap-table" class="heatmap-table">';
         tableHTML += '<thead><tr><th></th>';
@@ -221,6 +223,7 @@
     }
 
     function getData() {
+        $('#fom-loading').show();
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetPeptideOutliers.api'),
             params: {
