@@ -46,6 +46,9 @@ import org.labkey.targetedms.query.ModificationManager;
 import org.labkey.targetedms.query.ReplicateManager;
 
 import java.nio.file.Path;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -121,9 +124,34 @@ public class TargetedMSServiceImpl implements TargetedMSService
     public List<SampleFileInfo> getSampleFiles(Container container, User user, Date startDate, Date endDate)
     {
         List<SampleFileInfo> sampleFileInfos = TargetedMSManager.get().getSampleFileInfos(container, user, null);
+        List<SampleFileInfo> result = new ArrayList<>();
         if (!sampleFileInfos.isEmpty())
         {
-            return  sampleFileInfos.stream().filter(sampleFileInfo -> sampleFileInfo.getAcquiredTime().after(startDate) && sampleFileInfo.getAcquiredTime().before(endDate)).toList();
+            for (SampleFileInfo sampleFileInfo : sampleFileInfos)
+            {
+                DateFormat format = DateFormat.getDateInstance();
+                String acquiredTime = format.format(sampleFileInfo.getAcquiredTime());
+                String sd = format.format(startDate);
+                String ed = format.format(endDate);
+                try
+                {
+                    Date acquired = format.parse(acquiredTime);
+                    Date start = format.parse(sd);
+                    Date end = format.parse(ed);
+                    if ((acquired.after(start) && acquired.before(end) || acquired.compareTo(start) == 0 || acquired.compareTo(end) == 0))
+                    {
+                        result.add(sampleFileInfo);
+                    }
+                }
+
+                catch (ParseException e)
+                {
+                    throw new RuntimeException("Error parsing date '"+ sampleFileInfo.getAcquiredTime(), e);
+                }
+
+            }
+
+            return result;
         }
 
         return Collections.emptyList();
