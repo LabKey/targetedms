@@ -40,6 +40,11 @@
     padding: 8px;
     text-align: center;
   }
+
+  .table-container {
+    margin-top: 1em;
+  }
+
 </style>
 
 <label for="date-range">Date Range:</label>
@@ -62,7 +67,7 @@
 </div>
 
 <div class="legend-container">
-    <div class="legend-label">&nbsp; &nbsp;No Outliers</div>
+    <div class="legend-label">&nbsp; &nbsp;No outliers</div>
     <div id="legend" class="legend"></div>
     <div class="legend-label" id="max-outliers"></div>
     <div>Total Replicates : </div>
@@ -70,7 +75,7 @@
 </div>
 
 <span id="fom-loading">Loading...<i class="fa fa-spinner fa-pulse"></i></span>
-<div id="table-container">
+<div id="table-container" class="table-container">
 
 </div>
 <script type="text/javascript" nonce="<%=scriptNonce%>">
@@ -243,7 +248,7 @@
 
         const min = Math.min(...values);
         const max = Math.max(...values);
-        document.getElementById('max-outliers').innerHTML = '&nbsp;' +  max + ' Outliers';
+        document.getElementById('max-outliers').innerHTML = '&nbsp;' +  max + ' outliers';
         // Apply colors based on values, excluding the last row (totals row)
         for (let i = 1; i < table.rows.length - 1; i++) { // skip header
             const row = table.rows[i];
