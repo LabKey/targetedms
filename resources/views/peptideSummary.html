@@ -60,10 +60,10 @@
 </select>
 
 <div id="date-picker-container" class="date-picker-container">
-    <label for="start-date">Start Date:</label>
-    <input type="date" id="start-date">
-    <label for="end-date">End Date:</label>
-    <input type="date" id="end-date">
+    <label for="ps-start-date">Start Date:</label>
+    <input type="date" id="ps-start-date">
+    <label for="ps-end-date">End Date:</label>
+    <input type="date" id="ps-end-date">
 </div>
 
 <div class="legend-container">
@@ -285,13 +285,13 @@
     }
 
     function customDateRange() {
-        if (document.getElementById("start-date").value) {
-            startDate = formatDate(document.getElementById("start-date").value);
+        if (document.getElementById("ps-start-date").value) {
+            startDate = formatDate(document.getElementById("ps-start-date").value);
         }
-        if (document.getElementById("end-date").value) {
-            endDate = formatDate(document.getElementById("end-date").value);
+        if (document.getElementById("ps-end-date").value) {
+            endDate = formatDate(document.getElementById("ps-end-date").value);
         }
-        if (document.getElementById("start-date").value && document.getElementById("end-date").value) {
+        if (document.getElementById("ps-start-date").value && document.getElementById("ps-end-date").value) {
             persistDateRange(-1);
             getData();
         }
@@ -339,8 +339,8 @@
                     const datePickerContainer = document.getElementById('date-picker-container');
                     document.getElementById('date-range').value = '-1';
                     datePickerContainer.style.display = 'block';
-                    document.getElementById('start-date').value = formatDate(startDate);
-                    document.getElementById('end-date').value = formatDate(endDate);
+                    document.getElementById('ps-start-date').value = formatDate(startDate);
+                    document.getElementById('ps-end-date').value = formatDate(endDate);
                 }
                 else {
                     document.getElementById('date-range').value = dateRangeOffset;
@@ -361,8 +361,8 @@
     document.addEventListener('DOMContentLoaded', function () {
         const dateRangeSelect = document.getElementById('date-range');
         const datePickerContainer = document.getElementById('date-picker-container');
-        const startDateInput = document.getElementById('start-date');
-        const endDateInput = document.getElementById('end-date');
+        const startDateInput = document.getElementById('ps-start-date');
+        const endDateInput = document.getElementById('ps-end-date');
 
         dateRangeSelect.addEventListener('change', function () {
             if (dateRangeSelect.value === '-1') {  // Custom range selected
