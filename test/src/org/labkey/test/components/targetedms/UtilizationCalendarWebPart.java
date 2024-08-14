@@ -73,7 +73,7 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
         ModalDialog modalDialog = clickDate(startDate);
         getWrapper().setFormElement(Locator.name("event-description").findElement(modalDialog.getComponentElement()), description);
         getWrapper().setFormElement(Locator.name("event-end-date").findElement(modalDialog.getComponentElement()), endDate);
-        doAndWaitForElementToRefresh(() -> modalDialog.dismiss("Save"), elementCache().dayLoc.withText(extractDay(startDate)), 10);
+        doAndWaitForElementToRefresh(() -> modalDialog.dismiss("Save", 0), elementCache().dayLoc.withText(extractDay(startDate)), 10);
         return this;
     }
 
