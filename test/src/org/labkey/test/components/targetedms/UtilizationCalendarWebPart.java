@@ -73,7 +73,7 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
         ModalDialog modalDialog = clickDate(startDate);
         getWrapper().setFormElement(Locator.name("event-description").findElement(modalDialog.getComponentElement()), description);
         getWrapper().setFormElement(Locator.name("event-end-date").findElement(modalDialog.getComponentElement()), endDate);
-        modalDialog.dismiss("Save", 0);
+        doAndWaitForElementToRefresh(() -> modalDialog.dismiss("Save", 0), elementCache().dayLoc.withText(extractDay(startDate)), 10);
         return this;
     }
 
@@ -94,12 +94,16 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
 
     public ModalDialog clickDate(String date)
     {
-        String clickDate = date.substring(date.lastIndexOf("-") + 1);
+        String clickDate = extractDay(date);
         getWrapper().log("Clicking " + clickDate + " to update the status");
         elementCache().dayLoc.withText(clickDate).findElement(elementCache().calendar.findWhenNeeded(this)).click();
         return new ModalDialog.ModalDialogFinder(getDriver()).withTitle("Instrument Offline Annotation").waitFor();
     }
 
+    private String extractDay(String date)
+    {
+        return date.substring(date.lastIndexOf("-") + 1);
+    }
     public boolean isOffline(String date)
     {
         String day = date.substring(date.lastIndexOf("-") + 1);
