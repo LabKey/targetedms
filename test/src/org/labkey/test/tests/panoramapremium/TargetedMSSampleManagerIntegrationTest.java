@@ -115,7 +115,7 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
     private void createSampleType(String sampleName)
     {
         projectMenu().navigateToFolder(getProjectName(), Sample_Manager_Subfolder);
-        SampleTypeAPIHelper.createEmptySampleType(getProjectName(), new SampleTypeDefinition(sampleName));
+        SampleTypeAPIHelper.createEmptySampleType(getProjectName() + Sample_Manager_Subfolder, new SampleTypeDefinition(sampleName));
     }
 
     private void addSamples(String sampleName, List<Map<String, String>> samples)
