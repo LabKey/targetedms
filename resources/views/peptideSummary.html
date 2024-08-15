@@ -41,6 +41,13 @@
     text-align: center;
   }
 
+  .peptide-cell {
+    white-space: nowrap; /* Ensure the peptide sequence stays on one line */
+  }
+  .peptide-cell span {
+    display: block; /* Charge and mz will be on its own line */
+  }
+
   .table-container {
     margin-top: 1em;
   }
@@ -166,7 +173,15 @@
 
         let totalOutliersByMetric = {};
         for (let i = 0; i < data.peptideOutliers.length; i++) {
-            tableHTML += '<tr><td>' + LABKEY.Utils.encodeHtml(data.peptideOutliers[i].peptide) + '</td>';
+            let parts = data.peptideOutliers[i].peptide.split(' ');
+            let sequence = parts[0];
+            let chargeMz = parts.slice(1).join(' ');
+
+            tableHTML += '<tr>';
+            tableHTML += '<td class="peptide-cell">';
+            tableHTML += '<span>' + LABKEY.Utils.encodeHtml(sequence) + '</span>';
+            tableHTML += '<span>' + LABKEY.Utils.encodeHtml(chargeMz) + '</span>';
+            tableHTML += '</td>';
 
             for (let j = 0; j < data.metrics.length; j++) {
                 let metric = data.metrics[j];

@@ -622,12 +622,19 @@ public class OutlierGenerator
                     outlierCountsPerMetric.put(rawMetricDataSet.getMetric().getName(), outlierCountsPerMetric.get(rawMetricDataSet.getMetric().getName()) + 1);
                 }
             }
+            peptideOutlier.setPrecursorId(entry.getValue().get(0).getPrecursorChromInfoId());
             peptideOutlier.setOutlierCountsPerMetric(outlierCountsPerMetric);
             peptideOutlier.setTotalOutliers(totalOutliers);
             peptideOutliers.add(peptideOutlier);
         }
 
-        peptideOutliers.sort(Comparator.comparing(PeptideOutliers::getPeptide));
+        // first sort all the precursor metrics alphabetically and then non-precursor based metrics alphabetically
+        peptideOutliers.sort(Comparator.comparingInt((PeptideOutliers o) -> {
+                    if (o.getPrecursorId() > 1) return 0;
+                    if (o.getPrecursorId() == 0) return 2;
+                    return 1;
+                })
+                .thenComparing(PeptideOutliers::getPeptide));
         return peptideOutliers;
     }
 

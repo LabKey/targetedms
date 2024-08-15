@@ -13,6 +13,7 @@ public class PeptideOutliers
     private String peptide;
     Map<String, Integer> outlierCountsPerMetric;
     private int totalOutliers;
+    private Long precursorId;
 
     public JSONObject toJSON()
     {
