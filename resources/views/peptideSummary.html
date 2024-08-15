@@ -179,8 +179,13 @@
 
             tableHTML += '<tr>';
             tableHTML += '<td class="peptide-cell">';
-            tableHTML += '<span>' + LABKEY.Utils.encodeHtml(sequence) + '</span>';
-            tableHTML += '<span>' + LABKEY.Utils.encodeHtml(chargeMz) + '</span>';
+            if (data.peptideOutliers[i].precursorId > 0) {
+                tableHTML += '<span>' + LABKEY.Utils.encodeHtml(sequence) + '</span>';
+                tableHTML += '<span>' + LABKEY.Utils.encodeHtml(chargeMz) + '</span>';
+            }
+            else {
+                tableHTML += LABKEY.Utils.encodeHtml(data.peptideOutliers[i].peptide);
+            }
             tableHTML += '</td>';
 
             for (let j = 0; j < data.metrics.length; j++) {
