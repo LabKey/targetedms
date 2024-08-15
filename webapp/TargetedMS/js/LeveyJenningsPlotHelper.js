@@ -194,13 +194,15 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         return ['value_series1', 'value_series2'];
     },
 
-    getLJLegend: function () {
+    getLJLegend: function (combinedPlot) {
         var ljLegend = [];
 
         if (!this.getMetricPropsById(this.metric).series2Label) {
             let metricInfo = this.getMetricPropsById(this.metric);
-
-            if (metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.ValueCutoff || metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.MeanDeviationCutoff) {
+            let isCombinedValueCutOff = LABKEY.targetedms.MetricStatus.ValueCutoff && combinedPlot;
+            let isYAxisScaleLinearOrLog = this.yAxisScale === 'linear' || this.yAxisScale === 'log';
+            let showLegend = (isYAxisScaleLinearOrLog && isCombinedValueCutOff) || !isCombinedValueCutOff;
+            if (showLegend|| metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.MeanDeviationCutoff) {
                 if (Number.isFinite(metricInfo.upperBound)) {
                     ljLegend.push({
                         text: 'Upper: ' + metricInfo.upperBound,

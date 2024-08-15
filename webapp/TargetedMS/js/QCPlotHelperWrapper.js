@@ -392,13 +392,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
             return this.getLJCombinedPlotLegendSeries();
     },
 
-    getAdditionalPlotLegend: function(plotType) {
+    getAdditionalPlotLegend: function(plotType, combinedPlot) {
         if (plotType === LABKEY.vis.TrendingLinePlotType.CUSUM)
             return this.getCUSUMGroupLegend();
         if (plotType === LABKEY.vis.TrendingLinePlotType.MovingRange)
             return this.getMRLegend();
         if (plotType === LABKEY.vis.TrendingLinePlotType.LeveyJennings)
-            return this.getLJLegend();
+            return this.getLJLegend(combinedPlot);
         if (this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot() ||
                 plotType === LABKEY.vis.TrendingLinePlotType.TrailingMean ||
                 plotType === LABKEY.vis.TrendingLinePlotType.TrailingCV)
