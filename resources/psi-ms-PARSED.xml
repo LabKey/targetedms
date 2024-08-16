@@ -126,6 +126,7 @@
     <instrument id="MS:1003252" name="Xevo G2-XS QTof" vendor="Waters" description="Waters Corporation Xevo G2-XS QTof quadrupole time-of-flight mass spectrometer."/>
     <instrument id="MS:1000192" name="Quattro Ultima" vendor="Waters" description="Waters (triple) quadrupole based Ultima."/>
     <instrument id="MS:1000632" name="Q-Tof Premier" vendor="Waters" description="Waters oa-ToF based Q-Tof Premier."/>
+    <instrument id="MS:1000660" name="Xevo MRT MS" vendor="Waters" description="Waters Corporation Xevo MRT Mass Spectrometer."/>
     <instrument id="MS:1000191" name="quattro micro" vendor="Waters" description="Waters (triple) quadrupole based micro."/>
     <instrument id="MS:1000188" name="Q-Tof micro" vendor="Waters" description="Waters oa-ToF based Q-Tof micro."/>
     <instrument id="MS:1001791" name="Xevo TQD" vendor="Waters" description="Waters quadrupole based Xevo TQD."/>
