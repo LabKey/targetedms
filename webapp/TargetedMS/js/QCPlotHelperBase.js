@@ -784,6 +784,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         this.addGuideSetTrainingRangeToPlot(plot, combinePlotData);
 
+        let urlParams = LABKEY.ActionURL.getParameters();
+        if (parseInt(urlParams['replicateId']) > 0) {
+            this.highlightOutliersForClickedReplicate(plot, combinePlotData, parseInt(urlParams['replicateId']));
+        }
+
         this.attachPlotExportIcons(id, mainTitle + '- All Series', plotIndex, this.getPlotWidth(), this.showInPlotLegends() ? 0 : legendMargin);
     },
 
