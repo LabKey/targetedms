@@ -1558,6 +1558,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         });
 
                 this.sendSvgElementToBack(plot, outlierRect);
+                break;
             }
         }
 
