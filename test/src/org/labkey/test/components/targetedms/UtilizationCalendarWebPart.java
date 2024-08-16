@@ -85,10 +85,10 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
         if (endDate != null)
             getWrapper().setFormElement(Locator.name("event-end-date").findElement(modalDialog.getComponentElement()), endDate);
         getWrapper().longWait().until(ExpectedConditions.elementToBeClickable(Locator.button("Save")));
-        modalDialog.dismiss("Save", 0);
+        modalDialog.dismiss("Save");
         getWrapper().waitForElement(elementCache().error_msg.withText(errorMsg));
         Assert.assertEquals("Incorrect validation message", errorMsg, elementCache().error_msg.findElement(modalDialog.getComponentElement()).getText());
-        modalDialog.dismiss("Cancel", 0);
+        modalDialog.dismiss("Cancel");
         return this;
     }
 
@@ -115,7 +115,7 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
         if (isOffline(date))
         {
             ModalDialog modalDialog = clickDate(date);
-            modalDialog.dismiss("Delete", 0);
+            modalDialog.dismiss("Delete");
         }
         return this;
     }
