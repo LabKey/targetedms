@@ -105,6 +105,7 @@ public class SampleFileInfo extends OutlierCounts
         jsonObject.put("AcquiredTime", getAcquiredTime());
         jsonObject.put("GuideSetId", getGuideSetId());
         jsonObject.put("ReplicateName", getReplicateName());
+        jsonObject.put("ReplicateId", getReplicateId());
         jsonObject.put("FilePath", getFilePath());
         jsonObject.put("IgnoreForAllMetric", isIgnoreForAllMetric());
         jsonObject.put("Metrics", getMetricsJSON());
