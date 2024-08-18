@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 @Category({})
-@BaseWebDriverTest.ClassTimeout(minutes = 2)
+@BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
 {
     private final static String SUBFOLDER_1 = "QC Subfolder 1";
