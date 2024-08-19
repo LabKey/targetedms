@@ -1532,8 +1532,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             if (data.ReplicateId === replicateId) {
                 let clickedReplicateData = [];
                 clickedReplicateData.push({
-                    'EndIndex': j,
-                    'StartIndex': j
+                    'EndIndex': data.seqValue,
+                    'StartIndex': data.seqValue
                 })
 
                 let outlierRect = "rect.outlier-" + j;
@@ -1558,6 +1558,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         });
 
                 this.sendSvgElementToBack(plot, outlierRect);
+                break;
             }
         }
 
