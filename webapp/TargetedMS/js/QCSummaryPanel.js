@@ -385,7 +385,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
             {
                 // pass replicate id here so that the outlier details can be displayed in the context of the replicate
                 let urlParams = {};
-                urlParams['replicateId'] = sampleFile.SampleId;
+                urlParams['replicateId'] = sampleFile.ReplicateId;
                 urlParams['metric'] = item.MetricId;
                 let href = LABKEY.ActionURL.buildURL('project', 'begin', item.ContainerPath, urlParams);
                 content += '<tr class="' + (rowCount % 2 === 0 ? 'labkey-alternate-row' : 'labkey-row') + '">';
