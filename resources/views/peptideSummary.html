@@ -305,6 +305,7 @@
     }
 
     function customDateRange() {
+        $('#fom-loading').show();
         if (document.getElementById("ps-start-date").value) {
             startDate = formatDate(document.getElementById("ps-start-date").value);
         }
