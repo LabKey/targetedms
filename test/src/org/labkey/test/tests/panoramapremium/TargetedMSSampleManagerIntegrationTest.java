@@ -10,6 +10,7 @@ import org.labkey.test.params.experiment.SampleTypeDefinition;
 import org.labkey.test.util.APIContainerHelper;
 import org.labkey.test.util.PortalHelper;
 import org.labkey.test.util.SampleTypeHelper;
+import org.labkey.test.util.exp.SampleTypeAPIHelper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -114,10 +115,7 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
     private void createSampleType(String sampleName)
     {
         projectMenu().navigateToFolder(getProjectName(), Sample_Manager_Subfolder);
-        SampleTypeHelper sampleTypeHelper = new SampleTypeHelper(this);
-        SampleTypeDefinition sampleTypeDefinition = new SampleTypeDefinition(sampleName);
-        sampleTypeHelper.createSampleType(sampleTypeDefinition);
-        sampleTypeHelper.goToSampleType(sampleName);
+        SampleTypeAPIHelper.createEmptySampleType(getProjectName() + "/" + Sample_Manager_Subfolder, new SampleTypeDefinition(sampleName));
     }
 
     private void addSamples(String sampleName, List<Map<String, String>> samples)

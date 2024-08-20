@@ -627,7 +627,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             newLegendData = newLegendData.concat(ionLegend);
         }
 
-        var extraPlotLegendData = this.getAdditionalPlotLegend(plotType);
+        var extraPlotLegendData = this.getAdditionalPlotLegend(plotType, true);
         newLegendData = newLegendData.concat(extraPlotLegendData);
 
         return newLegendData;
@@ -861,7 +861,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(precursorInfo, plotType, isCUSUMMean, metricProps));
 
-        var plotLegendData = this.getAdditionalPlotLegend(plotType);
+        var plotLegendData = this.getAdditionalPlotLegend(plotType, false);
         if (Ext4.isArray(this.legendData)) {
             plotLegendData = plotLegendData.concat(this.legendData);
         }
