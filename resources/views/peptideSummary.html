@@ -172,7 +172,6 @@
         tableHTML += '</tr></thead><tbody>';
 
         let totalOutliersByMetric = {};
-        debugger
         for (let i = 0; i < data.peptideOutliers.length; i++) {
             let parts = data.peptideOutliers[i].peptide.split(' ');
             let sequence = parts[0];
@@ -185,7 +184,6 @@
                 tableHTML += '<span>' + LABKEY.Utils.encodeHtml(chargeMz) + '</span>';
             }
             else {
-                debugger
                 tableHTML += LABKEY.Utils.encodeHtml(data.peptideOutliers[i].peptide);
             }
             tableHTML += '</td>';
