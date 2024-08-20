@@ -253,7 +253,7 @@ import org.labkey.targetedms.view.MoleculePrecursorChromatogramsView;
 import org.labkey.targetedms.view.PeptidePrecursorChromatogramsView;
 import org.labkey.targetedms.view.PeptidePrecursorsView;
 import org.labkey.targetedms.view.PeptideTransitionsView;
-import org.labkey.targetedms.view.QCSummaryWebPart;
+import org.labkey.targetedms.view.ReplicateSummaryWebPart;
 import org.labkey.targetedms.view.SmallMoleculePrecursorsView;
 import org.labkey.targetedms.view.SmallMoleculeTransitionsView;
 import org.labkey.targetedms.view.TargetedMsRunListView;
@@ -1194,7 +1194,7 @@ public class TargetedMSController extends SpringActionController
             calendarView.addClientDependency(ClientDependency.fromPath("TargetedMS/js/misc.js"));
             calendarView.setTitle("Utilization Calendar");
             calendarView.setFrame(WebPartView.FrameType.PORTAL);
-            QCSummaryWebPart summaryView = new QCSummaryWebPart(getViewContext(), null);
+            ReplicateSummaryWebPart summaryView = new ReplicateSummaryWebPart(getViewContext(), null);
             ModuleHtmlView replicateSummary = ModuleHtmlView.get(ModuleLoader.getInstance().getModule(TargetedMSModule.class), "peptideSummary");
             return new VBox(calendarView, replicateSummary, summaryView);
         }
@@ -1202,7 +1202,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void addNavTrail(NavTree root)
         {
-            root.addChild("QC Summary History");
+            root.addChild("Replicate Summary History");
         }
     }
 

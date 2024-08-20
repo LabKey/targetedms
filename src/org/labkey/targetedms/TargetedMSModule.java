@@ -82,7 +82,7 @@ import org.labkey.targetedms.view.CalibrationCurveView;
 import org.labkey.targetedms.view.CrossLinkedPeptideInfo;
 import org.labkey.targetedms.view.FiguresOfMeritView;
 import org.labkey.targetedms.view.LibraryQueryViewWebPart;
-import org.labkey.targetedms.view.QCSummaryWebPart;
+import org.labkey.targetedms.view.ReplicateSummaryWebPart;
 import org.labkey.targetedms.view.TargetedMSRunsWebPartView;
 import org.labkey.targetedms.view.TransitionPeptideSearchViewProvider;
 import org.labkey.targetedms.view.TransitionProteinSearchViewProvider;
@@ -186,7 +186,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         addModuleProperty(SKYLINE_AUDIT_LEVEL_PROPERTY);
         //------------------------rr
 
-        // setup the QC Summary webpart AutoQCPing timeout
+        // setup the replicate summary webpart AutoQCPing timeout
         AUTO_QC_PING_TIMEOUT_PROPERTY = new ModuleProperty(this, "TargetedMS AutoQCPing Timeout");
         AUTO_QC_PING_TIMEOUT_PROPERTY.setDescription("The number of minutes before the most recent AutoQCPing indicator is considered stale.");
         AUTO_QC_PING_TIMEOUT_PROPERTY.setDefaultValue("15");
@@ -397,7 +397,13 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
                 @Override
                 public WebPartView<?> getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
                 {
-                    return new QCSummaryWebPart(portalCtx, 3);
+                    return new ReplicateSummaryWebPart(portalCtx, 3);
+                }
+
+                @Override
+                public List<String> getLegacyNames()
+                {
+                    return List.of("Targeted MS QC Summary");
                 }
             },
 

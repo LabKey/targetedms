@@ -172,6 +172,7 @@
         tableHTML += '</tr></thead><tbody>';
 
         let totalOutliersByMetric = {};
+        debugger
         for (let i = 0; i < data.peptideOutliers.length; i++) {
             let parts = data.peptideOutliers[i].peptide.split(' ');
             let sequence = parts[0];
@@ -184,6 +185,7 @@
                 tableHTML += '<span>' + LABKEY.Utils.encodeHtml(chargeMz) + '</span>';
             }
             else {
+                debugger
                 tableHTML += LABKEY.Utils.encodeHtml(data.peptideOutliers[i].peptide);
             }
             tableHTML += '</td>';
@@ -267,7 +269,7 @@
         }
 
         const min = Math.min(...values);
-        const max = Math.max(...values);
+        const max = Math.max(...values, 0);
         document.getElementById('max-outliers').innerHTML = '&nbsp;' +  max + ' outliers';
         // Apply colors based on values, excluding the last row (totals row)
         for (let i = 1; i < table.rows.length - 1; i++) { // skip header
