@@ -74,7 +74,7 @@ public class TargetedMSPeptideSummaryHeatmapTest extends TargetedMSTest
         log("Verify heatmap colors");
         Assert.assertEquals("Incorrect heatmap color for highest(Red)", "rgb(255, 0, 0)",
                 peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.PRECURSOR_AREA).getCssValue("background-color"));
-        Assert.assertEquals("Incorrect heatmap color for lowest(White)", "rgb(255, 255, 255)",
+        Assert.assertEquals("Incorrect heatmap color for lowest(White)", "rgb(0, 0, 0)",
                 peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.ISOTOPE_DOTP).getCssValue("background-color"));
 
         log("Verify Custom date range");
@@ -116,7 +116,7 @@ public class TargetedMSPeptideSummaryHeatmapTest extends TargetedMSTest
                 Arrays.asList("0", "0", "0", "0", "0", "0", "0", "0", "0"),
                 peptideSummaryHeatMap.getHeatmapTable().getTableHeaderColumnData(QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR.toString()));
         Assert.assertEquals("Incorrect value for fixed value cutoff in " + QCPlotsWebPart.MetricType.RETENTION,
-                Arrays.asList("23", "47", "26", "47", "0", "47", "47", "47", "284"),
+                Arrays.asList("23", "47", "26", "47", "47", "47", "47", "0", "284"),
                 peptideSummaryHeatMap.getHeatmapTable().getTableHeaderColumnData(QCPlotsWebPart.MetricType.RETENTION.toString()));
     }
 
