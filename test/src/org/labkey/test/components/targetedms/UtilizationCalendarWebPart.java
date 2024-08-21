@@ -72,7 +72,7 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
     {
         ModalDialog modalDialog = clickDate(startDate);
         getWrapper().setFormElement(Locator.name("event-description").findElement(modalDialog.getComponentElement()), description);
-        getWrapper().setFormElement(Locator.name("event-ins-end-date").findElement(modalDialog.getComponentElement()), endDate);
+        getWrapper().setFormElement(Locator.name("event-end-date").findElement(modalDialog.getComponentElement()), endDate);
         modalDialog.dismiss("Save", 0);
         return this;
     }
@@ -83,7 +83,7 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
         if (description != null)
             getWrapper().setFormElement(Locator.name("event-description").findElement(modalDialog.getComponentElement()), description);
         if (endDate != null)
-            getWrapper().setFormElement(Locator.name("event-ins-end-date").findElement(modalDialog.getComponentElement()), endDate);
+            getWrapper().setFormElement(Locator.name("event-end-date").findElement(modalDialog.getComponentElement()), endDate);
         getWrapper().longWait().until(ExpectedConditions.elementToBeClickable(Locator.button("Save")));
         modalDialog.dismiss("Save", 0);
         getWrapper().waitForElement(elementCache().error_msg.withText(errorMsg));
