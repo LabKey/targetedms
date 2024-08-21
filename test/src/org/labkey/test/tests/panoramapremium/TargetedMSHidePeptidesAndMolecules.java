@@ -88,7 +88,7 @@ public class TargetedMSHidePeptidesAndMolecules extends TargetedMSTest
     public void testMultipleSkyFilesImport()
     {
         setupSubfolder(getProjectName(), EmptyProject, FolderType.QC);
-        new PortalHelper(this).clickWebpartMenuItem("QC Summary", true, "Configure Included and Excluded Precursors");
+        new PortalHelper(this).clickWebpartMenuItem("Replicate Summary", true, "Configure Included and Excluded Precursors");
         checker().verifyTrue("Incorrect error message before importing SKY file",
                 isTextPresent("No data loaded in this folder. Import a Skyline document into this folder to configure exclusions."));
         checker().screenShotIfNewError("EmptyProjectErrorMessage");
