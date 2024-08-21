@@ -274,7 +274,7 @@
             const row = table.rows[i];
             for (let j = 1; j < row.cells.length - 1; j++) { // skip the first and last column
                 const value = parseFloat(row.cells[j].textContent);
-                if (!isNaN(value)) {
+                if (!isNaN(value) && value > 0) {
                     const bgColor = getColor(value, min, max);
                     const textColor = getContrastColor(bgColor);
                     row.cells[j].style.backgroundColor = bgColor;
