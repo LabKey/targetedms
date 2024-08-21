@@ -31,7 +31,7 @@ import static org.junit.Assert.assertTrue;
 
 public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Elements>
 {
-    public static final String DEFAULT_TITLE = "QC Summary";
+    public static final String DEFAULT_TITLE = "Replicate Summary";
 
     public QCSummaryWebPart(WebDriver driver)
     {
