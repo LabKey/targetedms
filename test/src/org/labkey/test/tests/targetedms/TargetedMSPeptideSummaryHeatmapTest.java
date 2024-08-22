@@ -72,10 +72,10 @@ public class TargetedMSPeptideSummaryHeatmapTest extends TargetedMSTest
                 peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.FWHM).getText());
 
         log("Verify heatmap colors");
-        Assert.assertEquals("Incorrect heatmap color for highest(Red)", "rgb(255, 0, 0)",
+        Assert.assertEquals("Incorrect heatmap color for darkest red", "rgb(255, 0, 0)",
                 peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.PRECURSOR_AREA).getCssValue("background-color"));
-        Assert.assertEquals("Incorrect heatmap color for lowest(White)", "rgb[a(0, ]0, 0, 0)",
-                peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.ISOTOPE_DOTP).getCssValue("background-color"));
+        Assert.assertEquals("Incorrect heatmap color for lightest red", "rgb(255, 245, 245)",
+                peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.FWHM).getCssValue("background-color"));
 
         log("Verify Custom date range");
         peptideSummaryHeatMap.setCustomDateRange("2013-08-01","2013-08-15");
