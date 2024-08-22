@@ -122,8 +122,8 @@ public class PeptideSummaryWebPart extends BodyWebPart<PeptideSummaryWebPart.Ele
     public class Elements extends BodyWebPart<?>.ElementCache
     {
         final Select dateRange = SelectWrapper.Select(Locator.id("date-range")).findWhenNeeded(this);
-        final Input startDate = new Input(Locator.id("start-date").findWhenNeeded(this), getDriver());
-        final Input endDate = new Input(Locator.id("end-date").findWhenNeeded(this), getDriver());
+        final Input startDate = new Input(Locator.id("ps-start-date").findWhenNeeded(this), getDriver());
+        final Input endDate = new Input(Locator.id("ps-end-date").findWhenNeeded(this), getDriver());
         final Locator heatmapLoc = Locator.id("heatmap-table");
         final Table heatmapTable = new Table(getDriver(), heatmapLoc.refindWhenNeeded(this));
         final WebElement replicateCount = Locator.id("total-replicates").findWhenNeeded(this);
