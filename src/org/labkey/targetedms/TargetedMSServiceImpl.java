@@ -36,6 +36,7 @@ import org.labkey.api.targetedms.TargetedMSFolderTypeListener;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.targetedms.model.SampleFilePath;
+import org.labkey.api.util.DateUtil;
 import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.targetedms.chromlib.ChromatogramLibraryUtils;
 import org.labkey.targetedms.datasource.MsDataSourceUtil;
@@ -46,8 +47,12 @@ import org.labkey.targetedms.query.ModificationManager;
 import org.labkey.targetedms.query.ReplicateManager;
 
 import java.nio.file.Path;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -114,6 +119,30 @@ public class TargetedMSServiceImpl implements TargetedMSService
     public List<SampleFileInfo> getSampleFiles(Container container, User user, Integer sampleFileLimit)
     {
         return TargetedMSManager.get().getSampleFileInfos(container, user, sampleFileLimit);
+    }
+
+    @Override
+    public List<SampleFileInfo> getSampleFiles(Container container, User user, Date startDate, Date endDate)
+    {
+        List<SampleFileInfo> sampleFileInfos = TargetedMSManager.get().getSampleFileInfos(container, user, null);
+        List<SampleFileInfo> result = new ArrayList<>();
+        if (!sampleFileInfos.isEmpty())
+        {
+            for (SampleFileInfo sampleFileInfo : sampleFileInfos)
+            {
+                Date acquired = DateUtil.getDateOnly(sampleFileInfo.getAcquiredTime());
+                Date start = DateUtil.getDateOnly(startDate);
+                Date end = DateUtil.getDateOnly(endDate);
+                if ((acquired.after(start) && acquired.before(end) || acquired.compareTo(start) == 0 || acquired.compareTo(end) == 0))
+                {
+                    result.add(sampleFileInfo);
+                }
+            }
+
+            return result;
+        }
+
+        return Collections.emptyList();
     }
 
     @Override

@@ -13,6 +13,7 @@ public class PeptideOutliers
     private String peptide;
     Map<String, Integer> outlierCountsPerMetric;
     private int totalOutliers;
+    private Long precursorId;
 
     public JSONObject toJSON()
     {
@@ -20,6 +21,7 @@ public class PeptideOutliers
         json.put("peptide", peptide);
         json.put("outlierCountsPerMetric", outlierCountsPerMetric);
         json.put("totalOutliers", totalOutliers);
+        json.put("precursorId", precursorId);
         return json;
     }
 }

@@ -8,38 +8,26 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 20px;
   }
   .legend {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 0 10px;
+    border: 1px lightgray solid;
   }
-  .legend-square {
-    width: 20px;
-    height: 20px;
-    margin-right: 2px;
-  }
-  .legend-label {
-    width: 150px;
-    text-align: center;
 
+  .legend-square {
+    width: 3em;
+    height: 1.5em;
   }
-  .arrow-left::before, .arrow-right::after {
-    content: '';
-    display: inline-block;
-    width: 0;
-    height: 0;
-    border-style: solid;
+
+  .legend-label {
+    width: 10em;
+    padding-left: 1em;
+    padding-right: 1em;
   }
-  .arrow-left::before {
-    border-width: 15px 20px 15px 0;
-    border-color: transparent black transparent transparent;
-  }
-  .arrow-right::after {
-    border-width: 15px 0 15px 20px;
-    border-color: transparent black transparent black;
+
+  .heatmap-legend-element {
+    width: 3em;
+    height: 1.5em;
   }
 
   .heatmap-table {
@@ -52,6 +40,18 @@
     padding: 8px;
     text-align: center;
   }
+
+  .peptide-cell {
+    white-space: nowrap; /* Ensure the peptide sequence stays on one line */
+  }
+  .peptide-cell span {
+    display: block; /* Charge and mz will be on its own line */
+  }
+
+  .table-container {
+    margin-top: 1em;
+  }
+
 </style>
 
 <label for="date-range">Date Range:</label>
@@ -67,21 +67,22 @@
 </select>
 
 <div id="date-picker-container" class="date-picker-container">
-    <label for="start-date">Start Date:</label>
-    <input type="date" id="start-date">
-    <label for="end-date">End Date:</label>
-    <input type="date" id="end-date">
+    <label for="ps-start-date">Start Date:</label>
+    <input type="date" id="ps-start-date">
+    <label for="ps-end-date">End Date:</label>
+    <input type="date" id="ps-end-date">
 </div>
 
 <div class="legend-container">
-    <div class="legend-label arrow-left">&nbsp; &nbsp;No Outliers</div>
+    <div class="legend-label">&nbsp; &nbsp;No outliers</div>
     <div id="legend" class="legend"></div>
-    <div class="legend-label arrow-right">Most Outliers &nbsp; &nbsp;</div>
+    <div class="legend-label" id="max-outliers"></div>
     <div>Total Replicates : </div>
     <div id="total-replicates"></div>
 </div>
 
-<div id="table-container">
+<span id="fom-loading">Loading...<i class="fa fa-spinner fa-pulse"></i></span>
+<div id="table-container" class="table-container">
 
 </div>
 <script type="text/javascript" nonce="<%=scriptNonce%>">
@@ -92,16 +93,16 @@
 
     function generateLegend() {
         const legendContainer = document.getElementById('legend');
-        const numSquares = 20;
-        const minColor = [255, 255, 255];
-        const maxColor = [255, 0, 0];
+        const numSquares = 6;
+        let alpha = 1.0;
 
         for (let i = 0; i < numSquares; i++) {
             const ratio = i / (numSquares - 1);
-            const red = Math.round(minColor[0] + ratio * (maxColor[0] - minColor[0]));
-            const green = Math.round(minColor[1] + ratio * (maxColor[1] - minColor[1]));
-            const blue = Math.round(minColor[2] + ratio * (maxColor[2] - minColor[2]));
-            const color = `rgb(${red}, ${green}, ${blue})`;
+            const red = 255;
+            const green = 0;
+            const blue = 0;
+            alpha = 1.0 - (0.2 * (numSquares - i - 1));
+            const color = `rgb(${red}, ${green}, ${blue}, ${alpha})`;
 
             const square = document.createElement('div');
             square.id = 'legend-square-' + i;
@@ -158,6 +159,7 @@
     }
 
     function generateTable(data) {
+        $('#fom-loading').hide();
         const tableContainer = document.getElementById('table-container');
         let tableHTML = '<table id="heatmap-table" class="heatmap-table">';
         tableHTML += '<thead><tr><th></th>';
@@ -171,7 +173,20 @@
 
         let totalOutliersByMetric = {};
         for (let i = 0; i < data.peptideOutliers.length; i++) {
-            tableHTML += '<tr><td>' + LABKEY.Utils.encodeHtml(data.peptideOutliers[i].peptide) + '</td>';
+            let parts = data.peptideOutliers[i].peptide.split(' ');
+            let sequence = parts[0];
+            let chargeMz = parts.slice(1).join(' ');
+
+            tableHTML += '<tr>';
+            tableHTML += '<td class="peptide-cell">';
+            if (data.peptideOutliers[i].precursorId > 0) {
+                tableHTML += '<span>' + LABKEY.Utils.encodeHtml(sequence) + '</span>';
+                tableHTML += '<span>' + LABKEY.Utils.encodeHtml(chargeMz) + '</span>';
+            }
+            else {
+                tableHTML += LABKEY.Utils.encodeHtml(data.peptideOutliers[i].peptide);
+            }
+            tableHTML += '</td>';
 
             for (let j = 0; j < data.metrics.length; j++) {
                 let metric = data.metrics[j];
@@ -221,6 +236,7 @@
     }
 
     function getData() {
+        $('#fom-loading').show();
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetPeptideOutliers.api'),
             params: {
@@ -251,14 +267,14 @@
         }
 
         const min = Math.min(...values);
-        const max = Math.max(...values);
-
+        const max = Math.max(...values, 0);
+        document.getElementById('max-outliers').innerHTML = '&nbsp;' +  max + ' outliers';
         // Apply colors based on values, excluding the last row (totals row)
         for (let i = 1; i < table.rows.length - 1; i++) { // skip header
             const row = table.rows[i];
             for (let j = 1; j < row.cells.length - 1; j++) { // skip the first and last column
                 const value = parseFloat(row.cells[j].textContent);
-                if (!isNaN(value)) {
+                if (!isNaN(value) && value > 0) {
                     const bgColor = getColor(value, min, max);
                     const textColor = getContrastColor(bgColor);
                     row.cells[j].style.backgroundColor = bgColor;
@@ -289,13 +305,14 @@
     }
 
     function customDateRange() {
-        if (document.getElementById("start-date").value) {
-            startDate = formatDate(document.getElementById("start-date").value);
+        $('#fom-loading').show();
+        if (document.getElementById("ps-start-date").value) {
+            startDate = formatDate(document.getElementById("ps-start-date").value);
         }
-        if (document.getElementById("end-date").value) {
-            endDate = formatDate(document.getElementById("end-date").value);
+        if (document.getElementById("ps-end-date").value) {
+            endDate = formatDate(document.getElementById("ps-end-date").value);
         }
-        if (document.getElementById("start-date").value && document.getElementById("end-date").value) {
+        if (document.getElementById("ps-start-date").value && document.getElementById("ps-end-date").value) {
             persistDateRange(-1);
             getData();
         }
@@ -343,8 +360,8 @@
                     const datePickerContainer = document.getElementById('date-picker-container');
                     document.getElementById('date-range').value = '-1';
                     datePickerContainer.style.display = 'block';
-                    document.getElementById('start-date').value = formatDate(startDate);
-                    document.getElementById('end-date').value = formatDate(endDate);
+                    document.getElementById('ps-start-date').value = formatDate(startDate);
+                    document.getElementById('ps-end-date').value = formatDate(endDate);
                 }
                 else {
                     document.getElementById('date-range').value = dateRangeOffset;
@@ -365,8 +382,8 @@
     document.addEventListener('DOMContentLoaded', function () {
         const dateRangeSelect = document.getElementById('date-range');
         const datePickerContainer = document.getElementById('date-picker-container');
-        const startDateInput = document.getElementById('start-date');
-        const endDateInput = document.getElementById('end-date');
+        const startDateInput = document.getElementById('ps-start-date');
+        const endDateInput = document.getElementById('ps-end-date');
 
         dateRangeSelect.addEventListener('change', function () {
             if (dateRangeSelect.value === '-1') {  // Custom range selected

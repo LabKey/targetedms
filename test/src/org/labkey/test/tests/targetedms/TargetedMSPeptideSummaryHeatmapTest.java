@@ -5,7 +5,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.BaseWebDriverTest;
-import org.labkey.test.components.targetedms.OutlierHeatmapSummaryWebPart;
+import org.labkey.test.components.targetedms.PeptideSummaryWebPart;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
@@ -16,14 +16,14 @@ import java.util.List;
 
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
-public class TargetedMSOutlierHeatmapTest extends TargetedMSTest
+public class TargetedMSPeptideSummaryHeatmapTest extends TargetedMSTest
 {
-    private static final String OUTLIER_HEATMAP_TAB = "Outlier Heatmap Summary";
+    private static final String PEPTIDE_MOLECULE_SUMMARY = "Peptide/Molecule Summary";
 
     @BeforeClass
     public static void setupProject()
     {
-        TargetedMSOutlierHeatmapTest init = (TargetedMSOutlierHeatmapTest) getCurrentTest();
+        TargetedMSPeptideSummaryHeatmapTest init = (TargetedMSPeptideSummaryHeatmapTest) getCurrentTest();
         init.doSetup();
     }
 
@@ -43,9 +43,9 @@ public class TargetedMSOutlierHeatmapTest extends TargetedMSTest
         _portalHelper.deleteTab("Raw Data");
         _portalHelper.deleteTab("Pareto Plot");
         _portalHelper.deleteTab("Annotations");
-        _portalHelper.addTab(OUTLIER_HEATMAP_TAB);
+        _portalHelper.addTab(PEPTIDE_MOLECULE_SUMMARY);
 
-        _portalHelper.addWebPart("Outlier Heatmap Summary View");
+        _portalHelper.addWebPart("Peptide/Molecule Summary");
         _portalHelper.exitAdminMode();
     }
 
@@ -60,40 +60,40 @@ public class TargetedMSOutlierHeatmapTest extends TargetedMSTest
         configureQCMetrics.setFixedDeviationFromMean(QCPlotsWebPart.MetricType.PRECURSOR_AREA, "-5", "5")
                 .clickSave();
 
-        clickPortalTab(OUTLIER_HEATMAP_TAB);
-        OutlierHeatmapSummaryWebPart outlierHeatmap = new OutlierHeatmapSummaryWebPart(getDriver());
+        clickPortalTab(PEPTIDE_MOLECULE_SUMMARY);
+        PeptideSummaryWebPart peptideSummaryHeatMap = new PeptideSummaryWebPart(getDriver());
         Assert.assertEquals("Incorrect outlier count", "2",
-                outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.FWHM).getText());
-        Assert.assertEquals("Incorrect total replicate count", "47", outlierHeatmap.getTotalReplicateCount().trim());
+                peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.FWHM).getText());
+        Assert.assertEquals("Incorrect total replicate count", "47", peptideSummaryHeatMap.getTotalReplicateCount().trim());
 
-        log("Verify data range: " + OutlierHeatmapSummaryWebPart.HeatmapDateRange.Last_7_Days);
-        outlierHeatmap.setDateRange(OutlierHeatmapSummaryWebPart.HeatmapDateRange.Last_7_Days);
+        log("Verify data range: " + PeptideSummaryWebPart.HeatmapDateRange.Last_7_Days);
+        peptideSummaryHeatMap.setDateRange(PeptideSummaryWebPart.HeatmapDateRange.Last_7_Days);
         Assert.assertEquals("Incorrect outlier count for " + QCPlotsWebPart.MetricType.FWHM, "1",
-                outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.FWHM).getText());
+                peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.FWHM).getText());
 
         log("Verify heatmap colors");
-        Assert.assertEquals("Incorrect heatmap color for highest(Red)", "rgb(255, 0, 0)",
-                outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.PRECURSOR_AREA).getCssValue("background-color"));
-        Assert.assertEquals("Incorrect heatmap color for lowest(White)", "rgb(255, 255, 255)",
-                outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.ISOTOPE_DOTP).getCssValue("background-color"));
+        Assert.assertEquals("Incorrect heatmap color for darkest red", "rgb(255, 0, 0)",
+                peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.PRECURSOR_AREA).getCssValue("background-color"));
+        Assert.assertEquals("Incorrect heatmap color for lightest red", "rgb(255, 245, 245)",
+                peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.FWHM).getCssValue("background-color"));
 
         log("Verify Custom date range");
-        outlierHeatmap.setCustomDateRange("2013-08-01","2013-08-15");
+        peptideSummaryHeatMap.setCustomDateRange("2013-08-01","2013-08-15");
         Assert.assertEquals("Incorrect outlier count for " + QCPlotsWebPart.MetricType.PRECURSOR_AREA, "11",
-                outlierHeatmap.getCellElement(1, QCPlotsWebPart.MetricType.PRECURSOR_AREA).getText());
+                peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.PRECURSOR_AREA).getText());
     }
 
     @Test
-    public void testMetricUsageOutlierHeatmap()
+    public void testMetricUsagePeptideSummaryHeatmap()
     {
         goToProjectHome();
-        clickPortalTab(OUTLIER_HEATMAP_TAB);
-        OutlierHeatmapSummaryWebPart outlierHeatmap = new OutlierHeatmapSummaryWebPart(getDriver());
+        clickPortalTab(PEPTIDE_MOLECULE_SUMMARY);
+        PeptideSummaryWebPart peptideSummaryHeatMap = new PeptideSummaryWebPart(getDriver());
         Assert.assertEquals("Missing Metric type in the heatmap", Arrays.asList("", "Full Width at Base (FWB)",
                         "Full Width at Half Maximum (FWHM)", "Isotope dotp", "Precursor Area", "Precursor Mass Error",
                         "Retention Time", "TIC Area", "Total Peak Area (Precursor + Transition)", "Transition & Precursor Areas",
                         "Transition Area", "Transition Mass Error", "Transition/Precursor Area Ratio", "Total")
-                , outlierHeatmap.getHeatmapTable().getTableHeaderTexts());
+                , peptideSummaryHeatMap.getHeatmapTable().getTableHeaderTexts());
 
         log("Updating the Metric type values");
         goToProjectHome();
@@ -105,25 +105,25 @@ public class TargetedMSOutlierHeatmapTest extends TargetedMSTest
                 .disableMetric(QCPlotsWebPart.MetricType.TOTAL_PEAK.toString())
                 .clickSave();
 
-        clickPortalTab(OUTLIER_HEATMAP_TAB);
-        outlierHeatmap = new OutlierHeatmapSummaryWebPart(getDriver());
+        clickPortalTab(PEPTIDE_MOLECULE_SUMMARY);
+        peptideSummaryHeatMap = new PeptideSummaryWebPart(getDriver());
         Assert.assertEquals("Metric type " + QCPlotsWebPart.MetricType.TOTAL_PEAK + " should not be present",
                 Arrays.asList("", "Full Width at Base (FWB)", "Full Width at Half Maximum (FWHM)", "Isotope dotp", "Precursor Area",
                         "Precursor Mass Error", "Retention Time", "TIC Area", "Transition & Precursor Areas", "Transition Area",
                         "Transition Mass Error", "Transition/Precursor Area Ratio", "Total"),
-                outlierHeatmap.getHeatmapTable().getTableHeaderTexts());
+                peptideSummaryHeatMap.getHeatmapTable().getTableHeaderTexts());
         Assert.assertEquals("Outlier value should not be calculated for " + QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR,
                 Arrays.asList("0", "0", "0", "0", "0", "0", "0", "0", "0"),
-                outlierHeatmap.getHeatmapTable().getTableHeaderColumnData(QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR.toString()));
+                peptideSummaryHeatMap.getHeatmapTable().getTableHeaderColumnData(QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR.toString()));
         Assert.assertEquals("Incorrect value for fixed value cutoff in " + QCPlotsWebPart.MetricType.RETENTION,
-                Arrays.asList("23", "47", "26", "47", "0", "47", "47", "47", "284"),
-                outlierHeatmap.getHeatmapTable().getTableHeaderColumnData(QCPlotsWebPart.MetricType.RETENTION.toString()));
+                Arrays.asList("23", "47", "26", "47", "47", "47", "47", "0", "284"),
+                peptideSummaryHeatMap.getHeatmapTable().getTableHeaderColumnData(QCPlotsWebPart.MetricType.RETENTION.toString()));
     }
 
     @Override
     protected String getProjectName()
     {
-        return "TargetedMSOutlierHeatmapTest Project";
+        return "TargetedMSPeptideSummaryHeatmapTest Project";
     }
 
     @Override

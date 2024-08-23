@@ -94,6 +94,7 @@ import org.labkey.api.files.FileContentService;
 import org.labkey.api.files.view.FilesWebPart;
 import org.labkey.api.module.DefaultFolderType;
 import org.labkey.api.module.Module;
+import org.labkey.api.module.ModuleHtmlView;
 import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.module.ModuleProperty;
 import org.labkey.api.pipeline.LocalDirectory;
@@ -252,7 +253,7 @@ import org.labkey.targetedms.view.MoleculePrecursorChromatogramsView;
 import org.labkey.targetedms.view.PeptidePrecursorChromatogramsView;
 import org.labkey.targetedms.view.PeptidePrecursorsView;
 import org.labkey.targetedms.view.PeptideTransitionsView;
-import org.labkey.targetedms.view.QCSummaryWebPart;
+import org.labkey.targetedms.view.ReplicateSummaryWebPart;
 import org.labkey.targetedms.view.SmallMoleculePrecursorsView;
 import org.labkey.targetedms.view.SmallMoleculeTransitionsView;
 import org.labkey.targetedms.view.TargetedMsRunListView;
@@ -1193,14 +1194,15 @@ public class TargetedMSController extends SpringActionController
             calendarView.addClientDependency(ClientDependency.fromPath("TargetedMS/js/misc.js"));
             calendarView.setTitle("Utilization Calendar");
             calendarView.setFrame(WebPartView.FrameType.PORTAL);
-            QCSummaryWebPart summaryView = new QCSummaryWebPart(getViewContext(), null);
-            return new VBox(calendarView, summaryView);
+            ReplicateSummaryWebPart summaryView = new ReplicateSummaryWebPart(getViewContext(), null);
+            ModuleHtmlView replicateSummary = ModuleHtmlView.get(ModuleLoader.getInstance().getModule(TargetedMSModule.class), "peptideSummary");
+            return new VBox(calendarView, replicateSummary, summaryView);
         }
 
         @Override
         public void addNavTrail(NavTree root)
         {
-            root.addChild("QC Summary History");
+            root.addChild("Replicate Summary History");
         }
     }
 
@@ -1357,7 +1359,7 @@ public class TargetedMSController extends SpringActionController
             Map<GuideSetKey, GuideSetStats> stats = outlierGenerator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
             response.put("peptideOutliers", outlierGenerator.getPeptideOutliers(rawMetricDataSets, stats).stream().map(PeptideOutliers::toJSON).collect(Collectors.toList()));
             response.put("metrics", enabledQCMetricConfigurations.stream().map(QCMetricConfiguration::getName).collect(Collectors.toList()));
-            response.put("replicatesCount", TargetedMSService.get().getSampleFiles(getContainer(), getUser(), null).size());
+            response.put("replicatesCount", TargetedMSService.get().getSampleFiles(getContainer(), getUser(), form.getStartDate(), form.getEndDate()).size());
             return response;
         }
     }

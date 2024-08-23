@@ -82,7 +82,7 @@ import org.labkey.targetedms.view.CalibrationCurveView;
 import org.labkey.targetedms.view.CrossLinkedPeptideInfo;
 import org.labkey.targetedms.view.FiguresOfMeritView;
 import org.labkey.targetedms.view.LibraryQueryViewWebPart;
-import org.labkey.targetedms.view.QCSummaryWebPart;
+import org.labkey.targetedms.view.ReplicateSummaryWebPart;
 import org.labkey.targetedms.view.TargetedMSRunsWebPartView;
 import org.labkey.targetedms.view.TransitionPeptideSearchViewProvider;
 import org.labkey.targetedms.view.TransitionProteinSearchViewProvider;
@@ -116,12 +116,12 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     public static final String TARGETED_MS_RUNS_WEBPART_NAME = "Targeted MS Runs";
     public static final String TARGETED_MS_PROTEIN_SEARCH = "Targeted MS Protein Search";
     public static final String TARGETED_MS_PEPTIDE_SEARCH = "Targeted MS Peptide Search";
-    public static final String TARGETED_MS_QC_SUMMARY = "Targeted MS QC Summary";
+    public static final String TARGETED_MS_REPLICATE_SUMMARY = "Targeted MS Replicate Summary";
     public static final String TARGETED_MS_QC_PLOTS = "Targeted MS QC Plots";
     public static final String TARGETED_MS_PARETO_PLOT = "Targeted MS Pareto Plot";
     public static final String TARGETED_MS_CALIBRATION_CURVE = "Targeted MS Calibration Curve";
     public static final String TARGETED_MS_FIGURES_OF_MERIT = "Targeted MS Figures of Merit";
-    public static final String TARGETED_MS_OUTLIER_HEATMAP_SUMMARY_VIEW = "Outlier Heatmap Summary View";
+    public static final String TARGETED_MS_PEPTIDE_MOLECULE_SUMMARY = "Peptide/Molecule Summary";
 
     public static final String PEPTIDE_TAB_NAME = "Peptides";
     public static final String PROTEIN_TAB_NAME = "Proteins";
@@ -148,7 +148,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
             TARGETED_MS_PEPTIDE_GROUP_VIEW
     };
 
-    public static final String[] QC_FOLDER_WEB_PARTS = new String[] {TARGETED_MS_QC_SUMMARY, TARGETED_MS_QC_PLOTS};
+    public static final String[] QC_FOLDER_WEB_PARTS = new String[] {TARGETED_MS_REPLICATE_SUMMARY, TARGETED_MS_QC_PLOTS};
 
     public final ModuleProperty FOLDER_TYPE_PROPERTY;
     public final ModuleProperty SKYLINE_AUDIT_LEVEL_PROPERTY;
@@ -186,7 +186,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         addModuleProperty(SKYLINE_AUDIT_LEVEL_PROPERTY);
         //------------------------rr
 
-        // setup the QC Summary webpart AutoQCPing timeout
+        // setup the replicate summary webpart AutoQCPing timeout
         AUTO_QC_PING_TIMEOUT_PROPERTY = new ModuleProperty(this, "TargetedMS AutoQCPing Timeout");
         AUTO_QC_PING_TIMEOUT_PROPERTY.setDescription("The number of minutes before the most recent AutoQCPing indicator is considered stale.");
         AUTO_QC_PING_TIMEOUT_PROPERTY.setDefaultValue("15");
@@ -392,12 +392,18 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
                 }
             },
 
-            new BaseWebPartFactory(TARGETED_MS_QC_SUMMARY)
+            new BaseWebPartFactory(TARGETED_MS_REPLICATE_SUMMARY)
             {
                 @Override
                 public WebPartView<?> getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
                 {
-                    return new QCSummaryWebPart(portalCtx, 3);
+                    return new ReplicateSummaryWebPart(portalCtx, 3);
+                }
+
+                @Override
+                public List<String> getLegacyNames()
+                {
+                    return List.of("Targeted MS QC Summary");
                 }
             },
 
@@ -476,12 +482,12 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
                 }
             },
 
-            new BaseWebPartFactory(TARGETED_MS_OUTLIER_HEATMAP_SUMMARY_VIEW)
+            new BaseWebPartFactory(TARGETED_MS_PEPTIDE_MOLECULE_SUMMARY)
             {
                 @Override
                 public WebPartView<?> getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
                 {
-                    return ModuleHtmlView.get(getModule(), "outlierHeatmapSummary");
+                    return ModuleHtmlView.get(getModule(), "peptideSummary");
                 }
             }
         );
@@ -646,14 +652,14 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
             fcs.addZiploaderPattern(extBrukerRaw2);
         }
 
-        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", new QCSummaryMenuCustomizer("configureQCGroups", "Configure Included and Excluded Precursors"));
-        Portal.registerNavTreeCustomizer("Targeted MS QC Plots", new QCSummaryMenuCustomizer("configureQCGroups", "Configure Included and Excluded Precursors"));
+        Portal.registerNavTreeCustomizer(TARGETED_MS_REPLICATE_SUMMARY, new QCSummaryMenuCustomizer("configureQCGroups", "Configure Included and Excluded Precursors"));
+        Portal.registerNavTreeCustomizer(TARGETED_MS_QC_PLOTS, new QCSummaryMenuCustomizer("configureQCGroups", "Configure Included and Excluded Precursors"));
 
-        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", new QCSummaryMenuCustomizer("configureQCMetric", "Configure QC Metrics"));
-        Portal.registerNavTreeCustomizer("Targeted MS QC Plots", new QCSummaryMenuCustomizer("configureQCMetric", "Configure QC Metrics"));
+        Portal.registerNavTreeCustomizer(TARGETED_MS_REPLICATE_SUMMARY, new QCSummaryMenuCustomizer("configureQCMetric", "Configure QC Metrics"));
+        Portal.registerNavTreeCustomizer(TARGETED_MS_QC_PLOTS, new QCSummaryMenuCustomizer("configureQCMetric", "Configure QC Metrics"));
 
-        Portal.registerNavTreeCustomizer("Targeted MS QC Summary", new QCSummaryMenuCustomizer("subscribeOutlierNotifications", "Subscribe to Outlier Notification Emails"));
-        Portal.registerNavTreeCustomizer("Targeted MS QC Plots", new QCSummaryMenuCustomizer("subscribeOutlierNotifications", "Subscribe to Outlier Notification Emails"));
+        Portal.registerNavTreeCustomizer(TARGETED_MS_REPLICATE_SUMMARY, new QCSummaryMenuCustomizer("subscribeOutlierNotifications", "Subscribe to Outlier Notification Emails"));
+        Portal.registerNavTreeCustomizer(TARGETED_MS_QC_PLOTS, new QCSummaryMenuCustomizer("subscribeOutlierNotifications", "Subscribe to Outlier Notification Emails"));
 
         TargetedMSService.get().registerSkylineDocumentImportListener(QCNotificationSender.get());
     }
