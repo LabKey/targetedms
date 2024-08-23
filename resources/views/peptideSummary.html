@@ -52,6 +52,10 @@
     margin-top: 1em;
   }
 
+  .outlier-count {
+    text-align: right
+  }
+
 </style>
 
 <label for="date-range">Date Range:</label>
@@ -161,7 +165,7 @@
     function generateTable(data) {
         $('#fom-loading').hide();
         const tableContainer = document.getElementById('table-container');
-        let tableHTML = '<table id="heatmap-table" class="heatmap-table">';
+        let tableHTML = '<table id="heatmap-table" class="table-condensed labkey-data-region-legacy labkey-show-borders">';
         tableHTML += '<thead><tr><th></th>';
 
         for (let i = 0; i < data.metrics.length; i++) {
@@ -191,7 +195,7 @@
             for (let j = 0; j < data.metrics.length; j++) {
                 let metric = data.metrics[j];
                 if (data.peptideOutliers[i].outlierCountsPerMetric[metric]) {
-                    tableHTML += '<td>' + data.peptideOutliers[i].outlierCountsPerMetric[metric] + '</td>';
+                    tableHTML += '<td class="outlier-count">' + data.peptideOutliers[i].outlierCountsPerMetric[metric] + '</td>';
                     if (!totalOutliersByMetric[metric]) {
                         totalOutliersByMetric[metric] = 0;
                     }
@@ -200,11 +204,11 @@
 
                 }
                 else {
-                    tableHTML += '<td>0</td>';
+                    tableHTML += '<td class="outlier-count">0</td>';
                 }
 
                 if (j === data.metrics.length - 1) {
-                    tableHTML += '<td><b>' + LABKEY.Utils.encodeHtml(data.peptideOutliers[i].totalOutliers) + '</b></td>';
+                    tableHTML += '<td class="outlier-count"><b>' + LABKEY.Utils.encodeHtml(data.peptideOutliers[i].totalOutliers) + '</b></td>';
                 }
             }
             tableHTML += '</tr>';
@@ -215,13 +219,13 @@
         for (let i = 0; i < data.metrics.length; i++) {
             if (totalOutliersByMetric[data.metrics[i]]) {
                 sumOfOutliers += totalOutliersByMetric[data.metrics[i]];
-                tableHTML += '<td><b>' + LABKEY.Utils.encodeHtml(totalOutliersByMetric[data.metrics[i]]) + '</b></td>';
+                tableHTML += '<td class="outlier-count"><b>' + LABKEY.Utils.encodeHtml(totalOutliersByMetric[data.metrics[i]]) + '</b></td>';
             }
             else {
-                tableHTML += '<td><b>0</b></td>';
+                tableHTML += '<td class="outlier-count"><b>0</b></td>';
             }
         }
-        tableHTML += '<td><b>' + sumOfOutliers + '</b></td>';
+        tableHTML += '<td class="outlier-count"><b>' + sumOfOutliers + '</b></td>';
         tableHTML += '</tbody></table>';
         tableContainer.innerHTML = tableHTML;
 
