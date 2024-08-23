@@ -36,6 +36,7 @@ import org.labkey.api.targetedms.TargetedMSFolderTypeListener;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.targetedms.model.SampleFilePath;
+import org.labkey.api.util.DateUtil;
 import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.targetedms.chromlib.ChromatogramLibraryUtils;
 import org.labkey.targetedms.datasource.MsDataSourceUtil;
@@ -129,26 +130,13 @@ public class TargetedMSServiceImpl implements TargetedMSService
         {
             for (SampleFileInfo sampleFileInfo : sampleFileInfos)
             {
-                DateFormat format = DateFormat.getDateInstance();
-                String acquiredTime = format.format(sampleFileInfo.getAcquiredTime());
-                String sd = format.format(startDate);
-                String ed = format.format(endDate);
-                try
+                Date acquired = DateUtil.getDateOnly(sampleFileInfo.getAcquiredTime());
+                Date start = DateUtil.getDateOnly(startDate);
+                Date end = DateUtil.getDateOnly(endDate);
+                if ((acquired.after(start) && acquired.before(end) || acquired.compareTo(start) == 0 || acquired.compareTo(end) == 0))
                 {
-                    Date acquired = format.parse(acquiredTime);
-                    Date start = format.parse(sd);
-                    Date end = format.parse(ed);
-                    if ((acquired.after(start) && acquired.before(end) || acquired.compareTo(start) == 0 || acquired.compareTo(end) == 0))
-                    {
-                        result.add(sampleFileInfo);
-                    }
+                    result.add(sampleFileInfo);
                 }
-
-                catch (ParseException e)
-                {
-                    throw new RuntimeException("Error parsing date '"+ sampleFileInfo.getAcquiredTime(), e);
-                }
-
             }
 
             return result;
