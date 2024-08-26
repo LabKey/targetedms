@@ -71,6 +71,7 @@
     <input type="date" id="ps-start-date">
     <label for="ps-end-date">End Date:</label>
     <input type="date" id="ps-end-date">
+    <button id="apply-button">Apply</button>
 </div>
 
 <div class="legend-container">
@@ -384,6 +385,7 @@
         const datePickerContainer = document.getElementById('date-picker-container');
         const startDateInput = document.getElementById('ps-start-date');
         const endDateInput = document.getElementById('ps-end-date');
+        const applyButton = document.getElementById('apply-button');
 
         dateRangeSelect.addEventListener('change', function () {
             if (dateRangeSelect.value === '-1') {  // Custom range selected
@@ -402,11 +404,7 @@
             persistDateRange(parseInt(dateRangeSelect.value));
         });
 
-        startDateInput.addEventListener('change', function () {
-            customDateRange();
-        });
-
-        endDateInput.addEventListener('change', function () {
+        applyButton.addEventListener('click', function () {
             customDateRange();
         });
 
