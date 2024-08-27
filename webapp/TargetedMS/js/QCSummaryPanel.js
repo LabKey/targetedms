@@ -333,8 +333,9 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                 iconCls = 'fa-times-rectangle qc-error';
             else
                 iconCls = 'fa-check qc-correct';
+            let acqDate = Ext4.util.Format.htmlEncode(Ext4.util.Format.date(sampleFile.AcquiredTime ? new Date(sampleFile.AcquiredTime) : null, LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s'));
             html += '<tr id="' + sampleFile.calloutId + '"><td>'
-                    + '<span class="fa ' + iconCls + '" style="width: 1em; text-align: center"></span></td><td><div class="sample-file-item">' + Ext4.util.Format.htmlEncode(sampleFile.ReplicateName) + '</div></td><td><div class="sample-file-item-acquired" style="text-wrap: nowrap">' + Ext4.util.Format.date(sampleFile.AcquiredTime ? new Date(sampleFile.AcquiredTime) : null, LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s') + '</div></td>';
+                    + '<span class="fa ' + iconCls + '" style="width: 1em; text-align: center"></span></td><td><div class="sample-file-item">' + Ext4.util.Format.htmlEncode(sampleFile.ReplicateName) + '</div></td><td><div class="sample-file-item-acquired" style="text-wrap: nowrap">' + acqDate + '</div></td>';
 
 
 
