@@ -189,7 +189,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                 },
                 getFullHistoryLink: function (path)
                 {
-                    return LABKEY.ActionURL.buildURL('targetedms', 'qCSummaryHistory', path);
+                    return LABKEY.ActionURL.buildURL('targetedms', 'qcSummaryHistory', path);
                 },
                 getAutoQCPingClass: function (val)
                 {
@@ -300,7 +300,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
         let container = params.container;
         let sampleFiles = params.sampleFiles;
         let metrics = sampleFiles[0].Metrics;
-        let showMetrics = container.fileCount <= sampleFiles.length && metrics && metrics.length > 0;
+        let showMetrics = LABKEY.ActionURL.getAction().toLowerCase() === 'qcSummaryHistory'.toLowerCase();
         let tableWidth = container.width - 100;
         let html = '';
         let thead = '';
