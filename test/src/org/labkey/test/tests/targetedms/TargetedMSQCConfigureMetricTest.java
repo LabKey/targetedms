@@ -178,13 +178,14 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
         qcSummaryWebPart = new QCSummaryWebPart(getDriver());
         scrollIntoView(Locator.tagContainingText("div", replicate));
         mouseOver(Locator.tagContainingText("div", replicate));
+        mouseOver(Locator.tagContainingText("div", replicate));
         waitForElement(qcSummaryWebPart.getBubble());
         WebElement bubbleContentEl = qcSummaryWebPart.getBubbleContent().findElement(getDriver());
         waitFor(()-> !bubbleContentEl.getText().isEmpty(), WAIT_FOR_PAGE);
         String bubbleContent = bubbleContentEl.getText();
         log("Bubble content " + bubbleContent);
-        Assert.assertTrue("Outlier count for metric " + metricType + "is not correct",
-                        Pattern.compile(Pattern.quote(metricType + " " + count), Pattern.CASE_INSENSITIVE).matcher(bubbleContent).find());
+        checker().verifyTrue("Outlier count for metric " + metricType + " is not correct",
+                Pattern.compile(Pattern.quote(metricType + " " + count), Pattern.CASE_INSENSITIVE).matcher(bubbleContent).find());
         mouseOver(Locator.css(".labkey-page-nav")); //to close the bubble.
     }
 
