@@ -95,6 +95,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
     getContainerSummaryView: function (container, hasChildren, width) {
         container.viewCmpId = Ext4.id();
         container.autoQcCalloutId = Ext4.id();
+        container.width = width;
 
         var config = {
             id: container.viewCmpId,
@@ -188,7 +189,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                 },
                 getFullHistoryLink: function (path)
                 {
-                    return LABKEY.ActionURL.buildURL('targetedms', 'qCSummaryHistory', path);
+                    return LABKEY.ActionURL.buildURL('targetedms', 'qcSummaryHistory', path);
                 },
                 getAutoQCPingClass: function (val)
                 {
@@ -296,49 +297,76 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
     },
 
     renderContainerSampleFileStats: function (params) {
-        var container = params.container;
-            var html = '<table class="table-condensed labkey-data-region-legacy labkey-show-borders">';
-            html += '<thead><tr><td></td></td><td class="labkey-column-header">Replicate Name</td><td class="labkey-column-header">Acquired</td><td class="labkey-column-header">Outliers</td></tr></thead>';
-            var sampleFiles = params.sampleFiles;
-            Ext4.iterate(sampleFiles, function (sampleFile) {
-                // create a new div id for each sampleFile to use for the hover details callout
-                sampleFile.calloutId = Ext4.id();
-
-                var totalOutliers = sampleFile.Value;
-
-                var iconCls;
-                if (sampleFile.IgnoreForAllMetric)
-                    iconCls = 'fa-ban qc-none';
-                else if (totalOutliers > 0)
-                    iconCls = 'fa-times-rectangle qc-error';
-                else
-                    iconCls = 'fa-check qc-correct';
-                html += '<tr id="' + sampleFile.calloutId + '"><td>'
-                        + '<span class="fa ' + iconCls + '" style="width: 1em; text-align: center"></span></td><td><div class="sample-file-item">' + Ext4.util.Format.htmlEncode(sampleFile.ReplicateName) + '</div></td><td><div class="sample-file-item-acquired">' + Ext4.util.Format.date(sampleFile.AcquiredTime ? new Date(sampleFile.AcquiredTime) : null, LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s') + '</div></td>';
-
-                if (sampleFile.IgnoreForAllMetric) {
-                    html += '<td><div class="sample-file-item-total-outliers" style="text-align: center">excluded</div></td>';
-                }
-                else {
-                    html += '<td style="text-align: right"><div class="sample-file-item-total-outliers">' + totalOutliers + "</div></td>"
-                }
-                html += '</tr>';
+        let container = params.container;
+        let sampleFiles = params.sampleFiles;
+        let metrics = sampleFiles[0].Metrics;
+        let showMetrics = LABKEY.ActionURL.getAction().toLowerCase() === 'qcSummaryHistory'.toLowerCase();
+        let tableWidth = container.width - 100;
+        let html = '';
+        let thead = '';
+        if (showMetrics) {
+            html = '<table class="table-condensed labkey-data-region-legacy labkey-show-borders" style="width: ' + tableWidth + 'px">';
+            thead = '<thead><tr><td></td></td><td class="labkey-column-header">Replicate Name</td><td class="labkey-column-header">Acquired</td>';
+            Ext4.each(metrics, function (item) {
+                thead += '<td class="labkey-column-header">' + Ext4.util.Format.htmlEncode(item.MetricLabel) + '</td>';
             });
-            html += '</table>';
-            if (container.fileCount > sampleFiles.length) {
-                html += '<div class="qc-summary-text"><a href="' + LABKEY.ActionURL.buildURL('targetedms', 'qcSummaryHistory.view', container.path) + '">View all ' + container.fileCount + ' replicates and utilization calendar <span class="fa fa-calendar"></span></a></div>';
+            thead += '<td class="labkey-column-header"><b>Total</b></td>';
+        }
+        else {
+            html = '<table class="table-condensed labkey-data-region-legacy labkey-show-borders">';
+            thead = '<thead><tr><td></td></td><td class="labkey-column-header">Replicate Name</td><td class="labkey-column-header">Acquired</td><td class="labkey-column-header">Outliers</td>';
+        }
+
+        thead += '</tr></thead>';
+        html += thead;
+
+        Ext4.iterate(sampleFiles, function (sampleFile) {
+            // create a new div id for each sampleFile to use for the hover details callout
+            sampleFile.calloutId = Ext4.id();
+
+            var totalOutliers = sampleFile.Value;
+
+            var iconCls;
+            if (sampleFile.IgnoreForAllMetric)
+                iconCls = 'fa-ban qc-none';
+            else if (totalOutliers > 0)
+                iconCls = 'fa-times-rectangle qc-error';
+            else
+                iconCls = 'fa-check qc-correct';
+            let acqDate = Ext4.util.Format.htmlEncode(Ext4.util.Format.date(sampleFile.AcquiredTime ? new Date(sampleFile.AcquiredTime) : null, LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s'));
+            html += '<tr id="' + sampleFile.calloutId + '"><td>'
+                    + '<span class="fa ' + iconCls + '" style="width: 1em; text-align: center"></span></td><td><div class="sample-file-item">' + Ext4.util.Format.htmlEncode(sampleFile.ReplicateName) + '</div></td><td><div class="sample-file-item-acquired" style="text-wrap: nowrap">' + acqDate + '</div></td>';
+
+
+
+            if (showMetrics) {
+                Ext4.each(sampleFile.Metrics, function (metric) {
+                    html += '<td><div class="sample-file-item" style="text-align: right">' + Ext4.util.Format.htmlEncode(metric.Value) + '</div></td>';
+                });
             }
-            var sampleFilesDiv = Ext4.get('qc-summary-samplefiles-' + container.id);
-            sampleFilesDiv.update(html);
-            sampleFilesDiv.removeCls('sample-file-details-loading');
+            if (sampleFile.IgnoreForAllMetric) {
+                html += '<td><div class="sample-file-item-total-outliers" style="text-align: center"><b>excluded</b></div></td>';
+            }
+            else {
+                html += '<td><div class="sample-file-item-total-outliers" style="text-align: right"><b>' + totalOutliers + "</b></div></td>"
+            }
+            html += '</tr>';
+        });
+        html += '</table>';
+        if (container.fileCount > sampleFiles.length) {
+            html += '<div class="qc-summary-text"><a href="' + LABKEY.ActionURL.buildURL('targetedms', 'qcSummaryHistory.view', container.path) + '">View all ' + container.fileCount + ' replicates and utilization calendar <span class="fa fa-calendar"></span></a></div>';
+        }
+        var sampleFilesDiv = Ext4.get('qc-summary-samplefiles-' + container.id);
+        sampleFilesDiv.update(html);
+        sampleFilesDiv.removeCls('sample-file-details-loading');
 
-            // since the height of the panel will change from adding up to three lines of text, need to reset the size of the view
-            this.doLayout();
+        // since the height of the panel will change from adding up to three lines of text, need to reset the size of the view
+        this.doLayout();
 
-            // add a hover listener for each of the sample file divs
-            Ext4.iterate(sampleFiles, function (sampleFile) {
-                this.showSampleFileStatsDetails(sampleFile.calloutId, sampleFile);
-            }, this);
+        // add a hover listener for each of the sample file divs
+        Ext4.iterate(sampleFiles, function (sampleFile) {
+            this.showSampleFileStatsDetails(sampleFile.calloutId, sampleFile);
+        }, this);
     },
 
     showSampleFileStatsDetails : function(divId, sampleFile) {
