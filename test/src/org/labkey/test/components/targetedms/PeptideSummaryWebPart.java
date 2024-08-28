@@ -44,9 +44,7 @@ public class PeptideSummaryWebPart extends BodyWebPart<PeptideSummaryWebPart.Ele
 
     public PeptideSummaryWebPart setEndDate(String value)
     {
-        doAndWaitForElementToRefresh(() -> elementCache().endDate.set(value),
-                elementCache().heatmapLoc, getWrapper().defaultWaitForPage);
-
+        elementCache().endDate.set(value);
         return this;
     }
 
@@ -61,10 +59,8 @@ public class PeptideSummaryWebPart extends BodyWebPart<PeptideSummaryWebPart.Ele
     public PeptideSummaryWebPart setCustomDateRange(String startDate, String endDate)
     {
         elementCache().dateRange.selectByVisibleText(HeatmapDateRange.Custom_Range.getLabel());
-        doAndWaitForTableUpdate(() -> {
-            setStartDate(startDate);
-            setEndDate(endDate);
-        });
+        setStartDate(startDate);
+        setEndDate(endDate);
         return this;
     }
 
