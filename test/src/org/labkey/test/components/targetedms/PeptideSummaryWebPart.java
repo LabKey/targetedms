@@ -44,7 +44,13 @@ public class PeptideSummaryWebPart extends BodyWebPart<PeptideSummaryWebPart.Ele
 
     public PeptideSummaryWebPart setEndDate(String value)
     {
-        doAndWaitForElementToRefresh(() -> elementCache().endDate.set(value),
+        elementCache().endDate.set(value);
+        return this;
+    }
+
+    public PeptideSummaryWebPart apply()
+    {
+        doAndWaitForElementToRefresh(() -> elementCache().applyButton.findElement(this).click(),
                 elementCache().heatmapLoc, getWrapper().defaultWaitForPage);
 
         return this;
@@ -53,10 +59,8 @@ public class PeptideSummaryWebPart extends BodyWebPart<PeptideSummaryWebPart.Ele
     public PeptideSummaryWebPart setCustomDateRange(String startDate, String endDate)
     {
         elementCache().dateRange.selectByVisibleText(HeatmapDateRange.Custom_Range.getLabel());
-        doAndWaitForTableUpdate(() -> {
-            setStartDate(startDate);
-            setEndDate(endDate);
-        });
+        setStartDate(startDate);
+        setEndDate(endDate);
         return this;
     }
 
@@ -125,6 +129,7 @@ public class PeptideSummaryWebPart extends BodyWebPart<PeptideSummaryWebPart.Ele
         final Input startDate = new Input(Locator.id("ps-start-date").findWhenNeeded(this), getDriver());
         final Input endDate = new Input(Locator.id("ps-end-date").findWhenNeeded(this), getDriver());
         final Locator heatmapLoc = Locator.id("heatmap-table");
+        final Locator applyButton = Locator.id("apply-button");
         final Table heatmapTable = new Table(getDriver(), heatmapLoc.refindWhenNeeded(this));
         final WebElement replicateCount = Locator.id("total-replicates").findWhenNeeded(this);
     }
