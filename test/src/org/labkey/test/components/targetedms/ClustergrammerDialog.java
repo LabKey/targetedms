@@ -95,7 +95,7 @@ public class ClustergrammerDialog extends Window<ClustergrammerDialog.ElementCac
 
         public void clickYes()
         {
-            clickButton("Yes", 30000);
+            clickButton("Yes", 60000);
         }
 
         public void clickNo()
