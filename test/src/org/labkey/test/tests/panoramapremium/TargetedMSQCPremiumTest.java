@@ -83,18 +83,18 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
     @Test
     public void testConfigureQCMetrics()
     {
-        String metric = QCPlotsWebPart.MetricType.TOTAL_PEAK.toString();
+        QCPlotsWebPart.MetricType metric = QCPlotsWebPart.MetricType.TOTAL_PEAK;
         ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
         configureUI.disableMetric(metric);
         configureUI.clickSave();
 
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        verifyMetricNotPresent(qcPlotsWebPart, metric);
+        verifyMetricNotPresent(qcPlotsWebPart, metric.toString());
 
         //re-enabling peak area metric
         goToConfigureMetricsUI();
-        configureUI.setLeveyJennings(metric, null, null);
+        configureUI.setLeveyJennings(metric.toString(), null, null);
         clickAndWait(Locator.buttonContainingText("Save"));
         impersonate(USER);
         log("Verifying Configure QC Metrics Menu option not present for non admin");
