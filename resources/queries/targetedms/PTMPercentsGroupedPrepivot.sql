@@ -1,3 +1,29 @@
+--Calculate the percentage for each individual modification
+WITH InitialGrouping AS (
+    (SELECT StructuralModId                                                                  AS Modification,
+            SUM(ModifiedAreaProportion)                                                      AS PercentModified,
+            MIN(Id)                                                                          AS Id,
+            MAX(PeptideModifiedSequence) AS PeptideModifiedSequence,
+            Sequence @hidden,
+            PreviousAA @hidden,
+            NextAA @hidden,
+            SampleName,
+            StartIndex,
+            IndexAA,
+            SUBSTRING(Sequence, IndexAA + 1, 1) AS AminoAcid,
+            StartIndex + IndexAA + 1 AS Location,
+            PeptideGroupId
+     FROM PTMPercentsPrepivot
+     GROUP BY SampleName,
+              Sequence,
+              PreviousAA,
+              NextAA,
+              StartIndex,
+              PeptideGroupId,
+              IndexAA,
+              StructuralModId)
+)
+
 
 SELECT
     -- We have a special rule for this C-term modification - we're actually interested in the _unmodified_ percentage
@@ -27,47 +53,25 @@ SELECT
        CAST(NULL AS VARCHAR) Risk
 
 FROM
-    -- First, calculate the percentage for each individual modification
-    (SELECT StructuralModId                                                                  AS Modification,
-            SUM(ModifiedAreaProportion)                                                      AS PercentModified,
-            MIN(Id)                                                                          AS Id,
-            MAX(PeptideModifiedSequence) AS PeptideModifiedSequence,
-            Sequence @hidden,
-            PreviousAA @hidden,
-            NextAA @hidden,
-            SampleName,
-            StartIndex,
-            IndexAA,
-            SUBSTRING(Sequence, IndexAA + 1, 1) AS AminoAcid,
-            StartIndex + IndexAA + 1 AS Location,
-            PeptideGroupId
-     FROM PTMPercentsPrepivot
-     GROUP BY SampleName,
-              Sequence,
-              PreviousAA,
-              NextAA,
-              StartIndex,
-              PeptideGroupId,
-              IndexAA,
-              StructuralModId) p1
+    InitialGrouping p1
 
         INNER JOIN
 
     -- Second, calculate total percent across all modifications for each amino acid
     (SELECT
-         SUM(ModifiedAreaProportion) AS TotalPercentModified,
-         COUNT(DISTINCT StructuralModId) AS ModificationCount,
+         SUM(PercentModified) AS TotalPercentModified,
+         COUNT(DISTINCT Modification) AS ModificationCount,
          SampleName,
          Sequence,
          PeptideGroupId,
-         SUBSTRING(Sequence, IndexAA + 1, 1) AS AminoAcid,
-         StartIndex + IndexAA + 1 AS Location,
-     FROM PTMPercentsPrepivot
+         AminoAcid,
+         Location,
+     FROM InitialGrouping
      GROUP BY SampleName,
               Sequence,
               PeptideGroupId,
-              IndexAA,
-              StartIndex) p2
+              Location,
+              AminoAcid) p2
 
     ON p1.SampleName = p2.SampleName AND
        p1.Sequence = p2.Sequence AND
@@ -84,18 +88,17 @@ FROM
                     PeptideGroupId,
                     AminoAcid,
                     Location
-             FROM (SELECT SUM(ModifiedAreaProportion)                                                      AS TotalPercentModified,
-                          SampleName                                                                       AS SampleName2,
+             FROM (SELECT SUM(PercentModified)                                                             AS TotalPercentModified,
                           Sequence,
                           PeptideGroupId,
-                          SUBSTRING(Sequence, IndexAA + 1, 1) AS AminoAcid,
-                          StartIndex + IndexAA + 1 AS Location,
-                   FROM PTMPercentsPrepivot
+                          AminoAcid,
+                          Location,
+                   FROM InitialGrouping
                    GROUP BY SampleName,
                             Sequence,
                             PeptideGroupId,
-                            IndexAA,
-                            StartIndex) x
+                            AminoAcid,
+                            Location) x
              GROUP BY Sequence, PeptideGroupId, AminoAcid, Location
              ) p3
 
