@@ -1592,6 +1592,7 @@ public class TargetedMSSchema extends UserSchema
                 result.getMutableColumnOrThrow("DataId").setFk(QueryForeignKey.from(_expSchema, cf).to(ExpSchema.TableType.Data.name(), null, null));
                 result.getMutableColumnOrThrow("Owner").setFk(new UserIdQueryForeignKey(this, true));
                 result.getMutableColumnOrThrow("SkydDataId").setFk(QueryForeignKey.from(_expSchema, cf).to(ExpSchema.TableType.Data.name(), null, null));
+                result.getMutableColumnOrThrow("ExperimentRunLSID").setFk(QueryForeignKey.from(_expSchema, cf).to("Runs", "LSID", null));
             }
             TargetedMSTable.fixupLookups(result);
             return result;
