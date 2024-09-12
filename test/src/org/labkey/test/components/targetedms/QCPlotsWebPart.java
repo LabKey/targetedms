@@ -30,6 +30,7 @@ import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -429,7 +430,8 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public WebElement openExclusionBubble(String acquiredDate)
     {
-        getWrapper().shortWait().ignoring(StaleElementReferenceException.class).withMessage("Exclusion pop-up for Acquired Date = " + acquiredDate)
+        getWrapper().shortWait().ignoring(StaleElementReferenceException.class, MoveTargetOutOfBoundsException.class)
+                .withMessage("Exclusion pop-up for Acquired Date = " + acquiredDate)
                 .until(input -> {
                     getWrapper().mouseOver(getPointByAcquiredDate(acquiredDate));
                     return getWrapper().isElementPresent(Locator.tagWithClass("div", "x4-form-display-field").withText(acquiredDate));
