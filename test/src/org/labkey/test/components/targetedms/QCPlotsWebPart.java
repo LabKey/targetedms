@@ -434,7 +434,8 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
                     WebElement point = getPointByAcquiredDate(acquiredDate);
                     getWrapper().scrollToMiddle(point);
                     getWrapper().mouseOverWithoutScrolling(point);
-                    return getWrapper().isElementPresent(Locator.tagWithClass("div", "x4-form-display-field").withText(acquiredDate));
+                    return getWrapper().isElementPresent(Locator.tagWithClass("div", "x4-form-display-field")
+                            .containing(acquiredDate.substring(0, 16))); // drop seconds part (e.g. "2013-08-12 04:54") for trailing mean/CV
                 });
         return elementCache().hopscotchBubble.findElement(getDriver());
     }
