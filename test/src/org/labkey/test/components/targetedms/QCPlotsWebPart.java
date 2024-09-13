@@ -26,6 +26,7 @@ import org.labkey.test.components.ext4.Window;
 import org.labkey.test.util.Ext4Helper;
 import org.labkey.test.util.LogMethod;
 import org.labkey.test.util.LoggedParam;
+import org.labkey.test.util.selenium.ScrollUtils;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -46,6 +47,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.labkey.test.BaseWebDriverTest.WAIT_FOR_JAVASCRIPT;
 import static org.labkey.test.components.ext4.Window.Window;
+import static org.labkey.test.util.selenium.ScrollUtils.Alignment.center;
 
 public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 {
@@ -432,7 +434,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         getWrapper().shortWait().ignoring(StaleElementReferenceException.class).withMessage("Exclusion pop-up for Acquired Date = " + acquiredDate)
                 .until(input -> {
                     WebElement point = getPointByAcquiredDate(acquiredDate);
-                    getWrapper().scrollToMiddle(point);
+                    ScrollUtils.scrollIntoView(point, center, center);
                     getWrapper().mouseOverWithoutScrolling(point);
                     return getWrapper().isElementPresent(Locator.tagWithClass("div", "x4-form-display-field")
                             .containing(acquiredDate.substring(0, 16))); // drop seconds part (e.g. "2013-08-12 04:54") for trailing mean/CV
