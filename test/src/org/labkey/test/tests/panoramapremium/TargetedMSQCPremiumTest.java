@@ -229,8 +229,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         String pressurePlotSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
         assertFalse("Pressure trace plot is not present", pressurePlotSVGText.isEmpty());
         assertTrue("Y axis label is not correct or present", pressurePlotSVGText.contains(yAxisLabel));
-        mouseOver(qcPlotsWebPart.getPointByAcquiredDate("2009-11-03 19:37:28"));
-        waitForElement(qcPlotsWebPart.getBubble());
+        qcPlotsWebPart.openExclusionBubble("2009-11-03 19:37:28");
         String pressureTracehoverText = waitForElementToBeVisible(qcPlotsWebPart.getBubbleContent()).getText();
         Assertions.assertThat(pressureTracehoverText).as("Tooltip value").contains("7.363");
 
