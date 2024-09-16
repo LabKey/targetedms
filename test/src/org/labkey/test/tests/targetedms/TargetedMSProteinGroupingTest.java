@@ -67,7 +67,7 @@ public class TargetedMSProteinGroupingTest extends TargetedMSTest
         checker().verifyEquals("Incorrect number of peptides imported", 1, peptideTable.getDataRowCount());
         CustomizeView customizeView = peptideTable.openCustomizeGrid();
         customizeView.addColumn("PeptideGroupId");
-        customizeView.clickViewGrid();
+        customizeView.applyCustomView();
         peptideTable = new DataRegionTable.DataRegionFinder(getDriver()).withName("Peptides").waitFor();
         checker().verifyEquals("Incorrect group for the protein", group, peptideTable.getDataAsText(0, "PeptideGroupId"));
     }
