@@ -45,7 +45,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -767,11 +766,11 @@ public class TargetedMSExperimentTest extends TargetedMSTest
                 "M+2 758.0285",
                 "x25 657.6403",
                 "a22 786.8611",
-                "z\u20222",  "272.1843", // z.2
-                "z\u202213", "387.5359", // z.13
-                "z\u202212", "355.1850", // z.12
-                "z\u20329",  "251.4732", // z'9
-                "z\u20321",  "54.0409" // z'1
+                "z\u20222",  "272.1843", // z•2
+                "z\u202213", "387.5359", // z•13
+                "z\u202212", "355.1850", // z•12
+                "z\u20329",  "251.4732", // z′9
+                "z\u20321",  "54.0409" // z′1
         );
         assertTextPresentInThisOrder(new TextSearcher(nestedTableText), expectedIons.toArray(new String[0]));
 
@@ -784,14 +783,14 @@ public class TargetedMSExperimentTest extends TargetedMSTest
                 "z\u20222 - 272.1843+", "z\u202213 - 387.5359+++", "z\u202212 - 355.1850+++",
                 "z\u20329 - 251.4732+++", "z\u20321 - 54.0409+++");
 
-        List<WebElement> svgElements = Locator.css("svg g text").findElements(getDriver());
+        List<WebElement> svgElements = Locator.css("svg g text").waitForElements(getDriver(), WAIT_FOR_JAVASCRIPT);
         Set<String> svgTexts = new HashSet<>();
         for (WebElement el: svgElements)
         {
             svgTexts.add(el.getText());
         }
-        List<String> missing = expectedLegendTexts.stream().filter(l -> !svgTexts.contains(l)).collect(Collectors.toList());
+        List<String> missing = expectedLegendTexts.stream().filter(l -> !svgTexts.contains(l)).toList();
 
-        assertTrue("Missing legend items in chromatogram plot - " + missing, missing.size() == 0);
+        assertTrue("Missing legend items in chromatogram plot - " + missing, missing.isEmpty());
     }
 }

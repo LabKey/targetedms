@@ -228,8 +228,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         scrollIntoView(Locator.tagWithText("span","FFVAPFPEVFGK ++, 692.8686"));
-        mouseOver(qcPlotsWebPart.getPointByAcquiredDate(date));
-        waitForElement(qcPlotsWebPart.getBubble());
+        qcPlotsWebPart.openExclusionBubble(date);
         clickAndWait(Locator.linkWithText("view chromatogram"));
         assertTrue("Navigated to incorrect replicate", isTextPresent(replicate));
         assertTrue("Plot is not highlighted", Locator.tagWithAttribute("div", "alt", "Chromatogram " + replicate).findElement(getDriver()).getAttribute("style").contains(" solid beige"));
@@ -690,8 +689,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         log("Verifying tic_area information in hover plot");
         qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TICAREA);
         qcPlotsWebPart.waitForPlots(1);
-        mouseOver(qcPlotsWebPart.getPointByAcquiredDate(acquiredDate));
-        waitForElement(qcPlotsWebPart.getBubble());
+        qcPlotsWebPart.openExclusionBubble(acquiredDate);
         String ticAreahoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
         assertTrue("Wrong header present", ticAreahoverText.contains("Total Ion Chromatogram Area"));
         assertTrue("Wrong Link present", ticAreahoverText.contains("VIEW DOCUMENT"));
