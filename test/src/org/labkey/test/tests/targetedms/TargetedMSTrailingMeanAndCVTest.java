@@ -91,7 +91,7 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
 
         log("Verifying tooltips");
         qcPlotsWebPart.waitForPlots(7);
-        mouseOver(qcPlotsWebPart.getPointByAcquiredDate("2013-08-12 04:54:55"));
+        qcPlotsWebPart.openExclusionBubble("2013-08-12 04:54:55");
         String toolTipText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
         Assert.assertEquals("Invalid tooltip", "Peptide:\n" +
                 "ATEEQLK ++, 409.7163\n" +
@@ -112,7 +112,7 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         dashboard = new PanoramaDashboard(this);
         qcPlotsWebPart = dashboard.getQcPlotsWebPart();
         qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.TrailingMean);
-        mouseOver(qcPlotsWebPart.getPointByAcquiredDate("2013-08-14 00:44:46"));
+        qcPlotsWebPart.openExclusionBubble("2013-08-14 00:44:46");
         toolTipText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
         Assert.assertEquals("Invalid tooltip of the point in guide set", "Peptide:\n" +
                 "ATEEQLK ++, 409.7163\n" +
@@ -156,7 +156,7 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         qcPlotsWebPart.setTrailingLast(trailingLast);
         log("Verifying tooltips");
         qcPlotsWebPart.waitForPlots(7);
-        mouseOver(qcPlotsWebPart.getPointByAcquiredDate("2013-08-12 04:54:55"));
+        qcPlotsWebPart.openExclusionBubble("2013-08-12 04:54:55");
         String toolTipText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
         Assert.assertEquals("Invalid tooltip", "Peptide:\n" +
                 "ATEEQLK ++, 409.7163\n" +
@@ -177,7 +177,7 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         dashboard = new PanoramaDashboard(this);
         qcPlotsWebPart = dashboard.getQcPlotsWebPart();
         qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.TrailingCV);
-        mouseOver(qcPlotsWebPart.getPointByAcquiredDate("2013-08-21 09:07:36"));
+        qcPlotsWebPart.openExclusionBubble("2013-08-21 09:07:36");
         toolTipText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
         Assert.assertEquals("Invalid tooltip of the point in guide set", "Peptide:\n" +
                 "ATEEQLK ++, 409.7163\n" +
