@@ -7,21 +7,35 @@ WITH InitialGrouping AS (
             Sequence @hidden,
             PreviousAA @hidden,
             NextAA @hidden,
-            SampleName,
-            StartIndex,
+            SampleFileId,
             IndexAA,
             SUBSTRING(Sequence, IndexAA + 1, 1) AS AminoAcid,
             StartIndex + IndexAA + 1 AS Location,
+            SiteLocation,
             PeptideGroupId
      FROM PTMPercentsPrepivot
-     GROUP BY SampleName,
+     GROUP BY SampleFileId,
               Sequence,
               PreviousAA,
               NextAA,
               StartIndex,
               PeptideGroupId,
               IndexAA,
-              StructuralModId)
+              StructuralModId,
+              SiteLocation)
+),
+Summarized AS (
+    SELECT SUM(PercentModified) AS TotalPercentModified,
+           COUNT(DISTINCT Modification) AS ModificationCount,
+           Sequence,
+           PeptideGroupId,
+           SampleFileId,
+           SiteLocation
+    FROM InitialGrouping
+    GROUP BY SampleFileId,
+             Sequence,
+             PeptideGroupId,
+             SiteLocation
 )
 
 
@@ -37,13 +51,14 @@ SELECT
        (CASE WHEN p1.Modification.Name = 'Lys-loss (Protein C-term K)' THEN (1 - p3.MinPercentModified) ELSE p3.MaxPercentModified END) AS MaxPercentModified,
        p2.ModificationCount,
 
-       Id AS Id @hidden,
+       p1.Id AS Id @hidden,
        PeptideModifiedSequence,
        p1.Sequence @hidden,
        PreviousAA @hidden,
        NextAA @hidden,
-       p1.SampleName,
+       p1.SampleFileId.SampleName,
        p1.AminoAcid,
+       p1.SiteLocation,
        p1.Location,
        p1.PeptideGroupId,
 
@@ -58,26 +73,12 @@ FROM
         INNER JOIN
 
     -- Second, calculate total percent across all modifications for each amino acid
-    (SELECT
-         SUM(PercentModified) AS TotalPercentModified,
-         COUNT(DISTINCT Modification) AS ModificationCount,
-         SampleName,
-         Sequence,
-         PeptideGroupId,
-         AminoAcid,
-         Location,
-     FROM InitialGrouping
-     GROUP BY SampleName,
-              Sequence,
-              PeptideGroupId,
-              Location,
-              AminoAcid) p2
+   Summarized p2
 
-    ON p1.SampleName = p2.SampleName AND
+    ON p1.SampleFileId = p2.SampleFileId AND
        p1.Sequence = p2.Sequence AND
        p1.PeptideGroupId = p2.PeptideGroupId AND
-       p1.AminoAcid = p2.AminoAcid AND
-       p1.Location = p2.Location
+       p1.SiteLocation = p2.SiteLocation
 
     INNER JOIN
 
@@ -86,23 +87,11 @@ FROM
                     MIN(TotalPercentModified) AS MinPercentModified,
                     Sequence,
                     PeptideGroupId,
-                    AminoAcid,
-                    Location
-             FROM (SELECT SUM(PercentModified)                                                             AS TotalPercentModified,
-                          Sequence,
-                          PeptideGroupId,
-                          AminoAcid,
-                          Location,
-                   FROM InitialGrouping
-                   GROUP BY SampleName,
-                            Sequence,
-                            PeptideGroupId,
-                            AminoAcid,
-                            Location) x
-             GROUP BY Sequence, PeptideGroupId, AminoAcid, Location
+                    SiteLocation
+             FROM Summarized x
+             GROUP BY Sequence, PeptideGroupId, SiteLocation
              ) p3
 
     ON p1.Sequence = p3.Sequence AND
        p1.PeptideGroupId = p3.PeptideGroupId AND
-       p1.AminoAcid = p3.AminoAcid AND
-       p1.Location = p3.Location
+       p1.SiteLocation = p3.SiteLocation
