@@ -77,6 +77,8 @@ import org.labkey.api.data.ContainerManager;
 import org.labkey.api.data.DataRegion;
 import org.labkey.api.data.DbScope;
 import org.labkey.api.data.PropertyManager;
+import org.labkey.api.data.PropertyManager.PropertyMap;
+import org.labkey.api.data.PropertyManager.WritablePropertyMap;
 import org.labkey.api.data.RenderContext;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SimpleFilter;
@@ -751,12 +753,12 @@ public class TargetedMSController extends SpringActionController
         {
             ApiSimpleResponse response = new ApiSimpleResponse();
 
-            PropertyManager.PropertyMap properties = null;
+            PropertyMap properties = null;
 
-            // only stash and retrieve plot option properties for logged in users
+            // only stash and retrieve plot option properties for logged-in users
             if (!getUser().isGuest())
             {
-                properties = PropertyManager.getWritableProperties(getUser(), getContainer(), QCFolderConstants.CATEGORY, true);
+                WritablePropertyMap writable = PropertyManager.getWritableProperties(getUser(), getContainer(), QCFolderConstants.CATEGORY, true);
 
                 Map<String, String> valuesToPersist = form.getAsMapOfStrings();
                 if (!valuesToPersist.isEmpty())
@@ -766,20 +768,21 @@ public class TargetedMSController extends SpringActionController
                     valuesToPersist.put("endDate", form.getEndDate());
                     valuesToPersist.put("selectedAnnotations", form.getSelectedAnnotationsString());
 
-                    properties.putAll(valuesToPersist);
-                    properties.save();
+                    writable.putAll(valuesToPersist);
+                    writable.save();
                 }
                 else
                 {
-                    if (properties.containsKey("selectedAnnotations") && (ReplicateManager.getReplicateAnnotationNameValues(getContainer()).size() == 0))
+                    if (writable.containsKey("selectedAnnotations") && (ReplicateManager.getReplicateAnnotationNameValues(getContainer()).isEmpty()))
                     {
                         // If there are no replicate annotations in this folder anymore, remove any saved annotation filters
                         // Issue 35726: No way to clear previously saved replicate annotation values in QC plots if folder no longer contains annotations
-                        properties.remove("selectedAnnotations");
-                        properties.save();
+                        writable.remove("selectedAnnotations");
+                        writable.save();
                     }
                 }
 
+                properties = writable;
             }
 
             if (properties == null || properties.isEmpty())
@@ -802,8 +805,8 @@ public class TargetedMSController extends SpringActionController
         @Override
         public Object execute(LeveyJenningsPlotOptions form, BindException errors)
         {
-            PropertyManager.PropertyMap current = PropertyManager.getProperties(getUser(), getContainer(), QCFolderConstants.CATEGORY);
-            PropertyManager.PropertyMap defaults = PropertyManager.getWritableProperties(getContainer(), QCFolderConstants.CATEGORY, true);
+            PropertyMap current = PropertyManager.getProperties(getUser(), getContainer(), QCFolderConstants.CATEGORY);
+            WritablePropertyMap defaults = PropertyManager.getWritableProperties(getContainer(), QCFolderConstants.CATEGORY, true);
             defaults.clear(); // Clear the map. There may be properties that are no longer applicable (e.g. selectedAnnotations, startDate, endDate).
             defaults.putAll(current);
             defaults.save();
@@ -825,7 +828,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public Object execute(LeveyJenningsPlotOptions form, BindException errors)
         {
-            PropertyManager.PropertyMap current = PropertyManager.getWritableProperties(getUser(), getContainer(), QCFolderConstants.CATEGORY, false);
+            WritablePropertyMap current = PropertyManager.getWritableProperties(getUser(), getContainer(), QCFolderConstants.CATEGORY, false);
             if (current != null)
             {
                 current.delete();
@@ -837,7 +840,7 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
-    private static class LeveyJenningsPlotOptions
+    public static class LeveyJenningsPlotOptions
     {
         private String _metric;
         private String _yAxisScale;
@@ -1306,7 +1309,7 @@ public class TargetedMSController extends SpringActionController
                 response.put("offlineAnnotationTypeId", ts2.getObject(Integer.class));
             }
 
-            PropertyManager.PropertyMap properties = PropertyManager.getWritableProperties(getUser(), getContainer(), QCFolderConstants.CATEGORY, false);
+            WritablePropertyMap properties = PropertyManager.getWritableProperties(getUser(), getContainer(), QCFolderConstants.CATEGORY, false);
             if (properties != null)
             {
                 Map<String, Object> toSend = new HashMap<>(properties);
@@ -4158,7 +4161,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public Object execute(PKOptions form, BindException errors)
         {
-            PropertyManager.PropertyMap properties = PropertyManager.getWritableProperties(getContainer(), getPropMapName(form), true);
+            WritablePropertyMap properties = PropertyManager.getWritableProperties(getContainer(), getPropMapName(form), true);
 
             // only stash option properties for users with editor role (i.e. UpdatePermissions)
             if (form.getSubgroups() != null && getContainer().hasPermission(getUser(), UpdatePermission.class))

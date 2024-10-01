@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.PropertyManager;
+import org.labkey.api.data.PropertyManager.WritablePropertyMap;
 import org.labkey.api.pipeline.LocalDirectory;
 import org.labkey.api.pipeline.PipeRoot;
 import org.labkey.api.pipeline.PipelineService;
@@ -119,7 +120,7 @@ public class ChromatogramLibraryUtils
 
     public static int incrementLibraryRevision(Container container, User user, LocalDirectory localDirectory)
     {
-        PropertyManager.PropertyMap propMap = PropertyManager.getWritableProperties(container, "TargetedMS", true);
+        WritablePropertyMap propMap = PropertyManager.getWritableProperties(container, "TargetedMS", true);
         String revisionVal = propMap.get(PROP_CHROM_LIB_REVISION);
         int newRevision;
         if(revisionVal == null)
