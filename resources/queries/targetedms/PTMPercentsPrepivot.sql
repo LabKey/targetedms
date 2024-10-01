@@ -6,10 +6,11 @@ SELECT ci.ModifiedAreaProportion,
        ci.PeptideId.PreviousAA,
        ci.PeptideId.StartIndex,
        ci.SampleFileId,
-       ci.SampleFileId.SampleName,
        ci.PeptideId.PeptideGroupId,
        psm.IndexAA,
-       psm.StructuralModId
+       psm.StructuralModId,
+       -- Explicitly cast for SQLServer to avoid trying to add as numeric types
+       (SUBSTRING(ci.PeptideId.Sequence, IndexAA + 1, 1)) || CAST(ci.PeptideId.StartIndex + IndexAA + 1 AS VARCHAR) AS SiteLocation
 FROM
      targetedms.GeneralMoleculeChromInfo ci LEFT JOIN
          targetedms.PeptideStructuralModification psm ON ci.PeptideId = psm.PeptideId LEFT JOIN
