@@ -1,7 +1,6 @@
 SELECT
     PeptideGroupId,
-    -- Explicitly cast for SQLServer to avoid trying to add as numeric types
-    AminoAcid || CAST(Location AS VARCHAR) AS SiteLocation,
+    SiteLocation,
     AminoAcid,
     Location,
     PeptideModifiedSequence,
@@ -29,5 +28,6 @@ GROUP BY
     PeptideGroupId,
     AminoAcid,
     Location,
+    SiteLocation,
     Modification
 PIVOT PercentModified, TotalPercentModified BY SampleName
