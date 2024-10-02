@@ -1,7 +1,6 @@
 package org.labkey.targetedms.folderImport;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jasper.tagplugins.jstl.core.Import;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.admin.FolderImportContext;
@@ -12,6 +11,7 @@ import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.PropertyManager;
+import org.labkey.api.data.PropertyManager.WritablePropertyMap;
 import org.labkey.api.data.Results;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SimpleFilter;
@@ -253,7 +253,7 @@ public enum PanoramaQCSettings
                         props.load(is);
                         if (!ctx.getUser().isGuest())
                         {
-                            PropertyManager.PropertyMap properties = PropertyManager.getWritableProperties(ctx.getUser(), ctx.getContainer(), QCFolderConstants.CATEGORY, true);
+                            WritablePropertyMap properties = PropertyManager.getWritableProperties(ctx.getUser(), ctx.getContainer(), QCFolderConstants.CATEGORY, true);
                             for (Map.Entry<Object, Object> entry : props.entrySet())
                             {
                                 if (entry.getKey() instanceof String && entry.getValue() instanceof String)
