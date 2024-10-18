@@ -68,6 +68,7 @@ import org.labkey.targetedms.parser.SampleFile;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.net.URI;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -368,12 +369,12 @@ public class SampleFileTable extends TargetedMSTable
                         Long dataSize = downloadInfo.getSize();
                         String size = dataSize != null ? FileUtils.byteCountToDisplaySize(dataSize) : "";
                         ExpData expData = downloadInfo.getExpData();
-                        String url = expData.getWebDavURL(FileContentService.PathType.full);
+                        String url = expData.getWebDavURL(FileContentService.PathType.full).toString();
                         if(!downloadInfo.isFile())
                         {
                             int idx = url.lastIndexOf('/');
                             url = idx != -1 ? url.substring(0, idx) : url;
-                            url = url + "?method=zip&depth=-1&file=" + expData.getName() + "&zipName=" + expData.getName();
+                            url = url + "?method=zip&depth=-1&file=" + PageFlowUtil.encode(expData.getName()) + "&zipName=" + PageFlowUtil.encode(expData.getName());
                         }
 
                         out.write(PageFlowUtil.iconLink("fa fa-download", null).href(url).toString());
