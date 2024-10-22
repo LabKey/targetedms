@@ -22,6 +22,7 @@
     <instrument id="MS:1003005" name="timsTOF Pro" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF Pro."/>
     <instrument id="MS:1003404" name="timsTOF HT" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF HT."/>
     <instrument id="MS:1003231" name="timsTOF SCP" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF SCP."/>
+    <instrument id="MS:1003412" name="timsTOF Ultra 2" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics timsTOF Ultra 2."/>
     <instrument id="MS:1003230" name="timsTOF Pro 2" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF Pro 2."/>
     <instrument id="MS:1003383" name="timsTOF Ultra" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF Ultra."/>
     <instrument id="MS:1003397" name="timsTOF fleX MALDI-2" vendor="Bruker Daltonics timsTOF series" description="Bruker Daltonics' timsTOF fleX MALDI-2."/>
@@ -218,6 +219,7 @@
     <instrument id="MS:1002874" name="TSQ Altis" vendor="Thermo Scientific" description="Thermo Scientific TSQ Altis Triple Quadrupole MS."/>
     <instrument id="MS:1000447" name="LTQ" vendor="Thermo Scientific" description="Finnigan LTQ MS."/>
     <instrument id="MS:1003292" name="TSQ Altis Plus" vendor="Thermo Scientific" description="Thermo Scientific TSQ Altis Plus Triple Quadrupole MS."/>
+    <instrument id="MS:1003423" name="Orbitrap Exploris GC 240" vendor="Thermo Scientific" description="Orbitrap Exploris GC 240 Mass Spectrometer."/>
     <instrument id="MS:1002835" name="LTQ Orbitrap Classic" vendor="Thermo Scientific" description="Thermo Fisher Scientific LTQ Orbitrap Classic."/>
     <instrument id="MS:1001908" name="ISQ" vendor="Thermo Scientific" description="Thermo Scientific ISQ single quadrupole MS with the ExtractraBrite source."/>
     <instrument id="MS:1003094" name="Orbitrap Exploris 240" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Exploris 240 Quadrupole Orbitrap MS."/>
@@ -264,6 +266,7 @@
     <instrument id="MS:1003409" name="Stellar" vendor="Thermo Scientific" description="Thermo Scientific Stellar mass spectrometer contains a quadrupole mass filter, a collision cell, and a quadrupole linear ion trap mass analyzer."/>
     <instrument id="MS:1002416" name="Orbitrap Fusion" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Fusion."/>
     <instrument id="MS:1002417" name="Orbitrap Fusion ETD" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Fusion with ETD."/>
+    <instrument id="MS:1003411" name="Orbitrap IQ-X" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap IQ-X mass spectrometer with Tribrid architecture consisting of quadrupole mass filter, linear ion trap and Orbitrap mass analyzers."/>
     <instrument id="MS:1002418" name="TSQ Quantiva" vendor="Thermo Scientific" description="Thermo Scientific TSQ Quantiva MS."/>
     <instrument id="MS:1002419" name="TSQ Endura" vendor="Thermo Scientific" description="Thermo Scientific TSQ Endura MS."/>
     <instrument id="MS:1000854" name="LTQ XL" vendor="Thermo Scientific" description="Thermo Scientific LTQ XL MS."/>
