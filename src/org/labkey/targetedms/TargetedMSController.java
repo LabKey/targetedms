@@ -276,6 +276,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -6299,11 +6300,11 @@ public class TargetedMSController extends SpringActionController
 
             if ("skyp".equalsIgnoreCase(form.getView()))
             {
-                String url = data.getWebDavURL(FileContentService.PathType.full);
+                URI url = data.getWebDavURL(FileContentService.PathType.full);
                 if (url != null)
                 {
                     String lineSeparator = "\r\n";
-                    StringBuilder text = new StringBuilder(url);
+                    StringBuilder text = new StringBuilder(url.toString());
                     if (run.getDocumentSize() != null)
                     {
                         text.append(lineSeparator).append("FileSize:").append(run.getDocumentSize()); // Size of the .sky.zip in bytes
