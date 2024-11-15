@@ -3113,7 +3113,7 @@ public class SkylineDocumentParser implements AutoCloseable
         {
             return Collections.emptyList();
         }
-        int traceMetricIndex = 1;
+        Map<String, Integer> traceMetricIndices = new HashMap<>();
         for (ChromGroupHeaderInfo chromatogram : _binaryParser.getChromatograms())
         {
             // Sample-scoped chromatograms have a magic precursor MZ value
@@ -3147,7 +3147,8 @@ public class SkylineDocumentParser implements AutoCloseable
                     {
                         if (chromatogramGroupId.getQcTraceName() == null && chromatogram.getFlagValues().contains(ChromGroupHeaderInfo.FlagValues.extracted_qc_trace))
                         {
-                            info.setTextId("QC Trace " + traceMetricIndex++);
+                            int traceMetricIndex = traceMetricIndices.merge(path, 1, Integer::sum);
+                            info.setTextId("QC Trace " + traceMetricIndex);
                         }
                         else
                         {
