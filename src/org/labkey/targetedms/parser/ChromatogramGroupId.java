@@ -15,6 +15,7 @@
  */
 package org.labkey.targetedms.parser;
 
+import org.apache.commons.lang3.StringUtils;
 import org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass;
 
 import java.util.ArrayList;
@@ -31,6 +32,12 @@ public class ChromatogramGroupId
     public ChromatogramGroupId(Target target)
     {
         _target = target;
+    }
+
+    public ChromatogramGroupId(Target target, String qcTraceName)
+    {
+        _target = target;
+        _qcTraceName = StringUtils.isEmpty(qcTraceName) ? null : qcTraceName;
     }
 
     public Target getTarget()
@@ -62,7 +69,7 @@ public class ChromatogramGroupId
         List<ChromatogramGroupId> list = new ArrayList<>();
         for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupId chromatogramGroupId : proto.getChromatogramGroupIdsList())
         {
-            list.add(new ChromatogramGroupId(targets.get(chromatogramGroupId.getTargetIndex())));
+            list.add(new ChromatogramGroupId(targets.get(chromatogramGroupId.getTargetIndex()), chromatogramGroupId.getQcTraceName()));
         }
         return list;
     }
