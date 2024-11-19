@@ -438,6 +438,7 @@
             <column columnName="Modified">
                 <formatString>DateTime</formatString>
             </column>
+            <column columnName="SpectrumFilter" />
         </columns>
     </table>
     <table tableDbType="TABLE" tableName="MoleculePrecursor">
