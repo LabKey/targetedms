@@ -15,6 +15,7 @@
  */
 package org.labkey.targetedms.parser;
 
+import org.apache.commons.lang3.StringUtils;
 import org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass;
 
 import java.util.ArrayList;
@@ -30,10 +31,16 @@ public class ChromatogramGroupId
     private ChromatogramGroupId()
     {
     }
-    public ChromatogramGroupId(Target target, SpectrumFilter spectrumFilter)
+    public ChromatogramGroupId(Target target, String qcTraceName, SpectrumFilter spectrumFilter)
     {
         _target = target;
+        _qcTraceName = StringUtils.isEmpty(qcTraceName) ? null : qcTraceName;
         _spectrumFilter = spectrumFilter;
+    }
+
+    public ChromatogramGroupId(Target target, SpectrumFilter spectrumFilter)
+    {
+        this(target, null, spectrumFilter);
     }
 
     public Target getTarget()
@@ -70,7 +77,7 @@ public class ChromatogramGroupId
         {
             targets.add(new Target(target));
         }
-        for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter spectrumFilter : proto.getFiltersList()) 
+        for (ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter spectrumFilter : proto.getFiltersList())
         {
             filterClauses.add(SpectrumFilter.FilterClause.fromProtocolMessage(spectrumFilter));
         }
@@ -80,7 +87,7 @@ public class ChromatogramGroupId
             SpectrumFilter spectrumFilter = SpectrumFilter.fromFilterClauses(
                     chromatogramGroupId.getFilterIndexesList().stream()
                     .map(filterClauses::get).collect(Collectors.toList())).orElse(null);
-            list.add(new ChromatogramGroupId(targets.get(chromatogramGroupId.getTargetIndex()), spectrumFilter));
+            list.add(new ChromatogramGroupId(targets.get(chromatogramGroupId.getTargetIndex()), chromatogramGroupId.getQcTraceName(), spectrumFilter));
         }
         return list;
     }
