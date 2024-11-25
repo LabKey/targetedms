@@ -601,6 +601,11 @@ public class TargetedMSManager
         return getSchema().getTable(TargetedMSSchema.TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION);
     }
 
+    public static TableInfo getTableInfoMSProject()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_MS_PROJECT);
+    }
+
     /** @return rowId for pipeline job that will perform the import asynchronously */
     public static Integer addRunToQueue(ViewBackgroundInfo info,
                                         final Path path) throws XarFormatException, PipelineValidationException

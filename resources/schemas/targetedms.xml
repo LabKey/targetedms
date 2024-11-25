@@ -1768,4 +1768,115 @@
             <column columnName="Container"/>
         </columns>
     </table>
+    <table tableName="msProject" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="affiliation"/>
+            <column columnName="blocked"/>
+            <column columnName="title"/>
+            <column columnName="type"/>
+            <column columnName="submitDate"/>
+            <column columnName="collaborationStatus"/>
+            <column columnName="collaborationWith"/>
+            <column columnName="organization"/>
+            <column columnName="labDirector"/>
+            <column columnName="scientificQuestion"/>
+            <column columnName="abstract"/>
+            <column columnName="results"/>
+            <column columnName="Created"/>
+            <column columnName="CreatedBy"/>
+            <column columnName="Modified"/>
+            <column columnName="ModifiedBy"/>
+            <column columnName="Container"/>
+        </columns>
+    </table>
+    <table tableName="projectResearcher" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="project"/>
+            <column columnName="researcher"/>
+            <column columnName="Created"/>
+            <column columnName="CreatedBy"/>
+            <column columnName="Modified"/>
+            <column columnName="ModifiedBy"/>
+            <column columnName="Container"/>
+        </columns>
+    </table>
+    <table tableName="msInstrument" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="name"/>
+            <column columnName="description"/>
+            <column columnName="active"/>
+            <column columnName="color"/>
+            <column columnName="massSpec"/>
+            <column columnName="Created"/>
+            <column columnName="CreatedBy"/>
+            <column columnName="Modified"/>
+            <column columnName="ModifiedBy"/>
+            <column columnName="Container"/>
+        </columns>
+    </table>
+    <table tableName="paymentMethod" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="UWBudgetNumber"/>
+            <column columnName="budgetExpirationDate"/>
+            <column columnName="PONumber"/>
+            <column columnName="contactNameFirst"/>
+            <column columnName="contactNameLast"/>
+            <column columnName="contactEmail"/>
+            <column columnName="contactPhone"/>
+            <column columnName="organization"/>
+            <column columnName="addressLine1"/>
+            <column columnName="addressLine2"/>
+            <column columnName="city"/>
+            <column columnName="state"/>
+            <column columnName="zip"/>
+            <column columnName="country"/>
+            <column columnName="isCurrent"/>
+            <column columnName="federalFunding"/>
+            <column columnName="poAmount"/>
+            <column columnName="name"/>
+            <column columnName="worktag"/>
+            <column columnName="resourceWorktag"/>
+            <column columnName="resourceWorktagDescription"/>
+            <column columnName="assigneeWorktag"/>
+            <column columnName="assigneeWorktagDescription"/>
+            <column columnName="activityWorktag"/>
+            <column columnName="activityWorktagDescription"/>
+            <column columnName="Created"/>
+            <column columnName="CreatedBy"/>
+            <column columnName="Modified"/>
+            <column columnName="ModifiedBy"/>
+            <column columnName="Container"/>
+        </columns>
+    </table>
+    <table tableName="projectPaymentMethod" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="project"/>
+            <column columnName="paymentMethod"/>
+            <column columnName="Created"/>
+            <column columnName="CreatedBy"/>
+            <column columnName="Modified"/>
+            <column columnName="ModifiedBy"/>
+            <column columnName="Container"/>
+        </columns>
+    </table>
+    <table tableName="instrumentSchedule" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="instrument"/>
+            <column columnName="project"/>
+            <column columnName="startTime"/>
+            <column columnName="endTime"/>
+            <column columnName="name"/>
+            <column columnName="Created"/>
+            <column columnName="CreatedBy"/>
+            <column columnName="Modified"/>
+            <column columnName="ModifiedBy"/>
+            <column columnName="Container"/>
+        </columns>
+    </table>
 </tables>

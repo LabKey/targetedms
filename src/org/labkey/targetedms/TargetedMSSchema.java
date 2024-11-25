@@ -260,6 +260,8 @@ public class TargetedMSSchema extends UserSchema
 
     public static final String TABLE_QC_EMAIL_NOTIFICATIONS = "QCEmailNotifications";
 
+    public static final String TABLE_MS_PROJECT = "MSProject";
+
     // Map of tables that have a library view -> name of the library view
     public static final CaseInsensitiveHashMap<String> TABLES_LIBRARY_VIEWS = new CaseInsensitiveHashMap<>(Map.of(
             TargetedMSSchema.TABLE_PEPTIDE_GROUP, "LibraryProteins",
@@ -1769,6 +1771,7 @@ public class TargetedMSSchema extends UserSchema
         hs.add(TABLE_KEYWORD_CATEGORIES);
         hs.add(TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION);
         hs.add(TABLE_QC_EMAIL_NOTIFICATIONS);
+        hs.add(TABLE_MS_PROJECT);
 
         return hs;
     }

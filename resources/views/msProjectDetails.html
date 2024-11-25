@@ -1,0 +1,62 @@
+<div id="project-details">
+    <div id="payment-methods">
+
+    </div>
+</div>
+// Add link to add new payment method
+<a href="<%= LABKEY.ActionURL.buildURL('targetedms', 'addPaymentMethod', null, {returnUrl: LABKEY.ActionURL.buildURL('targetedms', 'msProjectDetails', null, {project=project})}) %>">[Add payment method]</a>
+// Add link to schedule instrument time
+<a href="<%= LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrumentTime', null, {returnUrl: LABKEY.ActionURL.buildURL('targetedms', 'msProjectDetails', null, {project=project})}) %>">[Schedule instrument time]</a>
+<br/>
+// Add link to view instrument time scheduled for project
+<a href="<%= LABKEY.ActionURL.buildURL('targetedms', 'viewInstrumentTime', null, {returnUrl: LABKEY.ActionURL.buildURL('targetedms', 'msProjectDetails', null, {project=project})}) %>">[Instrument time scheduled for project]</a>
+
+
+<script type="text/javascript" nonce="<%=scriptNonce%>">
+    LABKEY.Query.selectRows({
+        schemaName: 'targetedms',
+        queryName: 'msProject',
+        success: function(data){
+            let projectDetails = data.rows[0];
+            let projectDetailsHtml = `
+                <table>
+                    <tr>
+                        <td>Id</td>
+                        <td>Affiliation</td>
+                        <td>Title</td>
+                        <td>Collaborating With</td>
+                        <td>Lab Director</td>
+                        <td>Organization</td>
+                        <td>Scientific Question</td>
+                        <td>Abstract</td>
+                        <td>Progress/Results</td>
+                    </tr>
+                    <tr>
+                        <td>${projectDetails.Id}</td>
+                        <td>${projectDetails.affiliation}</td>
+                        <td>${projectDetails.title}</td>
+                        <td>${projectDetails.collaborationWith}</td>
+                        <td>${projectDetails.labDirector}</td>
+                        <td>${projectDetails.organization}</td>
+                        <td>${projectDetails.scientificQuestion}</td>
+                        <td>${projectDetails.abstract}</td>
+                        <td>${projectDetails.results}</td>
+                    </tr>
+                </table>
+            `;
+            document.getElementById('project-details').innerHTML = projectDetailsHtml;
+        }
+    });
+
+    // query web part to show payment method and other invoice details - custom query
+    let webpart = <%=webpartContext%>;
+    let wp = new LABKEY.QueryWebPart({
+        renderTo: webpart.wrapperDivId,
+        frame: 'portal',
+        title: 'Payment Methods',
+        schemaName: 'targetedms',
+        queryName: 'paymentMethods',
+        containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
+    });
+    wp.render();
+</script>
