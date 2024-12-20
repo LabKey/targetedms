@@ -56,6 +56,7 @@ SELECT
        p1.Sequence @hidden,
        PreviousAA @hidden,
        NextAA @hidden,
+       p1.SampleFileId,
        p1.SampleFileId.SampleName,
        p1.AminoAcid,
        p1.SiteLocation,
