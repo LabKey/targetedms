@@ -19,28 +19,44 @@
             let projectDetailsHtml = `
                 <table>
                     <tr>
-                        <td>Id</td>
-                        <td>Affiliation</td>
-                        <td>Title</td>
-                        <td>Collaborating With</td>
-                        <td>Lab Director</td>
-                        <td>Organization</td>
-                        <td>Scientific Question</td>
-                        <td>Abstract</td>
-                        <td>Progress/Results</td>
+                        <td class='labkey-form-label'>Id</td>
+                        <td>${projectDetails.Id}</td>
                     </tr>
                     <tr>
-                        <td>${projectDetails.Id}</td>
+                        <td class='labkey-form-label'>Affiliation</td>
                         <td>${projectDetails.affiliation}</td>
+                    </tr>
+                    <tr>
+                        <td class='labkey-form-label'>Title</td>
                         <td>${projectDetails.title}</td>
+                    </tr>
+                    <tr>
+                        <td class='labkey-form-label'>Collaborating with</td>
                         <td>${projectDetails.collaborationWith}</td>
+                    </tr>
+                    <tr>
+                        <td class='labkey-form-label'>Lab Director</td>
                         <td>${projectDetails.labDirector}</td>
+                    </tr>
+                    <tr>
+                        <td class='labkey-form-label'>Organization</td>
                         <td>${projectDetails.organization}</td>
+                    </tr>
+                    <tr>
+                        <td class='labkey-form-label'>Scientific Question</td>
                         <td>${projectDetails.scientificQuestion}</td>
+                    </tr>
+                    <tr>
+                        <td class='labkey-form-label'>Abstract</td>
                         <td>${projectDetails.abstract}</td>
+                    </tr>
+                    <tr>
+                        <td class='labkey-form-label'>Progress/Results</td>
                         <td>${projectDetails.results}</td>
                     </tr>
+
                 </table>
+                </br>
             `;
             document.getElementById('project-details').innerHTML = projectDetailsHtml;
         }
