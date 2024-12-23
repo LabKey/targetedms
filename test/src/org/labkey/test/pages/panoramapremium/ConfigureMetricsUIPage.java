@@ -74,7 +74,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
 
     public void waitForMetricToAppear(QCPlotsWebPart.MetricType metric)
     {
-        shortWait().until(ExpectedConditions.visibilityOf(Locator.name(metric.toString()).findElement(getDriver())));
+        longWait().until(ExpectedConditions.visibilityOf(Locator.name(metric.toString()).findElement(getDriver())));
     }
 
     public String getLowerBound(String metric)

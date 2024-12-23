@@ -152,7 +152,7 @@ class CDRConditionalFormattingDisplayColumnFactory implements DisplayColumnFacto
                     result.addClause(new CompareType.CompareClause(getBoundColumn().getFieldKey(), CompareType.GT, value)
                     {
                         @Override
-                        protected void appendFilterText(StringBuilder sb, SimpleFilter.ColumnNameFormatter formatter)
+                        public void appendFilterText(StringBuilder sb, SimpleFilter.ColumnNameFormatter formatter)
                         {
                             sb.append("the peptide is ");
                             sb.append(inCDR ? "" : "not ");
