@@ -1872,6 +1872,7 @@
             <column columnName="startTime"/>
             <column columnName="endTime"/>
             <column columnName="name"/>
+            <column columnName="notes"/>
             <column columnName="Created"/>
             <column columnName="CreatedBy"/>
             <column columnName="Modified"/>

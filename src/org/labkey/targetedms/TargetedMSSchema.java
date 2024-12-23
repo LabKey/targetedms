@@ -49,6 +49,7 @@ import org.labkey.api.exp.query.ExpSchema;
 import org.labkey.api.module.Module;
 import org.labkey.api.query.CrosstabView;
 import org.labkey.api.query.CustomView;
+import org.labkey.api.query.DefaultQueryUpdateService;
 import org.labkey.api.query.DefaultSchema;
 import org.labkey.api.query.DetailsURL;
 import org.labkey.api.query.ExprColumn;
@@ -60,12 +61,16 @@ import org.labkey.api.query.QueryForeignKey;
 import org.labkey.api.query.QuerySchema;
 import org.labkey.api.query.QueryService;
 import org.labkey.api.query.QuerySettings;
+import org.labkey.api.query.QueryUpdateService;
 import org.labkey.api.query.QueryView;
 import org.labkey.api.query.SchemaKey;
 import org.labkey.api.query.SimpleUserSchema;
 import org.labkey.api.query.UserIdQueryForeignKey;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
+import org.labkey.api.security.UserPrincipal;
+import org.labkey.api.security.permissions.Permission;
+import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.util.ContainerContext;
@@ -261,6 +266,11 @@ public class TargetedMSSchema extends UserSchema
     public static final String TABLE_QC_EMAIL_NOTIFICATIONS = "QCEmailNotifications";
 
     public static final String TABLE_MS_PROJECT = "MSProject";
+    public static final String TABLE_MS_INSTRUMENT = "MSInstrument";
+    public static final String TABLE_PROJECT_RESEARCHER = "ProjectResearcher";
+    public static final String TABLE_PAYMENT_METHOD = "PaymentMethod";
+    public static final String TABLE_PROJECT_PAYMENT_METHOD = "ProjectPaymentMethod";
+    public static final String TABLE_INSTRUMENT_SCHEDULE = "InstrumentSchedule";
 
     // Map of tables that have a library view -> name of the library view
     public static final CaseInsensitiveHashMap<String> TABLES_LIBRARY_VIEWS = new CaseInsensitiveHashMap<>(Map.of(
@@ -1584,6 +1594,30 @@ public class TargetedMSSchema extends UserSchema
         {
             return new QCEmailNotificationsTable(this, cf);
         }
+        if (TABLE_MS_PROJECT.equalsIgnoreCase(name) ||
+                TABLE_MS_INSTRUMENT.equalsIgnoreCase(name) ||
+                TABLE_PAYMENT_METHOD.equalsIgnoreCase(name) ||
+                TABLE_PROJECT_PAYMENT_METHOD.equalsIgnoreCase(name))
+        {
+            // return a new class extending FilteredTable to override the hasPermission method
+            var result = new FilteredTable<TargetedMSSchema>(getSchema().getTable(name), this, cf)
+            {
+                @Override
+                public boolean hasPermission(@NotNull UserPrincipal user, @NotNull Class<? extends Permission> perm)
+                {
+                    return (getContainer().hasPermission(user, ReadPermission.class));
+                }
+
+                @Override
+                public @Nullable QueryUpdateService getUpdateService()
+                {
+                    return new DefaultQueryUpdateService(this, getRealTable());
+                }
+            };
+            result.wrapAllColumns(true);
+            TargetedMSTable.fixupLookups(result);
+            return result;
+        }
 
         if (getTableNames().contains(name))
         {
@@ -1772,6 +1806,11 @@ public class TargetedMSSchema extends UserSchema
         hs.add(TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION);
         hs.add(TABLE_QC_EMAIL_NOTIFICATIONS);
         hs.add(TABLE_MS_PROJECT);
+        hs.add(TABLE_MS_INSTRUMENT);
+        hs.add(TABLE_PROJECT_RESEARCHER);
+        hs.add(TABLE_PAYMENT_METHOD);
+        hs.add(TABLE_PROJECT_PAYMENT_METHOD);
+        hs.add(TABLE_INSTRUMENT_SCHEDULE);
 
         return hs;
     }

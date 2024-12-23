@@ -1,14 +1,12 @@
 <div id="project-details">
-    <div id="payment-methods">
 
-    </div>
 </div>
-// Add link to add new payment method
+<div id="payment-methods">
+
+</div>
 <a href="<%= LABKEY.ActionURL.buildURL('targetedms', 'addPaymentMethod', null, {returnUrl: LABKEY.ActionURL.buildURL('targetedms', 'msProjectDetails', null, {project=project})}) %>">[Add payment method]</a>
-// Add link to schedule instrument time
 <a href="<%= LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrumentTime', null, {returnUrl: LABKEY.ActionURL.buildURL('targetedms', 'msProjectDetails', null, {project=project})}) %>">[Schedule instrument time]</a>
 <br/>
-// Add link to view instrument time scheduled for project
 <a href="<%= LABKEY.ActionURL.buildURL('targetedms', 'viewInstrumentTime', null, {returnUrl: LABKEY.ActionURL.buildURL('targetedms', 'msProjectDetails', null, {project=project})}) %>">[Instrument time scheduled for project]</a>
 
 
@@ -51,11 +49,11 @@
     // query web part to show payment method and other invoice details - custom query
     let webpart = <%=webpartContext%>;
     let wp = new LABKEY.QueryWebPart({
-        renderTo: webpart.wrapperDivId,
+        renderTo: 'payment-methods',
         frame: 'portal',
         title: 'Payment Methods',
         schemaName: 'targetedms',
-        queryName: 'paymentMethods',
+        queryName: 'projectPaymentMethod',
         containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
     });
     wp.render();

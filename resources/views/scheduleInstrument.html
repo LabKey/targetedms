@@ -1,0 +1,183 @@
+<style>
+
+  #events-log {
+    display: inline-block;
+    vertical-align: top;
+    flex: 3;
+    padding: 10px;
+    min-height: 200px;
+    border-radius: 10px;
+    box-sizing: border-box;
+  }
+
+  #calendar {
+    flex:7;
+    box-sizing: border-box;
+  }
+
+  .calendar .calendar-header .year-title:not(.year-neighbor):not(.year-neighbor2) {
+    border-bottom: 2px solid #2196f3;
+  }
+
+  .calendar table.month {
+    background-color: white;
+    box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.2);
+    height: 400px;
+    width:100%;
+  }
+
+  .calendar table.month th.month-title {
+    background-color: #2196F3;
+    color: white;
+    padding: 12px;
+    font-weight: 400;
+  }
+
+  #calendarWrapper {
+    display: flex;
+    flex-direction: row;
+    height: 80%;
+    width: 100%;
+  }
+
+</style>
+
+<div id="topContainer">
+    <div id="projectDropDown"></div>
+    <br/>
+    <div id="instrumentDropDown"></div>
+    <br/>
+    <div id="instrumentOperatorDropDown"></div>
+    <br/>
+    <div id="paymentMethodDropDown"></div>
+    <a href="#" id="addPaymentMethod">[Add Payment Method]</a>
+    <br/>
+
+</div>
+
+<div id="calendarWrapper" style="min-height: 500px;">
+
+    <div id="calendar">
+        Loading...
+    </div>
+
+    <div id="events-log">
+        <h3>Time Scheduled</h3>
+
+    </div>
+</div>
+
+<script type="text/javascript" nonce="<%=scriptNonce%>">
+
+    let paymentMethodsData;
+    let paymentMethodCount = 1;
+
+    LABKEY.Query.selectRows({
+        schemaName: 'targetedms',
+        queryName: 'msProject',
+        sort: 'title',
+        columns: 'Id,title',
+        scope: this,
+        success: function (result) {
+            let rows = result.rows;
+            let projectDropDown = '<label for="projectDropDown">Select Project:</label>';
+            projectDropDown += '<select id="projectDropDown" name="projectDropDown">';
+            for (let i = 0; i < rows.length; i++) {
+                projectDropDown += '<option value="' + rows[i].Id + '">' + rows[i].title + '</option>';
+            }
+            projectDropDown += '</select>';
+            jQuery('#projectDropDown').html(projectDropDown);
+        }
+    });
+
+    LABKEY.Query.selectRows({
+        schemaName: 'targetedms',
+        queryName: 'msInstrument',
+        sort: 'name',
+        columns: 'Id,name',
+        scope: this,
+        success: function (result) {
+            let rows = result.rows;
+            let instrumentDropDown = '<label for="instrumentDropDown">Select Instrument:</label>';
+            instrumentDropDown += '<select id="instrumentDropDown" name="instrumentDropDown">';
+            for (let i = 0; i < rows.length; i++) {
+                instrumentDropDown += '<option value="' + rows[i].Id + '">' + rows[i].name + '</option>';
+            }
+            instrumentDropDown += '</select>';
+            jQuery('#instrumentDropDown').html(instrumentDropDown);
+        }
+    });
+
+    LABKEY.Query.selectRows({
+        schemaName: 'targetedms',
+        queryName: 'paymentMethod',
+        sort: 'name',
+        columns: 'Id,UWBudgetNumber,worktag, budgetExpirationDate, name',
+        scope: this,
+        success: function (result) {
+            let rows = result.rows;
+            paymentMethodsData = rows;
+            let paymentMethodDropDown = '<p>Select Payment Method(s): <p> <br/>'+
+                    '<label for="paymentMethodDropDown">Payment Method:&nbsp</label>';
+            paymentMethodDropDown += '<select id="paymentMethodDropDown" name="paymentMethodDropDown">';
+            for (let i = 0; i < rows.length; i++) {
+                paymentMethodDropDown += '<option value="' + rows[i].Id + '">' + rows[i].name + '</option>';
+            }
+            paymentMethodDropDown += '</select>';
+
+            paymentMethodDropDown += '&nbsp<input type="text" id="paymentMethodPercent" name="paymentMethodPercent" value="100" size="3" maxlength="3">';
+            paymentMethodDropDown += '<label for="paymentMethodPercent">%</label>';
+
+            jQuery('#paymentMethodDropDown').html(paymentMethodDropDown);
+
+        }
+    });
+
+    let calendar = new Calendar('#calendar', {
+        startDate: new Date(),
+        style: 'custom',
+        numberMonthsDisplayed: 1,
+        enableRangeSelection: LABKEY.user.canInsert,
+        clickDay: calendarDayClicked
+    });
+    calendar.render();
+
+    function calendarDayClicked() {
+        console.log('calendarDayClicked');
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const addPaymentMethodEl = document.getElementById('addPaymentMethod');
+        addPaymentMethodEl.addEventListener('click', function () {
+            paymentMethodCount++;
+            let id = 'paymentMethodDropDown' + paymentMethodCount;
+            let paymentMethodDropDown = '<label for=' + id + '>Payment Method:</label>';
+            paymentMethodDropDown += '<select id=' + id + ' name=' + id + '">';
+            for (let i = 0; i < paymentMethodsData.length; i++) {
+                paymentMethodDropDown += '<option value="' + paymentMethodsData[i].Id + '">' + paymentMethodsData[i].name + '</option>';
+            }
+            paymentMethodDropDown += '</select>';
+
+            paymentMethodDropDown += '&nbsp<input type="text" id="paymentMethodPercent" name="paymentMethodPercent" value="0" size="3" maxlength="3">';
+            paymentMethodDropDown += '<label for="paymentMethodPercent">%</label>';
+
+            // add delete icon
+
+            paymentMethodDropDown += '&nbsp' +
+                    '<a href="#" id="removePaymentMethod">[Remove]</a>';
+            let logElt = document.createElement('div');
+            logElt.innerHTML = paymentMethodDropDown;
+
+            document.querySelector('#paymentMethodDropDown').appendChild(logElt);
+        });
+
+        document.addEventListener('click', function (event) {
+            if (event.target.id === 'removePaymentMethod') {
+                event.preventDefault();
+                event.target.parentElement.remove();
+            }
+        });
+    });
+
+</script>
