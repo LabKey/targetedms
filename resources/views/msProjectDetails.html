@@ -1,14 +1,11 @@
 <div id="project-details">
-
 </div>
 <div id="payment-methods">
-
 </div>
-<a href="<%= LABKEY.ActionURL.buildURL('targetedms', 'addPaymentMethod', null, {returnUrl: LABKEY.ActionURL.buildURL('targetedms', 'msProjectDetails', null, {project=project})}) %>">[Add payment method]</a>
-<a href="<%= LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrumentTime', null, {returnUrl: LABKEY.ActionURL.buildURL('targetedms', 'msProjectDetails', null, {project=project})}) %>">[Schedule instrument time]</a>
-<br/>
-<a href="<%= LABKEY.ActionURL.buildURL('targetedms', 'viewInstrumentTime', null, {returnUrl: LABKEY.ActionURL.buildURL('targetedms', 'msProjectDetails', null, {project=project})}) %>">[Instrument time scheduled for project]</a>
-
+<div id="add-payment-method-link">
+</div>
+<div id="schedule-instrument-time">
+</div>
 
 <script type="text/javascript" nonce="<%=scriptNonce%>">
     LABKEY.Query.selectRows({
@@ -73,4 +70,25 @@
         containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
     });
     wp.render();
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const addPaymentMethodEl = document.getElementById('add-payment-method-link');
+        const urlParams = {
+            schemaName: 'targetedms',
+            queryName: 'ProjectPaymentMethod',
+            returnUrl: LABKEY.ActionURL.buildURL('targetedms', 'msProjectDetails', null, null)
+        };
+        let addPaymentMethodLink = `
+        <a href="${LABKEY.ActionURL.buildURL('query', 'insertQueryRow', LABKEY.ActionURL.getContainer(), urlParams)}">[Add payment method]</a>`;
+        addPaymentMethodEl.innerHTML = addPaymentMethodLink;
+
+
+        const scheduleInstrumentTimeEl = document.getElementById('schedule-instrument-time');
+        const scheduleInstrumentTimeLink = `
+        <a href="${LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument', null, null)}">[Schedule Instrument Time]</a>`;
+        scheduleInstrumentTimeEl.innerHTML = scheduleInstrumentTimeLink;
+    })
+
+
 </script>
