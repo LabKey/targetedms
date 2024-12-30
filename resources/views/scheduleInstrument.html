@@ -90,6 +90,9 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="form-group row" >
+                            <div class="col-sm-12 labkey-error" style="min-height: 2em;" id="schedule-save-error"></div>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -101,16 +104,24 @@
             </div>
         </div>
     </div>
-    <div id="context-menu">
+        <div id="context-menu">
 
-    <div id="events-log">
-        <h3>Time Scheduled</h3>
-
+        <div id="events-log">
+            <h3>Time Scheduled</h3>
+        </div>
     </div>
 </div>
 
 <script type="text/javascript" nonce="<%=scriptNonce%>">
     $(function() {
+
+        let project = LABKEY.ActionURL.getParameter('project');
+        let instrument = LABKEY.ActionURL.getParameter('instrument');
+
+        if (!project) {
+            alert('No project selected');
+            return;
+        }
 
         let calendar = null;
         LABKEY.Query.selectRows({
@@ -124,10 +135,13 @@
                 let projectDropDown = '<label for="projectDropDown">Select Project:</label>';
                 projectDropDown += '<select id="projectDropDown" name="projectDropDown">';
                 for (let i = 0; i < rows.length; i++) {
-                    projectDropDown += '<option value="' + rows[i].Id + '">' + rows[i].title + '</option>';
+                    // if project == rows[i].Id, then select this option
+                    projectDropDown += '<option value="' + rows[i].Id + '" ' + (project == rows[i].Id ? 'selected' : '') + '>' + LABKEY.Utils.encodeHtml(rows[i].title) + '</option>';
                 }
                 projectDropDown += '</select>';
+
                 jQuery('#projectDropDown').html(projectDropDown);
+
             }
         });
 
@@ -142,7 +156,8 @@
                 let instrumentDropDown = '<label for="instrumentDropDown">Select Instrument:</label>';
                 instrumentDropDown += '<select id="instrumentDropDown" name="instrumentDropDown">';
                 for (let i = 0; i < rows.length; i++) {
-                    instrumentDropDown += '<option value="' + rows[i].Id + '">' + rows[i].name + '</option>';
+                    // if instrument == rows[i].Id, then select this option
+                    instrumentDropDown += '<option value="' + rows[i].Id + '" ' + (instrument == rows[i].Id ? 'selected' : '') + '>' + LABKEY.Utils.encodeHtml(rows[i].name) + '</option>';
                 }
                 instrumentDropDown += '</select>';
                 jQuery('#instrumentDropDown').html(instrumentDropDown);
@@ -202,43 +217,33 @@
         }
 
         function saveEvent() {
-            var event = {
+            const event = {
                 id: $('#event-modal input[name="event-index"]').val(),
-                name: $('#event-modal input[name="event-name"]').val(),
-                location: $('#event-modal input[name="event-location"]').val(),
-                startDate: $('#event-modal input[name="event-start-date"]').datepicker('getDate'),
-                endDate: $('#event-modal input[name="event-end-date"]').datepicker('getDate')
+                startTime: $('#event-modal input[name="event-start-date"]').val(),
+                endTime: $('#event-modal input[name="event-end-date"]').val(),
+                project: project,
+                instrument: instrument ? instrument : $('#instrumentDropDown select[name="instrumentDropDown"]').val(),
             }
 
-            var dataSource = calendar.getDataSource();
-
-            if (event.id) {
-                for (var i in dataSource) {
-                    if (dataSource[i].id == event.id) {
-                        dataSource[i].name = event.name;
-                        dataSource[i].location = event.location;
-                        dataSource[i].startDate = event.startDate;
-                        dataSource[i].endDate = event.endDate;
-                    }
+            LABKEY.Query.saveRows({
+                commands: [{
+                    command: event.id ? 'update' : 'insert',
+                    schemaName: 'targetedms',
+                    queryName: 'instrumentSchedule',
+                    rows: [
+                        event
+                    ]
+                }],
+                success: function () {
+                    loadInstrumentSchedule(function (data) {
+                        calendar.setDataSource(data);
+                        $('#event-modal').modal('hide');
+                    }, true);
+                },
+                failure: function (errorInfo) {
+                    $('#schedule-save-error').text('Error saving. ' + (errorInfo.exception ? errorInfo.exception : ''));
                 }
-            }
-            else
-            {
-                var newId = 0;
-                for(var i in dataSource) {
-                    if(dataSource[i].id > newId) {
-                        newId = dataSource[i].id;
-                    }
-                }
-
-                newId++;
-                event.id = newId;
-
-                dataSource.push(event);
-            }
-
-            calendar.setDataSource(dataSource);
-            $('#event-modal').modal('hide');
+            })
         }
 
         function deleteEvent(event) {
@@ -256,6 +261,10 @@
             LABKEY.Query.selectRows({
                 schemaName: 'targetedms',
                 queryName: 'instrumentSchedule',
+                filterArray: [
+                    LABKEY.Filter.create('instrument', instrument),
+                    LABKEY.Filter.create('project', project)
+                ],
                 success: function (data) {
                     let rows = data.rows;
                     for (let i = 0; i < rows.length; i++) {
@@ -375,6 +384,18 @@
                 event.target.parentElement.remove();
             }
         });
+
+        // refresh the page on project change
+        document.getElementById('projectDropDown').addEventListener('change', function (event) {
+            document.location.href = LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument', null, {project: event.target.value});
+
+        });
+
+        // refresh the page on instrument change
+        document.getElementById('instrumentDropDown').addEventListener('change', function (event) {
+            document.location.href = LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument', null, {project: LABKEY.ActionURL.getParameter('project'), instrument: event.target.value});
+        });
+
     });
 
 </script>
