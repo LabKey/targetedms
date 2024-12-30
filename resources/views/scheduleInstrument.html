@@ -82,11 +82,11 @@
                             <label for="min-date" class="col-sm-4 control-label">Dates</label>
                             <div class="col-sm-8">
                                 <div class="input-group input-daterange" data-provide="datepicker">
-                                    <input id="min-date" name="event-start-date" type="text" class="form-control">
+                                    <input id="min-date" name="event-start-date" type="datetime-local" class="form-control">
                                     <div class="input-group-prepend input-group-append">
                                         <div class="input-group-text">to</div>
                                     </div>
-                                    <input name="event-end-date" type="text" class="form-control">
+                                    <input name="event-end-date" type="datetime-local" class="form-control">
                                 </div>
                             </div>
                         </div>
@@ -207,12 +207,32 @@
         //     }
         // });
 
+        function zeroPadded(val) {
+            if (val >= 10)
+                return val;
+            else
+                return '0' + val;
+        }
+
         function editEvent(event) {
             let startDate = event.startDate;
             let endDate = event.endDate;
+            let startDateVal = startDate.getFullYear() + "-" +
+                    zeroPadded(startDate.getMonth() + 1) + "-" +
+                    zeroPadded(startDate.getDate()) + "T" +
+                    zeroPadded(startDate.getHours()) + ":" +
+                    zeroPadded(startDate.getMinutes()) + ":" +
+                    zeroPadded(startDate.getSeconds());
+            let endDateVal = endDate.getFullYear() + "-" +
+                    zeroPadded(endDate.getMonth() + 1) + "-" +
+                    zeroPadded(endDate.getDate()) + "T" +
+                    zeroPadded(endDate.getHours()) + ":" +
+                    zeroPadded(endDate.getMinutes()) + ":" +
+                    zeroPadded(endDate.getSeconds());
+
             $('#event-modal input[name="event-index"]').val(event ? event.id : '');
-            $('#event-modal input[name="event-start-date"]').val(startDate.getFullYear() + '-' + (startDate.getMonth() + 1 < 10 ? '0' : '') + (startDate.getMonth() + 1) + '-' + (startDate.getDate() < 10 ? '0' : '') + startDate.getDate());
-            $('#event-modal input[name="event-end-date"]').val(endDate.getFullYear() + '-' + (endDate.getMonth() + 1 < 10 ? '0' : '') + (endDate.getMonth() + 1) + '-' + (endDate.getDate() < 10 ? '0' : '') + endDate.getDate());
+            $('#event-modal input[name="event-start-date"]').val(startDateVal);
+            $('#event-modal input[name="event-end-date"]').val(endDateVal);
             $('#event-modal').modal();
         }
 
@@ -368,8 +388,7 @@
             paymentMethodDropDown += '&nbsp<input type="text" id="paymentMethodPercent" name="paymentMethodPercent" value="0" size="3" maxlength="3">';
             paymentMethodDropDown += '<label for="paymentMethodPercent">%</label>';
 
-            // add delete icon
-
+            // TODO: add delete icon
             paymentMethodDropDown += '&nbsp' +
                     '<a href="#" id="removePaymentMethod">[Remove]</a>';
             let logElt = document.createElement('div');
