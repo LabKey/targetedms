@@ -261,6 +261,7 @@
             LABKEY.Query.selectRows({
                 schemaName: 'targetedms',
                 queryName: 'instrumentSchedule',
+                columns: 'Id,startTime,endTime,name,notes,instrument/color',
                 filterArray: [
                     LABKEY.Filter.create('instrument', instrument),
                     LABKEY.Filter.create('project', project)
@@ -274,7 +275,8 @@
                             startDate: new Date(row.startTime),
                             endDate: new Date(row.endTime),
                             name: row.name,
-                            notes: row.notes
+                            notes: row.notes,
+                            color: row['instrument/color']
                         });
                     }
                     callback(instrumentSchedule);
@@ -288,7 +290,6 @@
                 startDate: new Date(),
                 numberMonthsDisplayed: 1,
                 enableRangeSelection: LABKEY.user.canInsert,
-                // clickDay: calendarDayClicked,
                 dataSource: instrumentSchedule,
                 style: 'custom',
                 contextMenuItems:[
@@ -334,12 +335,11 @@
                     }
                 },
             });
-            // TODO: grab color from msInstrument table
             calendar.setCustomDayRenderer(function (element, date) {
                 let events = calendar.getEvents(date);
                 if (events && events.length) {
                     let e = events[0];
-                    element.classList.add('day-color');
+                    element.style.backgroundColor = e.color;
                 }
             });
 
