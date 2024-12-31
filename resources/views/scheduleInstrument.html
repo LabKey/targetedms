@@ -3,7 +3,7 @@
   #events-log {
     display: inline-block;
     vertical-align: top;
-    flex: 3;
+    flex: 4;
     padding: 10px;
     min-height: 200px;
     border-radius: 10px;
@@ -11,12 +11,8 @@
   }
 
   #calendar {
-    flex:7;
+    flex:6;
     box-sizing: border-box;
-  }
-
-  .calendar .calendar-header .year-title:not(.year-neighbor):not(.year-neighbor2) {
-    border-bottom: 2px solid #2196f3;
   }
 
   .calendar table.month {
@@ -27,11 +23,20 @@
   }
 
   .calendar table.month th.month-title {
-    background-color: #2196F3;
     color: white;
     padding: 12px;
     font-weight: 400;
   }
+
+  .calendar table.month tr td, .calendar table.month tr th {
+    padding: 1px;
+    vertical-align: center;
+  }
+
+  .calendar table.month td.day .day-content {
+   height: 5rem;
+  }
+
 
   #calendarWrapper {
     display: flex;
@@ -40,9 +45,14 @@
     width: 100%;
   }
 
-  .day-color {
-    background-color: indianred;
+  .event-tooltip-content {
+    white-space: nowrap;
   }
+
+  .popover{
+    max-width: 100%;
+  }
+
 
 </style>
 
@@ -88,6 +98,18 @@
                                     </div>
                                     <input name="event-end-date" type="datetime-local" class="form-control">
                                 </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 control-label">Name</label>
+                            <div class="col-sm-8">
+                                <input id="event-name" name="event-name" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 control-label">Notes</label>
+                            <div class="col-sm-8">
+                                <input id="event-notes" name="event-notes" type="text" class="form-control">
                             </div>
                         </div>
                         <div class="form-group row" >
@@ -161,6 +183,85 @@
                 }
                 instrumentDropDown += '</select>';
                 jQuery('#instrumentDropDown').html(instrumentDropDown);
+                loadInstrumentSchedule(function(instrumentSchedule) {
+                    let currentYear = new Date().getFullYear();
+                    calendar = new Calendar('#calendar', {
+                        startDate: new Date(),
+                        numberMonthsDisplayed: 1,
+                        enableRangeSelection: LABKEY.user.canInsert,
+                        dataSource: instrumentSchedule,
+                        style: 'custom',
+
+                        selectRange: function(e) {
+                            editEvent({
+                                startDate: e.events.length ? e.events[0].startDate : e.startDate,
+                                endDate: e.events.length ? e.events[0].endDate : e.endDate,
+                                id:  e.events.length ? e.events[0].id : null,
+                                name:  e.events.length ? e.events[0].name : null,
+                                notes:  e.events.length ? e.events[0].notes : null
+                            });
+                        },
+
+                    });
+                    calendar.setCustomDayRenderer(function (element, date) {
+                        let events = calendar.getEvents(date);
+                        if (events && events.length) {
+                            let e = events[0];
+                            // element.style = 'background-color: ' + e.color + ';';
+                            // if the project is different in the dropdown then change the bg color to gray
+                            let style =
+                                    'display: block; ' +
+                                    'width: 100%; ' +
+                                    'height: 40%; ' +
+                                    'background-color: ' + (e.project == project ? e.color : 'gray') + '; ' ;
+                            let div = document.createElement('div');
+                            div.style = style;
+                            let dateStr = e.startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' - ' + e.endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                            div.innerHTML = dateStr + '&nbsp' + e.project;
+                            element.appendChild(div);
+
+                            element.addEventListener('click', function() {
+                                editEvent(e);
+                            });
+
+                            // add mouse on element
+
+                            element.addEventListener('mouseover', function() {
+                                var content = '';
+
+                                for(var i in events) {
+                                    // format 12/01/24, 10:00 AM - 12/01/24, 11:00 AM
+                                    let dateStr = events[i].startDate.toLocaleDateString() + ', ' + events[i].startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' - ' +
+                                            events[i].endDate.toLocaleDateString() + ', ' + events[i].endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+                                    content += '<div class="event-tooltip-content">'
+                                            + '<div class="event-id" >' + 'Project Id : &nbsp' + LABKEY.Utils.encodeHtml(events[i].project) + '</div>'
+                                            + '<div class="event-title">' + 'Title : &nbsp' + LABKEY.Utils.encodeHtml(events[i].title) + '</div>'
+                                            + '<div class="event-date">' + LABKEY.Utils.encodeHtml(dateStr) + '</div>'
+
+                                            + '</div>';
+                                }
+
+                                $(element).popover({
+                                    trigger: 'manual',
+                                    container: 'body',
+                                    html:true,
+                                    content: content
+                                });
+
+                                $(element).popover('show');
+                            });
+
+                            // remove mouse popover
+                            element.addEventListener('mouseout', function() {
+                                $(element).popover('hide');
+                            });
+
+                        }
+                    });
+
+                    calendar.render();
+                });
             }
         });
 
@@ -233,6 +334,8 @@
             $('#event-modal input[name="event-index"]').val(event ? event.id : '');
             $('#event-modal input[name="event-start-date"]').val(startDateVal);
             $('#event-modal input[name="event-end-date"]').val(endDateVal);
+            $('#event-modal input[name="event-name"]').val(event ? event.name : '');
+            $('#event-modal input[name="event-notes"]').val(event ? event.notes : '');
             $('#event-modal').modal();
         }
 
@@ -243,6 +346,8 @@
                 endTime: $('#event-modal input[name="event-end-date"]').val(),
                 project: project,
                 instrument: instrument ? instrument : $('#instrumentDropDown select[name="instrumentDropDown"]').val(),
+                name: $('#event-modal input[name="event-name"]').val(),
+                notes: $('#event-modal input[name="event-notes"]').val()
             }
 
             LABKEY.Query.saveRows({
@@ -281,10 +386,9 @@
             LABKEY.Query.selectRows({
                 schemaName: 'targetedms',
                 queryName: 'instrumentSchedule',
-                columns: 'Id,startTime,endTime,name,notes,instrument/color',
+                columns: 'Id,startTime,endTime,name,notes,instrument/color,project/Id, project/title',
                 filterArray: [
-                    LABKEY.Filter.create('instrument', instrument),
-                    LABKEY.Filter.create('project', project)
+                    LABKEY.Filter.create('instrument', instrument ? instrument : $('#instrumentDropDown select[name="instrumentDropDown"]').val()),
                 ],
                 success: function (data) {
                     let rows = data.rows;
@@ -296,7 +400,9 @@
                             endDate: new Date(row.endTime),
                             name: row.name,
                             notes: row.notes,
-                            color: row['instrument/color']
+                            color: row['instrument/color'],
+                            project: row['project/Id'],
+                            title: row['project/title']
                         });
                     }
                     callback(instrumentSchedule);
@@ -304,67 +410,7 @@
             });
         }
 
-        loadInstrumentSchedule(function(instrumentSchedule) {
-            let currentYear = new Date().getFullYear();
-            calendar = new Calendar('#calendar', {
-                startDate: new Date(),
-                numberMonthsDisplayed: 1,
-                enableRangeSelection: LABKEY.user.canInsert,
-                dataSource: instrumentSchedule,
-                style: 'custom',
-                contextMenuItems:[
-                    {
-                        text: 'Update',
-                        click: editEvent
-                    },
-                    {
-                        text: 'Delete',
-                        click: deleteEvent
-                    }
-                ],
-                dayContextMenu: function(e) {
-                    $(e.element).popover('hide');
-                },
-                selectRange: function(e) {
-                    editEvent({ startDate: e.startDate, endDate: e.endDate });
-                },
-                mouseOnDay: function(e) {
-                    if(e.events.length > 0) {
-                        var content = '';
 
-                        for(var i in e.events) {
-                            content += '<div class="event-tooltip-content">'
-                                    + '<div class="event-name" style="color:' + e.events[i].color + '">' + e.events[i].name + '</div>'
-                                    + '<div class="event-notes">' + e.events[i].notes + '</div>'
-                                    + '</div>';
-                        }
-
-                        $(e.element).popover({
-                            trigger: 'manual',
-                            container: 'body',
-                            html:true,
-                            content: content
-                        });
-
-                        $(e.element).popover('show');
-                    }
-                },
-                mouseOutDay: function(e) {
-                    if(e.events.length > 0) {
-                        $(e.element).popover('hide');
-                    }
-                },
-            });
-            calendar.setCustomDayRenderer(function (element, date) {
-                let events = calendar.getEvents(date);
-                if (events && events.length) {
-                    let e = events[0];
-                    element.style.backgroundColor = e.color;
-                }
-            });
-
-            calendar.render();
-        });
 
         $('#save-event').click(function() {
             saveEvent();
