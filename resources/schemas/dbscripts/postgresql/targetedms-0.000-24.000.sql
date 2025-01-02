@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-/* targetedms-0.00-12.20.sql */
-
 CREATE SCHEMA targetedms;
 
 -- iRTScale table to store iRT scale information
@@ -148,8 +146,6 @@ CREATE TABLE targetedms.IsotopeEnrichment
 );
 CREATE INDEX IX_IsotopeEnrichment_RunId ON targetedms.IsotopeEnrichment (RunId);
 
-
-
 -- ----------------------------------------------------------------------------
 -- Peptide Settings
 -- ----------------------------------------------------------------------------
@@ -169,8 +165,6 @@ CREATE TABLE targetedms.RetentionTimePredictionSettings
     CONSTRAINT PK_RetentionTimePredictionSettings PRIMARY KEY (RunId),
     CONSTRAINT FK_RetentionTimePredictionSettings_Runs FOREIGN KEY (RunId) REFERENCES targetedms.Runs(Id)
 );
-
-
 
 -- ----------------------------------------------------------------------------
 -- Instrument, Replicate and SampleFile
@@ -312,7 +306,6 @@ CREATE TABLE targetedms.PeptideChromInfo
 );
 CREATE INDEX IX_PeptideChromInfo_PeptideId ON targetedms.PeptideChromInfo(PeptideId);
 CREATE INDEX IX_PeptideChromInfo_SampleFileId ON targetedms.PeptideChromInfo(SampleFileId);
-
 
 -- ----------------------------------------------------------------------------
 -- Precursor
@@ -576,7 +569,6 @@ CREATE TABLE targetedms.RunIsotopeModification
 CREATE INDEX IX_RunIsotopeModification_RunId ON targetedms.RunIsotopeModification (RunId);
 CREATE INDEX IX_RunIsotopeModification_IsotopeLabelId ON targetedms.RunIsotopeModification (IsotopeLabelId);
 
-
 -- ----------------------------------------------------------------------------
 -- Peptide Modifications
 -- ----------------------------------------------------------------------------
@@ -609,8 +601,6 @@ CREATE TABLE targetedms.PeptideIsotopeModification
 );
 CREATE INDEX IX_PeptideIsotopeModification_PeptideId ON targetedms.PeptideIsotopeModification (PeptideId);
 CREATE INDEX IX_PeptideIsotopeModification_IsotopeModId ON targetedms.PeptideIsotopeModification (IsotopeModId);
-
-
 
 -- ----------------------------------------------------------------------------
 -- Peak Area Ratios
@@ -675,8 +665,6 @@ CREATE INDEX IX_PeptideAreaRatio_PeptideChromInfoStdId ON targetedms.PeptideArea
 CREATE INDEX IX_PeptideAreaRatio_IsotopeLabelId ON targetedms.PeptideAreaRatio (IsotopeLabelId);
 CREATE INDEX IX_PeptideAreaRatio_IsotopeLabelStdId ON targetedms.PeptideAreaRatio (IsotopeLabelStdId);
 
-
-
 -- ----------------------------------------------------------------------------
 -- Spectrum Libraries
 -- ----------------------------------------------------------------------------
@@ -719,8 +707,6 @@ CREATE TABLE targetedms.SpectrumLibrary
 );
 CREATE INDEX IX_SpectrumLibrary_RunId ON targetedms.SpectrumLibrary (RunId);
 CREATE INDEX IX_SpectrumLibrary_LibrarySourceId ON targetedms.SpectrumLibrary (LibrarySourceId);
-
-
 
 -- ----------------------------------------------------------------------------
 -- Transition related tables
@@ -858,8 +844,6 @@ CREATE TABLE targetedms.PredictorSettings
     CONSTRAINT FK_PredictorSettings_PredictorId FOREIGN KEY (PredictorId) REFERENCES targetedms.Predictor(Id)
 );
 
-/* targetedms-12.20-12.30.sql */
-
 CREATE TABLE targetedms.ReplicateAnnotation
 (
     Id SERIAL NOT NULL,
@@ -871,7 +855,6 @@ CREATE TABLE targetedms.ReplicateAnnotation
     CONSTRAINT FK_ReplicateAnnotation_Replicate FOREIGN KEY (ReplicateId) REFERENCES targetedms.Replicate(Id),
     CONSTRAINT UQ_ReplicateAnnotation_Name_Repicate UNIQUE (Name, ReplicateId)
 );
-
 
 -- AnnotationSettings table to store annotation settings.
 -- Name: Name of the annotation
@@ -890,8 +873,6 @@ CREATE TABLE targetedms.AnnotationSettings
 );
 CREATE INDEX IX_AnnotationSettings_RunId ON targetedms.AnnotationSettings (RunId);
 
-/* targetedms-12.30-13.10.sql */
-
 -- Add indices on annotation tables to speed up deletes
 CREATE INDEX IX_PrecursorChromInfoAnnotation_PrecursorChromInfoId ON targetedms.PrecursorChromInfoAnnotation(PrecursorChromInfoId);
 
@@ -904,9 +885,6 @@ CREATE INDEX IX_PrecursorAnnotation_PrecursorId ON targetedms.PrecursorAnnotatio
 CREATE INDEX IX_PeptideGroupAnnotation_PeptideGroupId ON targetedms.PeptideGroupAnnotation(PeptideGroupId);
 
 CREATE INDEX IX_TransitionAnnotation_TransitionId ON targetedms.TransitionAnnotation(TransitionId);
-
-/* targetedms-13.10-13.20.sql */
-
 
 -- iRTPeptide table to store iRT peptide information.
 -- ModifiedSequence: the optionally chemically modified peptide sequence
@@ -960,8 +938,6 @@ CREATE INDEX IX_ExperimentAnnotations_ExperimentId ON targetedms.ExperimentAnnot
 ALTER TABLE targetedms.ExperimentAnnotations ADD CONSTRAINT FK_ExperimentAnnotations_Experiment FOREIGN KEY (ExperimentId) REFERENCES exp.Experiment(RowId);
 ALTER TABLE targetedms.ExperimentAnnotations ADD CONSTRAINT FK_ExperimentAnnotations_Container FOREIGN KEY (Container) REFERENCES core.Containers(EntityId);
 
-/* targetedms-14.10-14.20.sql */
-
 CREATE TABLE targetedms.IsolationScheme
 (
     Id SERIAL NOT NULL,
@@ -1004,7 +980,6 @@ CREATE INDEX IX_RunEnzyme_RunId ON targetedms.RunEnzyme(RunId);
 
 CREATE INDEX IX_SampleFile_InstrumentId ON targetedms.SampleFile(InstrumentId);
 
-
 -- Add ion mobility settings tables
 CREATE TABLE targetedms.DriftTimePredictionSettings
 (
@@ -1033,8 +1008,6 @@ CREATE TABLE targetedms.MeasuredDriftTime
     CONSTRAINT FK_MeasuredDriftTime_DriftTimePredictionSettings FOREIGN KEY (DriftTimePredictionSettingsId) REFERENCES targetedms.DriftTimePredictionSettings(Id)
 );
 CREATE INDEX IX_MeasuredDriftTime_DriftTimePredictionSettingsId ON targetedms.MeasuredDriftTime(DriftTimePredictionSettingsId);
-
-/* targetedms-14.20-14.30.sql */
 
 CREATE TABLE targetedms.Journal
 (
@@ -1078,9 +1051,6 @@ CREATE TABLE targetedms.JournalExperiment
 );
 CREATE INDEX IX_JournalExperiment_ShortAccessURL ON targetedms.JournalExperiment(ShortAccessURL);
 CREATE INDEX IX_JournalExperiment_ShortCopyURL ON targetedms.JournalExperiment(ShortCopyURL);
-
-
-/* targetedms-14.30-15.10.sql */
 
 CREATE TABLE targetedms.QCAnnotationType
 (
@@ -1147,8 +1117,6 @@ CREATE TABLE targetedms.MoleculeTransition (
   CONSTRAINT FK_MoleculeTransition_Transition FOREIGN KEY (TransitionId) REFERENCES targetedms.Transition(Id)
 );
 
-/* targetedms-15.10-15.20.sql */
-
 CREATE TABLE targetedms.GuideSet
 (
   RowId SERIAL NOT NULL,
@@ -1163,8 +1131,6 @@ CREATE TABLE targetedms.GuideSet
 
   CONSTRAINT PK_GuideSet PRIMARY KEY (RowId)
 );
-
-/* targetedms-15.30-16.10.sql */
 
 CREATE TABLE targetedms.AutoQCPing (
   CreatedBy USERID,
@@ -1443,8 +1409,6 @@ ALTER TABLE targetedms.Precursor ALTER COLUMN ModifiedSequence TYPE VARCHAR(300)
 UPDATE targetedms.Peptide SET Sequence='' WHERE Sequence IS NULL;
 ALTER TABLE targetedms.Peptide ALTER COLUMN Sequence SET NOT NULL;
 
-/* targetedms-16.10-16.20.sql */
-
 /* The run related count values are now calculated by the server in TargetedMSSchema.getTargetedMSRunsTable */
 ALTER TABLE targetedms.Runs DROP COLUMN PeptideGroupCount;
 ALTER TABLE targetedms.Runs DROP COLUMN PeptideCount;
@@ -1468,8 +1432,6 @@ ALTER TABLE targetedms.Precursor ALTER COLUMN NeutralMass TYPE DOUBLE PRECISION;
 -- Replace strings like [+80] in the modified sequence with [+80.0].
 -- Example: K[+96.2]VN[-17]K[+34.1]TES[+80]K[+62.1] -> K[+96.2]VN[-17.0]K[+34.1]TES[+80.0]K[+62.1]
 UPDATE targetedms.precursor SET ModifiedSequence = (REGEXP_REPLACE(ModifiedSequence, '(\[[+-]\d+)\]', '\1.0]', 'g'));
-
-/* targetedms-16.20-16.30.sql */
 
 CREATE TABLE targetedms.QCMetricConfiguration
 (
@@ -1495,7 +1457,6 @@ CREATE TABLE targetedms.QCMetricConfiguration
 
 
 WITH rootIdentity as (select EntityId as theIdentity FROM core.Containers WHERE Parent is null)
-
 INSERT INTO targetedms.QCMetricConfiguration (Container, Name,Series1Label,Series1SchemaName,Series1QueryName,Series2Label,Series2SchemaName,Series2QueryName) VALUES
     ((select theIdentity from rootIdentity), 'Retention Time','Retention Time','targetedms','QCMetric_retentionTime',NULL , NULL , NULL ),
     ((select theIdentity from rootIdentity), 'Peak Area','Peak Area','targetedms','QCMetric_peakArea',NULL , NULL , NULL ),
@@ -1536,8 +1497,6 @@ SET container =
 ALTER TABLE targetedms.precursorchrominfo ALTER COLUMN container SET NOT NULL;
 
 CREATE INDEX idx_precursorchrominfo_container ON targetedms.precursorchrominfo (container, id);
-
-/* targetedms-16.30-17.10.sql */
 
 -- Remove all replicates not associated with a sample file.
 DELETE FROM targetedms.replicateAnnotation WHERE replicateId IN (SELECT r.id FROM targetedms.replicate r LEFT OUTER JOIN targetedms.sampleFile sf ON(r.Id = sf.ReplicateId) WHERE sf.ReplicateId IS NULL);
@@ -1658,8 +1617,6 @@ FROM targetedms.samplefile sf
 WHERE pci.sampleFileId = sf.id
       AND pci.container != r.container;
 
-/* targetedms-17.10-17.20.sql */
-
 ALTER TABLE targetedms.PrecursorChromInfo ADD COLUMN ChromatogramFormat INT;
 
 CREATE TABLE targetedms.QCMetricExclusion
@@ -1690,18 +1647,12 @@ ALTER TABLE targetedms.ExperimentAnnotations ADD CONSTRAINT UQ_ExperimentAnnotat
 ALTER TABLE targetedms.ExperimentAnnotations ADD CONSTRAINT FK_ExperimentAnnotations_ShortUrl FOREIGN KEY (shorturl)
 REFERENCES core.shorturl (entityId);
 
-/* targetedms-17.20-17.30.sql */
-
 ALTER TABLE targetedms.Runs ADD COLUMN ReplicateCount INT;
 UPDATE targetedms.Runs SET ReplicateCount = (SELECT COUNT(r.id) FROM targetedms.Replicate r WHERE r.RunId = targetedms.Runs.Id);
 
 ALTER TABLE targetedms.TransitionChromInfo ADD COLUMN PointsAcrossPeak INT;
 
-/* targetedms-17.30-18.10.sql */
-
 ALTER TABLE targetedms.ReplicateAnnotation ALTER COLUMN Value TYPE VARCHAR(500);
-
-/* targetedms-18.10-18.20.sql */
 
 ALTER TABLE targetedms.Runs ADD COLUMN SkydDataId INT;
 
@@ -1733,12 +1684,8 @@ ALTER TABLE targetedms.JournalExperiment ADD COLUMN KeepPrivate BOOLEAN NOT NULL
 
 ALTER TABLE targetedms.spectrumlibrary ALTER COLUMN Name TYPE VARCHAR(400);
 
-/* targetedms-18.20-18.30.sql */
-
 ALTER TABLE targetedms.experimentannotations ALTER COLUMN Organism TYPE VARCHAR(300);
 ALTER TABLE targetedms.Replicate ADD COLUMN SampleDilutionFactor DOUBLE PRECISION;
-
-/* targetedms-18.30-19.10.sql */
 
 UPDATE exp.data a set sourceapplicationid = (SELECT d.sourceapplicationid from exp.data d where d.runid = a.runid AND d.name LIKE '%.zip')
 WHERE a.sourceapplicationid IS NULL AND a.runid IS NOT NULL AND a.name LIKE '%.skyd';
@@ -1748,8 +1695,6 @@ ALTER TABLE targetedms.runs ADD COLUMN DocumentSize BIGINT;
 
 ALTER TABLE targetedms.precursorchrominfo ADD COLUMN qvalue REAL;
 ALTER TABLE targetedms.precursorchrominfo ADD COLUMN zscore REAL;
-
-/* targetedms-19.10-19.20.sql */
 
 CREATE TABLE targetedms.QCEnabledMetrics
 (
@@ -1834,8 +1779,6 @@ UPDATE targetedms.qcmetricconfiguration SET name='Transition & Precursor Areas' 
 
 ALTER TABLE targetedms.qcmetricconfiguration ADD COLUMN PrecursorScoped BOOLEAN NOT NULL DEFAULT TRUE;
 
-DROP TABLE IF EXISTS targetedms.QCEmailNotifications;
-
 -- Increase the length of the Gene column. The gene field can contain all possible gene names that a protein product is associated with. This can get really long.
 ALTER TABLE targetedms.PeptideGroup ALTER COLUMN gene TYPE VARCHAR(2000);
 
@@ -1855,14 +1798,11 @@ ALTER TABLE targetedms.MeasuredDriftTime ADD HighEnergyIonMobilityOffset DOUBLE 
 -- From Brian Pratt about the ion_mobility_units field: Worst case is 23 characters, for Bruker:  inverse_K0_Vsec_per_cm2
 ALTER TABLE targetedms.MeasuredDriftTime ADD IonMobilityUnits VARCHAR(30);
 
-/* targetedms-19.20-19.30.sql */
-
 ALTER TABLE targetedms.Runs ADD COLUMN AuditLogEntriesCount INT4 DEFAULT 0 NOT NULL;
 
 WITH rootIdentity as (select EntityId as theIdentity FROM core.Containers WHERE Parent is null)
-
-INSERT INTO targetedms.QCMetricConfiguration (Container, Name,Series1Label,Series1SchemaName,Series1QueryName,Series2Label,Series2SchemaName,Series2QueryName,PrecursorScoped) VALUES
-((select theIdentity from rootIdentity), 'TIC Area','TIC Area','targetedms','QCRunMetric_ticArea',NULL , NULL , NULL , FALSE );
+    INSERT INTO targetedms.QCMetricConfiguration (Container, Name,Series1Label,Series1SchemaName,Series1QueryName,Series2Label,Series2SchemaName,Series2QueryName,PrecursorScoped) VALUES
+    ((select theIdentity from rootIdentity), 'TIC Area','TIC Area','targetedms','QCRunMetric_ticArea',NULL , NULL , NULL , FALSE );
 
 ALTER TABLE targetedms.SampleFile ADD COLUMN TicArea DOUBLE PRECISION;
 
@@ -1883,6 +1823,7 @@ CREATE TABLE targetedms.ListDefinition
     CONSTRAINT PK_List PRIMARY KEY(Id),
     CONSTRAINT FK_List_RunId FOREIGN KEY(RunId) REFERENCES targetedms.Runs(Id)
 );
+
 CREATE TABLE targetedms.ListColumnDefinition
 (
     Id SERIAL NOT NULL,
@@ -1945,20 +1886,20 @@ ALTER TABLE targetedms.AnnotationSettings ADD COLUMN Lookup TEXT;
 
 CREATE TABLE targetedms.SampleFileChromInfo
 (
-  Id serial NOT NULL,
-  SampleFileId integer NOT NULL,
-  StartTime real,
-  EndTime real,
-  TextId VARCHAR(512),
-  NumPoints integer,
-  UncompressedSize integer,
-  Container entityid NOT NULL,
-  ChromatogramFormat integer,
-  ChromatogramOffset bigint,
-  ChromatogramLength integer,
-  CONSTRAINT PK_SampleFileChromInfo PRIMARY KEY (Id),
-  CONSTRAINT FK_SampleFileChromInfo_SampleFile FOREIGN KEY (SampleFileId)
-  REFERENCES targetedms.SampleFile(Id)
+    Id serial NOT NULL,
+    SampleFileId integer NOT NULL,
+    StartTime real,
+    EndTime real,
+    TextId VARCHAR(512),
+    NumPoints integer,
+    UncompressedSize integer,
+    Container entityid NOT NULL,
+    ChromatogramFormat integer,
+    ChromatogramOffset bigint,
+    ChromatogramLength integer,
+    CONSTRAINT PK_SampleFileChromInfo PRIMARY KEY (Id),
+    CONSTRAINT FK_SampleFileChromInfo_SampleFile FOREIGN KEY (SampleFileId)
+    REFERENCES targetedms.SampleFile(Id)
 );
 
 CREATE INDEX IDX_SampleFileChromInfo_Container ON targetedms.SampleFileChromInfo(container);
@@ -1990,10 +1931,10 @@ ALTER TABLE targetedms.GeneralPrecursor DROP COLUMN Modified;
 --** changes to GeneralTransition **--
 ALTER TABLE targetedms.GeneralTransition ADD COLUMN Rank INT ;
 UPDATE targetedms.GeneralTransition gt
-SET Rank = (SELECT libraryRank FROM targetedms.Transition t WHERE t.id = gt.id);
+    SET Rank = (SELECT libraryRank FROM targetedms.Transition t WHERE t.id = gt.id);
 ALTER TABLE targetedms.GeneralTransition ADD COLUMN Intensity DOUBLE PRECISION ;
 UPDATE targetedms.GeneralTransition gt
-SET Intensity = (SELECT libraryIntensity FROM targetedms.Transition t WHERE t.id = gt.id);
+    SET Intensity = (SELECT libraryIntensity FROM targetedms.Transition t WHERE t.id = gt.id);
 ALTER TABLE targetedms.GeneralTransition ADD COLUMN Quantitative BOOLEAN;
 ALTER TABLE targetedms.GeneralTransition ADD COLUMN CollisionEnergy DOUBLE PRECISION;
 ALTER TABLE targetedms.GeneralTransition ADD COLUMN DeclusteringPotential DOUBLE PRECISION;
@@ -2123,11 +2064,9 @@ CREATE INDEX IX_SpectrastLibInfo_PrecursorId ON targetedms.SpectrastLibInfo(Prec
 CREATE INDEX IX_SpectrastLibInfo_SpectrumLibraryId ON targetedms.SpectrastLibInfo(SpectrumLibraryId);
 
 INSERT INTO targetedms.SpectrastLibInfo (PrecursorId, SpectrumLibraryId, CountMeasured, TotalIntensity, TFRatio)
-SELECT PrecursorId, SpectrumLibraryId, Score1, Score2, Score3
-FROM targetedms.PrecursorLibInfo pli
-INNER JOIN targetedms.SpectrumLibrary sl ON (sl.id = pli.SpectrumLibraryId AND sl.libraryType='spectrast') ;
-
-
+    SELECT PrecursorId, SpectrumLibraryId, Score1, Score2, Score3
+    FROM targetedms.PrecursorLibInfo pli
+    INNER JOIN targetedms.SpectrumLibrary sl ON (sl.id = pli.SpectrumLibraryId AND sl.libraryType='spectrast') ;
 
 CREATE TABLE targetedms.ChromatogramLibInfo
 (
@@ -2155,12 +2094,11 @@ INSERT INTO targetedms.IsotopeLabel (RunId, Name, Standard)
 
     WHERE gp.IsotopeLabelId IS NULL;
 
-UPDATE targetedms.GeneralPrecursor SET IsotopeLabelId = (SELECT il.Id FROM
-  targetedms.IsotopeLabel il
-    INNER JOIN targetedms.PeptideGroup pg ON pg.RunId = il.RunId AND il.Name = 'Unknown' AND il.Standard = TRUE
-    INNER JOIN targetedms.GeneralMolecule gm ON gm.PeptideGroupId = pg.Id AND gm.Id = GeneralPrecursor.GeneralMoleculeId
-)
-WHERE IsotopeLabelId IS NULL;
+UPDATE targetedms.GeneralPrecursor SET IsotopeLabelId = (SELECT il.Id FROM targetedms.IsotopeLabel il
+        INNER JOIN targetedms.PeptideGroup pg ON pg.RunId = il.RunId AND il.Name = 'Unknown' AND il.Standard = TRUE
+        INNER JOIN targetedms.GeneralMolecule gm ON gm.PeptideGroupId = pg.Id AND gm.Id = GeneralPrecursor.GeneralMoleculeId
+    )
+    WHERE IsotopeLabelId IS NULL;
 
 ALTER TABLE targetedms.GeneralPrecursor ALTER COLUMN IsotopeLabelId SET NOT NULL;
 
@@ -2291,7 +2229,6 @@ CREATE TABLE targetedms.keywords (
     CONSTRAINT keywords_keywordid_key UNIQUE (keywordid)
 );
 
-
 INSERT INTO targetedms.keywordcategories VALUES (1, 'KW-9999', 'Biological process');
 INSERT INTO targetedms.keywordcategories VALUES (2, 'KW-9998', 'Cellular component');
 INSERT INTO targetedms.keywordcategories VALUES (3, 'KW-9997', 'Coding sequence diversity');
@@ -2302,9 +2239,6 @@ INSERT INTO targetedms.keywordcategories VALUES (7, 'KW-9993', 'Ligand');
 INSERT INTO targetedms.keywordcategories VALUES (8, 'KW-9992', 'Molecular function');
 INSERT INTO targetedms.keywordcategories VALUES (9, 'KW-9991', 'PTM');
 INSERT INTO targetedms.keywordcategories VALUES (10, 'KW-9990', 'Technical term');
-
-
-
 
 INSERT INTO targetedms.keywords VALUES ( DEFAULT, 'KW-0001', '2Fe-2S', 'KW-9993');
 INSERT INTO targetedms.keywords VALUES ( DEFAULT, 'KW-0002', '3D-structure', 'KW-9990');
@@ -3867,8 +3801,6 @@ ALTER TABLE targetedms.PrecursorChromInfo ADD COLUMN TransitionChromatogramIndic
 
 ALTER TABLE targetedms.PrecursorChromInfo ADD COLUMN BestMassErrorPPM Real;
 
-/* 21.xxx SQL scripts */
-
 UPDATE targetedms.transitionpredictionsettings SET CePredictorId = NULL WHERE CePredictorId NOT IN (SELECT Id FROM targetedms.Predictor);
 UPDATE targetedms.transitionpredictionsettings SET DpPredictorId = NULL WHERE DpPredictorId NOT IN (SELECT Id FROM targetedms.Predictor);
 
@@ -4043,8 +3975,6 @@ ALTER TABLE targetedms.PrecursorChromInfo
     ADD COLUMN TotalAreaMs1 REAL,
     ADD COLUMN TotalAreaFragment REAL;
 
-/* 22.xxx SQL scripts */
-
 ALTER TABLE targetedms.SampleFileChromInfo
     ADD COLUMN Flags INT;
 
@@ -4205,3 +4135,23 @@ ALTER TABLE targetedms.Protein ADD CONSTRAINT FK_Protein_Sequences FOREIGN KEY(S
 
 ALTER TABLE targetedms.AuditLogMessage
     DROP COLUMN ExpandedText;
+
+DELETE FROM targetedms.ReplicateAnnotation WHERE source = 'User';
+ALTER TABLE targetedms.ReplicateAnnotation DROP COLUMN source;
+
+ALTER TABLE targetedms.QCAnnotation ADD COLUMN EndDate TIMESTAMP;
+
+-- Poke a new row annotation type into the /Shared project
+SELECT core.executeJavaInitializationCode('addInstrumentDowntimeAnnotationType');
+
+UPDATE targetedms.QCMetricConfiguration SET EnabledQueryName = 'QCMetricEnabled_precursorAndTransitionAreas', EnabledSchemaName = 'targetedms' WHERE Name = 'Transition/Precursor Area Ratio';
+UPDATE targetedms.QCMetricConfiguration SET EnabledQueryName = 'QCMetricEnabled_precursorAndTransitionAreas', EnabledSchemaName = 'targetedms' WHERE Name = 'Transition & Precursor Areas';
+UPDATE targetedms.QCMetricConfiguration SET EnabledQueryName = 'QCMetricEnabled_precursorAndTransitionAreas', EnabledSchemaName = 'targetedms' WHERE Name = 'Total Peak Area (Precursor + Transition)';
+UPDATE targetedms.QCMetricConfiguration SET EnabledQueryName = 'QCMetricEnabled_precursorArea', EnabledSchemaName = 'targetedms' WHERE Name = 'Precursor Area';
+
+ALTER TABLE targetedms.molecule ALTER COLUMN customionname TYPE TEXT;
+ALTER TABLE targetedms.moleculeprecursor ALTER COLUMN customionname TYPE TEXT;
+ALTER TABLE targetedms.moleculetransition ALTER COLUMN customionname TYPE TEXT;
+ALTER TABLE targetedms.excludedprecursors ALTER COLUMN customionname TYPE TEXT;
+
+ALTER TABLE targetedms.AutoQCPing ADD COLUMN SoftwareVersion VARCHAR(100);

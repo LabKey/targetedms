@@ -64,7 +64,7 @@ public class TargetedMSUpgradeCode implements UpgradeCode
         ContainerManager.getSharedContainer().setActiveModules(activeModules);
     }
 
-    // called at 23.000-23.001 to add a new type. Can eventually be consolidated into the bootstrap insert above
+    // initialization code called at 0.000-24.000 to add a new type. Can eventually be consolidated into the bootstrap insert above
     @SuppressWarnings({"UnusedDeclaration"})
     public void addInstrumentDowntimeAnnotationType(final ModuleContext moduleContext)
     {
@@ -87,6 +87,8 @@ public class TargetedMSUpgradeCode implements UpgradeCode
         new SqlExecutor(TargetedMSManager.getSchema()).execute(sql);
     }
 
+    // initialization code called at 0.000-24.000
+    @SuppressWarnings({"UnusedDeclaration"})
     @DeferredUpgrade
     public void recalculateAreaProportions(final ModuleContext moduleContext)
     {
