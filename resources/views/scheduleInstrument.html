@@ -119,6 +119,9 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="delete-event">
+                        Delete
+                    </button>
                     <button type="button" class="btn btn-primary" id="save-event">
                         Save
                     </button>
@@ -191,7 +194,6 @@
                         enableRangeSelection: LABKEY.user.canInsert,
                         dataSource: instrumentSchedule,
                         style: 'custom',
-
                         selectRange: function(e) {
                             editEvent({
                                 startDate: e.events.length ? e.events[0].startDate : e.startDate,
@@ -207,8 +209,7 @@
                         let events = calendar.getEvents(date);
                         if (events && events.length) {
                             let e = events[0];
-                            // element.style = 'background-color: ' + e.color + ';';
-                            // if the project is different in the dropdown then change the bg color to gray
+                            // Any time scheduled for the current project shows in a non-gray color
                             let style =
                                     'display: block; ' +
                                     'width: 100%; ' +
@@ -371,10 +372,31 @@
             })
         }
 
-        function deleteEvent(event) {
-            var dataSource = calendar.getDataSource();
+        function deleteEvent() {
+            const event = {
+                id: $('#event-modal input[name="event-index"]').val(),
+            }
 
-            calendar.setDataSource(dataSource.filter(item => item.id !== event.id));
+            LABKEY.Query.saveRows({
+                commands: [{
+                    command: 'delete',
+                    schemaName: 'targetedms',
+                    queryName: 'instrumentSchedule',
+                    rows: [
+                        event
+                    ]
+                }],
+                success: function () {
+                    // Don't reload the full data when only the annotations have been edited
+                    loadInstrumentSchedule(function (data) {
+                        calendar.setDataSource(data);
+                        $('#event-modal').modal('hide');
+                    }, true);
+                },
+                failure: function (errorInfo) {
+                    $('#schedule-save-error').text('Error saving. ' + (errorInfo.exception ? errorInfo.exception : ''));
+                }
+            });
         }
 
         function calendarDayClicked() {
@@ -414,6 +436,10 @@
 
         $('#save-event').click(function() {
             saveEvent();
+        });
+
+        $('#delete-event').click(function () {
+            deleteEvent();
         });
 
     });
