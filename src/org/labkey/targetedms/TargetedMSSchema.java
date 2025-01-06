@@ -1600,7 +1600,6 @@ public class TargetedMSSchema extends UserSchema
                 TABLE_PROJECT_PAYMENT_METHOD.equalsIgnoreCase(name) ||
                 TABLE_INSTRUMENT_SCHEDULE.equalsIgnoreCase(name))
         {
-            // return a new class extending FilteredTable to override the hasPermission method
             var result = new FilteredTable<TargetedMSSchema>(getSchema().getTable(name), this, cf)
             {
                 @Override

@@ -8,12 +8,21 @@
 </div>
 
 <script type="text/javascript" nonce="<%=scriptNonce%>">
-    LABKEY.Query.selectRows({
-        schemaName: 'targetedms',
-        queryName: 'msProject',
-        success: function(data){
-            let projectDetails = data.rows[0];
-            let projectDetailsHtml = `
+    $(function() {
+        let project = LABKEY.ActionURL.getParameter('project');
+        if (!project) {
+            alert('No project selected');
+            return;
+        }
+
+        LABKEY.Query.selectRows({
+            schemaName: 'targetedms',
+            queryName: 'msProject',
+            columns: 'Id,affiliation,title,collaborationWith,labDirector,organization,scientificQuestion,abstract,results',
+            filterArray: [LABKEY.Filter.create('Id', project, LABKEY.Filter.Types.EQUAL)],
+            success: function(data){
+                let projectDetails = data.rows[0];
+                let projectDetailsHtml = `
                 <table>
                     <tr>
                         <td class='labkey-form-label'>Id</td>
@@ -55,24 +64,24 @@
                 </table>
                 </br>
             `;
-            document.getElementById('project-details').innerHTML = projectDetailsHtml;
-        }
-    });
+                document.getElementById('project-details').innerHTML = projectDetailsHtml;
+            }
+        });
 
-    // query web part to show payment method and other invoice details - custom query
-    let webpart = <%=webpartContext%>;
-    let wp = new LABKEY.QueryWebPart({
-        renderTo: 'payment-methods',
-        frame: 'portal',
-        title: 'Payment Methods',
-        schemaName: 'targetedms',
-        queryName: 'projectPaymentMethod',
-        containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
-    });
-    wp.render();
+        // query web part to show payment method and other invoice details - custom query
+        let webpart = <%=webpartContext%>;
+        let wp = new LABKEY.QueryWebPart({
+            renderTo: 'payment-methods',
+            frame: 'portal',
+            title: 'Payment Methods',
+            schemaName: 'targetedms',
+            queryName: 'projectPaymentMethod',
+            filterArray: [LABKEY.Filter.create('project', project, LABKEY.Filter.Types.EQUAL)],
+            containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
+        });
+        wp.render();
 
-
-    document.addEventListener('DOMContentLoaded', function () {
+        // add payment method link
         const addPaymentMethodEl = document.getElementById('add-payment-method-link');
         const urlParams = {
             schemaName: 'targetedms',
@@ -83,12 +92,15 @@
         <a href="${LABKEY.ActionURL.buildURL('query', 'insertQueryRow', LABKEY.ActionURL.getContainer(), urlParams)}">[Add payment method]</a>`;
         addPaymentMethodEl.innerHTML = addPaymentMethodLink;
 
-
         const scheduleInstrumentTimeEl = document.getElementById('schedule-instrument-time');
+        const scheduleUrlParams = {
+            project: LABKEY.ActionURL.getParameter('project')
+        };
         const scheduleInstrumentTimeLink = `
-        <a href="${LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument', null, null)}">[Schedule Instrument Time]</a>`;
+        <a href="${LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument',LABKEY.ActionURL.getContainer(), scheduleUrlParams)}">[Schedule Instrument Time]</a>`;
         scheduleInstrumentTimeEl.innerHTML = scheduleInstrumentTimeLink;
-    })
+
+    });
 
 
 </script>

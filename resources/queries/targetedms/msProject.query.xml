@@ -4,6 +4,7 @@
             <table tableName="msProject" tableDbType="TABLE">
                 <columns>
                     <column columnName="Id">
+                        <url>/targetedms-msProjectDetails.view?project=${Id}</url>
                     </column>
                 </columns>
             </table>
