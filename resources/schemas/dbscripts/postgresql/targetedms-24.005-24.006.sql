@@ -49,6 +49,7 @@ CREATE TABLE targetedms.msInstrument
     active      BOOLEAN NOT NULL DEFAULT '1',
     color       varchar(10) DEFAULT NULL,
     massSpec    BOOLEAN DEFAULT '1',
+    instrument  varchar(200),
 
     Container   entityid NOT NULL,
     Created     TIMESTAMP,

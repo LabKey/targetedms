@@ -1810,6 +1810,7 @@
             <column columnName="active"/>
             <column columnName="color"/>
             <column columnName="massSpec"/>
+            <column columnName="instrument"/>
             <column columnName="Created"/>
             <column columnName="CreatedBy"/>
             <column columnName="Modified"/>
