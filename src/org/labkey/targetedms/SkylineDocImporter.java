@@ -208,7 +208,7 @@ public class SkylineDocImporter
         }
 
         // Skip if run was already fully imported
-        if (runInfo.isAlreadyImported() && run.getStatusId() == SkylineDocImporter.STATUS_SUCCESS)
+        if (run.getStatusId() == SkylineDocImporter.STATUS_SUCCESS)
         {
             _log.info(_expData.getName() + " has already been imported so it does not need to be imported again");
             return run;
@@ -2583,24 +2583,16 @@ public class SkylineDocImporter
     public static class RunInfo implements Serializable
     {
         private final long _runId;
-        private final boolean _alreadyImported;
 
         @JsonCreator
-        private RunInfo(@JsonProperty("_runId") long runId, @JsonProperty("_alreadyImported") boolean alreadyImported)
+        private RunInfo(@JsonProperty("_runId") long runId)
         {
             _runId = runId;
-
-            _alreadyImported = alreadyImported;
         }
 
         public long getRunId()
         {
             return _runId;
-        }
-
-        public boolean isAlreadyImported()
-        {
-            return _alreadyImported;
         }
     }
 
@@ -2608,35 +2600,28 @@ public class SkylineDocImporter
     {
         try (DbScope.Transaction transaction = TargetedMSManager.getSchema().getScope().ensureTransaction(_schemaLock))
         {
-            boolean alreadyImported = false;
-
             // Don't import if we've already imported this file (undeleted run exists matching this file name)
-            _runId = getRun();
-            if (_runId != -1)
-            {
-                alreadyImported = true;
-            }
-            else
+            TargetedMSRun run = getRun();
+            if (run == null)
             {
                 _log.info("Starting import from " + _expData.getName());
-                _runId = createRun();
+                run = createRun();
             }
 
             transaction.commit();
-            return new RunInfo(_runId, alreadyImported);
+            return new RunInfo(run.getRunId());
         }
     }
 
-    protected long getRun()
+    protected TargetedMSRun getRun()
     {
         SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("DataId"), _expData.getRowId());
         filter.addCondition(FieldKey.fromParts("Container"), _container.getId());
         filter.addCondition(FieldKey.fromParts("Deleted"), Boolean.FALSE);
-        TargetedMSRun run = new TableSelector(TargetedMSManager.getTableInfoRuns(), filter, null).getObject(TargetedMSRun.class);
-        return run != null ? run.getId() : -1;
+        return new TableSelector(TargetedMSManager.getTableInfoRuns(), filter, null).getObject(TargetedMSRun.class);
     }
 
-    protected long createRun()
+    protected TargetedMSRun createRun()
     {
         TargetedMSRun run = TargetedMSManager.getRunByDataId(_expData.getRowId(), _container);
         if (run != null)
@@ -2653,7 +2638,7 @@ public class SkylineDocImporter
         run.setRepresentativeDataState(_representative == null ? RunRepresentativeDataState.NotRepresentative : _representative);
 
         run = Table.insert(_user, TargetedMSManager.getTableInfoRuns(), run);
-        return run.getId();
+        return run;
     }
 
     protected void logError(String message, Exception e)
