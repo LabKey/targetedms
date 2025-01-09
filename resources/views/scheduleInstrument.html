@@ -159,7 +159,7 @@
                                     'background-color: ' + (e.project == project ? e.color : 'gray') + '; ' ;
                             let div = document.createElement('div');
                             div.style = style;
-                            let dateStr = e.startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' - ' + e.endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                            let dateStr = DateFormat.format.date(e.startDate, LABKEY.container.formats.dateTimeFormat) + ' - ' + DateFormat.format.date(e.endDate, LABKEY.container.formats.dateTimeFormat);
                             div.innerHTML = dateStr + '&nbsp' + e.project;
                             element.appendChild(div);
 
@@ -336,10 +336,6 @@
                     $('#schedule-save-error').text('Error saving. ' + (errorInfo.exception ? errorInfo.exception : ''));
                 }
             });
-        }
-
-        function calendarDayClicked() {
-            console.log('calendarDayClicked');
         }
 
         function loadInstrumentSchedule(callback) {
