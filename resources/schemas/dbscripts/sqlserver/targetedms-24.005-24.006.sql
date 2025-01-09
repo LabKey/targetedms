@@ -126,8 +126,8 @@ CREATE TABLE targetedms.instrumentSchedule
     Id              INT IDENTITY(1, 1) NOT NULL ,
     instrument      INT NOT NULL,
     project         INT NOT NULL,
-    startTime       timestamp NOT NULL,
-    endTime         timestamp NOT NULL,
+    startTime       DATETIME NOT NULL,
+    endTime         DATETIME NOT NULL,
     notes           TEXT DEFAULT NULL,
     name            NVARCHAR(255) DEFAULT NULL,
 
