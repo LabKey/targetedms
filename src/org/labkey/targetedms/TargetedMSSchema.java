@@ -69,6 +69,7 @@ import org.labkey.api.query.UserIdQueryForeignKey;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.security.UserPrincipal;
+import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.security.permissions.Permission;
 import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.targetedms.RepresentativeDataState;
@@ -1605,7 +1606,7 @@ public class TargetedMSSchema extends UserSchema
                 @Override
                 public boolean hasPermission(@NotNull UserPrincipal user, @NotNull Class<? extends Permission> perm)
                 {
-                    return (getContainer().hasPermission(user, ReadPermission.class));
+                    return (getContainer().hasPermission(user, AdminPermission.class));
                 }
 
                 @Override

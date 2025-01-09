@@ -1,23 +1,23 @@
 CREATE TABLE targetedms.msProject
 (
-    Id                  SERIAL NOT NULL ,
-    affiliation         varchar(15) DEFAULT NULL,
-    blocked             BOOLEAN NOT NULL DEFAULT '0',
-    title               varchar(255),
-    type                integer,
-    submitDate          timestamp NOT NULL,
-    collaborationStatus integer,
-    collaborationWith   varchar(255) NOT NULL,
-    organization        integer,
-    labDirector         integer,
-    scientificQuestion  varchar(255) NOT NULL,
+    Id                  INT IDENTITY(1, 1) NOT NULL ,
+    affiliation         NVARCHAR(15) DEFAULT NULL,
+    blocked             BIT NOT NULL DEFAULT 0,
+    title               NVARCHAR(255),
+    type                INT,
+    submitDate          DATETIME NOT NULL,
+    collaborationStatus INT,
+    collaborationWith   NVARCHAR(255) NOT NULL,
+    organization        INT,
+    labDirector         INT,
+    scientificQuestion  NVARCHAR(255) NOT NULL,
     abstract            TEXT NOT NULL,
     results             TEXT NOT NULL,
 
     Container           entityid NOT NULL,
-    Created             TIMESTAMP,
+    Created             DATETIME,
     CreatedBy           USERID,
-    Modified            TIMESTAMP,
+    Modified            DATETIME,
     ModifiedBy          USERID,
 
     CONSTRAINT PK_msProject PRIMARY KEY (Id)
@@ -26,14 +26,14 @@ CREATE INDEX IDX_msProject_Container ON targetedms.msProject(container);
 
 CREATE TABLE targetedms.projectResearcher
 (
-    Id                  SERIAL NOT NULL ,
-    project             integer NOT NULL,
-    researcher          integer NOT NULL,
+    Id                  INT IDENTITY(1, 1) NOT NULL ,
+    project             INT NOT NULL,
+    researcher          INT NOT NULL,
 
     Container           entityid NOT NULL,
-    Created             TIMESTAMP,
+    Created             DATETIME,
     CreatedBy           USERID,
-    Modified            TIMESTAMP,
+    Modified            DATETIME,
     ModifiedBy          USERID,
 
     CONSTRAINT PK_projectResearcher PRIMARY KEY (Id),
@@ -44,18 +44,18 @@ CREATE INDEX IDX_projectResearcher_Container ON targetedms.projectResearcher(con
 
 CREATE TABLE targetedms.msInstrument
 (
-    id          SERIAL NOT NULL ,
-    name        varchar(100) NOT NULL,
-    description varchar(255) DEFAULT NULL,
-    active      BOOLEAN NOT NULL DEFAULT '1',
-    color       varchar(10) DEFAULT NULL,
-    massSpec    BOOLEAN DEFAULT '1',
-    instrument  varchar(200),
+    id          INT IDENTITY(1, 1) NOT NULL ,
+    name        NVARCHAR(100) NOT NULL,
+    description NVARCHAR(255) DEFAULT NULL,
+    active      BIT NOT NULL DEFAULT 1,
+    color       NVARCHAR(10) DEFAULT NULL,
+    massSpec    BIT DEFAULT 1,
+    instrument  NVARCHAR(200),
 
     Container   entityid NOT NULL,
-    Created     TIMESTAMP,
+    Created     DATETIME,
     CreatedBy   USERID,
-    Modified    TIMESTAMP,
+    Modified    DATETIME,
     ModifiedBy  USERID,
 
     CONSTRAINT PK_msInstrument PRIMARY KEY (id)
@@ -64,37 +64,37 @@ CREATE INDEX IDX_msInstrument_Container ON targetedms.msInstrument(container);
 
 CREATE TABLE targetedms.paymentMethod
 (
-    Id                          SERIAL NOT NULL ,
-    UWBudgetNumber              varchar(50) DEFAULT NULL,
-    budgetExpirationDate        timestamp DEFAULT NULL,
-    PONumber                    varchar(50) DEFAULT NULL,
-    contactNameFirst            varchar(50) DEFAULT NULL,
-    contactNameLast             varchar(50) DEFAULT NULL,
-    contactEmail                varchar(50) DEFAULT NULL,
-    contactPhone                varchar(20) DEFAULT NULL,
-    organization                integer DEFAULT NULL,
-    addressLine1                varchar(50) DEFAULT NULL,
-    addressLine2                varchar(50) DEFAULT NULL,
-    city                        varchar(50) DEFAULT NULL,
+    Id                          INT IDENTITY(1, 1) NOT NULL ,
+    UWBudgetNumber              NVARCHAR(50) DEFAULT NULL,
+    budgetExpirationDate        DATETIME DEFAULT NULL,
+    PONumber                    NVARCHAR(50) DEFAULT NULL,
+    contactNameFirst            NVARCHAR(50) DEFAULT NULL,
+    contactNameLast             NVARCHAR(50) DEFAULT NULL,
+    contactEmail                NVARCHAR(50) DEFAULT NULL,
+    contactPhone                NVARCHAR(20) DEFAULT NULL,
+    organization                INT DEFAULT NULL,
+    addressLine1                NVARCHAR(50) DEFAULT NULL,
+    addressLine2                NVARCHAR(50) DEFAULT NULL,
+    city                        NVARCHAR(50) DEFAULT NULL,
     state                       char(2) DEFAULT NULL,
-    zip                         varchar(11) DEFAULT NULL,
-    country                     varchar(50) DEFAULT NULL,
-    isCurrent                   BOOLEAN NOT NULL DEFAULT '0',
-    federalFunding              BOOLEAN NOT NULL DEFAULT '0',
+    zip                         NVARCHAR(11) DEFAULT NULL,
+    country                     NVARCHAR(50) DEFAULT NULL,
+    isCurrent                   BIT NOT NULL DEFAULT 0,
+    federalFunding              BIT NOT NULL DEFAULT 0,
     poAmount                    decimal(11,2) DEFAULT NULL,
-    name                        varchar(500) DEFAULT NULL,
-    worktag                     varchar(10) DEFAULT NULL,
-    resourceWorktag             varchar(10) DEFAULT NULL,
+    name                        NVARCHAR(500) DEFAULT NULL,
+    worktag                     NVARCHAR(10) DEFAULT NULL,
+    resourceWorktag             NVARCHAR(10) DEFAULT NULL,
     resourceWorktagDescription  text DEFAULT NULL,
-    assigneeWorktag             varchar(10) DEFAULT NULL,
+    assigneeWorktag             NVARCHAR(10) DEFAULT NULL,
     assigneeWorktagDescription  text DEFAULT NULL,
-    activityWorktag             varchar(10) DEFAULT NULL,
+    activityWorktag             NVARCHAR(10) DEFAULT NULL,
     activityWorktagDescription  text DEFAULT NULL,
 
     Container                   entityid NOT NULL,
-    Created                     TIMESTAMP,
+    Created                     DATETIME,
     CreatedBy                   USERID,
-    Modified                    TIMESTAMP,
+    Modified                    DATETIME,
     ModifiedBy                  USERID,
 
     CONSTRAINT PK_paymentMethod PRIMARY KEY (Id)
@@ -103,14 +103,14 @@ CREATE INDEX IDX_paymentMethod_Container ON targetedms.paymentMethod(container);
 
 CREATE TABLE targetedms.projectPaymentMethod
 (
-    Id              SERIAL NOT NULL ,
-    paymentMethod   integer NOT NULL,
-    project         integer NOT NULL,
+    Id              INT IDENTITY(1, 1) NOT NULL ,
+    paymentMethod   INT NOT NULL,
+    project         INT NOT NULL,
 
     Container       entityid NOT NULL,
-    Created         TIMESTAMP,
+    Created         DATETIME,
     CreatedBy       USERID,
-    Modified        TIMESTAMP,
+    Modified        DATETIME,
     ModifiedBy      USERID,
 
     CONSTRAINT PK_projectPaymentMethod PRIMARY KEY (Id),
@@ -123,18 +123,18 @@ CREATE INDEX IDX_projectPaymentMethod_Container ON targetedms.projectPaymentMeth
 
 CREATE TABLE targetedms.instrumentSchedule
 (
-    Id              SERIAL NOT NULL ,
-    instrument      integer NOT NULL,
-    project         integer NOT NULL,
+    Id              INT IDENTITY(1, 1) NOT NULL ,
+    instrument      INT NOT NULL,
+    project         INT NOT NULL,
     startTime       timestamp NOT NULL,
     endTime         timestamp NOT NULL,
     notes           TEXT DEFAULT NULL,
-    name            varchar(255) DEFAULT NULL,
+    name            NVARCHAR(255) DEFAULT NULL,
 
     Container       entityid NOT NULL,
-    Created         TIMESTAMP,
+    Created         DATETIME,
     CreatedBy       USERID,
-    Modified        TIMESTAMP,
+    Modified        DATETIME,
     ModifiedBy      USERID,
 
     CONSTRAINT PK_instrumentSchedule PRIMARY KEY (Id),

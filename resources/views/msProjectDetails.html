@@ -22,43 +22,53 @@
             filterArray: [LABKEY.Filter.create('Id', project, LABKEY.Filter.Types.EQUAL)],
             success: function(data){
                 let projectDetails = data.rows[0];
+                let id = LABKEY.Utils.encodeHtml(projectDetails.Id);
+                let affiliation = LABKEY.Utils.encodeHtml(projectDetails.affiliation);
+                let title = LABKEY.Utils.encodeHtml(projectDetails.title);
+                let collaborationWith = LABKEY.Utils.encodeHtml(projectDetails.collaborationWith);
+                let labDirector = LABKEY.Utils.encodeHtml(projectDetails.labDirector);
+                let organization = LABKEY.Utils.encodeHtml(projectDetails.organization);
+                let scientificQuestion = LABKEY.Utils.encodeHtml(projectDetails.scientificQuestion);
+                let abstract = LABKEY.Utils.encodeHtml(projectDetails.abstract);
+                let results = LABKEY.Utils.encodeHtml(projectDetails.results);
+
                 let projectDetailsHtml = `
                 <table>
                     <tr>
                         <td class='labkey-form-label'>Id</td>
-                        <td>${projectDetails.Id}</td>
+                        <td>${id}</td>
                     </tr>
                     <tr>
                         <td class='labkey-form-label'>Affiliation</td>
-                        <td>${projectDetails.affiliation}</td>
+                        <td>${affiliation}</td>
                     </tr>
                     <tr>
                         <td class='labkey-form-label'>Title</td>
-                        <td>${projectDetails.title}</td>
+                        <td>${title}</td>
                     </tr>
                     <tr>
                         <td class='labkey-form-label'>Collaborating with</td>
-                        <td>${projectDetails.collaborationWith}</td>
+                        <td>${collaborationWith}</td>
                     </tr>
                     <tr>
                         <td class='labkey-form-label'>Lab Director</td>
-                        <td>${projectDetails.labDirector}</td>
+                        <td>${labDirector}</td>
                     </tr>
                     <tr>
                         <td class='labkey-form-label'>Organization</td>
-                        <td>${projectDetails.organization}</td>
+                        <td>${organization}</td>
                     </tr>
                     <tr>
                         <td class='labkey-form-label'>Scientific Question</td>
-                        <td>${projectDetails.scientificQuestion}</td>
+                        <td>${scientificQuestion}</td>
                     </tr>
                     <tr>
                         <td class='labkey-form-label'>Abstract</td>
-                        <td>${projectDetails.abstract}</td>
+                        <td>${abstract}</td>
                     </tr>
                     <tr>
                         <td class='labkey-form-label'>Progress/Results</td>
-                        <td>${projectDetails.results}</td>
+                        <td>${results}</td>
                     </tr>
 
                 </table>
