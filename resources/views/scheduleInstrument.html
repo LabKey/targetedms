@@ -6,7 +6,7 @@
     <div id="instrumentOperatorDropDown"></div>
     <br/>
     <div id="paymentMethodDropDown"></div>
-    <a href="javascript:void(0);" id="addPaymentMethod">[Add Payment Method]</a>
+    <span id="addPaymentMethod" role="button" style="cursor: pointer;">[Add Payment Method]</span>
     <br/>
 
 </div>
@@ -248,32 +248,13 @@
         //     }
         // });
 
-        function zeroPadded(val) {
-            if (val >= 10)
-                return val;
-            else
-                return '0' + val;
-        }
-
         function editEvent(event) {
             let startDate = event.startDate;
             let endDate = event.endDate;
-            let startDateVal = startDate.getFullYear() + "-" +
-                    zeroPadded(startDate.getMonth() + 1) + "-" +
-                    zeroPadded(startDate.getDate()) + "T" +
-                    zeroPadded(startDate.getHours()) + ":" +
-                    zeroPadded(startDate.getMinutes()) + ":" +
-                    zeroPadded(startDate.getSeconds());
-            let endDateVal = endDate.getFullYear() + "-" +
-                    zeroPadded(endDate.getMonth() + 1) + "-" +
-                    zeroPadded(endDate.getDate()) + "T" +
-                    zeroPadded(endDate.getHours()) + ":" +
-                    zeroPadded(endDate.getMinutes()) + ":" +
-                    zeroPadded(endDate.getSeconds());
 
             $('#event-modal input[name="event-index"]').val(event ? event.id : '');
-            $('#event-modal input[name="event-start-date"]').val(startDateVal);
-            $('#event-modal input[name="event-end-date"]').val(endDateVal);
+            $('#event-modal input[name="event-start-date"]').val(DateFormat.format.date(startDate, LABKEY.container.formats.dateTimeFormat));
+            $('#event-modal input[name="event-end-date"]').val(DateFormat.format.date(endDate, LABKEY.container.formats.dateTimeFormat));
             $('#event-modal input[name="event-name"]').val(event ? event.name : '');
             $('#event-modal input[name="event-notes"]').val(event ? event.notes : '');
             $('#event-modal').modal();
@@ -397,7 +378,7 @@
 
             // TODO: add delete icon
             paymentMethodDropDown += '&nbsp' +
-                    '<a href="javascript:void(0);" id="removePaymentMethod">[Remove]</a>';
+                    '<span id="removePaymentMethod" role="button" style="cursor: pointer;">[Remove]</span>';
             let logElt = document.createElement('div');
             logElt.innerHTML = paymentMethodDropDown;
 
