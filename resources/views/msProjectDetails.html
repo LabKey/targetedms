@@ -1,0 +1,116 @@
+<div id="project-details">
+</div>
+<div id="payment-methods">
+</div>
+<div id="add-payment-method-link">
+</div>
+<div id="schedule-instrument-time">
+</div>
+
+<script type="text/javascript" nonce="<%=scriptNonce%>">
+    $(function() {
+        let project = LABKEY.ActionURL.getParameter('project');
+        if (!project) {
+            alert('No project selected');
+            return;
+        }
+
+        LABKEY.Query.selectRows({
+            schemaName: 'targetedms',
+            queryName: 'msProject',
+            columns: 'Id,affiliation,title,collaborationWith,labDirector,organization,scientificQuestion,abstract,results',
+            filterArray: [LABKEY.Filter.create('Id', project, LABKEY.Filter.Types.EQUAL)],
+            success: function(data){
+                let projectDetails = data.rows[0];
+                let id = LABKEY.Utils.encodeHtml(projectDetails.Id);
+                let affiliation = LABKEY.Utils.encodeHtml(projectDetails.affiliation);
+                let title = LABKEY.Utils.encodeHtml(projectDetails.title);
+                let collaborationWith = LABKEY.Utils.encodeHtml(projectDetails.collaborationWith);
+                let labDirector = LABKEY.Utils.encodeHtml(projectDetails.labDirector);
+                let organization = LABKEY.Utils.encodeHtml(projectDetails.organization);
+                let scientificQuestion = LABKEY.Utils.encodeHtml(projectDetails.scientificQuestion);
+                let abstract = LABKEY.Utils.encodeHtml(projectDetails.abstract);
+                let results = LABKEY.Utils.encodeHtml(projectDetails.results);
+
+                let projectDetailsHtml = `
+                <table>
+                    <tr>
+                        <td class='labkey-form-label'>Id</td>
+                        <td>${id}</td>
+                    </tr>
+                    <tr>
+                        <td class='labkey-form-label'>Affiliation</td>
+                        <td>${affiliation}</td>
+                    </tr>
+                    <tr>
+                        <td class='labkey-form-label'>Title</td>
+                        <td>${title}</td>
+                    </tr>
+                    <tr>
+                        <td class='labkey-form-label'>Collaborating with</td>
+                        <td>${collaborationWith}</td>
+                    </tr>
+                    <tr>
+                        <td class='labkey-form-label'>Lab Director</td>
+                        <td>${labDirector}</td>
+                    </tr>
+                    <tr>
+                        <td class='labkey-form-label'>Organization</td>
+                        <td>${organization}</td>
+                    </tr>
+                    <tr>
+                        <td class='labkey-form-label'>Scientific Question</td>
+                        <td>${scientificQuestion}</td>
+                    </tr>
+                    <tr>
+                        <td class='labkey-form-label'>Abstract</td>
+                        <td>${abstract}</td>
+                    </tr>
+                    <tr>
+                        <td class='labkey-form-label'>Progress/Results</td>
+                        <td>${results}</td>
+                    </tr>
+
+                </table>
+                </br>
+            `;
+                document.getElementById('project-details').innerHTML = projectDetailsHtml;
+            }
+        });
+
+        // query web part to show payment method and other invoice details - custom query
+        let webpart = <%=webpartContext%>;
+        let wp = new LABKEY.QueryWebPart({
+            renderTo: 'payment-methods',
+            frame: 'portal',
+            title: 'Payment Methods',
+            schemaName: 'targetedms',
+            queryName: 'projectPaymentMethod',
+            filterArray: [LABKEY.Filter.create('project', project, LABKEY.Filter.Types.EQUAL)],
+            containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
+        });
+        wp.render();
+
+        // add payment method link
+        const addPaymentMethodEl = document.getElementById('add-payment-method-link');
+        const urlParams = {
+            schemaName: 'targetedms',
+            queryName: 'ProjectPaymentMethod',
+            returnUrl: LABKEY.ActionURL.buildURL('targetedms', 'msProjectDetails', null, null)
+        };
+        let addPaymentMethodLink = `
+        <a href="${LABKEY.ActionURL.buildURL('query', 'insertQueryRow', LABKEY.ActionURL.getContainer(), urlParams)}">[Add payment method]</a>`;
+        addPaymentMethodEl.innerHTML = addPaymentMethodLink;
+
+        const scheduleInstrumentTimeEl = document.getElementById('schedule-instrument-time');
+        const scheduleUrlParams = {
+            project: LABKEY.ActionURL.getParameter('project')
+        };
+        const scheduleInstrumentTimeLink = `
+        <a href="${LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument',LABKEY.ActionURL.getContainer(), scheduleUrlParams)}">[Schedule Instrument Time]</a>`;
+        scheduleInstrumentTimeEl.innerHTML = scheduleInstrumentTimeLink;
+
+    });
+
+
+</script>

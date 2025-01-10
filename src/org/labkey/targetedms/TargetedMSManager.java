@@ -601,6 +601,36 @@ public class TargetedMSManager
         return getSchema().getTable(TargetedMSSchema.TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION);
     }
 
+    public static TableInfo getTableInfoMSProject()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_MS_PROJECT);
+    }
+
+    public static TableInfo getTableInfoMSInstrument()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_MS_INSTRUMENT);
+    }
+
+    public static TableInfo getTableInfoProjectResearcher()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_PROJECT_RESEARCHER);
+    }
+
+    public static TableInfo getTableInfoPaymentMethod()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_PAYMENT_METHOD);
+    }
+
+    public static TableInfo getTableInfoProjectPaymentMethod()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_PROJECT_PAYMENT_METHOD);
+    }
+
+    public static TableInfo getTableInfoInstrumentSchedule()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_INSTRUMENT_SCHEDULE);
+    }
+
     /** @return rowId for pipeline job that will perform the import asynchronously */
     public static Integer addRunToQueue(ViewBackgroundInfo info,
                                         final Path path) throws XarFormatException, PipelineValidationException

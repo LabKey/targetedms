@@ -1,0 +1,408 @@
+<div id="topContainer">
+    <div id="projectDropDown"></div>
+    <br/>
+    <div id="instrumentDropDown"></div>
+    <br/>
+    <div id="instrumentOperatorDropDown"></div>
+    <br/>
+    <div id="paymentMethodDropDown"></div>
+    <span id="addPaymentMethod" role="button" style="cursor: pointer;">[Add Payment Method]</span>
+    <br/>
+
+</div>
+
+<div id="calendarWrapper" style="min-height: 500px;">
+
+    <div id="calendar">
+        Loading...
+    </div>
+
+    <div class="modal fade" id="event-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Instrument Time</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="event-index">
+                    <form class="form-horizontal">
+
+                        <div class="form-group row">
+                            <label for="min-date" class="col-sm-4 control-label">Dates</label>
+                            <div class="col-sm-8">
+                                <div class="input-group input-daterange" data-provide="datepicker">
+                                    <input id="min-date" name="event-start-date" type="datetime-local" class="form-control">
+                                    <div class="input-group-prepend input-group-append">
+                                        <div class="input-group-text">to</div>
+                                    </div>
+                                    <input name="event-end-date" type="datetime-local" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 control-label">Name</label>
+                            <div class="col-sm-8">
+                                <input id="event-name" name="event-name" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 control-label">Notes</label>
+                            <div class="col-sm-8">
+                                <input id="event-notes" name="event-notes" type="text" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group row" >
+                            <div class="col-sm-12 labkey-error" style="min-height: 2em;" id="schedule-save-error"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="delete-event">
+                        Delete
+                    </button>
+                    <button type="button" class="btn btn-primary" id="save-event">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+        <div id="context-menu">
+
+        <div id="events-log">
+            <h3>Time Scheduled</h3>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" nonce="<%=scriptNonce%>">
+    $(function() {
+
+        let project = LABKEY.ActionURL.getParameter('project');
+        let instrument = LABKEY.ActionURL.getParameter('instrument');
+
+        if (!project) {
+            alert('No project selected');
+            return;
+        }
+
+        let calendar = null;
+        LABKEY.Query.selectRows({
+            schemaName: 'targetedms',
+            queryName: 'msProject',
+            sort: 'title',
+            columns: 'Id,title',
+            scope: this,
+            success: function (result) {
+                let rows = result.rows;
+                let projectDropDown = '<label for="projectDropDown">Select Project:</label>';
+                projectDropDown += '<select id="projectDropDown" name="projectDropDown">';
+                for (let i = 0; i < rows.length; i++) {
+                    // if project == rows[i].Id, then select this option
+                    projectDropDown += '<option value="' + LABKEY.Utils.encodeHtml(rows[i].Id) + '" ' + (project == rows[i].Id ? 'selected' : '') + '>' + LABKEY.Utils.encodeHtml(rows[i].title) + '</option>';
+                }
+                projectDropDown += '</select>';
+
+                jQuery('#projectDropDown').html(projectDropDown);
+
+            }
+        });
+
+        LABKEY.Query.selectRows({
+            schemaName: 'targetedms',
+            queryName: 'msInstrument',
+            sort: 'name',
+            columns: 'Id,name',
+            scope: this,
+            success: function (result) {
+                let rows = result.rows;
+                let instrumentDropDown = '<label for="instrumentDropDown">Select Instrument:</label>';
+                instrumentDropDown += '<select id="instrumentDropDown" name="instrumentDropDown">';
+                for (let i = 0; i < rows.length; i++) {
+                    // if instrument == rows[i].Id, then select this option
+                    instrumentDropDown += '<option value="' + LABKEY.Utils.encodeHtml(rows[i].Id) + '" ' + (instrument == rows[i].Id ? 'selected' : '') + '>' + LABKEY.Utils.encodeHtml(rows[i].name) + '</option>';
+                }
+                instrumentDropDown += '</select>';
+                jQuery('#instrumentDropDown').html(instrumentDropDown);
+                loadInstrumentSchedule(function(instrumentSchedule) {
+                    let currentYear = new Date().getFullYear();
+                    calendar = new Calendar('#calendar', {
+                        startDate: new Date(),
+                        numberMonthsDisplayed: 1,
+                        enableRangeSelection: LABKEY.user.canInsert,
+                        dataSource: instrumentSchedule,
+                        style: 'custom',
+                        selectRange: function(e) {
+                            editEvent({
+                                startDate: e.events.length ? e.events[0].startDate : e.startDate,
+                                endDate: e.events.length ? e.events[0].endDate : e.endDate,
+                                id:  e.events.length ? e.events[0].id : null,
+                                name:  e.events.length ? e.events[0].name : null,
+                                notes:  e.events.length ? e.events[0].notes : null
+                            });
+                        },
+
+                    });
+                    calendar.setCustomDayRenderer(function (element, date) {
+                        let events = calendar.getEvents(date);
+                        if (events && events.length) {
+                            let e = events[0];
+                            // Any time scheduled for the current project shows in a non-gray color
+                            let style =
+                                    'display: block; ' +
+                                    'width: 100%; ' +
+                                    'height: 40%; ' +
+                                    'background-color: ' + (e.project == project ? e.color : 'gray') + '; ' ;
+                            let div = document.createElement('div');
+                            div.style = style;
+                            let dateStr = DateFormat.format.date(e.startDate, LABKEY.container.formats.dateTimeFormat) + ' - ' + DateFormat.format.date(e.endDate, LABKEY.container.formats.dateTimeFormat);
+                            div.innerHTML = dateStr + '&nbsp' + e.project;
+                            element.appendChild(div);
+
+                            element.addEventListener('click', function() {
+                                editEvent(e);
+                            });
+
+                            // add mouse on element
+
+                            element.addEventListener('mouseover', function() {
+                                var content = '';
+
+                                for(var i in events) {
+                                    let dateStr = DateFormat.format.date(events[i].startDate, LABKEY.container.formats.dateTimeFormat) + ' - ' + DateFormat.format.date(events[i].endDate, LABKEY.container.formats.dateTimeFormat);
+                                    content += '<div class="event-tooltip-content">'
+                                            + '<div class="event-id" >' + 'Project Id : &nbsp' + LABKEY.Utils.encodeHtml(events[i].project) + '</div>'
+                                            + '<div class="event-title">' + 'Title : &nbsp' + LABKEY.Utils.encodeHtml(events[i].title) + '</div>'
+                                            + '<div class="event-date">' + LABKEY.Utils.encodeHtml(dateStr) + '</div>'
+
+                                            + '</div>';
+                                }
+
+                                $(element).popover({
+                                    trigger: 'manual',
+                                    container: 'body',
+                                    html:true,
+                                    content: content
+                                });
+
+                                $(element).popover('show');
+                            });
+
+                            // remove mouse popover
+                            element.addEventListener('mouseout', function() {
+                                $(element).popover('hide');
+                            });
+
+                        }
+                    });
+
+                    calendar.render();
+                });
+            }
+        });
+
+        LABKEY.Query.selectRows({
+            schemaName: 'targetedms',
+            queryName: 'paymentMethod',
+            sort: 'name',
+            columns: 'Id,UWBudgetNumber,worktag, budgetExpirationDate, name',
+            scope: this,
+            success: function (result) {
+                let rows = result.rows;
+                paymentMethodsData = rows;
+                let paymentMethodDropDown = '<p>Select Payment Method(s): <p> <br/>'+
+                        '<label for="paymentMethodDropDown">Payment Method:&nbsp</label>';
+                paymentMethodDropDown += '<select id="paymentMethodDropDown" name="paymentMethodDropDown">';
+                for (let i = 0; i < rows.length; i++) {
+                    paymentMethodDropDown += '<option value="' + LABKEY.Utils.encodeHtml(rows[i].Id) + '">' + LABKEY.Utils.encodeHtml(rows[i].name) + '</option>';
+                }
+                paymentMethodDropDown += '</select>';
+
+                paymentMethodDropDown += '&nbsp<input type="text" id="paymentMethodPercent" name="paymentMethodPercent" value="100" size="3" maxlength="3">';
+                paymentMethodDropDown += '<label for="paymentMethodPercent">%</label>';
+
+                jQuery('#paymentMethodDropDown').html(paymentMethodDropDown);
+
+            }
+        });
+
+        // LABKEY.Query.selectRows({
+        //     schemaName: 'targetedms',
+        //     queryName: 'instrumentOperator',
+        //     sort: 'name',
+        //     columns: 'Id,name',
+        //     scope: this,
+        //     success: function (result) {
+        //         let rows = result.rows;
+        //         let instrumentOperatorDropDown = '<label for="instrumentOperatorDropDown">Select Instrument Operator:</label>';
+        //         instrumentOperatorDropDown += '<select id="instrumentOperatorDropDown" name="instrumentOperatorDropDown">';
+        //         for (let i = 0; i < rows.length; i++) {
+        //             instrumentOperatorDropDown += '<option value="' + rows[i].Id + '">' + rows[i].name + '</option>';
+        //         }
+        //         instrumentOperatorDropDown += '</select>';
+        //         jQuery('#instrumentOperatorDropDown').html(instrumentOperatorDropDown);
+        //     }
+        // });
+
+        function editEvent(event) {
+            let startDate = event.startDate;
+            let endDate = event.endDate;
+
+            $('#event-modal input[name="event-index"]').val(event ? event.id : '');
+            $('#event-modal input[name="event-start-date"]').val(DateFormat.format.date(startDate, LABKEY.container.formats.dateTimeFormat));
+            $('#event-modal input[name="event-end-date"]').val(DateFormat.format.date(endDate, LABKEY.container.formats.dateTimeFormat));
+            $('#event-modal input[name="event-name"]').val(event ? event.name : '');
+            $('#event-modal input[name="event-notes"]').val(event ? event.notes : '');
+            $('#event-modal').modal();
+        }
+
+        function saveEvent() {
+            const event = {
+                id: $('#event-modal input[name="event-index"]').val(),
+                startTime: $('#event-modal input[name="event-start-date"]').val(),
+                endTime: $('#event-modal input[name="event-end-date"]').val(),
+                project: project,
+                instrument: instrument ? instrument : $('#instrumentDropDown select[name="instrumentDropDown"]').val(),
+                name: $('#event-modal input[name="event-name"]').val(),
+                notes: $('#event-modal input[name="event-notes"]').val()
+            }
+
+            LABKEY.Query.saveRows({
+                commands: [{
+                    command: event.id ? 'update' : 'insert',
+                    schemaName: 'targetedms',
+                    queryName: 'instrumentSchedule',
+                    rows: [
+                        event
+                    ]
+                }],
+                success: function () {
+                    loadInstrumentSchedule(function (data) {
+                        calendar.setDataSource(data);
+                        $('#event-modal').modal('hide');
+                    }, true);
+                },
+                failure: function (errorInfo) {
+                    $('#schedule-save-error').text('Error saving. ' + (errorInfo.exception ? errorInfo.exception : ''));
+                }
+            })
+        }
+
+        function deleteEvent() {
+            const event = {
+                id: $('#event-modal input[name="event-index"]').val(),
+            }
+
+            LABKEY.Query.saveRows({
+                commands: [{
+                    command: 'delete',
+                    schemaName: 'targetedms',
+                    queryName: 'instrumentSchedule',
+                    rows: [
+                        event
+                    ]
+                }],
+                success: function () {
+                    // Don't reload the full data when only the annotations have been edited
+                    loadInstrumentSchedule(function (data) {
+                        calendar.setDataSource(data);
+                        $('#event-modal').modal('hide');
+                    }, true);
+                },
+                failure: function (errorInfo) {
+                    $('#schedule-save-error').text('Error saving. ' + (errorInfo.exception ? errorInfo.exception : ''));
+                }
+            });
+        }
+
+        function loadInstrumentSchedule(callback) {
+            let instrumentSchedule = [];
+            LABKEY.Query.selectRows({
+                schemaName: 'targetedms',
+                queryName: 'instrumentSchedule',
+                columns: 'Id,startTime,endTime,name,notes,instrument/color,project/Id, project/title',
+                filterArray: [
+                    LABKEY.Filter.create('instrument', instrument ? instrument : $('#instrumentDropDown select[name="instrumentDropDown"]').val()),
+                ],
+                success: function (data) {
+                    let rows = data.rows;
+                    for (let i = 0; i < rows.length; i++) {
+                        let row = rows[i];
+                        instrumentSchedule.push({
+                            id: row.Id,
+                            startDate: new Date(row.startTime),
+                            endDate: new Date(row.endTime),
+                            name: row.name,
+                            notes: row.notes,
+                            color: row['instrument/color'],
+                            project: row['project/Id'],
+                            title: row['project/title']
+                        });
+                    }
+                    callback(instrumentSchedule);
+                }
+            });
+        }
+
+
+
+        $('#save-event').click(function() {
+            saveEvent();
+        });
+
+        $('#delete-event').click(function () {
+            deleteEvent();
+        });
+
+    });
+    let paymentMethodsData;
+    let paymentMethodCount = 1;
+    document.addEventListener('DOMContentLoaded', function () {
+        const addPaymentMethodEl = document.getElementById('addPaymentMethod');
+        addPaymentMethodEl.addEventListener('click', function () {
+            paymentMethodCount++;
+            let id = 'paymentMethodDropDown' + paymentMethodCount;
+            let paymentMethodDropDown = '<label for=' + id + '>Payment Method:</label>';
+            paymentMethodDropDown += '<select id=' + id + ' name=' + id + '">';
+            for (let i = 0; i < paymentMethodsData.length; i++) {
+                paymentMethodDropDown += '<option value="' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].Id) + '">' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].name) + '</option>';
+            }
+            paymentMethodDropDown += '</select>';
+
+            paymentMethodDropDown += '&nbsp<input type="text" id="paymentMethodPercent" name="paymentMethodPercent" value="0" size="3" maxlength="3">';
+            paymentMethodDropDown += '<label for="paymentMethodPercent">%</label>';
+
+            // TODO: add delete icon
+            paymentMethodDropDown += '&nbsp' +
+                    '<span id="removePaymentMethod" role="button" style="cursor: pointer;">[Remove]</span>';
+            let logElt = document.createElement('div');
+            logElt.innerHTML = paymentMethodDropDown;
+
+            document.querySelector('#paymentMethodDropDown').appendChild(logElt);
+        });
+
+        document.addEventListener('click', function (event) {
+            if (event.target.id === 'removePaymentMethod') {
+                event.preventDefault();
+                event.target.parentElement.remove();
+            }
+        });
+
+        // refresh the page on project change
+        document.getElementById('projectDropDown').addEventListener('change', function (event) {
+            document.location.href = LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument', null, {project: event.target.value});
+
+        });
+
+        // refresh the page on instrument change
+        document.getElementById('instrumentDropDown').addEventListener('change', function (event) {
+            document.location.href = LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument', null, {project: LABKEY.ActionURL.getParameter('project'), instrument: event.target.value});
+        });
+
+    });
+
+</script>
