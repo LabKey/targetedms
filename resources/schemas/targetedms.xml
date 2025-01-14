@@ -1881,4 +1881,47 @@
             <column columnName="Container"/>
         </columns>
     </table>
+    <table tableName="rateType" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="name"/>
+            <column columnName="description"/>
+            <column columnName="setupFee"/>
+            <column columnName="Created"/>
+            <column columnName="CreatedBy"/>
+            <column columnName="Modified"/>
+            <column columnName="ModifiedBy"/>
+            <column columnName="Container"/>
+        </columns>
+    </table>
+    <table tableName="instrumentRate" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="instrument"/>
+            <column columnName="rateType"/>
+            <column columnName="fee"/>
+            <column columnName="Created"/>
+            <column columnName="CreatedBy"/>
+            <column columnName="Modified"/>
+            <column columnName="ModifiedBy"/>
+            <column columnName="Container"/>
+        </columns>
+    </table>
+    <table tableName="instrumentUsagePayment" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="instrument"/>
+            <column columnName="instrumentRate"/>
+            <column columnName="paymentMethod"/>
+            <column columnName="percentPayment"/>
+            <column columnName="project"/>
+            <column columnName="startTime"/>
+            <column columnName="endTime"/>
+            <column columnName="Created"/>
+            <column columnName="CreatedBy"/>
+            <column columnName="Modified"/>
+            <column columnName="ModifiedBy"/>
+            <column columnName="Container"/>
+        </columns>
+    </table>
 </tables>
