@@ -1599,6 +1599,7 @@ public class TargetedMSSchema extends UserSchema
             return new QCEmailNotificationsTable(this, cf);
         }
         if (TABLE_MS_PROJECT.equalsIgnoreCase(name) ||
+                TABLE_PROJECT_RESEARCHER.equalsIgnoreCase(name) ||
                 TABLE_MS_INSTRUMENT.equalsIgnoreCase(name) ||
                 TABLE_PAYMENT_METHOD.equalsIgnoreCase(name) ||
                 TABLE_PROJECT_PAYMENT_METHOD.equalsIgnoreCase(name) ||

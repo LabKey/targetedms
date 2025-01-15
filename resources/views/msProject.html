@@ -1,14 +1,18 @@
 <div id="ms-project"></div>
 <script type="text/javascript" nonce="<%=scriptNonce%>">
     let webpart = <%=webpartContext%>;
-    let wp = new LABKEY.QueryWebPart({
+    let config = {
         renderTo: webpart.wrapperDivId,
         frame: 'portal',
-        title: 'MS Project',
+        title: 'Your Projects',
         schemaName: 'targetedms',
-        queryName: 'msProject',
-        columns: 'Id, title, type, submitDate, collaborationStatus',
+        queryName: 'userProjects',
         containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
-    });
+    };
+    // admins can see all projects, non-admins can only see projects they are a researcher on
+    if (!LABKEY.user.isAdmin) {
+        config.filterArray = [LABKEY.Filter.create('researcher', LABKEY.user.id, LABKEY.Filter.Types.EQUAL)];
+    }
+    let wp = new LABKEY.QueryWebPart(config);
     wp.render();
 </script>
