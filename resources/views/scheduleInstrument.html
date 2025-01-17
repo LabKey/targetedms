@@ -378,6 +378,12 @@
                 }
             }
 
+            // get the paymentMethod and percentPayment from the html fields
+            // get the instrument rate and rate type
+            // check if the instrument is available during the scheduled time
+            // Make sure user has not exceeded instrument time quota
+            // Email admins
+
             LABKEY.Query.saveRows({
                 commands: [{
                     command: event.id ? 'update' : 'insert',
@@ -388,6 +394,10 @@
                     ]
                 }],
                 success: function () {
+                    // save the instrumentUsagePayment
+
+
+
                     loadInstrumentSchedule(function (data) {
                         calendar.getEventSources()[0].remove()
                         calendar.addEventSource(data)

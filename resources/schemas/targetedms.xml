@@ -1869,6 +1869,8 @@
         <columns>
             <column columnName="Id"/>
             <column columnName="instrument"/>
+            <column columnName="instrumentoperator"/>
+            <column columnName="instrumentrate"/>
             <column columnName="project"/>
             <column columnName="startTime"/>
             <column columnName="endTime"/>
@@ -1910,13 +1912,9 @@
     <table tableName="instrumentUsagePayment" tableDbType="TABLE">
         <columns>
             <column columnName="Id"/>
-            <column columnName="instrument"/>
-            <column columnName="instrumentRate"/>
+            <column columnName="instrumentScheduleId"/>
             <column columnName="paymentMethod"/>
             <column columnName="percentPayment"/>
-            <column columnName="project"/>
-            <column columnName="startTime"/>
-            <column columnName="endTime"/>
             <column columnName="Created"/>
             <column columnName="CreatedBy"/>
             <column columnName="Modified"/>
