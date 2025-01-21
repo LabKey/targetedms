@@ -1,48 +1,22 @@
+#calendarWrapper {
+  display: flex;
+  flex-direction: row;
+  height: 600px;
+}
 
+.fc {
+  flex: 7;
+  padding-right: 4rem;
+}
 
 #events-log {
   display: inline-block;
   vertical-align: top;
-  flex: 4;
+  flex: 3;
   padding: 10px;
   min-height: 200px;
   border-radius: 10px;
   box-sizing: border-box;
-}
-
-#calendar {
-  flex:6;
-  box-sizing: border-box;
-}
-
-.calendar table.month {
-  background-color: white;
-  box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.2);
-  height: 400px;
-  width:100%;
-}
-
-.calendar table.month th.month-title {
-  color: white;
-  padding: 12px;
-  font-weight: 400;
-}
-
-.calendar table.month tr td, .calendar table.month tr th {
-  padding: 1px;
-  vertical-align: center;
-}
-
-.calendar table.month td.day .day-content {
-  height: 5rem;
-}
-
-
-#calendarWrapper {
-  display: flex;
-  flex-direction: row;
-  height: 80%;
-  width: 100%;
 }
 
 .event-tooltip-content {
