@@ -329,6 +329,11 @@
                 tableElt.remove();
             }
 
+            let infoElt = document.querySelector('#cost-info');
+            if (infoElt) {
+                infoElt.remove();
+            }
+
             // create a table for start, end and cost in events log
             tableElt = document.createElement('table');
             tableElt.setAttribute('id', 'event-cost-table');
@@ -338,6 +343,19 @@
             rowElt.innerHTML = '<td>' + startDateFormatted + '</td><td>' + endDateFormatted + '</td><td id="event-cost"></td>';
             tableElt.appendChild(rowElt);
             document.querySelector('#events-log').appendChild(tableElt);
+
+            infoElt = document.createElement('div');
+            infoElt.setAttribute('id', 'cost-info');
+            let infoHtml ='<span id="total-event-cost" style="text-emphasis-color: indianred"></span>';
+            infoHtml += '<br>';
+            infoHtml += '<p>Click here to view all the time scheduled for this project.</p>';
+            infoHtml += '<br>';
+            infoHtml += '<p>View the billing FAQ and instructions for scheduling instruction time.</p>';
+            infoHtml += '<br>';
+            infoHtml += '<p><a href="' + LABKEY.ActionURL.buildURL('query', 'executeQuery', LABKEY.ActionURL.getContainer(), {schemaName: 'targetedms', 'query.queryName': 'InstrumentRate'}) + '">View</a> the current rates for instruments.</p>';
+            infoElt.innerHTML = infoHtml;
+
+            document.querySelector('#events-log').appendChild(infoElt);
 
             $('#event-modal input[name="event-index"]').val(event ? event.id : '');
             $('#event-modal input[name="event-start-date"]').val(startDateFormatted);
@@ -430,6 +448,9 @@
                             // add cost to event-cost-table
                             const costElt = document.getElementById('event-cost');
                             costElt.innerHTML = '$' + (setupFee + cost);
+
+                            const totalEventCostElt = document.getElementById('total-event-cost');
+                            totalEventCostElt.innerHTML = 'Total Cost: $' + (setupFee + cost);
 
 
                             // open the cost modal
