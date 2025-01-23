@@ -8,6 +8,7 @@
     <div id="paymentMethodDropDown"></div>
     <span id="addPaymentMethod" role="button" style="cursor: pointer;">[Add Payment Method]</span>
     <br/>
+    <br/>
 
 </div>
 
@@ -60,7 +61,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-default" id="close-schedule" data-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" id="delete-event">
                         Delete
                     </button>
@@ -149,6 +150,7 @@
 
         let calendar = null;
         let eventToSave = {};
+        let paymentMethods = [];
         LABKEY.Query.selectRows({
             schemaName: 'targetedms',
             queryName: 'msProject',
@@ -202,11 +204,12 @@
                         selectable: true,
                         selectMirror: true,
                         eventContent: function(e) {
+
                             let content = '';
                             let bgColor = (e.event.extendedProps.project == project ? e.backgroundColor : 'gray');
                             let textColor = getContrastTextColor(stringToColor(bgColor));
                             let dateStr = DateFormat.format.date(e.event.start, LABKEY.container.formats.dateTimeFormat) + ' - ' + DateFormat.format.date(e.event.end, LABKEY.container.formats.dateTimeFormat);
-                            let style = 'background-color: ' + bgColor + 'color: ' + textColor + ';';
+                            let style = 'background-color: ' + bgColor + '; color: ' + textColor;
                             content += '<div class="event-tooltip-content" style="' + style + ';">'
                                         + '<div class="event-date">' + LABKEY.Utils.encodeHtml(dateStr) + '</div>'
                                         + '<div class="event-id" >' + 'Project : &nbsp' + LABKEY.Utils.encodeHtml(e.event.extendedProps.project) + '</div>'
@@ -324,15 +327,7 @@
             let endDateFormatted = DateFormat.format.date(endDate, LABKEY.container.formats.dateTimeFormat);
 
             // remove the table if it exists
-            let tableElt = document.querySelector('#events-log table');
-            if (tableElt) {
-                tableElt.remove();
-            }
-
-            let infoElt = document.querySelector('#cost-info');
-            if (infoElt) {
-                infoElt.remove();
-            }
+            removeEventLog();
 
             // create a table for start, end and cost in events log
             tableElt = document.createElement('table');
@@ -366,6 +361,7 @@
         }
 
         function closeEvent() {
+            $('#schedule-cost-error').text('');
             $('#cost-modal').modal('hide');
         }
 
@@ -404,12 +400,12 @@
             }
 
             // get the paymentMethod and percentPayment from the html fields
-            let paymentMethods = [];
-            let paymentMethodPercent = 0;
+            paymentMethods = [];
             let paymentMethodDropDowns = document.querySelectorAll('#paymentMethodDropDown select');
+            let percentPaymentFields = document.querySelectorAll('#paymentMethodPercent');
             for (let i = 0; i < paymentMethodDropDowns.length; i++) {
                 let paymentMethodId = paymentMethodDropDowns[i].value;
-                let paymentMethodPercent = document.getElementById('paymentMethodPercent').value;
+                let paymentMethodPercent = percentPaymentFields[i].value;
                 paymentMethods.push({
                     paymentMethod: paymentMethodId,
                     percentPayment: paymentMethodPercent
@@ -425,6 +421,10 @@
                     LABKEY.Filter.create('instrument', eventToSave.instrument, LABKEY.Filter.Types.EQUAL)
                 ],
                 success: function (data) {
+                    if (data.rows.length === 0) {
+                        $('#schedule-save-error').text('Error calculating cost. No rate found for instrument');
+                        return;
+                    }
                     let fee = data.rows[0].fee;
                     let rateType = data.rows[0].rateType;
                     let cost = fee * (Math.abs(new Date(eventToSave.endTime) - new Date(eventToSave.startTime))) / 1000 / 60 / 60;
@@ -460,9 +460,6 @@
                             $('#schedule-cost-error').text('Error calculating cost ' + (errorInfo.exception ? errorInfo.exception : ''));
                         }
                     });
-
-                    // save the instrumentUsagePayment
-                    // save the instrumentSchedule
                 }
             });
 
@@ -475,19 +472,44 @@
         }
 
         function saveEvent() {
+
+            let instrumentScheduleCommand = {
+                command: eventToSave.id ? 'update' : 'insert',
+                schemaName: 'targetedms',
+                queryName: 'instrumentSchedule',
+                rows: [
+                    eventToSave
+                ]
+            };
+
+            let instrumentUsagePaymentRows = [];
+            if (paymentMethods.length > 0) {
+                for (let i = 0; i < paymentMethods.length; i++) {
+                    instrumentUsagePaymentRows.push({
+                        instrumentScheduleId: eventToSave.id,
+                        paymentMethod: paymentMethods[i].paymentMethod,
+                        percentPayment: paymentMethods[i].percentPayment
+                    });
+                }
+            }
+
+            let instrumentUsagePaymentCommand = {
+                command: eventToSave.id ? 'update' : 'insert',
+                schemaName: 'targetedms',
+                queryName: 'instrumentUsagePayment',
+                rows: instrumentUsagePaymentRows
+            };
+
+
+            let commandsToExecute = [instrumentScheduleCommand];
+            if (eventToSave.id) {
+                commandsToExecute.push(instrumentUsagePaymentCommand);
+            }
+
+
             LABKEY.Query.saveRows({
-                commands: [{
-                    command: eventToSave.id ? 'update' : 'insert',
-                    schemaName: 'targetedms',
-                    queryName: 'instrumentSchedule',
-                    rows: [
-                        eventToSave
-                    ]
-                }],
-                success: function () {
-                    // save the instrumentUsagePayment
-
-
+                commands: [instrumentScheduleCommand],
+                success: function (response) {
 
                     loadInstrumentSchedule(function (data) {
                         calendar.getEventSources()[0].remove();
@@ -495,6 +517,24 @@
                         $('#event-modal').modal('hide');
                         $('#cost-modal').modal('hide');
                     }, true);
+
+                    if (instrumentUsagePaymentRows.length > 0 && !eventToSave.id && response?.result[0]?.rows?.length > 0) {
+                        let responseRows = response.result[0].rows;
+                        let instrumentScheduleId = responseRows[0].id;
+                        for (let i = 0; i < instrumentUsagePaymentRows.length; i++) {
+                            instrumentUsagePaymentRows[i].instrumentScheduleId = instrumentScheduleId;
+                        }
+
+                        LABKEY.Query.saveRows({
+                            commands: [instrumentUsagePaymentCommand],
+                            success: function () {
+                                // Do nothing
+                            },
+                            failure: function (errorInfo) {
+                                $('#schedule-save-error').text('Error saving. ' + (errorInfo.exception ? errorInfo.exception : ''));
+                            }
+                        });
+                    }
                 },
                 failure: function (errorInfo) {
                     $('#schedule-save-error').text('Error saving. ' + (errorInfo.exception ? errorInfo.exception : ''));
@@ -507,7 +547,20 @@
             return !(newEvent.end <= existingEvent.start || newEvent.start >= existingEvent.end);
         }
 
+        function removeEventLog() {
+            let tableElt = document.querySelector('#events-log table');
+            if (tableElt) {
+                tableElt.remove();
+            }
+            let infoElt = document.querySelector('#cost-info');
+            if (infoElt) {
+                infoElt.remove();
+            }
+        }
+
         function deleteEvent() {
+            removeEventLog()
+
             const event = {
                 id: $('#event-modal input[name="event-index"]').val(),
             }
@@ -578,6 +631,11 @@
 
         $('#delete-event').click(function () {
             deleteEvent();
+        });
+
+        $('#close-schedule').click(function () {
+            $('#schedule-save-error').text('');
+            $('#event-modal').modal('hide');
         });
 
     });
