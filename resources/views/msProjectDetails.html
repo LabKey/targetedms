@@ -17,8 +17,8 @@
 
         LABKEY.Query.selectRows({
             schemaName: 'targetedms',
-            queryName: 'msProject',
-            columns: 'Id,affiliation,title,collaborationWith,labDirector,organization,scientificQuestion,abstract,results',
+            queryName: 'msProjectDetails',
+            columns: 'Id,affiliation,title,collaborationWith,labDirector,organization,scientificQuestion,abstract,results, researchers',
             filterArray: [LABKEY.Filter.create('Id', project, LABKEY.Filter.Types.EQUAL)],
             success: function(data){
                 let projectDetails = data.rows[0];
@@ -31,6 +31,7 @@
                 let scientificQuestion = LABKEY.Utils.encodeHtml(projectDetails.scientificQuestion);
                 let abstract = LABKEY.Utils.encodeHtml(projectDetails.abstract);
                 let results = LABKEY.Utils.encodeHtml(projectDetails.results);
+                let researchers = LABKEY.Utils.encodeHtml(projectDetails.researchers).split(',');
 
                 let projectDetailsHtml = `
                 <table>
@@ -54,7 +55,15 @@
                         <td class='labkey-form-label'>Lab Director</td>
                         <td>${labDirector}</td>
                     </tr>
-                    <tr>
+                    ` +
+                    researchers.map(researcher => {
+                        return `<tr>
+                            <td class='labkey-form-label'>Researcher</td>
+                            <td>${researcher}</td>
+                        </tr>`;
+                    }).join('') +
+
+                    `<tr>
                         <td class='labkey-form-label'>Organization</td>
                         <td>${organization}</td>
                     </tr>

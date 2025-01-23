@@ -151,6 +151,7 @@
         let calendar = null;
         let eventToSave = {};
         let paymentMethods = [];
+
         LABKEY.Query.selectRows({
             schemaName: 'targetedms',
             queryName: 'msProject',
@@ -176,7 +177,10 @@
             schemaName: 'targetedms',
             queryName: 'msInstrument',
             sort: 'name',
-            columns: 'Id,name',
+            columns: 'Id,name,active',
+            filterArray: [
+                LABKEY.Filter.create('active', true, LABKEY.Filter.Types.EQUAL)
+            ],
             scope: this,
             success: function (result) {
                 let rows = result.rows;
@@ -257,7 +261,7 @@
             success: function (result) {
                 let rows = result.rows;
                 paymentMethodsData = rows;
-                let paymentMethodDropDown = '<p>Select Payment Method(s): <p> <br/>'+
+                let paymentMethodDropDown = '<p>Select Payment Method(s): <p> '+
                         '<label for="paymentMethodDropDown">Payment Method:&nbsp</label>';
                 paymentMethodDropDown += '<select id="paymentMethodDropDown" name="paymentMethodDropDown">';
                 for (let i = 0; i < rows.length; i++) {
@@ -273,23 +277,26 @@
             }
         });
 
-        // LABKEY.Query.selectRows({
-        //     schemaName: 'targetedms',
-        //     queryName: 'instrumentOperator',
-        //     sort: 'name',
-        //     columns: 'Id,name',
-        //     scope: this,
-        //     success: function (result) {
-        //         let rows = result.rows;
-        //         let instrumentOperatorDropDown = '<label for="instrumentOperatorDropDown">Select Instrument Operator:</label>';
-        //         instrumentOperatorDropDown += '<select id="instrumentOperatorDropDown" name="instrumentOperatorDropDown">';
-        //         for (let i = 0; i < rows.length; i++) {
-        //             instrumentOperatorDropDown += '<option value="' + rows[i].Id + '">' + rows[i].name + '</option>';
-        //         }
-        //         instrumentOperatorDropDown += '</select>';
-        //         jQuery('#instrumentOperatorDropDown').html(instrumentOperatorDropDown);
-        //     }
-        // });
+        LABKEY.Query.selectRows({
+            schemaName: 'targetedms',
+            queryName: 'projectResearcher',
+            sort: 'name',
+            columns: 'Id,researcher/displayName, project',
+            filterArray: [
+                LABKEY.Filter.create('project', project, LABKEY.Filter.Types.EQUAL)
+            ],
+            scope: this,
+            success: function (result) {
+                let rows = result.rows;
+                let instrumentOperatorDropDown = '<label for="instrumentOperatorDropDown">Select Instrument Operator:</label>';
+                instrumentOperatorDropDown += '<select id="instrumentOperatorDropDown" name="instrumentOperatorDropDown">';
+                for (let i = 0; i < rows.length; i++) {
+                    instrumentOperatorDropDown += '<option value="' + LABKEY.Utils.encodeHtml(rows[i].Id) + '">' + LABKEY.Utils.encodeHtml(rows[i]['researcher/displayName']) + '</option>';
+                }
+                instrumentOperatorDropDown += '</select>';
+                jQuery('#instrumentOperatorDropDown').html(instrumentOperatorDropDown);
+            }
+        });
 
         function stringToColor(color) {
             // Create a temporary DOM element
@@ -322,6 +329,10 @@
         function editEvent(event) {
             let startDate = event.startDate;
             let endDate = event.endDate;
+            if (!event.id) {
+                // for new events subtract 1 minute from the end date to show the end date in the date picker
+                endDate = new Date(endDate.getTime() - 60000);
+            }
 
             let startDateFormatted = DateFormat.format.date(startDate, LABKEY.container.formats.dateTimeFormat);
             let endDateFormatted = DateFormat.format.date(endDate, LABKEY.container.formats.dateTimeFormat);
@@ -373,6 +384,7 @@
             eventToSave.instrument = instrument ? instrument : $('#instrumentDropDown select[name="instrumentDropDown"]').val();
             eventToSave.name = $('#event-modal input[name="event-name"]').val();
             eventToSave.notes = $('#event-modal input[name="event-notes"]').val();
+            eventToSave.instrumentoperator = $('#instrumentOperatorDropDown select[name="instrumentOperatorDropDown"]').val();
 
             if (eventToSave.endTime < eventToSave.startTime) {
                 alert('End date must be after start date');
@@ -452,7 +464,6 @@
                             const totalEventCostElt = document.getElementById('total-event-cost');
                             totalEventCostElt.innerHTML = 'Total Cost: $' + (setupFee + cost);
 
-
                             // open the cost modal
                             $('#cost-modal').modal();
                         },
@@ -463,12 +474,8 @@
                 }
             });
 
-            // get the instrument operator
-            // check if the instrument is available during the scheduled time
-            // Make sure user has not exceeded instrument time quota
-            // Email admins
-
-
+            // TODO: Make sure user has not exceeded instrument time quota
+            // TODO: Email admins
         }
 
         function saveEvent() {
