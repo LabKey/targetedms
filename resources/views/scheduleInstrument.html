@@ -133,6 +133,25 @@
 
     <div id="events-log">
         <h3>Time Scheduled</h3>
+
+        <table id="event-cost-table" class="labkey-data-region-legacy labkey-show-borders">
+            <tr>
+                <th>Start</th>
+                <th>End</th>
+                <th>Cost</th>
+            </tr>
+        </table>
+        <div id="total-event-cost">Total Cost: </div>
+        <br/>
+
+        <div id="cost-info">
+            <p>Click here to view all the time scheduled for this project.</p>
+            <br>
+            <p>View the billing FAQ and instructions for scheduling instruction time.</p>
+            <br>
+            <p><a id="instrument-rates">View</a> the current rates for instruments.</p>
+        </div>
+
     </div>
 
 </div>
@@ -193,7 +212,6 @@
                 instrumentDropDown += '</select>';
                 jQuery('#instrumentDropDown').html(instrumentDropDown);
                 loadInstrumentSchedule(function(instrumentSchedule) {
-                    let currentYear = new Date().getFullYear();
 
                     var calendarEl = document.getElementById('calendar');
 
@@ -219,6 +237,52 @@
                                         + '<div class="event-id" >' + 'Project : &nbsp' + LABKEY.Utils.encodeHtml(e.event.extendedProps.project) + '</div>'
                                     + '</div>';
                             return { html: content };
+                        },
+                        eventMouseEnter: function (mouseEnterInfo) {
+                            removeEventLog();
+                            let instrumentID = instrument ? instrument : $('#instrumentDropDown select[name="instrumentDropDown"]').val();
+                            fetchInstrumentCosts(instrumentID, mouseEnterInfo.event.start, mouseEnterInfo.event.end, false);
+                            let content = '';
+                            let dateStr = DateFormat.format.date(mouseEnterInfo.event.start, LABKEY.container.formats.dateTimeFormat) + ' - ' + DateFormat.format.date(mouseEnterInfo.event.end, LABKEY.container.formats.dateTimeFormat);
+                            content += '<div class="event-tooltip-content">'
+                                    + '<div class="event-id" >' + 'Project Id : &nbsp' + LABKEY.Utils.encodeHtml(mouseEnterInfo.event.extendedProps.project) + '</div>'
+                                    + '<div class="event-title">' + 'Title : &nbsp' + LABKEY.Utils.encodeHtml(mouseEnterInfo.event.title) + '</div>'
+                                    + '<div class="event-date">' + LABKEY.Utils.encodeHtml(dateStr) + '</div>'
+
+                                    + '<div id="event-delete" role="button" style="cursor: pointer;">[Delete]</div>'
+                                    + '<div class="event-edit" role="button" style="cursor: pointer;">[Edit]</div>'
+                                    + '<div class="event-edit-project" role="button" style="cursor: pointer;">[Edit Project]</div>'
+                                    + '</div>';
+
+
+                            $(mouseEnterInfo.el).popover({
+                                trigger: 'manual',
+                                container: 'body',
+                                html:true,
+                                content: content,
+
+                            });
+
+                            $(mouseEnterInfo.el).popover('show');
+
+                            const $popover = $('.popover'); // Get the popover element
+                            // Keep the popover open when hovering over it
+                            $popover.on('mouseenter', function () {
+                                $(mouseEnterInfo.el).popover('show');
+                            });
+
+                            // Close the popover when the mouse leaves it
+                            $popover.on('mouseleave', function () {
+                                $(mouseEnterInfo.el).popover('hide');
+                            });
+                        },
+                        eventMouseLeave: function (mouseLeaveInfo) {
+                            setTimeout(() => {
+                                const $popover = $('.popover:hover');
+                                if ($popover.length === 0) {
+                                    $(mouseLeaveInfo.el).popover('hide');
+                                }
+                            }, 200); // Add a delay to allow for hover on the popover
                         },
                         select: function(arg) {
                             editEvent({
@@ -337,31 +401,8 @@
             let startDateFormatted = DateFormat.format.date(startDate, LABKEY.container.formats.dateTimeFormat);
             let endDateFormatted = DateFormat.format.date(endDate, LABKEY.container.formats.dateTimeFormat);
 
-            // remove the table if it exists
+            // remove the old event log rows
             removeEventLog();
-
-            // create a table for start, end and cost in events log
-            tableElt = document.createElement('table');
-            tableElt.setAttribute('id', 'event-cost-table');
-            tableElt.className = 'labkey-data-region-legacy labkey-show-borders';
-            tableElt.innerHTML = '<tr><th>Start</th><th>End</th><th>Cost</th></tr>';
-            let rowElt = document.createElement('tr');
-            rowElt.innerHTML = '<td>' + startDateFormatted + '</td><td>' + endDateFormatted + '</td><td id="event-cost"></td>';
-            tableElt.appendChild(rowElt);
-            document.querySelector('#events-log').appendChild(tableElt);
-
-            infoElt = document.createElement('div');
-            infoElt.setAttribute('id', 'cost-info');
-            let infoHtml ='<span id="total-event-cost" style="text-emphasis-color: indianred"></span>';
-            infoHtml += '<br>';
-            infoHtml += '<p>Click here to view all the time scheduled for this project.</p>';
-            infoHtml += '<br>';
-            infoHtml += '<p>View the billing FAQ and instructions for scheduling instruction time.</p>';
-            infoHtml += '<br>';
-            infoHtml += '<p><a href="' + LABKEY.ActionURL.buildURL('query', 'executeQuery', LABKEY.ActionURL.getContainer(), {schemaName: 'targetedms', 'query.queryName': 'InstrumentRate'}) + '">View</a> the current rates for instruments.</p>';
-            infoElt.innerHTML = infoHtml;
-
-            document.querySelector('#events-log').appendChild(infoElt);
 
             $('#event-modal input[name="event-index"]').val(event ? event.id : '');
             $('#event-modal input[name="event-start-date"]').val(startDateFormatted);
@@ -372,6 +413,7 @@
         }
 
         function closeEvent() {
+            removeEventLog();
             $('#schedule-cost-error').text('');
             $('#cost-modal').modal('hide');
         }
@@ -424,13 +466,19 @@
                 });
             }
 
-            // query the instrument rate and rate type
+            fetchInstrumentCosts(eventToSave.instrument, eventToSave.startTime, eventToSave.endTime, true);
+
+            // TODO: Make sure user has not exceeded instrument time quota
+            // TODO: Email admins
+        }
+
+        function fetchInstrumentCosts(instrumentId, startDate, endDate, showCostModal) {
             LABKEY.Query.selectRows({
                 schemaName: 'targetedms',
                 queryName: 'instrumentRate',
                 columns: 'Id,fee,rateType',
                 filterArray: [
-                    LABKEY.Filter.create('instrument', eventToSave.instrument, LABKEY.Filter.Types.EQUAL)
+                    LABKEY.Filter.create('instrument', instrumentId, LABKEY.Filter.Types.EQUAL)
                 ],
                 success: function (data) {
                     if (data.rows.length === 0) {
@@ -439,8 +487,7 @@
                     }
                     let fee = data.rows[0].fee;
                     let rateType = data.rows[0].rateType;
-                    let cost = fee * (Math.abs(new Date(eventToSave.endTime) - new Date(eventToSave.startTime))) / 1000 / 60 / 60;
-
+                    let cost = fee * (Math.abs(new Date(endDate) - new Date(startDate))) / 1000 / 60 / 60;
 
                     // query the rateType
                     LABKEY.Query.selectRows({
@@ -453,19 +500,27 @@
                         success: function (data) {
                             let setupFee = data.rows[0].setupFee;
 
-                            $('#setup-cost').val(setupFee);
-                            $('#instrument-fee').val(cost);
-                            $('#total-cost').val(setupFee + cost);
 
-                            // add cost to event-cost-table
-                            const costElt = document.getElementById('event-cost');
-                            costElt.innerHTML = '$' + (setupFee + cost);
+
+                            let startDateFormatted = DateFormat.format.date(startDate, LABKEY.container.formats.dateTimeFormat);
+                            let endDateFormatted = DateFormat.format.date(endDate, LABKEY.container.formats.dateTimeFormat);
+
+                            let tableElt = document.getElementById('event-cost-table');
+                            let rowElt = document.createElement('tr');
+                            rowElt.innerHTML = '<td>' + startDateFormatted + '</td><td>' + endDateFormatted + '</td><td id="event-cost">' + '$' + (setupFee + cost) + '</td>';
+                            tableElt.appendChild(rowElt);
 
                             const totalEventCostElt = document.getElementById('total-event-cost');
                             totalEventCostElt.innerHTML = 'Total Cost: $' + (setupFee + cost);
 
-                            // open the cost modal
-                            $('#cost-modal').modal();
+                            if (showCostModal) {
+                                $('#setup-cost').val(setupFee);
+                                $('#instrument-fee').val(cost);
+                                $('#total-cost').val(setupFee + cost);
+
+                                // open the cost modal
+                                $('#cost-modal').modal();
+                            }
                         },
                         failure: function (errorInfo) {
                             $('#schedule-cost-error').text('Error calculating cost ' + (errorInfo.exception ? errorInfo.exception : ''));
@@ -474,8 +529,7 @@
                 }
             });
 
-            // TODO: Make sure user has not exceeded instrument time quota
-            // TODO: Email admins
+
         }
 
         function saveEvent() {
@@ -556,12 +610,17 @@
 
         function removeEventLog() {
             let tableElt = document.querySelector('#events-log table');
+            // remove the table rows if it exists
             if (tableElt) {
-                tableElt.remove();
+                let rows = tableElt.querySelectorAll('tr');
+                for (let i = 1; i < rows.length; i++) {
+                    rows[i].remove();
+                }
             }
-            let infoElt = document.querySelector('#cost-info');
+
+            let infoElt = document.querySelector('#total-event-cost');
             if (infoElt) {
-                infoElt.remove();
+                infoElt.innerHTML = '';
             }
         }
 
@@ -640,6 +699,10 @@
             deleteEvent();
         });
 
+        $('#event-delete').click(function () {
+            deleteEvent();
+        });
+
         $('#close-schedule').click(function () {
             $('#schedule-save-error').text('');
             $('#event-modal').modal('hide');
@@ -689,6 +752,8 @@
         document.getElementById('instrumentDropDown').addEventListener('change', function (event) {
             document.location.href = LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument', null, {project: LABKEY.ActionURL.getParameter('project'), instrument: event.target.value});
         });
+
+        document.getElementById('instrument-rates').setAttribute('href', LABKEY.ActionURL.buildURL('query', 'executeQuery', LABKEY.ActionURL.getContainer(), {schemaName: 'targetedms', 'query.queryName': 'InstrumentRate'}));
 
     });
 
