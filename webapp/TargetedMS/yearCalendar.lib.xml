@@ -3,6 +3,5 @@
         <script path="TargetedMS/css/js-year-calendar.css"/>
         <script path="TargetedMS/css/js-year-calendar-customizations.css"/>
         <script path="TargetedMS/js/js-year-calendar.js"/>
-        <script path="TargetedMS/js/fullcalendar.js"/>
     </library>
 </libraries>
