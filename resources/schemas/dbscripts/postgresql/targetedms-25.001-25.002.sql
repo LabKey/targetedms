@@ -63,7 +63,6 @@ ALTER TABLE targetedms.msProject ALTER COLUMN labDirector TYPE USERID;
 
 
 ALTER TABLE targetedms.instrumentSchedule ADD COLUMN instrumentOperator USERID;
-ALTER TABLE targetedms.instrumentSchedule ADD CONSTRAINT FK_instrumentSchedule_instrumentRate FOREIGN KEY (instrumentRate) REFERENCES targetedms.instrumentRate(Id);
 CREATE INDEX IDX_instrumentSchedule_InstrumentOperator ON targetedms.instrumentSchedule(instrumentOperator);
 
 
