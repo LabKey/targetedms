@@ -500,8 +500,6 @@
                         success: function (data) {
                             let setupFee = data.rows[0].setupFee;
 
-
-
                             let startDateFormatted = DateFormat.format.date(startDate, LABKEY.container.formats.dateTimeFormat);
                             let endDateFormatted = DateFormat.format.date(endDate, LABKEY.container.formats.dateTimeFormat);
 
@@ -528,8 +526,6 @@
                     });
                 }
             });
-
-
         }
 
         function saveEvent() {
@@ -629,24 +625,52 @@
 
             const event = {
                 id: $('#event-modal input[name="event-index"]').val(),
-            }
+            };
 
-            LABKEY.Query.saveRows({
-                commands: [{
-                    command: 'delete',
-                    schemaName: 'targetedms',
-                    queryName: 'instrumentSchedule',
-                    rows: [
-                        event
-                    ]
-                }],
-                success: function () {
-                    // Don't reload the full data when only the annotations have been edited
-                    loadInstrumentSchedule(function (data) {
-                        calendar.getEventSources()[0].remove()
-                        calendar.addEventSource(data)
-                        $('#event-modal').modal('hide');
-                    }, true);
+            LABKEY.Query.executeSql({
+                schemaName: 'targetedms',
+                sql: 'SELECT paymentMethod FROM targetedms.instrumentUsagePayment WHERE instrumentScheduleId = ' + event.id,
+                scope: this,
+                success: function (data) {
+                    let dataRows = data.rows;
+                    let instrumentUsagePaymentRows = [];
+
+                    for (let i = 0; i < dataRows.length; i++) {
+                        instrumentUsagePaymentRows.push({
+                            instrumentScheduleId: event.id,
+                            paymentMethod: dataRows[i].paymentMethod
+                        });
+                    }
+
+                    let instrumentUsagePaymentCommand = {
+                        command: 'delete',
+                        schemaName: 'targetedms',
+                        queryName: 'instrumentUsagePayment',
+                        rows: instrumentUsagePaymentRows
+                    };
+
+                    let instrumentScheduleCommand = {
+                        command: 'delete',
+                        schemaName: 'targetedms',
+                        queryName: 'instrumentSchedule',
+                        rows: [
+                            event
+                        ]
+                    };
+
+                    LABKEY.Query.saveRows({
+                        commands: [instrumentUsagePaymentCommand, instrumentScheduleCommand],
+                        success: function () {
+                            loadInstrumentSchedule(function (data) {
+                                calendar.getEventSources()[0].remove()
+                                calendar.addEventSource(data)
+                                $('#event-modal').modal('hide');
+                            }, true);
+                        },
+                        failure: function (errorInfo) {
+                            $('#schedule-save-error').text('Error saving. ' + (errorInfo.exception ? errorInfo.exception : ''));
+                        }
+                    });
                 },
                 failure: function (errorInfo) {
                     $('#schedule-save-error').text('Error saving. ' + (errorInfo.exception ? errorInfo.exception : ''));

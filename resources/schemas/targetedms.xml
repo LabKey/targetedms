@@ -1870,7 +1870,6 @@
             <column columnName="Id"/>
             <column columnName="instrument"/>
             <column columnName="instrumentoperator"/>
-            <column columnName="instrumentrate"/>
             <column columnName="project"/>
             <column columnName="startTime"/>
             <column columnName="endTime"/>
