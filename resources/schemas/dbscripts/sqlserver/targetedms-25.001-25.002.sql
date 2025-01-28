@@ -63,5 +63,5 @@ CREATE INDEX IDX_instrumentUsagePayment_Container ON targetedms.instrumentUsageP
 ALTER TABLE targetedms.projectResearcher ALTER COLUMN researcher TYPE USERID;
 ALTER TABLE targetedms.msProject ALTER COLUMN labDirector TYPE USERID;
 
-ALTER TABLE targetedms.instrumentSchedule ADD COLUMN instrumentOperator USERID;
+ALTER TABLE targetedms.instrumentSchedule ADD COLUMN instrumentOperator TYPE USERID;
 CREATE INDEX IDX_instrumentSchedule_InstrumentOperator ON targetedms.instrumentSchedule(instrumentOperator);
