@@ -60,8 +60,8 @@ CREATE INDEX IDX_instrumentUsagePayment_InstrumentRate ON targetedms.instrumentU
 CREATE INDEX IDX_instrumentUsagePayment_PaymentMethod ON targetedms.instrumentUsagePayment(paymentMethod);
 CREATE INDEX IDX_instrumentUsagePayment_Container ON targetedms.instrumentUsagePayment(container);
 
-ALTER TABLE targetedms.projectResearcher ALTER COLUMN researcher TYPE USERID;
-ALTER TABLE targetedms.msProject ALTER COLUMN labDirector TYPE USERID;
+ALTER TABLE targetedms.projectResearcher ALTER COLUMN researcher USERID;
+ALTER TABLE targetedms.msProject ALTER COLUMN labDirector USERID;
 
-ALTER TABLE targetedms.instrumentSchedule ADD COLUMN instrumentOperator TYPE USERID;
+ALTER TABLE targetedms.instrumentSchedule ADD instrumentOperator TYPE USERID;
 CREATE INDEX IDX_instrumentSchedule_InstrumentOperator ON targetedms.instrumentSchedule(instrumentOperator);
