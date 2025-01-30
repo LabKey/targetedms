@@ -15,12 +15,10 @@
  */
 package org.labkey.targetedms.parser;
 
-import com.google.protobuf.CodedInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.exp.api.DataType;
-import org.labkey.api.pipeline.PipelineJobException;
 import org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass;
 import org.labkey.targetedms.parser.skyd.CacheFormat;
 import org.labkey.targetedms.parser.skyd.CacheFormatVersion;
@@ -263,15 +261,13 @@ public class SkylineBinaryParser
         return _cacheFiles != null ? _cacheFiles.length : 0;
     }
 
-    public int matchTransitions(ChromGroupHeaderInfo header, List<? extends GeneralTransition> transitions, Double explicitRt, double tolerance, boolean multiMatch)
+    public boolean matchTransitions(ChromGroupHeaderInfo header, List<? extends GeneralTransition> transitions, Double explicitRt, double tolerance)
     {
-        int match = 0;
-
         if (explicitRt != null)
         {
             // We have retention time info, use that in the match
             if (header.excludesTime(explicitRt))
-                return match;
+                return false;
         }
 
         var numChromTransitions = header.getNumTransitions();
@@ -290,39 +286,15 @@ public class SkylineBinaryParser
         {
             for (int i = 0; i < numChromTransitions; i++)
             {
-                // Do we need to look through all of the transitions from the .skyd file?
+                // Do we need to look through all the transitions from the .skyd file?
                 if (header.toSignedMz(transition.getMz()).compareTolerant(chromTransitions[i].getProduct(header), tolerance) == 0)
                 {
-                    if (explicitRt == null)
-                    {
-                        match++;
-                        if (!multiMatch)
-                        {
-                            break;  // only one match per transition
-                        }
-                    }
-                    else
-                    {
-                        match = multiMatch ? match + 1 : 1; // Examine all RT values even if we're not multimatch
-                    }
+                    return true;
                 }
             }
         }
 
-        return match;
-    }
-
-    public byte[] readChromatogramBytes(ChromGroupHeaderInfo header) throws DataFormatException, IOException
-    {
-        // Get the compressed bytes
-        ByteBuffer buffer = ByteBuffer.allocate(header.getCompressedSize());
-        getChannel().position(header.getLocationPoints()).read(buffer);
-        buffer.position(0);
-        byte[] result = new byte[header.getCompressedSize()];
-        buffer.get(result);
-        // Make sure it uncompresses successfully so that we don't import bad content into the database
-        uncompress(result, header.getUncompressedSize());
-        return result;
+        return false;
     }
 
     public static byte[] uncompressStoredBytes(byte[] bytes, Integer uncompressedSize, int numPoints, int numTransitions) throws DataFormatException

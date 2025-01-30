@@ -3182,18 +3182,12 @@ public class SkylineDocumentParser implements AutoCloseable
         // Add precursor matches to a list, if they match at least 1 transition
         // in this group, and are potentially the maximal transition match.
 
-        // Using only the maximum works well for the case where there are 2
-        // precursors in the same document that match a single entry.
-        // TODO: But it messes up when there are 2 sets of transitions for
-        //       the same precursor covering different numbers of transitions.
-        //       Skyline never creates this case, but it has been reported
-        // int maxTranMatch = 1;
-
         if (_binaryParser != null && _binaryParser.getChromatograms() != null)
         {
             // ChromatogramCache.TryLoadChromInfo() in Skyline code:
             // Filter the list of chromatograms based on our precursor mZ
-            int i = findEntry(precursor.getSignedMz(), tolerance, _binaryParser.getChromatograms(), 0, _binaryParser.getChromatograms().length - 1);
+            ChromGroupHeaderInfo[] chromHeaders = _binaryParser.getChromatograms();
+            int i = findEntry(precursor.getSignedMz(), tolerance, chromHeaders, 0, chromHeaders.length - 1);
             if (i == -1)
             {
                 return Collections.emptyList();
@@ -3201,100 +3195,88 @@ public class SkylineDocumentParser implements AutoCloseable
 
             Double explicitRT = molecule.getExplicitRetentionTime();
 
+            List<ChromGroupHeaderInfo> result = new ArrayList<>();
+
             // Add entries to a list until they no longer match
-            List<ChromGroupHeaderInfo> listChromatograms = new ArrayList<>();
-            while (i < _binaryParser.getChromatograms().length &&
-                    matchMz(precursor.getSignedMz(), _binaryParser.getChromatograms()[i].getPrecursor(), tolerance))
+            List<ChromGroupHeaderInfo> chromsToMatchByTransitionMz = new ArrayList<>();
+            while (i < chromHeaders.length &&
+                    matchMz(precursor.getSignedMz(), chromHeaders[i].getPrecursor(), tolerance))
             {
-                ChromGroupHeaderInfo chrom = _binaryParser.getChromatograms()[i++];
+                ChromGroupHeaderInfo chrom = chromHeaders[i++];
                 // Sequence matching for extracted chromatogram data added in v1.5
                 ChromatogramGroupId chromTextId = _binaryParser.getTextId(chrom);
-                if (chromTextId != null) 
+                if (chromTextId != null)
                 {
-                    if (!molecule.targetMatches(chromTextId.getTarget()))
-                        continue;
-                    try
+                    // If we match based on textId, consider it a chromatogram worth storing
+                    if (molecule.targetMatches(chromTextId.getTarget()))
                     {
-                        SpectrumFilter spectrumFilter = SpectrumFilter.fromByteArray(precursor.getSpectrumFilter());
-                        if (!Objects.equals(spectrumFilter, chromTextId.getSpectrumFilter())) 
+                        try
                         {
-                            continue;
+                            SpectrumFilter spectrumFilter = SpectrumFilter.fromByteArray(precursor.getSpectrumFilter());
+                            if (Objects.equals(spectrumFilter, chromTextId.getSpectrumFilter()))
+                            {
+                                result.add(chrom);
+                            }
                         }
-                    }
-                    catch (InvalidProtocolBufferException e)
-                    {
-                        _log.warn("Error parsing spectrum filter {}", e);
-                        return Collections.emptyList();
+                        catch (InvalidProtocolBufferException e)
+                        {
+                            _log.warn("Error parsing spectrum filter", e);
+                            return Collections.emptyList();
+                        }
+                        continue;
                     }
                 }
 
                 // If explicit retention time info is available, use that to discard obvious mismatches
                 if (explicitRT == null || !chrom.excludesTime(explicitRT))
                 {
-                    listChromatograms.add(chrom);
+                    // See if we can find a match based on transition mz instead for SRM-style data
+                    chromsToMatchByTransitionMz.add(chrom);
                 }
             }
 
-            // MeasuredResults.TryLoadChromatogram in Skyline code:
-            // Since we are reading and returning chromatograms for all replicates we need to maintain
-            // the number of maximum transition matches for each replicate.
-            // MeasuredResults.TryLoadChromatogram in Skyline reads and returns chromatograms for a single replicate.
-            int[] maxTranMatches = new int[_binaryParser.getCacheFileSize()];
-
-            ChromGroupHeaderInfo[] chromArray = new ChromGroupHeaderInfo[_binaryParser.getCacheFileSize()];
-
-            for (ChromGroupHeaderInfo chromInfo : listChromatograms)
+            if (!chromsToMatchByTransitionMz.isEmpty())
             {
-                // If the chromatogram set has an optimization function then the number
-                // of matching chromatograms per transition is a reflection of better
-                // matching.  Otherwise, we only expect one match per transition.
-                // TODO - do we need this on the Java side?
-                boolean multiMatch = false;//chromatogram.OptimizationFunction != null;
-
-                int tranMatch = _binaryParser.matchTransitions(chromInfo, transitions, explicitRT, tolerance, multiMatch);
-
-                int fileIndex = chromInfo.getFileIndex();
-                int maxTranMatch = maxTranMatches[fileIndex];
-
-                if (tranMatch >= maxTranMatch)
+                ChromGroupHeaderInfo[] chromArray = new ChromGroupHeaderInfo[_binaryParser.getCacheFileSize()];
+                for (ChromGroupHeaderInfo chromInfo : chromsToMatchByTransitionMz)
                 {
-                    // If new maximum, clear anything collected at the previous maximum
-                    if (tranMatch > maxTranMatch)
-                    {
-                        chromArray[fileIndex] = null;
-                    }
+                    boolean foundMatch = _binaryParser.matchTransitions(chromInfo, transitions, explicitRT, tolerance);
 
-                    maxTranMatches[fileIndex] = tranMatch;
+                    int fileIndex = chromInfo.getFileIndex();
 
-                    if(chromArray[fileIndex] != null)
+                    if (foundMatch)
                     {
-                        // If more than one value was found, ensure that there
-                        // is only one precursor match per file.
-                        // Use the entry with the m/z closest to the target
-                        ChromGroupHeaderInfo currentChromForFileIndex = chromArray[fileIndex];
-                        // Use the entry with the m/z closest to the target
-                        if (Math.abs(precursor.getMz() - chromInfo.getPrecursorMz()) <
-                                Math.abs(precursor.getMz() - currentChromForFileIndex.getPrecursorMz()))
+                        if (chromArray[fileIndex] != null)
+                        {
+                            // If more than one value was found, ensure that there
+                            // is only one precursor match per file.
+                            // Use the entry with the m/z closest to the target
+                            ChromGroupHeaderInfo currentChromForFileIndex = chromArray[fileIndex];
+                            // Use the entry with the m/z closest to the target
+                            if (Math.abs(precursor.getMz() - chromInfo.getPrecursorMz()) <
+                                    Math.abs(precursor.getMz() - currentChromForFileIndex.getPrecursorMz()))
+                            {
+                                chromArray[fileIndex] = chromInfo;
+                            }
+                        }
+                        else
                         {
                             chromArray[fileIndex] = chromInfo;
                         }
                     }
-                    else
+                }
+
+                // Now that we've found the best matches, add them to the list
+                for (ChromGroupHeaderInfo info : chromArray)
+                {
+                    if (info != null)
                     {
-                        chromArray[fileIndex] = chromInfo;
+                        result.add(info);
                     }
                 }
             }
 
-            List<ChromGroupHeaderInfo> finalList = new ArrayList<>();
-            for (ChromGroupHeaderInfo info : chromArray)
-            {
-                if (info != null)
-                {
-                    finalList.add(info);
-                }
-            }
-            return finalList;
+            return result;
         }
 
         return Collections.emptyList();
