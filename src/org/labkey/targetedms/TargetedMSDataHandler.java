@@ -32,6 +32,7 @@ import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.pipeline.PipeRoot;
 import org.labkey.api.pipeline.PipelineJobException;
 import org.labkey.api.pipeline.PipelineService;
+import org.labkey.api.query.BatchValidationException;
 import org.labkey.api.security.User;
 import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.targetedms.TargetedMSService;
@@ -283,6 +284,26 @@ public class TargetedMSDataHandler extends AbstractExperimentDataHandler
             newData.setDataFileURI(destFile.toUri());
             newData.setContainer(targetContainer);
             newData.save(user);
+        }
+
+        // Fix ExpRun's FilePathRoot if it is still set to the file root of the source folder
+        ExpRun experimentRun = ExperimentService.get().getExpRun(newRunLSID);
+        if (experimentRun == null)
+        {
+            throw new ExperimentException("Unable to find exprun for lsid " + newRunLSID + ". Cannot set the filePathRoot.");
+        }
+        Path newFileRootPath = targetRoot.getRootFileLike().toNioPathForRead();
+        if (!newFileRootPath.equals(experimentRun.getFilePathRootPath()))
+        {
+            experimentRun.setFilePathRootPath(newFileRootPath);
+            try
+            {
+                experimentRun.save(user);
+            }
+            catch (BatchValidationException e)
+            {
+                throw new ExperimentException(e);
+            }
         }
 
         // Update the run
