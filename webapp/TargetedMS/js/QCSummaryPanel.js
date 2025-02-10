@@ -310,7 +310,6 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
             });
         });
 
-        // let metrics = sampleFiles[0].Metrics;
         let showMetrics = LABKEY.ActionURL.getAction().toLowerCase() === 'qcSummaryHistory'.toLowerCase();
         let tableWidth = container.width - 100;
         let html = '';
