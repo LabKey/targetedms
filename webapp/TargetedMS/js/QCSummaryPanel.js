@@ -299,7 +299,18 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
     renderContainerSampleFileStats: function (params) {
         let container = params.container;
         let sampleFiles = params.sampleFiles;
-        let metrics = sampleFiles[0].Metrics;
+        let metrics = [];
+        let seenMetrics = {};
+        Ext4.iterate(sampleFiles, function (sampleFile) {
+            Ext4.iterate(sampleFile.Metrics, function (metric) {
+                if (!seenMetrics[metric.MetricId]) {
+                    metrics.push(metric);
+                    seenMetrics[metric.MetricId] = true;
+                }
+            });
+        });
+
+        // let metrics = sampleFiles[0].Metrics;
         let showMetrics = LABKEY.ActionURL.getAction().toLowerCase() === 'qcSummaryHistory'.toLowerCase();
         let tableWidth = container.width - 100;
         let html = '';
@@ -340,8 +351,17 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
 
 
             if (showMetrics) {
-                Ext4.each(sampleFile.Metrics, function (metric) {
-                    html += '<td><div class="sample-file-item" style="text-align: right">' + Ext4.util.Format.htmlEncode(metric.Value) + '</div></td>';
+                Ext4.each(metrics, function (metric) {
+                    let isMetricPresent = false;
+                    Ext4.each(sampleFile.Metrics, function (item) {
+                        if (metric.MetricId === item.MetricId) {
+                            isMetricPresent = true;
+                            html += '<td><div class="sample-file-item" style="text-align: right">' + Ext4.util.Format.htmlEncode(item.Value) + '</div></td>';
+                        }
+                    });
+                    if (!isMetricPresent) {
+                        html += '<td><div class="sample-file-item" style="text-align: right">N/A</div></td>';
+                    }
                 });
             }
             if (sampleFile.IgnoreForAllMetric) {
