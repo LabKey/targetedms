@@ -104,7 +104,7 @@
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label class="col-sm-4 control-label">Instrument fee</label>
+                            <label class="col-sm-4 control-label">Total fee</label>
                             <div class="col-sm-8">
                                 <input id="total-cost" type="text" readonly="true" class="form-control"/>
                             </div>
@@ -249,9 +249,9 @@
                                     + '<div class="event-title">' + 'Title : &nbsp' + LABKEY.Utils.encodeHtml(mouseEnterInfo.event.title) + '</div>'
                                     + '<div class="event-date">' + LABKEY.Utils.encodeHtml(dateStr) + '</div>'
 
-                                    + '<div id="event-delete" role="button" style="cursor: pointer;">[Delete]</div>'
-                                    + '<div class="event-edit" role="button" style="cursor: pointer;">[Edit]</div>'
-                                    + '<div class="event-edit-project" role="button" style="cursor: pointer;">[Edit Project]</div>'
+                                    + '<a id="event-delete" class="labkey-text-link">[Delete]</a> <br/>'
+                                    + '<a id="event-edit" class="labkey-text-link">[Edit]</a> <br/>'
+                                    + '<a id="event-edit-project" class="labkey-text-link">[Edit Project]</a> <br/>'
                                     + '</div>';
 
 
@@ -504,11 +504,12 @@
 
                             let tableElt = document.getElementById('event-cost-table');
                             let rowElt = document.createElement('tr');
-                            rowElt.innerHTML = '<td>' + startDateFormatted + '</td><td>' + endDateFormatted + '</td><td id="event-cost">' + '$' + (setupFee + cost) + '</td>';
+                            let totalCost = Math.round(((setupFee + cost) + Number.EPSILON) * 100) / 100;
+                            rowElt.innerHTML = '<td>' + startDateFormatted + '</td><td>' + endDateFormatted + '</td><td id="event-cost">' + '$' + totalCost + '</td>';
                             tableElt.appendChild(rowElt);
 
                             const totalEventCostElt = document.getElementById('total-event-cost');
-                            totalEventCostElt.innerHTML = 'Total Cost: $' + (setupFee + cost);
+                            totalEventCostElt.innerHTML = 'Total Cost: $' + totalCost;
 
                             if (showCostModal) {
                                 $('#setup-cost').val(setupFee);
