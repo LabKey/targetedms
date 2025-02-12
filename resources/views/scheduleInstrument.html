@@ -136,9 +136,9 @@
 
         <table id="event-cost-table" class="labkey-data-region-legacy labkey-show-borders">
             <tr>
-                <th>Start</th>
-                <th>End</th>
-                <th>Cost</th>
+                <td class="labkey-column-header">Start</td>
+                <td class="labkey-column-header">End</td>
+                <td class="labkey-column-header">Cost</td>
             </tr>
         </table>
         <div id="total-event-cost">Total Cost: </div>
@@ -230,9 +230,9 @@
                             let content = '';
                             let bgColor = (e.event.extendedProps.project == project ? e.backgroundColor : 'gray');
                             let textColor = getContrastTextColor(stringToColor(bgColor));
-                            let dateStr = DateFormat.format.date(e.event.start, LABKEY.container.formats.dateTimeFormat) + ' - ' + DateFormat.format.date(e.event.end, LABKEY.container.formats.dateTimeFormat);
-                            let style = 'background-color: ' + bgColor + '; color: ' + textColor;
-                            content += '<div class="event-tooltip-content" style="' + style + ';">'
+                            let dateStr = DateFormat.format.date(e.event.start, LABKEY.container.formats.timeFormat) + ' - ' + DateFormat.format.date(e.event.end, LABKEY.container.formats.timeFormat);
+                            let style = 'background-color: ' + bgColor + '; color: ' + textColor + ';' + 'width: 100%';
+                            content += '<div style="' + style + ';">'
                                         + '<div class="event-date">' + LABKEY.Utils.encodeHtml(dateStr) + '</div>'
                                         + '<div class="event-id" >' + 'Project : &nbsp' + LABKEY.Utils.encodeHtml(e.event.extendedProps.project) + '</div>'
                                     + '</div>';
@@ -408,6 +408,7 @@
             $('#event-modal input[name="event-end-date"]').val(endDateFormatted);
             $('#event-modal input[name="event-name"]').val(event ? event.name : '');
             $('#event-modal input[name="event-notes"]').val(event ? event.notes : '');
+            $('#add-event').text(event.id ? 'Edit' : 'Add');
             $('#event-modal').modal();
         }
 
@@ -504,6 +505,7 @@
 
                             let tableElt = document.getElementById('event-cost-table');
                             let rowElt = document.createElement('tr');
+                            rowElt.className = 'labkey-row';
                             let totalCost = Math.round(((setupFee + cost) + Number.EPSILON) * 100) / 100;
                             rowElt.innerHTML = '<td>' + startDateFormatted + '</td><td>' + endDateFormatted + '</td><td id="event-cost">' + '$' + totalCost + '</td>';
                             tableElt.appendChild(rowElt);
