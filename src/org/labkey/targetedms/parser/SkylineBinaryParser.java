@@ -15,19 +15,16 @@
  */
 package org.labkey.targetedms.parser;
 
-import com.google.protobuf.CodedInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.exp.api.DataType;
-import org.labkey.api.pipeline.PipelineJobException;
 import org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass;
 import org.labkey.targetedms.parser.skyd.CacheFormat;
 import org.labkey.targetedms.parser.skyd.CacheFormatVersion;
 import org.labkey.targetedms.parser.skyd.CacheHeaderStruct;
 import org.labkey.targetedms.parser.skyd.CachedFileHeaderStruct;
 import org.labkey.targetedms.parser.skyd.ChromGroupHeaderInfo;
-import org.labkey.targetedms.parser.skyd.ChromPeak;
 import org.labkey.targetedms.parser.skyd.ChromTransition;
 import org.labkey.targetedms.parser.skyd.StructSerializer;
 
@@ -39,7 +36,6 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
-import java.nio.channels.SeekableByteChannel;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -64,7 +60,6 @@ public class SkylineBinaryParser
     private CacheHeaderStruct _cacheHeaderStruct;
 
     private ChromGroupHeaderInfo[] _chromatograms;
-    private float[] _allPeaksRt;
     private byte[] _seqBytes;
     private List<ChromatogramGroupId> _chromatogramGroupIds;
 
@@ -122,7 +117,6 @@ public class SkylineBinaryParser
 
         parseChromatogramGroupIds();
         parseFiles();
-        parsePeaks();
         _log.debug("Starting to load chromatogram headers");
         parseChromatograms();
         _log.debug("Done loading chromatogram headers");
@@ -202,19 +196,6 @@ public class SkylineBinaryParser
         return new String(buffer, _cacheFormat.getCharset());
     }
 
-    private void parsePeaks() throws IOException
-    {
-        _channel.position(_cacheHeaderStruct.getLocationPeaks());
-        ChromPeak[] chromPeaks = _cacheFormat.chromPeakSerializer()
-                .readArray(Channels.newInputStream(_channel), _cacheHeaderStruct.getNumPeaks());
-        _allPeaksRt = new float[chromPeaks.length];
-
-        for (int i = 0; i < chromPeaks.length; i++)
-        {
-            _allPeaksRt[i] = chromPeaks[i].getRetentionTime();
-        }
-    }
-
     private void parseChromatogramGroupIds() throws IOException
     {
         if (_cacheFormat.getFormatVersion().compareTo(CacheFormatVersion.Eighteen) < 0)
@@ -251,11 +232,6 @@ public class SkylineBinaryParser
 
         _chromatograms =_cacheFormat.chromGroupHeaderInfoSerializer().readArray(
                 Channels.newInputStream(_channel), _cacheHeaderStruct.getNumChromatograms());
-    }
-
-    public SeekableByteChannel getChannel()
-    {
-        return _channel;
     }
 
     final int getCacheFileSize()
@@ -310,19 +286,6 @@ public class SkylineBinaryParser
         }
 
         return match;
-    }
-
-    public byte[] readChromatogramBytes(ChromGroupHeaderInfo header) throws DataFormatException, IOException
-    {
-        // Get the compressed bytes
-        ByteBuffer buffer = ByteBuffer.allocate(header.getCompressedSize());
-        getChannel().position(header.getLocationPoints()).read(buffer);
-        buffer.position(0);
-        byte[] result = new byte[header.getCompressedSize()];
-        buffer.get(result);
-        // Make sure it uncompresses successfully so that we don't import bad content into the database
-        uncompress(result, header.getUncompressedSize());
-        return result;
     }
 
     public static byte[] uncompressStoredBytes(byte[] bytes, Integer uncompressedSize, int numPoints, int numTransitions) throws DataFormatException
