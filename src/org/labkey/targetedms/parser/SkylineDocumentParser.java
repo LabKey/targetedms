@@ -3179,9 +3179,6 @@ public class SkylineDocumentParser implements AutoCloseable
             GeneralPrecursor<?> precursor,
             double tolerance)
     {
-        // Add precursor matches to a list, if they match at least 1 transition
-        // in this group, and are potentially the maximal transition match.
-
         if (_binaryParser != null && _binaryParser.getChromatograms() != null)
         {
             // ChromatogramCache.TryLoadChromInfo() in Skyline code:
@@ -3198,43 +3195,42 @@ public class SkylineDocumentParser implements AutoCloseable
             List<ChromGroupHeaderInfo> result = new ArrayList<>();
 
             // Add entries to a list until they no longer match
-            List<ChromGroupHeaderInfo> chromsToMatchByTransitionMz = new ArrayList<>();
             while (i < chromHeaders.length &&
                     matchMz(precursor.getSignedMz(), chromHeaders[i].getPrecursor(), tolerance))
             {
                 ChromGroupHeaderInfo chrom = chromHeaders[i++];
+                // If explicit retention time info is available, use that to discard obvious mismatches
+                if (explicitRT != null && chrom.excludesTime(explicitRT))
+                {
+                    continue;
+                }
+
                 // Sequence matching for extracted chromatogram data added in v1.5
                 ChromatogramGroupId chromTextId = _binaryParser.getTextId(chrom);
                 if (chromTextId != null)
                 {
                     // If we match based on textId, consider it a chromatogram worth storing
-                    if (molecule.targetMatches(chromTextId.getTarget()))
+                    if (!molecule.targetMatches(chromTextId.getTarget()))
                     {
-                        try
+                        continue;
+                    }
+                    try
+                    {
+                        SpectrumFilter spectrumFilter = SpectrumFilter.fromByteArray(precursor.getSpectrumFilter());
+                        if (!Objects.equals(spectrumFilter, chromTextId.getSpectrumFilter()))
                         {
-                            SpectrumFilter spectrumFilter = SpectrumFilter.fromByteArray(precursor.getSpectrumFilter());
-                            if (Objects.equals(spectrumFilter, chromTextId.getSpectrumFilter()))
-                            {
-                                result.add(chrom);
-                            }
+                            continue;
                         }
-                        catch (InvalidProtocolBufferException e)
-                        {
-                            _log.warn("Error parsing spectrum filter", e);
-                            return Collections.emptyList();
-                        }
+                    }
+                    catch (InvalidProtocolBufferException e)
+                    {
+                        _log.warn("Error parsing spectrum filter", e);
                         continue;
                     }
                 }
-
-                // If explicit retention time info is available, use that to discard obvious mismatches
-                if (explicitRT == null || !chrom.excludesTime(explicitRT))
-                {
-                    // See if we can find a match based on transition mz instead for SRM-style data
-                    chromsToMatchByTransitionMz.add(chrom);
-                }
+                result.add(chrom);
             }
-            return findChromatogramsWithMostTransitions(precursor.getMz(), transitions, chromsToMatchByTransitionMz);
+            return findChromatogramsWithMostTransitions(precursor.getMz(), transitions, result);
         }
 
         return Collections.emptyList();
