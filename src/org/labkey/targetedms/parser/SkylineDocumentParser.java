@@ -3234,52 +3234,82 @@ public class SkylineDocumentParser implements AutoCloseable
                     chromsToMatchByTransitionMz.add(chrom);
                 }
             }
-
-            if (!chromsToMatchByTransitionMz.isEmpty())
-            {
-                ChromGroupHeaderInfo[] chromArray = new ChromGroupHeaderInfo[_binaryParser.getCacheFileSize()];
-                for (ChromGroupHeaderInfo chromInfo : chromsToMatchByTransitionMz)
-                {
-                    boolean foundMatch = _binaryParser.matchTransitions(chromInfo, transitions, explicitRT, tolerance);
-
-                    int fileIndex = chromInfo.getFileIndex();
-
-                    if (foundMatch)
-                    {
-                        if (chromArray[fileIndex] != null)
-                        {
-                            // If more than one value was found, ensure that there
-                            // is only one precursor match per file.
-                            // Use the entry with the m/z closest to the target
-                            ChromGroupHeaderInfo currentChromForFileIndex = chromArray[fileIndex];
-                            // Use the entry with the m/z closest to the target
-                            if (Math.abs(precursor.getMz() - chromInfo.getPrecursorMz()) <
-                                    Math.abs(precursor.getMz() - currentChromForFileIndex.getPrecursorMz()))
-                            {
-                                chromArray[fileIndex] = chromInfo;
-                            }
-                        }
-                        else
-                        {
-                            chromArray[fileIndex] = chromInfo;
-                        }
-                    }
-                }
-
-                // Now that we've found the best matches, add them to the list
-                for (ChromGroupHeaderInfo info : chromArray)
-                {
-                    if (info != null)
-                    {
-                        result.add(info);
-                    }
-                }
-            }
-
-            return result;
+            return findChromatogramsWithMostTransitions(precursor.getMz(), transitions, chromsToMatchByTransitionMz);
         }
 
         return Collections.emptyList();
+    }
+
+
+    /**
+     * Within each replicate, if there is more than one ChromGroupHeaderInfo, find the header infos with the most matching
+     * transitions, and, if there are multiple headers with the same number of matching transitions, then find the ones
+     * that have the closest match to the precursor m/z.
+     */
+    private List<ChromGroupHeaderInfo> findChromatogramsWithMostTransitions(
+            double precursorMz, List<? extends GeneralTransition> transitions, List<ChromGroupHeaderInfo> headerInfos)
+    {
+        Map<String, List<ChromGroupHeaderInfo>> byFile = headerInfos.stream()
+                .collect(Collectors.groupingBy(headerInfo -> _binaryParser.getFilePath(headerInfo)));
+
+        List<ChromGroupHeaderInfo> result = new ArrayList<>();
+
+        for (SkylineReplicate skylineReplicate : _replicateList)
+        {
+            List<ChromGroupHeaderInfo> candidates = new ArrayList<>();
+
+            for (SampleFile sampleFile : skylineReplicate.getSampleFileList())
+            {
+                List<ChromGroupHeaderInfo> listInFile = byFile.get(sampleFile.getFilePath());
+                if (listInFile != null)
+                {
+                    candidates.addAll(listInFile);
+                }
+            }
+
+            if (candidates.size() <= 1)
+            {
+                result.addAll(candidates);
+                continue;
+            }
+
+            int[] transitionCounts = new int[candidates.size()];
+            int maxTransitionCount = 0;
+            for (int i = 0; i < candidates.size(); i++)
+            {
+                int transitionCount = _binaryParser.countTransitionMatches(candidates.get(i), transitions, _matchTolerance);
+                transitionCounts[i] = transitionCount;
+                maxTransitionCount = Math.max(transitionCount, maxTransitionCount);
+            }
+            List<ChromGroupHeaderInfo> candidatesWithMostTransitions = new ArrayList<ChromGroupHeaderInfo>();
+            for (int i = 0; i < candidates.size(); i++)
+            {
+                if (transitionCounts[i] == maxTransitionCount)
+                {
+                    candidatesWithMostTransitions.add(candidates.get(i));
+                }
+            }
+            if (candidatesWithMostTransitions.size() <= 1)
+            {
+                result.addAll(candidatesWithMostTransitions);
+                continue;
+            }
+
+            // If multiple chromGroups tied for the number of matching transitions, then break the tie using
+            // precursor m/z distance
+            double minMzDelta = candidatesWithMostTransitions.stream()
+                    .mapToDouble(headerInfo -> Math.abs(precursorMz - headerInfo.getPrecursorMz()))
+                    .min().getAsDouble();
+            for (ChromGroupHeaderInfo headerInfo : candidatesWithMostTransitions)
+            {
+                if (Math.abs(precursorMz - headerInfo.getPrecursorMz()) == minMzDelta)
+                {
+                    result.add(headerInfo);
+                }
+            }
+        }
+
+        return result;
     }
 
     public int getPeptideGroupCount()

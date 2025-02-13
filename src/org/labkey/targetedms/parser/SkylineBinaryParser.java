@@ -261,15 +261,12 @@ public class SkylineBinaryParser
         return _cacheFiles != null ? _cacheFiles.length : 0;
     }
 
-    public boolean matchTransitions(ChromGroupHeaderInfo header, List<? extends GeneralTransition> transitions, Double explicitRt, double tolerance)
+    /**
+     * Returns the number of transitions from the Precursor in the Skyline document that have a matching
+     * chromatogram in the ChromGroupHeaderInfo.
+     */
+    public int countTransitionMatches(ChromGroupHeaderInfo header, List<? extends GeneralTransition> transitions, double tolerance)
     {
-        if (explicitRt != null)
-        {
-            // We have retention time info, use that in the match
-            if (header.excludesTime(explicitRt))
-                return false;
-        }
-
         var numChromTransitions = header.getNumTransitions();
         ChromTransition[] chromTransitions;
 
@@ -281,20 +278,19 @@ public class SkylineBinaryParser
         {
             throw new RuntimeException(e);
         }
-
+        int matchCount = 0;
         for (GeneralTransition transition : transitions)
         {
             for (int i = 0; i < numChromTransitions; i++)
             {
-                // Do we need to look through all the transitions from the .skyd file?
                 if (header.toSignedMz(transition.getMz()).compareTolerant(chromTransitions[i].getProduct(header), tolerance) == 0)
                 {
-                    return true;
+                    matchCount++;
+                    break;
                 }
             }
         }
-
-        return false;
+        return matchCount;
     }
 
     public static byte[] uncompressStoredBytes(byte[] bytes, Integer uncompressedSize, int numPoints, int numTransitions) throws DataFormatException
