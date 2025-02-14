@@ -311,15 +311,27 @@
 
     function customDateRange() {
         $('#fom-loading').show();
-        if (document.getElementById("ps-start-date").value) {
-            startDate = formatDate(document.getElementById("ps-start-date").value);
+        const startDateVal = document.getElementById('ps-start-date').value;
+        const endDateVal = document.getElementById('ps-end-date').value;
+
+        if (!startDateVal || !endDateVal) {
+            alert('Please select both start and end dates.');
+            $('#fom-loading').hide();
+            return;
         }
-        if (document.getElementById("ps-end-date").value) {
-            endDate = formatDate(document.getElementById("ps-end-date").value);
+
+        if (startDateVal) {
+            startDate = formatDate(startDateVal);
         }
-        if (document.getElementById("ps-start-date").value && document.getElementById("ps-end-date").value) {
+        if (endDateVal) {
+            endDate = formatDate(endDateVal);
+        }
+        if (startDateVal && endDateVal) {
             persistDateRange(-1);
             getData();
+        }
+        else {
+            $('#fom-loading').hide();
         }
     }
 
