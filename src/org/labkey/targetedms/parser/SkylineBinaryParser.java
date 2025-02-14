@@ -239,17 +239,12 @@ public class SkylineBinaryParser
         return _cacheFiles != null ? _cacheFiles.length : 0;
     }
 
-    public int matchTransitions(ChromGroupHeaderInfo header, List<? extends GeneralTransition> transitions, Double explicitRt, double tolerance, boolean multiMatch)
+    /**
+     * Returns the number of transitions from the Precursor in the Skyline document that have a matching
+     * chromatogram in the ChromGroupHeaderInfo.
+     */
+    public int countTransitionMatches(ChromGroupHeaderInfo header, List<? extends GeneralTransition> transitions, double tolerance)
     {
-        int match = 0;
-
-        if (explicitRt != null)
-        {
-            // We have retention time info, use that in the match
-            if (header.excludesTime(explicitRt))
-                return match;
-        }
-
         var numChromTransitions = header.getNumTransitions();
         ChromTransition[] chromTransitions;
 
@@ -261,31 +256,19 @@ public class SkylineBinaryParser
         {
             throw new RuntimeException(e);
         }
-
+        int matchCount = 0;
         for (GeneralTransition transition : transitions)
         {
             for (int i = 0; i < numChromTransitions; i++)
             {
-                // Do we need to look through all of the transitions from the .skyd file?
                 if (header.toSignedMz(transition.getMz()).compareTolerant(chromTransitions[i].getProduct(header), tolerance) == 0)
                 {
-                    if (explicitRt == null)
-                    {
-                        match++;
-                        if (!multiMatch)
-                        {
-                            break;  // only one match per transition
-                        }
-                    }
-                    else
-                    {
-                        match = multiMatch ? match + 1 : 1; // Examine all RT values even if we're not multimatch
-                    }
+                    matchCount++;
+                    break;
                 }
             }
         }
-
-        return match;
+        return matchCount;
     }
 
     public static byte[] uncompressStoredBytes(byte[] bytes, Integer uncompressedSize, int numPoints, int numTransitions) throws DataFormatException
