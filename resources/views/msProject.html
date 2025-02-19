@@ -1,5 +1,6 @@
 <div id="ms-project"></div>
 <script type="text/javascript" nonce="<%=scriptNonce%>">
+    (function(){
     let webpart = <%=webpartContext%>;
     let config = {
         renderTo: webpart.wrapperDivId,
@@ -15,4 +16,5 @@
     }
     let wp = new LABKEY.QueryWebPart(config);
     wp.render();
+    })();
 </script>
