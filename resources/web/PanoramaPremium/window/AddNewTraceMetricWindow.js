@@ -13,6 +13,15 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
     border: false,
     update: 'update',
     insert: 'insert',
+    timeValueOptions:  Ext4.create('Ext.data.Store', {
+        fields: ['value'],
+        data : [
+            { "value":"First"},
+            { "value":"Last"},
+            { "value":"Max"},
+            { "value":"Min"}
+        ]
+    }),
 
     initComponent: function() {
         var title = this.operation === this.insert ? 'Add New Trace Metric' : 'Edit Trace Metric';
@@ -108,70 +117,142 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
 
     getTraceValueRadioGroup: function () {
         if (!this.traceValueRadioGroup) {
-            this.traceValueRadioGroup = Ext4.create('Ext.form.RadioGroup', {
-                columns: 2,
-                layoutOptions: 'time',
-                padding: '0 10px 0 0',
-                items: [
-                     {
-                         boxLabel: 'Use trace value when time is greater than or equal to',
-                         inputValue: 'timeValue',
-                         name: 'metricValue',
-                         width: 400,
+            this.traceValueRadioGroup =
+                    Ext4.create('Ext.form.Panel', {
+                        renderTo: Ext4.getBody(),
+                        width: 470,
 
-                         checked: this.operation === this.update ? this.metric.TimeValue > 0 : true,
-                         listeners: {
-                             change: {fn : function(cmp, newVal, oldVal){
-                                 this.timeValueNumberField.setDisabled(oldVal);
-                                 this.traceValueNumberField.setDisabled(newVal);
+                        border:false,
+                        items: [{
+                            xtype: 'radiogroup',
+                            columns: 1, // Stack radio buttons vertically
+                            vertical: true,
+                            items: [
+                                {
+                                    xtype: 'container',
+                                    layout: 'hbox',
+                                    items: [
+                                        {
+                                            xtype: 'radio',
+                                            name: 'metricValue',
+                                            inputValue: 'timeValue',
+                                            boxLabel: 'Use the',
+                                            width: 70,
+                                            checked: this.operation === this.update ? this.metric.TimeValue > 0 : true,
+                                            listeners: {
+                                                 change: {fn : function(cmp, newVal, oldVal){
+                                                     this.minTimeValueNumberField.setDisabled(oldVal);
+                                                     this.maxTimeValueNumberField.setDisabled(oldVal);
+                                                     this.timeValueOptionField.setDisabled(oldVal);
+                                                     this.traceValueNumberField.setDisabled(newVal);
 
-                                 // restore the value onChange when it is present
-                                 if (this.operation === this.update) {
-                                     if (newVal) {
-                                         this.timeValueNumberField.setValue(this.metric.TimeValue);
-                                     }
-                                     else {
-                                         this.traceValueNumberField.setValue(this.metric.TraceValue);
-                                     }
-                                 }
-                                 else {
-                                     this.traceValueNumberField.setValue(undefined);
-                                     this.timeValueNumberField.setValue(undefined);
-                                 }
-                             }},
-                             scope   : this
-                         }
-                     },
-                    this.getTimeValueNumberField(),
-                    {
-                        boxLabel: 'Use time when the trace first reaches a value greater than or equal to',
-                        inputValue: 'traceValue',
-                        name: 'metricValue',
-                        width: 400,
-                        checked: this.operation === this.update ? this.metric.TraceValue > 0 : false
-                    },
-                    this.getTraceValueNumberField()
-                ]
-            });
+                                                     // restore the value onChange when it is present
+                                                     if (this.operation === this.update) {
+                                                         if (newVal) {
+                                                             this.minTimeValueNumberField.setValue(this.metric.MinTimeValue);
+                                                             this.maxTimeValueNumberField.setValue(this.metric.MaxTimeValue);
+                                                         }
+                                                         else {
+                                                             this.traceValueNumberField.setValue(this.metric.TraceValue);
+                                                         }
+                                                     }
+                                                     else {
+                                                         this.traceValueNumberField.setValue(undefined);
+                                                         this.minTimeValueNumberField.setValue(undefined);
+                                                         this.maxTimeValueNumberField.setValue(undefined);
+                                                         this.timeValueOptionField.setValue(undefined);
+                                                     }
+                                                 }},
+                                                 scope   : this
+                                            }
+                                        },
+                                        this.getTimeValueOptionField(),
+                                        {
+                                            xtype: 'displayfield',
+                                            value: 'trace value when time is between',
+                                            margin: '0 5'
+                                        },
+                                        this.getMinTimeValueNumberField(),
+                                        {
+                                            xtype: 'displayfield',
+                                            value: 'and',
+                                            margin: '0 5'
+                                        },
+                                        this.getMaxTimeValueNumberField()
+                                    ]
+                                },
+                                {
+                                    xtype: 'container',
+                                    layout: 'hbox',
+                                    items: [
+                                        {
+                                            xtype: 'radio',
+                                            name: 'metricValue',
+                                            inputValue: 'traceValue',
+                                            boxLabel: 'Use time when the trace first reaches a value greater than or equal to',
+                                            width: 400,
+                                            checked: this.operation === this.update ? this.metric.TraceValue > 0 : false
+                                        },
+                                        this.getTraceValueNumberField()
+                                    ]
+                                }
+                            ]
+                        }]
+                    });
         }
         return this.traceValueRadioGroup;
     },
 
-    getTimeValueNumberField: function () {
-        if (!this.timeValueNumberField) {
-            this.timeValueNumberField = Ext4.create('Ext.form.field.Number', {
-                name: 'timeValue',
+    getTimeValueOptionField: function() {
+        if (!this.timeValueOptionField) {
+            this.timeValueOptionField = Ext4.create('Ext.form.field.ComboBox', {
+                name: 'timeValueOption',
+                store: this.timeValueOptions,
+                displayField: 'value',
+                valueField: 'value',
+                width: 50,
+            });
+
+            if(this.operation === this.update) {
+                this.timeValueOptionField.setValue(this.metric.TimeValueOption);
+            }
+        }
+
+        return this.timeValueOptionField
+    },
+
+    getMinTimeValueNumberField: function () {
+        if (!this.minTimeValueNumberField) {
+            this.minTimeValueNumberField = Ext4.create('Ext.form.field.Number', {
+                name: 'minTimeValue',
                 width: 65,
-                disabled: this.operation === this.update ? !(this.metric.TimeValue > 0) : false
+                disabled: this.operation === this.update ? !(this.metric.MinTimeValue > 0) : false
             });
 
             if (this.operation === this.update) {
-                this.timeValueNumberField.setValue(this.metric.TimeValue);
+                this.minTimeValueNumberField.setValue(this.metric.MinTimeValue);
             }
 
         }
-        return this.timeValueNumberField;
+        return this.minTimeValueNumberField;
     },
+
+    getMaxTimeValueNumberField: function () {
+        if (!this.maxTimeValueNumberField) {
+            this.maxTimeValueNumberField = Ext4.create('Ext.form.field.Number', {
+                name: 'maxTimeValue',
+                width: 65,
+                disabled: this.operation === this.update ? !(this.metric.MaxTimeValue > 0) : false
+            });
+
+            if (this.operation === this.update) {
+                this.maxTimeValueNumberField.setValue(this.metric.MaxTimeValue);
+            }
+
+        }
+        return this.maxTimeValueNumberField;
+    },
+
 
     getTraceValueNumberField: function () {
         if (!this.traceValueNumberField) {
@@ -261,8 +342,14 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
         }
 
         if (this.traceValueRadioGroup.getValue()['metricValue'] === 'timeValue' &&
-                (!this.timeValueNumberField.getValue() || this.timeValueNumberField.getValue() < 0)) {
-            this.timeValueNumberField.setActiveError(errorText);
+                (!this.minTimeValueNumberField.getValue() || this.minTimeValueNumberField.getValue() < 0)) {
+            this.minTimeValueNumberField.setActiveError(errorText);
+            isValid = false;
+        }
+
+        if (this.traceValueRadioGroup.getValue()['metricValue'] === 'timeValue' &&
+                (!this.maxTimeValueNumberField.getValue() || this.maxTimeValueNumberField.getValue() < 0)) {
+            this.maxTimeValueNumberField.setActiveError(errorText);
             isValid = false;
         }
 
@@ -291,8 +378,16 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
             if (this.traceValueNumberField.getValue()) {
                 newMetric.TraceValue = this.traceValueNumberField.getValue();
             }
-            else if (this.timeValueNumberField.getValue()) {
-                newMetric.TimeValue = this.timeValueNumberField.getValue();
+            else {
+                if (this.timeValueOptionField.getValue()) {
+                    newMetric.TimeValueOption = this.timeValueOptionField.getValue();
+                }
+                if (this.minTimeValueNumberField.getValue()) {
+                    newMetric.MinTimeValue = this.minTimeValueNumberField.getValue();
+                }
+                if (this.maxTimeValueNumberField.getValue()) {
+                    newMetric.MaxTimeValue = this.maxTimeValueNumberField.getValue();
+                }
             }
 
             if(this.operation === this.update) {
