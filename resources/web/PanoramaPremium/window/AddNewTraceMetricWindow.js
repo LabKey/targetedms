@@ -138,7 +138,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
                                             inputValue: 'timeValue',
                                             boxLabel: 'Use the',
                                             width: 70,
-                                            checked: this.operation === this.update ? this.metric.TimeValue > 0 : true,
+                                            checked: this.operation === this.update ? this.metric.MinTimeValue > 0 : true,
                                             listeners: {
                                                  change: {fn : function(cmp, newVal, oldVal){
                                                      this.minTimeValueNumberField.setDisabled(oldVal);
