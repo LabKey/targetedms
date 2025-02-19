@@ -211,6 +211,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
                 displayField: 'value',
                 valueField: 'value',
                 width: 50,
+                itemId: 'timeValueOption',
             });
 
             if(this.operation === this.update) {
@@ -341,19 +342,24 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
             isValid = false;
         }
 
-        if (this.traceValueRadioGroup.getValue()['metricValue'] === 'timeValue' &&
+        if (this.timeValueOptionField.getValue() === null) {
+            this.timeValueOptionField.setActiveError(errorText);
+            isValid = false;
+        }
+
+        if (this.traceValueRadioGroup.down().getValue()['metricValue'] === 'timeValue' &&
                 (!this.minTimeValueNumberField.getValue() || this.minTimeValueNumberField.getValue() < 0)) {
             this.minTimeValueNumberField.setActiveError(errorText);
             isValid = false;
         }
 
-        if (this.traceValueRadioGroup.getValue()['metricValue'] === 'timeValue' &&
+        if (this.traceValueRadioGroup.down().getValue()['metricValue'] === 'timeValue' &&
                 (!this.maxTimeValueNumberField.getValue() || this.maxTimeValueNumberField.getValue() < 0)) {
             this.maxTimeValueNumberField.setActiveError(errorText);
             isValid = false;
         }
 
-        if (this.traceValueRadioGroup.getValue()['metricValue'] === 'traceValue' && !this.traceValueNumberField.getValue()) {
+        if (this.traceValueRadioGroup.down().getValue()['metricValue'] === 'traceValue' && !this.traceValueNumberField.getValue()) {
             this.traceValueNumberField.setActiveError(errorText);
             isValid = false;
         }

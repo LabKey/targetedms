@@ -33,7 +33,9 @@ SELECT
        COALESCE(qem.lowerBound, CASE WHEN qem.Status IS NULL OR qem.Status = 'LeveyJennings' THEN -3 END) AS lowerBound,
        COALESCE(qem.upperBound, CASE WHEN qem.Status IS NULL OR qem.Status = 'LeveyJennings' THEN 3 END) AS upperBound,
        qmc.TraceValue,
-       qmc.TimeValue,
+       qmc.MinTimeValue,
+       qmc.MaxTimeValue,
+       qmc.TimeValueOption,
        qmc.TraceName,
        qmc.YAxisLabel1,
        qmc.YAxisLabel2

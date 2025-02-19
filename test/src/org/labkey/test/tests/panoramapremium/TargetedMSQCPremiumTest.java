@@ -193,7 +193,9 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         String metricName = "Pressure At 5";
         String traceName = "ColumnOven_FC_BridgeFlow (channel 5)";
         String yAxisLabel = "psi";
-        String timeValue = "5";
+        String minTimeValue = "5";
+        String maxTimeValue = "10";
+        String timeValueOption = "First";
         String skyFile = "SampleFileChromInfo.sky.zip";
 
         setUpFolder(projectName, FolderType.QC);
@@ -204,7 +206,9 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.metricName, metricName);
         metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.traceName, traceName);
         metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.yAxisLabel, yAxisLabel);
-        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.timeValue, timeValue);
+        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.timeValueOption, timeValueOption);
+        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.minTimeValue, minTimeValue);
+        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.maxTimeValue, maxTimeValue);
 
         ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
         configureUI.addNewTraceMetric(metricProperties);
