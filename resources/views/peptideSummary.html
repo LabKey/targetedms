@@ -320,19 +320,11 @@
             return;
         }
 
-        if (startDateVal) {
-            startDate = formatDate(startDateVal);
-        }
-        if (endDateVal) {
-            endDate = formatDate(endDateVal);
-        }
-        if (startDateVal && endDateVal) {
-            persistDateRange(-1);
-            getData();
-        }
-        else {
-            $('#fom-loading').hide();
-        }
+        startDate = formatDate(startDateVal);
+        endDate = formatDate(endDateVal);
+
+        persistDateRange(-1);
+        getData();
     }
 
     function formatDate(d, includeTime) {
