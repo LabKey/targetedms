@@ -27,7 +27,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
         var title = this.operation === this.insert ? 'Add New Trace Metric' : 'Edit Trace Metric';
         this.setTitle(title);
         this.height = Ext4.max([Ext4.getBody().getHeight() * 0.3, 250]);
-        this.width = Ext4.max([Ext4.getBody().getWidth() * 0.3, 500]);
+        this.width = Ext4.max([Ext4.getBody().getWidth() * 0.3, 600]);
         this.items = this.getItems();
         this.dockedItems= [{
             xtype: 'toolbar',
@@ -69,7 +69,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
             this.metricNameField = Ext4.create('Ext.form.field.Text', {
                 fieldLabel: 'Metric Name',
                 labelWidth: 150,
-                width: 470,
+                width: 570,
                 name: 'metricName'
             });
 
@@ -87,7 +87,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
               fieldLabel: 'Use Trace',
               name: 'useTrace',
               labelWidth: 150,
-              width: 470
+              width: 570
           }
           if (!this.tracesPresent) {
               config.emptyText = 'No trace can be found';
@@ -120,7 +120,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
             this.traceValueRadioGroup =
                     Ext4.create('Ext.form.Panel', {
                         renderTo: Ext4.getBody(),
-                        width: 470,
+                        width: 570,
 
                         border:false,
                         items: [{
@@ -137,8 +137,8 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
                                             name: 'metricValue',
                                             inputValue: 'timeValue',
                                             boxLabel: 'Use the',
-                                            width: 70,
-                                            checked: this.operation === this.update ? this.metric.MinTimeValue > 0 : true,
+                                            width: 65,
+                                            checked: this.operation === this.update ? this.metric.MinTimeValue >= 0 : true,
                                             listeners: {
                                                  change: {fn : function(cmp, newVal, oldVal){
                                                      this.minTimeValueNumberField.setDisabled(oldVal);
@@ -169,7 +169,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
                                         this.getTimeValueOptionField(),
                                         {
                                             xtype: 'displayfield',
-                                            value: 'trace value when time is between',
+                                            value: 'trace value when time in minutes is between',
                                             margin: '0 5'
                                         },
                                         this.getMinTimeValueNumberField(),
@@ -189,8 +189,8 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
                                             xtype: 'radio',
                                             name: 'metricValue',
                                             inputValue: 'traceValue',
-                                            boxLabel: 'Use time when the trace first reaches a value greater than or equal to',
-                                            width: 400,
+                                            boxLabel: 'Use time in minutes when the trace first reaches a value greater than or equal to',
+                                            width: 450,
                                             checked: this.operation === this.update ? this.metric.TraceValue > 0 : false
                                         },
                                         this.getTraceValueNumberField()
@@ -227,7 +227,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
             this.minTimeValueNumberField = Ext4.create('Ext.form.field.Number', {
                 name: 'minTimeValue',
                 width: 65,
-                disabled: this.operation === this.update ? !(this.metric.MinTimeValue > 0) : false
+                disabled: this.operation === this.update ? !(this.metric.MinTimeValue >= 0) : false
             });
 
             if (this.operation === this.update) {
@@ -243,7 +243,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
             this.maxTimeValueNumberField = Ext4.create('Ext.form.field.Number', {
                 name: 'maxTimeValue',
                 width: 65,
-                disabled: this.operation === this.update ? !(this.metric.MaxTimeValue > 0) : false
+                disabled: this.operation === this.update ? !(this.metric.MaxTimeValue >= 0) : false
             });
 
             if (this.operation === this.update) {
@@ -260,7 +260,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
             this.traceValueNumberField = Ext4.create('Ext.form.field.Number', {
                 name: 'traceValue',
                 width: 65,
-                disabled: this.operation === this.update ? !(this.metric.TraceValue > 0) : true
+                disabled: this.operation === this.update ? !(this.metric.TraceValue >= 0) : true
             });
 
             if (this.operation === this.update) {
@@ -275,7 +275,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
             this.yAxisLabelField = Ext4.create('Ext.form.field.Text', {
                 fieldLabel: 'Y Axis Label',
                 labelWidth: 150,
-                width: 470,
+                width: 570,
                 name: 'yAxisLabel'
             });
 
@@ -348,13 +348,13 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
         }
 
         if (this.traceValueRadioGroup.down().getValue()['metricValue'] === 'timeValue' &&
-                (!this.minTimeValueNumberField.getValue() || this.minTimeValueNumberField.getValue() < 0)) {
+                (!(this.minTimeValueNumberField.getValue() >= 0))) {
             this.minTimeValueNumberField.setActiveError(errorText);
             isValid = false;
         }
 
         if (this.traceValueRadioGroup.down().getValue()['metricValue'] === 'timeValue' &&
-                (!this.maxTimeValueNumberField.getValue() || this.maxTimeValueNumberField.getValue() < 0)) {
+                (!(this.maxTimeValueNumberField.getValue() >= 0))) {
             this.maxTimeValueNumberField.setActiveError(errorText);
             isValid = false;
         }
