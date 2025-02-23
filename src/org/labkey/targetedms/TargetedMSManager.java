@@ -2636,16 +2636,100 @@ public class TargetedMSManager
                             throw new IllegalStateException("Incorrect values in skyd file for time and intensities for trace - " + sampleFileChromInfo.getTextId());
                         }
 
+
+                        //first, last, min and mav values between the time frame (trace)
+
+                        Double minTimeValue = qcMetricConfiguration.getMinTimeValue();
+                        Double maxTimeValue = qcMetricConfiguration.getMaxTimeValue();
+                        Double traceValue = qcMetricConfiguration.getTraceValue();
+                        String timeValueOption = qcMetricConfiguration.getTimeValueOption();
+                        float minValue = Float.MAX_VALUE;
+                        float maxValue = Float.MIN_VALUE;
                         for (int i = 0; i < times.length; i++)
                         {
-                            Double timeValue = qcMetricConfiguration.getTimeValue();
-                            Double traceValue = qcMetricConfiguration.getTraceValue();
-
-                            if (timeValue != null && times[i] >= timeValue)
+                            if (timeValueOption != null && timeValueOption.equals("First"))
                             {
-                                valuesToStore.put(sampleFileChromInfo, values[i]);
-                                break;
+                                // first value after the minTimeValue
+                                if (minTimeValue != null && times[i] > minTimeValue)
+                                {
+                                    valuesToStore.put(sampleFileChromInfo, values[i]);
+                                    break;
+                                }
+                                // first value in the trace
+                                else if (minTimeValue == null)
+                                {
+                                    valuesToStore.put(sampleFileChromInfo, values[i]);
+                                    break;
+                                }
                             }
+                            else if (timeValueOption != null && timeValueOption.equals("Last"))
+                            {
+                                // last value before the maxTimeValue
+                                if (maxTimeValue != null && times[i] < maxTimeValue)
+                                {
+                                    valuesToStore.put(sampleFileChromInfo, values[i]);
+                                }
+                                // last value in the trace
+                                else if (maxTimeValue == null)
+                                {
+                                    valuesToStore.put(sampleFileChromInfo, values[i]);
+                                }
+                            }
+                            else if (timeValueOption != null && timeValueOption.equals("Min"))
+                            {
+                                // minValue between minTimeValue and maxTimeValue
+                                if (minTimeValue != null && maxTimeValue != null && times[i] >= minTimeValue && times[i] <= maxTimeValue)
+                                {
+                                    if (values[i] < minValue)
+                                    {
+                                        minValue = values[i];
+                                    }
+                                }
+                                // minValue between minTimeValue and end of trace
+                                else if (minTimeValue != null && maxTimeValue == null && times[i] >= minTimeValue && values[i] < minValue)
+                                {
+                                    minValue = values[i];
+                                }
+                                // minValue between start of trace and maxTimeValue
+                                else if (minTimeValue == null && maxTimeValue != null && times[i] <= maxTimeValue && values[i] < minValue)
+                                {
+                                    minValue = values[i];
+                                }
+                                // minValue in the trace
+                                else if (minTimeValue == null && maxTimeValue == null && values[i] < minValue)
+                                {
+                                    minValue = values[i];
+                                }
+                                valuesToStore.put(sampleFileChromInfo, minValue);
+                            }
+                            else if (timeValueOption != null && timeValueOption.equals("Max"))
+                            {
+                                // maxValue between minTimeValue and maxTimeValue
+                                if (minTimeValue != null && maxTimeValue != null && times[i] >= minTimeValue && times[i] <= maxTimeValue)
+                                {
+                                    if (values[i] > maxValue)
+                                    {
+                                        maxValue = values[i];
+                                    }
+                                }
+                                // maxValue between minTimeValue and end of trace
+                                else if (minTimeValue != null && maxTimeValue == null && times[i] >= minTimeValue && values[i] > maxValue)
+                                {
+                                    maxValue = values[i];
+                                }
+                                // maxValue between start of trace and maxTimeValue
+                                else if (minTimeValue == null && maxTimeValue != null && times[i] <= maxTimeValue && values[i] > maxValue)
+                                {
+                                    maxValue = values[i];
+                                }
+                                // maxValue in the trace
+                                else if (minTimeValue == null && maxTimeValue == null && values[i] > maxValue)
+                                {
+                                    maxValue = values[i];
+                                }
+                                valuesToStore.put(sampleFileChromInfo, maxValue);
+                            }
+
                             else if (traceValue != null && values[i] >= traceValue)
                             {
                                 valuesToStore.put(sampleFileChromInfo, times[i]);

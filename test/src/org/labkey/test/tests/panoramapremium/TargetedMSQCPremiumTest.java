@@ -26,6 +26,7 @@ import org.labkey.test.util.DataRegionTable;
 import org.openqa.selenium.NoSuchElementException;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -190,48 +191,36 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
     public void testTraceMetric()
     {
         String projectName = "PressureTraceQC";
-        String metricName = "Pressure At 5";
         String traceName = "ColumnOven_FC_BridgeFlow (channel 5)";
-        String yAxisLabel = "psi";
-        String timeValue = "5";
+        Map<String,String> metrics= new HashMap<>();
+        metrics.put("First", "First Pressure After 5");
+        metrics.put("Min", "Min between 5 and 7");
+        metrics.put("Max", "Max between 5 and 7");
+
+        Map<String,String> timeValueOptions = new HashMap<>();
+        timeValueOptions.put("First", "First");
+        timeValueOptions.put("Last", "Last");
+        timeValueOptions.put("Min", "Min");
+        timeValueOptions.put("Max", "Max");
         String skyFile = "SampleFileChromInfo.sky.zip";
 
         setUpFolder(projectName, FolderType.QC);
         importData(skyFile);
 
-        log("Add new test trace metric");
-        Map<ConfigureMetricsUIPage.TraceMetricProperties, String> metricProperties = new LinkedHashMap<>();
-        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.metricName, metricName);
-        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.traceName, traceName);
-        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.yAxisLabel, yAxisLabel);
-        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.timeValue, timeValue);
-
-        ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
-        configureUI.addNewTraceMetric(metricProperties);
-
-        log("Verify new trace metric got added");
-        goToConfigureMetricsUI();
-        waitForElement(Locator.linkWithText(metricName));
-        assertTextPresent(metricName);
+        addNewTimeTraceMetrics(metrics.get("First"), timeValueOptions.get("First"), traceName);
+        addNewTimeTraceMetrics(metrics.get("Min"), timeValueOptions.get("Min"), "ColumnPressure (channel 4)");
+        addNewTimeTraceMetrics(metrics.get("Max"), timeValueOptions.get("Max"), traceName);
 
         log("Verify trace values after metric addition");
         goToSchemaBrowser();
         DataRegionTable traceValuesTable = viewQueryData("targetedms", "QCTraceMetricValues");
         assertTrue("Trace values are not present", traceValuesTable.getDataRowCount() > 0);
 
-        log("Verify qc plots");
-        var firstTraceValue = traceValuesTable.getRowDataAsMap("sampleFileId", "Site95_STUDY9S_PHASEI_6ProtMix_QC_01");
         goToProjectHome(projectName);
-        PanoramaDashboard dashboard = new PanoramaDashboard(this);
-        QCPlotsWebPart qcPlotsWebPart = dashboard.getQcPlotsWebPart();
-        _ext4Helper.selectComboBoxItem(Locator.id("metric-type-field"), metricName);
-        qcPlotsWebPart.waitForPlots(1);
-        String pressurePlotSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
-        assertFalse("Pressure trace plot is not present", pressurePlotSVGText.isEmpty());
-        assertTrue("Y axis label is not correct or present", pressurePlotSVGText.contains(yAxisLabel));
-        qcPlotsWebPart.openExclusionBubble("2009-11-03 19:37:28");
-        String pressureTracehoverText = waitForElementToBeVisible(qcPlotsWebPart.getBubbleContent()).getText();
-        Assertions.assertThat(pressureTracehoverText).as("Tooltip value").contains("7.363");
+        log("Verify qc plots");
+        verifyQCPlot(metrics.get("First"), "7.363");
+        verifyQCPlot(metrics.get("Min"), "72.878");
+        verifyQCPlot(metrics.get("Max"), "17.508");
 
         log("Delete run and verify trace metric values are deleted");
         clickTab("Runs");
@@ -246,6 +235,46 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         goToSchemaBrowser();
         traceValuesTable = viewQueryData("targetedms", "QCTraceMetricValues");
         assertTrue("Trace values after import are not present", traceValuesTable.getDataRowCount() > 0);
+    }
+
+    private void verifyQCPlot(String metricName, String tooltipValue)
+    {
+        log("Verify qc plots");
+        refresh();
+        PanoramaDashboard dashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = dashboard.getQcPlotsWebPart();
+        _ext4Helper.selectComboBoxItem(Locator.id("metric-type-field"), metricName);
+        qcPlotsWebPart.waitForPlots(1);
+        String pressurePlotSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
+        assertFalse("Pressure trace plot is not present", pressurePlotSVGText.isEmpty());
+        assertTrue("Y axis label is not correct or present", pressurePlotSVGText.contains("psi"));
+        qcPlotsWebPart.openExclusionBubble("2009-11-03 19:37:28");
+        String pressureTracehoverText = waitForElementToBeVisible(qcPlotsWebPart.getBubbleContent()).getText();
+        Assertions.assertThat(pressureTracehoverText).as("Tooltip value").contains(tooltipValue);
+    }
+
+    private void addNewTimeTraceMetrics(String metricName, String timeValueOption, String traceName)
+    {
+        String yAxisLabel = "psi";
+        String minTimeValue = "5";
+        String maxTimeValue = "7";
+
+        log("Add new test trace metric " + metricName);
+        Map<ConfigureMetricsUIPage.TraceMetricProperties, String> metricProperties = new LinkedHashMap<>();
+        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.metricName, metricName);
+        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.traceName, traceName);
+        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.yAxisLabel, yAxisLabel);
+        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.timeValueOption, timeValueOption);
+        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.minTimeValue, minTimeValue);
+        metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.maxTimeValue, maxTimeValue);
+
+        ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
+        configureUI.addNewTraceMetric(metricProperties);
+
+        log("Verify new trace metrics got added");
+        goToConfigureMetricsUI();
+        waitForElement(Locator.linkWithText(metricName));
+        assertTextPresent(metricName);
     }
 
     @Test
