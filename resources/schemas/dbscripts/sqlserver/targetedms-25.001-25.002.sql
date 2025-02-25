@@ -1,9 +1,111 @@
-CREATE TABLE targetedms.rateType
+CREATE TABLE targetedms.msProject
+(
+    Id                  INT IDENTITY(1, 1) NOT NULL ,
+    affiliation         NVARCHAR(15) DEFAULT NULL,
+    blocked             BIT NOT NULL DEFAULT 0,
+    title               NVARCHAR(255),
+    type                INT,
+    submitDate          DATETIME NOT NULL,
+    collaborationStatus INT,
+    collaborationWith   NVARCHAR(255) NOT NULL,
+    organization        INT,
+    labDirector         INT,
+    scientificQuestion  NVARCHAR(255) NOT NULL,
+    abstract            TEXT NOT NULL,
+    results             TEXT NOT NULL,
+
+    Container           entityid NOT NULL,
+    Created             DATETIME,
+    CreatedBy           USERID,
+    Modified            DATETIME,
+    ModifiedBy          USERID,
+
+    CONSTRAINT PK_msProject PRIMARY KEY (Id)
+);
+CREATE INDEX IDX_msProject_Container ON targetedms.msProject(container);
+
+CREATE TABLE targetedms.projectResearcher
+(
+    Id                  INT IDENTITY(1, 1) NOT NULL ,
+    project             INT NOT NULL,
+    researcher          INT NOT NULL,
+
+    Container           entityid NOT NULL,
+    Created             DATETIME,
+    CreatedBy           USERID,
+    Modified            DATETIME,
+    ModifiedBy          USERID,
+
+    CONSTRAINT PK_projectResearcher PRIMARY KEY (Id),
+    CONSTRAINT FK_projectResearcher_project FOREIGN KEY (project) REFERENCES targetedms.msProject(Id)
+);
+CREATE INDEX IDX_projectResearcher_Project ON targetedms.projectResearcher(project);
+CREATE INDEX IDX_projectResearcher_Container ON targetedms.projectResearcher(container);
+
+CREATE TABLE targetedms.msInstrument
+(
+    id          INT IDENTITY(1, 1) NOT NULL ,
+    name        NVARCHAR(100) NOT NULL,
+    description NVARCHAR(255) DEFAULT NULL,
+    active      BIT NOT NULL DEFAULT 1,
+    color       NVARCHAR(10) DEFAULT NULL,
+    massSpec    BIT DEFAULT 1,
+    instrument  NVARCHAR(200),
+
+    Container   entityid NOT NULL,
+    Created     DATETIME,
+    CreatedBy   USERID,
+    Modified    DATETIME,
+    ModifiedBy  USERID,
+
+    CONSTRAINT PK_msInstrument PRIMARY KEY (id)
+);
+CREATE INDEX IDX_msInstrument_Container ON targetedms.msInstrument(container);
+
+CREATE TABLE targetedms.paymentMethod
+(
+    Id                          INT IDENTITY(1, 1) NOT NULL ,
+    UWBudgetNumber              NVARCHAR(50) DEFAULT NULL,
+    budgetExpirationDate        DATETIME DEFAULT NULL,
+    PONumber                    NVARCHAR(50) DEFAULT NULL,
+    contactNameFirst            NVARCHAR(50) DEFAULT NULL,
+    contactNameLast             NVARCHAR(50) DEFAULT NULL,
+    contactEmail                NVARCHAR(50) DEFAULT NULL,
+    contactPhone                NVARCHAR(20) DEFAULT NULL,
+    organization                INT DEFAULT NULL,
+    addressLine1                NVARCHAR(50) DEFAULT NULL,
+    addressLine2                NVARCHAR(50) DEFAULT NULL,
+    city                        NVARCHAR(50) DEFAULT NULL,
+    state                       char(2) DEFAULT NULL,
+    zip                         NVARCHAR(11) DEFAULT NULL,
+    country                     NVARCHAR(50) DEFAULT NULL,
+    isCurrent                   BIT NOT NULL DEFAULT 0,
+    federalFunding              BIT NOT NULL DEFAULT 0,
+    poAmount                    decimal(11,2) DEFAULT NULL,
+    name                        NVARCHAR(500) DEFAULT NULL,
+    worktag                     NVARCHAR(10) DEFAULT NULL,
+    resourceWorktag             NVARCHAR(10) DEFAULT NULL,
+    resourceWorktagDescription  text DEFAULT NULL,
+    assigneeWorktag             NVARCHAR(10) DEFAULT NULL,
+    assigneeWorktagDescription  text DEFAULT NULL,
+    activityWorktag             NVARCHAR(10) DEFAULT NULL,
+    activityWorktagDescription  text DEFAULT NULL,
+
+    Container                   entityid NOT NULL,
+    Created                     DATETIME,
+    CreatedBy                   USERID,
+    Modified                    DATETIME,
+    ModifiedBy                  USERID,
+
+    CONSTRAINT PK_paymentMethod PRIMARY KEY (Id)
+);
+CREATE INDEX IDX_paymentMethod_Container ON targetedms.paymentMethod(container);
+
+CREATE TABLE targetedms.projectPaymentMethod
 (
     Id              INT IDENTITY(1, 1) NOT NULL ,
-    name            NVARCHAR(100) NOT NULL,
-    description     text DEFAULT NULL,
-    setupFee        decimal(5,2) DEFAULT 0.00,
+    paymentMethod   INT NOT NULL,
+    project         INT NOT NULL,
 
     Container       entityid NOT NULL,
     Created         DATETIME,
@@ -11,17 +113,23 @@ CREATE TABLE targetedms.rateType
     Modified        DATETIME,
     ModifiedBy      USERID,
 
-    CONSTRAINT PK_rateType PRIMARY KEY (Id)
+    CONSTRAINT PK_projectPaymentMethod PRIMARY KEY (Id),
+    CONSTRAINT FK_projectPaymentMethod_paymentMethod FOREIGN KEY (paymentMethod) REFERENCES targetedms.paymentMethod(Id),
+    CONSTRAINT FK_projectPaymentMethod_project FOREIGN KEY (project) REFERENCES targetedms.msProject(Id)
 );
-CREATE INDEX IDX_rateType_Container ON targetedms.rateType(container);
+CREATE INDEX IDX_projectPaymentMethod_PaymentMethod ON targetedms.projectPaymentMethod(paymentMethod);
+CREATE INDEX IDX_projectPaymentMethod_Project ON targetedms.projectPaymentMethod(project);
+CREATE INDEX IDX_projectPaymentMethod_Container ON targetedms.projectPaymentMethod(container);
 
-
-CREATE TABLE targetedms.instrumentRate
+CREATE TABLE targetedms.instrumentSchedule
 (
     Id              INT IDENTITY(1, 1) NOT NULL ,
     instrument      INT NOT NULL,
-    rateType        INT NOT NULL,
-    fee             decimal(7,2) NOT NULL,
+    project         INT NOT NULL,
+    startTime       DATETIME NOT NULL,
+    endTime         DATETIME NOT NULL,
+    notes           TEXT DEFAULT NULL,
+    name            NVARCHAR(255) DEFAULT NULL,
 
     Container       entityid NOT NULL,
     Created         DATETIME,
@@ -29,51 +137,10 @@ CREATE TABLE targetedms.instrumentRate
     Modified        DATETIME,
     ModifiedBy      USERID,
 
-    CONSTRAINT PK_instrumentRate PRIMARY KEY (Id),
-    CONSTRAINT FK_instrumentRate_instrument FOREIGN KEY (instrument) REFERENCES targetedms.msInstrument(id),
-    CONSTRAINT FK_instrumentRate_rateType FOREIGN KEY (rateType) REFERENCES targetedms.rateType(Id)
+    CONSTRAINT PK_instrumentSchedule PRIMARY KEY (Id),
+    CONSTRAINT FK_instrumentSchedule_instrument FOREIGN KEY (instrument) REFERENCES targetedms.msInstrument(id),
+    CONSTRAINT FK_instrumentSchedule_project FOREIGN KEY (project) REFERENCES targetedms.msProject(Id)
 );
-CREATE INDEX IDX_instrumentRate_Instrument ON targetedms.instrumentRate(instrument);
-CREATE INDEX IDX_instrumentRate_RateType ON targetedms.instrumentRate(rateType);
-CREATE INDEX IDX_instrumentRate_Container ON targetedms.instrumentRate(container);
-GO
-
-CREATE TABLE targetedms.instrumentUsagePayment
-(
-    Id                          INT IDENTITY(1, 1) NOT NULL ,
-    instrumentScheduleId        INT NOT NULL,
-    instrumentRate              INT NOT NULL,
-    paymentMethod               INT NOT NULL,
-    percentPayment              decimal(5,2) NOT NULL,
-
-    Container       entityid NOT NULL,
-    Created         DATETIME,
-    CreatedBy       USERID,
-    Modified        DATETIME,
-    ModifiedBy      USERID,
-
-    CONSTRAINT PK_instrumentUsagePayment PRIMARY KEY (Id),
-    CONSTRAINT FK_instrumentUsagePayment_instrumentScheduleId FOREIGN KEY (instrumentScheduleId) REFERENCES targetedms.instrumentSchedule(id),
-    CONSTRAINT FK_instrumentUsagePayment_instrumentRate FOREIGN KEY (instrumentRate) REFERENCES targetedms.instrumentRate(Id),
-);
-CREATE INDEX IDX_instrumentUsagePayment_InstrumentScheduleId ON targetedms.instrumentUsagePayment(instrumentScheduleId);
-CREATE INDEX IDX_instrumentUsagePayment_InstrumentRate ON targetedms.instrumentUsagePayment(instrumentRate);
-CREATE INDEX IDX_instrumentUsagePayment_PaymentMethod ON targetedms.instrumentUsagePayment(paymentMethod);
-CREATE INDEX IDX_instrumentUsagePayment_Container ON targetedms.instrumentUsagePayment(container);
-GO
-
-ALTER TABLE targetedms.projectResearcher ALTER COLUMN researcher USERID;
-GO
-ALTER TABLE targetedms.msProject ALTER COLUMN labDirector USERID;
-GO
-ALTER TABLE targetedms.instrumentSchedule ADD instrumentOperator USERID;
-Go
-CREATE INDEX IDX_instrumentSchedule_InstrumentOperator ON targetedms.instrumentSchedule(instrumentOperator);
-GO
-
-ALTER TABLE targetedms.msProject DROP COLUMN type;
-GO
-ALTER TABLE targetedms.msProject DROP COLUMN organization;
-GO
-ALTER TABLE targetedms.msProject DROP COLUMN results;
-GO
+CREATE INDEX IDX_instrumentSchedule_Instrument ON targetedms.instrumentSchedule(instrument);
+CREATE INDEX IDX_instrumentSchedule_Project ON targetedms.instrumentSchedule(project);
+CREATE INDEX IDX_instrumentSchedule_Container ON targetedms.instrumentSchedule(container);
