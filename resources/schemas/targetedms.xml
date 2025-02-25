@@ -1774,15 +1774,12 @@
             <column columnName="affiliation"/>
             <column columnName="blocked"/>
             <column columnName="title"/>
-            <column columnName="type"/>
             <column columnName="submitDate"/>
             <column columnName="collaborationStatus"/>
             <column columnName="collaborationWith"/>
-            <column columnName="organization"/>
             <column columnName="labDirector"/>
             <column columnName="scientificQuestion"/>
             <column columnName="abstract"/>
-            <column columnName="results"/>
             <column columnName="Created"/>
             <column columnName="CreatedBy"/>
             <column columnName="Modified"/>

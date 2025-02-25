@@ -32,8 +32,8 @@
                     <form class="form-horizontal">
 
                         <div class="form-group row">
-                            <label for="min-date" class="col-sm-4 control-label">Dates</label>
-                            <div class="col-sm-8">
+                            <label for="min-date" class="col-sm-2 control-label">Dates</label>
+                            <div class="col-sm-10">
                                 <div class="input-group input-daterange" data-provide="datepicker">
                                     <input id="min-date" name="event-start-date" type="datetime-local" class="form-control">
                                     <div class="input-group-prepend input-group-append">
@@ -44,19 +44,19 @@
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label class="col-sm-4 control-label">Name</label>
-                            <div class="col-sm-8">
+                            <label class="col-sm-2 control-label">Name</label>
+                            <div class="col-sm-10">
                                 <input id="event-name" name="event-name" type="text" class="form-control">
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label class="col-sm-4 control-label">Notes</label>
-                            <div class="col-sm-8">
+                            <label class="col-sm-2 control-label">Notes</label>
+                            <div class="col-sm-10">
                                 <input id="event-notes" name="event-notes" type="text" class="form-control">
                             </div>
                         </div>
                         <div class="form-group row" >
-                            <div class="col-sm-12 labkey-error" style="min-height: 2em;" id="schedule-save-error"></div>
+                            <div class="col-sm-10 offset-sm-2 labkey-error" style="min-height: 2em;" id="schedule-save-error"></div>
                         </div>
                     </form>
                 </div>
@@ -408,6 +408,7 @@
             $('#event-modal input[name="event-end-date"]').val(endDateFormatted);
             $('#event-modal input[name="event-name"]').val(event ? event.name : '');
             $('#event-modal input[name="event-notes"]').val(event ? event.notes : '');
+            $('#delete-event').toggle(!!event.id);
             $('#add-event').text(event.id ? 'Edit' : 'Add');
             $('#event-modal').modal();
         }
@@ -507,6 +508,8 @@
                             let rowElt = document.createElement('tr');
                             rowElt.className = 'labkey-row';
                             let totalCost = Math.round(((setupFee + cost) + Number.EPSILON) * 100) / 100;
+                            cost = Math.round((cost + Number.EPSILON) * 100) / 100;
+                            setupFee = Math.round((setupFee + Number.EPSILON) * 100) / 100;
                             rowElt.innerHTML = '<td>' + startDateFormatted + '</td><td>' + endDateFormatted + '</td><td id="event-cost">' + '$' + totalCost + '</td>';
                             tableElt.appendChild(rowElt);
 

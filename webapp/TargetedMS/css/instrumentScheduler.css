@@ -39,3 +39,19 @@
 .popover{
   max-width: 100%;
 }
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header .modal-title {
+  flex-grow: 1;
+  margin-bottom: 0; /* Removes extra spacing */
+}
+
+.modal-header .close {
+  font-size: 1.5rem;
+  line-height: 1;
+}

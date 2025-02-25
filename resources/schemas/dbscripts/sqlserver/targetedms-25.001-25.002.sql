@@ -36,6 +36,7 @@ CREATE TABLE targetedms.instrumentRate
 CREATE INDEX IDX_instrumentRate_Instrument ON targetedms.instrumentRate(instrument);
 CREATE INDEX IDX_instrumentRate_RateType ON targetedms.instrumentRate(rateType);
 CREATE INDEX IDX_instrumentRate_Container ON targetedms.instrumentRate(container);
+GO
 
 CREATE TABLE targetedms.instrumentUsagePayment
 (
@@ -59,9 +60,20 @@ CREATE INDEX IDX_instrumentUsagePayment_InstrumentScheduleId ON targetedms.instr
 CREATE INDEX IDX_instrumentUsagePayment_InstrumentRate ON targetedms.instrumentUsagePayment(instrumentRate);
 CREATE INDEX IDX_instrumentUsagePayment_PaymentMethod ON targetedms.instrumentUsagePayment(paymentMethod);
 CREATE INDEX IDX_instrumentUsagePayment_Container ON targetedms.instrumentUsagePayment(container);
+GO
 
 ALTER TABLE targetedms.projectResearcher ALTER COLUMN researcher USERID;
+GO
 ALTER TABLE targetedms.msProject ALTER COLUMN labDirector USERID;
-
+GO
 ALTER TABLE targetedms.instrumentSchedule ADD instrumentOperator USERID;
+Go
 CREATE INDEX IDX_instrumentSchedule_InstrumentOperator ON targetedms.instrumentSchedule(instrumentOperator);
+GO
+
+ALTER TABLE targetedms.msProject DROP COLUMN type;
+GO
+ALTER TABLE targetedms.msProject DROP COLUMN organization;
+GO
+ALTER TABLE targetedms.msProject DROP COLUMN results;
+GO

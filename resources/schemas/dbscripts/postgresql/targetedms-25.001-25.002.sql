@@ -65,5 +65,10 @@ ALTER TABLE targetedms.msProject ALTER COLUMN labDirector TYPE USERID;
 ALTER TABLE targetedms.instrumentSchedule ADD COLUMN instrumentOperator USERID;
 CREATE INDEX IDX_instrumentSchedule_InstrumentOperator ON targetedms.instrumentSchedule(instrumentOperator);
 
+ALTER TABLE targetedms.msProject DROP COLUMN type;
+ALTER TABLE targetedms.msProject DROP COLUMN organization;
+ALTER TABLE targetedms.msProject DROP COLUMN results;
+
+
 
 

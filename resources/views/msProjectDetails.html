@@ -18,7 +18,7 @@
         LABKEY.Query.selectRows({
             schemaName: 'targetedms',
             queryName: 'msProjectDetails',
-            columns: 'Id,affiliation,title,collaborationWith,labDirector,organization,scientificQuestion,abstract,results, researchers',
+            columns: 'Id,affiliation,title,collaborationWith,labDirector,scientificQuestion,abstract, researchers',
             filterArray: [LABKEY.Filter.create('Id', project, LABKEY.Filter.Types.EQUAL)],
             success: function(data){
                 let projectDetails = data.rows[0];
@@ -27,10 +27,8 @@
                 let title = LABKEY.Utils.encodeHtml(projectDetails.title);
                 let collaborationWith = LABKEY.Utils.encodeHtml(projectDetails.collaborationWith);
                 let labDirector = LABKEY.Utils.encodeHtml(projectDetails.labDirector);
-                let organization = LABKEY.Utils.encodeHtml(projectDetails.organization);
                 let scientificQuestion = LABKEY.Utils.encodeHtml(projectDetails.scientificQuestion);
                 let abstract = LABKEY.Utils.encodeHtml(projectDetails.abstract);
-                let results = LABKEY.Utils.encodeHtml(projectDetails.results);
                 let researchers = LABKEY.Utils.encodeHtml(projectDetails.researchers).split(',');
 
                 let projectDetailsHtml = `
@@ -63,10 +61,7 @@
                         </tr>`;
                     }).join('') +
 
-                    `<tr>
-                        <td class='labkey-form-label'>Organization</td>
-                        <td>${organization}</td>
-                    </tr>
+                    `
                     <tr>
                         <td class='labkey-form-label'>Scientific Question</td>
                         <td>${scientificQuestion}</td>
@@ -75,11 +70,6 @@
                         <td class='labkey-form-label'>Abstract</td>
                         <td>${abstract}</td>
                     </tr>
-                    <tr>
-                        <td class='labkey-form-label'>Progress/Results</td>
-                        <td>${results}</td>
-                    </tr>
-
                 </table>
                 </br>
             `;
