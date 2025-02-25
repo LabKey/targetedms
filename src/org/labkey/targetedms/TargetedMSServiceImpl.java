@@ -122,7 +122,7 @@ public class TargetedMSServiceImpl implements TargetedMSService
     }
 
     @Override
-    public List<SampleFileInfo> getSampleFiles(Container container, User user, Date startDate, Date endDate)
+    public List<SampleFileInfo> getSampleFiles(@NotNull Container container, @NotNull User user, @Nullable Date startDate, @Nullable Date endDate)
     {
         List<SampleFileInfo> sampleFileInfos = TargetedMSManager.get().getSampleFileInfos(container, user, null);
         List<SampleFileInfo> result = new ArrayList<>();
@@ -131,9 +131,9 @@ public class TargetedMSServiceImpl implements TargetedMSService
             for (SampleFileInfo sampleFileInfo : sampleFileInfos)
             {
                 Date acquired = DateUtil.getDateOnly(sampleFileInfo.getAcquiredTime());
-                Date start = DateUtil.getDateOnly(startDate);
-                Date end = DateUtil.getDateOnly(endDate);
-                if ((acquired.after(start) && acquired.before(end) || acquired.compareTo(start) == 0 || acquired.compareTo(end) == 0))
+                Date start = startDate == null ? acquired : DateUtil.getDateOnly(startDate);
+                Date end = endDate == null ? acquired : DateUtil.getDateOnly(endDate);
+                if ((acquired.after(start) || acquired.compareTo(start) == 0) && (acquired.before(end) || acquired.compareTo(end) == 0))
                 {
                     result.add(sampleFileInfo);
                 }

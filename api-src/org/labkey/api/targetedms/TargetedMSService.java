@@ -78,7 +78,7 @@ public interface TargetedMSService
     void registerTargetedMSFolderTypeListener(TargetedMSFolderTypeListener listener);
     List<TargetedMSFolderTypeListener> getTargetedMSFolderTypeListeners();
     List<SampleFileInfo> getSampleFiles(Container container, User user, Integer sampleFileLimit);
-    List<SampleFileInfo> getSampleFiles(Container container, User user, Date startDate, Date endDate);
+    List<SampleFileInfo> getSampleFiles(@NotNull Container container, @NotNull User user, @Nullable Date startDate, @Nullable Date endDate);
     TargetedMSService.FolderType getFolderType(Container container);
 
     ExperimentRunType getExperimentRunType();
