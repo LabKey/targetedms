@@ -1,25 +1,20 @@
-CREATE PROCEDURE targetedms.ensureColumns AS
+CREATE PROCEDURE targetedms.ensureQCMetricConfigurationColumns AS
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'QCMetricConfiguration' AND COLUMN_NAME = 'MinTimeValue')
 BEGIN
     execute('EXEC sp_rename ''targetedms.QCMetricConfiguration.TimeValue'', ''MinTimeValue'', ''COLUMN''');
-    execute('GO');
     execute('ALTER TABLE targetedms.QCMetricConfiguration ADD MaxTimeValue REAL');
-    execute('GO');
     execute('ALTER TABLE targetedms.QCMetricConfiguration ADD TimeValueOption NVARCHAR(10)');
-    execute('GO');
     execute('UPDATE targetedms.QCMetricConfiguration SET MaxTimeValue = 1000 WHERE MinTimeValue IS NOT NULL');
-    execute('GO');
     execute('UPDATE targetedms.QCMetricConfiguration SET TimeValueOption = ''First'' WHERE MinTimeValue IS NOT NULL');
-    execute('GO');
 END
 END;
 GO
 
-EXEC targetedms.ensureColumns
+EXEC targetedms.ensureQCMetricConfigurationColumns
 GO
 
-DROP PROCEDURE targetedms.ensureColumns
+DROP PROCEDURE targetedms.ensureQCMetricConfigurationColumns
 GO
 
 -- script from develop
