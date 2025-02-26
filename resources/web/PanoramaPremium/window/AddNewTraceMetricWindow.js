@@ -13,12 +13,21 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
     border: false,
     update: 'update',
     insert: 'insert',
+    timeValueOptions:  Ext4.create('Ext.data.Store', {
+        fields: ['value'],
+        data : [
+            { "value":"First"},
+            { "value":"Last"},
+            { "value":"Max"},
+            { "value":"Min"}
+        ]
+    }),
 
     initComponent: function() {
         var title = this.operation === this.insert ? 'Add New Trace Metric' : 'Edit Trace Metric';
         this.setTitle(title);
         this.height = Ext4.max([Ext4.getBody().getHeight() * 0.3, 250]);
-        this.width = Ext4.max([Ext4.getBody().getWidth() * 0.3, 500]);
+        this.width = Ext4.max([Ext4.getBody().getWidth() * 0.3, 600]);
         this.items = this.getItems();
         this.dockedItems= [{
             xtype: 'toolbar',
@@ -60,7 +69,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
             this.metricNameField = Ext4.create('Ext.form.field.Text', {
                 fieldLabel: 'Metric Name',
                 labelWidth: 150,
-                width: 470,
+                width: 570,
                 name: 'metricName'
             });
 
@@ -78,7 +87,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
               fieldLabel: 'Use Trace',
               name: 'useTrace',
               labelWidth: 150,
-              width: 470
+              width: 570
           }
           if (!this.tracesPresent) {
               config.emptyText = 'No trace can be found';
@@ -108,77 +117,150 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
 
     getTraceValueRadioGroup: function () {
         if (!this.traceValueRadioGroup) {
-            this.traceValueRadioGroup = Ext4.create('Ext.form.RadioGroup', {
-                columns: 2,
-                layoutOptions: 'time',
-                padding: '0 10px 0 0',
-                items: [
-                     {
-                         boxLabel: 'Use trace value when time is greater than or equal to',
-                         inputValue: 'timeValue',
-                         name: 'metricValue',
-                         width: 400,
+            this.traceValueRadioGroup =
+                    Ext4.create('Ext.form.Panel', {
+                        renderTo: Ext4.getBody(),
+                        width: 570,
 
-                         checked: this.operation === this.update ? this.metric.TimeValue > 0 : true,
-                         listeners: {
-                             change: {fn : function(cmp, newVal, oldVal){
-                                 this.timeValueNumberField.setDisabled(oldVal);
-                                 this.traceValueNumberField.setDisabled(newVal);
+                        border:false,
+                        items: [{
+                            xtype: 'radiogroup',
+                            columns: 1, // Stack radio buttons vertically
+                            vertical: true,
+                            items: [
+                                {
+                                    xtype: 'container',
+                                    layout: 'hbox',
+                                    items: [
+                                        {
+                                            xtype: 'radio',
+                                            name: 'metricValue',
+                                            inputValue: 'timeValue',
+                                            boxLabel: 'Use the',
+                                            width: 65,
+                                            checked: this.operation === this.update ? this.metric.MinTimeValue >= 0 : true,
+                                            listeners: {
+                                                 change: {fn : function(cmp, newVal, oldVal){
+                                                     this.minTimeValueNumberField.setDisabled(oldVal);
+                                                     this.maxTimeValueNumberField.setDisabled(oldVal);
+                                                     this.timeValueOptionField.setDisabled(oldVal);
+                                                     this.traceValueNumberField.setDisabled(newVal);
 
-                                 // restore the value onChange when it is present
-                                 if (this.operation === this.update) {
-                                     if (newVal) {
-                                         this.timeValueNumberField.setValue(this.metric.TimeValue);
-                                     }
-                                     else {
-                                         this.traceValueNumberField.setValue(this.metric.TraceValue);
-                                     }
-                                 }
-                                 else {
-                                     this.traceValueNumberField.setValue(undefined);
-                                     this.timeValueNumberField.setValue(undefined);
-                                 }
-                             }},
-                             scope   : this
-                         }
-                     },
-                    this.getTimeValueNumberField(),
-                    {
-                        boxLabel: 'Use time when the trace first reaches a value greater than or equal to',
-                        inputValue: 'traceValue',
-                        name: 'metricValue',
-                        width: 400,
-                        checked: this.operation === this.update ? this.metric.TraceValue > 0 : false
-                    },
-                    this.getTraceValueNumberField()
-                ]
-            });
+                                                     // restore the value onChange when it is present
+                                                     if (this.operation === this.update) {
+                                                         if (newVal) {
+                                                             this.minTimeValueNumberField.setValue(this.metric.MinTimeValue);
+                                                             this.maxTimeValueNumberField.setValue(this.metric.MaxTimeValue);
+                                                         }
+                                                         else {
+                                                             this.traceValueNumberField.setValue(this.metric.TraceValue);
+                                                         }
+                                                     }
+                                                     else {
+                                                         this.traceValueNumberField.setValue(undefined);
+                                                         this.minTimeValueNumberField.setValue(undefined);
+                                                         this.maxTimeValueNumberField.setValue(undefined);
+                                                         this.timeValueOptionField.setValue(undefined);
+                                                     }
+                                                 }},
+                                                 scope   : this
+                                            }
+                                        },
+                                        this.getTimeValueOptionField(),
+                                        {
+                                            xtype: 'displayfield',
+                                            value: 'trace value when time in minutes is between',
+                                            margin: '0 5'
+                                        },
+                                        this.getMinTimeValueNumberField(),
+                                        {
+                                            xtype: 'displayfield',
+                                            value: 'and',
+                                            margin: '0 5'
+                                        },
+                                        this.getMaxTimeValueNumberField()
+                                    ]
+                                },
+                                {
+                                    xtype: 'container',
+                                    layout: 'hbox',
+                                    items: [
+                                        {
+                                            xtype: 'radio',
+                                            name: 'metricValue',
+                                            inputValue: 'traceValue',
+                                            boxLabel: 'Use time in minutes when the trace first reaches a value greater than or equal to',
+                                            width: 450,
+                                            checked: this.operation === this.update ? this.metric.TraceValue > 0 : false
+                                        },
+                                        this.getTraceValueNumberField()
+                                    ]
+                                }
+                            ]
+                        }]
+                    });
         }
         return this.traceValueRadioGroup;
     },
 
-    getTimeValueNumberField: function () {
-        if (!this.timeValueNumberField) {
-            this.timeValueNumberField = Ext4.create('Ext.form.field.Number', {
-                name: 'timeValue',
+    getTimeValueOptionField: function() {
+        if (!this.timeValueOptionField) {
+            this.timeValueOptionField = Ext4.create('Ext.form.field.ComboBox', {
+                name: 'timeValueOption',
+                store: this.timeValueOptions,
+                displayField: 'value',
+                valueField: 'value',
+                width: 50,
+                itemId: 'timeValueOption',
+            });
+
+            if(this.operation === this.update) {
+                this.timeValueOptionField.setValue(this.metric.TimeValueOption);
+            }
+        }
+
+        return this.timeValueOptionField
+    },
+
+    getMinTimeValueNumberField: function () {
+        if (!this.minTimeValueNumberField) {
+            this.minTimeValueNumberField = Ext4.create('Ext.form.field.Number', {
+                name: 'minTimeValue',
                 width: 65,
-                disabled: this.operation === this.update ? !(this.metric.TimeValue > 0) : false
+                disabled: this.operation === this.update ? !(this.metric.MinTimeValue >= 0) : false
             });
 
             if (this.operation === this.update) {
-                this.timeValueNumberField.setValue(this.metric.TimeValue);
+                this.minTimeValueNumberField.setValue(this.metric.MinTimeValue);
             }
 
         }
-        return this.timeValueNumberField;
+        return this.minTimeValueNumberField;
     },
+
+    getMaxTimeValueNumberField: function () {
+        if (!this.maxTimeValueNumberField) {
+            this.maxTimeValueNumberField = Ext4.create('Ext.form.field.Number', {
+                name: 'maxTimeValue',
+                width: 65,
+                disabled: this.operation === this.update ? !(this.metric.MaxTimeValue >= 0) : false
+            });
+
+            if (this.operation === this.update) {
+                this.maxTimeValueNumberField.setValue(this.metric.MaxTimeValue);
+            }
+
+        }
+        return this.maxTimeValueNumberField;
+    },
+
 
     getTraceValueNumberField: function () {
         if (!this.traceValueNumberField) {
             this.traceValueNumberField = Ext4.create('Ext.form.field.Number', {
                 name: 'traceValue',
                 width: 65,
-                disabled: this.operation === this.update ? !(this.metric.TraceValue > 0) : true
+                disabled: this.operation === this.update ? !(this.metric.TraceValue >= 0) : true
             });
 
             if (this.operation === this.update) {
@@ -193,7 +275,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
             this.yAxisLabelField = Ext4.create('Ext.form.field.Text', {
                 fieldLabel: 'Y Axis Label',
                 labelWidth: 150,
-                width: 470,
+                width: 570,
                 name: 'yAxisLabel'
             });
 
@@ -260,13 +342,24 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
             isValid = false;
         }
 
-        if (this.traceValueRadioGroup.getValue()['metricValue'] === 'timeValue' &&
-                (!this.timeValueNumberField.getValue() || this.timeValueNumberField.getValue() < 0)) {
-            this.timeValueNumberField.setActiveError(errorText);
+        if (this.timeValueOptionField.getValue() === null) {
+            this.timeValueOptionField.setActiveError(errorText);
             isValid = false;
         }
 
-        if (this.traceValueRadioGroup.getValue()['metricValue'] === 'traceValue' && !this.traceValueNumberField.getValue()) {
+        if (this.traceValueRadioGroup.down().getValue()['metricValue'] === 'timeValue' &&
+                (!(this.minTimeValueNumberField.getValue() >= 0))) {
+            this.minTimeValueNumberField.setActiveError(errorText);
+            isValid = false;
+        }
+
+        if (this.traceValueRadioGroup.down().getValue()['metricValue'] === 'timeValue' &&
+                (!(this.maxTimeValueNumberField.getValue() >= 0))) {
+            this.maxTimeValueNumberField.setActiveError(errorText);
+            isValid = false;
+        }
+
+        if (this.traceValueRadioGroup.down().getValue()['metricValue'] === 'traceValue' && !this.traceValueNumberField.getValue()) {
             this.traceValueNumberField.setActiveError(errorText);
             isValid = false;
         }
@@ -291,8 +384,16 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
             if (this.traceValueNumberField.getValue()) {
                 newMetric.TraceValue = this.traceValueNumberField.getValue();
             }
-            else if (this.timeValueNumberField.getValue()) {
-                newMetric.TimeValue = this.timeValueNumberField.getValue();
+            else {
+                if (this.timeValueOptionField.getValue()) {
+                    newMetric.TimeValueOption = this.timeValueOptionField.getValue();
+                }
+                if (this.minTimeValueNumberField.getValue()) {
+                    newMetric.MinTimeValue = this.minTimeValueNumberField.getValue();
+                }
+                if (this.maxTimeValueNumberField.getValue()) {
+                    newMetric.MaxTimeValue = this.maxTimeValueNumberField.getValue();
+                }
             }
 
             if(this.operation === this.update) {

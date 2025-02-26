@@ -405,7 +405,7 @@ public class SkylineDocumentParser implements AutoCloseable
             {
                 result = ExperimentService.get().createData(container, SkylineBinaryParser.DATA_TYPE);
                 result.setName(skydFile.getName());
-                result.setDataFileURI(skydFile.toURI());
+                result.setDataFileURI(skydFile.toPath().toUri());
                 result.save(user);
             }
             return result;

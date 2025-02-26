@@ -161,9 +161,13 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
             {
                 setFormElement(Locator.name(prop.name()), val);
             }
-            else
+            else if (prop.formLabel != null)
             {
                 _ext4Helper.selectComboBoxItem(prop.formLabel, val);
+            }
+            else
+            {
+                _ext4Helper.selectComboBoxItem(prop.loc, val);
             }
         });
         clickAndWait(Ext4Helper.Locators.ext4Button("Save").findElement(metricWindow));
@@ -204,17 +208,34 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         metricName(null, false),
         traceName("Use Trace", true),
         yAxisLabel(null, false),
-        timeValue(null, false),
-        traceValue(null, false);
+        minTimeValue(null, false),
+        maxTimeValue(null, false),
+        traceValue(null, false),
+        timeValueOption(null, true, Ext4Helper.Locators.formItemWithInputNamed("timeValueOption")),;
 
         private final String formLabel;
         private final boolean isSelect;
+        private Locator.XPathLocator loc;
 
         TraceMetricProperties(String formLabel, boolean isSelect)
         {
-            this.formLabel = formLabel + ":";
+            if (formLabel == null)
+            {
+                this.formLabel = null;
+            }
+            else
+            {
+                this.formLabel = formLabel + ":";
+            }
             this.isSelect = isSelect;
         }
+
+        TraceMetricProperties(String formLabel, boolean isSelect, Locator.XPathLocator loc)
+        {
+            this(formLabel, isSelect);
+            this.loc = loc;
+        }
+
     }
 
 }
