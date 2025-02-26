@@ -1912,6 +1912,7 @@
             <column columnName="Id"/>
             <column columnName="instrumentScheduleId"/>
             <column columnName="paymentMethod"/>
+            <column columnName="instrumentRate"/>
             <column columnName="percentPayment"/>
             <column columnName="Created"/>
             <column columnName="CreatedBy"/>
