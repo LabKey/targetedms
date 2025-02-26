@@ -57,6 +57,7 @@ import org.labkey.api.view.JspView;
 import org.labkey.api.view.NavTree;
 import org.labkey.api.view.Portal;
 import org.labkey.api.view.ViewContext;
+import org.labkey.api.view.WebPartConfigurationException;
 import org.labkey.api.view.WebPartFactory;
 import org.labkey.api.view.WebPartView;
 import org.labkey.api.view.template.ClientDependency;
@@ -122,6 +123,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     public static final String TARGETED_MS_CALIBRATION_CURVE = "Targeted MS Calibration Curve";
     public static final String TARGETED_MS_FIGURES_OF_MERIT = "Targeted MS Figures of Merit";
     public static final String TARGETED_MS_PEPTIDE_MOLECULE_SUMMARY = "Peptide/Molecule Summary";
+    public static final String TARGETED_MS_PROJECT_WEBPART = "Targeted MS Project";
 
     public static final String PEPTIDE_TAB_NAME = "Peptides";
     public static final String PROTEIN_TAB_NAME = "Proteins";
@@ -488,6 +490,15 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
                 public WebPartView<?> getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
                 {
                     return ModuleHtmlView.get(getModule(), "peptideSummary");
+                }
+            },
+
+            new BaseWebPartFactory(TARGETED_MS_PROJECT_WEBPART)
+            {
+                @Override
+                public WebPartView<?> getWebPartView(@NotNull ViewContext portalCtx, @NotNull Portal.WebPart webPart)
+                {
+                    return ModuleHtmlView.get(getModule(), "msProject");
                 }
             }
         );

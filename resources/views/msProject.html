@@ -1,0 +1,14 @@
+<div id="ms-project"></div>
+<script type="text/javascript" nonce="<%=scriptNonce%>">
+    let webpart = <%=webpartContext%>;
+    let wp = new LABKEY.QueryWebPart({
+        renderTo: webpart.wrapperDivId,
+        frame: 'portal',
+        title: 'MS Project',
+        schemaName: 'targetedms',
+        queryName: 'msProject',
+        columns: 'Id, title, type, submitDate, collaborationStatus',
+        containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
+    });
+    wp.render();
+</script>
