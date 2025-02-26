@@ -1357,7 +1357,9 @@
             <column columnName="EnabledQueryName"/>
             <column columnName="EnabledSchemaName"/>
             <column columnName="TraceValue"/>
-            <column columnName="TimeValue"/>
+            <column columnName="MinTimeValue"/>
+            <column columnName="MaxTimeValue"/>
+            <column columnName="TimeValueOption"/>
             <column columnName="TraceName"/>
             <column columnName="YAxisLabel1"/>
             <column columnName="YAxisLabel2"/>

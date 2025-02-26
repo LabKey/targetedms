@@ -33,7 +33,9 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
     private String _enabledSchemaName;
     private QCMetricStatus _status;
     private String _traceName;
-    private Double _timeValue;
+    private Double _minTimeValue;
+    private Double _maxTimeValue;
+    private String _timeValueOption;
     private Double _traceValue;
     private String _yAxisLabel1;
     private String _yAxisLabel2;
@@ -169,14 +171,34 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
         _traceName = traceName;
     }
 
-    public Double getTimeValue()
+    public Double getMinTimeValue()
     {
-        return _timeValue;
+        return _minTimeValue;
     }
 
-    public void setTimeValue(Double timeValue)
+    public void setMinTimeValue(Double minTimeValue)
     {
-        _timeValue = timeValue;
+        _minTimeValue = minTimeValue;
+    }
+
+    public Double getMaxTimeValue()
+    {
+        return _maxTimeValue;
+    }
+
+    public void setMaxTimeValue(Double maxTimeValue)
+    {
+        _maxTimeValue = maxTimeValue;
+    }
+
+    public String getTimeValueOption()
+    {
+        return _timeValueOption;
+    }
+
+    public void setTimeValueOption(String timeValueOption)
+    {
+        _timeValueOption = timeValueOption;
     }
 
     public Double getTraceValue()
@@ -259,8 +281,14 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
         if (_traceValue != null) {
             jsonObject.put("traceValue", _traceValue);
         }
-        if (_timeValue != null) {
-            jsonObject.put("timeValue", _timeValue);
+        if (_minTimeValue != null) {
+            jsonObject.put("minTimeValue", _minTimeValue);
+        }
+        if (_maxTimeValue != null) {
+            jsonObject.put("maxTimeValue", _maxTimeValue);
+        }
+        if (_timeValueOption != null) {
+            jsonObject.put("timeValueOption", _timeValueOption);
         }
         if (_yAxisLabel1 != null) {
             jsonObject.put("yAxisLabel1", _yAxisLabel1);
