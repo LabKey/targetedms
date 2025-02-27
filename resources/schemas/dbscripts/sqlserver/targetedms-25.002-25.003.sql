@@ -54,6 +54,7 @@ CREATE TABLE targetedms.instrumentUsagePayment
 
     CONSTRAINT PK_instrumentUsagePayment PRIMARY KEY (Id),
     CONSTRAINT FK_instrumentUsagePayment_instrumentScheduleId FOREIGN KEY (instrumentScheduleId) REFERENCES targetedms.instrumentSchedule(id),
+    CONSTRAINT FK_instrumentUsagePayment_paymentMethod FOREIGN KEY (paymentMethod) REFERENCES targetedms.paymentMethod(Id),
     CONSTRAINT FK_instrumentUsagePayment_instrumentRate FOREIGN KEY (instrumentRate) REFERENCES targetedms.instrumentRate(Id),
 );
 CREATE INDEX IDX_instrumentUsagePayment_InstrumentScheduleId ON targetedms.instrumentUsagePayment(instrumentScheduleId);

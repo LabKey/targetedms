@@ -43,6 +43,7 @@ CREATE TABLE targetedms.instrumentUsagePayment
     instrumentScheduleId        integer NOT NULL,
     paymentMethod               integer NOT NULL,
     percentPayment              decimal(5,2) NOT NULL,
+    instrumentRate              integer NOT NULL,
 
     Container                   entityid NOT NULL,
     Created                     TIMESTAMP,
@@ -52,10 +53,12 @@ CREATE TABLE targetedms.instrumentUsagePayment
 
     CONSTRAINT PK_instrumentUsagePayment PRIMARY KEY (instrumentScheduleId, paymentMethod),
     CONSTRAINT FK_instrumentUsagePayment_instrumentScheduleId FOREIGN KEY (instrumentScheduleId) REFERENCES targetedms.instrumentSchedule(id),
-    CONSTRAINT FK_instrumentUsagePayment_paymentMethod FOREIGN KEY (paymentMethod) REFERENCES targetedms.paymentMethod(Id)
+    CONSTRAINT FK_instrumentUsagePayment_paymentMethod FOREIGN KEY (paymentMethod) REFERENCES targetedms.paymentMethod(Id),
+    CONSTRAINT FK_instrumentUsagePayment_instrumentRate FOREIGN KEY (instrumentRate) REFERENCES targetedms.instrumentRate(Id)
 );
 CREATE INDEX IDX_instrumentUsagePayment_InstrumentScheduleId ON targetedms.instrumentUsagePayment(instrumentScheduleId);
 CREATE INDEX IDX_instrumentUsagePayment_PaymentMethod ON targetedms.instrumentUsagePayment(paymentMethod);
+CREATE INDEX IDX_instrumentUsagePayment_InstrumentRate ON targetedms.instrumentUsagePayment(instrumentRate);
 CREATE INDEX IDX_instrumentUsagePayment_Container ON targetedms.instrumentUsagePayment(container);
 
 ALTER TABLE targetedms.projectResearcher ALTER COLUMN researcher TYPE USERID;
