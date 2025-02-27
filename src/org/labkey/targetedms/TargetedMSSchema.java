@@ -272,6 +272,9 @@ public class TargetedMSSchema extends UserSchema
     public static final String TABLE_PAYMENT_METHOD = "PaymentMethod";
     public static final String TABLE_PROJECT_PAYMENT_METHOD = "ProjectPaymentMethod";
     public static final String TABLE_INSTRUMENT_SCHEDULE = "InstrumentSchedule";
+    public static final String TABLE_RATE_TYPE = "rateType";
+    public static final String TABLE_INSTRUMENT_RATE = "InstrumentRate";
+    public static final String TABLE_INSTRUMENT_USAGE_PAYMENT = "instrumentUsagePayment";
 
     // Map of tables that have a library view -> name of the library view
     public static final CaseInsensitiveHashMap<String> TABLES_LIBRARY_VIEWS = new CaseInsensitiveHashMap<>(Map.of(
@@ -1596,17 +1599,21 @@ public class TargetedMSSchema extends UserSchema
             return new QCEmailNotificationsTable(this, cf);
         }
         if (TABLE_MS_PROJECT.equalsIgnoreCase(name) ||
+                TABLE_PROJECT_RESEARCHER.equalsIgnoreCase(name) ||
                 TABLE_MS_INSTRUMENT.equalsIgnoreCase(name) ||
                 TABLE_PAYMENT_METHOD.equalsIgnoreCase(name) ||
                 TABLE_PROJECT_PAYMENT_METHOD.equalsIgnoreCase(name) ||
-                TABLE_INSTRUMENT_SCHEDULE.equalsIgnoreCase(name))
+                TABLE_INSTRUMENT_SCHEDULE.equalsIgnoreCase(name) ||
+                TABLE_RATE_TYPE.equalsIgnoreCase(name) ||
+                TABLE_INSTRUMENT_RATE.equalsIgnoreCase(name) ||
+                TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name))
         {
             var result = new FilteredTable<TargetedMSSchema>(getSchema().getTable(name), this, cf)
             {
                 @Override
                 public boolean hasPermission(@NotNull UserPrincipal user, @NotNull Class<? extends Permission> perm)
                 {
-                    return (getContainer().hasPermission(user, AdminPermission.class));
+                    return getContainer().hasPermission(user,perm);
                 }
 
                 @Override
@@ -1812,6 +1819,9 @@ public class TargetedMSSchema extends UserSchema
         hs.add(TABLE_PAYMENT_METHOD);
         hs.add(TABLE_PROJECT_PAYMENT_METHOD);
         hs.add(TABLE_INSTRUMENT_SCHEDULE);
+        hs.add(TABLE_RATE_TYPE);
+        hs.add(TABLE_INSTRUMENT_RATE);
+        hs.add(TABLE_INSTRUMENT_USAGE_PAYMENT);
 
         return hs;
     }

@@ -1776,15 +1776,12 @@
             <column columnName="affiliation"/>
             <column columnName="blocked"/>
             <column columnName="title"/>
-            <column columnName="type"/>
             <column columnName="submitDate"/>
             <column columnName="collaborationStatus"/>
             <column columnName="collaborationWith"/>
-            <column columnName="organization"/>
             <column columnName="labDirector"/>
             <column columnName="scientificQuestion"/>
             <column columnName="abstract"/>
-            <column columnName="results"/>
             <column columnName="Created"/>
             <column columnName="CreatedBy"/>
             <column columnName="Modified"/>
@@ -1871,11 +1868,51 @@
         <columns>
             <column columnName="Id"/>
             <column columnName="instrument"/>
+            <column columnName="instrumentoperator"/>
             <column columnName="project"/>
             <column columnName="startTime"/>
             <column columnName="endTime"/>
             <column columnName="name"/>
             <column columnName="notes"/>
+            <column columnName="Created"/>
+            <column columnName="CreatedBy"/>
+            <column columnName="Modified"/>
+            <column columnName="ModifiedBy"/>
+            <column columnName="Container"/>
+        </columns>
+    </table>
+    <table tableName="rateType" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="name"/>
+            <column columnName="description"/>
+            <column columnName="setupFee"/>
+            <column columnName="Created"/>
+            <column columnName="CreatedBy"/>
+            <column columnName="Modified"/>
+            <column columnName="ModifiedBy"/>
+            <column columnName="Container"/>
+        </columns>
+    </table>
+    <table tableName="instrumentRate" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="instrument"/>
+            <column columnName="rateType"/>
+            <column columnName="fee"/>
+            <column columnName="Created"/>
+            <column columnName="CreatedBy"/>
+            <column columnName="Modified"/>
+            <column columnName="ModifiedBy"/>
+            <column columnName="Container"/>
+        </columns>
+    </table>
+    <table tableName="instrumentUsagePayment" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/>
+            <column columnName="instrumentScheduleId"/>
+            <column columnName="paymentMethod"/>
+            <column columnName="percentPayment"/>
             <column columnName="Created"/>
             <column columnName="CreatedBy"/>
             <column columnName="Modified"/>
