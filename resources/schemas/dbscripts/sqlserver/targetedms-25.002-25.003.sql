@@ -42,7 +42,6 @@ CREATE TABLE targetedms.instrumentUsagePayment
 (
     Id                          INT IDENTITY(1, 1) NOT NULL ,
     instrumentScheduleId        INT NOT NULL,
-    instrumentRate              INT NOT NULL,
     paymentMethod               INT NOT NULL,
     percentPayment              decimal(5,2) NOT NULL,
 
@@ -54,11 +53,9 @@ CREATE TABLE targetedms.instrumentUsagePayment
 
     CONSTRAINT PK_instrumentUsagePayment PRIMARY KEY (Id),
     CONSTRAINT FK_instrumentUsagePayment_instrumentScheduleId FOREIGN KEY (instrumentScheduleId) REFERENCES targetedms.instrumentSchedule(id),
-    CONSTRAINT FK_instrumentUsagePayment_paymentMethod FOREIGN KEY (paymentMethod) REFERENCES targetedms.paymentMethod(Id),
-    CONSTRAINT FK_instrumentUsagePayment_instrumentRate FOREIGN KEY (instrumentRate) REFERENCES targetedms.instrumentRate(Id),
+    CONSTRAINT FK_instrumentUsagePayment_paymentMethod FOREIGN KEY (paymentMethod) REFERENCES targetedms.paymentMethod(Id)
 );
 CREATE INDEX IDX_instrumentUsagePayment_InstrumentScheduleId ON targetedms.instrumentUsagePayment(instrumentScheduleId);
-CREATE INDEX IDX_instrumentUsagePayment_InstrumentRate ON targetedms.instrumentUsagePayment(instrumentRate);
 CREATE INDEX IDX_instrumentUsagePayment_PaymentMethod ON targetedms.instrumentUsagePayment(paymentMethod);
 CREATE INDEX IDX_instrumentUsagePayment_Container ON targetedms.instrumentUsagePayment(container);
 GO
