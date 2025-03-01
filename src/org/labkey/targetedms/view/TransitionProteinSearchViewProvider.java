@@ -101,7 +101,7 @@ public class TransitionProteinSearchViewProvider implements QueryViewProvider<Pr
 
                 sql.append(getProteinLabelCondition("p.Label", getProteinLabels(form.getIdentifier()), form.isExactMatch()));
 
-                ContainerFilter cf = form.isIncludeSubfolders() ? ContainerFilter.Type.CurrentAndSubfolders.create(getContainer(), getUser()) : ContainerFilter.current(getContainer());
+                ContainerFilter cf = form.isIncludeSubfolders() ? ContainerFilter.Type.CurrentAndSubfolders.create(getContainer(), getUser()) : ContainerFilter.current(this);
                 sql.append(")) AND pg.RunId IN (SELECT Id FROM ");
                 sql.append(TargetedMSManager.getTableInfoRuns(), "r");
                 sql.append(" WHERE ");
