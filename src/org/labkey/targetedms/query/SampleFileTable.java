@@ -262,7 +262,7 @@ public class SampleFileTable extends TargetedMSTable
             aggregates.add(new Aggregate(FieldKey.fromParts("InstrumentId"), Aggregate.BaseType.MAX));
 
             // Also search for values for any replicate annotations being used in this container
-            for (AnnotatedTargetedMSTable.AnnotationSettingForTyping annotation : getUserSchema().getAnnotationSettings("replicate", ContainerFilter.current(getUserSchema().getContainer())))
+            for (AnnotatedTargetedMSTable.AnnotationSettingForTyping annotation : getUserSchema().getAnnotationSettings("replicate", ContainerFilter.current(getUserSchema())))
             {
                 aggregates.add(new Aggregate(FieldKey.fromParts("ReplicateId", annotation.getName()), Aggregate.BaseType.MAX));
             }
