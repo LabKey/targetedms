@@ -579,11 +579,11 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
 
     },
 
-    getReturnURL: function () {
-        var returnURL = LABKEY.ActionURL.getParameter('returnUrl');
+    getReturnUrl: function () {
+        var returnUrl = LABKEY.ActionURL.getParameter('returnUrl');
 
-        if(returnURL) {
-            return returnURL;
+        if(returnUrl) {
+            return returnUrl;
         }
         else {
             return LABKEY.ActionURL.buildURL('project', 'start');

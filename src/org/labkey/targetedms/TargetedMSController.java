@@ -7352,11 +7352,11 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
-    public static ActionURL getRenameRunURL(Container c, TargetedMSRun run, ActionURL returnURL)
+    public static ActionURL getRenameRunURL(Container c, TargetedMSRun run, ActionURL returnUrl)
     {
         ActionURL url = new ActionURL(RenameRunAction.class, c);
         url.addParameter("run", run.getRunId() );
-        url.addReturnURL(returnURL);
+        url.addReturnUrl(returnUrl);
         return url;
     }
 
@@ -7379,7 +7379,7 @@ public class TargetedMSController extends SpringActionController
     public class RenameRunAction extends FormViewAction<RenameForm>
     {
         private TargetedMSRun _run;
-        private URLHelper _returnURL;
+        private URLHelper _returnUrl;
 
         @Override
         public void validateCommand(RenameForm target, Errors errors)
@@ -7390,16 +7390,16 @@ public class TargetedMSController extends SpringActionController
         public ModelAndView getView(RenameForm form, boolean reshow, BindException errors)
         {
             _run = validateRun(form.getRun());
-            _returnURL = form.getReturnURLHelper(getShowRunURL(getContainer(), form.getRun()));
+            _returnUrl = form.getReturnUrlHelper(getShowRunURL(getContainer(), form.getRun()));
 
             String description = form.getDescription();
-            if (description == null || description.length() == 0)
+            if (description == null || description.isEmpty())
                 description = _run.getDescription();
 
             RenameBean bean = new RenameBean();
             bean.run = _run;
             bean.description = description;
-            bean.returnURL = _returnURL;
+            bean.returnUrl = _returnUrl;
 
             getPageConfig().setFocusId("description");
 
@@ -7419,13 +7419,13 @@ public class TargetedMSController extends SpringActionController
         @Override
         public URLHelper getSuccessURL(RenameForm form)
         {
-            return form.getReturnURLHelper();
+            return form.getReturnUrlHelper();
         }
 
         @Override
         public void addNavTrail(NavTree root)
         {
-            addRunNavTrail(root, _run, _returnURL, "Rename Run", getPageConfig(), null);
+            addRunNavTrail(root, _run, _returnUrl, "Rename Run", getPageConfig(), null);
         }
     }
 
@@ -7434,7 +7434,7 @@ public class TargetedMSController extends SpringActionController
     {
         public TargetedMSRun run;
         public String description;
-        public URLHelper returnURL;
+        public URLHelper returnUrl;
     }
 
     private void addRunNavTrail(NavTree root, TargetedMSRun run, URLHelper runURL, String title, PageConfig page, String helpTopic)
