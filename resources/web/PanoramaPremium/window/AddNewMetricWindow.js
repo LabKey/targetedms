@@ -540,7 +540,7 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
                 scope: this,
                 method: 'POST',
                 success: function () {
-                    window.location = this.getReturnURL();
+                    window.location = this.getReturnUrl();
                 }
             });
         }
@@ -568,7 +568,7 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
                         scope: this,
                         method: 'POST',
                         success: function () {
-                            window.location = this.getReturnURL();
+                            window.location = this.getReturnUrl();
                         }
                     });
                 }
