@@ -16,20 +16,11 @@ import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.passport.PassportController;
 import org.springframework.validation.Errors;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 public class ProteinListView extends QueryView
 {
     public ProteinListView(UserSchema schema, QuerySettings settings, @Nullable Errors errors)
     {
         super(schema, settings, errors);
-    }
-
-    @Override
-    protected void renderView(Object model, HttpServletRequest request, HttpServletResponse response) throws Exception
-    {
-        super.renderView(model, request, response);
     }
 
     @Override
