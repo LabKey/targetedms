@@ -48,11 +48,11 @@
             }
         }
 
-        function getReturnURL() {
-            var returnURL = LABKEY.ActionURL.getParameter('returnUrl');
+        function getReturnUrl() {
+            var returnUrl = LABKEY.ActionURL.getParameter('returnUrl');
 
-            if(returnURL) {
-                return returnURL;
+            if(returnUrl) {
+                return returnUrl;
             }
             else {
                 return LABKEY.ActionURL.buildURL('project', 'start');
@@ -77,7 +77,7 @@
             },
 
             onCancel: function () {
-                window.location = getReturnURL();
+                window.location = getReturnUrl();
             },
 
             onSave: function () {
@@ -110,7 +110,7 @@
                            commands: commands,
                            method: 'POST',
                            success: function () {
-                               window.location = getReturnURL();
+                               window.location = getReturnUrl();
                            },
                            failure: LABKEY.Utils.getCallbackWrapper(LABKEY.internal.SubscribeQCNotification.onError, this, true)
                        });

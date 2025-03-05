@@ -89,7 +89,7 @@ public class TargetedMSFolderType extends MultiPortalFolderType
                     {
                         ActionURL fileRootsUrl = new ActionURL("admin", "fileRootsStandAlone", c)
                                 .addParameter("folderSetup", true)
-                                .addReturnURL(setupUrl);
+                                .addReturnUrl(setupUrl);
                         extraSteps.add(new NavTree("Change File Root", fileRootsUrl));
                     }
                     extraSteps.add(new NavTree(TargetedMSController.CONFIGURE_TARGETED_MS_FOLDER, setupUrl));

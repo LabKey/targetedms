@@ -102,11 +102,11 @@
             });
         }
 
-        function getReturnURL() {
-            var returnURL = LABKEY.ActionURL.getParameter('returnUrl');
+        function getReturnUrl() {
+            var returnUrl = LABKEY.ActionURL.getParameter('returnUrl');
 
-            if(returnURL) {
-                return returnURL;
+            if(returnUrl) {
+                return returnUrl;
             }
             else {
                 return LABKEY.ActionURL.buildURL('project', 'start');
@@ -162,7 +162,7 @@
             },
 
             resetQCMetrics: function(){
-                window.location = getReturnURL();
+                window.location = getReturnUrl();
             },
 
             showCustomMetricWindow: function (op, clickedMetric) {
@@ -302,12 +302,12 @@
                         commands: commands,
                         method: 'POST',
                         success: function (data) {
-                            window.location = getReturnURL();
+                            window.location = getReturnUrl();
                         },
                         failure: LABKEY.Utils.getCallbackWrapper(LABKEY.internal.ConfigureQCMetrics.onError, this, true)
                     });
                 } else {
-                    window.location = getReturnURL();
+                    window.location = getReturnUrl();
                 }
 
             },

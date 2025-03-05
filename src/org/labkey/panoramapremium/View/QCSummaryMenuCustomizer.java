@@ -6,8 +6,6 @@ import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.NavTree;
 import org.labkey.api.view.NavTreeCustomizer;
 import org.labkey.api.view.ViewContext;
-import org.labkey.panoramapremium.PanoramaPremiumController;
-import org.labkey.targetedms.TargetedMSController;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +29,7 @@ public class QCSummaryMenuCustomizer implements NavTreeCustomizer
         if(viewContext.getContainer().hasPermission(viewContext.getUser(), AdminPermission.class))
         {
             List<NavTree> navTrees = new ArrayList<>();
-            ActionURL url = new ActionURL("targetedms", actionName, viewContext.getContainer()).addReturnURL(viewContext.getActionURL());
+            ActionURL url = new ActionURL("targetedms", actionName, viewContext.getContainer()).addReturnUrl(viewContext.getActionURL());
             navTrees.add(new NavTree(menuLabel, url));
 
             return navTrees;

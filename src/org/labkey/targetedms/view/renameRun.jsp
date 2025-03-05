@@ -25,8 +25,8 @@
     RenameBean bean = ((JspView<RenameBean>) HttpView.currentView()).getModelBean();
 %>
 <labkey:form action="<%=urlFor(RenameRunAction.class)%>" method="post" layout="horizontal">
-<%=generateReturnUrlFormField(bean.returnURL)%>
+<%=generateReturnUrlFormField(bean.returnUrl)%>
     <labkey:input type="hidden" name="run" value="<%=bean.run.getRunId()%>"/>
     <labkey:input type="text" size="70" name="description" id="description" label="Name" value="<%=bean.description%>"/>
-    <%= button("Rename").submit(true) %> <%= button("Cancel").href(bean.returnURL) %>
+    <%= button("Rename").submit(true) %> <%= button("Cancel").href(bean.returnUrl) %>
 </labkey:form>

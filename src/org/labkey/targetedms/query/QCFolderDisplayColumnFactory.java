@@ -56,7 +56,7 @@ public class QCFolderDisplayColumnFactory implements DisplayColumnFactory
                     {
                         url.addParameter("RunId", currentRunId.toString());
                     }
-                    url.addReturnURL(ctx.getViewContext().getActionURL());
+                    url.addReturnUrl(ctx.getViewContext().getActionURL());
                     sb.append("<div><a href=\"")
                             .append(PageFlowUtil.filter(url))
                             .append("\"")
