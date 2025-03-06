@@ -33,6 +33,7 @@ import org.labkey.api.util.URLHelper;
 import org.labkey.api.view.NavTree;
 import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.template.PageConfig;
+import org.labkey.api.writer.HtmlWriter;
 import org.labkey.targetedms.query.ChromatogramGridQuerySettings;
 
 import java.io.IOException;
@@ -149,7 +150,7 @@ public class ChromatogramsDataRegion extends DataRegion
     }
 
     @Override
-    protected int renderTableContents(RenderContext ctx, Writer out, boolean showRecordSelectors, List<DisplayColumn> renderers) throws SQLException, IOException
+    protected int renderTableContents(RenderContext ctx, Writer oldWriter, boolean showRecordSelectors, List<DisplayColumn> renderers) throws SQLException, IOException
     {
         int rowIndex = 0;
         int maxRowSize = getSettings().getMaxRowSize();
@@ -167,18 +168,18 @@ public class ChromatogramsDataRegion extends DataRegion
             {
                 if (count == 0)
                 {
-                    out.write("<tr");
+                    oldWriter.write("<tr");
                     String rowClass = getRowClass(ctx, rowIndex);
                     if (rowClass != null)
-                        out.write(" class=\"" + rowClass + "\"");
-                    out.write(">");
+                        oldWriter.write(" class=\"" + rowClass + "\"");
+                    oldWriter.write(">");
                 }
                 ctx.setRow(factory.getRowMap(rs));
-                renderTableRow(ctx, out, showRecordSelectors, renderers, rowIndex++);
+                renderTableRow(ctx, oldWriter, showRecordSelectors, renderers, rowIndex++);
                 count++;
                 if (count == maxRowSize)
                 {
-                    out.write("</tr>\n");
+                    oldWriter.write("</tr>\n");
                     count = 0;
                 }
             }
@@ -188,10 +189,10 @@ public class ChromatogramsDataRegion extends DataRegion
         {
             while(count < maxRowSize)
             {
-                out.write("<td style=\"border:0;\"></td>");
+                oldWriter.write("<td style=\"border:0;\"></td>");
                 count++;
             }
-            out.write("</tr>\n");
+            oldWriter.write("</tr>\n");
         }
 
         return rowIndex;
@@ -204,9 +205,10 @@ public class ChromatogramsDataRegion extends DataRegion
         DisplayColumn updateColumn = getDetailsUpdateColumn(ctx, renderers, false);
 
         if (showRecordSelectors || (detailsColumn != null || updateColumn != null))
-            renderActionColumn(ctx, out, rowIndex, showRecordSelectors, detailsColumn, updateColumn);
+            renderActionColumn(ctx, HtmlWriter.of(out), rowIndex, showRecordSelectors, detailsColumn, updateColumn);
 
         for (DisplayColumn renderer : renderers)
+        {
             if (renderer.isVisible(ctx))
             {
                 if (renderer instanceof DetailsColumn || renderer instanceof UpdateColumn)
@@ -214,7 +216,7 @@ public class ChromatogramsDataRegion extends DataRegion
 
                 renderer.renderGridDataCell(ctx, out);
             }
-
+        }
     }
 
     @Override
