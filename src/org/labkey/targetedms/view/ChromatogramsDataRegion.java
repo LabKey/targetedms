@@ -115,43 +115,45 @@ public class ChromatogramsDataRegion extends DataRegion
     }
 
     @Override
-    protected void renderTable(RenderContext ctx, Writer out) throws SQLException, IOException
+    protected void renderTable(RenderContext ctx, Writer oldWriter) throws SQLException, IOException
     {
-        super.renderTable(ctx, out);
+        super.renderTable(ctx, oldWriter);
 
-        out.write("\n<script type=\"text/javascript\" nonce=\"");
-        out.write(PageFlowUtil.filter(PageConfig.getScriptNonceHeader(ctx.getRequest())));
-        out.write("\">");
-        out.write("LABKEY.DataRegions[" + PageFlowUtil.jsString(getName()) + "].refreshPlots = function() {\n");
-        out.write("  const svgInfos = " + _svgs.toString() + ";\n");
-        out.write("  for (let i = 0; i < svgInfos.length; i++) {\n");
-        out.write("    let svgInfo = svgInfos[i];\n");
-        out.write("    LABKEY.targetedms.SVGChart.requestAndRenderSVG(svgInfo.url, document.getElementById(svgInfo.mainId), ");
-        out.write(_legendElementId == null ? "null" : ("document.getElementById(" + PageFlowUtil.jsString(_legendElementId) + ")"));
-        out.write(", document.getElementById(svgInfo.labelId));\n");
-        out.write("  }\n");
-        out.write("};\n");
-        out.write("LABKEY.DataRegions[" + PageFlowUtil.jsString(getName()) + "].refreshPlots();\n");
+        oldWriter.write("\n<script type=\"text/javascript\" nonce=\"");
+        oldWriter.write(PageFlowUtil.filter(PageConfig.getScriptNonceHeader(ctx.getRequest())));
+        oldWriter.write("\">");
+        oldWriter.write("LABKEY.DataRegions[" + PageFlowUtil.jsString(getName()) + "].refreshPlots = function() {\n");
+        oldWriter.write("  const svgInfos = " + _svgs.toString() + ";\n");
+        oldWriter.write("  for (let i = 0; i < svgInfos.length; i++) {\n");
+        oldWriter.write("    let svgInfo = svgInfos[i];\n");
+        oldWriter.write("    LABKEY.targetedms.SVGChart.requestAndRenderSVG(svgInfo.url, document.getElementById(svgInfo.mainId), ");
+        oldWriter.write(_legendElementId == null ? "null" : ("document.getElementById(" + PageFlowUtil.jsString(_legendElementId) + ")"));
+        oldWriter.write(", document.getElementById(svgInfo.labelId));\n");
+        oldWriter.write("  }\n");
+        oldWriter.write("};\n");
+        oldWriter.write("LABKEY.DataRegions[" + PageFlowUtil.jsString(getName()) + "].refreshPlots();\n");
 
         for (String listeningDataRegionName : _listeningDataRegionNames)
         {
-            out.write("LABKEY.DataRegions[");
-            out.write(PageFlowUtil.jsString(listeningDataRegionName));
-            out.write("].on('selectchange', LABKEY.DataRegions[" + PageFlowUtil.jsString(getName()) + "].refreshPlots);\n");
+            oldWriter.write("LABKEY.DataRegions[");
+            oldWriter.write(PageFlowUtil.jsString(listeningDataRegionName));
+            oldWriter.write("].on('selectchange', LABKEY.DataRegions[" + PageFlowUtil.jsString(getName()) + "].refreshPlots);\n");
         }
 
-        out.write("</script>\n");
+        oldWriter.write("</script>\n");
     }
 
     @Override
-    protected void renderGridHeaderColumns(RenderContext ctx, Writer out, boolean showRecordSelectors, List<DisplayColumn> renderers)
+    protected void renderGridHeaderColumns(RenderContext ctx, Writer oldWriter, boolean showRecordSelectors, List<DisplayColumn> renderers)
     {
         // No need to render the headers for this specialized grid - they just take space
     }
 
     @Override
-    protected int renderTableContents(RenderContext ctx, Writer oldWriter, boolean showRecordSelectors, List<DisplayColumn> renderers) throws SQLException, IOException
+    protected int renderTableContents(RenderContext ctx, HtmlWriter out, boolean showRecordSelectors, List<DisplayColumn> renderers) throws SQLException, IOException
     {
+        Writer oldWriter = out.unwrap();
+
         int rowIndex = 0;
         int maxRowSize = getSettings().getMaxRowSize();
         int count = 0;
@@ -175,7 +177,7 @@ public class ChromatogramsDataRegion extends DataRegion
                     oldWriter.write(">");
                 }
                 ctx.setRow(factory.getRowMap(rs));
-                renderTableRow(ctx, oldWriter, showRecordSelectors, renderers, rowIndex++);
+                renderTableRow(ctx, out, showRecordSelectors, renderers, rowIndex++);
                 count++;
                 if (count == maxRowSize)
                 {
@@ -199,13 +201,13 @@ public class ChromatogramsDataRegion extends DataRegion
     }
 
     @Override
-    protected void renderTableRow(RenderContext ctx, Writer out, boolean showRecordSelectors, List<DisplayColumn> renderers, int rowIndex) throws IOException
+    protected void renderTableRow(RenderContext ctx, HtmlWriter out, boolean showRecordSelectors, List<DisplayColumn> renderers, int rowIndex) throws IOException
     {
         DisplayColumn detailsColumn = getDetailsUpdateColumn(ctx, renderers, true);
         DisplayColumn updateColumn = getDetailsUpdateColumn(ctx, renderers, false);
 
         if (showRecordSelectors || (detailsColumn != null || updateColumn != null))
-            renderActionColumn(ctx, HtmlWriter.of(out), rowIndex, showRecordSelectors, detailsColumn, updateColumn);
+            renderActionColumn(ctx, out, rowIndex, showRecordSelectors, detailsColumn, updateColumn);
 
         for (DisplayColumn renderer : renderers)
         {
