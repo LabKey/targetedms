@@ -115,9 +115,11 @@ public class ChromatogramsDataRegion extends DataRegion
     }
 
     @Override
-    protected void renderTable(RenderContext ctx, Writer oldWriter) throws SQLException, IOException
+    protected void renderTable(RenderContext ctx, HtmlWriter out) throws SQLException, IOException
     {
-        super.renderTable(ctx, oldWriter);
+        super.renderTable(ctx, out);
+
+        Writer oldWriter = out.unwrap();
 
         oldWriter.write("\n<script type=\"text/javascript\" nonce=\"");
         oldWriter.write(PageFlowUtil.filter(PageConfig.getScriptNonceHeader(ctx.getRequest())));
@@ -144,7 +146,7 @@ public class ChromatogramsDataRegion extends DataRegion
     }
 
     @Override
-    protected void renderGridHeaderColumns(RenderContext ctx, Writer oldWriter, boolean showRecordSelectors, List<DisplayColumn> renderers)
+    protected void renderGridHeaderColumns(RenderContext ctx, HtmlWriter out, boolean showRecordSelectors, List<DisplayColumn> renderers)
     {
         // No need to render the headers for this specialized grid - they just take space
     }
