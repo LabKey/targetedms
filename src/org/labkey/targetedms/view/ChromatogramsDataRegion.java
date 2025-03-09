@@ -27,12 +27,14 @@ import org.labkey.api.data.RenderContext;
 import org.labkey.api.data.Results;
 import org.labkey.api.data.UpdateColumn;
 import org.labkey.api.query.FilteredTable;
+import org.labkey.api.util.DOM;
+import org.labkey.api.util.JavaScriptFragment;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.util.StringUtilsLabKey;
 import org.labkey.api.util.URLHelper;
+import org.labkey.api.view.HttpView;
 import org.labkey.api.view.NavTree;
 import org.labkey.api.view.ViewContext;
-import org.labkey.api.view.template.PageConfig;
 import org.labkey.api.writer.HtmlWriter;
 import org.labkey.targetedms.query.ChromatogramGridQuerySettings;
 
@@ -119,30 +121,29 @@ public class ChromatogramsDataRegion extends DataRegion
     {
         super.renderTable(ctx, out);
 
-        Writer oldWriter = out.unwrap();
-
-        oldWriter.write("\n<script type=\"text/javascript\" nonce=\"");
-        oldWriter.write(PageFlowUtil.filter(PageConfig.getScriptNonceHeader(ctx.getRequest())));
-        oldWriter.write("\">");
-        oldWriter.write("LABKEY.DataRegions[" + PageFlowUtil.jsString(getName()) + "].refreshPlots = function() {\n");
-        oldWriter.write("  const svgInfos = " + _svgs.toString() + ";\n");
-        oldWriter.write("  for (let i = 0; i < svgInfos.length; i++) {\n");
-        oldWriter.write("    let svgInfo = svgInfos[i];\n");
-        oldWriter.write("    LABKEY.targetedms.SVGChart.requestAndRenderSVG(svgInfo.url, document.getElementById(svgInfo.mainId), ");
-        oldWriter.write(_legendElementId == null ? "null" : ("document.getElementById(" + PageFlowUtil.jsString(_legendElementId) + ")"));
-        oldWriter.write(", document.getElementById(svgInfo.labelId));\n");
-        oldWriter.write("  }\n");
-        oldWriter.write("};\n");
-        oldWriter.write("LABKEY.DataRegions[" + PageFlowUtil.jsString(getName()) + "].refreshPlots();\n");
+        StringBuilder script = new StringBuilder("\n")
+            .append(HttpView.currentPageConfig().getScriptTagStart())
+            .append("LABKEY.DataRegions[").append(PageFlowUtil.jsString(getName())).append("].refreshPlots = function() {\n")
+            .append("  const svgInfos = ").append(_svgs.toString()).append(";\n")
+            .append("  for (let i = 0; i < svgInfos.length; i++) {\n")
+            .append("    let svgInfo = svgInfos[i];\n")
+            .append("    LABKEY.targetedms.SVGChart.requestAndRenderSVG(svgInfo.url, document.getElementById(svgInfo.mainId), ")
+            .append(_legendElementId == null ? "null" : ("document.getElementById(" + PageFlowUtil.jsString(_legendElementId) + ")"))
+            .append(", document.getElementById(svgInfo.labelId));\n")
+            .append("  }\n")
+            .append("};\n").append("LABKEY.DataRegions[").append(PageFlowUtil.jsString(getName())).append("].refreshPlots();\n");
 
         for (String listeningDataRegionName : _listeningDataRegionNames)
         {
-            oldWriter.write("LABKEY.DataRegions[");
-            oldWriter.write(PageFlowUtil.jsString(listeningDataRegionName));
-            oldWriter.write("].on('selectchange', LABKEY.DataRegions[" + PageFlowUtil.jsString(getName()) + "].refreshPlots);\n");
+            script.append("LABKEY.DataRegions[")
+                .append(PageFlowUtil.jsString(listeningDataRegionName))
+                .append("].on('selectchange', LABKEY.DataRegions[")
+                .append(PageFlowUtil.jsString(getName()))
+                .append("].refreshPlots);\n");
         }
 
-        oldWriter.write("</script>\n");
+        out.write(JavaScriptFragment.unsafe(script.toString()));
+        out.writeElementEnd(DOM.Element.script);
     }
 
     @Override
@@ -154,13 +155,13 @@ public class ChromatogramsDataRegion extends DataRegion
     @Override
     protected int renderTableContents(RenderContext ctx, HtmlWriter out, boolean showRecordSelectors, List<DisplayColumn> renderers) throws SQLException, IOException
     {
-        Writer oldWriter = out.unwrap();
-
         int rowIndex = 0;
         int maxRowSize = getSettings().getMaxRowSize();
         int count = 0;
 
         Results results = ctx.getResults();
+
+        Writer oldWriter = out.unwrap();
 
         // unwrap for efficient use of ResultSetRowMapFactory
         try (ResultSet rs = results.getResultSet())
