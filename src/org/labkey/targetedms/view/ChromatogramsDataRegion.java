@@ -15,6 +15,8 @@
 
 package org.labkey.targetedms.view;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.labkey.api.collections.ResultSetRowMapFactory;
@@ -25,6 +27,7 @@ import org.labkey.api.data.DisplayColumn;
 import org.labkey.api.data.MenuButton;
 import org.labkey.api.data.RenderContext;
 import org.labkey.api.data.Results;
+import org.labkey.api.data.RuntimeSQLException;
 import org.labkey.api.data.UpdateColumn;
 import org.labkey.api.query.FilteredTable;
 import org.labkey.api.util.DOM;
@@ -39,7 +42,6 @@ import org.labkey.api.writer.HtmlWriter;
 import org.labkey.targetedms.query.ChromatogramGridQuerySettings;
 
 import java.io.IOException;
-import java.io.Writer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -47,6 +49,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+
+import static org.labkey.api.util.DOM.Attribute.style;
+import static org.labkey.api.util.DOM.TD;
+import static org.labkey.api.util.DOM.TR;
+import static org.labkey.api.util.DOM.at;
+import static org.labkey.api.util.DOM.cl;
 
 /**
  * User: vsharma
@@ -155,56 +163,67 @@ public class ChromatogramsDataRegion extends DataRegion
     @Override
     protected int renderTableContents(RenderContext ctx, HtmlWriter out, boolean showRecordSelectors, List<DisplayColumn> renderers) throws SQLException, IOException
     {
-        int rowIndex = 0;
+        MutableInt rowIndex = new MutableInt(0);
         int maxRowSize = getSettings().getMaxRowSize();
-        int count = 0;
 
         Results results = ctx.getResults();
-
-        Writer oldWriter = out.unwrap();
 
         // unwrap for efficient use of ResultSetRowMapFactory
         try (ResultSet rs = results.getResultSet())
         {
             assert rs != null;
             ResultSetRowMapFactory factory = ResultSetRowMapFactory.create(rs);
+            MutableBoolean hasRows = new MutableBoolean(rs.next());
 
-            while (rs.next())
+            // Render chromatograms in a grid with maximum width == maxRowSize
+            while (hasRows.getValue().booleanValue())
             {
-                if (count == 0)
-                {
-                    oldWriter.write("<tr");
-                    String rowClass = getRowClass(ctx, rowIndex);
-                    if (rowClass != null)
-                        oldWriter.write(" class=\"" + rowClass + "\"");
-                    oldWriter.write(">");
-                }
-                ctx.setRow(factory.getRowMap(rs));
-                renderTableRow(ctx, out, showRecordSelectors, renderers, rowIndex++);
-                count++;
-                if (count == maxRowSize)
-                {
-                    oldWriter.write("</tr>\n");
-                    count = 0;
-                }
+                MutableInt count = new MutableInt(0);
+                MutableBoolean firstRow = new MutableBoolean(true);
+
+                TR(
+                    cl(getRowClass(ctx, rowIndex.intValue())),
+                    (DOM.Renderable) ret -> {
+                        do
+                        {
+                            if (hasRows.getValue().booleanValue())
+                            {
+                                try
+                                {
+                                    ctx.setRow(factory.getRowMap(rs));
+                                    renderTableRow(ctx, out, showRecordSelectors, renderers, rowIndex.getAndIncrement());
+                                    hasRows.setValue(rs.next());
+                                }
+                                catch (SQLException e)
+                                {
+                                    throw new RuntimeSQLException(e);
+                                }
+                            }
+                            else
+                            {
+                                // We're out of ResultSet rows, so finish the row by adding empty TDs, one per renderer,
+                                // just like renderTableRows() does. But no need to do this if it's just a single row.
+                                if (firstRow.booleanValue())
+                                {
+                                    for (int i = 0; i < renderers.size(); i++)
+                                        TD(at(style, "border:0;")).appendTo(out);
+                                }
+                            }
+                        } while (count.incrementAndGet() < maxRowSize);
+
+                        return ret;
+                    }
+                ).appendTo(out);
+
+                firstRow.setValue(false);
             }
         }
 
-        if (count != 0)
-        {
-            while(count < maxRowSize)
-            {
-                oldWriter.write("<td style=\"border:0;\"></td>");
-                count++;
-            }
-            oldWriter.write("</tr>\n");
-        }
-
-        return rowIndex;
+        return rowIndex.intValue();
     }
 
     @Override
-    protected void renderTableRow(RenderContext ctx, HtmlWriter out, boolean showRecordSelectors, List<DisplayColumn> renderers, int rowIndex) throws IOException
+    protected void renderTableRow(RenderContext ctx, HtmlWriter out, boolean showRecordSelectors, List<DisplayColumn> renderers, int rowIndex)
     {
         DisplayColumn detailsColumn = getDetailsUpdateColumn(ctx, renderers, true);
         DisplayColumn updateColumn = getDetailsUpdateColumn(ctx, renderers, false);
