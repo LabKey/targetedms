@@ -41,7 +41,6 @@ import org.labkey.api.view.ViewContext;
 import org.labkey.api.writer.HtmlWriter;
 import org.labkey.targetedms.query.ChromatogramGridQuerySettings;
 
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -125,7 +124,7 @@ public class ChromatogramsDataRegion extends DataRegion
     }
 
     @Override
-    protected void renderTable(RenderContext ctx, HtmlWriter out) throws SQLException, IOException
+    protected void renderTable(RenderContext ctx, HtmlWriter out) throws SQLException
     {
         super.renderTable(ctx, out);
 
@@ -161,7 +160,7 @@ public class ChromatogramsDataRegion extends DataRegion
     }
 
     @Override
-    protected int renderTableContents(RenderContext ctx, HtmlWriter out, boolean showRecordSelectors, List<DisplayColumn> renderers) throws SQLException, IOException
+    protected int renderTableContents(RenderContext ctx, HtmlWriter out, boolean showRecordSelectors, List<DisplayColumn> renderers) throws SQLException
     {
         MutableInt rowIndex = new MutableInt(0);
         int maxRowSize = getSettings().getMaxRowSize();
