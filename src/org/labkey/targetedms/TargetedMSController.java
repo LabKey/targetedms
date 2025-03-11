@@ -315,11 +315,11 @@ import static org.labkey.api.util.DOM.Attribute.method;
 import static org.labkey.api.util.DOM.Attribute.src;
 import static org.labkey.api.util.DOM.Attribute.width;
 import static org.labkey.api.util.DOM.DIV;
+import static org.labkey.api.util.DOM.FORM;
 import static org.labkey.api.util.DOM.SPAN;
 import static org.labkey.api.util.DOM.TD;
 import static org.labkey.api.util.DOM.TR;
 import static org.labkey.api.util.DOM.UL;
-import static org.labkey.api.util.DOM.X.FORM;
 import static org.labkey.api.util.DOM.at;
 import static org.labkey.api.util.DOM.cl;
 import static org.labkey.targetedms.TargetedMSModule.EXPERIMENT_FOLDER_WEB_PARTS;
@@ -491,7 +491,7 @@ public class TargetedMSController extends SpringActionController
             addDataPipelineTab(c);
             addRawFilesPipelineTab(c);
 
-            // Inform listeners so that any additinal folder configuration can be done.
+            // Inform listeners so that any additional folder configuration can be done.
             TargetedMSService.get().getTargetedMSFolderTypeListeners().forEach(listener -> listener.folderCreated(c, getUser()));
 
             return true;
@@ -511,7 +511,6 @@ public class TargetedMSController extends SpringActionController
         {
             return getContainer().getStartURL(getUser());
         }
-
     }
 
     public static void addDashboardTab(String tab, Container c, String... includeWebParts)
@@ -530,9 +529,8 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
-    private static class ChromatogramCrawlerForm
+    public static class ChromatogramCrawlerForm
     {
-
     }
 
     @RequiresPermission(ApplicationAdminPermission.class)
@@ -547,8 +545,8 @@ public class TargetedMSController extends SpringActionController
         public ModelAndView getView(ChromatogramCrawlerForm form, boolean reshow, BindException errors)
         {
             return new HtmlView("Chromatogram Crawler", DIV("Crawl all containers under the parent " + getContainer().getPath(),
-                    FORM(at(method, "POST"),
-                            new Button.ButtonBuilder("Start Crawl").submit(true).build())));
+                FORM(at(method, "POST"),
+                    new Button.ButtonBuilder("Start Crawl").submit(true).build())));
         }
 
         @Override
@@ -4327,8 +4325,6 @@ public class TargetedMSController extends SpringActionController
     @RequiresPermission(ReadPermission.class)
     public abstract class ShowRunSplitDetailsAction<VIEWTYPE extends DocumentView> extends AbstractShowRunDetailsAction<RunDetailsForm, VIEWTYPE>
     {
-        protected String _dataRegion;
-
         public ShowRunSplitDetailsAction()
         {
             super(RunDetailsForm.class);
@@ -4346,7 +4342,6 @@ public class TargetedMSController extends SpringActionController
             if(_run.getPeptideCount() > 0)
             {
                 view = createInitializedQueryView(form, errors, false, getDataRegionNamePeptide());
-                _dataRegion = view.getDataRegionName();
                 vBox.addView(view);
             }
 
@@ -4354,7 +4349,6 @@ public class TargetedMSController extends SpringActionController
             if(_run.getSmallMoleculeCount() > 0)
             {
                 view = createInitializedQueryView(form, errors, false, getDataRegionNameSmallMolecule());
-                _dataRegion = view.getDataRegionName();
                 vBox.addView(view);
             }
 
