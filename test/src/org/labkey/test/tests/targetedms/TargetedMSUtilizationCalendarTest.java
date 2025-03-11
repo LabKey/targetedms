@@ -11,6 +11,7 @@ import org.labkey.test.pages.targetedms.PanoramaDashboard;
 import org.labkey.test.util.DataRegionTable;
 import org.openqa.selenium.NoSuchElementException;
 
+import java.sql.Timestamp;
 import java.util.Arrays;
 
 @Category({})
@@ -57,7 +58,7 @@ public class TargetedMSUtilizationCalendarTest extends TargetedMSTest
         log("Input data validation checks");
         utilizationCalendar.setDisplay("1")
                 .markOfflineExpectingError("2013-08-2", null, null, "Error saving. Missing value for required property: Description")
-                .markOfflineExpectingError("2013-08-2", "2013-0802", null, "Error saving. '2013-0802’ is not a valid Timestamp for EndDate using U.S. date parsing (MDY)")
+                .markOfflineExpectingError("2013-08-2", "2013-0802", null, "Error saving. " + getConversionErrorMessage("2013-0802", "EndDate", Timestamp.class))
                 .markOfflineExpectingError("2013-08-2", "2013-08-01", null, "Error saving. End date cannot be before the start date");
 
         log("Marking single day offline");
