@@ -315,7 +315,6 @@ import static org.labkey.api.util.DOM.Attribute.method;
 import static org.labkey.api.util.DOM.Attribute.src;
 import static org.labkey.api.util.DOM.Attribute.width;
 import static org.labkey.api.util.DOM.DIV;
-import static org.labkey.api.util.DOM.FORM;
 import static org.labkey.api.util.DOM.SPAN;
 import static org.labkey.api.util.DOM.TD;
 import static org.labkey.api.util.DOM.TR;
@@ -545,7 +544,7 @@ public class TargetedMSController extends SpringActionController
         public ModelAndView getView(ChromatogramCrawlerForm form, boolean reshow, BindException errors)
         {
             return new HtmlView("Chromatogram Crawler", DIV("Crawl all containers under the parent " + getContainer().getPath(),
-                FORM(at(method, "POST"),
+                DOM.LK.FORM(at(method, "POST"),
                     new Button.ButtonBuilder("Start Crawl").submit(true).build())));
         }
 
