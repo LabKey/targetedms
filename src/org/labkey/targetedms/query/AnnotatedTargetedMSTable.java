@@ -45,16 +45,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Optionally adds annotation-valued columns as if there were "real" columns. Can be conditionalized via the omitAnnotations
  * column to optimize for scenarios where they will never be used, such as when populating a Java bean with a fixed set
  * of get/set methods.
  * Wires up lookups to Skyline lists when possible. {@link SkylineListUnionTable}
- *
- * User: jeckels
- * Date: Jul 6, 2012
  */
 public class AnnotatedTargetedMSTable extends TargetedMSTable
 {
@@ -141,7 +137,7 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
                 String lookup = annotationSetting.getMaxLookup();
                 // Look at all the lists with the same name in this scope
                 List<ListDefinition> listDefs = SkylineListManager.getListDefinitions(getContainer(), getContainerFilter());
-                listDefs = listDefs.stream().filter((l) -> lookup.equals(l.getName())).collect(Collectors.toList());
+                listDefs = listDefs.stream().filter((l) -> lookup.equals(l.getName())).toList();
                 if (!listDefs.isEmpty())
                 {
                     ListDefinition listDef = listDefs.get(0);
@@ -310,7 +306,7 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
         }
 
         @Override
-        public Class<?> getValueClass()
+        public Class<String> getValueClass()
         {
             return String.class;
         }

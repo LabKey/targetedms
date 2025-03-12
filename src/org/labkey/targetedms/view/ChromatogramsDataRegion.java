@@ -50,6 +50,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.labkey.api.util.DOM.Attribute.style;
+import static org.labkey.api.util.DOM.SCRIPT;
 import static org.labkey.api.util.DOM.TD;
 import static org.labkey.api.util.DOM.TR;
 import static org.labkey.api.util.DOM.at;
@@ -149,8 +150,9 @@ public class ChromatogramsDataRegion extends DataRegion
                 .append("].refreshPlots);\n");
         }
 
-        out.write(JavaScriptFragment.unsafe(script.toString()));
-        out.writeElementEnd(DOM.Element.script);
+        SCRIPT(
+            JavaScriptFragment.unsafe(script.toString())
+        ).appendTo(out);
     }
 
     @Override

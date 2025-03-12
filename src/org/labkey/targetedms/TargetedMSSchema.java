@@ -69,14 +69,13 @@ import org.labkey.api.query.UserIdQueryForeignKey;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.security.UserPrincipal;
-import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.security.permissions.Permission;
-import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.HtmlString;
 import org.labkey.api.util.Pair;
+import org.labkey.api.util.SafeToRender;
 import org.labkey.api.util.UnexpectedException;
 import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.PopupMenu;
@@ -1685,7 +1684,7 @@ public class TargetedMSSchema extends UserSchema
                         {
                             private final Map<Pair<String, Long>, Pair<Boolean, String>> _metadata = PTMPercentsGroupedCustomizer.getSampleMetadata(getContainer());
                             @Override
-                            protected String getMemberCaptionWithUrl(String caption, String url)
+                            protected SafeToRender getMemberCaptionWithUrl(String caption, String url)
                             {
                                 var key = Pair.of(caption, runId);
                                 if (_metadata.containsKey(key))
