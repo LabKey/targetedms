@@ -15,6 +15,8 @@
 
 package org.labkey.targetedms.view;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.labkey.api.collections.ResultSetRowMapFactory;
@@ -25,18 +27,20 @@ import org.labkey.api.data.DisplayColumn;
 import org.labkey.api.data.MenuButton;
 import org.labkey.api.data.RenderContext;
 import org.labkey.api.data.Results;
+import org.labkey.api.data.RuntimeSQLException;
 import org.labkey.api.data.UpdateColumn;
 import org.labkey.api.query.FilteredTable;
+import org.labkey.api.util.DOM;
+import org.labkey.api.util.JavaScriptFragment;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.util.StringUtilsLabKey;
 import org.labkey.api.util.URLHelper;
+import org.labkey.api.view.HttpView;
 import org.labkey.api.view.NavTree;
 import org.labkey.api.view.ViewContext;
-import org.labkey.api.view.template.PageConfig;
+import org.labkey.api.writer.HtmlWriter;
 import org.labkey.targetedms.query.ChromatogramGridQuerySettings;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -44,6 +48,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+
+import static org.labkey.api.util.DOM.Attribute.style;
+import static org.labkey.api.util.DOM.TD;
+import static org.labkey.api.util.DOM.TR;
+import static org.labkey.api.util.DOM.at;
+import static org.labkey.api.util.DOM.cl;
 
 /**
  * User: vsharma
@@ -114,46 +124,46 @@ public class ChromatogramsDataRegion extends DataRegion
     }
 
     @Override
-    protected void renderTable(RenderContext ctx, Writer out) throws SQLException, IOException
+    protected void renderTable(RenderContext ctx, HtmlWriter out) throws SQLException
     {
         super.renderTable(ctx, out);
 
-        out.write("\n<script type=\"text/javascript\" nonce=\"");
-        out.write(PageFlowUtil.filter(PageConfig.getScriptNonceHeader(ctx.getRequest())));
-        out.write("\">");
-        out.write("LABKEY.DataRegions[" + PageFlowUtil.jsString(getName()) + "].refreshPlots = function() {\n");
-        out.write("  const svgInfos = " + _svgs.toString() + ";\n");
-        out.write("  for (let i = 0; i < svgInfos.length; i++) {\n");
-        out.write("    let svgInfo = svgInfos[i];\n");
-        out.write("    LABKEY.targetedms.SVGChart.requestAndRenderSVG(svgInfo.url, document.getElementById(svgInfo.mainId), ");
-        out.write(_legendElementId == null ? "null" : ("document.getElementById(" + PageFlowUtil.jsString(_legendElementId) + ")"));
-        out.write(", document.getElementById(svgInfo.labelId));\n");
-        out.write("  }\n");
-        out.write("};\n");
-        out.write("LABKEY.DataRegions[" + PageFlowUtil.jsString(getName()) + "].refreshPlots();\n");
+        StringBuilder script = new StringBuilder("\n")
+            .append(HttpView.currentPageConfig().getScriptTagStart())
+            .append("LABKEY.DataRegions[").append(PageFlowUtil.jsString(getName())).append("].refreshPlots = function() {\n")
+            .append("  const svgInfos = ").append(_svgs.toString()).append(";\n")
+            .append("  for (let i = 0; i < svgInfos.length; i++) {\n")
+            .append("    let svgInfo = svgInfos[i];\n")
+            .append("    LABKEY.targetedms.SVGChart.requestAndRenderSVG(svgInfo.url, document.getElementById(svgInfo.mainId), ")
+            .append(_legendElementId == null ? "null" : ("document.getElementById(" + PageFlowUtil.jsString(_legendElementId) + ")"))
+            .append(", document.getElementById(svgInfo.labelId));\n")
+            .append("  }\n")
+            .append("};\n").append("LABKEY.DataRegions[").append(PageFlowUtil.jsString(getName())).append("].refreshPlots();\n");
 
         for (String listeningDataRegionName : _listeningDataRegionNames)
         {
-            out.write("LABKEY.DataRegions[");
-            out.write(PageFlowUtil.jsString(listeningDataRegionName));
-            out.write("].on('selectchange', LABKEY.DataRegions[" + PageFlowUtil.jsString(getName()) + "].refreshPlots);\n");
+            script.append("LABKEY.DataRegions[")
+                .append(PageFlowUtil.jsString(listeningDataRegionName))
+                .append("].on('selectchange', LABKEY.DataRegions[")
+                .append(PageFlowUtil.jsString(getName()))
+                .append("].refreshPlots);\n");
         }
 
-        out.write("</script>\n");
+        out.write(JavaScriptFragment.unsafe(script.toString()));
+        out.writeElementEnd(DOM.Element.script);
     }
 
     @Override
-    protected void renderGridHeaderColumns(RenderContext ctx, Writer out, boolean showRecordSelectors, List<DisplayColumn> renderers)
+    protected void renderGridHeaderColumns(RenderContext ctx, HtmlWriter out, boolean showRecordSelectors, List<DisplayColumn> renderers)
     {
         // No need to render the headers for this specialized grid - they just take space
     }
 
     @Override
-    protected int renderTableContents(RenderContext ctx, Writer out, boolean showRecordSelectors, List<DisplayColumn> renderers) throws SQLException, IOException
+    protected int renderTableContents(RenderContext ctx, HtmlWriter out, boolean showRecordSelectors, List<DisplayColumn> renderers) throws SQLException
     {
-        int rowIndex = 0;
+        MutableInt rowIndex = new MutableInt(0);
         int maxRowSize = getSettings().getMaxRowSize();
-        int count = 0;
 
         Results results = ctx.getResults();
 
@@ -162,43 +172,57 @@ public class ChromatogramsDataRegion extends DataRegion
         {
             assert rs != null;
             ResultSetRowMapFactory factory = ResultSetRowMapFactory.create(rs);
+            MutableBoolean hasRows = new MutableBoolean(rs.next());
 
-            while (rs.next())
+            // Render chromatograms in a grid with maximum width == maxRowSize
+            while (hasRows.getValue().booleanValue())
             {
-                if (count == 0)
-                {
-                    out.write("<tr");
-                    String rowClass = getRowClass(ctx, rowIndex);
-                    if (rowClass != null)
-                        out.write(" class=\"" + rowClass + "\"");
-                    out.write(">");
-                }
-                ctx.setRow(factory.getRowMap(rs));
-                renderTableRow(ctx, out, showRecordSelectors, renderers, rowIndex++);
-                count++;
-                if (count == maxRowSize)
-                {
-                    out.write("</tr>\n");
-                    count = 0;
-                }
+                MutableInt count = new MutableInt(0);
+                MutableBoolean firstRow = new MutableBoolean(true);
+
+                TR(
+                    cl(getRowClass(ctx, rowIndex.intValue())),
+                    (DOM.Renderable) ret -> {
+                        do
+                        {
+                            if (hasRows.getValue().booleanValue())
+                            {
+                                try
+                                {
+                                    ctx.setRow(factory.getRowMap(rs));
+                                    renderTableRow(ctx, out, showRecordSelectors, renderers, rowIndex.getAndIncrement());
+                                    hasRows.setValue(rs.next());
+                                }
+                                catch (SQLException e)
+                                {
+                                    throw new RuntimeSQLException(e);
+                                }
+                            }
+                            else
+                            {
+                                // We're out of ResultSet rows, so finish the row by adding empty TDs, one per renderer,
+                                // just like renderTableRows() does. But no need to do this if it's just a single row.
+                                if (!firstRow.booleanValue())
+                                {
+                                    for (int i = 0; i < renderers.size(); i++)
+                                        TD(at(style, "border:0;")).appendTo(out);
+                                }
+                            }
+                        } while (count.incrementAndGet() < maxRowSize);
+
+                        return ret;
+                    }
+                ).appendTo(out);
+
+                firstRow.setValue(false);
             }
         }
 
-        if (count != 0)
-        {
-            while(count < maxRowSize)
-            {
-                out.write("<td style=\"border:0;\"></td>");
-                count++;
-            }
-            out.write("</tr>\n");
-        }
-
-        return rowIndex;
+        return rowIndex.intValue();
     }
 
     @Override
-    protected void renderTableRow(RenderContext ctx, Writer out, boolean showRecordSelectors, List<DisplayColumn> renderers, int rowIndex) throws IOException
+    protected void renderTableRow(RenderContext ctx, HtmlWriter out, boolean showRecordSelectors, List<DisplayColumn> renderers, int rowIndex)
     {
         DisplayColumn detailsColumn = getDetailsUpdateColumn(ctx, renderers, true);
         DisplayColumn updateColumn = getDetailsUpdateColumn(ctx, renderers, false);
@@ -207,6 +231,7 @@ public class ChromatogramsDataRegion extends DataRegion
             renderActionColumn(ctx, out, rowIndex, showRecordSelectors, detailsColumn, updateColumn);
 
         for (DisplayColumn renderer : renderers)
+        {
             if (renderer.isVisible(ctx))
             {
                 if (renderer instanceof DetailsColumn || renderer instanceof UpdateColumn)
@@ -214,7 +239,7 @@ public class ChromatogramsDataRegion extends DataRegion
 
                 renderer.renderGridDataCell(ctx, out);
             }
-
+        }
     }
 
     @Override
