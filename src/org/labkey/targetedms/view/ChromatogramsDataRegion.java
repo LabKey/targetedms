@@ -202,7 +202,7 @@ public class ChromatogramsDataRegion extends DataRegion
                             {
                                 // We're out of ResultSet rows, so finish the row by adding empty TDs, one per renderer,
                                 // just like renderTableRows() does. But no need to do this if it's just a single row.
-                                if (firstRow.booleanValue())
+                                if (!firstRow.booleanValue())
                                 {
                                     for (int i = 0; i < renderers.size(); i++)
                                         TD(at(style, "border:0;")).appendTo(out);
