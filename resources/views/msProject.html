@@ -14,7 +14,6 @@
     if (!LABKEY.user.isAdmin) {
         config.filterArray = [LABKEY.Filter.create('researcher', LABKEY.user.id, LABKEY.Filter.Types.EQUAL)];
     }
-    let wp = new LABKEY.QueryWebPart(config);
-    wp.render();
+    new LABKEY.QueryWebPart(config);
     })();
 </script>
