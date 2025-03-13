@@ -25,12 +25,11 @@ import org.labkey.api.query.FieldKey;
 import org.labkey.api.util.HtmlString;
 import org.labkey.api.util.Pair;
 import org.labkey.api.util.logging.LogHelper;
+import org.labkey.api.writer.HtmlWriter;
 import org.labkey.targetedms.parser.Protein;
 import org.labkey.targetedms.view.IconFactory;
 import org.labkey.targetedms.view.ModifiedPeptideHtmlMaker;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -66,7 +65,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
     public abstract void initialize(RenderContext ctx);
 
     @Override
-    public void renderGridCellContents(RenderContext ctx, Writer out) throws IOException
+    public void renderGridCellContents(RenderContext ctx, HtmlWriter out)
     {
         initialize(ctx);
         super.renderGridCellContents(ctx, out);

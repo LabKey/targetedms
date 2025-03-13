@@ -81,6 +81,7 @@ import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.PopupMenu;
 import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.template.ClientDependency;
+import org.labkey.api.writer.HtmlWriter;
 import org.labkey.panoramapremium.query.QCEmailNotificationsTable;
 import org.labkey.targetedms.parser.Chromatogram;
 import org.labkey.targetedms.parser.ChromatogramBinaryFormat;
@@ -812,7 +813,7 @@ public class TargetedMSSchema extends UserSchema
                             }
 
                             @Override
-                            public void renderGridCellContents(RenderContext ctx, Writer out) throws IOException
+                            public void renderGridCellContents(RenderContext ctx, Writer oldWriter, HtmlWriter out) throws IOException
                             {
                                 Long runId = ctx.get(this.getColumnInfo().getFieldKey(), Long.class);
                                 if (runId != null)
@@ -822,11 +823,11 @@ public class TargetedMSSchema extends UserSchema
                                     if(run != null)
                                     {
                                         PopupMenu menu = TargetedMSController.createDownloadMenu(run);
-                                        menu.render(out);
+                                        menu.render(oldWriter);
                                     }
                                     else
                                     {
-                                        out.write("<em>Not available</em>");
+                                        oldWriter.write("<em>Not available</em>");
                                     }
                                 }
                             }

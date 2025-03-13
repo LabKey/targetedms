@@ -26,6 +26,7 @@ import org.labkey.api.util.GUID;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.HttpView;
+import org.labkey.api.writer.HtmlWriter;
 import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.view.ChromatogramsDataRegion;
 import org.springframework.web.servlet.mvc.Controller;
@@ -170,7 +171,7 @@ public class ChromatogramDisplayColumnFactory implements DisplayColumnFactory
             }
 
             @Override
-            public void renderGridCellContents(RenderContext ctx, Writer out) throws IOException
+            public void renderGridCellContents(RenderContext ctx, Writer oldWriter, HtmlWriter out) throws IOException
             {
                 Object id = getValue(ctx);  // Primary key from the relevant table
                 if(null == id)
@@ -209,7 +210,7 @@ public class ChromatogramDisplayColumnFactory implements DisplayColumnFactory
                         "<div style=\"text-align: center\" id=\"" + PageFlowUtil.filter(domLabelId) + "\"></div>";
 
                 dataRegion.addSVG(chromAction.getLocalURIString(), domId, domLabelId);
-                out.write(html);
+                oldWriter.write(html);
             }
 
             @Override
