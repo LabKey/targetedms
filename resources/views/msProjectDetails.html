@@ -79,7 +79,7 @@
 
         // query web part to show payment method and other invoice details - custom query
         let webpart = <%=webpartContext%>;
-        let wp = new LABKEY.QueryWebPart({
+        new LABKEY.QueryWebPart({
             renderTo: 'payment-methods',
             frame: 'portal',
             title: 'Payment Methods',
@@ -88,7 +88,6 @@
             filterArray: [LABKEY.Filter.create('project', project, LABKEY.Filter.Types.EQUAL)],
             containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
         });
-        wp.render();
 
         // add payment method link
         const addPaymentMethodEl = document.getElementById('add-payment-method-link');
