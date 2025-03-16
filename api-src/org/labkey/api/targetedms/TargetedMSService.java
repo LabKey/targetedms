@@ -22,6 +22,7 @@ import org.labkey.api.data.TableCustomizer;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.exp.ExperimentRunType;
 import org.labkey.api.exp.XarFormatException;
+import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.pipeline.PipelineValidationException;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
@@ -72,6 +73,9 @@ public interface TargetedMSService
     ITargetedMSRun getRunByFileName(String fileName, Container container);
     List<ITargetedMSRun> getRuns(Container container);
     ITargetedMSRun getRunByLsid(String lsid, Container container);
+
+    boolean updateSkydDataId(ITargetedMSRun run, ExpData newSkydData, User user);
+
     List<? extends SkylineAnnotation> getReplicateAnnotations(Container container);
     void registerSkylineDocumentImportListener(SkylineDocumentImportListener skyLineDocumentImportListener);
     List<SkylineDocumentImportListener> getSkylineDocumentImportListener();
