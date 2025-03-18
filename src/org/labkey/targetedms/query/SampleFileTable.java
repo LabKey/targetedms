@@ -58,6 +58,7 @@ import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.util.Pair;
 import org.labkey.api.view.ActionURL;
+import org.labkey.api.writer.HtmlWriter;
 import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSRun;
@@ -68,7 +69,6 @@ import org.labkey.targetedms.parser.SampleFile;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.net.URI;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -352,7 +352,7 @@ public class SampleFileTable extends TargetedMSTable
         }
 
         @Override
-        public void renderGridCellContents(RenderContext ctx, Writer out) throws IOException
+        public void renderGridCellContents(RenderContext ctx, Writer oldWriter, HtmlWriter out) throws IOException
         {
             Long sampleFileId = ctx.get(this.getColumnInfo().getFieldKey(), Long.class);
             Container container = ctx.get(_containerFieldKey, Container.class);
@@ -377,14 +377,14 @@ public class SampleFileTable extends TargetedMSTable
                             url = url + "?method=zip&depth=-1&file=" + PageFlowUtil.encode(expData.getName()) + "&zipName=" + PageFlowUtil.encode(expData.getName());
                         }
 
-                        out.write(PageFlowUtil.iconLink("fa fa-download", null).href(url).toString());
-                        out.write("&nbsp;");
-                        out.write(PageFlowUtil.filter(size));
+                        oldWriter.write(PageFlowUtil.iconLink("fa fa-download", null).href(url).toString());
+                        oldWriter.write("&nbsp;");
+                        oldWriter.write(PageFlowUtil.filter(size));
                         return;
                     }
                 }
             }
-            out.write("<em>Not available</em>");
+            oldWriter.write("<em>Not available</em>");
         }
 
         @Override

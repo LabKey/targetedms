@@ -35,7 +35,6 @@ import org.labkey.api.util.JavaScriptFragment;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.util.StringUtilsLabKey;
 import org.labkey.api.util.URLHelper;
-import org.labkey.api.view.HttpView;
 import org.labkey.api.view.NavTree;
 import org.labkey.api.view.ViewContext;
 import org.labkey.api.writer.HtmlWriter;
@@ -50,6 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.labkey.api.util.DOM.Attribute.style;
+import static org.labkey.api.util.DOM.SCRIPT;
 import static org.labkey.api.util.DOM.TD;
 import static org.labkey.api.util.DOM.TR;
 import static org.labkey.api.util.DOM.at;
@@ -129,7 +129,6 @@ public class ChromatogramsDataRegion extends DataRegion
         super.renderTable(ctx, out);
 
         StringBuilder script = new StringBuilder("\n")
-            .append(HttpView.currentPageConfig().getScriptTagStart())
             .append("LABKEY.DataRegions[").append(PageFlowUtil.jsString(getName())).append("].refreshPlots = function() {\n")
             .append("  const svgInfos = ").append(_svgs.toString()).append(";\n")
             .append("  for (let i = 0; i < svgInfos.length; i++) {\n")
@@ -149,8 +148,9 @@ public class ChromatogramsDataRegion extends DataRegion
                 .append("].refreshPlots);\n");
         }
 
-        out.write(JavaScriptFragment.unsafe(script.toString()));
-        out.writeElementEnd(DOM.Element.script);
+        SCRIPT(
+            JavaScriptFragment.unsafe(script.toString())
+        ).appendTo(out);
     }
 
     @Override

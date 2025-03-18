@@ -69,19 +69,19 @@ import org.labkey.api.query.UserIdQueryForeignKey;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.security.UserPrincipal;
-import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.security.permissions.Permission;
-import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.HtmlString;
 import org.labkey.api.util.Pair;
+import org.labkey.api.util.SafeToRender;
 import org.labkey.api.util.UnexpectedException;
 import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.PopupMenu;
 import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.template.ClientDependency;
+import org.labkey.api.writer.HtmlWriter;
 import org.labkey.panoramapremium.query.QCEmailNotificationsTable;
 import org.labkey.targetedms.parser.Chromatogram;
 import org.labkey.targetedms.parser.ChromatogramBinaryFormat;
@@ -813,7 +813,7 @@ public class TargetedMSSchema extends UserSchema
                             }
 
                             @Override
-                            public void renderGridCellContents(RenderContext ctx, Writer out) throws IOException
+                            public void renderGridCellContents(RenderContext ctx, Writer oldWriter, HtmlWriter out) throws IOException
                             {
                                 Long runId = ctx.get(this.getColumnInfo().getFieldKey(), Long.class);
                                 if (runId != null)
@@ -823,11 +823,11 @@ public class TargetedMSSchema extends UserSchema
                                     if(run != null)
                                     {
                                         PopupMenu menu = TargetedMSController.createDownloadMenu(run);
-                                        menu.render(out);
+                                        menu.render(oldWriter);
                                     }
                                     else
                                     {
-                                        out.write("<em>Not available</em>");
+                                        oldWriter.write("<em>Not available</em>");
                                     }
                                 }
                             }
@@ -1685,7 +1685,7 @@ public class TargetedMSSchema extends UserSchema
                         {
                             private final Map<Pair<String, Long>, Pair<Boolean, String>> _metadata = PTMPercentsGroupedCustomizer.getSampleMetadata(getContainer());
                             @Override
-                            protected String getMemberCaptionWithUrl(String caption, String url)
+                            protected SafeToRender getMemberCaptionWithUrl(String caption, String url)
                             {
                                 var key = Pair.of(caption, runId);
                                 if (_metadata.containsKey(key))

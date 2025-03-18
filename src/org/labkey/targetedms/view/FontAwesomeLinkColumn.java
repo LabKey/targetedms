@@ -1,6 +1,7 @@
 package org.labkey.targetedms.view;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.DataColumn;
 import org.labkey.api.data.RenderContext;
@@ -26,7 +27,7 @@ public class FontAwesomeLinkColumn extends DataColumn
     }
 
     @Override
-    public String getTitle(RenderContext ctx)
+    public @Nullable HtmlString getTitle(RenderContext ctx)
     {
         return null;
     }

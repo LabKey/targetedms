@@ -19,6 +19,7 @@ import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.DataColumn;
 import org.labkey.api.data.RenderContext;
 import org.labkey.api.targetedms.RepresentativeDataState;
+import org.labkey.api.writer.HtmlWriter;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -36,7 +37,7 @@ public class RepresentativeStateDisplayColumn extends DataColumn
     }
 
     @Override
-    public void renderGridCellContents(RenderContext ctx, Writer out) throws IOException
+    public void renderGridCellContents(RenderContext ctx, Writer oldWriter, HtmlWriter out) throws IOException
     {
         Object representativeState = getValue(ctx);
         if (representativeState == null)
@@ -44,15 +45,15 @@ public class RepresentativeStateDisplayColumn extends DataColumn
 
         if (RepresentativeDataState.Representative.getLabel().equals(representativeState.toString()))
         {
-            out.write("<span style='color:green;'>" + representativeState.toString() + "</span>");
+            oldWriter.write("<span style='color:green;'>" + representativeState.toString() + "</span>");
         }
         else if (RepresentativeDataState.Conflicted.getLabel().equals(representativeState.toString()))
         {
-            out.write("<span style='color:red;'>" + representativeState.toString() + "</span>");
+            oldWriter.write("<span style='color:red;'>" + representativeState.toString() + "</span>");
         }
         else
         {
-            out.write(representativeState.toString());
+            oldWriter.write(representativeState.toString());
         }
     }
 }

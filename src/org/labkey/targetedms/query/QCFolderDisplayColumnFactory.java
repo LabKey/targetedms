@@ -10,6 +10,7 @@ import org.labkey.api.security.User;
 import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.util.PageFlowUtil;
+import org.labkey.api.writer.HtmlWriter;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSModule;
 import org.labkey.targetedms.TargetedMSRun;
@@ -32,7 +33,7 @@ public class QCFolderDisplayColumnFactory implements DisplayColumnFactory
         return new DataColumn(colInfo)
         {
             @Override
-            public void renderGridCellContents(RenderContext ctx, Writer out) throws IOException
+            public void renderGridCellContents(RenderContext ctx, Writer oldWriter, HtmlWriter out) throws IOException
             {
                 final User user = ctx.getViewContext().getUser();
                 String serialNumber = String.valueOf(getBoundColumn().getValue(ctx));
@@ -64,7 +65,7 @@ public class QCFolderDisplayColumnFactory implements DisplayColumnFactory
                             .append(PageFlowUtil.filter(qcContainer.getName()))
                             .append("</a></div>");
                 });
-                out.write(sb.toString());
+                oldWriter.write(sb.toString());
             }
         };
     }
