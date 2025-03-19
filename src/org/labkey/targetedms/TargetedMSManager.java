@@ -865,7 +865,7 @@ public class TargetedMSManager
 
     public static boolean updateSkydDataId(ITargetedMSRun run, ExpData newSkydData, User user)
     {
-        if (!(run instanceof TargetedMSRun))
+        if (!(run instanceof TargetedMSRun) || newSkydData == null)
         {
             return false;
         }
