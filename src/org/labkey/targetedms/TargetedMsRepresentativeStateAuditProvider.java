@@ -82,9 +82,7 @@ public class TargetedMsRepresentativeStateAuditProvider extends AbstractAuditTyp
 
     public static void addAuditEntry(Container container, User user, String comment)
     {
-        AuditTypeEvent event = new AuditTypeEvent(AUDIT_EVENT_TYPE, container.getId(), comment);
-
-        event.setProjectId(container.getProject().getId());
+        AuditTypeEvent event = new AuditTypeEvent(AUDIT_EVENT_TYPE, container, comment);
         AuditLogService.get().addEvent(user, event);
     }
 
