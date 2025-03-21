@@ -865,10 +865,16 @@ public class TargetedMSManager
 
     public static boolean updateSkydDataId(ITargetedMSRun run, ExpData newSkydData, User user)
     {
-        if (!(run instanceof TargetedMSRun) || newSkydData == null)
+        if (!(run instanceof TargetedMSRun))
         {
-            return false;
+            throw new IllegalArgumentException("Invalid run type. Expected TargetedMSRun but received " +
+                    (run != null ? run.getClass().getName() : "null"));
         }
+        if (newSkydData == null)
+        {
+            throw new IllegalArgumentException("Cannot update with null newSkydData. A valid ExpData object is required");
+        }
+
         TargetedMSRun targetedRun = (TargetedMSRun) run;
 
         ExpRun expRun = ExperimentService.get().getExpRun(targetedRun.getExperimentRunLSID());
