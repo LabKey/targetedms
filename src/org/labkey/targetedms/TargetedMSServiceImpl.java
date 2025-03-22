@@ -22,6 +22,7 @@ import org.labkey.api.data.TableCustomizer;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.exp.ExperimentRunType;
 import org.labkey.api.exp.XarFormatException;
+import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.pipeline.PipelineValidationException;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
@@ -273,6 +274,11 @@ public class TargetedMSServiceImpl implements TargetedMSService
     public ITargetedMSRun getRunByLsid(String lsid, Container container)
     {
         return TargetedMSManager.getRunByLsid(lsid, container);
+    }
+
+    public boolean updateSkydDataId(ITargetedMSRun run, ExpData newSkydData, User user)
+    {
+        return TargetedMSManager.updateSkydDataId(run, newSkydData, user);
     }
 
     @Override
