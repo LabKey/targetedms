@@ -73,6 +73,7 @@ import org.labkey.api.query.SchemaKey;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.security.permissions.DeletePermission;
+import org.labkey.api.targetedms.ITargetedMSRun;
 import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.targetedms.TargetedMSService;
@@ -123,6 +124,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -889,6 +891,30 @@ public class TargetedMSManager
             return runs[0];
         }
         throw new IllegalArgumentException("More than one TargetedMS runs found for LSID "+lsid);
+    }
+
+    public static boolean updateSkydDataId(ITargetedMSRun run, ExpData newSkydData, User user)
+    {
+        if (!(run instanceof TargetedMSRun))
+        {
+            throw new IllegalArgumentException("Invalid run type. Expected TargetedMSRun but received " +
+                    (run != null ? run.getClass().getName() : "null"));
+        }
+        if (newSkydData == null)
+        {
+            throw new IllegalArgumentException("Cannot update with null newSkydData. A valid ExpData object is required");
+        }
+
+        TargetedMSRun targetedRun = (TargetedMSRun) run;
+
+        ExpRun expRun = ExperimentService.get().getExpRun(targetedRun.getExperimentRunLSID());
+        if (expRun == null) return false;
+
+        if (!Objects.equals(newSkydData.getRunId(), expRun.getRowId())) return false;
+
+        targetedRun.setSkydDataId(newSkydData.getRowId());
+        TargetedMSManager.updateRun(targetedRun, user);
+        return true;
     }
 
     public static List<Long> getRunIdsByInstrument(String serialNumber)
