@@ -810,7 +810,7 @@ public class TargetedMSController extends SpringActionController
             defaults.save();
 
             SiteSettingsAuditProvider.SiteSettingsAuditEvent event = new SiteSettingsAuditProvider.SiteSettingsAuditEvent(
-                    getContainer().getEntityId().toString(), "Panorama QC plot default settings saved for " + getContainer().getPath());
+                    getContainer(), "Panorama QC plot default settings saved for " + getContainer().getPath());
             AuditLogService.get().addEvent(getUser(), event);
 
             ApiSimpleResponse response = new ApiSimpleResponse();
