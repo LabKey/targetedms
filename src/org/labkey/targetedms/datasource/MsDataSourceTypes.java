@@ -50,8 +50,8 @@ public class MsDataSourceTypes
                 public SQLFragment toSQLFragment(Map<FieldKey, ? extends ColumnInfo> columnMap, SqlDialect dialect)
                 {
                     ColumnInfo colInfo = columnMap != null ? columnMap.get(getFieldKey()) : null;
-                    String alias = colInfo != null ? colInfo.getAlias() : getFieldKey().getName();
-                    return new SQLFragment(dialect.getColumnSelectName(alias))
+                    var alias = SimpleFilter.getAliasForColumnFilter(dialect,colInfo, getFieldKey());
+                    return new SQLFragment().appendIdentifier(alias)
                             .append(" ").append(dialect.getCaseInsensitiveLikeOperator()).append(" ? ")
                             .append(sqlEscape())
                             .add(escapeLikePattern("_") + "FUNC%.DAT");

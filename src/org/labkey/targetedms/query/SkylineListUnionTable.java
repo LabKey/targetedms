@@ -74,7 +74,7 @@ public class SkylineListUnionTable extends VirtualTable<SkylineListSchema>
                 result.append(",\n ");
                 result.append(colInfo.getValueSql(innerAlias));
                 result.append(" AS ");
-                result.appendIdentifier(getSqlDialect().makeLegalIdentifier(colInfo.getAlias()));
+                result.appendIdentifier(colInfo.getAlias());
             }
             result.append(" FROM ");
             result.append(table.getFromSQL(innerAlias));
