@@ -54,7 +54,7 @@ public class CalibrationCurveChart
     final long _calibrationCurveId;
     private CalibrationCurveEntity _curveEntity;
     @Nullable
-    private GeneralMolecule _molecule;
+    private GeneralMolecule<?, ?> _molecule;
 
     public CalibrationCurveChart(User user, Container container, long calibrationCurveId) {
         _user = user;
@@ -113,12 +113,12 @@ public class CalibrationCurveChart
     }
 
     @Nullable
-    public GeneralMolecule getMolecule()
+    public GeneralMolecule<?, ?> getMolecule()
     {
         return _molecule;
     }
 
-    private JSONObject processCalibrationCurveJson(GeneralMolecule molecule, ReplicateDataSet replicateDataSet, CalibrationCurve calibrationCurve, Iterable<GeneralMoleculeChromInfo> chromInfos, QuantificationSettings quantificationSettings)
+    private JSONObject processCalibrationCurveJson(GeneralMolecule<?, ?> molecule, ReplicateDataSet replicateDataSet, CalibrationCurve calibrationCurve, Iterable<GeneralMoleculeChromInfo> chromInfos, QuantificationSettings quantificationSettings)
     {
         JSONObject json = new JSONObject();
         Double maxX = null, maxY = null, minX = null, minY = null;

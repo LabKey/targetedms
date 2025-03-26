@@ -18,7 +18,11 @@ package org.labkey.targetedms.parser;
 import org.labkey.api.util.Formats;
 import org.labkey.api.util.HtmlString;
 import org.labkey.api.util.HtmlStringBuilder;
+import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.chart.LabelFactory;
+import org.labkey.targetedms.query.MoleculeTransitionManager;
+
+import java.util.List;
 
 /**
  * User: binalpatel
@@ -103,5 +107,11 @@ public class MoleculePrecursor extends GeneralPrecursor<MoleculeTransition>
         hsb.append(Formats.f4.format(getMz()));
         hsb.append(LabelFactory.getChargeLabel(getCharge()));
         return hsb.getHtmlString();
+    }
+
+    @Override
+    public List<MoleculeTransition> fetchTransitions(TargetedMSSchema schema)
+    {
+        return MoleculeTransitionManager.getTransitionsForPrecursor(getId(), schema.getUser(), schema.getContainer());
     }
 }

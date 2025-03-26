@@ -70,7 +70,7 @@ public class FiguresOfMeritView extends JspView<FiguresOfMeritView.MoleculeInfo>
         String _sampleFiles;
         QuantificationSettings _settings;
 
-        GeneralMolecule _generalMolecule;
+        GeneralMolecule<?, ?> _generalMolecule;
         TargetedMSRun _run;
         private boolean _minimize;
 
@@ -162,7 +162,7 @@ public class FiguresOfMeritView extends JspView<FiguresOfMeritView.MoleculeInfo>
             return _run;
         }
 
-        public GeneralMolecule getGeneralMolecule()
+        public GeneralMolecule<?, ?> getGeneralMolecule()
         {
             return _generalMolecule;
         }

@@ -24,7 +24,7 @@ public class TargetedMSLightHeavyRatioTest extends TargetedMSTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSLightHeavyRatioTest init = (TargetedMSLightHeavyRatioTest) getCurrentTest();
+        TargetedMSLightHeavyRatioTest init = getCurrentTest();
         init.doInit();
     }
 
@@ -57,9 +57,9 @@ public class TargetedMSLightHeavyRatioTest extends TargetedMSTest
         assertEquals("Incorrect column headers", Arrays.asList("Sequence", "Copy", "Charge", "mZ", "Start Index", "Length", "Inter-day CV", "Intra-day CV", "Total CV", "Mean Intensity", "Max Intensity", "Min Intensity"),
                 precursorsWebPart.getIntensityTableHeaders());
         assertEquals("Incorrect number of rows displayed in the table", 8, precursorsWebPart.getIntensityTableRowCount());
-        assertEquals("Incorrect first row sorting in " + PrecursorsWebPart.SortBy.Intensity.toString(), "VLEPTLK[+8.0]",
+        assertEquals("Incorrect first row sorting in " + PrecursorsWebPart.SortBy.Intensity, "VLEPTLK[+8.0]",
                 precursorsWebPart.getIntensityTableElement(1, 1));
-        assertEquals("Incorrect last row after sorting in " + PrecursorsWebPart.SortBy.Intensity.toString(), "LPDATPTELAK",
+        assertEquals("Incorrect last row after sorting in " + PrecursorsWebPart.SortBy.Intensity, "LPDATPTELAK",
                 precursorsWebPart.getIntensityTableElement(8, 1));
         assertEquals("Incorrect Mean intensity for VLEPTLK", "3.925e+6", precursorsWebPart.getIntensityTableElement(2, 9));
         assertEquals("Incorrect Max intensity for VLEPTLK", "4.882e+6", precursorsWebPart.getIntensityTableElement(2, 10));
@@ -67,16 +67,16 @@ public class TargetedMSLightHeavyRatioTest extends TargetedMSTest
 
         log("Verifying Sequence sort by option");
         precursorsWebPart.setSortBy(PrecursorsWebPart.SortBy.Sequence);
-        assertEquals("Incorrect first row after sorting in " + PrecursorsWebPart.SortBy.Sequence.toString(), "ELPEHTVK",
+        assertEquals("Incorrect first row after sorting in " + PrecursorsWebPart.SortBy.Sequence, "ELPEHTVK",
                 precursorsWebPart.getIntensityTableElement(1, 1));
-        assertEquals("Incorrect last row after sorting in " + PrecursorsWebPart.SortBy.Sequence.toString(), "VLEPTLK[+8.0]",
+        assertEquals("Incorrect last row after sorting in " + PrecursorsWebPart.SortBy.Sequence, "VLEPTLK[+8.0]",
                 precursorsWebPart.getIntensityTableElement(8, 1));
 
         log("Verifying Coefficient of Variation sort by option");
         precursorsWebPart.setSortBy(PrecursorsWebPart.SortBy.Coefficient_of_Variation);
-        assertEquals("Incorrect first row after sorting in " + PrecursorsWebPart.SortBy.Coefficient_of_Variation.toString(), "31.5%",
+        assertEquals("Incorrect first row after sorting in " + PrecursorsWebPart.SortBy.Coefficient_of_Variation, "31.5%",
                 precursorsWebPart.getIntensityTableElement(1, 8));
-        assertEquals("Incorrect last row after sorting in " + PrecursorsWebPart.SortBy.Coefficient_of_Variation.toString(), "8.1%",
+        assertEquals("Incorrect last row after sorting in " + PrecursorsWebPart.SortBy.Coefficient_of_Variation, "8.1%",
                 precursorsWebPart.getIntensityTableElement(8, 8));
     }
 
@@ -104,16 +104,16 @@ public class TargetedMSLightHeavyRatioTest extends TargetedMSTest
         assertEquals("Incorrect Min ratio for VLEPTLK", "0.838", precursorsWebPart.getRatioTableElement(2, 13));
 
         log("Verifying Light/Heavy ration sort by option");
-        assertEquals("Incorrect first row sorting in " + PrecursorsWebPart.SortBy.Light_heavy_ratio.toString(), "ELPEHTVK",
+        assertEquals("Incorrect first row sorting in " + PrecursorsWebPart.SortBy.Light_heavy_ratio, "ELPEHTVK",
                 precursorsWebPart.getRatioTableElement(1, 1));
-        assertEquals("Incorrect last row after sorting in " + PrecursorsWebPart.SortBy.Light_heavy_ratio.toString(), "LPDATPTELAK",
+        assertEquals("Incorrect last row after sorting in " + PrecursorsWebPart.SortBy.Light_heavy_ratio, "LPDATPTELAK",
                 precursorsWebPart.getRatioTableElement(4, 1));
 
         log("Verifying Sequence location sort by option");
         precursorsWebPart.setSortBy(PrecursorsWebPart.SortBy.Sequence_Location);
-        assertEquals("Incorrect first row after sorting in " + PrecursorsWebPart.SortBy.Coefficient_of_Variation.toString(), "295",
+        assertEquals("Incorrect first row after sorting in " + PrecursorsWebPart.SortBy.Coefficient_of_Variation, "295",
                 precursorsWebPart.getRatioTableElement(1, 6));
-        assertEquals("Incorrect last row after sorting in " + PrecursorsWebPart.SortBy.Coefficient_of_Variation.toString(), "448",
+        assertEquals("Incorrect last row after sorting in " + PrecursorsWebPart.SortBy.Coefficient_of_Variation, "448",
                 precursorsWebPart.getRatioTableElement(4, 6));
     }
 

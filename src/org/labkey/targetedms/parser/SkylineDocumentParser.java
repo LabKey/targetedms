@@ -1400,7 +1400,7 @@ public class SkylineDocumentParser implements AutoCloseable
         return _optimizationDBRows;
     }
 
-    public void matchIrt(GeneralMolecule generalMolecule)
+    public void matchIrt(GeneralMolecule<?, ?> generalMolecule)
     {
         for (IrtPeptide irt : _iRTScaleSettings)
         {
@@ -1461,7 +1461,7 @@ public class SkylineDocumentParser implements AutoCloseable
         return molecule;
     }
 
-    private void readGeneralMolecule(XMLStreamReader reader, GeneralMolecule generalMolecule)
+    private void readGeneralMolecule(XMLStreamReader reader, GeneralMolecule<?, ?> generalMolecule)
     {
         String predictedRt = reader.getAttributeValue(null, "predicted_retention_time");
         if (null != predictedRt)
@@ -1499,7 +1499,7 @@ public class SkylineDocumentParser implements AutoCloseable
         molecule.setMoleculeId(XmlUtil.readAttribute(reader, ID));
 
         List<MoleculePrecursor> moleculePrecursorList = new ArrayList<>();
-        molecule.setMoleculePrecursorsList(moleculePrecursorList);
+        molecule.setPrecursorList(moleculePrecursorList);
 
         List<GeneralMoleculeAnnotation> annotations = new ArrayList<>();
         molecule.setAnnotations(annotations);
@@ -3175,7 +3175,7 @@ public class SkylineDocumentParser implements AutoCloseable
 
     private List<ChromGroupHeaderInfo> tryLoadChromatogram(
             List<? extends GeneralTransition> transitions,
-            GeneralMolecule molecule,
+            GeneralMolecule<?, ?> molecule,
             GeneralPrecursor<?> precursor,
             double tolerance)
     {
@@ -3277,7 +3277,7 @@ public class SkylineDocumentParser implements AutoCloseable
                 transitionCounts[i] = transitionCount;
                 maxTransitionCount = Math.max(transitionCount, maxTransitionCount);
             }
-            List<ChromGroupHeaderInfo> candidatesWithMostTransitions = new ArrayList<ChromGroupHeaderInfo>();
+            List<ChromGroupHeaderInfo> candidatesWithMostTransitions = new ArrayList<>();
             for (int i = 0; i < candidates.size(); i++)
             {
                 if (transitionCounts[i] == maxTransitionCount)
@@ -3436,12 +3436,9 @@ public class SkylineDocumentParser implements AutoCloseable
             if (XmlUtil.isStartElement(reader, evtType, LOSSES))
             {
                 var losses = readLosses(reader);
-                if (losses != null)
+                for (TransitionLoss loss : losses)
                 {
-                    for  (TransitionLoss loss : losses)
-                    {
-                        // TODO
-                    }
+                    // TODO
                 }
             }
             else if (XmlUtil.isStartElement(reader, evtType, LINKED_FRAGMENT_ION))

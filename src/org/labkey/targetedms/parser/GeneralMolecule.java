@@ -15,9 +15,12 @@
  */
 package org.labkey.targetedms.parser;
 
+import org.labkey.targetedms.TargetedMSSchema;
+
 import java.util.List;
 
-public abstract class GeneralMolecule extends AnnotatedEntity<GeneralMoleculeAnnotation>
+public abstract class GeneralMolecule<TransitionType extends GeneralTransition, PrecursorType extends GeneralPrecursor<TransitionType>>
+        extends AnnotatedEntity<GeneralMoleculeAnnotation>
 {
     protected long _peptideGroupId;
     protected Double _rtCalculatorScore;
@@ -32,6 +35,7 @@ public abstract class GeneralMolecule extends AnnotatedEntity<GeneralMoleculeAnn
     protected String _attributeGroupId;
     private List<GeneralMoleculeChromInfo> _generalMoleculeChromInfoList;
     private Double _explicitRetentionTimeWindow;
+    private List<PrecursorType> _precursorList;
 
     public long getPeptideGroupId()
     {
@@ -110,7 +114,7 @@ public abstract class GeneralMolecule extends AnnotatedEntity<GeneralMoleculeAnn
         _standardType = standardType;
     }
 
-    public abstract String getPrecursorKey(GeneralMolecule gm, GeneralPrecursor gp);
+    public abstract String getPrecursorKey(PrecursorType gp);
 
     public abstract String getTextId();
 
@@ -167,4 +171,16 @@ public abstract class GeneralMolecule extends AnnotatedEntity<GeneralMoleculeAnn
     {
         _explicitRetentionTimeWindow = explicitRetentionTimeWindow;
     }
+
+    public List<PrecursorType> getPrecursorList()
+    {
+        return _precursorList;
+    }
+
+    public void setPrecursorList(List<PrecursorType> list)
+    {
+        _precursorList = list;
+    }
+
+    public abstract List<? extends PrecursorType> fetchPrecursors(TargetedMSSchema schema);
 }

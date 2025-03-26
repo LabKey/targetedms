@@ -16,6 +16,7 @@
 package org.labkey.targetedms.parser;
 
 import org.labkey.api.targetedms.RepresentativeDataState;
+import org.labkey.targetedms.TargetedMSSchema;
 
 import java.util.List;
 
@@ -223,5 +224,10 @@ public class GeneralPrecursor<TransitionType extends GeneralTransition> extends 
     public void setSpectrumFilter(byte[] spectrumFilter)
     {
         _spectrumFilter = spectrumFilter;
+    }
+
+    public List<TransitionType> fetchTransitions(TargetedMSSchema schema)
+    {
+        throw new UnsupportedOperationException();
     }
 }

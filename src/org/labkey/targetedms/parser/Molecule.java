@@ -17,6 +17,8 @@
 package org.labkey.targetedms.parser;
 
 import org.apache.commons.lang3.StringUtils;
+import org.labkey.targetedms.TargetedMSSchema;
+import org.labkey.targetedms.query.MoleculePrecursorManager;
 
 import java.util.List;
 
@@ -25,13 +27,12 @@ import java.util.List;
  * Date: 1/27/2015
  * Time: 2:58 PM
  */
-public class Molecule extends GeneralMolecule
+public class Molecule extends GeneralMolecule<MoleculeTransition, MoleculePrecursor>
 {
     private String _ionFormula;
     private Double _massMonoisotopic; // not null
     private Double _massAverage; // not null
     private String _customIonName;
-    private List<MoleculePrecursor> _moleculePrecursorsList;
     private String _moleculeId;
 
     public String getIonFormula()
@@ -74,16 +75,6 @@ public class Molecule extends GeneralMolecule
         _customIonName = customIonName;
     }
 
-    public List<MoleculePrecursor> getMoleculePrecursorsList()
-    {
-        return _moleculePrecursorsList;
-    }
-
-    public void setMoleculePrecursorsList(List<MoleculePrecursor> moleculePrecursorsList)
-    {
-        _moleculePrecursorsList = moleculePrecursorsList;
-    }
-
     public String getMoleculeId()
     {
         return _moleculeId;
@@ -95,12 +86,9 @@ public class Molecule extends GeneralMolecule
     }
 
     @Override
-    public String getPrecursorKey(GeneralMolecule gm, GeneralPrecursor gp)
+    public String getPrecursorKey(MoleculePrecursor gp)
     {
-        StringBuilder key = new StringBuilder();
-        key.append(((Molecule) gm).getMassMonoisotopic());
-        key.append("_").append(gp.getCharge());
-        return key.toString();
+        return getMassMonoisotopic() + "_" + gp.getCharge();
     }
 
     @Override
@@ -201,5 +189,11 @@ public class Molecule extends GeneralMolecule
     public String getName()
     {
         return CustomIon.getName(this);
+    }
+
+    @Override
+    public List<? extends MoleculePrecursor> fetchPrecursors(TargetedMSSchema schema)
+    {
+        return MoleculePrecursorManager.getPrecursorsForMolecule(getId(), schema);
     }
 }

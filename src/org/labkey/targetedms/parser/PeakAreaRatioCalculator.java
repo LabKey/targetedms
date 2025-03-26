@@ -15,9 +15,6 @@
  */
 package org.labkey.targetedms.parser;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.labkey.targetedms.SkylineDocImporter;
 import org.labkey.targetedms.query.IsotopeLabelManager;
 import org.labkey.targetedms.query.ReplicateManager;
 
@@ -30,25 +27,21 @@ import java.util.Map;
  * Date: 1/31/14
  * Time: 10:33 AM
  */
-public class PeakAreaRatioCalculator
+public class PeakAreaRatioCalculator<TransitionType extends GeneralTransition, PrecursorType extends GeneralPrecursor<TransitionType>, MoleculeType extends GeneralMolecule<TransitionType, PrecursorType>>
 {
-    private static Logger _log = LogManager.getLogger(SkylineDocImporter.class);
-
-    private final Peptide _peptide;
+    private final MoleculeType _peptide;
     private final TransitionSettings _transitionSettings;
 
-    private Map<Long, PeptideAreaRatioCalculator> _peptideAreaRatioCalculatorMap;
+    private final Map<Long, PeptideAreaRatioCalculator> _peptideAreaRatioCalculatorMap = new HashMap<>();
 
     // All the precursors and transitions and chrom infos for this peptide must already have database IDs.
-    public PeakAreaRatioCalculator(Peptide peptide, TransitionSettings transitionSettings)
+    public PeakAreaRatioCalculator(MoleculeType molecule, TransitionSettings transitionSettings)
     {
-        _peptide = peptide;
+        _peptide = molecule;
         _transitionSettings = transitionSettings;
-
-        _peptideAreaRatioCalculatorMap = new HashMap<>();
     }
 
-    public void init(Map<SkylineDocImporter.SampleFileKey, SampleFile> skylineIdSampleFileMap)
+    public void init()
     {
         for(GeneralMoleculeChromInfo generalMoleculeChromInfo : _peptide.getGeneralMoleculeChromInfoList())
         {
@@ -56,16 +49,16 @@ public class PeakAreaRatioCalculator
             _peptideAreaRatioCalculatorMap.put(sampleFileId, new PeptideAreaRatioCalculator(generalMoleculeChromInfo));
         }
 
-        for(Precursor precursor: _peptide.getPrecursorList())
+        for (PrecursorType precursor: _peptide.getPrecursorList())
         {
-            if  (precursor.getSpectrumFilter() != null)
+            if (precursor.getSpectrumFilter() != null)
             {
                 // Ideally, ratios would be calculated separately between Precursors with the same Spectrum Filter.
                 // However, we only store one ratio in the database for each Peptide, so we just skip precursors
                 // which have a Spectrum Filter.
                 continue;
             }
-            for(PrecursorChromInfo precursorChromInfo : precursor.getChromInfoList())
+            for (PrecursorChromInfo precursorChromInfo : precursor.getChromInfoList())
             {
                 if(precursorChromInfo.isOptimizationPeak())
                 {
@@ -74,14 +67,14 @@ public class PeakAreaRatioCalculator
 
                 long sampleFileId = precursorChromInfo.getSampleFileId();
                 PeptideAreaRatioCalculator calculator = getPeptideAreaRatioCalculator(sampleFileId);
-                if(calculator != null)
+                if (calculator != null)
                 {
                     PrecursorAreaRatioCalculator precursorCalculator = calculator.getPrecursorAreaRatioCalculator(_peptide, precursor);
                     precursorCalculator.addChromInfo(precursor.getIsotopeLabelId(), precursorChromInfo);
                 }
             }
 
-            for(Transition transition: precursor.getTransitionsList())
+            for (TransitionType transition: precursor.getTransitionsList())
             {
                 // Issue 41788: Exclude non-quantitative transitions from peak area ratio calculations
                 if(!transition.isQuantitative(_transitionSettings.getFullScanSettings()))
@@ -119,7 +112,7 @@ public class PeakAreaRatioCalculator
         return pCalc != null ? pCalc.getRatio(numLabelId, denomLabelId) : null;
     }
 
-    public PrecursorAreaRatio getPrecursorAreaRatio(Long sampleFileId, Precursor precursor, Long numLabelId, Long denomLabelId)
+    public PrecursorAreaRatio getPrecursorAreaRatio(Long sampleFileId, PrecursorType precursor, Long numLabelId, Long denomLabelId)
     {
         if(precursor.getIsotopeLabelId() != numLabelId)
             return null;
@@ -132,7 +125,7 @@ public class PeakAreaRatioCalculator
         return calculator.getRatio(numLabelId, denomLabelId);
     }
 
-    public TransitionAreaRatio getTransitionAreaRatio(Long sampleFileId, Precursor precursor, Transition transition, Long numLabelId, Long denomLabelId)
+    public TransitionAreaRatio getTransitionAreaRatio(Long sampleFileId, PrecursorType precursor, TransitionType transition, Long numLabelId, Long denomLabelId)
     {
         if(precursor.getIsotopeLabelId() != numLabelId)
             return null;
@@ -141,19 +134,18 @@ public class PeakAreaRatioCalculator
         if(pCalc == null)
             return null;
 
-        TransitionAreaRatioCalculator calculator = pCalc.getTransitionAreaRatioCalculator(_peptide,precursor, transition);
+        TransitionAreaRatioCalculator calculator = pCalc.getTransitionAreaRatioCalculator(_peptide, precursor, transition);
         return calculator.getRatio(numLabelId, denomLabelId);
     }
 
     private class PeptideAreaRatioCalculator
     {
-        private Map<String, PrecursorAreaRatioCalculator> _calculatorMap;
-        private GeneralMoleculeChromInfo _generalMoleculeChromInfo;
+        private final Map<String, PrecursorAreaRatioCalculator> _calculatorMap = new HashMap<>();
+        private final GeneralMoleculeChromInfo _generalMoleculeChromInfo;
 
         public PeptideAreaRatioCalculator(GeneralMoleculeChromInfo generalMoleculeChromInfo)
         {
             _generalMoleculeChromInfo = generalMoleculeChromInfo;
-            _calculatorMap = new HashMap<>();
         }
 
         PeptideAreaRatio getRatio(long numIsotopeLabelId, long denomIsotopeLabelId)
@@ -186,11 +178,11 @@ public class PeakAreaRatioCalculator
             return null;
         }
 
-        private PrecursorAreaRatioCalculator getPrecursorAreaRatioCalculator(Peptide peptide, Precursor precursor)
+        private <PT extends GeneralPrecursor<?>> PrecursorAreaRatioCalculator getPrecursorAreaRatioCalculator(GeneralMolecule<?, PT> peptide, PT precursor)
         {
-            String precursorKey = peptide.getPrecursorKey(peptide, precursor);
+            String precursorKey = peptide.getPrecursorKey(precursor);
             PrecursorAreaRatioCalculator calculator = _calculatorMap.get(precursorKey);
-            if(calculator == null)
+            if (calculator == null)
             {
                 calculator = new PrecursorAreaRatioCalculator(precursorKey, _generalMoleculeChromInfo.getSampleFileId());
                 _calculatorMap.put(precursorKey, calculator);
@@ -198,7 +190,7 @@ public class PeakAreaRatioCalculator
             return calculator;
         }
 
-        private TransitionAreaRatioCalculator getTransitionAreaRatioCalculator(Peptide peptide, Precursor precursor, Transition transition)
+        private TransitionAreaRatioCalculator getTransitionAreaRatioCalculator(MoleculeType peptide, PrecursorType precursor, TransitionType transition)
         {
             PrecursorAreaRatioCalculator precursorCalculator = getPrecursorAreaRatioCalculator(peptide, precursor);
             return precursorCalculator.getTransitionAreaRatioCalculator(transition, precursor);
@@ -280,7 +272,7 @@ public class PeakAreaRatioCalculator
             return chromInfo;
         }
 
-        TransitionAreaRatioCalculator getTransitionAreaRatioCalculator(Transition transition, Precursor precursor)
+        TransitionAreaRatioCalculator getTransitionAreaRatioCalculator(TransitionType transition, PrecursorType precursor)
         {
             String transitionKey = getTransitionKey(transition, precursor);
             TransitionAreaRatioCalculator calculator = _calculatorMap.get(transitionKey);
@@ -322,7 +314,7 @@ public class PeakAreaRatioCalculator
 
     private abstract class AreaRatioCalculator <T, R extends AreaRatio>
     {
-        private Map<Long, T> _labelIdChromInfoMap;
+        private final Map<Long, T> _labelIdChromInfoMap;
 
         public AreaRatioCalculator()
         {
@@ -414,7 +406,7 @@ public class PeakAreaRatioCalculator
         return numerator / denominator;
     }
 
-    public static String getTransitionKey(GeneralTransition generalTransition, GeneralPrecursor generalPrecursor)
+    public static <TT extends GeneralTransition> String getTransitionKey(TT generalTransition, GeneralPrecursor<TT> generalPrecursor)
     {
         if (generalTransition instanceof Transition) {
             return getPeptideTransitionKey((Transition) generalTransition, (Precursor) generalPrecursor);
@@ -423,16 +415,12 @@ public class PeakAreaRatioCalculator
     }
 
     private static String getMoleculeTransitionKey(MoleculeTransition transition, MoleculePrecursor precursor) {
-        // TODO(nicksh): If getCustomIonName is null, then fall back to unlabeled formula.
+        // Don't rely on the custom ion name which could be duplicated
         String fragment = transition.getFragmentType()
-                + (transition.isPrecursorIon() ? transition.getMassIndex() : transition.getCustomIonName());
+                + (transition.isPrecursorIon() ? transition.getMassIndex() : (transition.getMassMonoisotopic() + " " + transition.getMassAverage()));
 
         int fragmentCharge = transition.isPrecursorIon() ? precursor.getCharge() : transition.getCharge();
-        StringBuilder key = new StringBuilder();
-        key.append(fragment)
-                .append("_")
-                .append(fragmentCharge);
-        return key.toString();
+        return fragment + "_" + fragmentCharge;
     }
 
     private static String getPeptideTransitionKey(Transition transition , Precursor precursor) {
@@ -445,7 +433,7 @@ public class PeakAreaRatioCalculator
                 .append("_")
                 .append(fragmentCharge);
         List<TransitionLoss> transitionLosses = transition.getNeutralLosses();
-        if(transitionLosses != null && transitionLosses.size() > 0)
+        if(transitionLosses != null && !transitionLosses.isEmpty())
         {
             for(TransitionLoss loss: transitionLosses)
             {
