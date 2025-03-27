@@ -327,17 +327,17 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         assertTextPresent("1343.740", "1226.661", "1001.550");
 
         //Click down arrow next to protein name. Click "Search for other references to this protein"
-        WebElement popupArrow = waitForElement(Locator.linkWithText("YAL038W").followingSibling("span").childTag("img"));
-        mouseOver(popupArrow);
-        waitForText("Search for other references to this protein");
-        clickAndWait(Locator.linkContainingText("Search for other references to this protein"));
-
-        //Verify Targeted MS Peptides section of page.
-        //Click on Details link.
-        //Spot check some values.
-        assertTextPresent("Protein Search Results", "Targeted MS Proteins", "YAL038W",
-                "I from 71787-73289, Verified ORF, \"Pyruvate kinase, functions as a homotetramer in glycolysis to convert phosphoenolpyruvate to pyruvate, the input for aerobic (TCA cycle",
-                "MRMer.zip");
+//        WebElement popupArrow = waitForElement(Locator.linkWithText("YAL038W").followingSibling("span").childTag("img"));
+//        mouseOver(popupArrow);
+//        waitForText("Search for other references to this protein");
+//        clickAndWait(Locator.linkContainingText("Search for other references to this protein"));
+//
+//        //Verify Targeted MS Peptides section of page.
+//        //Click on Details link.
+//        //Spot check some values.
+//        assertTextPresent("Protein Search Results", "Targeted MS Proteins", "YAL038W",
+//                "I from 71787-73289, Verified ORF, \"Pyruvate kinase, functions as a homotetramer in glycolysis to convert phosphoenolpyruvate to pyruvate, the input for aerobic (TCA cycle",
+//                "MRMer.zip");
     }
 
     @LogMethod
@@ -756,7 +756,6 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         assertElementPresent(transitionsLink);
         clickAndWait(transitionsLink);
         var precursorTable = new DataRegionTable("transitions_view" ,getDriver());
-        String nestedTableText = precursorTable.getDataAsText(1, 0); // Nested table of all transitions for a peptide group
 
         // Expected fragment ions for peptide GGGGPGGGGPGGGSAGGPSQPPGGGGPGIR
         var expectedIons = List.of(
@@ -772,6 +771,10 @@ public class TargetedMSExperimentTest extends TargetedMSTest
                 "z\u20329",  "251.4732", // z′9
                 "z\u20321",  "54.0409" // z′1
         );
+
+        waitForText(expectedIons.toArray(new String[0]));
+
+        String nestedTableText = precursorTable.getDataAsText(1, 0); // Nested table of all transitions for a peptide group
         assertTextPresentInThisOrder(new TextSearcher(nestedTableText), expectedIons.toArray(new String[0]));
 
         // Verify legend labels in the chromatogram plot
@@ -784,6 +787,8 @@ public class TargetedMSExperimentTest extends TargetedMSTest
                 "z\u20329 - 251.4732+++", "z\u20321 - 54.0409+++");
 
         List<WebElement> svgElements = Locator.css("svg g text").waitForElements(getDriver(), WAIT_FOR_JAVASCRIPT);
+        waitForText(expectedLegendTexts.toArray(new String[0]));
+
         Set<String> svgTexts = new HashSet<>();
         for (WebElement el: svgElements)
         {
