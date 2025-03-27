@@ -87,6 +87,7 @@
 </div>
 
 <span id="fom-loading">Loading...<i class="fa fa-spinner fa-pulse"></i></span>
+<span id="fom-error" class='labkey-error'></span>
 <div id="table-container" class="table-container">
 
 </div>
@@ -119,12 +120,13 @@
     }
 
     function getMinMaxDate() {
+        $('#fom-error').hide();
         LABKEY.Query.executeSql({
             schemaName: 'targetedms',
             sql: 'SELECT MIN(AcquiredTime) AS MinAcquiredTime, MAX(AcquiredTime) AS MaxAcquiredTime, count(*) AS runs FROM SampleFile',
             success: function(data) {
                 if (data.rows.length === 0 || !data.rows[0]['MinAcquiredTime']) {
-                    Ext4.get(plotPanelId).update("No data found. Please upload runs using the Data Pipeline or directly from Skyline.");
+                    showErrorMessage("No data found. Please upload runs using the Data Pipeline or directly from Skyline.");
                 }
                 else {
                     if (startDate === null || endDate === null) {
@@ -141,9 +143,15 @@
                 }
             },
             failure: function(response) {
-                Ext4.get(plotPanelId).update("<span class='labkey-error'>Error: " + LABKEY.Utils.encodeHtml(response.exception) + "</span>");
+                showErrorMessage("Error: " + response.exception);
             }
         });
+    }
+
+    function showErrorMessage(message) {
+        $('#fom-loading').hide();
+        document.getElementById('fom-error').innerText = message;
+        $('#fom-error').show();
     }
 
     function calculateStartDateByOffset(offset) {
@@ -242,6 +250,7 @@
 
     function getData() {
         $('#fom-loading').show();
+        $('#fom-error').hide();
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetPeptideOutliers.api'),
             params: {
@@ -252,7 +261,10 @@
                 const parsed = JSON.parse(response.responseText);
                 document.getElementById('total-replicates').innerHTML = '&nbsp;' +  LABKEY.Utils.encodeHtml(parsed.replicatesCount);
                 generateTable(parsed);
-            }
+            },
+            failure: LABKEY.Utils.getCallbackWrapper(function(response) {
+                showErrorMessage("Error: " + response.exception);
+            }, this, false)
         });
     }
 
@@ -311,6 +323,7 @@
 
     function customDateRange() {
         $('#fom-loading').show();
+        $('#fom-error').hide();
         const startDateVal = document.getElementById('ps-start-date').value;
         const endDateVal = document.getElementById('ps-end-date').value;
 
@@ -376,6 +389,9 @@
                     document.getElementById('date-range').value = dateRangeOffset;
                 }
                 getMinMaxDate();
+            }, this, false),
+            failure: LABKEY.Utils.getCallbackWrapper(function(response) {
+                showErrorMessage("Error:" + response.exception);
             }, this, false)
         });
     }
