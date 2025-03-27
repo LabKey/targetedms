@@ -1508,14 +1508,14 @@ public class SkylineDocImporter
         PeakAreaRatioCalculator<TransitionType, PrecursorType, MoleculeType> areaRatioCalculator = new PeakAreaRatioCalculator<>(peptide, transitionSettings);
         areaRatioCalculator.init();
         // Insert area ratios for each combination of 2 isotope labels
-        for (Long numLabelId : modInfo.isotopeLabelIdMap.values())
+        for (long numLabelId : modInfo.isotopeLabelIdMap.values())
         {
-            for (Long denomLabelId : modInfo.isotopeLabelIdMap.values())
+            for (long denomLabelId : modInfo.isotopeLabelIdMap.values())
             {
                 if (!modInfo.internalStandardLabelIds.contains(denomLabelId))
                     continue;
 
-                if (numLabelId.equals(denomLabelId))
+                if (numLabelId == denomLabelId)
                     continue;
 
                 for (SampleFile sampleFile : skylineIdSampleFileIdMap.values())

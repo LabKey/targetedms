@@ -54,7 +54,7 @@ public class TargetedMSSmallMoleculeLightHeavyRatioTest extends TargetedMSTest
         Connection connection = createDefaultConnection();
         SelectRowsCommand transitionCommand = new SelectRowsCommand("targetedms", "transitionarearatio");
         SelectRowsResponse transitionResponse = transitionCommand.execute(connection, getProjectName());
-        assertEquals("Wrong number of rows", 39, transitionResponse.getRows().size());
+        assertEquals("Wrong number of rows", 48, transitionResponse.getRows().size());
         assertEquals("Wrong ratio for first row", 11.234128, (Double)transitionResponse.getRows().get(0).get("arearatio"), 0.0001);
 
         SelectRowsCommand precursorCommand = new SelectRowsCommand("targetedms", "precursorarearatio");

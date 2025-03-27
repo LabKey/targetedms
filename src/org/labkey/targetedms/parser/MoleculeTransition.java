@@ -141,7 +141,7 @@ public class MoleculeTransition extends GeneralTransition
 
             if(result == 0)
             {
-                result = Double.valueOf(t2.getMz()).compareTo(t1.getMz());
+                result = Double.compare(t2.getMz(), t1.getMz());
             }
             if(result == 0)
             {

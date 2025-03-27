@@ -171,19 +171,12 @@ public class Molecule extends GeneralMolecule<MoleculeTransition, MoleculePrecur
         {
             String expectedText = String.format("%.9f/%.9f", getMassMonoisotopic(), getMassAverage());
             String actualText = String.format("%.9f/%.9f", target.getMonoMass(), target.getAverageMass());
-            if (!expectedText.equals(actualText))
-            {
-                return false;
-            }
+            return expectedText.equals(actualText);
         }
         else
         {
-            if (!target.getFormula().equals(getIonFormula()))
-            {
-                return false;
-            }
+            return target.getFormula().equals(getIonFormula());
         }
-        return true;
     }
 
     public String getName()

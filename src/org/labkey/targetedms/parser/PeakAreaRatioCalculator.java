@@ -106,13 +106,13 @@ public class PeakAreaRatioCalculator<TransitionType extends GeneralTransition, P
         return  _peptideAreaRatioCalculatorMap.get(sampleFileId);
     }
 
-    public PeptideAreaRatio getPeptideAreaRatio(Long sampleFileId, Long numLabelId, Long denomLabelId)
+    public PeptideAreaRatio getPeptideAreaRatio(long sampleFileId, long numLabelId, long denomLabelId)
     {
         PeptideAreaRatioCalculator pCalc = getPeptideAreaRatioCalculator(sampleFileId);
         return pCalc != null ? pCalc.getRatio(numLabelId, denomLabelId) : null;
     }
 
-    public PrecursorAreaRatio getPrecursorAreaRatio(Long sampleFileId, PrecursorType precursor, Long numLabelId, Long denomLabelId)
+    public PrecursorAreaRatio getPrecursorAreaRatio(Long sampleFileId, PrecursorType precursor, long numLabelId, long denomLabelId)
     {
         if(precursor.getIsotopeLabelId() != numLabelId)
             return null;
@@ -125,13 +125,13 @@ public class PeakAreaRatioCalculator<TransitionType extends GeneralTransition, P
         return calculator.getRatio(numLabelId, denomLabelId);
     }
 
-    public TransitionAreaRatio getTransitionAreaRatio(Long sampleFileId, PrecursorType precursor, TransitionType transition, Long numLabelId, Long denomLabelId)
+    public TransitionAreaRatio getTransitionAreaRatio(long sampleFileId, PrecursorType precursor, TransitionType transition, long numLabelId, long denomLabelId)
     {
-        if(precursor.getIsotopeLabelId() != numLabelId)
+        if (precursor.getIsotopeLabelId() != numLabelId)
             return null;
 
         PeptideAreaRatioCalculator pCalc = getPeptideAreaRatioCalculator(sampleFileId);
-        if(pCalc == null)
+        if (pCalc == null)
             return null;
 
         TransitionAreaRatioCalculator calculator = pCalc.getTransitionAreaRatioCalculator(_peptide, precursor, transition);
@@ -287,7 +287,7 @@ public class PeakAreaRatioCalculator<TransitionType extends GeneralTransition, P
 
     // Calculator for transition area ratios for a single transition from one precursor
     // in one sample file.
-    private class TransitionAreaRatioCalculator extends AreaRatioCalculator<TransitionChromInfo, TransitionAreaRatio>
+    private static class TransitionAreaRatioCalculator extends AreaRatioCalculator<TransitionChromInfo, TransitionAreaRatio>
     {
         @Override
         TransitionAreaRatio getRatio(long numIsotopeLabelId, long denomIsotopeLabelId)
@@ -295,10 +295,10 @@ public class PeakAreaRatioCalculator<TransitionType extends GeneralTransition, P
             TransitionChromInfo numChromInfo = getChromInfo(numIsotopeLabelId);
             TransitionChromInfo denomChromInfo = getChromInfo(denomIsotopeLabelId);
 
-            if(numChromInfo != null && denomChromInfo != null)
+            if (numChromInfo != null && denomChromInfo != null)
             {
                 Double ratio = PeakAreaRatioCalculator.calculateRatio(numChromInfo.getArea(), denomChromInfo.getArea());
-                if(ratio ==  null)
+                if (ratio == null)
                     return null;
                 TransitionAreaRatio taRatio = new TransitionAreaRatio();
                 taRatio.setTransitionChromInfoId(numChromInfo.getId());
@@ -312,9 +312,10 @@ public class PeakAreaRatioCalculator<TransitionType extends GeneralTransition, P
         }
     }
 
-    private abstract class AreaRatioCalculator <T, R extends AreaRatio>
+    private abstract static class AreaRatioCalculator <T, R extends AreaRatio>
     {
         private final Map<Long, T> _labelIdChromInfoMap;
+        private boolean _invalid;
 
         public AreaRatioCalculator()
         {
@@ -325,8 +326,9 @@ public class PeakAreaRatioCalculator<TransitionType extends GeneralTransition, P
         {
             if(_labelIdChromInfoMap.containsKey(isotopeLabelId))
             {
-                throw new IllegalStateException("Area for isotope label " + getIsotopeLabelName(isotopeLabelId)
-                                                + " already exists.");
+                // We might have multiple small molecule transitions with the same custom ion name but not
+                // representing labeled pairs. Don't try to compare them with each other
+                _invalid = true;
             }
 
             _labelIdChromInfoMap.put(isotopeLabelId, chromInfo);
@@ -337,6 +339,8 @@ public class PeakAreaRatioCalculator<TransitionType extends GeneralTransition, P
 
         T getChromInfo(long isotopeLabelId)
         {
+            if (_invalid)
+                return null;
             return _labelIdChromInfoMap.get(isotopeLabelId);
         }
     }
@@ -417,7 +421,7 @@ public class PeakAreaRatioCalculator<TransitionType extends GeneralTransition, P
     private static String getMoleculeTransitionKey(MoleculeTransition transition, MoleculePrecursor precursor) {
         // Don't rely on the custom ion name which could be duplicated
         String fragment = transition.getFragmentType()
-                + (transition.isPrecursorIon() ? transition.getMassIndex() : (transition.getMassMonoisotopic() + " " + transition.getMassAverage()));
+                + (transition.isPrecursorIon() ? transition.getMassIndex() : transition.getCustomIonName());
 
         int fragmentCharge = transition.isPrecursorIon() ? precursor.getCharge() : transition.getCharge();
         return fragment + "_" + fragmentCharge;

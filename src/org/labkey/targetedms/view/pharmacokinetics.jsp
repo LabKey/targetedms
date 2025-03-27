@@ -25,7 +25,7 @@
 <%@ taglib prefix="labkey" uri="http://www.labkey.org/taglib" %>
 <%@ taglib prefix="h" uri="http://www.labkey.org/taglib" %>
 <%
-    JspView<GeneralMolecule<?, ?>> me = HttpView.currentView();
+    JspView<GeneralMolecule<?, ?>> me = (JspView<GeneralMolecule<?,?>>) HttpView.currentView();
     GeneralMolecule<?, ?> molecule = me.getModelBean();
 %>
 
