@@ -776,8 +776,6 @@ public class TargetedMSExperimentTest extends TargetedMSTest
                 "z\u20321",  "54.0409" // z′1
         );
 
-        waitForText(expectedIons.toArray(new String[0]));
-
         String nestedTableText = precursorTable.getDataAsText(1, 0); // Nested table of all transitions for a peptide group
         assertTextPresentInThisOrder(new TextSearcher(nestedTableText), expectedIons.toArray(new String[0]));
 
