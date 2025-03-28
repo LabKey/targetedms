@@ -118,10 +118,10 @@ public class RunQuantifier
                     ++done,
                     peptideGroups.size()));
 
-            List<GeneralMolecule> generalMolecules = new ArrayList<>();
+            List<GeneralMolecule<?, ?>> generalMolecules = new ArrayList<>();
             generalMolecules.addAll(MoleculeManager.getMoleculesForGroup(peptideGroup.getId()));
             generalMolecules.addAll(PeptideManager.getPeptidesForGroup(peptideGroup.getId()));
-            for (GeneralMolecule molecule : generalMolecules)
+            for (GeneralMolecule<?, ?> molecule : generalMolecules)
             {
                 NormalizationMethod normalizationMethod
                         = getNormalizationMethod(molecule, quantificationSettings.getNormalizationMethod());
@@ -144,7 +144,7 @@ public class RunQuantifier
         return calibrationCurves;
     }
 
-    public CalibrationCurve calculateCalibrationCurve(QuantificationSettings quantificationSettings, GeneralMolecule generalMolecule, List<GeneralMoleculeChromInfo> modifiedChromInfos)
+    public CalibrationCurve calculateCalibrationCurve(QuantificationSettings quantificationSettings, GeneralMolecule<?, ?> generalMolecule, List<GeneralMoleculeChromInfo> modifiedChromInfos)
     {
         PeptideSettings.IsotopeLabel labelToQuantify
                 = getLabelToQuantify(getNormalizationMethod(generalMolecule, quantificationSettings.getNormalizationMethod()));
@@ -155,7 +155,7 @@ public class RunQuantifier
         return calculateCalibrationCurve(quantificationSettings, labelToQuantify, generalMolecule, modifiedChromInfos);
     }
 
-    public CalibrationCurveEntity calculateCalibrationCurveEntity(QuantificationSettings quantificationSettings, PeptideSettings.IsotopeLabel isotopeLabel, GeneralMolecule generalMolecule, List<GeneralMoleculeChromInfo> modifiedChromInfos)
+    public CalibrationCurveEntity calculateCalibrationCurveEntity(QuantificationSettings quantificationSettings, PeptideSettings.IsotopeLabel isotopeLabel, GeneralMolecule<?, ?> generalMolecule, List<GeneralMoleculeChromInfo> modifiedChromInfos)
     {
         CalibrationCurve calibrationCurve = calculateCalibrationCurve(quantificationSettings, isotopeLabel, generalMolecule, modifiedChromInfos);
         CalibrationCurveEntity calibrationCurveRow
@@ -165,7 +165,7 @@ public class RunQuantifier
         return calibrationCurveRow;
     }
 
-    public CalibrationCurve calculateCalibrationCurve(QuantificationSettings quantificationSettings, PeptideSettings.IsotopeLabel isotopeLabel, GeneralMolecule generalMolecule, List<GeneralMoleculeChromInfo> modifiedChromInfos)
+    public CalibrationCurve calculateCalibrationCurve(QuantificationSettings quantificationSettings, PeptideSettings.IsotopeLabel isotopeLabel, GeneralMolecule<?, ?> generalMolecule, List<GeneralMoleculeChromInfo> modifiedChromInfos)
     {
         NormalizationMethod normalizationMethod;
         if (null != generalMolecule.getNormalizationMethod())
@@ -186,8 +186,8 @@ public class RunQuantifier
         calibrationCurveDataSet.setRegressionFit(RegressionFit.parse(quantificationSettings.getRegressionFit()));
         calibrationCurveDataSet.setRegressionWeighting(
                 RegressionWeighting.parse(quantificationSettings.getRegressionWeighting()));
-        GeneralMoleculeResultDataSet generalMoleculeResultDataSet
-                = new GeneralMoleculeResultDataSet(_user, _container, _replicateDataSet, generalMolecule);
+        GeneralMoleculeResultDataSet<?, ?, ?> generalMoleculeResultDataSet
+                = new GeneralMoleculeResultDataSet<>(_user, _container, _replicateDataSet, generalMolecule);
         Collection<GeneralMoleculeChromInfo> moleculeChromInfos
                 = generalMoleculeResultDataSet.getGeneralMoleculeChromInfos();
         Set<Long> excludedReplicateIds = getExcludedReplicateIds(moleculeChromInfos);
@@ -274,21 +274,21 @@ public class RunQuantifier
     private List<FoldChange> calculateFoldChanges(GroupComparisonSettings settings, PeptideGroup peptideGroup)
     {
         List<FoldChange> foldChanges = new ArrayList<>();
-        Collection<GeneralMolecule> generalMolecules = getGeneralMoleculesForGroup(peptideGroup);
+        Collection<GeneralMolecule<?, ?>> generalMolecules = getGeneralMoleculesForGroup(peptideGroup);
         if (settings.isPerProtein())
         {
-            Collection<GeneralMoleculeResultDataSet> resultDataSets = generalMolecules.stream()
+            Collection<GeneralMoleculeResultDataSet<?, ?, ?>> resultDataSets = generalMolecules.stream()
                     .filter(peptide-> null == peptide.getStandardType())
                     .filter(peptide-> !(peptide instanceof Peptide && Boolean.TRUE.equals(((Peptide) peptide).getDecoy())))
-                    .map(peptide -> new GeneralMoleculeResultDataSet(_user, _container, _replicateDataSet, peptide))
+                    .map(peptide -> new GeneralMoleculeResultDataSet<>(_user, _container, _replicateDataSet, peptide))
                     .collect(Collectors.toList());
             foldChanges.addAll(calculateFoldChanges(settings, resultDataSets));
         }
         else
         {
-            for (GeneralMolecule generalMolecule : generalMolecules)
+            for (GeneralMolecule<?, ?> generalMolecule : generalMolecules)
             {
-                for (FoldChange foldChange : calculateFoldChanges(settings, Collections.singleton(new GeneralMoleculeResultDataSet(_user, _container, _replicateDataSet, generalMolecule))))
+                for (FoldChange foldChange : calculateFoldChanges(settings, Collections.singleton(new GeneralMoleculeResultDataSet<>(_user, _container, _replicateDataSet, generalMolecule))))
                 {
                     foldChange.setGeneralMoleculeId(generalMolecule.getId());
                     foldChanges.add(foldChange);
@@ -302,15 +302,15 @@ public class RunQuantifier
         return foldChanges;
     }
 
-    private List<GeneralMolecule> getGeneralMoleculesForGroup(PeptideGroup peptideGroup)
+    private List<GeneralMolecule<?, ?>> getGeneralMoleculesForGroup(PeptideGroup peptideGroup)
     {
-        List<GeneralMolecule> list = new ArrayList<>();
+        List<GeneralMolecule<?, ?>> list = new ArrayList<>();
         list.addAll(PeptideManager.getPeptidesForGroup(peptideGroup.getId()));
         list.addAll(MoleculeManager.getMoleculesForGroup(peptideGroup.getId()));
         return list;
     }
 
-    private List<FoldChange> calculateFoldChanges(GroupComparisonSettings settings, Collection<GeneralMoleculeResultDataSet> peptideResults)
+    private List<FoldChange> calculateFoldChanges(GroupComparisonSettings settings, Collection<GeneralMoleculeResultDataSet<?, ?, ?>> peptideResults)
     {
         Set<String> caseValues;
         if (null == settings.getCaseValue())
@@ -360,7 +360,7 @@ public class RunQuantifier
     }
 
     @Nullable
-    private FoldChange calculateFoldChange(GroupComparisonSettings settings, Collection<GeneralMoleculeResultDataSet> peptideResults,
+    private FoldChange calculateFoldChange(GroupComparisonSettings settings, Collection<GeneralMoleculeResultDataSet<?, ?, ?>> peptideResults,
                                            List<Tuple3<Boolean, String, Replicate>> replicates, PeptideSettings.IsotopeLabel isotopeLabel, Integer msLevel)
     {
         GroupComparisonDataSet foldChangeCalculator = new GroupComparisonDataSet();
@@ -374,7 +374,7 @@ public class RunQuantifier
         {
             GroupComparisonDataSet.Replicate replicateData
                     = foldChangeCalculator.addReplicate(tuple.getKey(), tuple.getValue());
-            for (GeneralMoleculeResultDataSet generalMoleculeResultDataSet : peptideResults)
+            for (GeneralMoleculeResultDataSet<?, ?, ?> generalMoleculeResultDataSet : peptideResults)
             {
                 NormalizationMethod normalizationMethod = getNormalizationMethod(
                         generalMoleculeResultDataSet.getGeneralMolecule(), settings.getNormalizationMethod());
@@ -411,7 +411,7 @@ public class RunQuantifier
         return _replicateDataSet;
     }
 
-    public NormalizationMethod getNormalizationMethod(GeneralMolecule generalMolecule, String normalizationMethodName)
+    public NormalizationMethod getNormalizationMethod(GeneralMolecule<?, ?> generalMolecule, String normalizationMethodName)
     {
         if (null != generalMolecule.getNormalizationMethod())
         {

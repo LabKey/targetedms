@@ -1304,7 +1304,7 @@ public class SkylineDocImporter
 
         while((molType = parser.hasNextPeptideOrMolecule()) != null)
         {
-            GeneralMolecule generalMolecule = null;
+            GeneralMolecule<?, ?> generalMolecule = null;
             switch (molType)
             {
                 case PEPTIDE -> {
@@ -1421,7 +1421,7 @@ public class SkylineDocImporter
                                               ModificationInfo modInfo,
                                               Map<String, Long> libraryNameIdMap,
                                               PeptideGroup pepGroup,
-                                              GeneralMolecule generalMolecule,
+                                              GeneralMolecule<?, ?> generalMolecule,
                                               TransitionSettings transitionSettings,
                                               SkylineDocumentParser parser)
     {
@@ -1456,10 +1456,12 @@ public class SkylineDocImporter
             Map<Long, Long> sampleFileIdGeneralMolChromInfoIdMap = insertGeneralMoleculeChromInfos(generalMolecule.getId(),
                     molecule.getGeneralMoleculeChromInfoList(), skylineIdSampleFileIdMap);
 
-            for (MoleculePrecursor moleculePrecursor : molecule.getMoleculePrecursorsList())
+            for (MoleculePrecursor moleculePrecursor : molecule.getPrecursorList())
             {
                 insertMoleculePrecursor(molecule, moleculePrecursor, skylineIdSampleFileIdMap, modInfo, sampleFileIdGeneralMolChromInfoIdMap, parser);
             }
+
+            insertRatios(skylineIdSampleFileIdMap, modInfo, transitionSettings, molecule);
         }
 
         for (GeneralMoleculeAnnotation annotation : generalMolecule.getAnnotations())
@@ -1495,55 +1497,61 @@ public class SkylineDocImporter
                         precursor, parser);
             }
 
-            // 4. Calculate and insert peak area ratios
-            PeakAreaRatioCalculator areaRatioCalculator = new PeakAreaRatioCalculator(peptide, transitionSettings);
-            areaRatioCalculator.init(skylineIdSampleFileIdMap);
-            // Insert area ratios for each combination of 2 isotope labels
-            for (Long numLabelId : modInfo.isotopeLabelIdMap.values())
+            insertRatios(skylineIdSampleFileIdMap, modInfo, transitionSettings, peptide);
+        }
+    }
+
+    private <TransitionType extends GeneralTransition, PrecursorType extends GeneralPrecursor<TransitionType>, MoleculeType extends GeneralMolecule<TransitionType, PrecursorType>>
+    void insertRatios(Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap, ModificationInfo modInfo, TransitionSettings transitionSettings, MoleculeType peptide)
+    {
+        // 4. Calculate and insert peak area ratios
+        PeakAreaRatioCalculator<TransitionType, PrecursorType, MoleculeType> areaRatioCalculator = new PeakAreaRatioCalculator<>(peptide, transitionSettings);
+        areaRatioCalculator.init();
+        // Insert area ratios for each combination of 2 isotope labels
+        for (long numLabelId : modInfo.isotopeLabelIdMap.values())
+        {
+            for (long denomLabelId : modInfo.isotopeLabelIdMap.values())
             {
-                for (Long denomLabelId : modInfo.isotopeLabelIdMap.values())
+                if (!modInfo.internalStandardLabelIds.contains(denomLabelId))
+                    continue;
+
+                if (numLabelId == denomLabelId)
+                    continue;
+
+                for (SampleFile sampleFile : skylineIdSampleFileIdMap.values())
                 {
-                    if (!modInfo.internalStandardLabelIds.contains(denomLabelId))
-                        continue;
-
-                    if (numLabelId.equals(denomLabelId))
-                        continue;
-
-                    for (SampleFile sampleFile : skylineIdSampleFileIdMap.values())
+                    PeptideAreaRatio ratio = areaRatioCalculator.getPeptideAreaRatio(sampleFile.getId(), numLabelId, denomLabelId);
+                    if (ratio != null)
                     {
-                        PeptideAreaRatio ratio = areaRatioCalculator.getPeptideAreaRatio(sampleFile.getId(), numLabelId, denomLabelId);
-                        if (ratio != null)
+                        Table.insert(_user, TargetedMSManager.getTableInfoPeptideAreaRatio(), ratio);
+                    }
+
+                    for (PrecursorType precursor : peptide.getPrecursorList())
+                    {
+                        if (precursor.getIsotopeLabelId() != numLabelId)
+                            continue;
+                        if (precursor.getSpectrumFilter() != null)
+                            continue;
+
+                        PrecursorAreaRatio pRatio = areaRatioCalculator.getPrecursorAreaRatio(sampleFile.getId(),
+                                precursor,
+                                numLabelId,
+                                denomLabelId);
+                        if (pRatio != null)
                         {
-                            Table.insert(_user, TargetedMSManager.getTableInfoPeptideAreaRatio(), ratio);
+                            Table.insert(_user, TargetedMSManager.getTableInfoPrecursorAreaRatio(), pRatio);
                         }
 
-                        for (Precursor precursor : peptide.getPrecursorList())
+                        for (TransitionType transition : precursor.getTransitionsList())
                         {
-                            if (precursor.getIsotopeLabelId() != numLabelId)
-                                continue;
-                            if (precursor.getSpectrumFilter() != null)
-                                continue;
-
-                            PrecursorAreaRatio pRatio = areaRatioCalculator.getPrecursorAreaRatio(sampleFile.getId(),
+                            TransitionAreaRatio tRatio = areaRatioCalculator.getTransitionAreaRatio(sampleFile.getId(),
                                     precursor,
+                                    transition,
                                     numLabelId,
                                     denomLabelId);
-                            if (pRatio != null)
+                            if (tRatio != null)
                             {
-                                Table.insert(_user, TargetedMSManager.getTableInfoPrecursorAreaRatio(), pRatio);
-                            }
-
-                            for (Transition transition : precursor.getTransitionsList())
-                            {
-                                TransitionAreaRatio tRatio = areaRatioCalculator.getTransitionAreaRatio(sampleFile.getId(),
-                                        precursor,
-                                        transition,
-                                        numLabelId,
-                                        denomLabelId);
-                                if (tRatio != null)
-                                {
-                                    Table.insert(_user, TargetedMSManager.getTableInfoTransitionAreaRatio(), tRatio);
-                                }
+                                Table.insert(_user, TargetedMSManager.getTableInfoTransitionAreaRatio(), tRatio);
                             }
                         }
                     }
@@ -1727,7 +1735,7 @@ public class SkylineDocImporter
         }
     }
 
-    private GeneralPrecursor<?> insertGeneralPrecursor(ModificationInfo modInfo, GeneralMolecule peptide, GeneralPrecursor<?> precursor)
+    private GeneralPrecursor<?> insertGeneralPrecursor(ModificationInfo modInfo, GeneralMolecule<?, ?> peptide, GeneralPrecursor<?> precursor)
     {
         //setting values for GeneralPrecursor here seems odd - is there a better way?
         GeneralPrecursor<?> gp = new GeneralPrecursor<>();
@@ -2270,7 +2278,7 @@ public class SkylineDocImporter
             sampleFile.setReplicateId(replicate.getId());
 
             List<Instrument> instrumentInfoList = sampleFile.getInstrumentInfoList();
-            if (instrumentInfoList != null && instrumentInfoList.size() > 0)
+            if (instrumentInfoList != null && !instrumentInfoList.isEmpty())
             {
                 Instrument instrument = combineInstrumentInfos(instrumentInfoList);
 
@@ -2667,7 +2675,7 @@ public class SkylineDocImporter
         RunQuantifier quantifier = new RunQuantifier(run, _user, _container);
         int i = 0;
         IProgressStatus _foldChangeStatus = _progressMonitor.getFoldChangeProgressTracker();
-        if(groupComparisons.size() > 0)
+        if(!groupComparisons.isEmpty())
         {
             _log.info("Calculating fold changes");
         }
@@ -2680,7 +2688,7 @@ public class SkylineDocImporter
             }
             _foldChangeStatus.updateProgress(i, groupComparisons.size());
         }
-        _foldChangeStatus.complete(groupComparisons.size() > 0 ? "Done calculating fold changes." : "No group comparisons found.");
+        _foldChangeStatus.complete(!groupComparisons.isEmpty() ? "Done calculating fold changes." : "No group comparisons found.");
 
         if (regressionFit != RegressionFit.NONE)
         {
@@ -2696,7 +2704,7 @@ public class SkylineDocImporter
             {
                 Table.update(_user, TargetedMSManager.getTableInfoGeneralMoleculeChromInfo(), chromInfo, chromInfo.getId());
             }
-            _calCurveStatus.complete(calibrationCurves.size() > 0 ? "Done calculating calibration curves." : "No calibration curves found.");
+            _calCurveStatus.complete(!calibrationCurves.isEmpty() ? "Done calculating calibration curves." : "No calibration curves found.");
 
             return calibrationCurves.size();
         }
@@ -2795,7 +2803,7 @@ public class SkylineDocImporter
         RegressionFit regressionFit = getRegressionFit(quantificationSettings);
         boolean hasCalCurves = regressionFit != RegressionFit.NONE;
 
-        progress.updateProgressParts(dataSettings.getGroupComparisons().size() > 0, hasCalCurves);
+        progress.updateProgressParts(!dataSettings.getGroupComparisons().isEmpty(), hasCalCurves);
     }
 
     private static class ProgressMonitor implements IProgressMonitor
