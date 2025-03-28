@@ -788,9 +788,9 @@ public class TargetedMSExperimentTest extends TargetedMSTest
                 "z\u20222 - 272.1843+", "z\u202213 - 387.5359+++", "z\u202212 - 355.1850+++",
                 "z\u20329 - 251.4732+++", "z\u20321 - 54.0409+++");
 
-        List<WebElement> svgElements = Locator.css("svg g text").waitForElements(getDriver(), WAIT_FOR_JAVASCRIPT);
         waitForText(expectedLegendTexts.toArray(new String[0]));
 
+        List<WebElement> svgElements = Locator.css("svg g text").waitForElements(getDriver(), WAIT_FOR_JAVASCRIPT);
         Set<String> svgTexts = new HashSet<>();
         for (WebElement el: svgElements)
         {
