@@ -65,7 +65,7 @@ public class GeneralMoleculePrecursorChromatogramsTableInfo extends FilteredTabl
     {
         super(tableInfo, schema);
         wrapAllColumns(true);
-        var pepChromCol = getMutableColumn(_generalMoleculeChromInfoCol);
+        var pepChromCol = getMutableColumnOrThrow(_generalMoleculeChromInfoCol);
         pepChromCol.setLabel("");
 
         pepChromCol.setDisplayColumnFactory(new ChromatogramDisplayColumnFactory(
@@ -137,7 +137,7 @@ public class GeneralMoleculePrecursorChromatogramsTableInfo extends FilteredTabl
         return colNames;
     }
 
-    private static TableInfo getPivotByPrecursorChromInfoTable(Container container, User user, GeneralMolecule generalMolecule,
+    private static TableInfo getPivotByPrecursorChromInfoTable(Container container, User user, GeneralMolecule<?, ?> generalMolecule,
                                                                String precursorIdKey, String isotopeChargeSqlFrag,
                                                                TargetedMSController.ChromatogramForm form)
     {
@@ -147,11 +147,11 @@ public class GeneralMoleculePrecursorChromatogramsTableInfo extends FilteredTabl
         sql.append("\n SampleFileId.ReplicateId.Name AS replicate");
         sql.append("\n, SampleFileId.SampleName AS sample");
         sql.append("\n, GeneralMoleculeChromInfoId AS ").append(_generalMoleculeChromInfoCol);
-        sql.append("\n, " + isotopeChargeSqlFrag + " AS isotopecharge");
+        sql.append("\n, ").append(isotopeChargeSqlFrag).append(" AS isotopecharge");
         sql.append("\n, Id AS preciId");
         sql.append(" FROM ");
         sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
-        sql.append(" WHERE " + precursorIdKey + ".GeneralMoleculeId=").appendValue(generalMolecule.getId());
+        sql.append(" WHERE ").append(precursorIdKey).append(".GeneralMoleculeId=").appendValue(generalMolecule.getId());
         sql.append(" AND OptimizationStep IS NULL "); // Ignore precursorChromInfos for optimization peaks (e.g. Collision energy optimization)
 
         form.appendReplicateFilters(sql, "SampleFileId.ReplicateId");

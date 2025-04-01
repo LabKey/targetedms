@@ -1170,7 +1170,7 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
-    private static class QCSummaryForm
+    public static class QCSummaryForm
     {
         boolean includeSubfolders;
 
@@ -1819,7 +1819,7 @@ public class TargetedMSController extends SpringActionController
         {
             if (StringUtils.isBlank(form.getQueryName()))
             {
-                errors.reject(ERROR_MSG, String.format("Expected a table name in the request"));
+                errors.reject(ERROR_MSG, "Expected a table name in the request");
                 return new SimpleErrorView(errors);
             }
             if (!LibraryQueryViewWebPart.isTableSupported(form.getQueryName()))
@@ -7843,7 +7843,7 @@ public class TargetedMSController extends SpringActionController
                 root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
                 root.addChild(run.getDescription(), getShowCalibrationCurvesURL(getContainer(), run.getId()));
 
-                GeneralMolecule molecule = _figuresOfMeritView.getModelBean().getGeneralMolecule();
+                GeneralMolecule<?, ?> molecule = _figuresOfMeritView.getModelBean().getGeneralMolecule();
                 if (molecule != null)
                 {
                     root.addChild("Figures of Merit: " + molecule.getTextId());

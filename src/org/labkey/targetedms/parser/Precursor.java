@@ -16,6 +16,11 @@
 
 package org.labkey.targetedms.parser;
 
+import org.labkey.targetedms.TargetedMSSchema;
+import org.labkey.targetedms.query.TransitionManager;
+
+import java.util.List;
+
 /**
  * User: vsharma
  * Date: 4/2/12
@@ -317,5 +322,11 @@ public class Precursor extends GeneralPrecursor<Transition>
         {
             _peakArea = peakArea;
         }
+    }
+
+    @Override
+    public List<Transition> fetchTransitions(TargetedMSSchema schema)
+    {
+        return TransitionManager.getTransitionsForPrecursor(getId(), schema.getUser(), schema.getContainer());
     }
 }

@@ -1465,7 +1465,7 @@ public abstract class ChromatogramDataset
         private final SampleFile _sampleFile;
         private final ViewContext _context;
 
-        private Map<GeneralMolecule, List<PrecursorChromInfoPlus>> _allMolecules;
+        private Map<GeneralMolecule<?, ?>, List<PrecursorChromInfoPlus>> _allMolecules;
 
         public GroupDataset(PeptideGroup group, SampleFile sampleFile, ViewContext context, boolean syncIntensity, boolean syncRt)
         {
@@ -1500,7 +1500,7 @@ public abstract class ChromatogramDataset
         protected RtRange getRtRangeSummary()
         {
             List<RtRange> ranges = new ArrayList<>();
-            for (GeneralMolecule generalMolecule : _allMolecules.keySet())
+            for (GeneralMolecule<?, ?> generalMolecule : _allMolecules.keySet())
             {
                 ranges.add(TransitionManager.getGeneralMoleculeRtRange(generalMolecule.getId()));
             }
@@ -1551,13 +1551,13 @@ public abstract class ChromatogramDataset
                 }
             }
 
-            for (GeneralMolecule generalMolecule : _allMolecules.keySet())
+            for (GeneralMolecule<?, ?> generalMolecule : _allMolecules.keySet())
             {
                 if (selectedIds.contains(generalMolecule.getId()))
                 {
                     // As soon as we find a single match in the selection filter the molecules based on the selected ids
-                    Map<GeneralMolecule, List<PrecursorChromInfoPlus>> filtered = new LinkedHashMap<>();
-                    for (Map.Entry<GeneralMolecule, List<PrecursorChromInfoPlus>> entry : _allMolecules.entrySet())
+                    Map<GeneralMolecule<?, ?>, List<PrecursorChromInfoPlus>> filtered = new LinkedHashMap<>();
+                    for (Map.Entry<GeneralMolecule<?, ?>, List<PrecursorChromInfoPlus>> entry : _allMolecules.entrySet())
                     {
                         if (selectedIds.contains(entry.getKey().getId()))
                         {
@@ -1597,7 +1597,7 @@ public abstract class ChromatogramDataset
                 // Note: If we are not storing TransitionChromInfos we will not be able to sync the intensity axis for
                 // all the plots. MaxHeight for a PrecursorChromInfo is the height of the tallest fragment peak, not the
                 // precursor peak which is calculated by summing up the transition peak intensities.
-                for (GeneralMolecule generalMolecule : _allMolecules.keySet())
+                for (GeneralMolecule<?, ?> generalMolecule : _allMolecules.keySet())
                 {
                     _maxDisplayIntensity = Math.max(_maxDisplayIntensity == null ? 0 : _maxDisplayIntensity.doubleValue(), PrecursorManager.getMaxPrecursorIntensityEstimate(generalMolecule.getId()));
                 }
@@ -1610,9 +1610,9 @@ public abstract class ChromatogramDataset
             List<RtRange> ranges = new ArrayList<>();
 
             int i = 0;
-            for (Map.Entry<GeneralMolecule, List<PrecursorChromInfoPlus>> entry : _allMolecules.entrySet())
+            for (Map.Entry<GeneralMolecule<?, ?>, List<PrecursorChromInfoPlus>> entry : _allMolecules.entrySet())
             {
-                GeneralMolecule gm = entry.getKey();
+                GeneralMolecule<?, ?> gm = entry.getKey();
 
                 // Issue 48258:Some very old docs have duplicate molecule names
                 String seriesName = gm.getTextId();
@@ -1672,7 +1672,7 @@ public abstract class ChromatogramDataset
             return false;
         }
 
-        private RtRange getChromatogramRange(GeneralMolecule generalMolecule, List<PrecursorChromInfoPlus> chromInfos)
+        private RtRange getChromatogramRange(GeneralMolecule<?, ?> generalMolecule, List<PrecursorChromInfoPlus> chromInfos)
         {
             List<RtRange> ranges = new ArrayList<>();
             if (_syncRt)
