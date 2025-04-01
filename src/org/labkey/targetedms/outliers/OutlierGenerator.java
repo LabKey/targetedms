@@ -566,7 +566,7 @@ public class OutlierGenerator
             long precursorId = entry.getKey();
             // It could be either a small molecule or a peptide, so look up both options. There's also a small
             // chance that it's been deleted
-            GeneralMolecule molecule = null;
+            GeneralMolecule<?, ?> molecule = null;
             GeneralPrecursor<?> precursor = PrecursorManager.getPrecursor(c, precursorId, u);
             if (precursor == null)
             {

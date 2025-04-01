@@ -17,6 +17,8 @@
 package org.labkey.targetedms.parser;
 
 import org.labkey.api.util.Pair;
+import org.labkey.targetedms.TargetedMSSchema;
+import org.labkey.targetedms.query.PrecursorManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +28,7 @@ import java.util.List;
  * Date: 4/2/12
  * Time: 10:28 AM
  */
-public class Peptide extends GeneralMolecule
+public class Peptide extends GeneralMolecule<Transition, Precursor>
 {
     private String _sequence;
     private String _peptideModifiedSequence;
@@ -43,7 +45,6 @@ public class Peptide extends GeneralMolecule
 
     private Boolean _decoy;
 
-    private List<Precursor> _precursorList;
     private List<StructuralModification> _structuralMods;
     private List<IsotopeModification> _isotopeMods;
 
@@ -152,16 +153,6 @@ public class Peptide extends GeneralMolecule
         return _decoy != null && _decoy.equals(Boolean.TRUE);
     }
 
-    public List<Precursor> getPrecursorList()
-    {
-        return _precursorList;
-    }
-
-    public void setPrecursorList(List<Precursor> precursorList)
-    {
-        _precursorList = precursorList;
-    }
-
     public List<StructuralModification> getStructuralMods()
     {
         return _structuralMods;
@@ -188,12 +179,9 @@ public class Peptide extends GeneralMolecule
     }
 
     @Override
-    public String getPrecursorKey(GeneralMolecule gm, GeneralPrecursor gp)
+    public String getPrecursorKey(Precursor gp)
     {
-        StringBuilder key = new StringBuilder();
-        key.append(((Peptide) gm).getPeptideModifiedSequence());
-        key.append("_").append(gp.getCharge());
-        return key.toString();
+        return getPeptideModifiedSequence() + "_" + gp.getCharge();
     }
 
     @Override
@@ -426,5 +414,11 @@ public class Peptide extends GeneralMolecule
             return unmodifiedSequence.toString();
         }
         return modifiedSequence;
+    }
+
+    @Override
+    public List<? extends Precursor> fetchPrecursors(TargetedMSSchema schema)
+    {
+        return PrecursorManager.getPrecursorsForPeptide(getId(), schema);
     }
 }

@@ -17,7 +17,7 @@ package org.labkey.targetedms.parser;
 import com.google.common.primitives.Floats;
 import org.apache.poi.util.LittleEndianByteArrayInputStream;
 import org.apache.poi.util.LittleEndianInput;
-import org.labkey.targetedms.parser.skyd.proto.ChromatogramGroupDataOuterClass;
+import org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass;
 
 import java.io.IOException;
 import java.util.ArrayList;
