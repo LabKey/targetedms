@@ -2292,6 +2292,7 @@ public class SkylineDocumentParser implements AutoCloseable
             }
         }
 
+        Map<ChromGroupHeaderInfo, SignedMz[]> cachedTransitions = new HashMap<>();
         List<? extends GeneralTransition> transitionsList = precursor.getTransitionsList();
         for (GeneralTransition transition: transitionsList)
         {
@@ -2305,9 +2306,14 @@ public class SkylineDocumentParser implements AutoCloseable
                     int matchIndex = -1;
                     // Figure out which index into the list of transitions we're inserting.
                     double deltaNearestMz = Double.MAX_VALUE;
-                    SignedMz[] transitions = Arrays.stream(_binaryParser.getTransitions(c))
-                            .map(t->t.getProduct(c))
-                            .toArray(SignedMz[]::new);
+                    SignedMz[] transitions = cachedTransitions.get(c);
+                    if (transitions == null)
+                    {
+                        transitions = Arrays.stream(_binaryParser.getTransitions(c))
+                                .map(t->t.getProduct(c))
+                                .toArray(SignedMz[]::new);
+                        cachedTransitions.put(c, transitions);
+                    }
                     double transitionMz = transition.getMz();
                     if (transChromInfo.isOptimizationPeak())
                     {
@@ -2332,7 +2338,7 @@ public class SkylineDocumentParser implements AutoCloseable
                         incrementMissingChromatograms(filePath,
                                 "Unable to find a matching chromatogram for file path " + filePath +
                                 ". SKYD file may be out of sync with primary Skyline document. Transition " + transition +
-                                ", " + precursor + ", " +precursor.getCharge());
+                                ", " + precursor + ", " + precursor.getCharge());
                     }
                     else
                     {
