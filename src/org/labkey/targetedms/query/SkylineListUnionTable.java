@@ -40,7 +40,7 @@ public class SkylineListUnionTable extends VirtualTable<SkylineListSchema>
 
         for (ColumnInfo childColumn : listTable.getColumns())
         {
-            BaseColumnInfo column = new ExprColumn(this, childColumn.getFieldKey(), new SQLFragment(ExprColumn.STR_TABLE_ALIAS + " ." + childColumn.getAlias()), childColumn.getJdbcType());
+            BaseColumnInfo column = new ExprColumn(this, childColumn.getFieldKey(), new SQLFragment().appendDottedIdentifiers(ExprColumn.STR_TABLE_ALIAS,childColumn.getAlias()), childColumn.getJdbcType());
             column.setKeyField(childColumn.isKeyField());
             addColumn(column);
         }
