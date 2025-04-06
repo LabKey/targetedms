@@ -33,7 +33,7 @@
 %>
 
 <%
-    JspView<?> me = (JspView<?>) HttpView.currentView();
+    JspView<?> me = HttpView.currentView();
     IProtein protein = (IProtein)me.getModelBean();
     boolean hasBeforeAndAfter = false;
     for (IPeptide iPeptide : protein.getPep())

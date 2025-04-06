@@ -34,7 +34,7 @@
     }
 %>
 <%
-    JspView<TargetedMSController.GeneralMoleculeChromatogramsViewBean> me = (JspView<TargetedMSController.GeneralMoleculeChromatogramsViewBean>) HttpView.currentView();
+    JspView<TargetedMSController.GeneralMoleculeChromatogramsViewBean> me = HttpView.currentView();
     TargetedMSController.GeneralMoleculeChromatogramsViewBean bean = me.getModelBean();
     bean.setReplicateAnnotationNameList(ReplicateManager.getReplicateAnnotationNamesForRun(bean.getRun().getId()));
     bean.setReplicatesFilter(ReplicateManager.getReplicatesForRun(bean.getRun().getId()));

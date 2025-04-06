@@ -30,7 +30,7 @@
 <%@ page import="java.util.Map" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 <%
-    JspView<TargetedMSController.PeptideChromatogramsViewBean> me = (JspView<TargetedMSController.PeptideChromatogramsViewBean>) HttpView.currentView();
+    JspView<TargetedMSController.PeptideChromatogramsViewBean> me = HttpView.currentView();
     TargetedMSController.PeptideChromatogramsViewBean bean = me.getModelBean();
     TargetedMSRun run = bean.getRun();
     Map<Long, String> labelIdMap = new HashMap<>();

@@ -18,18 +18,15 @@
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.JspView" %>
 <%@ page import="org.labkey.targetedms.TargetedMSController" %>
-<%@ page import="org.labkey.targetedms.parser.PeptideGroup" %>
-<%@ page import="org.labkey.targetedms.TargetedMSRun" %>
 <%@ page import="org.labkey.targetedms.TargetedMSManager" %>
-<%@ page import="java.util.List" %>
+<%@ page import="org.labkey.targetedms.TargetedMSRun" %>
+<%@ page import="org.labkey.targetedms.parser.PeptideGroup" %>
 <%@ page import="org.labkey.targetedms.parser.Protein" %>
-<%@ page import="java.util.stream.Collectors" %>
-<%@ page import="org.apache.commons.lang3.StringUtils" %>
-<%@ page import="org.labkey.api.util.StringUtilsLabKey" %>
+<%@ page import="java.util.List" %>
 <%@ page import="java.util.Objects" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 <%
-    JspView<PeptideGroup> me = (JspView<PeptideGroup>) HttpView.currentView();
+    JspView<PeptideGroup> me = HttpView.currentView();
     PeptideGroup bean = me.getModelBean();
     TargetedMSRun run = TargetedMSManager.getRun(bean.getRunId());
 %>

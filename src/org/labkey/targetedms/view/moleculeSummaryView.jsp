@@ -21,12 +21,12 @@
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.JspView" %>
 <%@ page import="org.labkey.targetedms.TargetedMSController" %>
+<%@ page import="org.labkey.targetedms.TargetedMSRun" %>
 <%@ page import="org.labkey.targetedms.parser.MoleculePrecursor" %>
 <%@ page import="org.labkey.targetedms.view.IconFactory" %>
-<%@ page import="org.labkey.targetedms.TargetedMSRun" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 <%
-    JspView<TargetedMSController.MoleculeChromatogramsViewBean> me = (JspView<TargetedMSController.MoleculeChromatogramsViewBean>) HttpView.currentView();
+    JspView<TargetedMSController.MoleculeChromatogramsViewBean> me = HttpView.currentView();
     TargetedMSController.MoleculeChromatogramsViewBean bean = me.getModelBean();
     TargetedMSRun run = bean.getRun();
 
