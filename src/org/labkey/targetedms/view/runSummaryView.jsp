@@ -38,7 +38,7 @@
 %>
 
 <%
-    JspView<TargetedMSController.RunDetailsBean> me = (JspView<TargetedMSController.RunDetailsBean>) HttpView.currentView();
+    JspView<TargetedMSController.RunDetailsBean> me = HttpView.currentView();
     TargetedMSController.RunDetailsBean bean = me.getModelBean();
     TargetedMSRun run = bean.getRun();
 

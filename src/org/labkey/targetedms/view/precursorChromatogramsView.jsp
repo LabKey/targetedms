@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 %>
+<%@ page import="org.labkey.api.view.ActionURL" %>
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.JspView" %>
 <%@ page import="org.labkey.targetedms.TargetedMSController" %>
+<%@ page import="org.labkey.targetedms.TargetedMSRun" %>
 <%@ page import="org.labkey.targetedms.parser.PeptideSettings" %>
 <%@ page import="java.text.DecimalFormat" %>
-<%@ page import="org.labkey.api.view.ActionURL" %>
-<%@ page import="org.labkey.targetedms.TargetedMSRun" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 <%
-    JspView<TargetedMSController.PrecursorChromatogramsViewBean> me = (JspView<TargetedMSController.PrecursorChromatogramsViewBean>) HttpView.currentView();
+    JspView<TargetedMSController.PrecursorChromatogramsViewBean> me = HttpView.currentView();
     TargetedMSController.PrecursorChromatogramsViewBean bean = me.getModelBean();
     TargetedMSRun run = bean.getRun();
     DecimalFormat ROUND_4 = new DecimalFormat("0.0000");

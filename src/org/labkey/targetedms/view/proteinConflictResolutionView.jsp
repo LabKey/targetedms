@@ -39,7 +39,7 @@
 %>
 
 <%
-    JspView<ProteinConflictBean> me = (JspView<ProteinConflictBean>) HttpView.currentView();
+    JspView<ProteinConflictBean> me = HttpView.currentView();
     ProteinConflictBean bean = me.getModelBean();
     ActionURL conflictPeptidesUrl = urlFor(ProteinConflictPeptidesAjaxAction.class);
     ActionURL runProteinDetailsUrl = urlFor(ShowProteinAction.class);

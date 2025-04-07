@@ -23,7 +23,7 @@
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 
 <%
-    JspView<JSONObject> me = (JspView<JSONObject>) HttpView.currentView();
+    JspView<JSONObject> me = HttpView.currentView();
     JSONObject bean = me.getModelBean();
 %>
 <%!

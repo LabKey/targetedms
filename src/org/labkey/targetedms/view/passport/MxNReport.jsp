@@ -28,7 +28,7 @@
 %>
 
 <%
-    JspView<?> me = (JspView<?>) HttpView.currentView();
+    JspView<?> me = HttpView.currentView();
     IProtein protein = (IProtein)me.getModelBean();
 %>
     <!--START IMPORTS-->

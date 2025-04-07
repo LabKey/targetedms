@@ -37,7 +37,7 @@
     }
 %>
 <%
-    JspView<TargetedMSController.SummaryChartBean> me = (JspView<TargetedMSController.SummaryChartBean>) HttpView.currentView();
+    JspView<TargetedMSController.SummaryChartBean> me = HttpView.currentView();
     TargetedMSController.SummaryChartBean bean = me.getModelBean();
     long peptideGroupId = bean.getPeptideGroupId(); // Used when displaying peak areas for all peptides of a protein
 
