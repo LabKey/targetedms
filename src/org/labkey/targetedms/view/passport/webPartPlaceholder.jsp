@@ -1,9 +1,9 @@
-<%@ page import="org.labkey.api.view.JspView" %>
 <%@ page import="org.labkey.api.view.HttpView" %>
+<%@ page import="org.labkey.api.view.JspView" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 
 <%
-    JspView<String> me = (JspView<String>) HttpView.currentView();
+    JspView<String> me = HttpView.currentView();
     String divId = me.getModelBean();
 %>
 

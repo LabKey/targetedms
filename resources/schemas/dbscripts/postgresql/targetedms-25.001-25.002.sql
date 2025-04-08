@@ -2,7 +2,7 @@
 -- script from 24.11
 CREATE FUNCTION targetedms.ensureColumns() RETURNS void AS $$
 BEGIN
-  IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'QCMetricConfiguration' AND COLUMN_NAME = 'MinTimeValue') THEN
+  IF NOT EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'qcmetricconfiguration' AND COLUMN_NAME = 'mintimevalue') THEN
     EXECUTE 'ALTER TABLE targetedms.QCMetricConfiguration RENAME COLUMN TimeValue To MinTimeValue';
     EXECUTE 'ALTER TABLE targetedms.QCMetricConfiguration ADD COLUMN MaxTimeValue REAL';
     EXECUTE 'ALTER TABLE targetedms.QCMetricConfiguration ADD COLUMN TimeValueOption VARCHAR(10)';

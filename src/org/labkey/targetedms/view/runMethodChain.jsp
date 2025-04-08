@@ -31,7 +31,7 @@
     }
 %>
 <%
-    JspView<ExpRun> me = (JspView<ExpRun>) HttpView.currentView();
+    JspView<ExpRun> me = HttpView.currentView();
     ExpRun run = me.getModelBean();
 %>
 

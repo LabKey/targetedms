@@ -34,7 +34,7 @@
 %>
 
 <%
-    JspView<LibrarySpectrumMatch> me = (JspView<LibrarySpectrumMatch>) HttpView.currentView();
+    JspView<LibrarySpectrumMatch> me = HttpView.currentView();
     LibrarySpectrumMatch bean = me.getModelBean();
 %>
 

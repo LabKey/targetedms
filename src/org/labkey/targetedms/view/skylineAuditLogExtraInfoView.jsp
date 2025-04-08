@@ -1,12 +1,10 @@
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.JspView" %>
-<%@ page import="org.labkey.targetedms.TargetedMSController" %>
 <%@ page import="org.labkey.targetedms.parser.skyaudit.AuditLogEntry" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 
 <%
-    JspView<AuditLogEntry> me =
-            (JspView<AuditLogEntry>) HttpView.currentView();
+    JspView<AuditLogEntry> me = HttpView.currentView();
     AuditLogEntry bean = me.getModelBean();
 %>
     <div id="targetedmsAuditLogExtraInfo" >

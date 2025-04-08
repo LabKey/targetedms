@@ -31,7 +31,7 @@
     }
 %>
 <%
-    JspView<ModificationSearchBean> me = (JspView<ModificationSearchBean>) HttpView.currentView();
+    JspView<ModificationSearchBean> me = HttpView.currentView();
     ModificationSearchBean bean = me.getModelBean();
 
     String initSearchType = bean.getForm().getSearchType() != null ? bean.getForm().getSearchType() : "deltaMass";

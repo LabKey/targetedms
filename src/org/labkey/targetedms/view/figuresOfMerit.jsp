@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 %>
+<%@ page import="org.labkey.api.view.ActionURL" %>
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.JspView" %>
 <%@ page import="org.labkey.api.view.template.ClientDependencies" %>
-<%@ page import="org.labkey.targetedms.view.FiguresOfMeritView" %>
 <%@ page import="org.labkey.targetedms.TargetedMSController" %>
 <%@ page import="org.labkey.targetedms.TargetedMSRun" %>
-<%@ page import="org.labkey.api.view.ActionURL" %>
+<%@ page import="org.labkey.targetedms.view.FiguresOfMeritView" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 <%@ taglib prefix="labkey" uri="http://www.labkey.org/taglib" %>
 <%!
@@ -33,7 +33,7 @@
     }
 %>
 <%
-    JspView<FiguresOfMeritView.MoleculeInfo> me = (JspView<FiguresOfMeritView.MoleculeInfo>) HttpView.currentView();
+    JspView<FiguresOfMeritView.MoleculeInfo> me = HttpView.currentView();
     FiguresOfMeritView.MoleculeInfo bean = me.getModelBean();
     TargetedMSRun run = bean.getRun();
 

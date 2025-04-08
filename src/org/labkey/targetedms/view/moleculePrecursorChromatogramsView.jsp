@@ -19,11 +19,11 @@
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.JspView" %>
 <%@ page import="org.labkey.targetedms.TargetedMSController" %>
-<%@ page import="java.text.DecimalFormat" %>
 <%@ page import="org.labkey.targetedms.TargetedMSRun" %>
+<%@ page import="java.text.DecimalFormat" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 <%
-    JspView<TargetedMSController.MoleculePrecursorChromatogramsViewBean> me = (JspView<TargetedMSController.MoleculePrecursorChromatogramsViewBean>) HttpView.currentView();
+    JspView<TargetedMSController.MoleculePrecursorChromatogramsViewBean> me = HttpView.currentView();
     TargetedMSController.MoleculePrecursorChromatogramsViewBean bean = me.getModelBean();
     TargetedMSRun run = bean.getRun();
     DecimalFormat ROUND_4 = new DecimalFormat("0.0000");

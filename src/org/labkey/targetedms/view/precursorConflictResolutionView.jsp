@@ -36,7 +36,7 @@
     }
 %>
 <%
-    JspView<TargetedMSController.PrecursorConflictBean> me = (JspView<TargetedMSController.PrecursorConflictBean>) HttpView.currentView();
+    JspView<TargetedMSController.PrecursorConflictBean> me = HttpView.currentView();
     TargetedMSController.PrecursorConflictBean bean = me.getModelBean();
     ActionURL conflictTransitionsUrl = new ActionURL(TargetedMSController.PrecursorConflictTransitionsAjaxAction.class, getContainer());
 
