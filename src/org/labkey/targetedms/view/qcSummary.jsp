@@ -29,6 +29,7 @@
         dependencies.add("targetedms/js/BaseQCPlotPanel.js");
         dependencies.add("targetedms/css/QCSummary.css");
         dependencies.add("targetedms/js/QCSummaryPanel.js");
+        dependencies.add("targetedms/js/QCMetricConfigLoader.js");
     }
 %>
 <%
@@ -37,7 +38,7 @@
     Integer sampleLimit = (Integer)HttpView.currentModel();
 %>
 
-<div style="min-height: 160px;" id="<%=h(qcSummaryId)%>" ></div>
+<div style="min-height: 175px;" id="<%=h(qcSummaryId)%>" ></div>
 
 <script type="text/javascript" nonce="<%=getScriptNonce()%>">
     Ext4.onReady(function()

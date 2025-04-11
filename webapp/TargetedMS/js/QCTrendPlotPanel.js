@@ -92,8 +92,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (this.minAcquiredTime == null || this.maxAcquiredTime == null)
             Ext4.get(this.plotDivId).update("<span class='labkey-error'>Unable to render report. Missing min and max AcquiredTime from data query.</span>");
         else {
+            Ext4.get(this.plotDivId).update("Loading...");
             // Load replicate annotations in the callback.
-            this.queryInitialQcMetrics(this.queryContainerReplicateAnnotations, this);
+            LABKEY.targetedms.QCMetricConfigLoader.getMetrics(this.queryContainerReplicateAnnotations, this);
         }
     },
 
@@ -154,7 +155,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         });
     },
 
-    queryContainerReplicateAnnotations : function() {
+    queryContainerReplicateAnnotations : function(metrics) {
+        this.metricPropArr = metrics;
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetContainerReplicateAnnotations.api'),
             method: 'GET',

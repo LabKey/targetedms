@@ -15,12 +15,13 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
     {
         this.callParent();
 
-        this.queryInitialQcMetrics(this.initPlot, this);
+        Ext4.get(this.plotDivId).mask("Loading...");
+
+        LABKEY.targetedms.QCMetricConfigLoader.getMetrics(this.initPlot, this);
     },
 
-    initPlot : function() {
-
-        Ext4.get(this.plotDivId).mask("Loading...");
+    initPlot : function(metrics) {
+        this.metricPropArr = metrics;
 
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetQCMetricOutliers.api'),
