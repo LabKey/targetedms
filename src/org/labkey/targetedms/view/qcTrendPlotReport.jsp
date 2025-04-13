@@ -47,6 +47,7 @@
         dependencies.add("targetedms/js/QCTrendPlotPanel.js");
         dependencies.add("targetedms/js/QCPlotHoverPanel.js");
         dependencies.add("targetedms/js/PlotTypeCheckCombo.js");
+        dependencies.add("targetedms/js/QCMetricConfigLoader.js");
     }
 %>
 <%

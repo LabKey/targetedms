@@ -33,6 +33,7 @@
         dependencies.add("targetedms/css/ParetoPlot.css");
         dependencies.add("targetedms/js/BaseQCPlotPanel.js");
         dependencies.add("targetedms/js/ParetoPlotPanel.js");
+        dependencies.add("targetedms/js/QCMetricConfigLoader.js");
     }
 %>
 <%
