@@ -5346,7 +5346,7 @@ public class TargetedMSController extends SpringActionController
 
             for (IKeyword keyword : keywords)
             {
-                HtmlString link = new LinkBuilder(keyword.label).href("https://www.uniprot.org/keywords/" + keyword.id).target("_blank").clearClasses().getHtmlString();
+                HtmlString link = LinkBuilder.simpleLink(keyword.label, "https://www.uniprot.org/keywords/" + keyword.id).target("_blank").getHtmlString();
                 if (IKeyword.BIOLOGICAL_PROCESS_CATEGORY.equals(keyword.categoryId))
                     extraAnnotations.computeIfAbsent("Biological Processes", k -> new ArrayList<>()).add(link);
                 if (IKeyword.MOLECULAR_FUNCTION_CATEGORY.equals(keyword.categoryId))
