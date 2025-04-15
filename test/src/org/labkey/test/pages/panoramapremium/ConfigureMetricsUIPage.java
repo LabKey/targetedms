@@ -74,7 +74,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
 
     public void waitForMetricToAppear(QCPlotsWebPart.MetricType metric)
     {
-        longWait().until(ExpectedConditions.visibilityOf(Locator.name(metric.toString()).findElement(getDriver())));
+        waitForElement(Locator.name(metric.toString()), WAIT_FOR_PAGE);
     }
 
     public String getLowerBound(String metric)
@@ -89,7 +89,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
 
     public void verifyNoDataForMetric(String metricName)
     {
-        Assert.assertEquals("Data should not be present for this metric - " + metricName, getText(Locator.id(metricName)), "No data in this folder");
+        Assert.assertEquals("Data should not be present for this metric - " + metricName, "No data in this folder", getText(Locator.id(metricName)));
     }
 
     public void clickSave()

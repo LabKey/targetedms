@@ -31,21 +31,20 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
     },
 
     getPlotWebPartHeader: function(wp, title) {
-        var html = '<br/>' +
-                '<table class="labkey-wp ' + wp + '">' +
+        return '<br/>' +
+                '<table class="labkey-wp ' + Ext4.util.Format.htmlEncode(wp) + '">' +
                 ' <tr class="labkey-wp-header">' +
                 '     <th class="labkey-wp-title-left">' +
-                '        <span class="labkey-wp-title-text ' +  wp + '-title">'+ Ext4.util.Format.htmlEncode(title) + '</span>' +
+                '        <span class="labkey-wp-title-text ' + Ext4.util.Format.htmlEncode(wp) + '-title">' + Ext4.util.Format.htmlEncode(title) + '</span>' +
                 '     </th>' +
                 ' </tr>';
-        return html;
     },
 
     addPlotWebPartToPlotDiv: function (id, title, div, wp) {
         var html = this.getPlotWebPartHeader(wp, title);
             html += '<tr>' +
                     '     <td class="labkey-wp-body">' +
-                    '        <div id="' + id + '" class="chart-render-div"></div>' +
+                    '        <div id="' + Ext4.util.Format.htmlEncode(id) + '" class="chart-render-div"></div>' +
                     '     </td>' +
                     ' </tr>' +
                     '</table>';
@@ -57,7 +56,7 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
 
         Ext4.each(ids, function(plotId){
             html += '<tr>' +
-                    '     <td><div id="' + plotId + '" class="chart-render-div"></div></td>' +
+                    '     <td><div id="' + Ext4.util.Format.htmlEncode(plotId) + '" class="chart-render-div"></div></td>' +
                     ' </tr>';
         });
         html += '</table>';
@@ -134,21 +133,6 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
 
             plotDiv.unmask();
         }
-    },
-
-    queryInitialQcMetrics : function(successCallback,callbackScope) {
-        LABKEY.Ajax.request({
-            url: LABKEY.ActionURL.buildURL('targetedms', 'GetQCMetricConfigurations.api'),
-            method: 'GET',
-            success: function(response) {
-                this.metricPropArr = Ext4.JSON.decode(response.responseText).configurations;
-                successCallback.call(callbackScope);
-            },
-            failure: LABKEY.Utils.getCallbackWrapper(function(response) {
-                this.failureHandler(response);
-            }, null, true),
-            scope: this
-        });
     },
 
     queryQCInstruments: function(successCallback, callbackScope) {
