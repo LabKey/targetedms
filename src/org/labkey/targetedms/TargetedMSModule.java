@@ -48,6 +48,7 @@ import org.labkey.api.query.QueryView;
 import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.security.permissions.ApplicationAdminPermission;
 import org.labkey.api.settings.AdminConsole;
+import org.labkey.api.settings.OptionalFeatureService;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.usageMetrics.UsageMetricsService;
 import org.labkey.api.util.PageFlowUtil;
@@ -127,6 +128,8 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     public static final String PEPTIDE_TAB_NAME = "Peptides";
     public static final String PROTEIN_TAB_NAME = "Proteins";
     public static final String MOLECULE_TAB_NAME = "Molecules";
+
+    public static final String USE_TEMP_DIR_FOR_SKYD_IMPORT = "UseTempDirForSkydImport";
 
     public static final String[] EXPERIMENT_FOLDER_WEB_PARTS = new String[] {MSSearchWebpart.NAME,
                                                                            TARGETED_MS_RUNS_WEBPART_NAME};
@@ -215,6 +218,10 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         MAX_PRECURSORS_PROPERTY.setShowDescriptionInline(true);
         addModuleProperty(MAX_PRECURSORS_PROPERTY);
 
+        AdminConsole.addOptionalFeatureFlag(new AdminConsole.OptionalFeatureFlag(USE_TEMP_DIR_FOR_SKYD_IMPORT,
+                "Stage SKYD files to a temporary local file for import purposes",
+                "When using a non-local file system, the latency for random access requests can be significantly slower than first copying to local storage",
+                false, false, OptionalFeatureService.FeatureType.Optional));
     }
 
     @Override

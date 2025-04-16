@@ -92,8 +92,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (this.minAcquiredTime == null || this.maxAcquiredTime == null)
             Ext4.get(this.plotDivId).update("<span class='labkey-error'>Unable to render report. Missing min and max AcquiredTime from data query.</span>");
         else {
+            Ext4.get(this.plotDivId).update("Loading...");
             // Load replicate annotations in the callback.
-            this.queryInitialQcMetrics(this.queryContainerReplicateAnnotations, this);
+            LABKEY.targetedms.QCMetricConfigLoader.getMetrics(this.queryContainerReplicateAnnotations, this);
         }
     },
 
@@ -111,7 +112,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     if (value === "true" || value === "false") {
                         value = value === "true";
                     }
-                    else if (value != undefined && value.length > 0 && !isNaN(Number(value))) {
+                    else if (value !== undefined && value.length > 0 && !isNaN(Number(value))) {
                         value = +value;
                     }
                     else if (key === 'plotTypes') { // convert string to array
@@ -120,15 +121,15 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         value = value.split(',');
                     }
                     if(key === 'selectedAnnotations') {
-                        var annotations = {};
+                        const annotations = {};
 
-                        var a = value.split(',');
-                        for(var i = 0; i < a.length; i++)
+                        const a = value.split(',');
+                        for (let i = 0; i < a.length; i++)
                         {
-                            var b = a[i].split(":");
-                            var name = b[0];
-                            var val = b[1];
-                            var selected = annotations[name];
+                            const b = a[i].split(":");
+                            const name = b[0];
+                            const val = b[1];
+                            let selected = annotations[name];
                             if(!selected)
                             {
                                 selected = [];
@@ -154,7 +155,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         });
     },
 
-    queryContainerReplicateAnnotations : function() {
+    queryContainerReplicateAnnotations : function(metrics) {
+        this.metricPropArr = metrics;
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetContainerReplicateAnnotations.api'),
             method: 'GET',
@@ -211,6 +213,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }
 
         this.getExpRunRangeDetails();
+        // We just finished loading the previously set options so clear any dirty state
+        this.havePlotOptionsChanged = false;
     },
 
     getExpRunRangeDetails: function() {
@@ -286,7 +290,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     getFirstPlotOptionsToolbar: function() {
         if (!this.plotTypeOptionsToolbar) {
-            let items = [];
             this.plotTypeOptionsToolbar = Ext4.create('Ext.toolbar.Toolbar', {
                 ui: 'footer',
                 cls: 'levey-jennings-toolbar',
@@ -327,7 +330,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 minValue: 2,
                 listeners: {
                     scope: this,
-                    change: function (cmp, newVal, oldVal) {
+                    change: function (cmp, newVal) {
                         this.trailingRuns = newVal;
                         this.havePlotOptionsChanged = true;
                         this.displayTrendPlot();
@@ -370,7 +373,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             value: selectedPlotTypes,
             listeners: {
                 scope: this,
-                change: function(cmp, newVal, oldVal) {
+                change: function(cmp, newVal) {
                     var newValues = newVal;
                     this.plotTypes = newValues ? Ext4.isArray(newValues) ? newValues : [newValues] : [];
 
@@ -418,7 +421,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
             toolbarItems.push(this.getGroupedXCheckbox());
             toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
-            var location = toolbarItems.push(this.getSinglePlotCheckbox());
+            const location = toolbarItems.push(this.getSinglePlotCheckbox());
             toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
             toolbarItems.push(this.getShowExcludedCheckbox());
             toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});

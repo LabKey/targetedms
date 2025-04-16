@@ -16,11 +16,17 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
 
         this.callParent();
 
-        this.qcPlotPanel.queryInitialQcMetrics(this.initPanel, this);
+        this.add({
+            xtype: 'label',
+            text: 'Loading...'
+        })
+
+        LABKEY.targetedms.QCMetricConfigLoader.getMetrics(this.initPanel, this);
         this.numSampleFileStats = config ? config.sampleLimit : 3;
     },
 
-    initPanel : function() {
+    initPanel : function(metrics) {
+        this.metricPropArr = metrics;
         this.qcPlotPanel.queryQCInstruments(this.getQCSummary, this);
     },
 
@@ -32,6 +38,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
             },
             scope: this,
             success: LABKEY.Utils.getCallbackWrapper(function (response) {
+                this.removeAll();
                 var containers = response['containers'],
                         container,
                         childPanelItems = [],
@@ -49,7 +56,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                 container = containers[0];
                 container.showName = hasChildren;
                 container.isParent = true;
-                container.parentOnly = containers.length == 1;
+                container.parentOnly = containers.length === 1;
                 if (this.qcPlotPanel.qcIntrumentsArr) {
                     if (this.qcPlotPanel.qcIntrumentsArr.length > 1) {
                         container.instrument = ' for multiple instruments: <ul>';
