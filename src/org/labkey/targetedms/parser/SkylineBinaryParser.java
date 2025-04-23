@@ -19,6 +19,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.exp.api.DataType;
+import org.labkey.api.settings.OptionalFeatureService;
+import org.labkey.api.util.FileUtil;
+import org.labkey.targetedms.TargetedMSModule;
 import org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass;
 import org.labkey.targetedms.parser.skyd.CacheFormat;
 import org.labkey.targetedms.parser.skyd.CacheFormatVersion;
@@ -44,15 +47,12 @@ import java.util.zip.Inflater;
 
 /**
  * Parses the .skyd binary file format, for chromatogram data.
- *
  * Based on ChromatogramCache.cs and ChromHeaderInfo.cs from Skyline
- * 
- * User: jeckels
- * Date: Apr 13, 2012
  */
 public class SkylineBinaryParser
 {
     private final File _file;
+    private final boolean _deleteFileOnClose;
     private final Logger _log;
     private FileChannel _channel;
     private RandomAccessFile _randomAccessFile;
@@ -71,10 +71,24 @@ public class SkylineBinaryParser
 
     private CachedFile[] _cacheFiles;
 
-    public SkylineBinaryParser(File file, Logger log)
+    public SkylineBinaryParser(File file, Logger log) throws IOException
     {
-        _file = file;
         _log = log;
+
+        if (OptionalFeatureService.get().isFeatureEnabled(TargetedMSModule.USE_TEMP_DIR_FOR_SKYD_IMPORT))
+        {
+            _deleteFileOnClose = true;
+            _file = FileUtil.createTempFile(file.getName(), ".skyd");
+            _file.deleteOnExit();
+            _log.info("Copying SKYD to temp directory for import purposes");
+            FileUtil.copyFile(file, _file);
+            _log.info("Copying complete");
+        }
+        else
+        {
+            _file = file;
+            _deleteFileOnClose = false;
+        }
     }
 
     public ChromGroupHeaderInfo[] getChromatograms()
@@ -97,6 +111,18 @@ public class SkylineBinaryParser
         // using a FileChannel there is a known Java issue on Windows that prevents the mapped file from being deleted,
         // http://bugs.java.com/bugdatabase/view_bug.do?bug_id=4715154 and http://bugs.java.com/bugdatabase/view_bug.do?bug_id=4469299
         System.gc();
+
+        if (_deleteFileOnClose && _file != null)
+        {
+            if (!_file.delete())
+            {
+                _log.warn("Failed to delete temp copy of SKYD file: " + _file.getAbsolutePath());
+            }
+            else
+            {
+                _log.info("Deleted temp copy of SKYD file");
+            }
+        }
     }
 
     public void parse() throws IOException

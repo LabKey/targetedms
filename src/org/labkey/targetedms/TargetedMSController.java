@@ -140,7 +140,7 @@ import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.targetedms.TargetedMSUrls;
 import org.labkey.api.targetedms.model.QCMetricConfiguration;
 import org.labkey.api.targetedms.model.SampleFileInfo;
-import org.labkey.api.util.Button;
+import org.labkey.api.util.ButtonBuilder;
 import org.labkey.api.util.ConfigurationException;
 import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.DOM;
@@ -149,7 +149,7 @@ import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.HelpTopic;
 import org.labkey.api.util.HtmlString;
 import org.labkey.api.util.JsonUtil;
-import org.labkey.api.util.Link;
+import org.labkey.api.util.LinkBuilder;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.util.Pair;
 import org.labkey.api.util.StringUtilsLabKey;
@@ -545,7 +545,7 @@ public class TargetedMSController extends SpringActionController
         {
             return new HtmlView("Chromatogram Crawler", DIV("Crawl all containers under the parent " + getContainer().getPath(),
                 DOM.LK.FORM(at(method, "POST"),
-                    new Button.ButtonBuilder("Start Crawl").submit(true).build())));
+                    new ButtonBuilder("Start Crawl").submit(true).build())));
         }
 
         @Override
@@ -5346,7 +5346,7 @@ public class TargetedMSController extends SpringActionController
 
             for (IKeyword keyword : keywords)
             {
-                HtmlString link = new Link.LinkBuilder(keyword.label).href("https://www.uniprot.org/keywords/" + keyword.id).target("_blank").clearClasses().getHtmlString();
+                HtmlString link = LinkBuilder.simpleLink(keyword.label, "https://www.uniprot.org/keywords/" + keyword.id).target("_blank").getHtmlString();
                 if (IKeyword.BIOLOGICAL_PROCESS_CATEGORY.equals(keyword.categoryId))
                     extraAnnotations.computeIfAbsent("Biological Processes", k -> new ArrayList<>()).add(link);
                 if (IKeyword.MOLECULAR_FUNCTION_CATEGORY.equals(keyword.categoryId))
