@@ -7,7 +7,7 @@ SELECT
   Sequence @hidden,
   PreviousAA @hidden,
   NextAA @hidden,
-  SampleFileId.SampleName,
+  SampleFileId.ReplicateId.Name AS ReplicateName,
   -- Explicitly cast for SQLServer to avoid trying to add as numeric types
   SUBSTRING(Sequence, IndexAA + 1, 1) || CAST(StartIndex + IndexAA + 1 AS VARCHAR) AS SiteLocation,
   SUBSTRING(Sequence, IndexAA + 1, 1) AS AminoAcid,
@@ -15,7 +15,7 @@ SELECT
   PeptideGroupId
 FROM PTMPercentsPrepivot
 GROUP BY
-  SampleFileId.SampleName,
+  SampleFileId.ReplicateId.Name,
   Sequence,
   PreviousAA,
   NextAA,
@@ -24,4 +24,4 @@ GROUP BY
   PeptideGroupId,
   IndexAA,
   StructuralModId
-PIVOT PercentModified BY SampleName
+PIVOT PercentModified BY ReplicateName

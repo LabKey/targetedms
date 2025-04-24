@@ -1863,7 +1863,7 @@ public class TargetedMSSchema extends UserSchema
             long runId = Long.parseLong(runIdString);
             QueryDefinition queryDef = Objects.requireNonNull(getQueryDef(baseQueryName));
             QueryDefinition result = QueryService.get().createQueryDef(getUser(), getContainer(), getSchemaPath(), queryName);
-            result.setSql(queryDef.getSql() + " IN (SELECT sf.SampleName FROM targetedms.SampleFile sf WHERE sf.ReplicateId.RunId = " + runId + ")");
+            result.setSql(queryDef.getSql() + " IN (SELECT r.Name FROM targetedms.Replicate r WHERE r.RunId = " + runId + ")");
             result.setMetadataXml(queryDef.getMetadataXml());
             return result;
         }

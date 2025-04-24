@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * Customizes the set of columns available on a pivot query that operates on samples, hiding all of the pivot values
  * that aren't part of the run that's being filtered on. This lets you view a single document's worth of data
- * without seeing empty columns for all of the other samples in the same container.
+ * without seeing empty columns for all the other samples in the same container.
  */
 public class SamplePivotCustomizer implements TableCustomizer
 {
