@@ -52,11 +52,11 @@ public class TargetedMSEarlyStagePTMReportTest extends TargetedMSTest
 
         log("Verifying the modified percentage for sequence with CDR Range and stressed or not stressed updates");
         Assert.assertEquals("Incorrect percentages for (K)VTNMDPADTATYYCAR(D) sequence", Arrays.asList("(K)VTNMDPADTATYYCAR(D)", "11.3%", "11.3%", "11.1%", "11.1%"),
-                reportTable.getRowDataAsText(vtnRowIndex, "Sequence", "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_1::PercentModified", "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_1::TotalPercentModified",
-                        "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_2::PercentModified", "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_2::TotalPercentModified"));
+                reportTable.getRowDataAsText(vtnRowIndex, "Sequence", "QE_1::PercentModified", "QE_1::TotalPercentModified",
+                        "QE_2::PercentModified", "QE_2::TotalPercentModified"));
         Assert.assertEquals("Incorrect percentages for (R)WQQGNVFSCSVMHEALHNHYTQK(S) sequence", Arrays.asList("(R)WQQGNVFSCSVMHEALHNHYTQK(S)", "22.1%", "22.1%", "24.1%", "24.1%"),
-                reportTable.getRowDataAsText(wqqRowIndex, "Sequence", "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_1::PercentModified", "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_1::TotalPercentModified",
-                        "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_2::PercentModified", "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_2::TotalPercentModified"));
+                reportTable.getRowDataAsText(wqqRowIndex, "Sequence", "QE_1::PercentModified", "QE_1::TotalPercentModified",
+                        "QE_2::PercentModified", "QE_2::TotalPercentModified"));
 
         log("Verifying the cell colors:Green, Yellow and Red");
         Assert.assertEquals("Incorrect risk category color for - Green", "rgb(137, 202, 83)",
