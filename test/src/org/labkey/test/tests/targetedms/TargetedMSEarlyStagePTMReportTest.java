@@ -44,7 +44,7 @@ public class TargetedMSEarlyStagePTMReportTest extends TargetedMSTest
         log("Verifying the table headers");
         Assert.assertEquals("Incorrect column headers", Arrays.asList("Chain", "Site Location", "Sequence", "Modification", "Max Percent Modified",
                 "Percent Modified", "Total Percent Modified", "Percent Modified", "Total Percent Modified"), reportTable.getColumnLabels());
-        Assert.assertEquals("Incorrect Sample Names displayed as headers", "Sample1 Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_2",
+        Assert.assertEquals("Incorrect Sample Names displayed as headers", "QE_1 QE_2",
                 Locator.xpath("//table/thead[2]/tr").findElement(reportTable).getText());
 
         int vtnRowIndex = 1;

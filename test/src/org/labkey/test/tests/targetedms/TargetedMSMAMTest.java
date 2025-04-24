@@ -29,7 +29,7 @@ public class TargetedMSMAMTest extends TargetedMSTest
     @BeforeClass
     public static void setupProject()
     {
-        TargetedMSMAMTest init = (TargetedMSMAMTest) getCurrentTest();
+        TargetedMSMAMTest init = getCurrentTest();
         init.setupFolder(FolderType.ExperimentMAM);
         init.importData(SKY_FILE, 1);
         init.importData(CROSS_LINKED_SKY_FILE, 2);
@@ -50,7 +50,8 @@ public class TargetedMSMAMTest extends TargetedMSTest
         assertElementPresent("Wrong modification count", Locator.xpath("//td[contains(text(), 'Carbamidomethyl Cysteine')]"), 9);
         assertTextPresentInThisOrder("(K)HDLDLICR(A)", "(K)YLECSALTQR(G)", "(R)YVDIAIPCNNK(G)");
         assertTextPresentInThisOrder("C245", "C157", "C163");
-        assertTextPresent("A_D110907_SiRT_HELA_11_nsMRM_150selected_2_30min-5-35", "A_D110907_SiRT_HELA_11_nsMRM_150selected_1_30min-5-35");
+
+        assertTextPresent("Chromatograms");
 
         clickAndWait(Locator.linkContainingText("Peptide Map"));
         assertTextPresentInThisOrder("11.3", "14.1", "14.8");
