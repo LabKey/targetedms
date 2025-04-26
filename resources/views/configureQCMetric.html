@@ -264,8 +264,7 @@
                     }
                 }, this);
 
-                var rowsToUpsert = false;
-                var commands = [];
+                const commands = [];
 
                 if (recordsToInsert.length > 0) {
                     commands.push({
@@ -274,7 +273,6 @@
                         command: 'insert',
                         rows: recordsToInsert
                     });
-                    rowsToUpsert = true;
                 }
 
                 if (recordsToUpdate.length > 0) {
@@ -284,7 +282,6 @@
                         command: 'update',
                         rows: recordsToUpdate
                     });
-                    rowsToUpsert = true;
                 }
 
                 if (recordsToDelete.length > 0) {
@@ -294,10 +291,10 @@
                         command: 'delete',
                         rows: recordsToDelete
                     });
-                    rowsToUpsert = true;
                 }
 
-                if (rowsToUpsert) {
+                if (commands.length > 0) {
+                    jQuery('#qcMetricsError').text("Saving...");
                     LABKEY.Query.saveRows({
                         commands: commands,
                         method: 'POST',
