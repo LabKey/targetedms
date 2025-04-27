@@ -102,7 +102,11 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         Locator.buttonContainingText("Save").findElement(getDriver()).click();
         Locator.XPathLocator errorMsgId = Locator.id("qcMetricsError");
         waitForElement(errorMsgId);
-        waitFor(() -> !errorMsgId.findElement(getDriver()).getText().isEmpty(), WAIT_FOR_PAGE);
+        waitFor(() ->
+        {
+            String errorText = errorMsgId.findElement(getDriver()).getText();
+            return !errorText.isEmpty() && !errorText.equals("Saving...");
+        }, WAIT_FOR_PAGE);
         return errorMsgId.findElement(getDriver()).getText();
     }
 
