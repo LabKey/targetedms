@@ -180,14 +180,11 @@ public class PTMPercentsGroupedCustomizer extends PTMPercentsCustomizer
         return -1;
     }
 
-    /** Key is the sample name and run ID, value is a pair of boolean (stressed or not) and description, both annotation-based */
+    /** Key is the replicate name and run ID, value is a pair of boolean (stressed or not) and description, both annotation-based */
     public static Map<Pair<String, Long>, Pair<Boolean, String>> getSampleMetadata(Container container)
     {
-        SQLFragment sql = new SQLFragment("SELECT DISTINCT sf.SampleName, r.RunId, raStressed.Value AS Stressed, COALESCE(raDescription.Value, sf.SampleName) AS Description FROM ");
-        sql.append(TargetedMSManager.getTableInfoSampleFile(), "sf");
-        sql.append(" INNER JOIN ");
+        SQLFragment sql = new SQLFragment("SELECT DISTINCT r.Name, r.RunId, raStressed.Value AS Stressed, COALESCE(raDescription.Value, r.Name) AS Description FROM ");
         sql.append(TargetedMSManager.getTableInfoReplicate(), "r");
-        sql.append(" ON r.Id = sf.ReplicateId ");
         sql.append(" INNER JOIN ");
         sql.append(TargetedMSManager.getTableInfoRuns(), "run");
         sql.append(" ON r.RunId = run.Id AND run.Container = ?");
@@ -200,11 +197,11 @@ public class PTMPercentsGroupedCustomizer extends PTMPercentsCustomizer
         sql.append(" ON r.Id = raDescription.ReplicateId AND raDescription.Name = 'Sample Description'");
         Map<Pair<String, Long>, Pair<Boolean, String>> result = new HashMap<>();
         new SqlSelector(TargetedMSManager.getSchema(), sql).forEach(rs -> {
-            String sampleName = rs.getString("SampleName");
+            String replicateName = rs.getString("Name");
             Long runId = rs.getLong("RunId");
             Boolean stressed = "Stressed".equalsIgnoreCase(rs.getString("Stressed"));
             String description = rs.getString("Description");
-            result.put(Pair.of(sampleName, runId), Pair.of(stressed, description));
+            result.put(Pair.of(replicateName, runId), Pair.of(stressed, description));
         });
         return result;
     }
