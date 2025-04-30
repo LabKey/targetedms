@@ -57,7 +57,7 @@ SELECT
        PreviousAA @hidden,
        NextAA @hidden,
        p1.SampleFileId,
-       p1.SampleFileId.SampleName,
+       p1.SampleFileId.ReplicateId.Name AS ReplicateName,
        p1.AminoAcid,
        p1.SiteLocation,
        p1.Location,

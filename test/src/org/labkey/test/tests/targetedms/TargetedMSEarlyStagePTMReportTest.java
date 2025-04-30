@@ -44,7 +44,7 @@ public class TargetedMSEarlyStagePTMReportTest extends TargetedMSTest
         log("Verifying the table headers");
         Assert.assertEquals("Incorrect column headers", Arrays.asList("Chain", "Site Location", "Sequence", "Modification", "Max Percent Modified",
                 "Percent Modified", "Total Percent Modified", "Percent Modified", "Total Percent Modified"), reportTable.getColumnLabels());
-        Assert.assertEquals("Incorrect Sample Names displayed as headers", "Sample1 Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_2",
+        Assert.assertEquals("Incorrect Sample Names displayed as headers", "Sample1 QE_2",
                 Locator.xpath("//table/thead[2]/tr").findElement(reportTable).getText());
 
         int vtnRowIndex = 1;
@@ -52,11 +52,11 @@ public class TargetedMSEarlyStagePTMReportTest extends TargetedMSTest
 
         log("Verifying the modified percentage for sequence with CDR Range and stressed or not stressed updates");
         Assert.assertEquals("Incorrect percentages for (K)VTNMDPADTATYYCAR(D) sequence", Arrays.asList("(K)VTNMDPADTATYYCAR(D)", "11.3%", "11.3%", "11.1%", "11.1%"),
-                reportTable.getRowDataAsText(vtnRowIndex, "Sequence", "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_1::PercentModified", "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_1::TotalPercentModified",
-                        "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_2::PercentModified", "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_2::TotalPercentModified"));
+                reportTable.getRowDataAsText(vtnRowIndex, "Sequence", "QE_1::PercentModified", "QE_1::TotalPercentModified",
+                        "QE_2::PercentModified", "QE_2::TotalPercentModified"));
         Assert.assertEquals("Incorrect percentages for (R)WQQGNVFSCSVMHEALHNHYTQK(S) sequence", Arrays.asList("(R)WQQGNVFSCSVMHEALHNHYTQK(S)", "22.1%", "22.1%", "24.1%", "24.1%"),
-                reportTable.getRowDataAsText(wqqRowIndex, "Sequence", "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_1::PercentModified", "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_1::TotalPercentModified",
-                        "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_2::PercentModified", "Sc_WCL-250ng-5ngNIST_rKCTi_3hRP-20cm_DE30_QE_2::TotalPercentModified"));
+                reportTable.getRowDataAsText(wqqRowIndex, "Sequence", "QE_1::PercentModified", "QE_1::TotalPercentModified",
+                        "QE_2::PercentModified", "QE_2::TotalPercentModified"));
 
         log("Verifying the cell colors:Green, Yellow and Red");
         Assert.assertEquals("Incorrect risk category color for - Green", "rgb(137, 202, 83)",

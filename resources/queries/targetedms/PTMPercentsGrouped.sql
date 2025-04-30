@@ -9,7 +9,7 @@ SELECT
     MIN(Id) AS Id @hidden,
     PreviousAA @hidden,
     NextAA @hidden,
-    SampleName,
+    ReplicateName,
 
     MAX(MaxPercentModified) AS MaxPercentModified,
     SUM(PercentModified) AS PercentModified,
@@ -20,7 +20,7 @@ SELECT
 FROM
     PTMPercentsGroupedPrepivot
 GROUP BY
-    SampleName,
+    ReplicateName,
     Sequence,
     PreviousAA,
     NextAA,
@@ -30,4 +30,4 @@ GROUP BY
     Location,
     SiteLocation,
     Modification
-PIVOT PercentModified, TotalPercentModified BY SampleName
+PIVOT PercentModified, TotalPercentModified BY ReplicateName
