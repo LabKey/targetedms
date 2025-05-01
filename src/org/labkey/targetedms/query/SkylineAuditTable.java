@@ -92,7 +92,7 @@ public class SkylineAuditTable extends VirtualTable<TargetedMSSchema>
         cteSQL.add(_run.getDocumentGUID());
 
         SQLFragment result = new SQLFragment();
-        result.addCommonTableExpression("TargetedMSAuditCTE", "logTree", cteSQL, getSqlDialect().isPostgreSQL());
+        result.addCommonTableExpression(getSqlDialect(), "TargetedMSAuditCTE", "logTree", cteSQL, getSqlDialect().isPostgreSQL());
         result.append("SELECT lt.* \n");
 
         result.append(", CASE WHEN msg.orderNumber = 0 AND lt.extraInfo IS NOT NULL THEN '(info)' END AS HasExtraInfo\n");

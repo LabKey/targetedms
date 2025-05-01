@@ -146,7 +146,7 @@ if (!LABKEY.targetedms.QCPlotLegendHelper) {
             var suffix = this.getSuffix(identifier);
             var matchingPrefixAndSuffix = matchingPrefixes[suffix];
 
-            // If there is only one sequence with this prefix, return the prefix (unless the identifer is already short enough).
+            // If there is only one sequence with this prefix, return the prefix (unless the identifier is already short enough).
             if (Object.keys(matchingPrefixes).length === 1 && Object.keys(matchingPrefixAndSuffix).length === 1)
                 return this.shorterOf((identifier.length > (this.minLegendLength * 2) + 1) ? (prefix + this.ellipsis) : identifier, identifier);
 

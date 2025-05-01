@@ -722,7 +722,8 @@ public class TargetedMSSchema extends UserSchema
                     "Targets " +
                     "  FROM ");
             annoSettingsSql.append(annotationSettingsTI, " annoSettings ");
-            annoSettingsSql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoRuns(), " runs ON runs.Id = annoSettings.RunId");
+            annoSettingsSql.append(" INNER JOIN ").append(TargetedMSManager.getTableInfoRuns(), "runs");
+            annoSettingsSql.append(" ON runs.Id = annoSettings.RunId");
             annoSettingsSql.append(" WHERE ");
             annoSettingsSql.append(containerFilter.getSQLFragment(getDbSchema(), new SQLFragment("runs.Container")));
             // AnnotationSettings table has a "Targets" column that determines which targets

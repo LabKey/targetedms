@@ -1404,7 +1404,7 @@ public class SkylineDocImporter
         Set<String> skylineIdentifiers = new HashSet<>();
         if(label != null)
         {
-            // prot.identifers table limits the name to 50 characters
+            // prot.identifiers table limits the name to 50 characters
             skylineIdentifiers.add(label.substring(0, Math.min(50, label.length())));
         }
         if(name != null)
