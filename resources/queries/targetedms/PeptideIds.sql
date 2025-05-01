@@ -6,7 +6,9 @@ SELECT
    PrecursorId.NeutralMass AS ExpectedPeptideMass,
    -- Concatenate the empty string so that the protein DisplayColumn doesn't get propagated too
    PrecursorId.PeptideId.PeptideGroupId.Label || '' AS Chain,
-   CAST(PrecursorId.PeptideId.StartIndex + 1 AS VARCHAR) || '-' || CAST(PrecursorId.PeptideId.EndIndex AS VARCHAR) AS PeptideLocation,
+   CAST(PrecursorId.PeptideId.StartIndex + 1 AS VARCHAR) || '-' ||
+        -- Subtract one from the index if it was a c-term clipping of lysine, shortening the sequence
+        CAST(PrecursorId.PeptideId.EndIndex - (CASE WHEN LOCATE('C-Term Lys Clipping', Modification) >= 0 THEN 1 ELSE 0 END) AS VARCHAR) AS PeptideLocation,
    -- Value is calculated in Java in CrossLinkedPeptideDisplayColumn
    CAST(NULL AS VARCHAR) AS BondLocation,
    PrecursorId.PeptideId.Sequence @hidden,
@@ -15,18 +17,22 @@ SELECT
    PrecursorId.PeptideId.PeptideModifiedSequence AS PeptideModifiedSequence,
    PrecursorId.PeptideId AS Id @hidden,
    PrecursorId.PeptideId.PeptideGroupId.RunId AS RunId @hidden,
-   -- Show the modifications and their locations
-   (SELECT GROUP_CONCAT((StructuralModId.Name ||
-                         -- For now omit AA index info for anything but the first crosslinked peptide
-                         CASE WHEN psm.PeptideIndex = 0 THEN (' @ ' ||
-                         SUBSTRING(p.Sequence, IndexAA + 1, 1) ||
-                         CAST(IndexAA + p.StartIndex + 1 AS VARCHAR)) ELSE '' END),
-       (', ' || CHR(10)))
-   FROM targetedms.PeptideStructuralModification psm INNER JOIN targetedms.Peptide p ON psm.PeptideId = p.Id WHERE psm.PeptideId = pci.PrecursorId.PeptideId) AS Modification,
+   mods.Modification,
    SUM(TotalArea) AS TotalArea
 
 FROM
-     targetedms.precursorchrominfo pci
+     targetedms.precursorchrominfo pci LEFT OUTER JOIN
+         -- Show the modifications and their locations
+         (SELECT GROUP_CONCAT((StructuralModId.Name ||
+             -- For now omit AA index info for anything but the first crosslinked peptide
+                               CASE WHEN psm.PeptideIndex = 0 THEN (' @ ' ||
+                                                                    SUBSTRING(p.Sequence, IndexAA + 1, 1) ||
+                                                                    CAST(IndexAA + p.StartIndex + 1 AS VARCHAR)) ELSE '' END),
+                              (', ' || CHR(10))) AS Modification,
+          psm.PeptideId
+          FROM targetedms.PeptideStructuralModification psm INNER JOIN targetedms.Peptide p ON psm.PeptideId = p.Id
+          GROUP BY psm.PeptideId)
+mods ON mods.PeptideId = pci.PrecursorId.PeptideId
 GROUP BY
    PrecursorId.PeptideId.PeptideModifiedSequence,
    PrecursorId.NeutralMass,
@@ -38,4 +44,5 @@ GROUP BY
    PrecursorId.PeptideId.NextAA,
    PrecursorId.PeptideId.PreviousAA,
    PrecursorId.PeptideId.StartIndex,
-   PrecursorId.PeptideId.EndIndex
+   PrecursorId.PeptideId.EndIndex,
+   Modification

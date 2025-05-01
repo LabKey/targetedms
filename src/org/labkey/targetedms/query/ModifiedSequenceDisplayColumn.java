@@ -17,9 +17,18 @@ package org.labkey.targetedms.query;
 
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.logging.log4j.Logger;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.RichTextString;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.DisplayColumn;
 import org.labkey.api.data.DisplayColumnFactory;
+import org.labkey.api.data.ExcelColumn;
 import org.labkey.api.data.RenderContext;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.util.HtmlString;
@@ -33,7 +42,10 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -45,6 +57,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
     private final ModifiedPeptideHtmlMaker _htmlMaker;
     String _iconPath;
     HtmlString _cellData;
+    List<List<ModifiedPeptideHtmlMaker.SequencePart>> _parsedParts;
 
     boolean _exportAsStrippedHtml = false;
 
@@ -310,7 +323,9 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
                     }
                 }
 
-                _cellData = getHtmlMaker().getPeptideHtml(peptideId, peptideGroupId, sequence, peptideModifiedSequence, runId, previousAA, nextAA, _useParens, strModIndices);
+                var rendered = getHtmlMaker().getPeptideHtml(peptideId, peptideGroupId, sequence, peptideModifiedSequence, runId, previousAA, nextAA, _useParens, strModIndices);
+                _cellData = rendered.first;
+                _parsedParts = rendered.second;
                 _iconPath = IconFactory.getPeptideIconPath(peptideId, runId, decoy, standardType);
             }
         }
@@ -356,19 +371,112 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
 
             String precursorModifiedSequence = (String)getValue(ctx);
 
-            if(precursorId == null || peptideId == null || isotopeLabelId == null || precursorModifiedSequence == null || sequence == null || runId == null)
+            if (precursorId == null || peptideId == null || isotopeLabelId == null || precursorModifiedSequence == null || sequence == null || runId == null)
             {
                 _cellData = HtmlString.of(precursorModifiedSequence);
             }
             else
             {
-                _cellData = getHtmlMaker().getPrecursorHtml(peptideId,
+                var rendered = getHtmlMaker().getPrecursorHtml(peptideId,
                         peptideGroupId,
                         isotopeLabelId,
                         precursorModifiedSequence,
                         runId);
+                _cellData = rendered.first;
+                _parsedParts = rendered.second;
                 _iconPath = IconFactory.getPrecursorIconPath(precursorId, runId, decoy);
             }
+        }
+    }
+
+    @Override
+    public ExcelColumn createExcelColumn(Map<ExcelColumn.ExcelFormatDescriptor, CellStyle> formatters, Workbook workbook)
+    {
+        return new ExcelColumnImpl(this, formatters, workbook);
+    }
+
+    private class ExcelColumnImpl extends ExcelColumn
+    {
+        private CellStyle _wrappedStyle;
+        private Font _crosslinkedFont;
+        private Font _modifiedFont;
+
+        ExcelColumnImpl(ModifiedSequenceDisplayColumn col, Map<ExcelColumn.ExcelFormatDescriptor, CellStyle> formatters, Workbook workbook)
+        {
+            super(col, formatters, workbook);
+        }
+
+        @Override
+        public void writeCell(Sheet sheet, int column, int row, RenderContext ctx)
+        {
+            ModifiedSequenceDisplayColumn.this.initialize(ctx);
+
+            StringBuilder builder = new StringBuilder();
+            Map<Integer, Font> highlights = new HashMap<>();
+            int i = 0;
+            String separator = "";
+            for (List<ModifiedPeptideHtmlMaker.SequencePart> parts : _parsedParts)
+            {
+                i += separator.length();
+                builder.append(separator);
+                separator = "\n";
+                for (ModifiedPeptideHtmlMaker.SequencePart part : parts)
+                {
+                    String s = part.sequence();
+                    builder.append(s);
+                    for (int j = 0; j < s.length(); j++)
+                    {
+                        if (part.crossLinked())
+                        {
+                            if (_crosslinkedFont == null)
+                            {
+                                _crosslinkedFont = _workbook.createFont();
+                                _crosslinkedFont.setColor(IndexedColors.GREEN.getIndex());
+                                _crosslinkedFont.setBold(true);
+                            }
+                            highlights.put(i, _crosslinkedFont);
+                        }
+                        else if (part.modified())
+                        {
+                            if (_modifiedFont == null)
+                            {
+                                _modifiedFont = _workbook.createFont();
+                                _modifiedFont.setColor(IndexedColors.RED.getIndex());
+                                _modifiedFont.setBold(true);
+                            }
+                            highlights.put(i, _modifiedFont);
+                        }
+                        i++;
+                    }
+                }
+            }
+
+            Row rowObject = getRow(sheet, row);
+            Cell cell = rowObject.getCell(column, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+
+            cell.setCellValue(builder.toString());
+            RichTextString richText = cell.getRichStringCellValue();
+
+            for (Map.Entry<Integer, Font> entry : highlights.entrySet())
+            {
+                richText.applyFont(entry.getKey(), entry.getKey() + 1, entry.getValue());
+            }
+
+            if (_parsedParts.size() > 1)
+            {
+                // We have multiple cross-linked peptides so we need a taller row to show them on separate lines within
+                // the same cell
+                if (_wrappedStyle == null)
+                {
+                    _wrappedStyle = _workbook.createCellStyle();
+                    _wrappedStyle.setWrapText(true);
+                }
+                cell.setCellStyle(_wrappedStyle);
+                rowObject.setHeightInPoints(_parsedParts.size() * sheet.getDefaultRowHeightInPoints());
+            }
+
+            // Set the rich text string to the cell
+            cell.setCellValue(richText);
         }
     }
 }

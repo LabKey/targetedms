@@ -3,6 +3,9 @@
         <tables xmlns="http://labkey.org/data/xml">
             <table tableName="PeptideIds" tableDbType="TABLE">
                 <columns>
+                    <column columnName="RetentionTime">
+                        <formatString>0.0</formatString>
+                    </column>
                     <column columnName="Modification">
                         <textAlign>left</textAlign>
                     </column>

@@ -41,6 +41,18 @@ public class CrossLinkedPeptideDisplayColumn extends DataColumn
     }
 
     @Override
+    public boolean isSortable()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean isFilterable()
+    {
+        return false;
+    }
+
+    @Override
     public Object getValue(RenderContext ctx)
     {
         Object defaultValue = super.getValue(ctx);
