@@ -25,7 +25,6 @@ import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.DisplayColumn;
 import org.labkey.api.data.DisplayColumnFactory;
@@ -156,6 +155,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
         {
         }
 
+        @SuppressWarnings("unused") // Used by query XML metadata
         public PeptideDisplayColumnFactory(MultiValuedMap<String, String> map)
         {
             _showNextAndPrevious = getBooleanProperty(map, "showNextAndPrevious", _showNextAndPrevious);
@@ -473,7 +473,11 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
                     _wrappedStyle.setWrapText(true);
                 }
                 cell.setCellStyle(_wrappedStyle);
-                rowObject.setHeightInPoints(_parsedParts.size() * sheet.getDefaultRowHeightInPoints());
+                float minHeight = sheet.getDefaultRowHeightInPoints() * _parsedParts.size();
+                if (rowObject.getHeightInPoints() < minHeight)
+                {
+                    rowObject.setHeightInPoints(minHeight);
+                }
             }
 
             // Set the rich text string to the cell

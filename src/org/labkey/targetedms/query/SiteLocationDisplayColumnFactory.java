@@ -20,6 +20,7 @@ import org.labkey.api.query.FieldKey;
 import java.util.Map;
 import java.util.Set;
 
+/** For Excel export, output a chain abbreviation, a three-letter abbreviation for the amino acid, and the index as a superscript */
 public class SiteLocationDisplayColumnFactory implements DisplayColumnFactory
 {
     @Override
