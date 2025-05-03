@@ -15,11 +15,16 @@
 
 package org.labkey.targetedms.view;
 
+import org.jetbrains.annotations.Nullable;
+import org.labkey.api.data.ExcelWriter;
 import org.labkey.api.data.NestableQueryView;
 import org.labkey.api.data.Sort;
 import org.labkey.api.query.QueryNestingOption;
 import org.labkey.api.view.ViewContext;
 import org.labkey.targetedms.TargetedMSSchema;
+
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * User: binalpatel
@@ -41,5 +46,15 @@ public abstract class DocumentView extends NestableQueryView
     protected Sort getBaseSort()
     {
         return new Sort("Id");
+    }
+
+    @Override
+    public ExcelWriter getExcelWriter(ExcelWriter.ExcelDocumentType docType, @Nullable Map<String, String> renameColumnMap) throws IOException
+    {
+        if (docType == ExcelWriter.ExcelDocumentType.xlsx)
+        {
+            docType = ExcelWriter.ExcelDocumentType.xlsxSharedStrings;
+        }
+        return super.getExcelWriter(docType, renameColumnMap);
     }
 }

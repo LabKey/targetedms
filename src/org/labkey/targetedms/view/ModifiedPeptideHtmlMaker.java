@@ -223,11 +223,11 @@ public class ModifiedPeptideHtmlMaker
             nextAA = null;
             if (runId != null)
             {
-                Protein matchingProtein = extraSequence.findMatch(getProteins(runId));
+                CrossLinkedPeptideInfo.Match matchingProtein = extraSequence.findMatch(getProteins(runId));
                 if (matchingProtein != null)
                 {
-                    String proteinSequence = matchingProtein.getSequence();
-                    int startIndex = proteinSequence.indexOf(extraSequence.getUnmodified());
+                    String proteinSequence = matchingProtein.protein().getSequence();
+                    int startIndex = matchingProtein.index();
                     int endIndex = startIndex + extraSequence.getUnmodified().length();
 
                     // Stay consistent with primary sequence for showing or hiding previous and next amino acids

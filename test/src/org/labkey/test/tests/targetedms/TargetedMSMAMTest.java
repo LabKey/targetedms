@@ -56,8 +56,8 @@ public class TargetedMSMAMTest extends TargetedMSTest
         clickAndWait(Locator.linkContainingText("Peptide Map"));
         assertTextPresentInThisOrder("11.3", "14.1", "14.8");
         assertTextPresentInThisOrder("1501.75", "1078.50", "1547.71");
-        assertTextPresentInThisOrder("NU205", "NU205", "1433Z");
-        assertTextPresentInThisOrder("70-84", "325-333", "28-41");
+        assertTextPresentInThisOrder("NU205", "NU205", "1433Z", "UCRI; RL35");
+        assertTextPresentInThisOrder("70-84", "325-333", "28-41", "190-196; 26-32");
         assertTextPresentInThisOrder("(K)ASTEGVAIQGQQGTR(L)", "(K)AQYEDIANR(S)", "(K)SVTEQGAELSNEER(N)");
         assertTextPresentInThisOrder("Carbamidomethyl Cysteine @ C157", "Carbamidomethyl Cysteine @ C245", "Carbamidomethyl Cysteine @ C94");
     }
@@ -74,7 +74,8 @@ public class TargetedMSMAMTest extends TargetedMSTest
 
         clickAndWait(Locator.linkContainingText("Peptide Map"));
         assertTextPresentInThisOrder("364-366", "367-369", "364-367");
-        assertTextPresentInThisOrder("Q364, N366", "T369", "D364");
+        // Disulfide bonds
+        assertTextPresentInThisOrder("Q364-T369-D364/\nN366-T369-D364", "V121-S345-Q142/\nQ124-S345-Q142");
         assertTextPresentInThisOrder("(A)LKPLALV(D)", "(G)AVVQDPA(Y)", "(F)YGEATSR(E)");
     }
 }

@@ -76,6 +76,7 @@ import org.labkey.targetedms.parser.SpectrumFilter;
 import org.labkey.targetedms.parser.skyaudit.SkylineAuditLogParser;
 import org.labkey.targetedms.passport.PassportController;
 import org.labkey.targetedms.pipeline.TargetedMSPipelineProvider;
+import org.labkey.targetedms.query.CrossLinkedPeptideDisplayColumn;
 import org.labkey.targetedms.query.PrecursorManager;
 import org.labkey.targetedms.query.SkylineListSchema;
 import org.labkey.targetedms.search.ModificationSearchWebPart;
@@ -705,7 +706,8 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
             PrecursorManager.TestCase.class,
             CrossLinkedPeptideInfo.TestCase.class,
             Protein.TestCase.class,
-            SpectrumFilter.TestCase.class
+            SpectrumFilter.TestCase.class,
+            CrossLinkedPeptideDisplayColumn.TestCase.class
         );
     }
 

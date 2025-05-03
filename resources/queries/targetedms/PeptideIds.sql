@@ -9,6 +9,9 @@ SELECT
    CAST(PrecursorId.PeptideId.StartIndex + 1 AS VARCHAR) || '-' ||
         -- Subtract one from the index if it was a c-term clipping of lysine, shortening the sequence
         CAST(PrecursorId.PeptideId.EndIndex - (CASE WHEN LOCATE('C-Term Lys Clipping', Modification) >= 0 THEN 1 ELSE 0 END) AS VARCHAR) AS PeptideLocation,
+   CAST(PrecursorId.PeptideId.StartIndex + 1 AS VARCHAR) || '-' ||
+        -- Subtract one from the index if it was a c-term clipping of lysine, shortening the sequence
+        CAST(PrecursorId.PeptideId.EndIndex - (CASE WHEN LOCATE('C-Term Lys Clipping', Modification) >= 0 THEN 1 ELSE 0 END) AS VARCHAR) AS PeptideIdentity,
    -- Value is calculated in Java in CrossLinkedPeptideDisplayColumn
    CAST(NULL AS VARCHAR) AS BondLocation,
    PrecursorId.PeptideId.Sequence @hidden,

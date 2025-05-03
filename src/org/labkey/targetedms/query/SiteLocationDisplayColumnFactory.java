@@ -75,22 +75,10 @@ public class SiteLocationDisplayColumnFactory implements DisplayColumnFactory
                 };
 
                 String chain = _col.getChainLabel(ctx);
-                String chainPrefix = "";
-                if (chain != null)
+                String chainPrefix = CrossLinkedPeptideDisplayColumn.getChainAbbreviation(chain);
+                if (!chainPrefix.isEmpty())
                 {
-                    chain = chain.toLowerCase();
-                    if (chain.endsWith("_hc"))
-                    {
-                        chainPrefix = "HC ";
-                    }
-                    if (chain.endsWith("_hcstar"))
-                    {
-                        chainPrefix = "HC* ";
-                    }
-                    if (chain.endsWith("_lc"))
-                    {
-                        chainPrefix = "LC ";
-                    }
+                    chainPrefix = chainPrefix + " ";
                 }
 
                 String offset = s.substring(1);

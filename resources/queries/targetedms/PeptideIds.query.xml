@@ -39,6 +39,11 @@
                             <className>org.labkey.targetedms.query.CrossLinkedPeptideDisplayColumn$PeptideLocationFactory</className>
                         </displayColumnFactory>
                     </column>
+                    <column columnName="PeptideIdentity">
+                        <displayColumnFactory>
+                            <className>org.labkey.targetedms.query.CrossLinkedPeptideDisplayColumn$PeptideIdentityFactory</className>
+                        </displayColumnFactory>
+                    </column>
                     <column columnName="BondLocation">
                         <columnTitle>Disulfide Bond Connection</columnTitle>
                         <displayColumnFactory>

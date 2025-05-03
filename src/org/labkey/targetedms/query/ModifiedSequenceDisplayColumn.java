@@ -25,6 +25,7 @@ import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.DisplayColumn;
 import org.labkey.api.data.DisplayColumnFactory;
