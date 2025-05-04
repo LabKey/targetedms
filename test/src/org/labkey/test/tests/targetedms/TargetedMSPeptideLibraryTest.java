@@ -15,6 +15,7 @@
  */
 package org.labkey.test.tests.targetedms;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -262,6 +263,11 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
         for(int i = 0; i < expectedConflictCount; i++)
         {
             String conflict = getTableCellText(table, i, 2);
+            if (conflict != null)
+            {
+                // Strip out whitespace
+                conflict = conflict.replaceAll("\\s", "");
+            }
             assertTrue("Unexpected row in conflicts table " + conflict, expectedConflicts.contains(conflict));
         }
 
