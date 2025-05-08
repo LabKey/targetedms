@@ -113,10 +113,13 @@ import org.labkey.api.protein.PeptideCharacteristic;
 import org.labkey.api.protein.ProteinService;
 import org.labkey.api.query.BatchValidationException;
 import org.labkey.api.query.DetailsURL;
+import org.labkey.api.query.DuplicateKeyException;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.FilteredTable;
+import org.labkey.api.query.InvalidKeyException;
 import org.labkey.api.query.QueryParam;
 import org.labkey.api.query.QuerySettings;
+import org.labkey.api.query.QueryUpdateServiceException;
 import org.labkey.api.query.QueryView;
 import org.labkey.api.query.ValidationException;
 import org.labkey.api.reports.ReportService;
@@ -4580,7 +4583,7 @@ public class TargetedMSController extends SpringActionController
         }
 
         @Override
-        public boolean handlePost(InstrumentForm form, BindException errors)
+        public boolean handlePost(InstrumentForm form, BindException errors) throws SQLException, BatchValidationException, QueryUpdateServiceException, InvalidKeyException, DuplicateKeyException
         {
             Container targetContainer = ContainerManager.getForId(form.getTargetContainerId());
             if (targetContainer == null || !targetContainer.hasPermission(getUser(), UpdatePermission.class))
@@ -4607,7 +4610,7 @@ public class TargetedMSController extends SpringActionController
             }
             if (StringUtils.isEmpty(form.getName()) && name.getId() > 0)
             {
-                TargetedMSManager.get().deleteNickname(name);
+                TargetedMSManager.get().deleteNickname(name, getUser());
             }
             else
             {

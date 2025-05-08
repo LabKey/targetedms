@@ -46,6 +46,7 @@ import org.labkey.api.data.WrappedColumn;
 import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.exp.query.ExpRunTable;
 import org.labkey.api.exp.query.ExpSchema;
+import org.labkey.api.gwt.client.AuditBehaviorType;
 import org.labkey.api.module.Module;
 import org.labkey.api.query.CrosstabView;
 import org.labkey.api.query.CustomView;
@@ -1609,7 +1610,6 @@ public class TargetedMSSchema extends UserSchema
                 TABLE_RATE_TYPE.equalsIgnoreCase(name) ||
                 TABLE_INSTRUMENT_RATE.equalsIgnoreCase(name) ||
                 TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name) ||
-
                 TABLE_INSTRUMENT_NICKNAME.equalsIgnoreCase(name))
         {
             var result = new FilteredTable<>(getSchema().getTable(name), this, cf)
@@ -1627,6 +1627,10 @@ public class TargetedMSSchema extends UserSchema
                 }
             };
             result.wrapAllColumns(true);
+            if (TABLE_INSTRUMENT_NICKNAME.equalsIgnoreCase(name))
+            {
+                result.setAuditBehavior(AuditBehaviorType.DETAILED);
+            }
             TargetedMSTable.fixupLookups(result);
             return result;
         }

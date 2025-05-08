@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.cache.Cache;
 import org.labkey.api.cache.CacheManager;
+import org.labkey.api.collections.CaseInsensitiveHashMap;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
@@ -65,11 +66,15 @@ import org.labkey.api.pipeline.PipeRoot;
 import org.labkey.api.pipeline.PipelineService;
 import org.labkey.api.pipeline.PipelineValidationException;
 import org.labkey.api.query.BatchValidationException;
+import org.labkey.api.query.DuplicateKeyException;
 import org.labkey.api.query.FieldKey;
+import org.labkey.api.query.InvalidKeyException;
 import org.labkey.api.query.QueryDefinition;
 import org.labkey.api.query.QueryException;
 import org.labkey.api.query.QuerySchema;
 import org.labkey.api.query.QueryService;
+import org.labkey.api.query.QueryUpdateService;
+import org.labkey.api.query.QueryUpdateServiceException;
 import org.labkey.api.query.SchemaKey;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
@@ -117,6 +122,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2937,20 +2943,37 @@ public class TargetedMSManager
         getSchema().getScope().addCommitTask(() -> _metricCache.remove(container), DbScope.CommitTaskOption.IMMEDIATE, DbScope.CommitTaskOption.POSTCOMMIT, DbScope.CommitTaskOption.POSTROLLBACK);
     }
 
-    public void deleteNickname(InstrumentNickname name)
+    @NotNull
+    private QueryUpdateService getNicknameUpdateService(User user, Container container)
     {
-        Table.delete(getTableInfoInstrumentNickname(), name.getId());
+        TargetedMSSchema schema = new TargetedMSSchema(user, container);
+        TableInfo table = schema.getTableOrThrow(TABLE_INSTRUMENT_NICKNAME);
+        return Objects.requireNonNull(table.getUpdateService());
     }
 
-    public void saveNickname(InstrumentNickname name, User user)
+    public void deleteNickname(InstrumentNickname name, User user) throws SQLException, BatchValidationException, QueryUpdateServiceException, InvalidKeyException
     {
+        getNicknameUpdateService(user, name.getContainer()).
+                deleteRows(user, name.getContainer(), Arrays.asList(new CaseInsensitiveHashMap<>(Map.of("id", name.getId()))), null, null);
+    }
+
+    public void saveNickname(InstrumentNickname name, User user) throws SQLException, BatchValidationException, QueryUpdateServiceException, InvalidKeyException, DuplicateKeyException
+    {
+        Map<String, Object> row = new CaseInsensitiveHashMap<>();
+        row.put("nickname", name.getNickname());
+        row.put("serialNumber", name.getSerialNumber());
+        row.put("model", name.getModel());
+        BatchValidationException errors = new BatchValidationException();
         if (name.getId() > 0)
         {
-            Table.update(user, getTableInfoInstrumentNickname(), name, name.getId());
+            row.put("id", name.getId());
+            getNicknameUpdateService(user, name.getContainer()).
+                    updateRows(user, name.getContainer(), Arrays.asList(row), Arrays.asList(row), errors, null, null);
         }
         else
         {
-            Table.insert(user, getTableInfoInstrumentNickname(), name);
+            getNicknameUpdateService(user, name.getContainer()).
+                    insertRows(user, name.getContainer(), Arrays.asList(row), errors, null, null);
         }
     }
 }
