@@ -1,5 +1,6 @@
 package org.labkey.targetedms.view;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Assert;
 import org.junit.Test;
@@ -123,6 +124,9 @@ public class CrossLinkedPeptideInfo
         return new PeptideSequence(0);
     }
 
+    /** @param index 0-based index for the match within the protein's sequence */
+    public record Match(Protein protein, int index) {}
+
     public class PeptideSequence
     {
         private final int _index;
@@ -167,17 +171,33 @@ public class CrossLinkedPeptideInfo
         }
 
         @Nullable
-        public Protein findMatch(List<Protein> proteins)
+        public Match findMatch(List<Protein> proteins)
         {
+            return findMatches(proteins).stream().findFirst().orElse(null);
+        }
+
+        @NotNull
+        public List<Match> findMatches(List<Protein> proteins)
+        {
+            List<Match> result = new ArrayList<>();
             for (Protein protein : proteins)
             {
                 String proteinSequence = protein.getSequence();
-                if (proteinSequence != null && proteinSequence.contains(getUnmodified()))
+                if (proteinSequence != null)
                 {
-                    return protein;
+                    int index = -1;
+                    do
+                    {
+                        index = proteinSequence.indexOf(getUnmodified(), index + 1);
+                        if (index >= 0)
+                        {
+                            result.add(new Match(protein, index));
+                        }
+                    }
+                    while (index > 0);
                 }
             }
-            return null;
+            return result;
         }
 
         public int getPeptideIndex()
