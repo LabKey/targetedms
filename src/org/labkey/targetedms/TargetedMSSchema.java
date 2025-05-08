@@ -158,6 +158,7 @@ public class TargetedMSSchema extends UserSchema
     public static final String TABLE_MOLECULE_GROUP = "MoleculeGroup";
     public static final String TABLE_PEPTIDE_GROUP_ANNOTATION = "PeptideGroupAnnotation";
     public static final String TABLE_INSTRUMENT = "Instrument";
+    public static final String TABLE_INSTRUMENT_NICKNAME = "InstrumentNickname";
     public static final String TABLE_ISOTOPE_ENRICHMENT = "IsotopeEnrichment";
     public static final String TABLE_ISOLATION_SCHEME = "IsolationScheme";
     public static final String TABLE_ISOLATION_WINDOW = "IsolationWindow";
@@ -1607,18 +1608,20 @@ public class TargetedMSSchema extends UserSchema
                 TABLE_INSTRUMENT_SCHEDULE.equalsIgnoreCase(name) ||
                 TABLE_RATE_TYPE.equalsIgnoreCase(name) ||
                 TABLE_INSTRUMENT_RATE.equalsIgnoreCase(name) ||
-                TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name))
+                TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name) ||
+
+                TABLE_INSTRUMENT_NICKNAME.equalsIgnoreCase(name))
         {
-            var result = new FilteredTable<TargetedMSSchema>(getSchema().getTable(name), this, cf)
+            var result = new FilteredTable<>(getSchema().getTable(name), this, cf)
             {
                 @Override
                 public boolean hasPermission(@NotNull UserPrincipal user, @NotNull Class<? extends Permission> perm)
                 {
-                    return getContainer().hasPermission(user,perm);
+                    return getContainer().hasPermission(user, perm);
                 }
 
-                @Override
-                public @Nullable QueryUpdateService getUpdateService()
+                @Override @NotNull
+                public QueryUpdateService getUpdateService()
                 {
                     return new DefaultQueryUpdateService(this, getRealTable());
                 }
@@ -1749,6 +1752,7 @@ public class TargetedMSSchema extends UserSchema
         hs.add(TABLE_REPLICATE);
         hs.add(TABLE_REPLICATE_ANNOTATION);
         hs.add(TABLE_INSTRUMENT);
+        hs.add(TABLE_INSTRUMENT_NICKNAME);
         hs.add(TABLE_ISOTOPE_ENRICHMENT);
         hs.add(TABLE_GENERAL_MOLECULE_CHROM_INFO);
         hs.add(TABLE_GENERAL_MOLECULE_ANNOTATION);

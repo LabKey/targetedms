@@ -117,6 +117,21 @@ public class SampleFileTable extends TargetedMSTable
         ExprColumn excludedColumn = new ExprColumn(this, "Excluded", excludedSQL, JdbcType.BOOLEAN);
         addColumn(excludedColumn);
 
+        SQLFragment nicknameSql = new SQLFragment("(SELECT MIN(COALESCE(Nickname, ");
+        nicknameSql.append(getSqlDialect().concatenate("i.Model", "' - '", ExprColumn.STR_TABLE_ALIAS + ".InstrumentSerialNumber"));
+        nicknameSql.append(", ").append(ExprColumn.STR_TABLE_ALIAS).append(".InstrumentSerialNumber, i.Model)) FROM (SELECT * FROM ");
+        nicknameSql.append(TargetedMSManager.getTableInfoInstrument(), "i");
+        nicknameSql.append(" WHERE i.Id = ");
+        nicknameSql.append(ExprColumn.STR_TABLE_ALIAS).append(".InstrumentId) i LEFT OUTER JOIN ");
+        nicknameSql.append(schema.getTableOrThrow(TargetedMSSchema.TABLE_INSTRUMENT_NICKNAME, ContainerFilter.Type.CurrentPlusProjectAndShared.create(schema)), "f");
+        nicknameSql.append(" ON (f.SerialNumber = ");
+        nicknameSql.append(ExprColumn.STR_TABLE_ALIAS).append(".InstrumentSerialNumber");
+        nicknameSql.append(" OR (f.SerialNumber IS NULL AND ");
+        nicknameSql.append(ExprColumn.STR_TABLE_ALIAS).append(".InstrumentSerialNumber");
+        nicknameSql.append(" IS NULL)) AND (f.Model = i.Model OR (f.Model IS NULL AND i.Model IS NULL)))");
+        ExprColumn nicknameCol = new ExprColumn(this, "InstrumentNickname", nicknameSql, JdbcType.VARCHAR);
+        addColumn(nicknameCol);
+
         // Special handling for a sample identifier annotation. Inject it even if this folder doesn't have it configured
 
         AnnotatedTargetedMSTable.AnnotationSettingForTyping idSetting = new AnnotatedTargetedMSTable.AnnotationSettingForTyping("SampleIdentifier",
@@ -221,8 +236,8 @@ public class SampleFileTable extends TargetedMSTable
         downloadCol.setTextAlign("left");
         downloadCol.setDisplayColumnFactory(DownloadLinkColumn::new);
 
-        DetailsURL instrumentURL = new DetailsURL(new ActionURL(TargetedMSController.ShowInstrumentAction.class, getContainer()), Collections.singletonMap("serialNumber", "InstrumentSerialNumber"));
-        getMutableColumn("InstrumentSerialNumber").setURL(instrumentURL);
+        DetailsURL instrumentURL = new DetailsURL(new ActionURL(TargetedMSController.ShowInstrumentAction.class, getContainer()), Collections.singletonMap("name", "InstrumentNickname"));
+        getMutableColumnOrThrow("InstrumentNickname").setURL(instrumentURL);
     }
 
     @Override
@@ -247,7 +262,7 @@ public class SampleFileTable extends TargetedMSTable
                     FieldKey.fromParts("File"),
                     FieldKey.fromParts("Download"),
                     FieldKey.fromParts("AcquiredTime"),
-                    FieldKey.fromParts("InstrumentSerialNumber")
+                    FieldKey.fromParts("InstrumentNickname")
             ));
 
             // Find the columns that have values for the run of interest, and include them in the set of columns in the default
@@ -259,7 +274,6 @@ public class SampleFileTable extends TargetedMSTable
             aggregates.add(new Aggregate(FieldKey.fromParts("ReplicateId", "SampleType"), Aggregate.BaseType.MAX));
             aggregates.add(new Aggregate(FieldKey.fromParts("ReplicateId", "AnalyteConcentration"), Aggregate.BaseType.MAX));
             aggregates.add(new Aggregate(FieldKey.fromParts("ReplicateId", "SampleDilutionFactor"), Aggregate.BaseType.MAX));
-            aggregates.add(new Aggregate(FieldKey.fromParts("InstrumentId"), Aggregate.BaseType.MAX));
 
             // Also search for values for any replicate annotations being used in this container
             for (AnnotatedTargetedMSTable.AnnotationSettingForTyping annotation : getUserSchema().getAnnotationSettings("replicate", ContainerFilter.current(getUserSchema())))

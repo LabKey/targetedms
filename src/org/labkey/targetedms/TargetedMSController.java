@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keypoint.PngEncoder;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGeneratorContext;
 import org.apache.batik.svggen.SVGGraphics2D;
@@ -166,6 +168,7 @@ import org.labkey.api.view.NotFoundException;
 import org.labkey.api.view.PopupMenu;
 import org.labkey.api.view.Portal;
 import org.labkey.api.view.RedirectException;
+import org.labkey.api.view.UnauthorizedException;
 import org.labkey.api.view.VBox;
 import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.api.view.ViewContext;
@@ -186,6 +189,7 @@ import org.labkey.targetedms.model.AutoQCPingData;
 import org.labkey.targetedms.model.GuideSet;
 import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
+import org.labkey.targetedms.model.InstrumentNickname;
 import org.labkey.targetedms.model.PeptideOutliers;
 import org.labkey.targetedms.model.PrecursorChromInfoLitePlus;
 import org.labkey.targetedms.model.QCPlotFragment;
@@ -1020,7 +1024,7 @@ public class TargetedMSController extends SpringActionController
             List<Map<String, Object>> containers = new ArrayList<>();
 
             // include the QC Summary properties for the current container
-            containers.add(getContainerQCSummaryProperties(getContainer(), getContainer(), false));
+            containers.add(getContainerQCSummaryProperties(getContainer(), getContainer(), false, getUser()));
 
             // include the QC Summary properties for the direct subfolders, of type QC, that the user has read permission
             if (form.isIncludeSubfolders())
@@ -1040,7 +1044,7 @@ public class TargetedMSController extends SpringActionController
                     folderType = TargetedMSManager.getFolderType(bestContainer);
                     if (bestContainer.hasPermission(getUser(), ReadPermission.class) && folderType == TargetedMSService.FolderType.QC)
                     {
-                        containers.add(getContainerQCSummaryProperties(bestContainer, container, true));
+                        containers.add(getContainerQCSummaryProperties(bestContainer, container, true, getUser()));
                     }
                 }
             }
@@ -1050,7 +1054,7 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
-    private Map<String, Object> getContainerQCSummaryProperties(Container container, Container instrumentContainer, boolean isSubfolder)
+    private Map<String, Object> getContainerQCSummaryProperties(Container container, Container instrumentContainer, boolean isSubfolder, User user)
     {
         Map<String, Object> properties = new HashMap<>();
         SQLFragment sql;
@@ -1070,11 +1074,12 @@ public class TargetedMSController extends SpringActionController
         properties.put("lastImportDate", valueMap.get("lastImportDate"));
 
         // # sample files, count of rows in targetedms.SampleFile
-        sql = new SQLFragment("SELECT COUNT(s.Id) FROM ").append(TargetedMSManager.getTableInfoSampleFile(), "s");
-        sql.append(" JOIN ").append(TargetedMSManager.getTableInfoReplicate(), "re").append(" ON s.ReplicateId = re.Id");
-        sql.append(" JOIN ").append(TargetedMSManager.getTableInfoRuns(), "r").append(" ON re.RunId = r.Id");
-        sql.append(" WHERE r.Container = ?").add(container.getId());
-        properties.put("fileCount", new SqlSelector(TargetedMSSchema.getSchema(), sql).getObject(Integer.class));
+        TargetedMSSchema schema = new TargetedMSSchema(user, container);
+        TableInfo sampleFileTable = schema.getTableOrThrow(TargetedMSSchema.TABLE_SAMPLE_FILE);
+        List<String> instruments = new TableSelector(sampleFileTable, Collections.singleton("InstrumentNickname")).getArrayList(String.class);
+        properties.put("fileCount", instruments.size());
+        ;
+        properties.put("distinctInstruments", instruments.stream().filter(Objects::nonNull).distinct().sorted().toList());
 
         // # precursors tracked, count of distinct precursors. Include peptides and small molecules
         sql = new SQLFragment("SELECT DISTINCT COALESCE(p.ModifiedSequence, ");
@@ -1098,7 +1103,6 @@ public class TargetedMSController extends SpringActionController
             autoQCPingMap.put("isRecent", lastModified.getTime() >= timeoutMinutesAgo);
         }
         properties.put("autoQCPing", autoQCPingMap);
-        TargetedMSSchema schema = new TargetedMSSchema(getUser(), container);
         properties.put("metricCount", TargetedMSManager.getEnabledQCMetricConfigurations(schema).size());
 
         return properties;
@@ -3225,7 +3229,7 @@ public class TargetedMSController extends SpringActionController
 
             idx++;
         }
-        if(unsupportedLibraries.size() > 0)
+        if(!unsupportedLibraries.isEmpty())
         {
             HtmlView view = new HtmlView(DIV("Annotated spectra cannot be displayed from the following unsupported "
                             + (unsupportedLibraries.size() == 1 ? "library" : "libraries") + ": ",
@@ -3237,7 +3241,7 @@ public class TargetedMSController extends SpringActionController
             view.setTitle("Unsupported Spectrum " + (unsupportedLibraries.size() == 1 ? "Library" : "Libraries"));
             vbox.addView(view);
         }
-        if(specLibErrors.size() > 0)
+        if(!specLibErrors.isEmpty())
         {
             HtmlView view = new HtmlView(DOM.LK.ERRORS(specLibErrors.stream().map(e -> new LabKeyError(e.getMessage())).collect(Collectors.toList())));
             view.setTitle("Spectrum Library Errors");
@@ -4510,7 +4514,21 @@ public class TargetedMSController extends SpringActionController
 
     public static class InstrumentForm extends QueryViewAction.QueryExportForm
     {
+        private long _id;
+        private String _name;
+        private String _model;
         private String _serialNumber;
+        private String _targetContainerId;
+
+        public String getModel()
+        {
+            return _model;
+        }
+
+        public void setModel(String model)
+        {
+            _model = model;
+        }
 
         public String getSerialNumber()
         {
@@ -4520,6 +4538,93 @@ public class TargetedMSController extends SpringActionController
         public void setSerialNumber(String serialNumber)
         {
             _serialNumber = serialNumber;
+        }
+
+        public String getTargetContainerId()
+        {
+            return _targetContainerId;
+        }
+
+        public void setTargetContainerId(String targetContainerId)
+        {
+            _targetContainerId = targetContainerId;
+        }
+
+        public String getName()
+        {
+            return _name;
+        }
+
+        public void setName(String name)
+        {
+            _name = name;
+        }
+
+        public long getId()
+        {
+            return _id;
+        }
+
+        public void setId(long id)
+        {
+            _id = id;
+        }
+    }
+
+    @RequiresPermission(UpdatePermission.class)
+    public static class SaveInstrumentNameAction extends FormHandlerAction<InstrumentForm>
+    {
+        @Override
+        public void validateCommand(InstrumentForm target, Errors errors)
+        {
+        }
+
+        @Override
+        public boolean handlePost(InstrumentForm form, BindException errors)
+        {
+            Container targetContainer = ContainerManager.getForId(form.getTargetContainerId());
+            if (targetContainer == null || !targetContainer.hasPermission(getUser(), UpdatePermission.class))
+            {
+                throw new UnauthorizedException();
+            }
+
+            InstrumentNickname name;
+            if (form.getId() > 0)
+            {
+                name = TargetedMSManager.get().getNickname(form.getId(), getUser());
+                if (name == null)
+                {
+                    throw new NotFoundException();
+                }
+                if (!name.getContainer().hasPermission(getUser(), UpdatePermission.class))
+                {
+                    throw new UnauthorizedException();
+                }
+            }
+            else
+            {
+                name = new InstrumentNickname();
+            }
+            if (StringUtils.isEmpty(form.getName()) && name.getId() > 0)
+            {
+                TargetedMSManager.get().deleteNickname(name);
+            }
+            else
+            {
+                name.setNickname(form.getName());
+                name.setModel(form.getModel());
+                name.setSerialNumber(form.getSerialNumber());
+                name.setContainer(targetContainer);
+                TargetedMSManager.get().saveNickname(name, getUser());
+            }
+
+            return true;
+        }
+
+        @Override
+        public URLHelper getSuccessURL(InstrumentForm form)
+        {
+            return StringUtils.isBlank(form.getName()) ? getContainer().getStartURL(getUser()) : new ActionURL(ShowInstrumentAction.class, getContainer()).addParameter("name", form.getName());
         }
     }
 
@@ -4538,7 +4643,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void addNavTrail(NavTree root)
         {
-            root.addChild("Instrument " + (_form == null ? "" : _form.getSerialNumber()));
+            root.addChild("Instrument " + (_form == null ? "" : _form.getName()));
         }
 
         @Override
@@ -4550,7 +4655,7 @@ public class TargetedMSController extends SpringActionController
                 Sort sort = new Sort();
                 sort.appendSortColumn(FieldKey.fromParts("AcquiredTime"), Sort.SortDirection.DESC, false);
                 settings.setBaseSort(sort);
-                settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("InstrumentSerialNumber"), form.getSerialNumber()));
+                settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("InstrumentNickname"), form.getName()));
                 settings.setContainerFilterName(ContainerFilter.Type.AllFolders.name());
                 TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
                 return schema.createView(getViewContext(), settings, errors);
@@ -4558,7 +4663,7 @@ public class TargetedMSController extends SpringActionController
             if (FOLDER_SUMMARY.equalsIgnoreCase(dataRegion))
             {
                 QuerySettings settings = new QuerySettings(getViewContext(), FOLDER_SUMMARY, "InstrumentSummaryByFolder");
-                settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("InstrumentSerialNumber"), form.getSerialNumber()));
+                settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("InstrumentNickname"), form.getName()));
                 settings.setContainerFilterName(ContainerFilter.Type.AllFolders.name());
                 TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
                 return schema.createView(getViewContext(), settings, errors);
@@ -4567,23 +4672,44 @@ public class TargetedMSController extends SpringActionController
         }
 
         @Override
-        public ModelAndView getView(InstrumentForm form, BindException errors) throws Exception
+        public ModelAndView getView(InstrumentForm form, BindException errors)
         {
-            if (form.getSerialNumber() == null)
+            if (form.getName() == null)
             {
-                throw new NotFoundException("No instrument serial number specified");
+                throw new NotFoundException("No instrument specified");
             }
             _form = form;
 
+            TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+            List<InstrumentNickname> names = TargetedMSManager.get().getNickname(form.getName(), schema);
+
+            if (names.isEmpty())
+            {
+                throw new NotFoundException("No matching instruments found");
+            }
+
+            VBox result = new VBox();
+
+            for (InstrumentNickname name : names)
+            {
+                var nameView = new JspView<>("/org/labkey/targetedms/view/nickname.jsp", name);
+                nameView.setTitle("Instrument Info");
+                nameView.setFrame(WebPartView.FrameType.PORTAL);
+                result.addView(nameView);
+            }
+
             QueryView folderSummaryView = createQueryView(form, errors, false, FOLDER_SUMMARY);
-            folderSummaryView.setTitle("Data in this Server");
+            folderSummaryView.setTitle("Summary by Folder");
             folderSummaryView.setFrame(WebPartView.FrameType.PORTAL);
 
             QueryView sampleFileView = createQueryView(form, errors, false, TargetedMSSchema.TABLE_SAMPLE_FILE);
-            sampleFileView.setTitle("Data from this Instrument");
+            sampleFileView.setTitle("Samples from " + form.getName());
             sampleFileView.setFrame(WebPartView.FrameType.PORTAL);
 
-            return new VBox(folderSummaryView, sampleFileView);
+            result.addView(folderSummaryView);
+            result.addView(sampleFileView);
+
+            return result;
         }
     }
 
@@ -5322,7 +5448,7 @@ public class TargetedMSController extends SpringActionController
         {
             int seqId = selectedProtein.getSequenceId();
             List<PeptideCharacteristic> combinedPeptideCharacteristics = new ArrayList<>(PeptideManager.getCombinedPeptideCharacteristics(group.getId(), replicateId));
-            List<PeptideCharacteristic> modifiedPeptideCharacteristics = new ArrayList<>(PeptideManager.getModifiedPeptideCharacteristics(group.getId(), replicateId));;
+            List<PeptideCharacteristic> modifiedPeptideCharacteristics = new ArrayList<>(PeptideManager.getModifiedPeptideCharacteristics(group.getId(), replicateId));
 
             List<Replicate> replicates = ReplicateManager.getReplicatesForRun(run.getRunId());
             List<org.labkey.api.protein.Replicate> msReplicates = new ArrayList<>();
@@ -5606,7 +5732,7 @@ public class TargetedMSController extends SpringActionController
         public ModelAndView getView(ConflictUIForm form, BindException errors)
         {
             List<ConflictProtein> conflictProteinList = ConflictResultsManager.getConflictedProteins(getContainer());
-            if(conflictProteinList.size() == 0)
+            if(conflictProteinList.isEmpty())
             {
                 errors.reject(ERROR_MSG, "Library folder "+getContainer().getPath()+" does not contain any conflicting proteins.");
                 return new SimpleErrorView(errors, true);
@@ -5805,7 +5931,7 @@ public class TargetedMSController extends SpringActionController
         public ModelAndView getView(ConflictUIForm form, BindException errors)
         {
             List<ConflictPrecursor> conflictPrecursorList = ConflictResultsManager.getConflictedPrecursors(getContainer());
-            if(conflictPrecursorList.size() == 0)
+            if(conflictPrecursorList.isEmpty())
             {
                 errors.reject(ERROR_MSG, "Library folder "+getContainer().getPath()+" does not contain any conflicting data.");
                 return new SimpleErrorView(errors, true);
@@ -6340,19 +6466,11 @@ public class TargetedMSController extends SpringActionController
     // ------------------------------------------------------------------------
     // Actions to export chromatogram libraries
     // ------------------------------------------------------------------------
+    @Setter
+    @Getter
     public static class DownloadForm
     {
         int revision;
-
-        public int getRevision()
-        {
-            return revision;
-        }
-
-        public void setRevision(int revision)
-        {
-            this.revision = revision;
-        }
     }
     @RequiresPermission(ReadPermission.class)
     public static class DownloadChromLibraryAction extends SimpleViewAction<DownloadForm>
@@ -6362,7 +6480,7 @@ public class TargetedMSController extends SpringActionController
         {
             // Check if the folder has any representative data
             List<Long> representativeRunIds = TargetedMSManager.getCurrentRepresentativeRunIds(getContainer());
-            if(representativeRunIds.size() == 0)
+            if(representativeRunIds.isEmpty())
             {
                 //errors.reject(ERROR_MSG, "Folder "+getContainer().getPath()+" does not contain any representative data.");
                 //return new SimpleErrorView(errors, true);
@@ -7288,6 +7406,8 @@ public class TargetedMSController extends SpringActionController
     /*
      * BEGIN RENAME CODE BLOCK
      */
+    @Setter
+    @Getter
     public static class RunForm extends ReturnUrlForm
     {
         public enum PARAMS
@@ -7297,26 +7417,6 @@ public class TargetedMSController extends SpringActionController
 
         int run = 0;
         String columns;
-
-        public void setRun(int run)
-        {
-            this.run = run;
-        }
-
-        public int getRun()
-        {
-            return run;
-        }
-
-        public String getColumns()
-        {
-            return columns;
-        }
-
-        public void setColumns(String columns)
-        {
-            this.columns = columns;
-        }
 
         @Override
         public ActionURL getReturnActionURL()
@@ -7353,19 +7453,11 @@ public class TargetedMSController extends SpringActionController
         return url;
     }
 
+    @Setter
+    @Getter
     public static class RenameForm extends RunForm
     {
         private String description;
-
-        public String getDescription()
-        {
-            return description;
-        }
-
-        public void setDescription(String description)
-        {
-            this.description = description;
-        }
     }
 
     @RequiresPermission(UpdatePermission.class)

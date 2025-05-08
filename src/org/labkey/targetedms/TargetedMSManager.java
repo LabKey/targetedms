@@ -43,6 +43,7 @@ import org.labkey.api.data.Table;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.data.dialect.SqlDialect;
+import org.labkey.api.data.dialect.StandardDialectStringHandler;
 import org.labkey.api.data.statistics.MathStat;
 import org.labkey.api.data.statistics.StatsService;
 import org.labkey.api.exp.AbstractFileXarSource;
@@ -73,6 +74,8 @@ import org.labkey.api.query.SchemaKey;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.security.permissions.DeletePermission;
+import org.labkey.api.security.permissions.ReadPermission;
+import org.labkey.api.security.permissions.UpdatePermission;
 import org.labkey.api.targetedms.ITargetedMSRun;
 import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.api.targetedms.RunRepresentativeDataState;
@@ -91,6 +94,7 @@ import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
 import org.labkey.api.targetedms.model.QCMetricConfiguration;
 import org.labkey.api.targetedms.model.QCMetricStatus;
+import org.labkey.targetedms.model.InstrumentNickname;
 import org.labkey.targetedms.model.QCTraceMetricValues;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.model.passport.IKeyword;
@@ -136,6 +140,7 @@ import static org.labkey.api.targetedms.TargetedMSService.FOLDER_TYPE_PROP_NAME;
 import static org.labkey.api.targetedms.TargetedMSService.FolderType.Library;
 import static org.labkey.api.targetedms.TargetedMSService.FolderType.LibraryProtein;
 import static org.labkey.api.targetedms.TargetedMSService.MODULE_NAME;
+import static org.labkey.targetedms.TargetedMSSchema.TABLE_INSTRUMENT_NICKNAME;
 
 public class TargetedMSManager
 {
@@ -456,6 +461,11 @@ public class TargetedMSManager
     public static TableInfo getTableInfoFoldChange()
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_FOLD_CHANGE);
+    }
+
+    public static TableInfo getTableInfoInstrumentNickname()
+    {
+        return getSchema().getTable(TABLE_INSTRUMENT_NICKNAME);
     }
 
     public static TableInfo getTableInfoiRTPeptide()
@@ -1128,6 +1138,81 @@ public class TargetedMSManager
         for (ExpRun run : experimentRunsToDelete)
         {
             run.delete(user);
+        }
+    }
+
+    public InstrumentNickname getNickname(long id, User user)
+    {
+        InstrumentNickname name = new TableSelector(getTableInfoInstrumentNickname()).getObject(id, InstrumentNickname.class);
+        if (name == null || !name.getContainer().hasPermission(user, ReadPermission.class))
+        {
+            throw new NotFoundException();
+        }
+        return name;
+    }
+
+    /** @return the matches in order of closest to furthest match, injecting a virtual option if the list is empty */
+    public List<InstrumentNickname> getNickname(String name, TargetedMSSchema schema)
+    {
+        TableInfo info = schema.getTableOrThrow(TABLE_INSTRUMENT_NICKNAME, new ContainerFilter.CurrentPlusProjectAndShared(schema.getContainer(), schema.getUser()));
+        List<InstrumentNickname> matches = new TableSelector(info, new SimpleFilter(FieldKey.fromParts("Nickname"), name), null).getArrayList(InstrumentNickname.class);
+
+        List<InstrumentNickname> result = new ArrayList<>();
+        // Closest is from the current container
+        addNameMatch(result, matches, schema.getContainer());
+        // Next closest is from the project
+        @Nullable Container project = schema.getContainer().getProject();
+        if (project != null && !project.equals(schema.getContainer()))
+        {
+            addNameMatch(result, matches, schema.getContainer().getProject());
+        }
+        Container shared = ContainerManager.getSharedContainer();
+        // Furthest is from /Shared
+        if (!schema.getContainer().equals(shared))
+        {
+            addNameMatch(result, matches, shared);
+        }
+        
+        if (matches.isEmpty())
+        {
+            String sql = "SELECT DISTINCT InstrumentNickname, " +
+                    "InstrumentId.Model AS Model, " +
+                    "InstrumentSerialNumber AS SerialNumber " +
+                    "FROM targetedms.SampleFile WHERE InstrumentNickname = " +
+                    new StandardDialectStringHandler().quoteStringLiteral(name) +
+                    " ORDER By InstrumentNickname, InstrumentId.Model, InstrumentSerialNumber";
+            TableSelector selector = QueryService.get().selector(schema, sql);
+            result = selector.getArrayList(InstrumentNickname.class);
+            Container targetContainer;
+            if (shared.hasPermission(schema.getUser(), UpdatePermission.class))
+            {
+                targetContainer = shared;
+            }
+            else if (project != null && project.hasPermission(schema.getUser(), UpdatePermission.class))
+            {
+                targetContainer = project;
+            }
+            else
+            {
+                targetContainer = schema.getContainer();
+            }
+            for (InstrumentNickname instrumentNickname : result)
+            {
+                instrumentNickname.setContainer(targetContainer);
+            }
+        }
+
+        return result;
+    }
+
+    private void addNameMatch(List<InstrumentNickname> result, List<InstrumentNickname> matches, Container container)
+    {
+        for (InstrumentNickname match : matches)
+        {
+            if (match.getContainer().equals(container))
+            {
+                result.add(match);
+            }
         }
     }
 
@@ -2850,5 +2935,22 @@ public class TargetedMSManager
     public void clearCachedEnabledQCMetrics(Container container)
     {
         getSchema().getScope().addCommitTask(() -> _metricCache.remove(container), DbScope.CommitTaskOption.IMMEDIATE, DbScope.CommitTaskOption.POSTCOMMIT, DbScope.CommitTaskOption.POSTROLLBACK);
+    }
+
+    public void deleteNickname(InstrumentNickname name)
+    {
+        Table.delete(getTableInfoInstrumentNickname(), name.getId());
+    }
+
+    public void saveNickname(InstrumentNickname name, User user)
+    {
+        if (name.getId() > 0)
+        {
+            Table.update(user, getTableInfoInstrumentNickname(), name, name.getId());
+        }
+        else
+        {
+            Table.insert(user, getTableInfoInstrumentNickname(), name);
+        }
     }
 }
