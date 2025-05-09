@@ -33,16 +33,16 @@
     Container shared = ContainerManager.getSharedContainer();
     if (shared.hasPermission(getUser(), UpdatePermission.class))
     {
-        targetContainers.put(shared.getId(), shared.getPath());
+        targetContainers.put(shared.getId(), "Server-wide");
     }
     Container project = getContainer().getProject();
     if (project != null && project.hasPermission(getUser(), UpdatePermission.class))
     {
-        targetContainers.put(project.getId(), project.getPath());
+        targetContainers.putIfAbsent(project.getId(), "In this project, " + project.getName());
     }
     if (getContainer().hasPermission(getUser(), UpdatePermission.class))
     {
-        targetContainers.put(getContainer().getId(), getContainer().getPath());
+        targetContainers.putIfAbsent(getContainer().getId(), "In this folder, " + getContainer().getPath());
     }
     %>
 
@@ -65,7 +65,7 @@
             </tr>
             <% if (!targetContainers.isEmpty()) { %>
             <tr class="form-group">
-                <td class="lk-form-label"><label for="targetContainerId<%= name.getId()%>">Save in</label></td>
+                <td class="lk-form-label"><label for="targetContainerId<%= name.getId()%>">Use nickname</label></td>
                 <td>
                     <select name="targetContainerId" id="targetContainerId<%= name.getId()%>">
                         <labkey:options value="<%= name.getContainer().getId() %>" map="<%= targetContainers %>"/>

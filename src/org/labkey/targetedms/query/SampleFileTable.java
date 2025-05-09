@@ -117,9 +117,10 @@ public class SampleFileTable extends TargetedMSTable
         ExprColumn excludedColumn = new ExprColumn(this, "Excluded", excludedSQL, JdbcType.BOOLEAN);
         addColumn(excludedColumn);
 
-        SQLFragment nicknameSql = new SQLFragment("(SELECT MIN(COALESCE(Nickname, ");
-        nicknameSql.append(getSqlDialect().concatenate("i.Model", "' - '", ExprColumn.STR_TABLE_ALIAS + ".InstrumentSerialNumber"));
-        nicknameSql.append(", ").append(ExprColumn.STR_TABLE_ALIAS).append(".InstrumentSerialNumber, i.Model)) FROM (SELECT * FROM ");
+        SQLFragment nicknameSql = new SQLFragment("COALESCE(");
+
+        // Find a nickname if we have one
+        nicknameSql.append("(SELECT MIN(Nickname) FROM ((SELECT * FROM ");
         nicknameSql.append(TargetedMSManager.getTableInfoInstrument(), "i");
         nicknameSql.append(" WHERE i.Id = ");
         nicknameSql.append(ExprColumn.STR_TABLE_ALIAS).append(".InstrumentId) i LEFT OUTER JOIN ");
@@ -128,7 +129,17 @@ public class SampleFileTable extends TargetedMSTable
         nicknameSql.append(ExprColumn.STR_TABLE_ALIAS).append(".InstrumentSerialNumber");
         nicknameSql.append(" OR (f.SerialNumber IS NULL AND ");
         nicknameSql.append(ExprColumn.STR_TABLE_ALIAS).append(".InstrumentSerialNumber");
-        nicknameSql.append(" IS NULL)) AND (f.Model = i.Model OR (f.Model IS NULL AND i.Model IS NULL)))");
+        nicknameSql.append(" IS NULL)) AND (f.Model = i.Model OR (f.Model IS NULL AND i.Model IS NULL)))), ");
+
+        // Alternatively, use the default name for the instrument (model - serial number)
+        nicknameSql.append("(SELECT COALESCE(");
+        nicknameSql.append(getSqlDialect().concatenate("x.Model", "' - '", ExprColumn.STR_TABLE_ALIAS + ".InstrumentSerialNumber"));
+        nicknameSql.append(", ").append(ExprColumn.STR_TABLE_ALIAS).append(".InstrumentSerialNumber, x.Model)");
+        nicknameSql.append(" FROM (SELECT Model FROM ");
+        nicknameSql.append(TargetedMSManager.getTableInfoInstrument(), "i");
+        nicknameSql.append(" WHERE i.Id = ");
+        nicknameSql.append(ExprColumn.STR_TABLE_ALIAS).append(".InstrumentId) x)");
+        nicknameSql.append(") ");
         ExprColumn nicknameCol = new ExprColumn(this, "InstrumentNickname", nicknameSql, JdbcType.VARCHAR);
         addColumn(nicknameCol);
 
