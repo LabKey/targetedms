@@ -52,7 +52,7 @@ public class AbstractQuantificationTest extends TargetedMSTest
     @BeforeClass
     public static void setupProject()
     {
-        AbstractQuantificationTest init = (AbstractQuantificationTest) getCurrentTest();
+        AbstractQuantificationTest init = getCurrentTest();
 
         init.setupFolder(FolderType.Experiment);
     }
@@ -85,7 +85,7 @@ public class AbstractQuantificationTest extends TargetedMSTest
             }
 
             // No data
-            if (distinctGroups.size() < 1)
+            if (distinctGroups.isEmpty())
             {
                 assertTextPresent("No data of this type");
                 return;
@@ -321,7 +321,7 @@ public class AbstractQuantificationTest extends TargetedMSTest
                 assertNotEquals(msg, -1, rowIndex);
                 String actualErrorMessage = calibrationCurvesTable.getDataAsText(rowIndex, "Error Message");
                 String expectedErrorMessage = (String) expectedRow.get("ErrorMessage");
-                if (expectedErrorMessage != null && expectedErrorMessage.length() > 0)
+                if (expectedErrorMessage != null && !expectedErrorMessage.isEmpty())
                 {
                     assertNotEquals("", actualErrorMessage);
                     rowWithoutData = rowIndex;
@@ -441,12 +441,13 @@ public class AbstractQuantificationTest extends TargetedMSTest
 
     private void testCalculatedConcentrations(String scenario) throws Exception
     {
-        String query = "SELECT COALESCE(generalmoleculechrominfo.PeptideId.Sequence, \n" +
-                "generalmoleculechrominfo.MoleculeId.Molecule) AS Peptide, \n" +
-                "generalmoleculechrominfo.SampleFileId.ReplicateId.Name AS Replicate, \n" +
-                "generalmoleculechrominfo.CalculatedConcentration, \n" +
-                "generalmoleculechrominfo.SampleFileId.ReplicateId.RunId.FileName\n" +
-                "FROM generalmoleculechrominfo";
+        String query = """
+                SELECT COALESCE(generalmoleculechrominfo.PeptideId.Sequence,
+                generalmoleculechrominfo.MoleculeId.Molecule) AS Peptide,
+                generalmoleculechrominfo.SampleFileId.ReplicateId.Name AS Replicate,
+                generalmoleculechrominfo.CalculatedConcentration,
+                generalmoleculechrominfo.SampleFileId.ReplicateId.RunId.FileName
+                FROM generalmoleculechrominfo""";
         ExecuteSqlCommand sc = new ExecuteSqlCommand("targetedms");
         sc.setSql(query);
         SelectRowsResponse resp = sc.execute(createDefaultConnection(), getProjectName() + "/" + scenario);
@@ -488,7 +489,7 @@ public class AbstractQuantificationTest extends TargetedMSTest
 
     private Double parseOptionalDouble(String value)
     {
-        if (value == null || "".equals(value) || "#N/A".equals(value))
+        if (value == null || value.isEmpty() || "#N/A".equals(value))
         {
             return null;
         }
@@ -501,9 +502,9 @@ public class AbstractQuantificationTest extends TargetedMSTest
         {
             return null;
         }
-        if (value instanceof String)
+        if (value instanceof String s)
         {
-            return parseOptionalDouble((String) value);
+            return parseOptionalDouble(s);
         }
         return (Double) value;
     }
@@ -516,7 +517,7 @@ public class AbstractQuantificationTest extends TargetedMSTest
         return null == value || "#N/A".equals(value);
     }
 
-    protected class FiguresOfMerit
+    protected static class FiguresOfMerit
     {
         String loq;
         String uloq;
@@ -525,8 +526,6 @@ public class AbstractQuantificationTest extends TargetedMSTest
         String lod;
         String calc;
         String name;
-
-        private FiguresOfMerit(){}
 
         public FiguresOfMerit(@NotNull String molName)
         {
