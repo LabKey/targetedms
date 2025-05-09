@@ -3,14 +3,14 @@ CREATE TABLE targetedms.InstrumentNickname
     Id              BIGINT IDENTITY(1, 1) NOT NULL,
 
     Container       entityid NOT NULL,
-    Created         TIMESTAMP,
+    Created         DATETIME,
     CreatedBy       USERID,
-    Modified        TIMESTAMP,
+    Modified        DATETIME,
     ModifiedBy      USERID,
 
-    SerialNumber    VARCHAR(200),
-    Model           VARCHAR(300),
-    Nickname    VARCHAR(200),
+    SerialNumber    NVARCHAR(200),
+    Model           NVARCHAR(300),
+    Nickname        NVARCHAR(200),
 
     CONSTRAINT PK_InstrumentNickname PRIMARY KEY (Id)
 );
