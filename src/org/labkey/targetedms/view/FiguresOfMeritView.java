@@ -1,16 +1,14 @@
 package org.labkey.targetedms.view;
 
-import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.SimpleFilter;
-import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.query.FieldKey;
-import org.labkey.api.query.QueryService;
 import org.labkey.api.query.UserSchema;
-import org.labkey.api.security.User;
+import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.JspView;
 import org.labkey.api.view.NotFoundException;
+import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSRun;
 import org.labkey.targetedms.TargetedMSSchema;
@@ -21,25 +19,15 @@ import org.labkey.targetedms.query.PeptideManager;
 
 public class FiguresOfMeritView extends JspView<FiguresOfMeritView.MoleculeInfo>
 {
-    public FiguresOfMeritView(User user, Container container, long generalMoleculeId, boolean minimize)
+    public FiguresOfMeritView(MoleculeInfo moleculeInfo, UserSchema schema, boolean minimize)
     {
         super("/org/labkey/targetedms/view/figuresOfMerit.jsp");
+
+        Container container = schema.getContainer();
+        long generalMoleculeId = moleculeInfo._generalMoleculeId;
+
         setTitle("Figures of Merit");
-
-        UserSchema schema = QueryService.get().getUserSchema(user, container, TargetedMSSchema.SCHEMA_NAME);
-        TableInfo tableInfo = schema.getTable(TargetedMSSchema.TABLE_MOLECULE_INFO);
-        if (tableInfo == null)
-        {
-            throw new NotFoundException("Query " + TargetedMSSchema.SCHEMA_NAME + "." + TargetedMSSchema.TABLE_MOLECULE_INFO + " not found.");
-        }
-
-        SimpleFilter filter = new SimpleFilter(FieldKey.fromString("GeneralMoleculeId"), generalMoleculeId, CompareType.EQUAL);
-        MoleculeInfo moleculeInfo = new TableSelector(tableInfo, filter, null).getObject(MoleculeInfo.class);
-
-        if (moleculeInfo == null)
-        {
-            throw new NotFoundException("GeneralMoleculeId " + generalMoleculeId + " not found");
-        }
+        setTitleHref(new ActionURL(TargetedMSController.ShowFiguresOfMeritAction.class, container).addParameter("GeneralMoleculeId", generalMoleculeId));
         setModelBean(moleculeInfo);
         moleculeInfo.setMinimize(minimize);
 
@@ -62,8 +50,8 @@ public class FiguresOfMeritView extends JspView<FiguresOfMeritView.MoleculeInfo>
 
     public static class MoleculeInfo
     {
-        Long _runId;
-        Long _generalMoleculeId;
+        long _runId;
+        long _generalMoleculeId;
         String _peptideName;
         String _moleculeName;
         String _fileName;
@@ -74,22 +62,22 @@ public class FiguresOfMeritView extends JspView<FiguresOfMeritView.MoleculeInfo>
         TargetedMSRun _run;
         private boolean _minimize;
 
-        public Long getRunId()
+        public long getRunId()
         {
             return _runId;
         }
 
-        public void setRunId(Long runId)
+        public void setRunId(long runId)
         {
             _runId = runId;
         }
 
-        public Long getGeneralMoleculeId()
+        public long getGeneralMoleculeId()
         {
             return _generalMoleculeId;
         }
 
-        public void setGeneralMoleculeId(Long moleculeId)
+        public void setGeneralMoleculeId(long moleculeId)
         {
             _generalMoleculeId = moleculeId;
         }
