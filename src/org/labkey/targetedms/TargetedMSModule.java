@@ -480,7 +480,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
                         }
                         catch (NumberFormatException ignored) {}
                     }
-                    return new FiguresOfMeritView(portalCtx.getUser(), portalCtx.getContainer(), id, true);
+                    return TargetedMSController.getFiguresOfMeritView(portalCtx.getUser(), portalCtx.getContainer(), id, true);
                 }
 
                 @Override

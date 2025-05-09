@@ -118,9 +118,11 @@ import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.InvalidKeyException;
 import org.labkey.api.query.QueryParam;
+import org.labkey.api.query.QueryService;
 import org.labkey.api.query.QuerySettings;
 import org.labkey.api.query.QueryUpdateServiceException;
 import org.labkey.api.query.QueryView;
+import org.labkey.api.query.UserSchema;
 import org.labkey.api.query.ValidationException;
 import org.labkey.api.reports.ReportService;
 import org.labkey.api.reports.model.ViewCategory;
@@ -7909,10 +7911,31 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
+    public static WebPartView<?> getFiguresOfMeritView(User user, Container container, long generalMoleculeId, boolean minimize)
+    {
+        UserSchema schema = QueryService.get().getUserSchema(user, container, TargetedMSSchema.SCHEMA_NAME);
+        TableInfo tableInfo = schema.getTable(TargetedMSSchema.TABLE_MOLECULE_INFO);
+        if (tableInfo == null)
+        {
+            throw new NotFoundException("Query " + TargetedMSSchema.SCHEMA_NAME + "." + TargetedMSSchema.TABLE_MOLECULE_INFO + " not found.");
+        }
+
+        SimpleFilter filter = new SimpleFilter(FieldKey.fromString("GeneralMoleculeId"), generalMoleculeId, CompareType.EQUAL);
+        FiguresOfMeritView.MoleculeInfo moleculeInfo = new TableSelector(tableInfo, filter, null).getObject(FiguresOfMeritView.MoleculeInfo.class);
+        if (moleculeInfo == null)
+        {
+            HtmlView htmlView = new HtmlView(HtmlString.of("No figures of merit available due to lack of quantitative data"));
+            htmlView.setTitle("Figures of Merit");
+            htmlView.setFrame(WebPartView.FrameType.PORTAL);
+            return htmlView;
+        }
+        return new FiguresOfMeritView(moleculeInfo, schema, minimize);
+    }
+
     @RequiresPermission(ReadPermission.class)
     public static class ShowFiguresOfMeritAction extends SimpleViewAction<GeneralMoleculeForm>
     {
-        private FiguresOfMeritView _figuresOfMeritView;
+        private HttpView<?> _figuresOfMeritView;
 
         @Override
         public void validate(GeneralMoleculeForm form, BindException errors)
@@ -7925,20 +7948,20 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(GeneralMoleculeForm form, BindException errors)
         {
-            _figuresOfMeritView = new FiguresOfMeritView(getUser(), getContainer(), form.getGeneralMoleculeId().longValue(), false);
+            _figuresOfMeritView = getFiguresOfMeritView(getUser(), getContainer(), form.getGeneralMoleculeId().longValue(), false);
             return _figuresOfMeritView;
         }
 
         @Override
         public void addNavTrail(NavTree root)
         {
-            if (_figuresOfMeritView != null && _figuresOfMeritView.getModelBean() != null)
+            if (_figuresOfMeritView != null && _figuresOfMeritView.getModelBean() instanceof FiguresOfMeritView.MoleculeInfo info)
             {
-                TargetedMSRun run = _figuresOfMeritView.getModelBean().getRun();
+                TargetedMSRun run = info.getRun();
                 root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
                 root.addChild(run.getDescription(), getShowCalibrationCurvesURL(getContainer(), run.getId()));
 
-                GeneralMolecule<?, ?> molecule = _figuresOfMeritView.getModelBean().getGeneralMolecule();
+                GeneralMolecule<?, ?> molecule = info.getGeneralMolecule();
                 if (molecule != null)
                 {
                     root.addChild("Figures of Merit: " + molecule.getTextId());
@@ -8013,7 +8036,7 @@ public class TargetedMSController extends SpringActionController
         public ModelAndView getView(CalibrationCurveForm calibrationCurveForm, BindException errors)
         {
             CalibrationCurveChart chart = _curvePlotView.getChart();
-            GeneralMolecule molecule = chart.getMolecule();
+            GeneralMolecule<?, ?> molecule = chart.getMolecule();
             if (molecule == null)
             {
                 throw new NotFoundException("Could not find molecule");
@@ -8039,8 +8062,7 @@ public class TargetedMSController extends SpringActionController
                 detailsUrl = new ActionURL(ShowMoleculeAction.class, getContainer());
             }
 
-            FiguresOfMeritView fomView = new FiguresOfMeritView(getUser(), getContainer(), molecule.getId(), true);
-            fomView.setTitleHref(new ActionURL(ShowFiguresOfMeritAction.class, getContainer()).addParameter("GeneralMoleculeId", molecule.getId()));
+            HttpView<?> fomView = getFiguresOfMeritView(getUser(), getContainer(), molecule.getId(), true);
 
             JspView<SummaryChartBean> summaryChartView = new JspView<>("/org/labkey/targetedms/view/summaryChartsView.jsp", summaryChartBean);
             summaryChartView.setTitle("Summary Charts");
