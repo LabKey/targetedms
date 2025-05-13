@@ -2520,7 +2520,7 @@ public class TargetedMSController extends SpringActionController
 
         public HtmlString getModifiedPeptideHtml()
         {
-            return new ModifiedPeptideHtmlMaker().getPrecursorHtml(getPrecursor(), getRun().getId(), _targetedMSSchema);
+            return new ModifiedPeptideHtmlMaker().getPrecursorHtml(getPrecursor(), getRun().getId(), _targetedMSSchema).first;
         }
 
         public PeptideSettings.IsotopeLabel getIsotopeLabel()
@@ -3225,7 +3225,7 @@ public class TargetedMSController extends SpringActionController
 
             idx++;
         }
-        if(unsupportedLibraries.size() > 0)
+        if(!unsupportedLibraries.isEmpty())
         {
             HtmlView view = new HtmlView(DIV("Annotated spectra cannot be displayed from the following unsupported "
                             + (unsupportedLibraries.size() == 1 ? "library" : "libraries") + ": ",
@@ -3237,7 +3237,7 @@ public class TargetedMSController extends SpringActionController
             view.setTitle("Unsupported Spectrum " + (unsupportedLibraries.size() == 1 ? "Library" : "Libraries"));
             vbox.addView(view);
         }
-        if(specLibErrors.size() > 0)
+        if(!specLibErrors.isEmpty())
         {
             HtmlView view = new HtmlView(DOM.LK.ERRORS(specLibErrors.stream().map(e -> new LabKeyError(e.getMessage())).collect(Collectors.toList())));
             view.setTitle("Spectrum Library Errors");

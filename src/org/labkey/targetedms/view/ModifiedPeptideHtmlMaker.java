@@ -17,8 +17,8 @@ package org.labkey.targetedms.view;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
+import org.labkey.api.util.DOM;
 import org.labkey.api.util.HtmlString;
-import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.util.Pair;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.chart.ChartColors;
@@ -30,6 +30,7 @@ import org.labkey.targetedms.query.ModificationManager;
 import org.labkey.targetedms.query.PeptideGroupManager;
 import org.labkey.targetedms.query.PeptideManager;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,12 +38,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
+import static org.labkey.api.util.DOM.at;
 
 /**
  * User: vsharma
- * Date: 4/29/12
- * Time: 7:33 PM
  */
 public class ModifiedPeptideHtmlMaker
 {
@@ -68,28 +70,28 @@ public class ModifiedPeptideHtmlMaker
         _firstIsotopeLabelIdInDocMap = new HashMap<>();
     }
 
-    public HtmlString getPrecursorHtml(Precursor precursor, Long runId, TargetedMSSchema schema)
+    public Pair<HtmlString, List<List<SequencePart>>> getPrecursorHtml(Precursor precursor, Long runId, TargetedMSSchema schema)
     {
         Peptide peptide = PeptideManager.getPeptide(schema.getContainer(), precursor.getGeneralMoleculeId());
         return getPrecursorHtml(peptide, precursor, runId);
     }
 
-    public HtmlString getPrecursorHtml(Peptide peptide, Precursor precursor, Long runId)
+    public Pair<HtmlString, List<List<SequencePart>>> getPrecursorHtml(Peptide peptide, Precursor precursor, Long runId)
     {
         return getPrecursorHtml(peptide.getId(), peptide.getPeptideGroupId(), precursor.getIsotopeLabelId(), precursor.getModifiedSequence(), runId);
     }
 
-    public HtmlString getPrecursorHtml(long peptideId, Long peptideGroupId, long isotopeLabelId, String precursorModifiedSequence, Long runId)
+    public Pair<HtmlString, List<List<SequencePart>>> getPrecursorHtml(long peptideId, Long peptideGroupId, long isotopeLabelId, String precursorModifiedSequence, Long runId)
     {
         return getHtml(peptideId, peptideGroupId, isotopeLabelId, precursorModifiedSequence, runId, null, null, false, null);
     }
 
     public HtmlString getPeptideHtml(Peptide peptide, Long runId)
     {
-        return getPeptideHtml(peptide.getId(), peptide.getPeptideGroupId(), peptide.getSequence(), peptide.getPeptideModifiedSequence(), runId, null, null, false, null);
+        return getPeptideHtml(peptide.getId(), peptide.getPeptideGroupId(), peptide.getSequence(), peptide.getPeptideModifiedSequence(), runId, null, null, false, null).first;
     }
 
-    public HtmlString getPeptideHtml(long peptideId, Long peptideGroupId, String sequence, String peptideModifiedSequence, Long runId, @Nullable String previousAA, @Nullable String nextAA, boolean useParens, @Nullable Set<Pair<Integer, Integer>> strModIndices)
+    public Pair<HtmlString, List<List<SequencePart>>> getPeptideHtml(long peptideId, Long peptideGroupId, String sequence, String peptideModifiedSequence, Long runId, @Nullable String previousAA, @Nullable String nextAA, boolean useParens, @Nullable Set<Pair<Integer, Integer>> strModIndices)
     {
         String altSequence = peptideModifiedSequence;
         if (StringUtils.isBlank(altSequence))
@@ -125,7 +127,7 @@ public class ModifiedPeptideHtmlMaker
      *                      value of the pair is the index of the cross-linked peptide (0 for non-cross linked
      *                      peptides), and the second value is the index of the AA
      */
-    private HtmlString getHtml(long peptideId, @Nullable Long peptideGroupId, @Nullable Long isotopeLabelId, String altSequence, Long runId, @Nullable String previousAA, @Nullable String nextAA, boolean useParens, @Nullable Set<Pair<Integer, Integer>> strModIndices)
+    private Pair<HtmlString, List<List<SequencePart>>> getHtml(long peptideId, @Nullable Long peptideGroupId, @Nullable Long isotopeLabelId, String altSequence, Long runId, @Nullable String previousAA, @Nullable String nextAA, boolean useParens, @Nullable Set<Pair<Integer, Integer>> strModIndices)
     {
         Long firstIsotopeLabelIdInDoc = null;
         if(runId != null)
@@ -153,21 +155,42 @@ public class ModifiedPeptideHtmlMaker
             isotopeModIndices = ModificationManager.getIsotopeModIndexes(peptideId, isotopeLabelId, runId);
         }
 
-        StringBuilder result = new StringBuilder();
-        result.append("<div style=\"display: inline-block;\" title='").append(PageFlowUtil.filter(altSequence)).append("'>");
-        String labelModColor = "black";
+        String labelModColor;
         StringBuilder error = new StringBuilder();
-        if(isotopeLabelId != null)
+        if (isotopeLabelId != null)
         {
-            if(isotopeLabelId >= firstIsotopeLabelIdInDoc)
+            if (isotopeLabelId >= firstIsotopeLabelIdInDoc)
             {
                 labelModColor = toHex(ChartColors.getIsotopeColor(isotopeLabelId - firstIsotopeLabelIdInDoc).getRGB());
             }
             else
             {
                 error.append("Error getting color for isotope label.");
+                labelModColor = "black";
             }
         }
+        else
+        {
+            labelModColor = "black";
+        }
+
+        List<List<SequencePart>> allParts = getCrossLinkedSequenceParts(altSequence, peptideGroupId, runId, strModIndices, isotopeModIndices, useParens, previousAA, nextAA, showPreviousNext);
+
+        AtomicBoolean separator = new AtomicBoolean(false);
+
+        return Pair.of(DOM.createHtmlFragment(
+                DOM.DIV(at(DOM.Attribute.style, "display:inline-block;", DOM.Attribute.title, altSequence),
+                        allParts.stream().map(parts ->
+                                DOM.createHtmlFragment(
+                                        separator.getAndSet(true) ? DOM.BR() : null,
+                                        renderSequenceHtml(parts, labelModColor))),
+                        error.isEmpty() ? DOM.DIV(at(DOM.Attribute.style, "color:red;"), error.toString()) : null)),
+            allParts);
+    }
+
+    private List<List<SequencePart>> getCrossLinkedSequenceParts(String altSequence, Long peptideGroupId, Long runId, Set<Pair<Integer, Integer>> strModIndices, Set<Integer> isotopeModIndices, boolean useParens, String previousAA, String nextAA, boolean showPreviousNext)
+    {
+        List<List<SequencePart>> result = new ArrayList<>();
 
         CrossLinkedPeptideInfo crossLink = new CrossLinkedPeptideInfo(altSequence);
 
@@ -191,23 +214,22 @@ public class ModifiedPeptideHtmlMaker
             }
         }
 
-        renderSequence(crossLink.getBaseSequence(), filterModIndices(strModIndices, 0), isotopeModIndices, result, labelModColor, useParens, previousAA, nextAA, cdrIndices);
+        result.add(renderSequence(crossLink.getBaseSequence(), filterModIndices(strModIndices, 0), isotopeModIndices, useParens, previousAA, nextAA, cdrIndices));
 
         // If we have cross-linking info, show those peptides too
         for (CrossLinkedPeptideInfo.PeptideSequence extraSequence : crossLink.getExtraSequences())
         {
             previousAA = null;
             nextAA = null;
-            result.append("<br />\n");
             if (runId != null)
             {
-                Protein matchingProtein = extraSequence.findMatch(getProteins(runId));
+                CrossLinkedPeptideInfo.Match matchingProtein = extraSequence.findMatch(getProteins(runId));
                 if (matchingProtein != null)
                 {
-                    String proteinSequence = matchingProtein.getSequence();
-                    int startIndex = proteinSequence.indexOf(extraSequence.getUnmodified());
+                    String proteinSequence = matchingProtein.protein().getSequence();
+                    int startIndex = matchingProtein.index();
                     int endIndex = startIndex + extraSequence.getUnmodified().length();
-                    
+
                     // Stay consistent with primary sequence for showing or hiding previous and next amino acids
                     if (showPreviousNext)
                     {
@@ -230,16 +252,9 @@ public class ModifiedPeptideHtmlMaker
                     }
                 }
             }
-            renderSequence(extraSequence, filterModIndices(strModIndices, extraSequence.getPeptideIndex()), isotopeModIndices, result, labelModColor, useParens, previousAA, nextAA, Collections.emptySet());
+            result.add(renderSequence(extraSequence, filterModIndices(strModIndices, extraSequence.getPeptideIndex()), isotopeModIndices, useParens, previousAA, nextAA, Collections.emptySet()));
         }
-
-        result.append("</div>");
-
-        if (!error.isEmpty())
-        {
-            result.append("<div style='color:red;'>").append(PageFlowUtil.filter(error.toString())).append("</div>");
-        }
-        return HtmlString.unsafe(result.toString());
+        return result;
     }
 
     private Set<Integer> filterModIndices(Set<Pair<Integer, Integer>> strModIndices, int peptideIndex)
@@ -247,20 +262,51 @@ public class ModifiedPeptideHtmlMaker
         return strModIndices.stream().filter(x -> x.first == peptideIndex).map(x -> x.second).collect(Collectors.toSet());
     }
 
-    private void renderSequence(CrossLinkedPeptideInfo.PeptideSequence sequenceInfo, Set<Integer> strModIndices, Set<Integer> isotopeModIndices, StringBuilder result, String labelModColor, boolean useParens, @Nullable String previousAA, @Nullable String nextAA, Set<Integer> cdrIndices)
+    public record SequencePart(String sequence, boolean modified, boolean isotopeModified, boolean crossLinked, boolean cdr) {}
+
+    private HtmlString renderSequenceHtml(List<SequencePart> parts, String labelModColor)
     {
+        return DOM.createHtmlFragment(
+            parts.stream().map(part -> {
+                if (part.modified || part.isotopeModified || part.crossLinked || part.cdr)
+                {
+                    StringBuilder style = new StringBuilder();
+                    if (part.modified || part.isotopeModified || part.crossLinked)
+                    {
+                        style.append("font-weight:bold;");
+                    }
+                    if (part.isotopeModified)
+                    {
+                        style.append("color:").append(labelModColor).append(";");
+                    }
+                    else if (part.crossLinked)
+                    {
+                        style.append("color:").append("green").append(";");
+                    }
+                    if (part.modified)
+                    {
+                        style.append("text-decoration:underline;");
+                    }
+                    if (part.cdr)
+                    {
+                        style.append("background-color:lightgrey;");
+                    }
+                    return DOM.SPAN(at(DOM.Attribute.style, style), part.sequence);
+                }
+                return part.sequence;
+            }));
+    }
+
+    private List<SequencePart> renderSequence(CrossLinkedPeptideInfo.PeptideSequence sequenceInfo, Set<Integer> strModIndices, Set<Integer> isotopeModIndices, boolean useParens, @Nullable String previousAA, @Nullable String nextAA, Set<Integer> cdrIndices)
+    {
+        List<SequencePart> parts = new ArrayList<>();
+
         if (previousAA != null)
         {
-            if (useParens)
-            {
-                result.append("(");
-            }
-            result.append(PageFlowUtil.filter(previousAA));
-            result.append(useParens ? ")" : ".");
+            parts.add(new SequencePart(useParens ? "(" + previousAA + ")" : previousAA, false, false, false, false));
         }
 
         String sequence = sequenceInfo.getUnmodified();
-
         for(int i = 0; i < sequence.length(); i++)
         {
             boolean isStrModified = strModIndices != null && strModIndices.contains(i);
@@ -268,47 +314,15 @@ public class ModifiedPeptideHtmlMaker
             boolean isCrossLinked = sequenceInfo.isCrossLinked(i);
             boolean isCDR = cdrIndices.contains(i);
 
-            if (isIsotopeModified || isStrModified || isCrossLinked || isCDR)
-            {
-                StringBuilder style = new StringBuilder("style='");
-                if (isIsotopeModified || isStrModified || isCrossLinked)
-                {
-                    style.append("font-weight:bold;");
-                }
-                if (isIsotopeModified)
-                {
-                    style.append("color:").append(labelModColor).append(";");
-                }
-                else if (isCrossLinked)
-                {
-                    style.append("color:").append("green").append(";");
-                }
-                if (isStrModified)
-                {
-                    style.append("text-decoration:underline;");
-                }
-                if (isCDR)
-                {
-                    style.append("background-color:lightgrey;");
-                }
-                style.append("'");
-                result.append("<span ").append(style).append(">").append(sequence.charAt(i)).append("</span>");
-            }
-            else
-            {
-                result.append(PageFlowUtil.filter(sequence.charAt(i)));
-            }
+            parts.add(new SequencePart(String.valueOf(sequence.charAt(i)), isStrModified, isIsotopeModified, isCrossLinked, isCDR));
         }
 
         if (nextAA != null)
         {
-            result.append(useParens ? "(" : ".");
-            result.append(PageFlowUtil.filter(nextAA));
-            if (useParens)
-            {
-                result.append(")");
-            }
+            parts.add(new SequencePart(useParens ? "(" + nextAA + ")" : nextAA, false, false, false, false));
         }
+
+        return parts;
     }
 
     public String toHex(int rgb)

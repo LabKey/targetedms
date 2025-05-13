@@ -44,7 +44,7 @@ public class PrecursorHtmlMaker
         }
 
         return DOM.createHtmlFragment(
-                new ModifiedPeptideHtmlMaker().getPrecursorHtml(peptide, precursor, runId),
+                new ModifiedPeptideHtmlMaker().getPrecursorHtml(peptide, precursor, runId).first,
                 DOM.SPAN(body));
     }
 
@@ -52,7 +52,7 @@ public class PrecursorHtmlMaker
                                              long runId, TargetedMSSchema schema)
     {
         return DOM.createHtmlFragment(
-                modifiedPeptideHtmlMaker.getPrecursorHtml(precursor, runId, schema),
+                modifiedPeptideHtmlMaker.getPrecursorHtml(precursor, runId, schema).first,
                 DOM.SPAN(LabelFactory.getChargeLabel(precursor.getCharge())));
     }
 }
