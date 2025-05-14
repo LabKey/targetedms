@@ -47,7 +47,6 @@ import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.exp.query.ExpRunTable;
 import org.labkey.api.exp.query.ExpSchema;
 import org.labkey.api.module.Module;
-import org.labkey.api.query.CrosstabView;
 import org.labkey.api.query.CustomView;
 import org.labkey.api.query.DefaultQueryUpdateService;
 import org.labkey.api.query.DefaultSchema;
@@ -111,7 +110,9 @@ import org.labkey.targetedms.query.QCTraceMetricValuesTable;
 import org.labkey.targetedms.query.RepresentativeStateDisplayColumn;
 import org.labkey.targetedms.query.SampleFileTable;
 import org.labkey.targetedms.query.SkylineAuditTable;
+import org.labkey.targetedms.query.TargetedMSCrosstabView;
 import org.labkey.targetedms.query.TargetedMSForeignKey;
+import org.labkey.targetedms.query.TargetedMSQueryView;
 import org.labkey.targetedms.query.TargetedMSTable;
 import org.labkey.targetedms.view.FontAwesomeLinkColumn;
 import org.springframework.validation.BindException;
@@ -1506,7 +1507,6 @@ public class TargetedMSSchema extends UserSchema
         if (TABLE_TRANSITION_ANNOTATION.equalsIgnoreCase(name) || TABLE_TRANSITION_OPTIMIZATION.equalsIgnoreCase(name))
         {
             TargetedMSTable result = new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.TransitionFK);
-            TargetedMSSchema targetedMSSchema = this;
             result.getMutableColumnOrThrow("TransitionId").setFk(new TargetedMSForeignKey(this, TABLE_TRANSITION, cf));
             result.addWrapColumn("MoleculeTransition", result.getRealTable().getColumn("TransitionId")).
                     setFk(new TargetedMSForeignKey(this, TABLE_MOLECULE_TRANSITION, cf));
@@ -1609,16 +1609,16 @@ public class TargetedMSSchema extends UserSchema
                 TABLE_INSTRUMENT_RATE.equalsIgnoreCase(name) ||
                 TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name))
         {
-            var result = new FilteredTable<TargetedMSSchema>(getSchema().getTable(name), this, cf)
+            var result = new FilteredTable<>(getSchema().getTable(name), this, cf)
             {
                 @Override
                 public boolean hasPermission(@NotNull UserPrincipal user, @NotNull Class<? extends Permission> perm)
                 {
-                    return getContainer().hasPermission(user,perm);
+                    return getContainer().hasPermission(user, perm);
                 }
 
                 @Override
-                public @Nullable QueryUpdateService getUpdateService()
+                public @NotNull QueryUpdateService getUpdateService()
                 {
                     return new DefaultQueryUpdateService(this, getRealTable());
                 }
@@ -1669,7 +1669,7 @@ public class TargetedMSSchema extends UserSchema
         String queryName = settings.getQueryName();
         if (queryName != null && ("PTMPercentsGrouped".equalsIgnoreCase(queryName) || queryName.toLowerCase().startsWith(QUERY_PTM_PERCENTS_GROUPED_PREFIX.toLowerCase())))
         {
-            return new CrosstabView(TargetedMSSchema.this, settings, errors)
+            return new TargetedMSCrosstabView(TargetedMSSchema.this, settings, errors)
             {
                 @Override
                 protected DataRegion createDataRegion()
@@ -1706,7 +1706,16 @@ public class TargetedMSSchema extends UserSchema
             };
         }
 
-        return super.createView(context, settings, errors);
+        QueryDefinition qdef = settings.getQueryDef(this);
+        if (qdef != null)
+        {
+            TableInfo tableInfo = qdef.getTable(this, new ArrayList<>(), true);
+            if (tableInfo instanceof CrosstabTableInfo cti && cti.isCrosstab())
+
+                return new TargetedMSCrosstabView(this, settings, errors);
+        }
+
+        return new TargetedMSQueryView(this, settings, errors);
     }
 
     @Override

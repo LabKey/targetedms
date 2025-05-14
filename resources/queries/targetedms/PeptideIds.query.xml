@@ -3,6 +3,9 @@
         <tables xmlns="http://labkey.org/data/xml">
             <table tableName="PeptideIds" tableDbType="TABLE">
                 <columns>
+                    <column columnName="RetentionTime">
+                        <formatString>0.0</formatString>
+                    </column>
                     <column columnName="Modification">
                         <textAlign>left</textAlign>
                     </column>
@@ -34,6 +37,11 @@
                     <column columnName="PeptideLocation">
                         <displayColumnFactory>
                             <className>org.labkey.targetedms.query.CrossLinkedPeptideDisplayColumn$PeptideLocationFactory</className>
+                        </displayColumnFactory>
+                    </column>
+                    <column columnName="PeptideIdentity">
+                        <displayColumnFactory>
+                            <className>org.labkey.targetedms.query.CrossLinkedPeptideDisplayColumn$PeptideIdentityFactory</className>
                         </displayColumnFactory>
                     </column>
                     <column columnName="BondLocation">

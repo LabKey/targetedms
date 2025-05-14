@@ -6,6 +6,11 @@
                     <column columnName="ModifiedAreaProportion">
                         <formatString>0.00%</formatString>
                     </column>
+                    <column columnName="SiteLocation">
+                        <displayColumnFactory>
+                            <className>org.labkey.targetedms.query.SiteLocationDisplayColumnFactory</className>
+                        </displayColumnFactory>
+                    </column>
                 </columns>
             </table>
         </tables>

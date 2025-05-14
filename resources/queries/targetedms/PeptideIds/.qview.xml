@@ -1,4 +1,15 @@
 <customView xmlns="http://labkey.org/data/xml/queryCustomView">
+    <columns>
+        <column name="RetentionTime" />
+        <column name="MinObservedPeptideMass" />
+        <column name="MaxObservedPeptideMass" />
+        <column name="ExpectedPeptideMass" />
+        <column name="Chain" />
+        <column name="PeptideIdentity" />
+        <column name="BondLocation" />
+        <column name="PeptideModifiedSequence" />
+        <column name="Modification" />
+    </columns>
     <sorts>
         <sort column="RetentionTime" />
     </sorts>
