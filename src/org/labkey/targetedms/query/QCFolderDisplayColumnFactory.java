@@ -9,17 +9,17 @@ import org.labkey.api.data.RenderContext;
 import org.labkey.api.security.User;
 import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.targetedms.TargetedMSService;
-import org.labkey.api.util.PageFlowUtil;
+import org.labkey.api.util.LinkBuilder;
 import org.labkey.api.writer.HtmlWriter;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSModule;
 import org.labkey.targetedms.TargetedMSRun;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+
+import static org.labkey.api.util.DOM.DIV;
 
 public class QCFolderDisplayColumnFactory implements DisplayColumnFactory
 {
@@ -33,7 +33,7 @@ public class QCFolderDisplayColumnFactory implements DisplayColumnFactory
         return new DataColumn(colInfo)
         {
             @Override
-            public void renderGridCellContents(RenderContext ctx, Writer oldWriter, HtmlWriter out) throws IOException
+            public void renderGridCellContents(RenderContext ctx, HtmlWriter out)
             {
                 final User user = ctx.getViewContext().getUser();
                 String serialNumber = String.valueOf(getBoundColumn().getValue(ctx));
@@ -50,7 +50,6 @@ public class QCFolderDisplayColumnFactory implements DisplayColumnFactory
                         }
                     }
                 });
-                StringBuilder sb = new StringBuilder();
                 qcContainers.forEach(qcContainer -> {
                     var url = qcContainer.getStartURL(user);
                     if (null != currentRunId)
@@ -58,14 +57,8 @@ public class QCFolderDisplayColumnFactory implements DisplayColumnFactory
                         url.addParameter("RunId", currentRunId.toString());
                     }
                     url.addReturnUrl(ctx.getViewContext().getActionURL());
-                    sb.append("<div><a href=\"")
-                            .append(PageFlowUtil.filter(url))
-                            .append("\"")
-                            .append(">")
-                            .append(PageFlowUtil.filter(qcContainer.getName()))
-                            .append("</a></div>");
+                    DIV(LinkBuilder.simpleLink(qcContainer.getName(), url)).appendTo(out);
                 });
-                oldWriter.write(sb.toString());
             }
         };
     }
