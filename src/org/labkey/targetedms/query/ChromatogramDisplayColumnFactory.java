@@ -154,8 +154,8 @@ public class ChromatogramDisplayColumnFactory implements DisplayColumnFactory
     @Override
     public DisplayColumn createRenderer(ColumnInfo colInfo)
     {
-        return new DataColumn(colInfo) {
-
+        return new DataColumn(colInfo)
+        {
             @Override
             public boolean isFilterable()
             {
@@ -206,15 +206,13 @@ public class ChromatogramDisplayColumnFactory implements DisplayColumnFactory
                 DIV(
                     at(
                         alt, "Chromatogram " + sampleName,
-                        style, "border: " + (highlight ? "beige" : "white") + " solid 8px; width:" + (_chartWidth + 16) + "px; min-height:" + (_chart_height + 50) + "px",
-                        id, domId
-                    )
+                        style, "border: " + (highlight ? "beige" : "white") + " solid 8px; width:" + (_chartWidth + 16) + "px; min-height:" + (_chart_height + 50) + "px"
+                    ).id(domId)
                 ).appendTo(out);
                 DIV(
                     at(
-                        style, "text-align: center",
-                        id, domLabelId
-                    )
+                        style, "text-align: center"
+                    ).id(domLabelId)
                 ).appendTo(out);
 
                 dataRegion.addSVG(chromAction.getLocalURIString(), domId, domLabelId);
