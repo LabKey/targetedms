@@ -48,7 +48,6 @@ import org.labkey.api.exp.query.ExpRunTable;
 import org.labkey.api.exp.query.ExpSchema;
 import org.labkey.api.gwt.client.AuditBehaviorType;
 import org.labkey.api.module.Module;
-import org.labkey.api.query.CrosstabView;
 import org.labkey.api.query.CustomView;
 import org.labkey.api.query.DefaultQueryUpdateService;
 import org.labkey.api.query.DefaultSchema;
@@ -112,14 +111,14 @@ import org.labkey.targetedms.query.QCTraceMetricValuesTable;
 import org.labkey.targetedms.query.RepresentativeStateDisplayColumn;
 import org.labkey.targetedms.query.SampleFileTable;
 import org.labkey.targetedms.query.SkylineAuditTable;
+import org.labkey.targetedms.query.TargetedMSCrosstabView;
 import org.labkey.targetedms.query.TargetedMSForeignKey;
+import org.labkey.targetedms.query.TargetedMSQueryView;
 import org.labkey.targetedms.query.TargetedMSTable;
 import org.labkey.targetedms.view.FontAwesomeLinkColumn;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.mvc.Controller;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -134,6 +133,8 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static org.labkey.api.util.DOM.EM;
 
 public class TargetedMSSchema extends UserSchema
 {
@@ -806,7 +807,6 @@ public class TargetedMSSchema extends UserSchema
                     {
                         return new DataColumn(colInfo)
                         {
-
                             @Override
                             public @NotNull Set<ClientDependency> getClientDependencies()
                             {
@@ -816,7 +816,7 @@ public class TargetedMSSchema extends UserSchema
                             }
 
                             @Override
-                            public void renderGridCellContents(RenderContext ctx, Writer oldWriter, HtmlWriter out) throws IOException
+                            public void renderGridCellContents(RenderContext ctx, HtmlWriter out)
                             {
                                 Long runId = ctx.get(this.getColumnInfo().getFieldKey(), Long.class);
                                 if (runId != null)
@@ -826,11 +826,11 @@ public class TargetedMSSchema extends UserSchema
                                     if(run != null)
                                     {
                                         PopupMenu menu = TargetedMSController.createDownloadMenu(run);
-                                        menu.render(oldWriter);
+                                        menu.render(out);
                                     }
                                     else
                                     {
-                                        oldWriter.write("<em>Not available</em>");
+                                        EM("Not available").appendTo(out);
                                     }
                                 }
                             }
@@ -1508,7 +1508,6 @@ public class TargetedMSSchema extends UserSchema
         if (TABLE_TRANSITION_ANNOTATION.equalsIgnoreCase(name) || TABLE_TRANSITION_OPTIMIZATION.equalsIgnoreCase(name))
         {
             TargetedMSTable result = new TargetedMSTable(getSchema().getTable(name), this, cf, ContainerJoinType.TransitionFK);
-            TargetedMSSchema targetedMSSchema = this;
             result.getMutableColumnOrThrow("TransitionId").setFk(new TargetedMSForeignKey(this, TABLE_TRANSITION, cf));
             result.addWrapColumn("MoleculeTransition", result.getRealTable().getColumn("TransitionId")).
                     setFk(new TargetedMSForeignKey(this, TABLE_MOLECULE_TRANSITION, cf));
@@ -1676,7 +1675,7 @@ public class TargetedMSSchema extends UserSchema
         String queryName = settings.getQueryName();
         if (queryName != null && ("PTMPercentsGrouped".equalsIgnoreCase(queryName) || queryName.toLowerCase().startsWith(QUERY_PTM_PERCENTS_GROUPED_PREFIX.toLowerCase())))
         {
-            return new CrosstabView(TargetedMSSchema.this, settings, errors)
+            return new TargetedMSCrosstabView(TargetedMSSchema.this, settings, errors)
             {
                 @Override
                 protected DataRegion createDataRegion()
@@ -1713,7 +1712,16 @@ public class TargetedMSSchema extends UserSchema
             };
         }
 
-        return super.createView(context, settings, errors);
+        QueryDefinition qdef = settings.getQueryDef(this);
+        if (qdef != null)
+        {
+            TableInfo tableInfo = qdef.getTable(this, new ArrayList<>(), true);
+            if (tableInfo instanceof CrosstabTableInfo cti && cti.isCrosstab())
+
+                return new TargetedMSCrosstabView(this, settings, errors);
+        }
+
+        return new TargetedMSQueryView(this, settings, errors);
     }
 
     @Override

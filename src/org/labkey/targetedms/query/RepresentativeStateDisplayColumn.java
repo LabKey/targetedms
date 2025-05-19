@@ -21,14 +21,10 @@ import org.labkey.api.data.RenderContext;
 import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.api.writer.HtmlWriter;
 
-import java.io.IOException;
-import java.io.Writer;
+import static org.labkey.api.util.DOM.Attribute.style;
+import static org.labkey.api.util.DOM.SPAN;
+import static org.labkey.api.util.DOM.at;
 
-/**
- * User: vsharma
- * Date: 8/5/13
- * Time: 8:32 PM
- */
 public class RepresentativeStateDisplayColumn extends DataColumn
 {
     public RepresentativeStateDisplayColumn (ColumnInfo columnInfo)
@@ -37,7 +33,7 @@ public class RepresentativeStateDisplayColumn extends DataColumn
     }
 
     @Override
-    public void renderGridCellContents(RenderContext ctx, Writer oldWriter, HtmlWriter out) throws IOException
+    public void renderGridCellContents(RenderContext ctx, HtmlWriter out)
     {
         Object representativeState = getValue(ctx);
         if (representativeState == null)
@@ -45,15 +41,21 @@ public class RepresentativeStateDisplayColumn extends DataColumn
 
         if (RepresentativeDataState.Representative.getLabel().equals(representativeState.toString()))
         {
-            oldWriter.write("<span style='color:green;'>" + representativeState.toString() + "</span>");
+            SPAN(
+                at(style, "color:green;"),
+                representativeState.toString()
+            ).appendTo(out);
         }
         else if (RepresentativeDataState.Conflicted.getLabel().equals(representativeState.toString()))
         {
-            oldWriter.write("<span style='color:red;'>" + representativeState.toString() + "</span>");
+            SPAN(
+                at(style, "color:red;"),
+                representativeState.toString()
+            ).appendTo(out);
         }
         else
         {
-            oldWriter.write(representativeState.toString());
+            out.write(representativeState.toString());
         }
     }
 }

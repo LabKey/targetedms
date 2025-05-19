@@ -23,7 +23,6 @@ import org.labkey.api.data.DisplayColumnFactory;
 import org.labkey.api.data.RenderContext;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.util.GUID;
-import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.HttpView;
 import org.labkey.api.writer.HtmlWriter;
@@ -31,19 +30,18 @@ import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.view.ChromatogramsDataRegion;
 import org.springframework.web.servlet.mvc.Controller;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import static org.labkey.api.util.DOM.A;
+import static org.labkey.api.util.DOM.Attribute.alt;
+import static org.labkey.api.util.DOM.Attribute.name;
+import static org.labkey.api.util.DOM.Attribute.style;
+import static org.labkey.api.util.DOM.DIV;
+import static org.labkey.api.util.DOM.at;
 import static org.labkey.targetedms.view.ChromatogramsDataRegion.FRAGMENT_PREFIX;
 import static org.labkey.targetedms.view.ChromatogramsDataRegion.HIGHLIGHTED_CHROMATOGRAM_PARAMETER_NAME;
 
-/**
- * User: vsharma
- * Date: 5/3/12
- * Time: 9:10 PM
- */
 public class ChromatogramDisplayColumnFactory implements DisplayColumnFactory
 {
     private final Container _container;
@@ -156,8 +154,8 @@ public class ChromatogramDisplayColumnFactory implements DisplayColumnFactory
     @Override
     public DisplayColumn createRenderer(ColumnInfo colInfo)
     {
-        return new DataColumn(colInfo) {
-
+        return new DataColumn(colInfo)
+        {
             @Override
             public boolean isFilterable()
             {
@@ -171,7 +169,7 @@ public class ChromatogramDisplayColumnFactory implements DisplayColumnFactory
             }
 
             @Override
-            public void renderGridCellContents(RenderContext ctx, Writer oldWriter, HtmlWriter out) throws IOException
+            public void renderGridCellContents(RenderContext ctx, HtmlWriter out)
             {
                 Object id = getValue(ctx);  // Primary key from the relevant table
                 if(null == id)
@@ -204,13 +202,20 @@ public class ChromatogramDisplayColumnFactory implements DisplayColumnFactory
 
                 ChromatogramsDataRegion dataRegion = (ChromatogramsDataRegion)ctx.getCurrentRegion();
 
-                String html = "<a name=\"" + FRAGMENT_PREFIX + id + "\"></a>";
-                html += "<div alt=\"Chromatogram " + PageFlowUtil.filter(sampleName) + "\" style=\"border: " + (highlight ? "beige" : "white") +
-                        " solid 8px; width:" + (_chartWidth + 16) + "px; min-height:" + (_chart_height + 50) + "px\" id=\"" + PageFlowUtil.filter(domId) + "\"></div>" +
-                        "<div style=\"text-align: center\" id=\"" + PageFlowUtil.filter(domLabelId) + "\"></div>";
+                A(at(name,FRAGMENT_PREFIX + id )).appendTo(out);
+                DIV(
+                    at(
+                        alt, "Chromatogram " + sampleName,
+                        style, "border: " + (highlight ? "beige" : "white") + " solid 8px; width:" + (_chartWidth + 16) + "px; min-height:" + (_chart_height + 50) + "px"
+                    ).id(domId)
+                ).appendTo(out);
+                DIV(
+                    at(
+                        style, "text-align: center"
+                    ).id(domLabelId)
+                ).appendTo(out);
 
                 dataRegion.addSVG(chromAction.getLocalURIString(), domId, domLabelId);
-                oldWriter.write(html);
             }
 
             @Override
