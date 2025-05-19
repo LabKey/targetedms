@@ -118,8 +118,6 @@ import org.labkey.targetedms.view.FontAwesomeLinkColumn;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.mvc.Controller;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -134,6 +132,8 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static org.labkey.api.util.DOM.EM;
 
 public class TargetedMSSchema extends UserSchema
 {
@@ -805,7 +805,6 @@ public class TargetedMSSchema extends UserSchema
                     {
                         return new DataColumn(colInfo)
                         {
-
                             @Override
                             public @NotNull Set<ClientDependency> getClientDependencies()
                             {
@@ -815,7 +814,7 @@ public class TargetedMSSchema extends UserSchema
                             }
 
                             @Override
-                            public void renderGridCellContents(RenderContext ctx, Writer oldWriter, HtmlWriter out) throws IOException
+                            public void renderGridCellContents(RenderContext ctx, HtmlWriter out)
                             {
                                 Long runId = ctx.get(this.getColumnInfo().getFieldKey(), Long.class);
                                 if (runId != null)
@@ -825,11 +824,11 @@ public class TargetedMSSchema extends UserSchema
                                     if(run != null)
                                     {
                                         PopupMenu menu = TargetedMSController.createDownloadMenu(run);
-                                        menu.render(oldWriter);
+                                        menu.render(out);
                                     }
                                     else
                                     {
-                                        oldWriter.write("<em>Not available</em>");
+                                        EM("Not available").appendTo(out);
                                     }
                                 }
                             }

@@ -55,6 +55,7 @@ import org.labkey.api.security.permissions.Permission;
 import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.util.ContainerContext;
+import org.labkey.api.util.HtmlString;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.util.Pair;
 import org.labkey.api.view.ActionURL;
@@ -79,6 +80,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.labkey.api.util.DOM.EM;
 
 public class SampleFileTable extends TargetedMSTable
 {
@@ -352,7 +355,7 @@ public class SampleFileTable extends TargetedMSTable
         }
 
         @Override
-        public void renderGridCellContents(RenderContext ctx, Writer oldWriter, HtmlWriter out) throws IOException
+        public void renderGridCellContents(RenderContext ctx, HtmlWriter out)
         {
             Long sampleFileId = ctx.get(this.getColumnInfo().getFieldKey(), Long.class);
             Container container = ctx.get(_containerFieldKey, Container.class);
@@ -370,21 +373,21 @@ public class SampleFileTable extends TargetedMSTable
                         String size = dataSize != null ? FileUtils.byteCountToDisplaySize(dataSize) : "";
                         ExpData expData = downloadInfo.getExpData();
                         String url = expData.getWebDavURL(FileContentService.PathType.full).toString();
-                        if(!downloadInfo.isFile())
+                        if (!downloadInfo.isFile())
                         {
                             int idx = url.lastIndexOf('/');
                             url = idx != -1 ? url.substring(0, idx) : url;
                             url = url + "?method=zip&depth=-1&file=" + PageFlowUtil.encode(expData.getName()) + "&zipName=" + PageFlowUtil.encode(expData.getName());
                         }
 
-                        oldWriter.write(PageFlowUtil.iconLink("fa fa-download", null).href(url).toString());
-                        oldWriter.write("&nbsp;");
-                        oldWriter.write(PageFlowUtil.filter(size));
+                        out.write(PageFlowUtil.iconLink("fa fa-download", null).href(url));
+                        out.write(HtmlString.NBSP);
+                        out.write(size);
                         return;
                     }
                 }
             }
-            oldWriter.write("<em>Not available</em>");
+            EM("Not available").appendTo(out);
         }
 
         @Override
