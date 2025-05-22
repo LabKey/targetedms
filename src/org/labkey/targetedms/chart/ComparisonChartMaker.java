@@ -16,6 +16,7 @@
 package org.labkey.targetedms.chart;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.LegendItem;
@@ -145,13 +146,18 @@ public class ComparisonChartMaker
     {
         if (molecule == null)
         {
+            if (peptideGroup == null)
+            {
+                throw new NotFoundException("Could not resolve molecule or group");
+            }
+
             return Pair.of(peptideGroup.getLabel(), ComparisonDataset.ChartType.MOLECULE_COMPARISON);
         }
         return Pair.of(molecule.getCustomIonName(), ComparisonDataset.ChartType.REPLICATE_COMPARISON);
     }
 
     public JFreeChart makeRetentionTimesChart(long replicateId, PeptideGroup peptideGroup,
-                                          Molecule molecule, MoleculePrecursor precursor,
+                                          Molecule molecule, @Nullable MoleculePrecursor precursor,
                                           String groupByAnnotation, String filterByAnnotation, String value, boolean cvValues,
                                           User user, Container container)
     {
@@ -332,7 +338,7 @@ public class ComparisonChartMaker
     }
 
     private List<PrecursorChromInfoLitePlus> getInputData(PeptideGroup peptideGroup, long replicateId, Peptide peptide,
-                                                          Precursor precursor, ComparisonDataset.ChartType chartType,
+                                                          @Nullable Precursor precursor, ComparisonDataset.ChartType chartType,
                                                           User user, Container container)
     {
         List<PrecursorChromInfoLitePlus> pciPlusList;
@@ -353,7 +359,7 @@ public class ComparisonChartMaker
     }
 
     private List<PrecursorChromInfoLitePlus> getInputData(PeptideGroup peptideGroup, long replicateId, Molecule molecule,
-                                                          MoleculePrecursor precursor, ComparisonDataset.ChartType chartType,
+                                                          @Nullable MoleculePrecursor precursor, ComparisonDataset.ChartType chartType,
                                                           User user, Container container)
     {
         List<PrecursorChromInfoLitePlus> pciPlusList;
