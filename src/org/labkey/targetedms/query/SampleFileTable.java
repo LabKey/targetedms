@@ -123,16 +123,24 @@ public class SampleFileTable extends TargetedMSTable
         SQLFragment nicknameSql = new SQLFragment("COALESCE(");
 
         // Find a nickname if we have one
-        nicknameSql.append("(SELECT MIN(Nickname) FROM ((SELECT * FROM ");
-        nicknameSql.append(TargetedMSManager.getTableInfoInstrument(), "i");
-        nicknameSql.append(" WHERE i.Id = ");
-        nicknameSql.append(ExprColumn.STR_TABLE_ALIAS).append(".InstrumentId) i LEFT OUTER JOIN ");
-        nicknameSql.append(schema.getTableOrThrow(TargetedMSSchema.TABLE_INSTRUMENT_NICKNAME, ContainerFilter.Type.CurrentPlusProjectAndShared.create(schema)), "f");
-        nicknameSql.append(" ON (f.SerialNumber = ");
-        nicknameSql.append(ExprColumn.STR_TABLE_ALIAS).append(".InstrumentSerialNumber");
-        nicknameSql.append(" OR (f.SerialNumber IS NULL AND ");
-        nicknameSql.append(ExprColumn.STR_TABLE_ALIAS).append(".InstrumentSerialNumber");
-        nicknameSql.append(" IS NULL)) AND (f.Model = i.Model OR (f.Model IS NULL AND i.Model IS NULL)))), ");
+        SQLFragment nicknameToLimitSql = new SQLFragment("SELECT Nickname FROM (SELECT *, CASE WHEN Container = ? THEN 3 WHEN Container = ? THEN 2 ELSE 1 END AS ContainerSort FROM (SELECT * FROM ");
+        nicknameSql.add(ContainerManager.getSharedContainer());
+        nicknameSql.add(schema.getContainer().getProject());
+        nicknameToLimitSql.append(TargetedMSManager.getTableInfoInstrument(), "i");
+        nicknameToLimitSql.append(" WHERE i.Id = ");
+        nicknameToLimitSql.append(ExprColumn.STR_TABLE_ALIAS).append(".InstrumentId) i LEFT OUTER JOIN ");
+        nicknameToLimitSql.append(schema.getTableOrThrow(TargetedMSSchema.TABLE_INSTRUMENT_NICKNAME, ContainerFilter.Type.CurrentPlusProjectAndShared.create(schema)), "f");
+        nicknameToLimitSql.append(" ON (f.SerialNumber = ");
+        nicknameToLimitSql.append(ExprColumn.STR_TABLE_ALIAS).append(".InstrumentSerialNumber");
+        nicknameToLimitSql.append(" OR (f.SerialNumber IS NULL AND ");
+        nicknameToLimitSql.append(ExprColumn.STR_TABLE_ALIAS).append(".InstrumentSerialNumber");
+        nicknameToLimitSql.append(" IS NULL)) AND (f.Model = i.Model OR (f.Model IS NULL AND i.Model IS NULL))) x ORDER BY ContainerSort\n");
+
+        getSqlDialect().limitRows(nicknameToLimitSql, 1);
+
+        nicknameSql.append("(");
+        nicknameSql.append(nicknameToLimitSql);
+        nicknameSql.append("),\n");
 
         // Alternatively, use the default name for the instrument (model - serial number)
         nicknameSql.append("(SELECT COALESCE(");
@@ -143,7 +151,7 @@ public class SampleFileTable extends TargetedMSTable
         nicknameSql.append(" WHERE i.Id = ");
         nicknameSql.append(ExprColumn.STR_TABLE_ALIAS).append(".InstrumentId) x)");
         nicknameSql.append(") ");
-        ExprColumn nicknameCol = new ExprColumn(this, "InstrumentNickname", nicknameSql, JdbcType.VARCHAR);
+        ExprColumn nicknameCol = new ExprColumn(this, "InstrumentNickname", nicknameSql, JdbcType.VARCHAR, getColumn("InstrumentSerialNumber"), getColumn("InstrumentId"));
         addColumn(nicknameCol);
 
         // Special handling for a sample identifier annotation. Inject it even if this folder doesn't have it configured

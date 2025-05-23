@@ -1083,7 +1083,6 @@ public class TargetedMSController extends SpringActionController
         TableInfo sampleFileTable = schema.getTableOrThrow(TargetedMSSchema.TABLE_SAMPLE_FILE);
         List<String> instruments = new TableSelector(sampleFileTable, Collections.singleton("InstrumentNickname")).getArrayList(String.class);
         properties.put("fileCount", instruments.size());
-        ;
         properties.put("distinctInstruments", instruments.stream().filter(Objects::nonNull).distinct().sorted().toList());
 
         // # precursors tracked, count of distinct precursors. Include peptides and small molecules
@@ -4593,34 +4592,45 @@ public class TargetedMSController extends SpringActionController
                 throw new UnauthorizedException();
             }
 
-            InstrumentNickname name;
-            if (form.getId() > 0)
+            try (var t = TargetedMSSchema.getSchema().getScope().ensureTransaction())
             {
-                name = TargetedMSManager.get().getNickname(form.getId(), getUser());
-                if (name == null)
+                InstrumentNickname name;
+                if (form.getId() > 0)
                 {
-                    throw new NotFoundException();
+                    name = TargetedMSManager.get().getNickname(form.getId(), getUser());
+                    if (name == null)
+                    {
+                        throw new NotFoundException();
+                    }
+                    if (!name.getContainer().hasPermission(getUser(), UpdatePermission.class))
+                    {
+                        // Insert a different record instead
+                        name.setId(0);
+                    }
+                    else if (!name.getContainer().equals(targetContainer))
+                    {
+                        // Moving from one container to another. Handle this by deleting the old and inserting a new
+                        TargetedMSManager.get().deleteNickname(name, getUser());
+                        name.setId(0);
+                    }
                 }
-                if (!name.getContainer().hasPermission(getUser(), UpdatePermission.class))
+                else
                 {
-                    throw new UnauthorizedException();
+                    name = new InstrumentNickname();
                 }
-            }
-            else
-            {
-                name = new InstrumentNickname();
-            }
-            if (StringUtils.isEmpty(form.getName()) && name.getId() > 0)
-            {
-                TargetedMSManager.get().deleteNickname(name, getUser());
-            }
-            else
-            {
-                name.setNickname(form.getName());
-                name.setModel(form.getModel());
-                name.setSerialNumber(form.getSerialNumber());
-                name.setContainer(targetContainer);
-                TargetedMSManager.get().saveNickname(name, getUser());
+                if (StringUtils.isEmpty(form.getName()) && name.getId() > 0)
+                {
+                    TargetedMSManager.get().deleteNickname(name, getUser());
+                }
+                else
+                {
+                    name.setNickname(form.getName());
+                    name.setModel(form.getModel());
+                    name.setSerialNumber(form.getSerialNumber());
+                    name.setContainer(targetContainer);
+                    TargetedMSManager.get().saveNickname(name, getUser());
+                }
+                t.commit();
             }
 
             return true;

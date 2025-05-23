@@ -1157,27 +1157,31 @@ public class TargetedMSManager
         return name;
     }
 
+    private record NicknameKey(String serialNumber, String model) {}
+
     /** @return the matches in order of closest to furthest match, injecting a virtual option if the list is empty */
     public List<InstrumentNickname> getNickname(String name, TargetedMSSchema schema)
     {
         TableInfo info = schema.getTableOrThrow(TABLE_INSTRUMENT_NICKNAME, new ContainerFilter.CurrentPlusProjectAndShared(schema.getContainer(), schema.getUser()));
         List<InstrumentNickname> matches = new TableSelector(info, new SimpleFilter(FieldKey.fromParts("Nickname"), name), null).getArrayList(InstrumentNickname.class);
 
-        List<InstrumentNickname> result = new ArrayList<>();
+        Map<NicknameKey, InstrumentNickname> dedupeAcrossContainers = new HashMap<>();
         // Closest is from the current container
-        addNameMatch(result, matches, schema.getContainer());
+        addNameMatch(dedupeAcrossContainers, matches, schema.getContainer());
         // Next closest is from the project
         @Nullable Container project = schema.getContainer().getProject();
         if (project != null && !project.equals(schema.getContainer()))
         {
-            addNameMatch(result, matches, schema.getContainer().getProject());
+            addNameMatch(dedupeAcrossContainers, matches, schema.getContainer().getProject());
         }
         Container shared = ContainerManager.getSharedContainer();
         // Furthest is from /Shared
         if (!schema.getContainer().equals(shared))
         {
-            addNameMatch(result, matches, shared);
+            addNameMatch(dedupeAcrossContainers, matches, shared);
         }
+
+        List<InstrumentNickname> result = new ArrayList<>(dedupeAcrossContainers.values());
         
         if (matches.isEmpty())
         {
@@ -1211,13 +1215,14 @@ public class TargetedMSManager
         return result;
     }
 
-    private void addNameMatch(List<InstrumentNickname> result, List<InstrumentNickname> matches, Container container)
+    private void addNameMatch(Map<NicknameKey, InstrumentNickname> result, List<InstrumentNickname> matches, Container container)
     {
         for (InstrumentNickname match : matches)
         {
             if (match.getContainer().equals(container))
             {
-                result.add(match);
+                NicknameKey key = new NicknameKey(match.getSerialNumber(), match.getModel());
+                result.putIfAbsent(key, match);
             }
         }
     }
