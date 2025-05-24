@@ -63,6 +63,14 @@
                 <td class="lk-form-label"><label for="nickname<%= name.getId()%>">Nickname</label></td>
                 <td><% if (targetContainers.isEmpty()) { %><%= h(name.getNickname()) %><% } else { %><labkey:input type="text" id="nickname<%= name.getId()%>" name="name" value="<%= name.getNickname() %>" size="40" /><% } %></td>
             </tr>
+            <% if (!targetContainers.containsKey(name.getContainer().getId())) { %>
+            <tr class="form-group">
+                <td class="lk-form-label">Currently saved in</td>
+                <td>
+                    <%= h(name.getContainer().getPath()) %>
+                </td>
+            </tr>
+            <% } %>
             <% if (!targetContainers.isEmpty()) { %>
             <tr class="form-group">
                 <td class="lk-form-label"><label for="targetContainerId<%= name.getId()%>">Use nickname</label></td>
