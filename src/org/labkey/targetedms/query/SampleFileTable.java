@@ -123,7 +123,8 @@ public class SampleFileTable extends TargetedMSTable
         SQLFragment nicknameSql = new SQLFragment("COALESCE(");
 
         // Find a nickname if we have one
-        SQLFragment nicknameToLimitSql = new SQLFragment("SELECT Nickname FROM (SELECT *, CASE WHEN Container = ? THEN 3 WHEN Container = ? THEN 2 ELSE 1 END AS ContainerSort FROM (SELECT * FROM ");
+        SQLFragment nicknameToLimitSql = new SQLFragment("SELECT Nickname FROM (SELECT Nickname, CASE WHEN Container = ? THEN 3 WHEN Container = ? THEN 2 ELSE 1 END AS ContainerSort FROM \n");
+        nicknameToLimitSql.append("(SELECT i.* FROM ");
         nicknameSql.add(ContainerManager.getSharedContainer());
         nicknameSql.add(schema.getContainer().getProject());
         nicknameToLimitSql.append(TargetedMSManager.getTableInfoInstrument(), "i");
