@@ -202,10 +202,9 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         timeValueOptions.put("Last", "Last");
         timeValueOptions.put("Min", "Min");
         timeValueOptions.put("Max", "Max");
-        String skyFile = "SampleFileChromInfo.sky.zip";
 
         setUpFolder(projectName, FolderType.QC);
-        importData(skyFile);
+        importData(SAMPLE_FILE_CHROM_INFO);
 
         addNewTimeTraceMetrics(metrics.get("First"), timeValueOptions.get("First"), traceName);
         addNewTimeTraceMetrics(metrics.get("Min"), timeValueOptions.get("Min"), "ColumnPressure (channel 4)");
@@ -225,13 +224,13 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         log("Delete run and verify trace metric values are deleted");
         clickTab("Runs");
         TargetedMSRunsTable runsTable = new TargetedMSRunsTable(this);
-        runsTable.deleteRun(skyFile);
+        runsTable.deleteRun(SAMPLE_FILE_CHROM_INFO);
         goToSchemaBrowser();
         traceValuesTable = viewQueryData("targetedms", "QCTraceMetricValues");
         assertEquals("Values in QCTraceMetricValues are not deleted on deleting run", 0, traceValuesTable.getDataRowCount());
 
         log("Reimport run and verify QCTraceMetricValues has values after import");
-        importData(skyFile, 2);
+        importData(SAMPLE_FILE_CHROM_INFO, 2);
         goToSchemaBrowser();
         traceValuesTable = viewQueryData("targetedms", "QCTraceMetricValues");
         assertTrue("Trace values after import are not present", traceValuesTable.getDataRowCount() > 0);

@@ -46,10 +46,14 @@
     }
     %>
 
+<%-- Always render the form, but conditionally render its elements--%>
     <labkey:form action="<%=urlFor(TargetedMSController.SaveInstrumentNameAction.class)%>" method="post" layout="horizontal">
+    <% if (!targetContainers.isEmpty()) { %>
         <labkey:input type="hidden" name="id" value="<%=name.getId()%>"/>
         <labkey:input type="hidden" name="model" value="<%=name.getModel()%>"/>
         <labkey:input type="hidden" name="serialNumber" value="<%=name.getSerialNumber()%>"/>
+    <% } %>
+
         <table>
             <tr class="form-group">
                 <td class="lk-form-label">Model</td>
@@ -61,7 +65,7 @@
             </tr>
             <tr class="form-group">
                 <td class="lk-form-label"><label for="nickname<%= name.getId()%>">Nickname</label></td>
-                <td><% if (targetContainers.isEmpty()) { %><%= h(name.getNickname()) %><% } else { %><labkey:input type="text" id="nickname<%= name.getId()%>" name="name" value="<%= name.getNickname() %>" size="40" /><% } %></td>
+                <td><% if (targetContainers.isEmpty()) { %><%= h(name.getNickname()) %><% } else { %><labkey:input type="text" name="name" value="<%= name.getNickname() %>" size="40" /><% } %></td>
             </tr>
             <% if (!targetContainers.containsKey(name.getContainer().getId())) { %>
             <tr class="form-group">

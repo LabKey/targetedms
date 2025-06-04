@@ -58,6 +58,8 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
     protected static final String QC_3_FILE = "QC_3.sky.zip";
     protected static final String QC_4_FILE = "QC_4.sky.zip";
     protected static final String SKY_FILE_SMALLMOL_PEP = "smallmol_plus_peptides.sky.zip";
+    protected static final String ISOTOPOLOGUE_FILE_ANNOTATED = "PRM_7x5mix_A40010_QEHF_examples_v3.sky.zip";
+    protected static final String SAMPLE_FILE_CHROM_INFO = "SampleFileChromInfo.sky.zip";
     protected static final String USER = "qcuser@targetedms.test";
     private static ConfiguresSite siteConfigurer;
 
@@ -219,6 +221,12 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
     @LogMethod
     protected void importData(@LoggedParam String file, int jobCount, boolean expectError)
     {
+        importData(file, jobCount, expectError, true);
+    }
+
+    @LogMethod
+    protected void importData(@LoggedParam String file, int jobCount, boolean expectError, boolean doDbMaintenance)
+    {
         Locator.XPathLocator importButtonLoc = Locator.lkButton("Process and Import Data");
         WebElement importButton = importButtonLoc.findElementOrNull(getDriver());
         if (null == importButton)
@@ -234,7 +242,10 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         waitForText("Skyline document import");
         waitForPipelineJobsToComplete(jobCount, file, expectError);
 
-        runDbMaintenance();
+        if (doDbMaintenance)
+        {
+            runDbMaintenance();
+        }
     }
 
     private void runDbMaintenance()
