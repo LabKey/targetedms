@@ -51,7 +51,7 @@ public class MoleculeTableInfo extends AbstractGeneralMoleculeTableInfo
         moleculeCol.setURL(getDetailsURL(null, null));
         addColumn(moleculeCol);
 
-        setTitleColumn(moleculeCol.getColumnName());
+        setTitleColumn(moleculeCol.getName());
 
         List<FieldKey> defaultCols = new ArrayList<>(getDefaultVisibleColumns());
         defaultCols.add(0, FieldKey.fromParts("PeptideGroupId", "RunId", "Folder", "Path"));
