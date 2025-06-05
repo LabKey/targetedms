@@ -128,12 +128,6 @@ public class TargetedMSInstrumentNicknameTest extends TargetedMSTest
         importData(SAMPLE_FILE_CHROM_INFO, 2, false, true);
     }
 
-    @Before
-    public void preTest()
-    {
-        goToProjectHome();
-    }
-
     @Test
     public void testSubfolders()
     {
