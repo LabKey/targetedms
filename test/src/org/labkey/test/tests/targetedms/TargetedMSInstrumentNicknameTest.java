@@ -214,8 +214,8 @@ public class TargetedMSInstrumentNicknameTest extends TargetedMSTest
 
         // Now try a non-QC folder, which should be inheriting the first nickname but not the second
         clickFolder(NON_QC_SUB_FOLDER);
-        click(Locator.linkWithText(ISOTOPOLOGUE_FILE_ANNOTATED));
-        click(Locator.linkWithText("6 replicates"));
+        clickAndWait(Locator.linkWithText(ISOTOPOLOGUE_FILE_ANNOTATED));
+        clickAndWait(Locator.linkWithText("6 replicates"));
         assertElementPresent(nickname1LinkLocator);
         assertElementPresent(qExactiveWithSerialLinkLocator);
         // We should also get links to the QC folders with data from the same instrument
