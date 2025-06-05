@@ -146,6 +146,7 @@ import org.labkey.api.util.ButtonBuilder;
 import org.labkey.api.util.ConfigurationException;
 import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.DOM;
+import org.labkey.api.util.DOM.Renderable;
 import org.labkey.api.util.DateUtil;
 import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.HelpTopic;
@@ -174,6 +175,7 @@ import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.WebPartView;
 import org.labkey.api.view.template.ClientDependency;
 import org.labkey.api.view.template.PageConfig;
+import org.labkey.api.writer.HtmlWriter;
 import org.labkey.targetedms.chart.ChromatogramChartMakerFactory;
 import org.labkey.targetedms.chart.ComparisonChartMaker;
 import org.labkey.targetedms.chromlib.ChromatogramLibraryUtils;
@@ -276,7 +278,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -313,8 +314,10 @@ import static org.labkey.api.targetedms.TargetedMSService.RAW_FILES_TAB;
 import static org.labkey.api.util.DOM.A;
 import static org.labkey.api.util.DOM.Attribute.height;
 import static org.labkey.api.util.DOM.Attribute.href;
+import static org.labkey.api.util.DOM.Attribute.id;
 import static org.labkey.api.util.DOM.Attribute.method;
 import static org.labkey.api.util.DOM.Attribute.src;
+import static org.labkey.api.util.DOM.Attribute.style;
 import static org.labkey.api.util.DOM.Attribute.width;
 import static org.labkey.api.util.DOM.DIV;
 import static org.labkey.api.util.DOM.SPAN;
@@ -5022,19 +5025,32 @@ public class TargetedMSController extends SpringActionController
             VBox result = new VBox();
 
             // Summary for this sample file
-            DOM.Renderable renderable = DOM.TABLE(cl("lk-fields-table"),
-                    TR(TD(cl("labkey-form-label"), "Sample Identifier"),
-                            TD(materialURL == null ? sampleRow.get(SampleFileTable.SAMPLE_FIELD_KEY) : A(at(href, materialURL), _sampleFile.getSampleName()))),
-                    TR(TD(cl("labkey-form-label"), "File Path"),
-                            TD(_sampleFile.getFilePath())),
-                    TR(TD(cl("labkey-form-label"), "Acquired Time"),
-                            TD(DateUtil.formatDateTime(getContainer(), _sampleFile.getAcquiredTime()))),
-                    TR(TD(cl("labkey-form-label"), "Modified Time"),
-                            TD(DateUtil.formatDateTime(getContainer(), _sampleFile.getModifiedTime()))),
-                    TR(TD(cl("labkey-form-label"), "Instrument Serial Number"),
-                            TD(_sampleFile.getInstrumentSerialNumber())),
-                    TR(TD(cl("labkey-form-label"), "Replicate Name"),
-                            TD(replicate.getName()))
+            Renderable renderable = DOM.TABLE(
+                cl("lk-fields-table"),
+                TR(
+                    TD(cl("labkey-form-label"), "Sample Identifier"),
+                    TD(materialURL == null ? sampleRow.get(SampleFileTable.SAMPLE_FIELD_KEY) : A(at(href, materialURL), _sampleFile.getSampleName()))
+                ),
+                TR(
+                    TD(cl("labkey-form-label"), "File Path"),
+                    TD(_sampleFile.getFilePath())
+                ),
+                TR(
+                    TD(cl("labkey-form-label"), "Acquired Time"),
+                    TD(DateUtil.formatDateTime(getContainer(), _sampleFile.getAcquiredTime()))
+                ),
+                TR(
+                    TD(cl("labkey-form-label"), "Modified Time"),
+                    TD(DateUtil.formatDateTime(getContainer(), _sampleFile.getModifiedTime()))
+                ),
+                TR(
+                    TD(cl("labkey-form-label"), "Instrument Serial Number"),
+                    TD(_sampleFile.getInstrumentSerialNumber())
+                ),
+                TR(
+                    TD(cl("labkey-form-label"), "Replicate Name"),
+                    TD(replicate.getName())
+                )
             );
 
             HtmlView summaryView = new HtmlView(renderable);
@@ -5168,12 +5184,23 @@ public class TargetedMSController extends SpringActionController
             ChromatogramGridView chromatogramView = new ChromatogramGridView(chromatogramRegion, errors)
             {
                 @Override
-                public void renderView(RenderContext model, PrintWriter out) throws IOException
+                public void renderView(RenderContext model, HtmlWriter out)
                 {
-                    out.write("<div style=\"display: inline-block\">\n");
-                    out.write("<div id=\"groupChromatogramLegend\"></div>\n");
-                    super.renderView(model, out);
-                    out.write("</div>\n");
+                    DIV(at(style, "display: inline-block")).appendTo(out);
+                    DIV(
+                        at(id, "groupChromatogramLegend"),
+                        (Renderable) ret -> {
+                            try
+                            {
+                                super.renderView(model, out);
+                            }
+                            catch (IOException e)
+                            {
+                                throw new RuntimeException(e);
+                            }
+                            return ret;
+                        }
+                    ).appendTo(out);
                 }
             };
 
