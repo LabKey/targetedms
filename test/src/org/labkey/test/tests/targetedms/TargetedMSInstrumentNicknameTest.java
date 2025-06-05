@@ -250,8 +250,8 @@ public class TargetedMSInstrumentNicknameTest extends TargetedMSTest
         setFormElement(Locator.input("name"), NICKNAME_3);
         clickButton("Save");
 
-        click(Locator.linkWithText(SAMPLE_FILE_CHROM_INFO));
-        click(Locator.linkWithText("2 replicates"));
+        clickAndWait(Locator.linkWithText(SAMPLE_FILE_CHROM_INFO));
+        clickAndWait(Locator.linkWithText("2 replicates"));
         assertElementPresent(Locator.linkWithText(NICKNAME_3));
         stopImpersonating();
     }
