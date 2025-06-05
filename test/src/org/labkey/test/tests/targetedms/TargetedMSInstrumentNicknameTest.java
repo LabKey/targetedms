@@ -152,7 +152,7 @@ public class TargetedMSInstrumentNicknameTest extends TargetedMSTest
         setFormElement(Locator.input("name"), NICKNAME_1);
         clickButton("Save");
         goToProjectHome();
-        waitAndClick(qExactiveWithSerialLinkLocator);
+        waitAndClickAndWait(qExactiveWithSerialLinkLocator);
         setFormElement(Locator.input("name"), NICKNAME_1);
         clickButton("Save");
 
