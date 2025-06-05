@@ -148,7 +148,7 @@ public class TargetedMSInstrumentNicknameTest extends TargetedMSTest
         assertElementPresent(qExactiveWithSerialLinkLocator);
 
         // Give a nickname that collapses them, saving in the default scope (server-side)
-        click(qExactiveLinkLocator);
+        clickAndWait(qExactiveLinkLocator);
         setFormElement(Locator.input("name"), NICKNAME_1);
         clickButton("Save");
         goToProjectHome();
