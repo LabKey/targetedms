@@ -229,9 +229,9 @@ public class TargetedMSInstrumentNicknameTest extends TargetedMSTest
     {
         goToProjectHome();
         clickFolder(NON_QC_SUB_FOLDER);
-        click(Locator.linkWithText(SAMPLE_FILE_CHROM_INFO));
-        click(Locator.linkWithText("2 replicates"));
-        click(Locator.linkWithText(QTRAP));
+        clickAndWait(Locator.linkWithText(SAMPLE_FILE_CHROM_INFO));
+        clickAndWait(Locator.linkWithText("2 replicates"));
+        clickAndWait(Locator.linkWithText(QTRAP));
 
         String postImpersonationUrl = getDriver().getCurrentUrl();
         // Check we don't let readers save
