@@ -221,7 +221,7 @@ public class TargetedMSInstrumentNicknameTest extends TargetedMSTest
         // We should also get links to the QC folders with data from the same instrument
         assertElementPresent(Locator.linkWithText(getProjectName()));
         assertElementPresent(Locator.linkWithText(QC_SUB_FOLDER));
-        assertElementPresent(Locator.linkWithText(QC_SUB_FOLDER));
+        assertElementPresent(Locator.linkWithText(QC_SUB_SUB_FOLDER));
     }
 
     @Test
