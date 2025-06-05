@@ -166,7 +166,7 @@ public class TargetedMSInstrumentNicknameTest extends TargetedMSTest
         assertElementNotPresent(qExactiveLinkLocator);
         assertElementNotPresent(qExactiveWithSerialLinkLocator);
 
-        click(nickname1LinkLocator);
+        clickAndWait(nickname1LinkLocator);
         // We should see both model/serial numbers on the same page
         assertTextPresent(Q_EXACTIVE, 4);  // Twice on the page itself, twice in hidden form elements
         assertTextPresent(Q_EXACTIVE_SERIAL_ONLY, 2); // Once on the page itself, once in hidden form elements
