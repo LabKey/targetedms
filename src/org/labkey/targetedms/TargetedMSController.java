@@ -5186,9 +5186,8 @@ public class TargetedMSController extends SpringActionController
                 @Override
                 public void renderView(RenderContext model, HtmlWriter out)
                 {
-                    DIV(at(style, "display: inline-block")).appendTo(out);
-                    DIV(
-                        at(id, "groupChromatogramLegend"),
+                    DIV(at(style, "display: inline-block"),
+                        DIV(at(id, "groupChromatogramLegend")),
                         (Renderable) ret -> {
                             try
                             {
