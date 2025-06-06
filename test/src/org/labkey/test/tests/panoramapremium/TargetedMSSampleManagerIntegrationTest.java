@@ -1,8 +1,10 @@
 package org.labkey.test.tests.panoramapremium;
 
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.labkey.remoteapi.CommandException;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.WebTestHelper;
@@ -12,6 +14,7 @@ import org.labkey.test.util.PortalHelper;
 import org.labkey.test.util.SampleTypeHelper;
 import org.labkey.test.util.exp.SampleTypeAPIHelper;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -23,11 +26,12 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
     protected static final String TargetedMS_SubFolder = "TargetedMS Subfolder";
     protected static final String Sample_Manager_Subfolder = "Sample Manager Subfolder";
     private static final String sampleType = "TargetedMS_Linked_Sample_Type";
+    private static ProductKey _previousProduct = null;
 
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSSampleManagerIntegrationTest init = (TargetedMSSampleManagerIntegrationTest) getCurrentTest();
+        TargetedMSSampleManagerIntegrationTest init = getCurrentTest();
         init.doInit();
     }
 
@@ -53,9 +57,25 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
         createSampleType(sampleType);
     }
 
-    @Test
-    public void testSampleTypeNavigation()
+    @After
+    public void resetProductConfiguration()
     {
+        try
+        {
+            if (_previousProduct != null)
+                setProductConfigurationViaApi(_previousProduct);
+        }
+        catch (Exception e)
+        {
+            log("Failed to reset the product configuration back to its original value:" + e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSampleTypeNavigation() throws IOException, CommandException
+    {
+        _previousProduct = setProductConfigurationViaApi(ProductKey.sampleManagerProfessional);
+
         String s1 = "AnnotatedSample1";
         String s2 = "ExtractedSampleId4";
         String s3 = "Q_Exactive_08_09_2013_JGB_87";
@@ -88,8 +108,8 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
         assertElementPresent(Locator.linkWithText(s2));
         assertElementPresent(Locator.linkWithText(s3));
         clickAndWait(Locator.linkWithText(s1));
-        checker().verifyTrue("Sample link did not navigate to sample manager application",
-                getCurrentRelativeURL(false).contains(WebTestHelper.buildRelativeUrl("sampleManager", getProjectName() + "/" + Sample_Manager_Subfolder, "app")));
+        checker().verifyTrue("Sample link did not navigate to Sample Manager application",
+                getCurrentRelativeURL(false).contains(WebTestHelper.buildRelativeUrl("SampleManager", getProjectName() + "/" + Sample_Manager_Subfolder, "app")));
 
         log("Navigating back to labkey server");
         waitForElementToBeVisible(Locator.linkWithText("Assays"));
@@ -98,6 +118,13 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
         waitAndClickAndWait(Locator.linkWithText(SProCoP_FILE_ANNOTATED));
         checker().verifyTrue("Did not navigate back to labkey server",
                 getCurrentRelativeURL(false).contains(WebTestHelper.buildRelativeUrl("targetedms", getProjectName() + "/" + TargetedMS_SubFolder, "showPrecursorList")));
+
+        log("Change to the LIMS configuration to verify the navigation");
+        setProductConfigurationViaApi(ProductKey.labkeyLims);
+        clickAndWait(Locator.linkWithText("6 replicates"));
+        clickAndWait(Locator.linkWithText(s1));
+        checker().verifyTrue("Sample link did not navigate to LIMS application",
+                getCurrentRelativeURL(false).contains(WebTestHelper.buildRelativeUrl("LIMS", getProjectName() + "/" + Sample_Manager_Subfolder, "app")));
 
         log("Disabling the SM to verify the navigation");
         goToProjectHome();
