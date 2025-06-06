@@ -9,8 +9,7 @@
                 <property name="columnTitle" value="Skyline Document"/>
             </properties>
         </column>
-        <column name="InstrumentId" />
-        <column name="InstrumentSerialNumber" />
+        <column name="InstrumentNickname" />
         <column name="ModifiedTime" />
     </columns>
     <sorts>

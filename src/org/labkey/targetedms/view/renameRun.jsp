@@ -22,7 +22,8 @@
 <%@ taglib prefix="labkey" uri="http://www.labkey.org/taglib" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 <%
-    RenameBean bean = ((JspView<RenameBean>) HttpView.currentView()).getModelBean();
+    JspView<RenameBean> currentView = HttpView.currentView();
+    RenameBean bean = currentView.getModelBean();
 %>
 <labkey:form action="<%=urlFor(RenameRunAction.class)%>" method="post" layout="horizontal">
 <%=generateReturnUrlFormField(bean.returnUrl)%>

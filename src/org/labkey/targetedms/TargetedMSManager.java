@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.cache.Cache;
 import org.labkey.api.cache.CacheManager;
+import org.labkey.api.collections.CaseInsensitiveHashMap;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
@@ -43,6 +44,7 @@ import org.labkey.api.data.Table;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.data.dialect.SqlDialect;
+import org.labkey.api.data.dialect.StandardDialectStringHandler;
 import org.labkey.api.data.statistics.MathStat;
 import org.labkey.api.data.statistics.StatsService;
 import org.labkey.api.exp.AbstractFileXarSource;
@@ -64,15 +66,21 @@ import org.labkey.api.pipeline.PipeRoot;
 import org.labkey.api.pipeline.PipelineService;
 import org.labkey.api.pipeline.PipelineValidationException;
 import org.labkey.api.query.BatchValidationException;
+import org.labkey.api.query.DuplicateKeyException;
 import org.labkey.api.query.FieldKey;
+import org.labkey.api.query.InvalidKeyException;
 import org.labkey.api.query.QueryDefinition;
 import org.labkey.api.query.QueryException;
 import org.labkey.api.query.QuerySchema;
 import org.labkey.api.query.QueryService;
+import org.labkey.api.query.QueryUpdateService;
+import org.labkey.api.query.QueryUpdateServiceException;
 import org.labkey.api.query.SchemaKey;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.security.permissions.DeletePermission;
+import org.labkey.api.security.permissions.ReadPermission;
+import org.labkey.api.security.permissions.UpdatePermission;
 import org.labkey.api.targetedms.ITargetedMSRun;
 import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.api.targetedms.RunRepresentativeDataState;
@@ -91,6 +99,7 @@ import org.labkey.targetedms.model.GuideSetKey;
 import org.labkey.targetedms.model.GuideSetStats;
 import org.labkey.api.targetedms.model.QCMetricConfiguration;
 import org.labkey.api.targetedms.model.QCMetricStatus;
+import org.labkey.targetedms.model.InstrumentNickname;
 import org.labkey.targetedms.model.QCTraceMetricValues;
 import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.model.passport.IKeyword;
@@ -113,6 +122,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -136,6 +146,7 @@ import static org.labkey.api.targetedms.TargetedMSService.FOLDER_TYPE_PROP_NAME;
 import static org.labkey.api.targetedms.TargetedMSService.FolderType.Library;
 import static org.labkey.api.targetedms.TargetedMSService.FolderType.LibraryProtein;
 import static org.labkey.api.targetedms.TargetedMSService.MODULE_NAME;
+import static org.labkey.targetedms.TargetedMSSchema.TABLE_INSTRUMENT_NICKNAME;
 
 public class TargetedMSManager
 {
@@ -456,6 +467,11 @@ public class TargetedMSManager
     public static TableInfo getTableInfoFoldChange()
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_FOLD_CHANGE);
+    }
+
+    public static TableInfo getTableInfoInstrumentNickname()
+    {
+        return getSchema().getTable(TABLE_INSTRUMENT_NICKNAME);
     }
 
     public static TableInfo getTableInfoiRTPeptide()
@@ -1128,6 +1144,86 @@ public class TargetedMSManager
         for (ExpRun run : experimentRunsToDelete)
         {
             run.delete(user);
+        }
+    }
+
+    public InstrumentNickname getNickname(long id, User user)
+    {
+        InstrumentNickname name = new TableSelector(getTableInfoInstrumentNickname()).getObject(id, InstrumentNickname.class);
+        if (name == null || !name.getContainer().hasPermission(user, ReadPermission.class))
+        {
+            throw new NotFoundException();
+        }
+        return name;
+    }
+
+    private record NicknameKey(String serialNumber, String model) {}
+
+    /** @return the matches in order of closest to furthest match, injecting a virtual option if the list is empty */
+    public List<InstrumentNickname> getNickname(String name, TargetedMSSchema schema)
+    {
+        TableInfo info = schema.getTableOrThrow(TABLE_INSTRUMENT_NICKNAME, new ContainerFilter.CurrentPlusProjectAndShared(schema.getContainer(), schema.getUser()));
+        List<InstrumentNickname> matches = new TableSelector(info, new SimpleFilter(FieldKey.fromParts("Nickname"), name), null).getArrayList(InstrumentNickname.class);
+
+        Map<NicknameKey, InstrumentNickname> dedupeAcrossContainers = new HashMap<>();
+        // Closest is from the current container
+        addNameMatch(dedupeAcrossContainers, matches, schema.getContainer());
+        // Next closest is from the project
+        @Nullable Container project = schema.getContainer().getProject();
+        if (project != null && !project.equals(schema.getContainer()))
+        {
+            addNameMatch(dedupeAcrossContainers, matches, schema.getContainer().getProject());
+        }
+        Container shared = ContainerManager.getSharedContainer();
+        // Furthest is from /Shared
+        if (!schema.getContainer().equals(shared))
+        {
+            addNameMatch(dedupeAcrossContainers, matches, shared);
+        }
+
+        List<InstrumentNickname> result = new ArrayList<>(dedupeAcrossContainers.values());
+        
+        if (matches.isEmpty())
+        {
+            String sql = "SELECT DISTINCT InstrumentNickname, " +
+                    "InstrumentId.Model AS Model, " +
+                    "InstrumentSerialNumber AS SerialNumber " +
+                    "FROM targetedms.SampleFile WHERE InstrumentNickname = " +
+                    new StandardDialectStringHandler().quoteStringLiteral(name) +
+                    " ORDER By InstrumentNickname, InstrumentId.Model, InstrumentSerialNumber";
+            TableSelector selector = QueryService.get().selector(schema, sql);
+            result = selector.getArrayList(InstrumentNickname.class);
+            Container targetContainer;
+            if (shared.hasPermission(schema.getUser(), UpdatePermission.class))
+            {
+                targetContainer = shared;
+            }
+            else if (project != null && project.hasPermission(schema.getUser(), UpdatePermission.class))
+            {
+                targetContainer = project;
+            }
+            else
+            {
+                targetContainer = schema.getContainer();
+            }
+            for (InstrumentNickname instrumentNickname : result)
+            {
+                instrumentNickname.setContainer(targetContainer);
+            }
+        }
+
+        return result;
+    }
+
+    private void addNameMatch(Map<NicknameKey, InstrumentNickname> result, List<InstrumentNickname> matches, Container container)
+    {
+        for (InstrumentNickname match : matches)
+        {
+            if (match.getContainer().equals(container))
+            {
+                NicknameKey key = new NicknameKey(match.getSerialNumber(), match.getModel());
+                result.putIfAbsent(key, match);
+            }
         }
     }
 
@@ -2850,5 +2946,39 @@ public class TargetedMSManager
     public void clearCachedEnabledQCMetrics(Container container)
     {
         getSchema().getScope().addCommitTask(() -> _metricCache.remove(container), DbScope.CommitTaskOption.IMMEDIATE, DbScope.CommitTaskOption.POSTCOMMIT, DbScope.CommitTaskOption.POSTROLLBACK);
+    }
+
+    @NotNull
+    private QueryUpdateService getNicknameUpdateService(User user, Container container)
+    {
+        TargetedMSSchema schema = new TargetedMSSchema(user, container);
+        TableInfo table = schema.getTableOrThrow(TABLE_INSTRUMENT_NICKNAME);
+        return Objects.requireNonNull(table.getUpdateService());
+    }
+
+    public void deleteNickname(InstrumentNickname name, User user) throws SQLException, BatchValidationException, QueryUpdateServiceException, InvalidKeyException
+    {
+        getNicknameUpdateService(user, name.getContainer()).
+                deleteRows(user, name.getContainer(), Arrays.asList(new CaseInsensitiveHashMap<>(Map.of("id", name.getId()))), null, null);
+    }
+
+    public void saveNickname(InstrumentNickname name, User user) throws SQLException, BatchValidationException, QueryUpdateServiceException, InvalidKeyException, DuplicateKeyException
+    {
+        Map<String, Object> row = new CaseInsensitiveHashMap<>();
+        row.put("nickname", name.getNickname());
+        row.put("serialNumber", name.getSerialNumber());
+        row.put("model", name.getModel());
+        BatchValidationException errors = new BatchValidationException();
+        if (name.getId() > 0)
+        {
+            row.put("id", name.getId());
+            getNicknameUpdateService(user, name.getContainer()).
+                    updateRows(user, name.getContainer(), Arrays.asList(row), Arrays.asList(row), errors, null, null);
+        }
+        else
+        {
+            getNicknameUpdateService(user, name.getContainer()).
+                    insertRows(user, name.getContainer(), Arrays.asList(row), errors, null, null);
+        }
     }
 }

@@ -21,7 +21,6 @@ import java.util.List;
 @BaseWebDriverTest.ClassTimeout(minutes = 4)
 public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
 {
-    private static final String SKY_FILE_EXPERIMENT = "SProCoPTutorial.zip";
     private static final String SKY_FILE_QC = "SProCoPTutorial-QCFolderData.zip";
     private static final String QC_FOLDER_1 = "Test Project QC Folder 1";
     private static final String QC_FOLDER_2 = "Test Project QC Folder 2";
@@ -30,14 +29,14 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSExperimentalQCLinkTest init = (TargetedMSExperimentalQCLinkTest) getCurrentTest();
+        TargetedMSExperimentalQCLinkTest init = getCurrentTest();
         init.doInit();
     }
 
     private void doInit()
     {
         setupFolder(FolderType.Experiment);
-        importData(SKY_FILE_EXPERIMENT);
+        importData(SProCoP_FILE);
 
         log("Creating one test QC folder with same data");
         setUpFolder(QC_FOLDER_1, FolderType.QC);
@@ -98,7 +97,7 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
     @Test
     public void testLinkExperimentalQC()
     {
-        String expRange = "Skyline File: " + SKY_FILE_EXPERIMENT + ", " +
+        String expRange = "Skyline File: " + SProCoP_FILE + ", " +
                 "Start: 2013-08-09 11:39:00, " +
                 "End: 2013-08-27 14:45:49, " +
                 "Mean: 14.669, Std Dev: 0.501, " +
@@ -139,8 +138,8 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
 
         log("Verify experiment toolbar is present");
         checker().verifyTrue("Experiment date range toolbar is not present",
-                isElementPresent(Locator.linkContainingText(SKY_FILE_EXPERIMENT)));
-        clickAndWait(Locator.linkContainingText(SKY_FILE_EXPERIMENT));
+                isElementPresent(Locator.linkContainingText(SProCoP_FILE)));
+        clickAndWait(Locator.linkContainingText(SProCoP_FILE));
         checker().verifyEquals("Did not navigate to experimental folder", getProjectName(), getCurrentContainer());
         goBack();
 
