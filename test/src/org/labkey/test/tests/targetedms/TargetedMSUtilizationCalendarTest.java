@@ -27,7 +27,7 @@ public class TargetedMSUtilizationCalendarTest extends TargetedMSTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSUtilizationCalendarTest init = (TargetedMSUtilizationCalendarTest) getCurrentTest();
+        TargetedMSUtilizationCalendarTest init = getCurrentTest();
         init.doInit();
     }
 

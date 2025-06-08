@@ -28,8 +28,8 @@ public class QCHelper
 
     public static class Annotation
     {
-        private String type;
-        private String description;
+        private final String type;
+        private final String description;
         private String date;
 
         public Annotation(String type, String description, String date)
@@ -88,9 +88,9 @@ public class QCHelper
 
     public static class AnnotationType
     {
-        private String name;
+        private final String name;
         private String description;
-        private String color;
+        private final String color;
 
         public AnnotationType(String name, String description, String color)
         {

@@ -98,14 +98,14 @@ public class IrtRegressionCalculator
             }
         }
 
-        if (existingPeptideList.size() > 0)
+        if (!existingPeptideList.isEmpty())
         {
             pipelineLog.info("Attempting to calculate iRT regression line from shared peptides.");
             // Attempt to get a regression based on shared peptides
             CurrentCalculator calculator = new CurrentCalculator(standardPeptideList, existingPeptideList);
             ArrayList<MeasuredRetentionTime> peptidesTimes = retentionTimes.getPeptideRetentionTimes();
             //var peptidesTimes = retentionTimes.getPeptideRetentionTimes().toArray();
-            RetentionTimeRegression regression = RetentionTimeRegression.FindThreshold(MIN_IRT_TO_TIME_CORRELATION, RetentionTimeRegression.getThresholdPrecision(), peptidesTimes, new ArrayList<MeasuredRetentionTime>(), peptidesTimes, calculator, false);
+            RetentionTimeRegression regression = RetentionTimeRegression.FindThreshold(MIN_IRT_TO_TIME_CORRELATION, RetentionTimeRegression.getThresholdPrecision(), peptidesTimes, new ArrayList<>(), peptidesTimes, calculator, false);
 
             if (regression != null && regression.getPeptideTimes().size() >= MIN_IRT_TO_TIME_POINT_COUNT)
             {
@@ -142,10 +142,10 @@ public class IrtRegressionCalculator
 
     private final static class CurrentCalculator extends RetentionScoreCalculatorSpec
     {
-        private LinkedHashMap<String, Double> _dictStandards = new LinkedHashMap<>();
-        private LinkedHashMap<String, Double> _dictLibrary = new LinkedHashMap<>();
+        private final LinkedHashMap<String, Double> _dictStandards = new LinkedHashMap<>();
+        private final LinkedHashMap<String, Double> _dictLibrary = new LinkedHashMap<>();
 
-        private double _unknownScore;
+        private final double _unknownScore;
 
         public CurrentCalculator(Iterable<IrtPeptide> standardPeptides, Iterable<IrtPeptide> libraryPeptides)
         {

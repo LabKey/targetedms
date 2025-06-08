@@ -62,7 +62,6 @@ public class ModificationManager
     }
 
     /**
-     * @param peptideId
      * @return Map of the modified amino acid index in the peptide sequence
      *         and the mass of the modification.
      *         ModifiedIndex -> MassDiff
@@ -94,7 +93,6 @@ public class ModificationManager
     }
 
     /**
-     * @param peptideId
      * @return Map of the modified amino acid index in the peptide sequence
      *         and the mass of the modification.
      *         ModifiedIndex -> MassDiff
@@ -111,7 +109,7 @@ public class ModificationManager
                      "AND m.IsotopeLabelId=?";
         SQLFragment sf = new SQLFragment(sql, peptideId, isotopeLabelId);
 
-        new SqlSelector(getSchema(), sf).forEach(new Selector.ForEachBlock<ResultSet>()
+        new SqlSelector(getSchema(), sf).forEach(new Selector.ForEachBlock<>()
         {
             @Override
             public void exec(ResultSet rs) throws SQLException
@@ -120,7 +118,7 @@ public class ModificationManager
                 double massDiff = rs.getDouble("MassDiff");
 
                 Double diffAtIndex = isotopeModIndexMassDiff.get(index);
-                if(diffAtIndex != null)
+                if (diffAtIndex != null)
                 {
                     massDiff += diffAtIndex;
                 }
@@ -136,7 +134,6 @@ public class ModificationManager
      * that were checked in the Peptide Settings > Modifications tab in Skyline.  The modifications are under
      * <peptide_settings> -> <peptide_modification> -> <heavy_modifications> element in the .sky file.  They are stored
      * in the targetedms.RunIsotopeModification table.
-     * @param runId
      * @return List of isotopic modifications
      */
     public static List<PeptideSettings.RunIsotopeModification> getIsotopeModificationsForRun(long runId)
@@ -159,7 +156,6 @@ public class ModificationManager
      * that were checked in the Peptide Settings > Modifications tab in Skyline.  The modifications are under
      * <peptide_settings> -> <peptide_modification> -> <static_modifications> element in the .sky file.  They are stored
      * in the targetedms.RunStructuralModification table.
-     * @param runId
      * @return List of structural modifications
      */
     public static List<PeptideSettings.RunStructuralModification> getStructuralModificationsForRun(long runId)
@@ -179,7 +175,6 @@ public class ModificationManager
 
     /**
      * Returns a list of isotopic modifications found in at least one peptide in the run (Skyline document).
-     * @param runId
      * @return List of isotopic modifications
      */
     public static List<PeptideSettings.IsotopeModification> getIsotopeModificationsUsedInRun(long runId)
@@ -191,7 +186,6 @@ public class ModificationManager
 
     /**
      * Returns a list of structural modifications found in at least one peptide in the run (Skyline document).
-     * @param runId
      * @return List of structural modifications
      */
     public static List<PeptideSettings.StructuralModification> getStructuralModificationsUsedInRun(long runId)

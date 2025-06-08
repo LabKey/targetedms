@@ -74,9 +74,7 @@ public class LibIrtLibrary extends AbstractLibEntity
     public boolean equals(Object o)
     {
         if (this == o) return true;
-        if (!(o instanceof LibIrtLibrary)) return false;
-
-        LibIrtLibrary that = (LibIrtLibrary) o;
+        if (!(o instanceof LibIrtLibrary that)) return false;
 
         if (!_modifiedSequence.equals(that._modifiedSequence)) return false;
         if (!_irtValue.equals(that._irtValue)) return false;

@@ -29,9 +29,9 @@ import org.labkey.targetedms.query.TransitionManager;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -41,11 +41,11 @@ import java.util.stream.Collectors;
  */
 public class ReplicateDataSet
 {
-    Map<Long, Replicate> _replicates = new HashMap<>();
-    Map<Long, Long> _fileIdToReplicateId = new HashMap<>();
+    Map<Long, Replicate> _replicates;
+    Map<Long, Long> _fileIdToReplicateId;
     Map<Long, Map<String, ReplicateAnnotation>> _replicateAnnotations;
     Map<Long, PeptideSettings.IsotopeLabel> _isotopeLabels;
-    private boolean _useTransitionChromInfos;
+    private final boolean _useTransitionChromInfos;
 
     public ReplicateDataSet(TargetedMSRun run)
     {
@@ -92,11 +92,7 @@ public class ReplicateDataSet
     public Map<String, ReplicateAnnotation> getReplicateAnnotations(Replicate replicate)
     {
         Map<String, ReplicateAnnotation> annotations = _replicateAnnotations.get(replicate.getId());
-        if (annotations != null)
-        {
-            return annotations;
-        }
-        return Collections.emptyMap();
+        return Objects.requireNonNullElse(annotations, Collections.emptyMap());
     }
 
     @Nullable

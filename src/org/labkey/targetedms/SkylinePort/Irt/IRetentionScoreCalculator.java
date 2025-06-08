@@ -28,7 +28,7 @@ import java.util.ArrayList;
 
 public interface IRetentionScoreCalculator
 {
-    public String getName();
+    String getName();
 
 	Double ScoreSequence(String modifiedSequence);
 

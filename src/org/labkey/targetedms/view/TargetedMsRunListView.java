@@ -52,12 +52,12 @@ public class TargetedMsRunListView extends ExperimentRunListView
 {
 
     private ViewType _viewType;
-    private boolean _hasDocVersions;
-    private boolean _showAllVersions;
+    private final boolean _hasDocVersions;
+    private final boolean _showAllVersions;
     private static final boolean DEFAULT_SHOW_ALL_VERSIONS = true;
     private static final String DEFAULT_VERSIONS_PARAM = DEFAULT_SHOW_ALL_VERSIONS ? "latestVersions" : "allVersions";
 
-    public static enum ViewType
+    public enum ViewType
     {
         FOLDER_VIEW,
         EXPERIMENT_VIEW,

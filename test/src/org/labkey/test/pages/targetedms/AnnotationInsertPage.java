@@ -15,7 +15,6 @@
  */
 package org.labkey.test.pages.targetedms;
 
-import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.pages.InsertPage;
 import org.labkey.test.util.targetedms.QCHelper;

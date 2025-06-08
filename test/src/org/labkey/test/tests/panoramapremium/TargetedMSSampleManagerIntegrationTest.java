@@ -27,7 +27,7 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSSampleManagerIntegrationTest init = (TargetedMSSampleManagerIntegrationTest) getCurrentTest();
+        TargetedMSSampleManagerIntegrationTest init = getCurrentTest();
         init.doInit();
     }
 

@@ -87,7 +87,7 @@ public final class RetentionTimeStatistics
 
 	public java.util.Map<String, Double> getScoreCache()
 	{
-		LinkedHashMap<String, Double> scoreCache = new LinkedHashMap<String, Double>();
+		LinkedHashMap<String, Double> scoreCache = new LinkedHashMap<>();
 		for (int i = 0; i < getPeptides().size(); i++)
 		{
 			String sequence = getPeptides().get(i);

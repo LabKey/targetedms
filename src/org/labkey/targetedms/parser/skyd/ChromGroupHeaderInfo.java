@@ -32,15 +32,15 @@ public class ChromGroupHeaderInfo
     // For reducing memory usage, following instance variables are commented out because of the
     // absence of accessors and reading from inputStream is left to correctly advance the size of the fields
     private int textIdIndex;
-    private int startTransitionIndex;
+    private final int startTransitionIndex;
 //    private int startPeakIndex;
 //    private int startScoreIndex;
-    private int numPoints;
-    private int compressedSize;
-    private EnumSet<FlagValues> flagValues;
-    private short fileIndex;
+    private final int numPoints;
+    private final int compressedSize;
+    private final EnumSet<FlagValues> flagValues;
+    private final short fileIndex;
     private short textIdLen;
-    private short numTransitions;
+    private final short numTransitions;
 //    private byte numPeaks;
 //    private byte maxPeakIndex;
 //    private byte isProcessedScans;
@@ -48,10 +48,10 @@ public class ChromGroupHeaderInfo
 //    private short statusId;
 //    private short statusRank;
     private double precursor;
-    private long locationPoints;
-    private int uncompressedSize;
-    private float startTime;
-    private float endTime;
+    private final long locationPoints;
+    private final int uncompressedSize;
+    private final float startTime;
+    private final float endTime;
 //    private float collisionalCrossSection;
 
     public ChromGroupHeaderInfo(CacheFormatVersion cacheFormatVersion, LittleEndianInput dataInputStream)
@@ -193,8 +193,8 @@ public class ChromGroupHeaderInfo
         dda_acquisition_method(0x40, 0x800),
         extracted_qc_trace(0x80, 0x1000);
 
-        private int currentFlagValue;
-        private int legacyFlagValue;
+        private final int currentFlagValue;
+        private final int legacyFlagValue;
 
         /**
          * @param currentFlagValue the value that the flag has in current (skyd format 18 or greater, Skyline 23_1) skyd files.

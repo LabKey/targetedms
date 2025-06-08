@@ -230,7 +230,7 @@ class PeptideSettingsParser
 
         // If we did not find either the "internal_standard" attribute or elements, check if we have
         // a "heavy" isotope label.  If we do, set "heavy" as the internal standard
-        if(internalStandards.size() == 0 && isotopeLabelNames.contains(PeptideSettings.HEAVY_LABEL))
+        if(internalStandards.isEmpty() && isotopeLabelNames.contains(PeptideSettings.HEAVY_LABEL))
         {
             internalStandards.add(PeptideSettings.HEAVY_LABEL);
         }

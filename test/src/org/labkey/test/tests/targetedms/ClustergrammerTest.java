@@ -42,7 +42,7 @@ public class ClustergrammerTest extends TargetedMSTest
     @BeforeClass
     public static void initProject()
     {
-        ClustergrammerTest init = (ClustergrammerTest)getCurrentTest();
+        ClustergrammerTest init = getCurrentTest();
         init.setupFolder(FolderType.QC);
         init.importData(SProCoP_FILE);
     }

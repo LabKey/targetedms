@@ -30,7 +30,7 @@ import java.io.IOException;
 public class GuideSetWebPart extends BodyWebPart
 {
     public static final String DEFAULT_TITLE = "Guide Set";
-    private BaseWebDriverTest _test;
+    private final BaseWebDriverTest _test;
     private DataRegionTable _dataRegionTable;
     private String _projectName;
 
@@ -68,7 +68,7 @@ public class GuideSetWebPart extends BodyWebPart
             SelectRowsResponse selResp = selectCmd.execute(cn, _projectName);
 
             // guide sets created from brushing in the QC plot will not have a comment
-            if (selResp.getRows().size() == 0)
+            if (selResp.getRows().isEmpty())
             {
                 selectCmd = new SelectRowsCommand("targetedms", "GuideSet");
                 selectCmd.addFilter(new Filter("TrainingStart", guideSet.getStartDate()));
@@ -76,7 +76,7 @@ public class GuideSetWebPart extends BodyWebPart
                 selResp = selectCmd.execute(cn, _projectName);
             }
 
-            if (selResp.getRows().size() > 0)
+            if (!selResp.getRows().isEmpty())
             {
                 String rowIdStr = selResp.getRows().get(0).get("RowId").toString();
                 return Integer.parseInt(rowIdStr);

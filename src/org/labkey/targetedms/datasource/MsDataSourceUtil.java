@@ -127,7 +127,7 @@ public class MsDataSourceUtil
     {
         List<? extends ExpData> expDatas = getExpData(sampleFile.getFileName(), container, rawFilesDir, expSvc);
 
-        if(expDatas.size() == 0)
+        if(expDatas.isEmpty())
         {
             return null;
         }
@@ -277,7 +277,7 @@ public class MsDataSourceUtil
         {
             List<? extends ExpData> expDatas = getExpData(fileName, container, rawFilesDir, expSvc);
 
-            if (expDatas.size() > 0)
+            if (!expDatas.isEmpty())
             {
                 for (ExpData data : expDatas)
                 {

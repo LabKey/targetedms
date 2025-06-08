@@ -69,7 +69,7 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         CIRCLE_OPEN("M0-2"),
         TRIANGLE("M0,2L2");
 
-        private String _pathPrefix;
+        private final String _pathPrefix;
         SvgShapes(String pathPrefix)
         {
             _pathPrefix = pathPrefix;
@@ -147,7 +147,7 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
     @BeforeClass
     public static void initPipeline()
     {
-        TargetedMSTest init = (TargetedMSTest)getCurrentTest();
+        TargetedMSTest init = getCurrentTest();
 
         init.doInitPipeline();
     }
@@ -404,8 +404,6 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
     /**
      * Sets the values of the site-level module properties: "TransitionChromInfo storage limit" and "Precursor storage limit".
      * The values should be set back to defaults after the test completes.
-     * @param transitionStorageLimit
-     * @param precursorStorageLimit
      */
     protected void setStorageLimitModuleProperties(String transitionStorageLimit, String precursorStorageLimit) {
         goToProjectHome();

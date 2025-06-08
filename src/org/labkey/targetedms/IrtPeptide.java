@@ -113,7 +113,6 @@ public class IrtPeptide extends SkylineEntity implements Comparable<IrtPeptide>
 
     /**
      * Include a new import value in the weighted average iRT value for the peptide sequence.
-     * @param newObservation
      */
     public void reweighValue(double newObservation)
     {

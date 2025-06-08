@@ -24,7 +24,7 @@ public class QCAnnotationWebPart extends BodyWebPart
 {
     public static final String DEFAULT_TITLE = "QC Annotation";
     private DataRegionTable _dataRegionTable;
-    private BaseWebDriverTest _test;
+    private final BaseWebDriverTest _test;
 
     public QCAnnotationWebPart(BaseWebDriverTest test)
     {

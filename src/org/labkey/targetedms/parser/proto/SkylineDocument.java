@@ -104,6 +104,7 @@ public final class SkylineDocument {
       public static final int USER_SET_MATCHED_VALUE = 4;
 
 
+      @Override
       public final int getNumber() {
         if (this == UNRECOGNIZED) {
           throw new java.lang.IllegalArgumentException(
@@ -143,12 +144,16 @@ public final class SkylineDocument {
       }
       private static final com.google.protobuf.Internal.EnumLiteMap<
           UserSet> internalValueMap =
-            new com.google.protobuf.Internal.EnumLiteMap<UserSet>() {
-              public UserSet findValueByNumber(int number) {
-                return UserSet.forNumber(number);
-              }
-            };
+              new com.google.protobuf.Internal.EnumLiteMap<>()
+              {
+                  @Override
+                  public UserSet findValueByNumber(int number)
+                  {
+                      return UserSet.forNumber(number);
+                  }
+              };
 
+      @Override
       public final com.google.protobuf.Descriptors.EnumValueDescriptor
           getValueDescriptor() {
         if (this == UNRECOGNIZED) {
@@ -157,6 +162,7 @@ public final class SkylineDocument {
         }
         return getDescriptor().getValues().get(ordinal());
       }
+      @Override
       public final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptorForType() {
         return getDescriptor();
@@ -182,7 +188,7 @@ public final class SkylineDocument {
 
       private final int value;
 
-      private UserSet(int value) {
+      UserSet(int value) {
         this.value = value;
       }
 
@@ -223,6 +229,7 @@ public final class SkylineDocument {
       public static final int OPTIONAL_BOOL_FALSE_VALUE = 2;
 
 
+      @Override
       public final int getNumber() {
         if (this == UNRECOGNIZED) {
           throw new java.lang.IllegalArgumentException(
@@ -260,12 +267,16 @@ public final class SkylineDocument {
       }
       private static final com.google.protobuf.Internal.EnumLiteMap<
           OptionalBool> internalValueMap =
-            new com.google.protobuf.Internal.EnumLiteMap<OptionalBool>() {
-              public OptionalBool findValueByNumber(int number) {
-                return OptionalBool.forNumber(number);
-              }
-            };
+              new com.google.protobuf.Internal.EnumLiteMap<>()
+              {
+                  @Override
+                  public OptionalBool findValueByNumber(int number)
+                  {
+                      return OptionalBool.forNumber(number);
+                  }
+              };
 
+      @Override
       public final com.google.protobuf.Descriptors.EnumValueDescriptor
           getValueDescriptor() {
         if (this == UNRECOGNIZED) {
@@ -274,6 +285,7 @@ public final class SkylineDocument {
         }
         return getDescriptor().getValues().get(ordinal());
       }
+      @Override
       public final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptorForType() {
         return getDescriptor();
@@ -299,7 +311,7 @@ public final class SkylineDocument {
 
       private final int value;
 
-      private OptionalBool(int value) {
+      OptionalBool(int value) {
         this.value = value;
       }
 
@@ -340,6 +352,7 @@ public final class SkylineDocument {
       public static final int PEAK_IDENTIFICATION_ALIGNED_VALUE = 2;
 
 
+      @Override
       public final int getNumber() {
         if (this == UNRECOGNIZED) {
           throw new java.lang.IllegalArgumentException(
@@ -377,12 +390,16 @@ public final class SkylineDocument {
       }
       private static final com.google.protobuf.Internal.EnumLiteMap<
           PeakIdentification> internalValueMap =
-            new com.google.protobuf.Internal.EnumLiteMap<PeakIdentification>() {
-              public PeakIdentification findValueByNumber(int number) {
-                return PeakIdentification.forNumber(number);
-              }
-            };
+              new com.google.protobuf.Internal.EnumLiteMap<>()
+              {
+                  @Override
+                  public PeakIdentification findValueByNumber(int number)
+                  {
+                      return PeakIdentification.forNumber(number);
+                  }
+              };
 
+      @Override
       public final com.google.protobuf.Descriptors.EnumValueDescriptor
           getValueDescriptor() {
         if (this == UNRECOGNIZED) {
@@ -391,6 +408,7 @@ public final class SkylineDocument {
         }
         return getDescriptor().getValues().get(ordinal());
       }
+      @Override
       public final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptorForType() {
         return getDescriptor();
@@ -416,7 +434,7 @@ public final class SkylineDocument {
 
       private final int value;
 
-      private PeakIdentification(int value) {
+      PeakIdentification(int value) {
         this.value = value;
       }
 
@@ -521,6 +539,7 @@ public final class SkylineDocument {
       public static final int ION_TYPE_zHH_VALUE = 10;
 
 
+      @Override
       public final int getNumber() {
         if (this == UNRECOGNIZED) {
           throw new java.lang.IllegalArgumentException(
@@ -566,12 +585,16 @@ public final class SkylineDocument {
       }
       private static final com.google.protobuf.Internal.EnumLiteMap<
           IonType> internalValueMap =
-            new com.google.protobuf.Internal.EnumLiteMap<IonType>() {
-              public IonType findValueByNumber(int number) {
-                return IonType.forNumber(number);
-              }
-            };
+              new com.google.protobuf.Internal.EnumLiteMap<>()
+              {
+                  @Override
+                  public IonType findValueByNumber(int number)
+                  {
+                      return IonType.forNumber(number);
+                  }
+              };
 
+      @Override
       public final com.google.protobuf.Descriptors.EnumValueDescriptor
           getValueDescriptor() {
         if (this == UNRECOGNIZED) {
@@ -580,6 +603,7 @@ public final class SkylineDocument {
         }
         return getDescriptor().getValues().get(ordinal());
       }
+      @Override
       public final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptorForType() {
         return getDescriptor();
@@ -605,7 +629,7 @@ public final class SkylineDocument {
 
       private final int value;
 
-      private IonType(int value) {
+      IonType(int value) {
         this.value = value;
       }
 
@@ -646,6 +670,7 @@ public final class SkylineDocument {
       public static final int Always_VALUE = 2;
 
 
+      @Override
       public final int getNumber() {
         if (this == UNRECOGNIZED) {
           throw new java.lang.IllegalArgumentException(
@@ -683,12 +708,16 @@ public final class SkylineDocument {
       }
       private static final com.google.protobuf.Internal.EnumLiteMap<
           LossInclusion> internalValueMap =
-            new com.google.protobuf.Internal.EnumLiteMap<LossInclusion>() {
-              public LossInclusion findValueByNumber(int number) {
-                return LossInclusion.forNumber(number);
-              }
-            };
+              new com.google.protobuf.Internal.EnumLiteMap<>()
+              {
+                  @Override
+                  public LossInclusion findValueByNumber(int number)
+                  {
+                      return LossInclusion.forNumber(number);
+                  }
+              };
 
+      @Override
       public final com.google.protobuf.Descriptors.EnumValueDescriptor
           getValueDescriptor() {
         if (this == UNRECOGNIZED) {
@@ -697,6 +726,7 @@ public final class SkylineDocument {
         }
         return getDescriptor().getValues().get(ordinal());
       }
+      @Override
       public final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptorForType() {
         return getDescriptor();
@@ -722,7 +752,7 @@ public final class SkylineDocument {
 
       private final int value;
 
-      private LossInclusion(int value) {
+      LossInclusion(int value) {
         this.value = value;
       }
 
@@ -956,12 +986,11 @@ public final class SkylineDocument {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations)) {
+        if (!(obj instanceof Annotations other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations other = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations) obj;
 
-        if (!getNote()
+          if (!getNote()
             .equals(other.getNote())) return false;
         if (getColor()
             != other.getColor()) return false;
@@ -1329,6 +1358,7 @@ public final class SkylineDocument {
          * <code>string note = 1;</code>
          * @return The note.
          */
+        @Override
         public java.lang.String getNote() {
           java.lang.Object ref = note_;
           if (!(ref instanceof java.lang.String)) {
@@ -1345,6 +1375,7 @@ public final class SkylineDocument {
          * <code>string note = 1;</code>
          * @return The bytes for note.
          */
+        @Override
         public com.google.protobuf.ByteString
             getNoteBytes() {
           java.lang.Object ref = note_;
@@ -1432,7 +1463,7 @@ public final class SkylineDocument {
           java.util.Collections.emptyList();
         private void ensureValuesIsMutable() {
           if (!((bitField0_ & 0x00000004) != 0)) {
-            values_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValue>(values_);
+            values_ = new java.util.ArrayList<>(values_);
             bitField0_ |= 0x00000004;
            }
         }
@@ -1443,6 +1474,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.AnnotationValue values = 3;</code>
          */
+        @Override
         public java.util.List<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValue> getValuesList() {
           if (valuesBuilder_ == null) {
             return java.util.Collections.unmodifiableList(values_);
@@ -1453,6 +1485,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.AnnotationValue values = 3;</code>
          */
+        @Override
         public int getValuesCount() {
           if (valuesBuilder_ == null) {
             return values_.size();
@@ -1463,6 +1496,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.AnnotationValue values = 3;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValue getValues(int index) {
           if (valuesBuilder_ == null) {
             return values_.get(index);
@@ -1613,6 +1647,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.AnnotationValue values = 3;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValueOrBuilder getValuesOrBuilder(
             int index) {
           if (valuesBuilder_ == null) {
@@ -1623,7 +1658,8 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.AnnotationValue values = 3;</code>
          */
-        public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValueOrBuilder> 
+        @Override
+        public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValueOrBuilder>
              getValuesOrBuilderList() {
           if (valuesBuilder_ != null) {
             return valuesBuilder_.getMessageOrBuilderList();
@@ -1657,8 +1693,7 @@ public final class SkylineDocument {
             org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValue, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValue.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValueOrBuilder> 
             getValuesFieldBuilder() {
           if (valuesBuilder_ == null) {
-            valuesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValue, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValue.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValueOrBuilder>(
+            valuesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                     values_,
                     ((bitField0_ & 0x00000004) != 0),
                     getParentForChildren(),
@@ -1694,25 +1729,34 @@ public final class SkylineDocument {
       }
 
       private static final com.google.protobuf.Parser<Annotations>
-          PARSER = new com.google.protobuf.AbstractParser<Annotations>() {
-        @java.lang.Override
-        public Annotations parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public Annotations parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<Annotations> parser() {
@@ -1919,12 +1963,11 @@ public final class SkylineDocument {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValue)) {
+        if (!(obj instanceof AnnotationValue other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValue other = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationValue) obj;
 
-        if (!getName()
+          if (!getName()
             .equals(other.getName())) return false;
         if (!getTextValue()
             .equals(other.getTextValue())) return false;
@@ -2229,6 +2272,7 @@ public final class SkylineDocument {
          * <code>string name = 1;</code>
          * @return The name.
          */
+        @Override
         public java.lang.String getName() {
           java.lang.Object ref = name_;
           if (!(ref instanceof java.lang.String)) {
@@ -2245,6 +2289,7 @@ public final class SkylineDocument {
          * <code>string name = 1;</code>
          * @return The bytes for name.
          */
+        @Override
         public com.google.protobuf.ByteString
             getNameBytes() {
           java.lang.Object ref = name_;
@@ -2301,6 +2346,7 @@ public final class SkylineDocument {
          * <code>string textValue = 2;</code>
          * @return The textValue.
          */
+        @Override
         public java.lang.String getTextValue() {
           java.lang.Object ref = textValue_;
           if (!(ref instanceof java.lang.String)) {
@@ -2317,6 +2363,7 @@ public final class SkylineDocument {
          * <code>string textValue = 2;</code>
          * @return The bytes for textValue.
          */
+        @Override
         public com.google.protobuf.ByteString
             getTextValueBytes() {
           java.lang.Object ref = textValue_;
@@ -2394,25 +2441,34 @@ public final class SkylineDocument {
       }
 
       private static final com.google.protobuf.Parser<AnnotationValue>
-          PARSER = new com.google.protobuf.AbstractParser<AnnotationValue>() {
-        @java.lang.Override
-        public AnnotationValue parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public AnnotationValue parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<AnnotationValue> parser() {
@@ -2863,12 +2919,11 @@ public final class SkylineDocument {
           if (obj == this) {
            return true;
           }
-          if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues)) {
+          if (!(obj instanceof PeakShapeValues other)) {
             return super.equals(obj);
           }
-          org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues other = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues) obj;
 
-          if (java.lang.Float.floatToIntBits(getStdDev())
+            if (java.lang.Float.floatToIntBits(getStdDev())
               != java.lang.Float.floatToIntBits(
                   other.getStdDev())) return false;
           if (java.lang.Float.floatToIntBits(getSkewness())
@@ -3358,25 +3413,34 @@ public final class SkylineDocument {
         }
 
         private static final com.google.protobuf.Parser<PeakShapeValues>
-            PARSER = new com.google.protobuf.AbstractParser<PeakShapeValues>() {
-          @java.lang.Override
-          public PeakShapeValues parsePartialFrom(
-              com.google.protobuf.CodedInputStream input,
-              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-              throws com.google.protobuf.InvalidProtocolBufferException {
-            Builder builder = newBuilder();
-            try {
-              builder.mergeFrom(input, extensionRegistry);
-            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-              throw e.setUnfinishedMessage(builder.buildPartial());
-            } catch (com.google.protobuf.UninitializedMessageException e) {
-              throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-            } catch (java.io.IOException e) {
-              throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                  .setUnfinishedMessage(builder.buildPartial());
+            PARSER = new com.google.protobuf.AbstractParser<>()
+        {
+            @java.lang.Override
+            public PeakShapeValues parsePartialFrom(
+                    com.google.protobuf.CodedInputStream input,
+                    com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                    throws com.google.protobuf.InvalidProtocolBufferException
+            {
+                Builder builder = newBuilder();
+                try
+                {
+                    builder.mergeFrom(input, extensionRegistry);
+                }
+                catch (com.google.protobuf.InvalidProtocolBufferException e)
+                {
+                    throw e.setUnfinishedMessage(builder.buildPartial());
+                }
+                catch (com.google.protobuf.UninitializedMessageException e)
+                {
+                    throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+                }
+                catch (java.io.IOException e)
+                {
+                    throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                            .setUnfinishedMessage(builder.buildPartial());
+                }
+                return builder.buildPartial();
             }
-            return builder.buildPartial();
-          }
         };
 
         public static com.google.protobuf.Parser<PeakShapeValues> parser() {
@@ -3987,12 +4051,11 @@ public final class SkylineDocument {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak)) {
+        if (!(obj instanceof TransitionPeak other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak other = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak) obj;
 
-        if (getReplicateIndex()
+          if (getReplicateIndex()
             != other.getReplicateIndex()) return false;
         if (getFileIndexInReplicate()
             != other.getFileIndexInReplicate()) return false;
@@ -4836,6 +4899,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.FloatValue massError = 3;</code>
          * @return Whether the massError field is set.
          */
+        @Override
         public boolean hasMassError() {
           return ((bitField0_ & 0x00000004) != 0);
         }
@@ -4843,6 +4907,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.FloatValue massError = 3;</code>
          * @return The massError.
          */
+        @Override
         public com.google.protobuf.FloatValue getMassError() {
           if (massErrorBuilder_ == null) {
             return massError_ == null ? com.google.protobuf.FloatValue.getDefaultInstance() : massError_;
@@ -4925,6 +4990,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.FloatValue massError = 3;</code>
          */
+        @Override
         public com.google.protobuf.FloatValueOrBuilder getMassErrorOrBuilder() {
           if (massErrorBuilder_ != null) {
             return massErrorBuilder_.getMessageOrBuilder();
@@ -4940,8 +5006,7 @@ public final class SkylineDocument {
             com.google.protobuf.FloatValue, com.google.protobuf.FloatValue.Builder, com.google.protobuf.FloatValueOrBuilder> 
             getMassErrorFieldBuilder() {
           if (massErrorBuilder_ == null) {
-            massErrorBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.FloatValue, com.google.protobuf.FloatValue.Builder, com.google.protobuf.FloatValueOrBuilder>(
+            massErrorBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getMassError(),
                     getParentForChildren(),
                     isClean());
@@ -5053,6 +5118,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
          * @return Whether the ionMobility field is set.
          */
+        @Override
         public boolean hasIonMobility() {
           return ((bitField0_ & 0x00000040) != 0);
         }
@@ -5060,6 +5126,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
          * @return The ionMobility.
          */
+        @Override
         public com.google.protobuf.DoubleValue getIonMobility() {
           if (ionMobilityBuilder_ == null) {
             return ionMobility_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : ionMobility_;
@@ -5142,6 +5209,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.DoubleValue ionMobility = 7;</code>
          */
+        @Override
         public com.google.protobuf.DoubleValueOrBuilder getIonMobilityOrBuilder() {
           if (ionMobilityBuilder_ != null) {
             return ionMobilityBuilder_.getMessageOrBuilder();
@@ -5157,8 +5225,7 @@ public final class SkylineDocument {
             com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getIonMobilityFieldBuilder() {
           if (ionMobilityBuilder_ == null) {
-            ionMobilityBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
+            ionMobilityBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getIonMobility(),
                     getParentForChildren(),
                     isClean());
@@ -5174,6 +5241,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
          * @return Whether the ionMobilityWindow field is set.
          */
+        @Override
         public boolean hasIonMobilityWindow() {
           return ((bitField0_ & 0x00000080) != 0);
         }
@@ -5181,6 +5249,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
          * @return The ionMobilityWindow.
          */
+        @Override
         public com.google.protobuf.DoubleValue getIonMobilityWindow() {
           if (ionMobilityWindowBuilder_ == null) {
             return ionMobilityWindow_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : ionMobilityWindow_;
@@ -5263,6 +5332,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.DoubleValue ionMobilityWindow = 8;</code>
          */
+        @Override
         public com.google.protobuf.DoubleValueOrBuilder getIonMobilityWindowOrBuilder() {
           if (ionMobilityWindowBuilder_ != null) {
             return ionMobilityWindowBuilder_.getMessageOrBuilder();
@@ -5278,8 +5348,7 @@ public final class SkylineDocument {
             com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getIonMobilityWindowFieldBuilder() {
           if (ionMobilityWindowBuilder_ == null) {
-            ionMobilityWindowBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
+            ionMobilityWindowBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getIonMobilityWindow(),
                     getParentForChildren(),
                     isClean());
@@ -5625,6 +5694,7 @@ public final class SkylineDocument {
          * <code>.SkylineDocumentProto.OptionalInt pointsAcrossPeak = 18;</code>
          * @return Whether the pointsAcrossPeak field is set.
          */
+        @Override
         public boolean hasPointsAcrossPeak() {
           return ((bitField0_ & 0x00020000) != 0);
         }
@@ -5632,6 +5702,7 @@ public final class SkylineDocument {
          * <code>.SkylineDocumentProto.OptionalInt pointsAcrossPeak = 18;</code>
          * @return The pointsAcrossPeak.
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt getPointsAcrossPeak() {
           if (pointsAcrossPeakBuilder_ == null) {
             return pointsAcrossPeak_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt.getDefaultInstance() : pointsAcrossPeak_;
@@ -5714,6 +5785,7 @@ public final class SkylineDocument {
         /**
          * <code>.SkylineDocumentProto.OptionalInt pointsAcrossPeak = 18;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalIntOrBuilder getPointsAcrossPeakOrBuilder() {
           if (pointsAcrossPeakBuilder_ != null) {
             return pointsAcrossPeakBuilder_.getMessageOrBuilder();
@@ -5729,8 +5801,7 @@ public final class SkylineDocument {
             org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalIntOrBuilder> 
             getPointsAcrossPeakFieldBuilder() {
           if (pointsAcrossPeakBuilder_ == null) {
-            pointsAcrossPeakBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalIntOrBuilder>(
+            pointsAcrossPeakBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getPointsAcrossPeak(),
                     getParentForChildren(),
                     isClean());
@@ -5831,6 +5902,7 @@ public final class SkylineDocument {
          * <code>.SkylineDocumentProto.Annotations annotations = 24;</code>
          * @return Whether the annotations field is set.
          */
+        @Override
         public boolean hasAnnotations() {
           return ((bitField0_ & 0x00100000) != 0);
         }
@@ -5838,6 +5910,7 @@ public final class SkylineDocument {
          * <code>.SkylineDocumentProto.Annotations annotations = 24;</code>
          * @return The annotations.
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations getAnnotations() {
           if (annotationsBuilder_ == null) {
             return annotations_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations.getDefaultInstance() : annotations_;
@@ -5920,6 +5993,7 @@ public final class SkylineDocument {
         /**
          * <code>.SkylineDocumentProto.Annotations annotations = 24;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationsOrBuilder getAnnotationsOrBuilder() {
           if (annotationsBuilder_ != null) {
             return annotationsBuilder_.getMessageOrBuilder();
@@ -5935,8 +6009,7 @@ public final class SkylineDocument {
             org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationsOrBuilder> 
             getAnnotationsFieldBuilder() {
           if (annotationsBuilder_ == null) {
-            annotationsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationsOrBuilder>(
+            annotationsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getAnnotations(),
                     getParentForChildren(),
                     isClean());
@@ -5984,6 +6057,7 @@ public final class SkylineDocument {
          * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
          * @return Whether the peakShapeValues field is set.
          */
+        @Override
         public boolean hasPeakShapeValues() {
           return ((bitField0_ & 0x00400000) != 0);
         }
@@ -5991,6 +6065,7 @@ public final class SkylineDocument {
          * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
          * @return The peakShapeValues.
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues getPeakShapeValues() {
           if (peakShapeValuesBuilder_ == null) {
             return peakShapeValues_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.getDefaultInstance() : peakShapeValues_;
@@ -6073,6 +6148,7 @@ public final class SkylineDocument {
         /**
          * <code>.SkylineDocumentProto.TransitionPeak.PeakShapeValues peakShapeValues = 26;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValuesOrBuilder getPeakShapeValuesOrBuilder() {
           if (peakShapeValuesBuilder_ != null) {
             return peakShapeValuesBuilder_.getMessageOrBuilder();
@@ -6088,8 +6164,7 @@ public final class SkylineDocument {
             org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValuesOrBuilder> 
             getPeakShapeValuesFieldBuilder() {
           if (peakShapeValuesBuilder_ == null) {
-            peakShapeValuesBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValues.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.PeakShapeValuesOrBuilder>(
+            peakShapeValuesBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getPeakShapeValues(),
                     getParentForChildren(),
                     isClean());
@@ -6105,6 +6180,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
          * @return Whether the ionMobilityCollisionCrossSection field is set.
          */
+        @Override
         public boolean hasIonMobilityCollisionCrossSection() {
           return ((bitField0_ & 0x00800000) != 0);
         }
@@ -6112,6 +6188,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
          * @return The ionMobilityCollisionCrossSection.
          */
+        @Override
         public com.google.protobuf.DoubleValue getIonMobilityCollisionCrossSection() {
           if (ionMobilityCollisionCrossSectionBuilder_ == null) {
             return ionMobilityCollisionCrossSection_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : ionMobilityCollisionCrossSection_;
@@ -6194,6 +6271,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.DoubleValue ionMobilityCollisionCrossSection = 27;</code>
          */
+        @Override
         public com.google.protobuf.DoubleValueOrBuilder getIonMobilityCollisionCrossSectionOrBuilder() {
           if (ionMobilityCollisionCrossSectionBuilder_ != null) {
             return ionMobilityCollisionCrossSectionBuilder_.getMessageOrBuilder();
@@ -6209,8 +6287,7 @@ public final class SkylineDocument {
             com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getIonMobilityCollisionCrossSectionFieldBuilder() {
           if (ionMobilityCollisionCrossSectionBuilder_ == null) {
-            ionMobilityCollisionCrossSectionBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
+            ionMobilityCollisionCrossSectionBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getIonMobilityCollisionCrossSection(),
                     getParentForChildren(),
                     isClean());
@@ -6245,25 +6322,34 @@ public final class SkylineDocument {
       }
 
       private static final com.google.protobuf.Parser<TransitionPeak>
-          PARSER = new com.google.protobuf.AbstractParser<TransitionPeak>() {
-        @java.lang.Override
-        public TransitionPeak parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public TransitionPeak parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<TransitionPeak> parser() {
@@ -6427,12 +6513,11 @@ public final class SkylineDocument {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResults)) {
+        if (!(obj instanceof TransitionResults other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResults other = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResults) obj;
 
-        if (!getPeaksList()
+          if (!getPeaksList()
             .equals(other.getPeaksList())) return false;
         if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
@@ -6765,7 +6850,7 @@ public final class SkylineDocument {
           java.util.Collections.emptyList();
         private void ensurePeaksIsMutable() {
           if (!((bitField0_ & 0x00000001) != 0)) {
-            peaks_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak>(peaks_);
+            peaks_ = new java.util.ArrayList<>(peaks_);
             bitField0_ |= 0x00000001;
            }
         }
@@ -6776,6 +6861,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.TransitionPeak peaks = 1;</code>
          */
+        @Override
         public java.util.List<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak> getPeaksList() {
           if (peaksBuilder_ == null) {
             return java.util.Collections.unmodifiableList(peaks_);
@@ -6786,6 +6872,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.TransitionPeak peaks = 1;</code>
          */
+        @Override
         public int getPeaksCount() {
           if (peaksBuilder_ == null) {
             return peaks_.size();
@@ -6796,6 +6883,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.TransitionPeak peaks = 1;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak getPeaks(int index) {
           if (peaksBuilder_ == null) {
             return peaks_.get(index);
@@ -6946,6 +7034,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.TransitionPeak peaks = 1;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeakOrBuilder getPeaksOrBuilder(
             int index) {
           if (peaksBuilder_ == null) {
@@ -6956,7 +7045,8 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.TransitionPeak peaks = 1;</code>
          */
-        public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeakOrBuilder> 
+        @Override
+        public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeakOrBuilder>
              getPeaksOrBuilderList() {
           if (peaksBuilder_ != null) {
             return peaksBuilder_.getMessageOrBuilderList();
@@ -6990,8 +7080,7 @@ public final class SkylineDocument {
             org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeakOrBuilder> 
             getPeaksFieldBuilder() {
           if (peaksBuilder_ == null) {
-            peaksBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeak.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionPeakOrBuilder>(
+            peaksBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                     peaks_,
                     ((bitField0_ & 0x00000001) != 0),
                     getParentForChildren(),
@@ -7027,25 +7116,34 @@ public final class SkylineDocument {
       }
 
       private static final com.google.protobuf.Parser<TransitionResults>
-          PARSER = new com.google.protobuf.AbstractParser<TransitionResults>() {
-        @java.lang.Override
-        public TransitionResults parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public TransitionResults parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<TransitionResults> parser() {
@@ -8696,12 +8794,11 @@ public final class SkylineDocument {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Transition)) {
+        if (!(obj instanceof Transition other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Transition other = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Transition) obj;
 
-        if (hasFormula() != other.hasFormula()) return false;
+          if (hasFormula() != other.hasFormula()) return false;
         if (hasFormula()) {
           if (!getFormula()
               .equals(other.getFormula())) return false;
@@ -9983,6 +10080,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.StringValue formula = 1;</code>
          * @return Whether the formula field is set.
          */
+        @Override
         public boolean hasFormula() {
           return ((bitField0_ & 0x00000001) != 0);
         }
@@ -9990,6 +10088,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.StringValue formula = 1;</code>
          * @return The formula.
          */
+        @Override
         public com.google.protobuf.StringValue getFormula() {
           if (formulaBuilder_ == null) {
             return formula_ == null ? com.google.protobuf.StringValue.getDefaultInstance() : formula_;
@@ -10072,6 +10171,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.StringValue formula = 1;</code>
          */
+        @Override
         public com.google.protobuf.StringValueOrBuilder getFormulaOrBuilder() {
           if (formulaBuilder_ != null) {
             return formulaBuilder_.getMessageOrBuilder();
@@ -10087,8 +10187,7 @@ public final class SkylineDocument {
             com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder> 
             getFormulaFieldBuilder() {
           if (formulaBuilder_ == null) {
-            formulaBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder>(
+            formulaBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getFormula(),
                     getParentForChildren(),
                     isClean());
@@ -10108,6 +10207,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
          * @return Whether the averageMassH field is set.
          */
+        @Override
         public boolean hasAverageMassH() {
           return ((bitField0_ & 0x00000002) != 0);
         }
@@ -10119,6 +10219,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
          * @return The averageMassH.
          */
+        @Override
         public com.google.protobuf.DoubleValue getAverageMassH() {
           if (averageMassHBuilder_ == null) {
             return averageMassH_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : averageMassH_;
@@ -10225,6 +10326,7 @@ public final class SkylineDocument {
          *
          * <code>.google.protobuf.DoubleValue averageMassH = 2;</code>
          */
+        @Override
         public com.google.protobuf.DoubleValueOrBuilder getAverageMassHOrBuilder() {
           if (averageMassHBuilder_ != null) {
             return averageMassHBuilder_.getMessageOrBuilder();
@@ -10244,8 +10346,7 @@ public final class SkylineDocument {
             com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getAverageMassHFieldBuilder() {
           if (averageMassHBuilder_ == null) {
-            averageMassHBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
+            averageMassHBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getAverageMassH(),
                     getParentForChildren(),
                     isClean());
@@ -10265,6 +10366,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
          * @return Whether the monoMassH field is set.
          */
+        @Override
         public boolean hasMonoMassH() {
           return ((bitField0_ & 0x00000004) != 0);
         }
@@ -10276,6 +10378,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
          * @return The monoMassH.
          */
+        @Override
         public com.google.protobuf.DoubleValue getMonoMassH() {
           if (monoMassHBuilder_ == null) {
             return monoMassH_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : monoMassH_;
@@ -10382,6 +10485,7 @@ public final class SkylineDocument {
          *
          * <code>.google.protobuf.DoubleValue monoMassH = 3;</code>
          */
+        @Override
         public com.google.protobuf.DoubleValueOrBuilder getMonoMassHOrBuilder() {
           if (monoMassHBuilder_ != null) {
             return monoMassHBuilder_.getMessageOrBuilder();
@@ -10401,8 +10505,7 @@ public final class SkylineDocument {
             com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getMonoMassHFieldBuilder() {
           if (monoMassHBuilder_ == null) {
-            monoMassHBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
+            monoMassHBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getMonoMassH(),
                     getParentForChildren(),
                     isClean());
@@ -10422,6 +10525,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
          * @return Whether the customIonName field is set.
          */
+        @Override
         public boolean hasCustomIonName() {
           return ((bitField0_ & 0x00000008) != 0);
         }
@@ -10433,6 +10537,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
          * @return The customIonName.
          */
+        @Override
         public com.google.protobuf.StringValue getCustomIonName() {
           if (customIonNameBuilder_ == null) {
             return customIonName_ == null ? com.google.protobuf.StringValue.getDefaultInstance() : customIonName_;
@@ -10539,6 +10644,7 @@ public final class SkylineDocument {
          *
          * <code>.google.protobuf.StringValue custom_ion_name = 6;</code>
          */
+        @Override
         public com.google.protobuf.StringValueOrBuilder getCustomIonNameOrBuilder() {
           if (customIonNameBuilder_ != null) {
             return customIonNameBuilder_.getMessageOrBuilder();
@@ -10558,8 +10664,7 @@ public final class SkylineDocument {
             com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder> 
             getCustomIonNameFieldBuilder() {
           if (customIonNameBuilder_ == null) {
-            customIonNameBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder>(
+            customIonNameBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getCustomIonName(),
                     getParentForChildren(),
                     isClean());
@@ -10575,6 +10680,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
          * @return Whether the measuredIonName field is set.
          */
+        @Override
         public boolean hasMeasuredIonName() {
           return ((bitField0_ & 0x00000010) != 0);
         }
@@ -10582,6 +10688,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
          * @return The measuredIonName.
          */
+        @Override
         public com.google.protobuf.StringValue getMeasuredIonName() {
           if (measuredIonNameBuilder_ == null) {
             return measuredIonName_ == null ? com.google.protobuf.StringValue.getDefaultInstance() : measuredIonName_;
@@ -10664,6 +10771,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.StringValue measured_ion_name = 7;</code>
          */
+        @Override
         public com.google.protobuf.StringValueOrBuilder getMeasuredIonNameOrBuilder() {
           if (measuredIonNameBuilder_ != null) {
             return measuredIonNameBuilder_.getMessageOrBuilder();
@@ -10679,8 +10787,7 @@ public final class SkylineDocument {
             com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder> 
             getMeasuredIonNameFieldBuilder() {
           if (measuredIonNameBuilder_ == null) {
-            measuredIonNameBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder>(
+            measuredIonNameBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getMeasuredIonName(),
                     getParentForChildren(),
                     isClean());
@@ -10696,6 +10803,7 @@ public final class SkylineDocument {
          * <code>.SkylineDocumentProto.OptionalInt decoyMassShift = 8;</code>
          * @return Whether the decoyMassShift field is set.
          */
+        @Override
         public boolean hasDecoyMassShift() {
           return ((bitField0_ & 0x00000020) != 0);
         }
@@ -10703,6 +10811,7 @@ public final class SkylineDocument {
          * <code>.SkylineDocumentProto.OptionalInt decoyMassShift = 8;</code>
          * @return The decoyMassShift.
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt getDecoyMassShift() {
           if (decoyMassShiftBuilder_ == null) {
             return decoyMassShift_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt.getDefaultInstance() : decoyMassShift_;
@@ -10785,6 +10894,7 @@ public final class SkylineDocument {
         /**
          * <code>.SkylineDocumentProto.OptionalInt decoyMassShift = 8;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalIntOrBuilder getDecoyMassShiftOrBuilder() {
           if (decoyMassShiftBuilder_ != null) {
             return decoyMassShiftBuilder_.getMessageOrBuilder();
@@ -10800,8 +10910,7 @@ public final class SkylineDocument {
             org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalIntOrBuilder> 
             getDecoyMassShiftFieldBuilder() {
           if (decoyMassShiftBuilder_ == null) {
-            decoyMassShiftBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalIntOrBuilder>(
+            decoyMassShiftBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getDecoyMassShift(),
                     getParentForChildren(),
                     isClean());
@@ -10849,6 +10958,7 @@ public final class SkylineDocument {
          * <code>.SkylineDocumentProto.OptionalInt isotopeDistRank = 11;</code>
          * @return Whether the isotopeDistRank field is set.
          */
+        @Override
         public boolean hasIsotopeDistRank() {
           return ((bitField0_ & 0x00000080) != 0);
         }
@@ -10856,6 +10966,7 @@ public final class SkylineDocument {
          * <code>.SkylineDocumentProto.OptionalInt isotopeDistRank = 11;</code>
          * @return The isotopeDistRank.
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt getIsotopeDistRank() {
           if (isotopeDistRankBuilder_ == null) {
             return isotopeDistRank_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt.getDefaultInstance() : isotopeDistRank_;
@@ -10938,6 +11049,7 @@ public final class SkylineDocument {
         /**
          * <code>.SkylineDocumentProto.OptionalInt isotopeDistRank = 11;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalIntOrBuilder getIsotopeDistRankOrBuilder() {
           if (isotopeDistRankBuilder_ != null) {
             return isotopeDistRankBuilder_.getMessageOrBuilder();
@@ -10953,8 +11065,7 @@ public final class SkylineDocument {
             org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalIntOrBuilder> 
             getIsotopeDistRankFieldBuilder() {
           if (isotopeDistRankBuilder_ == null) {
-            isotopeDistRankBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalIntOrBuilder>(
+            isotopeDistRankBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getIsotopeDistRank(),
                     getParentForChildren(),
                     isClean());
@@ -10970,6 +11081,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
          * @return Whether the isotopeDistProportion field is set.
          */
+        @Override
         public boolean hasIsotopeDistProportion() {
           return ((bitField0_ & 0x00000100) != 0);
         }
@@ -10977,6 +11089,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
          * @return The isotopeDistProportion.
          */
+        @Override
         public com.google.protobuf.FloatValue getIsotopeDistProportion() {
           if (isotopeDistProportionBuilder_ == null) {
             return isotopeDistProportion_ == null ? com.google.protobuf.FloatValue.getDefaultInstance() : isotopeDistProportion_;
@@ -11059,6 +11172,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.FloatValue isotopeDistProportion = 12;</code>
          */
+        @Override
         public com.google.protobuf.FloatValueOrBuilder getIsotopeDistProportionOrBuilder() {
           if (isotopeDistProportionBuilder_ != null) {
             return isotopeDistProportionBuilder_.getMessageOrBuilder();
@@ -11074,8 +11188,7 @@ public final class SkylineDocument {
             com.google.protobuf.FloatValue, com.google.protobuf.FloatValue.Builder, com.google.protobuf.FloatValueOrBuilder> 
             getIsotopeDistProportionFieldBuilder() {
           if (isotopeDistProportionBuilder_ == null) {
-            isotopeDistProportionBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.FloatValue, com.google.protobuf.FloatValue.Builder, com.google.protobuf.FloatValueOrBuilder>(
+            isotopeDistProportionBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getIsotopeDistProportion(),
                     getParentForChildren(),
                     isClean());
@@ -11263,6 +11376,7 @@ public final class SkylineDocument {
          * <code>.SkylineDocumentProto.Annotations annotations = 18;</code>
          * @return Whether the annotations field is set.
          */
+        @Override
         public boolean hasAnnotations() {
           return ((bitField0_ & 0x00004000) != 0);
         }
@@ -11270,6 +11384,7 @@ public final class SkylineDocument {
          * <code>.SkylineDocumentProto.Annotations annotations = 18;</code>
          * @return The annotations.
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations getAnnotations() {
           if (annotationsBuilder_ == null) {
             return annotations_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations.getDefaultInstance() : annotations_;
@@ -11352,6 +11467,7 @@ public final class SkylineDocument {
         /**
          * <code>.SkylineDocumentProto.Annotations annotations = 18;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationsOrBuilder getAnnotationsOrBuilder() {
           if (annotationsBuilder_ != null) {
             return annotationsBuilder_.getMessageOrBuilder();
@@ -11367,8 +11483,7 @@ public final class SkylineDocument {
             org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationsOrBuilder> 
             getAnnotationsFieldBuilder() {
           if (annotationsBuilder_ == null) {
-            annotationsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Annotations.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.AnnotationsOrBuilder>(
+            annotationsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getAnnotations(),
                     getParentForChildren(),
                     isClean());
@@ -11448,6 +11563,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
          * @return Whether the collisionEnergy field is set.
          */
+        @Override
         public boolean hasCollisionEnergy() {
           return ((bitField0_ & 0x00020000) != 0);
         }
@@ -11455,6 +11571,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
          * @return The collisionEnergy.
          */
+        @Override
         public com.google.protobuf.DoubleValue getCollisionEnergy() {
           if (collisionEnergyBuilder_ == null) {
             return collisionEnergy_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : collisionEnergy_;
@@ -11537,6 +11654,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.DoubleValue collisionEnergy = 21;</code>
          */
+        @Override
         public com.google.protobuf.DoubleValueOrBuilder getCollisionEnergyOrBuilder() {
           if (collisionEnergyBuilder_ != null) {
             return collisionEnergyBuilder_.getMessageOrBuilder();
@@ -11552,8 +11670,7 @@ public final class SkylineDocument {
             com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getCollisionEnergyFieldBuilder() {
           if (collisionEnergyBuilder_ == null) {
-            collisionEnergyBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
+            collisionEnergyBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getCollisionEnergy(),
                     getParentForChildren(),
                     isClean());
@@ -11569,6 +11686,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
          * @return Whether the declusteringPotential field is set.
          */
+        @Override
         public boolean hasDeclusteringPotential() {
           return ((bitField0_ & 0x00040000) != 0);
         }
@@ -11576,6 +11694,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
          * @return The declusteringPotential.
          */
+        @Override
         public com.google.protobuf.DoubleValue getDeclusteringPotential() {
           if (declusteringPotentialBuilder_ == null) {
             return declusteringPotential_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : declusteringPotential_;
@@ -11658,6 +11777,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.DoubleValue declusteringPotential = 22;</code>
          */
+        @Override
         public com.google.protobuf.DoubleValueOrBuilder getDeclusteringPotentialOrBuilder() {
           if (declusteringPotentialBuilder_ != null) {
             return declusteringPotentialBuilder_.getMessageOrBuilder();
@@ -11673,8 +11793,7 @@ public final class SkylineDocument {
             com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getDeclusteringPotentialFieldBuilder() {
           if (declusteringPotentialBuilder_ == null) {
-            declusteringPotentialBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
+            declusteringPotentialBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getDeclusteringPotential(),
                     getParentForChildren(),
                     isClean());
@@ -11687,7 +11806,7 @@ public final class SkylineDocument {
           java.util.Collections.emptyList();
         private void ensureLossesIsMutable() {
           if (!((bitField0_ & 0x00080000) != 0)) {
-            losses_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss>(losses_);
+            losses_ = new java.util.ArrayList<>(losses_);
             bitField0_ |= 0x00080000;
            }
         }
@@ -11698,6 +11817,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 23;</code>
          */
+        @Override
         public java.util.List<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss> getLossesList() {
           if (lossesBuilder_ == null) {
             return java.util.Collections.unmodifiableList(losses_);
@@ -11708,6 +11828,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 23;</code>
          */
+        @Override
         public int getLossesCount() {
           if (lossesBuilder_ == null) {
             return losses_.size();
@@ -11718,6 +11839,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 23;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss getLosses(int index) {
           if (lossesBuilder_ == null) {
             return losses_.get(index);
@@ -11868,6 +11990,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 23;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLossOrBuilder getLossesOrBuilder(
             int index) {
           if (lossesBuilder_ == null) {
@@ -11878,7 +12001,8 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.TransitionLoss losses = 23;</code>
          */
-        public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLossOrBuilder> 
+        @Override
+        public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLossOrBuilder>
              getLossesOrBuilderList() {
           if (lossesBuilder_ != null) {
             return lossesBuilder_.getMessageOrBuilderList();
@@ -11912,8 +12036,7 @@ public final class SkylineDocument {
             org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLossOrBuilder> 
             getLossesFieldBuilder() {
           if (lossesBuilder_ == null) {
-            lossesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLossOrBuilder>(
+            lossesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                     losses_,
                     ((bitField0_ & 0x00080000) != 0),
                     getParentForChildren(),
@@ -11983,6 +12106,7 @@ public final class SkylineDocument {
          * <code>.SkylineDocumentProto.TransitionLibInfo libInfo = 25;</code>
          * @return Whether the libInfo field is set.
          */
+        @Override
         public boolean hasLibInfo() {
           return ((bitField0_ & 0x00200000) != 0);
         }
@@ -11990,6 +12114,7 @@ public final class SkylineDocument {
          * <code>.SkylineDocumentProto.TransitionLibInfo libInfo = 25;</code>
          * @return The libInfo.
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLibInfo getLibInfo() {
           if (libInfoBuilder_ == null) {
             return libInfo_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLibInfo.getDefaultInstance() : libInfo_;
@@ -12072,6 +12197,7 @@ public final class SkylineDocument {
         /**
          * <code>.SkylineDocumentProto.TransitionLibInfo libInfo = 25;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLibInfoOrBuilder getLibInfoOrBuilder() {
           if (libInfoBuilder_ != null) {
             return libInfoBuilder_.getMessageOrBuilder();
@@ -12087,8 +12213,7 @@ public final class SkylineDocument {
             org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLibInfo, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLibInfo.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLibInfoOrBuilder> 
             getLibInfoFieldBuilder() {
           if (libInfoBuilder_ == null) {
-            libInfoBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLibInfo, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLibInfo.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLibInfoOrBuilder>(
+            libInfoBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getLibInfo(),
                     getParentForChildren(),
                     isClean());
@@ -12104,6 +12229,7 @@ public final class SkylineDocument {
          * <code>.SkylineDocumentProto.TransitionResults results = 26;</code>
          * @return Whether the results field is set.
          */
+        @Override
         public boolean hasResults() {
           return ((bitField0_ & 0x00400000) != 0);
         }
@@ -12111,6 +12237,7 @@ public final class SkylineDocument {
          * <code>.SkylineDocumentProto.TransitionResults results = 26;</code>
          * @return The results.
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResults getResults() {
           if (resultsBuilder_ == null) {
             return results_ == null ? org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResults.getDefaultInstance() : results_;
@@ -12193,6 +12320,7 @@ public final class SkylineDocument {
         /**
          * <code>.SkylineDocumentProto.TransitionResults results = 26;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResultsOrBuilder getResultsOrBuilder() {
           if (resultsBuilder_ != null) {
             return resultsBuilder_.getMessageOrBuilder();
@@ -12208,8 +12336,7 @@ public final class SkylineDocument {
             org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResults, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResults.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResultsOrBuilder> 
             getResultsFieldBuilder() {
           if (resultsBuilder_ == null) {
-            resultsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResults, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResults.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionResultsOrBuilder>(
+            resultsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getResults(),
                     getParentForChildren(),
                     isClean());
@@ -12225,6 +12352,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
          * @return Whether the averageMass field is set.
          */
+        @Override
         public boolean hasAverageMass() {
           return ((bitField0_ & 0x00800000) != 0);
         }
@@ -12232,6 +12360,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
          * @return The averageMass.
          */
+        @Override
         public com.google.protobuf.DoubleValue getAverageMass() {
           if (averageMassBuilder_ == null) {
             return averageMass_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : averageMass_;
@@ -12314,6 +12443,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.DoubleValue averageMass = 27;</code>
          */
+        @Override
         public com.google.protobuf.DoubleValueOrBuilder getAverageMassOrBuilder() {
           if (averageMassBuilder_ != null) {
             return averageMassBuilder_.getMessageOrBuilder();
@@ -12329,8 +12459,7 @@ public final class SkylineDocument {
             com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getAverageMassFieldBuilder() {
           if (averageMassBuilder_ == null) {
-            averageMassBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
+            averageMassBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getAverageMass(),
                     getParentForChildren(),
                     isClean());
@@ -12346,6 +12475,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
          * @return Whether the monoMass field is set.
          */
+        @Override
         public boolean hasMonoMass() {
           return ((bitField0_ & 0x01000000) != 0);
         }
@@ -12353,6 +12483,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
          * @return The monoMass.
          */
+        @Override
         public com.google.protobuf.DoubleValue getMonoMass() {
           if (monoMassBuilder_ == null) {
             return monoMass_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : monoMass_;
@@ -12435,6 +12566,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.DoubleValue monoMass = 28;</code>
          */
+        @Override
         public com.google.protobuf.DoubleValueOrBuilder getMonoMassOrBuilder() {
           if (monoMassBuilder_ != null) {
             return monoMassBuilder_.getMessageOrBuilder();
@@ -12450,8 +12582,7 @@ public final class SkylineDocument {
             com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getMonoMassFieldBuilder() {
           if (monoMassBuilder_ == null) {
-            monoMassBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
+            monoMassBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getMonoMass(),
                     getParentForChildren(),
                     isClean());
@@ -12467,6 +12598,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.StringValue adduct = 29;</code>
          * @return Whether the adduct field is set.
          */
+        @Override
         public boolean hasAdduct() {
           return ((bitField0_ & 0x02000000) != 0);
         }
@@ -12474,6 +12606,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.StringValue adduct = 29;</code>
          * @return The adduct.
          */
+        @Override
         public com.google.protobuf.StringValue getAdduct() {
           if (adductBuilder_ == null) {
             return adduct_ == null ? com.google.protobuf.StringValue.getDefaultInstance() : adduct_;
@@ -12556,6 +12689,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.StringValue adduct = 29;</code>
          */
+        @Override
         public com.google.protobuf.StringValueOrBuilder getAdductOrBuilder() {
           if (adductBuilder_ != null) {
             return adductBuilder_.getMessageOrBuilder();
@@ -12571,8 +12705,7 @@ public final class SkylineDocument {
             com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder> 
             getAdductFieldBuilder() {
           if (adductBuilder_ == null) {
-            adductBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder>(
+            adductBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getAdduct(),
                     getParentForChildren(),
                     isClean());
@@ -12588,6 +12721,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.StringValue molecule_id = 30;</code>
          * @return Whether the moleculeId field is set.
          */
+        @Override
         public boolean hasMoleculeId() {
           return ((bitField0_ & 0x04000000) != 0);
         }
@@ -12595,6 +12729,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.StringValue molecule_id = 30;</code>
          * @return The moleculeId.
          */
+        @Override
         public com.google.protobuf.StringValue getMoleculeId() {
           if (moleculeIdBuilder_ == null) {
             return moleculeId_ == null ? com.google.protobuf.StringValue.getDefaultInstance() : moleculeId_;
@@ -12677,6 +12812,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.StringValue molecule_id = 30;</code>
          */
+        @Override
         public com.google.protobuf.StringValueOrBuilder getMoleculeIdOrBuilder() {
           if (moleculeIdBuilder_ != null) {
             return moleculeIdBuilder_.getMessageOrBuilder();
@@ -12692,8 +12828,7 @@ public final class SkylineDocument {
             com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder> 
             getMoleculeIdFieldBuilder() {
           if (moleculeIdBuilder_ == null) {
-            moleculeIdBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.StringValue, com.google.protobuf.StringValue.Builder, com.google.protobuf.StringValueOrBuilder>(
+            moleculeIdBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getMoleculeId(),
                     getParentForChildren(),
                     isClean());
@@ -12741,6 +12876,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
          * @return Whether the explicitCollisionEnergy field is set.
          */
+        @Override
         public boolean hasExplicitCollisionEnergy() {
           return ((bitField0_ & 0x10000000) != 0);
         }
@@ -12748,6 +12884,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
          * @return The explicitCollisionEnergy.
          */
+        @Override
         public com.google.protobuf.DoubleValue getExplicitCollisionEnergy() {
           if (explicitCollisionEnergyBuilder_ == null) {
             return explicitCollisionEnergy_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : explicitCollisionEnergy_;
@@ -12830,6 +12967,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.DoubleValue explicitCollisionEnergy = 32;</code>
          */
+        @Override
         public com.google.protobuf.DoubleValueOrBuilder getExplicitCollisionEnergyOrBuilder() {
           if (explicitCollisionEnergyBuilder_ != null) {
             return explicitCollisionEnergyBuilder_.getMessageOrBuilder();
@@ -12845,8 +12983,7 @@ public final class SkylineDocument {
             com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getExplicitCollisionEnergyFieldBuilder() {
           if (explicitCollisionEnergyBuilder_ == null) {
-            explicitCollisionEnergyBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
+            explicitCollisionEnergyBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getExplicitCollisionEnergy(),
                     getParentForChildren(),
                     isClean());
@@ -12862,6 +12999,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
          * @return Whether the explicitIonMobilityHighEnergyOffset field is set.
          */
+        @Override
         public boolean hasExplicitIonMobilityHighEnergyOffset() {
           return ((bitField0_ & 0x20000000) != 0);
         }
@@ -12869,6 +13007,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
          * @return The explicitIonMobilityHighEnergyOffset.
          */
+        @Override
         public com.google.protobuf.DoubleValue getExplicitIonMobilityHighEnergyOffset() {
           if (explicitIonMobilityHighEnergyOffsetBuilder_ == null) {
             return explicitIonMobilityHighEnergyOffset_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : explicitIonMobilityHighEnergyOffset_;
@@ -12951,6 +13090,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.DoubleValue explicitIonMobilityHighEnergyOffset = 33;</code>
          */
+        @Override
         public com.google.protobuf.DoubleValueOrBuilder getExplicitIonMobilityHighEnergyOffsetOrBuilder() {
           if (explicitIonMobilityHighEnergyOffsetBuilder_ != null) {
             return explicitIonMobilityHighEnergyOffsetBuilder_.getMessageOrBuilder();
@@ -12966,8 +13106,7 @@ public final class SkylineDocument {
             com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getExplicitIonMobilityHighEnergyOffsetFieldBuilder() {
           if (explicitIonMobilityHighEnergyOffsetBuilder_ == null) {
-            explicitIonMobilityHighEnergyOffsetBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
+            explicitIonMobilityHighEnergyOffsetBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getExplicitIonMobilityHighEnergyOffset(),
                     getParentForChildren(),
                     isClean());
@@ -12983,6 +13122,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
          * @return Whether the explicitSLens field is set.
          */
+        @Override
         public boolean hasExplicitSLens() {
           return ((bitField0_ & 0x40000000) != 0);
         }
@@ -12990,6 +13130,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
          * @return The explicitSLens.
          */
+        @Override
         public com.google.protobuf.DoubleValue getExplicitSLens() {
           if (explicitSLensBuilder_ == null) {
             return explicitSLens_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : explicitSLens_;
@@ -13072,6 +13213,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.DoubleValue explicitSLens = 34;</code>
          */
+        @Override
         public com.google.protobuf.DoubleValueOrBuilder getExplicitSLensOrBuilder() {
           if (explicitSLensBuilder_ != null) {
             return explicitSLensBuilder_.getMessageOrBuilder();
@@ -13087,8 +13229,7 @@ public final class SkylineDocument {
             com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getExplicitSLensFieldBuilder() {
           if (explicitSLensBuilder_ == null) {
-            explicitSLensBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
+            explicitSLensBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getExplicitSLens(),
                     getParentForChildren(),
                     isClean());
@@ -13104,6 +13245,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
          * @return Whether the explicitConeVoltage field is set.
          */
+        @Override
         public boolean hasExplicitConeVoltage() {
           return ((bitField0_ & 0x80000000) != 0);
         }
@@ -13111,6 +13253,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
          * @return The explicitConeVoltage.
          */
+        @Override
         public com.google.protobuf.DoubleValue getExplicitConeVoltage() {
           if (explicitConeVoltageBuilder_ == null) {
             return explicitConeVoltage_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : explicitConeVoltage_;
@@ -13193,6 +13336,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.DoubleValue explicitConeVoltage = 35;</code>
          */
+        @Override
         public com.google.protobuf.DoubleValueOrBuilder getExplicitConeVoltageOrBuilder() {
           if (explicitConeVoltageBuilder_ != null) {
             return explicitConeVoltageBuilder_.getMessageOrBuilder();
@@ -13208,8 +13352,7 @@ public final class SkylineDocument {
             com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getExplicitConeVoltageFieldBuilder() {
           if (explicitConeVoltageBuilder_ == null) {
-            explicitConeVoltageBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
+            explicitConeVoltageBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getExplicitConeVoltage(),
                     getParentForChildren(),
                     isClean());
@@ -13225,6 +13368,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
          * @return Whether the explicitDeclusteringPotential field is set.
          */
+        @Override
         public boolean hasExplicitDeclusteringPotential() {
           return ((bitField1_ & 0x00000001) != 0);
         }
@@ -13232,6 +13376,7 @@ public final class SkylineDocument {
          * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
          * @return The explicitDeclusteringPotential.
          */
+        @Override
         public com.google.protobuf.DoubleValue getExplicitDeclusteringPotential() {
           if (explicitDeclusteringPotentialBuilder_ == null) {
             return explicitDeclusteringPotential_ == null ? com.google.protobuf.DoubleValue.getDefaultInstance() : explicitDeclusteringPotential_;
@@ -13314,6 +13459,7 @@ public final class SkylineDocument {
         /**
          * <code>.google.protobuf.DoubleValue explicitDeclusteringPotential = 36;</code>
          */
+        @Override
         public com.google.protobuf.DoubleValueOrBuilder getExplicitDeclusteringPotentialOrBuilder() {
           if (explicitDeclusteringPotentialBuilder_ != null) {
             return explicitDeclusteringPotentialBuilder_.getMessageOrBuilder();
@@ -13329,8 +13475,7 @@ public final class SkylineDocument {
             com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder> 
             getExplicitDeclusteringPotentialFieldBuilder() {
           if (explicitDeclusteringPotentialBuilder_ == null) {
-            explicitDeclusteringPotentialBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-                com.google.protobuf.DoubleValue, com.google.protobuf.DoubleValue.Builder, com.google.protobuf.DoubleValueOrBuilder>(
+            explicitDeclusteringPotentialBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                     getExplicitDeclusteringPotential(),
                     getParentForChildren(),
                     isClean());
@@ -13375,7 +13520,7 @@ public final class SkylineDocument {
           java.util.Collections.emptyList();
         private void ensureLinkedIonsIsMutable() {
           if (!((bitField1_ & 0x00000004) != 0)) {
-            linkedIons_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon>(linkedIons_);
+            linkedIons_ = new java.util.ArrayList<>(linkedIons_);
             bitField1_ |= 0x00000004;
            }
         }
@@ -13386,6 +13531,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.LinkedIon linkedIons = 38;</code>
          */
+        @Override
         public java.util.List<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon> getLinkedIonsList() {
           if (linkedIonsBuilder_ == null) {
             return java.util.Collections.unmodifiableList(linkedIons_);
@@ -13396,6 +13542,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.LinkedIon linkedIons = 38;</code>
          */
+        @Override
         public int getLinkedIonsCount() {
           if (linkedIonsBuilder_ == null) {
             return linkedIons_.size();
@@ -13406,6 +13553,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.LinkedIon linkedIons = 38;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon getLinkedIons(int index) {
           if (linkedIonsBuilder_ == null) {
             return linkedIons_.get(index);
@@ -13556,6 +13704,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.LinkedIon linkedIons = 38;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIonOrBuilder getLinkedIonsOrBuilder(
             int index) {
           if (linkedIonsBuilder_ == null) {
@@ -13566,7 +13715,8 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.LinkedIon linkedIons = 38;</code>
          */
-        public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIonOrBuilder> 
+        @Override
+        public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIonOrBuilder>
              getLinkedIonsOrBuilderList() {
           if (linkedIonsBuilder_ != null) {
             return linkedIonsBuilder_.getMessageOrBuilderList();
@@ -13600,8 +13750,7 @@ public final class SkylineDocument {
             org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIonOrBuilder> 
             getLinkedIonsFieldBuilder() {
           if (linkedIonsBuilder_ == null) {
-            linkedIonsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIonOrBuilder>(
+            linkedIonsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                     linkedIons_,
                     ((bitField1_ & 0x00000004) != 0),
                     getParentForChildren(),
@@ -13637,25 +13786,34 @@ public final class SkylineDocument {
       }
 
       private static final com.google.protobuf.Parser<Transition>
-          PARSER = new com.google.protobuf.AbstractParser<Transition>() {
-        @java.lang.Override
-        public Transition parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public Transition parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<Transition> parser() {
@@ -13775,12 +13933,11 @@ public final class SkylineDocument {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt)) {
+        if (!(obj instanceof OptionalInt other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt other = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.OptionalInt) obj;
 
-        if (getValue()
+          if (getValue()
             != other.getValue()) return false;
         if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
@@ -14123,25 +14280,34 @@ public final class SkylineDocument {
       }
 
       private static final com.google.protobuf.Parser<OptionalInt>
-          PARSER = new com.google.protobuf.AbstractParser<OptionalInt>() {
-        @java.lang.Override
-        public OptionalInt parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public OptionalInt parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<OptionalInt> parser() {
@@ -14481,12 +14647,11 @@ public final class SkylineDocument {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss)) {
+        if (!(obj instanceof TransitionLoss other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss other = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLoss) obj;
 
-        if (!getFormula()
+          if (!getFormula()
             .equals(other.getFormula())) return false;
         if (java.lang.Double.doubleToLongBits(getMonoisotopicMass())
             != java.lang.Double.doubleToLongBits(
@@ -14874,6 +15039,7 @@ public final class SkylineDocument {
          * <code>string formula = 1;</code>
          * @return The formula.
          */
+        @Override
         public java.lang.String getFormula() {
           java.lang.Object ref = formula_;
           if (!(ref instanceof java.lang.String)) {
@@ -14890,6 +15056,7 @@ public final class SkylineDocument {
          * <code>string formula = 1;</code>
          * @return The bytes for formula.
          */
+        @Override
         public com.google.protobuf.ByteString
             getFormulaBytes() {
           java.lang.Object ref = formula_;
@@ -15063,6 +15230,7 @@ public final class SkylineDocument {
          * <code>string modificationName = 5;</code>
          * @return The modificationName.
          */
+        @Override
         public java.lang.String getModificationName() {
           java.lang.Object ref = modificationName_;
           if (!(ref instanceof java.lang.String)) {
@@ -15079,6 +15247,7 @@ public final class SkylineDocument {
          * <code>string modificationName = 5;</code>
          * @return The bytes for modificationName.
          */
+        @Override
         public com.google.protobuf.ByteString
             getModificationNameBytes() {
           java.lang.Object ref = modificationName_;
@@ -15220,25 +15389,34 @@ public final class SkylineDocument {
       }
 
       private static final com.google.protobuf.Parser<TransitionLoss>
-          PARSER = new com.google.protobuf.AbstractParser<TransitionLoss>() {
-        @java.lang.Override
-        public TransitionLoss parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public TransitionLoss parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<TransitionLoss> parser() {
@@ -15377,12 +15555,11 @@ public final class SkylineDocument {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLibInfo)) {
+        if (!(obj instanceof TransitionLibInfo other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLibInfo other = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionLibInfo) obj;
 
-        if (getRank()
+          if (getRank()
             != other.getRank()) return false;
         if (java.lang.Float.floatToIntBits(getIntensity())
             != java.lang.Float.floatToIntBits(
@@ -15770,25 +15947,34 @@ public final class SkylineDocument {
       }
 
       private static final com.google.protobuf.Parser<TransitionLibInfo>
-          PARSER = new com.google.protobuf.AbstractParser<TransitionLibInfo>() {
-        @java.lang.Override
-        public TransitionLibInfo parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public TransitionLibInfo parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<TransitionLibInfo> parser() {
@@ -15952,12 +16138,11 @@ public final class SkylineDocument {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionData)) {
+        if (!(obj instanceof TransitionData other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionData other = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionData) obj;
 
-        if (!getTransitionsList()
+          if (!getTransitionsList()
             .equals(other.getTransitionsList())) return false;
         if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
@@ -16290,7 +16475,7 @@ public final class SkylineDocument {
           java.util.Collections.emptyList();
         private void ensureTransitionsIsMutable() {
           if (!((bitField0_ & 0x00000001) != 0)) {
-            transitions_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Transition>(transitions_);
+            transitions_ = new java.util.ArrayList<>(transitions_);
             bitField0_ |= 0x00000001;
            }
         }
@@ -16301,6 +16486,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.Transition transitions = 1;</code>
          */
+        @Override
         public java.util.List<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Transition> getTransitionsList() {
           if (transitionsBuilder_ == null) {
             return java.util.Collections.unmodifiableList(transitions_);
@@ -16311,6 +16497,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.Transition transitions = 1;</code>
          */
+        @Override
         public int getTransitionsCount() {
           if (transitionsBuilder_ == null) {
             return transitions_.size();
@@ -16321,6 +16508,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.Transition transitions = 1;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Transition getTransitions(int index) {
           if (transitionsBuilder_ == null) {
             return transitions_.get(index);
@@ -16471,6 +16659,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.Transition transitions = 1;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionOrBuilder getTransitionsOrBuilder(
             int index) {
           if (transitionsBuilder_ == null) {
@@ -16481,7 +16670,8 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.Transition transitions = 1;</code>
          */
-        public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionOrBuilder> 
+        @Override
+        public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionOrBuilder>
              getTransitionsOrBuilderList() {
           if (transitionsBuilder_ != null) {
             return transitionsBuilder_.getMessageOrBuilderList();
@@ -16515,8 +16705,7 @@ public final class SkylineDocument {
             org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Transition, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Transition.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionOrBuilder> 
             getTransitionsFieldBuilder() {
           if (transitionsBuilder_ == null) {
-            transitionsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Transition, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.Transition.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.TransitionOrBuilder>(
+            transitionsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                     transitions_,
                     ((bitField0_ & 0x00000001) != 0),
                     getParentForChildren(),
@@ -16552,25 +16741,34 @@ public final class SkylineDocument {
       }
 
       private static final com.google.protobuf.Parser<TransitionData>
-          PARSER = new com.google.protobuf.AbstractParser<TransitionData>() {
-        @java.lang.Override
-        public TransitionData parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public TransitionData parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<TransitionData> parser() {
@@ -16901,12 +17099,11 @@ public final class SkylineDocument {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon)) {
+        if (!(obj instanceof LinkedIon other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon other = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon) obj;
 
-        if (ionType_ != other.ionType_) return false;
+          if (ionType_ != other.ionType_) return false;
         if (getOrdinal()
             != other.getOrdinal()) return false;
         if (getModificationIndex()
@@ -17439,6 +17636,7 @@ public final class SkylineDocument {
          * <code>string modificationName = 4;</code>
          * @return The modificationName.
          */
+        @Override
         public java.lang.String getModificationName() {
           java.lang.Object ref = modificationName_;
           if (!(ref instanceof java.lang.String)) {
@@ -17455,6 +17653,7 @@ public final class SkylineDocument {
          * <code>string modificationName = 4;</code>
          * @return The bytes for modificationName.
          */
+        @Override
         public com.google.protobuf.ByteString
             getModificationNameBytes() {
           java.lang.Object ref = modificationName_;
@@ -17510,7 +17709,7 @@ public final class SkylineDocument {
           java.util.Collections.emptyList();
         private void ensureChildrenIsMutable() {
           if (!((bitField0_ & 0x00000010) != 0)) {
-            children_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon>(children_);
+            children_ = new java.util.ArrayList<>(children_);
             bitField0_ |= 0x00000010;
            }
         }
@@ -17521,6 +17720,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.LinkedIon children = 5;</code>
          */
+        @Override
         public java.util.List<org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon> getChildrenList() {
           if (childrenBuilder_ == null) {
             return java.util.Collections.unmodifiableList(children_);
@@ -17531,6 +17731,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.LinkedIon children = 5;</code>
          */
+        @Override
         public int getChildrenCount() {
           if (childrenBuilder_ == null) {
             return children_.size();
@@ -17541,6 +17742,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.LinkedIon children = 5;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon getChildren(int index) {
           if (childrenBuilder_ == null) {
             return children_.get(index);
@@ -17691,6 +17893,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.LinkedIon children = 5;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIonOrBuilder getChildrenOrBuilder(
             int index) {
           if (childrenBuilder_ == null) {
@@ -17701,7 +17904,8 @@ public final class SkylineDocument {
         /**
          * <code>repeated .SkylineDocumentProto.LinkedIon children = 5;</code>
          */
-        public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIonOrBuilder> 
+        @Override
+        public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIonOrBuilder>
              getChildrenOrBuilderList() {
           if (childrenBuilder_ != null) {
             return childrenBuilder_.getMessageOrBuilderList();
@@ -17735,8 +17939,7 @@ public final class SkylineDocument {
             org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIonOrBuilder> 
             getChildrenFieldBuilder() {
           if (childrenBuilder_ == null) {
-            childrenBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIon.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.LinkedIonOrBuilder>(
+            childrenBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                     children_,
                     ((bitField0_ & 0x00000010) != 0),
                     getParentForChildren(),
@@ -17804,25 +18007,34 @@ public final class SkylineDocument {
       }
 
       private static final com.google.protobuf.Parser<LinkedIon>
-          PARSER = new com.google.protobuf.AbstractParser<LinkedIon>() {
-        @java.lang.Override
-        public LinkedIon parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public LinkedIon parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<LinkedIon> parser() {
@@ -17874,12 +18086,11 @@ public final class SkylineDocument {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto)) {
+      if (!(obj instanceof SkylineDocumentProto other)) {
         return super.equals(obj);
       }
-      org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto other = (org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto) obj;
 
-      if (!getUnknownFields().equals(other.getUnknownFields())) return false;
+        if (!getUnknownFields().equals(other.getUnknownFields())) return false;
       return true;
     }
 
@@ -18162,25 +18373,34 @@ public final class SkylineDocument {
     }
 
     private static final com.google.protobuf.Parser<SkylineDocumentProto>
-        PARSER = new com.google.protobuf.AbstractParser<SkylineDocumentProto>() {
-      @java.lang.Override
-      public SkylineDocumentProto parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
+        PARSER = new com.google.protobuf.AbstractParser<>()
+    {
+        @java.lang.Override
+        public SkylineDocumentProto parsePartialFrom(
+                com.google.protobuf.CodedInputStream input,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws com.google.protobuf.InvalidProtocolBufferException
+        {
+            Builder builder = newBuilder();
+            try
+            {
+                builder.mergeFrom(input, extensionRegistry);
+            }
+            catch (com.google.protobuf.InvalidProtocolBufferException e)
+            {
+                throw e.setUnfinishedMessage(builder.buildPartial());
+            }
+            catch (com.google.protobuf.UninitializedMessageException e)
+            {
+                throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+            }
+            catch (java.io.IOException e)
+            {
+                throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                        .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
         }
-        return builder.buildPartial();
-      }
     };
 
     public static com.google.protobuf.Parser<SkylineDocumentProto> parser() {
@@ -18440,6 +18660,7 @@ public final class SkylineDocument {
       public static final int crosslink_VALUE = 3;
 
 
+      @Override
       public final int getNumber() {
         if (this == UNRECOGNIZED) {
           throw new java.lang.IllegalArgumentException(
@@ -18478,12 +18699,16 @@ public final class SkylineDocument {
       }
       private static final com.google.protobuf.Internal.EnumLiteMap<
           KeyType> internalValueMap =
-            new com.google.protobuf.Internal.EnumLiteMap<KeyType>() {
-              public KeyType findValueByNumber(int number) {
-                return KeyType.forNumber(number);
-              }
-            };
+              new com.google.protobuf.Internal.EnumLiteMap<>()
+              {
+                  @Override
+                  public KeyType findValueByNumber(int number)
+                  {
+                      return KeyType.forNumber(number);
+                  }
+              };
 
+      @Override
       public final com.google.protobuf.Descriptors.EnumValueDescriptor
           getValueDescriptor() {
         if (this == UNRECOGNIZED) {
@@ -18492,6 +18717,7 @@ public final class SkylineDocument {
         }
         return getDescriptor().getValues().get(ordinal());
       }
+      @Override
       public final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptorForType() {
         return getDescriptor();
@@ -18517,7 +18743,7 @@ public final class SkylineDocument {
 
       private final int value;
 
-      private KeyType(int value) {
+      KeyType(int value) {
         this.value = value;
       }
 
@@ -18727,12 +18953,11 @@ public final class SkylineDocument {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Crosslinker)) {
+        if (!(obj instanceof Crosslinker other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Crosslinker other = (org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Crosslinker) obj;
 
-        if (!getName()
+          if (!getName()
             .equals(other.getName())) return false;
         if (!getPositionsList()
             .equals(other.getPositionsList())) return false;
@@ -19084,6 +19309,7 @@ public final class SkylineDocument {
          * <code>string name = 1;</code>
          * @return The name.
          */
+        @Override
         public java.lang.String getName() {
           java.lang.Object ref = name_;
           if (!(ref instanceof java.lang.String)) {
@@ -19100,6 +19326,7 @@ public final class SkylineDocument {
          * <code>string name = 1;</code>
          * @return The bytes for name.
          */
+        @Override
         public com.google.protobuf.ByteString
             getNameBytes() {
           java.lang.Object ref = name_;
@@ -19155,7 +19382,7 @@ public final class SkylineDocument {
           java.util.Collections.emptyList();
         private void ensurePositionsIsMutable() {
           if (!((bitField0_ & 0x00000002) != 0)) {
-            positions_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Positions>(positions_);
+            positions_ = new java.util.ArrayList<>(positions_);
             bitField0_ |= 0x00000002;
            }
         }
@@ -19166,6 +19393,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .LibraryKeyProto.Positions positions = 2;</code>
          */
+        @Override
         public java.util.List<org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Positions> getPositionsList() {
           if (positionsBuilder_ == null) {
             return java.util.Collections.unmodifiableList(positions_);
@@ -19176,6 +19404,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .LibraryKeyProto.Positions positions = 2;</code>
          */
+        @Override
         public int getPositionsCount() {
           if (positionsBuilder_ == null) {
             return positions_.size();
@@ -19186,6 +19415,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .LibraryKeyProto.Positions positions = 2;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Positions getPositions(int index) {
           if (positionsBuilder_ == null) {
             return positions_.get(index);
@@ -19336,6 +19566,7 @@ public final class SkylineDocument {
         /**
          * <code>repeated .LibraryKeyProto.Positions positions = 2;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.PositionsOrBuilder getPositionsOrBuilder(
             int index) {
           if (positionsBuilder_ == null) {
@@ -19346,7 +19577,8 @@ public final class SkylineDocument {
         /**
          * <code>repeated .LibraryKeyProto.Positions positions = 2;</code>
          */
-        public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.PositionsOrBuilder> 
+        @Override
+        public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.PositionsOrBuilder>
              getPositionsOrBuilderList() {
           if (positionsBuilder_ != null) {
             return positionsBuilder_.getMessageOrBuilderList();
@@ -19380,8 +19612,7 @@ public final class SkylineDocument {
             org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Positions, org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Positions.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.PositionsOrBuilder> 
             getPositionsFieldBuilder() {
           if (positionsBuilder_ == null) {
-            positionsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Positions, org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Positions.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.PositionsOrBuilder>(
+            positionsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                     positions_,
                     ((bitField0_ & 0x00000002) != 0),
                     getParentForChildren(),
@@ -19417,25 +19648,34 @@ public final class SkylineDocument {
       }
 
       private static final com.google.protobuf.Parser<Crosslinker>
-          PARSER = new com.google.protobuf.AbstractParser<Crosslinker>() {
-        @java.lang.Override
-        public Crosslinker parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public Crosslinker parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<Crosslinker> parser() {
@@ -19528,6 +19768,7 @@ public final class SkylineDocument {
        * <code>repeated int32 position = 1;</code>
        * @return The count of position.
        */
+      @Override
       public int getPositionCount() {
         return position_.size();
       }
@@ -19536,6 +19777,7 @@ public final class SkylineDocument {
        * @param index The index of the element to return.
        * @return The position at the given index.
        */
+      @Override
       public int getPosition(int index) {
         return position_.getInt(index);
       }
@@ -19556,7 +19798,7 @@ public final class SkylineDocument {
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
         getSerializedSize();
-        if (getPositionList().size() > 0) {
+        if (!getPositionList().isEmpty()) {
           output.writeUInt32NoTag(10);
           output.writeUInt32NoTag(positionMemoizedSerializedSize);
         }
@@ -19596,12 +19838,11 @@ public final class SkylineDocument {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Positions)) {
+        if (!(obj instanceof Positions other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Positions other = (org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Positions) obj;
 
-        if (!getPositionList()
+          if (!getPositionList()
             .equals(other.getPositionList())) return false;
         if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
@@ -19914,6 +20155,7 @@ public final class SkylineDocument {
          * <code>repeated int32 position = 1;</code>
          * @return A list containing the position.
          */
+        @Override
         public java.util.List<java.lang.Integer>
             getPositionList() {
           position_.makeImmutable();
@@ -19923,6 +20165,7 @@ public final class SkylineDocument {
          * <code>repeated int32 position = 1;</code>
          * @return The count of position.
          */
+        @Override
         public int getPositionCount() {
           return position_.size();
         }
@@ -19931,6 +20174,7 @@ public final class SkylineDocument {
          * @param index The index of the element to return.
          * @return The position at the given index.
          */
+        @Override
         public int getPosition(int index) {
           return position_.getInt(index);
         }
@@ -20013,25 +20257,34 @@ public final class SkylineDocument {
       }
 
       private static final com.google.protobuf.Parser<Positions>
-          PARSER = new com.google.protobuf.AbstractParser<Positions>() {
-        @java.lang.Override
-        public Positions parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public Positions parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<Positions> parser() {
@@ -20343,6 +20596,7 @@ public final class SkylineDocument {
      * <code>repeated string crosslinkedSequences = 11;</code>
      * @return A list containing the crosslinkedSequences.
      */
+    @Override
     public com.google.protobuf.ProtocolStringList
         getCrosslinkedSequencesList() {
       return crosslinkedSequences_;
@@ -20351,6 +20605,7 @@ public final class SkylineDocument {
      * <code>repeated string crosslinkedSequences = 11;</code>
      * @return The count of crosslinkedSequences.
      */
+    @Override
     public int getCrosslinkedSequencesCount() {
       return crosslinkedSequences_.size();
     }
@@ -20359,6 +20614,7 @@ public final class SkylineDocument {
      * @param index The index of the element to return.
      * @return The crosslinkedSequences at the given index.
      */
+    @Override
     public java.lang.String getCrosslinkedSequences(int index) {
       return crosslinkedSequences_.get(index);
     }
@@ -20367,6 +20623,7 @@ public final class SkylineDocument {
      * @param index The index of the value to return.
      * @return The bytes of the crosslinkedSequences at the given index.
      */
+    @Override
     public com.google.protobuf.ByteString
         getCrosslinkedSequencesBytes(int index) {
       return crosslinkedSequences_.getByteString(index);
@@ -20528,12 +20785,11 @@ public final class SkylineDocument {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto)) {
+      if (!(obj instanceof LibraryKeyProto other)) {
         return super.equals(obj);
       }
-      org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto other = (org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto) obj;
 
-      if (keyType_ != other.keyType_) return false;
+        if (keyType_ != other.keyType_) return false;
       if (!getModifiedSequence()
           .equals(other.getModifiedSequence())) return false;
       if (getCharge()
@@ -21123,6 +21379,7 @@ public final class SkylineDocument {
        * <code>string modifiedSequence = 2;</code>
        * @return The modifiedSequence.
        */
+      @Override
       public java.lang.String getModifiedSequence() {
         java.lang.Object ref = modifiedSequence_;
         if (!(ref instanceof java.lang.String)) {
@@ -21139,6 +21396,7 @@ public final class SkylineDocument {
        * <code>string modifiedSequence = 2;</code>
        * @return The bytes for modifiedSequence.
        */
+      @Override
       public com.google.protobuf.ByteString
           getModifiedSequenceBytes() {
         java.lang.Object ref = modifiedSequence_;
@@ -21227,6 +21485,7 @@ public final class SkylineDocument {
        * <code>string moleculeName = 4;</code>
        * @return The moleculeName.
        */
+      @Override
       public java.lang.String getMoleculeName() {
         java.lang.Object ref = moleculeName_;
         if (!(ref instanceof java.lang.String)) {
@@ -21243,6 +21502,7 @@ public final class SkylineDocument {
        * <code>string moleculeName = 4;</code>
        * @return The bytes for moleculeName.
        */
+      @Override
       public com.google.protobuf.ByteString
           getMoleculeNameBytes() {
         java.lang.Object ref = moleculeName_;
@@ -21299,6 +21559,7 @@ public final class SkylineDocument {
        * <code>string chemicalFormula = 5;</code>
        * @return The chemicalFormula.
        */
+      @Override
       public java.lang.String getChemicalFormula() {
         java.lang.Object ref = chemicalFormula_;
         if (!(ref instanceof java.lang.String)) {
@@ -21315,6 +21576,7 @@ public final class SkylineDocument {
        * <code>string chemicalFormula = 5;</code>
        * @return The bytes for chemicalFormula.
        */
+      @Override
       public com.google.protobuf.ByteString
           getChemicalFormulaBytes() {
         java.lang.Object ref = chemicalFormula_;
@@ -21371,6 +21633,7 @@ public final class SkylineDocument {
        * <code>string inChiKey = 6;</code>
        * @return The inChiKey.
        */
+      @Override
       public java.lang.String getInChiKey() {
         java.lang.Object ref = inChiKey_;
         if (!(ref instanceof java.lang.String)) {
@@ -21387,6 +21650,7 @@ public final class SkylineDocument {
        * <code>string inChiKey = 6;</code>
        * @return The bytes for inChiKey.
        */
+      @Override
       public com.google.protobuf.ByteString
           getInChiKeyBytes() {
         java.lang.Object ref = inChiKey_;
@@ -21443,6 +21707,7 @@ public final class SkylineDocument {
        * <code>string otherKeys = 7;</code>
        * @return The otherKeys.
        */
+      @Override
       public java.lang.String getOtherKeys() {
         java.lang.Object ref = otherKeys_;
         if (!(ref instanceof java.lang.String)) {
@@ -21459,6 +21724,7 @@ public final class SkylineDocument {
        * <code>string otherKeys = 7;</code>
        * @return The bytes for otherKeys.
        */
+      @Override
       public com.google.protobuf.ByteString
           getOtherKeysBytes() {
         java.lang.Object ref = otherKeys_;
@@ -21515,6 +21781,7 @@ public final class SkylineDocument {
        * <code>string adduct = 8;</code>
        * @return The adduct.
        */
+      @Override
       public java.lang.String getAdduct() {
         java.lang.Object ref = adduct_;
         if (!(ref instanceof java.lang.String)) {
@@ -21531,6 +21798,7 @@ public final class SkylineDocument {
        * <code>string adduct = 8;</code>
        * @return The bytes for adduct.
        */
+      @Override
       public com.google.protobuf.ByteString
           getAdductBytes() {
         java.lang.Object ref = adduct_;
@@ -21658,6 +21926,7 @@ public final class SkylineDocument {
        * <code>repeated string crosslinkedSequences = 11;</code>
        * @return A list containing the crosslinkedSequences.
        */
+      @Override
       public com.google.protobuf.ProtocolStringList
           getCrosslinkedSequencesList() {
         crosslinkedSequences_.makeImmutable();
@@ -21667,6 +21936,7 @@ public final class SkylineDocument {
        * <code>repeated string crosslinkedSequences = 11;</code>
        * @return The count of crosslinkedSequences.
        */
+      @Override
       public int getCrosslinkedSequencesCount() {
         return crosslinkedSequences_.size();
       }
@@ -21675,6 +21945,7 @@ public final class SkylineDocument {
        * @param index The index of the element to return.
        * @return The crosslinkedSequences at the given index.
        */
+      @Override
       public java.lang.String getCrosslinkedSequences(int index) {
         return crosslinkedSequences_.get(index);
       }
@@ -21683,6 +21954,7 @@ public final class SkylineDocument {
        * @param index The index of the value to return.
        * @return The bytes of the crosslinkedSequences at the given index.
        */
+      @Override
       public com.google.protobuf.ByteString
           getCrosslinkedSequencesBytes(int index) {
         return crosslinkedSequences_.getByteString(index);
@@ -21737,8 +22009,8 @@ public final class SkylineDocument {
       public Builder clearCrosslinkedSequences() {
         crosslinkedSequences_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000400);;
-        onChanged();
+        bitField0_ = (bitField0_ & ~0x00000400);
+          onChanged();
         return this;
       }
       /**
@@ -21761,7 +22033,7 @@ public final class SkylineDocument {
         java.util.Collections.emptyList();
       private void ensureCrosslinkersIsMutable() {
         if (!((bitField0_ & 0x00000800) != 0)) {
-          crosslinkers_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Crosslinker>(crosslinkers_);
+          crosslinkers_ = new java.util.ArrayList<>(crosslinkers_);
           bitField0_ |= 0x00000800;
          }
       }
@@ -21772,6 +22044,7 @@ public final class SkylineDocument {
       /**
        * <code>repeated .LibraryKeyProto.Crosslinker crosslinkers = 12;</code>
        */
+      @Override
       public java.util.List<org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Crosslinker> getCrosslinkersList() {
         if (crosslinkersBuilder_ == null) {
           return java.util.Collections.unmodifiableList(crosslinkers_);
@@ -21782,6 +22055,7 @@ public final class SkylineDocument {
       /**
        * <code>repeated .LibraryKeyProto.Crosslinker crosslinkers = 12;</code>
        */
+      @Override
       public int getCrosslinkersCount() {
         if (crosslinkersBuilder_ == null) {
           return crosslinkers_.size();
@@ -21792,6 +22066,7 @@ public final class SkylineDocument {
       /**
        * <code>repeated .LibraryKeyProto.Crosslinker crosslinkers = 12;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Crosslinker getCrosslinkers(int index) {
         if (crosslinkersBuilder_ == null) {
           return crosslinkers_.get(index);
@@ -21942,6 +22217,7 @@ public final class SkylineDocument {
       /**
        * <code>repeated .LibraryKeyProto.Crosslinker crosslinkers = 12;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.CrosslinkerOrBuilder getCrosslinkersOrBuilder(
           int index) {
         if (crosslinkersBuilder_ == null) {
@@ -21952,7 +22228,8 @@ public final class SkylineDocument {
       /**
        * <code>repeated .LibraryKeyProto.Crosslinker crosslinkers = 12;</code>
        */
-      public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.CrosslinkerOrBuilder> 
+      @Override
+      public java.util.List<? extends org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.CrosslinkerOrBuilder>
            getCrosslinkersOrBuilderList() {
         if (crosslinkersBuilder_ != null) {
           return crosslinkersBuilder_.getMessageOrBuilderList();
@@ -21986,8 +22263,7 @@ public final class SkylineDocument {
           org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Crosslinker, org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Crosslinker.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.CrosslinkerOrBuilder> 
           getCrosslinkersFieldBuilder() {
         if (crosslinkersBuilder_ == null) {
-          crosslinkersBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Crosslinker, org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.Crosslinker.Builder, org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.CrosslinkerOrBuilder>(
+          crosslinkersBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                   crosslinkers_,
                   ((bitField0_ & 0x00000800) != 0),
                   getParentForChildren(),
@@ -22023,25 +22299,34 @@ public final class SkylineDocument {
     }
 
     private static final com.google.protobuf.Parser<LibraryKeyProto>
-        PARSER = new com.google.protobuf.AbstractParser<LibraryKeyProto>() {
-      @java.lang.Override
-      public LibraryKeyProto parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
+        PARSER = new com.google.protobuf.AbstractParser<>()
+    {
+        @java.lang.Override
+        public LibraryKeyProto parsePartialFrom(
+                com.google.protobuf.CodedInputStream input,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws com.google.protobuf.InvalidProtocolBufferException
+        {
+            Builder builder = newBuilder();
+            try
+            {
+                builder.mergeFrom(input, extensionRegistry);
+            }
+            catch (com.google.protobuf.InvalidProtocolBufferException e)
+            {
+                throw e.setUnfinishedMessage(builder.buildPartial());
+            }
+            catch (com.google.protobuf.UninitializedMessageException e)
+            {
+                throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+            }
+            catch (java.io.IOException e)
+            {
+                throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                        .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
         }
-        return builder.buildPartial();
-      }
     };
 
     public static com.google.protobuf.Parser<LibraryKeyProto> parser() {
@@ -22140,7 +22425,7 @@ public final class SkylineDocument {
       getDescriptor() {
     return descriptor;
   }
-  private static  com.google.protobuf.Descriptors.FileDescriptor
+  private static final com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
     java.lang.String[] descriptorData = {

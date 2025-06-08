@@ -97,7 +97,7 @@ class DesignMatrix {
         }
 
         return new DesignMatrix(dataSet, matrixColumns.toArray(new double[matrixColumns.size()][]),
-                contrastValueMatrix, columnNames.toArray(new String[columnNames.size()]));
+                contrastValueMatrix, columnNames.toArray(new String[0]));
     }
 
     private static RealMatrix matrixFromColumnVectors(double[][] columnVectors) {

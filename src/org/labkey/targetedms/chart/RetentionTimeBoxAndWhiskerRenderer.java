@@ -47,7 +47,7 @@ public class RetentionTimeBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer
         setItemMargin(0.1);
     }
 
-    // Need to override drawVertical and drawHorizontal methods so that we can draw the FWHM line and whisters
+    // Need to override drawVertical and drawHorizontal methods so that we can draw the FWHM line and whiskers
     @Override
     public void drawHorizontalItem(Graphics2D g2, CategoryItemRendererState state, Rectangle2D dataArea, CategoryPlot plot, CategoryAxis domainAxis, ValueAxis rangeAxis, CategoryDataset dataset, int row, int column)
     {
@@ -57,7 +57,7 @@ public class RetentionTimeBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer
         // TODO
     }
 
-    // Need to override drawVertical and drawHorizontal methods so that we can draw the FWHM line and whisters
+    // Need to override drawVertical and drawHorizontal methods so that we can draw the FWHM line and whiskers
     @Override
     public void drawVerticalItem(Graphics2D g2, CategoryItemRendererState state, Rectangle2D dataArea, CategoryPlot plot, CategoryAxis domainAxis, ValueAxis rangeAxis, CategoryDataset dataset, int row, int column)
     {
@@ -66,9 +66,8 @@ public class RetentionTimeBoxAndWhiskerRenderer extends BoxAndWhiskerRenderer
         // Draw the FWHM lines
         DefaultBoxAndWhiskerCategoryDataset rtDataset = (DefaultBoxAndWhiskerCategoryDataset) dataset;
 
-        if(!(rtDataset.getItem(row, column) instanceof ComparisonDataset.RetentionTimeDatasetItem))
+        if(!(rtDataset.getItem(row, column) instanceof ComparisonDataset.RetentionTimeDatasetItem item))
             return;
-        ComparisonDataset.RetentionTimeDatasetItem item = (ComparisonDataset.RetentionTimeDatasetItem) rtDataset.getItem(row, column);
 
         RectangleEdge location = plot.getRangeAxisEdge();
 

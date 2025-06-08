@@ -223,9 +223,7 @@ public class LibPeptide extends AbstractLibEntity
     public boolean equals(Object o)
     {
         if (this == o) return true;
-        if (!(o instanceof LibPeptide)) return false;
-
-        LibPeptide peptide = (LibPeptide) o;
+        if (!(o instanceof LibPeptide peptide)) return false;
 
         if (!_calcNeutralMass.equals(peptide._calcNeutralMass)) return false;
         if (_endIndex != null ? !_endIndex.equals(peptide._endIndex) : peptide._endIndex != null) return false;

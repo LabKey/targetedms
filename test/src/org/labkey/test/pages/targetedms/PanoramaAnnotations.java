@@ -22,8 +22,8 @@ import org.labkey.test.pages.PortalBodyPanel;
 
 public class PanoramaAnnotations extends PortalBodyPanel
 {
-    private QCAnnotationWebPart _qcAnnotationWebPart;
-    private QCAnnotationTypeWebPart _qcAnnotationTypeWebPart;
+    private final QCAnnotationWebPart _qcAnnotationWebPart;
+    private final QCAnnotationTypeWebPart _qcAnnotationTypeWebPart;
 
     public PanoramaAnnotations(BaseWebDriverTest test)
     {

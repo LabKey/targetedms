@@ -354,8 +354,7 @@ public class Statistics
 
 	 @param s1 First set of numbers
 	 @param s2 Second set of numbers
-	 @return
-	*/
+     */
 	public static double Covariance(Statistics s1, Statistics s2)
 	{
 		try
@@ -549,7 +548,7 @@ public class Statistics
 		double a = ATerm2(y, x);
 		double b = BTerm2(y, x);
 
-		java.util.ArrayList<Double> residuals = new java.util.ArrayList<Double>();
+		java.util.ArrayList<Double> residuals = new java.util.ArrayList<>();
 		for (int i = 0; i < x.getLength(); i++)
 		{
 			residuals.add(y._list[i] - (a*x._list[i] + b));

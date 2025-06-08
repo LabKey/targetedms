@@ -26,7 +26,7 @@ import static org.junit.Assert.assertEquals;
 
 public class PKReportPage extends LabKeyPage<PKReportPage.ElementCache>
 {
-    private int _totalSubgroupTimeRowCount;
+    private final int _totalSubgroupTimeRowCount;
 
     public PKReportPage(WebDriver driver, int totalSubgroupTimeRowCount)
     {

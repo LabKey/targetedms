@@ -397,7 +397,7 @@ public class ContainerChromatogramLibraryWriter
         {
             if(precursor.getGeneralMoleculeId() != lastPeptideId)
             {
-                if(peptidePrecursors.size() > 0)
+                if(!peptidePrecursors.isEmpty())
                 {
                     Peptide peptide = PeptideManager.getPeptide(_container, lastPeptideId);
                     LibPeptide libPeptide = makeLibPeptide(peptide, peptidePrecursors, run);
@@ -410,7 +410,7 @@ public class ContainerChromatogramLibraryWriter
             }
             peptidePrecursors.add(precursor);
         }
-        if(peptidePrecursors.size() > 0)
+        if(!peptidePrecursors.isEmpty())
         {
             Peptide peptide = PeptideManager.getPeptide(_container, lastPeptideId);
             LibPeptide libPeptide = makeLibPeptide(peptide, peptidePrecursors, run);
@@ -430,7 +430,7 @@ public class ContainerChromatogramLibraryWriter
         {
             if(precursor.getGeneralMoleculeId() != lastMoleculeId)
             {
-                if(moleculePrecursors.size() > 0)
+                if(!moleculePrecursors.isEmpty())
                 {
                     Molecule molecule = MoleculeManager.getMolecule(_container, lastMoleculeId);
                     LibPeptide libMolecule = makeLibMolecule(molecule, moleculePrecursors, run);
@@ -443,7 +443,7 @@ public class ContainerChromatogramLibraryWriter
             }
             moleculePrecursors.add(precursor);
         }
-        if(moleculePrecursors.size() > 0)
+        if(!moleculePrecursors.isEmpty())
         {
             Molecule molecule = MoleculeManager.getMolecule(_container, lastMoleculeId);
             LibPeptide libMolecule = makeLibMolecule(molecule, moleculePrecursors, run);
@@ -479,7 +479,7 @@ public class ContainerChromatogramLibraryWriter
         for(Peptide peptide: peptides)
         {
             List<Precursor> precursors = PrecursorManager.getPrecursorsForPeptide(peptide.getId(), schema);
-            if(precursors.size() == 0)
+            if(precursors.isEmpty())
             {
                 throw new IllegalStateException(String.format("No precursors found for peptide '%s'. Empty peptides are not allowed in library folders." +
                         " Empty peptides can be removed in Skyline by selecting Refine > Remove Empty Peptides.", peptide.getSequence()));
@@ -538,12 +538,12 @@ public class ContainerChromatogramLibraryWriter
         libPeptide.setStartIndex(peptide.getStartIndex());
         libPeptide.setEndIndex(peptide.getEndIndex());
         String previousAa = peptide.getPreviousAa();
-        if(previousAa != null && previousAa.length() > 0)
+        if(previousAa != null && !previousAa.isEmpty())
         {
             libPeptide.setPreviousAa(previousAa.charAt(0));
         }
         String nextAa = peptide.getNextAa();
-        if(nextAa != null && nextAa.length() > 0)
+        if(nextAa != null && !nextAa.isEmpty())
         {
             libPeptide.setNextAa(nextAa.charAt(0));
         }

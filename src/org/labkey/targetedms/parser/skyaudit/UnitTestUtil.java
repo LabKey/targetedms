@@ -47,7 +47,7 @@ import java.util.List;
 
 public class UnitTestUtil
 {
-    private static String[] _resourcePath = {"server", "customModules", "targetedms", "resources"};
+    private static final String[] _resourcePath = {"server", "customModules", "targetedms", "resources"};
 
     public static File getSampleDataFile(String pFileName) throws IOException
     {
@@ -69,7 +69,7 @@ public class UnitTestUtil
         //not good for production code but for testing util it should be fine) and append the
         //known path and file name to the Labkey root.
         URL r = UnitTestUtil.class.getResource("/");
-        String decodedUrl = "";
+        String decodedUrl;
         decodedUrl = URLDecoder.decode(r.getFile(), StandardCharsets.UTF_8);
         if(decodedUrl.startsWith("/"))
             decodedUrl = decodedUrl.replaceFirst("/", "");

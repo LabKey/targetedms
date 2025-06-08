@@ -128,7 +128,7 @@ public class PrecursorsWebPart extends BodyWebPart<PrecursorsWebPart.Elements>
         Coefficient_of_Variation("Coefficient of Variation"),
         Light_heavy_ratio("Light/heavy ratio");
 
-        private String _text;
+        private final String _text;
 
         SortBy(String text)
         {

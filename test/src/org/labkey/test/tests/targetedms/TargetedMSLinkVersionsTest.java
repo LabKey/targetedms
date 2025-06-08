@@ -45,7 +45,7 @@ public class TargetedMSLinkVersionsTest extends TargetedMSTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSLinkVersionsTest init = (TargetedMSLinkVersionsTest)getCurrentTest();
+        TargetedMSLinkVersionsTest init = getCurrentTest();
         init.setupFolder(FolderType.Experiment);
 
         // pre-upload the files to the pipeline root so that all of the @Test don't have to worry about it

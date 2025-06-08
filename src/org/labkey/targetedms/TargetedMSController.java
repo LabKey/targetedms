@@ -7840,7 +7840,7 @@ public class TargetedMSController extends SpringActionController
         public ApiResponse execute(ClustergrammerForm form, BindException errors) throws Exception
         {
             Map<String, Map<String, Double>> results = TargetedMSManager.getClustergrammerQuery(getUser(), getContainer(), form.getSelectedIds());
-            if (results.size() == 0)
+            if (results.isEmpty())
             {
                 errors.reject(ERROR_MSG, "No results for the selected file(s)");
                 return null;

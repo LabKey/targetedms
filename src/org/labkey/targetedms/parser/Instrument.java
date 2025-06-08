@@ -94,9 +94,7 @@ public class Instrument
     public boolean equals(Object o)
     {
         if (this == o) return true;
-        if (!(o instanceof Instrument)) return false;
-
-        Instrument that = (Instrument) o;
+        if (!(o instanceof Instrument that)) return false;
 
         if (analyzer != null ? !analyzer.equals(that.analyzer) : that.analyzer != null) return false;
         if (detector != null ? !detector.equals(that.detector) : that.detector != null) return false;

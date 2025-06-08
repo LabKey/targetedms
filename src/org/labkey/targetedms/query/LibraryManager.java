@@ -94,7 +94,7 @@ public class LibraryManager
 
     private static LinkedHashMap<PeptideSettings.SpectrumLibrary, Path> getLibraryFilePaths(long runId, List<PeptideSettings.SpectrumLibrary> libraries)
     {
-        if(libraries.size() == 0)
+        if(libraries.isEmpty())
             return new LinkedHashMap<>(Collections.emptyMap());
 
         Path skyFilesDir = getSkylineFilesDir(runId);

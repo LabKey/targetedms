@@ -53,7 +53,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSQCPremiumTest init = (TargetedMSQCPremiumTest)getCurrentTest();
+        TargetedMSQCPremiumTest init = getCurrentTest();
         init.doInit();
     }
 

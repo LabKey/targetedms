@@ -313,6 +313,7 @@ public class TargetedMSRun implements Serializable, ITargetedMSRun
 
     public void setAuditLogEntriesCount(int auditLogEntriesCount){this._auditLogEntriesCount = auditLogEntriesCount;}
 
+    @Override
     public RunRepresentativeDataState getRepresentativeDataState()
     {
         return _representativeDataState;
@@ -416,7 +417,7 @@ public class TargetedMSRun implements Serializable, ITargetedMSRun
     {
         if (_fullScanSettings == null)
         {
-            _fullScanSettings = TargetedMSManager.get().getTransitionFullScanSettings(getId());
+            _fullScanSettings = TargetedMSManager.getTransitionFullScanSettings(getId());
         }
         return _fullScanSettings;
     }

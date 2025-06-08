@@ -60,7 +60,7 @@ public class LibrarySpectrumMatchGetter
 {
     private static final int CACHE_SIZE = 10;
 
-    private static BlockingCache<PrecursorKey, List<PeptideIdRtInfo>> _peptideIdRtsCache =
+    private static final BlockingCache<PrecursorKey, List<PeptideIdRtInfo>> _peptideIdRtsCache =
             CacheManager.getBlockingCache(CACHE_SIZE, CacheManager.DAY, "TargetedMS peptide ID retention times",
                     (precursor, argument) -> {
                         if (!(argument instanceof Container))
@@ -81,7 +81,7 @@ public class LibrarySpectrumMatchGetter
                                 List<PeptideIdRtInfo> rtInfos = reader.getRetentionTimes((Container) argument,
                                         libPath, precursor.getModifiedSequence());
 
-                                if (rtInfos.size() > 0)
+                                if (!rtInfos.isEmpty())
                                 {
                                     return rtInfos;  // return matches from the first library that has a match
                                 }

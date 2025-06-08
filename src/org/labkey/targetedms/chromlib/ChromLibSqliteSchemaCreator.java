@@ -178,16 +178,15 @@ public class ChromLibSqliteSchemaCreator
             {
                 try (Statement stmt = conn.createStatement())
                 {
-                    StringBuilder indexSQL = new StringBuilder("CREATE INDEX IDX_");
-                    indexSQL.append(tableName);
-                    indexSQL.append("_");
-                    indexSQL.append(column.baseColumn().name());
-                    indexSQL.append(" ON ");
-                    indexSQL.append(tableName);
-                    indexSQL.append("(");
-                    indexSQL.append(column.baseColumn().name());
-                    indexSQL.append(")");
-                    stmt.execute(indexSQL.toString());
+                    String indexSQL = "CREATE INDEX IDX_" + tableName +
+                            "_" +
+                            column.baseColumn().name() +
+                            " ON " +
+                            tableName +
+                            "(" +
+                            column.baseColumn().name() +
+                            ")";
+                    stmt.execute(indexSQL);
                 }
             }
         }

@@ -159,9 +159,7 @@ public class LibIsotopeModification extends AbstractLibEntity
     public boolean equals(Object o)
     {
         if (this == o) return true;
-        if (!(o instanceof LibIsotopeModification)) return false;
-
-        LibIsotopeModification that = (LibIsotopeModification) o;
+        if (!(o instanceof LibIsotopeModification that)) return false;
 
         if (_aminoAcid != null ? !_aminoAcid.equals(that._aminoAcid) : that._aminoAcid != null) return false;
         if (_formula != null ? !_formula.equals(that._formula) : that._formula != null) return false;

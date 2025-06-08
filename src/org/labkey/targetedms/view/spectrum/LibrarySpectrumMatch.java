@@ -46,7 +46,7 @@ public class LibrarySpectrumMatch
     private List<PeptideSettings.SpectrumLibrary> _libraries; // All libraries that have a match
     private String _lorikeetId;
     List<Peptide.StructuralModification> _structuralModifications;
-    private Set<Long> _variableStructuralMods = new HashSet<>();
+    private final Set<Long> _variableStructuralMods = new HashSet<>();
 
     PeptideSettings.RunStructuralModification _ntermMod = null;
     PeptideSettings.RunStructuralModification _ctermMod = null;
@@ -160,7 +160,7 @@ public class LibrarySpectrumMatch
 
     public boolean hasRedundantSpectra()
     {
-        return _spectrum != null && _spectrum.getRedundantSpectrumList().size() > 0;
+        return _spectrum != null && !_spectrum.getRedundantSpectrumList().isEmpty();
     }
 
     public String getPeaks()
@@ -228,14 +228,14 @@ public class LibrarySpectrumMatch
             return "[]";
 
         // Example: [{modMass: 42.0, aminoAcid: 'K'}]
-        StringBuilder mods = new StringBuilder();
-        mods.append("[");
 
-        // Return all static (not variable) structural modifications.
-        mods.append(appendStructuralModifications(_structuralModifications, false)); // only static mods
+        String mods = "[" +
 
-        mods.append("]");
-        return mods.toString();
+                // Return all static (not variable) structural modifications.
+                appendStructuralModifications(_structuralModifications, false) + // only static mods
+
+                "]";
+        return mods;
     }
 
     public String getVariableModifications()
@@ -420,7 +420,7 @@ public class LibrarySpectrumMatch
         private static final Pattern formulaPattern = Pattern.compile("([A-Z]'*)([0-9]*)");
         public static double[] getMass(String formula)
         {
-            if(formula == null || formula.trim().length() == 0)
+            if(formula == null || formula.trim().isEmpty())
                 return new double[] {0.0, 0.0};
 
             double monoMass = 0.0;
@@ -439,11 +439,11 @@ public class LibrarySpectrumMatch
 
                 }
                 String atom = matcher.group(1);
-                int count = 0;
+                int count;
                 try
                 {
                     String num = matcher.group(2);
-                    if(num.length() > 0)
+                    if(!num.isEmpty())
                     {
                         count = Integer.parseInt(matcher.group(2));
                     }
@@ -476,7 +476,7 @@ public class LibrarySpectrumMatch
             return new double[] {monoMass, avgMass};
         }
 
-        private static Map<String, double[]> atomicMasses = new HashMap<String, double[]>();
+        private static final Map<String, double[]> atomicMasses = new HashMap<>();
         static
         {
             atomicMasses.put("H", new double[]{ 1.007825035, 1.00794}); //Unimod

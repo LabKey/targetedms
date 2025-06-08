@@ -32,7 +32,7 @@ package org.labkey.targetedms.SkylinePort.Irt;
 */
 public final class RegressionLineElement implements IRegressionFunction
 {
-    private RegressionLine _regressionLine;
+    private final RegressionLine _regressionLine;
 
     public RegressionLine getRegressionLine()
     {

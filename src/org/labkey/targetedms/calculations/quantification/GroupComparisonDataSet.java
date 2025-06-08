@@ -25,7 +25,7 @@ import java.util.stream.IntStream;
 
 public class GroupComparisonDataSet {
     private NormalizationMethod normalizationMethod = NormalizationMethod.NONE;
-    private List<Replicate> replicates = new ArrayList<>();
+    private final List<Replicate> replicates = new ArrayList<>();
 
     public Replicate addReplicate(boolean control, Object bioReplicate) {
         Replicate replicate = new Replicate(control, bioReplicate);
@@ -45,7 +45,7 @@ public class GroupComparisonDataSet {
 
     public LinearFitResult calculateFoldChange(String label) {
         List<Replicate> replicates = removeIncompleteReplicates(label, this.replicates);
-        if (replicates.size() == 0) {
+        if (replicates.isEmpty()) {
             return null;
         }
         List<Replicate> summarizedRows;
@@ -114,7 +114,7 @@ public class GroupComparisonDataSet {
         List<Replicate> completeReplicates = new ArrayList<>();
         for (Replicate replicateData : replicates) {
             TransitionAreas transitionAreas = replicateData.getTransitionAreas(label);
-            if (transitionAreas == null || transitionAreas.getKeys().size() == 0) {
+            if (transitionAreas == null || transitionAreas.getKeys().isEmpty()) {
                 continue;
             }
             if (requiredTransitions != null && !transitionAreas.getKeys().containsAll(requiredTransitions)) {
@@ -145,8 +145,8 @@ public class GroupComparisonDataSet {
     }
 
     public class Replicate extends ReplicateData {
-        private boolean control;
-        private Object bioReplicate;
+        private final boolean control;
+        private final Object bioReplicate;
 
         public Replicate(boolean control, Object bioReplicate) {
             this.control = control;

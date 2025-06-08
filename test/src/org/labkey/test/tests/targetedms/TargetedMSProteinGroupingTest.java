@@ -17,7 +17,7 @@ public class TargetedMSProteinGroupingTest extends TargetedMSTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSProteinGroupingTest init = (TargetedMSProteinGroupingTest) getCurrentTest();
+        TargetedMSProteinGroupingTest init = getCurrentTest();
         init.doInit();
     }
 

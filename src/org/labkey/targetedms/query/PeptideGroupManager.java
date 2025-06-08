@@ -129,7 +129,7 @@ public class PeptideGroupManager
 
     public static void updateRepresentativeStatus(List<Long> peptideGroupIds, RepresentativeDataState representativeState)
     {
-        if(peptideGroupIds == null || peptideGroupIds.size() == 0)
+        if(peptideGroupIds == null || peptideGroupIds.isEmpty())
             return;
 
         String peptideGroupIdsString = StringUtils.join(peptideGroupIds, ",");
@@ -185,7 +185,7 @@ public class PeptideGroupManager
 
     public static void updateStatusToDeprecatedOrNotRepresentative(List<Long> peptideGroupIds)
     {
-        if(peptideGroupIds == null || peptideGroupIds.size() == 0)
+        if(peptideGroupIds == null || peptideGroupIds.isEmpty())
             return;
 
         String peptideGroupIdsString = StringUtils.join(peptideGroupIds, ",");
@@ -278,7 +278,7 @@ public class PeptideGroupManager
         {
             pepGrpIds.append(",").append(id);
         }
-        if(pepGrpIds.length() > 0)
+        if(!pepGrpIds.isEmpty())
             pepGrpIds.deleteCharAt(0);
         SQLFragment sql = new SQLFragment("SELECT COUNT(pg.Id) FROM ");
         sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");

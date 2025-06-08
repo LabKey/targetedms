@@ -5,7 +5,6 @@ import org.jetbrains.annotations.Nullable;
 import org.labkey.api.data.ExcelWriter;
 import org.labkey.api.query.CrosstabView;
 import org.labkey.api.query.QuerySettings;
-import org.labkey.api.query.QueryView;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.springframework.validation.BindException;
 

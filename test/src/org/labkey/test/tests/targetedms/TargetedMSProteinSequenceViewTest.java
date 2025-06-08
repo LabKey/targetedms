@@ -23,7 +23,7 @@ public class TargetedMSProteinSequenceViewTest extends TargetedMSTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSProteinSequenceViewTest init = (TargetedMSProteinSequenceViewTest) getCurrentTest();
+        TargetedMSProteinSequenceViewTest init = getCurrentTest();
         init.doInit();
     }
 

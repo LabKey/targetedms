@@ -84,7 +84,7 @@ public class ClustergrammerDialog extends Window<ClustergrammerDialog.ElementCac
         Input reportDescriptionEditor = Input(Locator.textarea("reportDescriptionEditor" + "-inputEl"), getDriver()).findWhenNeeded(this);
     }
 
-    public class Confirmation extends Window
+    public static class Confirmation extends Window
     {
         private static final String CONFIRMATION_TITLE = "Publish to Clustergrammer";
 

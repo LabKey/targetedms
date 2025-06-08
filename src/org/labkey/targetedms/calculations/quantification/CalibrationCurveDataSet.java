@@ -23,7 +23,7 @@ public class CalibrationCurveDataSet {
     private NormalizationMethod normalizationMethod = NormalizationMethod.NONE;
     private RegressionFit regressionFit = RegressionFit.NONE;
     private RegressionWeighting regressionWeighting = RegressionWeighting.NONE;
-    private List<Replicate> replicates = new ArrayList<>();
+    private final List<Replicate> replicates = new ArrayList<>();
 
     public Replicate addReplicate(SampleType sampleType, Double analyteConcentration, double sampleDilutionFactor, boolean excludeFromCalibration) {
         Replicate replicate = new Replicate(sampleType, analyteConcentration, sampleDilutionFactor, excludeFromCalibration);
@@ -115,10 +115,10 @@ public class CalibrationCurveDataSet {
      * Created by nicksh on 4/15/2016.
      */
     public static class Replicate extends ReplicateData {
-        private SampleType sampleType;
-        private Double analyteConcentration;
-        private double sampleDilutionFactor;
-        private boolean excludeFromCalibration;
+        private final SampleType sampleType;
+        private final Double analyteConcentration;
+        private final double sampleDilutionFactor;
+        private final boolean excludeFromCalibration;
         public Replicate(SampleType sampleType, Double analyteConcentration, double sampleDilutionFactor, boolean excludeFromCalibration) {
             this.sampleType = sampleType;
             this.analyteConcentration = analyteConcentration;

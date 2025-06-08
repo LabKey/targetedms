@@ -80,8 +80,7 @@ public final class RegressionLine implements IRegressionFunction
      for a given x.
 
      @param x Value in x dimension
-     @return
-    */
+     */
     @Override
     public double GetY(double x)
     {
@@ -93,8 +92,7 @@ public final class RegressionLine implements IRegressionFunction
      for a given y.
 
      @param y Value in y dimension
-     @return
-    */
+     */
     public double GetX(double y)
     {
         return (y - getIntercept()) / getSlope();

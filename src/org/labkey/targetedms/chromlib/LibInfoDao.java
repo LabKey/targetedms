@@ -41,15 +41,14 @@ public class LibInfoDao implements Dao<LibInfo>
     {
         if(libInfo != null)
         {
-            StringBuilder sql = new StringBuilder();
-            sql.append("INSERT INTO ");
-            sql.append(Table.LibInfo);
-            sql.append(" (");
-            sql.append(getInsertColumnSql());
-            sql.append(")");
-            sql.append(" VALUES (?,?,?,?,?,?,?,?,?)");
+            String sql = "INSERT INTO " +
+                    Table.LibInfo +
+                    " (" +
+                    getInsertColumnSql() +
+                    ")" +
+                    " VALUES (?,?,?,?,?,?,?,?,?)";
 
-            try (PreparedStatement stmt = connection.prepareStatement(sql.toString()))
+            try (PreparedStatement stmt = connection.prepareStatement(sql))
             {
                 int colIndex = 1;
                 stmt.setString(colIndex++, libInfo.getPanoramaServer());

@@ -112,7 +112,7 @@ public abstract class RegressionFit {
     }
 
     public CalibrationCurve fit(List<WeightedObservedPoint> points) {
-        if (points.size() == 0) {
+        if (points.isEmpty()) {
             CalibrationCurve curve = new CalibrationCurve();
             curve.setErrorMessage("Unable to calculate curve, since there are no data points available");
             return curve;

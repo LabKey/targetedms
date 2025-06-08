@@ -13,8 +13,8 @@ import java.util.List;
 
 public class QCSummaryMenuCustomizer implements NavTreeCustomizer
 {
-    private @NotNull String actionName;
-    private @NotNull String menuLabel;
+    private final @NotNull String actionName;
+    private final @NotNull String menuLabel;
 
     public QCSummaryMenuCustomizer(@NotNull String actionName, @NotNull String menuLabel)
     {

@@ -94,9 +94,7 @@ public class LibPrecursorRetentionTime extends AbstractLibEntity
     public boolean equals(Object o)
     {
         if (this == o) return true;
-        if (!(o instanceof LibPrecursorRetentionTime)) return false;
-
-        LibPrecursorRetentionTime that = (LibPrecursorRetentionTime) o;
+        if (!(o instanceof LibPrecursorRetentionTime that)) return false;
 
         if (_precursorId != that._precursorId) return false;
         if (_sampleFileId != that._sampleFileId) return false;

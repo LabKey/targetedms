@@ -30,7 +30,7 @@ public class TargetedMSHidePeptidesAndMolecules extends TargetedMSTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSHidePeptidesAndMolecules init = (TargetedMSHidePeptidesAndMolecules) getCurrentTest();
+        TargetedMSHidePeptidesAndMolecules init = getCurrentTest();
         init.doInit();
     }
 

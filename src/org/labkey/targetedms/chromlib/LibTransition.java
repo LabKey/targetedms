@@ -26,7 +26,6 @@ import org.labkey.targetedms.parser.TransitionOptimization;
 import org.labkey.targetedms.parser.TransitionSettings;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import java.util.Objects;
@@ -65,7 +64,7 @@ public class LibTransition extends AbstractLibEntity
     private String _adduct;
 
 
-    private List<LibTransitionOptimization> _optimizations = new ArrayList<>();
+    private final List<LibTransitionOptimization> _optimizations = new ArrayList<>();
 
     public LibTransition() {}
 

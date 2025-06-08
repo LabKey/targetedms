@@ -41,7 +41,7 @@ public class TargetedMSDocumentFormatsTest extends TargetedMSTest
     @BeforeClass
     public static void setupProject()
     {
-        TargetedMSDocumentFormatsTest init = (TargetedMSDocumentFormatsTest) getCurrentTest();
+        TargetedMSDocumentFormatsTest init = getCurrentTest();
         init.setupFolder(FolderType.Experiment);
     }
 

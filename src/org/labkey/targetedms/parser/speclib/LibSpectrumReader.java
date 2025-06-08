@@ -257,7 +257,7 @@ public abstract class LibSpectrumReader
         // Find the modified sequence representation from the library that matches
         List<Pair<Integer, String>> mods = new ArrayList<>();
         String unmodifiedSequence = Peptide.stripModifications(modifiedSequence, mods);
-        if (mods.size() == 0) {
+        if (mods.isEmpty()) {
             return modifiedSequence;
         }
 

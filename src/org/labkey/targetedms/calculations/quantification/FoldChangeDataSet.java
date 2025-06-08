@@ -60,7 +60,7 @@ class FoldChangeDataSet {
         this.features = features.stream().mapToInt(Integer::intValue).toArray();
         this.runs = runs.stream().mapToInt(Integer::intValue).toArray();
         this.subjects = subjects.stream().mapToInt(Integer::intValue).toArray();
-        this.subjectControls = ArrayUtils.toPrimitive(subjectControls.toArray(new Boolean[subjectControls.size()]));
+        this.subjectControls = ArrayUtils.toPrimitive(subjectControls.toArray(new Boolean[0]));
         if (this.abundances.length == 0) {
             featureCount = 0;
             subjectCount = 0;

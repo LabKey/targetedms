@@ -17,7 +17,7 @@ public class TargetedMSEarlyStagePTMReportTest extends TargetedMSTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSEarlyStagePTMReportTest init = (TargetedMSEarlyStagePTMReportTest) getCurrentTest();
+        TargetedMSEarlyStagePTMReportTest init = getCurrentTest();
         init.doInit();
     }
 

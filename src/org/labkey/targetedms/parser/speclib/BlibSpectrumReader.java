@@ -165,12 +165,11 @@ public class BlibSpectrumReader extends LibSpectrumReader
                 return Collections.emptyList();
             }
 
-            StringBuilder sql = new StringBuilder("SELECT rt.retentionTime, rt.bestSpectrum, rs.peptideModSeq, rs.precursorCharge, ssf.fileName from RetentionTimes AS rt ");
-            sql.append(" INNER JOIN RefSpectra AS rs ON (rt.RefSpectraID = rs.id)");
-            sql.append(" INNER JOIN SpectrumSourceFiles ssf ON (rt.SpectrumSourceID = ssf.id)");
-            sql.append(" WHERE rs.peptideModSeq = ?");
+            String sql = "SELECT rt.retentionTime, rt.bestSpectrum, rs.peptideModSeq, rs.precursorCharge, ssf.fileName from RetentionTimes AS rt " + " INNER JOIN RefSpectra AS rs ON (rt.RefSpectraID = rs.id)" +
+                    " INNER JOIN SpectrumSourceFiles ssf ON (rt.SpectrumSourceID = ssf.id)" +
+                    " WHERE rs.peptideModSeq = ?";
 
-            try(PreparedStatement stmt = conn.prepareStatement(sql.toString()))
+            try(PreparedStatement stmt = conn.prepareStatement(sql))
             {
                 stmt.setString(1, modifiedPeptide);
                 List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> retentionTimes = new ArrayList<>();
@@ -398,11 +397,10 @@ public class BlibSpectrumReader extends LibSpectrumReader
 
     private static void addRedundantSpectrumInfo(Connection conn, BlibSpectrum spectrum) throws SQLException
     {
-        StringBuilder sql = new StringBuilder("SELECT rt.*, sf.fileName ");
-        sql.append("FROM RetentionTimes AS rt INNER JOIN SpectrumSourceFiles AS sf ON rt.spectrumSourceID = sf.id ");
-        sql.append("WHERE RefSpectraID=").append(spectrum.getBlibId());
+        String sql = "SELECT rt.*, sf.fileName " + "FROM RetentionTimes AS rt INNER JOIN SpectrumSourceFiles AS sf ON rt.spectrumSourceID = sf.id " +
+                "WHERE RefSpectraID=" + spectrum.getBlibId();
 
-        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql.toString()))
+        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql))
         {
             List<RedundantSpectrum> redundantSpectra = new ArrayList<>();
 
@@ -431,11 +429,10 @@ public class BlibSpectrumReader extends LibSpectrumReader
 
     private static BlibSpectrum readRedundantSpectrum(Connection conn, int redundantRefSpectrumid) throws SQLException
     {
-        StringBuilder sql = new StringBuilder("SELECT rf.*, ssf.fileName FROM RefSpectra AS rf ");
-        sql.append("LEFT JOIN SpectrumSourceFiles AS ssf ON rf.FileID = ssf.id ");
-        sql.append(" WHERE rf.id=").append(redundantRefSpectrumid);
+        String sql = "SELECT rf.*, ssf.fileName FROM RefSpectra AS rf " + "LEFT JOIN SpectrumSourceFiles AS ssf ON rf.FileID = ssf.id " +
+                " WHERE rf.id=" + redundantRefSpectrumid;
 
-        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql.toString()))
+        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql))
         {
             BlibSpectrum spectrum = null;
 

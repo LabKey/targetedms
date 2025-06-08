@@ -14,7 +14,6 @@ import org.labkey.test.util.APIContainerHelper;
 import org.labkey.test.util.DataRegionTable;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -27,7 +26,7 @@ public class TargetedMSQCFolderImportExport extends TargetedMSPremiumTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSQCFolderImportExport init = (TargetedMSQCFolderImportExport) getCurrentTest();
+        TargetedMSQCFolderImportExport init = getCurrentTest();
         init.doInit();
     }
 

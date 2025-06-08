@@ -22,7 +22,7 @@ public class TargetedMSMovingSKYDocAcrossFoldersTest extends TargetedMSTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSMovingSKYDocAcrossFoldersTest init = (TargetedMSMovingSKYDocAcrossFoldersTest) getCurrentTest();
+        TargetedMSMovingSKYDocAcrossFoldersTest init = getCurrentTest();
         init.doInit();
     }
 

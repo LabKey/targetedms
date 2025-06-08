@@ -17,7 +17,6 @@ package org.labkey.targetedms.view.spectrum;
 
 import org.labkey.api.view.JspView;
 import org.labkey.targetedms.parser.PeptideSettings;
-import org.springframework.validation.BindException;
 
 /**
  * User: vsharma

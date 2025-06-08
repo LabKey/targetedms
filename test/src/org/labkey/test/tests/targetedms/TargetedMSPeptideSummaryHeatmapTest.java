@@ -23,7 +23,7 @@ public class TargetedMSPeptideSummaryHeatmapTest extends TargetedMSTest
     @BeforeClass
     public static void setupProject()
     {
-        TargetedMSPeptideSummaryHeatmapTest init = (TargetedMSPeptideSummaryHeatmapTest) getCurrentTest();
+        TargetedMSPeptideSummaryHeatmapTest init = getCurrentTest();
         init.doSetup();
     }
 

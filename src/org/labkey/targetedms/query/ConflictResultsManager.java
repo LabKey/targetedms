@@ -393,7 +393,7 @@ public class ConflictResultsManager
             }
             TransitionWithAreaAndRank twr = new TransitionWithAreaAndRank();
             twr.setTransition(transition);
-            twr.setAvgArea(transChromInfoList.size() == 0 ? 0 : totalArea / transChromInfoList.size());
+            twr.setAvgArea(transChromInfoList.isEmpty() ? 0 : totalArea / transChromInfoList.size());
             transWithRankList.add(twr);
         }
 

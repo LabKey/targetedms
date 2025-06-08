@@ -41,7 +41,7 @@ import java.util.Map;
 
 public class PsiInstruments
 {
-    private static Map<String, PsiInstrument> _instruments = new HashMap<>();
+    private static final Map<String, PsiInstrument> _instruments = new HashMap<>();
 
     private static final Logger LOG = LogManager.getLogger(PsiInstruments.class);
 
