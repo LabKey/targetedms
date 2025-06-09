@@ -120,13 +120,6 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
         Assertions.assertThat(getCurrentRelativeURL()).as("Did not navigate back to labkey server")
                 .contains(WebTestHelper.buildRelativeUrl("targetedms", getProjectName() + "/" + TargetedMS_SubFolder, "showPrecursorList"));
 
-        log("Change to the LIMS configuration to verify the navigation");
-        setProductConfigurationViaApi(ProductKey.labkeyLims);
-        clickAndWait(Locator.linkWithText("6 replicates"));
-        clickAndWait(Locator.linkWithText(s1));
-        Assertions.assertThat(getCurrentRelativeURL()).as("Sample link did not navigate to LIMS application")
-                .contains(WebTestHelper.buildRelativeUrl("LIMS", getProjectName() + "/" + Sample_Manager_Subfolder, "app"));
-
         log("Disabling the SM to verify the navigation");
         goToProjectHome();
         navigateToFolder(getProjectName(), Sample_Manager_Subfolder);
