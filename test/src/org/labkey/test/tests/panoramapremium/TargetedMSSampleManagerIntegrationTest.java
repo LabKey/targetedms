@@ -1,5 +1,6 @@
 package org.labkey.test.tests.panoramapremium;
 
+import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -100,31 +101,31 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
 
         log("Clicking the replicate column link to verify the navigation");
         clickAndWait(Locator.linkWithText("Q_Exactive_08_09_2013_JGB_02").index(0));
-        checker().verifyTrue("Sample link did not navigate to sample manager application",
-                getCurrentRelativeURL(false).contains(WebTestHelper.buildRelativeUrl("targetedms", getProjectName() + "/" + TargetedMS_SubFolder, "showSampleFile")));
+        Assertions.assertThat(getCurrentRelativeURL()).as("Sample link did not navigate to sample manager application")
+                .contains(WebTestHelper.buildRelativeUrl("targetedms", getProjectName() + "/" + TargetedMS_SubFolder, "showSampleFile"));
         goBack();
 
         log("Navigating to SM app");
         assertElementPresent(Locator.linkWithText(s2));
         assertElementPresent(Locator.linkWithText(s3));
         clickAndWait(Locator.linkWithText(s1));
-        checker().fatal().verifyTrue("Sample link did not navigate to Sample Manager application",
-                getCurrentRelativeURL(false).contains(WebTestHelper.buildRelativeUrl("SampleManager", getProjectName() + "/" + Sample_Manager_Subfolder, "app")));
+        Assertions.assertThat(getCurrentRelativeURL()).as("Sample link did not navigate to Sample Manager application")
+                .contains(WebTestHelper.buildRelativeUrl("SampleManager", getProjectName() + "/" + Sample_Manager_Subfolder, "app"));
 
         log("Navigating back to labkey server");
         waitForElementToBeVisible(Locator.linkWithText("Assays"));
         click(Locator.linkWithText("Assays"));
         waitAndClick(Locator.linkContainingText("Skyline Documents"));
         waitAndClickAndWait(Locator.linkWithText(SProCoP_FILE_ANNOTATED));
-        checker().fatal().verifyTrue("Did not navigate back to labkey server",
-                getCurrentRelativeURL(false).contains(WebTestHelper.buildRelativeUrl("targetedms", getProjectName() + "/" + TargetedMS_SubFolder, "showPrecursorList")));
+        Assertions.assertThat(getCurrentRelativeURL()).as("Did not navigate back to labkey server")
+                .contains(WebTestHelper.buildRelativeUrl("targetedms", getProjectName() + "/" + TargetedMS_SubFolder, "showPrecursorList"));
 
         log("Change to the LIMS configuration to verify the navigation");
         setProductConfigurationViaApi(ProductKey.labkeyLims);
         clickAndWait(Locator.linkWithText("6 replicates"));
         clickAndWait(Locator.linkWithText(s1));
-        checker().fatal().verifyTrue("Sample link did not navigate to LIMS application",
-                getCurrentRelativeURL(false).contains(WebTestHelper.buildRelativeUrl("LIMS", getProjectName() + "/" + Sample_Manager_Subfolder, "app")));
+        Assertions.assertThat(getCurrentRelativeURL()).as("Sample link did not navigate to LIMS application")
+                .contains(WebTestHelper.buildRelativeUrl("LIMS", getProjectName() + "/" + Sample_Manager_Subfolder, "app"));
 
         log("Disabling the SM to verify the navigation");
         goToProjectHome();
@@ -134,8 +135,8 @@ public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTes
         navigateToFolder(getProjectName(), TargetedMS_SubFolder);
         waitAndClickAndWait(Locator.linkContainingText("replicates"));
         clickAndWait(Locator.linkWithText(s1));
-        checker().fatal().verifyTrue("Sample link navigated to sample manager application when disabled at folder level",
-                getCurrentRelativeURL(false).contains(WebTestHelper.buildRelativeUrl("experiment", getProjectName() + "/" + Sample_Manager_Subfolder, "showMaterial")));
+        Assertions.assertThat(getCurrentRelativeURL()).as("Sample link navigated to sample manager application when disabled at folder level")
+                .contains(WebTestHelper.buildRelativeUrl("experiment", getProjectName() + "/" + Sample_Manager_Subfolder, "showMaterial"));
 
     }
 
