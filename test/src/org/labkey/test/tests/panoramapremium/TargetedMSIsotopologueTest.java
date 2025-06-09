@@ -16,12 +16,10 @@ import static org.junit.Assert.assertTrue;
 @BaseWebDriverTest.ClassTimeout(minutes = 3)
 public class TargetedMSIsotopologueTest extends TargetedMSPremiumTest
 {
-    protected static final String ISOTOPOLOGUE_FILE_ANNOTATED = "PRM_7x5mix_A40010_QEHF_examples_v3.sky.zip";
-
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSIsotopologueTest init = (TargetedMSIsotopologueTest) getCurrentTest();
+        TargetedMSIsotopologueTest init = getCurrentTest();
         init.doInit();
     }
 

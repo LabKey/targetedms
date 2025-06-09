@@ -1,4 +1,5 @@
 SELECT
+    sf.InstrumentNickname AS Nickname,
     sf.InstrumentId.model AS InstrumentName,
     sf.InstrumentSerialNumber AS SerialNumber,
     MIN(sf.AcquiredTime) AS StartDate,
@@ -9,6 +10,7 @@ SELECT
 FROM targetedms.SampleFile sf
 INNER JOIN replicate rep ON sf.replicateId = rep.Id
 GROUP BY
+         sf.InstrumentNickname,
          sf.InstrumentSerialNumber,
          sf.InstrumentId.model,
          rep.runId

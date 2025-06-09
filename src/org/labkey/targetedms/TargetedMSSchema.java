@@ -46,6 +46,7 @@ import org.labkey.api.data.WrappedColumn;
 import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.exp.query.ExpRunTable;
 import org.labkey.api.exp.query.ExpSchema;
+import org.labkey.api.gwt.client.AuditBehaviorType;
 import org.labkey.api.module.Module;
 import org.labkey.api.query.CustomView;
 import org.labkey.api.query.DefaultQueryUpdateService;
@@ -159,6 +160,7 @@ public class TargetedMSSchema extends UserSchema
     public static final String TABLE_MOLECULE_GROUP = "MoleculeGroup";
     public static final String TABLE_PEPTIDE_GROUP_ANNOTATION = "PeptideGroupAnnotation";
     public static final String TABLE_INSTRUMENT = "Instrument";
+    public static final String TABLE_INSTRUMENT_NICKNAME = "InstrumentNickname";
     public static final String TABLE_ISOTOPE_ENRICHMENT = "IsotopeEnrichment";
     public static final String TABLE_ISOLATION_SCHEME = "IsolationScheme";
     public static final String TABLE_ISOLATION_WINDOW = "IsolationWindow";
@@ -1606,7 +1608,8 @@ public class TargetedMSSchema extends UserSchema
                 TABLE_INSTRUMENT_SCHEDULE.equalsIgnoreCase(name) ||
                 TABLE_RATE_TYPE.equalsIgnoreCase(name) ||
                 TABLE_INSTRUMENT_RATE.equalsIgnoreCase(name) ||
-                TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name))
+                TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name) ||
+                TABLE_INSTRUMENT_NICKNAME.equalsIgnoreCase(name))
         {
             var result = new FilteredTable<>(getSchema().getTable(name), this, cf)
             {
@@ -1616,13 +1619,17 @@ public class TargetedMSSchema extends UserSchema
                     return getContainer().hasPermission(user, perm);
                 }
 
-                @Override
-                public @NotNull QueryUpdateService getUpdateService()
+                @Override @NotNull
+                public QueryUpdateService getUpdateService()
                 {
                     return new DefaultQueryUpdateService(this, getRealTable());
                 }
             };
             result.wrapAllColumns(true);
+            if (TABLE_INSTRUMENT_NICKNAME.equalsIgnoreCase(name))
+            {
+                result.setAuditBehavior(AuditBehaviorType.DETAILED);
+            }
             TargetedMSTable.fixupLookups(result);
             return result;
         }
@@ -1757,6 +1764,7 @@ public class TargetedMSSchema extends UserSchema
         hs.add(TABLE_REPLICATE);
         hs.add(TABLE_REPLICATE_ANNOTATION);
         hs.add(TABLE_INSTRUMENT);
+        hs.add(TABLE_INSTRUMENT_NICKNAME);
         hs.add(TABLE_ISOTOPE_ENRICHMENT);
         hs.add(TABLE_GENERAL_MOLECULE_CHROM_INFO);
         hs.add(TABLE_GENERAL_MOLECULE_ANNOTATION);

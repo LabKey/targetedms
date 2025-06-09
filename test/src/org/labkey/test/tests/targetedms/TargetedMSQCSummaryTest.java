@@ -76,7 +76,7 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSQCSummaryTest init = (TargetedMSQCSummaryTest)getCurrentTest();
+        TargetedMSQCSummaryTest init = getCurrentTest();
         init.setupProjectWithSubfolders();
         init.importInitialData();
     }
@@ -96,13 +96,14 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
     private void importInitialData()
     {
         goToProjectHome();
-        importData(SProCoP_FILE);
+        importData(SProCoP_FILE, 1, false, false);
 
         clickFolder(FOLDER_2);
-        importData(QC_1_FILE);
+        importData(QC_1_FILE, 1, false, false);
 
         clickFolder(FOLDER_2A);
-        importData(QC_2_FILE);
+        // Do DB maintenance after the last of the initial imports
+        importData(QC_2_FILE, 1, false, true);
     }
 
     private void setAutoQCPingTimeOut(String timeOutLength)
@@ -321,7 +322,7 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         for(String classValue : iconClassValues)
         {
             log("Validate that the autoQC icon has a value of '" + classValue + "' in its class property.");
-            assertTrue("AutoQC icon not as expected. Class did not contain '" + classValue + "'. Class: '" + tmpString + "'", tmpString.toLowerCase().contains(classValue));
+            assertTrue("AutoQC icon not as expected. Class did not contain '" + classValue + "'. Class: '" + tmpString + "'", tmpString != null && tmpString.toLowerCase().contains(classValue));
         }
 
         log("Validate bubble text is '" + bubbleText + "'");
@@ -363,7 +364,7 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
                 if (!waitFor(() -> textSearcher.getMissingTexts(perBubbleTexts).isEmpty(), 10000))
                 {
                     String actualText = textSearcher.getLastSearchedText();
-                    fail("The bubble text for the file detail not as expected. Bubble text: '" + actualText + "' Missing: '" + String.join(",", perBubbleTexts.stream().filter(s -> !actualText.contains(s)).collect(Collectors.toList())) + "'");
+                    fail("The bubble text for the file detail not as expected. Bubble text: '" + actualText + "' Missing: '" + perBubbleTexts.stream().filter(s -> !actualText.contains(s)).collect(Collectors.joining(",")) + "'");
                 }
             }
             qcSummaryWebPart.closeBubble();
@@ -423,9 +424,9 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         }
     }
 
-    public class AutoQCPing extends PostCommand<CommandResponse>
+    public static class AutoQCPing extends PostCommand<CommandResponse>
     {
-        private String _softwareVersion;
+        private final String _softwareVersion;
 
         public AutoQCPing()
         {

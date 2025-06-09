@@ -21,13 +21,32 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
             text: 'Loading...'
         })
 
-        LABKEY.targetedms.QCMetricConfigLoader.getMetrics(this.initPanel, this);
+        this.qcPlotPanel.queryQCInstruments(this.getQCSummary, this);
         this.numSampleFileStats = config ? config.sampleLimit : 3;
     },
 
-    initPanel : function(metrics) {
-        this.metricPropArr = metrics;
-        this.qcPlotPanel.queryQCInstruments(this.getQCSummary, this);
+    formatInstruments: function(container) {
+        if (container.distinctInstruments) {
+            if (container.distinctInstruments.length > 1) {
+                container.instrument = ' for multiple instruments: <ul>';
+                for (let index = 0; index < container.distinctInstruments.length; index++) {
+                    container.instrument += '<li>' + this.formatInstrument(container.distinctInstruments[index], container.path) + '</li>';
+                }
+                container.instrument += '</ul> We recommend that each instrument use its own QC folder.';
+            }
+            else if (container.distinctInstruments.length === 1 && container.distinctInstruments[0]) {
+                container.instrument = ' for ' + this.formatInstrument(container.distinctInstruments[0], container.path);
+            }
+        }
+    },
+
+    formatInstrument: function(name, containerPath) {
+        let result = Ext4.util.Format.htmlEncode(name ? name : 'unknown instrument');
+        if (name)
+            result = '<a href="' +
+                    LABKEY.ActionURL.buildURL('targetedms', 'showInstrument', containerPath, {name: name}) +
+                    '">' + result + '</a>'
+        return result;
     },
 
     getQCSummary: function () {
@@ -57,25 +76,14 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                 container.showName = hasChildren;
                 container.isParent = true;
                 container.parentOnly = containers.length === 1;
-                if (this.qcPlotPanel.qcIntrumentsArr) {
-                    if (this.qcPlotPanel.qcIntrumentsArr.length > 1) {
-                        container.instrument = ' for multiple instruments: <ul>';
-                        for (let index = 0; index < this.qcPlotPanel.qcIntrumentsArr.length; index++) {
-                            let currentInstrument = this.qcPlotPanel.qcIntrumentsArr[index];
-                            container.instrument += '<li>' + Ext4.util.Format.htmlEncode(currentInstrument ? currentInstrument : 'unknown instrument') + '</li>';
-                        }
-                        container.instrument += '</ul> We recommend that each instrument use its own QC folder.';
-                    }
-                    else if (this.qcPlotPanel.qcIntrumentsArr.length === 1 && this.qcPlotPanel.qcIntrumentsArr[0]) {
-                        container.instrument = ' for ' + Ext4.util.Format.htmlEncode(this.qcPlotPanel.qcIntrumentsArr[0]);
-                    }
-                }
+                this.formatInstruments(container);
                 this.add(this.getContainerSummaryView(container, hasChildren, width));
 
                 // Add the set of child containers in an hbox layout
                 if (hasChildren) {
                     for (var i = 1; i < containers.length; i++) {
                         container = containers[i];
+                        this.formatInstruments(container);
                         container.showName = true;
                         container.parentOnly = false;
                         container.isParent = false;
