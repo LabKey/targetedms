@@ -31,7 +31,7 @@ import java.util.List;
 
 public class ChromatogramCrawlerJob extends PipelineJob
 {
-    private CrawlType _crawlType = CrawlType.verifyOnly;
+    private final CrawlType _crawlType = CrawlType.verifyOnly;
 
     /** For JSON serialization/deserialzation round-tripping
      * @noinspection unused*/

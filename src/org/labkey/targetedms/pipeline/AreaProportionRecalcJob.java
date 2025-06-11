@@ -2,33 +2,16 @@ package org.labkey.targetedms.pipeline;
 
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.jetbrains.annotations.NotNull;
-import org.labkey.api.data.Container;
-import org.labkey.api.data.ContainerFilter;
-import org.labkey.api.data.ContainerManager;
-import org.labkey.api.data.RuntimeSQLException;
-import org.labkey.api.data.SimpleFilter;
-import org.labkey.api.data.Sort;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.pipeline.PipeRoot;
 import org.labkey.api.pipeline.PipelineJob;
-import org.labkey.api.query.FieldKey;
 import org.labkey.api.util.FileUtil;
-import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.util.URLHelper;
 import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSRun;
-import org.labkey.targetedms.TargetedMSSchema;
-import org.labkey.targetedms.parser.Chromatogram;
-import org.labkey.targetedms.parser.PrecursorChromInfo;
-import org.labkey.targetedms.parser.SampleFile;
-import org.labkey.targetedms.query.PrecursorManager;
 
 import java.io.File;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class AreaProportionRecalcJob extends PipelineJob
 {

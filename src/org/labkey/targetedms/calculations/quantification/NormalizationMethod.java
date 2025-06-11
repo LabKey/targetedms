@@ -28,7 +28,7 @@ public abstract class NormalizationMethod {
 
 
     public static NormalizationMethod fromName(String name) {
-        if (name == null || name.length() == 0) {
+        if (name == null || name.isEmpty()) {
             return null;
         }
         if (name.startsWith(ratio_prefix)) {
@@ -86,7 +86,7 @@ public abstract class NormalizationMethod {
         }
 
         public String getIsotopeLabelTitle() {
-            if (isotopeLabelName == null || isotopeLabelName.length() == 0) {
+            if (isotopeLabelName == null || isotopeLabelName.isEmpty()) {
                 return isotopeLabelName;
             }
             return isotopeLabelName.substring(0, 1).toUpperCase(Locale.US) + isotopeLabelName.substring(1);

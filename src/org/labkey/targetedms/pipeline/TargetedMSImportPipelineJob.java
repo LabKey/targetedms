@@ -116,9 +116,8 @@ public class TargetedMSImportPipelineJob extends PipelineJob
     public List<String> compareJobs(PipelineJob job2)
     {
         List<String> errors = super.compareJobs(job2);
-        if (job2 instanceof TargetedMSImportPipelineJob)
+        if (job2 instanceof TargetedMSImportPipelineJob copyJob2)
         {
-            TargetedMSImportPipelineJob copyJob2 = (TargetedMSImportPipelineJob)job2;
             if (!this._representative.equals(copyJob2._representative))
                 errors.add("_representative");
         }

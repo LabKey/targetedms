@@ -40,9 +40,9 @@ public class DataSettings
         true_false(JdbcType.BOOLEAN, false, true),
         value_list(JdbcType.VARCHAR, false, true);
 
-        private JdbcType _dataType;
-        private boolean _isMeasure;
-        private boolean _isDimension;
+        private final JdbcType _dataType;
+        private final boolean _isMeasure;
+        private final boolean _isDimension;
 
         AnnotationType(JdbcType dataType, boolean isMeasure, boolean isDimension)
         {
@@ -88,11 +88,11 @@ public class DataSettings
         transition_result
     }
 
-    private Map<String, AnnotationDefinition> _annotationDefinitions = new HashMap<>();
-    private Map<AnnotationTarget, List<AnnotationDefinition>> _targetAnnotationsMap =
+    private final Map<String, AnnotationDefinition> _annotationDefinitions = new HashMap<>();
+    private final Map<AnnotationTarget, List<AnnotationDefinition>> _targetAnnotationsMap =
                         new HashMap<>();
-    private List<GroupComparisonSettings> _groupComparisons = new ArrayList<>();
-    private List<ListData> _listDatas = new ArrayList<>();
+    private final List<GroupComparisonSettings> _groupComparisons = new ArrayList<>();
+    private final List<ListData> _listDatas = new ArrayList<>();
 
     public void addAnnotations(String name, String targetsString, String type, String lookup)
     {

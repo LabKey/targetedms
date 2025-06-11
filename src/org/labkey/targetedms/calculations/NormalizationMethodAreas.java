@@ -42,12 +42,12 @@ import java.util.Optional;
  */
 public class NormalizationMethodAreas
 {
-    private TargetedMSRun _run;
-    private User _user;
-    private Container _container;
-    private ReplicateDataSet _replicateDataSet;
+    private final TargetedMSRun _run;
+    private final User _user;
+    private final Container _container;
+    private final ReplicateDataSet _replicateDataSet;
     private Collection<StandardEntry> _standardEntries;
-    private Map<NormalizationMethod, List<GeneralMoleculeResultDataSet>> _moleculeDataSets = new HashMap<>();
+    private final Map<NormalizationMethod, List<GeneralMoleculeResultDataSet<?, ?, ?>>> _moleculeDataSets = new HashMap<>();
 
     public NormalizationMethodAreas(TargetedMSRun run, User user, Container container, ReplicateDataSet replicateDataSet)
     {
@@ -59,14 +59,7 @@ public class NormalizationMethodAreas
 
     public NormalizationFactors getNormalizationFactors(NormalizationMethod normalizationMethod)
     {
-        return new NormalizationFactors()
-        {
-            @Override
-            public double getNormalizationFactor(long sampleFileId)
-            {
-                return 1.0 / getAreaForNormalization(normalizationMethod, sampleFileId);
-            }
-        };
+        return sampleFileId -> 1.0 / getAreaForNormalization(normalizationMethod, sampleFileId);
     }
 
     public boolean hasNormalizationFactors(NormalizationMethod normalizationMethod)
@@ -93,7 +86,7 @@ public class NormalizationMethodAreas
             {
                 Optional<PeptideSettings.IsotopeLabel> isotopeLabelOptional
                         = _replicateDataSet.listIsotopeLabels().stream().filter(label -> isotopeLabelName.equals(label.getName())).findFirst();
-                if (!isotopeLabelOptional.isPresent())
+                if (isotopeLabelOptional.isEmpty())
                 {
                     return 0;
                 }
@@ -101,21 +94,21 @@ public class NormalizationMethodAreas
             }
         }
         double total = 0;
-        for (GeneralMoleculeResultDataSet generalMoleculeResultDataSet : getMoleculeDataSets(normalizationMethod))
+        for (GeneralMoleculeResultDataSet<?, ?, ?> generalMoleculeResultDataSet : getMoleculeDataSets(normalizationMethod))
         {
             total += generalMoleculeResultDataSet.getTotalArea(sampleFileId, isotopeLabel);
         }
         return total;
     }
 
-    private List<GeneralMoleculeResultDataSet> getMoleculeDataSets(NormalizationMethod normalizationMethod)
+    private List<GeneralMoleculeResultDataSet<?, ?, ?>> getMoleculeDataSets(NormalizationMethod normalizationMethod)
     {
         NormalizationMethod.RatioToSurrogate ratioToSurrogate = null;
         if (normalizationMethod instanceof NormalizationMethod.RatioToSurrogate)
         {
             ratioToSurrogate = (NormalizationMethod.RatioToSurrogate) normalizationMethod;
         }
-        List<GeneralMoleculeResultDataSet> dataSets = _moleculeDataSets.get(normalizationMethod);
+        List<GeneralMoleculeResultDataSet<?, ?, ?>> dataSets = _moleculeDataSets.get(normalizationMethod);
         if (dataSets != null)
         {
             return dataSets;
@@ -146,7 +139,7 @@ public class NormalizationMethodAreas
                     continue;
                 }
             }
-            GeneralMolecule generalMolecule;
+            GeneralMolecule<?, ?> generalMolecule;
             if (standardEntry.getPeptideId() != null)
             {
                 generalMolecule = PeptideManager.getPeptide(_container, standardEntry.getPeptideId());
@@ -155,7 +148,7 @@ public class NormalizationMethodAreas
             {
                 generalMolecule = MoleculeManager.getMolecule(_container, standardEntry.getMoleculeId());
             }
-            dataSets.add(new GeneralMoleculeResultDataSet(_user, _container, _replicateDataSet, generalMolecule));
+            dataSets.add(new GeneralMoleculeResultDataSet<>(_user, _container, _replicateDataSet, generalMolecule));
         }
         _moleculeDataSets.put(normalizationMethod, dataSets);
         return dataSets;

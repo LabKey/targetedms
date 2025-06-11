@@ -150,6 +150,6 @@ public class CachedFileHeaderStruct
     public enum Flags {
         single_match_mz_known,
         single_match_mz,
-        has_midas_spectra;
+        has_midas_spectra
     }
 }

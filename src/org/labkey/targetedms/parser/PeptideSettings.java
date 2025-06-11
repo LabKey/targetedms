@@ -868,6 +868,7 @@ public class PeptideSettings
         private Boolean _useExplicitPeakBounds;
         private String _panoramaServer;
 
+        @Override
         public long getRunId()
         {
             return _runId;

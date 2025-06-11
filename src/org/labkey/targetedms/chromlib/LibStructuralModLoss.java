@@ -71,9 +71,7 @@ public class LibStructuralModLoss extends AbstractLibEntity
     public boolean equals(Object o)
     {
         if (this == o) return true;
-        if (!(o instanceof LibStructuralModLoss)) return false;
-
-        LibStructuralModLoss that = (LibStructuralModLoss) o;
+        if (!(o instanceof LibStructuralModLoss that)) return false;
 
         if (_formula != null ? !_formula.equals(that._formula) : that._formula != null) return false;
         if (_massDiffAvg != null ? !_massDiffAvg.equals(that._massDiffAvg) : that._massDiffAvg != null) return false;

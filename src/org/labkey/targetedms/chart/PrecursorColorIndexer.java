@@ -34,7 +34,7 @@ public class PrecursorColorIndexer
 {
     private long _lightLabelId = Integer.MAX_VALUE;
     private int _minCharge = Integer.MAX_VALUE;
-    private int _isotopeLabelCount;
+    private final int _isotopeLabelCount;
 
     public PrecursorColorIndexer(long runId, User user, Container container)
     {

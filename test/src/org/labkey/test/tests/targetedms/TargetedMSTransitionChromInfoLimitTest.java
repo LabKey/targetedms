@@ -22,7 +22,7 @@ public class TargetedMSTransitionChromInfoLimitTest extends TargetedMSTest
     @BeforeClass
     public static void setupProject()
     {
-        TargetedMSTransitionChromInfoLimitTest init = (TargetedMSTransitionChromInfoLimitTest) getCurrentTest();
+        TargetedMSTransitionChromInfoLimitTest init = getCurrentTest();
         init.setupFolder(FolderType.Experiment);
     }
 

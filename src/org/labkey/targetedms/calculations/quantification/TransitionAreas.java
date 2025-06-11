@@ -65,7 +65,7 @@ public class TransitionAreas {
     }
 
     public boolean isEmpty() {
-        return keys.size() == 0;
+        return keys.isEmpty();
     }
 
     public TransitionAreas merge(TransitionAreas that) {

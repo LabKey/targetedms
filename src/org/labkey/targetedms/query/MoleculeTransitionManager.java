@@ -26,7 +26,6 @@ import org.labkey.api.security.User;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.labkey.targetedms.parser.MoleculeTransition;
 
-import java.util.Collection;
 import java.util.List;
 
 public class MoleculeTransitionManager

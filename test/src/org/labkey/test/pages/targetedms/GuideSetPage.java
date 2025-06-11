@@ -16,7 +16,6 @@
 package org.labkey.test.pages.targetedms;
 
 import org.jetbrains.annotations.Nullable;
-import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.components.targetedms.GuideSet;
 import org.labkey.test.pages.InsertPage;

@@ -392,7 +392,7 @@ public class SkylineAuditLogManager
         {
             SimpleFilter runAuditLogFilter = new SimpleFilter(FieldKey.fromParts("VersionId"), pRunId);
 
-            if (deleteEntryIds.size() > 0)
+            if (!deleteEntryIds.isEmpty())
             {
                 SimpleFilter entryFilter = new SimpleFilter(
                         new SimpleFilter.InClause(FieldKey.fromParts("entryId"), deleteEntryIds, false)

@@ -151,7 +151,7 @@ public class CacheHeaderStruct
     }
 
     public static StructSerializer<CacheHeaderStruct> getStructSerializer(CacheFormatVersion cacheFormatVersion) {
-        return new StructSerializer<CacheHeaderStruct>(
+        return new StructSerializer<>(
                 CacheHeaderStruct.class, getStructSize(CacheFormatVersion.CURRENT), getStructSize(cacheFormatVersion))
         {
             @Override

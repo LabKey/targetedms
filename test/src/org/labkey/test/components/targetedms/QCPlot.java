@@ -111,7 +111,7 @@ public class QCPlot
         return new Elements();
     }
 
-    private class Elements
+    private static class Elements
     {
         Locator precursor = Locator.css(".labkey-wp-title-text");
         Locator.CssLocator svg = Locator.css("svg");

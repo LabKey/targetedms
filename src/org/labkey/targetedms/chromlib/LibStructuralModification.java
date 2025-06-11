@@ -149,9 +149,7 @@ public class LibStructuralModification extends AbstractLibEntity
     public boolean equals(Object o)
     {
         if (this == o) return true;
-        if (!(o instanceof LibStructuralModification)) return false;
-
-        LibStructuralModification that = (LibStructuralModification) o;
+        if (!(o instanceof LibStructuralModification that)) return false;
 
         if (_aminoAcid != null ? !_aminoAcid.equals(that._aminoAcid) : that._aminoAcid != null) return false;
         if (_explicitMod != null ? !_explicitMod.equals(that._explicitMod) : that._explicitMod != null) return false;

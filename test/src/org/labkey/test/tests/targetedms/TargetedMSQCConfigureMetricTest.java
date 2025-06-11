@@ -27,7 +27,7 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
     @BeforeClass
     public static void setupProject()
     {
-        TargetedMSQCConfigureMetricTest init = (TargetedMSQCConfigureMetricTest) getCurrentTest();
+        TargetedMSQCConfigureMetricTest init = getCurrentTest();
         init.doSetup();
     }
 

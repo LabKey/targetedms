@@ -50,7 +50,6 @@ import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 25)
@@ -83,7 +82,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSQCGuideSetTest init = (TargetedMSQCGuideSetTest)getCurrentTest();
+        TargetedMSQCGuideSetTest init = getCurrentTest();
 
         init.setupFolder(FolderType.QC);
         init.importData(SProCoP_FILE);

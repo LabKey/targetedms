@@ -18,13 +18,11 @@ package org.labkey.targetedms.query;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.data.JdbcType;
 import org.labkey.api.data.SQLFragment;
-import org.labkey.api.data.WrappedColumn;
 import org.labkey.api.query.ExprColumn;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.QueryForeignKey;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
-import org.labkey.targetedms.view.AnnotationUIDisplayColumn;
 
 import java.util.ArrayList;
 

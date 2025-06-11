@@ -66,7 +66,7 @@ public class XmlUtil
             int evtType = reader.next();
             if (evtType == XMLStreamReader.END_ELEMENT && endElementName.equalsIgnoreCase(reader.getLocalName()))
             {
-                if (sb.length() == 0)
+                if (sb.isEmpty())
                 {
                     return null;
                 }

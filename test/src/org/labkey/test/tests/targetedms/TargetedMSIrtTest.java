@@ -18,7 +18,6 @@ package org.labkey.test.tests.targetedms;
 import org.labkey.remoteapi.query.Filter;
 import org.labkey.test.Locator;
 import org.labkey.test.util.PipelineStatusTable;
-import org.labkey.test.util.UIContainerHelper;
 
 import java.io.File;
 import java.util.Collections;

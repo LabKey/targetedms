@@ -17,10 +17,6 @@ package org.labkey.test.tests.targetedms;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.labkey.test.Locator;
-import org.labkey.test.ModulePropertyValue;
-
-import java.util.Arrays;
 
 @Category({})
 public class TargetedMSPrecursorLevelDataTest extends AbstractQuantificationTest

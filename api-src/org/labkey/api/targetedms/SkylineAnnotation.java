@@ -15,10 +15,6 @@
  */
 package org.labkey.api.targetedms;
 
-import org.labkey.api.data.Container;
-
-import java.util.Date;
-
 /**
  * User: vsharma
  * Date: 8/26/2015
@@ -26,6 +22,6 @@ import java.util.Date;
  */
 public interface SkylineAnnotation
 {
-    public String getName();
-    public String getValue();
+    String getName();
+    String getValue();
 }

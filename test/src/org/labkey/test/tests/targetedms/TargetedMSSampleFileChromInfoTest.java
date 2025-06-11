@@ -34,7 +34,7 @@ public class TargetedMSSampleFileChromInfoTest extends TargetedMSTest
     @BeforeClass
     public static void setupProject()
     {
-        TargetedMSTest init = (TargetedMSTest) getCurrentTest();
+        TargetedMSTest init = getCurrentTest();
         init.setupFolder(FolderType.Experiment);
     }
 

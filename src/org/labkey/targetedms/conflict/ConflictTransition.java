@@ -17,8 +17,6 @@ package org.labkey.targetedms.conflict;
 
 import org.labkey.targetedms.parser.GeneralPrecursor;
 import org.labkey.targetedms.parser.GeneralTransition;
-import org.labkey.targetedms.parser.Precursor;
-import org.labkey.targetedms.parser.Transition;
 
 /**
  * User: vsharma

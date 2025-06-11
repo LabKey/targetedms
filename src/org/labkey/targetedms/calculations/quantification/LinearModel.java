@@ -27,11 +27,11 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 class LinearModel {
-    private RealMatrix designMatrix;
-    private RealMatrix contrastValues;
-    private QRDecomposition qrDecomposition;
-    private RealMatrix matrixCrossproductInverse;
-    private int[] independentColumnIndices;
+    private final RealMatrix designMatrix;
+    private final RealMatrix contrastValues;
+    private final QRDecomposition qrDecomposition;
+    private final RealMatrix matrixCrossproductInverse;
+    private final int[] independentColumnIndices;
     public LinearModel(RealMatrix designMatrix, RealMatrix contrastValues) {
         this.designMatrix = designMatrix;
         this.contrastValues = contrastValues;

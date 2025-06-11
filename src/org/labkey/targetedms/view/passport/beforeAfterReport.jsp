@@ -60,7 +60,7 @@
 <!-- PROTEIN INFO HEADER START -->
 <div id="passportContainer">
     <!-- PROTEIN INFO HEADER END -->
-    <%if(protein.getPep() != null && protein.getPep().size() != 0) {%>
+    <%if(protein.getPep() != null && !protein.getPep().isEmpty()) {%>
     <!-- FILTER OPTIONS START -->
         <div id="filterContainer"><img src="<%=h(contextPath)%>/passport/img/filtericon.png" id="filtericon"/>
             <h1>Filter Options</h1>
@@ -94,7 +94,7 @@
             <div id="pepListBox">
                 <ul id="livepeptidelist"></ul>
             </div>
-            <%if(protein.getFeatures() != null && protein.getFeatures().size() > 0) {%>
+            <%if(protein.getFeatures() != null && !protein.getFeatures().isEmpty()) {%>
                 <div class="filterBox" style="margin-left:10px; padding-left:20px;">
                     <h2>Features:</h2>
                     <input id="showFeatures" type="checkbox" name="showFeatures" readonly="readonly" style="border:0; color:#A01C00; font-weight:bold;"/>

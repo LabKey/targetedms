@@ -25,7 +25,6 @@ import org.labkey.api.data.DisplayColumn;
 import org.labkey.api.data.DisplayColumnFactory;
 import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.query.DefaultQueryUpdateService;
-import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.InvalidKeyException;
 import org.labkey.api.query.QueryUpdateService;
 import org.labkey.api.query.QueryUpdateServiceException;

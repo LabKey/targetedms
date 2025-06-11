@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 
 public class LinkVersionsGrid extends Component
 {
-    private WebDriverWrapper _test;
+    private final WebDriverWrapper _test;
 
     public LinkVersionsGrid(WebDriverWrapper test)
     {

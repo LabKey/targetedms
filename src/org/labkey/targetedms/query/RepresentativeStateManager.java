@@ -191,7 +191,7 @@ public class RepresentativeStateManager
         makeActiveSQL.add(RepresentativeDataState.Representative.ordinal());
         makeActiveSQL.append(" WHERE RunId=? ");
         makeActiveSQL.add(run.getId());
-        if(peptideGroupIdsToExclude.size() > 0)
+        if(!peptideGroupIdsToExclude.isEmpty())
         {
             makeActiveSQL.append(" AND Id NOT IN (").append(StringUtils.join(peptideGroupIdsToExclude, ',')).append(")");
         }
@@ -254,7 +254,7 @@ public class RepresentativeStateManager
         makeConflictedSQL.add(RepresentativeDataState.Conflicted.ordinal());
         makeConflictedSQL.append(" WHERE RunId=?");
         makeConflictedSQL.add(run.getId());
-        if(peptideGroupIdsToExclude.size() > 0)
+        if(!peptideGroupIdsToExclude.isEmpty())
         {
             makeConflictedSQL.append(" AND Id NOT IN (").append(StringUtils.join(peptideGroupIdsToExclude, ',')).append(")");
         }
@@ -268,7 +268,7 @@ public class RepresentativeStateManager
         // If this run has "standard" proteins, mark them as being representative.
         // Older versions of the proteins, from previous runs, will be marked as deprecated.
         List<Long> standardPeptideGroupIds = getAllStandardPeptideGroups(run);
-        if(standardPeptideGroupIds.size() > 0)
+        if(!standardPeptideGroupIds.isEmpty())
         {
             updateStandardPeptideGroups(container, standardPeptideGroupIds);
         }
@@ -379,7 +379,7 @@ public class RepresentativeStateManager
 
     private static List<Long> getCurrentStandardPrecursorIds(Container container, List<Long> stdPrecursorIdsInRun, TableInfo precursorTable, BiFunction<String, String, String> joinValue)
     {
-        if(stdPrecursorIdsInRun == null || stdPrecursorIdsInRun.size() == 0)
+        if(stdPrecursorIdsInRun == null || stdPrecursorIdsInRun.isEmpty())
         {
             return Collections.emptyList();
         }
@@ -525,7 +525,7 @@ public class RepresentativeStateManager
         // If there are standard peptides in this run, we will mark them as representative. Older versions of these
         // peptides, from previous runs, will be marked as deprecated.
         List<Long> stdPrecursorIdsInRun = getStdPrecursorIdsInRun(run);
-        if(stdPrecursorIdsInRun.size() > 0)
+        if(!stdPrecursorIdsInRun.isEmpty())
         {
             // Get a list of current representative precursors in the folder that have the same identifier and charge
             // as the standard precursors in the run.

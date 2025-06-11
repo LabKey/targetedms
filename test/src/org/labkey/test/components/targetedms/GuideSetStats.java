@@ -17,8 +17,8 @@ package org.labkey.test.components.targetedms;
 
 public class GuideSetStats
 {
-    private String _metricName;
-    private int _numRecords;
+    private final String _metricName;
+    private final int _numRecords;
     private String _precursor;
     private Double _mean;
     private Double _stdDev;

@@ -151,7 +151,7 @@ public class ComplexFragmentIonName
             return false;
         }
         // Current format: Precursors always look like some number of "p" separated by hyphens
-        if ("".equals(name.substring(1).replace("-p", ""))) {
+        if (name.substring(1).replace("-p", "").isEmpty()) {
             return true;
         }
         if (name.indexOf('}') < 0) {

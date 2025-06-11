@@ -12,8 +12,8 @@ import java.util.List;
 
 class MsMultiDataSource extends MsDataSource
 {
-    private List<MsDataDirSource> _dirSources;
-    private List<MsDataFileSource> _fileSources;
+    private final List<MsDataDirSource> _dirSources;
+    private final List<MsDataFileSource> _fileSources;
 
     MsMultiDataSource()
     {

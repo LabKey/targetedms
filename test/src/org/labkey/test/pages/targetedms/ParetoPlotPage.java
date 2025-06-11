@@ -15,14 +15,13 @@
  */
 package org.labkey.test.pages.targetedms;
 
-import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.components.targetedms.ParetoPlotsWebPart;
 import org.labkey.test.pages.PortalBodyPanel;
 import org.openqa.selenium.WebDriver;
 
 public class ParetoPlotPage extends PortalBodyPanel
 {
-    private ParetoPlotsWebPart _paretoPlotsWebPart;
+    private final ParetoPlotsWebPart _paretoPlotsWebPart;
 
     public ParetoPlotPage(WebDriver driver)
     {

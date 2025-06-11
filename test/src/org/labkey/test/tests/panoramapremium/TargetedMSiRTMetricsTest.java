@@ -29,7 +29,7 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSiRTMetricsTest init = (TargetedMSiRTMetricsTest) getCurrentTest();
+        TargetedMSiRTMetricsTest init = getCurrentTest();
         init.doInit();
     }
 

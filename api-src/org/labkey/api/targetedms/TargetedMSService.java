@@ -143,9 +143,6 @@ public interface TargetedMSService
     /**
      * Returns the name of a chromatogram library file according to the naming pattern used for creating
      * .clib files for a specific revision number in a given container.
-     * @param container
-     * @param revision
-     * @return
      */
     String getChromLibFileName(@NotNull Container container, int revision);
 
@@ -153,16 +150,12 @@ public interface TargetedMSService
      * Returns the revision number from the file name if the given file name matches the chromatogram library
      * naming pattern.  Example: chromlib_314_rev5.clib; revision number is 5.
      * Returns null if the given file name does not match the expected pattern.
-     * @param chromLibFileName
-     * @return
      */
     @Nullable
     Integer parseChromLibRevision(@NotNull String chromLibFileName);
 
     /**
      *
-     * @param sampleFileId
-     * @param container container that has the Skyline document that the sample file belongs to.
      * @return the replicate name associated with the given sampleFileId. Returns null if a database row with the given
      * sampleFileId does not exist, or if the Skyline document with the sample file is not in the given container.
      */

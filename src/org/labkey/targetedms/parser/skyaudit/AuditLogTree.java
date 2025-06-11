@@ -170,7 +170,7 @@ public class AuditLogTree implements Iterable<AuditLogTree>
                 entityCount.put(currentEntry.getEntryHash(), 1);
             }
 
-            if (currentEntry._children.size() == 0)      //if this is a leaf
+            if (currentEntry._children.isEmpty())      //if this is a leaf
             {
                 if (currentEntry._versionId == null)
                 {

@@ -276,7 +276,7 @@ public interface ComparisonCategory
 
         private static void makeUniquePrefixes(List<PeptideCategory> peptideCategories, int prefixLen)
         {
-            if(peptideCategories == null || peptideCategories.size() == 0)
+            if(peptideCategories == null || peptideCategories.isEmpty())
                 return;
 
             if(peptideCategories.size() == 1)

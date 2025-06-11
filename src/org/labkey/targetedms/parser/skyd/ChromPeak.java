@@ -21,19 +21,19 @@ import org.apache.poi.util.LittleEndianInput;
  */
 public class ChromPeak
 {
-    private float _retentionTime;
-    private float _startTime;
-    private float _endTime;
-    private float _area;
-    private float _backgroundArea;
-    private float _height;
-    private float _fwhm;
-    private int _flagBits;
-    private short _pointsAcross;
-    private float _stdDev;
-    private float _skewness;
-    private float _kurtosis;
-    private float _shapeCorrelation;
+    private final float _retentionTime;
+    private final float _startTime;
+    private final float _endTime;
+    private final float _area;
+    private final float _backgroundArea;
+    private final float _height;
+    private final float _fwhm;
+    private final int _flagBits;
+    private final short _pointsAcross;
+    private final float _stdDev;
+    private final float _skewness;
+    private final float _kurtosis;
+    private final float _shapeCorrelation;
 
     private static final int FLAGVALUE_HAS_PEAK_SHAPE = 0x80;
 

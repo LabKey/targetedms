@@ -66,15 +66,15 @@ abstract class ComparisonAxis extends CategoryAxis
     private void calculateDisplayLabels(float availableWidth, Graphics2D g2)
     {
         CategoryPlot plot = (CategoryPlot) getPlot();
-        java.util.List categories = plot.getCategoriesForAxis(this);
+        java.util.List<String> categories = plot.getCategoriesForAxis(this);
 
         Map<String, String> originalLabels = getFullLengthLabels(categories);
 
         FontMetrics fm = g2.getFontMetrics(getTickLabelFont());
         final Font font = fm.getFont();
         final int originalSize = font.getSize();
-        final int smallestSize = originalSize; // 8; // Changing the font makes the legend overlap category labels.
-        for(int i = originalSize; i >= smallestSize; i--)
+        // 8; // Changing the font makes the legend overlap category labels.
+        for(int i = originalSize; i >= originalSize; i--)
         {
             Font newFont = font.deriveFont((float)i);
             if(tryFont(availableWidth, originalLabels.values(), newFont, g2))
@@ -90,7 +90,7 @@ abstract class ComparisonAxis extends CategoryAxis
             // Full size labels did not fit. Try minimized labels
             while(minimizeLabels(trimmedLabels))
             {
-                for(int i = originalSize; i >= smallestSize; i--)
+                for(int i = originalSize; i >= originalSize; i--)
                 {
                     Font newFont = font.deriveFont((float)i);
                     if(tryFont(availableWidth, trimmedLabels.values(), newFont, g2))
@@ -104,7 +104,7 @@ abstract class ComparisonAxis extends CategoryAxis
 
         // If we are here we did not find a combination of labels and font size that fits.
         // Select the smallest font-size and trimmed labels
-        setTickLabelFont(font.deriveFont((float)smallestSize));
+        setTickLabelFont(font.deriveFont((float) originalSize));
         _displayLabels = trimmedLabels;
     }
 
@@ -157,7 +157,7 @@ abstract class ComparisonAxis extends CategoryAxis
 
     static class GeneralMoleculeAxis extends ComparisonAxis
     {
-        private Map<String, ComparisonCategory> _categoryMap;
+        private final Map<String, ComparisonCategory> _categoryMap;
         public GeneralMoleculeAxis(String label, Map<String, ComparisonCategory> categoryMap)
         {
             super(label);
@@ -167,10 +167,10 @@ abstract class ComparisonAxis extends CategoryAxis
         @Override
         protected Map<String, String> getFullLengthLabels(Collection<String> categories)
         {
-            Iterator iterator = categories.iterator();
+            Iterator<String> iterator = categories.iterator();
             Map<String, String> originalLabels = new HashMap<>();
             while (iterator.hasNext()) {
-                String category = iterator.next().toString();
+                String category = iterator.next();
                 ComparisonCategory pepCategory = _categoryMap.get(category);
                 if(pepCategory != null)
                 {
@@ -207,10 +207,10 @@ abstract class ComparisonAxis extends CategoryAxis
         @Override
         protected Map<String, String> getFullLengthLabels(Collection<String> categories)
         {
-            Iterator iterator = categories.iterator();
+            Iterator<String> iterator = categories.iterator();
             Map<String, String> originalLabels = new HashMap<>();
             while (iterator.hasNext()) {
-                String category = iterator.next().toString();
+                String category = iterator.next();
                 originalLabels.put(category, category);
             }
             return originalLabels;

@@ -37,7 +37,7 @@ public class GroupComparisonView extends QuantificationView
 {
     public static final String DATAREGION_NAME = "group_comparison";
     public static final String DATAREGION_NAME_SM_MOL = DATAREGION_NAME + SMALL_MOLECULE_SUFFIX;
-    private GroupComparisonSettings _groupComparisonSettings;
+    private final GroupComparisonSettings _groupComparisonSettings;
 
     public GroupComparisonView(ViewContext ctx, TargetedMSSchema schema, Form form, boolean forExport, String dataRegionName)
     {

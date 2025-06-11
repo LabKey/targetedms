@@ -118,7 +118,7 @@ public class PanoramaPremiumController extends SpringActionController
 
         //skip selected precursors that are already excluded
         selectedRowsKeys.forEach(id -> {
-            List<ExcludedPrecursor> prec = precursorsList.stream().filter(p -> p.getId() == id).collect(Collectors.toList());
+            List<ExcludedPrecursor> prec = precursorsList.stream().filter(p -> p.getId() == id).toList();
             ExcludedPrecursor precursor = prec.get(0);
             precursor.setIsPeptide(isPeptide);
 

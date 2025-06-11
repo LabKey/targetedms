@@ -254,7 +254,7 @@ public class ChromatogramLibraryUtils
 
         SQLiteConfig config = new SQLiteConfig();
         config.setReadOnly(true);
-        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:/" + archiveFile.toAbsolutePath().toString(), config.toProperties()))
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:/" + archiveFile.toAbsolutePath(), config.toProperties()))
         {
             TargetedMSController.ChromLibAnalyteCounts analyteCountsInLib = new TargetedMSController.ChromLibAnalyteCounts();
             analyteCountsInLib.setPeptideGroupCount(getCountsIn(Constants.Table.Protein, conn, null));

@@ -89,13 +89,13 @@ public class TargetedMSQCTest extends TargetedMSTest
     private static final String QCREPLICATE_3 = "25fmol_Pepmix_spike_SRM_1601_03";
     private static final String QCREPLICATE_4 = "25fmol_Pepmix_spike_SRM_1601_04";
 
-    private static QCHelper.Annotation instrumentChange = new QCHelper.Annotation("Instrumentation Change", "We changed it", "2013-08-22 14:43:00");
-    private static QCHelper.Annotation reagentChange = new QCHelper.Annotation("Reagent Change", "New reagents", "2013-08-10 15:34:00");
-    private static QCHelper.Annotation technicianChange = new QCHelper.Annotation("Technician Change", "New guy on the scene", "2013-08-10 08:43:00");
-    private static QCHelper.Annotation candyChange = new QCHelper.Annotation("Candy Change", "New candies!", "2013-08-21 6:57:00");
+    private static final QCHelper.Annotation instrumentChange = new QCHelper.Annotation("Instrumentation Change", "We changed it", "2013-08-22 14:43:00");
+    private static final QCHelper.Annotation reagentChange = new QCHelper.Annotation("Reagent Change", "New reagents", "2013-08-10 15:34:00");
+    private static final QCHelper.Annotation technicianChange = new QCHelper.Annotation("Technician Change", "New guy on the scene", "2013-08-10 08:43:00");
+    private static final QCHelper.Annotation candyChange = new QCHelper.Annotation("Candy Change", "New candies!", "2013-08-21 6:57:00");
 
 
-    private static String longPeptideJSTest =
+    private static final String longPeptideJSTest =
             "var testVals = {\n" +
                     "        a: {fragment:'', dataType: 'Peptide', result: ''},\n" +
                     "        b: {fragment:'A', dataType: 'Peptide', result: 'A'},\n" +
@@ -163,7 +163,7 @@ public class TargetedMSQCTest extends TargetedMSTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSQCTest init = (TargetedMSQCTest) getCurrentTest();
+        TargetedMSQCTest init = getCurrentTest();
         init.doInit();
     }
 

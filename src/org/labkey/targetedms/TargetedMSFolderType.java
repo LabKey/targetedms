@@ -120,7 +120,7 @@ public class TargetedMSFolderType extends MultiPortalFolderType
 
         if (container.hasPermission(user, AdminPermission.class))
         {
-            if (Portal.getParts(container, RAW_FILES_TAB).size() == 0)
+            if (Portal.getParts(container, RAW_FILES_TAB).isEmpty())
             {
                 ActionURL url = new ActionURL(TargetedMSController.AddRawDataTabAction.class, container);
                 NavTree addRawData = new NavTree("Add Raw Data Tab", url);

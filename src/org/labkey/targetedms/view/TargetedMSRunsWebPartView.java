@@ -37,7 +37,7 @@ public class TargetedMSRunsWebPartView extends VBox
         TargetedMSService.FolderType folderType = TargetedMSManager.getFolderType(viewContext.getContainer());
         if(folderType == TargetedMSService.FolderType.Library || folderType == TargetedMSService.FolderType.LibraryProtein)
         {
-            addView(new JspView("/org/labkey/targetedms/view/conflictSummary.jsp"));
+            addView(new JspView<>("/org/labkey/targetedms/view/conflictSummary.jsp"));
         }
         TargetedMsRunListView runListView = TargetedMsRunListView.createView(viewContext);
         runListView.setFrame(WebPartView.FrameType.NONE);

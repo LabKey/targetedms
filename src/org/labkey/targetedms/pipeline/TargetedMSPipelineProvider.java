@@ -40,7 +40,7 @@ import java.util.List;
 public class TargetedMSPipelineProvider extends PipelineProvider
 {
     static String name = "Targeted MS";
-    private static String ACTION_LABEL = "Import Skyline Results";
+    private static final String ACTION_LABEL = "Import Skyline Results";
 
     public TargetedMSPipelineProvider(Module owningModule)
     {

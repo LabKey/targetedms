@@ -129,7 +129,7 @@ public class Target
             return null;
         }
 
-        if (parts.size() > 0)
+        if (!parts.isEmpty())
         {
             target.name = parts.get(0);
         }

@@ -306,10 +306,10 @@ public final class RetentionTimeRegression
     */
     public RetentionTimeStatistics CalcStatistics(ArrayList<MeasuredRetentionTime> peptidesTimes, java.util.Map<String, Double> scoreCache)
     {
-        java.util.ArrayList<String> listPeptides = new java.util.ArrayList<String>();
-        java.util.ArrayList<Double> listHydroScores = new java.util.ArrayList<Double>();
-        java.util.ArrayList<Double> listPredictions = new java.util.ArrayList<Double>();
-        java.util.ArrayList<Double> listRetentionTimes = new java.util.ArrayList<Double>();
+        java.util.ArrayList<String> listPeptides = new java.util.ArrayList<>();
+        java.util.ArrayList<Double> listHydroScores = new java.util.ArrayList<>();
+        java.util.ArrayList<Double> listPredictions = new java.util.ArrayList<>();
+        java.util.ArrayList<Double> listRetentionTimes = new java.util.ArrayList<>();
 
         boolean usableCalc = getCalculator().IsUsable();
 
@@ -500,7 +500,7 @@ public final class RetentionTimeRegression
         RetentionScoreCalculatorSpec s = null;
         RefObject<RetentionScoreCalculatorSpec> tempRef_s = new RefObject<>(s);
         RetentionTimeRegression tempVar = CalcRegression(name, calculators, measuredPeptides, null, false, statistics, tempRef_s);
-        s = tempRef_s.get();
+        tempRef_s.get();
         return tempVar;
     }
 
@@ -514,8 +514,7 @@ public final class RetentionTimeRegression
      @param allPeptides If true, do not let the calculator pick which peptides to use in the regression
      @param statistics Statistics from the regression of the best calculator
      @param calculatorSpec The best calculator
-     @return
-    */
+     */
     public static RetentionTimeRegression CalcRegression(String name, ArrayList<RetentionScoreCalculatorSpec> calculators, ArrayList<MeasuredRetentionTime> measuredPeptides, RetentionTimeScoreCache scoreCache, boolean allPeptides, RefObject<RetentionTimeStatistics> statistics, RefObject<RetentionScoreCalculatorSpec> calculatorSpec)
     {
         // Get a list of peptide names for use by the calculators to choose their regression peptides
@@ -545,7 +544,7 @@ public final class RetentionTimeRegression
         // An arraylist, indexed by calculator, of actual retention times for the peptides in peptideScoresByCalc
         List<ArrayList<Double>> listRTs = new ArrayList<>(calcs);
 
-        LinkedHashMap<String, Double> dictMeasuredPeptides = new LinkedHashMap<String, Double>();
+        LinkedHashMap<String, Double> dictMeasuredPeptides = new LinkedHashMap<>();
 
         for (MeasuredRetentionTime measured : measuredPeptides)
         {
@@ -575,7 +574,7 @@ public final class RetentionTimeRegression
 
             try
             {
-                listRTs.set(i, new ArrayList<Double>());
+                listRTs.set(i, new ArrayList<>());
                 calcPeptides.set(i, allPeptides ? listPeptides : calc.ChooseRegressionPeptides(listPeptides));
                 peptideScoresByCalc.set(i, RetentionTimeScoreCache.CalcScores(calc, calcPeptides.get(i), scoreCache));
             }
@@ -714,8 +713,8 @@ public final class RetentionTimeRegression
         RefObject<RetentionTimeStatistics> tempRef_statisticsRefined = new RefObject<>(statisticsRefined);
         RefObject<LinkedHashSet<Integer>> tempRef_outIndexes = new RefObject<>(outIndexes);
         RetentionTimeRegression tempVar = regressionInitial.FindThreshold(threshold, precision, 0, measuredPeptides.size(), standardPeptides, variablePeptides, statisticsAll, calculator, scoreCache, isCanceled, tempRef_statisticsRefined, tempRef_outIndexes);
-        statisticsRefined = tempRef_statisticsRefined.get();  // TPG: TODO Proper handling of the ref conversion
-        outIndexes = tempRef_outIndexes.get();
+        tempRef_statisticsRefined.get();
+        tempRef_outIndexes.get();
         return tempVar;
 
     }
@@ -840,7 +839,7 @@ public final class RetentionTimeRegression
         Collections.sort(listDeltas);
 
         // Remove points with the highest deltas above mid
-        outIndexes.set(new LinkedHashSet<Integer>());
+        outIndexes.set(new LinkedHashSet<>());
         int countOut = variablePeptides.size() - mid - 1;
         for (int i = 0; i < countOut; i++)
         {
@@ -859,9 +858,9 @@ public final class RetentionTimeRegression
         peptidesTimesTry.addAll(requiredPeptides);
 
         RetentionScoreCalculatorSpec s = null;
-        RefObject<RetentionScoreCalculatorSpec> tempRef_s = new RefObject<RetentionScoreCalculatorSpec>(s);
+        RefObject<RetentionScoreCalculatorSpec> tempRef_s = new RefObject<>(s);
         RetentionTimeRegression tempVar = CalcRegression(getName(), Lists.newArrayList(calculator), peptidesTimesTry, scoreCache, true, statisticsResult, tempRef_s);
-        s = tempRef_s.get();  // TPG TODO: By ref handled correctly?
+        tempRef_s.get();
         return tempVar;
     }
 

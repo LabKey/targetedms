@@ -54,6 +54,7 @@ public class SampleFile extends SkylineEntity implements ISampleFile
 
     private List<Instrument> _instrumentInfoList;
 
+    @Override
     public long getReplicateId()
     {
         return _replicateId;

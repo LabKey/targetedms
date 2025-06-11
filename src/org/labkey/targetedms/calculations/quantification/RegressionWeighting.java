@@ -44,8 +44,8 @@ public abstract class RegressionWeighting {
             = Collections.unmodifiableList(Arrays.asList(NONE, ONE_OVER_X, ONE_OVER_X_SQUARED));
 
 
-    private String name;
-    private String label;
+    private final String name;
+    private final String label;
     private RegressionWeighting(String name, String label) {
         this.name = name;
         this.label = label;

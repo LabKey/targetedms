@@ -131,7 +131,7 @@ public class LibPrecursorDao extends BaseDaoImpl<LibPrecursor>
     @Override
     public void saveAll(Collection<LibPrecursor> precursors, Connection connection) throws SQLException
     {
-        if(precursors.size() > 0)
+        if(!precursors.isEmpty())
         {
             super.saveAll(precursors, connection);
 

@@ -21,9 +21,9 @@ import java.util.List;
 
 public class ListData
 {
-    private ListDefinition _listDefinition;
-    private List<ListColumn> _columns;
-    private List<List<Object>> _columnDatas;
+    private final ListDefinition _listDefinition;
+    private final List<ListColumn> _columns;
+    private final List<List<Object>> _columnDatas;
 
     public ListData()
     {

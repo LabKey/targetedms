@@ -81,7 +81,7 @@ public class LibProteinDao extends BaseDaoImpl<LibProtein>
     @Override
     public void saveAll(Collection<LibProtein> proteins, Connection connection) throws SQLException
     {
-        if(proteins != null && proteins.size() > 0)
+        if(proteins != null && !proteins.isEmpty())
         {
             super.saveAll(proteins, connection);
 

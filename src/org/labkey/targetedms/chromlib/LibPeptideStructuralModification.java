@@ -71,9 +71,7 @@ public class LibPeptideStructuralModification extends AbstractLibEntity
     public boolean equals(Object o)
     {
         if (this == o) return true;
-        if (!(o instanceof LibPeptideStructuralModification)) return false;
-
-        LibPeptideStructuralModification that = (LibPeptideStructuralModification) o;
+        if (!(o instanceof LibPeptideStructuralModification that)) return false;
 
         if (_peptideId != that._peptideId) return false;
         if (_structuralModificationId != that._structuralModificationId) return false;

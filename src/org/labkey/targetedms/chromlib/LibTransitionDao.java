@@ -128,7 +128,7 @@ public class LibTransitionDao extends BaseDaoImpl<LibTransition>
     @Override
     public void saveAll(Collection<LibTransition> transitions, Connection connection) throws SQLException
     {
-        if (transitions.size() > 0)
+        if (!transitions.isEmpty())
         {
             super.saveAll(transitions, connection);
 

@@ -23,15 +23,15 @@ public enum SampleType {
     solvent(new Color(255,226,43)),
     blank(Color.blue),
     double_blank(new Color(255, 230, 216));
-    private Color color;
-    private SampleType(Color color) {
+    private final Color color;
+    SampleType(Color color) {
         this.color = color;
     }
     public Color getColor() {
         return color;
     }
     public static SampleType fromName(String name) {
-        if (name == null || 0 == name.length()) {
+        if (name == null || name.isEmpty()) {
             return unknown;
         }
         try {

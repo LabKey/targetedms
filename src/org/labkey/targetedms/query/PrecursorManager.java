@@ -161,7 +161,7 @@ public class PrecursorManager
     @Nullable
     public static PrecursorChromInfo getBestPrecursorChromInfo(@NotNull List<PrecursorChromInfo> chromInfos)
     {
-        if(chromInfos.size() == 0)
+        if(chromInfos.isEmpty())
         {
             return null;
         }
@@ -453,7 +453,7 @@ public class PrecursorManager
 
     public static void updateRepresentativeStatus(List<Long> precursorIds, RepresentativeDataState representativeState)
     {
-        if(precursorIds == null || precursorIds.size() == 0)
+        if(precursorIds == null || precursorIds.isEmpty())
             return;
 
         SQLFragment sql = new SQLFragment("UPDATE "+TargetedMSManager.getTableInfoGeneralPrecursor());
@@ -468,7 +468,7 @@ public class PrecursorManager
 
     public static void updateStatusToDeprecatedOrNotRepresentative(List<Long> precursorIds)
     {
-        if(precursorIds == null || precursorIds.size() == 0)
+        if(precursorIds == null || precursorIds.isEmpty())
             return;
 
         SQLFragment sql = new SQLFragment("UPDATE "+TargetedMSManager.getTableInfoGeneralPrecursor());

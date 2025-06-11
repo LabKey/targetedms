@@ -43,7 +43,7 @@ public class ReplicateLabelMinimizer
 
     public static Map<String, String> minimize(List<String> labels)
     {
-        if(labels == null || labels.size() == 0)
+        if(labels == null || labels.isEmpty())
             return Collections.emptyMap();
 
         List<String> normalizedLabels = normalizeLabels(labels);
@@ -101,9 +101,9 @@ public class ReplicateLabelMinimizer
     private static List<String> normalizeLabels(List<String> labels)
     {
         List<String> normalized = new ArrayList<>(labels.size());
-        for(Object label: labels)
+        for(String label: labels)
         {
-            normalized.add(normalizeLabel((String) label));
+            normalized.add(normalizeLabel(label));
         }
         return normalized;
     }
@@ -225,18 +225,18 @@ public class ReplicateLabelMinimizer
                 iteration++;
                 if(iteration == 1)
                 {
-                    assertEquals(labels.get("Prefix_name_1_Suffix"), "name_1_Suffix");
-                    assertEquals(labels.get("Prefix_name_2_Suffix"), "name_2_Suffix");
+                    assertEquals("name_1_Suffix", labels.get("Prefix_name_1_Suffix"));
+                    assertEquals("name_2_Suffix", labels.get("Prefix_name_2_Suffix"));
                 }
                 if(iteration == 2)
                 {
-                    assertEquals(labels.get("Prefix_name_1_Suffix"), "1_Suffix");
-                    assertEquals(labels.get("Prefix_name_2_Suffix"), "2_Suffix");
+                    assertEquals("1_Suffix", labels.get("Prefix_name_1_Suffix"));
+                    assertEquals("2_Suffix", labels.get("Prefix_name_2_Suffix"));
                 }
                 if(iteration == 3)
                 {
-                    assertEquals(labels.get("Prefix_name_1_Suffix"), "1");
-                    assertEquals(labels.get("Prefix_name_2_Suffix"), "2");
+                    assertEquals("1", labels.get("Prefix_name_1_Suffix"));
+                    assertEquals("2", labels.get("Prefix_name_2_Suffix"));
                 }
             }
             assertEquals(3, iteration);
@@ -250,13 +250,13 @@ public class ReplicateLabelMinimizer
                 iteration++;
                 if(iteration == 1)
                 {
-                    assertEquals(labels.get("1,ABC-XYZ_File1"), "1...XYZ_File1");
-                    assertEquals(labels.get("2_ABC-XYZ_File2"), "2...XYZ_File2");
+                    assertEquals("1...XYZ_File1", labels.get("1,ABC-XYZ_File1"));
+                    assertEquals("2...XYZ_File2", labels.get("2_ABC-XYZ_File2"));
                 }
                 if(iteration == 2)
                 {
-                    assertEquals(labels.get("1,ABC-XYZ_File1"), "1...File1");
-                    assertEquals(labels.get("2_ABC-XYZ_File2"), "2...File2");
+                    assertEquals("1...File1", labels.get("1,ABC-XYZ_File1"));
+                    assertEquals("2...File2", labels.get("2_ABC-XYZ_File2"));
                 }
             }
             assertEquals(2, iteration);

@@ -248,6 +248,7 @@ public final class ChromatogramGroupDataOuterClass {
        * <code>repeated float times = 1;</code>
        * @return The count of times.
        */
+      @Override
       public int getTimesCount() {
         return times_.size();
       }
@@ -256,6 +257,7 @@ public final class ChromatogramGroupDataOuterClass {
        * @param index The index of the element to return.
        * @return The times at the given index.
        */
+      @Override
       public float getTimes(int index) {
         return times_.getFloat(index);
       }
@@ -276,7 +278,7 @@ public final class ChromatogramGroupDataOuterClass {
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
         getSerializedSize();
-        if (getTimesList().size() > 0) {
+        if (!getTimesList().isEmpty()) {
           output.writeUInt32NoTag(10);
           output.writeUInt32NoTag(timesMemoizedSerializedSize);
         }
@@ -293,7 +295,7 @@ public final class ChromatogramGroupDataOuterClass {
 
         size = 0;
         {
-          int dataSize = 0;
+          int dataSize;
           dataSize = 4 * getTimesList().size();
           size += dataSize;
           if (!getTimesList().isEmpty()) {
@@ -313,12 +315,11 @@ public final class ChromatogramGroupDataOuterClass {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeList)) {
+        if (!(obj instanceof TimeList other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeList other = (org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeList) obj;
 
-        if (!getTimesList()
+          if (!getTimesList()
             .equals(other.getTimesList())) return false;
         if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
@@ -638,6 +639,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated float times = 1;</code>
          * @return A list containing the times.
          */
+        @Override
         public java.util.List<java.lang.Float>
             getTimesList() {
           times_.makeImmutable();
@@ -647,6 +649,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated float times = 1;</code>
          * @return The count of times.
          */
+        @Override
         public int getTimesCount() {
           return times_.size();
         }
@@ -655,6 +658,7 @@ public final class ChromatogramGroupDataOuterClass {
          * @param index The index of the element to return.
          * @return The times at the given index.
          */
+        @Override
         public float getTimes(int index) {
           return times_.getFloat(index);
         }
@@ -737,25 +741,34 @@ public final class ChromatogramGroupDataOuterClass {
       }
 
       private static final com.google.protobuf.Parser<TimeList>
-          PARSER = new com.google.protobuf.AbstractParser<TimeList>() {
-        @java.lang.Override
-        public TimeList parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public TimeList parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<TimeList> parser() {
@@ -848,6 +861,7 @@ public final class ChromatogramGroupDataOuterClass {
        * <code>repeated int32 scanIds = 2;</code>
        * @return The count of scanIds.
        */
+      @Override
       public int getScanIdsCount() {
         return scanIds_.size();
       }
@@ -856,6 +870,7 @@ public final class ChromatogramGroupDataOuterClass {
        * @param index The index of the element to return.
        * @return The scanIds at the given index.
        */
+      @Override
       public int getScanIds(int index) {
         return scanIds_.getInt(index);
       }
@@ -876,7 +891,7 @@ public final class ChromatogramGroupDataOuterClass {
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
         getSerializedSize();
-        if (getScanIdsList().size() > 0) {
+        if (!getScanIdsList().isEmpty()) {
           output.writeUInt32NoTag(18);
           output.writeUInt32NoTag(scanIdsMemoizedSerializedSize);
         }
@@ -916,12 +931,11 @@ public final class ChromatogramGroupDataOuterClass {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ScanIdList)) {
+        if (!(obj instanceof ScanIdList other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ScanIdList other = (org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ScanIdList) obj;
 
-        if (!getScanIdsList()
+          if (!getScanIdsList()
             .equals(other.getScanIdsList())) return false;
         if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
@@ -1234,6 +1248,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated int32 scanIds = 2;</code>
          * @return A list containing the scanIds.
          */
+        @Override
         public java.util.List<java.lang.Integer>
             getScanIdsList() {
           scanIds_.makeImmutable();
@@ -1243,6 +1258,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated int32 scanIds = 2;</code>
          * @return The count of scanIds.
          */
+        @Override
         public int getScanIdsCount() {
           return scanIds_.size();
         }
@@ -1251,6 +1267,7 @@ public final class ChromatogramGroupDataOuterClass {
          * @param index The index of the element to return.
          * @return The scanIds at the given index.
          */
+        @Override
         public int getScanIds(int index) {
           return scanIds_.getInt(index);
         }
@@ -1333,25 +1350,34 @@ public final class ChromatogramGroupDataOuterClass {
       }
 
       private static final com.google.protobuf.Parser<ScanIdList>
-          PARSER = new com.google.protobuf.AbstractParser<ScanIdList>() {
-        @java.lang.Override
-        public ScanIdList parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public ScanIdList parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<ScanIdList> parser() {
@@ -1515,6 +1541,7 @@ public final class ChromatogramGroupDataOuterClass {
        * <code>repeated float intensities = 2;</code>
        * @return The count of intensities.
        */
+      @Override
       public int getIntensitiesCount() {
         return intensities_.size();
       }
@@ -1523,6 +1550,7 @@ public final class ChromatogramGroupDataOuterClass {
        * @param index The index of the element to return.
        * @return The intensities at the given index.
        */
+      @Override
       public float getIntensities(int index) {
         return intensities_.getFloat(index);
       }
@@ -1545,6 +1573,7 @@ public final class ChromatogramGroupDataOuterClass {
        * <code>repeated float massErrorsDeprecated = 3;</code>
        * @return The count of massErrorsDeprecated.
        */
+      @Override
       public int getMassErrorsDeprecatedCount() {
         return massErrorsDeprecated_.size();
       }
@@ -1553,6 +1582,7 @@ public final class ChromatogramGroupDataOuterClass {
        * @param index The index of the element to return.
        * @return The massErrorsDeprecated at the given index.
        */
+      @Override
       public float getMassErrorsDeprecated(int index) {
         return massErrorsDeprecated_.getFloat(index);
       }
@@ -1575,6 +1605,7 @@ public final class ChromatogramGroupDataOuterClass {
        * <code>repeated sint32 massErrors100X = 5;</code>
        * @return The count of massErrors100X.
        */
+      @Override
       public int getMassErrors100XCount() {
         return massErrors100X_.size();
       }
@@ -1583,6 +1614,7 @@ public final class ChromatogramGroupDataOuterClass {
        * @param index The index of the element to return.
        * @return The massErrors100X at the given index.
        */
+      @Override
       public int getMassErrors100X(int index) {
         return massErrors100X_.getInt(index);
       }
@@ -1621,14 +1653,14 @@ public final class ChromatogramGroupDataOuterClass {
         if (timeListIndex_ != 0) {
           output.writeInt32(1, timeListIndex_);
         }
-        if (getIntensitiesList().size() > 0) {
+        if (!getIntensitiesList().isEmpty()) {
           output.writeUInt32NoTag(18);
           output.writeUInt32NoTag(intensitiesMemoizedSerializedSize);
         }
         for (int i = 0; i < intensities_.size(); i++) {
           output.writeFloatNoTag(intensities_.getFloat(i));
         }
-        if (getMassErrorsDeprecatedList().size() > 0) {
+        if (!getMassErrorsDeprecatedList().isEmpty()) {
           output.writeUInt32NoTag(26);
           output.writeUInt32NoTag(massErrorsDeprecatedMemoizedSerializedSize);
         }
@@ -1638,7 +1670,7 @@ public final class ChromatogramGroupDataOuterClass {
         if (scanIdListIndex_ != 0) {
           output.writeInt32(4, scanIdListIndex_);
         }
-        if (getMassErrors100XList().size() > 0) {
+        if (!getMassErrors100XList().isEmpty()) {
           output.writeUInt32NoTag(42);
           output.writeUInt32NoTag(massErrors100XMemoizedSerializedSize);
         }
@@ -1659,7 +1691,7 @@ public final class ChromatogramGroupDataOuterClass {
             .computeInt32Size(1, timeListIndex_);
         }
         {
-          int dataSize = 0;
+          int dataSize;
           dataSize = 4 * getIntensitiesList().size();
           size += dataSize;
           if (!getIntensitiesList().isEmpty()) {
@@ -1670,7 +1702,7 @@ public final class ChromatogramGroupDataOuterClass {
           intensitiesMemoizedSerializedSize = dataSize;
         }
         {
-          int dataSize = 0;
+          int dataSize;
           dataSize = 4 * getMassErrorsDeprecatedList().size();
           size += dataSize;
           if (!getMassErrorsDeprecatedList().isEmpty()) {
@@ -1708,12 +1740,11 @@ public final class ChromatogramGroupDataOuterClass {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.Chromatogram)) {
+        if (!(obj instanceof Chromatogram other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.Chromatogram other = (org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.Chromatogram) obj;
 
-        if (getTimeListIndex()
+          if (getTimeListIndex()
             != other.getTimeListIndex()) return false;
         if (!getIntensitiesList()
             .equals(other.getIntensitiesList())) return false;
@@ -2186,6 +2217,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated float intensities = 2;</code>
          * @return A list containing the intensities.
          */
+        @Override
         public java.util.List<java.lang.Float>
             getIntensitiesList() {
           intensities_.makeImmutable();
@@ -2195,6 +2227,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated float intensities = 2;</code>
          * @return The count of intensities.
          */
+        @Override
         public int getIntensitiesCount() {
           return intensities_.size();
         }
@@ -2203,6 +2236,7 @@ public final class ChromatogramGroupDataOuterClass {
          * @param index The index of the element to return.
          * @return The intensities at the given index.
          */
+        @Override
         public float getIntensities(int index) {
           return intensities_.getFloat(index);
         }
@@ -2276,6 +2310,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated float massErrorsDeprecated = 3;</code>
          * @return A list containing the massErrorsDeprecated.
          */
+        @Override
         public java.util.List<java.lang.Float>
             getMassErrorsDeprecatedList() {
           massErrorsDeprecated_.makeImmutable();
@@ -2285,6 +2320,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated float massErrorsDeprecated = 3;</code>
          * @return The count of massErrorsDeprecated.
          */
+        @Override
         public int getMassErrorsDeprecatedCount() {
           return massErrorsDeprecated_.size();
         }
@@ -2293,6 +2329,7 @@ public final class ChromatogramGroupDataOuterClass {
          * @param index The index of the element to return.
          * @return The massErrorsDeprecated at the given index.
          */
+        @Override
         public float getMassErrorsDeprecated(int index) {
           return massErrorsDeprecated_.getFloat(index);
         }
@@ -2360,6 +2397,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated sint32 massErrors100X = 5;</code>
          * @return A list containing the massErrors100X.
          */
+        @Override
         public java.util.List<java.lang.Integer>
             getMassErrors100XList() {
           massErrors100X_.makeImmutable();
@@ -2369,6 +2407,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated sint32 massErrors100X = 5;</code>
          * @return The count of massErrors100X.
          */
+        @Override
         public int getMassErrors100XCount() {
           return massErrors100X_.size();
         }
@@ -2377,6 +2416,7 @@ public final class ChromatogramGroupDataOuterClass {
          * @param index The index of the element to return.
          * @return The massErrors100X at the given index.
          */
+        @Override
         public int getMassErrors100X(int index) {
           return massErrors100X_.getInt(index);
         }
@@ -2503,25 +2543,34 @@ public final class ChromatogramGroupDataOuterClass {
       }
 
       private static final com.google.protobuf.Parser<Chromatogram>
-          PARSER = new com.google.protobuf.AbstractParser<Chromatogram>() {
-        @java.lang.Override
-        public Chromatogram parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public Chromatogram parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<Chromatogram> parser() {
@@ -2632,6 +2681,7 @@ public final class ChromatogramGroupDataOuterClass {
        * <code>repeated float startTimes = 1;</code>
        * @return The count of startTimes.
        */
+      @Override
       public int getStartTimesCount() {
         return startTimes_.size();
       }
@@ -2640,6 +2690,7 @@ public final class ChromatogramGroupDataOuterClass {
        * @param index The index of the element to return.
        * @return The startTimes at the given index.
        */
+      @Override
       public float getStartTimes(int index) {
         return startTimes_.getFloat(index);
       }
@@ -2662,6 +2713,7 @@ public final class ChromatogramGroupDataOuterClass {
        * <code>repeated float endTimes = 2;</code>
        * @return The count of endTimes.
        */
+      @Override
       public int getEndTimesCount() {
         return endTimes_.size();
       }
@@ -2670,6 +2722,7 @@ public final class ChromatogramGroupDataOuterClass {
        * @param index The index of the element to return.
        * @return The endTimes at the given index.
        */
+      @Override
       public float getEndTimes(int index) {
         return endTimes_.getFloat(index);
       }
@@ -2690,14 +2743,14 @@ public final class ChromatogramGroupDataOuterClass {
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
         getSerializedSize();
-        if (getStartTimesList().size() > 0) {
+        if (!getStartTimesList().isEmpty()) {
           output.writeUInt32NoTag(10);
           output.writeUInt32NoTag(startTimesMemoizedSerializedSize);
         }
         for (int i = 0; i < startTimes_.size(); i++) {
           output.writeFloatNoTag(startTimes_.getFloat(i));
         }
-        if (getEndTimesList().size() > 0) {
+        if (!getEndTimesList().isEmpty()) {
           output.writeUInt32NoTag(18);
           output.writeUInt32NoTag(endTimesMemoizedSerializedSize);
         }
@@ -2714,7 +2767,7 @@ public final class ChromatogramGroupDataOuterClass {
 
         size = 0;
         {
-          int dataSize = 0;
+          int dataSize;
           dataSize = 4 * getStartTimesList().size();
           size += dataSize;
           if (!getStartTimesList().isEmpty()) {
@@ -2725,7 +2778,7 @@ public final class ChromatogramGroupDataOuterClass {
           startTimesMemoizedSerializedSize = dataSize;
         }
         {
-          int dataSize = 0;
+          int dataSize;
           dataSize = 4 * getEndTimesList().size();
           size += dataSize;
           if (!getEndTimesList().isEmpty()) {
@@ -2745,12 +2798,11 @@ public final class ChromatogramGroupDataOuterClass {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeIntervals)) {
+        if (!(obj instanceof TimeIntervals other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeIntervals other = (org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeIntervals) obj;
 
-        if (!getStartTimesList()
+          if (!getStartTimesList()
             .equals(other.getStartTimesList())) return false;
         if (!getEndTimesList()
             .equals(other.getEndTimesList())) return false;
@@ -3109,6 +3161,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated float startTimes = 1;</code>
          * @return A list containing the startTimes.
          */
+        @Override
         public java.util.List<java.lang.Float>
             getStartTimesList() {
           startTimes_.makeImmutable();
@@ -3118,6 +3171,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated float startTimes = 1;</code>
          * @return The count of startTimes.
          */
+        @Override
         public int getStartTimesCount() {
           return startTimes_.size();
         }
@@ -3126,6 +3180,7 @@ public final class ChromatogramGroupDataOuterClass {
          * @param index The index of the element to return.
          * @return The startTimes at the given index.
          */
+        @Override
         public float getStartTimes(int index) {
           return startTimes_.getFloat(index);
         }
@@ -3199,6 +3254,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated float endTimes = 2;</code>
          * @return A list containing the endTimes.
          */
+        @Override
         public java.util.List<java.lang.Float>
             getEndTimesList() {
           endTimes_.makeImmutable();
@@ -3208,6 +3264,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated float endTimes = 2;</code>
          * @return The count of endTimes.
          */
+        @Override
         public int getEndTimesCount() {
           return endTimes_.size();
         }
@@ -3216,6 +3273,7 @@ public final class ChromatogramGroupDataOuterClass {
          * @param index The index of the element to return.
          * @return The endTimes at the given index.
          */
+        @Override
         public float getEndTimes(int index) {
           return endTimes_.getFloat(index);
         }
@@ -3298,25 +3356,34 @@ public final class ChromatogramGroupDataOuterClass {
       }
 
       private static final com.google.protobuf.Parser<TimeIntervals>
-          PARSER = new com.google.protobuf.AbstractParser<TimeIntervals>() {
-        @java.lang.Override
-        public TimeIntervals parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public TimeIntervals parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<TimeIntervals> parser() {
@@ -3636,12 +3703,11 @@ public final class ChromatogramGroupDataOuterClass {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData)) {
+      if (!(obj instanceof ChromatogramGroupData other)) {
         return super.equals(obj);
       }
-      org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData other = (org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData) obj;
 
-      if (!getTimeListsList()
+        if (!getTimeListsList()
           .equals(other.getTimeListsList())) return false;
       if (!getScanIdListsList()
           .equals(other.getScanIdListsList())) return false;
@@ -4224,7 +4290,7 @@ public final class ChromatogramGroupDataOuterClass {
         java.util.Collections.emptyList();
       private void ensureTimeListsIsMutable() {
         if (!((bitField0_ & 0x00000001) != 0)) {
-          timeLists_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeList>(timeLists_);
+          timeLists_ = new java.util.ArrayList<>(timeLists_);
           bitField0_ |= 0x00000001;
          }
       }
@@ -4235,6 +4301,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupData.TimeList timeLists = 1;</code>
        */
+      @Override
       public java.util.List<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeList> getTimeListsList() {
         if (timeListsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(timeLists_);
@@ -4245,6 +4312,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupData.TimeList timeLists = 1;</code>
        */
+      @Override
       public int getTimeListsCount() {
         if (timeListsBuilder_ == null) {
           return timeLists_.size();
@@ -4255,6 +4323,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupData.TimeList timeLists = 1;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeList getTimeLists(int index) {
         if (timeListsBuilder_ == null) {
           return timeLists_.get(index);
@@ -4405,6 +4474,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupData.TimeList timeLists = 1;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeListOrBuilder getTimeListsOrBuilder(
           int index) {
         if (timeListsBuilder_ == null) {
@@ -4415,7 +4485,8 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupData.TimeList timeLists = 1;</code>
        */
-      public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeListOrBuilder> 
+      @Override
+      public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeListOrBuilder>
            getTimeListsOrBuilderList() {
         if (timeListsBuilder_ != null) {
           return timeListsBuilder_.getMessageOrBuilderList();
@@ -4449,8 +4520,7 @@ public final class ChromatogramGroupDataOuterClass {
           org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeList, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeList.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeListOrBuilder> 
           getTimeListsFieldBuilder() {
         if (timeListsBuilder_ == null) {
-          timeListsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeList, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeList.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeListOrBuilder>(
+          timeListsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                   timeLists_,
                   ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
@@ -4464,7 +4534,7 @@ public final class ChromatogramGroupDataOuterClass {
         java.util.Collections.emptyList();
       private void ensureScanIdListsIsMutable() {
         if (!((bitField0_ & 0x00000002) != 0)) {
-          scanIdLists_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ScanIdList>(scanIdLists_);
+          scanIdLists_ = new java.util.ArrayList<>(scanIdLists_);
           bitField0_ |= 0x00000002;
          }
       }
@@ -4475,6 +4545,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupData.ScanIdList scanIdLists = 2;</code>
        */
+      @Override
       public java.util.List<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ScanIdList> getScanIdListsList() {
         if (scanIdListsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(scanIdLists_);
@@ -4485,6 +4556,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupData.ScanIdList scanIdLists = 2;</code>
        */
+      @Override
       public int getScanIdListsCount() {
         if (scanIdListsBuilder_ == null) {
           return scanIdLists_.size();
@@ -4495,6 +4567,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupData.ScanIdList scanIdLists = 2;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ScanIdList getScanIdLists(int index) {
         if (scanIdListsBuilder_ == null) {
           return scanIdLists_.get(index);
@@ -4645,6 +4718,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupData.ScanIdList scanIdLists = 2;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ScanIdListOrBuilder getScanIdListsOrBuilder(
           int index) {
         if (scanIdListsBuilder_ == null) {
@@ -4655,7 +4729,8 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupData.ScanIdList scanIdLists = 2;</code>
        */
-      public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ScanIdListOrBuilder> 
+      @Override
+      public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ScanIdListOrBuilder>
            getScanIdListsOrBuilderList() {
         if (scanIdListsBuilder_ != null) {
           return scanIdListsBuilder_.getMessageOrBuilderList();
@@ -4689,8 +4764,7 @@ public final class ChromatogramGroupDataOuterClass {
           org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ScanIdList, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ScanIdList.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ScanIdListOrBuilder> 
           getScanIdListsFieldBuilder() {
         if (scanIdListsBuilder_ == null) {
-          scanIdListsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ScanIdList, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ScanIdList.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ScanIdListOrBuilder>(
+          scanIdListsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                   scanIdLists_,
                   ((bitField0_ & 0x00000002) != 0),
                   getParentForChildren(),
@@ -4704,7 +4778,7 @@ public final class ChromatogramGroupDataOuterClass {
         java.util.Collections.emptyList();
       private void ensureChromatogramsIsMutable() {
         if (!((bitField0_ & 0x00000004) != 0)) {
-          chromatograms_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.Chromatogram>(chromatograms_);
+          chromatograms_ = new java.util.ArrayList<>(chromatograms_);
           bitField0_ |= 0x00000004;
          }
       }
@@ -4715,6 +4789,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupData.Chromatogram chromatograms = 3;</code>
        */
+      @Override
       public java.util.List<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.Chromatogram> getChromatogramsList() {
         if (chromatogramsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(chromatograms_);
@@ -4725,6 +4800,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupData.Chromatogram chromatograms = 3;</code>
        */
+      @Override
       public int getChromatogramsCount() {
         if (chromatogramsBuilder_ == null) {
           return chromatograms_.size();
@@ -4735,6 +4811,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupData.Chromatogram chromatograms = 3;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.Chromatogram getChromatograms(int index) {
         if (chromatogramsBuilder_ == null) {
           return chromatograms_.get(index);
@@ -4885,6 +4962,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupData.Chromatogram chromatograms = 3;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ChromatogramOrBuilder getChromatogramsOrBuilder(
           int index) {
         if (chromatogramsBuilder_ == null) {
@@ -4895,7 +4973,8 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupData.Chromatogram chromatograms = 3;</code>
        */
-      public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ChromatogramOrBuilder> 
+      @Override
+      public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ChromatogramOrBuilder>
            getChromatogramsOrBuilderList() {
         if (chromatogramsBuilder_ != null) {
           return chromatogramsBuilder_.getMessageOrBuilderList();
@@ -4929,8 +5008,7 @@ public final class ChromatogramGroupDataOuterClass {
           org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.Chromatogram, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.Chromatogram.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ChromatogramOrBuilder> 
           getChromatogramsFieldBuilder() {
         if (chromatogramsBuilder_ == null) {
-          chromatogramsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.Chromatogram, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.Chromatogram.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.ChromatogramOrBuilder>(
+          chromatogramsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                   chromatograms_,
                   ((bitField0_ & 0x00000004) != 0),
                   getParentForChildren(),
@@ -5107,6 +5185,7 @@ public final class ChromatogramGroupDataOuterClass {
        * <code>.ChromatogramGroupData.TimeIntervals timeIntervals = 10;</code>
        * @return Whether the timeIntervals field is set.
        */
+      @Override
       public boolean hasTimeIntervals() {
         return ((bitField0_ & 0x00000100) != 0);
       }
@@ -5114,6 +5193,7 @@ public final class ChromatogramGroupDataOuterClass {
        * <code>.ChromatogramGroupData.TimeIntervals timeIntervals = 10;</code>
        * @return The timeIntervals.
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeIntervals getTimeIntervals() {
         if (timeIntervalsBuilder_ == null) {
           return timeIntervals_ == null ? org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeIntervals.getDefaultInstance() : timeIntervals_;
@@ -5196,6 +5276,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>.ChromatogramGroupData.TimeIntervals timeIntervals = 10;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeIntervalsOrBuilder getTimeIntervalsOrBuilder() {
         if (timeIntervalsBuilder_ != null) {
           return timeIntervalsBuilder_.getMessageOrBuilder();
@@ -5211,8 +5292,7 @@ public final class ChromatogramGroupDataOuterClass {
           org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeIntervals, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeIntervals.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeIntervalsOrBuilder> 
           getTimeIntervalsFieldBuilder() {
         if (timeIntervalsBuilder_ == null) {
-          timeIntervalsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeIntervals, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeIntervals.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupData.TimeIntervalsOrBuilder>(
+          timeIntervalsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<>(
                   getTimeIntervals(),
                   getParentForChildren(),
                   isClean());
@@ -5247,25 +5327,34 @@ public final class ChromatogramGroupDataOuterClass {
     }
 
     private static final com.google.protobuf.Parser<ChromatogramGroupData>
-        PARSER = new com.google.protobuf.AbstractParser<ChromatogramGroupData>() {
-      @java.lang.Override
-      public ChromatogramGroupData parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
+        PARSER = new com.google.protobuf.AbstractParser<>()
+    {
+        @java.lang.Override
+        public ChromatogramGroupData parsePartialFrom(
+                com.google.protobuf.CodedInputStream input,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws com.google.protobuf.InvalidProtocolBufferException
+        {
+            Builder builder = newBuilder();
+            try
+            {
+                builder.mergeFrom(input, extensionRegistry);
+            }
+            catch (com.google.protobuf.InvalidProtocolBufferException e)
+            {
+                throw e.setUnfinishedMessage(builder.buildPartial());
+            }
+            catch (com.google.protobuf.UninitializedMessageException e)
+            {
+                throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+            }
+            catch (java.io.IOException e)
+            {
+                throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                        .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
         }
-        return builder.buildPartial();
-      }
     };
 
     public static com.google.protobuf.Parser<ChromatogramGroupData> parser() {
@@ -5567,6 +5656,7 @@ public final class ChromatogramGroupDataOuterClass {
        * <code>repeated int32 scanIdParts = 2;</code>
        * @return The count of scanIdParts.
        */
+      @Override
       public int getScanIdPartsCount() {
         return scanIdParts_.size();
       }
@@ -5575,6 +5665,7 @@ public final class ChromatogramGroupDataOuterClass {
        * @param index The index of the element to return.
        * @return The scanIdParts at the given index.
        */
+      @Override
       public int getScanIdParts(int index) {
         return scanIdParts_.getInt(index);
       }
@@ -5636,6 +5727,7 @@ public final class ChromatogramGroupDataOuterClass {
        * <code>repeated int32 precursorIndex = 4;</code>
        * @return The count of precursorIndex.
        */
+      @Override
       public int getPrecursorIndexCount() {
         return precursorIndex_.size();
       }
@@ -5644,6 +5736,7 @@ public final class ChromatogramGroupDataOuterClass {
        * @param index The index of the element to return.
        * @return The precursorIndex at the given index.
        */
+      @Override
       public int getPrecursorIndex(int index) {
         return precursorIndex_.getInt(index);
       }
@@ -5700,7 +5793,7 @@ public final class ChromatogramGroupDataOuterClass {
         if (java.lang.Double.doubleToRawLongBits(retentionTime_) != 0) {
           output.writeDouble(1, retentionTime_);
         }
-        if (getScanIdPartsList().size() > 0) {
+        if (!getScanIdPartsList().isEmpty()) {
           output.writeUInt32NoTag(18);
           output.writeUInt32NoTag(scanIdPartsMemoizedSerializedSize);
         }
@@ -5710,7 +5803,7 @@ public final class ChromatogramGroupDataOuterClass {
         if (!com.google.protobuf.GeneratedMessageV3.isStringEmpty(scanIdText_)) {
           com.google.protobuf.GeneratedMessageV3.writeString(output, 3, scanIdText_);
         }
-        if (getPrecursorIndexList().size() > 0) {
+        if (!getPrecursorIndexList().isEmpty()) {
           output.writeUInt32NoTag(34);
           output.writeUInt32NoTag(precursorIndexMemoizedSerializedSize);
         }
@@ -5792,12 +5885,11 @@ public final class ChromatogramGroupDataOuterClass {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.SpectrumMetadata)) {
+        if (!(obj instanceof SpectrumMetadata other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.SpectrumMetadata other = (org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.SpectrumMetadata) obj;
 
-        if (java.lang.Double.doubleToLongBits(getRetentionTime())
+          if (java.lang.Double.doubleToLongBits(getRetentionTime())
             != java.lang.Double.doubleToLongBits(
                 other.getRetentionTime())) return false;
         if (!getScanIdPartsList()
@@ -6264,6 +6356,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated int32 scanIdParts = 2;</code>
          * @return A list containing the scanIdParts.
          */
+        @Override
         public java.util.List<java.lang.Integer>
             getScanIdPartsList() {
           scanIdParts_.makeImmutable();
@@ -6273,6 +6366,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated int32 scanIdParts = 2;</code>
          * @return The count of scanIdParts.
          */
+        @Override
         public int getScanIdPartsCount() {
           return scanIdParts_.size();
         }
@@ -6281,6 +6375,7 @@ public final class ChromatogramGroupDataOuterClass {
          * @param index The index of the element to return.
          * @return The scanIdParts at the given index.
          */
+        @Override
         public int getScanIdParts(int index) {
           return scanIdParts_.getInt(index);
         }
@@ -6342,6 +6437,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string scanIdText = 3;</code>
          * @return The scanIdText.
          */
+        @Override
         public java.lang.String getScanIdText() {
           java.lang.Object ref = scanIdText_;
           if (!(ref instanceof java.lang.String)) {
@@ -6358,6 +6454,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string scanIdText = 3;</code>
          * @return The bytes for scanIdText.
          */
+        @Override
         public com.google.protobuf.ByteString
             getScanIdTextBytes() {
           java.lang.Object ref = scanIdText_;
@@ -6420,6 +6517,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated int32 precursorIndex = 4;</code>
          * @return A list containing the precursorIndex.
          */
+        @Override
         public java.util.List<java.lang.Integer>
             getPrecursorIndexList() {
           precursorIndex_.makeImmutable();
@@ -6429,6 +6527,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated int32 precursorIndex = 4;</code>
          * @return The count of precursorIndex.
          */
+        @Override
         public int getPrecursorIndexCount() {
           return precursorIndex_.size();
         }
@@ -6437,6 +6536,7 @@ public final class ChromatogramGroupDataOuterClass {
          * @param index The index of the element to return.
          * @return The precursorIndex at the given index.
          */
+        @Override
         public int getPrecursorIndex(int index) {
           return precursorIndex_.getInt(index);
         }
@@ -6615,25 +6715,34 @@ public final class ChromatogramGroupDataOuterClass {
       }
 
       private static final com.google.protobuf.Parser<SpectrumMetadata>
-          PARSER = new com.google.protobuf.AbstractParser<SpectrumMetadata>() {
-        @java.lang.Override
-        public SpectrumMetadata parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public SpectrumMetadata parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<SpectrumMetadata> parser() {
@@ -6844,12 +6953,11 @@ public final class ChromatogramGroupDataOuterClass {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.Precursor)) {
+        if (!(obj instanceof Precursor other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.Precursor other = (org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.Precursor) obj;
 
-        if (java.lang.Double.doubleToLongBits(getTargetMz())
+          if (java.lang.Double.doubleToLongBits(getTargetMz())
             != java.lang.Double.doubleToLongBits(
                 other.getTargetMz())) return false;
         if (java.lang.Double.doubleToLongBits(getIsolationWindowLower())
@@ -7387,25 +7495,34 @@ public final class ChromatogramGroupDataOuterClass {
       }
 
       private static final com.google.protobuf.Parser<Precursor>
-          PARSER = new com.google.protobuf.AbstractParser<Precursor>() {
-        @java.lang.Override
-        public Precursor parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public Precursor parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<Precursor> parser() {
@@ -7514,6 +7631,7 @@ public final class ChromatogramGroupDataOuterClass {
      * <code>repeated string scanDescriptions = 3;</code>
      * @return A list containing the scanDescriptions.
      */
+    @Override
     public com.google.protobuf.ProtocolStringList
         getScanDescriptionsList() {
       return scanDescriptions_;
@@ -7522,6 +7640,7 @@ public final class ChromatogramGroupDataOuterClass {
      * <code>repeated string scanDescriptions = 3;</code>
      * @return The count of scanDescriptions.
      */
+    @Override
     public int getScanDescriptionsCount() {
       return scanDescriptions_.size();
     }
@@ -7530,6 +7649,7 @@ public final class ChromatogramGroupDataOuterClass {
      * @param index The index of the element to return.
      * @return The scanDescriptions at the given index.
      */
+    @Override
     public java.lang.String getScanDescriptions(int index) {
       return scanDescriptions_.get(index);
     }
@@ -7538,6 +7658,7 @@ public final class ChromatogramGroupDataOuterClass {
      * @param index The index of the value to return.
      * @return The bytes of the scanDescriptions at the given index.
      */
+    @Override
     public com.google.protobuf.ByteString
         getScanDescriptionsBytes(int index) {
       return scanDescriptions_.getByteString(index);
@@ -7551,6 +7672,7 @@ public final class ChromatogramGroupDataOuterClass {
      * <code>repeated string analyzers = 4;</code>
      * @return A list containing the analyzers.
      */
+    @Override
     public com.google.protobuf.ProtocolStringList
         getAnalyzersList() {
       return analyzers_;
@@ -7559,6 +7681,7 @@ public final class ChromatogramGroupDataOuterClass {
      * <code>repeated string analyzers = 4;</code>
      * @return The count of analyzers.
      */
+    @Override
     public int getAnalyzersCount() {
       return analyzers_.size();
     }
@@ -7567,6 +7690,7 @@ public final class ChromatogramGroupDataOuterClass {
      * @param index The index of the element to return.
      * @return The analyzers at the given index.
      */
+    @Override
     public java.lang.String getAnalyzers(int index) {
       return analyzers_.get(index);
     }
@@ -7575,6 +7699,7 @@ public final class ChromatogramGroupDataOuterClass {
      * @param index The index of the value to return.
      * @return The bytes of the analyzers at the given index.
      */
+    @Override
     public com.google.protobuf.ByteString
         getAnalyzersBytes(int index) {
       return analyzers_.getByteString(index);
@@ -7649,12 +7774,11 @@ public final class ChromatogramGroupDataOuterClass {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto)) {
+      if (!(obj instanceof ResultFileMetaDataProto other)) {
         return super.equals(obj);
       }
-      org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto other = (org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto) obj;
 
-      if (!getSpectraList()
+        if (!getSpectraList()
           .equals(other.getSpectraList())) return false;
       if (!getPrecursorsList()
           .equals(other.getPrecursorsList())) return false;
@@ -8104,7 +8228,7 @@ public final class ChromatogramGroupDataOuterClass {
         java.util.Collections.emptyList();
       private void ensureSpectraIsMutable() {
         if (!((bitField0_ & 0x00000001) != 0)) {
-          spectra_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.SpectrumMetadata>(spectra_);
+          spectra_ = new java.util.ArrayList<>(spectra_);
           bitField0_ |= 0x00000001;
          }
       }
@@ -8115,6 +8239,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ResultFileMetaDataProto.SpectrumMetadata spectra = 1;</code>
        */
+      @Override
       public java.util.List<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.SpectrumMetadata> getSpectraList() {
         if (spectraBuilder_ == null) {
           return java.util.Collections.unmodifiableList(spectra_);
@@ -8125,6 +8250,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ResultFileMetaDataProto.SpectrumMetadata spectra = 1;</code>
        */
+      @Override
       public int getSpectraCount() {
         if (spectraBuilder_ == null) {
           return spectra_.size();
@@ -8135,6 +8261,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ResultFileMetaDataProto.SpectrumMetadata spectra = 1;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.SpectrumMetadata getSpectra(int index) {
         if (spectraBuilder_ == null) {
           return spectra_.get(index);
@@ -8285,6 +8412,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ResultFileMetaDataProto.SpectrumMetadata spectra = 1;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.SpectrumMetadataOrBuilder getSpectraOrBuilder(
           int index) {
         if (spectraBuilder_ == null) {
@@ -8295,7 +8423,8 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ResultFileMetaDataProto.SpectrumMetadata spectra = 1;</code>
        */
-      public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.SpectrumMetadataOrBuilder> 
+      @Override
+      public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.SpectrumMetadataOrBuilder>
            getSpectraOrBuilderList() {
         if (spectraBuilder_ != null) {
           return spectraBuilder_.getMessageOrBuilderList();
@@ -8329,8 +8458,7 @@ public final class ChromatogramGroupDataOuterClass {
           org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.SpectrumMetadata, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.SpectrumMetadata.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.SpectrumMetadataOrBuilder> 
           getSpectraFieldBuilder() {
         if (spectraBuilder_ == null) {
-          spectraBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.SpectrumMetadata, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.SpectrumMetadata.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.SpectrumMetadataOrBuilder>(
+          spectraBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                   spectra_,
                   ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
@@ -8344,7 +8472,7 @@ public final class ChromatogramGroupDataOuterClass {
         java.util.Collections.emptyList();
       private void ensurePrecursorsIsMutable() {
         if (!((bitField0_ & 0x00000002) != 0)) {
-          precursors_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.Precursor>(precursors_);
+          precursors_ = new java.util.ArrayList<>(precursors_);
           bitField0_ |= 0x00000002;
          }
       }
@@ -8355,6 +8483,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ResultFileMetaDataProto.Precursor precursors = 2;</code>
        */
+      @Override
       public java.util.List<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.Precursor> getPrecursorsList() {
         if (precursorsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(precursors_);
@@ -8365,6 +8494,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ResultFileMetaDataProto.Precursor precursors = 2;</code>
        */
+      @Override
       public int getPrecursorsCount() {
         if (precursorsBuilder_ == null) {
           return precursors_.size();
@@ -8375,6 +8505,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ResultFileMetaDataProto.Precursor precursors = 2;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.Precursor getPrecursors(int index) {
         if (precursorsBuilder_ == null) {
           return precursors_.get(index);
@@ -8525,6 +8656,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ResultFileMetaDataProto.Precursor precursors = 2;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.PrecursorOrBuilder getPrecursorsOrBuilder(
           int index) {
         if (precursorsBuilder_ == null) {
@@ -8535,7 +8667,8 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ResultFileMetaDataProto.Precursor precursors = 2;</code>
        */
-      public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.PrecursorOrBuilder> 
+      @Override
+      public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.PrecursorOrBuilder>
            getPrecursorsOrBuilderList() {
         if (precursorsBuilder_ != null) {
           return precursorsBuilder_.getMessageOrBuilderList();
@@ -8569,8 +8702,7 @@ public final class ChromatogramGroupDataOuterClass {
           org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.Precursor, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.Precursor.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.PrecursorOrBuilder> 
           getPrecursorsFieldBuilder() {
         if (precursorsBuilder_ == null) {
-          precursorsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.Precursor, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.Precursor.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ResultFileMetaDataProto.PrecursorOrBuilder>(
+          precursorsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                   precursors_,
                   ((bitField0_ & 0x00000002) != 0),
                   getParentForChildren(),
@@ -8592,6 +8724,7 @@ public final class ChromatogramGroupDataOuterClass {
        * <code>repeated string scanDescriptions = 3;</code>
        * @return A list containing the scanDescriptions.
        */
+      @Override
       public com.google.protobuf.ProtocolStringList
           getScanDescriptionsList() {
         scanDescriptions_.makeImmutable();
@@ -8601,6 +8734,7 @@ public final class ChromatogramGroupDataOuterClass {
        * <code>repeated string scanDescriptions = 3;</code>
        * @return The count of scanDescriptions.
        */
+      @Override
       public int getScanDescriptionsCount() {
         return scanDescriptions_.size();
       }
@@ -8609,6 +8743,7 @@ public final class ChromatogramGroupDataOuterClass {
        * @param index The index of the element to return.
        * @return The scanDescriptions at the given index.
        */
+      @Override
       public java.lang.String getScanDescriptions(int index) {
         return scanDescriptions_.get(index);
       }
@@ -8617,6 +8752,7 @@ public final class ChromatogramGroupDataOuterClass {
        * @param index The index of the value to return.
        * @return The bytes of the scanDescriptions at the given index.
        */
+      @Override
       public com.google.protobuf.ByteString
           getScanDescriptionsBytes(int index) {
         return scanDescriptions_.getByteString(index);
@@ -8671,8 +8807,8 @@ public final class ChromatogramGroupDataOuterClass {
       public Builder clearScanDescriptions() {
         scanDescriptions_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);;
-        onChanged();
+        bitField0_ = (bitField0_ & ~0x00000004);
+          onChanged();
         return this;
       }
       /**
@@ -8703,6 +8839,7 @@ public final class ChromatogramGroupDataOuterClass {
        * <code>repeated string analyzers = 4;</code>
        * @return A list containing the analyzers.
        */
+      @Override
       public com.google.protobuf.ProtocolStringList
           getAnalyzersList() {
         analyzers_.makeImmutable();
@@ -8712,6 +8849,7 @@ public final class ChromatogramGroupDataOuterClass {
        * <code>repeated string analyzers = 4;</code>
        * @return The count of analyzers.
        */
+      @Override
       public int getAnalyzersCount() {
         return analyzers_.size();
       }
@@ -8720,6 +8858,7 @@ public final class ChromatogramGroupDataOuterClass {
        * @param index The index of the element to return.
        * @return The analyzers at the given index.
        */
+      @Override
       public java.lang.String getAnalyzers(int index) {
         return analyzers_.get(index);
       }
@@ -8728,6 +8867,7 @@ public final class ChromatogramGroupDataOuterClass {
        * @param index The index of the value to return.
        * @return The bytes of the analyzers at the given index.
        */
+      @Override
       public com.google.protobuf.ByteString
           getAnalyzersBytes(int index) {
         return analyzers_.getByteString(index);
@@ -8782,8 +8922,8 @@ public final class ChromatogramGroupDataOuterClass {
       public Builder clearAnalyzers() {
         analyzers_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000008);;
-        onChanged();
+        bitField0_ = (bitField0_ & ~0x00000008);
+          onChanged();
         return this;
       }
       /**
@@ -8828,25 +8968,34 @@ public final class ChromatogramGroupDataOuterClass {
     }
 
     private static final com.google.protobuf.Parser<ResultFileMetaDataProto>
-        PARSER = new com.google.protobuf.AbstractParser<ResultFileMetaDataProto>() {
-      @java.lang.Override
-      public ResultFileMetaDataProto parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
+        PARSER = new com.google.protobuf.AbstractParser<>()
+    {
+        @java.lang.Override
+        public ResultFileMetaDataProto parsePartialFrom(
+                com.google.protobuf.CodedInputStream input,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws com.google.protobuf.InvalidProtocolBufferException
+        {
+            Builder builder = newBuilder();
+            try
+            {
+                builder.mergeFrom(input, extensionRegistry);
+            }
+            catch (com.google.protobuf.InvalidProtocolBufferException e)
+            {
+                throw e.setUnfinishedMessage(builder.buildPartial());
+            }
+            catch (com.google.protobuf.UninitializedMessageException e)
+            {
+                throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+            }
+            catch (java.io.IOException e)
+            {
+                throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                        .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
         }
-        return builder.buildPartial();
-      }
     };
 
     public static com.google.protobuf.Parser<ResultFileMetaDataProto> parser() {
@@ -9093,6 +9242,7 @@ public final class ChromatogramGroupDataOuterClass {
       public static final int FILTER_OP_NOT_STARTS_WITH_VALUE = 12;
 
 
+      @Override
       public final int getNumber() {
         if (this == UNRECOGNIZED) {
           throw new java.lang.IllegalArgumentException(
@@ -9140,12 +9290,16 @@ public final class ChromatogramGroupDataOuterClass {
       }
       private static final com.google.protobuf.Internal.EnumLiteMap<
           FilterOperation> internalValueMap =
-            new com.google.protobuf.Internal.EnumLiteMap<FilterOperation>() {
-              public FilterOperation findValueByNumber(int number) {
-                return FilterOperation.forNumber(number);
-              }
-            };
+              new com.google.protobuf.Internal.EnumLiteMap<>()
+              {
+                  @Override
+                  public FilterOperation findValueByNumber(int number)
+                  {
+                      return FilterOperation.forNumber(number);
+                  }
+              };
 
+      @Override
       public final com.google.protobuf.Descriptors.EnumValueDescriptor
           getValueDescriptor() {
         if (this == UNRECOGNIZED) {
@@ -9154,6 +9308,7 @@ public final class ChromatogramGroupDataOuterClass {
         }
         return getDescriptor().getValues().get(ordinal());
       }
+      @Override
       public final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptorForType() {
         return getDescriptor();
@@ -9179,7 +9334,7 @@ public final class ChromatogramGroupDataOuterClass {
 
       private final int value;
 
-      private FilterOperation(int value) {
+      FilterOperation(int value) {
         this.value = value;
       }
 
@@ -9340,12 +9495,11 @@ public final class ChromatogramGroupDataOuterClass {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.AccessionNumber)) {
+        if (!(obj instanceof AccessionNumber other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.AccessionNumber other = (org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.AccessionNumber) obj;
 
-        if (getTypeName()
+          if (getTypeName()
             != other.getTypeName()) return false;
         if (!getValue()
             .equals(other.getValue())) return false;
@@ -9680,6 +9834,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string value = 2;</code>
          * @return The value.
          */
+        @Override
         public java.lang.String getValue() {
           java.lang.Object ref = value_;
           if (!(ref instanceof java.lang.String)) {
@@ -9696,6 +9851,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string value = 2;</code>
          * @return The bytes for value.
          */
+        @Override
         public com.google.protobuf.ByteString
             getValueBytes() {
           java.lang.Object ref = value_;
@@ -9773,25 +9929,34 @@ public final class ChromatogramGroupDataOuterClass {
       }
 
       private static final com.google.protobuf.Parser<AccessionNumber>
-          PARSER = new com.google.protobuf.AbstractParser<AccessionNumber>() {
-        @java.lang.Override
-        public AccessionNumber parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public AccessionNumber parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<AccessionNumber> parser() {
@@ -10452,12 +10617,11 @@ public final class ChromatogramGroupDataOuterClass {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target)) {
+        if (!(obj instanceof Target other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target other = (org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target) obj;
 
-        if (!getModifiedPeptideSequence()
+          if (!getModifiedPeptideSequence()
             .equals(other.getModifiedPeptideSequence())) return false;
         if (!getFormula()
             .equals(other.getFormula())) return false;
@@ -10924,6 +11088,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string modifiedPeptideSequence = 1;</code>
          * @return The modifiedPeptideSequence.
          */
+        @Override
         public java.lang.String getModifiedPeptideSequence() {
           java.lang.Object ref = modifiedPeptideSequence_;
           if (!(ref instanceof java.lang.String)) {
@@ -10940,6 +11105,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string modifiedPeptideSequence = 1;</code>
          * @return The bytes for modifiedPeptideSequence.
          */
+        @Override
         public com.google.protobuf.ByteString
             getModifiedPeptideSequenceBytes() {
           java.lang.Object ref = modifiedPeptideSequence_;
@@ -10996,6 +11162,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string formula = 2;</code>
          * @return The formula.
          */
+        @Override
         public java.lang.String getFormula() {
           java.lang.Object ref = formula_;
           if (!(ref instanceof java.lang.String)) {
@@ -11012,6 +11179,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string formula = 2;</code>
          * @return The bytes for formula.
          */
+        @Override
         public com.google.protobuf.ByteString
             getFormulaBytes() {
           java.lang.Object ref = formula_;
@@ -11068,6 +11236,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string name = 3;</code>
          * @return The name.
          */
+        @Override
         public java.lang.String getName() {
           java.lang.Object ref = name_;
           if (!(ref instanceof java.lang.String)) {
@@ -11084,6 +11253,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string name = 3;</code>
          * @return The bytes for name.
          */
+        @Override
         public com.google.protobuf.ByteString
             getNameBytes() {
           java.lang.Object ref = name_;
@@ -11204,6 +11374,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string inChiKey = 6;</code>
          * @return The inChiKey.
          */
+        @Override
         public java.lang.String getInChiKey() {
           java.lang.Object ref = inChiKey_;
           if (!(ref instanceof java.lang.String)) {
@@ -11220,6 +11391,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string inChiKey = 6;</code>
          * @return The bytes for inChiKey.
          */
+        @Override
         public com.google.protobuf.ByteString
             getInChiKeyBytes() {
           java.lang.Object ref = inChiKey_;
@@ -11276,6 +11448,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string cas = 7;</code>
          * @return The cas.
          */
+        @Override
         public java.lang.String getCas() {
           java.lang.Object ref = cas_;
           if (!(ref instanceof java.lang.String)) {
@@ -11292,6 +11465,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string cas = 7;</code>
          * @return The bytes for cas.
          */
+        @Override
         public com.google.protobuf.ByteString
             getCasBytes() {
           java.lang.Object ref = cas_;
@@ -11348,6 +11522,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string hmdb = 8;</code>
          * @return The hmdb.
          */
+        @Override
         public java.lang.String getHmdb() {
           java.lang.Object ref = hmdb_;
           if (!(ref instanceof java.lang.String)) {
@@ -11364,6 +11539,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string hmdb = 8;</code>
          * @return The bytes for hmdb.
          */
+        @Override
         public com.google.protobuf.ByteString
             getHmdbBytes() {
           java.lang.Object ref = hmdb_;
@@ -11420,6 +11596,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string inChi = 9;</code>
          * @return The inChi.
          */
+        @Override
         public java.lang.String getInChi() {
           java.lang.Object ref = inChi_;
           if (!(ref instanceof java.lang.String)) {
@@ -11436,6 +11613,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string inChi = 9;</code>
          * @return The bytes for inChi.
          */
+        @Override
         public com.google.protobuf.ByteString
             getInChiBytes() {
           java.lang.Object ref = inChi_;
@@ -11492,6 +11670,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string smiles = 10;</code>
          * @return The smiles.
          */
+        @Override
         public java.lang.String getSmiles() {
           java.lang.Object ref = smiles_;
           if (!(ref instanceof java.lang.String)) {
@@ -11508,6 +11687,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string smiles = 10;</code>
          * @return The bytes for smiles.
          */
+        @Override
         public com.google.protobuf.ByteString
             getSmilesBytes() {
           java.lang.Object ref = smiles_;
@@ -11564,6 +11744,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string kegg = 11;</code>
          * @return The kegg.
          */
+        @Override
         public java.lang.String getKegg() {
           java.lang.Object ref = kegg_;
           if (!(ref instanceof java.lang.String)) {
@@ -11580,6 +11761,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string kegg = 11;</code>
          * @return The bytes for kegg.
          */
+        @Override
         public com.google.protobuf.ByteString
             getKeggBytes() {
           java.lang.Object ref = kegg_;
@@ -11657,25 +11839,34 @@ public final class ChromatogramGroupDataOuterClass {
       }
 
       private static final com.google.protobuf.Parser<Target>
-          PARSER = new com.google.protobuf.AbstractParser<Target>() {
-        @java.lang.Override
-        public Target parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public Target parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<Target> parser() {
@@ -11826,6 +12017,7 @@ public final class ChromatogramGroupDataOuterClass {
        * <code>repeated int32 filterIndexes = 2;</code>
        * @return The count of filterIndexes.
        */
+      @Override
       public int getFilterIndexesCount() {
         return filterIndexes_.size();
       }
@@ -11838,6 +12030,7 @@ public final class ChromatogramGroupDataOuterClass {
        * @param index The index of the element to return.
        * @return The filterIndexes at the given index.
        */
+      @Override
       public int getFilterIndexes(int index) {
         return filterIndexes_.getInt(index);
       }
@@ -11900,7 +12093,7 @@ public final class ChromatogramGroupDataOuterClass {
         if (targetIndex_ != 0) {
           output.writeInt32(1, targetIndex_);
         }
-        if (getFilterIndexesList().size() > 0) {
+        if (!getFilterIndexesList().isEmpty()) {
           output.writeUInt32NoTag(18);
           output.writeUInt32NoTag(filterIndexesMemoizedSerializedSize);
         }
@@ -11950,12 +12143,11 @@ public final class ChromatogramGroupDataOuterClass {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupId)) {
+        if (!(obj instanceof ChromatogramGroupId other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupId other = (org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupId) obj;
 
-        if (getTargetIndex()
+          if (getTargetIndex()
             != other.getTargetIndex()) return false;
         if (!getFilterIndexesList()
             .equals(other.getFilterIndexesList())) return false;
@@ -12350,6 +12542,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated int32 filterIndexes = 2;</code>
          * @return A list containing the filterIndexes.
          */
+        @Override
         public java.util.List<java.lang.Integer>
             getFilterIndexesList() {
           filterIndexes_.makeImmutable();
@@ -12363,6 +12556,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>repeated int32 filterIndexes = 2;</code>
          * @return The count of filterIndexes.
          */
+        @Override
         public int getFilterIndexesCount() {
           return filterIndexes_.size();
         }
@@ -12375,6 +12569,7 @@ public final class ChromatogramGroupDataOuterClass {
          * @param index The index of the element to return.
          * @return The filterIndexes at the given index.
          */
+        @Override
         public int getFilterIndexes(int index) {
           return filterIndexes_.getInt(index);
         }
@@ -12452,6 +12647,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string qcTraceName = 3;</code>
          * @return The qcTraceName.
          */
+        @Override
         public java.lang.String getQcTraceName() {
           java.lang.Object ref = qcTraceName_;
           if (!(ref instanceof java.lang.String)) {
@@ -12468,6 +12664,7 @@ public final class ChromatogramGroupDataOuterClass {
          * <code>string qcTraceName = 3;</code>
          * @return The bytes for qcTraceName.
          */
+        @Override
         public com.google.protobuf.ByteString
             getQcTraceNameBytes() {
           java.lang.Object ref = qcTraceName_;
@@ -12545,25 +12742,34 @@ public final class ChromatogramGroupDataOuterClass {
       }
 
       private static final com.google.protobuf.Parser<ChromatogramGroupId>
-          PARSER = new com.google.protobuf.AbstractParser<ChromatogramGroupId>() {
-        @java.lang.Override
-        public ChromatogramGroupId parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public ChromatogramGroupId parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<ChromatogramGroupId> parser() {
@@ -12871,12 +13077,11 @@ public final class ChromatogramGroupDataOuterClass {
           if (obj == this) {
            return true;
           }
-          if (!(obj instanceof org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.Predicate)) {
+          if (!(obj instanceof Predicate other)) {
             return super.equals(obj);
           }
-          org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.Predicate other = (org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.Predicate) obj;
 
-          if (!getPropertyPath()
+            if (!getPropertyPath()
               .equals(other.getPropertyPath())) return false;
           if (operation_ != other.operation_) return false;
           if (!getOperand()
@@ -13196,6 +13401,7 @@ public final class ChromatogramGroupDataOuterClass {
            * <code>string propertyPath = 1;</code>
            * @return The propertyPath.
            */
+          @Override
           public java.lang.String getPropertyPath() {
             java.lang.Object ref = propertyPath_;
             if (!(ref instanceof java.lang.String)) {
@@ -13212,6 +13418,7 @@ public final class ChromatogramGroupDataOuterClass {
            * <code>string propertyPath = 1;</code>
            * @return The bytes for propertyPath.
            */
+          @Override
           public com.google.protobuf.ByteString
               getPropertyPathBytes() {
             java.lang.Object ref = propertyPath_;
@@ -13321,6 +13528,7 @@ public final class ChromatogramGroupDataOuterClass {
            * <code>string operand = 3;</code>
            * @return The operand.
            */
+          @Override
           public java.lang.String getOperand() {
             java.lang.Object ref = operand_;
             if (!(ref instanceof java.lang.String)) {
@@ -13337,6 +13545,7 @@ public final class ChromatogramGroupDataOuterClass {
            * <code>string operand = 3;</code>
            * @return The bytes for operand.
            */
+          @Override
           public com.google.protobuf.ByteString
               getOperandBytes() {
             java.lang.Object ref = operand_;
@@ -13414,25 +13623,34 @@ public final class ChromatogramGroupDataOuterClass {
         }
 
         private static final com.google.protobuf.Parser<Predicate>
-            PARSER = new com.google.protobuf.AbstractParser<Predicate>() {
-          @java.lang.Override
-          public Predicate parsePartialFrom(
-              com.google.protobuf.CodedInputStream input,
-              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-              throws com.google.protobuf.InvalidProtocolBufferException {
-            Builder builder = newBuilder();
-            try {
-              builder.mergeFrom(input, extensionRegistry);
-            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-              throw e.setUnfinishedMessage(builder.buildPartial());
-            } catch (com.google.protobuf.UninitializedMessageException e) {
-              throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-            } catch (java.io.IOException e) {
-              throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                  .setUnfinishedMessage(builder.buildPartial());
+            PARSER = new com.google.protobuf.AbstractParser<>()
+        {
+            @java.lang.Override
+            public Predicate parsePartialFrom(
+                    com.google.protobuf.CodedInputStream input,
+                    com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                    throws com.google.protobuf.InvalidProtocolBufferException
+            {
+                Builder builder = newBuilder();
+                try
+                {
+                    builder.mergeFrom(input, extensionRegistry);
+                }
+                catch (com.google.protobuf.InvalidProtocolBufferException e)
+                {
+                    throw e.setUnfinishedMessage(builder.buildPartial());
+                }
+                catch (com.google.protobuf.UninitializedMessageException e)
+                {
+                    throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+                }
+                catch (java.io.IOException e)
+                {
+                    throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                            .setUnfinishedMessage(builder.buildPartial());
+                }
+                return builder.buildPartial();
             }
-            return builder.buildPartial();
-          }
         };
 
         public static com.google.protobuf.Parser<Predicate> parser() {
@@ -13532,12 +13750,11 @@ public final class ChromatogramGroupDataOuterClass {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter)) {
+        if (!(obj instanceof SpectrumFilter other)) {
           return super.equals(obj);
         }
-        org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter other = (org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter) obj;
 
-        if (!getPredicatesList()
+          if (!getPredicatesList()
             .equals(other.getPredicatesList())) return false;
         if (!getUnknownFields().equals(other.getUnknownFields())) return false;
         return true;
@@ -13870,7 +14087,7 @@ public final class ChromatogramGroupDataOuterClass {
           java.util.Collections.emptyList();
         private void ensurePredicatesIsMutable() {
           if (!((bitField0_ & 0x00000001) != 0)) {
-            predicates_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.Predicate>(predicates_);
+            predicates_ = new java.util.ArrayList<>(predicates_);
             bitField0_ |= 0x00000001;
            }
         }
@@ -13881,6 +14098,7 @@ public final class ChromatogramGroupDataOuterClass {
         /**
          * <code>repeated .ChromatogramGroupIdsProto.SpectrumFilter.Predicate predicates = 1;</code>
          */
+        @Override
         public java.util.List<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.Predicate> getPredicatesList() {
           if (predicatesBuilder_ == null) {
             return java.util.Collections.unmodifiableList(predicates_);
@@ -13891,6 +14109,7 @@ public final class ChromatogramGroupDataOuterClass {
         /**
          * <code>repeated .ChromatogramGroupIdsProto.SpectrumFilter.Predicate predicates = 1;</code>
          */
+        @Override
         public int getPredicatesCount() {
           if (predicatesBuilder_ == null) {
             return predicates_.size();
@@ -13901,6 +14120,7 @@ public final class ChromatogramGroupDataOuterClass {
         /**
          * <code>repeated .ChromatogramGroupIdsProto.SpectrumFilter.Predicate predicates = 1;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.Predicate getPredicates(int index) {
           if (predicatesBuilder_ == null) {
             return predicates_.get(index);
@@ -14051,6 +14271,7 @@ public final class ChromatogramGroupDataOuterClass {
         /**
          * <code>repeated .ChromatogramGroupIdsProto.SpectrumFilter.Predicate predicates = 1;</code>
          */
+        @Override
         public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.PredicateOrBuilder getPredicatesOrBuilder(
             int index) {
           if (predicatesBuilder_ == null) {
@@ -14061,7 +14282,8 @@ public final class ChromatogramGroupDataOuterClass {
         /**
          * <code>repeated .ChromatogramGroupIdsProto.SpectrumFilter.Predicate predicates = 1;</code>
          */
-        public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.PredicateOrBuilder> 
+        @Override
+        public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.PredicateOrBuilder>
              getPredicatesOrBuilderList() {
           if (predicatesBuilder_ != null) {
             return predicatesBuilder_.getMessageOrBuilderList();
@@ -14095,8 +14317,7 @@ public final class ChromatogramGroupDataOuterClass {
             org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.Predicate, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.Predicate.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.PredicateOrBuilder> 
             getPredicatesFieldBuilder() {
           if (predicatesBuilder_ == null) {
-            predicatesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-                org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.Predicate, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.Predicate.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.PredicateOrBuilder>(
+            predicatesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                     predicates_,
                     ((bitField0_ & 0x00000001) != 0),
                     getParentForChildren(),
@@ -14132,25 +14353,34 @@ public final class ChromatogramGroupDataOuterClass {
       }
 
       private static final com.google.protobuf.Parser<SpectrumFilter>
-          PARSER = new com.google.protobuf.AbstractParser<SpectrumFilter>() {
-        @java.lang.Override
-        public SpectrumFilter parsePartialFrom(
-            com.google.protobuf.CodedInputStream input,
-            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-            throws com.google.protobuf.InvalidProtocolBufferException {
-          Builder builder = newBuilder();
-          try {
-            builder.mergeFrom(input, extensionRegistry);
-          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            throw e.setUnfinishedMessage(builder.buildPartial());
-          } catch (com.google.protobuf.UninitializedMessageException e) {
-            throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-          } catch (java.io.IOException e) {
-            throw new com.google.protobuf.InvalidProtocolBufferException(e)
-                .setUnfinishedMessage(builder.buildPartial());
+          PARSER = new com.google.protobuf.AbstractParser<>()
+      {
+          @java.lang.Override
+          public SpectrumFilter parsePartialFrom(
+                  com.google.protobuf.CodedInputStream input,
+                  com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                  throws com.google.protobuf.InvalidProtocolBufferException
+          {
+              Builder builder = newBuilder();
+              try
+              {
+                  builder.mergeFrom(input, extensionRegistry);
+              }
+              catch (com.google.protobuf.InvalidProtocolBufferException e)
+              {
+                  throw e.setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (com.google.protobuf.UninitializedMessageException e)
+              {
+                  throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+              }
+              catch (java.io.IOException e)
+              {
+                  throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                          .setUnfinishedMessage(builder.buildPartial());
+              }
+              return builder.buildPartial();
           }
-          return builder.buildPartial();
-        }
       };
 
       public static com.google.protobuf.Parser<SpectrumFilter> parser() {
@@ -14346,12 +14576,11 @@ public final class ChromatogramGroupDataOuterClass {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto)) {
+      if (!(obj instanceof ChromatogramGroupIdsProto other)) {
         return super.equals(obj);
       }
-      org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto other = (org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto) obj;
 
-      if (!getTargetsList()
+        if (!getTargetsList()
           .equals(other.getTargetsList())) return false;
       if (!getFiltersList()
           .equals(other.getFiltersList())) return false;
@@ -14806,7 +15035,7 @@ public final class ChromatogramGroupDataOuterClass {
         java.util.Collections.emptyList();
       private void ensureTargetsIsMutable() {
         if (!((bitField0_ & 0x00000001) != 0)) {
-          targets_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target>(targets_);
+          targets_ = new java.util.ArrayList<>(targets_);
           bitField0_ |= 0x00000001;
          }
       }
@@ -14817,6 +15046,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupIdsProto.Target targets = 1;</code>
        */
+      @Override
       public java.util.List<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target> getTargetsList() {
         if (targetsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(targets_);
@@ -14827,6 +15057,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupIdsProto.Target targets = 1;</code>
        */
+      @Override
       public int getTargetsCount() {
         if (targetsBuilder_ == null) {
           return targets_.size();
@@ -14837,6 +15068,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupIdsProto.Target targets = 1;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target getTargets(int index) {
         if (targetsBuilder_ == null) {
           return targets_.get(index);
@@ -14987,6 +15219,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupIdsProto.Target targets = 1;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.TargetOrBuilder getTargetsOrBuilder(
           int index) {
         if (targetsBuilder_ == null) {
@@ -14997,7 +15230,8 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupIdsProto.Target targets = 1;</code>
        */
-      public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.TargetOrBuilder> 
+      @Override
+      public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.TargetOrBuilder>
            getTargetsOrBuilderList() {
         if (targetsBuilder_ != null) {
           return targetsBuilder_.getMessageOrBuilderList();
@@ -15031,8 +15265,7 @@ public final class ChromatogramGroupDataOuterClass {
           org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.TargetOrBuilder> 
           getTargetsFieldBuilder() {
         if (targetsBuilder_ == null) {
-          targetsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.Target.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.TargetOrBuilder>(
+          targetsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                   targets_,
                   ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
@@ -15046,7 +15279,7 @@ public final class ChromatogramGroupDataOuterClass {
         java.util.Collections.emptyList();
       private void ensureFiltersIsMutable() {
         if (!((bitField0_ & 0x00000002) != 0)) {
-          filters_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter>(filters_);
+          filters_ = new java.util.ArrayList<>(filters_);
           bitField0_ |= 0x00000002;
          }
       }
@@ -15057,6 +15290,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupIdsProto.SpectrumFilter filters = 2;</code>
        */
+      @Override
       public java.util.List<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter> getFiltersList() {
         if (filtersBuilder_ == null) {
           return java.util.Collections.unmodifiableList(filters_);
@@ -15067,6 +15301,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupIdsProto.SpectrumFilter filters = 2;</code>
        */
+      @Override
       public int getFiltersCount() {
         if (filtersBuilder_ == null) {
           return filters_.size();
@@ -15077,6 +15312,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupIdsProto.SpectrumFilter filters = 2;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter getFilters(int index) {
         if (filtersBuilder_ == null) {
           return filters_.get(index);
@@ -15227,6 +15463,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupIdsProto.SpectrumFilter filters = 2;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilterOrBuilder getFiltersOrBuilder(
           int index) {
         if (filtersBuilder_ == null) {
@@ -15237,7 +15474,8 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupIdsProto.SpectrumFilter filters = 2;</code>
        */
-      public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilterOrBuilder> 
+      @Override
+      public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilterOrBuilder>
            getFiltersOrBuilderList() {
         if (filtersBuilder_ != null) {
           return filtersBuilder_.getMessageOrBuilderList();
@@ -15271,8 +15509,7 @@ public final class ChromatogramGroupDataOuterClass {
           org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilterOrBuilder> 
           getFiltersFieldBuilder() {
         if (filtersBuilder_ == null) {
-          filtersBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilter.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.SpectrumFilterOrBuilder>(
+          filtersBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                   filters_,
                   ((bitField0_ & 0x00000002) != 0),
                   getParentForChildren(),
@@ -15286,7 +15523,7 @@ public final class ChromatogramGroupDataOuterClass {
         java.util.Collections.emptyList();
       private void ensureChromatogramGroupIdsIsMutable() {
         if (!((bitField0_ & 0x00000004) != 0)) {
-          chromatogramGroupIds_ = new java.util.ArrayList<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupId>(chromatogramGroupIds_);
+          chromatogramGroupIds_ = new java.util.ArrayList<>(chromatogramGroupIds_);
           bitField0_ |= 0x00000004;
          }
       }
@@ -15297,6 +15534,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupIdsProto.ChromatogramGroupId chromatogramGroupIds = 3;</code>
        */
+      @Override
       public java.util.List<org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupId> getChromatogramGroupIdsList() {
         if (chromatogramGroupIdsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(chromatogramGroupIds_);
@@ -15307,6 +15545,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupIdsProto.ChromatogramGroupId chromatogramGroupIds = 3;</code>
        */
+      @Override
       public int getChromatogramGroupIdsCount() {
         if (chromatogramGroupIdsBuilder_ == null) {
           return chromatogramGroupIds_.size();
@@ -15317,6 +15556,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupIdsProto.ChromatogramGroupId chromatogramGroupIds = 3;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupId getChromatogramGroupIds(int index) {
         if (chromatogramGroupIdsBuilder_ == null) {
           return chromatogramGroupIds_.get(index);
@@ -15467,6 +15707,7 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupIdsProto.ChromatogramGroupId chromatogramGroupIds = 3;</code>
        */
+      @Override
       public org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupIdOrBuilder getChromatogramGroupIdsOrBuilder(
           int index) {
         if (chromatogramGroupIdsBuilder_ == null) {
@@ -15477,7 +15718,8 @@ public final class ChromatogramGroupDataOuterClass {
       /**
        * <code>repeated .ChromatogramGroupIdsProto.ChromatogramGroupId chromatogramGroupIds = 3;</code>
        */
-      public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupIdOrBuilder> 
+      @Override
+      public java.util.List<? extends org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupIdOrBuilder>
            getChromatogramGroupIdsOrBuilderList() {
         if (chromatogramGroupIdsBuilder_ != null) {
           return chromatogramGroupIdsBuilder_.getMessageOrBuilderList();
@@ -15511,8 +15753,7 @@ public final class ChromatogramGroupDataOuterClass {
           org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupId, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupId.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupIdOrBuilder> 
           getChromatogramGroupIdsFieldBuilder() {
         if (chromatogramGroupIdsBuilder_ == null) {
-          chromatogramGroupIdsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupId, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupId.Builder, org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.ChromatogramGroupIdOrBuilder>(
+          chromatogramGroupIdsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<>(
                   chromatogramGroupIds_,
                   ((bitField0_ & 0x00000004) != 0),
                   getParentForChildren(),
@@ -15548,25 +15789,34 @@ public final class ChromatogramGroupDataOuterClass {
     }
 
     private static final com.google.protobuf.Parser<ChromatogramGroupIdsProto>
-        PARSER = new com.google.protobuf.AbstractParser<ChromatogramGroupIdsProto>() {
-      @java.lang.Override
-      public ChromatogramGroupIdsProto parsePartialFrom(
-          com.google.protobuf.CodedInputStream input,
-          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
-          throws com.google.protobuf.InvalidProtocolBufferException {
-        Builder builder = newBuilder();
-        try {
-          builder.mergeFrom(input, extensionRegistry);
-        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          throw e.setUnfinishedMessage(builder.buildPartial());
-        } catch (com.google.protobuf.UninitializedMessageException e) {
-          throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
-        } catch (java.io.IOException e) {
-          throw new com.google.protobuf.InvalidProtocolBufferException(e)
-              .setUnfinishedMessage(builder.buildPartial());
+        PARSER = new com.google.protobuf.AbstractParser<>()
+    {
+        @java.lang.Override
+        public ChromatogramGroupIdsProto parsePartialFrom(
+                com.google.protobuf.CodedInputStream input,
+                com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+                throws com.google.protobuf.InvalidProtocolBufferException
+        {
+            Builder builder = newBuilder();
+            try
+            {
+                builder.mergeFrom(input, extensionRegistry);
+            }
+            catch (com.google.protobuf.InvalidProtocolBufferException e)
+            {
+                throw e.setUnfinishedMessage(builder.buildPartial());
+            }
+            catch (com.google.protobuf.UninitializedMessageException e)
+            {
+                throw e.asInvalidProtocolBufferException().setUnfinishedMessage(builder.buildPartial());
+            }
+            catch (java.io.IOException e)
+            {
+                throw new com.google.protobuf.InvalidProtocolBufferException(e)
+                        .setUnfinishedMessage(builder.buildPartial());
+            }
+            return builder.buildPartial();
         }
-        return builder.buildPartial();
-      }
     };
 
     public static com.google.protobuf.Parser<ChromatogramGroupIdsProto> parser() {
@@ -15660,7 +15910,7 @@ public final class ChromatogramGroupDataOuterClass {
       getDescriptor() {
     return descriptor;
   }
-  private static  com.google.protobuf.Descriptors.FileDescriptor
+  private static final com.google.protobuf.Descriptors.FileDescriptor
       descriptor;
   static {
     java.lang.String[] descriptorData = {

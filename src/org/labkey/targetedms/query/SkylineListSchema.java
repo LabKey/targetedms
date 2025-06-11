@@ -26,7 +26,7 @@ public class SkylineListSchema extends UserSchema
     public static final String ID_SEPARATOR = "_";
     public static final String UNION_PREFIX = "All" + ID_SEPARATOR;
 
-    private Map<ContainerFilter, List<ListDefinition>> _listDefinitions = new HashMap<>();
+    private final Map<ContainerFilter, List<ListDefinition>> _listDefinitions = new HashMap<>();
 
     static public void register(Module module)
     {

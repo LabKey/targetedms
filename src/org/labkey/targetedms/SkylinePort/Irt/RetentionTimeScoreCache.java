@@ -63,7 +63,7 @@ public final class RetentionTimeScoreCache
         Map<String, Double> calcCache = _cache.get(calculator.getName());
         if(calcCache != null)
         {
-            LinkedHashMap<String, Double> newCalcCache = new LinkedHashMap<String, Double>();
+            LinkedHashMap<String, Double> newCalcCache = new LinkedHashMap<>();
 
             for (String key : calcCache.keySet())
             {
@@ -77,7 +77,7 @@ public final class RetentionTimeScoreCache
 
     public double CalcScore(IRetentionScoreCalculator calculator, String peptide)
     {
-        LinkedHashMap<String, Double> cacheCalc = null;
+        LinkedHashMap<String, Double> cacheCalc;
         cacheCalc = _cache.get(calculator.getName());
         return CalcScore(calculator, peptide, cacheCalc);
     }

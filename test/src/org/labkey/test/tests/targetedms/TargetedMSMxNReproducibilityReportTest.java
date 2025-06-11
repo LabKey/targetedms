@@ -35,7 +35,7 @@ public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
     @BeforeClass
     public static void setupProject()
     {
-        TargetedMSMxNReproducibilityReportTest init = (TargetedMSMxNReproducibilityReportTest) getCurrentTest();
+        TargetedMSMxNReproducibilityReportTest init = getCurrentTest();
         init.setupFolder(FolderType.Library);
     }
 

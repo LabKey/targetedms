@@ -70,9 +70,7 @@ public class LibPrecursorIsotopeModification extends AbstractLibEntity
     public boolean equals(Object o)
     {
         if (this == o) return true;
-        if (!(o instanceof LibPrecursorIsotopeModification)) return false;
-
-        LibPrecursorIsotopeModification that = (LibPrecursorIsotopeModification) o;
+        if (!(o instanceof LibPrecursorIsotopeModification that)) return false;
 
         if (_isotopeModificationId != that._isotopeModificationId) return false;
         if (_precursorId != that._precursorId) return false;

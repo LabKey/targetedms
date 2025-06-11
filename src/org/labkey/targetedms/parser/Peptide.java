@@ -385,7 +385,7 @@ public class Peptide extends GeneralMolecule<Transition, Precursor>
                     if (modifications != null)
                     {
                         String strModification = modifiedSequence.substring(modificationStart, i);
-                        modifications.add(new Pair<Integer, String>(unmodifiedSequence.length() - 1, strModification));
+                        modifications.add(new Pair<>(unmodifiedSequence.length() - 1, strModification));
                     }
                     modificationStart = null;
                 }

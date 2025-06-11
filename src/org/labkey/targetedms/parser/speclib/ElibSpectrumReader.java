@@ -103,7 +103,7 @@ public class ElibSpectrumReader extends LibSpectrumReader
             }
         }
 
-        if(spectra.size() > 0)
+        if(!spectra.isEmpty())
         {
             sortElibSpectra(spectra);
             ElibSpectrum bestSpectrum = spectra.get(0);

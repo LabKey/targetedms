@@ -21,7 +21,7 @@ public class TargetedMSMultiplePeptidePlotTest extends TargetedMSTest
     @BeforeClass
     public static void setupProject()
     {
-        TargetedMSMultiplePeptidePlotTest init = (TargetedMSMultiplePeptidePlotTest) getCurrentTest();
+        TargetedMSMultiplePeptidePlotTest init = getCurrentTest();
         init.setupFolder(FolderType.Library);
     }
 

@@ -24,10 +24,10 @@ import java.util.List;
 public class GuideSet
 {
     private int _rowId;
-    private String _startDate;
-    private String _endDate;
-    private String _comment;
-    private List<GuideSetStats> _stats;
+    private final String _startDate;
+    private final String _endDate;
+    private final String _comment;
+    private final List<GuideSetStats> _stats;
     private Integer _brushSelectedPoints;
 
     public GuideSet(String startDate, String endDate, String comment, Integer brushSelectedPoints)

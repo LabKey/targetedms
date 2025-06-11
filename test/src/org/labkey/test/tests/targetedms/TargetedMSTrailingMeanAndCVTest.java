@@ -23,7 +23,7 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSTrailingMeanAndCVTest init = (TargetedMSTrailingMeanAndCVTest) getCurrentTest();
+        TargetedMSTrailingMeanAndCVTest init = getCurrentTest();
         init.doInit();
     }
 

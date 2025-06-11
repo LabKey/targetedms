@@ -82,7 +82,6 @@ import org.labkey.targetedms.search.ModificationSearchWebPart;
 import org.labkey.targetedms.search.ProteinSearchWebPart;
 import org.labkey.targetedms.view.CalibrationCurveView;
 import org.labkey.targetedms.view.CrossLinkedPeptideInfo;
-import org.labkey.targetedms.view.FiguresOfMeritView;
 import org.labkey.targetedms.view.LibraryQueryViewWebPart;
 import org.labkey.targetedms.view.ReplicateSummaryWebPart;
 import org.labkey.targetedms.view.TargetedMSRunsWebPartView;

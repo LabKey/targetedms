@@ -30,7 +30,7 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
     @BeforeClass
     public static void setupProject()
     {
-        TargetedMSChromatogramOptimizationTest init = (TargetedMSChromatogramOptimizationTest) getCurrentTest();
+        TargetedMSChromatogramOptimizationTest init = getCurrentTest();
         init.setupFolder(FolderType.Library);
     }
 
@@ -49,9 +49,9 @@ public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest
         File downloadedClibFile = doAndWaitForDownload(() -> clickButton("Download", 0));
 
         log("Verifying table exists");
-        List<String> tablesToVerify = new LinkedList<String>(Arrays.asList("TransitionOptimization", "Transition", "Peptide", "Protein", "Precursor", "PrecursorRetentionTime"));
+        List<String> tablesToVerify = new LinkedList<>(Arrays.asList("TransitionOptimization", "Transition", "Peptide", "Protein", "Precursor", "PrecursorRetentionTime"));
         List<String> tablesNotPresent = tableExists(tablesToVerify, downloadedClibFile);
-        if (tablesNotPresent.size() != 0)
+        if (!tablesNotPresent.isEmpty())
             checker().verifyTrue("Some of the tables do not exists in SQLITE file" + Arrays.toString(tablesNotPresent.toArray()), false);
 
         log("Verifying the SampleFile modifications");

@@ -19,7 +19,7 @@ public class TargetedMSAuditLogTest extends TargetedMSTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSAuditLogTest init = (TargetedMSAuditLogTest) getCurrentTest();
+        TargetedMSAuditLogTest init = getCurrentTest();
         init.doInit();
     }
 

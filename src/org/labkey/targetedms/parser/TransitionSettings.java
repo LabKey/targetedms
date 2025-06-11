@@ -419,7 +419,7 @@ public class TransitionSettings
         private Predictor _cePredictor;
         private Predictor _dpPredictor;
 
-        private Map<String, String> _optimizedLibraries = new HashMap<>();
+        private final Map<String, String> _optimizedLibraries = new HashMap<>();
 
         public long getRunId()
         {
