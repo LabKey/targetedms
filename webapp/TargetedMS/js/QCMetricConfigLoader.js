@@ -28,14 +28,18 @@ if (!LABKEY.targetedms.QCMetricConfigLoader) {
                             const configs = Ext4.JSON.decode(response.responseText).configurations;
                             this.initialQcMetrics = configs;
                             for (const c of this.initialQcMetricsCallbacks) {
-                                c.callback.call(c.scope, this.initialQcMetrics);
+                                if (c.callback) {
+                                    c.callback.call(c.scope, this.initialQcMetrics);
+                                }
                             }
                             this.initialQcMetricsCallbacks = [];
                         },
                         failure: LABKEY.Utils.getCallbackWrapper(function (response) {
                             this.failureResponse = response;
                             for (const c of this.initialQcMetricsCallbacks) {
-                                c.failure.call(c.scope, response);
+                                if (c.failure) {
+                                    c.failure.call(c.scope, response);
+                                }
                             }
                             this.initialQcMetricsCallbacks = [];
                         }, null, true),
