@@ -94,7 +94,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         else {
             Ext4.get(this.plotDivId).update("Loading...");
             // Load replicate annotations in the callback.
-            LABKEY.targetedms.QCMetricConfigLoader.getMetrics(this.queryContainerReplicateAnnotations, this);
+            LABKEY.targetedms.QCMetricConfigLoader.getMetrics(this.queryContainerReplicateAnnotations, this, function() {
+                Ext4.get(this.plotDivId).update('Failed to load');
+            });
         }
     },
 
