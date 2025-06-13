@@ -12,8 +12,10 @@ import org.labkey.api.data.RenderContext;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.query.FieldKey;
 import org.labkey.api.util.Pair;
+import org.labkey.targetedms.parser.Peptide;
 import org.labkey.targetedms.parser.Protein;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -31,11 +33,26 @@ class CDRConditionalFormattingDisplayColumnFactory implements DisplayColumnFacto
         _runId = runId;
     }
 
-    public static RiskLevel getRiskLevel(Number value, boolean inCDR, boolean stressed)
+    public static RiskLevel getRiskLevel(Number value, boolean inCDR, boolean stressed, String modification, String modifiedSequence)
     {
         if (value == null)
         {
             return null;
+        }
+
+        if ("Gln->pyro-Glu (N-term Q)".equalsIgnoreCase(modification))
+        {
+            return null;
+        }
+
+        if (modifiedSequence != null)
+        {
+            String sequence = Peptide.stripModifications(modifiedSequence, new ArrayList<>());
+            // Ticket 53293 - exempt low-risk IgG1 and IgG4 sequences from scoring
+            if ("EEQYNSTYR".equalsIgnoreCase(sequence) || "EEQFNSTYR".equalsIgnoreCase(sequence))
+            {
+                return null;
+            }
         }
 
         // Apply different cutoffs when the peptide is part of the complementarity determining region (CDR)
@@ -136,12 +153,17 @@ class CDRConditionalFormattingDisplayColumnFactory implements DisplayColumnFacto
             keys.add(FieldKey.fromString(getBoundColumn().getFieldKey().getParent(), "Location"));
             keys.add(FieldKey.fromString(getBoundColumn().getFieldKey().getParent(), "Modification"));
             keys.add(FieldKey.fromString(getBoundColumn().getFieldKey().getParent(), "RunId"));
+            keys.add(FieldKey.fromString(getBoundColumn().getFieldKey().getParent(), "Sequence"));
         }
 
-        @NotNull
-        private ConditionalFormat createConditionalFormat(Number value, boolean inCDR, boolean stressed)
+        @Nullable
+        private ConditionalFormat createConditionalFormat(Number value, boolean inCDR, boolean stressed, String modification, String modifiedSequence)
         {
-            RiskLevel level = getRiskLevel(value, inCDR, stressed);
+            RiskLevel level = getRiskLevel(value, inCDR, stressed, modification, modifiedSequence);
+            if (level == null)
+            {
+                return null;
+            }
 
             ConditionalFormat result = new ConditionalFormat()
             {
@@ -178,10 +200,7 @@ class CDRConditionalFormattingDisplayColumnFactory implements DisplayColumnFacto
             }
 
             String modification = ctx.get(new FieldKey(getBoundColumn().getFieldKey().getParent(), "Modification"), String.class);
-            if ("Gln->pyro-Glu (N-term Q)".equalsIgnoreCase(modification))
-            {
-                return null;
-            }
+            String modifiedSequence = ctx.get(new FieldKey(getBoundColumn().getFieldKey().getParent(), "Sequence"), String.class);
 
             boolean inCDR = isInCDR(getBoundColumn().getFieldKey().getParent(), ctx, _proteinGetter);
 
@@ -192,7 +211,7 @@ class CDRConditionalFormattingDisplayColumnFactory implements DisplayColumnFacto
                 sampleName = sampleName.substring(0, sampleName.indexOf("::"));
             }
             Pair<Boolean, String> metadata = _stressedSamples.get(Pair.of(sampleName, _runId));
-            return createConditionalFormat(value, inCDR, metadata != null && metadata.first.booleanValue());
+            return createConditionalFormat(value, inCDR, metadata != null && metadata.first.booleanValue(), modification, modifiedSequence);
         }
     }
 
