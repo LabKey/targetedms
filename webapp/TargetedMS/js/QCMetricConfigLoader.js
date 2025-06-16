@@ -5,15 +5,19 @@ if (!LABKEY.targetedms) {
 if (!LABKEY.targetedms.QCMetricConfigLoader) {
     LABKEY.targetedms.QCMetricConfigLoader = {
         initialQcMetrics: null,
+        failureResponse: null,
         initialQcMetricsCallbacks: [],
         initialQcMetricsRequested: false,
 
-        getMetrics : function(successCallback, callbackScope) {
+        getMetrics : function(successCallback, callbackScope, failureCallback) {
             if (this.initialQcMetrics) {
                 successCallback.call(callbackScope, this.initialQcMetrics);
             }
+            else if (this.failureResponse) {
+                failureCallback.call(callbackScope, this.failureResponse);
+            }
             else {
-                this.initialQcMetricsCallbacks.push({callback: successCallback, scope: callbackScope});
+                this.initialQcMetricsCallbacks.push({callback: successCallback, scope: callbackScope, failure: failureCallback});
 
                 if (!this.initialQcMetricsRequested) {
                     this.initialQcMetricsRequested = true;
@@ -24,12 +28,20 @@ if (!LABKEY.targetedms.QCMetricConfigLoader) {
                             const configs = Ext4.JSON.decode(response.responseText).configurations;
                             this.initialQcMetrics = configs;
                             for (const c of this.initialQcMetricsCallbacks) {
-                                c.callback.call(c.scope, this.initialQcMetrics);
+                                if (c.callback) {
+                                    c.callback.call(c.scope, this.initialQcMetrics);
+                                }
                             }
                             this.initialQcMetricsCallbacks = [];
                         },
                         failure: LABKEY.Utils.getCallbackWrapper(function (response) {
-                            this.failureHandler(response);
+                            this.failureResponse = response;
+                            for (const c of this.initialQcMetricsCallbacks) {
+                                if (c.failure) {
+                                    c.failure.call(c.scope, response);
+                                }
+                            }
+                            this.initialQcMetricsCallbacks = [];
                         }, null, true),
                         scope: this
                     });

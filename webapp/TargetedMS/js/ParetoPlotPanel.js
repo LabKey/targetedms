@@ -17,7 +17,10 @@ Ext4.define('LABKEY.targetedms.ParetoPlotPanel', {
 
         Ext4.get(this.plotDivId).mask("Loading...");
 
-        LABKEY.targetedms.QCMetricConfigLoader.getMetrics(this.initPlot, this);
+        LABKEY.targetedms.QCMetricConfigLoader.getMetrics(this.initPlot, this, function() {
+            Ext4.get(this.plotDivId).unmask();
+            Ext4.get(this.plotDivId).update('Failed to load');
+        });
     },
 
     initPlot : function(metrics) {
