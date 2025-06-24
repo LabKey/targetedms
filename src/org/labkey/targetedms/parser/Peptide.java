@@ -370,7 +370,7 @@ public class Peptide extends GeneralMolecule<Transition, Precursor>
     }
 
     /**
-     * Adds to a list all of the modifications in a modifiedSequence, and returns the unmodified sequence.
+     * Adds to a list all the modifications in a modifiedSequence, and returns the unmodified sequence.
      */
     public static String stripModifications(String modifiedSequence, List<Pair<Integer, String>> modifications)
     {

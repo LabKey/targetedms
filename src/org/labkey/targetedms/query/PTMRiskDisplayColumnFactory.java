@@ -48,10 +48,12 @@ public class PTMRiskDisplayColumnFactory implements DisplayColumnFactory
             Object result = super.getValue(ctx);
             if (result == null)
             {
-                Number modified = ctx.get(FieldKey.fromString(getBoundColumn().getFieldKey().getParent(), "PercentModified"), Number.class);
-                String sampleName = ctx.get(FieldKey.fromString(getBoundColumn().getFieldKey().getParent(), "SampleName"), String.class);
+                Number percentModified = ctx.get(FieldKey.fromString(getBoundColumn().getFieldKey().getParent(), "PercentModified"), Number.class);
+                String replicateName = ctx.get(FieldKey.fromString(getBoundColumn().getFieldKey().getParent(), "ReplicateName"), String.class);
                 Long runId = ctx.get(FieldKey.fromString(getBoundColumn().getFieldKey().getParent(), "RunId"), Long.class);
-                if (modified == null || sampleName == null || runId == null)
+                String modification = ctx.get(FieldKey.fromString(getBoundColumn().getFieldKey().getParent(), "Modification"), String.class);
+                String modifiedSequence = ctx.get(FieldKey.fromString(getBoundColumn().getFieldKey().getParent(), "Sequence"), String.class);
+                if (percentModified == null || replicateName == null || runId == null)
                 {
                     return null;
                 }
@@ -62,10 +64,10 @@ public class PTMRiskDisplayColumnFactory implements DisplayColumnFactory
                 }
 
                 boolean cdr = CDRConditionalFormattingDisplayColumnFactory.isInCDR(getBoundColumn().getFieldKey().getParent(), ctx, _proteinGetter);
-                Pair<Boolean, String> metadata = _stressedSamples.get(Pair.of(sampleName, runId));
+                Pair<Boolean, String> metadata = _stressedSamples.get(Pair.of(replicateName, runId));
                 boolean stressed = metadata != null && metadata.first.booleanValue();
 
-                result = CDRConditionalFormattingDisplayColumnFactory.getRiskLevel(modified, cdr, stressed);
+                result = CDRConditionalFormattingDisplayColumnFactory.getRiskLevel(percentModified, cdr, stressed, modification, modifiedSequence);
             }
             return result;
         }
@@ -81,7 +83,7 @@ public class PTMRiskDisplayColumnFactory implements DisplayColumnFactory
         {
             super.addQueryFieldKeys(keys);
             keys.add(FieldKey.fromString(getBoundColumn().getFieldKey().getParent(), "PercentModified"));
-            keys.add(FieldKey.fromString(getBoundColumn().getFieldKey().getParent(), "SampleName"));
+            keys.add(FieldKey.fromString(getBoundColumn().getFieldKey().getParent(), "ReplicateName"));
             keys.add(FieldKey.fromString(getBoundColumn().getFieldKey().getParent(), "PeptideGroupId"));
             keys.add(FieldKey.fromString(getBoundColumn().getFieldKey().getParent(), "Location"));
             keys.add(FieldKey.fromString(getBoundColumn().getFieldKey().getParent(), "RunId"));
