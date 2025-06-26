@@ -72,18 +72,17 @@ public class PeptideSummaryWebPart extends BodyWebPart<PeptideSummaryWebPart.Ele
         return elementCache().endDate.get();
     }
 
-    public PeptideSummaryWebPart apply(boolean wait)
+    public PeptideSummaryWebPart apply()
     {
-        if (wait)
-        {
-            doAndWaitForElementToRefresh(() -> elementCache().applyButton.findElement(this).click(),
-                    elementCache().heatmapLoc, getWrapper().defaultWaitForPage);
-        }
-        else
-        {
-            elementCache().applyButton.findElement(this).click();
-        }
+        doAndWaitForElementToRefresh(() -> elementCache().applyButton.findElement(this).click(),
+                elementCache().heatmapLoc, getWrapper().defaultWaitForPage);
+        return this;
+    }
 
+    public PeptideSummaryWebPart applyExpectingError(String error)
+    {
+        elementCache().applyButton.findElement(this).click();
+        getWrapper().assertTextPresent(error);
         return this;
     }
 

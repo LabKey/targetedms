@@ -87,15 +87,13 @@ public class TargetedMSPeptideSummaryHeatmapTest extends TargetedMSTest
 
         log("Verify invalid date combos produce helpful errors");
         peptideSummaryHeatMap.setCustomDateRange("2013-08-15", "2013-08-01");
-        peptideSummaryHeatMap.apply(false);
-        assertTextPresent("Please choose a start date that is before the end date.");
+        peptideSummaryHeatMap.applyExpectingError("Please choose a start date that is before the end date.");
         peptideSummaryHeatMap.setCustomDateRange(null, "2013-08-01");
-        peptideSummaryHeatMap.apply(false);
-        assertTextPresent("Please select both start and end dates.");
+        peptideSummaryHeatMap.applyExpectingError("Please select both start and end dates.");
 
         log("Verify Custom date range");
         peptideSummaryHeatMap.setCustomDateRange("2013-08-01", "2013-08-15");
-        peptideSummaryHeatMap.apply(true);
+        peptideSummaryHeatMap.apply();
         verifyDataCustomRange(peptideSummaryHeatMap);
 
         log("Verify Custom -> standard -> custom toggling");
