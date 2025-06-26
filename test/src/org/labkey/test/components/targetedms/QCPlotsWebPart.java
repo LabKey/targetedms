@@ -678,6 +678,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     public enum DateRangeOffset
     {
         ALL(0, "All dates"),
+        LAST_7_DAYS(180, "Last 7 days"),
         LAST_180_DAYS(180, "Last 180 days"),
         CUSTOM(-1, "Custom range");
 

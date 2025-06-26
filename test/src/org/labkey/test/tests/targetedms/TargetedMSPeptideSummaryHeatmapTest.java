@@ -5,6 +5,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.BaseWebDriverTest;
+import org.labkey.test.Locator;
 import org.labkey.test.components.targetedms.PeptideSummaryWebPart;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
@@ -13,6 +14,8 @@ import org.labkey.test.util.PortalHelper;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
@@ -61,13 +64,57 @@ public class TargetedMSPeptideSummaryHeatmapTest extends TargetedMSTest
                 .clickSave();
 
         clickPortalTab(PEPTIDE_MOLECULE_SUMMARY);
-        PeptideSummaryWebPart peptideSummaryHeatMap = new PeptideSummaryWebPart(getDriver());
-        Assert.assertEquals("Incorrect outlier count", "2",
-                peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.FWHM).getText());
-        Assert.assertEquals("Incorrect total replicate count", "47", peptideSummaryHeatMap.getTotalReplicateCount().trim());
+        verifyDataAllDates();
 
         log("Verify data range: " + PeptideSummaryWebPart.HeatmapDateRange.Last_7_Days);
+        PeptideSummaryWebPart peptideSummaryHeatMap = new PeptideSummaryWebPart(getDriver());
         peptideSummaryHeatMap.setDateRange(PeptideSummaryWebPart.HeatmapDateRange.Last_7_Days);
+        verifyDataLast7Days();
+
+        // Go back to the dashboard and make sure the date range matches
+        goToProjectHome();
+        qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
+        qcPlotsWebPart.waitForReady();
+        assertEquals("Date Range Offset not set to default value", QCPlotsWebPart.DateRangeOffset.LAST_7_DAYS, qcPlotsWebPart.getCurrentDateRangeOffset());
+        qcPlotsWebPart.filterQCPlots("2013-08-10", "2013-08-15", 7);
+
+        // Now navigate through the link instead of the custom tab and webpart
+        waitAndClickAndWait(Locator.linkContainingText("View all 47 replicates"));
+        // Make sure the custom date range matches the other plot's
+        peptideSummaryHeatMap = new PeptideSummaryWebPart(getDriver());
+        assertEquals("2013-08-10", peptideSummaryHeatMap.getStartDate());
+        assertEquals("2013-08-15", peptideSummaryHeatMap.getEndDate());
+
+        log("Verify invalid date combos produce helpful errors");
+        peptideSummaryHeatMap.setCustomDateRange("2013-08-15", "2013-08-01");
+        peptideSummaryHeatMap.applyExpectingError("Please choose a start date that is before the end date.");
+        peptideSummaryHeatMap.setCustomDateRange(null, "2013-08-01");
+        peptideSummaryHeatMap.applyExpectingError("Please select both start and end dates.");
+
+        log("Verify Custom date range");
+        peptideSummaryHeatMap.setCustomDateRange("2013-08-01", "2013-08-15");
+        peptideSummaryHeatMap.apply();
+        verifyDataCustomRange(peptideSummaryHeatMap);
+
+        log("Verify Custom -> standard -> custom toggling");
+        peptideSummaryHeatMap.setDateRange(PeptideSummaryWebPart.HeatmapDateRange.Last_7_Days);
+        verifyDataLast7Days();
+
+        peptideSummaryHeatMap.setDateRange(PeptideSummaryWebPart.HeatmapDateRange.Custom_Range);
+        assertEquals("2013-08-01", peptideSummaryHeatMap.getStartDate());
+        assertEquals("2013-08-15", peptideSummaryHeatMap.getEndDate());
+        verifyDataCustomRange(peptideSummaryHeatMap);
+    }
+
+    private static void verifyDataCustomRange(PeptideSummaryWebPart peptideSummaryHeatMap)
+    {
+        Assert.assertEquals("Incorrect outlier count for " + QCPlotsWebPart.MetricType.PRECURSOR_AREA, "11",
+                peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.PRECURSOR_AREA).getText());
+    }
+
+    private void verifyDataLast7Days()
+    {
+        PeptideSummaryWebPart peptideSummaryHeatMap = new PeptideSummaryWebPart(getDriver());
         Assert.assertEquals("Incorrect outlier count for " + QCPlotsWebPart.MetricType.FWHM, "1",
                 peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.FWHM).getText());
 
@@ -76,13 +123,15 @@ public class TargetedMSPeptideSummaryHeatmapTest extends TargetedMSTest
                 peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.PRECURSOR_AREA).getCssValue("background-color"));
         Assert.assertEquals("Incorrect heatmap color for lightest red", "rgb(255, 245, 245)",
                 peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.FWHM).getCssValue("background-color"));
+    }
 
-        log("Verify Custom date range");
-        peptideSummaryHeatMap.setCustomDateRange("2013-08-01", "2013-08-15");
-        log("hitting apply button");
-        peptideSummaryHeatMap.apply();
-        Assert.assertEquals("Incorrect outlier count for " + QCPlotsWebPart.MetricType.PRECURSOR_AREA, "11",
-                peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.PRECURSOR_AREA).getText());
+    private void verifyDataAllDates()
+    {
+        PeptideSummaryWebPart peptideSummaryHeatMap = new PeptideSummaryWebPart(getDriver());
+        Assert.assertEquals("Incorrect outlier count", "2",
+                peptideSummaryHeatMap.getCellElement(1, QCPlotsWebPart.MetricType.FWHM).getText());
+        assertTextPresent("Total Ion Chromatogram Area", "VYVEELKPTPEGDLEILLQK", "++, 1,157.1330");
+        Assert.assertEquals("Incorrect total replicate count", "47", peptideSummaryHeatMap.getTotalReplicateCount().trim());
     }
 
     @Test
