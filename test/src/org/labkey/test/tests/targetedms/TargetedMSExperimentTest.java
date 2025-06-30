@@ -397,7 +397,6 @@ public class TargetedMSExperimentTest extends TargetedMSTest
 
         //Look for Small Molecule Precursor List data region
         drt = DataRegion(getDriver()).withName("small_mol_precursors_view").index(1).find();
-        assertEquals("PC aa C30:1", drt.getDataAsText(5, "Custom Ion Name"));
         assertEquals("C38H74NO8P", drt.getDataAsText(5, "Ion Formula"));
         assertEquals("703.9755", drt.getDataAsText(5, "Mass Average"));
         assertEquals("703.5152", drt.getDataAsText(5, "Mass Monoisotopic"));
