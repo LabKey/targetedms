@@ -48,6 +48,7 @@ import org.labkey.api.query.QueryView;
 import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.security.permissions.ApplicationAdminPermission;
 import org.labkey.api.settings.AdminConsole;
+import org.labkey.api.settings.OptionalFeatureFlag;
 import org.labkey.api.settings.OptionalFeatureService;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.usageMetrics.UsageMetricsService;
@@ -217,11 +218,6 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         MAX_PRECURSORS_PROPERTY.setDescription("If a document has more than a specified number of precursors AND more than the separate transition/replicate chromatogram limit, Panorama will skip storing them in the database to save space and import time");
         MAX_PRECURSORS_PROPERTY.setShowDescriptionInline(true);
         addModuleProperty(MAX_PRECURSORS_PROPERTY);
-
-        AdminConsole.addOptionalFeatureFlag(new AdminConsole.OptionalFeatureFlag(USE_TEMP_DIR_FOR_SKYD_IMPORT,
-                "Stage SKYD files to a temporary local file for import purposes",
-                "When using a non-local file system, the latency for random access requests can be significantly slower than first copying to local storage",
-                false, false, OptionalFeatureService.FeatureType.Optional));
     }
 
     @Override
@@ -606,6 +602,15 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         {
             folderRegistry.addFactories(new QCFolderWriterFactory(), new QCFolderImporter.Factory());
         }
+
+        OptionalFeatureService.get().addFeatureFlag(
+            new OptionalFeatureFlag(
+                USE_TEMP_DIR_FOR_SKYD_IMPORT,
+                "Stage SKYD files to a temporary local file for import purposes",
+                "When using a non-local file system, the latency for random access requests can be significantly slower than first copying to local storage",
+                false, false, OptionalFeatureService.FeatureType.Optional
+            )
+        );
     }
 
     @Override
