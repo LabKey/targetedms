@@ -93,8 +93,11 @@
     <instrument id="MS:1002533" name="TripleTOF 6600" vendor="SCIEX" description="SCIEX TripleTOF 6600, a quadrupole - quadrupole - time-of-flight mass spectrometer."/>
     <instrument id="MS:1000194" name="SymBiot I" vendor="SCIEX" description="Applied Biosystems/MDS SCIEX SymBiot I MS."/>
     <instrument id="MS:1001482" name="5800 TOF/TOF" vendor="SCIEX" description="SCIEX 5800 TOF-TOF Analyzer."/>
+    <instrument id="MS:1003443" name="ZenoTOF 8600" vendor="SCIEX" description="SCIEX ZenoTOF 8600 system."/>
     <instrument id="MS:1000932" name="TripleTOF 5600" vendor="SCIEX" description="SCIEX TripleTOF 5600, a quadrupole - quadrupole - time-of-flight mass spectrometer."/>
+    <instrument id="MS:1003445" name="SCIEX 7500+" vendor="SCIEX" description="SCIEX 7500+ system."/>
     <instrument id="MS:1000931" name="QTRAP 5500" vendor="SCIEX" description="Applied Biosystems|MDS SCIEX QTRAP 5500."/>
+    <instrument id="MS:1003444" name="ZenoTOF 7600+" vendor="SCIEX" description="SCIEX ZenoTOF 7600+ system."/>
     <instrument id="MS:1000654" name="API 5000" vendor="SCIEX" description="SCIEX or Applied Biosystems|MDS SCIEX API 5000 MS."/>
     <instrument id="MS:1000655" name="QSTAR Elite" vendor="SCIEX" description="SCIEX or Applied Biosystems|MDS SCIEX QSTAR Elite."/>
     <instrument id="MS:1000656" name="QSTAR Pulsar" vendor="SCIEX" description="Applied Biosystems|MDS SCIEX QSTAR Pulsar."/>
@@ -250,6 +253,7 @@
     <instrument id="MS:1000751" name="TSQ Quantum Ultra" vendor="Thermo Scientific" description="Thermo Scientific TSQ Quantum Ultra."/>
     <instrument id="MS:1000639" name="LTQ Orbitrap XL ETD" vendor="Thermo Scientific" description="Thermo Scientific LTQ Orbitrap XL MS with ETD."/>
     <instrument id="MS:1002634" name="Q Exactive Plus" vendor="Thermo Scientific" description="Thermo Scientific Q Exactive Plus."/>
+    <instrument id="MS:1003442" name="Orbitrap Astral Zoom" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Astral Zoom mass spectrometer contains three mass analyzers: a quadrupole analyzer, an Orbitrap analyzer, and an Astral analyzer."/>
     <instrument id="MS:1003112" name="Orbitrap ID-X" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap ID-X mass spectrometer with Tribrid architecture consisting of quadrupole mass filter, linear ion trap and Orbitrap mass analyzers."/>
     <instrument id="MS:1001510" name="TSQ Vantage" vendor="Thermo Scientific" description="TSQ Vantage."/>
     <instrument id="MS:1001910" name="LTQ Orbitrap Elite" vendor="Thermo Scientific" description="Thermo Scientific LTQ Orbitrap Elite, often just referred to as the Orbitrap Elite."/>
