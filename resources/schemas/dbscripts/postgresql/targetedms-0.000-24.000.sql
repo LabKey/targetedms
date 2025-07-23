@@ -1455,7 +1455,7 @@ CREATE TABLE targetedms.QCMetricConfiguration
     CONSTRAINT UQ_QCMetricConfig_Name_Container UNIQUE (Name, Container)
 );
 
-
+@SkipOnEmptySchemasBegin
 WITH rootIdentity as (select EntityId as theIdentity FROM core.Containers WHERE Parent is null)
 INSERT INTO targetedms.QCMetricConfiguration (Container, Name,Series1Label,Series1SchemaName,Series1QueryName,Series2Label,Series2SchemaName,Series2QueryName) VALUES
     ((select theIdentity from rootIdentity), 'Retention Time','Retention Time','targetedms','QCMetric_retentionTime',NULL , NULL , NULL ),
@@ -1466,6 +1466,7 @@ INSERT INTO targetedms.QCMetricConfiguration (Container, Name,Series1Label,Serie
     ((select theIdentity from rootIdentity), 'Transition/Precursor Area Ratio','Transition/Precursor Area Ratio','targetedms','QCMetric_transitionPrecursorRatio',NULL , NULL , NULL ),
     ((select theIdentity from rootIdentity), 'Transition/Precursor Areas','Transition Area','targetedms','QCMetric_transitionArea','Precursor Area','targetedms','QCMetric_precursorArea'),
     ((select theIdentity from rootIdentity), 'Mass Accuracy','Mass Accuracy','targetedms','QCMetric_massAccuracy',NULL , NULL , NULL );
+@SkipOnEmptySchemasEnd
 
 -- Add column to ReplicateAnnotation to store the source of the annotation (e.g. Skyline or AutoQC)
 ALTER TABLE targetedms.ReplicateAnnotation ADD COLUMN Source VARCHAR(20) NOT NULL DEFAULT 'Skyline';
@@ -1800,9 +1801,11 @@ ALTER TABLE targetedms.MeasuredDriftTime ADD IonMobilityUnits VARCHAR(30);
 
 ALTER TABLE targetedms.Runs ADD COLUMN AuditLogEntriesCount INT4 DEFAULT 0 NOT NULL;
 
+@SkipOnEmptySchemasBegin
 WITH rootIdentity as (select EntityId as theIdentity FROM core.Containers WHERE Parent is null)
     INSERT INTO targetedms.QCMetricConfiguration (Container, Name,Series1Label,Series1SchemaName,Series1QueryName,Series2Label,Series2SchemaName,Series2QueryName,PrecursorScoped) VALUES
     ((select theIdentity from rootIdentity), 'TIC Area','TIC Area','targetedms','QCRunMetric_ticArea',NULL , NULL , NULL , FALSE );
+@SkipOnEmptySchemasEnd
 
 ALTER TABLE targetedms.SampleFile ADD COLUMN TicArea DOUBLE PRECISION;
 
@@ -1860,6 +1863,7 @@ CREATE TABLE targetedms.ListItemValue
 ALTER TABLE targetedms.QCMetricConfiguration ADD COLUMN EnabledQueryName VARCHAR(200);
 ALTER TABLE targetedms.QCMetricConfiguration ADD COLUMN EnabledSchemaName VARCHAR(200);
 
+@SkipOnEmptySchemasBegin
 WITH rootIdentity as (select EntityId as theIdentity FROM core.Containers WHERE Parent is null)
 INSERT INTO targetedms.QCMetricConfiguration (Container, Name,Series1Label,Series1SchemaName,Series1QueryName,Series2Label,Series2SchemaName,Series2QueryName,PrecursorScoped, EnabledQueryName, EnabledSchemaName) VALUES
   ((select theIdentity from rootIdentity), 'Isotopologue LOD', 'LOD','targetedms', 'QCMetric_IsotopologuePrecursorLOD', NULL, NULL, NULL, TRUE, 'QCMetricEnabled_IsotopologuePrecursorLOD', 'targetedms');
@@ -1877,6 +1881,7 @@ INSERT INTO targetedms.QCMetricConfiguration (Container, Name,Series1Label,Serie
   ((select theIdentity from rootIdentity), 'Isotopologue Regression RSquared', 'Coefficient', 'targetedms', 'QCMetric_IsotopologuePrecursorRSquared', NULL, NULL, NULL, TRUE, 'QCMetricEnabled_IsotopologuePrecursorRSquared', 'targetedms');
 
 UPDATE targetedms.QCMetricConfiguration SET EnabledQueryName = 'QCMetricEnabled_lhRatio', EnabledSchemaName ='targetedms' WHERE Series1QueryName = 'QCMetric_lhRatio';
+@SkipOnEmptySchemasEnd
 
 ALTER TABLE targetedms.runs ALTER COLUMN SoftwareVersion TYPE VARCHAR(200);
 
@@ -2229,6 +2234,7 @@ CREATE TABLE targetedms.keywords (
     CONSTRAINT keywords_keywordid_key UNIQUE (keywordid)
 );
 
+@SkipOnEmptySchemasBegin
 INSERT INTO targetedms.keywordcategories VALUES (1, 'KW-9999', 'Biological process');
 INSERT INTO targetedms.keywordcategories VALUES (2, 'KW-9998', 'Cellular component');
 INSERT INTO targetedms.keywordcategories VALUES (3, 'KW-9997', 'Coding sequence diversity');
@@ -3423,6 +3429,7 @@ INSERT INTO targetedms.keywords VALUES ( DEFAULT, 'KW-1268', 'Autism spectrum di
 INSERT INTO targetedms.keywords VALUES ( DEFAULT, 'KW-1269', 'Autism', 'KW-9995');
 INSERT INTO targetedms.keywords VALUES ( DEFAULT, 'KW-1270', 'Asperger syndrome', 'KW-9995');
 INSERT INTO targetedms.keywords VALUES ( DEFAULT, 'KW-1271', 'Inflammasome', 'KW-9998');
+@SkipOnEmptySchemasEnd
 
 ALTER TABLE targetedms.Runs ALTER COLUMN Id TYPE bigint;
 
@@ -3924,6 +3931,7 @@ ALTER TABLE targetedms.SampleFile ADD IRTSlope REAL;
 ALTER TABLE targetedms.SampleFile ADD IRTIntercept REAL;
 ALTER TABLE targetedms.SampleFile ADD IRTCorrelation REAL;
 
+@SkipOnEmptySchemasBegin
 WITH rootIdentity as (select EntityId as theIdentity FROM core.Containers WHERE Parent is null)
 INSERT INTO targetedms.QCMetricConfiguration (Container, Name, Series1Label, Series1SchemaName, Series1QueryName, PrecursorScoped, EnabledQueryName, EnabledSchemaName) VALUES
     ((select theIdentity from rootIdentity), 'iRT Slope', 'iRT Slope', 'targetedms', 'QCRunMetric_iRTSlope', false, 'QCRunMetricEnabled_iRTSlope', 'targetedms');
@@ -3942,7 +3950,6 @@ UPDATE targetedms.QCMetricConfiguration SET EnabledQueryName = 'QCMetricEnabled_
 WITH rootIdentity as (select EntityId as theIdentity FROM core.Containers WHERE Parent is null)
 INSERT INTO targetedms.QCMetricConfiguration (Container, Name, Series1Label, Series1SchemaName, Series1QueryName, PrecursorScoped) VALUES
     ((select theIdentity from rootIdentity), 'Precursor Area', 'Precursor Area', 'targetedms', 'QCMetric_precursorArea', true);
-
 
 WITH rootIdentity as (select EntityId as theIdentity FROM core.Containers WHERE Parent is null)
 INSERT INTO targetedms.QCMetricConfiguration (Container, Name, Series1Label, Series1SchemaName, Series1QueryName, PrecursorScoped, EnabledQueryName, EnabledSchemaName) VALUES
@@ -3970,6 +3977,7 @@ SET
     EnabledQueryName = 'QCMetricEnabled_transitionArea',
     EnabledSchemaName = 'targetedms'
 WHERE Name = 'Transition & Precursor Areas';
+@SkipOnEmptySchemasEnd
 
 ALTER TABLE targetedms.PrecursorChromInfo
     ADD COLUMN TotalAreaMs1 REAL,
@@ -4025,6 +4033,7 @@ SELECT core.fn_dropifexists('AuditLogEntry', 'targetedms', 'CONSTRAINT', 'fk_aud
 ALTER TABLE targetedms.AuditLogEntry
 DROP COLUMN VersionId;
 
+@SkipOnEmptySchemasBegin
 WITH rootIdentity as (select EntityId as theIdentity FROM core.Containers WHERE Parent is null)
 INSERT INTO targetedms.QCMetricConfiguration (Container, Name, Series1Label, Series1SchemaName, Series1QueryName, PrecursorScoped, EnabledQueryName, EnabledSchemaName) VALUES
     ((select theIdentity from rootIdentity), 'Library dotp', 'Library dotp', 'targetedms', 'QCMetric_libraryDotp', true, 'QCMetricEnabled_libraryDotp', 'targetedms');
@@ -4032,6 +4041,7 @@ INSERT INTO targetedms.QCMetricConfiguration (Container, Name, Series1Label, Ser
 WITH rootIdentity as (select EntityId as theIdentity FROM core.Containers WHERE Parent is null)
 INSERT INTO targetedms.QCMetricConfiguration (Container, Name, Series1Label, Series1SchemaName, Series1QueryName, PrecursorScoped, EnabledQueryName, EnabledSchemaName) VALUES
     ((select theIdentity from rootIdentity), 'Isotope dotp', 'Isotope dotp', 'targetedms', 'QCMetric_isotopeDotp', true, 'QCMetricEnabled_isotopeDotp', 'targetedms');
+@SkipOnEmptySchemasEnd
 
 -- Reparent table if it exists in PanoramaPremium schema
 ALTER TABLE IF EXISTS PanoramaPremium.QCEmailNotifications SET SCHEMA targetedms;
