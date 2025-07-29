@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.Test;
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.DataColumn;
 import org.labkey.api.data.DisplayColumn;
@@ -27,7 +28,7 @@ import java.util.Set;
 public class CrossLinkedPeptideDisplayColumn extends DataColumn
 {
     // Cache the proteins for a given run to avoid many redundant queries
-    private final Map<Long, List<Protein>> _proteins = new HashMap<>();
+    private final Map<Long, List<Protein>> _proteins = new LongHashMap<>();
     private final Formatter _formatter;
 
     private CrossLinkedPeptideDisplayColumn(ColumnInfo col, Formatter formatter)

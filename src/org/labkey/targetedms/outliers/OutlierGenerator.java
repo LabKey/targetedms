@@ -18,6 +18,8 @@ package org.labkey.targetedms.outliers;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.labkey.api.collections.IntHashMap;
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.RuntimeSQLException;
 import org.labkey.api.data.SQLFragment;
@@ -265,7 +267,7 @@ public class OutlierGenerator
         TableInfo sampleFileForQC = schema.getTable("SampleFileForQC");
         List<SampleFileQCMetadata> sfs = new TableSelector(sampleFileForQC).getArrayList(SampleFileQCMetadata.class);
 
-        Map<Long, SampleFileQCMetadata> sampleFiles = new HashMap<>();
+        Map<Long, SampleFileQCMetadata> sampleFiles = new LongHashMap<>();
         for (SampleFileQCMetadata sf : sfs)
         {
             sampleFiles.put(sf.getId(), sf);
@@ -285,10 +287,10 @@ public class OutlierGenerator
 
         try
         {
-            Map<Long, Object> excludedPrecursorIds = new HashMap<>();
+            Map<Long, Object> excludedPrecursorIds = new LongHashMap<>();
             Map<Long, RawMetricDataSet.PrecursorInfo> precursors = loadPrecursors(schema, excludedPrecursorIds, showExcludedPrecursors);
 
-            Map<Integer, QCMetricConfiguration> metrics = new HashMap<>();
+            Map<Integer, QCMetricConfiguration> metrics = new IntHashMap<>();
             configurations.forEach(m -> metrics.put(m.getId(), m));
 
             try (ResultSet rs = new SqlSelector(TargetedMSManager.getSchema(), sql).getResultSet(false))
@@ -343,7 +345,7 @@ public class OutlierGenerator
     @NotNull
     private Map<Long, RawMetricDataSet.PrecursorInfo> loadPrecursors(TargetedMSSchema schema, Map<Long, Object> excludedPrecursorsIds, boolean showExcludedPrecursors) throws SQLException
     {
-        Map<Long, RawMetricDataSet.PrecursorInfo> precursors = new HashMap<>();
+        Map<Long, RawMetricDataSet.PrecursorInfo> precursors = new LongHashMap<>();
 
         DecimalFormat format = new DecimalFormat();
         format.setMinimumFractionDigits(4);

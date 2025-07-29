@@ -21,6 +21,7 @@ import org.jfree.chart.ChartColor;
 import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.labkey.api.collections.IntHashMap;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DataRegionSelection;
 import org.labkey.api.pipeline.PipeRoot;
@@ -418,7 +419,7 @@ public abstract class ChromatogramDataset
         private final List<ChartAnnotation> _annotations = new ArrayList<>();
 
         /** Create a map of colors to be used for drawing the peaks. */
-        protected final Map<Integer, Color> _seriesColors = new HashMap<>();
+        protected final Map<Integer, Color> _seriesColors = new IntHashMap<>();
 
         public RtRangeDataset(User u, Container c)
         {

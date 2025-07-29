@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.cache.BlockingCache;
 import org.labkey.api.cache.CacheManager;
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.Container;
 import org.labkey.api.security.User;
 import org.labkey.api.util.FileUtil;
@@ -214,7 +215,7 @@ public class LibrarySpectrumMatchGetter
 
         List<Peptide.StructuralModification> structuralModifications= ModificationManager.getPeptideStructuralModifications(peptide.getId());
         List<PeptideSettings.RunStructuralModification> runStrMods = ModificationManager.getStructuralModificationsForRun(run.getId());
-        Map<Long, List<PeptideSettings.PotentialLoss>> potentialLossMap = new HashMap<>();
+        Map<Long, List<PeptideSettings.PotentialLoss>> potentialLossMap = new LongHashMap<>();
         for(Peptide.StructuralModification mod: structuralModifications)
         {
             List<PeptideSettings.PotentialLoss> losses = ModificationManager.getPotentialLossesForStructuralMod(mod.getStructuralModId());

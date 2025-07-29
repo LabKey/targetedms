@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.collections.CaseInsensitiveHashMap;
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DbScope;
@@ -757,7 +758,7 @@ public class SkylineDocImporter
         private final Map<String, Long> isotopeLabelIdMap = new HashMap<>();
         private final Set<Long> internalStandardLabelIds = new HashSet<>();
         private final Map<String, Long> structuralModNameIdMap = new HashMap<>();
-        private final Map<Long, List<PeptideSettings.PotentialLoss>> structuralModLossesMap = new HashMap<>();
+        private final Map<Long, List<PeptideSettings.PotentialLoss>> structuralModLossesMap = new LongHashMap<>();
         private final Map<String, Long> isotopeModNameIdMap = new HashMap<>();
     }
 
@@ -1867,7 +1868,7 @@ public class SkylineDocImporter
     private Map<Long, Long> insertGeneralMoleculeChromInfos(long gmId, List<GeneralMoleculeChromInfo> generalMoleculeChromInfos,
                                                                   Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap)
     {
-        Map<Long, Long> sampleFileIdGeneralMolChromInfoIdMap = new HashMap<>();
+        Map<Long, Long> sampleFileIdGeneralMolChromInfoIdMap = new LongHashMap<>();
 
         for (GeneralMoleculeChromInfo generalMoleculeChromInfo : generalMoleculeChromInfos)
         {
@@ -2314,7 +2315,7 @@ public class SkylineDocImporter
 
     private void copyExtractedFilesToCloud(TargetedMSRun run)
     {
-        Integer skyDataId = run.getDataId();
+        var skyDataId = run.getDataId();
         if (skyDataId != null)
         {
             ExpData skyData = ExperimentService.get().getExpData(skyDataId);

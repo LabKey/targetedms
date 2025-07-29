@@ -15,6 +15,7 @@
 package org.labkey.targetedms.calculations;
 
 import org.jetbrains.annotations.Nullable;
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.TableSelector;
@@ -191,7 +192,7 @@ public class RunQuantifier
         Collection<GeneralMoleculeChromInfo> moleculeChromInfos
                 = generalMoleculeResultDataSet.getGeneralMoleculeChromInfos();
         Set<Long> excludedReplicateIds = getExcludedReplicateIds(moleculeChromInfos);
-        Map<Long, CalibrationCurveDataSet.Replicate> calibrationCurveReplicates = new HashMap<>();
+        Map<Long, CalibrationCurveDataSet.Replicate> calibrationCurveReplicates = new LongHashMap<>();
         for (Replicate replicate : _replicateDataSet.listReplicates())
         {
             Double moleculeConcentration = replicate.getAnalyteConcentration();

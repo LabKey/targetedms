@@ -15,6 +15,7 @@
  */
 package org.labkey.targetedms.parser;
 
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.targetedms.query.IsotopeLabelManager;
 import org.labkey.targetedms.query.ReplicateManager;
 
@@ -32,7 +33,7 @@ public class PeakAreaRatioCalculator<TransitionType extends GeneralTransition, P
     private final MoleculeType _peptide;
     private final TransitionSettings _transitionSettings;
 
-    private final Map<Long, PeptideAreaRatioCalculator> _peptideAreaRatioCalculatorMap = new HashMap<>();
+    private final Map<Long, PeptideAreaRatioCalculator> _peptideAreaRatioCalculatorMap = new LongHashMap<>();
 
     // All the precursors and transitions and chrom infos for this peptide must already have database IDs.
     public PeakAreaRatioCalculator(MoleculeType molecule, TransitionSettings transitionSettings)

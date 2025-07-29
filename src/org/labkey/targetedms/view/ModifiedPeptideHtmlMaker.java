@@ -17,6 +17,7 @@ package org.labkey.targetedms.view;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.util.DOM;
 import org.labkey.api.util.HtmlString;
 import org.labkey.api.util.Pair;
@@ -53,7 +54,7 @@ public class ModifiedPeptideHtmlMaker
     private final Map<Long, Long> _firstIsotopeLabelIdInDocMap;
 
     /** RunId -> all proteins in that run */
-    private final Map<Long, List<Protein>> _proteins = new HashMap<>();
+    private final Map<Long, List<Protein>> _proteins = new LongHashMap<>();
 
     private final static String[] HEX_PADDING = new String[] {
                                                         "",

@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.action.SimpleViewAction;
 import org.labkey.api.action.SpringActionController;
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.DbSchema;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SimpleFilter;
@@ -280,7 +281,7 @@ public class PassportController extends SpringActionController
         if (p == null)
             return;
 
-        Map<Long, IPeptide> peptideMap = new HashMap<>();
+        Map<Long, IPeptide> peptideMap = new LongHashMap<>();
 
         UserSchema schema = QueryService.get().getUserSchema(getUser(), getContainer(), "targetedms");
         TableInfo tinfo = schema.getTable("Passport_TotalPrecursorArea");

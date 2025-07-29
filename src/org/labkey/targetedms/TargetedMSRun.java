@@ -60,8 +60,8 @@ public class TargetedMSRun implements Serializable, ITargetedMSRun
     protected int _auditLogEntriesCount;
     protected int _listCount;
 
-    protected Integer _dataId; // FK to exp.data's RowId column for the .sky file
-    protected Integer _skydDataId; // FK to exp.data's RowId column for the .skyd file
+    protected Long _dataId; // FK to exp.data's RowId column for the .sky file
+    protected Long _skydDataId; // FK to exp.data's RowId column for the .skyd file
     protected Integer _iRTscaleId;
 
     private String _softwareVersion;
@@ -331,23 +331,23 @@ public class TargetedMSRun implements Serializable, ITargetedMSRun
     }
 
     @Override
-    public Integer getDataId()
+    public Long getDataId()
     {
         return _dataId;
     }
 
-    public void setDataId(Integer dataId)
+    public void setDataId(Long dataId)
     {
         _dataId = dataId;
     }
 
     @Override
-    public Integer getSkydDataId()
+    public Long getSkydDataId()
     {
         return _skydDataId;
     }
 
-    public void setSkydDataId(Integer dataId)
+    public void setSkydDataId(Long dataId)
     {
         _skydDataId = dataId;
     }

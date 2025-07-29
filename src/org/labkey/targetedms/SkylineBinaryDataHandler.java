@@ -71,7 +71,7 @@ public class SkylineBinaryDataHandler extends AbstractExperimentDataHandler
     }
 
     @Override
-    public void runMoved(ExpData newData, Container container, Container targetContainer, String oldRunLSID, String newRunLSID, User user, int oldDataRowID) throws ExperimentException
+    public void runMoved(ExpData newData, Container container, Container targetContainer, String oldRunLSID, String newRunLSID, User user, long oldDataRowID) throws ExperimentException
     {
         super.runMoved(newData, container, targetContainer, oldRunLSID, newRunLSID, user, oldDataRowID);
         // Update the file path in the new ExpData

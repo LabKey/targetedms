@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 %>
+<%@ page import="org.labkey.api.collections.LongHashMap" %>
 <%@ page import="org.labkey.api.util.Formats" %>
 <%@ page import="org.labkey.api.view.ActionURL" %>
 <%@ page import="org.labkey.api.view.HttpView" %>
@@ -26,14 +27,13 @@
 <%@ page import="org.labkey.targetedms.view.IconFactory" %>
 <%@ page import="org.labkey.targetedms.view.ModifiedPeptideHtmlMaker" %>
 <%@ page import="org.labkey.targetedms.view.PrecursorHtmlMaker" %>
-<%@ page import="java.util.HashMap" %>
 <%@ page import="java.util.Map" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 <%
     JspView<TargetedMSController.PeptideChromatogramsViewBean> me = HttpView.currentView();
     TargetedMSController.PeptideChromatogramsViewBean bean = me.getModelBean();
     TargetedMSRun run = bean.getRun();
-    Map<Long, String> labelIdMap = new HashMap<>();
+    Map<Long, String> labelIdMap = new LongHashMap<>();
     for(PeptideSettings.IsotopeLabel label: bean.getLabels())
     {
         labelIdMap.put(label.getId(), label.getName());
