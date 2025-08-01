@@ -2567,7 +2567,8 @@ public class TargetedMSManager
         TableSelector selector = new TableSelector(runsTable, idColumnNames, filter, null);
 
         //get RowId -> ReplacedByRun key value pairs and also populate the opposite direction to get ReplacedByRun -> RowId
-        Map<Long, Long> replacedByMap = selector.getValueMap();
+        Map<Long, Long> replacedByMap = new LongHashMap<>();
+        selector.forEach(rs -> {replacedByMap.put(rs.getLong(1), rs.getLong(2));});
         Map<Long, Long> replacesMap = new LongHashMap<>();
         for (Map.Entry<Long, Long> entry : replacedByMap.entrySet())
             replacesMap.put(entry.getValue(), entry.getKey());
