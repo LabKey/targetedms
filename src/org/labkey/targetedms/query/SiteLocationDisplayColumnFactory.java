@@ -76,7 +76,7 @@ public class SiteLocationDisplayColumnFactory implements DisplayColumnFactory
                 };
 
                 String chain = _col.getChainLabel(ctx);
-                String chainPrefix = CrossLinkedPeptideDisplayColumn.getChainAbbreviation(chain);
+                String chainPrefix = CrossLinkedPeptideDisplayColumn.getChainPrefix(chain);
                 if (!chainPrefix.isEmpty())
                 {
                     chainPrefix = chainPrefix + " ";

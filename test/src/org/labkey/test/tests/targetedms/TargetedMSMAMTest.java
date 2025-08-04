@@ -20,6 +20,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.Locator;
 
+import static org.junit.Assert.assertTrue;
+
 @Category({})
 public class TargetedMSMAMTest extends TargetedMSTest
 {
@@ -60,6 +62,9 @@ public class TargetedMSMAMTest extends TargetedMSTest
         assertTextPresentInThisOrder("70-84", "325-333", "28-41", "190-196; 26-32");
         assertTextPresentInThisOrder("(K)ASTEGVAIQGQQGTR(L)", "(K)AQYEDIANR(S)", "(K)SVTEQGAELSNEER(N)");
         assertTextPresentInThisOrder("Carbamidomethyl Cysteine @ C157", "Carbamidomethyl Cysteine @ C245", "Carbamidomethyl Cysteine @ C94");
+
+        // Ensure that the Cystine isn't highlighted, as it's a fixed modification and that report doesn't want to call it out
+        assertTrue(getHtmlSource().contains("(K)YLECSALTQR(G)"));
     }
 
     @Test
@@ -77,5 +82,8 @@ public class TargetedMSMAMTest extends TargetedMSTest
         // Disulfide bonds
         assertTextPresentInThisOrder("Q364-T369-D364/\nN366-T369-D364", "V121-S345-Q142/\nQ124-S345-Q142");
         assertTextPresentInThisOrder("(A)LKPLALV(D)", "(G)AVVQDPA(Y)", "(F)YGEATSR(E)");
+
+        // Ensure that the highlighting is as expected for both crosslinking and modification
+        assertTrue(getHtmlSource().contains("(Y)<span style=\"font-weight:bold;color:green;text-decoration:underline;\">Q</span><span style=\"font-weight:bold;text-decoration:underline;\">M</span><span style=\"font-weight:bold;color:green;\">N</span>(D)"));
     }
 }

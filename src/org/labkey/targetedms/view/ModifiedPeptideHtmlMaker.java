@@ -54,6 +54,9 @@ public class ModifiedPeptideHtmlMaker
 
     /** RunId -> all proteins in that run */
     private final Map<Long, List<Protein>> _proteins = new HashMap<>();
+    
+    /** Whether to include fixed modifications in the formatting */
+    private final boolean _highlightFixedMods;
 
     private final static String[] HEX_PADDING = new String[] {
                                                         "",
@@ -67,7 +70,16 @@ public class ModifiedPeptideHtmlMaker
 
     public ModifiedPeptideHtmlMaker()
     {
+        this(true);
+    }
+    
+    /**
+     * @param highlightFixedMods Whether to include fixed modifications in the formatting
+     */
+    public ModifiedPeptideHtmlMaker(boolean highlightFixedMods)
+    {
         _firstIsotopeLabelIdInDocMap = new HashMap<>();
+        _highlightFixedMods = highlightFixedMods;
     }
 
     public Pair<HtmlString, List<List<SequencePart>>> getPrecursorHtml(Precursor precursor, Long runId, TargetedMSSchema schema)
@@ -147,7 +159,7 @@ public class ModifiedPeptideHtmlMaker
 
         if (strModIndices == null)
         {
-            strModIndices = ModificationManager.getStructuralModIndexes(peptideId, runId);
+            strModIndices = ModificationManager.getStructuralModIndexes(peptideId, runId, _highlightFixedMods);
         }
         Set<Integer> isotopeModIndices = null;
         if(isotopeLabelId != null)
