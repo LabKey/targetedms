@@ -567,7 +567,7 @@ public class SkylineDocImporter
             sql.append(TargetedMSManager.getTableInfoGeneralMoleculeChromInfo(), "gmci");
             sql.append(" WHERE gmci.SampleFileId = ? AND RetentionTime IS NOT NULL");
             sql.add(sampleFile.getId());
-            Map<Long, Float> rtValuesMap = new SqlSelector(TargetedMSManager.getSchema(), sql).getValueMap();
+            Map<Long, Float> rtValuesMap = new SqlSelector(TargetedMSManager.getSchema(), sql).getValueMap(Long.class);
 
             for (IrtPeptide irtPeptide : matchedIrts)
             {
