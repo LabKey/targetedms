@@ -17,6 +17,7 @@
                                 <property name="showNextAndPrevious">true</property>
                                 <property name="useParens">true</property>
                                 <property name="exportFormatted">true</property>
+                                <property name="highlightFixed">false</property>
                             </properties>
                         </displayColumnFactory>
                     </column>
