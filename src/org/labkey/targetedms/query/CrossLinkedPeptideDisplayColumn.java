@@ -173,13 +173,13 @@ public class CrossLinkedPeptideDisplayColumn extends DataColumn
             return new CrossLinkedPeptideDisplayColumn(colInfo, (match, sequence, modification) ->
             {
                 String label = match.protein().getLabel();
-                String suffix = getChainAbbreviation(label);
-                return (match.index() + 1) + "-" + (match.index() + getPeptideLength(sequence.getUnmodified(), modification)) + suffix;
+                String prefix = getChainPrefix(label);
+                return prefix + (match.index() + 1) + "-" + (match.index() + getPeptideLength(sequence.getUnmodified(), modification));
             });
         }
     }
 
-    public static @NotNull String getChainAbbreviation(String label)
+    public static @NotNull String getChainPrefix(String label)
     {
         String result = "";
         if (label != null)
@@ -187,15 +187,15 @@ public class CrossLinkedPeptideDisplayColumn extends DataColumn
             label = label.toLowerCase();
             if (label.endsWith("_hc"))
             {
-                result = "HC";
+                result = "H";
             }
             if (label.endsWith("_hcstar"))
             {
-                result = "HC*";
+                result = "*";
             }
             if (label.endsWith("_lc"))
             {
-                result = "LC";
+                result = "L";
             }
         }
         return result;
@@ -221,7 +221,7 @@ public class CrossLinkedPeptideDisplayColumn extends DataColumn
                         {
                             for (int linkIndex : sequence.getLinkIndices())
                             {
-                                bonds.add(Character.toString(sequence.getUnmodified().charAt(linkIndex)) + (match.index() + linkIndex + 1) + getChainAbbreviation(match.protein().getLabel()));
+                                bonds.add(Character.toString(sequence.getUnmodified().charAt(linkIndex)) + (match.index() + linkIndex + 1) + getChainPrefix(match.protein().getLabel()));
                             }
                         }
                         allBonds.add(bonds);
