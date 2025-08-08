@@ -102,6 +102,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.labkey.api.exp.api.ExperimentService.asInteger;
 import static org.labkey.targetedms.TargetedMSManager.getTableInfoTransitionChromInfo;
 
 /**
@@ -1090,7 +1091,7 @@ public class SkylineDocImporter
                 Map<String, Object> iRTScaleRow = new CaseInsensitiveHashMap<>();
                 iRTScaleRow.put("container", _container);
                 Map<String, Object> iRTScaleResult = Table.insert(_user, TargetedMSManager.getTableInfoiRTScale(), iRTScaleRow);
-                iRTScaleId = (int) iRTScaleResult.get("id");
+                iRTScaleId = asInteger(iRTScaleResult.get("id"));
             }
 
             // insert any new iRT Peptides into the database
