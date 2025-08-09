@@ -191,7 +191,7 @@ public class CrossLinkedPeptideDisplayColumn extends DataColumn
             }
             if (label.endsWith("_hcstar"))
             {
-                result = "*";
+                result = "H*";
             }
             if (label.endsWith("_lc"))
             {
