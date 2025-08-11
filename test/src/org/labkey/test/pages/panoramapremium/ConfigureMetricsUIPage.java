@@ -127,10 +127,23 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
 
     public void editMetric(String metric, Map<CustomMetricProperties, String> metricProperties)
     {
+        Window<?> metricWindow = openForEdit(metric);
+        editCustomMetricValues(metricWindow, metricProperties);
+    }
+
+    public void deleteMetric(String metric)
+    {
+        openForEdit(metric);
+        clickButton("Delete", 0);
+        clickButton("Yes");
+        waitForPage();
+    }
+
+    private Window<?> openForEdit(String metric)
+    {
         waitAndClick(Locator.linkWithText(metric));
         waitForElement(Ext4Helper.Locators.window("Edit Metric"));
-        Window<?> metricWindow = new Window.WindowFinder(getDriver()).withTitle("Edit Metric").waitFor();
-        editCustomMetricValues(metricWindow, metricProperties);
+        return new Window.WindowFinder(getDriver()).withTitle("Edit Metric").waitFor();
     }
 
     private void editCustomMetricValues(Window<?> metricWindow, Map<CustomMetricProperties, String> metricProperties)
@@ -186,8 +199,6 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
     public enum CustomMetricProperties
     {
         metricName("Name", false),
-        series1Schema("Series 1 Schema", true),
-        series2Schema("Series 2 Schema", true),
         series1Query("Series 1 Query", true),
         series2Query("Series 2 Query", true),
         series1AxisLabel("Series 1 Axis Label", false),

@@ -504,12 +504,13 @@ public class OutlierGenerator
     public String getMetricLabel(Map<Integer, QCMetricConfiguration> metrics, RawMetricDataSet dataRow)
     {
         QCMetricConfiguration metric = metrics.get(dataRow.getMetricId());
-        return switch (dataRow.getMetricSeriesIndex())
+        String result = switch (dataRow.getMetricSeriesIndex())
                 {
                     case 1 -> metric.getSeries1Label();
                     case 2 -> metric.getSeries2Label();
                     default -> throw new IllegalArgumentException("Unexpected metric series index: " + dataRow.getMetricSeriesIndex());
                 };
+        return result == null ? "Unlabeled" : result;
     }
     /**
      * returns the separated plots data per peptide
