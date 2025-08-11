@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.labkey.api.exp.api.ExperimentService.asInteger;
+
 public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
 {
     public QCMetricConfigurationTable(TargetedMSSchema schema, ContainerFilter cf)
@@ -105,7 +107,7 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
         {
             var insertedRow = super.insertRow(user, container, row);
             TargetedMSManager.get().clearCachedEnabledQCMetrics(container);
-            calculateAndInsertTraceValuesForMetric((int) insertedRow.get("Id"), container, user);
+            calculateAndInsertTraceValuesForMetric(asInteger(insertedRow.get("Id")), container, user);
             return insertedRow;
         }
 
@@ -113,7 +115,7 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
         protected Map<String, Object> updateRow(User user, Container container, Map<String, Object> row, @NotNull Map<String, Object> oldRow, @Nullable Map<Enum, Object> configParameters) throws InvalidKeyException, ValidationException, QueryUpdateServiceException, SQLException
         {
             var updatedRow = super.updateRow(user, container, row, oldRow, configParameters);
-            var metricId = (int) updatedRow.get("Id");
+            int metricId = asInteger(updatedRow.get("Id"));
             deleteTraceValueForMetric(metricId, container);
             TargetedMSManager.get().clearCachedEnabledQCMetrics(container);
             calculateAndInsertTraceValuesForMetric(metricId, container, user);
@@ -124,29 +126,29 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
         protected Map<String, Object> deleteRow(User user, Container container, Map<String, Object> oldRow) throws InvalidKeyException, QueryUpdateServiceException, SQLException
         {
             TargetedMSManager.get().clearCachedEnabledQCMetrics(container);
-            deleteTraceValueForMetric((Integer) oldRow.get("id"), container);
+            deleteTraceValueForMetric(asInteger(oldRow.get("id")), container);
             return super.deleteRow(user, container, oldRow);
         }
 
         private void deleteTraceValueForMetric(int metricId, Container container)
         {
             var sql = new SQLFragment(" DELETE FROM " + TargetedMSManager.getTableQCTraceMetricValues() + " WHERE metric IN ("+
-                    " SELECT qc.Id FROM " + TargetedMSManager.getTableInfoQCMetricConfiguration() + " qc" +
-                    " INNER JOIN " + TargetedMSManager.getTableInfoSampleFileChromInfo() + " sfi ON sfi.TextId = qc.TraceName" +
-                    " INNER JOIN " + TargetedMSManager.getTableInfoSampleFile() + " sf ON sf.id = sfi.SampleFileId" +
-                    " INNER JOIN " + TargetedMSManager.getTableInfoReplicate() + " rep ON rep.Id = sf.ReplicateId" +
-                    " INNER JOIN " + TargetedMSManager.getTableInfoRuns() + " r ON rep.RunId = r.Id" +
-                    " WHERE qc.Id = ? AND r.container = ? ) ").add(metricId).add(container.getId());
+                " SELECT qc.Id FROM " + TargetedMSManager.getTableInfoQCMetricConfiguration() + " qc" +
+                " INNER JOIN " + TargetedMSManager.getTableInfoSampleFileChromInfo() + " sfi ON sfi.TextId = qc.TraceName" +
+                " INNER JOIN " + TargetedMSManager.getTableInfoSampleFile() + " sf ON sf.id = sfi.SampleFileId" +
+                " INNER JOIN " + TargetedMSManager.getTableInfoReplicate() + " rep ON rep.Id = sf.ReplicateId" +
+                " INNER JOIN " + TargetedMSManager.getTableInfoRuns() + " r ON rep.RunId = r.Id" +
+                " WHERE qc.Id = ? AND r.container = ? ) ").add(metricId).add(container.getId());
             new SqlExecutor(TargetedMSManager.getSchema()).execute(sql);
         }
 
         private void calculateAndInsertTraceValuesForMetric(int metricId, Container container, User user)
         {
             var qcMetricConfigurations = TargetedMSManager
-                    .getEnabledQCMetricConfigurations(_queryTable.getUserSchema())
-                    .stream()
-                    .filter(qcMetricConfiguration -> qcMetricConfiguration.getId() == metricId)
-                    .collect(Collectors.toList());
+                .getEnabledQCMetricConfigurations(_queryTable.getUserSchema())
+                .stream()
+                .filter(qcMetricConfiguration -> qcMetricConfiguration.getId() == metricId)
+                .collect(Collectors.toList());
             var runsInContainer = TargetedMSManager.getRunsInContainer(container);
 
             for (TargetedMSRun run : runsInContainer)
@@ -155,6 +157,5 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
                 qcTraceMetricValues.forEach(qcTraceMetricValue -> Table.insert(user, TargetedMSManager.getTableQCTraceMetricValues(), qcTraceMetricValue));
             }
         }
-
     }
 }
