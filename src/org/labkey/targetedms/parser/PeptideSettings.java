@@ -493,7 +493,7 @@ public class PeptideSettings
 
         public boolean isModExplicit()
         {
-            return _explicitMod == null ? false : _explicitMod;
+            return _explicitMod != null && _explicitMod;
         }
 
         public void setExplicitMod(Boolean explicitMod)

@@ -267,12 +267,14 @@ public class ModificationManager
     /**
      * @return    PeptideId -> (Set of indexes where the peptide has structural modifications)
      */
-    private static Map<Long, Set<Pair<Integer, Integer>>> getPeptideStructuralModIndexMap(long runId)
+    private static Map<Long, Set<Pair<Integer, Integer>>> getPeptideStructuralModIndexMap(long runId, boolean includeFixedMods)
     {
         SQLFragment sql = new SQLFragment();
         sql.append(" SELECT mod.PeptideId AS peptideId, mod.IndexAA AS indexAA, mod.PeptideIndex AS peptideIndex");
         sql.append(" FROM ");
         sql.append(TargetedMSManager.getTableInfoPeptideStructuralModification(), "mod");
+        sql.append(" , ");
+        sql.append(TargetedMSManager.getTableInfoRunStructuralModification(), "runmod");
         sql.append(" , ");
         sql.append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm");
         sql.append(" , ");
@@ -287,6 +289,15 @@ public class ModificationManager
         sql.append(" gm.peptideGroupId = pg.id ");
         sql.append(" AND ");
         sql.append(" mod.peptideId = gm.id ");
+        sql.append(" AND ");
+        sql.append(" runmod.StructuralModId = mod.StructuralModId");
+        sql.append(" AND ");
+        sql.append(" runmod.RunId = run.Id");
+        if (!includeFixedMods)
+        {
+            sql.append(" AND (runmod.variable = ? OR runmod.ExplicitMod IS NOT NULL)");
+            sql.add(true);
+        }
 
         final Map<Long, Set<Pair<Integer, Integer>>> peptideModIndexMap = new LongHashMap<>();
 
@@ -344,17 +355,25 @@ public class ModificationManager
         return Collections.unmodifiableMap(peptideModIndexMap);
     }
 
-    /** Pair is the index of the cross-linked peptide (or 0 for non-cross-linked peptides) and the amino acid index */
-    public static Set<Pair<Integer, Integer>> getStructuralModIndexes(long peptideId, Long runId)
+    /**
+     * Pair is the index of the cross-linked peptide (or 0 for non-cross-linked peptides) and the amino acid index
+     * @param includeFixedMods Whether to include fixed modifications
+     * @return Set of pairs of peptide index and amino acid index
+     */
+    public static Set<Pair<Integer, Integer>> getStructuralModIndexes(long peptideId, Long runId, boolean includeFixedMods)
     {
-        if(runId == null)
+        if (runId == null)
         {
+            if (!includeFixedMods)
+            {
+                throw new UnsupportedOperationException();
+            }
             Map<Pair<Integer, Integer>, Double> modMap = getPeptideStructuralModsMap(peptideId);
             return new HashSet<>(modMap.keySet());
         }
         else
         {
-            Map<Long, Set<Pair<Integer, Integer>>> modIndexesForRun = PEPTIDE_STR_MOD_INDEXES.get(String.valueOf(runId), null, (runId1, argument) -> getPeptideStructuralModIndexMap(Long.valueOf(runId1)));
+            Map<Long, Set<Pair<Integer, Integer>>> modIndexesForRun = PEPTIDE_STR_MOD_INDEXES.get(runId + "-" + includeFixedMods, null, (runId1, argument) -> getPeptideStructuralModIndexMap(runId, includeFixedMods));
             return modIndexesForRun.getOrDefault(peptideId, Collections.emptySet());
         }
     }

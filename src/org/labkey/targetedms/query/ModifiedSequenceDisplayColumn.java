@@ -66,9 +66,14 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
 
     public ModifiedSequenceDisplayColumn(ColumnInfo colInfo)
     {
+        this(colInfo, true);
+    }
+
+    public ModifiedSequenceDisplayColumn(ColumnInfo colInfo, boolean highlightFixed)
+    {
         super(colInfo);
 
-        _htmlMaker = new ModifiedPeptideHtmlMaker();
+        _htmlMaker = new ModifiedPeptideHtmlMaker(highlightFixed);
     }
 
     ModifiedPeptideHtmlMaker getHtmlMaker()
@@ -148,6 +153,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
         private boolean _exportStrippedHtml = false;
         private boolean _showNextAndPrevious = false;
         private boolean _useParens = false;
+        private boolean _highlightFixed = true;
         /** Optionally, the name of the column that identifies the animo acid and index within the protein to highlight as modified */
         private String _modificationSite;
 
@@ -162,6 +168,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
             _useParens = getBooleanProperty(map, "useParens", _useParens);
             _exportStrippedHtml = getBooleanProperty(map, "exportFormatted", _exportStrippedHtml);
             _modificationSite = map == null || map.get("modificationSite").isEmpty() ? null : map.get("modificationSite").iterator().next();
+            _highlightFixed = getBooleanProperty(map, "highlightFixed", _highlightFixed);
         }
 
         private boolean getBooleanProperty(MultiValuedMap<String, String> map, String propertyName, boolean defaultValue)
@@ -177,7 +184,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
         @Override
         public DisplayColumn createRenderer(ColumnInfo colInfo)
         {
-            return new ModifiedSequenceDisplayColumn.PeptideCol(colInfo, _showNextAndPrevious, _useParens, _exportStrippedHtml, _modificationSite);
+            return new ModifiedSequenceDisplayColumn.PeptideCol(colInfo, _showNextAndPrevious, _useParens, _exportStrippedHtml, _highlightFixed, _modificationSite);
         }
     }
 
@@ -191,12 +198,12 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
 
         public PeptideCol(ColumnInfo colInfo)
         {
-            this(colInfo, false, false, false, null);
+            this(colInfo, false, false, false, true, null);
         }
 
-        public PeptideCol(ColumnInfo colInfo, boolean showNextAndPrevious, boolean useParens, boolean exportStrippedHtml, String modificationSite)
+        public PeptideCol(ColumnInfo colInfo, boolean showNextAndPrevious, boolean useParens, boolean exportStrippedHtml, boolean highlightFixed, String modificationSite)
         {
-            super(colInfo);
+            super(colInfo, highlightFixed);
             _showNextAndPrevious = showNextAndPrevious;
             _useParens = useParens;
             _modificationSite = modificationSite;

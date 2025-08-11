@@ -54,21 +54,27 @@ public class TargetedMSUpgradeCode implements UpgradeCode
     @SuppressWarnings({"UnusedDeclaration"})
     public void populateDefaultAnnotationTypes(final ModuleContext moduleContext)
     {
-        insertAnnotationType("Instrumentation Change", "FF0000", moduleContext.getUpgradeUser());
-        insertAnnotationType("Reagent Change", "00FF00", moduleContext.getUpgradeUser());
-        insertAnnotationType("Technician Change", "0000FF", moduleContext.getUpgradeUser());
+        if (ModuleLoader.getInstance().shouldInsertData())
+        {
+            insertAnnotationType("Instrumentation Change", "FF0000", moduleContext.getUpgradeUser());
+            insertAnnotationType("Reagent Change", "00FF00", moduleContext.getUpgradeUser());
+            insertAnnotationType("Technician Change", "0000FF", moduleContext.getUpgradeUser());
 
-        // Enable the module in the /Shared container so that it can be resolved
-        Set<Module> activeModules = new HashSet<>(ContainerManager.getSharedContainer().getActiveModules());
-        activeModules.add(ModuleLoader.getInstance().getModule(TargetedMSModule.class));
-        ContainerManager.getSharedContainer().setActiveModules(activeModules);
+            // Enable the module in the /Shared container so that it can be resolved
+            Set<Module> activeModules = new HashSet<>(ContainerManager.getSharedContainer().getActiveModules());
+            activeModules.add(ModuleLoader.getInstance().getModule(TargetedMSModule.class));
+            ContainerManager.getSharedContainer().setActiveModules(activeModules);
+        }
     }
 
     // initialization code called at 0.000-24.000 to add a new type. Can eventually be consolidated into the bootstrap insert above
     @SuppressWarnings({"UnusedDeclaration"})
     public void addInstrumentDowntimeAnnotationType(final ModuleContext moduleContext)
     {
-        insertAnnotationType(QCAnnotationTypeTable.INSTRUMENT_DOWNTIME, "CCCC00", moduleContext.getUpgradeUser());
+        if (ModuleLoader.getInstance().shouldInsertData())
+        {
+            insertAnnotationType(QCAnnotationTypeTable.INSTRUMENT_DOWNTIME, "CCCC00", moduleContext.getUpgradeUser());
+        }
     }
 
     private void insertAnnotationType(String name, String color, User user)
