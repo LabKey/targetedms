@@ -73,6 +73,7 @@ import org.labkey.api.attachments.DocumentConversionService;
 import org.labkey.api.attachments.SvgSource;
 import org.labkey.api.audit.AuditLogService;
 import org.labkey.api.audit.provider.SiteSettingsAuditProvider;
+import org.labkey.api.collections.LongArrayList;
 import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
@@ -6312,8 +6313,8 @@ public class TargetedMSController extends SpringActionController
             if(!StringUtils.isBlank(selectedInputValues))
             {
                 String[] vals = selectedInputValues.split(",");
-                _selectedIds = new ArrayList<>(vals.length);
-                _deselectedIds = new ArrayList<>(vals.length);
+                _selectedIds = new LongArrayList(vals.length);
+                _deselectedIds = new LongArrayList(vals.length);
 
                 for(String value: vals)
                 {

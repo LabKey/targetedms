@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.collections.CaseInsensitiveHashMap;
+import org.labkey.api.collections.LongArrayList;
 import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
@@ -693,7 +694,7 @@ public class SkylineDocImporter
         _log.debug("Found data for the following old sample files in the QC folder:");
         replicateInfo.oldSamplesToDelete.keySet().forEach(key -> _log.debug(String.format("  %s", key)));
 
-        List<Long> existingSamples = new ArrayList<>(total);
+        List<Long> existingSamples = new LongArrayList(total);
         replicateInfo.oldSamplesToDelete.forEach((key, value) -> value.forEach(existingSample -> existingSamples.add(existingSample.getId())));
 
         List<String> srcFiles = TargetedMSManager.deleteSampleFilesAndDependencies(existingSamples);
