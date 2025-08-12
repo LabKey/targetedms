@@ -204,7 +204,6 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         series1AxisLabel("Series 1 Axis Label", false),
         series2AxisLabel("Series 2 Axis Label", false),
         metricType("Metric Type", true),
-        enabledSchema("Enabled Schema", true),
         enabledQuery("Enabled Query", true);
 
         private final String formLabel;
