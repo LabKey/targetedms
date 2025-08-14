@@ -25,6 +25,7 @@ import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.labkey.api.collections.IntHashMap;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.DisplayColumn;
 import org.labkey.api.data.DisplayColumnFactory;
@@ -419,7 +420,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
             ModifiedSequenceDisplayColumn.this.initialize(ctx);
 
             StringBuilder builder = new StringBuilder();
-            Map<Integer, Font> highlights = new HashMap<>();
+            Map<Integer, Font> highlights = new IntHashMap<>();
             int i = 0;
             String separator = "";
             for (List<ModifiedPeptideHtmlMaker.SequencePart> parts : _parsedParts)

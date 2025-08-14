@@ -346,7 +346,7 @@ public class TargetedMSServiceImpl implements TargetedMSService
     }
 
     @Override
-    public Integer importSkylineDocument(ViewBackgroundInfo info, Path skylinePath) throws XarFormatException, PipelineValidationException
+    public Long importSkylineDocument(ViewBackgroundInfo info, Path skylinePath) throws XarFormatException, PipelineValidationException
     {
         return TargetedMSManager.addRunToQueue(info, skylinePath);
     }

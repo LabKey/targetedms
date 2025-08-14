@@ -33,8 +33,8 @@ public interface ITargetedMSRun
     String getDescription();
     Date getCreated();
     long getId();
-    Integer getDataId();
-    Integer getSkydDataId();
+    Long getDataId();
+    Long getSkydDataId();
     String getSoftwareVersion();
     RunRepresentativeDataState getRepresentativeDataState();
 }

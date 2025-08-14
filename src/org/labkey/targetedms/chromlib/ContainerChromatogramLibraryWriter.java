@@ -16,6 +16,7 @@
 package org.labkey.targetedms.chromlib;
 
 import org.labkey.api.collections.CaseInsensitiveHashSet;
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.TableSelector;
@@ -496,7 +497,7 @@ public class ContainerChromatogramLibraryWriter
         // Get the isotope modifications for the peptide.
         List<Peptide.IsotopeModification> pepIsotopeMods = ModificationManager.getPeptideIsotopelModifications(peptide.getId());
         // IsotopeLabelId(Panorama) -> List<Peptide.IsotopeModification>
-        Map<Long, List<Peptide.IsotopeModification>> precIsotopeModMap = new HashMap<>();
+        Map<Long, List<Peptide.IsotopeModification>> precIsotopeModMap = new LongHashMap<>();
         for(Peptide.IsotopeModification isotopeMod: pepIsotopeMods)
         {
             Long isotopeLabelId = _isotopeModificationAndLabelMap.get(isotopeMod.getIsotopeModId());

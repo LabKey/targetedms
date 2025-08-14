@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 import org.labkey.api.collections.CaseInsensitiveHashMap;
 import org.labkey.api.collections.CaseInsensitiveHashSet;
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.AJAXDetailsDisplayColumn;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.Container;
@@ -879,16 +880,16 @@ public class TargetedMSSchema extends UserSchema
                 versionsCol.setDisplayColumnFactory(colInfo -> new DataColumn(colInfo) {
 
                     /** exp.ExperimentRun.RowId -> number of associated runs */
-                    private final Map<Integer, Integer> _counts = new HashMap<>();
+                    private final Map<Long, Integer> _counts = new LongHashMap<>();
 
                     @Override
                     public Object getValue(RenderContext ctx)
                     {
-                        Integer expRunId = ctx.get(getExpRunIdFieldKey(), Integer.class);
+                        Long expRunId = ctx.get(getExpRunIdFieldKey(), Long.class);
 
                         return expRunId == null ? null : _counts.computeIfAbsent(expRunId, x ->
                         {
-                            Set<Integer> rowIds = Collections.singleton(x);
+                            Set<Long> rowIds = Collections.singleton(x);
                             return TargetedMSManager.getLinkedVersions(TargetedMSSchema.this, rowIds, rowIds).size();
                         });
                     }

@@ -130,7 +130,7 @@ public interface TargetedMSService
     List<TableCustomizer> getModificationSearchResultCustomizers();
 
     /** @return rowId for pipeline job that will perform the import asynchronously */
-    Integer importSkylineDocument(ViewBackgroundInfo info, Path skylinePath) throws XarFormatException, PipelineValidationException;
+    Long importSkylineDocument(ViewBackgroundInfo info, Path skylinePath) throws XarFormatException, PipelineValidationException;
 
     /**
      * @param sampleFiles list of sample files for which we should do a path lookup on the server

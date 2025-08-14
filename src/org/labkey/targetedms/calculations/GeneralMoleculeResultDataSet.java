@@ -14,6 +14,7 @@
  */
 package org.labkey.targetedms.calculations;
 
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.TableSelector;
@@ -52,7 +53,7 @@ public class GeneralMoleculeResultDataSet<TransitionType extends GeneralTransiti
 {
     private final MoleculeType _generalMolecule;
     private final ReplicateDataSet _replicateSet;
-    private final Map<Long, List<ChromInfoRecord>> _chromInfoRecordsByReplicateId = new HashMap<>();
+    private final Map<Long, List<ChromInfoRecord>> _chromInfoRecordsByReplicateId = new LongHashMap<>();
 
     public GeneralMoleculeResultDataSet(User user, Container container, ReplicateDataSet replicateSet, MoleculeType peptide)
     {

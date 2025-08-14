@@ -62,7 +62,7 @@ public class TargetedMSImportTask extends PipelineJob.Task<TargetedMSImportTask.
                                                                  job.getLocalDirectory(), job.getPipeRoot());
             TargetedMSRun run = importer.importRun(job.getRunInfo(), job);
 
-            Integer jobId = PipelineService.get().getJobId(getJob().getUser(), getJob().getContainer(), getJob().getJobGUID());
+            Long jobId = PipelineService.get().getJobId(getJob().getUser(), getJob().getContainer(), getJob().getJobGUID());
             TargetedMSManager.ensureWrapped(run, job.getUser(), jobId);
             TargetedMSService.get().getSkylineDocumentImportListener().forEach(listener -> listener.onDocumentImport(job.getContainer(), job.getUser(), run));
             transaction.commit();

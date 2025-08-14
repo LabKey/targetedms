@@ -27,6 +27,7 @@ import org.apache.batik.svggen.SVGGeneratorContext;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.batik.svggen.SVGGraphics2DIOException;
 import org.apache.batik.svggen.SVGIDGenerator;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -72,6 +73,8 @@ import org.labkey.api.attachments.DocumentConversionService;
 import org.labkey.api.attachments.SvgSource;
 import org.labkey.api.audit.AuditLogService;
 import org.labkey.api.audit.provider.SiteSettingsAuditProvider;
+import org.labkey.api.collections.LongArrayList;
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
@@ -313,6 +316,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static org.labkey.api.exp.api.ExperimentService.asLong;
 import static org.labkey.api.targetedms.TargetedMSService.FOLDER_TYPE_PROP_NAME;
 import static org.labkey.api.targetedms.TargetedMSService.FolderType;
 import static org.labkey.api.targetedms.TargetedMSService.MODULE_NAME;
@@ -4017,7 +4021,7 @@ public class TargetedMSController extends SpringActionController
                 ViewBackgroundInfo info = getViewBackgroundInfo();
                 try
                 {
-                    Integer jobId = TargetedMSManager.addRunToQueue(info, path);
+                    Long jobId = TargetedMSManager.addRunToQueue(info, path);
                     Map<String, Object> detailsMap = new HashMap<>(4);
                     detailsMap.put("Path", form.getPath());
                     detailsMap.put("File", FileUtil.getFileName(path));
@@ -4060,7 +4064,7 @@ public class TargetedMSController extends SpringActionController
             throw new NotFoundException("Document is not fully loaded and initialized");
         }
 
-        Set<Integer> ids = Collections.singleton(expRun.getRowId());
+        Set<Long> ids = Collections.singleton(expRun.getRowId());
 
         RunDetailsBean bean = new RunDetailsBean();
         bean.setForm(form);
@@ -6309,8 +6313,8 @@ public class TargetedMSController extends SpringActionController
             if(!StringUtils.isBlank(selectedInputValues))
             {
                 String[] vals = selectedInputValues.split(",");
-                _selectedIds = new ArrayList<>(vals.length);
-                _deselectedIds = new ArrayList<>(vals.length);
+                _selectedIds = new LongArrayList(vals.length);
+                _deselectedIds = new LongArrayList(vals.length);
 
                 for(String value: vals)
                 {
@@ -7600,10 +7604,10 @@ public class TargetedMSController extends SpringActionController
         @Override
         public Object execute(SelectedRowIdsForm form, BindException errors)
         {
-            Collection<Integer> linkedRowIds = new ArrayList<>();
+            Collection<Long> linkedRowIds = new ArrayList<>();
 
             //get selectedRowIds params
-            List<Integer> selectedRowIds = form.getSelectedRowIds();
+            List<Long> selectedRowIds = form.getSelectedRowIds();
             if (form.isIncludeSelected())
                 linkedRowIds.addAll(selectedRowIds);
 
@@ -7618,15 +7622,15 @@ public class TargetedMSController extends SpringActionController
 
     public static class SelectedRowIdsForm
     {
-        List<Integer> selectedRowIds;
+        List<Long> selectedRowIds;
         boolean includeSelected;
 
-        public List<Integer> getSelectedRowIds()
+        public List<Long> getSelectedRowIds()
         {
             return selectedRowIds;
         }
 
-        public void setSelectedRowIds(List<Integer> selectedRowIds)
+        public void setSelectedRowIds(List<Long> selectedRowIds)
         {
             this.selectedRowIds = selectedRowIds;
         }
@@ -7715,7 +7719,7 @@ public class TargetedMSController extends SpringActionController
         public void validateForm(ChainedVersions form, Errors errors)
         {
             // verify that the run and replacedByRun rowIds are valid and match an existing run
-            for (Map.Entry<Integer, Integer> entry : form.getRuns().entrySet())
+            for (var entry : form.getRuns().entrySet())
             {
                 if (entry.getKey() == null)
                     errors.reject(ERROR_MSG, "No run found for id " + entry.getKey());
@@ -7737,10 +7741,10 @@ public class TargetedMSController extends SpringActionController
         {
             DbScope scope = ExperimentService.get().getSchema().getScope();
 
-            Set<Integer> ids = new HashSet<>(form.getRuns().keySet());
+            Set<Long> ids = new HashSet<>(form.getRuns().keySet());
             ids.addAll(form.getRuns().values());
 
-            Collection<Integer> allLinkedIds = TargetedMSManager.getLinkedVersions(getUser(), getContainer(), ids, ids);
+            var allLinkedIds = TargetedMSManager.getLinkedVersions(getUser(), getContainer(), ids, ids);
 
             try (DbScope.Transaction transaction = scope.ensureTransaction())
             {
@@ -7762,7 +7766,7 @@ public class TargetedMSController extends SpringActionController
                     }
                 });
 
-                for (Map.Entry<Integer, Integer> entry : form._runs.entrySet())
+                for (var entry : form._runs.entrySet())
                 {
                     ExpRun run = ExperimentService.get().getExpRun(entry.getKey());
                     ExpRun replacedByRun = ExperimentService.get().getExpRun(entry.getValue());
@@ -7780,10 +7784,10 @@ public class TargetedMSController extends SpringActionController
             return new ApiSimpleResponse("success", true);
         }
 
-        private List<Integer> getLinkedListOfChainedDocuments(Set<Map.Entry<Integer, Integer>> entries)
+        private List<Long> getLinkedListOfChainedDocuments(Set<Map.Entry<Integer, Integer>> entries)
         {
             int index = 0;
-            List<Integer> chainedDocumentsList = new LinkedList<>();
+            List<Long> chainedDocumentsList = new LinkedList<>();
 
 
             for (Map.Entry<Integer, Integer> entry : entries)
@@ -7804,11 +7808,11 @@ public class TargetedMSController extends SpringActionController
             return chainedDocumentsList;
         }
 
-        private void addToDocumentChainAtCorrectIndex(ExpRun run, ExpRun replacedByRun, List<Integer> list)
+        private void addToDocumentChainAtCorrectIndex(ExpRun run, ExpRun replacedByRun, List<Long> list)
         {
             for (int i = 0; i < list.size(); i++)
             {
-                final Integer rowid = list.get(i);
+                final var rowid = list.get(i);
                 if (rowid == run.getRowId())
                 {
                     list.add(i + 1, replacedByRun.getRowId());
@@ -7826,7 +7830,7 @@ public class TargetedMSController extends SpringActionController
 
     public static class ChainedVersions implements ApiJsonForm
     {
-        private final Map<Integer, Integer> _runs = new HashMap<>();
+        private final Map<Long, Long> _runs = new LongHashMap<>();
 
         @Override
         public void bindJson(JSONObject json)
@@ -7834,13 +7838,13 @@ public class TargetedMSController extends SpringActionController
             List<Map<String, Object>> list = JsonUtil.toMapList(json.getJSONArray("runs"));
             for (Map<String, Object> entry : list)
             {
-                Integer rowId = (Integer) entry.get("RowId");
-                Integer replacedByRunId = (Integer) entry.get("ReplacedByRun");
+                Long rowId = MapUtils.getLong(entry, "RowId");
+                Long replacedByRunId = MapUtils.getLong(entry, "ReplacedByRun");
                 _runs.put(rowId, replacedByRunId);
             }
         }
 
-        public Map<Integer, Integer> getRuns()
+        public Map<Long, Long> getRuns()
         {
             return _runs;
         }

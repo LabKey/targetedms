@@ -188,10 +188,10 @@ public class MsDataSourceUtil
         filter.addCondition(FieldKey.fromParts("datafileurl"), encodedName, CompareType.CONTAINS);
 
         // Get the rowId and name of matching rows.
-        Map<Integer, String> expDatas = new TableSelector(expDataTInfo,
-                expDataTInfo.getColumns("RowId", "DataFileUrl"), filter, null).getValueMap();
+        Map<Long, String> expDatas = new TableSelector(expDataTInfo,
+                expDataTInfo.getColumns("RowId", "DataFileUrl"), filter, null).getValueMap(Long.class);
 
-        List<Integer> expDataIds = new ArrayList<>();
+        List<Long> expDataIds = new ArrayList<>();
         expDatas.entrySet().forEach(e -> e.setValue(org.labkey.api.util.Path.parse(e.getValue()).getName())); // Replace path with file name
         // Look for the file and file.zip (e.g. sample_1.raw and sample_1.raw.zip)
         expDatas.entrySet().stream()
@@ -415,7 +415,7 @@ public class MsDataSourceUtil
             run.setContainer(_container);
             run.setFileName(SKY_FILE_NAME);
             Table.insert(_user, TargetedMSManager.getTableInfoRuns(), run);
-            assertNotEquals("Id for saved run should not be 0", 0, run.getId());
+            assertNotEquals("Id for saved run should not be 0", 0L, run.getId());
             return run;
         }
 

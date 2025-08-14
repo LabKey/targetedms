@@ -17,6 +17,7 @@ package org.labkey.targetedms.query;
 
 
 import org.apache.commons.lang3.StringUtils;
+import org.labkey.api.collections.LongArrayList;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SimpleFilter;
@@ -174,7 +175,7 @@ public class PeptideGroupManager
     {
         if(peptideGroupIds == null || peptideGroupIds.length == 0)
             return;
-        List<Long> peptideGroupIdList = new ArrayList<>(peptideGroupIds.length);
+        List<Long> peptideGroupIdList = new LongArrayList(peptideGroupIds.length);
         for(int i = 0; i < peptideGroupIds.length; i++)
         {
             peptideGroupIdList.add(peptideGroupIds[i]);

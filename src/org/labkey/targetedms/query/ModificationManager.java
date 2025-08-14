@@ -17,6 +17,8 @@ package org.labkey.targetedms.query;
 
 import org.labkey.api.cache.Cache;
 import org.labkey.api.cache.CacheManager;
+import org.labkey.api.collections.IntHashMap;
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.Selector;
 import org.labkey.api.data.SimpleFilter;
@@ -99,7 +101,7 @@ public class ModificationManager
      */
     public static Map<Integer, Double> getPeptideIsotopeModsMap(long peptideId, long isotopeLabelId)
     {
-        final Map<Integer, Double> isotopeModIndexMassDiff = new HashMap<>();
+        final Map<Integer, Double> isotopeModIndexMassDiff = new IntHashMap<>();
         String sql = "SELECT pm.IndexAa, pm.MassDiff "+
                      "FROM "+
                      TargetedMSManager.getTableInfoPeptideIsotopeModification()+" AS pm, "+
@@ -297,7 +299,7 @@ public class ModificationManager
             sql.add(true);
         }
 
-        final Map<Long, Set<Pair<Integer, Integer>>> peptideModIndexMap = new HashMap<>();
+        final Map<Long, Set<Pair<Integer, Integer>>> peptideModIndexMap = new LongHashMap<>();
 
         new SqlSelector(getSchema(), sql).forEach(rs -> {
             long peptideId = rs.getLong("peptideId");
@@ -308,7 +310,7 @@ public class ModificationManager
             modIndexes.add(Pair.of(peptideIndex, indexAA));
         });
 
-        Map<Long, Set<Pair<Integer, Integer>>> immutableMap = new HashMap<>();
+        Map<Long, Set<Pair<Integer, Integer>>> immutableMap = new LongHashMap<>();
         peptideModIndexMap.forEach((k, v) -> immutableMap.put(k, Collections.unmodifiableSet(v)));
 
         return Collections.unmodifiableMap(immutableMap);

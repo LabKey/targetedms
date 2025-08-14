@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class PanoramaPremiumController extends SpringActionController
 {
@@ -54,7 +53,7 @@ public class PanoramaPremiumController extends SpringActionController
         public Object execute(QueryForm queryForm, BindException errors) throws Exception
         {
             //get selected rows
-            Set<Integer> selectedRowsKeys = DataRegionSelection.getSelectedIntegers(queryForm.getViewContext(),true);
+            Set<Long> selectedRowsKeys = DataRegionSelection.getSelectedIntegers(queryForm.getViewContext(),true);
 
             UserSchema us = QueryService.get().getUserSchema(getUser(), getContainer(), "targetedms");
             TableInfo excludedPrecursorsTableInfo = us.getTable("ExcludedPrecursors");
@@ -84,7 +83,7 @@ public class PanoramaPremiumController extends SpringActionController
         }
     }
 
-    public List<Map<String, Object>> getPrecursorsToExcludeOrInclude(Set<Integer> selectedRowsKeys, String query, boolean isExcluding, boolean isIncluding)
+    public List<Map<String, Object>> getPrecursorsToExcludeOrInclude(Set<Long> selectedRowsKeys, String query, boolean isExcluding, boolean isIncluding)
     {
         final boolean isPeptide = query.equalsIgnoreCase("QCGroupingPrecursorPeptides");
         final boolean isMolecule = query.equalsIgnoreCase("QCGroupingPrecursorMolecules");
@@ -163,7 +162,7 @@ public class PanoramaPremiumController extends SpringActionController
             BatchValidationException batchValidationErrors = new BatchValidationException();
 
             //get selected rows
-            Set<Integer> selectedRowsKeys = DataRegionSelection.getSelectedIntegers(queryForm.getViewContext(), true);
+            Set<Long> selectedRowsKeys = DataRegionSelection.getSelectedIntegers(queryForm.getViewContext(), true);
 
             //get selected precursors that are not already excluded (i.e. not in targetedms.excludedPrecursors table)
             List<Map<String, Object>> precursorsToExclude = getPrecursorsToExcludeOrInclude(selectedRowsKeys, queryForm.getQueryName(), true, false);

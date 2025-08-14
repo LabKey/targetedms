@@ -1,6 +1,7 @@
 package org.labkey.targetedms.query;
 
 import org.apache.commons.collections4.MultiValuedMap;
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DisplayColumn;
@@ -209,7 +210,7 @@ public class PTMPercentsGroupedCustomizer extends PTMPercentsCustomizer
     /** Look up proteins on demand by peptideGroupId, caching them for reuse */
     public static class PeptideGroupIdProteinGetter implements Function<Long, Protein>
     {
-        private final Map<Long, Protein> _proteins = new HashMap<>();
+        private final Map<Long, Protein> _proteins = new LongHashMap<>();
         @Override
         public Protein apply(Long peptideGroupId)
         {

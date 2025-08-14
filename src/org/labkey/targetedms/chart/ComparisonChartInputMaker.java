@@ -16,6 +16,7 @@
 package org.labkey.targetedms.chart;
 
 import org.apache.commons.lang3.StringUtils;
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.Container;
 import org.labkey.api.security.User;
 import org.labkey.targetedms.TargetedMSSchema;
@@ -208,7 +209,7 @@ public class ComparisonChartInputMaker
     private List<PrecursorChromInfoLitePlus> filterInputList()
     {
         List<SampleFile> sampleFileList = ReplicateManager.getSampleFilesForRun(_runId);
-        Map<Long, Long> sampleFileReplicateMap = new HashMap<>();
+        Map<Long, Long> sampleFileReplicateMap = new LongHashMap<>();
         for(SampleFile file: sampleFileList)
         {
             sampleFileReplicateMap.put(file.getId(), file.getReplicateId());
@@ -237,10 +238,10 @@ public class ComparisonChartInputMaker
 
     private Map<Long, Replicate> getSampleFileReplicateMap()
     {
-        Map<Long, Replicate> sampleFileReplicateMap = new HashMap<>();
+        Map<Long, Replicate> sampleFileReplicateMap = new LongHashMap<>();
         List<SampleFile> sampleFiles = ReplicateManager.getSampleFilesForRun(_runId);
         List<Replicate> replicates = ReplicateManager.getReplicatesForRun(_runId);
-        Map<Long, Replicate> replicateMap = new HashMap<>();
+        Map<Long, Replicate> replicateMap = new LongHashMap<>();
         for(Replicate replicate: replicates)
         {
             replicateMap.put(replicate.getId(), replicate);
@@ -254,11 +255,11 @@ public class ComparisonChartInputMaker
 
     private Map<Long, String> getSampleAnnotationMap()
     {
-        Map<Long, String> sampleFileAnnotMap = new HashMap<>();
+        Map<Long, String> sampleFileAnnotMap = new LongHashMap<>();
         if(_groupByAnnotationName != null)
         {
             List<ReplicateAnnotation> replicateAnnotationList = ReplicateManager.getReplicateAnnotationsForRun(_runId);
-            Map<Long, String> replicateAnnotationMap = new HashMap<>();
+            Map<Long, String> replicateAnnotationMap = new LongHashMap<>();
             for(ReplicateAnnotation annot: replicateAnnotationList)
             {
                 if(!annot.getName().equals(_groupByAnnotationName))

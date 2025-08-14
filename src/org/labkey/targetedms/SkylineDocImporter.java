@@ -23,6 +23,8 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.collections.CaseInsensitiveHashMap;
+import org.labkey.api.collections.LongArrayList;
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DbScope;
@@ -101,6 +103,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.labkey.api.exp.api.ExperimentService.asInteger;
 import static org.labkey.targetedms.TargetedMSManager.getTableInfoTransitionChromInfo;
 
 /**
@@ -566,7 +569,7 @@ public class SkylineDocImporter
             sql.append(TargetedMSManager.getTableInfoGeneralMoleculeChromInfo(), "gmci");
             sql.append(" WHERE gmci.SampleFileId = ? AND RetentionTime IS NOT NULL");
             sql.add(sampleFile.getId());
-            Map<Long, Float> rtValuesMap = new SqlSelector(TargetedMSManager.getSchema(), sql).getValueMap();
+            Map<Long, Float> rtValuesMap = new SqlSelector(TargetedMSManager.getSchema(), sql).getValueMap(Long.class);
 
             for (IrtPeptide irtPeptide : matchedIrts)
             {
@@ -691,7 +694,7 @@ public class SkylineDocImporter
         _log.debug("Found data for the following old sample files in the QC folder:");
         replicateInfo.oldSamplesToDelete.keySet().forEach(key -> _log.debug(String.format("  %s", key)));
 
-        List<Long> existingSamples = new ArrayList<>(total);
+        List<Long> existingSamples = new LongArrayList(total);
         replicateInfo.oldSamplesToDelete.forEach((key, value) -> value.forEach(existingSample -> existingSamples.add(existingSample.getId())));
 
         List<String> srcFiles = TargetedMSManager.deleteSampleFilesAndDependencies(existingSamples);
@@ -757,7 +760,7 @@ public class SkylineDocImporter
         private final Map<String, Long> isotopeLabelIdMap = new HashMap<>();
         private final Set<Long> internalStandardLabelIds = new HashSet<>();
         private final Map<String, Long> structuralModNameIdMap = new HashMap<>();
-        private final Map<Long, List<PeptideSettings.PotentialLoss>> structuralModLossesMap = new HashMap<>();
+        private final Map<Long, List<PeptideSettings.PotentialLoss>> structuralModLossesMap = new LongHashMap<>();
         private final Map<String, Long> isotopeModNameIdMap = new HashMap<>();
     }
 
@@ -1089,7 +1092,7 @@ public class SkylineDocImporter
                 Map<String, Object> iRTScaleRow = new CaseInsensitiveHashMap<>();
                 iRTScaleRow.put("container", _container);
                 Map<String, Object> iRTScaleResult = Table.insert(_user, TargetedMSManager.getTableInfoiRTScale(), iRTScaleRow);
-                iRTScaleId = (int) iRTScaleResult.get("id");
+                iRTScaleId = asInteger(iRTScaleResult.get("id"));
             }
 
             // insert any new iRT Peptides into the database
@@ -1867,7 +1870,7 @@ public class SkylineDocImporter
     private Map<Long, Long> insertGeneralMoleculeChromInfos(long gmId, List<GeneralMoleculeChromInfo> generalMoleculeChromInfos,
                                                                   Map<SampleFileKey, SampleFile> skylineIdSampleFileIdMap)
     {
-        Map<Long, Long> sampleFileIdGeneralMolChromInfoIdMap = new HashMap<>();
+        Map<Long, Long> sampleFileIdGeneralMolChromInfoIdMap = new LongHashMap<>();
 
         for (GeneralMoleculeChromInfo generalMoleculeChromInfo : generalMoleculeChromInfos)
         {
@@ -2314,7 +2317,7 @@ public class SkylineDocImporter
 
     private void copyExtractedFilesToCloud(TargetedMSRun run)
     {
-        Integer skyDataId = run.getDataId();
+        var skyDataId = run.getDataId();
         if (skyDataId != null)
         {
             ExpData skyData = ExperimentService.get().getExpData(skyDataId);

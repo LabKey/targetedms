@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import org.labkey.api.cache.Cache;
 import org.labkey.api.cache.CacheManager;
 import org.labkey.api.collections.CaseInsensitiveHashMap;
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.CompareType;
 import org.labkey.api.data.Container;
@@ -650,7 +651,7 @@ public class TargetedMSManager
     }
 
     /** @return rowId for pipeline job that will perform the import asynchronously */
-    public static Integer addRunToQueue(ViewBackgroundInfo info,
+    public static Long addRunToQueue(ViewBackgroundInfo info,
                                         final Path path) throws XarFormatException, PipelineValidationException
     {
         String description = "Skyline document import - " + FileUtil.getFileName(path);
@@ -708,7 +709,7 @@ public class TargetedMSManager
         return PipelineService.get().getJobId(user, container, job.getJobGUID());
     }
 
-    public static void ensureWrapped(TargetedMSRun run, User user, Integer jobId) throws ExperimentException
+    public static void ensureWrapped(TargetedMSRun run, User user, Long jobId) throws ExperimentException
     {
         ExpRun expRun;
         if (run.getExperimentRunLSID() != null)
@@ -722,7 +723,7 @@ public class TargetedMSManager
         wrapRun(run, user, jobId);
     }
 
-    private static void wrapRun(TargetedMSRun run, User user, Integer jobId) throws ExperimentException
+    private static void wrapRun(TargetedMSRun run, User user, Long jobId) throws ExperimentException
     {
         try (DbScope.Transaction transaction = ExperimentService.get().getSchema().getScope().ensureTransaction())
         {
@@ -840,12 +841,12 @@ public class TargetedMSManager
         deleteiRTscales(container);
     }
 
-    public static TargetedMSRun getRunByDataId(int dataId)
+    public static TargetedMSRun getRunByDataId(long dataId)
     {
         return getRunByDataId(dataId, null);
     }
 
-    public static TargetedMSRun getRunByDataId(int dataId, Container c)
+    public static TargetedMSRun getRunByDataId(long dataId, Container c)
     {
         TargetedMSRun[] runs;
         if(c != null)
@@ -867,12 +868,12 @@ public class TargetedMSManager
         throw new IllegalStateException("There is more than one non-deleted Targeted MS Run for dataId " + dataId);
     }
 
-    public static TargetedMSRun getRunBySkydDataId(int skydDataId)
+    public static TargetedMSRun getRunBySkydDataId(long skydDataId)
     {
         return getRunBySkydDataId(skydDataId, null);
     }
 
-    public static TargetedMSRun getRunBySkydDataId(int skydDataId, Container c)
+    public static TargetedMSRun getRunBySkydDataId(long skydDataId, Container c)
     {
         TargetedMSRun[] runs;
         if(c != null)
@@ -2486,7 +2487,7 @@ public class TargetedMSManager
         return maxCount != null ? maxCount.intValue() : 0;
     }
 
-    static void moveRun(TargetedMSRun run, Container newContainer, String newRunLSID, int newDataRowId, User user)
+    static void moveRun(TargetedMSRun run, Container newContainer, String newRunLSID, long newDataRowId, User user)
     {
         // MoveRunsTask.moveRun ensures a transaction
         SQLFragment updatePrecChromInfoSql = new SQLFragment("UPDATE ");
@@ -2506,10 +2507,10 @@ public class TargetedMSManager
         updateRun(run, user);
     }
 
-    private static void addParentRunsToChain(ArrayDeque<Integer> chainRowIds, Map<Integer, Integer> replacedByMap, Integer rowId)
+    private static void addParentRunsToChain(ArrayDeque<Long> chainRowIds, Map<Long, Long> replacedByMap, Long rowId)
     {
         // add all runs rowIds up the chain to the end of the list, recursively
-        Integer replacedBy = replacedByMap.get(rowId);
+        var replacedBy = replacedByMap.get(rowId);
         int originalSize = chainRowIds.size();
         if (replacedBy != null)
         {
@@ -2525,10 +2526,10 @@ public class TargetedMSManager
         }
     }
 
-    private static void addChildRunsToChain(ArrayDeque<Integer> chainRowIds, Map<Integer, Integer> replacesMap, Integer rowId)
+    private static void addChildRunsToChain(ArrayDeque<Long> chainRowIds, Map<Long, Long> replacesMap, Long rowId)
     {
         // add all runs rowIds down the chain to the front of the list, recursively
-        Integer replaces = replacesMap.get(rowId);
+        var replaces = replacesMap.get(rowId);
         int originalSize = chainRowIds.size();
         if (replaces != null)
         {
@@ -2544,14 +2545,14 @@ public class TargetedMSManager
         }
     }
 
-    public static Collection<Integer> getLinkedVersions(User u, Container c, Collection<Integer> selectedRowIds, Collection<Integer> linkedRowIds)
+    public static Collection<Long> getLinkedVersions(User u, Container c, Collection<Long> selectedRowIds, Collection<Long> linkedRowIds)
     {
         return getLinkedVersions(new TargetedMSSchema(u, c), selectedRowIds, linkedRowIds);
     }
 
-    public static Collection<Integer> getLinkedVersions(@NotNull TargetedMSSchema schema, Collection<Integer> selectedRowIds, Collection<Integer> linkedRowIds)
+    public static Collection<Long> getLinkedVersions(@NotNull TargetedMSSchema schema, Collection<Long> selectedRowIds, Collection<Long> linkedRowIds)
     {
-        Set<Integer> result = new HashSet<>(linkedRowIds);
+        Set<Long> result = new HashSet<>(linkedRowIds);
         //get related/linked RowIds from TargetedMSRuns table
 
         //create a filter for non-null ReplacedByRun value
@@ -2566,15 +2567,16 @@ public class TargetedMSManager
         TableSelector selector = new TableSelector(runsTable, idColumnNames, filter, null);
 
         //get RowId -> ReplacedByRun key value pairs and also populate the opposite direction to get ReplacedByRun -> RowId
-        Map<Integer, Integer> replacedByMap = selector.getValueMap();
-        Map<Integer, Integer> replacesMap = new HashMap<>();
-        for (Map.Entry<Integer, Integer> entry : replacedByMap.entrySet())
+        Map<Long, Long> replacedByMap = new LongHashMap<>();
+        selector.forEach(rs -> {replacedByMap.put(rs.getLong(1), rs.getLong(2));});
+        Map<Long, Long> replacesMap = new LongHashMap<>();
+        for (Map.Entry<Long, Long> entry : replacedByMap.entrySet())
             replacesMap.put(entry.getValue(), entry.getKey());
 
         //get full chain for the selected runs to be added to the linkedRowIds list
-        for (Integer rowId : selectedRowIds)
+        for (var rowId : selectedRowIds)
         {
-            ArrayDeque<Integer> chainRowIds = new ArrayDeque<>();
+            ArrayDeque<Long> chainRowIds = new ArrayDeque<>();
             addParentRunsToChain(chainRowIds, replacedByMap, rowId);
             addChildRunsToChain(chainRowIds, replacesMap, rowId);
 
