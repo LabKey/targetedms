@@ -8,7 +8,6 @@ import org.labkey.test.components.ext4.Window;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.pages.PortalBodyPanel;
 import org.labkey.test.util.Ext4Helper;
-import org.openqa.selenium.NoSuchElementException;
 
 import java.util.Map;
 
@@ -156,15 +155,10 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
             else
             {
                 String label = prop.formLabel;
-                //adding waits does not help here, however it passes in catch block
-                try
-                {
-                    _ext4Helper.selectComboBoxItem(label, val);
-                }
-                catch (NoSuchElementException e)
-                {
-                    _ext4Helper.selectComboBoxItem(label, val);
-                }
+
+                click(Ext4Helper.Locators.formItemWithLabel(label)); // Focus to make combo box open on the first try
+
+                _ext4Helper.selectComboBoxItem(label, val);
             }
         });
         clickAndWait(Ext4Helper.Locators.ext4Button("Save").findElement(metricWindow));
