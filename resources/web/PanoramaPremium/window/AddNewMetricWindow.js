@@ -14,6 +14,9 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
     update: 'update',
     insert: 'insert',
 
+    SCHEMA_NAME: 'targetedms',
+
+
     initComponent: function() {
         var title = this.operation === this.insert ? 'Add New Metric' : 'Edit Metric';
         this.setTitle(title);
@@ -28,41 +31,27 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
         }]
 
         this.callParent();
-        if(this.operation === this.update) {
-            if(this.metric.Series1SchemaName) {
-                this.getQueriesForSchema(this.metric.Series1SchemaName, function (queries, scope) {
-                    scope.series1queries = queries;
-                    scope.queries1Combo.bindStore(scope.getQueriesStore());
 
-                });
+        LABKEY.Query.getQueries({
+            scope: this,
+            schemaName: this.SCHEMA_NAME,
+            success: function(queriesInfo) {
+                this.series1queries = queriesInfo.queries;
+                this.series2queries = queriesInfo.queries;
+                this.enabledqueries = queriesInfo.queries;
             }
-            if(this.metric.Series2SchemaName) {
-                this.getQueriesForSchema(this.metric.Series2SchemaName, function (queries, scope) {
-                    scope.series2queries = queries;
-                    scope.queries2Combo.bindStore(scope.getQueriesStore());
-                });
-            }
-            if(this.metric.EnabledSchemaName) {
-                this.getQueriesForSchema(this.metric.EnabledSchemaName, function (queries, scope) {
-                    scope.enabledqueries = queries;
-                    scope.enabledQueriesCombo.bindStore(scope.getQueriesStore());
-                });
-            }
-        }
+        });
 
     },
 
     getItems: function() {
         return [
                 this.getMetricNameField(),
-                this.getSchema1Combo(),
                 this.getQueries1Combo(),
                 this.getSeries1AxisLabelField(),
-                this.getSchema2Combo(),
                 this.getQueries2Combo(),
                 this.getSeries2AxisLabelField(),
                 this.getMetricTypeCombo(),
-                this.getEnabledSchemaCombo(),
                 this.getEnabledQueriesCombo(),
             this.getQueryError(),
         ];
@@ -107,38 +96,6 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
         };
     },
 
-    getSchema1Combo: function() {
-        if(!this.schema1Combo) {
-            var config = Ext4.apply(this.getSchemaConfig('Series 1', 'series1'), {
-                listeners: {
-                    scope: this,
-                    select: function(combo, recs){
-                        var rec = recs[0];
-                        this.series1schema = rec.data.field1;
-                        this.queries1Combo.setValue(null);
-
-                        LABKEY.Query.getQueries({
-                            scope: this,
-                            schemaName: this.series1schema,
-                            success: function(queriesInfo) {
-                                this.series1queries = queriesInfo.queries;
-                            }
-                        });
-                    }
-                }
-            });
-
-            this.schema1Combo = Ext4.create('Ext.form.field.ComboBox', config);
-
-            if(this.operation === this.update) {
-                this.schema1Combo.setValue(this.metric.Series1SchemaName);
-                this.schema1Combo.bindStore(this.schemas);
-            }
-        }
-
-        return this.schema1Combo;
-    },
-
     getQueriesConfig: function(label, name) {
         return {
             fieldLabel: label + ' Query',
@@ -146,8 +103,7 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
             labelWidth: 150,
             width: 400,
             displayField : 'title',
-            valueField : 'name',
-            emptyText: 'Please select ' + label + ' Schema.'
+            valueField : 'name'
         };
     },
 
@@ -224,37 +180,6 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
         return this.series2AxisLabelField;
     },
 
-    getSchema2Combo: function() {
-        if(!this.schema2Combo) {
-            var config = Ext4.apply(this.getSchemaConfig('Series 2', 'series2'), {
-                listeners: {
-                    scope: this,
-                    select: function(combo, recs){
-                        var rec = recs[0];
-                        this.series2schema = rec.data.field1;
-                        this.queries2Combo.setValue(null);
-
-                        LABKEY.Query.getQueries({
-                            scope: this,
-                            schemaName: this.series2schema,
-                            success: function(queriesInfo) {
-                                this.series2queries = queriesInfo.queries;
-                            }
-                        });
-                    }
-                }
-            });
-
-            this.schema2Combo = Ext4.create('Ext.form.field.ComboBox', config);
-
-            if(this.operation === this.update) {
-                this.schema2Combo.setValue(this.metric.Series2SchemaName);
-            }
-        }
-
-        return this.schema2Combo;
-    },
-
     getQueries2Combo: function() {
         if(!this.queries2Combo) {
             var config = Ext4.apply(this.getQueriesConfig('Series 2', 'series2'), {
@@ -278,37 +203,6 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
         }
 
         return this.queries2Combo;
-    },
-
-    getEnabledSchemaCombo: function() {
-        if(!this.enabledSchemaCombo) {
-            var config = Ext4.apply(this.getSchemaConfig('Enabled', 'enabled'), {
-                listeners: {
-                    scope: this,
-                    select: function(combo, recs){
-                        var rec = recs[0];
-                        this.enabledschema = rec.data.field1;
-                        this.enabledQueriesCombo.setValue(null);
-
-                        LABKEY.Query.getQueries({
-                            scope: this,
-                            schemaName: this.enabledschema,
-                            success: function(queriesInfo) {
-                                this.enabledqueries = queriesInfo.queries;
-                            }
-                        });
-                    }
-                }
-            });
-
-            this.enabledSchemaCombo = Ext4.create('Ext.form.field.ComboBox', config);
-
-            if(this.operation === this.update) {
-                this.enabledSchemaCombo.setValue(this.metric.EnabledSchemaName);
-            }
-        }
-
-        return this.enabledSchemaCombo;
     },
 
     getEnabledQueriesCombo: function() {
@@ -426,32 +320,17 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
             isValid = false;
         }
 
-        if(!this.schema1Combo.getValue()) {
-            this.schema1Combo.setActiveError(errorText);
-            isValid = false;
-        }
-
-        if(this.schema1Combo.getValue() && !this.queries1Combo.getValue()) {
+        if(!this.queries1Combo.getValue()) {
             this.queries1Combo.setActiveError(errorText);
             isValid = false;
         }
 
-        if(this.schema1Combo.getValue() && !this.series1AxisLabelField.getValue().length > 0) {
+        if(!this.series1AxisLabelField.getValue().length > 0) {
             this.series1AxisLabelField.setActiveError(errorText);
             isValid = false;
         }
 
-        if(this.schema2Combo.getValue() && !this.queries2Combo.getValue()) {
-            this.queries2Combo.setActiveError("Required when series 2 schema is provided.");
-            isValid = false;
-        }
-
-        if(this.schema2Combo.getValue() && !this.series2AxisLabelField.getValue().length > 0) {
-            this.series2AxisLabelField.setActiveError("Required when series 2 schema is provided.");
-            isValid = false;
-        }
-
-        if(this.schema1Combo.getValue() && this.metricTypeCombo.getValue() == null) {
+        if(this.metricTypeCombo.getValue() == null) {
             this.metricTypeCombo.setActiveError(errorText);
             isValid = false;
         }
@@ -510,17 +389,17 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
             var records = [];
             var newMetric = {};
             newMetric.Name = this.metricNameField.getValue();
-            newMetric.Series1SchemaName = this.schema1Combo.getValue();
+            newMetric.Series1SchemaName = this.SCHEMA_NAME;
             newMetric.Series1QueryName = this.queries1Combo.getValue();
             newMetric.Series1Label = this.series1AxisLabelField.getValue();
             newMetric.PrecursorScoped = this.metricTypeCombo.getValue();
 
 
-            newMetric.Series2SchemaName = this.schema2Combo.getValue();
+            newMetric.Series2SchemaName = this.SCHEMA_NAME;
             newMetric.Series2QueryName = this.queries2Combo.getValue();
             newMetric.Series2Label = this.series2AxisLabelField.getValue();
 
-            newMetric.EnabledSchemaName = this.enabledSchemaCombo.getValue();
+            newMetric.EnabledSchemaName = this.SCHEMA_NAME;
             newMetric.EnabledQueryName = this.enabledQueriesCombo.getValue();
 
             if(this.operation === this.update) {
