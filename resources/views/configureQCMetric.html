@@ -11,9 +11,9 @@
         LABKEY.internal = {};
 
     LABKEY.internal.ConfigureQCMetrics = new function () {
-        var qcMetrics;
-        var qcMetricsTable ='';
-        var configRows = [];
+        let qcMetrics;
+        let qcMetricsTable ='';
+        let configRows = [];
 
         function showQCMetrics() {
             qcMetricsTable += '<form id="qcMetricsForm" >';
@@ -37,7 +37,11 @@
                 qcMetricsTable += '<td>' + (editLock ? '<a id="editLink' + row.id + '" href="#">' : '' ) + LABKEY.Utils.encodeHtml(row.name) + '</td>' + (editLock ? '</a>' : '' );
                 qcMetricsTable += '<td>' + (row.PrecursorScoped ? 'Precursor' : 'Run') + '</td>';
 
-                if (row.EffectiveStatus === 'NoData') {
+                // remove all paired metric configs
+                if (row.Series2QueryName !== null) {
+                    qcMetricsTable += '<td id=\"' + LABKEY.Utils.encodeHtml(row.name) + '\">Dual-metrics cannot be configured</td>';
+                }
+                else if (row.EffectiveStatus === 'NoData') {
                     qcMetricsTable += '<td id=\"' + LABKEY.Utils.encodeHtml(row.name) + '\">No data in this folder</td>';
                 }
                 else {
@@ -121,10 +125,6 @@
                     sort: 'name',
                     scope: this,
                     success: function (result) {
-                        // remove all paired metric configs
-                        result.rows = result.rows.filter(function(row) {
-                            return row.Series2QueryName === null;
-                        });
                         result.rows.sort(function(row1, row2) { return row1.name.toLowerCase().localeCompare(row2.name.toLowerCase()); });
                         qcMetrics = result.rows;
                         showQCMetrics();
