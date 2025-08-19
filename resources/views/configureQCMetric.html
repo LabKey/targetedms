@@ -37,11 +37,7 @@
                 qcMetricsTable += '<td>' + (editLock ? '<a id="editLink' + row.id + '" href="#">' : '' ) + LABKEY.Utils.encodeHtml(row.name) + '</td>' + (editLock ? '</a>' : '' );
                 qcMetricsTable += '<td>' + (row.PrecursorScoped ? 'Precursor' : 'Run') + '</td>';
 
-                // remove all paired metric configs
-                if (row.Series2QueryName !== null) {
-                    qcMetricsTable += '<td id=\"' + LABKEY.Utils.encodeHtml(row.name) + '\">Dual-metrics cannot be configured</td>';
-                }
-                else if (row.EffectiveStatus === 'NoData') {
+                if (row.EffectiveStatus === 'NoData') {
                     qcMetricsTable += '<td id=\"' + LABKEY.Utils.encodeHtml(row.name) + '\">No data in this folder</td>';
                 }
                 else {

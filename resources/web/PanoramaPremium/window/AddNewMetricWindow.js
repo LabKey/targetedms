@@ -36,8 +36,7 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
             scope: this,
             schemaName: this.SCHEMA_NAME,
             success: function(queriesInfo) {
-                this.series1queries = queriesInfo.queries;
-                this.series2queries = queriesInfo.queries;
+                this.queries = queriesInfo.queries;
                 this.enabledqueries = queriesInfo.queries;
             }
         });
@@ -46,13 +45,11 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
 
     getItems: function() {
         return [
-                this.getMetricNameField(),
-                this.getQueries1Combo(),
-                this.getSeries1AxisLabelField(),
-                this.getQueries2Combo(),
-                this.getSeries2AxisLabelField(),
-                this.getMetricTypeCombo(),
-                this.getEnabledQueriesCombo(),
+            this.getMetricNameField(),
+            this.getQueriesCombo(),
+            this.getMetricTypeCombo(),
+            this.getYAxisLabelField(),
+            this.getEnabledQueriesCombo(),
             this.getQueryError(),
         ];
     },
@@ -86,20 +83,10 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
         return this.metricNameField;
     },
 
-    getSchemaConfig: function(label, name) {
-        return {
-            fieldLabel: label +' Schema',
-            name: name + 'Schema',
-            store: this.schemas,
-            labelWidth: 150,
-            width: 400
-        };
-    },
-
     getQueriesConfig: function(label, name) {
         return {
-            fieldLabel: label + ' Query',
-            name: name + 'Query',
+            fieldLabel: label,
+            name: name,
             labelWidth: 150,
             width: 400,
             displayField : 'title',
@@ -109,7 +96,7 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
 
     getQueriesStore: function() {
         return  Ext4.create('Ext.data.Store', {
-            data: this.series1queries,
+            data: this.queries,
             fields: ['name','title'],
             sorters: [{
                 sorterFn: this.getQueriesSorter
@@ -121,93 +108,51 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
         return LABKEY.internal.SortUtil.naturalSort(val1.get('name'), val2.get('name'));
     },
 
-    getQueries1Combo: function() {
-        if(!this.queries1Combo) {
-            var config = Ext4.apply(this.getQueriesConfig('Series 1', 'series1'), {
+    getQueriesCombo: function() {
+        if(!this.queriesCombo) {
+            var config = Ext4.apply(this.getQueriesConfig('Metrics Query', 'queryName'), {
                 listeners: {
                     scope: this,
                     expand: function (field, options) {
-                        if (this.series1queries) {
-                            this.queries1Combo.bindStore(this.getQueriesStore());
+                        if (this.queries) {
+                            this.queriesCombo.bindStore(this.getQueriesStore());
                         }
                     },
                     select: function(combo, records) {
-                        this.validateQCMetricQuery(records[0].data.name, this.series1queries, combo);
+                        this.validateQCMetricQuery(records[0].data.name, this.queries, combo);
                     }
                 }
             });
-            this.queries1Combo = Ext4.create('Ext.form.field.ComboBox', config);
+            this.queriesCombo = Ext4.create('Ext.form.field.ComboBox', config);
 
             if(this.operation === this.update) {
-                this.queries1Combo.setValue(this.metric.Series1QueryName);
+                this.queriesCombo.setValue(this.metric.QueryName);
             }
         }
 
-        return this.queries1Combo;
+        return this.queriesCombo;
     },
 
-    getSeries1AxisLabelField: function() {
-        if (!this.series1AxisLabelField) {
-            this.series1AxisLabelField = Ext4.create('Ext.form.field.Text', {
-                fieldLabel: 'Series 1 Axis Label',
+    getYAxisLabelField: function() {
+        if (!this.yAxisLabelField) {
+            this.yAxisLabelField = Ext4.create('Ext.form.field.Text', {
+                fieldLabel: 'Y-Axis Label',
                 labelWidth: 150,
                 width: 400,
-                name: 'series1AxisLabel'
+                name: 'yAxisLabel'
             });
 
             if(this.operation === this.update) {
-                this.series1AxisLabelField.setValue(this.metric.Series1Label);
+                this.yAxisLabelField.setValue(this.metric.YAxisLabel);
             }
         }
 
-        return this.series1AxisLabelField;
-    },
-
-    getSeries2AxisLabelField: function() {
-        if (!this.series2AxisLabelField) {
-            this.series2AxisLabelField = Ext4.create('Ext.form.field.Text', {
-                fieldLabel: 'Series 2 Axis Label',
-                labelWidth: 150,
-                width: 400,
-                name: 'series2AxisLabel'
-            });
-
-            if(this.operation === this.update) {
-                this.series2AxisLabelField.setValue(this.metric.Series2Label);
-            }
-        }
-
-        return this.series2AxisLabelField;
-    },
-
-    getQueries2Combo: function() {
-        if(!this.queries2Combo) {
-            var config = Ext4.apply(this.getQueriesConfig('Series 2', 'series2'), {
-                listeners: {
-                    scope: this,
-                    expand: function (field, options) {
-                        if (this.series2queries) {
-                            this.queries2Combo.bindStore(this.getQueriesStore());
-                        }
-                    },
-                    select: function(combo, records) {
-                        this.validateQCMetricQuery(records[0].data.name, this.series2queries, combo);
-                    }
-                }
-            });
-            this.queries2Combo = Ext4.create('Ext.form.field.ComboBox', config);
-
-            if(this.operation === this.update) {
-                this.queries2Combo.setValue(this.metric.Series2QueryName);
-            }
-        }
-
-        return this.queries2Combo;
+        return this.yAxisLabelField;
     },
 
     getEnabledQueriesCombo: function() {
         if(!this.enabledQueriesCombo) {
-            var config = Ext4.apply(this.getQueriesConfig('Enabled', 'enabled'), {
+            var config = Ext4.apply(this.getQueriesConfig('Enabled Query', 'enabledQueryName'), {
                 listeners: {
                     scope: this,
                     expand: function (field, options) {
@@ -320,13 +265,8 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
             isValid = false;
         }
 
-        if(!this.queries1Combo.getValue()) {
-            this.queries1Combo.setActiveError(errorText);
-            isValid = false;
-        }
-
-        if(!this.series1AxisLabelField.getValue().length > 0) {
-            this.series1AxisLabelField.setActiveError(errorText);
+        if(!this.queriesCombo.getValue()) {
+            this.queriesCombo.setActiveError(errorText);
             isValid = false;
         }
 
@@ -389,17 +329,10 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
             var records = [];
             var newMetric = {};
             newMetric.Name = this.metricNameField.getValue();
-            newMetric.Series1SchemaName = this.SCHEMA_NAME;
-            newMetric.Series1QueryName = this.queries1Combo.getValue();
-            newMetric.Series1Label = this.series1AxisLabelField.getValue();
+            newMetric.QueryName = this.queriesCombo.getValue();
+            newMetric.YAxisLabel = this.yAxisLabelField.getValue();
             newMetric.PrecursorScoped = this.metricTypeCombo.getValue();
 
-
-            newMetric.Series2SchemaName = this.SCHEMA_NAME;
-            newMetric.Series2QueryName = this.queries2Combo.getValue();
-            newMetric.Series2Label = this.series2AxisLabelField.getValue();
-
-            newMetric.EnabledSchemaName = this.SCHEMA_NAME;
             newMetric.EnabledQueryName = this.enabledQueriesCombo.getValue();
 
             if(this.operation === this.update) {

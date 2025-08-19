@@ -18,9 +18,9 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         this.defaultGuideSet = {};
         Ext4.each(plotDataRows, function(plotDataRow) {
             Ext4.each(plotDataRow.GuideSetStats, function(guideSetStat) {
-                var guideSetId = guideSetStat['GuideSetId'];
-                var seriesLabel = plotDataRow['SeriesLabel'];
-                var seriesType = guideSetStat['SeriesType'] === 2 ? 'series2' : 'series1';
+                const guideSetId = guideSetStat['GuideSetId'];
+                const seriesLabel = plotDataRow['SeriesLabel'];
+                const metricId = guideSetStat['MetricId'];
 
                 if (guideSetId > 0) {
                     if (!this.guideSetDataMap[guideSetId]) {
@@ -31,7 +31,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
                         this.guideSetDataMap[guideSetId].Series[seriesLabel] = {};
                     }
 
-                    this.guideSetDataMap[guideSetId].Series[seriesLabel][seriesType] = {
+                    this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId] = {
                         NumRecords: guideSetStat['NumRecords'],
                         Mean: guideSetStat['LJMean'],
                         StdDev: guideSetStat['LJStdDev']
@@ -46,11 +46,11 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
                         this.defaultGuideSet[seriesLabel] = {};
                     }
 
-                    if (!this.defaultGuideSet[seriesLabel][seriesType]) {
-                        this.defaultGuideSet[seriesLabel][seriesType] = {};
+                    if (!this.defaultGuideSet[seriesLabel][metricId]) {
+                        this.defaultGuideSet[seriesLabel][metricId] = {};
                     }
 
-                    this.defaultGuideSet[seriesLabel][seriesType].LJ = {
+                    this.defaultGuideSet[seriesLabel][metricId].LJ = {
                         NumRecords: guideSetStat['NumRecords'],
                         Mean: guideSetStat['LJMean'],
                         StdDev: guideSetStat['LJStdDev']
@@ -61,9 +61,9 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         }, this);
     },
 
-    setLJSeriesMinMax: function(dataObject, row) {
+    setLJSeriesMinMax: function(dataObject, row, metricProps) {
         // track the min and max data so we can get the range for including the QC annotations
-        var val = row['value'];
+        const val = row['value'];
         if (LABKEY.vis.isValid(val)) {
             if (dataObject.min == null || val < dataObject.min) {
                 dataObject.min = val;
@@ -72,7 +72,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
                 dataObject.max = val;
             }
 
-            if (this.yAxisScale == 'log' && val <= 0) {
+            if (this.yAxisScale === 'log' && val <= 0) {
                 dataObject.showLogInvalid = true;
             }
 
@@ -82,7 +82,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
             // Issue 28462: don't include the +/-3 stddev error bars in min/max calculation when it isn't being plotted
             if (!this.singlePlot && LABKEY.vis.isValid(mean)) {
                 var minSd = (mean - (3 * sd));
-                if (dataObject.showLogInvalid == undefined && this.yAxisScale == 'log' && minSd <= 0) {
+                if (dataObject.showLogInvalid === undefined && this.yAxisScale === 'log' && minSd <= 0) {
                     // Avoid setting our scale to be negative based on the three standard deviations to avoid messing up log plots
                     dataObject.showLogWarning = true;
                     for (var i = 2; i >= 0; i--)
@@ -104,9 +104,9 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         }
         else if (this.isMultiSeries()) {
             // check if either of the y-axis metric values are invalid for a log scale
-            var val1 = row['value_series1'],
-                    val2 = row['value_series2'];
-            if (dataObject.showLogInvalid == undefined && this.yAxisScale == 'log') {
+            var val1 = row['value_' + this.metric],
+                    val2 = row['value_' + this.metric2];
+            if (dataObject.showLogInvalid === undefined && this.yAxisScale === 'log') {
                 if ((LABKEY.vis.isValid(val1) && val1 <= 0) || (LABKEY.vis.isValid(val2) && val2 <= 0)) {
                     dataObject.showLogInvalid = true;
                 }
@@ -116,10 +116,10 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
 
     getLJPlotTypeProperties: function(precursorInfo, metricProps) {
         var plotProperties = {};
-        // some properties are specific to whether or not we are showing multiple y-axis series
+        // some properties are specific to whether we are showing multiple y-axis series
         if (this.isMultiSeries()) {
-            plotProperties['value'] = 'value_series1';
-            plotProperties['valueRight'] = 'value_series2';
+            plotProperties['value'] = 'value_' + this.metric;
+            plotProperties['valueRight'] = 'value_' + this.metric2;
         }
         else {
             plotProperties['value'] = 'value';
@@ -128,12 +128,12 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
             plotProperties['yAxisDomain'] = [precursorInfo.min, precursorInfo.max];
         }
 
-        plotProperties['lowerBound'] = metricProps.lowerBound;
-        plotProperties['upperBound'] = metricProps.upperBound;
-        if (metricProps.metricStatus === LABKEY.targetedms.MetricStatus.ValueCutoff) {
+        plotProperties['lowerBound'] = metricProps[this.metric].lowerBound;
+        plotProperties['upperBound'] = metricProps[this.metric].upperBound;
+        if (metricProps[this.metric].metricStatus === LABKEY.targetedms.MetricStatus.ValueCutoff) {
             plotProperties['boundType'] = LABKEY.vis.PlotProperties.BoundType.Absolute;
         }
-        else if (metricProps.metricStatus === LABKEY.targetedms.MetricStatus.MeanDeviationCutoff) {
+        else if (metricProps[this.metric].metricStatus === LABKEY.targetedms.MetricStatus.MeanDeviationCutoff) {
             plotProperties['boundType'] = LABKEY.vis.PlotProperties.BoundType.MeanDeviation;
         }
         else {
@@ -149,21 +149,21 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         }
     },
 
-    processLJPlotDataRow: function(row, fragment, seriesType, metricProps)
+    processLJPlotDataRow: function(row, fragment, metricId, metricProps)
     {
         var data = {};
         // if a guideSetId is defined for this row, include the guide set stats values in the data object
         if (Ext4.isDefined(row['GuideSetId']) && row['GuideSetId'] > 0) {
             var gs = this.guideSetDataMap[row['GuideSetId']];
-            if (Ext4.isDefined(gs) && gs.Series[fragment]&& gs.Series[fragment][seriesType]) {
-                data['mean'] = gs.Series[fragment][seriesType]['Mean'];
-                data['stdDev'] = gs.Series[fragment][seriesType]['StdDev'];
+            if (Ext4.isDefined(gs) && gs.Series[fragment]&& gs.Series[fragment][metricId]) {
+                data['mean'] = gs.Series[fragment][metricId]['Mean'];
+                data['stdDev'] = gs.Series[fragment][metricId]['StdDev'];
             }
         }
 
         if (this.isMultiSeries()) {
-            data['value_' + seriesType] = row['Value'];
-            data['value_' + seriesType + 'Title'] = metricProps[seriesType + 'Label'];
+            data['value_' + metricId] = row['Value'];
+            data['value_' + metricId + 'Title'] = metricProps['name'];
         }
         else {
             data['value'] = row['Value'];
@@ -189,9 +189,13 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         combinePlotData.fragment = precursorInfo.fragment;
     },
 
-    getLJCombinedPlotLegendSeries: function()
+    getLJCombinedPlotLegendSeries: function(metricProps)
     {
-        return ['value_series1', 'value_series2'];
+        const result = ['value_' + this.metric];
+        if (this.isMultiSeries()) {
+            result.push('value_' + this.metric2);
+        }
+        return result;
     },
 
     getLJLegend: function (combinedPlot) {

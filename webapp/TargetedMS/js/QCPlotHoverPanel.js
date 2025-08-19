@@ -76,14 +76,14 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
             hideExclusionAndPointClickLinks = true
         }
 
-        if (this.pointData[this.valueName + 'Title'] != undefined) {
-            this.add(this.getPlotPointDetailField('Metric', this.pointData[this.valueName + 'Title']));
+        if (this.metricProps.name !== undefined) {
+            this.add(this.getPlotPointDetailField('Metric', this.metricProps.name));
         }
 
         this.add(this.getPlotPointDetailField(this.pointData['dataType'], this.pointData['fragment'], 'qc-hover-value-break'));
 
         if (this.valueName.indexOf('CUSUM') > -1) {
-            this.add(this.getPlotPointDetailField('Group', 'CUSUMmN' == this.valueName || 'CUSUMvN' == this.valueName ? 'CUSUM-' : 'CUSUM+'));
+            this.add(this.getPlotPointDetailField('Group', 'CUSUMmN' === this.valueName || 'CUSUMvN' === this.valueName ? 'CUSUM-' : 'CUSUM+'));
         }
 
         if (this.pointData.conversion && this.pointData.rawValue !== undefined && this.valueName.indexOf("CUSUM") === -1) {
@@ -171,7 +171,7 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
                 scope: this,
                 handler: function() {
                     var newStatus = this.getPlotPointExclusionRadioGroup().getValue().status;
-                    if (newStatus != this.originalStatus) {
+                    if (newStatus !== this.originalStatus) {
                         this.getEl().mask();
 
                         // Scenarios:
@@ -181,12 +181,12 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
                         // 4 - from exclude metric to exclude all - delete all for replicate and then insert new row without MetricId
                         // 5 - from exclude all to include - delete all for replicate
                         // 6 - from exclude all to exclude metric - delete all for replicate and then insert new row with MetricId
-                        var s1 = this.originalStatus == this.STATE.INCLUDE && newStatus == this.STATE.EXCLUDE_METRIC;
-                        var s2 = this.originalStatus == this.STATE.INCLUDE && newStatus == this.STATE.EXCLUDE_ALL;
-                        var s3 = this.originalStatus == this.STATE.EXCLUDE_METRIC && newStatus == this.STATE.INCLUDE;
-                        var s4 = this.originalStatus == this.STATE.EXCLUDE_METRIC && newStatus == this.STATE.EXCLUDE_ALL;
-                        var s5 = this.originalStatus == this.STATE.EXCLUDE_ALL && newStatus == this.STATE.INCLUDE;
-                        var s6 = this.originalStatus == this.STATE.EXCLUDE_ALL && newStatus == this.STATE.EXCLUDE_METRIC;
+                        var s1 = this.originalStatus === this.STATE.INCLUDE && newStatus === this.STATE.EXCLUDE_METRIC;
+                        var s2 = this.originalStatus === this.STATE.INCLUDE && newStatus === this.STATE.EXCLUDE_ALL;
+                        var s3 = this.originalStatus === this.STATE.EXCLUDE_METRIC && newStatus === this.STATE.INCLUDE;
+                        var s4 = this.originalStatus === this.STATE.EXCLUDE_METRIC && newStatus === this.STATE.EXCLUDE_ALL;
+                        var s5 = this.originalStatus === this.STATE.EXCLUDE_ALL && newStatus === this.STATE.INCLUDE;
+                        var s6 = this.originalStatus === this.STATE.EXCLUDE_ALL && newStatus === this.STATE.EXCLUDE_METRIC;
 
                         var commands = [];
 
@@ -277,7 +277,7 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
                 listeners: {
                     scope: this,
                     change: function(cmp, newVal, oldVal) {
-                        this.getPlotPointExclusionSaveBtn().setDisabled(newVal.status == this.originalStatus);
+                        this.getPlotPointExclusionSaveBtn().setDisabled(newVal.status === this.originalStatus);
                     }
                 }
             });
@@ -288,7 +288,7 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
 
     getPlotPointClickLinks : function() {
         //Choose action target based on precursor type
-        var action = this.pointData['dataType'] == 'Peptide' ? "precursorAllChromatogramsChart" : "moleculePrecursorAllChromatogramsChart",
+        var action = this.pointData['dataType'] === 'Peptide' ? "precursorAllChromatogramsChart" : "moleculePrecursorAllChromatogramsChart",
             url = LABKEY.ActionURL.buildURL('targetedms', action, LABKEY.ActionURL.getContainer(), {
                 id: this.pointData['PrecursorId'],
                 chromInfoId: this.pointData['PrecursorChromInfoId']
@@ -307,7 +307,7 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
     getRunId: function () {
 
         LABKEY.Query.executeSql({
-            schemaName: this.metricProps.series1SchemaName,
+            schemaName: 'targetedms',
             sql: 'SELECT SampleFileId.ReplicateId.RunId.Id as runId from PrecursorChromInfo',
             scope: this,
             success: function (results) {

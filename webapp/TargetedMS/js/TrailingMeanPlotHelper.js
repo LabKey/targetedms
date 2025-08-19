@@ -11,26 +11,25 @@ Ext4.define("LABKEY.targetedms.TrailingMeanPlotHelper", {
         }
     },
 
-    processTrailingMeanPlotDataRow: function(row, fragment, seriesType, metricProps) {
+    processTrailingMeanPlotDataRow: function(row, fragment, metricId, metricProps) {
         let data = {};
 
         if (this.isMultiSeries()) {
-            data['TrailingMean_' + seriesType] = row['TrailingMean'];
-            data['TrailingMean_' + seriesType + 'Title'] = metricProps[seriesType + 'Label'];
+            data['TrailingMean_' + metricId] = row['TrailingMean'];
+            data['TrailingMean_' + metricId + 'Title'] = metricProps['name'];
         }
         else {
             data['TrailingMean'] = row['TrailingMean'];
         }
         return data;
-
     },
 
     getTrailingMeanPlotTypeProperties: function(precursorInfo) {
         let plotProperties = {};
-        // some properties are specific to whether or not we are showing multiple y-axis series
+        // some properties are specific to whether we are showing multiple y-axis series
         if (this.isMultiSeries()) {
-            plotProperties['TrailingMean'] = 'TrailingMean_series1';
-            plotProperties['TrailingMeanRight'] = 'TrailingMean_series2';
+            plotProperties['TrailingMean'] = 'TrailingMean_' + this.metric;
+            plotProperties['TrailingMeanRight'] = 'TrailingMean_' + this.metric2;
         }
         else {
             plotProperties['TrailingMean'] = 'TrailingMean';
@@ -47,9 +46,9 @@ Ext4.define("LABKEY.targetedms.TrailingMeanPlotHelper", {
         return plotProperties;
     },
 
-    setTrailingMeanMinMax: function (dataObject, row) {
+    setTrailingMeanMinMax: function (dataObject, row, metricProps) {
         // track the min and max data, so we can get the range for including the QC annotations
-        let val = row['TrailingMean'];
+        let val = row['TrailingMean' + (this.isMultiSeries() ? ('_' + row.MetricId) : '')];
         if (LABKEY.vis.isValid(val)) {
             if (dataObject.minTrailingMean == null || val < dataObject.minTrailingMean) {
                 dataObject.minTrailingMean = val;
@@ -61,12 +60,11 @@ Ext4.define("LABKEY.targetedms.TrailingMeanPlotHelper", {
             if (this.yAxisScale === 'log' && val <= 0) {
                 dataObject.showLogInvalid = true;
             }
-
         }
         else if (this.isMultiSeries()) {
             // check if either of the y-axis metric values are invalid for a log scale
-            let val1 = row['TrailingMean_series1'],
-                    val2 = row['TrailingMean_series2'];
+            let val1 = row['TrailingMean_' + this.metric],
+                    val2 = row['TrailingMean_' + this.metric2];
             if (dataObject.showLogInvalid === undefined && this.yAxisScale === 'log') {
                 if ((LABKEY.vis.isValid(val1) && val1 <= 0) || (LABKEY.vis.isValid(val2) && val2 <= 0)) {
                     dataObject.showLogInvalid = true;

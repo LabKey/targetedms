@@ -22,12 +22,7 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
 {
     private int _id;
     private String _name;
-    private String _series1Label;
-    private String _series1SchemaName;
-    private String _series1QueryName;
-    private String _series2Label;
-    private String _series2SchemaName;
-    private String _series2QueryName;
+    private String _queryName;
     private boolean _precursorScoped;
     private String _enabledQueryName;
     private String _enabledSchemaName;
@@ -37,8 +32,7 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
     private Double _maxTimeValue;
     private String _timeValueOption;
     private Double _traceValue;
-    private String _yAxisLabel1;
-    private String _yAxisLabel2;
+    private String _yAxisLabel;
     private Double _upperBound;
     private Double _lowerBound;
 
@@ -62,63 +56,14 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
         _name = name;
     }
 
-    public String getSeries1Label()
+    public String getQueryName()
     {
-        return _series1Label;
+        return _queryName;
     }
 
-    public void setSeries1Label(String series1Label)
+    public void setQueryName(String queryName)
     {
-        _series1Label = series1Label;
-    }
-
-    public String getSeries1SchemaName()
-    {
-        return _series1SchemaName;
-    }
-
-    public void setSeries1SchemaName(String series1SchemaName)
-    {
-        _series1SchemaName = series1SchemaName;
-    }
-    public String getSeries1QueryName()
-    {
-        return _series1QueryName;
-    }
-
-    public void setSeries1QueryName(String series1QueryName)
-    {
-        _series1QueryName = series1QueryName;
-    }
-
-    public String getSeries2Label()
-    {
-        return _series2Label;
-    }
-
-    public void setSeries2Label(String series2Label)
-    {
-        _series2Label = series2Label;
-    }
-
-    public String getSeries2SchemaName()
-    {
-        return _series2SchemaName;
-    }
-
-    public void setSeries2SchemaName(String series2SchemaName)
-    {
-        _series2SchemaName = series2SchemaName;
-    }
-
-    public String getSeries2QueryName()
-    {
-        return _series2QueryName;
-    }
-
-    public void setSeries2QueryName(String series2QueryName)
-    {
-        _series2QueryName = series2QueryName;
+        _queryName = queryName;
     }
 
     public boolean isPrecursorScoped()
@@ -211,24 +156,14 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
         _traceValue = traceValue;
     }
 
-    public String getyAxisLabel1()
+    public String getyAxisLabel()
     {
-        return _yAxisLabel1;
+        return _yAxisLabel;
     }
 
-    public void setyAxisLabel1(String yAxisLabel1)
+    public void setyAxisLabel(String yAxisLabel)
     {
-        _yAxisLabel1 = yAxisLabel1;
-    }
-
-    public String getyAxisLabel2()
-    {
-        return _yAxisLabel2;
-    }
-
-    public void setyAxisLabel2(String yAxisLabel2)
-    {
-        _yAxisLabel2 = yAxisLabel2;
+        _yAxisLabel = yAxisLabel;
     }
 
     public Double getUpperBound()
@@ -255,20 +190,9 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("id", _id);
         jsonObject.put("name", _name);
-        jsonObject.put("series1Label",      _series1Label);
-        jsonObject.put("series1SchemaName", _series1SchemaName);
-        jsonObject.put("series1QueryName",  _series1QueryName);
+        jsonObject.put("queryName", _queryName);
         jsonObject.put("precursorScoped",  _precursorScoped);
         jsonObject.put("metricStatus", getStatus() == null ? QCMetricStatus.DEFAULT.toString() : getStatus().toString());
-        if (_series2Label != null) {
-            jsonObject.put("series2Label",      _series2Label);
-        }
-        if (_series2SchemaName != null) {
-            jsonObject.put("series2SchemaName", _series2SchemaName);
-        }
-        if (_series2QueryName != null) {
-            jsonObject.put("series2QueryName",  _series2QueryName);
-        }
         if (_enabledQueryName != null) {
             jsonObject.put("enabledQueryName", _enabledQueryName);
         }
@@ -290,11 +214,8 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
         if (_timeValueOption != null) {
             jsonObject.put("timeValueOption", _timeValueOption);
         }
-        if (_yAxisLabel1 != null) {
-            jsonObject.put("yAxisLabel1", _yAxisLabel1);
-        }
-        if (_yAxisLabel2 != null) {
-            jsonObject.put("yAxisLabel2", _yAxisLabel2);
+        if (_yAxisLabel != null) {
+            jsonObject.put("yAxisLabels", _yAxisLabel);
         }
         if (_lowerBound != null) {
             jsonObject.put("lowerBound", _lowerBound);
