@@ -57,6 +57,8 @@ public class CalibrationCurveTable extends TargetedMSTable
         public PeptideCalibrationCurveTable(TargetedMSSchema schema, ContainerFilter cf)
         {
             super(schema, cf);
+            setName(TargetedMSSchema.TABLE_PEPTIDE_CALIBRATION_CURVE);
+            setTitle(TargetedMSSchema.TABLE_PEPTIDE_CALIBRATION_CURVE);
             var generalMoleculeId = getMutableColumn("GeneralMoleculeId");
             generalMoleculeId.setFk(new TargetedMSForeignKey(_userSchema, TargetedMSSchema.TABLE_PEPTIDE, cf));
             generalMoleculeId.setLabel("Peptide");
@@ -73,6 +75,8 @@ public class CalibrationCurveTable extends TargetedMSTable
         public MoleculeCalibrationCurveTable(TargetedMSSchema schema, ContainerFilter cf)
         {
             super(schema, cf);
+            setName(TargetedMSSchema.TABLE_MOLECULE_CALIBRATION_CURVE);
+            setTitle(TargetedMSSchema.TABLE_MOLECULE_CALIBRATION_CURVE);
             var generalMoleculeId = getMutableColumn("GeneralMoleculeId");
             generalMoleculeId.setFk(new TargetedMSForeignKey(_userSchema, TargetedMSSchema.TABLE_MOLECULE, cf));
             generalMoleculeId.setLabel("Molecule");

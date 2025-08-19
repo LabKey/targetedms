@@ -123,6 +123,17 @@
             ]
         });
 
+        // Don't create form here - it will be created when the container is shown
+
+    });
+
+    function createForm()
+    {
+        if (form)
+        {
+            return; // Form already exists
+        }
+
         // syncMargin is the negative margin-left of the syncX and syncY fields.  If the filters are not being displayed
         // the sync fields slide under the width/height fields.
         var syncMargin;
@@ -141,7 +152,7 @@
             name: 'chromForm',
             border: false, frame: false,
             width:550,
-            height: 160,
+            autoHeight: true, // Don't set a fixed height. Use autoHeight to allow the ExtJS form to automatically size itself to fit all content
             defaults: {
                 labelWidth: 150,
                 labelHeight: 23,
@@ -277,9 +288,20 @@
             ],
         });
 
+        // Initialize form after creation
+        setupFormHandlers();
+        setInitialValues();
+        hideFieldsNotNeeded();
+    }
+
+    function setupFormHandlers()
+    {
         document.getElementById("clear-rep")['onclick'] = clearReplicates;
         document.getElementById("clear-annot")['onclick'] = clearAnnotations;
+    }
 
+    function setInitialValues()
+    {
         // This has to happen after form is rendered.
         form.getForm().findField("annotationsFilter").setValue(selectedAnnotationsFilterList);
         for(var i = 0; i < selectedAnnotationsFilterList.length; i++)
@@ -309,7 +331,10 @@
             }
         }
         manageFilterListVisibility();
+    }
 
+    function hideFieldsNotNeeded()
+    {
         // Hides multi-select combo boxes if there is only one or zero values in its value store.
         <%if(replicatesList.size() <= 1){%>
             form.getForm().findField("replicatesFilter").hide();
@@ -321,82 +346,82 @@
             form.getForm().findField("hideAnnotations").hide();
             hiddenFields++;
         <%}%>
+    }
 
-        // appendFilterItem adds a filter table row & column to the appropriate parent filter box.
-        function appendFilterItem(element, displayValue, parentTable, id) {
-            if(displayValue != null) {
-                let deleteIconId = 'delete-' + id;
-                let newRowContent = "<tr id=\""+LABKEY.Utils.encodeHtml(id)+"\"><td class=\"item\"><img id=\""+LABKEY.Utils.encodeHtml(deleteIconId)+"\" src='<%=getWebappURL("_images/delete.png")%>' style='width:10px; height:10px; margin-right:3px;'>"+LABKEY.Utils.encodeHtml(displayValue)+"</td></tr>";
-                element.append(newRowContent);
+    // appendFilterItem adds a filter table row & column to the appropriate parent filter box.
+    function appendFilterItem(element, displayValue, parentTable, id) {
+        if(displayValue != null) {
+            let deleteIconId = 'delete-' + id;
+            let newRowContent = "<tr id=\""+LABKEY.Utils.encodeHtml(id)+"\"><td class=\"item\"><img id=\""+LABKEY.Utils.encodeHtml(deleteIconId)+"\" src='<%=getWebappURL("_images/delete.png")%>' style='width:10px; height:10px; margin-right:3px;'>"+LABKEY.Utils.encodeHtml(displayValue)+"</td></tr>";
+            element.append(newRowContent);
 
-                document.getElementById(deleteIconId).addEventListener('click', function() {
-                    deleteFilter(this, parentTable);
-                });
-            }
+            document.getElementById(deleteIconId).addEventListener('click', function() {
+                deleteFilter(this, parentTable);
+            });
         }
+    }
 
-        // modifyFilter is triggered when user modifies selection through the combobox and will add/remove items from the list based on a newValue and an oldValue.
-        function modifyFilter(newValues, oldValues, parentId)
+    // modifyFilter is triggered when user modifies selection through the combobox and will add/remove items from the list based on a newValue and an oldValue.
+    function modifyFilter(newValues, oldValues, parentId)
+    {
+        if(newValues !=null && oldValues !=null)
         {
-            if(newValues !=null && oldValues !=null)
+            if(newValues.length >= oldValues.length)
             {
-                if(newValues.length >= oldValues.length)
+                for (var i = 0; i < newValues.length; i++)
                 {
-                    for (var i = 0; i < newValues.length; i++)
+                    if(oldValues.indexOf(newValues[i]) === -1)
                     {
-                        if(oldValues.indexOf(newValues[i]) === -1)
+                        var val;
+                        var id;
+                        if(parentId === "replicateFilters")
                         {
-                            var val;
-                            var id;
-                            if(parentId === "replicateFilters")
+                            for(var a = 0; a < replicateStore.getCount(); a++)
                             {
-                                for(var a = 0; a < replicateStore.getCount(); a++)
+                                if(replicateStore.data.items[a].data.replicateId === newValues[i])
                                 {
-                                    if(replicateStore.data.items[a].data.replicateId === newValues[i])
-                                    {
-                                        val = replicateStore.data.items[a].data.replicateName;
-                                        id =    replicateStore.data.items[a].data.replicateId;
-                                    }
+                                    val = replicateStore.data.items[a].data.replicateName;
+                                    id =    replicateStore.data.items[a].data.replicateId;
                                 }
                             }
-                            else
-                            {
-                                val = newValues[i];
-                                id = newValues[i];
-                            }
-                            appendFilterItem($('#'+parentId+''), val, parentId, id);
                         }
+                        else
+                        {
+                            val = newValues[i];
+                            id = newValues[i];
+                        }
+                        appendFilterItem($('#'+parentId+''), val, parentId, id);
                     }
                 }
-                else if(newValues.length < oldValues.length)
-                {
-                    for (var j = 0; j < oldValues.length; j++) {
-                        if(newValues.indexOf(oldValues[j]) === -1)
+            }
+            else if(newValues.length < oldValues.length)
+            {
+                for (var j = 0; j < oldValues.length; j++) {
+                    if(newValues.indexOf(oldValues[j]) === -1)
+                    {
+                        var textValue = oldValues[j];
+                        if(parentId === "replicateFilters")
                         {
-                            var textValue = oldValues[j];
-                            if(parentId === "replicateFilters")
+                            for(var a = 0; a < replicateStore.getCount(); a++)
                             {
-                                for(var a = 0; a < replicateStore.getCount(); a++)
+                                if(replicateStore.data.items[a].data.replicateId === oldValues[j])
                                 {
-                                    if(replicateStore.data.items[a].data.replicateId === oldValues[j])
-                                    {
-                                        textValue = replicateStore.data.items[a].data.replicateName;
-                                    }
+                                    textValue = replicateStore.data.items[a].data.replicateName;
                                 }
                             }
-                            var el = findByText(document.getElementById("allFilters"), textValue);
-                            var $el = $(el);
-                            if(null != el)
-                            {
+                        }
+                        var el = findByText(document.getElementById("allFilters"), textValue);
+                        var $el = $(el);
+                        if(null != el)
+                        {
                             $el.closest('tr').remove();
-                            }
                         }
                     }
                 }
             }
-            manageFilterListVisibility();
         }
-    });
+        manageFilterListVisibility();
+    }
 
     // Finds element that contains text value.  Searches all children of node.
     function findByText(node, text) {
@@ -485,6 +510,9 @@
             $('#showGraphImg').attr('src', <%= q(getWebappURL("/_images/minus.gif")) %>);
             $('#formContainer').show();
             $('#allFilters').show();
+
+            // Create the form after the container is visible
+            createForm();
         }
         else
         {
@@ -498,7 +526,7 @@
 <div id="headContainer">
     <% addHandler("showChartHeadContainer", "click", "showChart()"); %>
     <div id="showChartHeadContainer" style="margin-bottom: 10px;"><img id="showGraphImg" src="<%=getWebappURL("_images/plus.gif")%>"> <strong>Display Chart Settings</strong></div>
-    <div id="formContainer" style="float:left; width:550px; height: 160px; padding-bottom: 25px; display: none;"></div>
+    <div id="formContainer" style="float:left; width:550px; padding-bottom: 25px; display: none;"></div>
     <div id="allFilters" style="float:left; display: none;">
 
         <div style="float:left;" class="chrom_title_box" id="reptitle" >

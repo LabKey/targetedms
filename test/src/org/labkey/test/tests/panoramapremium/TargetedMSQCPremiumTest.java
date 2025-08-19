@@ -77,7 +77,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         // these tests use the UIContainerHelper for project creation, but we can use the APIContainerHelper for deletion
         APIContainerHelper apiContainerHelper = new APIContainerHelper(this);
         apiContainerHelper.deleteProject(getProjectName(), afterTest);
-        apiContainerHelper.deleteProject("PressureTraceQC", afterTest);
+        apiContainerHelper.deleteProject("PressureTraceQC", false);
         _userHelper.deleteUsers(false, USER);
     }
 
@@ -147,14 +147,12 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
     public void testAddNewMetric()
     {
         String metricName = "Test Custom Metric";
-        String schema1Name = "targetedms";
         String series1Query = "AQCTest_Metric"; //starting the query name with A to make it appear top in the list
 
         log("Adding new test custom metric");
         //need to preserve the insertion order
         Map<ConfigureMetricsUIPage.CustomMetricProperties, String > metricProperties = new LinkedHashMap<>();
         metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.metricName, metricName);
-        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.series1Schema, schema1Name);
         metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.series1Query, series1Query);
         metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.series1AxisLabel, metricName);
         metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.metricType, ConfigureMetricsUIPage.MetricType.Precursor.name());
@@ -178,13 +176,28 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
 
         configureUI = goToConfigureMetricsUI();
         metricProperties.clear();
-        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.metricName, metricName+"-Edited");
+        String metricName2 = metricName + "-Edited";
+        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.metricName, metricName2);
         configureUI.editMetric(metricName, metricProperties);
 
         log("Verifying new metric got edited");
         qcPlotsWebPart.clickMenuItem("Configure QC Metrics");
-        waitForElement(Locator.linkWithText(metricName + "-Edited"));
-        assertTextPresent(metricName + "-Edited");
+        waitForElement(Locator.linkWithText(metricName2));
+        assertTextPresent(metricName2);
+
+        configureUI = goToConfigureMetricsUI();
+        metricProperties.clear();
+        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.series2Query, "QCMetric_fwb");
+        configureUI.editMetric(metricName2, metricProperties);
+
+        qcPlotsWebPart.clickMenuItem("Configure QC Metrics");
+        waitForElement(Locator.linkWithText(metricName2));
+        assertTextPresent(metricName2, "Dual-metrics cannot be configured");
+        configureUI = goToConfigureMetricsUI();
+        configureUI.deleteMetric(metricName2);
+
+        configureUI = goToConfigureMetricsUI();
+        assertTextNotPresent(metricName2);
     }
 
     @Test

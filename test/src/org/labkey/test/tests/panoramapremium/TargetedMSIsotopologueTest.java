@@ -8,6 +8,7 @@ import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.components.ext4.Window;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
+import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
 
 import static org.junit.Assert.assertTrue;
@@ -67,9 +68,8 @@ public class TargetedMSIsotopologueTest extends TargetedMSPremiumTest
 
         log("Verifying that two new metric properties are added");
         clickButton("Add New Custom Metric", 0);
-        Window metricWindow = new Window.WindowFinder(getDriver()).withTitle("Add New Metric").waitFor();
-        assertElementPresent(Locator.name("enabledSchema"));
-        assertElementPresent(Locator.name("enabledQuery"));
+        Window<?> metricWindow = new Window.WindowFinder(getDriver()).withTitle("Add New Metric").waitFor();
+        assertElementPresent(Locator.name(ConfigureMetricsUIPage.CustomMetricProperties.enabledQuery.name()));
 
     }
 }
