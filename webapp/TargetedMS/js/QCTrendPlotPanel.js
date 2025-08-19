@@ -114,7 +114,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     if (value === "true" || value === "false") {
                         value = value === "true";
                     }
-                    else if (value !== undefined && value.length > 0 && !isNaN(Number(value))) {
+                    else if (value && value.length > 0 && !isNaN(Number(value))) {
                         value = +value;
                     }
                     else if (key === 'plotTypes') { // convert string to array
@@ -122,7 +122,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         value = value.replace('Levey-Jennings', 'Metric Value');
                         value = value.split(',');
                     }
-                    if(key === 'selectedAnnotations') {
+                    if(key === 'selectedAnnotations' && value) {
                         const annotations = {};
 
                         const a = value.split(',');
