@@ -30,6 +30,7 @@ import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.exp.api.ExpRun;
 import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.pipeline.PipeRoot;
+import org.labkey.api.pipeline.PipelineJob;
 import org.labkey.api.pipeline.PipelineJobException;
 import org.labkey.api.pipeline.PipelineService;
 import org.labkey.api.security.User;
@@ -105,7 +106,14 @@ public class TargetedMSDataHandler extends AbstractExperimentDataHandler
 
             TargetedMSManager.updateRun(run, info.getUser());
 
-            TargetedMSService.get().getSkylineDocumentImportListener().forEach(listener -> listener.onDocumentImport(context.getContainer(), info.getUser(), run));
+            try
+            {
+                TargetedMSService.get().getSkylineDocumentImportListener().forEach(listener -> listener.onDocumentImport(context.getContainer(), info.getUser(), run));
+            }
+            catch (RuntimeException e)
+            {
+                context.getJob().warn("Error calling SkylineDocumentImportListener.onDocumentImport", e);
+            }
 
             transaction.commit();
         }
