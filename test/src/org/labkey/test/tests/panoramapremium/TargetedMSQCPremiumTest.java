@@ -255,7 +255,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         refresh();
         PanoramaDashboard dashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = dashboard.getQcPlotsWebPart();
-        _ext4Helper.selectComboBoxItem(Locator.id("metric-type-field"), metricName);
+        _ext4Helper.selectComboBoxItem(Locator.id("metric-type-field1"), metricName);
         qcPlotsWebPart.waitForPlots(1);
         String pressurePlotSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
         assertFalse("Pressure trace plot is not present", pressurePlotSVGText.isEmpty());

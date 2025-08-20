@@ -826,7 +826,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         WebElement applyRangeButton = Ext4Helper.Locators.ext4Button("Apply").findWhenNeeded(this);
         Locator.XPathLocator scaleCombo = Locator.id("scale-combo-box");
         Locator.XPathLocator dateRangeCombo = Locator.id("daterange-combo-box");
-        Locator.XPathLocator metricTypeCombo = Locator.id("metric-type-field");
+        Locator.XPathLocator metricTypeCombo = Locator.id("metric-type-field1");
         WebElement trailingLast = Locator.id("trailingRuns-inputEl").findWhenNeeded(this);
 
         ComboBox qcPlotTypeCombo = new ComboBox.ComboBoxFinder(getDriver()).withIdPrefix("qc-plot-type-with-y-options")

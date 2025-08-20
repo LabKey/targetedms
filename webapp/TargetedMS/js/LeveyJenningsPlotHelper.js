@@ -22,42 +22,20 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
                 const seriesLabel = plotDataRow['SeriesLabel'];
                 const metricId = guideSetStat['MetricId'];
 
-                if (guideSetId > 0) {
-                    if (!this.guideSetDataMap[guideSetId]) {
-                        this.guideSetDataMap[guideSetId] = this.getGuideSetDataObj(guideSetStat);
-                    }
-
-                    if (!this.guideSetDataMap[guideSetId].Series[seriesLabel]) {
-                        this.guideSetDataMap[guideSetId].Series[seriesLabel] = {};
-                    }
-
-                    this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId] = {
-                        NumRecords: guideSetStat['NumRecords'],
-                        Mean: guideSetStat['LJMean'],
-                        StdDev: guideSetStat['LJStdDev']
-                    };
+                if (!this.guideSetDataMap[guideSetId]) {
+                    this.guideSetDataMap[guideSetId] = this.getGuideSetDataObj(guideSetStat);
                 }
-                else {
-                    if (!this.defaultGuideSet) {
-                        this.defaultGuideSet = {};
-                    }
 
-                    if (!this.defaultGuideSet[seriesLabel]) {
-                        this.defaultGuideSet[seriesLabel] = {};
-                    }
-
-                    if (!this.defaultGuideSet[seriesLabel][metricId]) {
-                        this.defaultGuideSet[seriesLabel][metricId] = {};
-                    }
-
-                    this.defaultGuideSet[seriesLabel][metricId].LJ = {
-                        NumRecords: guideSetStat['NumRecords'],
-                        Mean: guideSetStat['LJMean'],
-                        StdDev: guideSetStat['LJStdDev']
-                    };
+                if (!this.guideSetDataMap[guideSetId].Series[seriesLabel]) {
+                    this.guideSetDataMap[guideSetId].Series[seriesLabel] = {};
                 }
+
+                this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId] = {
+                    NumRecords: guideSetStat['NumRecords'],
+                    Mean: guideSetStat['LJMean'],
+                    StdDev: guideSetStat['LJStdDev']
+                };
             }, this);
-
         }, this);
     },
 
@@ -151,9 +129,9 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
 
     processLJPlotDataRow: function(row, fragment, metricId, metricProps)
     {
-        var data = {};
+        const data = {};
         // if a guideSetId is defined for this row, include the guide set stats values in the data object
-        if (Ext4.isDefined(row['GuideSetId']) && row['GuideSetId'] > 0) {
+        if (Ext4.isDefined(row['GuideSetId'])) {
             var gs = this.guideSetDataMap[row['GuideSetId']];
             if (Ext4.isDefined(gs) && gs.Series[fragment]&& gs.Series[fragment][metricId]) {
                 data['mean'] = gs.Series[fragment][metricId]['Mean'];
@@ -189,7 +167,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         combinePlotData.fragment = precursorInfo.fragment;
     },
 
-    getLJCombinedPlotLegendSeries: function(metricProps)
+    getLJCombinedPlotLegendSeries: function()
     {
         const result = ['value_' + this.metric];
         if (this.isMultiSeries()) {

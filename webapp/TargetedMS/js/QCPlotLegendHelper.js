@@ -21,12 +21,12 @@ if (!LABKEY.targetedms.QCPlotLegendHelper) {
         },
 
         getPrefix: function (name) {
-            return name.substr(0, Math.min(name.length, this.minLegendLength));
+            return name.substring(0, Math.min(name.length, this.minLegendLength));
         },
 
         getSuffix: function (name) {
             return (name.length > this.minLegendLength) ?
-                    name.substr(Math.max(this.minLegendLength, name.length - this.minLegendLength)) :
+                    name.substring(Math.max(this.minLegendLength, name.length - this.minLegendLength)) :
                     '';
         },
 
@@ -69,12 +69,12 @@ if (!LABKEY.targetedms.QCPlotLegendHelper) {
             while (true) {
                 var modificationIndex = seq.indexOf('[', index);
                 if (modificationIndex < 0) {
-                    stripped += seq.substr(index);
+                    stripped += seq.substring(index);
                     return stripped;
                 }
 
-                stripped += seq.substr(index, modificationIndex - 1 - index);
-                stripped += seq.substr(modificationIndex - 1, 1).toLowerCase();
+                stripped += seq.substring(index, modificationIndex - 1 - index);
+                stripped += seq.substring(modificationIndex - 1, 1).toLowerCase();
                 index = seq.indexOf(']', modificationIndex + 1) + 1;
                 if (index === 0)
                     return stripped;
@@ -101,7 +101,7 @@ if (!LABKEY.targetedms.QCPlotLegendHelper) {
                     return a.length <= b.length ? a : b;
                 });
                 while (commonLead.length > 0 && !this.moleculesStartWith(molecules, commonLead)) {
-                    commonLead = commonLead.substr(0, commonLead.length - 1);
+                    commonLead = commonLead.substring(0, commonLead.length - 1);
                 }
 
                 this.commonStartLength = (commonLead.length > minLength) ? commonLead.length : 0; // Very short common leads ok
@@ -118,7 +118,7 @@ if (!LABKEY.targetedms.QCPlotLegendHelper) {
             for (item in items) {
                 if (items.hasOwnProperty(item) && items[item] !== undefined && items[item].fragment !== undefined) {
                     this.addString((items[item].dataType === 'Peptide' ? this.stripModifications(items[item].fragment)
-                            : items[item].fragment.substr(this.commonStartLength)), items[item].dataType === 'Peptide');
+                            : items[item].fragment.substring(this.commonStartLength)), items[item].dataType === 'Peptide');
                 }
             }
         },
@@ -137,7 +137,7 @@ if (!LABKEY.targetedms.QCPlotLegendHelper) {
                 identifier = this.stripModifications(identifier);
             }
             else {
-                identifier = identifier.substr(this.commonStartLength);
+                identifier = identifier.substring(this.commonStartLength);
             }
 
             // Get sequences that match this prefix, and ones that match both prefix and suffix.

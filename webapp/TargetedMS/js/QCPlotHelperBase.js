@@ -40,14 +40,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     },
 
     getGuideSetDataObj : function(row) {
-        var guideSet = {
+        return {
             ReferenceEnd: row['ReferenceEnd'],
             TrainingEnd: row['TrainingEnd'],
             TrainingStart: row['TrainingStart'],
             Comment: row['Comment'],
             Series: {}
         };
-        return guideSet;
     },
 
     processRawGuideSetData: function (plotDataRows) {
@@ -60,42 +59,22 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 const metricId = guideSetStat['MetricId'];
                 const seriesLabel = plotDataRow['SeriesLabel'];
 
-                if (guideSetId === 0) {
-                    if (!this.defaultGuideSet) {
-                        this.defaultGuideSet = {};
-                    }
+                if (!this.guideSetDataMap[guideSetId]) {
+                    this.guideSetDataMap[guideSetId] = this.getGuideSetDataObj(guideSetStat);
+                }
+                if (!this.guideSetDataMap[guideSetId].Series[seriesLabel]) {
+                    this.guideSetDataMap[guideSetId].Series[seriesLabel] = {};
+                }
 
-                    if (!this.defaultGuideSet[seriesLabel]) {
-                        this.defaultGuideSet[seriesLabel] = {};
-                    }
-
-                    if (!this.defaultGuideSet[seriesLabel][metricId]) {
-                        this.defaultGuideSet[seriesLabel][metricId] = {};
-                    }
-
-                    this.defaultGuideSet[seriesLabel][metricId].MR = {
-                        Mean: guideSetStat['MeanMR'],
-                        StdDev: guideSetStat['StdDevMR']
+                if (!this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId]) {
+                    this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId] = {
+                        MeanMR: guideSetStat['MeanMR'],
+                        StdDevMR: guideSetStat['StdDevMR']
                     };
                 }
                 else {
-                    if (!this.guideSetDataMap[guideSetId]) {
-                        this.guideSetDataMap[guideSetId] = this.getGuideSetDataObj(guideSetStat);
-                    }
-                    if (!this.guideSetDataMap[guideSetId].Series[seriesLabel]) {
-                        this.guideSetDataMap[guideSetId].Series[seriesLabel] = {};
-                    }
-
-                    if (!this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId]) {
-                        this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId] = {
-                            MeanMR: guideSetStat['MeanMR'],
-                            StdDevMR: guideSetStat['StdDevMR']
-                        };
-                    }
-                    else {
-                        this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId].MeanMR = guideSetStat['MeanMR'];
-                        this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId].StdDevMR = guideSetStat['StdDevMR'];
-                    }
+                    this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId].MeanMR = guideSetStat['MeanMR'];
+                    this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId].StdDevMR = guideSetStat['StdDevMR'];
                 }
             }, this);
 
@@ -265,7 +244,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 var datesToAdd = [];
                 for (var j = 0; j < allPlotDateValues.length; j++) {
                     var dateVal = this.formatDate(allPlotDateValues[j], !this.groupedX);
-                    var dataIsMissingDate = precursorDates.indexOf(dateVal) == -1 && Ext4.Array.pluck(datesToAdd, dateProp).indexOf(dateVal) == -1;
+                    var dataIsMissingDate = precursorDates.indexOf(dateVal) === -1 && Ext4.Array.pluck(datesToAdd, dateProp).indexOf(dateVal) === -1;
                     if (dataIsMissingDate) {
                         datesToAdd.push({
                             type: 'missing',
@@ -396,7 +375,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         this.setBrushingEnabled(false);
         this.setPlotWidth(this.plotDivId);
 
-        var addedPlot = false;
+        let addedPlot;
         const metricProps = {};
         metricProps[this.metric] = this.getMetricPropsById(this.metric);
         if (this.isMultiSeries()) {
@@ -468,10 +447,10 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         if (precursorInfo) {
             // fragmentPlotData has plot data separated by series labels
-            var data = precursorInfo.data;
+            const data = precursorInfo.data;
 
-            for (var index = 0; index < data.length; index++) {
-                var pointDate = new Date(data[index].fullDate)
+            for (let index = 0; index < data.length; index++) {
+                const pointDate = new Date(data[index].fullDate)
                 if (pointDate >= startDate && pointDate < endDate) {
                     if (startIndex === undefined) {
                         startIndex = data[index].seqValue;
@@ -488,7 +467,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     endIndex = data[data.length - 1].seqValue;
                 }
 
-                var foundIndices = startIndex !== undefined && endIndex !== undefined;
+                const foundIndices = startIndex !== undefined && endIndex !== undefined;
 
                 if (foundIndices) {
                     this.expRunDetails['startIndex'] = startIndex;
@@ -549,17 +528,17 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         var legendHelper = LABKEY.targetedms.QCPlotLegendHelper;
         legendHelper.setupLegendPrefixes(this.testVals, 3);
 
-        for (var key in this.testVals) {
+        for (let key in this.testVals) {
             if (this.testVals.hasOwnProperty(key)) {
-                var val = legendHelper.getUniquePrefix(this.testVals[key].fragment, (this.testVals[key].dataType == 'Peptide'));
-                if(val !== this.testVals[key].result)
+                const val = legendHelper.getUniquePrefix(this.testVals[key].fragment, (this.testVals[key].dataType === 'Peptide'));
+                if (val !== this.testVals[key].result)
                     console.log("Incorrect result for " + this.testVals[key].fragment + ". Expected: " + this.testVals[key].result + ", Actual: " + val);
             }
         }
     },
 
     getCombinedPlotLegendData: function(metricProps, groupColors, yAxisCount, plotType, isCUSUMMean) {
-        var newLegendData = Ext4.Array.clone(this.legendData),
+        let newLegendData = Ext4.Array.clone(this.legendData),
                 proteomicsLegend = [{ //Temp holder for proteomics legend labels
                     text: 'Peptides',
                     separator: true
@@ -583,7 +562,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             });
         }
 
-        var legendSeries = this.getCombinedPlotLegendSeries(plotType, isCUSUMMean, metricProps);
+        const legendSeries = this.getCombinedPlotLegendSeries(plotType, isCUSUMMean);
 
         // traverse the precursor list for: calculating the longest legend string and combine the plot data
         for (var i = 0; i < this.precursors.length; i++)
@@ -591,9 +570,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             precursorInfo = this.fragmentPlotData[this.precursors[i]];
             // We may not have a match if it's been filtered out - see issue 38720
             if (precursorInfo) {
-                var appropriateLegend = precursorInfo.dataType === 'Peptide' ? proteomicsLegend : ionLegend;
+                const series1Legend = precursorInfo.dataType === 'Peptide' ? proteomicsLegend : ionLegend;
 
-                appropriateLegend.push({
+                series1Legend.push({
                     name: precursorInfo.fragment + (this.isMultiSeries() ? '|' + legendSeries[0] : ''),
                     text: this.legendHelper.getLegendItemText(precursorInfo),
                     hoverText: precursorInfo.fragment,
@@ -614,12 +593,12 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 separator: true
             });
 
-            for (var i = 0; i < this.precursors.length; i++)
+            for (let i = 0; i < this.precursors.length; i++)
             {
-                var appropriateLegend = precursorInfo.dataType === 'Peptide' ?  proteomicsLegend : ionLegend;
+                const series2Legend = precursorInfo.dataType === 'Peptide' ?  proteomicsLegend : ionLegend;
 
                 precursorInfo = this.fragmentPlotData[this.precursors[i]];
-                appropriateLegend.push({
+                series2Legend.push({
                     name: precursorInfo.fragment + '|' + legendSeries[1],
                     text: this.legendHelper.getLegendItemText(precursorInfo),
                     hoverText: precursorInfo.fragment,
@@ -643,10 +622,12 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         return newLegendData;
     },
 
-    getYScaleLabel: function(plotType, conversion, label) {
-        var yScaleLabel;
+    getYScaleLabel: function(plotType, conversion, metricProp) {
+        const label = metricProp.yAxisLabel;
 
-        var conversionLabel = null;
+        let yScaleLabel;
+
+        let conversionLabel = null;
 
         if (plotType !== LABKEY.vis.TrendingLinePlotType.MovingRange && plotType !== LABKEY.vis.TrendingLinePlotType.LeveyJennings) {
             yScaleLabel = 'Sum of Deviations'
@@ -671,32 +652,35 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 yScaleLabel = yScaleLabel ? (yScaleLabel + ' (' + conversionLabel + ')') : conversionLabel;
             }
         }
+        if (this.isMultiSeries()) {
+            yScaleLabel = metricProp.name + (yScaleLabel ? (' - ' + yScaleLabel) : '');
+        }
         return yScaleLabel;
     },
 
     getSubtitle: function(precursor) {
-        if (precursor === this.getMetricPropsById(this.metric).name)
-            return precursor;
-        else
-            return precursor + ' - ' + this.getMetricPropsById(this.metric).name;
+        if (!this.isMultiSeries()) {
+            return (precursor ? (precursor + ' - ') : '')  + this.getMetricPropsById(this.metric).name;
+        }
+        return precursor;
     },
 
     addEachCombinedPrecursorPlot: function(plotIndex, id, combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, plotType, isCUSUMMean) {
-        var plotLegendData = this.getCombinedPlotLegendData(metricProps, groupColors, yAxisCount, plotType, isCUSUMMean);
+        let plotLegendData = this.getCombinedPlotLegendData(metricProps, groupColors, yAxisCount, plotType, isCUSUMMean);
 
         if (plotType !== LABKEY.vis.TrendingLinePlotType.CUSUM) {
             this.showInvalidLogMsg(id, showLogInvalid);
         }
 
-        var disableRange = true;
+        let showRange = false;
         if (plotType === LABKEY.vis.TrendingLinePlotType.CUSUM && !this.getMetricPropsById(this.metric).series2QueryName) {
-            disableRange = false;
+            showRange = true;
         }
         else if (this.yAxisScale === 'standardDeviation' && plotType === LABKEY.vis.TrendingLinePlotType.LeveyJennings) {
-            disableRange = false;
+            showRange = true;
         }
         else if (plotType === LABKEY.vis.TrendingLinePlotType.LeveyJennings && (metricProps[this.metric].upperBound !== undefined || metricProps[this.metric].lowerBound !== undefined)) {
-            disableRange = false;
+            showRange = true;
         }
 
         let shapeProp = 'IgnoreInQC';
@@ -711,14 +695,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         }
 
         var trendLineProps = {
-            disableRangeDisplay: disableRange,
+            disableRangeDisplay: !showRange,
             xTick: this.groupedX ? 'groupedXTick' : 'fullDate',
             xTickLabel: 'date',
             shape: shapeProp,
             combined: true,
             yAxisScale: (showLogInvalid ? 'linear' : (this.yAxisScale !== 'log' ? 'linear' : 'log')),
             valueConversion: (this.yAxisScale === 'percentDeviation' || this.yAxisScale === 'standardDeviation' ? this.yAxisScale : undefined),
-            defaultGuideSets: this.defaultGuideSet,
             groupBy: 'fragment',
             color: 'fragment',
             defaultGuideSetLabel: 'fragment',
@@ -770,15 +753,15 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     value: mainTitle
                 },
                 subtitle: {
-                    value: this.getSubtitle("All Series", plotType, trendLineProps.valueConversion),
+                    value: this.getSubtitle(''),
                     visibility: 'hidden',  // Set as hidden so it doesn't clutter the web UI. It'll get set to visible during export, where it's useful context.
                     color: '#555555'
                 },
                 yLeft: {
-                    value: this.getYScaleLabel(plotType, trendLineProps.valueConversion, metricProps[this.metric].yAxisLabel)
+                    value: this.getYScaleLabel(plotType, trendLineProps.valueConversion, metricProps[this.metric])
                 },
                 yRight: {
-                    value: this.isMultiSeries() ? this.getYScaleLabel(plotType, trendLineProps.valueConversion, metricProps[this.metric2].yAxisLabel) : undefined,
+                    value: this.isMultiSeries() ? this.getYScaleLabel(plotType, trendLineProps.valueConversion, metricProps[this.metric2]) : undefined,
                     visibility: this.isMultiSeries() ? undefined : 'hidden'
                 }
             },
@@ -786,8 +769,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         });
 
         plotConfig.qcPlotType = plotType;
-        this.lastPlotConfig = plotConfig; // remember the plot config for generating legend popup
-        var plot = LABKEY.vis.TrendingLinePlot(plotConfig);
+        const plot = LABKEY.vis.TrendingLinePlot(plotConfig);
         plot.render();
 
         this.addAnnotationsToPlot(plot, combinePlotData);
@@ -803,9 +785,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     },
 
     addEachIndividualPrecursorPlot: function(plotIndex, id, precursorIndex, precursorInfo, metricProps, plotType, isCUSUMMean, scope) {
-        let trailingMeanORCVPlot = plotType === LABKEY.vis.TrendingLinePlotType.TrailingMean ||
+        let trailingMeanOrCVPlot = plotType === LABKEY.vis.TrendingLinePlotType.TrailingMean ||
                 plotType === LABKEY.vis.TrendingLinePlotType.TrailingCV;
-        if (trailingMeanORCVPlot) {
+        if (trailingMeanOrCVPlot) {
             if (this.trailingRuns >= this.runs) {
                 Ext4.get(id).update("<span class='labkey-error'> " + plotType + " - The number you entered is larger than the number of available runs. Only " + this.runs + " runs are used for calculation</span>");
                 return;
@@ -890,6 +872,29 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         const leftMargin = 75;
         const leftMarginOffset = this.getYAxisLeftMarginOffset(precursorInfo) + leftMargin;
 
+        const labels = {
+            main: {
+                value: mainTitle
+            },
+            subtitle: {
+                value: this.getSubtitle(this.precursors[precursorIndex]),
+                visibility: 'hidden',  // Set as hidden so it doesn't clutter the web UI. It'll get set to visible during export, where it's useful context.
+                color: '#555555'
+            },
+            yLeft: {
+                value: this.getYScaleLabel(plotType, trendLineProps.valueConversion, metricProps[this.metric]),
+                        position: leftMarginOffset > 0 ? leftMarginOffset - 15 : undefined
+            }
+        };
+        if (this.isMultiSeries()) {
+            const defaultColors = LABKEY.vis.Scale.ColorDiscrete();
+            labels.yLeft.color = defaultColors[0];
+            labels.yRight = {
+                value: this.getYScaleLabel(plotType, trendLineProps.valueConversion, metricProps[this.metric2]),
+                color: defaultColors[1]
+            }
+        }
+
         const basePlotConfig = this.getBasePlotConfig(id, precursorInfo.data, plotLegendData);
         const plotConfig = Ext4.apply(basePlotConfig, {
             margins : {
@@ -898,26 +903,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 bottom: 75,
                 right: (this.showInPlotLegends() ? 0 : 30) // if in plot, set to 0 to auto calculate margin; otherwise, set to small value to cut off legend
             },
-            labels : {
-                main: {
-                    value: mainTitle
-                },
-                subtitle: {
-                    value: this.getSubtitle(this.precursors[precursorIndex], plotType, trendLineProps.valueConversion),
-                    visibility: 'hidden',  // Set as hidden so it doesn't clutter the web UI. It'll get set to visible during export, where it's useful context.
-                    color: '#555555'
-                },
-                yLeft: {
-                    value: this.getYScaleLabel(plotType, trendLineProps.valueConversion, metricProps[this.metric].yAxisLabel),
-                    color: this.isMultiSeries() ? this.getColorRange()[0] : undefined,
-                    position: leftMarginOffset > 0 ? leftMarginOffset - 15 : undefined
-                },
-                yRight: {
-                    value: this.isMultiSeries() ? this.getYScaleLabel(plotType, trendLineProps.valueConversion, metricProps[this.metric2].yAxisLabel) : undefined,
-                    visibility: this.isMultiSeries() ? undefined : 'hidden',
-                    color: this.isMultiSeries() ? this.getColorRange()[1] : undefined
-                }
-            },
+            labels: labels,
             properties: trendLineProps,
             brushing: !this.allowGuideSetBrushing() ? undefined : {
                 dimension: 'x',
@@ -941,11 +927,10 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         // create plot using the JS Vis API
         plotConfig.qcPlotType = plotType;
-        this.lastPlotConfig = plotConfig; // remember the plot config for generating legend popup
-        var plot = LABKEY.vis.TrendingLinePlot(plotConfig);
+        const plot = LABKEY.vis.TrendingLinePlot(plotConfig);
         plot.render();
 
-        if (!trailingMeanORCVPlot) {
+        if (!trailingMeanOrCVPlot) {
             this.addAnnotationsToPlot(plot, precursorInfo);
         }
 
@@ -956,7 +941,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             this.highlightOutliersForClickedReplicate(plot, precursorInfo, parseInt(urlParams['replicateId']));
         }
 
-        var extraMargin = this.showInPlotLegends() ? 0 : 10 * this.longestLegendText;
+        const extraMargin = this.showInPlotLegends() ? 0 : 10 * this.longestLegendText;
         this.attachPlotExportIcons(id, mainTitle + '-' + this.precursors[precursorIndex] + '-' + this.getMetricPropsById(this.metric).name, plotIndex, this.getPlotWidth(), extraMargin);
     },
 

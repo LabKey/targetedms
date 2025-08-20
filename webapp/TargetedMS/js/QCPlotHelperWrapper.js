@@ -128,7 +128,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
     },
 
     addCombinedPeptideSinglePlot : function(metricProps) {
-        var     yAxisCount = this.isMultiSeries() ? 2 : 1, //Will only have a right if there is already a left y-axis
+        let     yAxisCount = this.isMultiSeries() ? 2 : 1, //Will only have a right if there is already a left y-axis
                 groupColors = this.getColorRange(),
                 combinePlotData = this.getCombinedPlotInitData(),
                 lengthOfLongestLegend = 8,  // At least length of label 'Peptides'
@@ -382,14 +382,14 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         }
     },
 
-    getCombinedPlotLegendSeries: function(plotType, isCUSUMMean, metricProps)
+    getCombinedPlotLegendSeries: function(plotType, isCUSUMMean)
     {
         if (plotType === LABKEY.vis.TrendingLinePlotType.MovingRange)
-            return this.getMRCombinedPlotLegendSeries(metricProps);
+            return this.getMRCombinedPlotLegendSeries();
         else if (plotType === LABKEY.vis.TrendingLinePlotType.CUSUM)
-            return this.getCUSUMCombinedPlotLegendSeries(isCUSUMMean, metricProps);
+            return this.getCUSUMCombinedPlotLegendSeries(isCUSUMMean);
         else
-            return this.getLJCombinedPlotLegendSeries(metricProps);
+            return this.getLJCombinedPlotLegendSeries();
     },
 
     getAdditionalPlotLegend: function(plotType, combinedPlot) {

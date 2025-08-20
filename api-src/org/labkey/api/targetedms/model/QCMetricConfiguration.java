@@ -25,7 +25,6 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
     private String _queryName;
     private boolean _precursorScoped;
     private String _enabledQueryName;
-    private String _enabledSchemaName;
     private QCMetricStatus _status;
     private String _traceName;
     private Double _minTimeValue;
@@ -94,16 +93,6 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
     public void setStatus(QCMetricStatus status)
     {
         _status = status;
-    }
-
-    public String getEnabledSchemaName()
-    {
-        return _enabledSchemaName;
-    }
-
-    public void setEnabledSchemaName(String enabledSchemaName)
-    {
-        _enabledSchemaName = enabledSchemaName;
     }
 
     public String getTraceName()
@@ -196,9 +185,6 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
         if (_enabledQueryName != null) {
             jsonObject.put("enabledQueryName", _enabledQueryName);
         }
-        if (_enabledQueryName != null) {
-            jsonObject.put("enabledSchemaName", _enabledSchemaName);
-        }
         if (_traceName != null) {
             jsonObject.put("traceName", _traceName);
         }
@@ -215,7 +201,7 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
             jsonObject.put("timeValueOption", _timeValueOption);
         }
         if (_yAxisLabel != null) {
-            jsonObject.put("yAxisLabels", _yAxisLabel);
+            jsonObject.put("yAxisLabel", _yAxisLabel);
         }
         if (_lowerBound != null) {
             jsonObject.put("lowerBound", _lowerBound);
