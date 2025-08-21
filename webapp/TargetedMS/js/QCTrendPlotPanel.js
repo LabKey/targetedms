@@ -405,7 +405,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (!this.mainPlotOptionsToolbar) {
             var toolbarItems = [
                 this.getMetricCombo1(),
-                {xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'},
                 this.getMetricCombo2(),
                 {xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'},
                 this.getDateRangeCombo()
@@ -589,9 +588,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     isValidQCPlotType: function(plotType) {
         var valid = false;
         Ext4.each(LABKEY.targetedms.QCPlotHelperBase.qcPlotTypes, function(type){
-            if (plotType == type) {
+            if (plotType === type) {
                 valid = true;
-                return;
             }
         });
         return valid;
@@ -605,7 +603,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             metric;
 
         paramValue = urlParams['metric'];
-        if (paramValue != undefined) {
+        if (paramValue !== undefined) {
             metric = this.validateMetricId(paramValue);
             if(metric == null) {
                 alertMessage += "Invalid Metric, reverting to default metric.";
@@ -616,9 +614,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }
         }
 
-        if (urlParams['startDate'] != undefined) {
+        if (urlParams['startDate'] !== undefined) {
             paramValue = new Date(urlParams['startDate']);
-            if(paramValue == "Invalid Date") {
+            if(paramValue === "Invalid Date") {
                 alertMessage += sep + "Invalid Start Date, reverting to default start date.";
                 sep = ' ';
             }
@@ -628,9 +626,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }
         }
 
-        if (urlParams['endDate'] != undefined) {
+        if (urlParams['endDate'] !== undefined) {
             paramValue = new Date(urlParams['endDate']);
-            if(paramValue == "Invalid Date") {
+            if(paramValue === "Invalid Date") {
                 alertMessage += sep + "Invalid End Date, reverting to default end date.";
             }
             else {
@@ -640,7 +638,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }
 
         paramValue = urlParams['plotTypes'];
-        if (paramValue != undefined) {
+        if (paramValue !== undefined) {
             var plotTypes = [];
             if (!Ext4.isArray(paramValue))
                 paramValue = paramValue.split(',');
@@ -651,7 +649,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }, this);
 
 
-            if (plotTypes.length == 0) {
+            if (plotTypes.length === 0) {
                 alertMessage += sep + "Invalid Plot Type, reverting to default plot type.";
             }
             else {
@@ -672,7 +670,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     validateMetricId : function(id) {
         for (var i = 0; i < this.metricPropArr.length; i++) {
-            if (this.metricPropArr[i].id == id) {
+            if (this.metricPropArr[i].id === id) {
                 return this.metricPropArr[i].id;
             }
         }
@@ -871,7 +869,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             id: 'metric-type-field' + (primary ? '1' : '2'),
             width: 350,
             labelWidth: 50,
-            fieldLabel: 'Metric ' + (primary ? '1' : '2'),
+            fieldLabel: primary ? 'Metrics' : undefined,
             triggerAction: 'all',
             mode: 'local',
             store: Ext4.create('Ext.data.Store', {
@@ -1318,7 +1316,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     dateCount[annotationDate]++;
 
                     // get unique annotation names and colors for the legend
-                if (Ext4.Array.pluck(this.legendData, "text").indexOf(annotation['Name']) == -1) {
+                if (Ext4.Array.pluck(this.legendData, "text").indexOf(annotation['Name']) === -1) {
                         this.legendData.push({
                             text: annotation['Name'],
                             color: '#' + annotation['Color'],
@@ -1436,13 +1434,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     highlightFragmentSeries : function(fragment) {
-        var metricProps = this.getMetricPropsById(this.metric);
-
         var points = d3.selectAll('.point path');
         var pointOpacityAcc = function(d) { return d.fragment === undefined || d.fragment === null || d.fragment === fragment ? 1 : 0.1 };
         points.attr('fill-opacity', pointOpacityAcc).attr('stroke-opacity', pointOpacityAcc);
 
-        var hasYRightMetric = metricProps.series2QueryName !== undefined;
+        var hasYRightMetric = this.metric2;
         var lines = d3.selectAll('path.line');
         var lineOpacityAcc = function(d) { return d.group === undefined || d.group === null || d.group.indexOf(fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1 };
         lines.attr('fill-opacity', lineOpacityAcc).attr('stroke-opacity', lineOpacityAcc);
@@ -1559,7 +1555,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (this.plotBrushSelection) {
             this.getSvgElForPlot(this.plotBrushSelection.plot).selectAll(".guideset-svg-button").remove();
 
-            if (this.plotBrushSelection.plot != plot) {
+            if (this.plotBrushSelection.plot !== plot) {
                 this.plotBrushSelection.plot.clearBrush();
             }
         }
@@ -1633,6 +1629,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         // find the x-axis starting and ending index based on the guide set information attached to each data point
         Ext4.Object.each(this.guideSetDataMap, function(guideSetId, guideSetData) {
+            // each() treats the indices as property names, so convert back to an integer
+            guideSetId = parseInt(guideSetId);
             // only compare guide set info for matching precursor fragment
             if (!this.singlePlot && guideSetData.Series[precursorInfo.fragment] === undefined) {
                 return true; // continue
@@ -1649,8 +1647,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                       series: metricIds[0]};
             for (var j = 0; j < precursorInfo.data.length; j++) {
                 // only use data points that match the GuideSet RowId and are in the training set range
-                if (precursorInfo.data[j].guideSetId == gs.GuideSetId && precursorInfo.data[j].inGuideSetTrainingRange) {
-                    if (gs.StartIndex == undefined)
+                if (precursorInfo.data[j].guideSetId === gs.GuideSetId && precursorInfo.data[j].inGuideSetTrainingRange) {
+                    if (gs.StartIndex === undefined)
                     {
                         gs.StartIndex = precursorInfo.data[j].seqValue;
                     }
@@ -1658,7 +1656,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 }
             }
 
-            if (gs.StartIndex != undefined) {
+            if (gs.StartIndex !== undefined) {
                 guideSetTrainingData.push(gs);
             }
         }, this);
@@ -1797,7 +1795,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             // determine the annotation index based on the "date" but unique values are based on "groupedXTick"
             var prevGroupedXTick = null;
             Ext4.each(precursorInfo.data, function(row) {
-                if (row['groupedXTick'] != prevGroupedXTick) {
+                if (row['groupedXTick'] !== prevGroupedXTick) {
                     xAxisLabels.push(row['date']);
                 }
                 prevGroupedXTick = row['groupedXTick'];
@@ -1881,7 +1879,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             endDateValue = this.getEndDateField().getValue();
 
         // make sure that at least one filter field is not null
-        if (startDateRawValue == '' && endDateRawValue == '') {
+        if (startDateRawValue === '' && endDateRawValue === '') {
             Ext4.Msg.show({
                 title:'ERROR',
                 msg: 'Please enter a value for filtering.',
@@ -1890,7 +1888,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             });
         }
         // verify that the start date is not after the end date
-        else if (startDateValue > endDateValue && endDateValue != '') {
+        else if (startDateValue > endDateValue && endDateValue !== '') {
             Ext4.Msg.show({
                 title:'ERROR',
                 msg: 'Please enter an end date that does not occur before the start date.',
@@ -1924,7 +1922,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     applyAnnotationFiltersBtnClick: function() {
         // make sure that at least one filter is selected
-        if (this.getAnnotationListTree().getChecked().length == 0) {
+        if (this.getAnnotationListTree().getChecked().length === 0) {
             Ext4.Msg.show({
                 title:'ERROR',
                 msg: 'Please select a replicate annotation.',
@@ -2009,7 +2007,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         var annotationsTree = this.getAnnotationListTree();
         var records = annotationsTree.getChecked();
 
-        if(records.length == 0) {
+        if(records.length === 0) {
             return;
         }
 
@@ -2039,7 +2037,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     buttons: Ext4.Msg.YESNO,
                     scope: this,
                     fn: function(btnId, text, opt){
-                        if(btnId == 'yes'){
+                        if(btnId === 'yes'){
                             this.insertNewGuideSet(startDate, endDate);
                         }
                     }

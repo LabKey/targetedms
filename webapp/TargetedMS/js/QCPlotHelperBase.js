@@ -67,15 +67,14 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 }
 
                 if (!this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId]) {
-                    this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId] = {
-                        MeanMR: guideSetStat['MeanMR'],
-                        StdDevMR: guideSetStat['StdDevMR']
-                    };
+                    this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId] = {}
                 }
-                else {
-                    this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId].MeanMR = guideSetStat['MeanMR'];
-                    this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId].StdDevMR = guideSetStat['StdDevMR'];
-                }
+                this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId].MeanMR = guideSetStat['MeanMR'];
+                this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId].StdDevMR = guideSetStat['StdDevMR'];
+                this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId].MeanTrailingMean = guideSetStat['MeanTrailingMean'];
+                this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId].StdDevTrailingMean = guideSetStat['StdDevTrailingMean'];
+                this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId].MeanTrailingCV = guideSetStat['MeanTrailingCV'];
+                this.guideSetDataMap[guideSetId].Series[seriesLabel][metricId].StdDevTrailingCV = guideSetStat['StdDevTrailingCV'];
             }, this);
 
         }, this);
@@ -203,7 +202,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 var data = this.processPlotDataRow(plotData, plotDataRow, fragment, metricProps);
                 this.fragmentPlotData[fragment].data.push(data);
                 this.fragmentPlotData[fragment].precursorScoped = metricProps[data.MetricId].precursorScoped;
-                this.setSeriesMinMax(this.fragmentPlotData[fragment], data, metricProps);
+                this.setSeriesMinMax(this.fragmentPlotData[fragment], data);
                 allPlotDateValues.push(data.fullDate);
 
             }, this);
@@ -673,7 +672,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         }
 
         let showRange = false;
-        if (plotType === LABKEY.vis.TrendingLinePlotType.CUSUM && !this.getMetricPropsById(this.metric).series2QueryName) {
+        if (plotType === LABKEY.vis.TrendingLinePlotType.CUSUM && !this.metric2) {
             showRange = true;
         }
         else if (this.yAxisScale === 'standardDeviation' && plotType === LABKEY.vis.TrendingLinePlotType.LeveyJennings) {
@@ -793,7 +792,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 return;
             }
             else if (this.trailingRuns <= 2) {
-                Ext4.get(id).update("<span class='labkey-error'> " + plotType + " - Please enter a positive integer (>2) that is less than or equal to total number of available runs - " + this.runs + " </span>");
+                Ext4.get(id).update("<span class='labkey-error'> " + plotType + " - Please enter a positive integer (>2) that is less than or equal to the total number of available runs - " + this.runs + " </span>");
                 return;
             }
         }

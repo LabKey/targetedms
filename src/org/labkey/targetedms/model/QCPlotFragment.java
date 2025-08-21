@@ -99,6 +99,16 @@ public class QCPlotFragment
                 statsJSONObject.put("StdDevMR", stats.getMovingRangeStdDev());
                 statsJSONObject.put("MeanMR", stats.getMovingRangeAverage());
             }
+            if (includeTrailingMean)
+            {
+                statsJSONObject.put("StdDevTrailingMean", stats.getTrailingMeanStdDev());
+                statsJSONObject.put("MeanTrailingMean", stats.getTrailingMeanAverage());
+            }
+            if (includeTrailingCV)
+            {
+                statsJSONObject.put("StdDevTrailingCV", stats.getTrailingCVStdDev());
+                statsJSONObject.put("MeanTrailingCV", stats.getTrailingCVAverage());
+            }
             statsJSONObject.put("Comment", stats.getGuideSet().getComment());
             statsJSONObject.put("ReferenceEnd", stats.getGuideSet().getReferenceEnd());
             statsJSONObject.put("TrainingStart", stats.getGuideSet().getTrainingStart());

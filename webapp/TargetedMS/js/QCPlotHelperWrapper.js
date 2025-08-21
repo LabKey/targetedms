@@ -217,10 +217,10 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         return true;
     },
 
-    setSeriesMinMax: function(dataObject, row, metricProps) {
+    setSeriesMinMax: function(dataObject, row) {
         // track the min and max data so we can get the range for including the QC annotations
         if (this.showMetricValuePlot)
-            this.setLJSeriesMinMax(dataObject, row, metricProps);
+            this.setLJSeriesMinMax(dataObject, row);
         if (this.showMovingRangePlot())
             this.setMovingRangeSeriesMinMax(dataObject, row);
         if (this.showMeanCUSUMPlot())
@@ -228,7 +228,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         if (this.showVariableCUSUMPlot())
             this.setCUSUMSeriesMinMax(dataObject, row, false);
         if (this.showTrailingMeanPlot())
-            this.setTrailingMeanMinMax(dataObject, row, metricProps);
+            this.setTrailingMeanMinMax(dataObject, row);
         if (this.showTrailingCVPlot())
             this.setTrailingCVMinMax(dataObject, row);
     },
@@ -239,7 +239,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         else if (plotType === LABKEY.vis.TrendingLinePlotType.CUSUM)
             return this.getCUSUMPlotTypeProperties(precursorInfo, isMean, metricProps);
         else if (plotType === LABKEY.vis.TrendingLinePlotType.TrailingMean)
-            return this.getTrailingMeanPlotTypeProperties(precursorInfo);
+            return this.getTrailingMeanPlotTypeProperties(precursorInfo, metricProps);
         else if (plotType === LABKEY.vis.TrendingLinePlotType.TrailingCV)
             return this.getTrailingCVPlotTypeProperties(precursorInfo, metricProps);
         else
@@ -316,6 +316,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         };
 
         // if a guideSetId is defined for this row, include the guide set stats values in the data object
+        // Don't do this for the default guideset (Id === 0)
         if (Ext4.isDefined(row['GuideSetId']) && row['GuideSetId'] > 0) {
             var gs = this.guideSetDataMap[row['GuideSetId']];
             if (Ext4.isDefined(gs) && gs.Series[fragment]) {
@@ -388,6 +389,10 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
             return this.getMRCombinedPlotLegendSeries();
         else if (plotType === LABKEY.vis.TrendingLinePlotType.CUSUM)
             return this.getCUSUMCombinedPlotLegendSeries(isCUSUMMean);
+        else if (plotType === LABKEY.vis.TrendingLinePlotType.TrailingCV)
+            return this.getTrailingCVCombinedPlotLegendSeries();
+        else if (plotType === LABKEY.vis.TrendingLinePlotType.TrailingMean)
+            return this.getTrailingMeanCombinedPlotLegendSeries();
         else
             return this.getLJCombinedPlotLegendSeries();
     },

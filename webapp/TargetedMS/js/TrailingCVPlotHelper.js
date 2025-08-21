@@ -11,7 +11,16 @@ Ext4.define("LABKEY.targetedms.TrailingCVPlotHelper", {
         }
     },
     processTrailingCVPlotDataRow: function(row, fragment, metricId, metricProps) {
-        let data = {};
+        const data = {};
+        if (Ext4.isDefined(row['GuideSetId']))
+        {
+            var gs = this.guideSetDataMap[row['GuideSetId']];
+            if (Ext4.isDefined(gs) && gs.Series[fragment] && gs.Series[fragment][metricId])
+            {
+                data['meanTrailingCV'] = gs.Series[fragment][metricId]['MeanTrailingCV'];
+                data['stddevTrailingCV'] = gs.Series[fragment][metricId]['StdDevTrailingCV'];
+            }
+        }
 
         if (this.isMultiSeries())
         {
@@ -26,12 +35,17 @@ Ext4.define("LABKEY.targetedms.TrailingCVPlotHelper", {
 
     },
 
+    getTrailingCVCombinedPlotLegendSeries: function()
+    {
+        return ['TrailingCV_' + this.metric, 'TrailingCV_' + this.metric2];
+    },
+
     getTrailingCVPlotTypeProperties: function(precursorInfo, metricProps) {
         let plotProperties = {};
         // some properties are specific to whether we are showing multiple y-axis series
         if (this.isMultiSeries()) {
-            plotProperties['TrailingCV'] = 'value_' + this.metric;
-            plotProperties['TrailingCVRight'] = 'value_' + this.metric2;
+            plotProperties['TrailingCV'] = 'TrailingCV_' + this.metric;
+            plotProperties['TrailingCVRight'] = 'TrailingCV_' + this.metric2;
         }
         else {
             plotProperties['TrailingCV'] = 'TrailingCV';

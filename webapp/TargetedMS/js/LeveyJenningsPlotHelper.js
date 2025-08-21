@@ -39,7 +39,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         }, this);
     },
 
-    setLJSeriesMinMax: function(dataObject, row, metricProps) {
+    setLJSeriesMinMax: function(dataObject, row) {
         // track the min and max data so we can get the range for including the QC annotations
         const val = row['value'];
         if (LABKEY.vis.isValid(val)) {
@@ -179,12 +179,12 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
     getLJLegend: function (combinedPlot) {
         var ljLegend = [];
 
-        if (!this.getMetricPropsById(this.metric).series2Label) {
+        if (!this.metric2) {
             let metricInfo = this.getMetricPropsById(this.metric);
-            let isCombinedValueCutOff = LABKEY.targetedms.MetricStatus.ValueCutoff && combinedPlot;
+            let isCombinedValueCutOff = metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.ValueCutoff && combinedPlot;
             let isYAxisScaleLinearOrLog = this.yAxisScale === 'linear' || this.yAxisScale === 'log';
             let showLegend = (isYAxisScaleLinearOrLog && isCombinedValueCutOff) || !isCombinedValueCutOff;
-            if (showLegend|| metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.MeanDeviationCutoff) {
+            if (showLegend || metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.MeanDeviationCutoff) {
                 if (Number.isFinite(metricInfo.upperBound)) {
                     ljLegend.push({
                         text: 'Upper: ' + metricInfo.upperBound,

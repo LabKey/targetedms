@@ -12,7 +12,17 @@ Ext4.define("LABKEY.targetedms.TrailingMeanPlotHelper", {
     },
 
     processTrailingMeanPlotDataRow: function(row, fragment, metricId, metricProps) {
-        let data = {};
+        const data = {};
+
+        if (Ext4.isDefined(row['GuideSetId']))
+        {
+            var gs = this.guideSetDataMap[row['GuideSetId']];
+            if (Ext4.isDefined(gs) && gs.Series[fragment] && gs.Series[fragment][metricId])
+            {
+                data['meanTrailingMean'] = gs.Series[fragment][metricId]['MeanTrailingMean'];
+                data['stddevTrailingMean'] = gs.Series[fragment][metricId]['StdDevTrailingMean'];
+            }
+        }
 
         if (this.isMultiSeries()) {
             data['TrailingMean_' + metricId] = row['TrailingMean'];
@@ -24,7 +34,7 @@ Ext4.define("LABKEY.targetedms.TrailingMeanPlotHelper", {
         return data;
     },
 
-    getTrailingMeanPlotTypeProperties: function(precursorInfo) {
+    getTrailingMeanPlotTypeProperties: function(precursorInfo, metricProps) {
         let plotProperties = {};
         // some properties are specific to whether we are showing multiple y-axis series
         if (this.isMultiSeries()) {
@@ -33,20 +43,26 @@ Ext4.define("LABKEY.targetedms.TrailingMeanPlotHelper", {
         }
         else {
             plotProperties['TrailingMean'] = 'TrailingMean';
-
-            let min = Math.min(...precursorInfo.data.map(function(object) {
-                return object.TrailingMean;
-            }));
-            let max = Math.max(...precursorInfo.data.map(function(object) {
-                return object.TrailingMean;
-            }));
-
-            plotProperties['yAxisDomain'] = [min, max];
         }
+
+        // let min = Math.min(...precursorInfo.data.map(function(object) {
+        //     return object.TrailingMean;
+        // }));
+        // let max = Math.max(...precursorInfo.data.map(function(object) {
+        //     return object.TrailingMean;
+        // }));
+        //
+        // plotProperties['yAxisDomain'] = [0, 10];//precursorInfo.minTrailingMean, precursorInfo.maxTrailingMean];
+
         return plotProperties;
     },
 
-    setTrailingMeanMinMax: function (dataObject, row, metricProps) {
+    getTrailingMeanCombinedPlotLegendSeries: function()
+    {
+        return ['TrailingMean_' + this.metric, 'TrailingMean_' + this.metric2];
+    },
+
+    setTrailingMeanMinMax: function (dataObject, row) {
         // track the min and max data, so we can get the range for including the QC annotations
         let val = row['TrailingMean' + (this.isMultiSeries() ? ('_' + row.MetricId) : '')];
         if (LABKEY.vis.isValid(val)) {

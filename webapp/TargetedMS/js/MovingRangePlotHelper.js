@@ -7,7 +7,7 @@ Ext4.define("LABKEY.targetedms.MovingRangePlotHelper", {
     extend: 'LABKEY.targetedms.QCPlotHelperBase',
     statics: {
         tooltips: {
-            'Moving Range' : 'An MR plot plots the moving range over time to monitor process variation for individual observations ' +
+            'Moving Range' : 'Moving range plots show the variation for individual observations ' +
             'by using the sequential differences between two successive values as a measure of dispersion.'
         }
     },
@@ -54,7 +54,7 @@ Ext4.define("LABKEY.targetedms.MovingRangePlotHelper", {
     getMovingRangePlotTypeProperties: function(precursorInfo)
     {
         var plotProperties = {};
-        // some properties are specific to whether or not we are showing multiple y-axis series
+        // some properties are specific to whether we are showing multiple y-axis series
         if (this.isMultiSeries())
         {
             plotProperties['valueMR'] = 'MR_' + this.metric;
@@ -80,9 +80,9 @@ Ext4.define("LABKEY.targetedms.MovingRangePlotHelper", {
     },
     processMRPlotDataRow: function(row, fragment, metricId, metricProps)
     {
-        var data = {};
+        const data = {};
         // if a guideSetId is defined for this row, include the guide set stats values in the data object
-        if (Ext4.isDefined(row['GuideSetId']) && row['GuideSetId'] > 0)
+        if (Ext4.isDefined(row['GuideSetId']))
         {
             var gs = this.guideSetDataMap[row['GuideSetId']];
             if (Ext4.isDefined(gs) && gs.Series[fragment] && gs.Series[fragment][metricId])
@@ -130,7 +130,7 @@ Ext4.define("LABKEY.targetedms.MovingRangePlotHelper", {
         var mrLegend = [];
 
         // Not showing limits for standard deviation
-        if (this.yAxisScale !== 'standardDeviation' && !this.singlePlot && !this.getMetricPropsById(this.metric).series2Label) {
+        if (this.yAxisScale !== 'standardDeviation' && !this.singlePlot && !this.metric2) {
             mrLegend.push({
                 text: 'Moving Range',
                 separator: true
