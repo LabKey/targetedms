@@ -176,85 +176,77 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         return result;
     },
 
-    getLJLegend: function (combinedPlot) {
-        var ljLegend = [];
+    getLJLegend: function () {
+        const ljLegend = [];
 
         if (!this.metric2) {
             let metricInfo = this.getMetricPropsById(this.metric);
-            let isCombinedValueCutOff = metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.ValueCutoff && combinedPlot;
-            let isYAxisScaleLinearOrLog = this.yAxisScale === 'linear' || this.yAxisScale === 'log';
-            let showLegend = (isYAxisScaleLinearOrLog && isCombinedValueCutOff) || !isCombinedValueCutOff;
-            if (showLegend || metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.MeanDeviationCutoff) {
-                if (Number.isFinite(metricInfo.upperBound)) {
-                    ljLegend.push({
-                        text: 'Upper: ' + metricInfo.upperBound,
-                        color: 'red',
-                        shape: LABKEY.vis.TrendingLineShape.stdDevLJ
-                    });
-                }
-                if (Number.isFinite(metricInfo.lowerBound)) {
-                    ljLegend.push({
-                        text: 'Lower: ' + metricInfo.lowerBound,
-                        color: 'red',
-                        shape: LABKEY.vis.TrendingLineShape.stdDevLJ
-                    });
-                }
-            }
 
-            let upper = Number.isFinite(metricInfo.upperBound) ? metricInfo.upperBound : 3;
-            let lower = Number.isFinite(metricInfo.lowerBound) ? metricInfo.lowerBound : -3;
-            if ( (metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.LeveyJennings || metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.PlotOnly) &&
-                    (!this.singlePlot && this.yAxisScale === 'standardDeviation')) {
-
-                if (lower === upper * -1) {
-                    ljLegend.push({
-                        text: '+/- ' + upper + ' Std Dev',
-                        color: 'red',
-                        shape: LABKEY.vis.TrendingLineShape.stdDevLJ
-                    });
+            if (metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.ValueCutoff) {
+                const isYAxisScaleLinearOrLog = this.yAxisScale === 'linear' || this.yAxisScale === 'log';
+                if (isYAxisScaleLinearOrLog) {
+                    if (Number.isFinite(metricInfo.upperBound)) {
+                        ljLegend.push({
+                            text: 'Upper: ' + metricInfo.upperBound,
+                            color: 'red',
+                            shape: LABKEY.vis.TrendingLineShape.stdDevLJ
+                        });
+                    }
+                    if (Number.isFinite(metricInfo.lowerBound)) {
+                        ljLegend.push({
+                            text: 'Lower: ' + metricInfo.lowerBound,
+                            color: 'red',
+                            shape: LABKEY.vis.TrendingLineShape.stdDevLJ
+                        });
+                    }
                 }
-                else {
-                    ljLegend.push({
-                        text: (upper > 0 ? '+' : '') + upper + '/' + (lower > 0 ? '+' : '') + lower + ' Std Dev',
-                        color: 'red',
-                        shape: LABKEY.vis.TrendingLineShape.stdDevLJ
-                    });
-                }
-            }
+            } else {
+                let upper = Number.isFinite(metricInfo.upperBound) ? metricInfo.upperBound : 3;
+                let lower = Number.isFinite(metricInfo.lowerBound) ? metricInfo.lowerBound : -3;
+                if ((metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.LeveyJennings ||
+                                metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.PlotOnly) &&
+                        (this.yAxisScale === 'standardDeviation' || !this.singlePlot)) {
 
-            if (!this.singlePlot) {
-                ljLegend.push({
-                    text: 'Mean',
-                    color: 'darkgrey',
-                    shape: LABKEY.vis.TrendingLineShape.meanLJ
-                });
-            }
-
-            if (this.singlePlot && this.yAxisScale === 'standardDeviation' && metricInfo.metricStatus === LABKEY.targetedms.MetricStatus.LeveyJennings) {
-                if (lower === upper * -1) {
-                    ljLegend.push({
-                        text: '+/- ' + upper + ' Std Dev',
-                        color: 'red',
-                        shape: LABKEY.vis.TrendingLineShape.stdDevLJ
-                    });
+                    if (lower === upper * -1) {
+                        ljLegend.push({
+                            text: '+/- ' + upper + ' Std Dev',
+                            color: 'red',
+                            shape: LABKEY.vis.TrendingLineShape.stdDevLJ
+                        });
+                    } else {
+                        ljLegend.push({
+                            text: (upper > 0 ? '+' : '') + upper + '/' + (lower > 0 ? '+' : '') + lower + ' Std Dev',
+                            color: 'red',
+                            shape: LABKEY.vis.TrendingLineShape.stdDevLJ
+                        });
+                    }
                 }
-                else {
+
+                if (!this.singlePlot) {
+                    if (ljLegend.length === 0) {
+                        ljLegend.push({
+                            text: 'Outlier bounds',
+                            color: 'red',
+                            shape: LABKEY.vis.TrendingLineShape.stdDevLJ
+                        });
+                    }
+
                     ljLegend.push({
-                        text: (upper > 0 ? '+' : '') + upper + '/' + (lower > 0 ? '+' : '') + lower + ' Std Dev',
-                        color: 'red',
-                        shape: LABKEY.vis.TrendingLineShape.stdDevLJ
+                        text: 'Mean',
+                        color: 'darkgrey',
+                        shape: LABKEY.vis.TrendingLineShape.meanLJ
                     });
                 }
             }
         }
 
-        if (ljLegend.length > 0)
-        {
+        if (ljLegend.length > 0) {
             ljLegend.splice(0, 0, {
                 text: '',
                 separator: true
             });
         }
+
         return ljLegend;
     }
 
