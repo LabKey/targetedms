@@ -38,7 +38,7 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
     public enum MetricTypeTicks
     {
         RETENTION("Retention Time"),
-        TOTAL_PEAK("Total Peak Area"),
+        TOTAL_PEAK("Total Peak Area (Precursor + Transition)"),
         FWHM("Full Width at Half Maximum (FWHM)"),
         FWB("Full Width at Base (FWB)"),
         LHRATIO("Light/Heavy Ratio"),

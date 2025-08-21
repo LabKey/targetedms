@@ -96,67 +96,68 @@ public class TargetedMSQCTest extends TargetedMSTest
 
 
     private static final String longPeptideJSTest =
-            "var testVals = {\n" +
-                    "        a: {fragment:'', dataType: 'Peptide', result: ''},\n" +
-                    "        b: {fragment:'A', dataType: 'Peptide', result: 'A'},\n" +
-                    "        c: {fragment:'A', dataType: 'Peptide', result: 'A'}, // duplicate\n" +
-                    "        d: {fragment:'AB', dataType: 'Peptide', result: 'AB'},\n" +
-                    "        e: {fragment:'ABC', dataType: 'Peptide', result: 'ABC'},\n" +
-                    "        f: {fragment:'ABCD', dataType: 'Peptide', result: 'ABCD'},\n" +
-                    "        g: {fragment:'ABCDE', dataType: 'Peptide', result: 'ABCDE'},\n" +
-                    "        h: {fragment:'ABCDEF', dataType: 'Peptide', result: 'ABCDEF'},\n" +
-                    "        i: {fragment:'ABCDEFG', dataType: 'Peptide', result: 'ABCDEFG'},\n" +
-                    "        j: {fragment:'ABCDEFGH', dataType: 'Peptide', result: 'ABC\u2026FGH'},\n" +
-                    "        k: {fragment:'ABCDEFGHI', dataType: 'Peptide', result: 'ABC\u2026GHI'},\n" +
-                    "        l: {fragment:'ABCE', dataType: 'Peptide', result: 'ABCE'},\n" +
-                    "        m: {fragment:'ABDEFGHI', dataType: 'Peptide', result: 'ABD\u2026'},\n" +
-                    "        n: {fragment:'ABEFGHI', dataType: 'Peptide', result: 'ABEFGHI'},\n" +
-                    "        o: {fragment:'ABEFGHIJ', dataType: 'Peptide', result: 'ABE\u2026HIJ'},\n" +
-                    "        p: {fragment:'ABEFHI', dataType: 'Peptide', result: 'ABEFHI'},\n" +
-                    "        q: {fragment:'ABFFFGHI', dataType: 'Peptide', result: 'ABF(5)'},\n" +
-                    "        r: {fragment:'ABFFFFGHI', dataType: 'Peptide', result: 'ABF(6)'},\n" +
-                    "        s: {fragment:'ABFFFFAFGHI', dataType: 'Peptide', result: 'ABF\u2026FA\u2026'},\n" +
-                    "        t: {fragment:'ABFFFAFFGHI', dataType: 'Peptide', result: 'ABF\u2026A\u2026'},\n" +
-                    "        u: {fragment:'ABGAABAABAGHI', dataType: 'Peptide', result: 'ABG\u2026B\u2026B\u2026'},\n" +
-                    "        v: {fragment:'ABGAAbAABAGHI', dataType: 'Peptide', result: 'ABG\u2026b\u2026B\u2026'},\n" +
-                    "        w: {fragment:'ABGAABAAbAGHI', dataType: 'Peptide', result: 'ABG\u2026B\u2026b\u2026'},\n" +
-                    "        x: {fragment:'ABGAAB[80]AAB[99]AGHI', dataType: 'Peptide', result: 'ABG\u2026b\u2026b\u2026'},\n" +
-                    "        y: {fragment:'C32:0', dataType: 'ion', result: 'C32:0'},\n" +
-                    "        z: {fragment:'C32:1', dataType: 'ion', result: 'C32:1'},\n" +
-                    "        aa: {fragment:'C32:2', dataType: 'ion', result: 'C32:2'},\n" +
-                    "        bb: {fragment:'C32:2', dataType: 'ion', result: 'C32:2'},\n" +
-                    "        cc: {fragment:'C30:0', dataType: 'ion', result: 'C30:0'},\n" +
-                    "        dd: {fragment:'C[30]:0', dataType: 'ion', result: 'C[30]:0'},\n" +
-                    "        ee: {fragment:'C[400]:0', dataType: 'ion', result: 'C[4\u2026'},\n" +
-                    "        ff: {fragment:'C12:0 fish breath', dataType: 'ion', result: 'C12\u2026'},\n" +
-                    "        gg: {fragment:'C15:0 fish breath', dataType: 'ion', result: 'C15(14)'},\n" +
-                    "        hh: {fragment:'C15:0 doggy breath', dataType: 'ion', result: 'C15(15)'},\n" +
-                    "        ii: {fragment:'C16:0 fishy breath', dataType: 'ion', result: 'C16\u2026f\u2026'},\n" +
-                    "        jj: {fragment:'C16:0 doggy breath', dataType: 'ion', result: 'C16\u2026d\u2026'},\n" +
-                    "        kk: {fragment:'C14', dataType: 'ion', result: 'C14'},\n" +
-                    "        ll: {fragment:'C14:1', dataType: 'ion', result: 'C14:1'},\n" +
-                    "        mm: {fragment:'C14:1-OH', dataType: 'ion', result: 'C14:1\u2026'},\n" +
-                    "        nn: {fragment:'C14:2', dataType: 'ion', result: 'C14:2'},\n" +
-                    "        oo: {fragment:'C14:2-OH', dataType: 'ion', result: 'C14:2\u2026'},\n" +
-                    "    };\n" +
-                    "\n" +
-                    "    var testLegends = function() {\n" +
-                    "        var result = '';\n" +
-                    "\t\tvar legendHelper = LABKEY.targetedms.QCPlotLegendHelper;\n" +
-                    "        legendHelper.setupLegendPrefixes(testVals, 3);\n" +
-                    "\n" +
-                    "        for (var key in testVals) {\n" +
-                    "            if (testVals.hasOwnProperty(key)) {\n" +
-                    "                var val = legendHelper.getUniquePrefix(testVals[key].fragment, (testVals[key].dataType == 'Peptide'));\n" +
-                    "                if(val !== testVals[key].result)\n" +
-                    "                    result += \"Incorrect result for \" + testVals[key].fragment + \". Expected: \" + testVals[key].result + \", Actual: \" + val + '\\n';\n" +
-                    "            }\n" +
-                    "        }\n" +
-                    "\n" +
-                    "        return result;\n" +
-                    "    };\n" +
-                    "\n" +
-                    "    return testLegends();";
+            """
+                    var testVals = {
+                            a: {fragment:'', dataType: 'Peptide', result: ''},
+                            b: {fragment:'A', dataType: 'Peptide', result: 'A'},
+                            c: {fragment:'A', dataType: 'Peptide', result: 'A'}, // duplicate
+                            d: {fragment:'AB', dataType: 'Peptide', result: 'AB'},
+                            e: {fragment:'ABC', dataType: 'Peptide', result: 'ABC'},
+                            f: {fragment:'ABCD', dataType: 'Peptide', result: 'ABCD'},
+                            g: {fragment:'ABCDE', dataType: 'Peptide', result: 'ABCDE'},
+                            h: {fragment:'ABCDEF', dataType: 'Peptide', result: 'ABCDEF'},
+                            i: {fragment:'ABCDEFG', dataType: 'Peptide', result: 'ABCDEFG'},
+                            j: {fragment:'ABCDEFGH', dataType: 'Peptide', result: 'ABC\u2026FGH'},
+                            k: {fragment:'ABCDEFGHI', dataType: 'Peptide', result: 'ABC\u2026GHI'},
+                            l: {fragment:'ABCE', dataType: 'Peptide', result: 'ABCE'},
+                            m: {fragment:'ABDEFGHI', dataType: 'Peptide', result: 'ABD\u2026'},
+                            n: {fragment:'ABEFGHI', dataType: 'Peptide', result: 'ABEFGHI'},
+                            o: {fragment:'ABEFGHIJ', dataType: 'Peptide', result: 'ABE\u2026HIJ'},
+                            p: {fragment:'ABEFHI', dataType: 'Peptide', result: 'ABEFHI'},
+                            q: {fragment:'ABFFFGHI', dataType: 'Peptide', result: 'ABF(5)'},
+                            r: {fragment:'ABFFFFGHI', dataType: 'Peptide', result: 'ABF(6)'},
+                            s: {fragment:'ABFFFFAFGHI', dataType: 'Peptide', result: 'ABF\u2026FA\u2026'},
+                            t: {fragment:'ABFFFAFFGHI', dataType: 'Peptide', result: 'ABF\u2026A\u2026'},
+                            u: {fragment:'ABGAABAABAGHI', dataType: 'Peptide', result: 'ABG\u2026B\u2026B\u2026'},
+                            v: {fragment:'ABGAAbAABAGHI', dataType: 'Peptide', result: 'ABG\u2026b\u2026B\u2026'},
+                            w: {fragment:'ABGAABAAbAGHI', dataType: 'Peptide', result: 'ABG\u2026B\u2026b\u2026'},
+                            x: {fragment:'ABGAAB[80]AAB[99]AGHI', dataType: 'Peptide', result: 'ABG\u2026b\u2026b\u2026'},
+                            y: {fragment:'C32:0', dataType: 'ion', result: 'C32:0'},
+                            z: {fragment:'C32:1', dataType: 'ion', result: 'C32:1'},
+                            aa: {fragment:'C32:2', dataType: 'ion', result: 'C32:2'},
+                            bb: {fragment:'C32:2', dataType: 'ion', result: 'C32:2'},
+                            cc: {fragment:'C30:0', dataType: 'ion', result: 'C30:0'},
+                            dd: {fragment:'C[30]:0', dataType: 'ion', result: 'C[30]:0'},
+                            ee: {fragment:'C[400]:0', dataType: 'ion', result: 'C[4\u2026'},
+                            ff: {fragment:'C12:0 fish breath', dataType: 'ion', result: 'C12\u2026'},
+                            gg: {fragment:'C15:0 fish breath', dataType: 'ion', result: 'C15(14)'},
+                            hh: {fragment:'C15:0 doggy breath', dataType: 'ion', result: 'C15(15)'},
+                            ii: {fragment:'C16:0 fishy breath', dataType: 'ion', result: 'C16\u2026f\u2026'},
+                            jj: {fragment:'C16:0 doggy breath', dataType: 'ion', result: 'C16\u2026d\u2026'},
+                            kk: {fragment:'C14', dataType: 'ion', result: 'C14'},
+                            ll: {fragment:'C14:1', dataType: 'ion', result: 'C14:1'},
+                            mm: {fragment:'C14:1-OH', dataType: 'ion', result: 'C14:1\u2026'},
+                            nn: {fragment:'C14:2', dataType: 'ion', result: 'C14:2'},
+                            oo: {fragment:'C14:2-OH', dataType: 'ion', result: 'C14:2\u2026'},
+                        };
+                    
+                        var testLegends = function() {
+                            var result = '';
+                            var legendHelper = LABKEY.targetedms.QCPlotLegendHelper;
+                            legendHelper.setupLegendPrefixes(testVals, 3);
+                    
+                            for (var key in testVals) {
+                                if (testVals.hasOwnProperty(key)) {
+                                    var val = legendHelper.getUniquePrefix(testVals[key].fragment, (testVals[key].dataType == 'Peptide'));
+                                    if(val !== testVals[key].result)
+                                        result += "Incorrect result for " + testVals[key].fragment + ". Expected: " + testVals[key].result + ", Actual: " + val + '\\n';
+                                }
+                            }
+                    
+                            return result;
+                        };
+                    
+                        return testLegends();""";
 
     private final PortalHelper portalHelper = new PortalHelper(this);
 

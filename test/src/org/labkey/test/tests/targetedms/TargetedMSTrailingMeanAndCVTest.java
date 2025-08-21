@@ -63,7 +63,7 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         trailingLast = "-1";
         qcPlotsWebPart.setTrailingLast(trailingLast);
         longWait().until(ExpectedConditions.textToBePresentInElement(Locators.labkeyError.findWhenNeeded(getDriver()),
-                "TrailingMean - Please enter a positive integer (>2) that is less than or equal to total number of available runs - 47"));
+                "TrailingMean - Please enter a positive integer (>2) that is less than or equal to the total number of available runs - 47"));
 
         trailingLast = "48";
         qcPlotsWebPart.setTrailingLast(trailingLast);
@@ -140,7 +140,7 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         trailingLast = "-1";
         qcPlotsWebPart.setTrailingLast(trailingLast);
         longWait().until(ExpectedConditions.textToBePresentInElement(Locators.labkeyError.findWhenNeeded(getDriver()),
-                "TrailingCV - Please enter a positive integer (>2) that is less than or equal to total number of available runs - 47"));
+                "TrailingCV - Please enter a positive integer (>2) that is less than or equal to the total number of available runs - 47"));
 
         trailingLast = "48";
         qcPlotsWebPart.setTrailingLast(trailingLast);

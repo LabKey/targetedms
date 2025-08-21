@@ -73,8 +73,8 @@ if (!LABKEY.targetedms.QCPlotLegendHelper) {
                     return stripped;
                 }
 
-                stripped += seq.substring(index, modificationIndex - 1 - index);
-                stripped += seq.substring(modificationIndex - 1, 1).toLowerCase();
+                stripped += seq.substring(index, modificationIndex - 1);
+                stripped += seq.substring(modificationIndex - 1, modificationIndex).toLowerCase();
                 index = seq.indexOf(']', modificationIndex + 1) + 1;
                 if (index === 0)
                     return stripped;

@@ -30,6 +30,7 @@ import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.ModulePropertyValue;
 import org.labkey.test.components.targetedms.GuideSet;
+import org.labkey.test.components.targetedms.ParetoPlotsWebPart;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.components.targetedms.QCSummaryWebPart;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
@@ -296,9 +297,9 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         tempStringList01.put("Q_Exactive_08_23_2013_JGB_37", "0");
 
         tempStringList02.clear();
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_58", "Full Width at Half Maximum (FWHM) 1 1 0 0 0 0"));
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_51", "Peak Area 0 2 0 0 0 0"));
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_37", "TIC Area 0 1 0 0 0 0"));
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_58", ParetoPlotsWebPart.MetricTypeTicks.FWHM + " 1 1 0 0 0 0"));
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_51", ParetoPlotsWebPart.MetricTypeTicks.TOTAL_PEAK + " 0 2 0 0 0 0"));
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_37", ParetoPlotsWebPart.MetricTypeTicks.TIC_AREA  + " 0 1 0 0 0 0"));
         validateSampleFile(0, tempStringList01, tempStringList02);
 
         removeAllGuideSets();

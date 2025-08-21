@@ -7,10 +7,8 @@ package org.labkey.test.tests.panoramapremium;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestTimeoutException;
@@ -41,9 +39,6 @@ import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.CU
 @BaseWebDriverTest.ClassTimeout(minutes = 6)
 public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
 {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     @Override
     protected String getProjectName()
     {
@@ -153,8 +148,8 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         //need to preserve the insertion order
         Map<ConfigureMetricsUIPage.CustomMetricProperties, String > metricProperties = new LinkedHashMap<>();
         metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.metricName, metricName);
-        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.series1Query, series1Query);
-        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.series1AxisLabel, metricName);
+        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.queryName, series1Query);
+        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.yAxisLabel, metricName);
         metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.metricType, ConfigureMetricsUIPage.MetricType.Precursor.name());
 
         ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
@@ -184,20 +179,6 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         qcPlotsWebPart.clickMenuItem("Configure QC Metrics");
         waitForElement(Locator.linkWithText(metricName2));
         assertTextPresent(metricName2);
-
-        configureUI = goToConfigureMetricsUI();
-        metricProperties.clear();
-        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.series2Query, "QCMetric_fwb");
-        configureUI.editMetric(metricName2, metricProperties);
-
-        qcPlotsWebPart.clickMenuItem("Configure QC Metrics");
-        waitForElement(Locator.linkWithText(metricName2));
-        assertTextPresent(metricName2, "Dual-metrics cannot be configured");
-        configureUI = goToConfigureMetricsUI();
-        configureUI.deleteMetric(metricName2);
-
-        configureUI = goToConfigureMetricsUI();
-        assertTextNotPresent(metricName2);
     }
 
     @Test

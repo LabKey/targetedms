@@ -199,10 +199,8 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
     public enum CustomMetricProperties
     {
         metricName("Name", false),
-        series1Query("Series 1 Query", true),
-        series2Query("Series 2 Query", true),
-        series1AxisLabel("Series 1 Axis Label", false),
-        series2AxisLabel("Series 2 Axis Label", false),
+        queryName("Metrics Query", true),
+        yAxisLabel("Y-Axis Label", false),
         metricType("Metric Type", true),
         enabledQuery("Enabled Query", true);
 

@@ -118,13 +118,13 @@ public class TargetedMSQCFolderImportExport extends TargetedMSPremiumTest
         Assert.assertEquals("Guide Set was not added correctly", 1, table.getDataRowCount());
     }
 
-    private void addCustomMetric(String projectName, String metricName, String series1Query)
+    private void addCustomMetric(String projectName, String metricName, String queryName)
     {
         goToProjectHome(projectName);
         Map<ConfigureMetricsUIPage.CustomMetricProperties, String> metricProperties = new LinkedHashMap<>();
         metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.metricName, metricName);
-        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.series1Query, series1Query);
-        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.series1AxisLabel, metricName);
+        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.queryName, queryName);
+        metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.yAxisLabel, metricName);
         metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.metricType, ConfigureMetricsUIPage.MetricType.Precursor.name());
 
         ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
