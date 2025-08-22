@@ -20,7 +20,7 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
     initComponent: function() {
         var title = this.operation === this.insert ? 'Add New Metric' : 'Edit Metric';
         this.setTitle(title);
-        this.height = Ext4.max([Ext4.getBody().getHeight() * 0.3, 450]);
+        this.height = Ext4.max([Ext4.getBody().getHeight() * 0.25, 200]);
         this.width = Ext4.max([Ext4.getBody().getWidth() * 0.2, 450]);
         this.items = this.getItems();
         this.dockedItems= [{
@@ -190,8 +190,8 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
             };
             this.metricTypeCombo = Ext4.create('Ext.form.field.ComboBox', config);
 
-            if(this.operation === this.update) {
-                this.metricTypeCombo.setValue(this.metric.PrecursorScoped);
+            if(this.operation === this.insert) {
+                this.metricTypeCombo.setValue(true);
             }
         }
         return this.metricTypeCombo;

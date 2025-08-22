@@ -374,7 +374,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
             var records = [];
             var newMetric = {};
             newMetric.Name = this.metricNameField.getValue();
-            newMetric.Series1QueryName = 'QCTraceMetric'; // dummy text to insert and not an actual query
+            newMetric.QueryName = 'QCTraceMetric'; // dummy text to insert and not an actual query
             newMetric.PrecursorScoped = false;
             newMetric.TraceName = this.tracesCombo.getValue();
             newMetric.YAxisLabel = this.yAxisLabelField.getValue();

@@ -163,8 +163,6 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
         {
             combinePlotData.max = precursorInfo.max;
         }
-
-        combinePlotData.fragment = precursorInfo.fragment;
     },
 
     getLJCombinedPlotLegendSeries: function()

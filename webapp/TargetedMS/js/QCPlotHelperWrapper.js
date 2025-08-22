@@ -365,6 +365,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
 
     processCombinedPlotMinMax: function(combinePlotData, precursorInfo)
     {
+        combinePlotData.fragment = precursorInfo.fragment;
+
         if (this.showMetricValuePlot())
         {
             this.processLJCombinedMinMax(combinePlotData, precursorInfo);

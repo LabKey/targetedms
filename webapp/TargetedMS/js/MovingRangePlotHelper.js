@@ -117,8 +117,6 @@ Ext4.define("LABKEY.targetedms.MovingRangePlotHelper", {
         {
             combinePlotData.maxMR = precursorInfo.maxMR;
         }
-
-        combinePlotData.fragment = precursorInfo.fragment;
     },
 
     getMRCombinedPlotLegendSeries: function()
