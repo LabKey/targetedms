@@ -274,7 +274,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         List<QCPlotsWebPart.MetricType> metricTypeWithData =
                 Arrays.asList(QCPlotsWebPart.MetricType.TOTAL_PEAK, QCPlotsWebPart.MetricType.RETENTION, QCPlotsWebPart.MetricType.FWHM,
                         QCPlotsWebPart.MetricType.FWB, QCPlotsWebPart.MetricType.TPAREARATIO,
-                        QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR, QCPlotsWebPart.MetricType.TICAREA);
+                        QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR, QCPlotsWebPart.MetricType.TIC_AREA);
 
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
@@ -678,7 +678,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
 
         log("Verifying TIC Area QC Plots");
-        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.TICAREA);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.TIC_AREA);
         qcPlotsWebPart.waitForPlots(1);
         String ticPlotSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
         assertFalse(ticPlotSVGText.isEmpty());
@@ -689,7 +689,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertElementVisible(Locator.tagContainingText("label", "Show All Series in a Single Plot"));
 
         log("Verifying tic_area information in hover plot");
-        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.TICAREA);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.TIC_AREA);
         qcPlotsWebPart.waitForPlots(1);
         qcPlotsWebPart.openExclusionBubble(acquiredDate);
         String ticAreahoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();

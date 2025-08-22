@@ -297,9 +297,9 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         tempStringList01.put("Q_Exactive_08_23_2013_JGB_37", "0");
 
         tempStringList02.clear();
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_58", ParetoPlotsWebPart.MetricTypeTicks.FWHM + " 1 1 0 0 0 0"));
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_51", ParetoPlotsWebPart.MetricTypeTicks.TOTAL_PEAK + " 0 2 0 0 0 0"));
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_37", ParetoPlotsWebPart.MetricTypeTicks.TIC_AREA  + " 0 1 0 0 0 0"));
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_58", QCPlotsWebPart.MetricType.FWHM + " 1 1 0 0 0 0"));
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_51", QCPlotsWebPart.MetricType.TOTAL_PEAK + " 0 2 0 0 0 0"));
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_37", QCPlotsWebPart.MetricType.TIC_AREA  + " 0 1 0 0 0 0"));
         validateSampleFile(0, tempStringList01, tempStringList02);
 
         removeAllGuideSets();
