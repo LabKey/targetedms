@@ -93,14 +93,17 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         qcPlotsWebPart.waitForPlots(7);
         qcPlotsWebPart.openExclusionBubble("2013-08-12 04:54:55");
         String toolTipText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
-        Assert.assertEquals("Invalid tooltip", "Peptide:\n" +
-                "ATEEQLK ++, 409.7163\n" +
-                "Value:\n" +
-                "15.652\n" +
-                "Replicate:\n" +
-                "3 runs average\n" +
-                "Acquired:\n" +
-                "2013-08-09 11:39 - 2013-08-12 04:54", toolTipText);
+        Assert.assertEquals("Invalid tooltip", """
+                Metric:
+                Retention Time
+                Peptide:
+                ATEEQLK ++, 409.7163
+                Value:
+                15.652
+                Replicate:
+                3 runs average
+                Acquired:
+                2013-08-09 11:39 - 2013-08-12 04:54""", toolTipText);
 
         log("Selecting multiple plot types with trailing mean");
         qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.MetricValue, QCPlotsWebPart.QCPlotType.MovingRange, QCPlotsWebPart.QCPlotType.TrailingMean);
@@ -114,14 +117,17 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.TrailingMean);
         qcPlotsWebPart.openExclusionBubble("2013-08-14 00:44:46");
         toolTipText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
-        Assert.assertEquals("Invalid tooltip of the point in guide set", "Peptide:\n" +
-                "ATEEQLK ++, 409.7163\n" +
-                "Value:\n" +
-                "15.684\n" +
-                "Replicate:\n" +
-                "3 runs average\n" +
-                "Acquired:\n" +
-                "2013-08-11 18:34 - 2013-08-14 00:44", toolTipText);
+        Assert.assertEquals("Invalid tooltip of the point in guide set", """
+                Metric:
+                Retention Time
+                Peptide:
+                ATEEQLK ++, 409.7163
+                Value:
+                15.684
+                Replicate:
+                3 runs average
+                Acquired:
+                2013-08-11 18:34 - 2013-08-14 00:44""", toolTipText);
 
         log("Verifying the count of points on the plots with guide set");
         Assert.assertEquals("Invalid point count for all replicates", 322 , qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size());
@@ -158,14 +164,17 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         qcPlotsWebPart.waitForPlots(7);
         qcPlotsWebPart.openExclusionBubble("2013-08-12 04:54:55");
         String toolTipText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
-        Assert.assertEquals("Invalid tooltip", "Peptide:\n" +
-                "ATEEQLK ++, 409.7163\n" +
-                "Value:\n" +
-                "6.831\n" +
-                "Replicate:\n" +
-                "3 runs average\n" +
-                "Acquired:\n" +
-                "2013-08-09 11:39 - 2013-08-12 04:54", toolTipText);
+        Assert.assertEquals("Invalid tooltip", """
+                Metric:
+                Retention Time
+                Peptide:
+                ATEEQLK ++, 409.7163
+                Value:
+                6.831
+                Replicate:
+                3 runs average
+                Acquired:
+                2013-08-09 11:39 - 2013-08-12 04:54""", toolTipText);
         qcPlotsWebPart.closeBubble();
         log("Verifying the count of points on the plot");
         Assert.assertEquals("Invalid point count for all replicates", REPLICATE_COUNT * RUN_COUNT,
@@ -179,14 +188,17 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.TrailingCV);
         qcPlotsWebPart.openExclusionBubble("2013-08-21 09:07:36");
         toolTipText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
-        Assert.assertEquals("Invalid tooltip of the point in guide set", "Peptide:\n" +
-                "ATEEQLK ++, 409.7163\n" +
-                "Value:\n" +
-                "3.704\n" +
-                "Replicate:\n" +
-                "3 runs average\n" +
-                "Acquired:\n" +
-                "2013-08-21 04:46 - 2013-08-21 09:07", toolTipText);
+        Assert.assertEquals("Invalid tooltip of the point in guide set", """
+                Metric:
+                Retention Time
+                Peptide:
+                ATEEQLK ++, 409.7163
+                Value:
+                3.704
+                Replicate:
+                3 runs average
+                Acquired:
+                2013-08-21 04:46 - 2013-08-21 09:07""", toolTipText);
         qcPlotsWebPart.closeBubble();
 
         log("Verifying the count of points on the plot with guide set");

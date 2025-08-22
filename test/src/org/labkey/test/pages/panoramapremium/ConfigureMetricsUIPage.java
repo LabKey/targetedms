@@ -202,7 +202,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         queryName("Metrics Query", true),
         yAxisLabel("Y-Axis Label", false),
         metricType("Metric Type", true),
-        enabledQuery("Enabled Query", true);
+        enabledQueryName("Enabled Query", true);
 
         private final String formLabel;
         private final boolean isSelect;

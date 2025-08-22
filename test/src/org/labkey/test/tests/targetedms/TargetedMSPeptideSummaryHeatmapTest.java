@@ -142,7 +142,7 @@ public class TargetedMSPeptideSummaryHeatmapTest extends TargetedMSTest
         PeptideSummaryWebPart peptideSummaryHeatMap = new PeptideSummaryWebPart(getDriver());
         Assert.assertEquals("Missing Metric type in the heatmap", Arrays.asList("", "Full Width at Base (FWB)",
                         "Full Width at Half Maximum (FWHM)", "Isotope dotp", "Precursor Area", "Precursor Mass Error",
-                        "Retention Time", "TIC Area", "Total Peak Area (Precursor + Transition)", "Transition & Precursor Areas",
+                        "Retention Time", "TIC Area", "Total Peak Area (Precursor + Transition)",
                         "Transition Area", "Transition Mass Error", "Transition/Precursor Area Ratio", "Total")
                 , peptideSummaryHeatMap.getHeatmapTable().getTableHeaderTexts());
 
