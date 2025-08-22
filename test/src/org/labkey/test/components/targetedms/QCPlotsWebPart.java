@@ -73,8 +73,8 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         List<WebElement> els = new ArrayList<>();
         WebDriverWrapper.waitFor(() -> els.addAll(elementCache().findSeriesPanels()) ||
-                                els.addAll(elementCache().findPlotErrors()) ||
-                                els.addAll(elementCache().findNoRecordsMessage()),
+                        els.addAll(elementCache().findPlotErrors()) ||
+                        els.addAll(elementCache().findNoRecordsMessage()),
                 "QC Plots Webpart load", 10_000);
         return els.get(0);
     }
@@ -150,19 +150,30 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         return getWrapper().getFormElement(elementCache().endDate);
     }
 
-    @LogMethod
-    public void setMetricType(@LoggedParam MetricType metricType)
+
+    private void setMetricType(MetricType metricType, MetricType currentMetricType, Locator.XPathLocator metricTypeCombo)
     {
-        if (getCurrentMetricType() != metricType)
+        if (currentMetricType != metricType)
         {
             doAndWaitForUpdate(() ->
             {
                 // scroll to prevent inadvertent hover over QC Summary webpart items that show hopscotch tooltips
-                getWrapper().scrollIntoView(elementCache().metricTypeCombo, true);
-
-                getWrapper()._ext4Helper.selectComboBoxItem(elementCache().metricTypeCombo, metricType.toString());
+                getWrapper().scrollIntoView(metricTypeCombo, true);
+                getWrapper()._ext4Helper.selectComboBoxItem(metricTypeCombo, metricType.toString());
             });
         }
+    }
+
+    @LogMethod
+    public void setMetric1Type(@LoggedParam MetricType metricType)
+    {
+        setMetricType(metricType, getCurrentMetric1Type(), elementCache().metric1TypeCombo);
+    }
+
+    @LogMethod
+    public void setMetric2Type(@LoggedParam MetricType metricType)
+    {
+        setMetricType(metricType, getCurrentMetric2Type(), elementCache().metric2TypeCombo);
     }
 
     @LogMethod
@@ -193,7 +204,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public List<String> getMetricTypeOptions()
     {
-        return getWrapper()._ext4Helper.getComboBoxOptions(elementCache().metricTypeCombo);
+        return getWrapper()._ext4Helper.getComboBoxOptions(elementCache().metric1TypeCombo);
     }
 
     public List<String> getQCPlotTypeOptions()
@@ -201,10 +212,20 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         return elementCache().qcPlotTypeCombo.getComboBoxOptions();
     }
 
-    public MetricType getCurrentMetricType()
+    private MetricType getCurrentMetricType(Locator.XPathLocator metricTypeCombo)
     {
-        WebElement typeInput = elementCache().metricTypeCombo.append(Locator.tag("input")).waitForElement(this, 1000);
+        WebElement typeInput = metricTypeCombo.append(Locator.tag("input")).waitForElement(this, 1000);
         return MetricType.getEnum(typeInput.getDomProperty("value"));
+    }
+
+    public MetricType getCurrentMetric1Type()
+    {
+        return getCurrentMetricType(elementCache().metric1TypeCombo);
+    }
+
+    public MetricType getCurrentMetric2Type()
+    {
+        return getCurrentMetricType(elementCache().metric2TypeCombo);
     }
 
     public Set<QCPlotType> getCurrentQCPlotTypes()
@@ -277,7 +298,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public QCPlotsWebPart saveAsDefaultView()
     {
-        clickMenuItem(false ,"Save as Default View");
+        clickMenuItem(false, "Save as Default View");
         getWrapper().acceptAlert();
         return this;
     }
@@ -346,7 +367,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     public void resetInitialQCPlotFields()
     {
         // revert to the initial form values if any of them have changed
-        setMetricType(MetricType.RETENTION);
+        setMetric1Type(MetricType.RETENTION);
         setDateRangeOffset(DateRangeOffset.ALL);
         setQCPlotTypes(QCPlotsWebPart.QCPlotType.MetricValue);
         setScale(QCPlotsWebPart.Scale.LINEAR);
@@ -495,7 +516,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         if (guideSet.getBrushSelectedPoints() != null && guideSet.getBrushSelectedPoints() < 5)
         {
             gsButtons.get(0).click(); // Create button : index 0
-            Window warning = Window(getDriver()).withTitle("Create Guide Set Warning").waitFor();
+            Window<?> warning = Window(getDriver()).withTitle("Create Guide Set Warning").waitFor();
             if (expectPageReload)
                 warning.clickButton("Yes");
             else
@@ -513,7 +534,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
         if (expectErrorMsg != null)
         {
-            Window error = Window(getDriver()).withTitle("Error Creating Guide Set").waitFor();
+            Window<?> error = Window(getDriver()).withTitle("Error Creating Guide Set").waitFor();
             getWrapper().assertElementPresent(elementCache().extFormDisplay.withText(expectErrorMsg));
             error.clickButton("OK", true);
             gsButtons.get(1).click(); // Cancel button : index 1
@@ -788,7 +809,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         FWB("Full Width at Base (FWB)"),
         LHRATIO("Light/Heavy Ratio"),
         TPAREARATIO("Transition/Precursor Area Ratio"),
-        TPAREAS("Transition & Precursor Areas"),
         TRANSITION_AREA("Transition Area"),
         PRECURSOR_MASS_ERROR("Precursor Mass Error"),
         TRANSITION_MASS_ERROR("Transition Mass Error"),
@@ -807,6 +827,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
         public static MetricType getEnum(String value)
         {
+            if (value == null || value.isEmpty())
+            {
+                return null;
+            }
+
             for (MetricType v : values())
                 if (v.toString().equalsIgnoreCase(value))
                     return v;
@@ -826,7 +851,8 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         WebElement applyRangeButton = Ext4Helper.Locators.ext4Button("Apply").findWhenNeeded(this);
         Locator.XPathLocator scaleCombo = Locator.id("scale-combo-box");
         Locator.XPathLocator dateRangeCombo = Locator.id("daterange-combo-box");
-        Locator.XPathLocator metricTypeCombo = Locator.id("metric-type-field1");
+        Locator.XPathLocator metric1TypeCombo = Locator.id("metric-type-field1");
+        Locator.XPathLocator metric2TypeCombo = Locator.id("metric-type-field2");
         WebElement trailingLast = Locator.id("trailingRuns-inputEl").findWhenNeeded(this);
 
         ComboBox qcPlotTypeCombo = new ComboBox.ComboBoxFinder(getDriver()).withIdPrefix("qc-plot-type-with-y-options")

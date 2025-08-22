@@ -277,7 +277,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
 
         PanoramaDashboard panoramaDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = panoramaDashboard.getQcPlotsWebPart();
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TOTAL_PEAK);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.TOTAL_PEAK);
         qcPlotsWebPart.checkPlotType(CUSUMm);
         qcPlotsWebPart.setShowExcludedPoints(true);
         qcPlotsWebPart.saveAsDefaultView();
@@ -285,12 +285,12 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         log("Verifying the values are set after save as default view action");
         checker().verifyTrue("Incorrect value for Show Excluded points", qcPlotsWebPart.isShowExcludedPointsChecked());
         checker().verifyEquals("Incorrect Metric value", QCPlotsWebPart.MetricType.TOTAL_PEAK.toString(),
-                qcPlotsWebPart.getCurrentMetricType().toString());
+                qcPlotsWebPart.getCurrentMetric1Type().toString());
 
         impersonate(USER);
         checker().verifyTrue("Incorrect value for Show Excluded points for different user " + USER , qcPlotsWebPart.isShowExcludedPointsChecked());
         checker().verifyEquals("Incorrect Metric value for different user " + USER, QCPlotsWebPart.MetricType.TOTAL_PEAK.toString(),
-                qcPlotsWebPart.getCurrentMetricType().toString());
+                qcPlotsWebPart.getCurrentMetric1Type().toString());
         checker().verifyEquals("Reader user should not have save as default permission", Arrays.asList("Revert to Default View"),
                 getListOfMenuItems(qcPlotsWebPart));
 
@@ -300,11 +300,11 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         goToProjectHome();
         panoramaDashboard = new PanoramaDashboard(this);
         qcPlotsWebPart = panoramaDashboard.getQcPlotsWebPart();
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.RETENTION);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.RETENTION);
         qcPlotsWebPart.revertToDefaultView();
 
         checker().verifyEquals("Incorrect Metric value", QCPlotsWebPart.MetricType.TOTAL_PEAK.toString(),
-                qcPlotsWebPart.getCurrentMetricType().toString());
+                qcPlotsWebPart.getCurrentMetric1Type().toString());
     }
 
     private List<String> getListOfMenuItems(QCPlotsWebPart qcPlotsWebPart)

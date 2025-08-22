@@ -111,7 +111,7 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
         configureQCMetrics.clickSave();
 
         QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
-        qcPlotsWebPart.setMetricType(metricType);
+        qcPlotsWebPart.setMetric1Type(metricType);
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LINEAR);
 
         String replicate = "Q_Exactive_08_09_2013_JGB_87";
@@ -145,7 +145,7 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
         configureQCMetrics.setFixedValueCutOff(metric, "-5", "5");
         configureQCMetrics.clickSave();
         QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
-        qcPlotsWebPart.setMetricType(metric);
+        qcPlotsWebPart.setMetric1Type(metric);
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LINEAR);
         qcPlotsWebPart.waitForPlots(6);
 
@@ -164,7 +164,7 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
         configureQCMetrics.clickSave();
 
         QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
-        qcPlotsWebPart.setMetricType(metric);
+        qcPlotsWebPart.setMetric1Type(metric);
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LINEAR);
 
         String replicate = "Q_Exactive_08_14_2013_JGB_54";

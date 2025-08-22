@@ -635,7 +635,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
 
         //test for correct metric type
-        assertEquals(metricType, qcPlotsWebPart.getCurrentMetricType());
+        assertEquals(metricType, qcPlotsWebPart.getCurrentMetric1Type());
 
         //test for correct plot type
         qcPlotsWebPart.isPlotTypeSelected(plotType);

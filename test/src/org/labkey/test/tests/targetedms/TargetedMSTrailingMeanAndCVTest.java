@@ -78,11 +78,11 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         trailingLast = "3";
         qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.TrailingMean);
         qcPlotsWebPart.setTrailingLast(trailingLast);
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR);
         Assert.assertTrue("Y axis is not labeled correctly for " + QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR,
                 qcPlotsWebPart.getSVGPlotText("precursorPlot0").contains("Mass Error PPM"));
 
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.RETENTION);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.RETENTION);
         Assert.assertTrue("Y axis is not labeled correctly for " + QCPlotsWebPart.MetricType.RETENTION,
                 qcPlotsWebPart.getSVGPlotText("precursorPlot0").contains("Minutes"));
 
