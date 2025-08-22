@@ -244,7 +244,7 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
 
         if (doDbMaintenance)
         {
-//            runDbMaintenance();
+            runDbMaintenance();
         }
     }
 
