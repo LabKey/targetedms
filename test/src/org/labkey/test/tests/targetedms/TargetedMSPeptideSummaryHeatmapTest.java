@@ -160,7 +160,7 @@ public class TargetedMSPeptideSummaryHeatmapTest extends TargetedMSTest
         peptideSummaryHeatMap = new PeptideSummaryWebPart(getDriver());
         Assert.assertEquals("Metric type " + QCPlotsWebPart.MetricType.TOTAL_PEAK + " should not be present",
                 Arrays.asList("", "Full Width at Base (FWB)", "Full Width at Half Maximum (FWHM)", "Isotope dotp", "Precursor Area",
-                        "Precursor Mass Error", "Retention Time", "TIC Area", "Transition & Precursor Areas", "Transition Area",
+                        "Precursor Mass Error", "Retention Time", "TIC Area", "Transition Area",
                         "Transition Mass Error", "Transition/Precursor Area Ratio", "Total"),
                 peptideSummaryHeatMap.getHeatmapTable().getTableHeaderTexts());
         Assert.assertEquals("Outlier value should not be calculated for " + QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR,

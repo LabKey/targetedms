@@ -606,7 +606,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (paramValue !== undefined) {
             metric = this.validateMetricId(paramValue);
             if(metric == null) {
-                alertMessage += "Invalid Metric, reverting to default metric.";
+                alertMessage += "Invalid metric, reverting to default metric.";
                 sep = ' ';
             }
             else {
@@ -669,7 +669,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     validateMetricId : function(id) {
-        for (var i = 0; i < this.metricPropArr.length; i++) {
+        // convert id to an integer, handling a parsing failure gracefully
+        id = parseInt(id);
+        for (let i = 0; i < this.metricPropArr.length; i++) {
             if (this.metricPropArr[i].id === id) {
                 return this.metricPropArr[i].id;
             }

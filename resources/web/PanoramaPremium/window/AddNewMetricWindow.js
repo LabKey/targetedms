@@ -190,9 +190,7 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
             };
             this.metricTypeCombo = Ext4.create('Ext.form.field.ComboBox', config);
 
-            if(this.operation === this.insert) {
-                this.metricTypeCombo.setValue(true);
-            }
+            this.metricTypeCombo.setValue(this.operation === this.insert ? true : this.metric.PrecursorScoped);
         }
         return this.metricTypeCombo;
     },
