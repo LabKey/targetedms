@@ -30,6 +30,7 @@ public class ReplicateSummaryWebPart extends JspView<Integer>
         super("/org/labkey/targetedms/view/qcSummary.jsp", sampleLimit);
         setTitleHref(new ActionURL(TargetedMSController.QCSummaryHistoryAction.class, context.getContainer()));
         addClientDependency(ClientDependency.fromPath("Ext4"));
+        addClientDependency(ClientDependency.fromPath("TargetedMS/js/misc.js"));
         setTitle("Replicate Summary");
         setFrame(WebPartView.FrameType.PORTAL);
     }

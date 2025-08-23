@@ -1476,10 +1476,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     plotBrushEvent : function(extent, plot, layers) {
         Ext4.each(layers, function(layer){
-            var points = layer.selectAll('.point path');
-            if (points[0].length > 0) {
-                var colorAcc = function(d) {
-                    var x = plot.scales.x.scale(d.seqValue);
+            const points = layer.selectAll('.point path');
+            if (points && points[0] && points[0].length > 0) {
+                const colorAcc = function(d) {
+                    const x = plot.scales.x.scale(d.seqValue);
                     d.isInSelection = (x > extent[0][0] && x < extent[1][0]);
                     return d.isInSelection ? 'rgba(20, 204, 201, 1)' : '#000000';
                 };
