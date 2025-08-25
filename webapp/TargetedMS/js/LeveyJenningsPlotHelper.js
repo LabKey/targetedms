@@ -93,7 +93,7 @@ Ext4.define("LABKEY.targetedms.LeveyJenningsPlotHelper", {
     },
 
     getLJPlotTypeProperties: function(precursorInfo, metricProps) {
-        var plotProperties = {};
+        const plotProperties = {};
         // some properties are specific to whether we are showing multiple y-axis series
         if (this.isMultiSeries()) {
             plotProperties['value'] = 'value_' + this.metric;

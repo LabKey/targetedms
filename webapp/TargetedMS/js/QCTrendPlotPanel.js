@@ -830,10 +830,15 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     assignDefaultMetricIfNull: function () {
         if (this.metric == null || isNaN(Number(this.metric)) || !this.getMetricPropsById(this.metric)) {
+            this.metric = null;
             for (let i = 0; i < this.metricPropArr.length; i++) {
                 if (this.metricPropArr[i].name === 'Retention Time') {
                     this.metric = this.metricPropArr[i].id;
                 }
+            }
+            // Fall back on the first one
+            if (!this.metric && this.metricPropArr.length > 0) {
+                this.metric = this.metricPropArr[0].id;
             }
         }
         if (this.metric2 && !this.getMetricPropsById(this.metric2)) {
