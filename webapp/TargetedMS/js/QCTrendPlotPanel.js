@@ -444,8 +444,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 items: toolbarItems
             });
 
-            //hiding the show All series in a single plot checkbox for run scoped metrics
-            this.showAllSeriesCheckbox(this.getMetricPropsById(this.metric).precursorScoped, location-1);
+            if (this.metric) {
+                //hiding the show All series in a single plot checkbox for run scoped metrics
+                this.showAllSeriesCheckbox(this.getMetricPropsById(this.metric).precursorScoped, location - 1);
+            }
         }
 
         return this.otherPlotOptionsToolbar;
@@ -889,7 +891,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             value: primary ? this.metric : this.metric2,
             forceSelection: true,
             allowBlank: !primary,
-            emptyText: 'No second metric',
+            emptyText: primary ? 'No metric' : 'No second metric',
             editable: false,
             listeners: {
                 scope: this,
