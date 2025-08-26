@@ -1639,7 +1639,7 @@ public class TargetedMSController extends SpringActionController
             }
             else
             {
-                stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+                stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())), form.getTrailingRuns());
             }
             boolean zoomedRange = qcFolderStartDate != null &&
                     qcFolderEndDate != null && rangeStartDate != null && form.getEndDate() != null &&
@@ -1671,7 +1671,7 @@ public class TargetedMSController extends SpringActionController
                                 .stream()
                                 .filter(withInDateRange)
                                 .collect(Collectors.toList());
-                        targetedStats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+                        targetedStats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())), form.getTrailingRuns());
                     }
                     else if (replicateAcquiredTime.after(form.getStartDate()))
                     {
@@ -1681,7 +1681,7 @@ public class TargetedMSController extends SpringActionController
                                 .stream()
                                 .filter(withInDateRange)
                                 .collect(Collectors.toList());
-                        targetedStats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+                        targetedStats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())), form.getTrailingRuns());
                     }
                     else if (replicateAcquiredTime.before(form.getEndDate()))
                     {
@@ -1691,7 +1691,7 @@ public class TargetedMSController extends SpringActionController
                                 .stream()
                                 .filter(withInDateRange)
                                 .collect(Collectors.toList());
-                        targetedStats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+                        targetedStats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())), form.getTrailingRuns());
                     }
                     else
                     {
@@ -1711,7 +1711,7 @@ public class TargetedMSController extends SpringActionController
                         .stream()
                         .filter(withInDateRange)
                         .collect(Collectors.toList());
-                targetedStats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
+                targetedStats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())), form.getTrailingRuns());
                 // attach mean and sd stats from full stats
                 targetedStats.forEach((guideSetKey, guideSetStats) -> {
                     GuideSetStats correctGuideSetStats = stats.get(guideSetKey);

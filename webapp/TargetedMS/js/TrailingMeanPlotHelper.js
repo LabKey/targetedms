@@ -34,7 +34,7 @@ Ext4.define("LABKEY.targetedms.TrailingMeanPlotHelper", {
         return data;
     },
 
-    getTrailingMeanPlotTypeProperties: function(precursorInfo, metricProps) {
+    getTrailingMeanPlotTypeProperties: function(precursorInfo) {
         let plotProperties = {};
         // some properties are specific to whether we are showing multiple y-axis series
         if (this.isMultiSeries()) {
@@ -45,14 +45,16 @@ Ext4.define("LABKEY.targetedms.TrailingMeanPlotHelper", {
             plotProperties['TrailingMean'] = 'TrailingMean';
         }
 
-        let min = Math.min(...precursorInfo.data.map(function(object) {
-            return object.TrailingMean;
-        }));
-        let max = Math.max(...precursorInfo.data.map(function(object) {
-            return object.TrailingMean;
-        }));
+        if (this.yAxisScale !== LABKEY.vis.PlotProperties.ValueConversion.PercentDeviation && this.yAxisScale !== LABKEY.vis.PlotProperties.ValueConversion.StandardDeviation) {
+            let min = Math.min(...precursorInfo.data.map(function (object) {
+                return object.TrailingMean;
+            }));
+            let max = Math.max(...precursorInfo.data.map(function (object) {
+                return object.TrailingMean;
+            }));
 
-        plotProperties['yAxisDomain'] = [min, max];
+            plotProperties['yAxisDomain'] = [min, max];
+        }
 
         return plotProperties;
     },

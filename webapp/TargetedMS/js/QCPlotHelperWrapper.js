@@ -237,11 +237,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         if (plotType === LABKEY.vis.TrendingLinePlotType.MovingRange)
             return this.getMovingRangePlotTypeProperties(precursorInfo);
         else if (plotType === LABKEY.vis.TrendingLinePlotType.CUSUM)
-            return this.getCUSUMPlotTypeProperties(precursorInfo, isMean, metricProps);
+            return this.getCUSUMPlotTypeProperties(precursorInfo, isMean);
         else if (plotType === LABKEY.vis.TrendingLinePlotType.TrailingMean)
-            return this.getTrailingMeanPlotTypeProperties(precursorInfo, metricProps);
+            return this.getTrailingMeanPlotTypeProperties(precursorInfo);
         else if (plotType === LABKEY.vis.TrendingLinePlotType.TrailingCV)
-            return this.getTrailingCVPlotTypeProperties(precursorInfo, metricProps);
+            return this.getTrailingCVPlotTypeProperties(precursorInfo);
         else
             return this.getLJPlotTypeProperties(precursorInfo, metricProps);
     },

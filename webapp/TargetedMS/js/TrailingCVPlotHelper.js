@@ -40,7 +40,7 @@ Ext4.define("LABKEY.targetedms.TrailingCVPlotHelper", {
         return ['TrailingCV_' + this.metric, 'TrailingCV_' + this.metric2];
     },
 
-    getTrailingCVPlotTypeProperties: function(precursorInfo, metricProps) {
+    getTrailingCVPlotTypeProperties: function(precursorInfo) {
         let plotProperties = {};
         // some properties are specific to whether we are showing multiple y-axis series
         if (this.isMultiSeries()) {
