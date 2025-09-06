@@ -23,7 +23,7 @@ public class TargetedMSPremiumTest extends TargetedMSTest
 
     protected void verifyMetricNotPresent(QCPlotsWebPart qcPlotsWebPart, String metricName)
     {
-        List<String> qcMetricOptions = qcPlotsWebPart.getMetricTypeOptions();
+        List<String> qcMetricOptions = qcPlotsWebPart.getMetric1TypeOptions();
 
         log("Verifying disabled metric not present in QC Plot dashboard dropdown");
         qcMetricOptions.forEach(qcMetric -> assertFalse("Disabled QC Metric found - " + metricName, qcMetric.equalsIgnoreCase(metricName)));
@@ -31,7 +31,7 @@ public class TargetedMSPremiumTest extends TargetedMSTest
 
     protected boolean verifyMetricIsPresent(QCPlotsWebPart qcPlotsWebPart, String metricName)
     {
-        List<String> qcMetricOptions = qcPlotsWebPart.getMetricTypeOptions();
+        List<String> qcMetricOptions = qcPlotsWebPart.getMetric1TypeOptions();
         for (String type : qcMetricOptions)
         {
             if (type.equalsIgnoreCase(metricName))

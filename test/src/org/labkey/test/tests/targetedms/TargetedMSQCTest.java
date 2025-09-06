@@ -62,6 +62,8 @@ import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.CU
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.CUSUMv;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.MetricValue;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.MovingRange;
+import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.TrailingCV;
+import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.TrailingMean;
 
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 35)
@@ -461,26 +463,40 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         for (QCPlotsWebPart.QCPlotType plotType : QCPlotsWebPart.QCPlotType.values())
         {
-            qcPlotsWebPart.setGroupXAxisValuesByDate(false);
-            qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false, PRECURSORS.length);
             qcPlotsWebPart.setQCPlotTypes(plotType);
 
-            testEachMultiSeriesQCPlot(plotType);
+            for (QCPlotsWebPart.Scale scale : QCPlotsWebPart.Scale.values())
+            {
+                qcPlotsWebPart.setGroupXAxisValuesByDate(false);
+                qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false, PRECURSORS.length);
+                qcPlotsWebPart.setScale(scale);
+
+                testEachMultiSeriesQCPlot(plotType, scale);
+            }
+
+            // Test once per plot type, not once for each scale
+            assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Annotations", true));
+            assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Change", false), 4);
+            assertElementPresent(qcPlotsWebPart.getLegendItemLocator(QCPlotsWebPart.MetricType.TRANSITION_AREA.toString(), true));
+            assertElementPresent(qcPlotsWebPart.getLegendItemLocator(QCPlotsWebPart.MetricType.PRECURSOR_AREA.toString(), true));
+            if (plotType == CUSUMm || plotType == QCPlotsWebPart.QCPlotType.CUSUMv)
+                assertElementPresent(qcPlotsWebPart.getLegendItemLocator("CUSUM Group", true));
+            for (String precursor : PRECURSORS)
+            {
+                Locator legendItemLoc = qcPlotsWebPart.getLegendItemLocatorByTitle(precursor);
+                assertElementPresent("Unexpected number of QC plot legend items found for " + precursor, legendItemLoc, 2);
+            }
+
+            qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
         }
         // reset to avoid test case dependency
         qcPlotsWebPart.resetInitialQCPlotFields();
     }
 
     @LogMethod
-    private void testEachMultiSeriesQCPlot(@LoggedParam QCPlotsWebPart.QCPlotType plotType)
+    private void testEachMultiSeriesQCPlot(@LoggedParam QCPlotsWebPart.QCPlotType plotType, QCPlotsWebPart.Scale scale)
     {
-        if (!plotType.isStandardPointCount())
-        {
-            log("Skipping plot type " + plotType.getLabel());
-            return;
-        }
-
-        log("Test plot type " + plotType.getLabel());
+        log("Test plot type " + plotType.getLabel() + " with y-scale " + scale);
 
         String yLeftColor = "#66C2A5";
         String yRightColor = "#FC8D62";
@@ -488,14 +504,22 @@ public class TargetedMSQCTest extends TargetedMSTest
         int pointsPerSeries = 47;
         if (plotType == CUSUMm || plotType == QCPlotsWebPart.QCPlotType.CUSUMv)
             pointsPerSeries *= 2;
+        int expectedLeftPoints = pointsPerSeries * PRECURSORS.length;
+        int expectedRightPoints = expectedLeftPoints;
+
+        if (plotType == TrailingCV)
+        {
+            // Transition area has no data for one peptide, meaning CV is undefined due to the mean being zero
+            expectedRightPoints = pointsPerSeries * (PRECURSORS.length - 1) + 1;
+        }
 
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         // check that there are two series per plot by doing a point count by color
         int count = qcPlotsWebPart.getPointElements("fill", yLeftColor, false).size();
-        assertEquals("Unexpected number of points for yLeft metric", pointsPerSeries * PRECURSORS.length, count);
+        assertEquals("Unexpected number of points for yLeft metric", expectedLeftPoints, count);
         count = qcPlotsWebPart.getPointElements("fill", yRightColor, false).size();
-        assertEquals("Unexpected number of points for yRight metric", pointsPerSeries * PRECURSORS.length, count);
+        assertEquals("Unexpected number of points for yRight metric", expectedRightPoints, count);
 
         // check a few attributes of the multi-series all peptide plot
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
@@ -503,23 +527,12 @@ public class TargetedMSQCTest extends TargetedMSTest
         int closedCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
         int openCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
         int triangleCount = qcPlotsWebPart.getPointElements("d", SvgShapes.TRIANGLE.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of points for multi-series all peptide plot", pointsPerSeries * 2 * PRECURSORS.length, openCount + closedCount + triangleCount);
+        assertEquals("Unexpected number of points for multi-series all peptide plot", expectedLeftPoints + expectedRightPoints, openCount + closedCount + triangleCount);
         qcPlotsWebPart.setGroupXAxisValuesByDate(true);
         closedCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
         openCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
         triangleCount = qcPlotsWebPart.getPointElements("d", SvgShapes.TRIANGLE.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of points for multi-series all peptide plot", pointsPerSeries * 2 * PRECURSORS.length, openCount + closedCount + triangleCount);
-        assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Annotations", true));
-        assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Change", false), 4);
-        assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Transition Area", true));
-        assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Precursor Area", true));
-        if (plotType == CUSUMm || plotType == QCPlotsWebPart.QCPlotType.CUSUMv)
-            assertElementPresent(qcPlotsWebPart.getLegendItemLocator("CUSUM Group", true));
-        for (String precursor : PRECURSORS)
-        {
-            Locator legendItemLoc = qcPlotsWebPart.getLegendItemLocatorByTitle(precursor);
-            assertElementPresent("Unexpected number of QC plot legend items found for " + precursor, legendItemLoc, 2);
-        }
+        assertEquals("Unexpected number of points for multi-series all peptide plot", expectedLeftPoints + expectedRightPoints, openCount + closedCount + triangleCount);
     }
 
     @Test

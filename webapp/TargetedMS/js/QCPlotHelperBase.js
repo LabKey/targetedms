@@ -704,7 +704,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             groupBy: 'fragment',
             color: 'fragment',
             defaultGuideSetLabel: 'fragment',
-            pointSize: 3,
+            pointSize: 2,
             shapeRange: [LABKEY.vis.Scale.Shape()[0] /* circle */, LABKEY.vis.Scale.DataspaceShape()[0] /* open circle */, LABKEY.vis.Scale.Shape()[1], LABKEY.vis.Scale.Shape()[2]],
             shapeDomain: shapeDomain,
             showTrendLine: true,
@@ -827,7 +827,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             valueConversion: (this.yAxisScale === 'percentDeviation' || this.yAxisScale === 'standardDeviation' ? this.yAxisScale : undefined),
             shape: shapeProp,
             combined: false,
-            pointSize: 3,
+            pointSize: 2,
             pointIdAttr: function(row) { return row['fullDate']; },
             shapeRange: [LABKEY.vis.Scale.Shape()[0] /* circle */, LABKEY.vis.Scale.DataspaceShape()[0] /* open circle */, LABKEY.vis.Scale.Shape()[1], LABKEY.vis.Scale.Shape()[2]],
             shapeDomain: shapeDomain,
@@ -929,10 +929,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         const plot = LABKEY.vis.TrendingLinePlot(plotConfig);
         plot.render();
 
-        if (!trailingMeanOrCVPlot) {
-            this.addAnnotationsToPlot(plot, precursorInfo);
-        }
-
+        this.addAnnotationsToPlot(plot, precursorInfo);
         this.addGuideSetTrainingRangeToPlot(plot, precursorInfo);
 
         let urlParams = LABKEY.ActionURL.getParameters();

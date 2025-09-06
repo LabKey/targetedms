@@ -195,16 +195,6 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
         return this.metricTypeCombo;
     },
 
-    getQueriesForSchema: function(schemaName, callback) {
-        LABKEY.Query.getQueries({
-            scope: this,
-            schemaName: schemaName,
-            success: function(queriesInfo) {
-                 callback(queriesInfo.queries, this);
-            }
-        });
-    },
-
     getQueryError: function() {
         if (!this.queryError) {
             this.queryError = Ext4.create('Ext.form.Label', {
@@ -213,7 +203,6 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
                 cls: 'labkey-error',
                 text:''
             });
-
         }
 
         return this.queryError;
@@ -350,7 +339,7 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
                 scope: this,
                 method: 'POST',
                 success: function () {
-                    window.location = this.getReturnUrl();
+                    window.location.reload();
                 }
             });
         }
@@ -359,7 +348,7 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
 
     deleteMetric: function() {
         Ext4.Msg.confirm('Delete Custom Metric', 'This will delete ' + LABKEY.Utils.encodeHtml(this.metric.name) +   ' metric. Are you sure you want to do this?', function(val){
-                if (val == 'yes'){
+                if (val === 'yes'){
                     var qcMetricToDelete = {metric: this.metric.id};
                     var metricToDelete = {id: this.metric.id};
                     LABKEY.Query.saveRows({
@@ -378,25 +367,10 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
                         scope: this,
                         method: 'POST',
                         success: function () {
-                            window.location = this.getReturnUrl();
+                            window.location.reload();
                         }
                     });
                 }
             }, this);
-
-
-
-
-    },
-
-    getReturnUrl: function () {
-        var returnUrl = LABKEY.ActionURL.getParameter('returnUrl');
-
-        if(returnUrl) {
-            return returnUrl;
-        }
-        else {
-            return LABKEY.ActionURL.buildURL('project', 'start');
-        }
     }
 });

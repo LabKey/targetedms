@@ -187,7 +187,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
             }
         });
         clickAndWait(Ext4Helper.Locators.ext4Button("Save").findElement(metricWindow));
-        waitForText("QC Plots");
+        waitForElement(Locator.linkWithText(metricProperties.get(ConfigureMetricsUIPage.TraceMetricProperties.metricName)));
     }
 
     public enum MetricType

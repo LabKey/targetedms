@@ -411,7 +411,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
                 scope: this,
                 method: 'POST',
                 success: function () {
-                    window.location = this.getReturnUrl();
+                    window.location.reload();
                 }
             });
         }
@@ -440,22 +440,11 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
                     scope: this,
                     method: 'POST',
                     success: function () {
-                        window.location = this.getReturnUrl();
+                        window.location.reload();
                     }
                 });
                 win.close();
             }
         }, this);
-    },
-
-    getReturnUrl: function () {
-        var returnUrl = LABKEY.ActionURL.getParameter('returnUrl');
-
-        if (returnUrl) {
-            return returnUrl;
-        }
-        else {
-            return LABKEY.ActionURL.buildURL('project', 'start');
-        }
     }
 });

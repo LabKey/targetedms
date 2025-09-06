@@ -202,9 +202,14 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         doAndWaitForUpdate(() -> getWrapper().setFormElement(elementCache().trailingLast, value));
     }
 
-    public List<String> getMetricTypeOptions()
+    public List<String> getMetric1TypeOptions()
     {
         return getWrapper()._ext4Helper.getComboBoxOptions(elementCache().metric1TypeCombo);
+    }
+
+    public List<String> getMetric2TypeOptions()
+    {
+        return getWrapper()._ext4Helper.getComboBoxOptions(elementCache().metric2TypeCombo);
     }
 
     public List<String> getQCPlotTypeOptions()
@@ -215,7 +220,15 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     private MetricType getCurrentMetricType(Locator.XPathLocator metricTypeCombo)
     {
         WebElement typeInput = metricTypeCombo.append(Locator.tag("input")).waitForElement(this, 1000);
-        return MetricType.getEnum(typeInput.getDomProperty("value"));
+        try
+        {
+            return MetricType.getEnum(typeInput.getDomProperty("value"));
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Custom metrics aren't in our enum
+            return null;
+        }
     }
 
     public MetricType getCurrentMetric1Type()

@@ -880,7 +880,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             labelWidth: 50,
             fieldLabel: primary ? 'Left axis' : 'Right axis',
             triggerAction: 'all',
-            mode: 'local',
+            queryMode: 'local',
             store: Ext4.create('Ext.data.Store', {
                 fields: ['id', 'name'],
                 data: data

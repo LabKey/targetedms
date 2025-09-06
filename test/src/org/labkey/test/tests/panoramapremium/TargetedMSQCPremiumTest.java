@@ -9,6 +9,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.labkey.remoteapi.CommandException;
+import org.labkey.remoteapi.query.SelectRowsCommand;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestTimeoutException;
@@ -20,11 +22,10 @@ import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
 import org.labkey.test.util.APIContainerHelper;
 import org.labkey.test.util.ApiPermissionsHelper;
-import org.labkey.test.util.DataRegionTable;
 import org.openqa.selenium.NoSuchElementException;
 
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +58,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         setupFolder(FolderType.QC);
         _userHelper.createUser(USER);
         new ApiPermissionsHelper(this).setUserPermissions(USER, "Reader");
-        importData(SProCoP_FILE);
+//        importData(SProCoP_FILE);
     }
 
     @Before
@@ -182,52 +183,58 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
     }
 
     @Test
-    public void testTraceMetric()
+    public void testTraceMetric() throws IOException, CommandException
     {
         String projectName = "PressureTraceQC";
         String traceName = "ColumnOven_FC_BridgeFlow (channel 5)";
-        Map<String,String> metrics= new HashMap<>();
-        metrics.put("First", "First Pressure After 5");
-        metrics.put("Min", "Min between 5 and 7");
-        metrics.put("Max", "Max between 5 and 7");
 
-        Map<String,String> timeValueOptions = new HashMap<>();
-        timeValueOptions.put("First", "First");
-        timeValueOptions.put("Last", "Last");
-        timeValueOptions.put("Min", "Min");
-        timeValueOptions.put("Max", "Max");
+        final String firstMetric = "First Pressure After 5";
+        final String minMetric = "Min between 5 and 7";
+        final String maxMetric = "Max between 5 and 7";
 
         setUpFolder(projectName, FolderType.QC);
         importData(SAMPLE_FILE_CHROM_INFO);
 
-        addNewTimeTraceMetrics(metrics.get("First"), timeValueOptions.get("First"), traceName);
-        addNewTimeTraceMetrics(metrics.get("Min"), timeValueOptions.get("Min"), "ColumnPressure (channel 4)");
-        addNewTimeTraceMetrics(metrics.get("Max"), timeValueOptions.get("Max"), traceName);
+        addNewTimeTraceMetrics(firstMetric, "First", traceName);
+        addNewTimeTraceMetrics(minMetric, "Min", "ColumnPressure (channel 4)");
+        addNewTimeTraceMetrics(maxMetric, "Max", traceName);
 
         log("Verify trace values after metric addition");
-        goToSchemaBrowser();
-        DataRegionTable traceValuesTable = viewQueryData("targetedms", "QCTraceMetricValues");
-        assertTrue("Trace values are not present", traceValuesTable.getDataRowCount() > 0);
+        assertTrue("Trace values are not present", getTraceMetricValueRowCount() > 0);
 
         goToProjectHome(projectName);
         log("Verify qc plots");
-        verifyQCPlot(metrics.get("First"), "7.363");
-        verifyQCPlot(metrics.get("Min"), "72.878");
-        verifyQCPlot(metrics.get("Max"), "17.508");
+        verifyQCPlot(firstMetric, "7.363");
+        verifyQCPlot(minMetric, "72.878");
+        verifyQCPlot(maxMetric, "17.508");
+
+        // Make sure the second dropdown shows similarly scoped metrics to the first drop-down
+        PanoramaDashboard dashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = dashboard.getQcPlotsWebPart();
+        assertEquals(Arrays.asList("", firstMetric, minMetric), qcPlotsWebPart.getMetric2TypeOptions());
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.RETENTION);
+        List<String> metric2Options = qcPlotsWebPart.getMetric2TypeOptions();
+        assertFalse("Shouldn't have run-scoped metrics in the second dropdown: " + metric2Options, metric2Options.contains(firstMetric));
+        assertTrue("Should have precursor-scoped metrics in the second dropdown: " + metric2Options, metric2Options.contains(QCPlotsWebPart.MetricType.TRANSITION_AREA.toString()));
+        assertFalse("Shouldn't have the same metric in the second dropdown: " + metric2Options, metric2Options.contains(QCPlotsWebPart.MetricType.RETENTION.toString()));
 
         log("Delete run and verify trace metric values are deleted");
         clickTab("Runs");
         TargetedMSRunsTable runsTable = new TargetedMSRunsTable(this);
         runsTable.deleteRun(SAMPLE_FILE_CHROM_INFO);
-        goToSchemaBrowser();
-        traceValuesTable = viewQueryData("targetedms", "QCTraceMetricValues");
-        assertEquals("Values in QCTraceMetricValues are not deleted on deleting run", 0, traceValuesTable.getDataRowCount());
+        assertEquals("Values in QCTraceMetricValues are not deleted on deleting run", 0, getTraceMetricValueRowCount());
 
         log("Reimport run and verify QCTraceMetricValues has values after import");
         importData(SAMPLE_FILE_CHROM_INFO, 2);
-        goToSchemaBrowser();
-        traceValuesTable = viewQueryData("targetedms", "QCTraceMetricValues");
-        assertTrue("Trace values after import are not present", traceValuesTable.getDataRowCount() > 0);
+        assertTrue("Trace values are not present", getTraceMetricValueRowCount() > 0);
+    }
+
+    private int getTraceMetricValueRowCount() throws IOException, CommandException
+    {
+        return new SelectRowsCommand("targetedms", "QCTraceMetricValues").
+                execute(createDefaultConnection(), getCurrentContainerPath()).
+                getRows().
+                size();
     }
 
     private void verifyQCPlot(String metricName, String tooltipValue)
@@ -242,8 +249,8 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         assertFalse("Pressure trace plot is not present", pressurePlotSVGText.isEmpty());
         assertTrue("Y axis label is not correct or present", pressurePlotSVGText.contains("psi"));
         qcPlotsWebPart.openExclusionBubble("2009-11-03 19:37:28");
-        String pressureTracehoverText = waitForElementToBeVisible(qcPlotsWebPart.getBubbleContent()).getText();
-        Assertions.assertThat(pressureTracehoverText).as("Tooltip value").contains(tooltipValue);
+        String pressureTraceHoverText = waitForElementToBeVisible(qcPlotsWebPart.getBubbleContent()).getText();
+        Assertions.assertThat(pressureTraceHoverText).as("Tooltip value").contains(tooltipValue);
     }
 
     private void addNewTimeTraceMetrics(String metricName, String timeValueOption, String traceName)
