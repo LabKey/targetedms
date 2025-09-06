@@ -877,7 +877,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return Ext4.create('Ext.form.field.ComboBox', {
             id: 'metric-type-field' + (primary ? '1' : '2'),
             width: 350,
-            labelWidth: 50,
+            labelWidth: 60,
             fieldLabel: primary ? 'Left axis' : 'Right axis',
             triggerAction: 'all',
             queryMode: 'local',
