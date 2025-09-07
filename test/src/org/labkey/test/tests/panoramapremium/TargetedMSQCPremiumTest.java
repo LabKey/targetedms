@@ -58,7 +58,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         setupFolder(FolderType.QC);
         _userHelper.createUser(USER);
         new ApiPermissionsHelper(this).setUserPermissions(USER, "Reader");
-//        importData(SProCoP_FILE);
+        importData(SProCoP_FILE);
     }
 
     @Before

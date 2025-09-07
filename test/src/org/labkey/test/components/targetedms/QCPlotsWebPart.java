@@ -74,7 +74,8 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         List<WebElement> els = new ArrayList<>();
         WebDriverWrapper.waitFor(() -> els.addAll(elementCache().findSeriesPanels()) ||
                         els.addAll(elementCache().findPlotErrors()) ||
-                        els.addAll(elementCache().findNoRecordsMessage()),
+                        els.addAll(elementCache().findNoRecordsMessage()) ||
+                        els.addAll(elementCache().findNoDataMessage()),
                 "QC Plots Webpart load", 10_000);
         return els.get(0);
     }
@@ -912,6 +913,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         List<WebElement> findNoRecordsMessage()
         {
             return Locator.tagContainingText("span", "There were no records found.").findElements(plotPanel);
+        }
+
+        List<WebElement> findNoDataMessage()
+        {
+            return Locator.tagContainingText("span", "No data found.").findElements(plotPanel);
         }
 
         List<WebElement> findPlotErrors()

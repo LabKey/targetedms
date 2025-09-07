@@ -52,7 +52,6 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
 
     public void waitForLoad()
     {
-        Locator.tagWithClass("div", "item-text").waitForElement(this, 15000);
         Locators.recentSampleFilesLoading.waitForElementToDisappear(this, 30000);
     }
 
