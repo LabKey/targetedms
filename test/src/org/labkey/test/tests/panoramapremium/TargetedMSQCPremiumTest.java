@@ -177,9 +177,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         configureUI.editMetric(metricName, metricProperties);
 
         log("Verifying new metric got edited");
-        qcPlotsWebPart.clickMenuItem("Configure QC Metrics");
         waitForElement(Locator.linkWithText(metricName2));
-        assertTextPresent(metricName2);
     }
 
     @Test
