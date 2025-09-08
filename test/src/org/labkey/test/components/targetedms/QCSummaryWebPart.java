@@ -89,6 +89,7 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
 
     public void waitForRecentSampleFiles(int count)
     {
+        WebDriverWrapper.waitFor(() -> Locators.recentSampleFile.findElements(this).size() == count, WebDriverWrapper.WAIT_FOR_JAVASCRIPT);
         assertEquals("Details for wrong number of sample files in QC Summary.", count, Locators.recentSampleFile.findElements(this).size());
     }
 
