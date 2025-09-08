@@ -16,6 +16,7 @@
 package org.labkey.test.components.targetedms;
 
 import org.labkey.test.Locator;
+import org.labkey.test.WebDriverWrapper;
 import org.labkey.test.components.BodyWebPart;
 import org.labkey.test.components.Component;
 import org.openqa.selenium.WebDriver;
@@ -106,6 +107,7 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
             {
                 summaryTiles = new ArrayList<>();
                 int index = 0;
+                WebDriverWrapper.waitFor(() -> Locators.summaryTile.areAnyVisible(this), WebDriverWrapper.WAIT_FOR_JAVASCRIPT);
                 List<WebElement> els = Locators.summaryTile.findElements(this);
                 for (WebElement el : els)
                 {
