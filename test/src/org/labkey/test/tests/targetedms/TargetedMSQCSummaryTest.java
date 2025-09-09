@@ -213,7 +213,7 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         sampleFileCount = 0;
         clickTab("Panorama Dashboard");
         waitForElement(Locator.linkWithText(sampleFileCount + " replicates"));
-        waitForElement(Locator.tagContainingText("div", "No data found."));
+        waitForElement(Locator.tagContainingText("span", "No data found."));
         assertElementNotPresent(Locator.tagWithClass("div", "sample-file-item"));
     }
 
