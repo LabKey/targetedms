@@ -72,7 +72,6 @@ import org.labkey.api.query.FieldKey;
 import org.labkey.api.query.InvalidKeyException;
 import org.labkey.api.query.QueryDefinition;
 import org.labkey.api.query.QueryException;
-import org.labkey.api.query.QuerySchema;
 import org.labkey.api.query.QueryService;
 import org.labkey.api.query.QueryUpdateService;
 import org.labkey.api.query.QueryUpdateServiceException;
@@ -88,7 +87,6 @@ import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.util.FileUtil;
-import org.labkey.api.util.Pair;
 import org.labkey.api.util.StringUtilsLabKey;
 import org.labkey.api.util.logging.LogHelper;
 import org.labkey.api.view.NotFoundException;
@@ -2358,38 +2356,26 @@ public class TargetedMSManager
 
             // We may encounter the same query to see if metrics have data more than once, so remember the values
             // so we don't have to requery
-            Map<Pair<String, String>, Boolean> hasDataQueries = new HashMap<>();
+            Map<String, Boolean> hasDataQueries = new CaseInsensitiveHashMap<>();
 
             for (QCMetricConfiguration metric : metrics)
             {
                 if (metric.getStatus() == null)
                 {
-                    if (metric.getEnabledQueryName() == null || metric.getEnabledSchemaName() == null)
+                    if (metric.getEnabledQueryName() == null)
                     {
                         metric.setStatus(QCMetricStatus.DEFAULT);
                     }
                     else
                     {
-                        Pair<String, String> schemaQuery = new Pair<>(metric.getEnabledSchemaName(), metric.getEnabledQueryName());
-                        boolean hasData = hasDataQueries.computeIfAbsent(schemaQuery, p ->
+                        boolean hasData = hasDataQueries.computeIfAbsent(metric.getEnabledQueryName(), p ->
                         {
-                            QuerySchema enabledSchema = TargetedMSSchema.SCHEMA_NAME.equalsIgnoreCase(metric.getEnabledSchemaName()) ? schema : schema.getDefaultSchema().getSchema(metric.getEnabledSchemaName());
-                            if (enabledSchema != null)
+                            TableInfo enabledQuery = schema.getTable(metric.getEnabledQueryName(), null);
+                            if (enabledQuery != null)
                             {
-                                TableInfo enabledQuery = enabledSchema.getTable(metric.getEnabledQueryName(), null);
-                                if (enabledQuery != null)
-                                {
-                                    return new TableSelector(enabledQuery).exists();
-                                }
-                                else
-                                {
-                                    _log.warn("Could not find query " + metric.getEnabledSchemaName() + "." + metric.getEnabledQueryName() + " to determine if metric " + metric.getName() + " should be enabled in container " + c.getPath());
-                                }
+                                return new TableSelector(enabledQuery).exists();
                             }
-                            else
-                            {
-                                _log.warn("Could not find schema " + metric.getEnabledSchemaName() + " to determine if metric " + metric.getName() + " should be enabled in container " + c.getPath());
-                            }
+                            _log.warn("Could not find query " + schema.getName() + "." + metric.getEnabledQueryName() + " to determine if metric " + metric.getName() + " should be enabled in container " + c.getPath());
                             return false;
                         });
 
@@ -2431,7 +2417,7 @@ public class TargetedMSManager
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(container, user);
             Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
 
-            List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(schema, enabledQCMetricConfigurations, null, null, Collections.emptyList(), true, false, false);
+            List<RawMetricDataSet> rawMetricDataSets = OutlierGenerator.get().getRawMetricDataSets(schema, enabledQCMetricConfigurations, null, null, Collections.emptyList(), true, false);
 
             Map<GuideSetKey, GuideSetStats> stats = OutlierGenerator.get().getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())));
 
@@ -2568,7 +2554,7 @@ public class TargetedMSManager
 
         //get RowId -> ReplacedByRun key value pairs and also populate the opposite direction to get ReplacedByRun -> RowId
         Map<Long, Long> replacedByMap = new LongHashMap<>();
-        selector.forEach(rs -> {replacedByMap.put(rs.getLong(1), rs.getLong(2));});
+        selector.forEach(rs -> replacedByMap.put(rs.getLong(1), rs.getLong(2)));
         Map<Long, Long> replacesMap = new LongHashMap<>();
         for (Map.Entry<Long, Long> entry : replacedByMap.entrySet())
             replacesMap.put(entry.getValue(), entry.getKey());
@@ -2586,7 +2572,7 @@ public class TargetedMSManager
         return result;
     }
 
-    public List<String> getReplicateSubgroupNames(User user, Container container, @NotNull GeneralMolecule molecule)
+    public List<String> getReplicateSubgroupNames(User user, Container container, @NotNull GeneralMolecule<?, ?> molecule)
     {
         UserSchema userSchema = QueryService.get().getUserSchema(user, container, "targetedms");
         TableInfo tableInfo = userSchema.getTableOrThrow("pharmacokinetics");

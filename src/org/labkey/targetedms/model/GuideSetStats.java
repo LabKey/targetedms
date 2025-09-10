@@ -41,6 +41,10 @@ public class GuideSetStats
 
     private double _movingRangeAverage;
     private double _movingRangeStdDev;
+    private double _trailingMeanAverage;
+    private double _trailingMeanStdDev;
+    private double _trailingCVAverage;
+    private double _trailingCVStdDev;
 
     private boolean _locked = false;
 
@@ -80,6 +84,30 @@ public class GuideSetStats
     {
         assertLocked();
         return _movingRangeStdDev;
+    }
+
+    public double getTrailingMeanAverage()
+    {
+        assertLocked();
+        return _trailingMeanAverage;
+    }
+
+    public double getTrailingMeanStdDev()
+    {
+        assertLocked();
+        return _trailingMeanStdDev;
+    }
+
+    public double getTrailingCVAverage()
+    {
+        assertLocked();
+        return _trailingCVAverage;
+    }
+
+    public double getTrailingCVStdDev()
+    {
+        assertLocked();
+        return _trailingCVStdDev;
     }
 
     public GuideSet getGuideSet()
@@ -169,6 +197,10 @@ public class GuideSetStats
         {
             trailingMeans = Stats.getTrailingMeans(metricValsForTrailing, trailingRuns);
             trailingCVs = Stats.getTrailingCVs(metricValsForTrailing, trailingRuns);
+            _trailingMeanAverage = Stats.getMean(trailingMeans);
+            _trailingMeanStdDev = Stats.getStdDev(trailingMeans, false);
+            _trailingCVAverage = Stats.getMean(trailingCVs);
+            _trailingCVStdDev = Stats.getStdDev(trailingCVs, false);
         }
 
         double[] positiveCUSUMm = Stats.getCUSUMS(metricVals, false, false, false, null);

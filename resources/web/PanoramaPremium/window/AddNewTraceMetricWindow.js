@@ -280,7 +280,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
             });
 
             if(this.operation === this.update) {
-                this.yAxisLabelField.setValue(this.metric.YAxisLabel1);
+                this.yAxisLabelField.setValue(this.metric.YAxisLabel);
             }
         }
 
@@ -374,12 +374,10 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
             var records = [];
             var newMetric = {};
             newMetric.Name = this.metricNameField.getValue();
-            newMetric.Series1SchemaName = 'targetedms';
-            newMetric.Series1QueryName = 'QCTraceMetric'; // dummy text to insert and not an actual query
-            newMetric.Series1Label = this.metricNameField.getValue();
+            newMetric.QueryName = 'QCTraceMetric'; // dummy text to insert and not an actual query
             newMetric.PrecursorScoped = false;
             newMetric.TraceName = this.tracesCombo.getValue();
-            newMetric.YAxisLabel1 = this.yAxisLabelField.getValue();
+            newMetric.YAxisLabel = this.yAxisLabelField.getValue();
 
             if (this.traceValueNumberField.getValue()) {
                 newMetric.TraceValue = this.traceValueNumberField.getValue();
@@ -413,7 +411,7 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
                 scope: this,
                 method: 'POST',
                 success: function () {
-                    window.location = this.getReturnUrl();
+                    window.location.reload();
                 }
             });
         }
@@ -422,9 +420,9 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
 
     deleteMetric: function() {
         Ext4.Msg.confirm('Delete Trace Metric', 'This will delete ' + LABKEY.Utils.encodeHtml(this.metric.name) +  ' metric. Are you sure you want to do this?', function(val){
-            if (val == 'yes'){
-                var qcMetricToDelete = {metric: this.metric.id};
-                var metricToDelete = {id: this.metric.id};
+            if (val === 'yes'){
+                const qcMetricToDelete = {metric: this.metric.id};
+                const metricToDelete = {id: this.metric.id};
 
                 LABKEY.Query.saveRows({
                     containerPath: LABKEY.container.id,
@@ -442,22 +440,11 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
                     scope: this,
                     method: 'POST',
                     success: function () {
-                        window.location = this.getReturnUrl();
+                        window.location.reload();
                     }
                 });
                 win.close();
             }
         }, this);
-    },
-
-    getReturnUrl: function () {
-        var returnUrl = LABKEY.ActionURL.getParameter('returnUrl');
-
-        if (returnUrl) {
-            return returnUrl;
-        }
-        else {
-            return LABKEY.ActionURL.buildURL('project', 'start');
-        }
     }
 });

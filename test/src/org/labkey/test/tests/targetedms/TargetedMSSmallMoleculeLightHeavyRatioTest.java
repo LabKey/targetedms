@@ -47,7 +47,7 @@ public class TargetedMSSmallMoleculeLightHeavyRatioTest extends TargetedMSTest
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         // Be sure that we get a light/heavy ratio metric shown
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.LHRATIO);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.LHRATIO);
         assertTextPresent("Acetylcarnitine (C2)", "Tetradecanoylcarnitine (C14)");
 
         // Spot check calculated values. Ordering should be stable based on the Skyline document's ordering

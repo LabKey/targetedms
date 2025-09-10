@@ -17,16 +17,10 @@
 SELECT
        qmc.id,
        qmc.name,
-       qmc.Series1Label,
-       qmc.Series1SchemaName,
-       qmc.Series1QueryName,
-       qmc.Series2Label,
-       qmc.Series2SchemaName,
-       qmc.Series2QueryName,
+       qmc.QueryName,
        qmc.PrecursorScoped,
        qmc.Container, -- including to lock out editing pre-configured qc metrics,
        qmc.EnabledQueryName,
-       qmc.EnabledSchemaName,
        qem.Status,
        CASE WHEN qem.metric IS NULL THEN FALSE
             ELSE TRUE END AS Inserted,
@@ -37,8 +31,7 @@ SELECT
        qmc.MaxTimeValue,
        qmc.TimeValueOption,
        qmc.TraceName,
-       qmc.YAxisLabel1,
-       qmc.YAxisLabel2
+       qmc.YAxisLabel
 FROM
       qcmetricconfiguration qmc
 FULL JOIN   qcenabledmetrics qem

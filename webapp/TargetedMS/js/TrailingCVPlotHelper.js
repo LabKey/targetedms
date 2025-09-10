@@ -10,13 +10,22 @@ Ext4.define("LABKEY.targetedms.TrailingCVPlotHelper", {
             'Trailing CV' : 'A Trailing Coefficient of Variation plot shows the moving average of percent coefficient of variation for the previous N runs, as defined by the user.  It is useful for finding long-term trends otherwise disguised by fluctuations caused by outliers.'
         }
     },
-    processTrailingCVPlotDataRow: function(row, fragment, seriesType, metricProps) {
-        let data = {};
+    processTrailingCVPlotDataRow: function(row, fragment, metricId, metricProps) {
+        const data = {};
+        if (Ext4.isDefined(row['GuideSetId']))
+        {
+            var gs = this.guideSetDataMap[row['GuideSetId']];
+            if (Ext4.isDefined(gs) && gs.Series[fragment] && gs.Series[fragment][metricId])
+            {
+                data['meanTrailingCV'] = gs.Series[fragment][metricId]['MeanTrailingCV'];
+                data['stddevTrailingCV'] = gs.Series[fragment][metricId]['StdDevTrailingCV'];
+            }
+        }
 
         if (this.isMultiSeries())
         {
-            data['TrailingCV_' + seriesType] = row['TrailingCV'];
-            data['TrailingCV_' + seriesType + 'Title'] = metricProps[seriesType + 'Label'];
+            data['TrailingCV_' + metricId] = row['TrailingCV'];
+            data['TrailingCV_' + metricId + 'Title'] = metricProps['name'];
         }
         else
         {
@@ -26,12 +35,17 @@ Ext4.define("LABKEY.targetedms.TrailingCVPlotHelper", {
 
     },
 
+    getTrailingCVCombinedPlotLegendSeries: function()
+    {
+        return ['TrailingCV_' + this.metric, 'TrailingCV_' + this.metric2];
+    },
+
     getTrailingCVPlotTypeProperties: function(precursorInfo) {
         let plotProperties = {};
-        // some properties are specific to whether or not we are showing multiple y-axis series
+        // some properties are specific to whether we are showing multiple y-axis series
         if (this.isMultiSeries()) {
-            plotProperties['TrailingCV'] = 'value_series1';
-            plotProperties['TrailingCVRight'] = 'value_series2';
+            plotProperties['TrailingCV'] = 'TrailingCV_' + this.metric;
+            plotProperties['TrailingCVRight'] = 'TrailingCV_' + this.metric2;
         }
         else {
             plotProperties['TrailingCV'] = 'TrailingCV';
@@ -61,7 +75,7 @@ Ext4.define("LABKEY.targetedms.TrailingCVPlotHelper", {
 
     setTrailingCVMinMax: function (dataObject, row) {
         // track the min and max data, so we can get the range for including the QC annotations
-        let val = row['TrailingCV'];
+        let val = row['TrailingCV' + (this.isMultiSeries() ? ('_' + row.MetricId) : '')];
         if (LABKEY.vis.isValid(val)) {
             if (dataObject.TrailingCVMin == null || val < dataObject.TrailingCVMin) {
                 dataObject.TrailingCVMin = val;
@@ -77,8 +91,8 @@ Ext4.define("LABKEY.targetedms.TrailingCVPlotHelper", {
         }
         else if (this.isMultiSeries()) {
             // check if either of the y-axis metric values are invalid for a log scale
-            let val1 = row['TrailingCV_series1'],
-                    val2 = row['TrailingCV_series2'];
+            let val1 = row['TrailingCV_' + this.metric],
+                    val2 = row['TrailingCV_' + this.metric2];
             if (dataObject.showLogInvalid === undefined && this.yAxisScale === 'log') {
                 if ((LABKEY.vis.isValid(val1) && val1 <= 0) || (LABKEY.vis.isValid(val2) && val2 <= 0)) {
                     dataObject.showLogInvalid = true;

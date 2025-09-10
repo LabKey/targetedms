@@ -25,7 +25,7 @@ Ext4.define("LABKEY.targetedms.CUSUMPlotHelper", {
         var valNegative = row[negative], valPositive = row[positive];
         if (LABKEY.vis.isValid(valNegative) && LABKEY.vis.isValid(valPositive))
         {
-            if (this.yAxisScale == 'log' && (valNegative <= 0 || valPositive <= 0))
+            if (this.yAxisScale === 'log' && (valNegative <= 0 || valPositive <= 0))
             {
                 dataObject.showLogEpsilonWarning = true;
             }
@@ -48,31 +48,19 @@ Ext4.define("LABKEY.targetedms.CUSUMPlotHelper", {
 
     getCUSUMPlotTypeProperties: function(precursorInfo, isMean)
     {
-        var plotProperties = {};
-        // some properties are specific to whether or not we are showing multiple y-axis series
+        const plotProperties = {};
+        // some properties are specific to whether we are showing multiple y-axis series
         if (this.isMultiSeries())
         {
-            if (isMean)
-            {
-                plotProperties['positiveValue'] = 'CUSUMmP_series1';
-                plotProperties['positiveValueRight'] = 'CUSUMmP_series2';
-                plotProperties['negativeValue'] = 'CUSUMmN_series1';
-                plotProperties['negativeValueRight'] = 'CUSUMmN_series2';
-
-            }
-            else
-            {
-                plotProperties['positiveValue'] = 'CUSUMvP_series1';
-                plotProperties['positiveValueRight'] = 'CUSUMvP_series2';
-                plotProperties['negativeValue'] = 'CUSUMvN_series1';
-                plotProperties['negativeValueRight'] = 'CUSUMvN_series2';
-
-            }
-
+            const prefix = isMean ? 'CUSUMm' : 'CUSUMv';
+            plotProperties['positiveValue'] = prefix + 'P_' + this.metric;
+            plotProperties['positiveValueRight'] = prefix + 'P_' + this.metric2;
+            plotProperties['negativeValue'] = prefix + 'N_' + this.metric;
+            plotProperties['negativeValueRight'] = prefix + 'N_' + this.metric2;
         }
         else
         {
-            var lower, upper;
+            let lower, upper;
             if (isMean)
             {
                 plotProperties['positiveValue'] = 'CUSUMmP';
@@ -115,7 +103,7 @@ Ext4.define("LABKEY.targetedms.CUSUMPlotHelper", {
         }
     },
 
-    processCUSUMPlotDataRow: function(row, fragment, seriesType, metricProps, isMeanCUSUM)
+    processCUSUMPlotDataRow: function(row, fragment, metricId, metricProps, isMeanCUSUM)
     {
         var data = {};
 
@@ -123,10 +111,10 @@ Ext4.define("LABKEY.targetedms.CUSUMPlotHelper", {
         {
             if (this.isMultiSeries())
             {
-                data['CUSUMmN_' + seriesType] = this.formatValue(row['CUSUMmN']);
-                data['CUSUMmN_' + seriesType + 'Title'] = metricProps[seriesType + 'Label'];
-                data['CUSUMmP_' + seriesType] = this.formatValue(row['CUSUMmP']);
-                data['CUSUMmP_' + seriesType + 'Title'] = metricProps[seriesType + 'Label'];
+                data['CUSUMmN_' + metricId] = this.formatValue(row['CUSUMmN']);
+                data['CUSUMmN_' + metricId + 'Title'] = metricProps['name'];
+                data['CUSUMmP_' + metricId] = this.formatValue(row['CUSUMmP']);
+                data['CUSUMmP_' + metricId + 'Title'] = metricProps['name'];
             }
             else
             {
@@ -138,10 +126,10 @@ Ext4.define("LABKEY.targetedms.CUSUMPlotHelper", {
         {
             if (this.isMultiSeries())
             {
-                data['CUSUMvP_' + seriesType] = this.formatValue(row['CUSUMvP']);
-                data['CUSUMvP_' + seriesType + 'Title'] = metricProps[seriesType + 'Label'];
-                data['CUSUMvN_' + seriesType] = this.formatValue(row['CUSUMvN']);
-                data['CUSUMvN_' + seriesType + 'Title'] = metricProps[seriesType + 'Label'];
+                data['CUSUMvP_' + metricId] = this.formatValue(row['CUSUMvP']);
+                data['CUSUMvP_' + metricId + 'Title'] = metricProps['name'];
+                data['CUSUMvN_' + metricId] = this.formatValue(row['CUSUMvN']);
+                data['CUSUMvN_' + metricId + 'Title'] = metricProps['name'];
             }
             else
             {
@@ -179,8 +167,6 @@ Ext4.define("LABKEY.targetedms.CUSUMPlotHelper", {
         {
             combinePlotData[maxPositive] = valPositiveMax;
         }
-
-        combinePlotData.fragment = precursorInfo.fragment;
     },
 
     getCUSUMCombinedPlotLegendSeries: function(isMeanCUSUM)
@@ -189,8 +175,8 @@ Ext4.define("LABKEY.targetedms.CUSUMPlotHelper", {
         //normalizedGroup = group.replace('CUSUMmN', 'CUSUMm').replace('CUSUMmP', 'CUSUMm');
         //normalizedGroup = group.replace('CUSUMvN', 'CUSUMv').replace('CUSUMvP', 'CUSUMv');
         if (isMeanCUSUM)
-            return ['CUSUMm_series1', 'CUSUMm_series2'];
-        return ['CUSUMv_series1', 'CUSUMv_series2'];
+            return ['CUSUMm_' + this.metric, 'CUSUMm_' + this.metric2];
+        return ['CUSUMv_' + this.metric, 'CUSUMv_' + this.metric2];
     },
 
     getCUSUMGroupLegend: function()
@@ -210,7 +196,7 @@ Ext4.define("LABKEY.targetedms.CUSUMPlotHelper", {
             color: '#000000',
             shape: LABKEY.vis.TrendingLineShape.positiveCUSUM
         });
-        if (!this.getMetricPropsById(this.metric).series2Label) {
+        if (!this.metric2) {
             cusumLegend.push({
                 text: 'Upper/Lower Limit',
                 color: 'red',

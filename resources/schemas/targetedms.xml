@@ -1347,22 +1347,15 @@
                 </fk>
             </column>
             <column columnName="Name"/>
-            <column columnName="Series1Label"/>
-            <column columnName="Series1SchemaName"/>
-            <column columnName="Series1QueryName"/>
-            <column columnName="Series2Label"/>
-            <column columnName="Series2SchemaName"/>
-            <column columnName="Series2QueryName"/>
+            <column columnName="QueryName"/>
             <column columnName="PrecursorScoped"/>
             <column columnName="EnabledQueryName"/>
-            <column columnName="EnabledSchemaName"/>
             <column columnName="TraceValue"/>
             <column columnName="MinTimeValue"/>
             <column columnName="MaxTimeValue"/>
             <column columnName="TimeValueOption"/>
             <column columnName="TraceName"/>
-            <column columnName="YAxisLabel1"/>
-            <column columnName="YAxisLabel2"/>
+            <column columnName="YAxisLabel"/>
         </columns>
     </table>
     <table tableName="QCMetricExclusion" tableDbType="TABLE">

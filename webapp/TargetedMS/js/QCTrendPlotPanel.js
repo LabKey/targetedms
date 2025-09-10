@@ -114,7 +114,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     if (value === "true" || value === "false") {
                         value = value === "true";
                     }
-                    else if (value !== undefined && value.length > 0 && !isNaN(Number(value))) {
+                    else if (value && value.length > 0 && !isNaN(Number(value))) {
                         value = +value;
                     }
                     else if (key === 'plotTypes') { // convert string to array
@@ -122,7 +122,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         value = value.replace('Levey-Jennings', 'Metric Value');
                         value = value.split(',');
                     }
-                    if(key === 'selectedAnnotations') {
+                    if(key === 'selectedAnnotations' && value) {
                         const annotations = {};
 
                         const a = value.split(',');
@@ -158,7 +158,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     queryContainerReplicateAnnotations : function(metrics) {
-        this.metricPropArr = metrics;
+        this.metricPropArr = metrics.sort(function(a, b) {
+            return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+        });
         LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetContainerReplicateAnnotations.api'),
             method: 'GET',
@@ -292,18 +294,26 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     getFirstPlotOptionsToolbar: function() {
         if (!this.plotTypeOptionsToolbar) {
+            const items = [
+                this.getPlotTypeOptions(),
+                {xtype: 'tbseparator'},
+                this.getTrailingRunsField(),
+                {xtype: 'tbspacer'},
+                this.getScaleCombo()
+            ];
+
+            // only add the create guide set button if the user has the proper permissions to insert/update guide sets
+            if (this.canUserEdit()) {
+                items.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
+                items.push(this.getGuideSetCreateButton());
+            }
+
             this.plotTypeOptionsToolbar = Ext4.create('Ext.toolbar.Toolbar', {
                 ui: 'footer',
                 cls: 'levey-jennings-toolbar',
                 layout: { pack: 'center' },
                 padding: '0 10px 10px 10px',
-                items: [
-                    this.getPlotTypeOptions(),
-                    {xtype: 'tbseparator'},
-                    this.getTrailingRunsField(),
-                    {xtype: 'tbspacer'},
-                    this.getScaleCombo()
-                ],
+                items: items,
                 listeners: {
                     scope: this,
                     render: function(cmp)
@@ -394,16 +404,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     getMainPlotOptionsToolbar : function() {
         if (!this.mainPlotOptionsToolbar) {
             var toolbarItems = [
-                this.getMetricCombo(),
+                this.getMetricCombo1(),
+                this.getMetricCombo2(),
                 {xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'},
                 this.getDateRangeCombo()
             ];
-
-            // only add the create guide set button if the user has the proper permissions to insert/update guide sets
-            if (this.canUserEdit()) {
-                toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
-                toolbarItems.push(this.getGuideSetCreateButton());
-            }
 
             this.mainPlotOptionsToolbar = Ext4.create('Ext.toolbar.Toolbar', {
                 ui: 'footer',
@@ -439,8 +444,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 items: toolbarItems
             });
 
-            //hiding the show All series in a single plot checkbox for run scoped metrics
-            this.showAllSeriesCheckbox(this.getMetricPropsById(this.metric).precursorScoped, location-1);
+            if (this.metric) {
+                //hiding the show All series in a single plot checkbox for run scoped metrics
+                this.showAllSeriesCheckbox(this.getMetricPropsById(this.metric).precursorScoped, location - 1);
+            }
         }
 
         return this.otherPlotOptionsToolbar;
@@ -583,9 +590,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     isValidQCPlotType: function(plotType) {
         var valid = false;
         Ext4.each(LABKEY.targetedms.QCPlotHelperBase.qcPlotTypes, function(type){
-            if (plotType == type) {
+            if (plotType === type) {
                 valid = true;
-                return;
             }
         });
         return valid;
@@ -599,10 +605,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             metric;
 
         paramValue = urlParams['metric'];
-        if (paramValue != undefined) {
+        if (paramValue !== undefined) {
             metric = this.validateMetricId(paramValue);
             if(metric == null) {
-                alertMessage += "Invalid Metric, reverting to default metric.";
+                alertMessage += "Invalid metric, reverting to default metric.";
                 sep = ' ';
             }
             else {
@@ -610,9 +616,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }
         }
 
-        if (urlParams['startDate'] != undefined) {
+        if (urlParams['startDate'] !== undefined) {
             paramValue = new Date(urlParams['startDate']);
-            if(paramValue == "Invalid Date") {
+            if(paramValue === "Invalid Date") {
                 alertMessage += sep + "Invalid Start Date, reverting to default start date.";
                 sep = ' ';
             }
@@ -622,9 +628,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }
         }
 
-        if (urlParams['endDate'] != undefined) {
+        if (urlParams['endDate'] !== undefined) {
             paramValue = new Date(urlParams['endDate']);
-            if(paramValue == "Invalid Date") {
+            if(paramValue === "Invalid Date") {
                 alertMessage += sep + "Invalid End Date, reverting to default end date.";
             }
             else {
@@ -634,7 +640,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }
 
         paramValue = urlParams['plotTypes'];
-        if (paramValue != undefined) {
+        if (paramValue !== undefined) {
             var plotTypes = [];
             if (!Ext4.isArray(paramValue))
                 paramValue = paramValue.split(',');
@@ -645,7 +651,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }, this);
 
 
-            if (plotTypes.length == 0) {
+            if (plotTypes.length === 0) {
                 alertMessage += sep + "Invalid Plot Type, reverting to default plot type.";
             }
             else {
@@ -665,8 +671,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     validateMetricId : function(id) {
-        for (var i = 0; i < this.metricPropArr.length; i++) {
-            if (this.metricPropArr[i].id == id) {
+        // convert id to an integer, handling a parsing failure gracefully
+        id = parseInt(id);
+        for (let i = 0; i < this.metricPropArr.length; i++) {
+            if (this.metricPropArr[i].id === id) {
                 return this.metricPropArr[i].id;
             }
         }
@@ -824,54 +832,97 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     assignDefaultMetricIfNull: function () {
         if (this.metric == null || isNaN(Number(this.metric)) || !this.getMetricPropsById(this.metric)) {
-            var targetIndex = 0;
-            for (var i = 0; i < this.metricPropArr.length; i++) {
-                if (this.metricPropArr[i].name == 'Retention Time') {
-                    targetIndex = i;
+            this.metric = null;
+            for (let i = 0; i < this.metricPropArr.length; i++) {
+                if (this.metricPropArr[i].name === 'Retention Time') {
+                    this.metric = this.metricPropArr[i].id;
                 }
             }
-            if(this.metricPropArr.length > 0) {
-                this.metric = this.metricPropArr[targetIndex].id;
+            // Fall back on the first one
+            if (!this.metric && this.metricPropArr.length > 0) {
+                this.metric = this.metricPropArr[0].id;
             }
+        }
+        if (this.metric2 && !this.getMetricPropsById(this.metric2)) {
+            this.metric2 = null;
         }
     },
 
-    getMetricCombo : function() {
-        if (!this.metricField) {
-            this.assignDefaultMetricIfNull();
+    getSecondMetricList : function() {
+        const primaryMetric = this.getMetricPropsById(this.metric);
+        const subset = this.metricPropArr.filter(function(metric) {
+            return !primaryMetric ||
+                    (primaryMetric.precursorScoped === metric.precursorScoped && primaryMetric.id !== metric.id);
+        });
 
-            this.metricField = Ext4.create('Ext.form.field.ComboBox', {
-                id: 'metric-type-field',
-                width: 350,
-                labelWidth: 50,
-                fieldLabel: 'Metric',
-                triggerAction: 'all',
-                mode: 'local',
-                store: Ext4.create('Ext.data.Store', {
-                    fields: ['id', 'name'],
-                    sorters: [{property: 'name', transform: function(arg) { return arg.toLowerCase(); }}],
-                    data: this.metricPropArr
-                }),
-                valueField: 'id',
-                displayField: 'name',
-                tpl : '<tpl for="."><li role="option" class="x4-boundlist-item">{name:htmlEncode}</li></tpl>',
-                value: this.metric,
-                forceSelection: true,
-                editable: false,
-                listeners: {
-                    scope: this,
-                    change: function(cmp, newVal, oldVal) {
+        return [{
+            // It's easier to use 0 to avoid ambiguity of null vs not defined in JSON calls
+            id: 0,
+            name: this.noSecondMetricText
+        }, ...subset];
+    },
+
+    createMetricCombo : function(primary) {
+
+        let data;
+        if (primary) {
+            data = this.metricPropArr;
+        }
+        else {
+            data = this.getSecondMetricList();
+        }
+
+        this.assignDefaultMetricIfNull();
+
+        return Ext4.create('Ext.form.field.ComboBox', {
+            id: 'metric-type-field' + (primary ? '1' : '2'),
+            width: 350,
+            labelWidth: 60,
+            fieldLabel: primary ? 'Left axis' : 'Right axis',
+            triggerAction: 'all',
+            queryMode: 'local',
+            store: Ext4.create('Ext.data.Store', {
+                fields: ['id', 'name'],
+                data: data
+            }),
+            valueField: 'id',
+            displayField: 'name',
+            tpl : '<tpl for="."><li role="option" style="min-height: 1.75em;" class="x4-boundlist-item">{name:htmlEncode}</li></tpl>',
+            value: primary ? this.metric : this.metric2,
+            forceSelection: true,
+            allowBlank: !primary,
+            emptyText: primary ? 'No metric' : 'No second metric',
+            editable: false,
+            listeners: {
+                scope: this,
+                change: function(cmp, newVal) {
+                    if (primary) {
                         this.metric = newVal;
-                        this.havePlotOptionsChanged = true;
-                        var items = this.otherPlotOptionsToolbar.items.items;
-                        var showAllSeriesCheckBoxLocation;
 
-                        for(var i=0; i<items.length;i++ ) {
+                        const filteredMetrics = this.getSecondMetricList();
+                        this.getMetricCombo2().getStore().loadData(filteredMetrics);
+                        const metric2 = this.metric2;
+                        const found = filteredMetrics.find(function(metric) {
+                            return metric.id === metric2;
+                        })
+                        if (!found) {
+                            this.getMetricCombo2().setValue(null);
+                        }
+                    }
+                    else {
+                        this.metric2 = newVal;
+                    }
+                    this.havePlotOptionsChanged = true;
+                    if (this.otherPlotOptionsToolbar) {
+                        const items = this.otherPlotOptionsToolbar.items.items;
+                        let showAllSeriesCheckBoxLocation;
+
+                        for(let i=0; i<items.length;i++ ) {
                             if(items[i].boxLabel ==='Show All Series in a Single Plot')
                                 showAllSeriesCheckBoxLocation = i;
                         }
 
-                        var showAllSeriesCheckBox = this.getMetricPropsById(newVal).precursorScoped;
+                        const showAllSeriesCheckBox = this.getMetricPropsById(this.metric).precursorScoped;
                         this.showAllSeriesCheckbox(showAllSeriesCheckBox, showAllSeriesCheckBoxLocation);
 
                         this.setBrushingEnabled(false);
@@ -881,10 +932,24 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         this.displayTrendPlot();
                     }
                 }
-            });
+            }
+        });
+    },
+
+    getMetricCombo1 : function() {
+        if (!this.metricField) {
+            this.metricField = this.createMetricCombo(true);
         }
 
         return this.metricField;
+    },
+
+    getMetricCombo2 : function() {
+        if (!this.metricField2) {
+            this.metricField2 = this.createMetricCombo(false);
+        }
+
+        return this.metricField2;
     },
 
     getAnnotationListTree : function() {
@@ -1260,7 +1325,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     dateCount[annotationDate]++;
 
                     // get unique annotation names and colors for the legend
-                if (Ext4.Array.pluck(this.legendData, "text").indexOf(annotation['Name']) == -1) {
+                if (Ext4.Array.pluck(this.legendData, "text").indexOf(annotation['Name']) === -1) {
                         this.legendData.push({
                             text: annotation['Name'],
                             color: '#' + annotation['Color'],
@@ -1305,7 +1370,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     plotPointMouseOver : function(event, row, layerSel, point, valueName, plotConfig) {
         var showHoverTask = new Ext4.util.DelayedTask(),
-            metricProps = this.getMetricPropsById(this.metric),
+            metricProps = this.getMetricPropsById(row.MetricId),
             me = this;
 
         let panelY = me.canUserEdit() ? -375 : -270;
@@ -1378,13 +1443,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     highlightFragmentSeries : function(fragment) {
-        var metricProps = this.getMetricPropsById(this.metric);
-
         var points = d3.selectAll('.point path');
         var pointOpacityAcc = function(d) { return d.fragment === undefined || d.fragment === null || d.fragment === fragment ? 1 : 0.1 };
         points.attr('fill-opacity', pointOpacityAcc).attr('stroke-opacity', pointOpacityAcc);
 
-        var hasYRightMetric = metricProps.series2QueryName !== undefined;
+        var hasYRightMetric = this.metric2;
         var lines = d3.selectAll('path.line');
         var lineOpacityAcc = function(d) { return d.group === undefined || d.group === null || d.group.indexOf(fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1 };
         lines.attr('fill-opacity', lineOpacityAcc).attr('stroke-opacity', lineOpacityAcc);
@@ -1420,10 +1483,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     plotBrushEvent : function(extent, plot, layers) {
         Ext4.each(layers, function(layer){
-            var points = layer.selectAll('.point path');
-            if (points[0].length > 0) {
-                var colorAcc = function(d) {
-                    var x = plot.scales.x.scale(d.seqValue);
+            const points = layer.selectAll('.point path');
+            if (points && points[0] && points[0].length > 0) {
+                const colorAcc = function(d) {
+                    const x = plot.scales.x.scale(d.seqValue);
                     d.isInSelection = (x > extent[0][0] && x < extent[1][0]);
                     return d.isInSelection ? 'rgba(20, 204, 201, 1)' : '#000000';
                 };
@@ -1501,7 +1564,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (this.plotBrushSelection) {
             this.getSvgElForPlot(this.plotBrushSelection.plot).selectAll(".guideset-svg-button").remove();
 
-            if (this.plotBrushSelection.plot != plot) {
+            if (this.plotBrushSelection.plot !== plot) {
                 this.plotBrushSelection.plot.clearBrush();
             }
         }
@@ -1575,24 +1638,26 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         // find the x-axis starting and ending index based on the guide set information attached to each data point
         Ext4.Object.each(this.guideSetDataMap, function(guideSetId, guideSetData) {
+            // each() treats the indices as property names, so convert back to an integer
+            guideSetId = parseInt(guideSetId);
             // only compare guide set info for matching precursor fragment
             if (!this.singlePlot && guideSetData.Series[precursorInfo.fragment] === undefined) {
                 return true; // continue
             }
 
-            var seriesTypes = [];
+            var metricIds = [];
             for (var series in guideSetData.Series[precursorInfo.fragment]) {
                 if (guideSetData.Series[precursorInfo.fragment].hasOwnProperty(series)) {
-                    seriesTypes.push(series);
+                    metricIds.push(series);
                 }
             }
 
             var gs = {GuideSetId: guideSetId,
-                      series: seriesTypes[0]};
+                      series: metricIds[0]};
             for (var j = 0; j < precursorInfo.data.length; j++) {
                 // only use data points that match the GuideSet RowId and are in the training set range
-                if (precursorInfo.data[j].guideSetId == gs.GuideSetId && precursorInfo.data[j].inGuideSetTrainingRange) {
-                    if (gs.StartIndex == undefined)
+                if (precursorInfo.data[j].guideSetId === gs.GuideSetId && precursorInfo.data[j].inGuideSetTrainingRange) {
+                    if (gs.StartIndex === undefined)
                     {
                         gs.StartIndex = precursorInfo.data[j].seqValue;
                     }
@@ -1600,7 +1665,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 }
             }
 
-            if (gs.StartIndex != undefined) {
+            if (gs.StartIndex !== undefined) {
                 guideSetTrainingData.push(gs);
             }
         }, this);
@@ -1739,7 +1804,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             // determine the annotation index based on the "date" but unique values are based on "groupedXTick"
             var prevGroupedXTick = null;
             Ext4.each(precursorInfo.data, function(row) {
-                if (row['groupedXTick'] != prevGroupedXTick) {
+                if (row['groupedXTick'] !== prevGroupedXTick) {
                     xAxisLabels.push(row['date']);
                 }
                 prevGroupedXTick = row['groupedXTick'];
@@ -1823,7 +1888,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             endDateValue = this.getEndDateField().getValue();
 
         // make sure that at least one filter field is not null
-        if (startDateRawValue == '' && endDateRawValue == '') {
+        if (startDateRawValue === '' && endDateRawValue === '') {
             Ext4.Msg.show({
                 title:'ERROR',
                 msg: 'Please enter a value for filtering.',
@@ -1832,7 +1897,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             });
         }
         // verify that the start date is not after the end date
-        else if (startDateValue > endDateValue && endDateValue != '') {
+        else if (startDateValue > endDateValue && endDateValue !== '') {
             Ext4.Msg.show({
                 title:'ERROR',
                 msg: 'Please enter an end date that does not occur before the start date.',
@@ -1866,7 +1931,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     applyAnnotationFiltersBtnClick: function() {
         // make sure that at least one filter is selected
-        if (this.getAnnotationListTree().getChecked().length == 0) {
+        if (this.getAnnotationListTree().getChecked().length === 0) {
             Ext4.Msg.show({
                 title:'ERROR',
                 msg: 'Please select a replicate annotation.',
@@ -1951,7 +2016,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         var annotationsTree = this.getAnnotationListTree();
         var records = annotationsTree.getChecked();
 
-        if(records.length == 0) {
+        if(records.length === 0) {
             return;
         }
 
@@ -1981,7 +2046,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     buttons: Ext4.Msg.YESNO,
                     scope: this,
                     fn: function(btnId, text, opt){
-                        if(btnId == 'yes'){
+                        if(btnId === 'yes'){
                             this.insertNewGuideSet(startDate, endDate);
                         }
                     }
@@ -2042,6 +2107,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         var props = {
             metric: this.metric,
+            metric2: this.metric2,
             plotTypes: this.plotTypes,
             yAxisScale: this.yAxisScale,
             groupedX: this.groupedX,
@@ -2054,8 +2120,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         };
 
         // set start and end date to null unless we are
-        props.startDate = this.dateRangeOffset == -1 ? this.formatDate(this.startDate) : null;
-        props.endDate = this.dateRangeOffset == -1 ? this.formatDate(this.endDate) : null;
+        props.startDate = this.dateRangeOffset === -1 ? this.formatDate(this.startDate) : null;
+        props.endDate = this.dateRangeOffset === -1 ? this.formatDate(this.endDate) : null;
 
         return props;
     },

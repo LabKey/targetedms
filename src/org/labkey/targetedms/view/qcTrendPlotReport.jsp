@@ -67,24 +67,19 @@
             var plotPanelId = <%=q(plotPanelId)%>;
             var plotPaginationPanelId = <%=q(plotPaginationPanelId)%>;
 
-            if (Ext4.isIE8) {
-                Ext4.get(plotPanelId).update("<span class='labkey-error'>Unable to render report in Internet Explorer < 9.</span>");
-                return;
-            }
-
             LABKEY.Query.executeSql({
                 schemaName: 'targetedms',
                 sql: 'SELECT MIN(AcquiredTime) AS MinAcquiredTime, MAX(AcquiredTime) AS MaxAcquiredTime, count(*) AS runs FROM SampleFile',
                 success: function(data) {
                     if (data.rows.length === 0 || !data.rows[0]['MinAcquiredTime']) {
-                        Ext4.get(plotPanelId).update("No data found. Please upload runs using the Data Pipeline or directly from Skyline.");
+                        Ext4.get(plotPanelId).update("<span>No data found. Please upload runs using the Data Pipeline or directly from Skyline.</span>");
                     }
                     else {
                         initializeReportPanels(data, reportPanelId, plotPanelId, plotPaginationPanelId);
                     }
                 },
                 failure: function(response) {
-                    Ext4.get(plotPanelId).update("<span class='labkey-error'>Error: " + response.exception + "</span>");
+                    Ext4.get(plotPanelId).update("<span class='labkey-error'>Error: " + LABKEY.Utils.encodeHtml(response.exception) + "</span>");
                 }
             });
         }

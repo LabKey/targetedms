@@ -89,7 +89,7 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
 
         log("Verifying the iRT Correlation plot values");
         String acquiredDate = "2014-03-17 06:46:14";
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.IRTCORRELATION);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.IRTCORRELATION);
         checker().verifyEquals("Incorrect plot displayed for iRT Correlation metric", Arrays.asList("iRT Correlation"), qcPlotsWebPart.getPlotTitles());
         qcPlotsWebPart.openExclusionBubble(acquiredDate);
         String ticAreaHoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
@@ -98,7 +98,7 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
 
         log("Verifying the iRT Intercept plot values");
         acquiredDate = "2014-03-16 05:21:58";
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.IRTINTERCEPT);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.IRTINTERCEPT);
         checker().verifyEquals("Incorrect plot displayed for iRT Intercept metric", Arrays.asList("iRT Intercept"), qcPlotsWebPart.getPlotTitles());
         qcPlotsWebPart.openExclusionBubble(acquiredDate);
         ticAreaHoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
@@ -107,7 +107,7 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
 
         log("Verifying the iRT Slope plot values");
         acquiredDate = "2014-03-17 06:46:14";
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.IRTSLOPE);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.IRTSLOPE);
         checker().verifyEquals("Incorrect plot displayed for iRT Slope metric", Arrays.asList("iRT Slope"), qcPlotsWebPart.getPlotTitles());
         qcPlotsWebPart.openExclusionBubble(acquiredDate);
         waitForElement(qcPlotsWebPart.getBubble());
@@ -144,7 +144,7 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
         navigateToFolder(getProjectName(), subFolderName);
         qcDashboard = new PanoramaDashboard(this);
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.RETENTION);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.RETENTION);
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
 
         verifyQCPlotColors(peptide1, peptide1Color);

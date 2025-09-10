@@ -62,6 +62,8 @@ import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.CU
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.CUSUMv;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.MetricValue;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.MovingRange;
+import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.TrailingCV;
+import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.TrailingMean;
 
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 35)
@@ -96,67 +98,68 @@ public class TargetedMSQCTest extends TargetedMSTest
 
 
     private static final String longPeptideJSTest =
-            "var testVals = {\n" +
-                    "        a: {fragment:'', dataType: 'Peptide', result: ''},\n" +
-                    "        b: {fragment:'A', dataType: 'Peptide', result: 'A'},\n" +
-                    "        c: {fragment:'A', dataType: 'Peptide', result: 'A'}, // duplicate\n" +
-                    "        d: {fragment:'AB', dataType: 'Peptide', result: 'AB'},\n" +
-                    "        e: {fragment:'ABC', dataType: 'Peptide', result: 'ABC'},\n" +
-                    "        f: {fragment:'ABCD', dataType: 'Peptide', result: 'ABCD'},\n" +
-                    "        g: {fragment:'ABCDE', dataType: 'Peptide', result: 'ABCDE'},\n" +
-                    "        h: {fragment:'ABCDEF', dataType: 'Peptide', result: 'ABCDEF'},\n" +
-                    "        i: {fragment:'ABCDEFG', dataType: 'Peptide', result: 'ABCDEFG'},\n" +
-                    "        j: {fragment:'ABCDEFGH', dataType: 'Peptide', result: 'ABC\u2026FGH'},\n" +
-                    "        k: {fragment:'ABCDEFGHI', dataType: 'Peptide', result: 'ABC\u2026GHI'},\n" +
-                    "        l: {fragment:'ABCE', dataType: 'Peptide', result: 'ABCE'},\n" +
-                    "        m: {fragment:'ABDEFGHI', dataType: 'Peptide', result: 'ABD\u2026'},\n" +
-                    "        n: {fragment:'ABEFGHI', dataType: 'Peptide', result: 'ABEFGHI'},\n" +
-                    "        o: {fragment:'ABEFGHIJ', dataType: 'Peptide', result: 'ABE\u2026HIJ'},\n" +
-                    "        p: {fragment:'ABEFHI', dataType: 'Peptide', result: 'ABEFHI'},\n" +
-                    "        q: {fragment:'ABFFFGHI', dataType: 'Peptide', result: 'ABF(5)'},\n" +
-                    "        r: {fragment:'ABFFFFGHI', dataType: 'Peptide', result: 'ABF(6)'},\n" +
-                    "        s: {fragment:'ABFFFFAFGHI', dataType: 'Peptide', result: 'ABF\u2026FA\u2026'},\n" +
-                    "        t: {fragment:'ABFFFAFFGHI', dataType: 'Peptide', result: 'ABF\u2026A\u2026'},\n" +
-                    "        u: {fragment:'ABGAABAABAGHI', dataType: 'Peptide', result: 'ABG\u2026B\u2026B\u2026'},\n" +
-                    "        v: {fragment:'ABGAAbAABAGHI', dataType: 'Peptide', result: 'ABG\u2026b\u2026B\u2026'},\n" +
-                    "        w: {fragment:'ABGAABAAbAGHI', dataType: 'Peptide', result: 'ABG\u2026B\u2026b\u2026'},\n" +
-                    "        x: {fragment:'ABGAAB[80]AAB[99]AGHI', dataType: 'Peptide', result: 'ABG\u2026b\u2026b\u2026'},\n" +
-                    "        y: {fragment:'C32:0', dataType: 'ion', result: 'C32:0'},\n" +
-                    "        z: {fragment:'C32:1', dataType: 'ion', result: 'C32:1'},\n" +
-                    "        aa: {fragment:'C32:2', dataType: 'ion', result: 'C32:2'},\n" +
-                    "        bb: {fragment:'C32:2', dataType: 'ion', result: 'C32:2'},\n" +
-                    "        cc: {fragment:'C30:0', dataType: 'ion', result: 'C30:0'},\n" +
-                    "        dd: {fragment:'C[30]:0', dataType: 'ion', result: 'C[30]:0'},\n" +
-                    "        ee: {fragment:'C[400]:0', dataType: 'ion', result: 'C[4\u2026'},\n" +
-                    "        ff: {fragment:'C12:0 fish breath', dataType: 'ion', result: 'C12\u2026'},\n" +
-                    "        gg: {fragment:'C15:0 fish breath', dataType: 'ion', result: 'C15(14)'},\n" +
-                    "        hh: {fragment:'C15:0 doggy breath', dataType: 'ion', result: 'C15(15)'},\n" +
-                    "        ii: {fragment:'C16:0 fishy breath', dataType: 'ion', result: 'C16\u2026f\u2026'},\n" +
-                    "        jj: {fragment:'C16:0 doggy breath', dataType: 'ion', result: 'C16\u2026d\u2026'},\n" +
-                    "        kk: {fragment:'C14', dataType: 'ion', result: 'C14'},\n" +
-                    "        ll: {fragment:'C14:1', dataType: 'ion', result: 'C14:1'},\n" +
-                    "        mm: {fragment:'C14:1-OH', dataType: 'ion', result: 'C14:1\u2026'},\n" +
-                    "        nn: {fragment:'C14:2', dataType: 'ion', result: 'C14:2'},\n" +
-                    "        oo: {fragment:'C14:2-OH', dataType: 'ion', result: 'C14:2\u2026'},\n" +
-                    "    };\n" +
-                    "\n" +
-                    "    var testLegends = function() {\n" +
-                    "        var result = '';\n" +
-                    "\t\tvar legendHelper = LABKEY.targetedms.QCPlotLegendHelper;\n" +
-                    "        legendHelper.setupLegendPrefixes(testVals, 3);\n" +
-                    "\n" +
-                    "        for (var key in testVals) {\n" +
-                    "            if (testVals.hasOwnProperty(key)) {\n" +
-                    "                var val = legendHelper.getUniquePrefix(testVals[key].fragment, (testVals[key].dataType == 'Peptide'));\n" +
-                    "                if(val !== testVals[key].result)\n" +
-                    "                    result += \"Incorrect result for \" + testVals[key].fragment + \". Expected: \" + testVals[key].result + \", Actual: \" + val + '\\n';\n" +
-                    "            }\n" +
-                    "        }\n" +
-                    "\n" +
-                    "        return result;\n" +
-                    "    };\n" +
-                    "\n" +
-                    "    return testLegends();";
+            """
+                    var testVals = {
+                            a: {fragment:'', dataType: 'Peptide', result: ''},
+                            b: {fragment:'A', dataType: 'Peptide', result: 'A'},
+                            c: {fragment:'A', dataType: 'Peptide', result: 'A'}, // duplicate
+                            d: {fragment:'AB', dataType: 'Peptide', result: 'AB'},
+                            e: {fragment:'ABC', dataType: 'Peptide', result: 'ABC'},
+                            f: {fragment:'ABCD', dataType: 'Peptide', result: 'ABCD'},
+                            g: {fragment:'ABCDE', dataType: 'Peptide', result: 'ABCDE'},
+                            h: {fragment:'ABCDEF', dataType: 'Peptide', result: 'ABCDEF'},
+                            i: {fragment:'ABCDEFG', dataType: 'Peptide', result: 'ABCDEFG'},
+                            j: {fragment:'ABCDEFGH', dataType: 'Peptide', result: 'ABC\u2026FGH'},
+                            k: {fragment:'ABCDEFGHI', dataType: 'Peptide', result: 'ABC\u2026GHI'},
+                            l: {fragment:'ABCE', dataType: 'Peptide', result: 'ABCE'},
+                            m: {fragment:'ABDEFGHI', dataType: 'Peptide', result: 'ABD\u2026'},
+                            n: {fragment:'ABEFGHI', dataType: 'Peptide', result: 'ABEFGHI'},
+                            o: {fragment:'ABEFGHIJ', dataType: 'Peptide', result: 'ABE\u2026HIJ'},
+                            p: {fragment:'ABEFHI', dataType: 'Peptide', result: 'ABEFHI'},
+                            q: {fragment:'ABFFFGHI', dataType: 'Peptide', result: 'ABF(5)'},
+                            r: {fragment:'ABFFFFGHI', dataType: 'Peptide', result: 'ABF(6)'},
+                            s: {fragment:'ABFFFFAFGHI', dataType: 'Peptide', result: 'ABF\u2026FA\u2026'},
+                            t: {fragment:'ABFFFAFFGHI', dataType: 'Peptide', result: 'ABF\u2026A\u2026'},
+                            u: {fragment:'ABGAABAABAGHI', dataType: 'Peptide', result: 'ABG\u2026B\u2026B\u2026'},
+                            v: {fragment:'ABGAAbAABAGHI', dataType: 'Peptide', result: 'ABG\u2026b\u2026B\u2026'},
+                            w: {fragment:'ABGAABAAbAGHI', dataType: 'Peptide', result: 'ABG\u2026B\u2026b\u2026'},
+                            x: {fragment:'ABGAAB[80]AAB[99]AGHI', dataType: 'Peptide', result: 'ABG\u2026b\u2026b\u2026'},
+                            y: {fragment:'C32:0', dataType: 'ion', result: 'C32:0'},
+                            z: {fragment:'C32:1', dataType: 'ion', result: 'C32:1'},
+                            aa: {fragment:'C32:2', dataType: 'ion', result: 'C32:2'},
+                            bb: {fragment:'C32:2', dataType: 'ion', result: 'C32:2'},
+                            cc: {fragment:'C30:0', dataType: 'ion', result: 'C30:0'},
+                            dd: {fragment:'C[30]:0', dataType: 'ion', result: 'C[30]:0'},
+                            ee: {fragment:'C[400]:0', dataType: 'ion', result: 'C[4\u2026'},
+                            ff: {fragment:'C12:0 fish breath', dataType: 'ion', result: 'C12\u2026'},
+                            gg: {fragment:'C15:0 fish breath', dataType: 'ion', result: 'C15(14)'},
+                            hh: {fragment:'C15:0 doggy breath', dataType: 'ion', result: 'C15(15)'},
+                            ii: {fragment:'C16:0 fishy breath', dataType: 'ion', result: 'C16\u2026f\u2026'},
+                            jj: {fragment:'C16:0 doggy breath', dataType: 'ion', result: 'C16\u2026d\u2026'},
+                            kk: {fragment:'C14', dataType: 'ion', result: 'C14'},
+                            ll: {fragment:'C14:1', dataType: 'ion', result: 'C14:1'},
+                            mm: {fragment:'C14:1-OH', dataType: 'ion', result: 'C14:1\u2026'},
+                            nn: {fragment:'C14:2', dataType: 'ion', result: 'C14:2'},
+                            oo: {fragment:'C14:2-OH', dataType: 'ion', result: 'C14:2\u2026'},
+                        };
+                    
+                        var testLegends = function() {
+                            var result = '';
+                            var legendHelper = LABKEY.targetedms.QCPlotLegendHelper;
+                            legendHelper.setupLegendPrefixes(testVals, 3);
+                    
+                            for (var key in testVals) {
+                                if (testVals.hasOwnProperty(key)) {
+                                    var val = legendHelper.getUniquePrefix(testVals[key].fragment, (testVals[key].dataType == 'Peptide'));
+                                    if(val !== testVals[key].result)
+                                        result += "Incorrect result for " + testVals[key].fragment + ". Expected: " + testVals[key].result + ", Actual: " + val + '\\n';
+                                }
+                            }
+                    
+                            return result;
+                        };
+                    
+                        return testLegends();""";
 
     private final PortalHelper portalHelper = new PortalHelper(this);
 
@@ -272,8 +275,8 @@ public class TargetedMSQCTest extends TargetedMSTest
     {
         List<QCPlotsWebPart.MetricType> metricTypeWithData =
                 Arrays.asList(QCPlotsWebPart.MetricType.TOTAL_PEAK, QCPlotsWebPart.MetricType.RETENTION, QCPlotsWebPart.MetricType.FWHM,
-                        QCPlotsWebPart.MetricType.FWB, QCPlotsWebPart.MetricType.TPAREARATIO, QCPlotsWebPart.MetricType.TPAREAS,
-                        QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR, QCPlotsWebPart.MetricType.TICAREA);
+                        QCPlotsWebPart.MetricType.FWB, QCPlotsWebPart.MetricType.TPAREARATIO,
+                        QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR, QCPlotsWebPart.MetricType.TIC_AREA);
 
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
@@ -316,15 +319,15 @@ public class TargetedMSQCTest extends TargetedMSTest
         for (QCPlotsWebPart.MetricType type : QCPlotsWebPart.MetricType.values())
         {
             // Skip over metrics that dont have data.
-            if (metricTypeWithData.contains(type) && type != qcPlotsWebPart.getCurrentMetricType())
+            if (metricTypeWithData.contains(type) && type != qcPlotsWebPart.getCurrentMetric1Type())
             {
                 log("Verify plot type: " + type);
                 initialSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
-                qcPlotsWebPart.setMetricType(type);
+                qcPlotsWebPart.setMetric1Type(type);
                 assertNotEquals(initialSVGText, qcPlotsWebPart.getSVGPlotText("precursorPlot0"));
 
                 // back to default metric type for baseline comparison of svg plot change
-                qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.RETENTION);
+                qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.RETENTION);
             }
         }
     }
@@ -338,7 +341,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         // change all of the plot input fields and filter to a single date
         String testDateStr = "2013-08-20";
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TOTAL_PEAK);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.TOTAL_PEAK);
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.PERCENT_OF_MEAN);
         qcPlotsWebPart.setGroupXAxisValuesByDate(true);
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
@@ -350,7 +353,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         refresh();
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.waitForPlots(1);
-        assertEquals("Metric Type not round tripped as expected", QCPlotsWebPart.MetricType.TOTAL_PEAK, qcPlotsWebPart.getCurrentMetricType());
+        assertEquals("Metric Type not round tripped as expected", QCPlotsWebPart.MetricType.TOTAL_PEAK, qcPlotsWebPart.getCurrentMetric1Type());
         assertEquals("Y-Axis Scale not round tripped as expected", QCPlotsWebPart.Scale.PERCENT_OF_MEAN, qcPlotsWebPart.getCurrentScale());
         assertTrue("Group X-Axis not round tripped as expected", qcPlotsWebPart.isGroupXAxisValuesByDateChecked());
         assertTrue("Show All Peptides not round tripped as expected", qcPlotsWebPart.isShowAllPeptidesInSinglePlotChecked());
@@ -376,7 +379,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         // impersonate a different user in this container and verify that initial form fields used
         impersonate(USER);
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        assertEquals("Metric Type not set to default value", QCPlotsWebPart.MetricType.RETENTION, qcPlotsWebPart.getCurrentMetricType());
+        assertEquals("Metric Type not set to default value", QCPlotsWebPart.MetricType.RETENTION, qcPlotsWebPart.getCurrentMetric1Type());
         assertEquals("Y-Axis Scale not set to default value", QCPlotsWebPart.Scale.LINEAR, qcPlotsWebPart.getCurrentScale());
         assertFalse("Group X-Axis not set to default value", qcPlotsWebPart.isGroupXAxisValuesByDateChecked());
         assertFalse("Show All Peptides not set to default value", qcPlotsWebPart.isShowAllPeptidesInSinglePlotChecked());
@@ -402,7 +405,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.checkPlotType(CUSUMv);
 
         // if metric has negative values and we pick log y-axis scale, we should revert to linear scale and show message
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR);
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LOG);
         assertEquals("Unexpected number of plots with invalid log scale.", 5, qcPlotsWebPart.getLogScaleInvalidCount());
         assertEquals("Unexpected number of plots with invalid log scale.", 0, qcPlotsWebPart.getLogScaleWarningCount());
@@ -413,7 +416,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         clickTab("Panorama Dashboard");
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         assertEquals("Y-axis Scale selection wasn't persisted", QCPlotsWebPart.Scale.LOG, qcPlotsWebPart.getCurrentScale());
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TOTAL_PEAK);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.TOTAL_PEAK);
         assertEquals("Unexpected number of plots with invalid log scale.", 0, qcPlotsWebPart.getLogScaleInvalidCount());
         assertEquals("Unexpected number of plots with invalid log scale.", 1, qcPlotsWebPart.getLogScaleWarningCount());
         assertEquals("Unexpected number of plots with log scale 0 value replacement warning.", PRECURSORS.length, qcPlotsWebPart.getLogScaleEpsilonWarningCount());
@@ -454,31 +457,46 @@ public class TargetedMSQCTest extends TargetedMSTest
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.filterQCPlotsToInitialData(PRECURSORS.length, true);
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TPAREAS);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.PRECURSOR_AREA);
+        qcPlotsWebPart.setMetric2Type(QCPlotsWebPart.MetricType.TRANSITION_AREA);
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
 
         for (QCPlotsWebPart.QCPlotType plotType : QCPlotsWebPart.QCPlotType.values())
         {
-            qcPlotsWebPart.setGroupXAxisValuesByDate(false);
-            qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false, PRECURSORS.length);
             qcPlotsWebPart.setQCPlotTypes(plotType);
 
-            testEachMultiSeriesQCPlot(plotType);
+            for (QCPlotsWebPart.Scale scale : QCPlotsWebPart.Scale.values())
+            {
+                qcPlotsWebPart.setGroupXAxisValuesByDate(false);
+                qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false, PRECURSORS.length);
+                qcPlotsWebPart.setScale(scale);
+
+                testEachMultiSeriesQCPlot(plotType, scale);
+            }
+
+            // Test once per plot type, not once for each scale
+            assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Annotations", true));
+            assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Change", false), 4);
+            assertElementPresent(qcPlotsWebPart.getLegendItemLocator(QCPlotsWebPart.MetricType.TRANSITION_AREA.toString(), true));
+            assertElementPresent(qcPlotsWebPart.getLegendItemLocator(QCPlotsWebPart.MetricType.PRECURSOR_AREA.toString(), true));
+            if (plotType == CUSUMm || plotType == QCPlotsWebPart.QCPlotType.CUSUMv)
+                assertElementPresent(qcPlotsWebPart.getLegendItemLocator("CUSUM Group", true));
+            for (String precursor : PRECURSORS)
+            {
+                Locator legendItemLoc = qcPlotsWebPart.getLegendItemLocatorByTitle(precursor);
+                assertElementPresent("Unexpected number of QC plot legend items found for " + precursor, legendItemLoc, 2);
+            }
+
+            qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
         }
         // reset to avoid test case dependency
         qcPlotsWebPart.resetInitialQCPlotFields();
     }
 
     @LogMethod
-    private void testEachMultiSeriesQCPlot(@LoggedParam QCPlotsWebPart.QCPlotType plotType)
+    private void testEachMultiSeriesQCPlot(@LoggedParam QCPlotsWebPart.QCPlotType plotType, QCPlotsWebPart.Scale scale)
     {
-        if (!plotType.isStandardPointCount())
-        {
-            log("Skipping plot type " + plotType.getLabel());
-            return;
-        }
-
-        log("Test plot type " + plotType.getLabel());
+        log("Test plot type " + plotType.getLabel() + " with y-scale " + scale);
 
         String yLeftColor = "#66C2A5";
         String yRightColor = "#FC8D62";
@@ -486,14 +504,22 @@ public class TargetedMSQCTest extends TargetedMSTest
         int pointsPerSeries = 47;
         if (plotType == CUSUMm || plotType == QCPlotsWebPart.QCPlotType.CUSUMv)
             pointsPerSeries *= 2;
+        int expectedLeftPoints = pointsPerSeries * PRECURSORS.length;
+        int expectedRightPoints = expectedLeftPoints;
+
+        if (plotType == TrailingCV)
+        {
+            // Transition area has no data for one peptide, meaning CV is undefined due to the mean being zero
+            expectedRightPoints = pointsPerSeries * (PRECURSORS.length - 1) + 1;
+        }
 
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         // check that there are two series per plot by doing a point count by color
         int count = qcPlotsWebPart.getPointElements("fill", yLeftColor, false).size();
-        assertEquals("Unexpected number of points for yLeft metric", pointsPerSeries * PRECURSORS.length, count);
+        assertEquals("Unexpected number of points for yLeft metric", expectedLeftPoints, count);
         count = qcPlotsWebPart.getPointElements("fill", yRightColor, false).size();
-        assertEquals("Unexpected number of points for yRight metric", pointsPerSeries * PRECURSORS.length, count);
+        assertEquals("Unexpected number of points for yRight metric", expectedRightPoints, count);
 
         // check a few attributes of the multi-series all peptide plot
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
@@ -501,23 +527,12 @@ public class TargetedMSQCTest extends TargetedMSTest
         int closedCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
         int openCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
         int triangleCount = qcPlotsWebPart.getPointElements("d", SvgShapes.TRIANGLE.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of points for multi-series all peptide plot", pointsPerSeries * 2 * PRECURSORS.length, openCount + closedCount + triangleCount);
+        assertEquals("Unexpected number of points for multi-series all peptide plot", expectedLeftPoints + expectedRightPoints, openCount + closedCount + triangleCount);
         qcPlotsWebPart.setGroupXAxisValuesByDate(true);
         closedCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
         openCount = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE_OPEN.getPathPrefix(), true).size();
         triangleCount = qcPlotsWebPart.getPointElements("d", SvgShapes.TRIANGLE.getPathPrefix(), true).size();
-        assertEquals("Unexpected number of points for multi-series all peptide plot", pointsPerSeries * 2 * PRECURSORS.length, openCount + closedCount + triangleCount);
-        assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Annotations", true));
-        assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Change", false), 4);
-        assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Transition Area", true));
-        assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Precursor Area", true));
-        if (plotType == CUSUMm || plotType == QCPlotsWebPart.QCPlotType.CUSUMv)
-            assertElementPresent(qcPlotsWebPart.getLegendItemLocator("CUSUM Group", true));
-        for (String precursor : PRECURSORS)
-        {
-            Locator legendItemLoc = qcPlotsWebPart.getLegendItemLocatorByTitle(precursor);
-            assertElementPresent("Unexpected number of QC plot legend items found for " + precursor, legendItemLoc, 2);
-        }
+        assertEquals("Unexpected number of points for multi-series all peptide plot", expectedLeftPoints + expectedRightPoints, openCount + closedCount + triangleCount);
     }
 
     @Test
@@ -676,18 +691,18 @@ public class TargetedMSQCTest extends TargetedMSTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
 
         log("Verifying TIC Area QC Plots");
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TICAREA);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.TIC_AREA);
         qcPlotsWebPart.waitForPlots(1);
         String ticPlotSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
         assertFalse(ticPlotSVGText.isEmpty());
 
         log("Verifying Show All Series Checkbox");
         assertElementNotVisible(Locator.tagContainingText("label", "Show All Series in a Single Plot"));
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.RETENTION);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.RETENTION);
         assertElementVisible(Locator.tagContainingText("label", "Show All Series in a Single Plot"));
 
         log("Verifying tic_area information in hover plot");
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TICAREA);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.TIC_AREA);
         qcPlotsWebPart.waitForPlots(1);
         qcPlotsWebPart.openExclusionBubble(acquiredDate);
         String ticAreahoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
@@ -930,7 +945,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         verifyExclusionButtonSelection(acquiredDate, QCPlotsWebPart.QCPlotExclusionState.ExcludeMetric);
 
         log("Changing the metric type");
-        qcPlotsWebPart.setMetricType(QCPlotsWebPart.MetricType.TOTAL_PEAK);
+        qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.TOTAL_PEAK);
         qcPlotsWebPart.setShowExcludedPoints(false);
 
         qcPlotsWebPart.waitForPlots(7);

@@ -220,8 +220,8 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
         return '<div><a href="https://panoramaweb.org/home/wiki-page.view?name=autoqc_loader" target="_blank" rel="noopener noreferrer">AutoQC</a>' +
                 ' can automically analyze and import system suitability data into this folder using a Skyline template document.</div><br/>' +
                 '<div>After installing AutoQC, create a configuration for this folder. Within its Panorama setting tab, ' +
-                'check the Publish to Panorama checkbox. Use <strong>' + LABKEY.Utils.encodeHtml(LABKEY.ActionURL.getBaseURL()) +
-                '</strong> as the URL and <strong>' + LABKEY.Utils.encodeHtml(LABKEY.ActionURL.getContainer()) + '</strong>' +
+                'check the Publish to Panorama checkbox. Use <span style="font-weight: bold; white-space: nowrap;">' + LABKEY.Utils.encodeHtml(LABKEY.ActionURL.getBaseURL()) +
+                '</span> as the URL and <span style="font-weight: bold; white-space: nowrap;">' + LABKEY.Utils.encodeHtml(LABKEY.ActionURL.getContainer()) + '</span>' +
                 ' as the folder path.</div>'
     },
 

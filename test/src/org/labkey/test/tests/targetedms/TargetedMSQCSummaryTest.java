@@ -30,6 +30,7 @@ import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.ModulePropertyValue;
 import org.labkey.test.components.targetedms.GuideSet;
+import org.labkey.test.components.targetedms.ParetoPlotsWebPart;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.components.targetedms.QCSummaryWebPart;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
@@ -212,8 +213,8 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         sampleFileCount = 0;
         clickTab("Panorama Dashboard");
         waitForElement(Locator.linkWithText(sampleFileCount + " replicates"));
+        waitForElement(Locator.tagContainingText("span", "No data found."));
         assertElementNotPresent(Locator.tagWithClass("div", "sample-file-item"));
-        assertElementPresent(Locator.tagContainingText("div", "No data found."));
     }
 
     @Test
@@ -296,9 +297,9 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
         tempStringList01.put("Q_Exactive_08_23_2013_JGB_37", "0");
 
         tempStringList02.clear();
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_58", "Full Width at Half Maximum (FWHM) 1 1 0 0 0 0"));
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_51", "Peak Area 0 2 0 0 0 0"));
-        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_37", "TIC Area 0 1 0 0 0 0"));
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_58", QCPlotsWebPart.MetricType.FWHM + " 1 1 0 0 0 0"));
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_51", QCPlotsWebPart.MetricType.TOTAL_PEAK + " 0 2 0 0 0 0"));
+        tempStringList02.add(Arrays.asList("Q_Exactive_08_23_2013_JGB_37", QCPlotsWebPart.MetricType.TIC_AREA  + " 0 1 0 0 0 0"));
         validateSampleFile(0, tempStringList01, tempStringList02);
 
         removeAllGuideSets();

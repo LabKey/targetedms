@@ -33,7 +33,6 @@ public class RawMetricDataSet
     String seriesLabel;
     Double metricValue;
     QCMetricConfiguration metric;
-    int metricSeriesIndex;
 
     Long precursorChromInfoId;
 
@@ -227,21 +226,11 @@ public class RawMetricDataSet
         this.metric = metric;
     }
 
-    public int getMetricSeriesIndex()
-    {
-        return metricSeriesIndex;
-    }
-
-    public void setMetricSeriesIndex(int metricSeriesIndex)
-    {
-        this.metricSeriesIndex = metricSeriesIndex;
-    }
-
     public GuideSetKey getGuideSetKey()
     {
         if (_guideSetKey == null)
         {
-            _guideSetKey = new GuideSetKey(metric, getMetricSeriesIndex(), _sampleFile.getGuideSetId(), getSeriesLabel());
+            _guideSetKey = new GuideSetKey(metric, _sampleFile.getGuideSetId(), getSeriesLabel());
         }
         return _guideSetKey;
     }

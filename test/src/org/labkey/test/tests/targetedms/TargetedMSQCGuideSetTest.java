@@ -224,7 +224,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         assertEquals("Wrong number of Pareto plots", 20, paretoPlotsWebPart.getNumOfParetoPlots());
         verifyDownloadableParetoPlots(paretoPlotsWebPart.getNumOfParetoPlots());
 
-        ParetoPlotsWebPart.ParetoPlotType plotType = ParetoPlotsWebPart.ParetoPlotType.MetricValue;
+        QCPlotsWebPart.QCPlotType plotType = QCPlotsWebPart.QCPlotType.MetricValue;
         int guideSetId = 4;
         log("Verifying Pareto Plots for " + plotType.getLabel());
         assertEquals("Wrong number of non-conformers for PA", 69, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 0));
@@ -237,23 +237,23 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         assertEquals("Wrong number of non-conformers for FWHM", 13, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 7));
         assertEquals("Wrong number of non-conformers for FWB", 7, paretoPlotsWebPart.getPlotBarHeight(guideSetId, 8));
         verifyTicksOnPlots(paretoPlotsWebPart, guideSetId, plotType,
-                ParetoPlotsWebPart.MetricTypeTicks.TOTAL_PEAK,
-                ParetoPlotsWebPart.MetricTypeTicks.PRECURSOR_MASS_ERROR,
-                ParetoPlotsWebPart.MetricTypeTicks.PAREA,
-                ParetoPlotsWebPart.MetricTypeTicks.TAREA,
-                ParetoPlotsWebPart.MetricTypeTicks.TRANSITION_MASS_ERROR,
-                ParetoPlotsWebPart.MetricTypeTicks.TPAREARATIO,
-                ParetoPlotsWebPart.MetricTypeTicks.RETENTION,
-                ParetoPlotsWebPart.MetricTypeTicks.FWHM,
-                ParetoPlotsWebPart.MetricTypeTicks.FWB,
-                ParetoPlotsWebPart.MetricTypeTicks.TIC_AREA,
-                ParetoPlotsWebPart.MetricTypeTicks.ISOTOPE_DOTP
+                QCPlotsWebPart.MetricType.TOTAL_PEAK,
+                QCPlotsWebPart.MetricType.PRECURSOR_MASS_ERROR,
+                QCPlotsWebPart.MetricType.PRECURSOR_AREA,
+                QCPlotsWebPart.MetricType.TRANSITION_AREA,
+                QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR,
+                QCPlotsWebPart.MetricType.TPAREARATIO,
+                QCPlotsWebPart.MetricType.RETENTION,
+                QCPlotsWebPart.MetricType.FWHM,
+                QCPlotsWebPart.MetricType.FWB,
+                QCPlotsWebPart.MetricType.TIC_AREA,
+                QCPlotsWebPart.MetricType.ISOTOPE_DOTP
                 );
         verifyNavigationToPanoramaDashboard(guideSetId, 0, QCPlotsWebPart.MetricType.TOTAL_PEAK, true);
 
         clickAndWait(Locator.linkWithText("Pareto Plot")); //go to Pareto Plot tab
         waitForElement(Locator.css("svg"));
-        plotType = ParetoPlotsWebPart.ParetoPlotType.MovingRange;
+        plotType = QCPlotsWebPart.QCPlotType.MovingRange;
         log("Verifying non-conformers for " + plotType.getLabel());
         assertEquals("Wrong number of non-conformers for P Mass Error", 40, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 0));
         assertEquals("Wrong number of non-conformers for PA", 37, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 1));
@@ -267,42 +267,42 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         assertEquals("Wrong number of non-conformers for area ratio", 4, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 9));
         assertEquals("Wrong number of non-conformers for TIC area", 2, paretoPlotsWebPart.getPlotBarHeight(guideSetId, plotType, 10));
         verifyTicksOnPlots(paretoPlotsWebPart, guideSetId, plotType,
-                ParetoPlotsWebPart.MetricTypeTicks.PRECURSOR_MASS_ERROR,
-                ParetoPlotsWebPart.MetricTypeTicks.TOTAL_PEAK,
-                ParetoPlotsWebPart.MetricTypeTicks.TAREA,
-                ParetoPlotsWebPart.MetricTypeTicks.FWB,
-                ParetoPlotsWebPart.MetricTypeTicks.PAREA,
-                ParetoPlotsWebPart.MetricTypeTicks.TRANSITION_MASS_ERROR,
-                ParetoPlotsWebPart.MetricTypeTicks.RETENTION,
-                ParetoPlotsWebPart.MetricTypeTicks.FWHM,
-                ParetoPlotsWebPart.MetricTypeTicks.ISOTOPE_DOTP,
-                ParetoPlotsWebPart.MetricTypeTicks.TPAREARATIO,
-                ParetoPlotsWebPart.MetricTypeTicks.TIC_AREA);
+                QCPlotsWebPart.MetricType.PRECURSOR_MASS_ERROR,
+                QCPlotsWebPart.MetricType.TOTAL_PEAK,
+                QCPlotsWebPart.MetricType.TRANSITION_AREA,
+                QCPlotsWebPart.MetricType.FWB,
+                QCPlotsWebPart.MetricType.PRECURSOR_AREA,
+                QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR,
+                QCPlotsWebPart.MetricType.RETENTION,
+                QCPlotsWebPart.MetricType.FWHM,
+                QCPlotsWebPart.MetricType.ISOTOPE_DOTP,
+                QCPlotsWebPart.MetricType.TPAREARATIO,
+                QCPlotsWebPart.MetricType.TIC_AREA);
         verifyNavigationToPanoramaDashboard(guideSetId, QCPlotsWebPart.QCPlotType.MovingRange, 0, QCPlotsWebPart.MetricType.PRECURSOR_MASS_ERROR, true);
 
         clickAndWait(Locator.linkWithText("Pareto Plot")); //go to Pareto Plot tab
         waitForElement(Locator.css("svg"));
-        plotType = ParetoPlotsWebPart.ParetoPlotType.CUSUMv;
+        plotType = QCPlotsWebPart.QCPlotType.CUSUMv;
         log("Verifying non-conformers for " + plotType.getLabel());
         assertEquals("Wrong number of non-conformers for FWHM", "CUSUM-: 2 CUSUM+: 0 Total: 2", paretoPlotsWebPart.getPlotBarTooltip(guideSetId, plotType, 0));
         assertEquals("Wrong number of non-conformers for T Area", "CUSUM-: 1 CUSUM+: 0 Total: 1", paretoPlotsWebPart.getPlotBarTooltip(guideSetId, plotType, 1));
         verifyTicksOnPlots(paretoPlotsWebPart, guideSetId, plotType,
-                ParetoPlotsWebPart.MetricTypeTicks.FWHM,
-                ParetoPlotsWebPart.MetricTypeTicks.TAREA,
-                ParetoPlotsWebPart.MetricTypeTicks.FWB,
-                ParetoPlotsWebPart.MetricTypeTicks.ISOTOPE_DOTP,
-                ParetoPlotsWebPart.MetricTypeTicks.PAREA,
-                ParetoPlotsWebPart.MetricTypeTicks.PRECURSOR_MASS_ERROR,
-                ParetoPlotsWebPart.MetricTypeTicks.RETENTION,
-                ParetoPlotsWebPart.MetricTypeTicks.TIC_AREA,
-                ParetoPlotsWebPart.MetricTypeTicks.TOTAL_PEAK,
-                ParetoPlotsWebPart.MetricTypeTicks.TRANSITION_MASS_ERROR,
-                ParetoPlotsWebPart.MetricTypeTicks.TPAREARATIO);
+                QCPlotsWebPart.MetricType.FWHM,
+                QCPlotsWebPart.MetricType.TRANSITION_AREA,
+                QCPlotsWebPart.MetricType.FWB,
+                QCPlotsWebPart.MetricType.ISOTOPE_DOTP,
+                QCPlotsWebPart.MetricType.PRECURSOR_AREA,
+                QCPlotsWebPart.MetricType.PRECURSOR_MASS_ERROR,
+                QCPlotsWebPart.MetricType.RETENTION,
+                QCPlotsWebPart.MetricType.TIC_AREA,
+                QCPlotsWebPart.MetricType.TOTAL_PEAK,
+                QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR,
+                QCPlotsWebPart.MetricType.TPAREARATIO);
         verifyNavigationToPanoramaDashboard(guideSetId, QCPlotsWebPart.QCPlotType.CUSUMv, 0, QCPlotsWebPart.MetricType.FWHM, true);
 
         clickAndWait(Locator.linkWithText("Pareto Plot")); //go to Pareto Plot tab
         waitForElement(Locator.css("svg"));
-        plotType = ParetoPlotsWebPart.ParetoPlotType.CUSUMm;
+        plotType = QCPlotsWebPart.QCPlotType.CUSUMm;
         guideSetId = 3;
         log("Verifying non-conformers for " + plotType.getLabel());
         assertEquals("Wrong number of non-conformers for PA", "CUSUM-: 3 CUSUM+: 4 Total: 7", paretoPlotsWebPart.getPlotBarTooltip(guideSetId, plotType, 0));
@@ -313,17 +313,17 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         assertEquals("Wrong number of non-conformers for T/P Ratio", "CUSUM-: 3 CUSUM+: 1 Total: 4", paretoPlotsWebPart.getPlotBarTooltip(guideSetId, plotType, 5));
         assertEquals("Wrong number of non-conformers for Isotope dtop", "CUSUM-: 1 CUSUM+: 0 Total: 1", paretoPlotsWebPart.getPlotBarTooltip(guideSetId, plotType, 6));
         verifyTicksOnPlots(paretoPlotsWebPart, guideSetId, plotType,
-                ParetoPlotsWebPart.MetricTypeTicks.TOTAL_PEAK,
-                ParetoPlotsWebPart.MetricTypeTicks.PAREA,
-                ParetoPlotsWebPart.MetricTypeTicks.PRECURSOR_MASS_ERROR,
-                ParetoPlotsWebPart.MetricTypeTicks.TRANSITION_MASS_ERROR,
-                ParetoPlotsWebPart.MetricTypeTicks.TAREA,
-                ParetoPlotsWebPart.MetricTypeTicks.TPAREARATIO,
-                ParetoPlotsWebPart.MetricTypeTicks.ISOTOPE_DOTP,
-                ParetoPlotsWebPart.MetricTypeTicks.FWB,
-                ParetoPlotsWebPart.MetricTypeTicks.FWHM,
-                ParetoPlotsWebPart.MetricTypeTicks.RETENTION,
-                ParetoPlotsWebPart.MetricTypeTicks.TIC_AREA);
+                QCPlotsWebPart.MetricType.TOTAL_PEAK,
+                QCPlotsWebPart.MetricType.PRECURSOR_AREA,
+                QCPlotsWebPart.MetricType.PRECURSOR_MASS_ERROR,
+                QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR,
+                QCPlotsWebPart.MetricType.TRANSITION_AREA,
+                QCPlotsWebPart.MetricType.TPAREARATIO,
+                QCPlotsWebPart.MetricType.ISOTOPE_DOTP,
+                QCPlotsWebPart.MetricType.FWB,
+                QCPlotsWebPart.MetricType.FWHM,
+                QCPlotsWebPart.MetricType.RETENTION,
+                QCPlotsWebPart.MetricType.TIC_AREA);
         verifyNavigationToPanoramaDashboard(guideSetId, QCPlotsWebPart.QCPlotType.CUSUMm, 0, QCPlotsWebPart.MetricType.TOTAL_PEAK, true);
     }
 
@@ -357,11 +357,11 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         ParetoPlotPage paretoPage = new ParetoPlotPage(getDriver());
         ParetoPlotsWebPart paretoPlotsWebPart = paretoPage.getParetoPlotsWebPart();
 
-        verifyTicksOnPlots(paretoPlotsWebPart, 1, ParetoPlotsWebPart.ParetoPlotType.MetricValue,
-                        ParetoPlotsWebPart.MetricTypeTicks.FWB,
-                        ParetoPlotsWebPart.MetricTypeTicks.FWHM,
-                        ParetoPlotsWebPart.MetricTypeTicks.RETENTION,
-                        ParetoPlotsWebPart.MetricTypeTicks.TAREA);
+        verifyTicksOnPlots(paretoPlotsWebPart, 1, QCPlotsWebPart.QCPlotType.MetricValue,
+                        QCPlotsWebPart.MetricType.FWB,
+                        QCPlotsWebPart.MetricType.FWHM,
+                        QCPlotsWebPart.MetricType.RETENTION,
+                        QCPlotsWebPart.MetricType.TRANSITION_AREA);
 
         clickExportPDFIcon("chart-render-div", 0);
         clickExportPNGIcon("chart-render-div", 0);
@@ -600,13 +600,13 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         guideSet.setRowId(guideSetWebPart.getRowId(guideSet));
     }
 
-    private void verifyTicksOnPlots(ParetoPlotsWebPart paretoPlotsWebPart, int guideSetNum, ParetoPlotsWebPart.ParetoPlotType plotType, ParetoPlotsWebPart.MetricTypeTicks... metrics)
+    private void verifyTicksOnPlots(ParetoPlotsWebPart paretoPlotsWebPart, int guideSetNum, QCPlotsWebPart.QCPlotType plotType, QCPlotsWebPart.MetricType ... metrics)
     {
         paretoPlotsWebPart.waitForTickLoad(guideSetNum, plotType);
 
         List<String> ticks = paretoPlotsWebPart.getTicks(guideSetNum, plotType);
 
-        assertEquals("Wrong metrics shown in Pareto Plot", Arrays.stream(metrics).map(ParetoPlotsWebPart.MetricTypeTicks::toString).toList(), ticks);
+        assertEquals("Wrong metrics shown in Pareto Plot", Arrays.stream(metrics).map(QCPlotsWebPart.MetricType::toString).toList(), ticks);
     }
 
     private void verifyDownloadableParetoPlots(int expectedPlotCount)
@@ -635,7 +635,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
 
         //test for correct metric type
-        assertEquals(metricType, qcPlotsWebPart.getCurrentMetricType());
+        assertEquals(metricType, qcPlotsWebPart.getCurrentMetric1Type());
 
         //test for correct plot type
         qcPlotsWebPart.isPlotTypeSelected(plotType);

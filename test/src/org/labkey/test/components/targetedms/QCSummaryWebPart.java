@@ -16,6 +16,7 @@
 package org.labkey.test.components.targetedms;
 
 import org.labkey.test.Locator;
+import org.labkey.test.WebDriverWrapper;
 import org.labkey.test.components.BodyWebPart;
 import org.labkey.test.components.Component;
 import org.openqa.selenium.WebDriver;
@@ -52,7 +53,6 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
 
     public void waitForLoad()
     {
-        Locator.tagWithClass("div", "item-text").waitForElement(this, 15000);
         Locators.recentSampleFilesLoading.waitForElementToDisappear(this, 30000);
     }
 
@@ -89,6 +89,7 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
 
     public void waitForRecentSampleFiles(int count)
     {
+        WebDriverWrapper.waitFor(() -> Locators.recentSampleFile.findElements(this).size() == count, WebDriverWrapper.WAIT_FOR_JAVASCRIPT);
         assertEquals("Details for wrong number of sample files in QC Summary.", count, Locators.recentSampleFile.findElements(this).size());
     }
 
@@ -107,6 +108,7 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
             {
                 summaryTiles = new ArrayList<>();
                 int index = 0;
+                WebDriverWrapper.waitFor(() -> Locators.summaryTile.areAnyVisible(this), WebDriverWrapper.WAIT_FOR_JAVASCRIPT);
                 List<WebElement> els = Locators.summaryTile.findElements(this);
                 for (WebElement el : els)
                 {

@@ -78,29 +78,28 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         }
     },
 
-    addIndividualPrecursorPlots : function() {
+    addIndividualPrecursorPlots : function(metricProps) {
         var addedPlot = false,
-                metricProps = this.getMetricPropsById(this.metric),
                 me = this; // for plot brushing
 
         this.longestLegendText = 0;
 
-        for (var i = 0; i < this.precursors.length; i++) {
+        for (let i = 0; i < this.precursors.length; i++) {
             const precursorInfo = this.fragmentPlotData[this.precursors[i]];
 
             // We don't necessarily have info for all possible precursors, depending on the filters and plot type
             if (precursorInfo) {
                 addedPlot = true;
 
-                var id = this.plotDivId + "-precursorPlot" + i;
-                var ids = [id];
-                for (var j = 1; j < this.plotTypes.length; j++) {
+                const id = this.plotDivId + "-precursorPlot" + i;
+                const ids = [id];
+                for (let j = 1; j < this.plotTypes.length; j++) {
                     ids.push(id + '_plotType_' + j);
                 }
 
                 this.addPlotsToPlotDiv(ids, this.precursors[i], this.plotDivId, 'qc-plot-wp');
 
-                var plotIndex = 0;
+                let plotIndex = 0;
                 // add a new panel for each plot so we can add the title to the frame
                 if (this.showMetricValuePlot()) {
                     this.addEachIndividualPrecursorPlot(plotIndex, ids[plotIndex++], i, precursorInfo, metricProps, LABKEY.vis.TrendingLinePlotType.LeveyJennings, undefined, me);
@@ -128,9 +127,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         return addedPlot;
     },
 
-    addCombinedPeptideSinglePlot : function() {
-        var metricProps = this.getMetricPropsById(this.metric),
-                yAxisCount = this.isMultiSeries() ? 2 : 1, //Will only have a right if there is already a left y-axis
+    addCombinedPeptideSinglePlot : function(metricProps) {
+        let     yAxisCount = this.isMultiSeries() ? 2 : 1, //Will only have a right if there is already a left y-axis
                 groupColors = this.getColorRange(),
                 combinePlotData = this.getCombinedPlotInitData(),
                 lengthOfLongestLegend = 8,  // At least length of label 'Peptides'
@@ -139,14 +137,15 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
                 precursorInfo,
                 prefix, ellipCount, prefLength, ellipMatch = new RegExp(this.legendHelper.ellipsis, 'g');
 
+
         //Add series1 separator to Legend sections
         if (this.isMultiSeries()) {
-            if (metricProps.series1Label.length > lengthOfLongestLegend)
-                lengthOfLongestLegend = metricProps.series1Label.length;
+            if (metricProps[this.metric].name.length > lengthOfLongestLegend)
+                lengthOfLongestLegend = metricProps[this.metric].name.length;
         }
 
         // traverse the precursor list for: calculating the longest legend string and combine the plot data
-        for (var i = 0; i < this.precursors.length; i++) {
+        for (let i = 0; i < this.precursors.length; i++) {
             precursorInfo = this.fragmentPlotData[this.precursors[i]];
             // We may not have a match if it's been filtered out - see issue 38720
             if (precursorInfo) {
@@ -174,8 +173,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         }, this);
 
         if (this.isMultiSeries()) {
-            if (metricProps.series2Label.length > lengthOfLongestLegend)
-                lengthOfLongestLegend = metricProps.series2Label.length;
+            if (metricProps[this.metric2].name.length > lengthOfLongestLegend)
+                lengthOfLongestLegend = metricProps[this.metric2].name.length;
         }
         var id = 'combinedPlot';
         var ids = [id];
@@ -295,7 +294,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
             this.fragmentPlotData[fragment] = this.getInitFragmentPlotData(fragment, dataType, mz, color);
         }
 
-        var seriesType = row['SeriesType'] === 2 ? 'series2' : 'series1';
+        var metricId = row['MetricId'];
+        const metricProp = metricProps[metricId];
 
         var data = {
             type: 'data',
@@ -312,10 +312,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
             date: row['AcquiredTime'] ? this.formatDate(new Date(row['AcquiredTime'])) : null,
             groupedXTick: row['AcquiredTime'] ? this.formatDate(new Date(row['AcquiredTime'])) : null,
             dataType: dataType, //needed for plot point click handler
-            SeriesType: seriesType
+            MetricId: metricId
         };
 
         // if a guideSetId is defined for this row, include the guide set stats values in the data object
+        // Don't do this for the default guideset (Id === 0)
         if (Ext4.isDefined(row['GuideSetId']) && row['GuideSetId'] > 0) {
             var gs = this.guideSetDataMap[row['GuideSetId']];
             if (Ext4.isDefined(gs) && gs.Series[fragment]) {
@@ -328,22 +329,22 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         }
 
         if (this.showMetricValuePlot()) {
-            Ext4.apply(data, this.processLJPlotDataRow(row, fragment, seriesType, metricProps));
+            Ext4.apply(data, this.processLJPlotDataRow(row, fragment, metricId, metricProp));
         }
         if (this.showMovingRangePlot()) {
-            Ext4.apply(data, this.processMRPlotDataRow(row, fragment, seriesType, metricProps));
+            Ext4.apply(data, this.processMRPlotDataRow(row, fragment, metricId, metricProp));
         }
         if (this.showMeanCUSUMPlot()) {
-            Ext4.apply(data, this.processCUSUMPlotDataRow(row, fragment, seriesType, metricProps, true));
+            Ext4.apply(data, this.processCUSUMPlotDataRow(row, fragment, metricId, metricProp, true));
         }
         if (this.showVariableCUSUMPlot()) {
-            Ext4.apply(data, this.processCUSUMPlotDataRow(row, fragment, seriesType, metricProps, false));
+            Ext4.apply(data, this.processCUSUMPlotDataRow(row, fragment, metricId, metricProp, false));
         }
         if (this.showTrailingMeanPlot()) {
-            Ext4.apply(data, this.processTrailingMeanPlotDataRow(row, fragment, seriesType, metricProps));
+            Ext4.apply(data, this.processTrailingMeanPlotDataRow(row, fragment, metricId, metricProp));
         }
         if (this.showTrailingCVPlot()) {
-            Ext4.apply(data, this.processTrailingCVPlotDataRow(row, fragment, seriesType, metricProps));
+            Ext4.apply(data, this.processTrailingCVPlotDataRow(row, fragment, metricId, metricProp));
         }
         if (this.showTrailingMeanPlot() || this.showTrailingCVPlot()) {
             data['TrailingStartDate'] = row['TrailingStartDate'];
@@ -364,6 +365,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
 
     processCombinedPlotMinMax: function(combinePlotData, precursorInfo)
     {
+        combinePlotData.fragment = precursorInfo.fragment;
+
         if (this.showMetricValuePlot())
         {
             this.processLJCombinedMinMax(combinePlotData, precursorInfo);
@@ -384,21 +387,25 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
 
     getCombinedPlotLegendSeries: function(plotType, isCUSUMMean)
     {
-        if (plotType == LABKEY.vis.TrendingLinePlotType.MovingRange)
+        if (plotType === LABKEY.vis.TrendingLinePlotType.MovingRange)
             return this.getMRCombinedPlotLegendSeries();
-        else if (plotType == LABKEY.vis.TrendingLinePlotType.CUSUM)
+        else if (plotType === LABKEY.vis.TrendingLinePlotType.CUSUM)
             return this.getCUSUMCombinedPlotLegendSeries(isCUSUMMean);
+        else if (plotType === LABKEY.vis.TrendingLinePlotType.TrailingCV)
+            return this.getTrailingCVCombinedPlotLegendSeries();
+        else if (plotType === LABKEY.vis.TrendingLinePlotType.TrailingMean)
+            return this.getTrailingMeanCombinedPlotLegendSeries();
         else
             return this.getLJCombinedPlotLegendSeries();
     },
 
-    getAdditionalPlotLegend: function(plotType, combinedPlot) {
+    getAdditionalPlotLegend: function(plotType) {
         if (plotType === LABKEY.vis.TrendingLinePlotType.CUSUM)
             return this.getCUSUMGroupLegend();
         if (plotType === LABKEY.vis.TrendingLinePlotType.MovingRange)
             return this.getMRLegend();
         if (plotType === LABKEY.vis.TrendingLinePlotType.LeveyJennings)
-            return this.getLJLegend(combinedPlot);
+            return this.getLJLegend();
         if (this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot() ||
                 plotType === LABKEY.vis.TrendingLinePlotType.TrailingMean ||
                 plotType === LABKEY.vis.TrendingLinePlotType.TrailingCV)

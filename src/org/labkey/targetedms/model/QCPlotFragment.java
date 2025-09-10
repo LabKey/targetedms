@@ -88,7 +88,7 @@ public class QCPlotFragment
         {
             JSONObject statsJSONObject = new JSONObject();
             statsJSONObject.put("GuideSetId", stats.getKey().getGuideSetId());
-            statsJSONObject.put("SeriesType", stats.getKey().getMetricSeriesIndex());
+            statsJSONObject.put("MetricId", stats.getKey().getMetricId());
             if (includeLJ)
             {
                 JsonUtil.safePut(statsJSONObject, "LJStdDev", stats.getStandardDeviation());
@@ -98,6 +98,16 @@ public class QCPlotFragment
             {
                 statsJSONObject.put("StdDevMR", stats.getMovingRangeStdDev());
                 statsJSONObject.put("MeanMR", stats.getMovingRangeAverage());
+            }
+            if (includeTrailingMean)
+            {
+                statsJSONObject.put("StdDevTrailingMean", stats.getTrailingMeanStdDev());
+                statsJSONObject.put("MeanTrailingMean", stats.getTrailingMeanAverage());
+            }
+            if (includeTrailingCV)
+            {
+                statsJSONObject.put("StdDevTrailingCV", stats.getTrailingCVStdDev());
+                statsJSONObject.put("MeanTrailingCV", stats.getTrailingCVAverage());
             }
             statsJSONObject.put("Comment", stats.getGuideSet().getComment());
             statsJSONObject.put("ReferenceEnd", stats.getGuideSet().getReferenceEnd());
@@ -129,7 +139,7 @@ public class QCPlotFragment
                     dataJsonObject.put("IgnoreInQC", true);
                 }
                 dataJsonObject.put("PrecursorId", plotData.getPrecursorId());
-                dataJsonObject.put("SeriesType", plotData.getMetricSeriesIndex());
+                dataJsonObject.put("MetricId", plotData.getMetricId());
                 if (includeMR)
                 {
                     dataJsonObject.put("MR", plotData.getmR());

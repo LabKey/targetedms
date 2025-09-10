@@ -35,81 +35,12 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
         super(driver, DEFAULT_TITLE);
     }
 
-    public enum MetricTypeTicks
-    {
-        RETENTION("Retention Time"),
-        TOTAL_PEAK("Total Peak Area"),
-        FWHM("Full Width at Half Maximum (FWHM)"),
-        FWB("Full Width at Base (FWB)"),
-        LHRATIO("Light/Heavy Ratio"),
-        TPAREARATIO("Transition/Precursor Area Ratio"),
-        PAREA("Precursor Area"),
-        TAREA("Transition Area"),
-        PRECURSOR_MASS_ERROR("Precursor Mass Error"),
-        TRANSITION_MASS_ERROR("Transition Mass Error"),
-        TIC_AREA("TIC Area"),
-        ISOTOPE_DOTP("Isotope dotp"),
-        LIBRARY_DOTP("Library dotp");
-
-        private final String _text;
-
-        MetricTypeTicks(String text)
-        {
-            _text = text;
-        }
-
-        public String toString()
-        {
-            return _text;
-        }
-
-        public static String getMetricTypeTick(String value)
-        {
-            String metricTypeTick = null;
-
-            for(MetricTypeTicks v : values())
-            {
-                if (value.contains(v.toString()))
-                {
-                    metricTypeTick = v.toString();
-                    break;
-                }
-            }
-
-            return metricTypeTick;
-        }
-    }
-    public enum ParetoPlotType
-    {
-        MetricValue("Metric Value", ""),
-        MovingRange("Moving Range", "_mR"),
-        CUSUMm("Mean CUSUM", "_CUSUMm"),
-        CUSUMv("Variability CUSUM", "_CUSUMv");
-
-        private final String _label;
-        private final String _suffix;
-
-        ParetoPlotType(String text, String idSuffix)
-        {
-            _label = text;
-            _suffix = idSuffix;
-        }
-
-        public String getLabel()
-        {
-            return _label;
-        }
-
-        public String getIdSuffix()
-        {
-            return _suffix;
-        }
-    }
     public List<String> getTicks(int guideSetNum)
     {
-        return getTicks(guideSetNum, ParetoPlotType.MetricValue);
+        return getTicks(guideSetNum, QCPlotsWebPart.QCPlotType.MetricValue);
     }
-    public List<String> getTicks(int guideSetNum, ParetoPlotType plotType)
+
+    public List<String> getTicks(int guideSetNum, QCPlotsWebPart.QCPlotType plotType)
     {
         List<String> ticks = new LinkedList<>();
         int maxIndex = 20;
@@ -117,7 +48,7 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
 
         while (index <= maxIndex)
         {
-            Optional<WebElement> element = Locator.css("#paretoPlot-GuideSet-" + guideSetNum  + plotType.getIdSuffix() +
+            Optional<WebElement> element = Locator.css("#paretoPlot-GuideSet-" + guideSetNum + plotType.getIdSuffix() +
                     " > svg > g:nth-child(1) > g.tick-text > a:nth-child(" + index + ") > text > title").findOptionalElement(getDriver());
             if (element.isPresent())
             {
@@ -137,17 +68,12 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
         return Locator.xpath("//div[contains(@id, 'tiledPlotPanel')]/table[contains(@class, 'labkey-wp pareto-plot-wp')]").findElements(getDriver()).size();
     }
 
-    public boolean isMetricTypeTickValid(String metricType)
-    {
-        return MetricTypeTicks.getMetricTypeTick(metricType) != null;
-    }
-
     public int getPlotBarHeight(int guideSetId, int barPlotNum)
     {
-        return getPlotBarHeight(guideSetId, ParetoPlotType.MetricValue, barPlotNum);
+        return getPlotBarHeight(guideSetId, QCPlotsWebPart.QCPlotType.MetricValue, barPlotNum);
     }
 
-    public int getPlotBarHeight(int guideSetId, ParetoPlotType plotType, int barPlotNum)
+    public int getPlotBarHeight(int guideSetId, QCPlotsWebPart.QCPlotType plotType, int barPlotNum)
     {
         String text = Locator.css("#paretoPlot-GuideSet-" + guideSetId + plotType.getIdSuffix() + "-0" +
                 " > a:nth-child(" + (barPlotNum + 1) + ")").findElement(getDriver()).getText();
@@ -155,10 +81,10 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
         return Integer.parseInt(text.substring("Value: ".length()));
     }
 
-    public String getPlotBarTooltip(int guideSetId, ParetoPlotType plotType, int barPlotNum)
+    public String getPlotBarTooltip(int guideSetId, QCPlotsWebPart.QCPlotType plotType, int barPlotNum)
     {
         return Locator.css("#paretoPlot-GuideSet-" + guideSetId + plotType.getIdSuffix() + "-0" +
-                " > a:nth-child(" + (barPlotNum+1) + ")").findElement(getDriver()).getText();
+                " > a:nth-child(" + (barPlotNum + 1) + ")").findElement(getDriver()).getText();
     }
 
     public void verifyEmpty()
@@ -168,10 +94,10 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
 
     public void waitForTickLoad(int guideSetNum)
     {
-        waitForTickLoad(guideSetNum, ParetoPlotType.MetricValue);
+        waitForTickLoad(guideSetNum, QCPlotsWebPart.QCPlotType.MetricValue);
     }
 
-    public void waitForTickLoad(int guideSetNum, ParetoPlotType plotType)
+    public void waitForTickLoad(int guideSetNum, QCPlotsWebPart.QCPlotType plotType)
     {
         getWrapper().waitForElement(Locator.css("#paretoPlot-GuideSet-" + guideSetNum + plotType.getIdSuffix() +
                 " > svg > g:nth-child(1) > g.tick-text > a:nth-child(1)"));
@@ -183,8 +109,8 @@ public class ParetoPlotsWebPart extends BodyWebPart<ParetoPlotsWebPart.ElementCa
         return new ElementCache();
     }
 
-    protected class ElementCache extends BodyWebPart.ElementCache
+    protected class ElementCache extends BodyWebPart<?>.ElementCache
     {
-        WebElement notFound = new LazyWebElement(Locator.tagWithClass("div", "tiledPlotPanel").startsWith("No sample files loaded yet."), this).withTimeout(10000);
+        WebElement notFound = new LazyWebElement<>(Locator.tagWithClass("div", "tiledPlotPanel").startsWith("No sample files loaded yet."), this).withTimeout(10000);
     }
 }
