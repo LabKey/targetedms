@@ -93,7 +93,6 @@ public class PassportTest extends PassportTestPart
 
         //features
         waitForElements(Locator.tagWithClass("td", "feature-sequencevariant"), 5, 30_000);
-        waitForElements(Locator.tagWithClass("td", "feature-sequencevariant"), 5, 30_000);
         waitForElements(Locator.tagWithClass("td", "feature-glycosylationsite"), 4, 30_000);
         waitForElements(Locator.tagWithClass("td", "feature-helix"), 7, 30_000);
         waitForElements(Locator.tagWithClass("td", "feature-turn"), 6, 30_000);
