@@ -47,7 +47,7 @@ public class TargetedMSLightHeavyRatioTest extends TargetedMSTest
         clickTab("Proteins");
         DataRegionTable table = new DataRegionTable("PeptideGroup", getDriver());
         table.setFilter("Label", "Equals", "gi|324021745|ref|NP_001191236.1|");
-        clickAndWait(reproducibilityReportLink());
+        waitAndClickAndWait(reproducibilityReportLink());
 
         log("Verifying the default checks for Intensity");
         PrecursorsWebPart precursorsWebPart = new PrecursorsWebPart(getDriver());
@@ -87,7 +87,7 @@ public class TargetedMSLightHeavyRatioTest extends TargetedMSTest
         clickTab("Proteins");
         DataRegionTable table = new DataRegionTable("PeptideGroup", getDriver());
         table.setFilter("Label", "Equals", "gi|324021745|ref|NP_001191236.1|");
-        clickAndWait(reproducibilityReportLink());
+        waitAndClickAndWait(reproducibilityReportLink());
 
         log("Verifying values for light/heavy ratio");
         PrecursorsWebPart precursorsWebPart = new PrecursorsWebPart(getDriver());
