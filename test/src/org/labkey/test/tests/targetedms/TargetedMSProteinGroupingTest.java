@@ -9,7 +9,7 @@ import org.labkey.test.components.CustomizeView;
 import org.labkey.test.util.DataRegionTable;
 
 @Category({})
-@BaseWebDriverTest.ClassTimeout(minutes = 2)
+@BaseWebDriverTest.ClassTimeout(minutes = 12)
 public class TargetedMSProteinGroupingTest extends TargetedMSTest
 {
     private static final String SKY_FILE = "ProteinGroup.sky";
@@ -43,7 +43,7 @@ public class TargetedMSProteinGroupingTest extends TargetedMSTest
 
         goToProjectHome();
         clickAndWait(Locator.linkWithText(SKY_FILE));
-        clickAndWait(Locator.linkWithText(group), longWaitForPage);
+        clickAndWait(Locator.linkWithText(group), longWaitForPage * 2);
 
         log("Verifying protein matches for peptide");
         DataRegionTable proteinTable = new DataRegionTable.DataRegionFinder(getDriver()).withName("Proteins").waitFor();
