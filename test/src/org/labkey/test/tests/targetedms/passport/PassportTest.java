@@ -54,7 +54,7 @@ public class PassportTest extends PassportTestPart
         assertTextNotPresent("Pages");
         // enter Haptoglobin
 
-        clickAndWait(Locator.xpath("//tr[contains(@class,'labkey-alternate-row')]//a[@class='labkey-text-link'][contains(text(),'PASSPORT VIEW')]"));
+        clickAndWait(Locator.xpath("//tr[contains(@class,'labkey-alternate-row')]//a[@class='labkey-text-link'][contains(text(),'PASSPORT VIEW')]"), longWaitForPage);
         assertTextPresent("Haptoglobin", "data1.sky.zip");
         assertElementPresent(Locator.xpath("//div[@id='rangesliderdeg']"));
         assertElementPresent(Locator.xpath("//div[@id='rangesliderlength']"));
@@ -77,6 +77,7 @@ public class PassportTest extends PassportTestPart
             assertElementContains(Locator.xpath("//ul[@id='livepeptidelist']//li["+index+"]"), peptidesOrderLocation[i]);
         }
         click(Locator.xpath("//button[@id='formreset']")); // reset form check reset works
+        waitForElement(Locator.tagWithId("ul", "livepeptidelist"));
         for(int i = 0; i < peptidesOrderIntensity.length; i++) {
             int index = i+1;
             assertElementContains(Locator.xpath("//ul[@id='livepeptidelist']//li["+index+"]"), peptidesOrderIntensity[i]);
@@ -86,13 +87,16 @@ public class PassportTest extends PassportTestPart
         dragAndDrop(Locator.xpath("//div[@id='rangesliderdeg']//span[1]"), 50, 0);
         assertElementContains(Locator.xpath("//span[@id='filteredPeptideCount']//green"), "15");
         click(Locator.xpath("//button[@id='formreset']")); // reset form check reset works
+
+        waitForElement(Locator.tagWithId("span", "filteredPeptideCount").childTag("green"));
         assertElementContains(Locator.xpath("//span[@id='filteredPeptideCount']//green"), "19");
 
         //features
-        assertElementPresent(Locator.xpath("//td[contains(@class, 'feature-sequencevariant')]"), 5);
-        assertElementPresent(Locator.xpath("//td[contains(@class, 'feature-glycosylationsite')]"), 4);
-        assertElementPresent(Locator.xpath("//td[contains(@class, 'feature-helix')]"), 7);
-        assertElementPresent(Locator.xpath("//td[contains(@class, 'feature-turn')]"), 6);
+        waitForElements(Locator.tagWithClass("td", "feature-sequencevariant"), 5, 30_000);
+        waitForElements(Locator.tagWithClass("td", "feature-sequencevariant"), 5, 30_000);
+        waitForElements(Locator.tagWithClass("td", "feature-glycosylationsite"), 4, 30_000);
+        waitForElements(Locator.tagWithClass("td", "feature-helix"), 7, 30_000);
+        waitForElements(Locator.tagWithClass("td", "feature-turn"), 6, 30_000);
     }
 
     @LogMethod

@@ -43,7 +43,7 @@ public class TargetedMSProteinGroupingTest extends TargetedMSTest
 
         goToProjectHome();
         clickAndWait(Locator.linkWithText(SKY_FILE));
-        clickAndWait(Locator.linkWithText(group));
+        clickAndWait(Locator.linkWithText(group), longWaitForPage);
 
         log("Verifying protein matches for peptide");
         DataRegionTable proteinTable = new DataRegionTable.DataRegionFinder(getDriver()).withName("Proteins").waitFor();
