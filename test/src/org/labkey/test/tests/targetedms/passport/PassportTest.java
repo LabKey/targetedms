@@ -54,7 +54,7 @@ public class PassportTest extends PassportTestPart
         assertTextNotPresent("Pages");
         // enter Haptoglobin
 
-        clickAndWait(Locator.xpath("//tr[contains(@class,'labkey-alternate-row')]//a[@class='labkey-text-link'][contains(text(),'PASSPORT VIEW')]"), longWaitForPage);
+        clickAndWait(Locator.xpath("//tr[contains(@class,'labkey-alternate-row')]//a[@class='labkey-text-link'][contains(text(),'PASSPORT VIEW')]"));
         assertTextPresent("Haptoglobin", "data1.sky.zip");
         assertElementPresent(Locator.xpath("//div[@id='rangesliderdeg']"));
         assertElementPresent(Locator.xpath("//div[@id='rangesliderlength']"));
@@ -92,10 +92,10 @@ public class PassportTest extends PassportTestPart
         assertElementContains(Locator.xpath("//span[@id='filteredPeptideCount']//green"), "19");
 
         //features
-        waitForElements(Locator.tagWithClass("td", "feature-sequencevariant"), 5, 30_000);
-        waitForElements(Locator.tagWithClass("td", "feature-glycosylationsite"), 4, 30_000);
-        waitForElements(Locator.tagWithClass("td", "feature-helix"), 7, 30_000);
-        waitForElements(Locator.tagWithClass("td", "feature-turn"), 6, 30_000);
+        waitForElements(Locator.tagWithClass("td", "feature-sequencevariant"), 5);
+        waitForElements(Locator.tagWithClass("td", "feature-glycosylationsite"), 4);
+        waitForElements(Locator.tagWithClass("td", "feature-helix"), 7);
+        waitForElements(Locator.tagWithClass("td", "feature-turn"), 6);
     }
 
     @LogMethod

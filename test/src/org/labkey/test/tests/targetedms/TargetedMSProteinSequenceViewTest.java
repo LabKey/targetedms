@@ -51,7 +51,7 @@ public class TargetedMSProteinSequenceViewTest extends TargetedMSTest
         log("Navigate to sequence coverage map");
         navigateToFolder(getProjectName(), CONFIDENCE_SCORE_FOLDER);
         waitAndClickAndWait(Locator.linkWithText(CS_SKY_FILE));
-        clickAndWait(Locator.linkWithText("sp|O13527|YA11B_YEAST"), longWaitForPage);
+        clickAndWait(Locator.linkWithText("sp|O13527|YA11B_YEAST"), WAIT_FOR_PAGE);
 
         log("Verifying Intensity values");
         SequenceCoverageWebPart sequenceCoverage = new SequenceCoverageWebPart(getDriver());
