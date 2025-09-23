@@ -14,6 +14,8 @@ import org.openqa.selenium.NoSuchElementException;
 import java.sql.Timestamp;
 import java.util.Arrays;
 
+import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
+
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSUtilizationCalendarTest extends TargetedMSTest
@@ -89,7 +91,7 @@ public class TargetedMSUtilizationCalendarTest extends TargetedMSTest
     public void testReaderRoleAccessibility()
     {
         goToProjectHome();
-        impersonateRole("Reader");
+        impersonateRole(READER_ROLE);
         UtilizationCalendarWebPart utilizationCalendar = new PanoramaDashboard(this)
                 .getQcSummaryWebPart()
                 .gotoUtilizationCalendar();

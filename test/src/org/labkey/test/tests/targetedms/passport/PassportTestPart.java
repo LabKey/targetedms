@@ -29,6 +29,8 @@ import org.openqa.selenium.WebElement;
 
 import java.nio.file.Paths;
 
+import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
+
 
 public abstract class PassportTestPart extends BaseWebDriverTest
 {
@@ -45,7 +47,7 @@ public abstract class PassportTestPart extends BaseWebDriverTest
     {
         _containerHelper.createProject(getProjectName(), "Collaboration");
         ApiPermissionsHelper h = new ApiPermissionsHelper(this);
-        h.addMemberToRole(NORMAL_USER, "Reader", PermissionsHelper.MemberType.user);
+        h.addMemberToRole(NORMAL_USER, READER_ROLE, PermissionsHelper.MemberType.user);
 
         goToFolderManagement().
                 goToFolderTypeTab().
