@@ -64,6 +64,7 @@ import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.Me
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.MovingRange;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.TrailingCV;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.TrailingMean;
+import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
 
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 35)
@@ -180,7 +181,7 @@ public class TargetedMSQCTest extends TargetedMSTest
     {
         setupFolder(FolderType.QC);
         _userHelper.createUser(USER);
-        new ApiPermissionsHelper(this).setUserPermissions(USER, "Reader");
+        new ApiPermissionsHelper(this).setUserPermissions(USER, READER_ROLE);
         importData(SProCoP_FILE);
         createAndInsertAnnotations();
     }

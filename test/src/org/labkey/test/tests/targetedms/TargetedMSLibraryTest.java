@@ -34,6 +34,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
 
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
@@ -308,7 +309,7 @@ public class TargetedMSLibraryTest extends TargetedMSTest
 
     private void verifyConflictsAsReadOnlyUser()
     {
-        impersonateRole("Reader");
+        impersonateRole(READER_ROLE);
         String[] conflictText = new String[] {"The chromatogram library in this folder is in a conflicted state and is awaiting action from a folder administrator to resolve the conflicts",
                 "The download link below is for the last stable version of the library."};
         assertTextPresent(conflictText);

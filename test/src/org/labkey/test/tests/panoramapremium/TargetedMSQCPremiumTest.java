@@ -35,6 +35,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.CUSUMm;
+import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
 
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 6)
@@ -57,7 +58,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
     {
         setupFolder(FolderType.QC);
         _userHelper.createUser(USER);
-        new ApiPermissionsHelper(this).setUserPermissions(USER, "Reader");
+        new ApiPermissionsHelper(this).setUserPermissions(USER, READER_ROLE);
         importData(SProCoP_FILE);
     }
 

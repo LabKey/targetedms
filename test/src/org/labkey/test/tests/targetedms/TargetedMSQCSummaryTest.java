@@ -54,6 +54,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
 
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 12)
@@ -147,10 +148,10 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
 
         // give user reader permissions to all but FOLDER_1
         ApiPermissionsHelper permissionsHelper = new ApiPermissionsHelper(this);
-        permissionsHelper.addMemberToRole(USER, "Reader", PermissionsHelper.MemberType.user, getProjectName());
-        permissionsHelper.addMemberToRole(USER, "Reader", PermissionsHelper.MemberType.user, getProjectName() + "/" + FOLDER_2);
-        permissionsHelper.addMemberToRole(USER, "Reader", PermissionsHelper.MemberType.user, getProjectName() + "/" + FOLDER_2 + "/" + FOLDER_2A);
-        permissionsHelper.addMemberToRole(USER, "Reader", PermissionsHelper.MemberType.user, getProjectName() + "/" + FOLDER_3);
+        permissionsHelper.addMemberToRole(USER, READER_ROLE, PermissionsHelper.MemberType.user, getProjectName());
+        permissionsHelper.addMemberToRole(USER, READER_ROLE, PermissionsHelper.MemberType.user, getProjectName() + "/" + FOLDER_2);
+        permissionsHelper.addMemberToRole(USER, READER_ROLE, PermissionsHelper.MemberType.user, getProjectName() + "/" + FOLDER_2 + "/" + FOLDER_2A);
+        permissionsHelper.addMemberToRole(USER, READER_ROLE, PermissionsHelper.MemberType.user, getProjectName() + "/" + FOLDER_3);
 
         // impersonate user and check that the project QC Summary doesn't include the FOLDER_1 details
         goToProjectHome();

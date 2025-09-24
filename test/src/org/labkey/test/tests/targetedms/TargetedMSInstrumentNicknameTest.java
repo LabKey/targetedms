@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.labkey.test.util.PermissionsHelper.EDITOR_ROLE;
+import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
 
 @Category({})
 public class TargetedMSInstrumentNicknameTest extends TargetedMSTest
@@ -105,8 +107,8 @@ public class TargetedMSInstrumentNicknameTest extends TargetedMSTest
 
         // give user reader permissions to all but FOLDER_1
         ApiPermissionsHelper permissionsHelper = new ApiPermissionsHelper(this);
-        permissionsHelper.addMemberToRole(USER, "Reader", PermissionsHelper.MemberType.user, getProjectName());
-        permissionsHelper.addMemberToRole(USER, "Editor", PermissionsHelper.MemberType.user, getProjectName() + "/" + NON_QC_SUB_FOLDER);
+        permissionsHelper.addMemberToRole(USER, READER_ROLE, PermissionsHelper.MemberType.user, getProjectName());
+        permissionsHelper.addMemberToRole(USER, EDITOR_ROLE, PermissionsHelper.MemberType.user, getProjectName() + "/" + NON_QC_SUB_FOLDER);
     }
 
     private void importInitialData()
@@ -182,7 +184,7 @@ public class TargetedMSInstrumentNicknameTest extends TargetedMSTest
         assertTextPresent(REPLICATE_NAME_WITH_SERIAL, FILE_PATH_WITH_SERIAL);
 
         String postImpersonationUrl = getDriver().getCurrentUrl();
-        impersonateRole("Reader");
+        impersonateRole(READER_ROLE);
         assertTextPresent(Q_EXACTIVE_SERIAL_ONLY, 1);  // Just the visible element, no form and hidden inputs for readers
         stopImpersonating();
         beginAt(postImpersonationUrl);
@@ -228,7 +230,7 @@ public class TargetedMSInstrumentNicknameTest extends TargetedMSTest
 
         String postImpersonationUrl = getDriver().getCurrentUrl();
         // Check we don't let readers save
-        impersonateRole("Reader");
+        impersonateRole(READER_ROLE);
         assertTextPresent("Currently saved in");
         assertElementNotPresent(Locator.lkButton("Save"));
         stopImpersonating();

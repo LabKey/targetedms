@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
 
 /**
  * Tests uploading Skyline documents that contain calibration curve settings. Makes sure that the calculated results
@@ -165,7 +166,7 @@ public class TargetedMSCalibrationCurveTest extends AbstractQuantificationTest
 
         // impersonate a reader, who should be able to change the settings/inputs but those don't get persisted
         pushLocation();
-        impersonateRole("Reader");
+        impersonateRole(READER_ROLE);
         popLocation();
         pkReportPage = new PKReportPage(getDriver(), 10);
         // uncheck all the SB1 and SB2 time inputs
