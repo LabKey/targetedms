@@ -4,8 +4,7 @@
     let webpart = <%=webpartContext%>;
     let config = {
         renderTo: webpart.wrapperDivId,
-        frame: 'portal',
-        title: 'Your Projects',
+        frame: 'none',
         schemaName: 'targetedms',
         queryName: 'userProjects',
         containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders

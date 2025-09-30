@@ -1,0 +1,264 @@
+<div id="allInstrumentsContainer" style="display: flex; gap: 16px; min-height: 600px;">
+    <div id="instrumentSidebar" style="width: 360px; min-width: 280px;">
+        <div style="margin-bottom: 12px;">
+            <label for="projectFilter" style="display:block"><strong>Project</strong></label>
+            <select id="projectFilter" name="projectFilter" style="width:100%"></select>
+        </div>
+        <strong>Instruments</strong>
+        <div id="instrumentListActiveWrapper" style="margin-top: 8px;">
+            Active
+            <div id="instrumentListActive" class="lk-form-group" style="display: flex; flex-direction: column; gap: 6px;"></div>
+        </div>
+        <div id="instrumentListInactiveWrapper" style="margin-top: 12px;">
+            Inactive
+            <div id="instrumentListInactive" class="lk-form-group" style="display: flex; flex-direction: column; gap: 6px;"></div>
+        </div>
+    </div>
+
+    <div id="calendar" style="flex: 1; min-width: 0;">Loading...</div>
+</div>
+
+<script type="text/javascript" nonce="<%=scriptNonce%>">
+    (function() {
+        let calendar = null;
+        let selectedProjectId = null; // null means All Projects
+        // instrumentId -> { name, color, active, events: [], source: EventSource | null, checkboxEl }
+        const instruments = new Map();
+
+        function encodeHtml(s) { return LABKEY.Utils.encodeHtml(String(s ?? '')); }
+
+        function initCalendar() {
+            const calendarEl = document.getElementById('calendar');
+            calendarEl.innerText = '';
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                initialDate: new Date(),
+                navLinks: true,
+                selectable: false,
+                selectMirror: false,
+                eventContent: function(arg) {
+                    const e = arg.event;
+                    const timeFormatString = LABKEY.container.formats.timeFormat
+                        .replace(':ss', '')
+                        .replace('.SSS', '');
+                    const dateStr = DateFormat.format.date(e.start, timeFormatString) + ' - ' + DateFormat.format.date(e.end, timeFormatString);
+                    const baseColor = e.extendedProps && e.extendedProps.baseColor ? e.extendedProps.baseColor : (arg.backgroundColor || e.backgroundColor || '#888');
+                    const bg = (selectedProjectId && e.extendedProps && e.extendedProps.projectId !== selectedProjectId) ? 'gray' : baseColor;
+                    const textColor = ScheduleUtils.getContrastTextColor(ScheduleUtils.stringToColor(bg));
+                    let html = '';
+                    html += '<div style="background-color:' + encodeHtml(bg) + ';color:' + encodeHtml(textColor) + ';width:100%">';
+                    html += '<div class="event-date">' + encodeHtml(dateStr) + '</div>';
+                    html += '</div>';
+                    return { html: html };
+                },
+                eventMouseEnter: function(mouseEnterInfo) {
+                    const e = mouseEnterInfo.event;
+                    const dateStr = DateFormat.format.date(e.start, LABKEY.container.formats.dateTimeFormat) + ' - ' + DateFormat.format.date(e.end, LABKEY.container.formats.dateTimeFormat);
+                    let content = '';
+                    content += '<div class="event-tooltip-content">';
+                    if (e.extendedProps && e.extendedProps.instrumentName) {
+                        content += '<div class="event-id">Instrument: ' + LABKEY.Utils.encodeHtml(e.extendedProps.instrumentName) + '</div>';
+                    }
+                    if (e.extendedProps && e.extendedProps.projectTitle) {
+                        content += '<div class="event-id">Project: ' + LABKEY.Utils.encodeHtml(e.extendedProps.projectTitle) + '</div>';
+                    }
+                    content += '<div class="event-date">' + LABKEY.Utils.encodeHtml(dateStr) + '</div>';
+                    content += '</div>';
+
+                    $(mouseEnterInfo.el).popover({
+                        trigger: 'manual',
+                        container: 'body',
+                        html: true,
+                        content: content
+                    });
+                    $(mouseEnterInfo.el).popover('show');
+
+                    const $popover = $('.popover');
+                    $popover.on('mouseenter', function () {
+                        $(mouseEnterInfo.el).popover('show');
+                    });
+                    $popover.on('mouseleave', function () {
+                        $(mouseEnterInfo.el).popover('hide');
+                    });
+                },
+                eventMouseLeave: function (mouseLeaveInfo) {
+                    setTimeout(() => {
+                        const $popover = $('.popover:hover');
+                        if ($popover.length === 0) {
+                            $(mouseLeaveInfo.el).popover('hide');
+                        }
+                    }, 200);
+                },
+                eventClick: function() {
+                    // Read-only view; do nothing on click
+                }
+            });
+            calendar.render();
+        }
+
+        function addInstrumentCheckbox(inst) {
+            const active = !!inst.active;
+            const listEl = document.getElementById(active ? 'instrumentListActive' : 'instrumentListInactive');
+            const row = document.createElement('div');
+            row.style.display = 'flex';
+            row.style.alignItems = 'center';
+            row.style.gap = '8px';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = true; // Show all by default
+            checkbox.id = 'instrument-toggle-' + inst.Id;
+
+            const swatch = document.createElement('span');
+            swatch.style.display = 'inline-block';
+            swatch.style.width = '14px';
+            swatch.style.height = '14px';
+            swatch.style.border = '1px solid #888';
+            swatch.style.backgroundColor = inst.color || '#888';
+
+            const label = document.createElement('label');
+            label.setAttribute('for', checkbox.id);
+            label.textContent = inst.name;
+            label.style.margin = 0;
+
+            row.appendChild(checkbox);
+            row.appendChild(swatch);
+            row.appendChild(label);
+            listEl.appendChild(row);
+
+            const info = instruments.get(inst.Id);
+            info.checkboxEl = checkbox;
+
+            checkbox.addEventListener('change', function() {
+                if (checkbox.checked) {
+                    addEventSourceForInstrument(inst.Id);
+                } else {
+                    removeEventSourceForInstrument(inst.Id);
+                }
+            });
+        }
+
+        function addEventSourceForInstrument(instrumentId) {
+            const info = instruments.get(instrumentId);
+            if (!info) return;
+            if (info.source) {
+                // Already added
+                return;
+            }
+            const events = info.events || [];
+            info.source = calendar.addEventSource(events);
+        }
+
+        function removeEventSourceForInstrument(instrumentId) {
+            const info = instruments.get(instrumentId);
+            if (!info || !info.source) return;
+            info.source.remove();
+            info.source = null;
+        }
+
+        function loadAllInstrumentsAndSchedules() {
+            // 1) Load all instruments (both active and inactive)
+            LABKEY.Query.selectRows({
+                schemaName: 'targetedms',
+                queryName: 'msInstrument',
+                sort: 'active,-active,name', // ensure active first (true sorts before false when used inversely); also sort by name within groups
+                columns: 'Id,name,color,active',
+                success: function(result) {
+                    const rows = result.rows || [];
+                    // initialize map
+                    for (let i = 0; i < rows.length; i++) {
+                        const r = rows[i];
+                        instruments.set(r.Id, { name: r.name, color: r.color || '#888', active: !!r.active, events: [], source: null, checkboxEl: null });
+                    }
+
+                    // Build sidebar UI
+                    rows.forEach(function(r) { addInstrumentCheckbox(r); });
+
+                    // 2) Load all schedules at once
+                    LABKEY.Query.selectRows({
+                        schemaName: 'targetedms',
+                        queryName: 'instrumentSchedule',
+                        columns: 'Id,startTime,endTime,name,notes,instrument/Id,instrument/name,instrument/color,project/Id,project/title',
+                        success: function (data) {
+                            const schedRows = data.rows || [];
+                            for (let i = 0; i < schedRows.length; i++) {
+                                const r = schedRows[i];
+                                const instId = r['instrument/Id'];
+                                const info = instruments.get(instId);
+                                if (!info) continue; // skip schedules for instruments outside this container
+                                const color = r['instrument/color'] || info.color || '#888';
+                                const evt = {
+                                    id: r.Id,
+                                    start: new Date(r.startTime),
+                                    end: new Date(r.endTime),
+                                    title: r.name || r['project/title'] || info.name,
+                                    backgroundColor: color,
+                                    borderColor: color,
+                                    extendedProps: {
+                                        baseColor: color,
+                                        instrumentId: instId,
+                                        instrumentName: r['instrument/name'] || info.name,
+                                        projectId: r['project/Id'] || null,
+                                        projectTitle: r['project/title'] || ''
+                                    }
+                                };
+                                info.events.push(evt);
+                            }
+
+                            // Add initial sources for all instruments (all toggled on by default)
+                            instruments.forEach(function(info, instId) {
+                                addEventSourceForInstrument(instId);
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        function loadProjectFilter() {
+            LABKEY.Query.selectRows({
+                schemaName: 'targetedms',
+                queryName: 'msProject',
+                sort: 'title',
+                columns: 'Id,title',
+                success: function(result) {
+                    const rows = result.rows || [];
+                    const ddl = document.getElementById('projectFilter');
+                    // All projects option
+                    const allOption = document.createElement('option');
+                    allOption.value = '';
+                    allOption.text = 'All Projects';
+                    ddl.appendChild(allOption);
+                    for (let i = 0; i < rows.length; i++) {
+                        const r = rows[i];
+                        const opt = document.createElement('option');
+                        opt.value = r.Id;
+                        opt.text = r.title;
+                        ddl.appendChild(opt);
+                    }
+                    ddl.addEventListener('change', function() {
+                        const val = ddl.value;
+                        selectedProjectId = val ? (parseInt(val) || null) : null;
+                        if (calendar && calendar.rerenderEvents) {
+                            calendar.rerenderEvents();
+                        } else if (calendar) {
+                            // Fallback: remove and re-add sources to force rerender
+                            const sources = Array.from(instruments.keys());
+                            sources.forEach(function(id) { removeEventSourceForInstrument(id); });
+                            sources.forEach(function(id) { addEventSourceForInstrument(id); });
+                        }
+                    });
+                }
+            });
+        }
+
+        // Initialize
+        initCalendar();
+        loadProjectFilter();
+        loadAllInstrumentsAndSchedules();
+    })();
+</script>
