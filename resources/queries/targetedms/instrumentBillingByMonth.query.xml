@@ -1,7 +1,7 @@
 <query xmlns="http://labkey.org/data/xml/query">
     <metadata>
         <tables xmlns="http://labkey.org/data/xml">
-            <table tableName="instrumentSchedule" tableDbType="TABLE">
+            <table tableName="instrumentBillingByMonth" tableDbType="TABLE">
                 <columns>
                     <column columnName="HoursInRange">
                         <formatString>0.0</formatString>
