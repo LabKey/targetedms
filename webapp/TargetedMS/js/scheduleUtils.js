@@ -42,7 +42,7 @@
 
     // Return a time-only format string without seconds/millis based on the container setting
     utils.getTimeOnlyFormat = function() {
-        if (window.LABKEY && LABKEY.container && LABKEY.container.formats && LABKEY.container.formats.timeFormat) {
+        if (window.LABKEY && LABKEY.container?.formats?.timeFormat) {
             return LABKEY.container.formats.timeFormat.replace(':ss', '').replace('.SSS', '');
         }
         return 'HH:mm';
