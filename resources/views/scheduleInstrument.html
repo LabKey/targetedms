@@ -367,7 +367,8 @@
             sort: 'name',
             columns: 'Id,researcher/displayName,researcher/UserId,project',
             filterArray: [
-                LABKEY.Filter.create('project', project, LABKEY.Filter.Types.EQUAL)
+                LABKEY.Filter.create('project', project, LABKEY.Filter.Types.EQUAL),
+                LABKEY.Filter.create('researcher/UserId', project, LABKEY.Filter.Types.NONBLANK)
             ],
             scope: this,
             success: function (result) {

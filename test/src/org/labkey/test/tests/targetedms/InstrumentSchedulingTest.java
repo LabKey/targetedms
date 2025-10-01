@@ -23,6 +23,8 @@ import org.labkey.remoteapi.query.InsertRowsCommand;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.TestTimeoutException;
 import org.labkey.test.util.APIContainerHelper;
+import org.labkey.test.util.ApiPermissionsHelper;
+import org.labkey.test.util.PermissionsHelper;
 import org.labkey.test.util.PortalHelper;
 
 import java.io.IOException;
@@ -51,6 +53,9 @@ public class InstrumentSchedulingTest extends TargetedMSTest
 
         int schedulerUser1Id = _userHelper.createUser(SCHEDULER_USER_1).getUserId();
         int schedulerUser2Id = _userHelper.createUser(SCHEDULER_USER_2).getUserId();
+        ApiPermissionsHelper apiPermissionsHelper = new ApiPermissionsHelper(this);
+        apiPermissionsHelper.addMemberToRole(SCHEDULER_USER_1, "Editor", PermissionsHelper.MemberType.user);
+        apiPermissionsHelper.addMemberToRole(SCHEDULER_USER_2, "Editor", PermissionsHelper.MemberType.user);
 
         InsertRowsCommand instrumentInsert = new InsertRowsCommand("targetedms", "msInstrument");
         instrumentInsert.setRows(Arrays.asList(

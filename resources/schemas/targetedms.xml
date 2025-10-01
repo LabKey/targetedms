@@ -1794,7 +1794,9 @@
         <columns>
             <column columnName="Id"/>
             <column columnName="project"/>
-            <column columnName="researcher"/>
+            <column columnName="researcher">
+                <required>true</required>
+            </column>
             <column columnName="Created"/>
             <column columnName="CreatedBy"/>
             <column columnName="Modified"/>
