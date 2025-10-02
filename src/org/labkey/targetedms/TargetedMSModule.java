@@ -686,9 +686,8 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         TargetedMSService.get().registerSkylineDocumentImportListener(QCNotificationSender.get());
     }
 
-    @NotNull
     @Override
-    public Set<Class> getIntegrationTests()
+    public @NotNull Set<Class<?>> getIntegrationTests()
     {
         return Set.of(
             MsDataSourceUtil.TestCase.class,
@@ -696,9 +695,8 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         );
     }
 
-    @NotNull
     @Override
-    public Set<Class> getUnitTests()
+    public @NotNull Set<Class<?>> getUnitTests()
     {
         return Set.of(
             ComparisonCategory.TestCase.class,
