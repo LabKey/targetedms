@@ -49,8 +49,9 @@
                     const baseColor = e.extendedProps && e.extendedProps.baseColor ? e.extendedProps.baseColor : (arg.backgroundColor || e.backgroundColor || '#888');
                     const bg = (selectedProjectId && e.extendedProps && e.extendedProps.projectId !== selectedProjectId) ? 'gray' : baseColor;
                     const textColor = ScheduleUtils.getContrastTextColor(ScheduleUtils.stringToColor(bg));
+                    const cl = (selectedProjectId && e.extendedProps && e.extendedProps.projectId !== selectedProjectId) ? 'otherProjectEvent' : 'activeProjectEvent';
                     let html = '';
-                    html += '<div style="background-color:' + encodeHtml(bg) + ';color:' + encodeHtml(textColor) + ';width:100%">';
+                    html += '<div class="' + encodeHtml(cl) + '" style="background-color:' + encodeHtml(bg) + ';color:' + encodeHtml(textColor) + ';width:100%">';
                     html += '<div class="event-date">' + encodeHtml(dateStr) + '</div>';
                     html += '</div>';
                     return { html: html };

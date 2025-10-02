@@ -1,5 +1,4 @@
 SELECT
-    '[View]' AS ViewLink,
     p.id AS Id,
     p.title AS Title,
     p.submitDate AS SubmitDate,

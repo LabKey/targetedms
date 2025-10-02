@@ -96,17 +96,13 @@
             queryName: 'ProjectPaymentMethod',
             returnUrl: LABKEY.ActionURL.buildURL('targetedms', 'msProjectDetails', null, null)
         };
-        let addPaymentMethodLink = `
-        <a href="${LABKEY.ActionURL.buildURL('query', 'insertQueryRow', LABKEY.ActionURL.getContainer(), urlParams)}">[Add payment method]</a>`;
-        addPaymentMethodEl.innerHTML = addPaymentMethodLink;
+        addPaymentMethodEl.innerHTML = LABKEY.Utils.textLink({text: 'Add payment method', href: LABKEY.ActionURL.buildURL('query', 'insertQueryRow', LABKEY.ActionURL.getContainer(), urlParams)});;
 
         const scheduleInstrumentTimeEl = document.getElementById('schedule-instrument-time');
         const scheduleUrlParams = {
             project: LABKEY.ActionURL.getParameter('project')
         };
-        const scheduleInstrumentTimeLink = `
-        <a href="${LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument',LABKEY.ActionURL.getContainer(), scheduleUrlParams)}">[Schedule Instrument Time]</a>`;
-        scheduleInstrumentTimeEl.innerHTML = scheduleInstrumentTimeLink;
+        scheduleInstrumentTimeEl.innerHTML = LABKEY.Utils.textLink({text: 'Schedule instrument time', href: LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument',LABKEY.ActionURL.getContainer(), scheduleUrlParams)});
 
     });
 

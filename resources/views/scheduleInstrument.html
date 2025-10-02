@@ -156,11 +156,9 @@
         <br/>
 
         <div id="cost-info">
-            <p>Click here to view all the time scheduled for this project.</p>
-            <br>
             <p>View the billing FAQ and instructions for scheduling instruction time.</p>
             <br>
-            <p><a id="instrument-rates">View</a> the current rates for instruments.</p>
+            <p id="instrument-rates"></p>
         </div>
 
     </div>
@@ -252,14 +250,15 @@
                         eventContent: function(e) {
 
                             let content = '';
-                            let bgColor = (e.event.extendedProps.project === project ? e.backgroundColor : 'gray');
+                            let bgColor = e.event.extendedProps.project === project ? e.backgroundColor : 'gray';
+                            const cl = e.event.extendedProps.project === project ? 'activeProjectEvent' : 'otherProjectEvent';
                             let textColor = ScheduleUtils.getContrastTextColor(ScheduleUtils.stringToColor(bgColor));
                             let timeFormatString = LABKEY.container.formats.timeFormat;
                             // Strip seconds and milliseconds
                             timeFormatString = timeFormatString.replace(':ss', '').replace('.SSS', '');
                             let dateStr = DateFormat.format.date(e.event.start, timeFormatString) + ' - ' + DateFormat.format.date(e.event.end, timeFormatString);
                             let style = 'background-color: ' + LABKEY.Utils.encodeHtml(bgColor) + '; color: ' + LABKEY.Utils.encodeHtml(textColor) + ';' + 'width: 100%';
-                            content += '<div style="' + style + ';">'
+                            content += '<div class="' + LABKEY.Utils.encodeHtml(cl) + '" style="' + style + ';">'
                                         + '<div class="event-date">' + LABKEY.Utils.encodeHtml(dateStr) + '</div>'
                                         + '<div class="event-id" >' + 'Project : &nbsp' + LABKEY.Utils.encodeHtml(e.event.extendedProps.project) + '</div>'
                                     + '</div>';
@@ -773,7 +772,7 @@
             document.location.href = LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument', null, {project: LABKEY.ActionURL.getParameter('project'), instrument: document.getElementById('instrumentDropDown').value});
         });
 
-        document.getElementById('instrument-rates').setAttribute('href', LABKEY.ActionURL.buildURL('query', 'executeQuery', LABKEY.ActionURL.getContainer(), {schemaName: 'targetedms', 'query.queryName': 'InstrumentRate'}));
+        document.getElementById('instrument-rates').innerHTML = LABKEY.Utils.textLink({text: 'View the current rates for instruments', href: LABKEY.ActionURL.buildURL('query', 'executeQuery', LABKEY.ActionURL.getContainer(), {schemaName: 'targetedms', 'query.queryName': 'InstrumentRate'})});
 
     });
 

@@ -21,6 +21,7 @@ import org.junit.experimental.categories.Category;
 import org.labkey.remoteapi.CommandException;
 import org.labkey.remoteapi.query.InsertRowsCommand;
 import org.labkey.test.BaseWebDriverTest;
+import org.labkey.test.Locator;
 import org.labkey.test.TestTimeoutException;
 import org.labkey.test.util.APIContainerHelper;
 import org.labkey.test.util.ApiPermissionsHelper;
@@ -29,6 +30,7 @@ import org.labkey.test.util.PortalHelper;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
@@ -110,9 +112,86 @@ public class InstrumentSchedulingTest extends TargetedMSTest
     }
 
     @Test
-    public void doSomeStuff()
+    public void testSchedule()
     {
+        goToProjectHome();
+        clickAndWait(Locator.linkWithText("Your project list"));
+        assertTextPresent("Project1", "Project2");
+        clickAndWait(Locator.linkWithText("Project1"));
+        waitAndClickAndWait(Locator.linkWithText("Schedule instrument time"));
 
+        String yearMonth = Calendar.getInstance().get(Calendar.YEAR) + "-";
+        int month = (Calendar.getInstance().get(Calendar.MONTH) + 1);
+        if (month < 10)
+        {
+            yearMonth += yearMonth;
+        }
+        yearMonth += month;
+
+        scheduleInstrument(yearMonth + "-02");
+        scheduleInstrument(yearMonth + "-03");
+        scheduleInstrument(yearMonth + "-03", true);
+        scheduleInstrument(yearMonth + "-03");
+
+        assertProjectEventCounts(2, 0);
+
+        sleep(1000);  // Wait for the dialog to clear out of the way
+        doAndWaitForPageToLoad(() -> selectOptionByText(Locator.id("projectDropDown"), "Project2"));
+
+        scheduleInstrument(yearMonth + "-04");
+        assertProjectEventCounts(1, 2);
+
+        scheduleInstrument(yearMonth + "-05");
+        assertProjectEventCounts(2, 2);
+
+        sleep(1000);  // Wait for the dialog to clear out of the way
+        doAndWaitForPageToLoad(() -> selectOptionByText(Locator.id("instrumentDropDown"), "Instrument2"));
+        scheduleInstrument(yearMonth + "-06");
+        assertProjectEventCounts(1, 0);
+
+        goToDashboard();
+        clickAndWait(Locator.linkWithText("All instrument calendar view"));
+        assertTextPresent("Instrument1", "Instrument2", "InactiveInstrument");
+
+        waitForElementToBeVisible(Locator.tagWithClass("div", "activeProjectEvent"));
+        assertProjectEventCounts(5, 0);
+
+        selectOptionByText(Locator.id("projectFilter"), "Project2");
+        assertProjectEventCounts(3, 2);
+
+        goToDashboard();
+        clickAndWait(Locator.linkWithText("Instrument billing report"));
+        assertTextPresent("$2,450.00", 4);
+        assertTextPresent("$2,690.00", 1);
+    }
+
+    private void assertProjectEventCounts(int expectedActiveCount, int expectedOtherCount)
+    {
+        assertElementPresent(Locator.tagWithClass("div", "activeProjectEvent"), expectedActiveCount);
+        assertElementPresent(Locator.tagWithClass("div", "otherProjectEvent"), expectedOtherCount);
+    }
+
+    private void scheduleInstrument(String yearMonthDay)
+    {
+        scheduleInstrument(yearMonthDay, false);
+    }
+
+    private void scheduleInstrument(String yearMonthDay, boolean delete)
+    {
+        waitAndClick(Locator.tagWithAttribute("td", "data-date", yearMonthDay));
+        waitForText("Add Instrument Time");
+        if (delete)
+        {
+            waitAndClick(Locator.button("Delete"));
+        }
+        else
+        {
+            waitForElementToBeVisible(Locator.id("event-name"));
+            setFormElement(Locator.id("event-name").findElement(getDriver()), "A name!");
+            setFormElement(Locator.id("event-notes").findElement(getDriver()), "A note!");
+            waitAndClick(Locator.button("Save"));
+            waitAndClick(Locator.button("Yes"));
+        }
     }
 
     @Override
