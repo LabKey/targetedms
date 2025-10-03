@@ -80,6 +80,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     runs: null,
     trailingRuns: null,
 
+    SHOW_ALL_IN_A_SINGLE_PLOT: 'Show all series in a single plot',
+    LABEL_WIDTH: 115,
+
     // Max number of plots/series to show per page
     maxCount: 50,
 
@@ -276,63 +279,86 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     initPlotFormToolbars : function() {
-        var toolbarArr = [
-            { tbar: this.getMainPlotOptionsToolbar() },
-            { tbar: this.getCustomDateRangeToolbar() },
-            { tbar: this.getFirstPlotOptionsToolbar() },
-            { tbar: this.getSecondPlotOptionsToolbar() },
+        // Build a single top region with three columns of controls for a more compact layout.
+        const columnDefaults = {
+            xtype: 'container',
+            layout: { type: 'vbox', align: 'start' },
+            defaults: {
+                width: 400,
+                // Add a little vertical spacing between stacked controls
+                margin: '0 10 10 0'
+            }
+        };
+
+        const col1 = Ext4.create('Ext.container.Container', Ext4.apply({ itemId: 'qc-controls-col-1', style: 'border-right: 1px solid #e0e0e0; padding-right: 12px; margin-right: 12px;' }, columnDefaults));
+        // Primary controls: metrics and date range
+        col1.add(this.getMetricCombo1());
+        col1.add(this.getMetricCombo2());
+        col1.add(this.getScaleCombo());
+
+        if (this.metric) {
+            //hiding the show All series in a single plot checkbox for run scoped metrics
+            this.getSinglePlotCheckbox().setVisible(this.getMetricPropsById(this.metric).precursorScoped);
+        }
+
+
+        const col2 = Ext4.create('Ext.container.Container', Ext4.apply({ itemId: 'qc-controls-col-2', style: 'border-right: 1px solid #e0e0e0; padding-right: 12px; margin-right: 12px;' }, columnDefaults));
+        // Plot configuration controls
+        col2.add(this.getDateRangeCombo());
+        // Show custom date range inline when selected
+        col2.add(this.getCustomDateRangeToolbar());
+        col2.add(this.getGroupedXCheckbox());
+        col2.add(this.getExcludedReplicateCheckbox());
+
+        const col3 = Ext4.create('Ext.container.Container', Ext4.apply({ itemId: 'qc-controls-col-3' }, columnDefaults));
+        // Display toggles and filters
+        col3.add(this.getPlotTypeOptions());
+        col3.add(this.getTrailingRunsField());
+        col3.add(this.getSinglePlotCheckbox());
+        col3.add(this.getExcludedPrecursorsCheckbox());
+        col3.add(this.getShowReferenceCheckbox());
+        if (this.canUserEdit()) {
+            const buttonContainer = Ext4.create('Ext.form.FieldContainer', {
+                hideEmptyLabel: false,
+                labelWidth: this.LABEL_WIDTH,
+                items: [this.getGuideSetCreateButton()]
+            });
+
+            col3.add(buttonContainer);
+        }
+        if (this.replicateAnnotationsNodes.length > 0) {
+            col2.add(this.getAnnotationFiltersToolbar());
+            col2.add(this.getSelectedAnnotationsToolbar());
+        }
+
+        // Ensure single-plot checkbox visibility mirrors previous logic when metrics are run-scoped
+        if (this.metric) {
+            var showSinglePlot = this.getMetricPropsById(this.metric).precursorScoped;
+            this.getSinglePlotCheckbox().setVisible(showSinglePlot);
+        }
+
+        const columnsToolbar = Ext4.create('Ext.toolbar.Toolbar', {
+            ui: 'footer',
+            cls: 'levey-jennings-toolbar',
+            padding: 10,
+            layout: { type: 'hbox', align: 'start' },
+            defaults: { flex: 1 },
+            items: [col1, col2, col3]
+        });
+
+        return [
+            { tbar: columnsToolbar },
             { tbar: this.getGuideSetMessageToolbar() },
             { tbar: this.getExperimentRunDateRangeToolbar() }
         ];
-
-        if(this.replicateAnnotationsNodes.length > 0) {
-            toolbarArr.splice(2, 0, {tbar: this.getAnnotationFiltersToolbar()});
-            toolbarArr.splice(3, 0, {tbar: this.getSelectedAnnotationsToolbar()});
-        }
-        return toolbarArr;
-    },
-
-    getFirstPlotOptionsToolbar: function() {
-        if (!this.plotTypeOptionsToolbar) {
-            const items = [
-                this.getPlotTypeOptions(),
-                {xtype: 'tbseparator'},
-                this.getTrailingRunsField(),
-                {xtype: 'tbspacer'},
-                this.getScaleCombo()
-            ];
-
-            // only add the create guide set button if the user has the proper permissions to insert/update guide sets
-            if (this.canUserEdit()) {
-                items.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
-                items.push(this.getGuideSetCreateButton());
-            }
-
-            this.plotTypeOptionsToolbar = Ext4.create('Ext.toolbar.Toolbar', {
-                ui: 'footer',
-                cls: 'levey-jennings-toolbar',
-                layout: { pack: 'center' },
-                padding: '0 10px 10px 10px',
-                items: items,
-                listeners: {
-                    scope: this,
-                    render: function(cmp)
-                    {
-                        cmp.doLayout();
-                    }
-                }
-            });
-        }
-        return this.plotTypeOptionsToolbar;
     },
 
     getTrailingRunsField: function () {
         if (!this.trailingRunsField) {
-            this.trailingRunsField = {
+            this.trailingRunsField = Ext4.create('Ext.form.field.Number', {
                 xtype : 'numberfield',
-                fieldLabel: 'Trailing Last',
-                labelWidth: 70,
-                width: 115,
+                fieldLabel: 'Trailing last',
+                labelWidth: this.LABEL_WIDTH,
                 enableKeyEvents: true,
                 id : 'trailingRuns',
                 value: this.trailingRuns ? this.trailingRuns : this.runs > 10 ? 10 : this.runs,
@@ -348,7 +374,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         this.displayTrendPlot();
                     }
                 }
-            };
+            });
         }
         return this.trailingRunsField;
     },
@@ -370,9 +396,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         return {
             xtype: 'plottype-checkcombo',
+            labelWidth: this.LABEL_WIDTH,
             id: 'qc-plot-type-with-y-options',
-            fieldLabel: 'Plot Types',
-            width: 275,
+            fieldLabel: 'Plot types',
             expandToFitContent: true,
             addAllSelector: false,
             queryMode: 'local',
@@ -392,7 +418,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     if (this.trailingRuns === undefined || this.trailingRuns === null) {
                         this.trailingRuns = 10;
                     }
-                    this.getFirstPlotOptionsToolbar().items.get('trailingRuns').setVisible(newValues.indexOf("Trailing Mean") > -1 || newValues.indexOf("Trailing CV") > -1);
+                    this.getTrailingRunsField().setVisible(newValues.indexOf("Trailing Mean") > -1 || newValues.indexOf("Trailing CV") > -1);
                     this.havePlotOptionsChanged = true;
                     this.setBrushingEnabled(false);
                     this.displayTrendPlot();
@@ -401,73 +427,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }
     },
 
-    getMainPlotOptionsToolbar : function() {
-        if (!this.mainPlotOptionsToolbar) {
-            var toolbarItems = [
-                this.getMetricCombo1(),
-                this.getMetricCombo2(),
-                {xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'},
-                this.getDateRangeCombo()
-            ];
-
-            this.mainPlotOptionsToolbar = Ext4.create('Ext.toolbar.Toolbar', {
-                ui: 'footer',
-                cls: 'levey-jennings-toolbar',
-                padding: 10,
-                layout: { pack: 'center' },
-                items: toolbarItems
-            });
-        }
-
-        return this.mainPlotOptionsToolbar;
-    },
-
-    getSecondPlotOptionsToolbar : function() {
-        if (!this.otherPlotOptionsToolbar) {
-            var  toolbarItems = [];
-
-            toolbarItems.push(this.getGroupedXCheckbox());
-            toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
-            const location = toolbarItems.push(this.getSinglePlotCheckbox());
-            toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
-            toolbarItems.push(this.getShowExcludedCheckbox());
-            toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
-            toolbarItems.push(this.getShowReferenceCheckbox());
-            toolbarItems.push({xtype: 'tbspacer'}, {xtype: 'tbseparator'}, {xtype: 'tbspacer'});
-            toolbarItems.push(this.getShowExcludedPrecursorsCheckbox());
-
-            this.otherPlotOptionsToolbar = Ext4.create('Ext.toolbar.Toolbar', {
-                ui: 'footer',
-                cls: 'levey-jennings-toolbar',
-                layout: { pack: 'center' },
-                padding: '0 10px 10px 10px',
-                items: toolbarItems
-            });
-
-            if (this.metric) {
-                //hiding the show All series in a single plot checkbox for run scoped metrics
-                this.showAllSeriesCheckbox(this.getMetricPropsById(this.metric).precursorScoped, location - 1);
-            }
-        }
-
-        return this.otherPlotOptionsToolbar;
-    },
-
-    showAllSeriesCheckbox: function (visible, location) {
-        var items = this.otherPlotOptionsToolbar.items.items;
-        items[location-1].setVisible(visible);
-        items[location].setVisible(visible);
-        items[location+1].setVisible(visible);
-        items[location+2].setVisible(visible);
-    },
-
     getAnnotationFiltersToolbar : function() {
         if (!this.annotationFiltersToolbar) {
-            this.annotationFiltersToolbar = Ext4.create('Ext.toolbar.Toolbar', {
-                ui: 'footer',
-                cls: 'levey-jennings-toolbar',
-                padding: '0 10px 10px 10px',
-                layout: { pack: 'center' },
+            this.annotationFiltersToolbar = Ext4.create('Ext.form.FieldContainer', {
+                fieldLabel: 'Replicate filter',
+                labelWidth: this.LABEL_WIDTH,
                 items: [
                     this.getAnnotationListTree(),
                     {xtype: 'tbspacer'},
@@ -525,15 +489,18 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     getCustomDateRangeToolbar : function() {
         if (!this.customDateRangeToolbar) {
-            this.customDateRangeToolbar = Ext4.create('Ext.toolbar.Toolbar', {
-                ui: 'footer',
-                cls: 'levey-jennings-toolbar',
-                padding: '0 10px 10px 10px',
+            // Render the custom range controls inline beneath the date range combo,
+            // left-aligned so they stay within the same column and don't overlap
+            // with the label column.
+            this.customDateRangeToolbar = Ext4.create('Ext.form.FieldContainer', {
+                fieldLabel: 'Custom dates',
+                labelWidth: this.LABEL_WIDTH,
                 hidden: this.dateRangeOffset > -1,
-                layout: { pack: 'center' },
+                layout: { type: 'hbox', align: 'middle' },
+                defaults: { margin: '0 5 0 0' },
                 items: [
-                    this.getStartDateField(), {xtype: 'tbspacer'},
-                    this.getEndDateField(), {xtype: 'tbspacer'},
+                    this.getStartDateField(),
+                    this.getEndDateField(),
                     this.getApplyDateRangeButton()
                 ]
             });
@@ -692,9 +659,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (!this.scaleCombo) {
             this.scaleCombo = Ext4.create('Ext.form.field.ComboBox', {
                 id: 'scale-combo-box',
-                width: 255,
-                labelWidth: 80,
-                fieldLabel: 'Y-Axis Scale',
+                fieldLabel: 'Y-axis scale',
+                labelWidth: this.LABEL_WIDTH,
                 triggerAction: 'all',
                 mode: 'local',
                 store: Ext4.create('Ext.data.ArrayStore', this.getYAxisOptions()),
@@ -724,9 +690,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (!this.dateRangeCombo) {
             this.dateRangeCombo = Ext4.create('Ext.form.field.ComboBox', {
                 id: 'daterange-combo-box',
-                width: 225,
-                labelWidth: 75,
-                fieldLabel: 'Date Range',
+                labelWidth: this.LABEL_WIDTH,
+                fieldLabel: 'Date range',
                 triggerAction: 'all',
                 mode: 'local',
                 store: Ext4.create('Ext.data.ArrayStore', {
@@ -773,51 +738,41 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return this.dateRangeCombo;
     },
 
-    getStartDateField : function() {
-        if (!this.startDateField) {
-            this.startDateField = Ext4.create('Ext.form.field.Date', {
-                id: 'start-date-field',
-                width: 180,
-                labelWidth: 65,
-                fieldLabel: 'Start Date',
-                value: this.startDate,
-                allowBlank: false,
-                format: 'Y-m-d',
-                listeners: {
-                    scope: this,
-                    validitychange: function (df, isValid)
-                    {
-                        this.getApplyDateRangeButton().setDisabled(!isValid);
-                    }
+    createDateField: function (config) {
+        var defaultConfig = {
+            width: 109,
+            allowBlank: false,
+            format: 'Y-m-d',
+            listeners: {
+                scope: this,
+                validitychange: function (df, isValid) {
+                    this.getApplyDateRangeButton().setDisabled(!isValid);
                 }
+            }
+        };
+
+        return Ext4.create('Ext.form.field.Date', Ext4.apply(defaultConfig, config));
+    },
+
+    getStartDateField: function () {
+        if (!this.startDateField) {
+            this.startDateField = this.createDateField({
+                id: 'start-date-field',
+                value: this.startDate
             });
         }
-
         return this.startDateField;
     },
 
-    getEndDateField : function() {
+    getEndDateField: function () {
         if (!this.endDateField) {
-            this.endDateField = Ext4.create('Ext.form.field.Date', {
+            this.endDateField = this.createDateField({
                 id: 'end-date-field',
-                width: 175,
-                labelWidth: 60,
-                fieldLabel: 'End Date',
-                value: this.showExpRunRange ? this.formatDate(this.expRunDetails.endDate, false) : this.endDate,
-                allowBlank: false,
-                format: 'Y-m-d',
-                listeners: {
-                    scope: this,
-                    validitychange: function (df, isValid) {
-                        this.getApplyDateRangeButton().setDisabled(!isValid);
-                    }
-                }
+                value: this.showExpRunRange ? this.formatDate(this.expRunDetails.endDate, false) : this.endDate
             });
         }
-
         return this.endDateField;
     },
-
     getApplyDateRangeButton : function() {
         if (!this.applyFilterButton) {
             this.applyFilterButton = Ext4.create('Ext.button.Button', {
@@ -876,9 +831,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         return Ext4.create('Ext.form.field.ComboBox', {
             id: 'metric-type-field' + (primary ? '1' : '2'),
-            width: 350,
-            labelWidth: 60,
-            fieldLabel: primary ? 'Left axis' : 'Right axis',
+            fieldLabel: primary ? 'Y-axis left' : 'Y-axis right',
+            labelWidth: this.LABEL_WIDTH,
             triggerAction: 'all',
             queryMode: 'local',
             store: Ext4.create('Ext.data.Store', {
@@ -913,24 +867,15 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         this.metric2 = newVal;
                     }
                     this.havePlotOptionsChanged = true;
-                    if (this.otherPlotOptionsToolbar) {
-                        const items = this.otherPlotOptionsToolbar.items.items;
-                        let showAllSeriesCheckBoxLocation;
+                    // Update single-plot checkbox visibility directly in the 3-column layout
+                    var showAllSeriesCheckBox = this.getMetricPropsById(this.metric).precursorScoped;
+                    this.getSinglePlotCheckbox().setVisible(showAllSeriesCheckBox);
 
-                        for(let i=0; i<items.length;i++ ) {
-                            if(items[i].boxLabel ==='Show All Series in a Single Plot')
-                                showAllSeriesCheckBoxLocation = i;
-                        }
-
-                        const showAllSeriesCheckBox = this.getMetricPropsById(this.metric).precursorScoped;
-                        this.showAllSeriesCheckbox(showAllSeriesCheckBox, showAllSeriesCheckBoxLocation);
-
-                        this.setBrushingEnabled(false);
-                        if (this.filterQCPoints) {
-                            this.resetFilterPointsIndices();
-                        }
-                        this.displayTrendPlot();
+                    this.setBrushingEnabled(false);
+                    if (this.filterQCPoints) {
+                        this.resetFilterPointsIndices();
                     }
+                    this.displayTrendPlot();
                 }
             }
         });
@@ -960,7 +905,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
             this.annotationFiltersField = Ext4.create('Ext.tree.Panel', {
                 id: 'annotation-filter-field',
-                width: 440,
                 height: 150,
                 title: 'Filter: Replicate Annotations',
                 store: store,
@@ -1003,14 +947,23 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     getGroupedXCheckbox : function() {
         if (!this.groupedXCheckbox) {
-            this.groupedXCheckbox = Ext4.create('Ext.form.field.Checkbox', {
+            // Replace checkbox with a radio group: x-axis grouping per replicate or per date
+            this.groupedXCheckbox = Ext4.create('Ext.form.RadioGroup', {
                 id: 'grouped-x-field',
-                boxLabel: 'Group X-Axis Values by Date',
-                checked: this.groupedX,
+                fieldLabel: 'X-axis grouping',
+                labelWidth: this.LABEL_WIDTH,
+                columns: 2,
+                vertical: false,
+                items: [
+                    { boxLabel: 'per replicate', name: 'xAxisGrouping', inputValue: 'replicate', checked: this.groupedX === false },
+                    { boxLabel: 'per date', name: 'xAxisGrouping', inputValue: 'date', checked: this.groupedX === true }
+                ],
                 listeners: {
                     scope: this,
-                    change: function(cb, newValue, oldValue) {
-                        this.groupedX = newValue;
+                    change: function(group, newValue) {
+                        var val = newValue && (newValue.xAxisGrouping || newValue['xAxisGrouping']);
+                        var groupByDate = val === 'date' || (val === true); // fallback safety
+                        this.groupedX = groupByDate;
                         this.havePlotOptionsChanged = true;
 
                         this.setBrushingEnabled(false);
@@ -1026,15 +979,23 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     getSinglePlotCheckbox : function() {
         if (!this.peptidesInSinglePlotCheckbox) {
-            this.peptidesInSinglePlotCheckbox = Ext4.create('Ext.form.field.Checkbox', {
+            // Replace checkbox with a radio group: Show plots per precursor or combined
+            this.peptidesInSinglePlotCheckbox = Ext4.create('Ext.form.RadioGroup', {
                 id: 'peptides-single-plot',
-                boxLabel: 'Show All Series in a Single Plot',
-                checked: this.singlePlot,
+                labelWidth: this.LABEL_WIDTH,
+                fieldLabel: 'Plots',
+                columns: 2,
+                vertical: false,
+                items: [
+                    { boxLabel: 'per precursor', name: 'showPlots', inputValue: 'per-precursor', checked: this.singlePlot === false },
+                    { boxLabel: 'combined', name: 'showPlots', inputValue: 'combined', checked: this.singlePlot === true }
+                ],
                 listeners: {
                     scope: this,
-                    change: function(cb, newValue, oldValue)
-                    {
-                        this.singlePlot = newValue;
+                    change: function(group, newValue) {
+                        var val = newValue && (newValue.showPlots || newValue['showPlots']);
+                        var combined = val === 'combined' || (val === true); // fallback safety
+                        this.singlePlot = combined;
                         this.havePlotOptionsChanged = true;
 
                         this.setBrushingEnabled(false);
@@ -1048,17 +1009,25 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return this.peptidesInSinglePlotCheckbox;
     },
 
-    getShowExcludedCheckbox : function() {
+    getExcludedReplicateCheckbox : function() {
         if (!this.showExcludedPointsCheckbox) {
-            this.showExcludedPointsCheckbox = Ext4.create('Ext.form.field.Checkbox', {
+            // Replace checkbox with a radio group for clarity: Show/Hide excluded samples
+            this.showExcludedPointsCheckbox = Ext4.create('Ext.form.RadioGroup', {
                 id: 'show-excluded-points',
-                boxLabel: 'Show Excluded Samples',
-                checked: this.showExcluded,
+                fieldLabel: 'Excluded replicates',
+                labelWidth: this.LABEL_WIDTH,
+                columns: 2,
+                vertical: false,
+                items: [
+                    { boxLabel: 'show', name: 'excludedSamples', inputValue: 'show', checked: this.showExcluded === true },
+                    { boxLabel: 'hide', name: 'excludedSamples', inputValue: 'hide', checked: this.showExcluded === false }
+                ],
                 listeners: {
                     scope: this,
-                    change: function(cb, newValue, oldValue)
-                    {
-                        this.showExcluded = newValue;
+                    change: function(group, newValue) {
+                        var val = newValue && (newValue.excludedSamples || newValue['excludedSamples']);
+                        var newShow = val === 'show' || (val === true); // fallback safety
+                        this.showExcluded = newShow;
                         this.havePlotOptionsChanged = true;
 
                         this.setLoadingMsg();
@@ -1071,17 +1040,25 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return this.showExcludedPointsCheckbox;
     },
 
-    getShowExcludedPrecursorsCheckbox : function() {
+    getExcludedPrecursorsCheckbox : function() {
         if (!this.showExcludedPrecursorsCheckbox) {
-            this.showExcludedPrecursorsCheckbox = Ext4.create('Ext.form.field.Checkbox', {
+            // Replace checkbox with a radio group: Show/Hide excluded precursors
+            this.showExcludedPrecursorsCheckbox = Ext4.create('Ext.form.RadioGroup', {
                 id: 'show-excluded-precursors',
-                boxLabel: 'Show Excluded Precursors',
-                checked: this.showExcludedPrecursors,
+                fieldLabel: 'Excluded precursors',
+                labelWidth: this.LABEL_WIDTH,
+                columns: 2,
+                vertical: false,
+                items: [
+                    { boxLabel: 'show', name: 'excludedPrecursors', inputValue: 'show', checked: this.showExcludedPrecursors === true },
+                    { boxLabel: 'hide', name: 'excludedPrecursors', inputValue: 'hide', checked: this.showExcludedPrecursors === false }
+                ],
                 listeners: {
                     scope: this,
-                    change: function(cb, newValue, oldValue)
-                    {
-                        this.showExcludedPrecursors = newValue;
+                    change: function(group, newValue) {
+                        var val = newValue && (newValue.excludedPrecursors || newValue['excludedPrecursors']);
+                        var newShow = val === 'show' || (val === true);
+                        this.showExcludedPrecursors = newShow;
                         this.havePlotOptionsChanged = true;
 
                         this.setLoadingMsg();
@@ -1102,18 +1079,27 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     getShowReferenceCheckbox : function() {
         if (!this.showReferenceGSCheckBox) {
-            this.showReferenceGSCheckBox = Ext4.create('Ext.form.field.Checkbox', {
+            // Replace checkbox with a radio group: Show/Hide reference guide sets
+            this.showReferenceGSCheckBox = Ext4.create('Ext.form.RadioGroup', {
                 id: 'show-oorange-gs',
-                boxLabel: 'Show Reference Guide Set',
-                checked: this.showReferenceGS,
+                fieldLabel: 'Reference guide sets',
+                labelWidth: this.LABEL_WIDTH,
+                columns: 2,
+                vertical: false,
+                items: [
+                    { boxLabel: 'always show', name: 'referenceGuideSets', inputValue: 'show', checked: this.showReferenceGS === true },
+                    { boxLabel: 'when in date range', name: 'referenceGuideSets', inputValue: 'hide', checked: this.showReferenceGS === false }
+                ],
                 listeners: {
                     scope: this,
-                    change: function(cb, newValue, oldValue) {
-                        this.showReferenceGS = newValue;
+                    change: function(group, newValue) {
+                        var val = newValue && (newValue.referenceGuideSets || newValue['referenceGuideSets']);
+                        var newShow = val === 'show' || (val === true);
+                        this.showReferenceGS = newShow;
                         this.havePlotOptionsChanged = true;
 
                         if (this.showExpRunRange) {
-                            if (newValue) {
+                            if (newShow) {
                                 this.resetFilterPointsIndices();
                                 Ext4.apply(this, {
                                     startDate: this.formatDate(this.expRunDetails.startDate),
@@ -1795,7 +1781,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     addAnnotationsToPlot: function(plot, precursorInfo) {
         var me = this;
 
-        // Issue 38270. Get unique dates just in case there are two replicates with the same acquired time. 
+        // Issue 38270. Get unique dates just in case there are two replicates with the same acquired time.
         // This can happen e.g. if a raw file is imported from different locations.
         var xAxisLabels = Ext4.Array.unique(Ext4.Array.pluck(precursorInfo.data, "fullDate"));
         if (this.groupedX) {

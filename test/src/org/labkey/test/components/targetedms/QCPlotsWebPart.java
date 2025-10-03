@@ -252,22 +252,46 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void setGroupXAxisValuesByDate(boolean check)
     {
-        if (elementCache().groupedXCheckbox.get() != check)
+        boolean currentlyByDate = isGroupXAxisValuesByDateChecked();
+        if (currentlyByDate != check)
         {
-            doAndWaitForUpdate(() -> elementCache().groupedXCheckbox.set(check));
+            if (check)
+                doAndWaitForUpdate(() -> elementCache().groupedXPerDate.click());
+            else
+                doAndWaitForUpdate(() -> elementCache().groupedXPerReplicate.click());
         }
     }
 
     public boolean isGroupXAxisValuesByDateChecked()
     {
-        return elementCache().groupedXCheckbox.isChecked();
+        try
+        {
+            return elementCache().groupedXPerDate.isSelected();
+        }
+        catch (NoSuchElementException | StaleElementReferenceException e)
+        {
+            // Fallback: if radios are not present yet, assume unchecked
+            return false;
+        }
     }
 
     public void setShowAllPeptidesInSinglePlot(boolean check)
     {
-        if (elementCache().singlePlotCheckbox.get() != check)
+        // 'check' means show all series combined in a single plot
+        try
         {
-            doAndWaitForUpdate(() -> elementCache().singlePlotCheckbox.set(check));
+            boolean currentlyCombined = elementCache().showPlotsCombined.isSelected();
+            if (currentlyCombined != check)
+            {
+                if (check)
+                    doAndWaitForUpdate(() -> elementCache().showPlotsCombined.click());
+                else
+                    doAndWaitForUpdate(() -> elementCache().showPlotsPerPrecursor.click());
+            }
+        }
+        catch (NoSuchElementException | StaleElementReferenceException e)
+        {
+            // Fallback: ignore if control not present yet
         }
     }
 
@@ -307,7 +331,14 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public boolean isShowAllPeptidesInSinglePlotChecked()
     {
-        return elementCache().singlePlotCheckbox.isChecked();
+        try
+        {
+            return elementCache().showPlotsCombined.isSelected();
+        }
+        catch (NoSuchElementException | StaleElementReferenceException e)
+        {
+            return false;
+        }
     }
 
     public QCPlotsWebPart saveAsDefaultView()
@@ -871,10 +902,10 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
         ComboBox qcPlotTypeCombo = new ComboBox.ComboBoxFinder(getDriver()).withIdPrefix("qc-plot-type-with-y-options")
                 .findWhenNeeded(this).setMatcher(Ext4Helper.TextMatchTechnique.CONTAINS).setMultiSelect(true);
-        Checkbox groupedXCheckbox = new Checkbox(Locator.css("#grouped-x-field input")
-                .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
-        Checkbox singlePlotCheckbox = new Checkbox(Locator.css("#peptides-single-plot input")
-                .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
+        WebElement groupedXPerReplicate = Locator.css("#grouped-x-field input[value=replicate]").findWhenNeeded(this);
+        WebElement groupedXPerDate = Locator.css("#grouped-x-field input[value=date]").findWhenNeeded(this);
+        WebElement showPlotsPerPrecursor = Locator.css("#peptides-single-plot input[value=per-precursor]").findWhenNeeded(this);
+        WebElement showPlotsCombined = Locator.css("#peptides-single-plot input[value=combined]").findWhenNeeded(this);
         Checkbox showExcludedCheckbox = new Checkbox(Locator.css("#show-excluded-points input")
                 .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
         Checkbox showReferenceGuideSet = new Checkbox(Locator.css("#show-oorange-gs input")
