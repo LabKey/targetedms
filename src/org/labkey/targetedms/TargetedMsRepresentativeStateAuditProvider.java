@@ -40,8 +40,8 @@ public class TargetedMsRepresentativeStateAuditProvider extends AbstractAuditTyp
 
     static final List<FieldKey> defaultVisibleColumns = new ArrayList<>();
 
-    static {
-
+    static
+    {
         defaultVisibleColumns.add(FieldKey.fromParts(COLUMN_NAME_CREATED));
         defaultVisibleColumns.add(FieldKey.fromParts(COLUMN_NAME_CREATED_BY));
         defaultVisibleColumns.add(FieldKey.fromParts(COLUMN_NAME_IMPERSONATED_BY));
@@ -50,10 +50,9 @@ public class TargetedMsRepresentativeStateAuditProvider extends AbstractAuditTyp
         defaultVisibleColumns.add(FieldKey.fromParts(COLUMN_NAME_COMMENT));
     }
 
-    @Override
-    protected AbstractAuditDomainKind getDomainKind()
+    public TargetedMsRepresentativeStateAuditProvider()
     {
-        return new TargetedMsRepresentativeStateAuditDomainKind();
+        super(new TargetedMsRepresentativeStateAuditDomainKind());
     }
 
     @Override
