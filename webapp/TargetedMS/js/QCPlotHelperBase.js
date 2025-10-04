@@ -370,7 +370,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             return;
         }
 
-        this.setLoadingMsg();
+        Ext4.get(this.plotDivId).update("");
         this.setBrushingEnabled(false);
         this.setPlotWidth(this.plotDivId);
 
