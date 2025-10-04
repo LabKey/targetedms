@@ -884,7 +884,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     this.havePlotOptionsChanged = true;
                     // Update single-plot checkbox visibility directly in the 3-column layout
                     var showAllSeriesCheckBox = this.getMetricPropsById(this.metric).precursorScoped;
-                    this.getSinglePlotCheckbox().setVisible(showAllSeriesCheckBox);
+                    this.getPlotGroupRadioGroup().setVisible(showAllSeriesCheckBox);
 
                     if (this.filterQCPoints) {
                         this.resetFilterPointsIndices();
@@ -981,7 +981,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     getGroupedXRadioGroup : function() {
         if (!this.groupedXRadioGroup) {
-            // Replace checkbox with a radio group: x-axis grouping per replicate or per date
             this.groupedXRadioGroup = Ext4.create('Ext.form.RadioGroup', {
                 id: 'grouped-x-field',
                 fieldLabel: 'X-axis grouping',
@@ -1013,7 +1012,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     getPlotGroupRadioGroup : function() {
         if (!this.plotGroupRadioGroup) {
-            // Replace checkbox with a radio group: Show plots per precursor or combined
             this.plotGroupRadioGroup = Ext4.create('Ext.form.RadioGroup', {
                 id: 'peptides-single-plot',
                 labelWidth: this.LABEL_WIDTH,
@@ -1045,7 +1043,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     getExcludedReplicatesRadioGroup : function() {
         if (!this.excludedReplicatesRadioGroup) {
-            // Replace checkbox with a radio group for clarity: Show/Hide excluded samples
             this.excludedReplicatesRadioGroup = Ext4.create('Ext.form.RadioGroup', {
                 id: 'show-excluded-points',
                 fieldLabel: 'Excluded replicates',
@@ -1076,7 +1073,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     getExcludedPrecursorsRadioGroup : function() {
         if (!this.excludedPrecursorsRadioGroup) {
-            // Replace checkbox with a radio group: Show/Hide excluded precursors
             this.excludedPrecursorsRadioGroup = Ext4.create('Ext.form.RadioGroup', {
                 id: 'show-excluded-precursors',
                 fieldLabel: 'Excluded precursors',
@@ -1113,7 +1109,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     getReferenceGuideSetRadioGroup : function() {
         if (!this.referenceGuideSetRadioGroup) {
-            // Replace checkbox with a radio group: Show/Hide reference guide sets
             this.referenceGuideSetRadioGroup = Ext4.create('Ext.form.RadioGroup', {
                 id: 'show-oorange-gs',
                 fieldLabel: 'Reference guide sets',
