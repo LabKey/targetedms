@@ -20,8 +20,8 @@ import org.labkey.test.Locator;
 import org.labkey.test.Locators;
 import org.labkey.test.WebDriverWrapper;
 import org.labkey.test.components.BodyWebPart;
-import org.labkey.test.components.ext4.Checkbox;
 import org.labkey.test.components.ext4.ComboBox;
+import org.labkey.test.components.ext4.RadioButton;
 import org.labkey.test.components.ext4.Window;
 import org.labkey.test.util.Ext4Helper;
 import org.labkey.test.util.LogMethod;
@@ -280,14 +280,10 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         // 'check' means show all series combined in a single plot
         try
         {
-            boolean currentlyCombined = elementCache().showPlotsCombined.isSelected();
-            if (currentlyCombined != check)
-            {
-                if (check)
-                    doAndWaitForUpdate(() -> elementCache().showPlotsCombined.click());
-                else
-                    doAndWaitForUpdate(() -> elementCache().showPlotsPerPrecursor.click());
-            }
+            if (check)
+                doAndWaitForUpdate(() -> elementCache().plotsCombinedRadio.check());
+            else
+                doAndWaitForUpdate(() -> elementCache().plotsPerPrecursorRadio.check());
         }
         catch (NoSuchElementException | StaleElementReferenceException e)
         {
@@ -306,34 +302,58 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void setShowExcludedPoints(boolean check)
     {
-        elementCache().showExcludedCheckbox.set(check);
+        if (check)
+        {
+            elementCache().excludedReplicatesShow.check();
+        }
+        else
+        {
+            elementCache().excludedReplicatesHide.check();
+        }
     }
 
     public boolean isShowExcludedPointsChecked()
     {
-        return elementCache().showExcludedCheckbox.isChecked();
+        // TODO
+        return elementCache().excludedReplicatesShow.isChecked();
     }
 
     public void setShowReferenceGuideSet(boolean check)
     {
-        elementCache().showReferenceGuideSet.set(check);
+        if (check)
+        {
+            elementCache().referenceGuideSetShow.check();
+        }
+        else
+        {
+            elementCache().referenceGuideSetHide.check();
+        }
     }
 
     public void setShowExcludedPrecursors(boolean check)
     {
-        elementCache().showExcludedPrecursors.set(check);
+        if (check)
+        {
+            elementCache().excludedPrecursorsShow.check();
+        }
+        else
+        {
+            elementCache().excludedPrecursorsHide.check();
+        }
     }
 
     public boolean isShowReferenceGuideSetChecked()
     {
-        return elementCache().showReferenceGuideSet.isChecked();
+        // TODO
+        return elementCache().referenceGuideSetShow.isChecked();
     }
 
     public boolean isShowAllPeptidesInSinglePlotChecked()
     {
         try
         {
-            return elementCache().showPlotsCombined.isSelected();
+            // TODO
+            return elementCache().plotsCombinedRadio.isSelected();
         }
         catch (NoSuchElementException | StaleElementReferenceException e)
         {
@@ -352,11 +372,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         clickMenuItem("Revert to Default View");
         return this;
-    }
-
-    public void applyRange()
-    {
-        doAndWaitForUpdate(() -> elementCache().applyRangeButton.click());
     }
 
     public void waitForPlots(Integer plotCount)
@@ -427,7 +442,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         setDateRangeOffset(DateRangeOffset.CUSTOM);
         setStartDate(startDate);
         setEndDate(endDate);
-        applyRange();
         waitForPlots(expectedPlotCount);
     }
 
@@ -905,14 +919,18 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         WebElement groupedXPerReplicate = Locator.css("#grouped-x-field input[value=replicate]").findWhenNeeded(this);
         WebElement groupedXPerDate = Locator.css("#grouped-x-field input[value=date]").findWhenNeeded(this);
         WebElement showPlotsPerPrecursor = Locator.css("#peptides-single-plot input[value=per-precursor]").findWhenNeeded(this);
-        WebElement showPlotsCombined = Locator.css("#peptides-single-plot input[value=combined]").findWhenNeeded(this);
-        Checkbox showExcludedCheckbox = new Checkbox(Locator.css("#show-excluded-points input")
-                .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
-        Checkbox showReferenceGuideSet = new Checkbox(Locator.css("#show-oorange-gs input")
-                .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
-        Checkbox showExcludedPrecursors = new Checkbox(Locator.css("#show-excluded-precursors input")
-                .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
 
+        RadioButton plotsCombinedRadio = new RadioButton(Locator.id("plots-combined").findWhenNeeded(getDriver()));
+        RadioButton plotsPerPrecursorRadio = new RadioButton(Locator.id("plots-per-precursor").findWhenNeeded(getDriver()));
+
+        RadioButton excludedReplicatesShow = new RadioButton(Locator.id("excluded-replicates-show").findWhenNeeded(getDriver()));
+        RadioButton excludedReplicatesHide = new RadioButton(Locator.id("excluded-replicates-hide").findWhenNeeded(getDriver()));
+
+        RadioButton excludedPrecursorsShow = new RadioButton(Locator.id("excluded-precursors-show").findWhenNeeded(getDriver()));
+        RadioButton excludedPrecursorsHide = new RadioButton(Locator.id("excluded-precursors-hide").findWhenNeeded(getDriver()));
+
+        RadioButton referenceGuideSetShow = new RadioButton(Locator.id("reference-guide-set-show").findWhenNeeded(getDriver()));
+        RadioButton referenceGuideSetHide = new RadioButton(Locator.id("reference-guide-set-hide").findWhenNeeded(getDriver()));
 
         WebElement plotPanel = Locator.css("div.tiledPlotPanel").findWhenNeeded(this);
         WebElement paginationPanel = Locator.css("div.plotPaginationHeaderPanel").findWhenNeeded(this);

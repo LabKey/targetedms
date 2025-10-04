@@ -33,7 +33,7 @@ public abstract class TargetedMSIrtTest extends TargetedMSTest
     private static final String SCHEMA = "targetedms";
     private static final String QUERY = "iRTPeptide";
 
-    // All tests use varations of this test dataset.
+    // All tests use variations of this test dataset.
     protected static final String SKY_FILE = "iRT Human+Standard Calibrate.zip";
     protected static final int PEPTIDE_COUNT = 716;
     protected static final double DELTA = 0.00001;
