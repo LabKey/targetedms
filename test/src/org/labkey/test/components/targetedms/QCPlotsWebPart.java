@@ -321,7 +321,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void setShowReferenceGuideSet(boolean check)
     {
-        if (isShowExcludedPointsChecked() != check)
+        if (isShowReferenceGuideSetChecked() != check)
         {
             if (check)
             {
