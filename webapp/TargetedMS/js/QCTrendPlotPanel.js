@@ -988,8 +988,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 columns: 2,
                 vertical: false,
                 items: [
-                    { boxLabel: 'per replicate', name: 'xAxisGrouping', inputValue: 'replicate', checked: this.groupedX === false },
-                    { boxLabel: 'per date', name: 'xAxisGrouping', inputValue: 'date', checked: this.groupedX === true }
+                    { boxLabel: 'per replicate', id: 'x-axis-grouping-replicate', name: 'xAxisGrouping', inputValue: 'replicate', checked: this.groupedX === false },
+                    { boxLabel: 'per date', id: 'x-axis-grouping-date', name: 'xAxisGrouping', inputValue: 'date', checked: this.groupedX === true }
                 ],
                 listeners: {
                     scope: this,

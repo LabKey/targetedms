@@ -252,21 +252,18 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void setGroupXAxisValuesByDate(boolean check)
     {
-        boolean currentlyByDate = isGroupXAxisValuesByDateChecked();
-        if (currentlyByDate != check)
-        {
-            if (check)
-                doAndWaitForUpdate(() -> elementCache().groupedXPerDate.click());
-            else
-                doAndWaitForUpdate(() -> elementCache().groupedXPerReplicate.click());
-        }
+        if (check)
+            doAndWaitForUpdate(() -> elementCache().xAxisGroupingDateRadio.check());
+        else
+            doAndWaitForUpdate(() -> elementCache().xAxisGroupingReplicateRadio.check());
     }
 
     public boolean isGroupXAxisValuesByDateChecked()
     {
         try
         {
-            return elementCache().groupedXPerDate.isSelected();
+            // TODO
+            return elementCache().xAxisGroupingDateRadio.isSelected();
         }
         catch (NoSuchElementException | StaleElementReferenceException e)
         {
@@ -917,8 +914,9 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         ComboBox qcPlotTypeCombo = new ComboBox.ComboBoxFinder(getDriver()).withIdPrefix("qc-plot-type-with-y-options")
                 .findWhenNeeded(this).setMatcher(Ext4Helper.TextMatchTechnique.CONTAINS).setMultiSelect(true);
         WebElement groupedXPerReplicate = Locator.css("#grouped-x-field input[value=replicate]").findWhenNeeded(this);
-        WebElement groupedXPerDate = Locator.css("#grouped-x-field input[value=date]").findWhenNeeded(this);
-        WebElement showPlotsPerPrecursor = Locator.css("#peptides-single-plot input[value=per-precursor]").findWhenNeeded(this);
+
+        RadioButton xAxisGroupingReplicateRadio = new RadioButton(Locator.id("x-axis-grouping-replicate").findWhenNeeded(getDriver()));
+        RadioButton xAxisGroupingDateRadio = new RadioButton(Locator.id("x-axis-grouping-date").findWhenNeeded(getDriver()));
 
         RadioButton plotsCombinedRadio = new RadioButton(Locator.id("plots-combined").findWhenNeeded(getDriver()));
         RadioButton plotsPerPrecursorRadio = new RadioButton(Locator.id("plots-per-precursor").findWhenNeeded(getDriver()));
