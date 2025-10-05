@@ -21,59 +21,64 @@
             columns: 'Id,affiliation,title,collaborationWith,labDirector,scientificQuestion,abstract, researchers',
             filterArray: [LABKEY.Filter.create('Id', project, LABKEY.Filter.Types.EQUAL)],
             success: function(data){
-                let projectDetails = data.rows[0];
-                let id = LABKEY.Utils.encodeHtml(projectDetails.Id);
-                let affiliation = LABKEY.Utils.encodeHtml(projectDetails.affiliation);
-                let title = LABKEY.Utils.encodeHtml(projectDetails.title);
-                let collaborationWith = LABKEY.Utils.encodeHtml(projectDetails.collaborationWith);
-                let labDirector = LABKEY.Utils.encodeHtml(projectDetails.labDirector);
-                let scientificQuestion = LABKEY.Utils.encodeHtml(projectDetails.scientificQuestion);
-                let abstract = LABKEY.Utils.encodeHtml(projectDetails.abstract);
-                let researchers = LABKEY.Utils.encodeHtml(projectDetails.researchers).split(',');
+                if (data.rows.length === 0) {
+                    document.getElementById('project-details').innerHTML = 'Could not find project ' + LABKEY.Utils.encodeHtml(project);
+                }
+                else {
+                    let projectDetails = data.rows[0];
+                    let id = LABKEY.Utils.encodeHtml(projectDetails.Id);
+                    let affiliation = LABKEY.Utils.encodeHtml(projectDetails.affiliation);
+                    let title = LABKEY.Utils.encodeHtml(projectDetails.title);
+                    let collaborationWith = LABKEY.Utils.encodeHtml(projectDetails.collaborationWith);
+                    let labDirector = LABKEY.Utils.encodeHtml(projectDetails.labDirector);
+                    let scientificQuestion = LABKEY.Utils.encodeHtml(projectDetails.scientificQuestion);
+                    let abstract = LABKEY.Utils.encodeHtml(projectDetails.abstract);
+                    let researchers = LABKEY.Utils.encodeHtml(projectDetails.researchers).split(',');
 
-                let projectDetailsHtml = `
-                <table class='lk-fields-table'>
-                    <tr>
-                        <td class='labkey-form-label'>Id</td>
-                        <td>${id}</td>
-                    </tr>
-                    <tr>
-                        <td class='labkey-form-label'>Affiliation</td>
-                        <td>${affiliation}</td>
-                    </tr>
-                    <tr>
-                        <td class='labkey-form-label'>Title</td>
-                        <td>${title}</td>
-                    </tr>
-                    <tr>
-                        <td class='labkey-form-label'>Collaborating with</td>
-                        <td>${collaborationWith}</td>
-                    </tr>
-                    <tr>
-                        <td class='labkey-form-label'>Lab Director</td>
-                        <td>${labDirector}</td>
-                    </tr>
-                    ` +
-                    researchers.map(researcher => {
-                        return `<tr>
-                            <td class='labkey-form-label'>Researcher</td>
-                            <td>${researcher}</td>
-                        </tr>`;
-                    }).join('') +
+                    let projectDetailsHtml = `
+                    <table class='lk-fields-table'>
+                        <tr>
+                            <td class='labkey-form-label'>Id</td>
+                            <td>${id}</td>
+                        </tr>
+                        <tr>
+                            <td class='labkey-form-label'>Affiliation</td>
+                            <td>${affiliation}</td>
+                        </tr>
+                        <tr>
+                            <td class='labkey-form-label'>Title</td>
+                            <td>${title}</td>
+                        </tr>
+                        <tr>
+                            <td class='labkey-form-label'>Collaborating with</td>
+                            <td>${collaborationWith}</td>
+                        </tr>
+                        <tr>
+                            <td class='labkey-form-label'>Lab Director</td>
+                            <td>${labDirector}</td>
+                        </tr>
+                        ` +
+                            researchers.map(researcher => {
+                                return `<tr>
+                                <td class='labkey-form-label'>Researcher</td>
+                                <td>${researcher}</td>
+                            </tr>`;
+                            }).join('') +
 
-                    `
-                    <tr>
-                        <td class='labkey-form-label'>Scientific Question</td>
-                        <td>${scientificQuestion}</td>
-                    </tr>
-                    <tr>
-                        <td class='labkey-form-label'>Abstract</td>
-                        <td>${abstract}</td>
-                    </tr>
-                </table>
-                </br>
-            `;
-                document.getElementById('project-details').innerHTML = projectDetailsHtml;
+                            `
+                        <tr>
+                            <td class='labkey-form-label'>Scientific Question</td>
+                            <td>${scientificQuestion}</td>
+                        </tr>
+                        <tr>
+                            <td class='labkey-form-label'>Abstract</td>
+                            <td>${abstract}</td>
+                        </tr>
+                    </table>
+                    </br>
+                `;
+                    document.getElementById('project-details').innerHTML = projectDetailsHtml;
+                }
             }
         });
 
@@ -94,7 +99,7 @@
         const urlParams = {
             schemaName: 'targetedms',
             queryName: 'ProjectPaymentMethod',
-            returnUrl: LABKEY.ActionURL.buildURL('targetedms', 'msProjectDetails', null, null)
+            returnUrl: LABKEY.ActionURL.buildURL('targetedms', 'msProjectDetails', null, { project: project })
         };
         addPaymentMethodEl.innerHTML = LABKEY.Utils.textLink({text: 'Add payment method', href: LABKEY.ActionURL.buildURL('query', 'insertQueryRow', LABKEY.ActionURL.getContainer(), urlParams)});;
 

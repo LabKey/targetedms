@@ -393,6 +393,13 @@
             let startDate = event.startDate;
             let endDate = event.endDate;
 
+            if (!event.id && startDate.getHours() === 0 && startDate.getMinutes() === 0 && endDate.getHours() === 0 && endDate.getMinutes() === 0) {
+                // Default to starting at 8AM and ending at 5PM
+                startDate.setHours(8);
+                endDate.setHours(17);
+                endDate.setDate(endDate.getDate() - 1);
+            }
+
             let startDateFormatted = DateFormat.format.date(startDate, LABKEY.container.formats.dateTimeFormat);
             let endDateFormatted = DateFormat.format.date(endDate, LABKEY.container.formats.dateTimeFormat);
 

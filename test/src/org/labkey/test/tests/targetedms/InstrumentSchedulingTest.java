@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.remoteapi.CommandException;
 import org.labkey.remoteapi.query.InsertRowsCommand;
+import org.labkey.remoteapi.security.WhoAmICommand;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestTimeoutException;
@@ -104,11 +105,15 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         ));
         List<Map<String, Object>> projectPaymentMethods = projectPaymentMethodInsert.execute(createDefaultConnection(), getProjectName()).getRows();
 
+        int currentUserId = new WhoAmICommand().execute(createDefaultConnection(), getProjectName()).getUserId().intValue();
+
         InsertRowsCommand projectResearcherInsert = new InsertRowsCommand("targetedms", "projectResearcher");
         projectResearcherInsert.setRows(Arrays.asList(
                 Map.of("Project", projects.get(0).get("Id"), "Researcher", schedulerUser1Id),
                 Map.of("Project", projects.get(1).get("Id"), "Researcher", schedulerUser1Id),
-                Map.of("Project", projects.get(1).get("Id"), "Researcher", schedulerUser2Id)
+                Map.of("Project", projects.get(1).get("Id"), "Researcher", schedulerUser2Id),
+                Map.of("Project", projects.get(0).get("Id"), "Researcher", currentUserId),
+                Map.of("Project", projects.get(1).get("Id"), "Researcher", currentUserId)
         ));
         List<Map<String, Object>> projectResearchers = projectResearcherInsert.execute(createDefaultConnection(), getProjectName()).getRows();
 
@@ -169,8 +174,8 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
 
         goToDashboard();
         waitAndClickAndWait(Locator.linkWithText("Instrument billing report"));
-        assertTextPresent("$2,450.00", 4);
-        assertTextPresent("$2,690.00", 1);
+        assertTextPresent("$950.00", 4);
+        assertTextPresent("$1,040.00", 1);
 
         // Future test cases:
         // Split payment across multiple methods
