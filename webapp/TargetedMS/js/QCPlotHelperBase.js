@@ -84,7 +84,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     getPlotsData: function() {
         // get input number N
         // pass includeTrailingCV or includeTrailingMean in plotsConfig
-        var plotsConfig = {};
+        const plotsConfig = {};
         plotsConfig.metricId = this.metric;
         plotsConfig.metricId2 = this.metric2;
         plotsConfig.includeLJ = this.showMetricValuePlot();
@@ -104,7 +104,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             plotsConfig.replicateId = parseInt(urlParams['replicateId']);
         }
 
-        var config = this.getReportConfig()
+        const config = this.getReportConfig()
 
         if (this.selectedAnnotations) {
             plotsConfig.selectedAnnotations = [];
@@ -121,14 +121,44 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             plotsConfig.endDate = config.EndDate;
         }
 
-        // pass input number N to plotsConfig
-        LABKEY.Ajax.request({
+        // Track and cancel in-flight request; ensure only latest response is processed
+        this._qcRequestSeq = (this._qcRequestSeq || 0) + 1;
+        const requestSeq = this._qcRequestSeq;
+
+        // Abort any previous in-flight request if possible
+        if (this._qcActiveRequest && typeof this._qcActiveRequest.abort === 'function') {
+            try { this._qcActiveRequest.abort(); } catch (e) { /* no-op */ }
+        }
+
+        const failureCb = LABKEY.Utils.getCallbackWrapper(this.failureHandler, this);
+
+        this._qcActiveRequest = LABKEY.Ajax.request({
             url: LABKEY.ActionURL.buildURL('targetedms', 'GetQCPlotsData.api'),
             success: function(response) {
-                this.lastParsedResponse = JSON.parse(response.responseText);
-                this.processPlotData();
+                // Ignore if not the most recent request
+                if (requestSeq !== this._qcRequestSeq)
+                    return;
+
+                try {
+                    this.lastParsedResponse = JSON.parse(response.responseText);
+                    this.processPlotData();
+                }
+                finally {
+                    // Clear active request handle
+                    if (requestSeq === this._qcRequestSeq)
+                        this._qcActiveRequest = null;
+                }
             },
-            failure: LABKEY.Utils.getCallbackWrapper(this.failureHandler),
+            failure: function(response) {
+                // Ignore failures from stale/aborted requests
+                if (requestSeq !== this._qcRequestSeq)
+                    return;
+
+                try { failureCb(response); } finally {
+                    if (requestSeq === this._qcRequestSeq)
+                        this._qcActiveRequest = null;
+                }
+            },
             scope: this,
             jsonData: plotsConfig
         });

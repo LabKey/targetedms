@@ -1000,7 +1000,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         this.havePlotOptionsChanged = true;
 
                         this.setBrushingEnabled(false);
-                        this.setLoadingMsg();
                         this.getAnnotationData();
                     }
                 }
@@ -1061,7 +1060,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         this.showExcluded = newShow;
                         this.havePlotOptionsChanged = true;
 
-                        this.setLoadingMsg();
                         this.getAnnotationData();
                     }
                 }
@@ -1086,12 +1084,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 listeners: {
                     scope: this,
                     change: function(group, newValue) {
-                        var val = newValue && (newValue.excludedPrecursors || newValue['excludedPrecursors']);
-                        var newShow = val === 'show' || (val === true);
-                        this.showExcludedPrecursors = newShow;
+                        const val = newValue && (newValue.excludedPrecursors || newValue['excludedPrecursors']);
+                        this.showExcludedPrecursors = val === 'show' || (val === true);
                         this.havePlotOptionsChanged = true;
 
-                        this.setLoadingMsg();
                         this.getAnnotationData();
                     }
                 }
@@ -1139,9 +1135,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                             else {
                                 this.getStartDateField().setValue(this.formatDate(this.expRunDetails.startDate, false));
                             }
-
                         }
-                        this.setLoadingMsg();
                         this.getAnnotationData();
                     }
                 }
@@ -1286,6 +1280,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     getAnnotationData: function() {
+        this.setLoadingMsg();
+
         var config = this.getReportConfig();
 
         var annotationSql = "SELECT qca.Date, qca.Description, qca.Created, qca.CreatedBy.DisplayName, qcat.Name, qcat.Color FROM qcannotation qca JOIN qcannotationtype qcat ON qcat.Id = qca.QCAnnotationTypeId";
@@ -1327,10 +1323,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     });
             }
 
-        for (var i = 0; i < this.annotationData.length; i++)
+        for (let i = 0; i < this.annotationData.length; i++)
         {
-                var annotation = this.annotationData[i];
-                var annotationDate = this.formatDate(new Date(annotation['Date']), !this.groupedX);
+                const annotation = this.annotationData[i];
+                const annotationDate = this.formatDate(new Date(annotation['Date']), !this.groupedX);
 
                     // track if we need to stack annotations that fall on the same date
                     if (!dateCount[annotationDate]) {
