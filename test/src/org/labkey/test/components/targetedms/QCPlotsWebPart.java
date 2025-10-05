@@ -389,6 +389,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         }
     }
 
+    public boolean isCombinedPlotControlVisible()
+    {
+        return elementCache().plotsCombinedRadio.isDisplayed();
+    }
+
     public List<QCPlot> getPlots()
     {
         return elementCache().findSeriesPanels().stream().map(QCPlot::new).toList();
@@ -441,10 +446,12 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     @LogMethod
     public void filterQCPlots(@LoggedParam String startDate, @LoggedParam String endDate, int expectedPlotCount)
     {
-        setDateRangeOffset(DateRangeOffset.CUSTOM);
-        setStartDate(startDate);
-        setEndDate(endDate);
-        waitForPlots(expectedPlotCount);
+        doAndWaitForUpdate(() ->
+        {
+            setDateRangeOffset(DateRangeOffset.CUSTOM);
+            setStartDate(startDate);
+            setEndDate(endDate);
+        });
     }
 
     public int getGuideSetTrainingRectCount()

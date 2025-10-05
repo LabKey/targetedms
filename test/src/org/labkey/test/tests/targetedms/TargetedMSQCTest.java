@@ -697,10 +697,10 @@ public class TargetedMSQCTest extends TargetedMSTest
         String ticPlotSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
         assertFalse(ticPlotSVGText.isEmpty());
 
-        log("Verifying Show All Series Checkbox");
-        assertElementNotVisible(Locator.tagContainingText("label", "Show All Series in a Single Plot"));
+        log("Verifying combined/per-precursor plot controls");
+        assertFalse(qcPlotsWebPart.isCombinedPlotControlVisible());
         qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.RETENTION);
-        assertElementVisible(Locator.tagContainingText("label", "Show All Series in a Single Plot"));
+        assertTrue(qcPlotsWebPart.isCombinedPlotControlVisible());
 
         log("Verifying tic_area information in hover plot");
         qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.TIC_AREA);
