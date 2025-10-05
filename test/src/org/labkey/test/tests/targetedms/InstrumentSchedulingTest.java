@@ -28,6 +28,7 @@ import org.labkey.test.util.ApiPermissionsHelper;
 import org.labkey.test.util.PermissionsHelper;
 import org.labkey.test.util.PortalHelper;
 import org.labkey.test.util.PostgresOnlyTest;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -36,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 
 @Category({})
-@BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class InstrumentSchedulingTest extends TargetedMSTest implements PostgresOnlyTest
 {
     protected static final String SCHEDULER_USER_1 = "scheduler1@targetedms.test";
@@ -47,6 +47,8 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
     public static final String INACTIVE_INSTRUMENT = "InactiveInstrument";
     public static final String PROJECT_1 = "Project1";
     public static final String PROJECT_2 = "Project2";
+    public static final Locator.IdLocator EVENT_NAME_FIELD = Locator.id("event-name");
+    public static final Locator.IdLocator EVENT_NOTE_FIELD = Locator.id("event-notes");
 
     @BeforeClass
     public static void initProject() throws IOException, CommandException
@@ -142,7 +144,7 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
 
         assertProjectEventCounts(2, 0);
 
-        sleep(1000);  // Wait for the dialog to clear out of the way
+        shortWait().until((x) -> !isElementVisible(EVENT_NAME_FIELD));
         doAndWaitForPageToLoad(() -> selectOptionByText(Locator.id("projectDropDown"), PROJECT_2));
 
         scheduleInstrument(yearMonth + "-04");
@@ -151,23 +153,22 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         scheduleInstrument(yearMonth + "-05");
         assertProjectEventCounts(2, 2);
 
-        sleep(1000);  // Wait for the dialog to clear out of the way
+        shortWait().until((x) -> !isElementVisible(EVENT_NAME_FIELD));
         doAndWaitForPageToLoad(() -> selectOptionByText(Locator.id("instrumentDropDown"), INSTRUMENT_2));
         scheduleInstrument(yearMonth + "-06");
         assertProjectEventCounts(1, 0);
 
         goToDashboard();
-        clickAndWait(Locator.linkWithText("All instrument calendar view"));
+        waitAndClickAndWait(Locator.linkWithText("All instrument calendar view"));
         assertTextPresent(INSTRUMENT_1, INSTRUMENT_2, INACTIVE_INSTRUMENT);
 
-        waitForElementToBeVisible(Locator.tagWithClass("div", "activeProjectEvent"));
         assertProjectEventCounts(5, 0);
 
         selectOptionByText(Locator.id("projectFilter"), PROJECT_2);
         assertProjectEventCounts(3, 2);
 
         goToDashboard();
-        clickAndWait(Locator.linkWithText("Instrument billing report"));
+        waitAndClickAndWait(Locator.linkWithText("Instrument billing report"));
         assertTextPresent("$2,450.00", 4);
         assertTextPresent("$2,690.00", 1);
 
@@ -181,8 +182,18 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
 
     private void assertProjectEventCounts(int expectedActiveCount, int expectedOtherCount)
     {
-        assertElementPresent(Locator.tagWithClass("div", "activeProjectEvent"), expectedActiveCount);
-        assertElementPresent(Locator.tagWithClass("div", "otherProjectEvent"), expectedOtherCount);
+        Locator activeLocator = Locator.byClass("activeProjectEvent");
+        Locator otherLocator = Locator.byClass("otherProjectEvent");
+        if (expectedActiveCount > 0)
+        {
+            waitForElementToBeVisible(activeLocator);
+        }
+        if (expectedOtherCount > 0)
+        {
+            waitForElementToBeVisible(otherLocator);
+        }
+        assertElementPresent(activeLocator, expectedActiveCount);
+        assertElementPresent(otherLocator, expectedOtherCount);
     }
 
     private void scheduleInstrument(String yearMonthDay)
@@ -200,9 +211,9 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         }
         else
         {
-            waitForElementToBeVisible(Locator.id("event-name"));
-            setFormElement(Locator.id("event-name").findElement(getDriver()), "A name!");
-            setFormElement(Locator.id("event-notes").findElement(getDriver()), "A note!");
+            waitForElementToBeVisible(EVENT_NAME_FIELD);
+            setFormElement(EVENT_NAME_FIELD.findElement(getDriver()), "A name!");
+            setFormElement(EVENT_NOTE_FIELD.findElement(getDriver()), "A note!");
             waitAndClick(Locator.button("Save"));
             waitAndClick(Locator.button("Yes"));
         }
