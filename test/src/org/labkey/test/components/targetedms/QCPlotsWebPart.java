@@ -252,17 +252,19 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void setGroupXAxisValuesByDate(boolean check)
     {
-        if (check)
-            doAndWaitForUpdate(() -> elementCache().xAxisGroupingDateRadio.check());
-        else
-            doAndWaitForUpdate(() -> elementCache().xAxisGroupingReplicateRadio.check());
+        if (isGroupXAxisValuesByDateChecked() != check)
+        {
+            if (check)
+                doAndWaitForUpdate(() -> elementCache().xAxisGroupingDateRadio.check());
+            else
+                doAndWaitForUpdate(() -> elementCache().xAxisGroupingReplicateRadio.check());
+        }
     }
 
     public boolean isGroupXAxisValuesByDateChecked()
     {
         try
         {
-            // TODO
             return elementCache().xAxisGroupingDateRadio.isSelected();
         }
         catch (NoSuchElementException | StaleElementReferenceException e)
@@ -277,10 +279,13 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         // 'check' means show all series combined in a single plot
         try
         {
-            if (check)
-                doAndWaitForUpdate(() -> elementCache().plotsCombinedRadio.check());
-            else
-                doAndWaitForUpdate(() -> elementCache().plotsPerPrecursorRadio.check());
+            if (isShowAllPeptidesInSinglePlotChecked() != check)
+            {
+                if (check)
+                    doAndWaitForUpdate(() -> elementCache().plotsCombinedRadio.check());
+                else
+                    doAndWaitForUpdate(() -> elementCache().plotsPerPrecursorRadio.check());
+            }
         }
         catch (NoSuchElementException | StaleElementReferenceException e)
         {
@@ -311,19 +316,21 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public boolean isShowExcludedPointsChecked()
     {
-        // TODO
         return elementCache().excludedReplicatesShow.isChecked();
     }
 
     public void setShowReferenceGuideSet(boolean check)
     {
-        if (check)
+        if (isShowExcludedPointsChecked() != check)
         {
-            elementCache().referenceGuideSetShow.check();
-        }
-        else
-        {
-            elementCache().referenceGuideSetHide.check();
+            if (check)
+            {
+                elementCache().referenceGuideSetShow.check();
+            }
+            else
+            {
+                elementCache().referenceGuideSetHide.check();
+            }
         }
     }
 
@@ -341,7 +348,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public boolean isShowReferenceGuideSetChecked()
     {
-        // TODO
         return elementCache().referenceGuideSetShow.isChecked();
     }
 
@@ -349,7 +355,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         try
         {
-            // TODO
             return elementCache().plotsCombinedRadio.isSelected();
         }
         catch (NoSuchElementException | StaleElementReferenceException e)
@@ -915,20 +920,22 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
                 .findWhenNeeded(this).setMatcher(Ext4Helper.TextMatchTechnique.CONTAINS).setMultiSelect(true);
         WebElement groupedXPerReplicate = Locator.css("#grouped-x-field input[value=replicate]").findWhenNeeded(this);
 
-        RadioButton xAxisGroupingReplicateRadio = new RadioButton(Locator.id("x-axis-grouping-replicate").findWhenNeeded(getDriver()));
-        RadioButton xAxisGroupingDateRadio = new RadioButton(Locator.id("x-axis-grouping-date").findWhenNeeded(getDriver()));
+        RadioButton xAxisGroupingReplicateRadio = new RadioButton.RadioButtonFinder().withLabel("per replicate").findWhenNeeded(getDriver());
+        RadioButton xAxisGroupingDateRadio = new RadioButton.RadioButtonFinder().withLabel("per date").findWhenNeeded(getDriver());
 
-        RadioButton plotsCombinedRadio = new RadioButton(Locator.id("plots-combined").findWhenNeeded(getDriver()));
-        RadioButton plotsPerPrecursorRadio = new RadioButton(Locator.id("plots-per-precursor").findWhenNeeded(getDriver()));
+        RadioButton plotsCombinedRadio = new RadioButton.RadioButtonFinder().withLabel("combined").findWhenNeeded(getDriver());
+        RadioButton plotsPerPrecursorRadio = new RadioButton.RadioButtonFinder().withLabel("per precursor").findWhenNeeded(getDriver());
 
-        RadioButton excludedReplicatesShow = new RadioButton(Locator.id("excluded-replicates-show").findWhenNeeded(getDriver()));
-        RadioButton excludedReplicatesHide = new RadioButton(Locator.id("excluded-replicates-hide").findWhenNeeded(getDriver()));
+        // These have the same label as another group, but are first in the page
+        RadioButton excludedReplicatesShow = new RadioButton.RadioButtonFinder().withLabel("show").findWhenNeeded(getDriver());
+        RadioButton excludedReplicatesHide = new RadioButton.RadioButtonFinder().withLabel("hide").findWhenNeeded(getDriver());
 
+        // Note that these two won't work with the isChecked() call but they have the same labels as the ones above so we can't simply check by label
         RadioButton excludedPrecursorsShow = new RadioButton(Locator.id("excluded-precursors-show").findWhenNeeded(getDriver()));
         RadioButton excludedPrecursorsHide = new RadioButton(Locator.id("excluded-precursors-hide").findWhenNeeded(getDriver()));
 
-        RadioButton referenceGuideSetShow = new RadioButton(Locator.id("reference-guide-set-show").findWhenNeeded(getDriver()));
-        RadioButton referenceGuideSetHide = new RadioButton(Locator.id("reference-guide-set-hide").findWhenNeeded(getDriver()));
+        RadioButton referenceGuideSetShow = new RadioButton.RadioButtonFinder().withLabel("always show").findWhenNeeded(getDriver());
+        RadioButton referenceGuideSetHide = new RadioButton.RadioButtonFinder().withLabel("when in date range").findWhenNeeded(getDriver());
 
         WebElement plotPanel = Locator.css("div.tiledPlotPanel").findWhenNeeded(this);
         WebElement paginationPanel = Locator.css("div.plotPaginationHeaderPanel").findWhenNeeded(this);
