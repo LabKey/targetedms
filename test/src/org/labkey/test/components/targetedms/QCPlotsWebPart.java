@@ -446,10 +446,10 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     @LogMethod
     public void filterQCPlots(@LoggedParam String startDate, @LoggedParam String endDate, int expectedPlotCount)
     {
+        setDateRangeOffset(DateRangeOffset.CUSTOM);
+        setStartDate(startDate);
         doAndWaitForUpdate(() ->
         {
-            setDateRangeOffset(DateRangeOffset.CUSTOM);
-            setStartDate(startDate);
             setEndDate(endDate);
         });
     }

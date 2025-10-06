@@ -208,6 +208,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         qcPlotsWebPart.filterQCPlots("2013-08-19", "2013-08-19", PRECURSORS.length);
         shapeCounts = new ArrayList<>();
         shapeCounts.add(Pair.of(SvgShapes.CIRCLE.getPathPrefix(), 14));
+        qcPlotsWebPart = new QCPlotsWebPart(getDriver());
         verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 0, shapeCounts, 2);
     }
 
