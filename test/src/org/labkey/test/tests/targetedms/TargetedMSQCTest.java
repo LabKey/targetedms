@@ -190,6 +190,9 @@ public class TargetedMSQCTest extends TargetedMSTest
     public void preTest()
     {
         goToProjectHome();
+        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        qcPlotsWebPart.revertToDefaultView();
     }
 
     @Test
