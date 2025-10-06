@@ -153,7 +153,7 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
 
         String testStartDate = "2013-08-18";
         String testEndDate = "2013-08-27";
-        qcPlotsWebPart.filterQCPlots(testStartDate, testEndDate, 7);
+        qcPlotsWebPart.filterQCPlots(testStartDate, testEndDate, true);
 
         checker().verifyTrue("The graph is not divided by line separator",
                 isElementPresent(Locator.tagWithAttribute("line", "class", "separator")));

@@ -76,7 +76,7 @@ public class TargetedMSPeptideSummaryHeatmapTest extends TargetedMSTest
         qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
         qcPlotsWebPart.waitForReady();
         assertEquals("Date Range Offset not set to default value", QCPlotsWebPart.DateRangeOffset.LAST_7_DAYS, qcPlotsWebPart.getCurrentDateRangeOffset());
-        qcPlotsWebPart.filterQCPlots("2013-08-10", "2013-08-15", 7);
+        qcPlotsWebPart.filterQCPlots("2013-08-10", "2013-08-15", true);
 
         // Now navigate through the link instead of the custom tab and webpart
         waitAndClickAndWait(Locator.linkContainingText("View all 47 replicates"));

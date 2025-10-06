@@ -427,7 +427,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
             resetInitialQCPlotFields();
         }
 
-        filterQCPlots("2013-08-09", "2013-08-27", expectedPlotCount);
+        filterQCPlots("2013-08-09", "2013-08-27", resetForm);
     }
 
     @LogMethod
@@ -444,14 +444,18 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     }
 
     @LogMethod
-    public void filterQCPlots(@LoggedParam String startDate, @LoggedParam String endDate, int expectedPlotCount)
+    public void filterQCPlots(@LoggedParam String startDate, @LoggedParam String endDate, boolean waitForPlotsToRefresh)
     {
         setDateRangeOffset(DateRangeOffset.CUSTOM);
         setStartDate(startDate);
-        doAndWaitForUpdate(() ->
+        if (waitForPlotsToRefresh)
+        {
+            doAndWaitForUpdate(() -> setEndDate(endDate));
+        }
+        else
         {
             setEndDate(endDate);
-        });
+        }
     }
 
     public int getGuideSetTrainingRectCount()

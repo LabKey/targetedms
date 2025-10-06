@@ -63,7 +63,6 @@ import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.CU
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.MetricValue;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.MovingRange;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.TrailingCV;
-import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.TrailingMean;
 import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
 
 @Category({})
@@ -349,7 +348,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.PERCENT_OF_MEAN);
         qcPlotsWebPart.setGroupXAxisValuesByDate(true);
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
-        qcPlotsWebPart.filterQCPlots(testDateStr, testDateStr, 1);
+        qcPlotsWebPart.filterQCPlots(testDateStr, testDateStr, true);
         int count = qcPlotsWebPart.getPointElements("d", SvgShapes.CIRCLE.getPathPrefix(), true).size();
         assertEquals("Unexpected number of points for '" + testDateStr + "'", 21, count);
 
@@ -546,10 +545,10 @@ public class TargetedMSQCTest extends TargetedMSTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.filterQCPlotsToInitialData(PRECURSORS.length, true);
 
-        qcPlotsWebPart.filterQCPlots("2014-08-09", "2014-08-27", 0);
-
-        // reset to avoid test case dependency
-        qcPlotsWebPart.resetInitialQCPlotFields();
+        qcPlotsWebPart.filterQCPlots("2015-08-09", "2014-08-27", false);
+        waitForText("Please enter an end date that does not occur before the start date.");
+        qcPlotsWebPart.filterQCPlots("2014-08-09", "2014-08-27", false);
+        waitForText("There were no records found");
     }
 
     @Test

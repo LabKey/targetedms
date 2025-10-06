@@ -362,6 +362,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return [
             { tbar: columnsToolbar },
             { tbar: this.getGuideSetMessageToolbar() },
+            { tbar: this.getDateRangeErrorToolbar() },
             { tbar: this.getExperimentRunDateRangeToolbar() }
         ];
     },
@@ -553,6 +554,24 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return this.guideSetMessageToolbar;
     },
 
+    getDateRangeErrorToolbar : function() {
+        if (!this.dateRangeErrorToolbar) {
+            this.dateRangeErrorToolbar = Ext4.create('Ext.toolbar.Toolbar', {
+                ui: 'footer',
+                hidden: true,
+                layout: { pack: 'center' },
+                items: [{
+                    xtype: 'label',
+                    id: 'DateRangeErrorBar',
+                    cls: 'labkey-error',
+                    text: 'Please correct the date range. Check the start and end dates are valid.'
+                }]
+            });
+        }
+
+        return this.dateRangeErrorToolbar;
+    },
+
     getExperimentRunDateRangeToolbar : function() {
         if (!this.experimentRunDateRangeToolbar) {
             var hidden = !this.showExpRunRange;
@@ -571,7 +590,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 layout: { pack: 'center' },
                 items: [{
                     xtype: 'box',
-                    itemId: 'ExpreimentRunDateRangeToolBar',
                     html: htmlStr
                 }]
             });
@@ -748,6 +766,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         this.getCustomDateRangeToolbar().setVisible(showCustomRangeItems);
 
                         if (!showCustomRangeItems) {
+                            this.getDateRangeErrorToolbar().hide();
                             // either use the min and max values based on the data
                             // or calculate range based on today's date and the offset
                             this.startDate = this.formatDate(this.calculateStartDateByOffset());
@@ -1898,28 +1917,18 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             endDateRawValue = this.getEndDateField().getRawValue(),
             endDateValue = this.getEndDateField().getValue();
 
-        if (!this.getStartDateField().isValid() || !this.getEndDateField().isValid()) {
-
-        }
-        // make sure that at least one filter field is not null
-        else if (startDateRawValue === '' && endDateRawValue === '') {
-            Ext4.Msg.show({
-                title:'ERROR',
-                msg: 'Please enter start and end dates.',
-                buttons: Ext4.Msg.OK,
-                icon: Ext4.MessageBox.ERROR
-            });
+        if ((!this.getStartDateField().isValid() || !this.getEndDateField().isValid()) ||
+                (startDateRawValue === '' && endDateRawValue === '')) {
+            this.getDateRangeErrorToolbar().show();
+            Ext4.get('DateRangeErrorBar').setHTML('Please correct the date range. Check the start and end dates are valid.');
         }
         // verify that the start date is not after the end date
         else if (startDateValue > endDateValue && endDateValue !== '') {
-            Ext4.Msg.show({
-                title:'ERROR',
-                msg: 'Please enter an end date that does not occur before the start date.',
-                buttons: Ext4.Msg.OK,
-                icon: Ext4.MessageBox.ERROR
-            });
+            this.getDateRangeErrorToolbar().show();
+            Ext4.get('DateRangeErrorBar').setHTML('Please enter an end date that does not occur before the start date.');
         }
         else {
+            this.getDateRangeErrorToolbar().hide();
             // get date values without the time zone info
             this.startDate = startDateRawValue;
             this.endDate = endDateRawValue;
