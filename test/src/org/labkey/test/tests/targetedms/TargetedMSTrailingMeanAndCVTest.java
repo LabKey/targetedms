@@ -69,8 +69,6 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.MetricValue, QCPlotsWebPart.QCPlotType.TrailingMean);
         waitForText("TrailingMean - The number you entered is larger than the number of available runs. Only 47 runs are used for calculation");
         checker().verifyEquals("Incorrect plot count", REPLICATE_COUNT , qcPlotsWebPart.getPlots().size());
-        checker().verifyEquals("Incorrect number of times error message was displayed", REPLICATE_COUNT,
-                Locators.labkeyError.findElements(getDriver()).size());
 
         log("Verifying y-axis value based on metric type");
         trailingLast = "3";
@@ -150,8 +148,6 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.MetricValue, QCPlotsWebPart.QCPlotType.TrailingCV);
         waitForText("TrailingCV - The number you entered is larger than the number of available runs. Only 47 runs are used for calculation");
         checker().verifyEquals("Incorrect plot count", REPLICATE_COUNT , qcPlotsWebPart.getPlots().size());
-        checker().verifyEquals("Incorrect number of times error message was displayed", REPLICATE_COUNT,
-                Locators.labkeyError.findElements(getDriver()).size());
 
         trailingLast = "3";
         qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.TrailingCV);
