@@ -79,7 +79,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     selectedAnnotations: {},
     runs: null,
     trailingRuns: null,
-    minWidth: 1275,
+    minWidth: 1250, // Keep in sync with the width defined in qcTrendPlot.jsp
+    width: '100%',
 
     SHOW_ALL_IN_A_SINGLE_PLOT: 'Show all series in a single plot',
     LABEL_WIDTH: 115,
