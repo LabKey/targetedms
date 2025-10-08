@@ -224,8 +224,8 @@
             LABKEY.Query.selectRows({
                 schemaName: 'targetedms',
                 queryName: 'msProject',
-                sort: 'title',
-                columns: 'Id,title',
+                sort: 'Title',
+                columns: 'Id,Title',
                 success: function(result) {
                     const rows = result.rows || [];
                     const ddl = document.getElementById('projectFilter');
@@ -238,7 +238,7 @@
                         const r = rows[i];
                         const opt = document.createElement('option');
                         opt.value = r.Id;
-                        opt.text = r.title;
+                        opt.text = r.Title;
                         ddl.appendChild(opt);
                     }
                     ddl.addEventListener('change', function() {
