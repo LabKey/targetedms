@@ -1,10 +1,11 @@
 <div id="project-details">
 </div>
+<div id="schedule-instrument-time">
+</div>
+<br/>
 <div id="payment-methods">
 </div>
-<div id="add-payment-method-link">
-</div>
-<div id="schedule-instrument-time">
+<div id="payment-summary">
 </div>
 
 <script type="text/javascript" nonce="<%=scriptNonce%>">
@@ -83,25 +84,25 @@
         });
 
         // query web part to show payment method and other invoice details - custom query
-        let webpart = <%=webpartContext%>;
         new LABKEY.QueryWebPart({
-            renderTo: 'payment-methods',
+            renderTo: 'payment-summary',
             frame: 'portal',
-            title: 'Payment Methods',
+            title: 'Payment Summary',
             schemaName: 'targetedms',
             queryName: 'paymentMethodCostSummary',
             filterArray: [LABKEY.Filter.create('project', project, LABKEY.Filter.Types.EQUAL)],
             containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
         });
 
-        // add payment method link
-        const addPaymentMethodEl = document.getElementById('add-payment-method-link');
-        const urlParams = {
+        new LABKEY.QueryWebPart({
+            renderTo: 'payment-methods',
+            frame: 'portal',
+            title: 'Payment Methods',
             schemaName: 'targetedms',
-            queryName: 'ProjectPaymentMethod',
-            returnUrl: LABKEY.ActionURL.buildURL('targetedms', 'msProjectDetails', null, { project: project })
-        };
-        addPaymentMethodEl.innerHTML = LABKEY.Utils.textLink({text: 'Add payment method', href: LABKEY.ActionURL.buildURL('query', 'insertQueryRow', LABKEY.ActionURL.getContainer(), urlParams)});;
+            queryName: 'projectPaymentMethod',
+            filterArray: [LABKEY.Filter.create('project', project, LABKEY.Filter.Types.EQUAL)],
+            containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
+        });
 
         const scheduleInstrumentTimeEl = document.getElementById('schedule-instrument-time');
         const scheduleUrlParams = {

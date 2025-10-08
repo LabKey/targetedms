@@ -1,18 +1,20 @@
 <div id="ms-project"></div>
+<br/>
+<div id="all-projects"></div>
 <script type="text/javascript" nonce="<%=scriptNonce%>">
     (function(){
-    let webpart = <%=webpartContext%>;
     let config = {
-        renderTo: webpart.wrapperDivId,
+        renderTo: 'ms-project',
         frame: 'none',
         schemaName: 'targetedms',
         queryName: 'userProjects',
         containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
     };
     // admins can see all projects, non-admins can only see projects they are a researcher on
-    if (!LABKEY.user.isAdmin) {
-        config.filterArray = [LABKEY.Filter.create('researcher', LABKEY.user.id, LABKEY.Filter.Types.EQUAL)];
-    }
     new LABKEY.QueryWebPart(config);
+
+    if (LABKEY.user.isAdmin) {
+        document.getElementById('all-projects').innerHTML = LABKEY.Utils.textLink({text: 'View all projects', href: 'query-executeQuery.view?schemaName=targetedms&query.queryName=msProject'});
+    }
     })();
 </script>

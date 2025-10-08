@@ -6,6 +6,9 @@
                     <column columnName="Id">
                         <url>/targetedms-msProjectDetails.view?project=${Id}</url>
                     </column>
+                    <column columnName="Title">
+                        <url>/targetedms-msProjectDetails.view?project=${Id}</url>
+                    </column>
                 </columns>
             </table>
         </tables>
