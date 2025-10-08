@@ -186,8 +186,8 @@
         LABKEY.Query.selectRows({
             schemaName: 'targetedms',
             queryName: 'msProject',
-            sort: 'title',
-            columns: 'Id,title',
+            sort: 'Title',
+            columns: 'Id,Title',
             scope: this,
             success: function (result) {
                 let rows = result.rows;
@@ -198,7 +198,7 @@
                 for (let i = 0; i < rows.length; i++) {
                     let option = document.createElement('option');
                     option.value = rows[i].Id;
-                    option.text = rows[i].title;
+                    option.text = rows[i].Title;
                     if (project === rows[i].Id) {
                         option.selected = true;
                     }
@@ -692,7 +692,7 @@
             LABKEY.Query.selectRows({
                 schemaName: 'targetedms',
                 queryName: 'instrumentSchedule',
-                columns: 'Id,startTime,endTime,name,notes,instrument/color,instrument/Id,project/Id, project/title',
+                columns: 'Id,startTime,endTime,name,notes,instrument/color,instrument/Id,project/Id, project/Title',
                 filterArray: [
                     LABKEY.Filter.create('instrument', instrument ? instrument : $('#instrumentDropDown').val()),
                 ],
@@ -708,7 +708,7 @@
                             notes: row.notes,
                             color: row['instrument/color'],
                             project: row['project/Id'],
-                            title: row['project/title']
+                            title: row['project/Title']
                         });
                     }
                     callback(instrumentSchedule);
