@@ -87,10 +87,11 @@
         new LABKEY.QueryWebPart({
             renderTo: 'payment-summary',
             frame: 'portal',
-            title: 'Payment Summary',
+            title: 'Instrument Use',
             schemaName: 'targetedms',
-            queryName: 'paymentMethodCostSummary',
-            filterArray: [LABKEY.Filter.create('project', project, LABKEY.Filter.Types.EQUAL)],
+            queryName: 'instrumentBilling',
+            viewName: 'Project View',
+            filterArray: [LABKEY.Filter.create('projectId', project, LABKEY.Filter.Types.EQUAL)],
             containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
         });
 
