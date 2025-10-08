@@ -247,10 +247,13 @@
                         if (calendar && calendar.rerenderEvents) {
                             calendar.rerenderEvents();
                         } else if (calendar) {
-                            // Fallback: remove and re-add sources to force rerender
-                            const sources = Array.from(instruments.keys());
-                            sources.forEach(function(id) { removeEventSourceForInstrument(id); });
-                            sources.forEach(function(id) { addEventSourceForInstrument(id); });
+                            // Fallback: remove and re-add only currently active sources to force rerender
+                            const activeIds = [];
+                            instruments.forEach(function(info, id) {
+                                if (info && info.source) activeIds.push(id);
+                            });
+                            activeIds.forEach(function(id) { removeEventSourceForInstrument(id); });
+                            activeIds.forEach(function(id) { addEventSourceForInstrument(id); });
                         }
                     });
                 }

@@ -266,7 +266,7 @@
                         },
                         eventMouseEnter: function (mouseEnterInfo) {
                             removeEventLog();
-                            let instrumentID = instrument ? instrument : $('#instrumentDropDown select[name="instrumentDropDown"]').val();
+                            let instrumentID = instrument ? instrument : $('#instrumentDropDown').val();
                             fetchInstrumentCosts(instrumentID, mouseEnterInfo.event.start, mouseEnterInfo.event.end, false);
                             let content = '';
                             let dateStr = DateFormat.format.date(mouseEnterInfo.event.start, LABKEY.container.formats.dateTimeFormat) + ' - ' + DateFormat.format.date(mouseEnterInfo.event.end, LABKEY.container.formats.dateTimeFormat);
@@ -688,12 +688,13 @@
 
         function loadInstrumentSchedule(callback) {
             let instrumentSchedule = [];
+            const currentInstrument = instrument ? instrument : parseInt($('#instrumentDropDown').val());
             LABKEY.Query.selectRows({
                 schemaName: 'targetedms',
                 queryName: 'instrumentSchedule',
-                columns: 'Id,startTime,endTime,name,notes,instrument/color,project/Id, project/title',
+                columns: 'Id,startTime,endTime,name,notes,instrument/color,instrument/Id,project/Id, project/title',
                 filterArray: [
-                    LABKEY.Filter.create('instrument', instrument ? instrument : $('#instrumentDropDown select[name="instrumentDropDown"]').val()),
+                    LABKEY.Filter.create('instrument', instrument ? instrument : $('#instrumentDropDown').val()),
                 ],
                 success: function (data) {
                     let rows = data.rows;
