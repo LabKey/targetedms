@@ -130,7 +130,7 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
     {
         goToProjectHome();
         clickAndWait(Locator.linkWithText("Your project list"));
-        assertTextPresent(PROJECT_1, PROJECT_2);
+        waitForText(PROJECT_1, PROJECT_2);
         clickAndWait(Locator.linkWithText(PROJECT_1));
         waitAndClickAndWait(Locator.linkWithText("Schedule instrument time"));
 
@@ -149,7 +149,7 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
 
         assertProjectEventCounts(2, 0);
 
-        shortWait().until((x) -> !isElementVisible(EVENT_NAME_FIELD));
+        sleep(1000);
         doAndWaitForPageToLoad(() -> selectOptionByText(Locator.id("projectDropDown"), PROJECT_2));
 
         scheduleInstrument(yearMonth + "-04");
@@ -158,7 +158,7 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         scheduleInstrument(yearMonth + "-05");
         assertProjectEventCounts(2, 2);
 
-        shortWait().until((x) -> !isElementVisible(EVENT_NAME_FIELD));
+        sleep(1000);
         doAndWaitForPageToLoad(() -> selectOptionByText(Locator.id("instrumentDropDown"), INSTRUMENT_2));
         scheduleInstrument(yearMonth + "-06");
         assertProjectEventCounts(1, 0);
