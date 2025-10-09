@@ -1,15 +1,26 @@
 <div id="topContainer">
-    <div id="projectDropDown"></div>
-    <br/>
-    <div id="instrumentDropDown"></div>
-    <br/>
-    <div id="instrumentOperatorDropDown"></div>
-    <br/>
-    <div id="paymentMethodDropDown"></div>
-    <span id="addPaymentMethod" role="button" style="cursor: pointer;">[Add Payment Method]</span>
-    <br/>
-    <br/>
-
+    <table class="lk-fields-table">
+        <tr>
+            <td class="labkey-form-label"><label for="instrumentDropDown">Instrument</label></td>
+            <td><select id="instrumentDropDown" name="instrumentDropDown"></select></td>
+        </tr>
+        <tr>
+            <td class="labkey-form-label"><label for="instrumentOperatorDropDown">Operator</label></td>
+            <td><select id="instrumentOperatorDropDown" name="instrumentOperatorDropDown"></select></td>
+        </tr>
+        <tr>
+            <td class="labkey-form-label"><label for="projectDropDown">Project</label></td>
+            <td><select id="projectDropDown" name="projectDropDown"></select></td>
+        </tr>
+        <tr>
+            <td class="labkey-form-label"><label for="paymentMethodDropDown">Payment method</label></td>
+            <td><div id="paymentMethodDropDown"></div></td>
+        </tr>
+        <tr>
+            <td class="labkey-form-label"></td>
+            <td><span id="addPaymentMethod" role="button" style="cursor: pointer;">[Add Payment Method]</span></td>
+        </tr>
+    </table>
 </div>
 
 <div id="calendarWrapper" style="min-height: 500px;">
@@ -33,26 +44,26 @@
 
                         <div class="form-group row">
                             <label for="min-date" class="col-sm-2 control-label">Dates</label>
-                            <div class="col-sm-10">
+                            <div class="col-sm-5">
                                 <div class="input-group input-daterange" data-provide="datepicker">
                                     <input id="min-date" name="event-start-date" type="datetime-local" class="form-control">
                                     <div class="input-group-prepend input-group-append">
-                                        <div class="input-group-text">to</div>
+                                        <div class="input-group-text"><label for="event-end-date">to</label></div>
                                     </div>
-                                    <input name="event-end-date" type="datetime-local" class="form-control">
+                                    <input name="event-end-date" id="event-end-date" type="datetime-local" class="form-control">
                                 </div>
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label class="col-sm-2 control-label">Name</label>
+                            <label class="col-sm-2 control-label" for="event-name">Name</label>
                             <div class="col-sm-10">
-                                <input id="event-name" name="event-name" type="text" class="form-control">
+                                <input id="event-name" name="event-name" size="50" type="text" class="form-control">
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label class="col-sm-2 control-label">Notes</label>
+                            <label class="col-sm-2 control-label" for="event-notes">Notes</label>
                             <div class="col-sm-10">
-                                <input id="event-notes" name="event-notes" type="text" class="form-control">
+                                <input id="event-notes" name="event-notes" size="50" type="text" class="form-control">
                             </div>
                         </div>
                         <div class="form-group row" >
@@ -92,21 +103,21 @@
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label class="col-sm-4 control-label">Setup fee</label>
+                            <label class="col-sm-4 control-label" for="setup-cost">Setup fee</label>
                             <div class="col-sm-8">
-                                <input id="setup-cost" name="setup-cost" type="text" readonly="true" class="form-control"/>
+                                <input id="setup-cost" name="setup-cost" type="text" readonly="readonly" class="form-control"/>
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label class="col-sm-4 control-label">Instrument fee</label>
+                            <label class="col-sm-4 control-label" for="instrument-fee">Instrument fee</label>
                             <div class="col-sm-8">
-                                <input id="instrument-fee" type="text" readonly="true" class="form-control"/>
+                                <input id="instrument-fee" type="text" readonly="readonly" class="form-control"/>
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label class="col-sm-4 control-label">Total fee</label>
+                            <label class="col-sm-4 control-label" for="total-cost">Total fee</label>
                             <div class="col-sm-8">
-                                <input id="total-cost" type="text" readonly="true" class="form-control"/>
+                                <input id="total-cost" type="text" readonly="readonly" class="form-control"/>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -145,11 +156,9 @@
         <br/>
 
         <div id="cost-info">
-            <p>Click here to view all the time scheduled for this project.</p>
-            <br>
             <p>View the billing FAQ and instructions for scheduling instruction time.</p>
             <br>
-            <p><a id="instrument-rates">View</a> the current rates for instruments.</p>
+            <p id="instrument-rates"></p>
         </div>
 
     </div>
@@ -161,6 +170,9 @@
 
         let project = LABKEY.ActionURL.getParameter('project');
         let instrument = LABKEY.ActionURL.getParameter('instrument');
+        // Parse as integers, defaulting to null if empty/invalid
+        project = project ? parseInt(project) || null : null;
+        instrument = instrument ? parseInt(instrument) || null : null;
 
         if (!project) {
             alert('No project selected');
@@ -174,21 +186,24 @@
         LABKEY.Query.selectRows({
             schemaName: 'targetedms',
             queryName: 'msProject',
-            sort: 'title',
-            columns: 'Id,title',
+            sort: 'Title',
+            columns: 'Id,Title',
             scope: this,
             success: function (result) {
                 let rows = result.rows;
-                let projectDropDown = '<label for="projectDropDown">Select Project:</label>';
-                projectDropDown += '<select id="projectDropDown" name="projectDropDown">';
-                for (let i = 0; i < rows.length; i++) {
-                    // if project == rows[i].Id, then select this option
-                    projectDropDown += '<option value="' + LABKEY.Utils.encodeHtml(rows[i].Id) + '" ' + (project == rows[i].Id ? 'selected' : '') + '>' + LABKEY.Utils.encodeHtml(rows[i].title) + '</option>';
+                let projectDropDown = document.getElementById('projectDropDown');
+                while (projectDropDown.firstChild) {
+                    projectDropDown.removeChild(projectDropDown.firstChild);
                 }
-                projectDropDown += '</select>';
-
-                jQuery('#projectDropDown').html(projectDropDown);
-
+                for (let i = 0; i < rows.length; i++) {
+                    let option = document.createElement('option');
+                    option.value = rows[i].Id;
+                    option.text = rows[i].Title;
+                    if (project === rows[i].Id) {
+                        option.selected = true;
+                    }
+                    projectDropDown.appendChild(option);
+                }
             }
         });
 
@@ -203,14 +218,21 @@
             scope: this,
             success: function (result) {
                 let rows = result.rows;
-                let instrumentDropDown = '<label for="instrumentDropDown">Select Instrument:</label>';
-                instrumentDropDown += '<select id="instrumentDropDown" name="instrumentDropDown">';
-                for (let i = 0; i < rows.length; i++) {
-                    // if instrument == rows[i].Id, then select this option
-                    instrumentDropDown += '<option value="' + LABKEY.Utils.encodeHtml(rows[i].Id) + '" ' + (instrument == rows[i].Id ? 'selected' : '') + '>' + LABKEY.Utils.encodeHtml(rows[i].name) + '</option>';
+                let instrumentDropDown = document.getElementById('instrumentDropDown');
+                while (instrumentDropDown.firstChild) {
+                    instrumentDropDown.removeChild(instrumentDropDown.firstChild);
                 }
-                instrumentDropDown += '</select>';
-                jQuery('#instrumentDropDown').html(instrumentDropDown);
+
+                for (let i = 0; i < rows.length; i++) {
+                    let option = document.createElement('option');
+                    option.value = rows[i].Id;
+                    option.text = rows[i].name;
+                    if (instrument === rows[i].Id) {
+                        option.selected = true;
+                    }
+                    instrumentDropDown.appendChild(option);
+                }
+
                 loadInstrumentSchedule(function(instrumentSchedule) {
 
                     var calendarEl = document.getElementById('calendar');
@@ -228,11 +250,15 @@
                         eventContent: function(e) {
 
                             let content = '';
-                            let bgColor = (e.event.extendedProps.project == project ? e.backgroundColor : 'gray');
-                            let textColor = getContrastTextColor(stringToColor(bgColor));
-                            let dateStr = DateFormat.format.date(e.event.start, LABKEY.container.formats.timeFormat) + ' - ' + DateFormat.format.date(e.event.end, LABKEY.container.formats.timeFormat);
-                            let style = 'background-color: ' + bgColor + '; color: ' + textColor + ';' + 'width: 100%';
-                            content += '<div style="' + style + ';">'
+                            let bgColor = e.event.extendedProps.project === project ? e.backgroundColor : 'gray';
+                            const cl = e.event.extendedProps.project === project ? 'activeProjectEvent' : 'otherProjectEvent';
+                            let textColor = ScheduleUtils.getContrastTextColor(ScheduleUtils.stringToColor(bgColor));
+                            let timeFormatString = LABKEY.container.formats.timeFormat;
+                            // Strip seconds and milliseconds
+                            timeFormatString = timeFormatString.replace(':ss', '').replace('.SSS', '');
+                            let dateStr = DateFormat.format.date(e.event.start, timeFormatString) + ' - ' + DateFormat.format.date(e.event.end, timeFormatString);
+                            let style = 'background-color: ' + LABKEY.Utils.encodeHtml(bgColor) + '; color: ' + LABKEY.Utils.encodeHtml(textColor) + ';' + 'width: 100%';
+                            content += '<div class="' + LABKEY.Utils.encodeHtml(cl) + '" style="' + style + ';">'
                                         + '<div class="event-date">' + LABKEY.Utils.encodeHtml(dateStr) + '</div>'
                                         + '<div class="event-id" >' + 'Project : &nbsp' + LABKEY.Utils.encodeHtml(e.event.extendedProps.project) + '</div>'
                                     + '</div>';
@@ -240,7 +266,7 @@
                         },
                         eventMouseEnter: function (mouseEnterInfo) {
                             removeEventLog();
-                            let instrumentID = instrument ? instrument : $('#instrumentDropDown select[name="instrumentDropDown"]').val();
+                            let instrumentID = instrument ? instrument : $('#instrumentDropDown').val();
                             fetchInstrumentCosts(instrumentID, mouseEnterInfo.event.start, mouseEnterInfo.event.end, false);
                             let content = '';
                             let dateStr = DateFormat.format.date(mouseEnterInfo.event.start, LABKEY.container.formats.dateTimeFormat) + ' - ' + DateFormat.format.date(mouseEnterInfo.event.end, LABKEY.container.formats.dateTimeFormat);
@@ -248,10 +274,6 @@
                                     + '<div class="event-id" >' + 'Project Id : &nbsp' + LABKEY.Utils.encodeHtml(mouseEnterInfo.event.extendedProps.project) + '</div>'
                                     + '<div class="event-title">' + 'Title : &nbsp' + LABKEY.Utils.encodeHtml(mouseEnterInfo.event.title) + '</div>'
                                     + '<div class="event-date">' + LABKEY.Utils.encodeHtml(dateStr) + '</div>'
-
-                                    + '<a id="event-delete" class="labkey-text-link">[Delete]</a> <br/>'
-                                    + '<a id="event-edit" class="labkey-text-link">[Edit]</a> <br/>'
-                                    + '<a id="event-edit-project" class="labkey-text-link">[Edit Project]</a> <br/>'
                                     + '</div>';
 
 
@@ -324,9 +346,7 @@
             success: function (result) {
                 let rows = result.rows;
                 paymentMethodsData = rows;
-                let paymentMethodDropDown = '<p>Select Payment Method(s): <p> '+
-                        '<label for="paymentMethodDropDown">Payment Method:&nbsp</label>';
-                paymentMethodDropDown += '<select id="paymentMethodDropDown" name="paymentMethodDropDown">';
+                let paymentMethodDropDown = '<select id="paymentMethodDropDown" name="paymentMethodDropDown">';
                 for (let i = 0; i < rows.length; i++) {
                     paymentMethodDropDown += '<option value="' + LABKEY.Utils.encodeHtml(rows[i].Id) + '">' + LABKEY.Utils.encodeHtml(rows[i].name) + '</option>';
                 }
@@ -344,57 +364,40 @@
             schemaName: 'targetedms',
             queryName: 'projectResearcher',
             sort: 'name',
-            columns: 'Id,researcher/displayName, project',
+            columns: 'Id,researcher/displayName,researcher/UserId,project',
             filterArray: [
-                LABKEY.Filter.create('project', project, LABKEY.Filter.Types.EQUAL)
+                LABKEY.Filter.create('project', project, LABKEY.Filter.Types.EQUAL),
+                LABKEY.Filter.create('researcher/UserId', project, LABKEY.Filter.Types.NONBLANK)
             ],
             scope: this,
             success: function (result) {
                 let rows = result.rows;
-                let instrumentOperatorDropDown = '<label for="instrumentOperatorDropDown">Select Instrument Operator:</label>';
-                instrumentOperatorDropDown += '<select id="instrumentOperatorDropDown" name="instrumentOperatorDropDown">';
-                for (let i = 0; i < rows.length; i++) {
-                    instrumentOperatorDropDown += '<option value="' + LABKEY.Utils.encodeHtml(rows[i].Id) + '">' + LABKEY.Utils.encodeHtml(rows[i]['researcher/displayName']) + '</option>';
+                let instrumentOperatorDropDown = document.getElementById('instrumentOperatorDropDown');
+                while (instrumentOperatorDropDown.firstChild) {
+                    instrumentOperatorDropDown.removeChild(instrumentOperatorDropDown.firstChild);
                 }
-                instrumentOperatorDropDown += '</select>';
-                jQuery('#instrumentOperatorDropDown').html(instrumentOperatorDropDown);
+                for (let i = 0; i < rows.length; i++) {
+                    let option = document.createElement('option');
+                    option.value = rows[i]['researcher/UserId'];
+                    option.text = rows[i]['researcher/displayName'];
+                    if (instrument === rows[i].Id) {
+                        option.selected = true;
+                    }
+                    instrumentOperatorDropDown.appendChild(option);
+                }
             }
         });
 
-        function stringToColor(color) {
-            // Create a temporary DOM element
-            const tempElement = document.createElement('div');
-            tempElement.style.color = color;
-            document.body.appendChild(tempElement);
-
-            // Get the computed color value
-            const computedColor = window.getComputedStyle(tempElement).color;
-            document.body.removeChild(tempElement);
-
-            // Convert RGB to HEX
-            const rgbValues = computedColor.match(/\d+/g).map(Number);
-            if (rgbValues.length === 3) {
-                const [r, g, b] = rgbValues;
-                return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
-            }
-
-            return null; // Return null if conversion fails
-        }
-
-        function getContrastTextColor(hexcolor){
-            var r = parseInt(hexcolor.substring(1,3),16);
-            var g = parseInt(hexcolor.substring(3,5),16);
-            var b = parseInt(hexcolor.substring(5,7),16);
-            var yiq = ((r*299)+(g*587)+(b*114))/1000;
-            return (yiq >= 128) ? 'black' : 'white';
-        }
 
         function editEvent(event) {
             let startDate = event.startDate;
             let endDate = event.endDate;
-            if (!event.id) {
-                // for new events subtract 1 minute from the end date to show the end date in the date picker
-                endDate = new Date(endDate.getTime() - 60000);
+
+            if (!event.id && startDate.getHours() === 0 && startDate.getMinutes() === 0 && endDate.getHours() === 0 && endDate.getMinutes() === 0) {
+                // Default to starting at 8AM and ending at 5PM
+                startDate.setHours(8);
+                endDate.setHours(17);
+                endDate.setDate(endDate.getDate() - 1);
             }
 
             let startDateFormatted = DateFormat.format.date(startDate, LABKEY.container.formats.dateTimeFormat);
@@ -409,7 +412,7 @@
             $('#event-modal input[name="event-name"]').val(event ? event.name : '');
             $('#event-modal input[name="event-notes"]').val(event ? event.notes : '');
             $('#delete-event').toggle(!!event.id);
-            $('#add-event').text(event.id ? 'Edit' : 'Add');
+            $('#add-event').text('Save');
             $('#event-modal').modal();
         }
 
@@ -424,10 +427,10 @@
             eventToSave.startTime = $('#event-modal input[name="event-start-date"]').val();
             eventToSave.endTime = $('#event-modal input[name="event-end-date"]').val();
             eventToSave.project = project;
-            eventToSave.instrument = instrument ? instrument : $('#instrumentDropDown select[name="instrumentDropDown"]').val();
+            eventToSave.instrument = instrument ? instrument : $('#instrumentDropDown').val();
             eventToSave.name = $('#event-modal input[name="event-name"]').val();
             eventToSave.notes = $('#event-modal input[name="event-notes"]').val();
-            eventToSave.instrumentoperator = $('#instrumentOperatorDropDown select[name="instrumentOperatorDropDown"]').val();
+            eventToSave.instrumentoperator = $('#instrumentOperatorDropDown').val();
 
             if (eventToSave.endTime < eventToSave.startTime) {
                 alert('End date must be after start date');
@@ -437,7 +440,7 @@
             const events = calendar.getEvents();
             // validate that the events time do not overlap with existing events
             for (let i = 0; i < events.length; i++) {
-                if (eventToSave.id != events[i].id) {
+                if (eventToSave.id !== events[i].id) {
                     let newEvent = {
                         start: new Date(eventToSave.startTime),
                         end: new Date(eventToSave.endTime)
@@ -685,12 +688,13 @@
 
         function loadInstrumentSchedule(callback) {
             let instrumentSchedule = [];
+            const currentInstrument = instrument ? instrument : parseInt($('#instrumentDropDown').val());
             LABKEY.Query.selectRows({
                 schemaName: 'targetedms',
                 queryName: 'instrumentSchedule',
-                columns: 'Id,startTime,endTime,name,notes,instrument/color,project/Id, project/title',
+                columns: 'Id,startTime,endTime,name,notes,instrument/color,instrument/Id,project/Id, project/Title',
                 filterArray: [
-                    LABKEY.Filter.create('instrument', instrument ? instrument : $('#instrumentDropDown select[name="instrumentDropDown"]').val()),
+                    LABKEY.Filter.create('instrument', instrument ? instrument : $('#instrumentDropDown').val()),
                 ],
                 success: function (data) {
                     let rows = data.rows;
@@ -704,7 +708,7 @@
                             notes: row.notes,
                             color: row['instrument/color'],
                             project: row['project/Id'],
-                            title: row['project/title']
+                            title: row['project/Title']
                         });
                     }
                     callback(instrumentSchedule);
@@ -728,10 +732,6 @@
             deleteEvent();
         });
 
-        $('#event-delete').click(function () {
-            deleteEvent();
-        });
-
         $('#close-schedule').click(function () {
             $('#schedule-save-error').text('');
             $('#event-modal').modal('hide');
@@ -745,8 +745,7 @@
         addPaymentMethodEl.addEventListener('click', function () {
             paymentMethodCount++;
             let id = 'paymentMethodDropDown' + paymentMethodCount;
-            let paymentMethodDropDown = '<label for=' + id + '>Payment Method:</label>';
-            paymentMethodDropDown += '<select id=' + id + ' name=' + id + '">';
+            let paymentMethodDropDown = '<select id=' + id + ' name=' + id + '">';
             for (let i = 0; i < paymentMethodsData.length; i++) {
                 paymentMethodDropDown += '<option value="' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].Id) + '">' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].name) + '</option>';
             }
@@ -772,17 +771,16 @@
         });
 
         // refresh the page on project change
-        document.getElementById('projectDropDown').addEventListener('change', function (event) {
-            document.location.href = LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument', null, {project: event.target.value});
-
+        document.getElementById('projectDropDown').addEventListener('change', function () {
+            document.location.href = LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument', null, {project: document.getElementById('projectDropDown').value});
         });
 
         // refresh the page on instrument change
-        document.getElementById('instrumentDropDown').addEventListener('change', function (event) {
-            document.location.href = LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument', null, {project: LABKEY.ActionURL.getParameter('project'), instrument: event.target.value});
+        document.getElementById('instrumentDropDown').addEventListener('change', function () {
+            document.location.href = LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument', null, {project: LABKEY.ActionURL.getParameter('project'), instrument: document.getElementById('instrumentDropDown').value});
         });
 
-        document.getElementById('instrument-rates').setAttribute('href', LABKEY.ActionURL.buildURL('query', 'executeQuery', LABKEY.ActionURL.getContainer(), {schemaName: 'targetedms', 'query.queryName': 'InstrumentRate'}));
+        document.getElementById('instrument-rates').innerHTML = LABKEY.Utils.textLink({text: 'View the current rates for instruments', href: LABKEY.ActionURL.buildURL('query', 'executeQuery', LABKEY.ActionURL.getContainer(), {schemaName: 'targetedms', 'query.queryName': 'InstrumentRate'})});
 
     });
 

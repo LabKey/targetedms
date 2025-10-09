@@ -1771,6 +1771,7 @@
         </columns>
     </table>
     <table tableName="msProject" tableDbType="TABLE">
+        <description>A project used for scheduling and billing instruments</description>
         <columns>
             <column columnName="Id"/>
             <column columnName="affiliation"/>
@@ -1793,7 +1794,9 @@
         <columns>
             <column columnName="Id"/>
             <column columnName="project"/>
-            <column columnName="researcher"/>
+            <column columnName="researcher">
+                <required>true</required>
+            </column>
             <column columnName="Created"/>
             <column columnName="CreatedBy"/>
             <column columnName="Modified"/>
@@ -1802,12 +1805,15 @@
         </columns>
     </table>
     <table tableName="msInstrument" tableDbType="TABLE">
+        <description>Instruments that can be scheduled and whose usage can be billed</description>
         <columns>
             <column columnName="Id"/>
             <column columnName="name"/>
             <column columnName="description"/>
             <column columnName="active"/>
-            <column columnName="color"/>
+            <column columnName="color">
+                <description>HTML/CSS color description. Can be RGB like #00ee00 or a named color like "red"</description>
+            </column>
             <column columnName="massSpec"/>
             <column columnName="instrument"/>
             <column columnName="Created"/>
@@ -1817,9 +1823,13 @@
             <column columnName="Container"/>
         </columns>
     </table>
-    <table tableName="paymentMethod" tableDbType="TABLE">
+    <table tableName="paymentMethod" tableDbType="TABLE" useColumnOrder="true">
         <columns>
             <column columnName="Id"/>
+            <column columnName="name">
+                <required>true</required>
+                <inputType>text</inputType>
+            </column>
             <column columnName="UWBudgetNumber"/>
             <column columnName="budgetExpirationDate"/>
             <column columnName="PONumber"/>
@@ -1837,7 +1847,6 @@
             <column columnName="isCurrent"/>
             <column columnName="federalFunding"/>
             <column columnName="poAmount"/>
-            <column columnName="name"/>
             <column columnName="worktag"/>
             <column columnName="resourceWorktag"/>
             <column columnName="resourceWorktagDescription"/>
@@ -1865,6 +1874,7 @@
         </columns>
     </table>
     <table tableName="instrumentSchedule" tableDbType="TABLE">
+        <description>Scheduled usage of a particular instrument for particular project</description>
         <columns>
             <column columnName="Id"/>
             <column columnName="instrument"/>
@@ -1886,7 +1896,9 @@
             <column columnName="Id"/>
             <column columnName="name"/>
             <column columnName="description"/>
-            <column columnName="setupFee"/>
+            <column columnName="setupFee">
+                <formatString>$#,##0.00</formatString>
+            </column>
             <column columnName="Created"/>
             <column columnName="CreatedBy"/>
             <column columnName="Modified"/>
@@ -1899,7 +1911,9 @@
             <column columnName="Id"/>
             <column columnName="instrument"/>
             <column columnName="rateType"/>
-            <column columnName="fee"/>
+            <column columnName="fee">
+                <formatString>$#,##0.00</formatString>
+            </column>
             <column columnName="Created"/>
             <column columnName="CreatedBy"/>
             <column columnName="Modified"/>
