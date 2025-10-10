@@ -106,6 +106,7 @@ public class CrossLinkedPeptideInfo
 
     public List<PeptideSequence> getAllSequences()
     {
+
         return getSequences(0);
     }
 
@@ -189,12 +190,13 @@ public class CrossLinkedPeptideInfo
                     do
                     {
                         index = proteinSequence.indexOf(getUnmodified(), index + 1);
-                        if (index >= 0)
+                        if (index != -1 &&
+                                (index == 0 || proteinSequence.charAt(index - 1) == 'K' || proteinSequence.charAt(index - 1) == 'R'))
                         {
                             result.add(new Match(protein, index));
                         }
                     }
-                    while (index > 0);
+                    while (index >= 0);
                 }
             }
             return result;
@@ -254,6 +256,37 @@ public class CrossLinkedPeptideInfo
             Assert.assertEquals("Link location", Set.of(4, 7, 0, 1), i.getBaseSequence().getLinkIndices());
             Assert.assertEquals("Link location", Set.of(9), i.getExtraSequences().get(0).getLinkIndices());
             Assert.assertEquals("Link location", Set.of(4, 7, 0, 1), i.getExtraSequences().get(4).getLinkIndices());
+        }
+
+        @Test
+        public void testTrypticMatches()
+        {
+            CrossLinkedPeptideInfo info = new CrossLinkedPeptideInfo("PEPTIDE");
+            PeptideSequence seq = info.getBaseSequence();
+
+            // Single protein containing multiple occurrences of PEPTIDE:
+            // - at start (allowed)
+            // - preceded by A (disallowed)
+            // - preceded by K (allowed)
+            // - preceded by R (allowed)
+            Protein protein = new Protein();
+            String proteinSeq = "PEPTIDE" + "APEPTIDE" + "KPEPTIDE" + "RPEPTIDE";
+            protein.setSequence(proteinSeq);
+
+            List<Protein> proteins = Arrays.asList(protein);
+            List<Match> matches = seq.findMatches(proteins);
+
+            // Expect three valid matches: indices 0 (start), 16 (after K), 24 (after R)
+            Assert.assertEquals("Should find three valid matches within a single protein sequence", 3, matches.size());
+
+            Assert.assertSame("First match should be at start (index 0)", protein, matches.get(0).protein());
+            Assert.assertEquals(0, matches.get(0).index());
+
+            Assert.assertSame("Second match should be after K at index 16", protein, matches.get(1).protein());
+            Assert.assertEquals(16, matches.get(1).index());
+
+            Assert.assertSame("Third match should be after R at index 24", protein, matches.get(2).protein());
+            Assert.assertEquals(24, matches.get(2).index());
         }
     }
 
