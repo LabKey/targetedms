@@ -103,3 +103,7 @@
     font-family: 'Roboto-Bold', 'Arial-Bold', 'Helvetica-Bold', sans-serif;
     font-size: 14px;
 }
+
+.x4-panel-header-text-container-default {
+  font-weight: normal;
+}

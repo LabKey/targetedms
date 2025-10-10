@@ -205,9 +205,10 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         qcPlotsWebPart.setGroupXAxisValuesByDate(false);
 
         // filter plot by start/end date to check reference points without training points in view
-        qcPlotsWebPart.filterQCPlots("2013-08-19", "2013-08-19", PRECURSORS.length);
+        qcPlotsWebPart.filterQCPlots("2013-08-19", "2013-08-19", true);
         shapeCounts = new ArrayList<>();
         shapeCounts.add(Pair.of(SvgShapes.CIRCLE.getPathPrefix(), 14));
+        qcPlotsWebPart = new QCPlotsWebPart(getDriver());
         verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 0, shapeCounts, 2);
     }
 

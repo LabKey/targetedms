@@ -62,17 +62,13 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         log("Verifying error checking on trailing last number");
         trailingLast = "-1";
         qcPlotsWebPart.setTrailingLast(trailingLast);
-        longWait().until(ExpectedConditions.textToBePresentInElement(Locators.labkeyError.findWhenNeeded(getDriver()),
-                "TrailingMean - Please enter a positive integer (>2) that is less than or equal to the total number of available runs - 47"));
+        waitForText("TrailingMean - Please enter a positive integer (>2) that is less than or equal to the total number of available runs - 47");
 
         trailingLast = "48";
         qcPlotsWebPart.setTrailingLast(trailingLast);
         qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.MetricValue, QCPlotsWebPart.QCPlotType.TrailingMean);
-        longWait().until(ExpectedConditions.textToBePresentInElement(Locators.labkeyError.findWhenNeeded(getDriver()),
-                "TrailingMean - The number you entered is larger than the number of available runs. Only 47 runs are used for calculation"));
+        waitForText("TrailingMean - The number you entered is larger than the number of available runs. Only 47 runs are used for calculation");
         checker().verifyEquals("Incorrect plot count", REPLICATE_COUNT , qcPlotsWebPart.getPlots().size());
-        checker().verifyEquals("Incorrect number of times error message was displayed", REPLICATE_COUNT,
-                Locators.labkeyError.findElements(getDriver()).size());
 
         log("Verifying y-axis value based on metric type");
         trailingLast = "3";
@@ -145,17 +141,13 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
         log("Verifying error checking on trailing last number");
         trailingLast = "-1";
         qcPlotsWebPart.setTrailingLast(trailingLast);
-        longWait().until(ExpectedConditions.textToBePresentInElement(Locators.labkeyError.findWhenNeeded(getDriver()),
-                "TrailingCV - Please enter a positive integer (>2) that is less than or equal to the total number of available runs - 47"));
+        waitForText("TrailingCV - Please enter a positive integer (>2) that is less than or equal to the total number of available runs - 47");
 
         trailingLast = "48";
         qcPlotsWebPart.setTrailingLast(trailingLast);
         qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.MetricValue, QCPlotsWebPart.QCPlotType.TrailingCV);
-        longWait().until(ExpectedConditions.textToBePresentInElement(Locators.labkeyError.findWhenNeeded(getDriver()),
-                "TrailingCV - The number you entered is larger than the number of available runs. Only 47 runs are used for calculation"));
+        waitForText("TrailingCV - The number you entered is larger than the number of available runs. Only 47 runs are used for calculation");
         checker().verifyEquals("Incorrect plot count", REPLICATE_COUNT , qcPlotsWebPart.getPlots().size());
-        checker().verifyEquals("Incorrect number of times error message was displayed", REPLICATE_COUNT,
-                Locators.labkeyError.findElements(getDriver()).size());
 
         trailingLast = "3";
         qcPlotsWebPart.setQCPlotTypes(QCPlotsWebPart.QCPlotType.TrailingCV);

@@ -56,7 +56,8 @@
     String plotPanelId = "tiledPlotPanel-" + uid;
     String plotPaginationPanelId = "plotPaginationPanel-" + uid;
 %>
-
+<!-- Help ExtJS plot controls reliably grab the width they need -->
+<div style="height: 1px; width: 1250px;"></div>
 <div id="<%=h(reportPanelId)%>"></div>
 <div id="<%=h(plotPaginationPanelId)%>" class="plotPaginationHeaderPanel"></div>
 <div id="<%=h(plotPanelId)%>" class="tiledPlotPanel"></div>

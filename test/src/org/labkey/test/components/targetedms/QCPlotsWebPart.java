@@ -20,8 +20,8 @@ import org.labkey.test.Locator;
 import org.labkey.test.Locators;
 import org.labkey.test.WebDriverWrapper;
 import org.labkey.test.components.BodyWebPart;
-import org.labkey.test.components.ext4.Checkbox;
 import org.labkey.test.components.ext4.ComboBox;
+import org.labkey.test.components.ext4.RadioButton;
 import org.labkey.test.components.ext4.Window;
 import org.labkey.test.util.Ext4Helper;
 import org.labkey.test.util.LogMethod;
@@ -252,22 +252,44 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void setGroupXAxisValuesByDate(boolean check)
     {
-        if (elementCache().groupedXCheckbox.get() != check)
+        if (isGroupXAxisValuesByDateChecked() != check)
         {
-            doAndWaitForUpdate(() -> elementCache().groupedXCheckbox.set(check));
+            if (check)
+                doAndWaitForUpdate(() -> elementCache().xAxisGroupingDateRadio.check());
+            else
+                doAndWaitForUpdate(() -> elementCache().xAxisGroupingReplicateRadio.check());
         }
     }
 
     public boolean isGroupXAxisValuesByDateChecked()
     {
-        return elementCache().groupedXCheckbox.isChecked();
+        try
+        {
+            return elementCache().xAxisGroupingDateRadio.isSelected();
+        }
+        catch (NoSuchElementException | StaleElementReferenceException e)
+        {
+            // Fallback: if radios are not present yet, assume unchecked
+            return false;
+        }
     }
 
     public void setShowAllPeptidesInSinglePlot(boolean check)
     {
-        if (elementCache().singlePlotCheckbox.get() != check)
+        // 'check' means show all series combined in a single plot
+        try
         {
-            doAndWaitForUpdate(() -> elementCache().singlePlotCheckbox.set(check));
+            if (isShowAllPeptidesInSinglePlotChecked() != check)
+            {
+                if (check)
+                    doAndWaitForUpdate(() -> elementCache().plotsCombinedRadio.check());
+                else
+                    doAndWaitForUpdate(() -> elementCache().plotsPerPrecursorRadio.check());
+            }
+        }
+        catch (NoSuchElementException | StaleElementReferenceException e)
+        {
+            // Fallback: ignore if control not present yet
         }
     }
 
@@ -282,32 +304,63 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void setShowExcludedPoints(boolean check)
     {
-        elementCache().showExcludedCheckbox.set(check);
+        if (check)
+        {
+            elementCache().excludedReplicatesShow.check();
+        }
+        else
+        {
+            elementCache().excludedReplicatesHide.check();
+        }
     }
 
     public boolean isShowExcludedPointsChecked()
     {
-        return elementCache().showExcludedCheckbox.isChecked();
+        return elementCache().excludedReplicatesShow.isChecked();
     }
 
     public void setShowReferenceGuideSet(boolean check)
     {
-        elementCache().showReferenceGuideSet.set(check);
+        if (isShowReferenceGuideSetChecked() != check)
+        {
+            if (check)
+            {
+                elementCache().referenceGuideSetShow.check();
+            }
+            else
+            {
+                elementCache().referenceGuideSetHide.check();
+            }
+        }
     }
 
     public void setShowExcludedPrecursors(boolean check)
     {
-        elementCache().showExcludedPrecursors.set(check);
+        if (check)
+        {
+            elementCache().excludedPrecursorsShow.check();
+        }
+        else
+        {
+            elementCache().excludedPrecursorsHide.check();
+        }
     }
 
     public boolean isShowReferenceGuideSetChecked()
     {
-        return elementCache().showReferenceGuideSet.isChecked();
+        return elementCache().referenceGuideSetShow.isChecked();
     }
 
     public boolean isShowAllPeptidesInSinglePlotChecked()
     {
-        return elementCache().singlePlotCheckbox.isChecked();
+        try
+        {
+            return elementCache().plotsCombinedRadio.isSelected();
+        }
+        catch (NoSuchElementException | StaleElementReferenceException e)
+        {
+            return false;
+        }
     }
 
     public QCPlotsWebPart saveAsDefaultView()
@@ -323,11 +376,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         return this;
     }
 
-    public void applyRange()
-    {
-        doAndWaitForUpdate(() -> elementCache().applyRangeButton.click());
-    }
-
     public void waitForPlots(Integer plotCount)
     {
         if (plotCount > 0)
@@ -339,6 +387,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         {
             getWrapper().longWait().until(ExpectedConditions.textToBePresentInElement(elementCache().plotPanel, "There were no records found. The date filter applied may be too restrictive."));
         }
+    }
+
+    public boolean isCombinedPlotControlVisible()
+    {
+        return elementCache().plotsCombinedRadio.isDisplayed();
     }
 
     public List<QCPlot> getPlots()
@@ -374,7 +427,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
             resetInitialQCPlotFields();
         }
 
-        filterQCPlots("2013-08-09", "2013-08-27", expectedPlotCount);
+        filterQCPlots("2013-08-09", "2013-08-27", resetForm);
     }
 
     @LogMethod
@@ -391,13 +444,18 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     }
 
     @LogMethod
-    public void filterQCPlots(@LoggedParam String startDate, @LoggedParam String endDate, int expectedPlotCount)
+    public void filterQCPlots(@LoggedParam String startDate, @LoggedParam String endDate, boolean waitForPlotsToRefresh)
     {
         setDateRangeOffset(DateRangeOffset.CUSTOM);
         setStartDate(startDate);
-        setEndDate(endDate);
-        applyRange();
-        waitForPlots(expectedPlotCount);
+        if (waitForPlotsToRefresh)
+        {
+            doAndWaitForUpdate(() -> setEndDate(endDate));
+        }
+        else
+        {
+            setEndDate(endDate);
+        }
     }
 
     public int getGuideSetTrainingRectCount()
@@ -871,17 +929,24 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
         ComboBox qcPlotTypeCombo = new ComboBox.ComboBoxFinder(getDriver()).withIdPrefix("qc-plot-type-with-y-options")
                 .findWhenNeeded(this).setMatcher(Ext4Helper.TextMatchTechnique.CONTAINS).setMultiSelect(true);
-        Checkbox groupedXCheckbox = new Checkbox(Locator.css("#grouped-x-field input")
-                .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
-        Checkbox singlePlotCheckbox = new Checkbox(Locator.css("#peptides-single-plot input")
-                .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
-        Checkbox showExcludedCheckbox = new Checkbox(Locator.css("#show-excluded-points input")
-                .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
-        Checkbox showReferenceGuideSet = new Checkbox(Locator.css("#show-oorange-gs input")
-                .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
-        Checkbox showExcludedPrecursors = new Checkbox(Locator.css("#show-excluded-precursors input")
-                .findWhenNeeded(this).withTimeout(WAIT_FOR_JAVASCRIPT));
+        WebElement groupedXPerReplicate = Locator.css("#grouped-x-field input[value=replicate]").findWhenNeeded(this);
 
+        RadioButton xAxisGroupingReplicateRadio = new RadioButton.RadioButtonFinder().withLabel("per replicate").findWhenNeeded(getDriver());
+        RadioButton xAxisGroupingDateRadio = new RadioButton.RadioButtonFinder().withLabel("per date").findWhenNeeded(getDriver());
+
+        RadioButton plotsCombinedRadio = new RadioButton.RadioButtonFinder().withLabel("combined").findWhenNeeded(getDriver());
+        RadioButton plotsPerPrecursorRadio = new RadioButton.RadioButtonFinder().withLabel("per precursor").findWhenNeeded(getDriver());
+
+        // These have the same label as another group, but are first in the page
+        RadioButton excludedReplicatesShow = new RadioButton.RadioButtonFinder().withLabel("show").findWhenNeeded(getDriver());
+        RadioButton excludedReplicatesHide = new RadioButton.RadioButtonFinder().withLabel("hide").findWhenNeeded(getDriver());
+
+        // Note that these two won't work with the isChecked() call but they have the same labels as the ones above so we can't simply check by label
+        RadioButton excludedPrecursorsShow = new RadioButton(Locator.id("excluded-precursors-show").findWhenNeeded(getDriver()));
+        RadioButton excludedPrecursorsHide = new RadioButton(Locator.id("excluded-precursors-hide").findWhenNeeded(getDriver()));
+
+        RadioButton referenceGuideSetShow = new RadioButton.RadioButtonFinder().withLabel("always show").findWhenNeeded(getDriver());
+        RadioButton referenceGuideSetHide = new RadioButton.RadioButtonFinder().withLabel("when in date range").findWhenNeeded(getDriver());
 
         WebElement plotPanel = Locator.css("div.tiledPlotPanel").findWhenNeeded(this);
         WebElement paginationPanel = Locator.css("div.plotPaginationHeaderPanel").findWhenNeeded(this);

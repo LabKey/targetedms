@@ -128,9 +128,9 @@ public class TargetedMSHidePeptidesAndMolecules extends TargetedMSTest
         DataRegionTable table = gotoIncludeExcludeMenu();
         table.checkCheckbox(rowIndex);
         if (action.equals("Excluded"))
-            table.doAndWaitForUpdate(() -> table.clickHeaderButton("Mark As Excluded"));
+            table.doAndWaitForUpdate(() -> table.clickHeaderButton("Exclude"));
         else
-            table.doAndWaitForUpdate(() -> table.clickHeaderButton("Mark As Included"));
+            table.doAndWaitForUpdate(() -> table.clickHeaderButton("Include"));
         checker().withScreenshot("MarkedAsColumnUpdate_" + folderName).verifyEquals("Marked As column not updated with selection of action", action, table.getDataAsText(rowIndex, "markedAs"));
 
         log("Verifying targetedms.ExcludedPrecursors table gets updated with action");
