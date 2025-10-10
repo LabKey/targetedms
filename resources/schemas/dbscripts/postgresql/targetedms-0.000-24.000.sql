@@ -3925,8 +3925,6 @@ ALTER TABLE targetedms.spectrumlibrary ALTER COLUMN FileNameHint TYPE VARCHAR(30
 ALTER TABLE targetedms.IsotopeModification ALTER COLUMN AminoAcid TYPE VARCHAR(100);
 ALTER TABLE targetedms.StructuralModification ALTER COLUMN AminoAcid TYPE VARCHAR(100);
 
-SELECT core.executeJavaInitializationCode('recalculateAreaProportions');
-
 ALTER TABLE targetedms.SampleFile ADD IRTSlope REAL;
 ALTER TABLE targetedms.SampleFile ADD IRTIntercept REAL;
 ALTER TABLE targetedms.SampleFile ADD IRTCorrelation REAL;
@@ -4150,9 +4148,6 @@ DELETE FROM targetedms.ReplicateAnnotation WHERE source = 'User';
 ALTER TABLE targetedms.ReplicateAnnotation DROP COLUMN source;
 
 ALTER TABLE targetedms.QCAnnotation ADD COLUMN EndDate TIMESTAMP;
-
--- Poke a new row annotation type into the /Shared project
-SELECT core.executeJavaInitializationCode('addInstrumentDowntimeAnnotationType');
 
 UPDATE targetedms.QCMetricConfiguration SET EnabledQueryName = 'QCMetricEnabled_precursorAndTransitionAreas', EnabledSchemaName = 'targetedms' WHERE Name = 'Transition/Precursor Area Ratio';
 UPDATE targetedms.QCMetricConfiguration SET EnabledQueryName = 'QCMetricEnabled_precursorAndTransitionAreas', EnabledSchemaName = 'targetedms' WHERE Name = 'Transition & Precursor Areas';
