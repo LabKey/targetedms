@@ -106,7 +106,6 @@ public class CrossLinkedPeptideInfo
 
     public List<PeptideSequence> getAllSequences()
     {
-
         return getSequences(0);
     }
 
