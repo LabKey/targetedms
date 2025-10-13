@@ -175,7 +175,7 @@
         instrument = instrument ? parseInt(instrument) || null : null;
 
         if (!project) {
-            alert('No project selected');
+            document.getElementById('calendar').innerText = 'Invalid or no project specified';
             return;
         }
 
