@@ -1,1 +1,0 @@
-ALTER TABLE targetedms.GeneralPrecursor ADD SpectrumFilter VARBINARY(MAX);

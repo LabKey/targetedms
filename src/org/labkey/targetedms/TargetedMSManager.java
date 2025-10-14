@@ -1607,7 +1607,7 @@ public class TargetedMSManager
     {
         purgeDeletedSampleFiles(sampleFileIds);
 
-        List<String> files = sampleFileIds.stream().map(sampleFileId -> getSampleFileUploadFile(sampleFileId)).collect(Collectors.toList());
+        List<String> files = sampleFileIds.stream().map(TargetedMSManager::getSampleFileUploadFile).collect(Collectors.toList());
 
         execute(getSqlDialect().appendInClauseSql(new SQLFragment("DELETE FROM " + getTableInfoSampleFile() + " WHERE Id "), sampleFileIds));
 
@@ -2633,11 +2633,11 @@ public class TargetedMSManager
         // Create temp tables to help make the rollups efficient
         SqlExecutor executor = new SqlExecutor(getSchema());
         executor.execute("CREATE " + getSqlDialect().getTempTableKeyword() + " TABLE " +
-                precursorGroupingsTableName + "(Grouping " + (getSqlDialect().isSqlServer() ? "NVARCHAR" : "VARCHAR") + "(300), PrecursorId BIGINT, PeptideGroupId BIGINT)");
+                precursorGroupingsTableName + "(Grouping VARCHAR(300), PrecursorId BIGINT, PeptideGroupId BIGINT)");
         executor.execute("CREATE " + getSqlDialect().getTempTableKeyword() + " TABLE " +
-                moleculeGroupingsTableName + "(Grouping " + (getSqlDialect().isSqlServer() ? "NVARCHAR" : "VARCHAR") + "(300), GeneralMoleculeId BIGINT, PeptideGroupId BIGINT)");
+                moleculeGroupingsTableName + "(Grouping VARCHAR(300), GeneralMoleculeId BIGINT, PeptideGroupId BIGINT)");
         executor.execute("CREATE " + getSqlDialect().getTempTableKeyword() + " TABLE " +
-                areasTableName + "(Grouping " + (getSqlDialect().isSqlServer() ? "NVARCHAR" : "VARCHAR") + "(300), PeptideGroupId BIGINT, SampleFileId BIGINT, Area REAL)");
+                areasTableName + "(Grouping VARCHAR(300), PeptideGroupId BIGINT, SampleFileId BIGINT, Area REAL)");
 
         // Populate the temp tables
         SQLFragment precursorGroupingsSQL = new SQLFragment("INSERT INTO ").append(precursorGroupingsTableName).append("(Grouping, PrecursorId, PeptideGroupId)\n")

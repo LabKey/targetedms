@@ -23,7 +23,6 @@ import org.labkey.targetedms.parser.PrecursorChromInfo;
 import org.labkey.targetedms.parser.SampleFile;
 import org.labkey.targetedms.query.PrecursorManager;
 
-import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -43,7 +42,7 @@ public class ChromatogramCrawlerJob extends PipelineJob
     public ChromatogramCrawlerJob(ViewBackgroundInfo info, @NotNull PipeRoot root)
     {
         super(TargetedMSPipelineProvider.name, info, root);
-        setLogFile(new File(root.getRootPath(), FileUtil.makeFileNameWithTimestamp("ChromatogramCrawl", "log")));
+        setLogFile(root.getRootFileLike().resolveChild(FileUtil.makeFileNameWithTimestamp("ChromatogramCrawl", "log")).toNioPathForWrite());
 
         getLogger().info("Description of key statuses:");
         for (Chromatogram.SourceStatus value : Chromatogram.SourceStatus.values())
@@ -199,8 +198,7 @@ public class ChromatogramCrawlerJob extends PipelineJob
                     _dbOnlyCount,
                     _diskOnlyCount,
                     _skydNotPresentCount,
-                    _mismatchCount,
-                    _noChromatogramCount);
+                    _mismatchCount);
         }
     }
 

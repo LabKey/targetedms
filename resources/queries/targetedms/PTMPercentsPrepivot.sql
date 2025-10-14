@@ -9,7 +9,7 @@ SELECT ci.ModifiedAreaProportion,
        ci.PeptideId.PeptideGroupId,
        psm.IndexAA,
        psm.StructuralModId,
-       -- Explicitly cast for SQLServer to avoid trying to add as numeric types
+       -- Explicitly cast to avoid trying to add as numeric types
        (SUBSTRING(ci.PeptideId.Sequence, IndexAA + 1, 1)) || CAST(ci.PeptideId.StartIndex + IndexAA + 1 AS VARCHAR) AS SiteLocation
 FROM
      targetedms.GeneralMoleculeChromInfo ci LEFT JOIN
