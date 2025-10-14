@@ -19,6 +19,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.Locator;
+import org.labkey.test.util.DataRegion;
+import org.labkey.test.util.DataRegionTable;
 
 import static org.junit.Assert.assertTrue;
 
@@ -56,10 +58,13 @@ public class TargetedMSMAMTest extends TargetedMSTest
         assertTextPresent("Chromatograms");
 
         clickAndWait(Locator.linkContainingText("Peptide Map"));
+        DataRegionTable table = new DataRegionTable("PeptideIds", getDriver());
+        table.setPageSize(250);
         assertTextPresentInThisOrder("11.3", "14.1", "14.8");
         assertTextPresentInThisOrder("1501.75", "1078.50", "1547.71");
-        assertTextPresentInThisOrder("NU205", "NU205", "1433Z", "UCRI; RL35");
-        assertTextPresentInThisOrder("70-84", "325-333", "28-41", "190-196; 26-32");
+        assertTextPresentInThisOrder("NU205", "1433Z", "RL35", "HSP72; HSP7C");
+        assertTextNotPresent("UCRI; RL35"); // Ensure we don't have non-tryptic matches anymore
+        assertTextPresentInThisOrder("70-84", "325-333", "28-41", "305-314; 302-311");
         assertTextPresentInThisOrder("(K)ASTEGVAIQGQQGTR(L)", "(K)AQYEDIANR(S)", "(K)SVTEQGAELSNEER(N)");
         assertTextPresentInThisOrder("Carbamidomethyl Cysteine @ C157", "Carbamidomethyl Cysteine @ C245", "Carbamidomethyl Cysteine @ C94");
 
@@ -75,15 +80,15 @@ public class TargetedMSMAMTest extends TargetedMSTest
         clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
         clickAndWait(Locator.linkContainingText(CROSS_LINKED_SKY_FILE));
 
-        verifyRunSummaryCountsPep(2,3,0, 3,3, 1, 0, 0);
+        verifyRunSummaryCountsPep(2,2,0, 2,2, 1, 0, 0);
 
         clickAndWait(Locator.linkContainingText("Peptide Map"));
-        assertTextPresentInThisOrder("364-366", "367-369", "364-367");
+        assertTextPresentInThisOrder("121-124", "342-345", "142-145");
         // Disulfide bonds
-        assertTextPresentInThisOrder("Q364-T369-D364/\nN366-T369-D364", "V121-S345-Q142/\nQ124-S345-Q142");
-        assertTextPresentInThisOrder("(A)LKPLALV(D)", "(G)AVVQDPA(Y)", "(F)YGEATSR(E)");
+        assertTextPresentInThisOrder("V121-S345-Q142/\nQ124-S345-Q142", "L11-A137-Y271/\nL11-A137-Y271/\nV17-A137-Y271/");
+        assertTextPresentInThisOrder("(K)LKPLALV(D)", "(K)AVVQDPA(Y)", "(R)YGEATSR(E)");
 
         // Ensure that the highlighting is as expected for both crosslinking and modification
-        assertTrue(getHtmlSource().contains("(Y)<span style=\"font-weight:bold;color:green;text-decoration:underline;\">Q</span><span style=\"font-weight:bold;text-decoration:underline;\">M</span><span style=\"font-weight:bold;color:green;\">N</span>(D)"));
+        assertTrue(getHtmlSource().contains("(R)<span style=\"font-weight:bold;color:green;text-decoration:underline;\">V</span>SS<span style=\"font-weight:bold;color:green;\">Q</span>(Q)"));
     }
 }
