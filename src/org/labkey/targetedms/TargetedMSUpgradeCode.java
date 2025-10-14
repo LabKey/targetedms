@@ -15,28 +15,16 @@
  */
 package org.labkey.targetedms;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.labkey.api.data.ContainerManager;
-import org.labkey.api.data.DeferredUpgrade;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.data.UpgradeCode;
 import org.labkey.api.module.Module;
 import org.labkey.api.module.ModuleContext;
 import org.labkey.api.module.ModuleLoader;
-import org.labkey.api.pipeline.PipeRoot;
-import org.labkey.api.pipeline.PipelineService;
-import org.labkey.api.pipeline.PipelineValidationException;
 import org.labkey.api.security.User;
-import org.labkey.api.util.ContextListener;
-import org.labkey.api.util.StartupListener;
-import org.labkey.api.util.UnexpectedException;
-import org.labkey.api.view.ViewBackgroundInfo;
-import org.labkey.targetedms.pipeline.AreaProportionRecalcJob;
 import org.labkey.targetedms.query.QCAnnotationTypeTable;
 
-import jakarta.servlet.ServletContext;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -48,8 +36,6 @@ import java.util.Set;
  */
 public class TargetedMSUpgradeCode implements UpgradeCode
 {
-    private static final Logger LOG = LogManager.getLogger(TargetedMSUpgradeCode.class);
-
     // called at every bootstrap to initialize annotation types
     @SuppressWarnings({"UnusedDeclaration"})
     public void populateDefaultAnnotationTypes(final ModuleContext moduleContext)
@@ -59,21 +45,12 @@ public class TargetedMSUpgradeCode implements UpgradeCode
             insertAnnotationType("Instrumentation Change", "FF0000", moduleContext.getUpgradeUser());
             insertAnnotationType("Reagent Change", "00FF00", moduleContext.getUpgradeUser());
             insertAnnotationType("Technician Change", "0000FF", moduleContext.getUpgradeUser());
+            insertAnnotationType(QCAnnotationTypeTable.INSTRUMENT_DOWNTIME, "CCCC00", moduleContext.getUpgradeUser());
 
             // Enable the module in the /Shared container so that it can be resolved
             Set<Module> activeModules = new HashSet<>(ContainerManager.getSharedContainer().getActiveModules());
             activeModules.add(ModuleLoader.getInstance().getModule(TargetedMSModule.class));
             ContainerManager.getSharedContainer().setActiveModules(activeModules);
-        }
-    }
-
-    // initialization code called at 0.000-24.000 to add a new type. Can eventually be consolidated into the bootstrap insert above
-    @SuppressWarnings({"UnusedDeclaration"})
-    public void addInstrumentDowntimeAnnotationType(final ModuleContext moduleContext)
-    {
-        if (ModuleLoader.getInstance().shouldInsertData())
-        {
-            insertAnnotationType(QCAnnotationTypeTable.INSTRUMENT_DOWNTIME, "CCCC00", moduleContext.getUpgradeUser());
         }
     }
 
@@ -91,41 +68,5 @@ public class TargetedMSUpgradeCode implements UpgradeCode
         sql.add(name);
         sql.add(color);
         new SqlExecutor(TargetedMSManager.getSchema()).execute(sql);
-    }
-
-    // initialization code called at 0.000-24.000
-    @SuppressWarnings({"UnusedDeclaration"})
-    @DeferredUpgrade
-    public void recalculateAreaProportions(final ModuleContext moduleContext)
-    {
-        if (!moduleContext.isNewInstall())
-        {
-            // Wait until post-startup because the Enterprise pipeline won't be initialized until it's done on servers
-            // that are using the JMS queue
-            ContextListener.addStartupListener(new StartupListener()
-            {
-                @Override
-                public String getName()
-                {
-                    return "AreaProportionRecalcJob submitter";
-                }
-
-                @Override
-                public void moduleStartupComplete(ServletContext servletContext)
-                {
-                    try
-                    {
-                        LOG.info("Module startup complete, queuing AreaProportionRecalcJob");
-                        ViewBackgroundInfo info = new ViewBackgroundInfo(ContainerManager.getRoot(), moduleContext.getUpgradeUser(), null);
-                        PipeRoot root = PipelineService.get().findPipelineRoot(ContainerManager.getRoot());
-                        PipelineService.get().queueJob(new AreaProportionRecalcJob(info, root));
-                    }
-                    catch (PipelineValidationException e)
-                    {
-                        throw UnexpectedException.wrap(e);
-                    }
-                }
-            });
-        }
     }
 }

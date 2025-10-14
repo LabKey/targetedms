@@ -52,13 +52,10 @@ public class UnitTestUtil
     public static File getSampleDataFile(String pFileName) throws IOException
     {
         String relativePath = "TargetedMS/" + pFileName;
-        File sampleDataFile = JunitUtil.getSampleData(ModuleLoader.getInstance().getModule("targetedms"), relativePath);
-        if (sampleDataFile == null)
-            throw new IOException("Sampledata not found: " + relativePath);
-        return sampleDataFile;
+        return JunitUtil.getSampleData(ModuleLoader.getInstance().getModule("targetedms"), relativePath);
     }
 
-    public static File getResourcesFile(String pFileName) throws UnsupportedEncodingException
+    public static File getResourcesFile(String pFileName)
     {
         return getTestFile(pFileName, UnitTestUtil._resourcePath);
     }
@@ -76,7 +73,7 @@ public class UnitTestUtil
 
         //java.nio.file.Path currentDir = new File(System.getProperty("user.dir")).toPath();
         java.nio.file.Path currentDir = new File(decodedUrl).toPath();
-        while(!currentDir.getFileName().toString().toLowerCase().equals("build"))
+        while(!currentDir.getFileName().toString().equalsIgnoreCase("build"))
             currentDir = currentDir.getParent();
         currentDir = currentDir.getParent();
         String[] pathComponents = new String[] {currentDir.toString(), String.join(File.separator, pPathList), pFileName};
@@ -134,7 +131,7 @@ public class UnitTestUtil
             workingDir.mkdir();
         if (!workingDir.exists())
             throw new FileExistsException("Cannot get a working dir for testing: " + workingDir.getPath());
-        File zipDir = new File(workingDir, SkylineFileUtils.getBaseName(pZip.getName()));
+        File zipDir = FileUtil.appendName(workingDir, SkylineFileUtils.getBaseName(pZip.getName()));
 
         if (zipDir.exists())
         {

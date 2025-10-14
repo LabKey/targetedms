@@ -309,14 +309,7 @@ public class SkylineAuditLogManager
         TableInfo entryTbl = TargetedMSManager.getTableInfoSkylineAuditLogEntry();
 
         SQLFragment treeQuery = new SQLFragment("");
-        if(TargetedMSManager.getSqlDialect().isPostgreSQL()){
-            treeQuery.append("WITH RECURSIVE tree(id, hash, parenthash, treedepth) AS ");
-        }
-        else if(TargetedMSManager.getSqlDialect().isSqlServer()){
-            treeQuery.append("WITH tree(id, hash, parenthash, treedepth) AS ");
-        }
-        else
-            throw new AuditLogException("Database type not supported");
+        treeQuery.append("WITH RECURSIVE tree(id, hash, parenthash, treedepth) AS ");
 
         treeQuery.append("( ");
 
@@ -333,13 +326,6 @@ public class SkylineAuditLogManager
                 .append(" SELECT DISTINCT t.*, r.VersionId FROM tree t \n")
                 .append(" LEFT JOIN ").append(TargetedMSManager.getTableInfoSkylineRunAuditLogEntry(), "r").append(" ON t.Id = r.AuditLogEntryId \n")
                 .append(" ORDER BY treedepth\n");
-
-        if (TargetedMSManager.getSqlDialect().isSqlServer())
-        {
-            // Issue 45712: SQLServer defaults to a limit of 100 recursion steps. Import verification will prevent
-            // loops so don't set a limit
-            treeQuery.append("option (maxrecursion 0)");
-        }
 
         BaseSelector.ResultSetHandler<Map<String, AuditLogTree>> resultSetHandler = (rs, conn) -> {
             Map<String, AuditLogTree> result = new HashMap<>(10);

@@ -93,17 +93,13 @@ public class PeptideManager
 
     private static String appendLog10IntensitySql(SqlDialect sqlDialect)
     {
-        var pgLog10Intensity = " CASE WHEN MAX(X.Intensity) IS NOT NULL AND MAX(X.Intensity) != 0 THEN LOG(" + sqlDialect.getNumericCast(new SQLFragment("MAX(X.Intensity)")).getSQL() + ") ELSE 0 END ";
-        var sqlServerLog10Intensity = " CASE WHEN MAX(X.Intensity) IS NOT NULL AND MAX(X.Intensity) != 0 THEN LOG10(MAX(X.Intensity)) ELSE 0 END ";
-        return sqlDialect.isPostgreSQL() ? pgLog10Intensity : sqlServerLog10Intensity;
+        return " CASE WHEN MAX(X.Intensity) IS NOT NULL AND MAX(X.Intensity) != 0 THEN LOG(" + sqlDialect.getNumericCast(new SQLFragment("MAX(X.Intensity)")).getSQL() + ") ELSE 0 END ";
     }
 
     private static String appendLog10ConfidenceSql(SqlDialect sqlDialect)
     {
         var pgConfidenceValueToRound = " CASE WHEN MAX(X.Confidence) IS NOT NULL AND MAX(X.Confidence) != 0 THEN -LOG(" + sqlDialect.getNumericCast(new SQLFragment("MAX(X.Confidence)")).getSQL() + ")  ELSE 0 END ";
-        var pgLog10Confidence = "ROUND(" + sqlDialect.getNumericCast(new SQLFragment(pgConfidenceValueToRound)).getSQL() + ",4)";
-        var sqlServerLog10Confidence = " CASE WHEN MAX(X.Confidence) IS NOT NULL AND MAX(X.Confidence) != 0 THEN ROUND(-LOG10(MAX(X.Confidence)),4)  ELSE 0 END ";
-        return sqlDialect.isPostgreSQL() ? pgLog10Confidence : sqlServerLog10Confidence;
+        return "ROUND(" + sqlDialect.getNumericCast(new SQLFragment(pgConfidenceValueToRound)).getSQL() + ",4)";
     }
 
     public static List<PeptideCharacteristic> getCombinedPeptideCharacteristics(long peptideGroupId, @Nullable Long replicateId)
