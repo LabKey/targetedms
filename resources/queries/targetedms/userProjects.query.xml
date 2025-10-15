@@ -3,10 +3,6 @@
         <tables xmlns="http://labkey.org/data/xml">
             <table tableName="userProjects" tableDbType="TABLE">
                 <columns>
-                    <column columnName="ViewLink">
-                        <columnTitle></columnTitle>
-                        <url>/targetedms-msProjectDetails.view?project=${Id}</url>
-                    </column>
                 </columns>
             </table>
         </tables>

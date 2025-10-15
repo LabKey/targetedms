@@ -1,0 +1,17 @@
+<customView xmlns="http://labkey.org/data/xml/queryCustomView" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <columns>
+        <column name="Instrument" />
+        <column name="LabDirector" />
+        <column name="Researcher" />
+        <column name="RequestedBy" />
+        <column name="StartDate" />
+        <column name="EndDate" />
+        <column name="Hours" />
+        <column name="TotalCost" />
+        <column name="Payment_Method_Name" />
+        <column name="PercentPayment" />
+    </columns>
+    <sorts>
+        <sort column="StartDate" descending="true" />
+    </sorts>
+</customView>

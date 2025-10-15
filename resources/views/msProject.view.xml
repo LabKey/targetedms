@@ -1,4 +1,4 @@
-<view xmlns="http://labkey.org/data/xml/view" title="Projects">
+<view xmlns="http://labkey.org/data/xml/view" title="Your Projects">
     <dependencies>
         <dependency path="internal/jQuery"/>
     </dependencies>

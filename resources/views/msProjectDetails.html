@@ -1,10 +1,11 @@
 <div id="project-details">
 </div>
+<div id="schedule-instrument-time">
+</div>
+<br/>
 <div id="payment-methods">
 </div>
-<div id="add-payment-method-link">
-</div>
-<div id="schedule-instrument-time">
+<div id="payment-summary">
 </div>
 
 <script type="text/javascript" nonce="<%=scriptNonce%>">
@@ -21,92 +22,94 @@
             columns: 'Id,affiliation,title,collaborationWith,labDirector,scientificQuestion,abstract, researchers',
             filterArray: [LABKEY.Filter.create('Id', project, LABKEY.Filter.Types.EQUAL)],
             success: function(data){
-                let projectDetails = data.rows[0];
-                let id = LABKEY.Utils.encodeHtml(projectDetails.Id);
-                let affiliation = LABKEY.Utils.encodeHtml(projectDetails.affiliation);
-                let title = LABKEY.Utils.encodeHtml(projectDetails.title);
-                let collaborationWith = LABKEY.Utils.encodeHtml(projectDetails.collaborationWith);
-                let labDirector = LABKEY.Utils.encodeHtml(projectDetails.labDirector);
-                let scientificQuestion = LABKEY.Utils.encodeHtml(projectDetails.scientificQuestion);
-                let abstract = LABKEY.Utils.encodeHtml(projectDetails.abstract);
-                let researchers = LABKEY.Utils.encodeHtml(projectDetails.researchers).split(',');
+                if (data.rows.length === 0) {
+                    document.getElementById('project-details').innerHTML = 'Could not find project ' + LABKEY.Utils.encodeHtml(project);
+                }
+                else {
+                    let projectDetails = data.rows[0];
+                    let id = LABKEY.Utils.encodeHtml(projectDetails.Id);
+                    let affiliation = LABKEY.Utils.encodeHtml(projectDetails.affiliation);
+                    let title = LABKEY.Utils.encodeHtml(projectDetails.title);
+                    let collaborationWith = LABKEY.Utils.encodeHtml(projectDetails.collaborationWith);
+                    let labDirector = LABKEY.Utils.encodeHtml(projectDetails.labDirector);
+                    let scientificQuestion = LABKEY.Utils.encodeHtml(projectDetails.scientificQuestion);
+                    let abstract = LABKEY.Utils.encodeHtml(projectDetails.abstract);
+                    let researchers = LABKEY.Utils.encodeHtml(projectDetails.researchers).split(',');
 
-                let projectDetailsHtml = `
-                <table>
-                    <tr>
-                        <td class='labkey-form-label'>Id</td>
-                        <td>${id}</td>
-                    </tr>
-                    <tr>
-                        <td class='labkey-form-label'>Affiliation</td>
-                        <td>${affiliation}</td>
-                    </tr>
-                    <tr>
-                        <td class='labkey-form-label'>Title</td>
-                        <td>${title}</td>
-                    </tr>
-                    <tr>
-                        <td class='labkey-form-label'>Collaborating with</td>
-                        <td>${collaborationWith}</td>
-                    </tr>
-                    <tr>
-                        <td class='labkey-form-label'>Lab Director</td>
-                        <td>${labDirector}</td>
-                    </tr>
-                    ` +
-                    researchers.map(researcher => {
-                        return `<tr>
-                            <td class='labkey-form-label'>Researcher</td>
-                            <td>${researcher}</td>
-                        </tr>`;
-                    }).join('') +
+                    let projectDetailsHtml = `
+                    <table class='lk-fields-table'>
+                        <tr>
+                            <td class='labkey-form-label'>Id</td>
+                            <td>${id}</td>
+                        </tr>
+                        <tr>
+                            <td class='labkey-form-label'>Affiliation</td>
+                            <td>${affiliation}</td>
+                        </tr>
+                        <tr>
+                            <td class='labkey-form-label'>Title</td>
+                            <td>${title}</td>
+                        </tr>
+                        <tr>
+                            <td class='labkey-form-label'>Collaborating with</td>
+                            <td>${collaborationWith}</td>
+                        </tr>
+                        <tr>
+                            <td class='labkey-form-label'>Lab Director</td>
+                            <td>${labDirector}</td>
+                        </tr>
+                        ` +
+                            researchers.map(researcher => {
+                                return `<tr>
+                                <td class='labkey-form-label'>Researcher</td>
+                                <td>${researcher}</td>
+                            </tr>`;
+                            }).join('') +
 
-                    `
-                    <tr>
-                        <td class='labkey-form-label'>Scientific Question</td>
-                        <td>${scientificQuestion}</td>
-                    </tr>
-                    <tr>
-                        <td class='labkey-form-label'>Abstract</td>
-                        <td>${abstract}</td>
-                    </tr>
-                </table>
-                </br>
-            `;
-                document.getElementById('project-details').innerHTML = projectDetailsHtml;
+                            `
+                        <tr>
+                            <td class='labkey-form-label'>Scientific Question</td>
+                            <td>${scientificQuestion}</td>
+                        </tr>
+                        <tr>
+                            <td class='labkey-form-label'>Abstract</td>
+                            <td>${abstract}</td>
+                        </tr>
+                    </table>
+                    </br>
+                `;
+                    document.getElementById('project-details').innerHTML = projectDetailsHtml;
+                }
             }
         });
 
         // query web part to show payment method and other invoice details - custom query
-        let webpart = <%=webpartContext%>;
+        new LABKEY.QueryWebPart({
+            renderTo: 'payment-summary',
+            frame: 'portal',
+            title: 'Instrument Use',
+            schemaName: 'targetedms',
+            queryName: 'instrumentBilling',
+            viewName: 'Project View',
+            filterArray: [LABKEY.Filter.create('projectId', project, LABKEY.Filter.Types.EQUAL)],
+            containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
+        });
+
         new LABKEY.QueryWebPart({
             renderTo: 'payment-methods',
             frame: 'portal',
             title: 'Payment Methods',
             schemaName: 'targetedms',
-            queryName: 'paymentMethodCostSummary',
+            queryName: 'projectPaymentMethod',
             filterArray: [LABKEY.Filter.create('project', project, LABKEY.Filter.Types.EQUAL)],
             containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
         });
-
-        // add payment method link
-        const addPaymentMethodEl = document.getElementById('add-payment-method-link');
-        const urlParams = {
-            schemaName: 'targetedms',
-            queryName: 'ProjectPaymentMethod',
-            returnUrl: LABKEY.ActionURL.buildURL('targetedms', 'msProjectDetails', null, null)
-        };
-        let addPaymentMethodLink = `
-        <a href="${LABKEY.ActionURL.buildURL('query', 'insertQueryRow', LABKEY.ActionURL.getContainer(), urlParams)}">[Add payment method]</a>`;
-        addPaymentMethodEl.innerHTML = addPaymentMethodLink;
 
         const scheduleInstrumentTimeEl = document.getElementById('schedule-instrument-time');
         const scheduleUrlParams = {
             project: LABKEY.ActionURL.getParameter('project')
         };
-        const scheduleInstrumentTimeLink = `
-        <a href="${LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument',LABKEY.ActionURL.getContainer(), scheduleUrlParams)}">[Schedule Instrument Time]</a>`;
-        scheduleInstrumentTimeEl.innerHTML = scheduleInstrumentTimeLink;
+        scheduleInstrumentTimeEl.innerHTML = LABKEY.Utils.textLink({text: 'Schedule instrument time', href: LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument',LABKEY.ActionURL.getContainer(), scheduleUrlParams)});
 
     });
 
