@@ -77,7 +77,7 @@ public class QCEnabledMetricsTable extends SimpleUserSchema.SimpleTable<Targeted
             @Override
             protected Map<String, Object> _insert(User user, Container c, Map<String, Object> row) throws SQLException, ValidationException
             {
-                TargetedMSManager.get().clearCachedEnabledQCMetrics(c);
+                TargetedMSManager.get().clearQCMetricCache(c, false);
                 validateBounds(row);
                 return super._insert(user, c, row);
             }
@@ -125,7 +125,7 @@ public class QCEnabledMetricsTable extends SimpleUserSchema.SimpleTable<Targeted
             @Override
             protected Map<String, Object> _update(User user, Container c, Map<String, Object> row, Map<String, Object> oldRow, Object[] keys) throws SQLException, ValidationException
             {
-                TargetedMSManager.get().clearCachedEnabledQCMetrics(c);
+                TargetedMSManager.get().clearQCMetricCache(c, false);
                 validateBounds(row);
                 return super._update(user, c, row, oldRow, keys);
             }
@@ -133,7 +133,7 @@ public class QCEnabledMetricsTable extends SimpleUserSchema.SimpleTable<Targeted
             @Override
             protected void _delete(Container c, Map<String, Object> row) throws InvalidKeyException
             {
-                TargetedMSManager.get().clearCachedEnabledQCMetrics(c);
+                TargetedMSManager.get().clearQCMetricCache(c, false);
                 super._delete(c, row);
             }
         };

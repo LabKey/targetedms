@@ -254,8 +254,7 @@ public class SkylineDocImporter
 
             updateRunStatus(IMPORT_SUCCEEDED, STATUS_SUCCESS);
 
-            // We may have inserted the first set of data for a given metric
-            TargetedMSManager.get().clearCachedEnabledQCMetrics(run.getContainer());
+            TargetedMSManager.get().clearQCMetricCache(run.getContainer(), true);
 
             _progressMonitor.complete();
             return TargetedMSManager.getRun(_runId);

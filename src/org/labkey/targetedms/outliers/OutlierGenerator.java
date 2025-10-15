@@ -18,12 +18,13 @@ package org.labkey.targetedms.outliers;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.labkey.api.collections.IntHashMap;
+import org.labkey.api.action.SpringActionController;
 import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.RuntimeSQLException;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SqlSelector;
+import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.query.QueryService;
@@ -72,7 +73,6 @@ import java.util.stream.Collectors;
 public class OutlierGenerator
 {
     private static final OutlierGenerator INSTANCE = new OutlierGenerator();
-    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.000");
 
     private OutlierGenerator() {}
 
@@ -81,7 +81,7 @@ public class OutlierGenerator
         return INSTANCE;
     }
 
-    private String getEachSeriesTypePlotDataSql(QCMetricConfiguration configuration, List<AnnotationGroup> annotationGroups)
+    private String getEachSeriesTypePlotDataSql(QCMetricConfiguration configuration)
     {
         String schemaName = "targetedms";
         String queryName = configuration.getQueryName();
@@ -93,7 +93,7 @@ public class OutlierGenerator
         {
             sql.append("(SELECT 0 AS PrecursorChromInfoId, SampleFileId, ");
             sql.append(" metric.Name AS SeriesLabel, ");
-            sql.append("\nvalue as MetricValue, metric, ").append(configuration.getId()).append(" AS MetricId");
+            sql.append("\nvalue as MetricValue, Metric AS MetricId ");
             sql.append("\n FROM ").append(schemaName).append('.').append(TargetedMSManager.getTableQCTraceMetricValues().getName());
             sql.append(" WHERE metric = ").append(configuration.getId());
             sql.append(")");
@@ -102,51 +102,15 @@ public class OutlierGenerator
         {
             sql.append("(SELECT PrecursorChromInfoId, SampleFileId, ");
             sql.append(" CAST(IFDEFINED(SeriesLabel) AS VARCHAR) AS SeriesLabel, ");
-            sql.append("\nMetricValue, 0 as metric, ").append(configuration.getId()).append(" AS MetricId");
-
+            sql.append("\nMetricValue, ").append(configuration.getId()).append(" AS MetricId");
             sql.append("\n FROM ").append(schemaName).append('.').append(queryName);
-
-            if (!annotationGroups.isEmpty())
-            {
-                sql.append(" WHERE ");
-                StringBuilder filterClause = new StringBuilder("SampleFileId.ReplicateId IN (");
-                var intersect = "";
-                var selectSql = "(SELECT ReplicateId FROM targetedms.ReplicateAnnotation WHERE ";
-                for (AnnotationGroup annotation : annotationGroups)
-                {
-                    filterClause.append(intersect)
-                            .append(selectSql)
-                            .append(" Name='")
-                            .append(annotation.getName().replace("'", "''"))
-                            .append("'");
-
-
-                    var annotationValues = annotation.getValues();
-                    if (!annotationValues.isEmpty())
-                    {
-                        var quoteEscapedVals = annotationValues.stream().map(s -> s.replace("'", "''")).toList( );
-                        var vals = "'" + StringUtils.join(quoteEscapedVals, "','") + "'";
-                        filterClause.append(" AND  Value IN (").append(vals).append(" )");
-                    }
-                    filterClause.append(" ) ");
-                    intersect = " INTERSECT ";
-                }
-                filterClause.append(") ");
-                sql.append(filterClause);
-            }
-            if (configuration.getTraceName() != null)
-            {
-                sql.append(" WHERE metric = ").append(configuration.getId());
-            }
             sql.append(")");
         }
         return sql.toString();
     }
 
     /** @return LabKey SQL to fetch all the values for the specified metrics */
-    private String queryContainerSampleFileRawData(List<QCMetricConfiguration> configurations, Date startDate,
-                                                   Date endDate, List<AnnotationGroup> annotationGroups,
-                                                   boolean showExcluded)
+    private String queryContainerSampleFileRawData(List<QCMetricConfiguration> configurations)
     {
         // Copy so that we can use our preferred sort
         configurations = new ArrayList<>(configurations);
@@ -166,44 +130,43 @@ public class OutlierGenerator
         {
             if (alreadyAdded.add(Pair.of(configuration.getId(), 1)))
             {
-                sql.append(sep).append(getEachSeriesTypePlotDataSql(configuration, annotationGroups));
+                sql.append(sep).append(getEachSeriesTypePlotDataSql(configuration));
             }
             sep = "\nUNION ALL\n";
         }
-
         sql.append(") X");
-        sql.append("\nINNER JOIN SampleFile sf ON X.SampleFileId = sf.Id");
-        if (null != startDate || null != endDate)
-        {
-            var sqlSeparator = "WHERE";
-
-            if (null != startDate)
-            {
-                sql.append("\n").append(sqlSeparator);
-                sql.append(" sf.AcquiredTime >= '");
-                sql.append(startDate);
-                sql.append("' ");
-                sqlSeparator = "AND";
-            }
-
-            if (null != endDate)
-            {
-                sql.append("\n").append(sqlSeparator);
-                sql.append("\n sf.AcquiredTime < TIMESTAMPADD('SQL_TSI_DAY', 1, CAST('");
-                sql.append(endDate);
-                sql.append("' AS TIMESTAMP))");
-            }
-        }
-        else
-        {
-            sql.append("\nWHERE sf.AcquiredTime IS NOT NULL");
-        }
-        if (!showExcluded)
-        {
-            sql.append(" AND sf.Excluded = false");
-        }
-
         return sql.toString();
+    }
+
+    /**
+     * We cache all precursor-scoped metrics in targetedms.QCMetricCache for performance.
+     * Run-scoped metrics are not cached like this as they are fast enough to query directly from the backing tables
+     * like targetedms.SampleFile and targetedms.QCTraceMetricValues.
+     */
+    public void cachePrecursorMetricValues(TargetedMSSchema schema)
+    {
+        SQLFragment existingSql = new SQLFragment("SELECT Container FROM ").append(TargetedMSManager.getTableInfoQCMetricCache(), "c").append(" WHERE Container = ?").add(schema.getContainer());
+        if (!new SqlSelector(schema.getDbSchema(), existingSql).exists())
+        {
+            List<QCMetricConfiguration> allMetrics = TargetedMSManager.getAllQCMetricConfigurations(schema);
+            List<QCMetricConfiguration> precursorMetrics = allMetrics.stream()
+                    .filter(QCMetricConfiguration::isPrecursorScoped)
+                    .toList();
+
+            String computeAllSql = queryContainerSampleFileRawData(precursorMetrics);
+            TableInfo tiAll = QueryService.get().createTable(schema, computeAllSql, null, true);
+
+            try (var ignored = SpringActionController.ignoreSqlUpdates())
+            {
+                SQLFragment insertAll = new SQLFragment();
+                insertAll.append("INSERT INTO ");
+                insertAll.append(TargetedMSManager.getTableInfoQCMetricCache()).append(" (Container, MetricId, PrecursorChromInfoId, SampleFileId, MetricValue, SeriesLabel) ");
+                insertAll.append(" SELECT ?, lk.MetricId, lk.PrecursorChromInfoId, lk.SampleFileId, lk.MetricValue, lk.SeriesLabel FROM ");
+                insertAll.append(tiAll, "lk");
+
+                new SqlExecutor(TargetedMSManager.getSchema()).execute(insertAll);
+            }
+        }
     }
 
     public List<RawMetricDataSet> getRawMetricDataSets(TargetedMSSchema schema, List<QCMetricConfiguration> configurations, Date startDate, Date endDate, List<AnnotationGroup> annotationGroups, boolean showExcluded, boolean showExcludedPrecursors)
@@ -219,55 +182,148 @@ public class OutlierGenerator
             sampleFiles.put(sf.getId(), sf);
         }
 
-        String labkeySQL = queryContainerSampleFileRawData(configurations, startDate, endDate, annotationGroups, showExcluded);
+        // Split configurations into cacheable (precursor-scoped) vs direct-query (run-scoped)
+        List<QCMetricConfiguration> runScoped = configurations.stream()
+            .filter(c -> !c.isPrecursorScoped())
+            .toList();
+        List<QCMetricConfiguration> precursorScoped = configurations.stream()
+            .filter(QCMetricConfiguration::isPrecursorScoped)
+            .toList();
 
-        // Use strictColumnList = false to avoid a potentially expensive injected join for the Container via lookups
-        TableInfo ti = QueryService.get().createTable(schema, labkeySQL, null, true);
+        cachePrecursorMetricValues(schema);
 
-        SQLFragment sql = new SQLFragment("SELECT lk.*, pci.PrecursorId ");
-        sql.append(" FROM ");
-        sql.append(ti, "lk");
-        sql.append(" LEFT OUTER JOIN ");
-        sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
-        sql.append(" ON lk.PrecursorChromInfoId = pci.Id ");
-
+        // Load precursor info and metric map
+        Map<Long, Object> excludedPrecursorIds = new LongHashMap<>();
+        Map<Long, RawMetricDataSet.PrecursorInfo> precursors;
         try
         {
-            Map<Long, Object> excludedPrecursorIds = new LongHashMap<>();
-            Map<Long, RawMetricDataSet.PrecursorInfo> precursors = loadPrecursors(schema, excludedPrecursorIds, showExcludedPrecursors);
+            precursors = loadPrecursors(schema, excludedPrecursorIds, showExcludedPrecursors);
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeSQLException(e);
+        }
+        Map<Integer, QCMetricConfiguration> metrics = new HashMap<>();
+        configurations.forEach(m -> metrics.put(m.getId(), m));
 
-            Map<Integer, QCMetricConfiguration> metrics = new IntHashMap<>();
-            configurations.forEach(m -> metrics.put(m.getId(), m));
+        // Read requested precursor values from the cache with all the filters
+        SQLFragment sql = new SQLFragment();
+        sql.append("SELECT x.*, pci.PrecursorId FROM (");
 
-            try (ResultSet rs = new SqlSelector(TargetedMSManager.getSchema(), sql).getResultSet(false))
+        String separator = "";
+        if (!precursorScoped.isEmpty())
+        {
+            sql.append("SELECT c.PrecursorChromInfoId, c.SampleFileId, c.SeriesLabel, c.MetricValue, c.MetricId ");
+            sql.append(" FROM ");
+            sql.append(TargetedMSManager.getTableInfoQCMetricCache(), "c");
+            sql.append(" WHERE c.Container = ?\n");
+            sql.add(schema.getContainer());
+            sql.append(" AND c.MetricId IN (");
+            sql.append(StringUtils.repeat("?", ",", precursorScoped.size()));
+            sql.addAll(precursorScoped.stream().map(QCMetricConfiguration::getId).toList());
+            sql.append(")");
+            separator = "\nUNION ALL\n";
+        }
+
+        if (!runScoped.isEmpty())
+        {
+            sql.append(separator);
+            String runScopedLabKeySql = queryContainerSampleFileRawData(runScoped);
+            TableInfo ti = QueryService.get().createTable(schema, runScopedLabKeySql, null, true);
+            sql.append("SELECT lk.* ");
+            sql.append(" FROM ");
+            sql.append(ti, "lk");
+        }
+
+        sql.append(") x ");
+
+        sql.append(" LEFT OUTER JOIN ");
+        sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
+        sql.append(" ON x.PrecursorChromInfoId = pci.Id ");
+        sql.append(" INNER JOIN ");
+        sql.append(TargetedMSManager.getTableInfoSampleFile(), "sf");
+        sql.append(" ON x.SampleFileId = sf.Id ");
+
+        if (null != startDate || null != endDate)
+        {
+            if (null != startDate)
             {
-                while (rs.next())
+                sql.append(" AND sf.AcquiredTime >= ?");
+                sql.add(startDate);
+            }
+            if (null != endDate)
+            {
+                sql.append(" AND sf.AcquiredTime < ?");
+                // Add one day to be exclusive upper bound, mimicking TIMESTAMPADD('SQL_TSI_DAY', 1, endDate)
+                sql.add(new Date(endDate.getTime() + 24L * 60L * 60L * 1000L));
+            }
+        }
+        else
+        {
+            sql.append(" AND sf.AcquiredTime IS NOT NULL");
+        }
+        if (!showExcluded)
+        {
+            sql.append(" AND sf.ReplicateId NOT IN (SELECT ReplicateId FROM ");
+            sql.append(TargetedMSManager.getTableInfoQCMetricExclusion(), "x");
+            sql.append(" WHERE x.MetricId IS NULL)");
+        }
+
+        if (!annotationGroups.isEmpty())
+        {
+            sql.append(" AND sf.ReplicateId IN (");
+            String intersect = "";
+            for (AnnotationGroup annotation : annotationGroups)
+            {
+                sql.append(intersect).append(" SELECT ReplicateId FROM ")
+                    .append(TargetedMSManager.getTableInfoReplicateAnnotation(), "ra").append(" WHERE ra.Name = ?");
+                sql.add(annotation.getName());
+
+                List<String> vals = annotation.getValues();
+                if (!vals.isEmpty())
                 {
-                    long sampleFileId = rs.getLong("SampleFileId");
-                    Long precursorId = getLong(rs, "PrecursorId");
-
-                    if (excludedPrecursorIds.containsKey(precursorId))
-                        continue;
-
-                    // Sample-scoped metrics won't have an associated precursor
-                    RawMetricDataSet.PrecursorInfo precursor = null;
-                    if (precursorId != null)
+                    sql.append(" AND ra.Value IN (");
+                    String vsep = "";
+                    for (String v : vals)
                     {
-                        precursor = precursors.get(precursorId);
-                        if (precursor == null)
-                        {
-                            throw new IllegalStateException("Could not find Precursor with Id " + precursorId);
-                        }
+                        sql.append(vsep).append("?");
+                        sql.add(v);
+                        vsep = ",";
                     }
-
-                    RawMetricDataSet row = new RawMetricDataSet(sampleFiles.get(sampleFileId), precursor);
-
-                    row.setMetric(metrics.get(rs.getInt("MetricId"))); // this datarow is not setting the correct metric
-                    row.setSeriesLabel(rs.getString("SeriesLabel"));
-                    row.setPrecursorChromInfoId(getLong(rs, "PrecursorChromInfoId"));
-                    row.setMetricValue(getDouble(rs, "MetricValue"));
-                    result.add(row);
+                    sql.append(")");
                 }
+                intersect = " INTERSECT ";
+            }
+            sql.append(")");
+        }
+
+        try (ResultSet rs = new SqlSelector(TargetedMSManager.getSchema(), sql).getResultSet(false))
+        {
+            while (rs.next())
+            {
+                int metricId = rs.getInt("MetricId");
+                long sampleFileId = rs.getLong("SampleFileId");
+                Long precursorId = getLong(rs, "PrecursorId");
+
+                if (excludedPrecursorIds.containsKey(precursorId))
+                    continue;
+
+                RawMetricDataSet.PrecursorInfo precursor = null;
+                if (precursorId != null)
+                {
+                    precursor = precursors.get(precursorId);
+                    if (precursor == null)
+                    {
+                        throw new IllegalStateException("Could not find Precursor with Id " + precursorId);
+                    }
+                }
+
+                RawMetricDataSet row = new RawMetricDataSet(sampleFiles.get(sampleFileId), precursor);
+                row.setMetric(metrics.get(metricId));
+                row.setSeriesLabel(rs.getString("SeriesLabel"));
+                row.setPrecursorChromInfoId(getLong(rs, "PrecursorChromInfoId"));
+                row.setMetricValue(getDouble(rs, "MetricValue"));
+                result.add(row);
             }
         }
         catch (SQLException e)

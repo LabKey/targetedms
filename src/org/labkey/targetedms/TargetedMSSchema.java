@@ -227,6 +227,7 @@ public class TargetedMSSchema extends UserSchema
     public static final String TABLE_QC_METRIC_EXCLUSION = "QCMetricExclusion";
     public static final String TABLE_QC_ENABLED_METRICS = "QCEnabledMetrics";
     public static final String TABLE_QC_TRACE_METRIC_VALUES = "QCTraceMetricValues";
+    public static final String TABLE_QC_METRIC_CACHE = "QCMetricCache";
 
     public static final String TABLE_GUIDE_SET = "GuideSet";
 

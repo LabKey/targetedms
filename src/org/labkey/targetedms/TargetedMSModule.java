@@ -183,10 +183,12 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         SKYLINE_AUDIT_LEVEL_PROPERTY.setOptions(auditOptions);
         SKYLINE_AUDIT_LEVEL_PROPERTY.setDefaultValue("0");
         SKYLINE_AUDIT_LEVEL_PROPERTY.setCanSetPerContainer(true);
-        SKYLINE_AUDIT_LEVEL_PROPERTY.setDescription("Defines requirements for the integrity of the audit log uploaded together with a Skyline document. \n"+
-                "0 means that no audit log is required. If the log file is present in the uploaded file it will be parsed and loaded as is.\n " +
-                "1 means that audit log is required and its integrity will be verified using MD5 hash-based algorithm. If log integrity verification fails the document upload will be cancelled. \n" +
-                "2 means that audit log is required and its integrity will be verified using RSA-encryption algorithm. If log integrity verification fails the document upload will be cancelled.");
+        SKYLINE_AUDIT_LEVEL_PROPERTY.setDescription("""
+                Defines requirements for the integrity of the audit log uploaded together with a Skyline document.\s
+                0 means that no audit log is required. If the log file is present in the uploaded file it will be parsed and loaded as is.
+                 \
+                1 means that audit log is required and its integrity will be verified using MD5 hash-based algorithm. If log integrity verification fails the document upload will be cancelled.\s
+                2 means that audit log is required and its integrity will be verified using RSA-encryption algorithm. If log integrity verification fails the document upload will be cancelled.""");
         SKYLINE_AUDIT_LEVEL_PROPERTY.setShowDescriptionInline(true);
         addModuleProperty(SKYLINE_AUDIT_LEVEL_PROPERTY);
         //------------------------rr
@@ -229,7 +231,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     @Override
     public Double getSchemaVersion()
     {
-        return 25.005;
+        return 25.006;
     }
 
     @Override

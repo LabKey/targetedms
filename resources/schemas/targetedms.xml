@@ -1926,4 +1926,14 @@
             <column columnName="Nickname"/>
         </columns>
     </table>
+    <table tableName="QCMetricCache" tableDbType="TABLE">
+        <columns>
+            <column columnName="Container"/>
+            <column columnName="MetricId"/>
+            <column columnName="PrecursorChromInfoId"/>
+            <column columnName="SampleFileId"/>
+            <column columnName="MetricValue"/>
+            <column columnName="SeriesLabel"/>
+        </columns>
+    </table>
 </tables>

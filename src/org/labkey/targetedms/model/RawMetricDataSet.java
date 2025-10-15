@@ -181,7 +181,7 @@ public class RawMetricDataSet
         }
     }
 
-    @Nullable
+    @NotNull
     public String getSeriesLabel()
     {
         if (null != seriesLabel)

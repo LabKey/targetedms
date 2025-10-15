@@ -106,7 +106,7 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
         protected Map<String, Object> insertRow(User user, Container container, Map<String, Object> row) throws DuplicateKeyException, ValidationException, QueryUpdateServiceException, SQLException
         {
             var insertedRow = super.insertRow(user, container, row);
-            TargetedMSManager.get().clearCachedEnabledQCMetrics(container);
+            TargetedMSManager.get().clearQCMetricCache(container, true);
             calculateAndInsertTraceValuesForMetric(asInteger(insertedRow.get("Id")), container, user);
             return insertedRow;
         }
@@ -117,7 +117,7 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
             var updatedRow = super.updateRow(user, container, row, oldRow, configParameters);
             int metricId = asInteger(updatedRow.get("Id"));
             deleteTraceValueForMetric(metricId, container);
-            TargetedMSManager.get().clearCachedEnabledQCMetrics(container);
+            TargetedMSManager.get().clearQCMetricCache(container, true);
             calculateAndInsertTraceValuesForMetric(metricId, container, user);
             return updatedRow;
         }
@@ -125,7 +125,7 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
         @Override
         protected Map<String, Object> deleteRow(User user, Container container, Map<String, Object> oldRow) throws InvalidKeyException, QueryUpdateServiceException, SQLException
         {
-            TargetedMSManager.get().clearCachedEnabledQCMetrics(container);
+            TargetedMSManager.get().clearQCMetricCache(container, true);
             deleteTraceValueForMetric(asInteger(oldRow.get("id")), container);
             return super.deleteRow(user, container, oldRow);
         }

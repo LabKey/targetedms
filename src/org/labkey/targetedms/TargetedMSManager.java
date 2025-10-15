@@ -551,6 +551,11 @@ public class TargetedMSManager
         return getSchema().getTable(TargetedMSSchema.TABLE_QC_TRACE_METRIC_VALUES);
     }
 
+    public static TableInfo getTableInfoQCMetricCache()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_QC_METRIC_CACHE);
+    }
+
     public static TableInfo getTableInfoSkylineAuditLogEntry()
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_SKYLINE_AUDITLOG_ENTRY);
@@ -1288,7 +1293,7 @@ public class TargetedMSManager
         }
 
         // We may have deleted the last set of data for a given metric
-        containers.forEach(c2 -> TargetedMSManager.get().clearCachedEnabledQCMetrics(c2));
+        containers.forEach(c2 -> TargetedMSManager.get().clearQCMetricCache(c2, true));
 
         // Mark all the runs for deletion
         SQLFragment markDeleted = new SQLFragment("UPDATE " + getTableInfoRuns() + " SET ExperimentRunLSID = NULL, DataId = NULL, SkydDataId = NULL, Deleted=?, Modified=? ", Boolean.TRUE, new Date());
@@ -2354,36 +2359,28 @@ public class TargetedMSManager
             SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("Status"), QCMetricStatus.Disabled.toString(), CompareType.NEQ_OR_NULL);
             List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, filter, new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
 
-            // We may encounter the same query to see if metrics have data more than once, so remember the values
-            // so we don't have to requery
-            Map<String, Boolean> hasDataQueries = new CaseInsensitiveHashMap<>();
+            OutlierGenerator.get().cachePrecursorMetricValues(schema);
+
+            // Identify which precursor-scoped metrics have any cached data in this container
+            SQLFragment existingSql = new SQLFragment("SELECT DISTINCT MetricId FROM ");
+            existingSql.append(getTableInfoQCMetricCache(), "c");
+            existingSql.append(" WHERE c.Container = ?");
+            existingSql.add(c.getEntityId());
+            Set<Integer> cachedMetricIds = new HashSet<>(new SqlSelector(getSchema(), existingSql).getCollection(Integer.class));
 
             for (QCMetricConfiguration metric : metrics)
             {
                 if (metric.getStatus() == null)
                 {
-                    if (metric.getEnabledQueryName() == null)
+                    if (metric.isPrecursorScoped())
                     {
-                        metric.setStatus(QCMetricStatus.DEFAULT);
-                    }
-                    else
-                    {
-                        boolean hasData = hasDataQueries.computeIfAbsent(metric.getEnabledQueryName(), p ->
+                        if (!cachedMetricIds.contains(metric.getId()))
                         {
-                            TableInfo enabledQuery = schema.getTable(metric.getEnabledQueryName(), null);
-                            if (enabledQuery != null)
-                            {
-                                return new TableSelector(enabledQuery).exists();
-                            }
-                            _log.warn("Could not find query " + schema.getName() + "." + metric.getEnabledQueryName() + " to determine if metric " + metric.getName() + " should be enabled in container " + c.getPath());
-                            return false;
-                        });
-
-                        if (!hasData)
-                        {
+                            // Precursor-scoped metrics without cached values have no data in this container
                             metric.setStatus(QCMetricStatus.NoData);
                         }
                     }
+                    // For run-scoped metrics, do not mark as NoData here since they are not cached; leave as DEFAULT
                 }
                 if (metric.getStatus() == null)
                 {
@@ -2473,9 +2470,11 @@ public class TargetedMSManager
         return maxCount != null ? maxCount.intValue() : 0;
     }
 
-    static void moveRun(TargetedMSRun run, Container newContainer, String newRunLSID, long newDataRowId, User user)
+    public void moveRun(TargetedMSRun run, Container newContainer, String newRunLSID, long newDataRowId, User user)
     {
         // MoveRunsTask.moveRun ensures a transaction
+        Container oldContainer = run.getContainer();
+
         SQLFragment updatePrecChromInfoSql = new SQLFragment("UPDATE ");
         updatePrecChromInfoSql.append(getTableInfoPrecursorChromInfo(), "");
         updatePrecChromInfoSql.append(" SET container = ?").add(newContainer);
@@ -2491,6 +2490,11 @@ public class TargetedMSManager
         run.setDataId(newDataRowId);
         run.setContainer(newContainer);
         updateRun(run, user);
+
+        // Clear caches for both source and destination containers
+        if (oldContainer != null)
+            clearQCMetricCache(oldContainer, true);
+        clearQCMetricCache(newContainer, true);
     }
 
     private static void addParentRunsToChain(ArrayDeque<Long> chainRowIds, Map<Long, Long> replacedByMap, Long rowId)
@@ -2929,9 +2933,22 @@ public class TargetedMSManager
         return new SqlSelector(getSchema(), sql).getMap();
     }
 
-    public void clearCachedEnabledQCMetrics(Container container)
+    /**
+     * Invalidate the stored QC metric value cache for this container.
+     * Called when underlying data or metric definitions change (e.g., Skyline import/delete, config edits).
+     */
+    public void clearQCMetricCache(Container container, boolean clearMetricValues)
     {
         getSchema().getScope().addCommitTask(() -> _metricCache.remove(container), DbScope.CommitTaskOption.IMMEDIATE, DbScope.CommitTaskOption.POSTCOMMIT, DbScope.CommitTaskOption.POSTROLLBACK);
+
+        if (clearMetricValues)
+        {
+            SQLFragment sql = new SQLFragment("DELETE FROM ");
+            sql.append(getTableInfoQCMetricCache());
+            sql.append(" WHERE Container = ?");
+            sql.add(container.getEntityId());
+            new SqlExecutor(getSchema()).execute(sql);
+        }
     }
 
     @NotNull
