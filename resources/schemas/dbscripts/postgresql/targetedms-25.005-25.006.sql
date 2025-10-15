@@ -17,3 +17,5 @@ CREATE TABLE targetedms.QCMetricCache
 CREATE INDEX IDX_QCMetricCache_PrecursorChromInfoId ON targetedms.QCMetricCache(PrecursorChromInfoId);
 CREATE INDEX IDX_QCMetricCache_SampleFileId ON targetedms.QCMetricCache(SampleFileId);
 CREATE INDEX IDX_QCMetricCache_MetricId ON targetedms.QCMetricCache(MetricId);
+
+ALTER TABLE targetedms.QCMetricConfiguration DROP COLUMN EnabledQueryName;

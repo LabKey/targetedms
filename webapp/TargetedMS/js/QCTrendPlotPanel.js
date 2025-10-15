@@ -1607,7 +1607,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     toggleGuideSetMsgDisplay : function() {
         var toolbarMsg = this.down('#GuideSetMessageToolBar');
-        toolbarMsg.up('toolbar').setVisible(this.enableBrushing);
+        if (toolbarMsg) {
+            toolbarMsg.up('toolbar').setVisible(this.enableBrushing);
+        }
     },
 
     highlightOutliersForClickedReplicate: function(plot, precursorInfo, replicateId) {

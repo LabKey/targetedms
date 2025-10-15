@@ -69,7 +69,7 @@ public class TargetedMSIsotopologueTest extends TargetedMSPremiumTest
         log("Verifying that two new metric properties are added");
         clickButton("Add New Custom Metric", 0);
         Window<?> metricWindow = new Window.WindowFinder(getDriver()).withTitle("Add New Metric").waitFor();
-        assertElementPresent(Locator.name(ConfigureMetricsUIPage.CustomMetricProperties.enabledQueryName.name()));
+        assertElementPresent(Locator.name(ConfigureMetricsUIPage.CustomMetricProperties.metricName.name()));
 
     }
 }

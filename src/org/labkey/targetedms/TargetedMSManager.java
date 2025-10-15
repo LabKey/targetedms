@@ -162,7 +162,37 @@ public class TargetedMSManager
      * A cache to make it faster to render QC folders. A number of API calls come from the
      * client rendering the overview, all of which need to know the enabled configs.
      */
-    private static final Cache<Container, List<QCMetricConfiguration>> _metricCache = CacheManager.getCache(1000, TimeUnit.HOURS.toMillis(1), "Enabled QC metric configs");
+    private static final Cache<Container, List<QCMetricConfiguration>> _metricCache = CacheManager.getBlockingCache(1000, TimeUnit.HOURS.toMillis(1), "Enabled QC metric configs",
+            (c, argument) ->
+            {
+                TargetedMSSchema schema = (TargetedMSSchema) argument;
+                TableInfo metricsTable = schema.getTableOrThrow("qcMetricsConfig", null);
+                SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("Status"), QCMetricStatus.Disabled.toString(), CompareType.NEQ_OR_NULL);
+                List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, filter, new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
+
+                OutlierGenerator.get().cachePrecursorMetricValues(schema, metrics);
+
+                // Identify which precursor-scoped metrics have any cached data in this container
+                SQLFragment sql = new SQLFragment("SELECT DISTINCT MetricId FROM (");
+                sql.append(OutlierGenerator.get().getRawMetricSql(schema, metrics));
+                sql.append(") y WHERE MetricValue IS NOT NULL");
+                Set<Integer> cachedMetricIds = new HashSet<>(new SqlSelector(getSchema(), sql).getCollection(Integer.class));
+
+                for (QCMetricConfiguration metric : metrics)
+                {
+                    if (!cachedMetricIds.contains(metric.getId()))
+                    {
+                        metric.setStatus(QCMetricStatus.NoData);
+                    }
+                    else if (metric.getStatus() == null)
+                    {
+                        metric.setStatus(QCMetricStatus.DEFAULT);
+                    }
+                }
+                // Ensure we get a case-insensitive sort regardless of DB collation
+                Collections.sort(metrics);
+                return Collections.unmodifiableList(metrics);
+            });
 
     public static TargetedMSManager get()
     {
@@ -2353,44 +2383,7 @@ public class TargetedMSManager
 
     public static List<QCMetricConfiguration> getAllQCMetricConfigurations(TargetedMSSchema schema)
     {
-        return _metricCache.get(schema.getContainer(), null, (c, argument) ->
-        {
-            TableInfo metricsTable = schema.getTableOrThrow("qcMetricsConfig", null);
-            SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("Status"), QCMetricStatus.Disabled.toString(), CompareType.NEQ_OR_NULL);
-            List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, filter, new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
-
-            OutlierGenerator.get().cachePrecursorMetricValues(schema);
-
-            // Identify which precursor-scoped metrics have any cached data in this container
-            SQLFragment existingSql = new SQLFragment("SELECT DISTINCT MetricId FROM ");
-            existingSql.append(getTableInfoQCMetricCache(), "c");
-            existingSql.append(" WHERE c.Container = ?");
-            existingSql.add(c.getEntityId());
-            Set<Integer> cachedMetricIds = new HashSet<>(new SqlSelector(getSchema(), existingSql).getCollection(Integer.class));
-
-            for (QCMetricConfiguration metric : metrics)
-            {
-                if (metric.getStatus() == null)
-                {
-                    if (metric.isPrecursorScoped())
-                    {
-                        if (!cachedMetricIds.contains(metric.getId()))
-                        {
-                            // Precursor-scoped metrics without cached values have no data in this container
-                            metric.setStatus(QCMetricStatus.NoData);
-                        }
-                    }
-                    // For run-scoped metrics, do not mark as NoData here since they are not cached; leave as DEFAULT
-                }
-                if (metric.getStatus() == null)
-                {
-                    metric.setStatus(QCMetricStatus.DEFAULT);
-                }
-            }
-            // Ensure we get a case-insensitive sort regardless of DB collation
-            Collections.sort(metrics);
-            return Collections.unmodifiableList(metrics);
-        });
+        return _metricCache.get(schema.getContainer(), schema, null);
     }
     public static List<QCMetricConfiguration> getEnabledQCMetricConfigurations(TargetedMSSchema schema)
     {

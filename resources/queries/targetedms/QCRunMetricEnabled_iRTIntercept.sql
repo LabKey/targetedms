@@ -1,1 +1,0 @@
-SELECT Id FROM targetedms.SampleFile WHERE IRTIntercept IS NOT NULL

@@ -143,12 +143,11 @@ public class OutlierGenerator
      * Run-scoped metrics are not cached like this as they are fast enough to query directly from the backing tables
      * like targetedms.SampleFile and targetedms.QCTraceMetricValues.
      */
-    public void cachePrecursorMetricValues(TargetedMSSchema schema)
+    public void cachePrecursorMetricValues(TargetedMSSchema schema, List<QCMetricConfiguration> allMetrics)
     {
         SQLFragment existingSql = new SQLFragment("SELECT Container FROM ").append(TargetedMSManager.getTableInfoQCMetricCache(), "c").append(" WHERE Container = ?").add(schema.getContainer());
         if (!new SqlSelector(schema.getDbSchema(), existingSql).exists())
         {
-            List<QCMetricConfiguration> allMetrics = TargetedMSManager.getAllQCMetricConfigurations(schema);
             List<QCMetricConfiguration> precursorMetrics = allMetrics.stream()
                     .filter(QCMetricConfiguration::isPrecursorScoped)
                     .toList();
@@ -163,7 +162,7 @@ public class OutlierGenerator
                 insertAll.append(TargetedMSManager.getTableInfoQCMetricCache()).append(" (Container, MetricId, PrecursorChromInfoId, SampleFileId, MetricValue, SeriesLabel) ");
                 insertAll.append(" SELECT ?, lk.MetricId, lk.PrecursorChromInfoId, lk.SampleFileId, lk.MetricValue, lk.SeriesLabel FROM ");
                 insertAll.append(tiAll, "lk");
-
+                insertAll.add(schema.getContainer());
                 new SqlExecutor(TargetedMSManager.getSchema()).execute(insertAll);
             }
         }
@@ -182,16 +181,6 @@ public class OutlierGenerator
             sampleFiles.put(sf.getId(), sf);
         }
 
-        // Split configurations into cacheable (precursor-scoped) vs direct-query (run-scoped)
-        List<QCMetricConfiguration> runScoped = configurations.stream()
-            .filter(c -> !c.isPrecursorScoped())
-            .toList();
-        List<QCMetricConfiguration> precursorScoped = configurations.stream()
-            .filter(QCMetricConfiguration::isPrecursorScoped)
-            .toList();
-
-        cachePrecursorMetricValues(schema);
-
         // Load precursor info and metric map
         Map<Long, Object> excludedPrecursorIds = new LongHashMap<>();
         Map<Long, RawMetricDataSet.PrecursorInfo> precursors;
@@ -206,37 +195,9 @@ public class OutlierGenerator
         Map<Integer, QCMetricConfiguration> metrics = new HashMap<>();
         configurations.forEach(m -> metrics.put(m.getId(), m));
 
-        // Read requested precursor values from the cache with all the filters
-        SQLFragment sql = new SQLFragment();
-        sql.append("SELECT x.*, pci.PrecursorId FROM (");
-
-        String separator = "";
-        if (!precursorScoped.isEmpty())
-        {
-            sql.append("SELECT c.PrecursorChromInfoId, c.SampleFileId, c.SeriesLabel, c.MetricValue, c.MetricId ");
-            sql.append(" FROM ");
-            sql.append(TargetedMSManager.getTableInfoQCMetricCache(), "c");
-            sql.append(" WHERE c.Container = ?\n");
-            sql.add(schema.getContainer());
-            sql.append(" AND c.MetricId IN (");
-            sql.append(StringUtils.repeat("?", ",", precursorScoped.size()));
-            sql.addAll(precursorScoped.stream().map(QCMetricConfiguration::getId).toList());
-            sql.append(")");
-            separator = "\nUNION ALL\n";
-        }
-
-        if (!runScoped.isEmpty())
-        {
-            sql.append(separator);
-            String runScopedLabKeySql = queryContainerSampleFileRawData(runScoped);
-            TableInfo ti = QueryService.get().createTable(schema, runScopedLabKeySql, null, true);
-            sql.append("SELECT lk.* ");
-            sql.append(" FROM ");
-            sql.append(ti, "lk");
-        }
-
+        SQLFragment sql = new SQLFragment("SELECT x.*, pci.PrecursorId FROM (");
+        sql.append(getRawMetricSql(schema, configurations));
         sql.append(") x ");
-
         sql.append(" LEFT OUTER JOIN ");
         sql.append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci");
         sql.append(" ON x.PrecursorChromInfoId = pci.Id ");
@@ -335,6 +296,46 @@ public class OutlierGenerator
                 thenComparing(x -> x.getSampleFile().getAcquiredTime()));
 
         return result;
+    }
+
+    public SQLFragment getRawMetricSql(TargetedMSSchema schema, List<QCMetricConfiguration> configurations)
+    {
+        // Split configurations into cacheable (precursor-scoped) vs direct-query (run-scoped)
+        List<QCMetricConfiguration> runScoped = configurations.stream()
+                .filter(c -> !c.isPrecursorScoped())
+                .toList();
+        List<QCMetricConfiguration> precursorScoped = configurations.stream()
+                .filter(QCMetricConfiguration::isPrecursorScoped)
+                .toList();
+
+        // Read requested precursor values from the cache with all the filters
+        SQLFragment sql = new SQLFragment();
+
+        String separator = "";
+        if (!precursorScoped.isEmpty())
+        {
+            sql.append("SELECT c.PrecursorChromInfoId, c.SampleFileId, c.SeriesLabel, c.MetricValue, c.MetricId ");
+            sql.append(" FROM ");
+            sql.append(TargetedMSManager.getTableInfoQCMetricCache(), "c");
+            sql.append(" WHERE c.Container = ?\n");
+            sql.add(schema.getContainer());
+            sql.append(" AND c.MetricId IN (");
+            sql.append(StringUtils.repeat("?", ",", precursorScoped.size()));
+            sql.addAll(precursorScoped.stream().map(QCMetricConfiguration::getId).toList());
+            sql.append(")");
+            separator = "\nUNION ALL\n";
+        }
+
+        if (!runScoped.isEmpty())
+        {
+            sql.append(separator);
+            String runScopedLabKeySql = queryContainerSampleFileRawData(runScoped);
+            TableInfo ti = QueryService.get().createTable(schema, runScopedLabKeySql, null, true);
+            sql.append("SELECT lk.* ");
+            sql.append(" FROM ");
+            sql.append(ti, "lk");
+        }
+        return sql;
     }
 
     /**

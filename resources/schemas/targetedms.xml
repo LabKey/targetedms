@@ -1349,7 +1349,6 @@
             <column columnName="Name"/>
             <column columnName="QueryName"/>
             <column columnName="PrecursorScoped"/>
-            <column columnName="EnabledQueryName"/>
             <column columnName="TraceValue"/>
             <column columnName="MinTimeValue"/>
             <column columnName="MaxTimeValue"/>
