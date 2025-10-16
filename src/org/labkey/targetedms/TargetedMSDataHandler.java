@@ -42,6 +42,7 @@ import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.ViewBackgroundInfo;
 import org.labkey.api.writer.ZipUtil;
 import org.labkey.targetedms.parser.skyaudit.AuditLogException;
+import org.labkey.vfs.FileLike;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
@@ -71,12 +72,7 @@ public class TargetedMSDataHandler extends AbstractExperimentDataHandler
     }
 
     @Override
-    public void importFile(@NotNull ExpData data, File dataFile, @NotNull ViewBackgroundInfo info, @NotNull Logger log, @NotNull XarContext context) throws ExperimentException
-    {
-        importFile(data, dataFile != null ? dataFile.toPath() : null, info, log, context);
-    }
-    @Override
-    public void importFile(ExpData data, Path dataFile, ViewBackgroundInfo info, @NotNull Logger log, @NotNull XarContext context) throws ExperimentException
+    public void importFile(@NotNull ExpData data, @NotNull FileLike dataFile, @NotNull ViewBackgroundInfo info, @NotNull Logger log, @NotNull XarContext context) throws ExperimentException
     {
         String description = data.getFile().getName();
         SkylineDocImporter importer = new SkylineDocImporter(info.getUser(), context.getContainer(), description,
