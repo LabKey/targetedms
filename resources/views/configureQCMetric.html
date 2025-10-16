@@ -57,12 +57,13 @@
                 qcMetricsTable += '</tr>';
             });
 
-            qcMetricsTable += '</table>' + '<br>' +
+            qcMetricsTable += '</table><br>' +
                     '<button type="button" class="labkey-button primary" id="saveButton" style="margin-right: 20px;">Save</button>' +
                     '<button type="button" class="labkey-button" id="cancelButton" style="margin-right: 20px;">Cancel</button>' +
                     '<button type="button" class="labkey-button" id="createNewCustomMetricButton" style="margin-right: 20px;">Add New Custom Metric</button>' +
-                    '<button type="button" class="labkey-button" id="createNewTraceMetricButton">Add New Trace Metric</button>' +
-                    '</form>';
+                    '<button type="button" class="labkey-button" id="createNewTraceMetricButton" style="margin-right: 20px;">Add New Trace Metric</button>' +
+                    '<button type="button" class="labkey-button" id="clearCacheButton">Clear Cached Metric Values</button>' +
+                    '</form><br>Edits to queries backing existing custom metrics require a manual cache clearing to display the updated results.</p>';
 
             jQuery('#qcMetricsTable').html(qcMetricsTable);
 
@@ -79,6 +80,17 @@
             });
             jQuery('#createNewTraceMetricButton').click(function() {
                 LABKEY.internal.ConfigureQCMetrics.addNewMetric('trace')
+            });
+            jQuery('#clearCacheButton').click(function() {
+                jQuery('#qcMetricsError').text('Clearing cached metrics...');
+                LABKEY.Ajax.request({
+                    url: LABKEY.ActionURL.buildURL('targetedms', 'clearQCMetricsCache.api'),
+                    method: 'POST',
+                    success: function() {
+                        jQuery('#qcMetricsError').text('Cleared cached metrics.');
+                    },
+                    failure: LABKEY.Utils.getCallbackWrapper(LABKEY.internal.ConfigureQCMetrics.onError, this, true)
+                });
             });
 
             jQuery.each(qcMetrics, function (index, row) {
