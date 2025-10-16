@@ -1637,7 +1637,7 @@ public class TargetedMSManager
     /**
      * @return the file paths of the Skyline documents containing the given sample files
      */
-    @Nullable
+    @NotNull
     public static List<String> deleteSampleFilesAndDependencies(List<Long> sampleFileIds)
     {
         purgeDeletedSampleFiles(sampleFileIds);
@@ -1683,6 +1683,10 @@ public class TargetedMSManager
 
         // Delete from PrecursorAreaRatio (dependent of PrecursorChromInfo)
         execute(getTempChromInfoIdsDependentDeleteSql(getTableInfoPrecursorAreaRatio(), "PrecursorChromInfoId", precursorChromInfoIdsTempTableName));
+
+        // Delete from QCMetricCache (dependent of PrecursorChromInfo and SampleFile)
+        execute(getTempChromInfoIdsDependentDeleteSql(getTableInfoQCMetricCache(), "PrecursorChromInfoId", precursorChromInfoIdsTempTableName));
+        execute(new SQLFragment("DELETE FROM ").append(getTableInfoQCMetricCache()).append(whereClause));
 
         // Delete from PrecursorChromInfo
         execute(getTempChromInfoIdsDependentDeleteSql(getTableInfoPrecursorChromInfo(), "Id", precursorChromInfoIdsTempTableName));
@@ -2891,10 +2895,10 @@ public class TargetedMSManager
 
     public static List<QCMetricConfiguration> getTraceMetricConfigurations(Container container, User user)
     {
-        return getEnabledQCMetricConfigurations(new TargetedMSSchema(user, container))
+        return getAllQCMetricConfigurations(new TargetedMSSchema(user, container))
                 .stream()
                 .filter(qcMetricConfiguration -> qcMetricConfiguration.getTraceName() != null)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static List<IKeyword> getKeywords(long sequenceId)
