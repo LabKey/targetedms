@@ -16,6 +16,7 @@
 package org.labkey.targetedms;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.labkey.api.data.Container;
 import org.labkey.api.exp.ExperimentException;
 import org.labkey.api.exp.Handler;
@@ -30,8 +31,8 @@ import org.labkey.api.security.User;
 import org.labkey.api.util.FileUtil;
 import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.ViewBackgroundInfo;
+import org.labkey.vfs.FileLike;
 
-import java.io.File;
 import java.nio.file.Path;
 
 /**
@@ -49,7 +50,7 @@ public class SkylineBinaryDataHandler extends AbstractExperimentDataHandler
     }
 
     @Override
-    public void importFile(ExpData data, File dataFile, ViewBackgroundInfo info, Logger log, XarContext context) throws ExperimentException
+    public void importFile(@NotNull ExpData data, @NotNull FileLike dataFile, @NotNull ViewBackgroundInfo info, @NotNull Logger log, @NotNull XarContext context) throws ExperimentException
     {
     }
 
