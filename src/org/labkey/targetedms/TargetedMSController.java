@@ -276,6 +276,7 @@ import org.labkey.targetedms.view.TargetedMsRunListView;
 import org.labkey.targetedms.view.spectrum.LibrarySpectrumMatch;
 import org.labkey.targetedms.view.spectrum.LibrarySpectrumMatchGetter;
 import org.labkey.targetedms.view.spectrum.PeptideSpectrumView;
+import org.labkey.vfs.FileLike;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
@@ -3935,18 +3936,6 @@ public class TargetedMSController extends SpringActionController
         public void setPeptideRepresentative(String[] peptideRepresentative)
         {
             _peptideRepresentative = peptideRepresentative;
-        }
-
-        @Override
-        public List<File> getValidatedFiles(Container c)
-        {
-            List<File> files = super.getValidatedFiles(c);
-            List<File> resolvedFiles = new ArrayList<>(files.size());
-            for(File file: files)
-            {
-                resolvedFiles.add(FileUtil.resolveFile(file));  // Strips out ".." and "." from the path
-            }
-            return resolvedFiles;
         }
     }
 

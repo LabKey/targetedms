@@ -18,6 +18,7 @@
 <%@ page import="org.labkey.api.view.ActionURL"%>
 <%@ page import="org.labkey.api.view.HttpView"%>
 <%@ page import="org.labkey.targetedms.TargetedMSController" %>
+<%@ page import="org.labkey.vfs.FileLike" %>
 <%@ taglib prefix="labkey" uri="http://www.labkey.org/taglib" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 <%
@@ -51,7 +52,7 @@
     </tr>
     <labkey:form action="<%=targetURL%>" method="POST">
         <input type="hidden" name="path" value="<%= h(form.getPath() )%>" />
-        <% for (java.io.File file : form.getValidatedFiles(getContainer()))
+        <% for (FileLike file : form.getValidatedFiles(getContainer()))
         { %>
             <tr style="border:1px solid;">
                 <td>

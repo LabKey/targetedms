@@ -116,6 +116,7 @@ import org.labkey.targetedms.query.ModificationManager;
 import org.labkey.targetedms.query.PeptideManager;
 import org.labkey.targetedms.query.PrecursorManager;
 import org.labkey.targetedms.query.RepresentativeStateManager;
+import org.labkey.vfs.FileLike;
 
 import java.io.IOException;
 import java.net.URI;
@@ -666,7 +667,7 @@ public class TargetedMSManager
             XarSource source = new AbstractFileXarSource("Wrap Targeted MS Run", container, user)
             {
                 @Override
-                public Path getLogFilePath()
+                public FileLike getLogFilePath()
                 {
                     throw new UnsupportedOperationException();
                 }
