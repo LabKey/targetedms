@@ -167,8 +167,7 @@ public class TargetedMSManager
             {
                 TargetedMSSchema schema = (TargetedMSSchema) argument;
                 TableInfo metricsTable = schema.getTableOrThrow("qcMetricsConfig", null);
-                SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("Status"), QCMetricStatus.Disabled.toString(), CompareType.NEQ_OR_NULL);
-                List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, filter, new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
+                List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, null, new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
 
                 OutlierGenerator.get().cachePrecursorMetricValues(schema, metrics);
 
