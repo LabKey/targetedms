@@ -18,3 +18,39 @@ SELECT
   SampleFileId AS SampleFileId,
   TotalArea AS MetricValue
 FROM PrecursorChromInfo
+WHERE
+    -- Ensure we have precursor areas for peptides or small molecules
+    (EXISTS (SELECT Id, FragmentType, Quantitative FROM Transition t WHERE FragmentType = 'precursor' AND Charge IS NULL)
+        OR EXISTS (SELECT Id, FragmentType, Quantitative FROM MoleculeTransition t WHERE FragmentType = 'precursor' AND Charge IS NULL))
+
+  -- Ensure we have transition areas for peptides or small molecules
+AND (EXISTS (
+    SELECT Id, FragmentType, Quantitative FROM Transition t
+    WHERE
+    (Quantitative = TRUE) OR (Quantitative IS NULL AND
+    (FragmentType != 'precursor' AND
+    t.GeneralPrecursorId.GeneralMoleculeId.PeptideGroupId.RunId IN (
+    SELECT r.Id
+    FROM
+    targetedms.Runs r LEFT OUTER JOIN
+    targetedms.TransitionFullScanSettings tfss
+    ON r.Id = tfss.RunId
+    WHERE AcquisitionMethod IS NULL OR AcquisitionMethod != 'DDA'
+    ))
+    )
+    )
+    OR EXISTS (
+    SELECT Id, FragmentType, Quantitative FROM MoleculeTransition t
+    WHERE
+    (Quantitative = TRUE) OR (Quantitative IS NULL AND
+    (FragmentType != 'precursor' AND
+    t.GeneralPrecursorId.GeneralMoleculeId.PeptideGroupId.RunId IN (
+    SELECT r.Id
+    FROM
+    targetedms.Runs r LEFT OUTER JOIN
+    targetedms.TransitionFullScanSettings tfss
+    ON r.Id = tfss.RunId
+    WHERE AcquisitionMethod IS NULL OR AcquisitionMethod != 'DDA'
+    ))
+    )
+    ))

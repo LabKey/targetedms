@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 SELECT
-  Id AS PrecursorChromInfoId,
-  SampleFileId AS SampleFileId,
-  TotalPrecursorArea AS MetricValue
+    Id AS PrecursorChromInfoId,
+    SampleFileId AS SampleFileId,
+    TotalPrecursorArea AS MetricValue
 FROM PrecursorChromInfo
+WHERE
+    (EXISTS (SELECT Id, FragmentType, Quantitative FROM Transition t WHERE FragmentType = 'precursor' AND Charge IS NULL)
+        OR EXISTS (SELECT Id, FragmentType, Quantitative FROM MoleculeTransition t WHERE FragmentType = 'precursor' AND Charge IS NULL))
