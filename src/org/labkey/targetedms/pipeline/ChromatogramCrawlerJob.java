@@ -42,7 +42,7 @@ public class ChromatogramCrawlerJob extends PipelineJob
     public ChromatogramCrawlerJob(ViewBackgroundInfo info, @NotNull PipeRoot root)
     {
         super(TargetedMSPipelineProvider.name, info, root);
-        setLogFile(root.getRootFileLike().resolveChild(FileUtil.makeFileNameWithTimestamp("ChromatogramCrawl", "log")).toNioPathForWrite());
+        setLogFile(root.getRootFileLike().resolveChild(FileUtil.makeFileNameWithTimestamp("ChromatogramCrawl", "log")));
 
         getLogger().info("Description of key statuses:");
         for (Chromatogram.SourceStatus value : Chromatogram.SourceStatus.values())
