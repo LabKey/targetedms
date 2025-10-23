@@ -123,9 +123,8 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
         protected Map<String, Object> deleteRow(User user, Container container, Map<String, Object> oldRow) throws InvalidKeyException, QueryUpdateServiceException, SQLException
         {
             deleteTraceValueForMetric(asInteger(oldRow.get("id")), container);
-            Map<String, Object> result = super.deleteRow(user, container, oldRow);
             TargetedMSManager.get().clearQCMetricCache(container, true);
-            return result;
+            return super.deleteRow(user, container, oldRow);
         }
 
         private void deleteTraceValueForMetric(int metricId, Container container)
