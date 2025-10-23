@@ -276,7 +276,6 @@ import org.labkey.targetedms.view.TargetedMsRunListView;
 import org.labkey.targetedms.view.spectrum.LibrarySpectrumMatch;
 import org.labkey.targetedms.view.spectrum.LibrarySpectrumMatchGetter;
 import org.labkey.targetedms.view.spectrum.PeptideSpectrumView;
-import org.labkey.vfs.FileLike;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
 import org.springframework.web.servlet.ModelAndView;
@@ -286,7 +285,6 @@ import org.w3c.dom.Document;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -3227,7 +3225,7 @@ public class TargetedMSController extends SpringActionController
         PipeRoot root = PipelineService.get().getPipelineRootSetting(getContainer());
         if (null != root)
         {
-            LocalDirectory localDirectory = LocalDirectory.create(root, MODULE_NAME);
+            LocalDirectory localDirectory = LocalDirectory.create(root);
             try
             {
                 List<SpeclibReaderException> specLibErrors = new ArrayList<>();
@@ -6270,7 +6268,7 @@ public class TargetedMSController extends SpringActionController
                 PipeRoot root = PipelineService.get().getPipelineRootSetting(getContainer());
                 if (null != root)
                 {
-                    LocalDirectory localDirectory = LocalDirectory.create(root, MODULE_NAME);
+                    LocalDirectory localDirectory = LocalDirectory.create(root);
                     try
                     {
                         ChromatogramLibraryUtils.incrementLibraryRevision(getContainer(), getUser(), localDirectory);
@@ -6562,7 +6560,7 @@ public class TargetedMSController extends SpringActionController
                     PipeRoot root = PipelineService.get().getPipelineRootSetting(getContainer());
                     if (null != root)
                     {
-                        LocalDirectory localDirectory = LocalDirectory.create(root, MODULE_NAME);
+                        LocalDirectory localDirectory = LocalDirectory.create(root);
                         try
                         {
                             ChromatogramLibraryUtils.writeLibrary(container, getUser(), localDirectory, libraryRevision);

@@ -34,8 +34,6 @@ import org.labkey.targetedms.TargetedMSController;
 
 import java.util.List;
 
-import static org.labkey.api.targetedms.TargetedMSService.MODULE_NAME;
-
 /**
  * Simple wrapper job around a {@link TargetedMSImportTask}.
  * User: vsharma
@@ -69,14 +67,14 @@ public class TargetedMSImportPipelineJob extends PipelineJob
         if ((_expData.hasFileScheme() && root.isCloudRoot()) || (!_expData.hasFileScheme() && !root.isCloudRoot()))
             throw new RuntimeException("Cannot process ExpData when its schema does not match root URI scheme.");
 
-        LocalDirectory localDirectory = LocalDirectory.create(root, MODULE_NAME, baseLogFileName,
+        LocalDirectory localDirectory = LocalDirectory.create(root, baseLogFileName,
                 null != _expData.getFile() ? _expData.getFile().getParentFile().getPath() : FileUtil.getTempDirectory().getPath());
         setLocalDirectory(localDirectory);
         setLogFile(localDirectory.determineLogFile());
     }
 
     @Override
-    public TaskPipeline getTaskPipeline()
+    public TaskPipeline<?> getTaskPipeline()
     {
         return PipelineJobService.get().getTaskPipeline(new TaskId(TargetedMSImportPipelineJob.class));
     }

@@ -145,7 +145,6 @@ import java.util.stream.Collectors;
 import static org.labkey.api.targetedms.TargetedMSService.FOLDER_TYPE_PROP_NAME;
 import static org.labkey.api.targetedms.TargetedMSService.FolderType.Library;
 import static org.labkey.api.targetedms.TargetedMSService.FolderType.LibraryProtein;
-import static org.labkey.api.targetedms.TargetedMSService.MODULE_NAME;
 import static org.labkey.targetedms.TargetedMSSchema.TABLE_INSTRUMENT_NICKNAME;
 
 public class TargetedMSManager
@@ -1268,7 +1267,7 @@ public class TargetedMSManager
                     PipeRoot root = PipelineService.get().getPipelineRootSetting(run.getContainer());
                     if (null != root)
                     {
-                        LocalDirectory localDirectory = LocalDirectory.create(root, MODULE_NAME);
+                        LocalDirectory localDirectory = LocalDirectory.create(root);
                         try
                         {
                             RepresentativeStateManager.setRepresentativeState(user, run.getContainer(), localDirectory, run, RunRepresentativeDataState.NotRepresentative);
