@@ -740,6 +740,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         return hopscotchBubble.append(Locator.byClass("hopscotch-bubble-content").append(Locator.byClass("hopscotch-content").withText()));
     }
 
+    public void clickConfigureQCMetrics()
+    {
+        clickMenuItem("Configure QC Metrics");
+    }
+
     public enum Scale
     {
         LINEAR("Linear"),

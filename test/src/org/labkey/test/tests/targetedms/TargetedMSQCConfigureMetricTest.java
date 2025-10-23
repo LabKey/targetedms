@@ -53,7 +53,7 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
         setupSubfolder(getProjectName(), SUBFOLDER_1, FolderType.QC);
         importData(SProCoP_FILE);
         navigateToFolder(getProjectName(), SUBFOLDER_1);
-        new PanoramaDashboard(this).getQcSummaryWebPart().clickMenuItem("Configure QC Metrics");
+        new PanoramaDashboard(this).getQcSummaryWebPart().clickConfigureQCMetrics();
         ConfigureMetricsUIPage configureQCMetrics = new ConfigureMetricsUIPage(this);
         configureQCMetrics.disableMetric("Precursor Area")
                 .disableMetric("Retention Time")
@@ -65,7 +65,7 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
         setupSubfolder(getProjectName(), SUBFOLDER_2, FolderType.QC);
         importData(SProCoP_FILE);
         navigateToFolder(getProjectName(), SUBFOLDER_2);
-        new PanoramaDashboard(this).getQcSummaryWebPart().clickMenuItem("Configure QC Metrics");
+        new PanoramaDashboard(this).getQcSummaryWebPart().clickConfigureQCMetrics();
         configureQCMetrics = new ConfigureMetricsUIPage(this);
         configureQCMetrics.disableMetric("Precursor Area")
                 .clickSave();
@@ -83,7 +83,7 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
     {
         QCPlotsWebPart.MetricType metricType = QCPlotsWebPart.MetricType.TRANSITION_AREA;
         goToProjectHome();
-        new PanoramaDashboard(this).getQcSummaryWebPart().clickMenuItem("Configure QC Metrics");
+        new PanoramaDashboard(this).getQcSummaryWebPart().clickConfigureQCMetrics();
         ConfigureMetricsUIPage configureQCMetrics = new ConfigureMetricsUIPage(this);
 
         log("Validating the lower and upper limit inputs");
@@ -124,7 +124,7 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
     {
         QCPlotsWebPart.MetricType metric = QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR;
         goToProjectHome();
-        new PanoramaDashboard(this).getQcSummaryWebPart().clickMenuItem("Configure QC Metrics");
+        new PanoramaDashboard(this).getQcSummaryWebPart().clickConfigureQCMetrics();
         ConfigureMetricsUIPage configureQCMetrics = new ConfigureMetricsUIPage(this);
 
         configureQCMetrics.setFixedValueCutOff(metric, "5", "-5");
@@ -158,7 +158,7 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
     {
         QCPlotsWebPart.MetricType metric = QCPlotsWebPart.MetricType.ISOTOPE_DOTP;
         goToProjectHome();
-        new PanoramaDashboard(this).getQcSummaryWebPart().clickMenuItem("Configure QC Metrics");
+        new PanoramaDashboard(this).getQcSummaryWebPart().clickConfigureQCMetrics();
         ConfigureMetricsUIPage configureQCMetrics = new ConfigureMetricsUIPage(this);
         configureQCMetrics.setShowMetricNoOutlier(metric);
         configureQCMetrics.clickSave();

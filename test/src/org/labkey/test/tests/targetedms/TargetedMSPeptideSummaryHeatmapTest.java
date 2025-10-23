@@ -58,7 +58,7 @@ public class TargetedMSPeptideSummaryHeatmapTest extends TargetedMSTest
         log("Updating the Metric type values");
         goToProjectHome();
         QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
-        qcPlotsWebPart.clickMenuItem("Configure QC Metrics");
+        qcPlotsWebPart.clickConfigureQCMetrics();
         ConfigureMetricsUIPage configureQCMetrics = new ConfigureMetricsUIPage(this);
         configureQCMetrics.setFixedDeviationFromMean(QCPlotsWebPart.MetricType.PRECURSOR_AREA, "-5", "5")
                 .clickSave();
@@ -149,7 +149,7 @@ public class TargetedMSPeptideSummaryHeatmapTest extends TargetedMSTest
         log("Updating the Metric type values");
         goToProjectHome();
         QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
-        qcPlotsWebPart.clickMenuItem("Configure QC Metrics");
+        qcPlotsWebPart.clickConfigureQCMetrics();
         ConfigureMetricsUIPage configureQCMetrics = new ConfigureMetricsUIPage(this);
         configureQCMetrics.setShowMetricNoOutlier(QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR)
                 .setFixedValueCutOff(QCPlotsWebPart.MetricType.RETENTION, "-15", "15")

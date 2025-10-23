@@ -55,8 +55,6 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
         wrapAllColumns(true);
         TargetedMSTable.fixupLookups(this);
         setInsertURL(LINK_DISABLER);
-        setDeleteURL(LINK_DISABLER);
-        setUpdateURL(LINK_DISABLER);
         setImportURL(LINK_DISABLER);
     }
 

@@ -16,7 +16,7 @@ public class TargetedMSPremiumTest extends TargetedMSTest
     {
         PanoramaDashboard qcDashboard = goToDashboard();
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        qcPlotsWebPart.clickMenuItem("Configure QC Metrics");
+        qcPlotsWebPart.clickConfigureQCMetrics();
         waitForElement(Locator.tagWithText("button", "Add New Custom Metric"));
         return new ConfigureMetricsUIPage(this);
     }

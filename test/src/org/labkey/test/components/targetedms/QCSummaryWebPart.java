@@ -99,7 +99,12 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
         return new Elements();
     }
 
-    public class Elements extends BodyWebPart.ElementCache
+    public void clickConfigureQCMetrics()
+    {
+        clickMenuItem("Configure QC Metrics");
+    }
+
+    public class Elements extends BodyWebPart<?>.ElementCache
     {
         private List<QcSummaryTile> summaryTiles;
         public List<QcSummaryTile> summaryTiles()

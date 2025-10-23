@@ -4,7 +4,8 @@
 </p>
 
 <div id="qcMetricsTable">Loading...</div>
-<div id="qcMetricsError"></div>
+<div id="qcMetricsError" class="labkey-error"></div>
+<div id="linkToRawTable"></div>
 <script type="text/javascript" nonce="<%=scriptNonce%>">
 
     if (!LABKEY.internal)
@@ -149,7 +150,9 @@
                     msgPrefix: 'Error: '
                 });
 
+                jQuery('#qcMetricsTable').text('');
                 jQuery('#qcMetricsError').text(msg);
+                jQuery('#linkToRawTable').html(LABKEY.Utils.textLink({href: LABKEY.ActionURL.buildURL('query', 'executeQuery.view', null, {schemaName: 'targetedms', queryName: 'QCMetricConfiguration'}), text: 'View QC metrics table'}));
             },
 
             editMetric: function (metricName) {
