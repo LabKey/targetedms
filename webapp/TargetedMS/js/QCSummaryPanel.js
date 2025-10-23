@@ -98,6 +98,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
 
             }, this, false),
             failure: LABKEY.Utils.getCallbackWrapper(function (response) {
+                this.removeAll();
                 this.add(Ext4.create('Ext.Component', {
                     autoEl: 'span',
                     cls: 'labkey-error',

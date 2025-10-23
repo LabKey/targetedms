@@ -165,32 +165,39 @@ public class TargetedMSManager
     private static final Cache<Container, List<QCMetricConfiguration>> _metricCache = CacheManager.getBlockingCache(1000, TimeUnit.HOURS.toMillis(1), "Enabled QC metric configs",
             (c, argument) ->
             {
-                TargetedMSSchema schema = (TargetedMSSchema) argument;
-                TableInfo metricsTable = schema.getTableOrThrow("qcMetricsConfig", null);
-                List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, null, new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
-
-                OutlierGenerator.get().cachePrecursorMetricValues(schema, metrics);
-
-                // Identify which precursor-scoped metrics have any cached data in this container
-                SQLFragment sql = new SQLFragment("SELECT DISTINCT MetricId FROM (");
-                sql.append(OutlierGenerator.get().getRawMetricSql(schema, metrics));
-                sql.append(") y WHERE MetricValue IS NOT NULL");
-                Set<Integer> cachedMetricIds = new HashSet<>(new SqlSelector(getSchema(), sql).getCollection(Integer.class));
-
-                for (QCMetricConfiguration metric : metrics)
+                try
                 {
-                    if (!cachedMetricIds.contains(metric.getId()))
+                    TargetedMSSchema schema = (TargetedMSSchema) argument;
+                    TableInfo metricsTable = schema.getTableOrThrow("qcMetricsConfig", null);
+                    List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, null, new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
+
+                    OutlierGenerator.get().cachePrecursorMetricValues(schema, metrics);
+
+                    // Identify which precursor-scoped metrics have any cached data in this container
+                    SQLFragment sql = new SQLFragment("SELECT DISTINCT MetricId FROM (");
+                    sql.append(OutlierGenerator.get().getRawMetricSql(schema, metrics));
+                    sql.append(") y WHERE MetricValue IS NOT NULL");
+                    Set<Integer> cachedMetricIds = new HashSet<>(new SqlSelector(getSchema(), sql).getCollection(Integer.class));
+
+                    for (QCMetricConfiguration metric : metrics)
                     {
-                        metric.setStatus(QCMetricStatus.NoData);
+                        if (!cachedMetricIds.contains(metric.getId()))
+                        {
+                            metric.setStatus(QCMetricStatus.NoData);
+                        }
+                        else if (metric.getStatus() == null)
+                        {
+                            metric.setStatus(QCMetricStatus.DEFAULT);
+                        }
                     }
-                    else if (metric.getStatus() == null)
-                    {
-                        metric.setStatus(QCMetricStatus.DEFAULT);
-                    }
+                    // Ensure we get a case-insensitive sort regardless of DB collation
+                    Collections.sort(metrics);
+                    return Collections.unmodifiableList(metrics);
                 }
-                // Ensure we get a case-insensitive sort regardless of DB collation
-                Collections.sort(metrics);
-                return Collections.unmodifiableList(metrics);
+                catch (RuntimeException e)
+                {
+                    throw new PanoramaBadDataException("Failed to calculate metric values. Double-check the metric configurations and the backing queries. " + (e.getMessage() == null ? "" : e.getMessage()), e);
+                }
             });
 
     public static TargetedMSManager get()
