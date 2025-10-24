@@ -19,6 +19,7 @@ import org.labkey.test.Locator;
 import org.labkey.test.WebDriverWrapper;
 import org.labkey.test.components.BodyWebPart;
 import org.labkey.test.components.Component;
+import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -99,9 +100,12 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
         return new Elements();
     }
 
-    public void clickConfigureQCMetrics()
+    public ConfigureMetricsUIPage clickConfigureQCMetrics()
     {
         clickMenuItem("Configure QC Metrics");
+        getWrapper().waitForElement(Locator.tagWithText("button", ConfigureMetricsUIPage.ADD_NEW_CUSTOM_METRIC));
+        return new ConfigureMetricsUIPage(getDriver());
+
     }
 
     public class Elements extends BodyWebPart<?>.ElementCache

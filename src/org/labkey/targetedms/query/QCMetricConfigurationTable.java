@@ -36,6 +36,7 @@ import org.labkey.api.security.UserPrincipal;
 import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.security.permissions.Permission;
 import org.labkey.api.security.permissions.ReadPermission;
+import org.labkey.api.util.StringExpressionFactory;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSRun;
 import org.labkey.targetedms.TargetedMSSchema;
@@ -56,6 +57,7 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
         TargetedMSTable.fixupLookups(this);
         setInsertURL(LINK_DISABLER);
         setImportURL(LINK_DISABLER);
+        getMutableColumnOrThrow("QueryName").setURL(StringExpressionFactory.createURL("/query-executeQuery.view?schemaName=targetedms&queryName=${QueryName}"));
     }
 
     @Override

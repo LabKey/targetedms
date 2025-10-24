@@ -11,10 +11,13 @@ import org.labkey.test.components.targetedms.QCSummaryWebPart;
 import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
 import org.labkey.test.tests.panoramapremium.TargetedMSPremiumTest;
+import org.labkey.test.util.DataRegion;
+import org.labkey.test.util.DataRegionTable;
 import org.openqa.selenium.WebElement;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 @Category({})
@@ -53,11 +56,10 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
         setupSubfolder(getProjectName(), SUBFOLDER_1, FolderType.QC);
         importData(SProCoP_FILE);
         navigateToFolder(getProjectName(), SUBFOLDER_1);
-        new PanoramaDashboard(this).getQcSummaryWebPart().clickConfigureQCMetrics();
-        ConfigureMetricsUIPage configureQCMetrics = new ConfigureMetricsUIPage(this);
-        configureQCMetrics.disableMetric("Precursor Area")
-                .disableMetric("Retention Time")
-                .disableMetric("Transition Area")
+        ConfigureMetricsUIPage configureQCMetrics = new PanoramaDashboard(this).getQcSummaryWebPart().clickConfigureQCMetrics();
+        configureQCMetrics.disableMetric(QCPlotsWebPart.MetricType.PRECURSOR_AREA.toString())
+                .disableMetric(QCPlotsWebPart.MetricType.RETENTION.toString())
+                .disableMetric(QCPlotsWebPart.MetricType.TRANSITION_AREA.toString())
                 .clickSave();
 
         log("Create subfolder, import data and configure custom metrics in " + SUBFOLDER_2);
@@ -65,9 +67,8 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
         setupSubfolder(getProjectName(), SUBFOLDER_2, FolderType.QC);
         importData(SProCoP_FILE);
         navigateToFolder(getProjectName(), SUBFOLDER_2);
-        new PanoramaDashboard(this).getQcSummaryWebPart().clickConfigureQCMetrics();
-        configureQCMetrics = new ConfigureMetricsUIPage(this);
-        configureQCMetrics.disableMetric("Precursor Area")
+        configureQCMetrics = new PanoramaDashboard(this).getQcSummaryWebPart().clickConfigureQCMetrics();
+        configureQCMetrics.disableMetric(QCPlotsWebPart.MetricType.PRECURSOR_AREA.toString())
                 .clickSave();
 
         log("Verify the data is displayed correctly on parent folder");
@@ -79,12 +80,42 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
     }
 
     @Test
+    public void testBadMetricQuery()
+    {
+        // Set up a metric
+        String metricName = "BadMetric";
+        createQuery(getProjectName(), metricName, "targetedms", "SELECT * FROM AQCTest_Metric", null,  false);
+        ConfigureMetricsUIPage configureQCMetrics = goToDashboard().getQcPlotsWebPart().clickConfigureQCMetrics();
+        configureQCMetrics.addNewCustomMetric(Map.of(
+                ConfigureMetricsUIPage.CustomMetricProperties.metricName, metricName,
+                ConfigureMetricsUIPage.CustomMetricProperties.queryName, metricName,
+                ConfigureMetricsUIPage.CustomMetricProperties.yAxisLabel, "Label",
+                ConfigureMetricsUIPage.CustomMetricProperties.metricType, ConfigureMetricsUIPage.MetricType.Precursor.name()));
+
+        // Break the query and force a recaching
+        goToSchemaBrowser();
+        editQuerySource("targetedms", metricName).setSource("SELECT * FROM AQCTest_Metric_Bad").clickSaveExpectingError();
+        configureQCMetrics = goToDashboard().getQcPlotsWebPart().clickConfigureQCMetrics();
+        configureQCMetrics.clearMetricCache();
+
+        // Verify helpful error and then delete the bad metric
+        refresh();
+        waitForText("Failed to calculate metric values");
+        clickAndWait(Locator.linkWithText("View QC metrics table"));
+        DataRegionTable table = new DataRegionTable("query", getDriver());
+        table.setFilter("Name", "Equals", metricName);
+        table.checkCheckbox(0);
+        table.deleteSelectedRows();
+
+        goToDashboard().getQcPlotsWebPart().clickConfigureQCMetrics();
+        assertTextNotPresent(metricName);
+    }
+
+    @Test
     public void testFixedDeviationFromMeanOption()
     {
         QCPlotsWebPart.MetricType metricType = QCPlotsWebPart.MetricType.TRANSITION_AREA;
-        goToProjectHome();
-        new PanoramaDashboard(this).getQcSummaryWebPart().clickConfigureQCMetrics();
-        ConfigureMetricsUIPage configureQCMetrics = new ConfigureMetricsUIPage(this);
+        ConfigureMetricsUIPage configureQCMetrics = goToDashboard().getQcSummaryWebPart().clickConfigureQCMetrics();
 
         log("Validating the lower and upper limit inputs");
         configureQCMetrics.setFixedDeviationFromMean(metricType, "", null);
@@ -123,9 +154,7 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
     public void testFixedValueCutOffOption()
     {
         QCPlotsWebPart.MetricType metric = QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR;
-        goToProjectHome();
-        new PanoramaDashboard(this).getQcSummaryWebPart().clickConfigureQCMetrics();
-        ConfigureMetricsUIPage configureQCMetrics = new ConfigureMetricsUIPage(this);
+        ConfigureMetricsUIPage configureQCMetrics = goToDashboard().getQcSummaryWebPart().clickConfigureQCMetrics();
 
         configureQCMetrics.setFixedValueCutOff(metric, "5", "-5");
         Assert.assertEquals("Incorrect error for upper bound < lower bound",
@@ -157,9 +186,7 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
     public void testPlotOnlyOption()
     {
         QCPlotsWebPart.MetricType metric = QCPlotsWebPart.MetricType.ISOTOPE_DOTP;
-        goToProjectHome();
-        new PanoramaDashboard(this).getQcSummaryWebPart().clickConfigureQCMetrics();
-        ConfigureMetricsUIPage configureQCMetrics = new ConfigureMetricsUIPage(this);
+        ConfigureMetricsUIPage configureQCMetrics = goToDashboard().getQcSummaryWebPart().clickConfigureQCMetrics();
         configureQCMetrics.setShowMetricNoOutlier(metric);
         configureQCMetrics.clickSave();
 

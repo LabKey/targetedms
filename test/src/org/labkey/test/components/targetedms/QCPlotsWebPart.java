@@ -23,6 +23,7 @@ import org.labkey.test.components.BodyWebPart;
 import org.labkey.test.components.ext4.ComboBox;
 import org.labkey.test.components.ext4.RadioButton;
 import org.labkey.test.components.ext4.Window;
+import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.util.Ext4Helper;
 import org.labkey.test.util.LogMethod;
 import org.labkey.test.util.LoggedParam;
@@ -740,9 +741,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         return hopscotchBubble.append(Locator.byClass("hopscotch-bubble-content").append(Locator.byClass("hopscotch-content").withText()));
     }
 
-    public void clickConfigureQCMetrics()
+    public ConfigureMetricsUIPage clickConfigureQCMetrics()
     {
         clickMenuItem("Configure QC Metrics");
+        getWrapper().waitForElement(Locator.tagWithText("button", ConfigureMetricsUIPage.ADD_NEW_CUSTOM_METRIC));
+        return new ConfigureMetricsUIPage(getDriver());
     }
 
     public enum Scale

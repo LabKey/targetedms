@@ -9,14 +9,18 @@ import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.pages.PortalBodyPanel;
 import org.labkey.test.util.Ext4Helper;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.WebDriver;
 
 import java.util.Map;
 
 public class ConfigureMetricsUIPage extends PortalBodyPanel
 {
-    public ConfigureMetricsUIPage(BaseWebDriverTest test)
+
+    public static final String ADD_NEW_CUSTOM_METRIC = "Add New Custom Metric";
+
+    public ConfigureMetricsUIPage(WebDriver driver)
     {
-        super(test.getDriver());
+        super(driver);
     }
 
     public ConfigureMetricsUIPage setLeveyJennings(String metric, @Nullable String lowerBound, @Nullable String upperBound)
@@ -111,7 +115,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
 
     public void addNewCustomMetric(Map<CustomMetricProperties, String> metricProperties)
     {
-        click(Locator.tagWithText("button", "Add New Custom Metric"));
+        click(Locator.tagWithText("button", ADD_NEW_CUSTOM_METRIC));
         waitForElement(Ext4Helper.Locators.window("Add New Metric"));
         Window<?> metricWindow = new Window.WindowFinder(getDriver()).withTitle("Add New Metric").waitFor();
         editCustomMetricValues(metricWindow, metricProperties);
@@ -188,6 +192,12 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         });
         clickAndWait(Ext4Helper.Locators.ext4Button("Save").findElement(metricWindow));
         waitForElement(Locator.linkWithText(metricProperties.get(ConfigureMetricsUIPage.TraceMetricProperties.metricName)));
+    }
+
+    public void clearMetricCache()
+    {
+        clickButton("Clear Cached Metric Values", 0);
+        waitForText("Cleared cached metrics");
     }
 
     public enum MetricType
