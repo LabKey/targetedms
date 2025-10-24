@@ -29,9 +29,9 @@
                                 '</tr>';
 
             jQuery.each(qcMetrics, function (index, row) {
-                var rowClass = index % 2 === 1 ? "labkey-row" : "labkey-alternate-row";
+                const rowClass = index % 2 === 1 ? "labkey-row" : "labkey-alternate-row";
                 configRows.push({metric: row.id, name: row.name, Status: row.Status, Inserted: row.Inserted});
-                var editLock = row.Container === LABKEY.container.id;
+                const editLock = row.Container === LABKEY.container.id;
 
                 qcMetricsTable += '<tr class="' + rowClass + '">';
 
@@ -100,7 +100,7 @@
                     LABKEY.internal.ConfigureQCMetrics.editMetric(jQuery('#editLink' + row.id).text());
                     return false;
                 });
-                jQuery('#select-' + row.id).change(function (e) {
+                jQuery('#select-' + row.id).change(function () {
                     refreshBoundsInputs(qcMetrics);
                 });
             });
@@ -116,7 +116,7 @@
         }
 
         function getReturnUrl() {
-            var returnUrl = LABKEY.ActionURL.getParameter('returnUrl');
+            const returnUrl = LABKEY.ActionURL.getParameter('returnUrl');
 
             if(returnUrl) {
                 return returnUrl;
@@ -138,32 +138,36 @@
                         qcMetrics = result.rows;
                         showQCMetrics();
                     },
-                    failure: LABKEY.Utils.getCallbackWrapper(LABKEY.internal.ConfigureQCMetrics.onError, this, true)
+                    failure: LABKEY.Utils.getCallbackWrapper(LABKEY.internal.ConfigureQCMetrics.onErrorClearLoading, this, true)
                 });
+            },
+
+            onErrorClearLoading: function(exception, responseObj, response2){
+                this.onError(exception, responseObj, response2);
+                jQuery('#qcMetricsTable').text('');
             },
 
             onError: function(exception, responseObj, response2){
                 console.error(arguments);
 
-                var msg = LABKEY.Utils.getMsgFromError(response2, exception, {
+                const msg = LABKEY.Utils.getMsgFromError(response2, exception, {
                     showExceptionClass: false,
                     msgPrefix: 'Error: '
                 });
 
-                jQuery('#qcMetricsTable').text('');
                 jQuery('#qcMetricsError').text(msg);
                 jQuery('#linkToRawTable').html(LABKEY.Utils.textLink({href: LABKEY.ActionURL.buildURL('query', 'executeQuery.view', null, {schemaName: 'targetedms', queryName: 'QCMetricConfiguration'}), text: 'View QC metrics table'}));
             },
 
             editMetric: function (metricName) {
-                var clickedQcMetricConfig = {};
+                let clickedQcMetricConfig = {};
                 jQuery.each(qcMetrics, function (index, row) {
                     if (row.name === metricName) {
                         clickedQcMetricConfig = row;
                     }
                 });
 
-                var op = 'update';
+                const op = 'update';
                 if (clickedQcMetricConfig.TraceName) {
                     LABKEY.internal.ConfigureQCMetrics.showTraceMetricWindow(op, clickedQcMetricConfig)
                 }
@@ -181,7 +185,7 @@
                     scope: this,
                     containerPath: LABKEY.container.id,
                     success:  function(schemasInfo) {
-                        var windowConfig = {
+                        const windowConfig = {
                             parent: this,
                             schemas: schemasInfo.schemas,
                             operation: op
@@ -203,17 +207,18 @@
                     filterArray: [LABKEY.Filter.create('TextId', null, LABKEY.Filter.Types.NOT_MISSING)],
                     success: function (sampleFileChromInfos) {
 
-                        var tracesPresent = false;
+                        let tracesPresent = false;
+                        let traces;
                         if (sampleFileChromInfos.rows && sampleFileChromInfos.rows.length > 0) {
-                            var rows = sampleFileChromInfos.rows;
-                            var uniqueTraces = [];
-                            var trace  = {};
+                            const rows = sampleFileChromInfos.rows;
+                            const uniqueTraces = [];
+                            const trace  = {};
 
-                            for (var i in rows) {
+                            for (let i in rows) {
                                 trace[rows[i]['TextId']] = rows[i];
                             }
 
-                            for (i in trace) {
+                            for (let i in trace) {
                                 uniqueTraces.push(trace[i]);
                             }
 
@@ -221,7 +226,7 @@
                             tracesPresent = true;
                         }
 
-                        var windowConfig = {
+                        const windowConfig = {
                             parent: this,
                             traces: tracesPresent ? traces : {} ,
                             tracesPresent: tracesPresent,
@@ -238,7 +243,7 @@
             },
 
             addNewMetric: function (metricType) {
-                var op = 'insert';
+                const op = 'insert';
                 if (metricType === 'custom') {
                     this.showCustomMetricWindow(op);
                 }
@@ -309,7 +314,7 @@
                     LABKEY.Query.saveRows({
                         commands: commands,
                         method: 'POST',
-                        success: function (data) {
+                        success: function () {
                             window.location = getReturnUrl();
                         },
                         failure: LABKEY.Utils.getCallbackWrapper(LABKEY.internal.ConfigureQCMetrics.onError, this, true)
