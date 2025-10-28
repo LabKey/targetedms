@@ -4,7 +4,8 @@
 </p>
 
 <div id="qcMetricsTable">Loading...</div>
-<div id="qcMetricsError"></div>
+<div id="qcMetricsError" class="labkey-error"></div>
+<div id="linkToRawTable"></div>
 <script type="text/javascript" nonce="<%=scriptNonce%>">
 
     if (!LABKEY.internal)
@@ -28,9 +29,9 @@
                                 '</tr>';
 
             jQuery.each(qcMetrics, function (index, row) {
-                var rowClass = index % 2 === 1 ? "labkey-row" : "labkey-alternate-row";
+                const rowClass = index % 2 === 1 ? "labkey-row" : "labkey-alternate-row";
                 configRows.push({metric: row.id, name: row.name, Status: row.Status, Inserted: row.Inserted});
-                var editLock = row.Container === LABKEY.container.id;
+                const editLock = row.Container === LABKEY.container.id;
 
                 qcMetricsTable += '<tr class="' + rowClass + '">';
 
@@ -57,12 +58,13 @@
                 qcMetricsTable += '</tr>';
             });
 
-            qcMetricsTable += '</table>' + '<br>' +
+            qcMetricsTable += '</table><br>' +
                     '<button type="button" class="labkey-button primary" id="saveButton" style="margin-right: 20px;">Save</button>' +
                     '<button type="button" class="labkey-button" id="cancelButton" style="margin-right: 20px;">Cancel</button>' +
                     '<button type="button" class="labkey-button" id="createNewCustomMetricButton" style="margin-right: 20px;">Add New Custom Metric</button>' +
-                    '<button type="button" class="labkey-button" id="createNewTraceMetricButton">Add New Trace Metric</button>' +
-                    '</form>';
+                    '<button type="button" class="labkey-button" id="createNewTraceMetricButton" style="margin-right: 20px;">Add New Trace Metric</button>' +
+                    '<button type="button" class="labkey-button" id="clearCacheButton">Clear Cached Metric Values</button>' +
+                    '</form><br>Edits to queries backing existing custom metrics require a manual cache clearing to display the updated results.</p>';
 
             jQuery('#qcMetricsTable').html(qcMetricsTable);
 
@@ -80,6 +82,17 @@
             jQuery('#createNewTraceMetricButton').click(function() {
                 LABKEY.internal.ConfigureQCMetrics.addNewMetric('trace')
             });
+            jQuery('#clearCacheButton').click(function() {
+                jQuery('#qcMetricsError').text('Clearing cached metrics...');
+                LABKEY.Ajax.request({
+                    url: LABKEY.ActionURL.buildURL('targetedms', 'clearQCMetricsCache.api'),
+                    method: 'POST',
+                    success: function() {
+                        jQuery('#qcMetricsError').text('Cleared cached metrics.');
+                    },
+                    failure: LABKEY.Utils.getCallbackWrapper(LABKEY.internal.ConfigureQCMetrics.onError, this, true)
+                });
+            });
 
             jQuery.each(qcMetrics, function (index, row) {
                 jQuery('#editLink' + row.id).click(function (e) {
@@ -87,7 +100,7 @@
                     LABKEY.internal.ConfigureQCMetrics.editMetric(jQuery('#editLink' + row.id).text());
                     return false;
                 });
-                jQuery('#select-' + row.id).change(function (e) {
+                jQuery('#select-' + row.id).change(function () {
                     refreshBoundsInputs(qcMetrics);
                 });
             });
@@ -103,7 +116,7 @@
         }
 
         function getReturnUrl() {
-            var returnUrl = LABKEY.ActionURL.getParameter('returnUrl');
+            const returnUrl = LABKEY.ActionURL.getParameter('returnUrl');
 
             if(returnUrl) {
                 return returnUrl;
@@ -125,30 +138,36 @@
                         qcMetrics = result.rows;
                         showQCMetrics();
                     },
-                    failure: LABKEY.Utils.getCallbackWrapper(LABKEY.internal.ConfigureQCMetrics.onError, this, true)
+                    failure: LABKEY.Utils.getCallbackWrapper(LABKEY.internal.ConfigureQCMetrics.onErrorClearLoading, this, true)
                 });
+            },
+
+            onErrorClearLoading: function(exception, responseObj, response2){
+                this.onError(exception, responseObj, response2);
+                jQuery('#qcMetricsTable').text('');
             },
 
             onError: function(exception, responseObj, response2){
                 console.error(arguments);
 
-                var msg = LABKEY.Utils.getMsgFromError(response2, exception, {
+                const msg = LABKEY.Utils.getMsgFromError(response2, exception, {
                     showExceptionClass: false,
                     msgPrefix: 'Error: '
                 });
 
                 jQuery('#qcMetricsError').text(msg);
+                jQuery('#linkToRawTable').html(LABKEY.Utils.textLink({href: LABKEY.ActionURL.buildURL('query', 'executeQuery.view', null, {schemaName: 'targetedms', queryName: 'QCMetricConfiguration'}), text: 'View QC metrics table'}));
             },
 
             editMetric: function (metricName) {
-                var clickedQcMetricConfig = {};
+                let clickedQcMetricConfig = {};
                 jQuery.each(qcMetrics, function (index, row) {
                     if (row.name === metricName) {
                         clickedQcMetricConfig = row;
                     }
                 });
 
-                var op = 'update';
+                const op = 'update';
                 if (clickedQcMetricConfig.TraceName) {
                     LABKEY.internal.ConfigureQCMetrics.showTraceMetricWindow(op, clickedQcMetricConfig)
                 }
@@ -166,7 +185,7 @@
                     scope: this,
                     containerPath: LABKEY.container.id,
                     success:  function(schemasInfo) {
-                        var windowConfig = {
+                        const windowConfig = {
                             parent: this,
                             schemas: schemasInfo.schemas,
                             operation: op
@@ -188,17 +207,18 @@
                     filterArray: [LABKEY.Filter.create('TextId', null, LABKEY.Filter.Types.NOT_MISSING)],
                     success: function (sampleFileChromInfos) {
 
-                        var tracesPresent = false;
+                        let tracesPresent = false;
+                        let traces;
                         if (sampleFileChromInfos.rows && sampleFileChromInfos.rows.length > 0) {
-                            var rows = sampleFileChromInfos.rows;
-                            var uniqueTraces = [];
-                            var trace  = {};
+                            const rows = sampleFileChromInfos.rows;
+                            const uniqueTraces = [];
+                            const trace  = {};
 
-                            for (var i in rows) {
+                            for (let i in rows) {
                                 trace[rows[i]['TextId']] = rows[i];
                             }
 
-                            for (i in trace) {
+                            for (let i in trace) {
                                 uniqueTraces.push(trace[i]);
                             }
 
@@ -206,7 +226,7 @@
                             tracesPresent = true;
                         }
 
-                        var windowConfig = {
+                        const windowConfig = {
                             parent: this,
                             traces: tracesPresent ? traces : {} ,
                             tracesPresent: tracesPresent,
@@ -223,7 +243,7 @@
             },
 
             addNewMetric: function (metricType) {
-                var op = 'insert';
+                const op = 'insert';
                 if (metricType === 'custom') {
                     this.showCustomMetricWindow(op);
                 }
@@ -294,7 +314,7 @@
                     LABKEY.Query.saveRows({
                         commands: commands,
                         method: 'POST',
-                        success: function (data) {
+                        success: function () {
                             window.location = getReturnUrl();
                         },
                         failure: LABKEY.Utils.getCallbackWrapper(LABKEY.internal.ConfigureQCMetrics.onError, this, true)

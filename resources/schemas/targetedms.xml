@@ -1349,7 +1349,6 @@
             <column columnName="Name"/>
             <column columnName="QueryName"/>
             <column columnName="PrecursorScoped"/>
-            <column columnName="EnabledQueryName"/>
             <column columnName="TraceValue"/>
             <column columnName="MinTimeValue"/>
             <column columnName="MaxTimeValue"/>
@@ -1938,6 +1937,16 @@
             <column columnName="SerialNumber"/>
             <column columnName="Model"/>
             <column columnName="Nickname"/>
+        </columns>
+    </table>
+    <table tableName="QCMetricCache" tableDbType="TABLE">
+        <columns>
+            <column columnName="Container"/>
+            <column columnName="MetricId"/>
+            <column columnName="PrecursorChromInfoId"/>
+            <column columnName="SampleFileId"/>
+            <column columnName="MetricValue"/>
+            <column columnName="SeriesLabel"/>
         </columns>
     </table>
 </tables>

@@ -179,6 +179,20 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
 
         log("Verifying new metric got edited");
         waitForElement(Locator.linkWithText(metricName2));
+        configureUI.setLeveyJennings(metricName2, "-3", "3");
+        configureUI.clickSave();
+        qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        List<String> metricOptions = getMetric1TypeOptions(qcPlotsWebPart);
+        assertTrue("Didn't find '" + metricName2 + "' in :" + metricOptions, metricOptions.contains(metricName2));
+        goToConfigureMetricsUI().deleteMetric(metricName2);
+        goToDashboard();
+        metricOptions = getMetric1TypeOptions(qcPlotsWebPart);
+        assertFalse("Found '" + metricName2 + "' in :" + metricOptions, metricOptions.contains(metricName2));
+    }
+
+    private static List<String> getMetric1TypeOptions(QCPlotsWebPart qcPlotsWebPart)
+    {
+        return qcPlotsWebPart.getMetric1TypeOptions();
     }
 
     @Test

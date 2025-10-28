@@ -18,7 +18,7 @@ SELECT * FROM (
                       pci.Id AS PrecursorChromInfoId,
                       SampleFileId AS SampleFileId,
                       -- Use the error from the most intense transition associated with the precursor
-                      (SELECT COALESCE(MassErrorPPM, -1000) AS MetricValue
+                      (SELECT COALESCE(MassErrorPPM, -100000) AS MetricValue
                        FROM TransitionChromInfo tci
                        WHERE TransitionId.Charge IS NOT NULL
                          AND tci.PrecursorChromInfoId = pci.Id
@@ -26,3 +26,4 @@ SELECT * FROM (
                        ORDER BY Area DESC, Id LIMIT 1) AS MetricValue FROM PrecursorChromInfo pci
  ) X
 WHERE MetricValue IS NOT NULL
+AND MetricValue != -100000

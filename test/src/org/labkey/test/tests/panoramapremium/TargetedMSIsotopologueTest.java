@@ -63,13 +63,7 @@ public class TargetedMSIsotopologueTest extends TargetedMSPremiumTest
         assertTextPresent("ELA\u2026GFk", "ELA\u2026PV\u2026", "ELA\u2026Pv\u2026", "ELA\u2026p\u2026");
 
         log("Verifying isotopologue is present while configuring the metric");
-        qcPlotsWebPart.clickMenuItem("Configure QC Metrics");
+        qcPlotsWebPart.clickConfigureQCMetrics();
         waitForText("Isotopologue Accuracy", "Isotopologue LOD", "Isotopologue LOQ", "Isotopologue Regression RSquared");
-
-        log("Verifying that two new metric properties are added");
-        clickButton("Add New Custom Metric", 0);
-        Window<?> metricWindow = new Window.WindowFinder(getDriver()).withTitle("Add New Metric").waitFor();
-        assertElementPresent(Locator.name(ConfigureMetricsUIPage.CustomMetricProperties.enabledQueryName.name()));
-
     }
 }

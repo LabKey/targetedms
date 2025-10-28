@@ -1,6 +1,5 @@
 package org.labkey.test.tests.panoramapremium;
 
-import org.labkey.test.Locator;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
@@ -16,9 +15,7 @@ public class TargetedMSPremiumTest extends TargetedMSTest
     {
         PanoramaDashboard qcDashboard = goToDashboard();
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        qcPlotsWebPart.clickMenuItem("Configure QC Metrics");
-        waitForElement(Locator.tagWithText("button", "Add New Custom Metric"));
-        return new ConfigureMetricsUIPage(this);
+        return qcPlotsWebPart.clickConfigureQCMetrics();
     }
 
     protected void verifyMetricNotPresent(QCPlotsWebPart qcPlotsWebPart, String metricName)

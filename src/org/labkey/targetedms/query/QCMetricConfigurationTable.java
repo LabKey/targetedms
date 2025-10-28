@@ -36,6 +36,7 @@ import org.labkey.api.security.UserPrincipal;
 import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.security.permissions.Permission;
 import org.labkey.api.security.permissions.ReadPermission;
+import org.labkey.api.util.StringExpressionFactory;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSRun;
 import org.labkey.targetedms.TargetedMSSchema;
@@ -44,7 +45,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.labkey.api.exp.api.ExperimentService.asInteger;
 
@@ -56,9 +56,8 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
         wrapAllColumns(true);
         TargetedMSTable.fixupLookups(this);
         setInsertURL(LINK_DISABLER);
-        setDeleteURL(LINK_DISABLER);
-        setUpdateURL(LINK_DISABLER);
         setImportURL(LINK_DISABLER);
+        getMutableColumnOrThrow("QueryName").setURL(StringExpressionFactory.createURL("/query-executeQuery.view?schemaName=targetedms&queryName=${QueryName}"));
     }
 
     @Override
@@ -106,7 +105,6 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
         protected Map<String, Object> insertRow(User user, Container container, Map<String, Object> row) throws DuplicateKeyException, ValidationException, QueryUpdateServiceException, SQLException
         {
             var insertedRow = super.insertRow(user, container, row);
-            TargetedMSManager.get().clearCachedEnabledQCMetrics(container);
             calculateAndInsertTraceValuesForMetric(asInteger(insertedRow.get("Id")), container, user);
             return insertedRow;
         }
@@ -117,7 +115,6 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
             var updatedRow = super.updateRow(user, container, row, oldRow, configParameters);
             int metricId = asInteger(updatedRow.get("Id"));
             deleteTraceValueForMetric(metricId, container);
-            TargetedMSManager.get().clearCachedEnabledQCMetrics(container);
             calculateAndInsertTraceValuesForMetric(metricId, container, user);
             return updatedRow;
         }
@@ -125,8 +122,8 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
         @Override
         protected Map<String, Object> deleteRow(User user, Container container, Map<String, Object> oldRow) throws InvalidKeyException, QueryUpdateServiceException, SQLException
         {
-            TargetedMSManager.get().clearCachedEnabledQCMetrics(container);
             deleteTraceValueForMetric(asInteger(oldRow.get("id")), container);
+            TargetedMSManager.get().clearQCMetricCache(container, true);
             return super.deleteRow(user, container, oldRow);
         }
 
@@ -144,11 +141,20 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
 
         private void calculateAndInsertTraceValuesForMetric(int metricId, Container container, User user)
         {
+            // Make sure that we pick up the new metric
+            TargetedMSManager.get().clearQCMetricCache(container, true);
+
             var qcMetricConfigurations = TargetedMSManager
-                .getEnabledQCMetricConfigurations(_queryTable.getUserSchema())
+                .getAllQCMetricConfigurations(_queryTable.getUserSchema())
                 .stream()
                 .filter(qcMetricConfiguration -> qcMetricConfiguration.getId() == metricId)
-                .collect(Collectors.toList());
+                .toList();
+
+            if (qcMetricConfigurations.isEmpty())
+            {
+                throw new IllegalStateException("No QCMetricConfiguration found for Id " + metricId);
+            }
+
             var runsInContainer = TargetedMSManager.getRunsInContainer(container);
 
             for (TargetedMSRun run : runsInContainer)
@@ -156,6 +162,9 @@ public class QCMetricConfigurationTable extends FilteredTable<TargetedMSSchema>
                 var qcTraceMetricValues = TargetedMSManager.calculateTraceMetricValues(qcMetricConfigurations, run);
                 qcTraceMetricValues.forEach(qcTraceMetricValue -> Table.insert(user, TargetedMSManager.getTableQCTraceMetricValues(), qcTraceMetricValue));
             }
+
+            // Clear again so that we have the right state for the presence/absence of data
+            TargetedMSManager.get().clearQCMetricCache(container, false);
         }
     }
 }

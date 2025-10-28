@@ -18,3 +18,5 @@ SELECT
   SampleFileId AS SampleFileId,
   TotalNonPrecursorArea AS MetricValue
 FROM PrecursorChromInfo
+WHERE
+  EXISTS (SELECT * FROM QCMetricEnabled_transitionArea)

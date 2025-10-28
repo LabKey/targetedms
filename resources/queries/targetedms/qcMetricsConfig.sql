@@ -20,7 +20,6 @@ SELECT
        qmc.QueryName,
        qmc.PrecursorScoped,
        qmc.Container, -- including to lock out editing pre-configured qc metrics,
-       qmc.EnabledQueryName,
        qem.Status,
        CASE WHEN qem.metric IS NULL THEN FALSE
             ELSE TRUE END AS Inserted,

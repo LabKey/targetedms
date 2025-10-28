@@ -8159,6 +8159,17 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
+    @RequiresPermission(AdminPermission.class)
+    public static class ClearQCMetricsCacheAction extends MutatingApiAction<Object>
+    {
+        @Override
+        public Object execute(Object form, BindException errors)
+        {
+            TargetedMSManager.get().clearQCMetricCache(getContainer(), true);
+            return new ApiSimpleResponse("success", true);
+        }
+    }
+
     public static class TargetedMSUrlsImpl implements TargetedMSUrls
     {
         public static TargetedMSUrlsImpl get()

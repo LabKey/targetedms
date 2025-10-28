@@ -37,7 +37,6 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
             schemaName: this.SCHEMA_NAME,
             success: function(queriesInfo) {
                 this.queries = queriesInfo.queries;
-                this.enabledqueries = queriesInfo.queries;
             }
         });
 
@@ -49,7 +48,6 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
             this.getQueriesCombo(),
             this.getMetricTypeCombo(),
             this.getYAxisLabelField(),
-            this.getEnabledQueriesCombo(),
             this.getQueryError(),
         ];
     },
@@ -148,28 +146,6 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
         }
 
         return this.yAxisLabelField;
-    },
-
-    getEnabledQueriesCombo: function() {
-        if(!this.enabledQueriesCombo) {
-            var config = Ext4.apply(this.getQueriesConfig('Enabled Query', 'enabledQueryName'), {
-                listeners: {
-                    scope: this,
-                    expand: function (field, options) {
-                        if (this.enabledqueries) {
-                            this.enabledQueriesCombo.bindStore(this.getQueriesStore());
-                        }
-                    }
-                }
-            });
-            this.enabledQueriesCombo = Ext4.create('Ext.form.field.ComboBox', config);
-
-            if(this.operation === this.update) {
-                this.enabledQueriesCombo.setValue(this.metric.EnabledQueryName);
-            }
-        }
-
-        return this.enabledQueriesCombo;
     },
 
     getMetricTypeCombo: function() {
@@ -319,8 +295,6 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
             newMetric.QueryName = this.queriesCombo.getValue();
             newMetric.YAxisLabel = this.yAxisLabelField.getValue();
             newMetric.PrecursorScoped = this.metricTypeCombo.getValue();
-
-            newMetric.EnabledQueryName = this.enabledQueriesCombo.getValue();
 
             if(this.operation === this.update) {
                 newMetric.id = this.metric.id;
