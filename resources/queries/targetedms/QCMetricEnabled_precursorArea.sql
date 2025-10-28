@@ -13,13 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-SELECT
-  Id AS PrecursorChromInfoId,
-  SampleFileId AS SampleFileId,
-  TotalArea AS MetricValue
-FROM PrecursorChromInfo
-WHERE
-    -- Ensure we have precursor areas for peptides or small molecules
-    EXISTS (SELECT * FROM QCMetricEnabled_precursorArea)
-    -- Ensure we have transition areas for peptides or small molecules
-    AND EXISTS (SELECT * FROM QCMetricEnabled_transitionArea)
+-- We need to check both the proteomics and small molecule data. Use two separate EXISTS subqueries so we stop as
+-- soon as we find any data
+SELECT 1 AS E WHERE
+EXISTS (SELECT Id, FragmentType, Quantitative FROM Transition t WHERE FragmentType = 'precursor' AND Charge IS NULL)
+OR EXISTS (SELECT Id, FragmentType, Quantitative FROM MoleculeTransition t WHERE FragmentType = 'precursor' AND Charge IS NULL)

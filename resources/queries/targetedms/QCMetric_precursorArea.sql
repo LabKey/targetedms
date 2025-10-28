@@ -19,5 +19,4 @@ SELECT
     TotalPrecursorArea AS MetricValue
 FROM PrecursorChromInfo
 WHERE
-    (EXISTS (SELECT Id, FragmentType, Quantitative FROM Transition t WHERE FragmentType = 'precursor' AND Charge IS NULL)
-        OR EXISTS (SELECT Id, FragmentType, Quantitative FROM MoleculeTransition t WHERE FragmentType = 'precursor' AND Charge IS NULL))
+    EXISTS (SELECT * FROM QCMetricEnabled_precursorArea)
