@@ -13,12 +13,14 @@
             <td><select id="projectDropDown" name="projectDropDown"></select></td>
         </tr>
         <tr>
-            <td class="labkey-form-label"><label for="paymentMethodDropDown">Payment method</label></td>
+            <td class="labkey-form-label" rowspan="10"><label for="paymentMethodDropDown">Payment method</label></td>
             <td><div id="paymentMethodDropDown"></div></td>
         </tr>
         <tr>
-            <td class="labkey-form-label"></td>
-            <td><span id="addPaymentMethod" role="button" style="cursor: pointer;">[Add Payment Method]</span></td>
+            <td>
+                <div id="addPaymentMethod" role="button" style="cursor: pointer;">[Add payment method]</div>
+                <div id="payment-method-error" class="labkey-error"></div>
+            </td>
         </tr>
     </table>
 </div>
@@ -337,25 +339,146 @@
             }
         });
 
+        function validatePaymentMethodPercentsAndShow() {
+            const errorEl = document.getElementById('payment-method-error');
+            const scheduleError = document.getElementById('schedule-save-error');
+            const selects = document.querySelectorAll('#paymentMethodDropDown select');
+            const percents = document.querySelectorAll('.paymentMethodPercent');
+
+            // Default: clear
+            let message = '';
+            let total = 0;
+            let invalid = false;
+
+            // Only validate when there are percent inputs (i.e., multiple methods in use UI-wise)
+            if (percents.length > 0 && selects.length > 0) {
+                for (let i = 0; i < selects.length; i++) {
+                    const val = percents[i] ? percents[i].value : (selects.length === 1 ? '100' : '0');
+                    const num = parseFloat(val);
+                    if (isNaN(num) || num < 0 || num > 100) {
+                        invalid = true;
+                    }
+                    total += isNaN(num) ? 0 : num;
+                }
+
+                if (invalid) {
+                    message = 'Each payment percentage must be a number between 0 and 100.';
+                }
+                else if (percents.length > 1 && total !== 100) {
+                    message = 'When multiple payment methods are used, the percentages must add up to 100% (current total: ' + total + '%).';
+                }
+            }
+
+            if (errorEl) errorEl.textContent = message;
+            if (scheduleError) scheduleError.textContent = message; // mirror below modal as well
+
+            return { valid: !message, total: total };
+        }
+
+        const validationCallback = validatePaymentMethodPercentsAndShow;
+
+        function updatePercentInputsVisibility() {
+            const container = document.getElementById('paymentMethodDropDown');
+            if (!container) return;
+
+            const selects = container.querySelectorAll('select');
+            const groups = container.querySelectorAll('.paymentPercentGroup');
+            const inputs = container.querySelectorAll('.paymentMethodPercent');
+            const rowCount = selects.length;
+
+            // Show when multiple rows, hide when single
+            const show = rowCount > 1;
+
+            // If only one row remains, reset its percent back to 100 before hiding
+            if (!show && inputs.length > 0) {
+                inputs[0].value = '100';
+            }
+
+            groups.forEach(function (grp) {
+                grp.style.display = show ? '' : 'none';
+            });
+
+            // When first transitioning to multi-row, ensure sensible defaults
+            if (show && inputs.length > 0) {
+                // If first value is empty, default to 100
+                if (inputs[0].value === '') inputs[0].value = '100';
+                // For others, if empty, default to 0
+                for (let i = 1; i < inputs.length; i++) {
+                    if (inputs[i].value === '') inputs[i].value = '0';
+                }
+            }
+
+            // Clear the top message when hiding
+            if (!show) {
+                const topErr = document.getElementById('payment-method-error');
+                if (topErr) topErr.textContent = '';
+            }
+        }
+
         LABKEY.Query.selectRows({
             schemaName: 'targetedms',
-            queryName: 'paymentMethod',
-            sort: 'name',
-            columns: 'Id,UWBudgetNumber,worktag, budgetExpirationDate, name',
+            queryName: 'projectPaymentMethod',
+            sort: 'paymentMethod/name',
+            columns: 'paymentMethod,paymentMethod/name,paymentMethod/UWBudgetNumber,paymentMethod/worktag,paymentMethod/budgetExpirationDate',
+            filterArray: [
+                LABKEY.Filter.create('project', project, LABKEY.Filter.Types.EQUAL)
+            ],
             scope: this,
             success: function (result) {
-                let rows = result.rows;
-                paymentMethodsData = rows;
+                let rows = result.rows || [];
+                // Normalize to the same shape used elsewhere in this file
+                paymentMethodsData = rows.map(function(r) {
+                    return {
+                        Id: r.paymentMethod,
+                        name: r['paymentMethod/name'],
+                        UWBudgetNumber: r['paymentMethod/UWBudgetNumber'],
+                        worktag: r['paymentMethod/worktag'],
+                        budgetExpirationDate: r['paymentMethod/budgetExpirationDate']
+                    };
+                });
                 let paymentMethodDropDown = '<select id="paymentMethodDropDown" name="paymentMethodDropDown">';
-                for (let i = 0; i < rows.length; i++) {
-                    paymentMethodDropDown += '<option value="' + LABKEY.Utils.encodeHtml(rows[i].Id) + '">' + LABKEY.Utils.encodeHtml(rows[i].name) + '</option>';
+                for (let i = 0; i < paymentMethodsData.length; i++) {
+                    paymentMethodDropDown += '<option value="' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].Id) + '">' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].name) + '</option>';
                 }
                 paymentMethodDropDown += '</select>';
-
-                paymentMethodDropDown += '&nbsp<input type="text" id="paymentMethodPercent" name="paymentMethodPercent" value="100" size="3" maxlength="3">';
-                paymentMethodDropDown += '<label for="paymentMethodPercent">%</label>';
+                // Always render a percent input for the first row; visibility will be toggled based on row count
+                paymentMethodDropDown += '&nbsp;<span class="paymentPercentGroup" style="display:none;"><input type="text" class="paymentMethodPercent" name="paymentMethodPercent" value="100" size="3" maxlength="3"><label>%</label></span>';
 
                 jQuery('#paymentMethodDropDown').html(paymentMethodDropDown);
+
+                // Attach live validation listeners to the first row percent input
+                const firstPercent = document.querySelector('#paymentMethodDropDown .paymentMethodPercent');
+                if (firstPercent) {
+                    firstPercent.addEventListener('input', validationCallback);
+                    firstPercent.addEventListener('change', validationCallback);
+                }
+
+                // Toggle visibility based on how many rows are present
+                updatePercentInputsVisibility();
+                // Run validation once to clear or show any messages
+                validatePaymentMethodPercentsAndShow();
+
+                // Hide or show the Add Payment Method control based on count
+                const addBtn = document.getElementById('addPaymentMethod');
+                if (addBtn) {
+                    if (paymentMethodsData.length <= 1) {
+                        addBtn.style.display = 'none';
+                    } else {
+                        addBtn.style.display = '';
+                    }
+                }
+
+                // If there are no payment methods, disable Save and inform the user
+                const saveBtn = document.getElementById('save-event');
+                const scheduleError = document.getElementById('schedule-save-error');
+                if (paymentMethodsData.length === 0) {
+                    if (saveBtn) saveBtn.setAttribute('disabled', 'disabled');
+                    if (scheduleError) scheduleError.textContent = 'No payment methods are configured for this project. Please contact an administrator.';
+                }
+                else {
+                    if (saveBtn) saveBtn.removeAttribute('disabled');
+                    if (scheduleError) scheduleError.textContent = '';
+                }
 
             }
         });
@@ -460,14 +583,38 @@
             // get the paymentMethod and percentPayment from the html fields
             paymentMethods = [];
             let paymentMethodDropDowns = document.querySelectorAll('#paymentMethodDropDown select');
-            let percentPaymentFields = document.querySelectorAll('#paymentMethodPercent');
+            let percentPaymentFields = document.querySelectorAll('.paymentMethodPercent');
+
+            // Validation: ensure numeric values and totals add to 100 when multiple entries
+            let percentTotal = 0;
+            let invalidPercent = false;
             for (let i = 0; i < paymentMethodDropDowns.length; i++) {
                 let paymentMethodId = paymentMethodDropDowns[i].value;
-                let paymentMethodPercent = percentPaymentFields[i].value;
+                let percentVal = percentPaymentFields[i] ? percentPaymentFields[i].value : (paymentMethodDropDowns.length === 1 ? '100' : '0');
+                let percentNum = parseFloat(percentVal);
+                if (percentPaymentFields.length > 0) {
+                    // only validate when inputs are present (multiple methods)
+                    if (isNaN(percentNum) || percentNum < 0 || percentNum > 100) {
+                        invalidPercent = true;
+                    }
+                    percentTotal += isNaN(percentNum) ? 0 : percentNum;
+                }
                 paymentMethods.push({
                     paymentMethod: paymentMethodId,
-                    percentPayment: paymentMethodPercent
+                    percentPayment: percentVal
                 });
+            }
+
+            const scheduleError = document.getElementById('schedule-save-error');
+            if (invalidPercent) {
+                if (scheduleError) scheduleError.textContent = 'Each payment percentage must be a number between 0 and 100.';
+                return;
+            }
+            if (percentPaymentFields.length > 1 && percentTotal !== 100) {
+                if (scheduleError) scheduleError.textContent = 'When multiple payment methods are used, the percentages must add up to 100% (current total: ' + percentTotal + '%).';
+                return;
+            } else if (scheduleError) {
+                scheduleError.textContent = '';
             }
 
             fetchInstrumentCosts(eventToSave.instrument, eventToSave.startTime, eventToSave.endTime, true);
@@ -538,6 +685,18 @@
 
         function saveEvent() {
 
+            let instrumentUsagePaymentRows = [];
+            if (paymentMethods.length > 0) {
+                for (let i = 0; i < paymentMethods.length; i++) {
+                    instrumentUsagePaymentRows.push({
+                        paymentMethod: paymentMethods[i].paymentMethod,
+                        percentPayment: paymentMethods[i].percentPayment
+                    });
+                }
+            }
+
+            eventToSave.usagePayments = instrumentUsagePaymentRows;
+
             let instrumentScheduleCommand = {
                 command: eventToSave.id ? 'update' : 'insert',
                 schemaName: 'targetedms',
@@ -546,31 +705,6 @@
                     eventToSave
                 ]
             };
-
-            let instrumentUsagePaymentRows = [];
-            if (paymentMethods.length > 0) {
-                for (let i = 0; i < paymentMethods.length; i++) {
-                    instrumentUsagePaymentRows.push({
-                        instrumentScheduleId: eventToSave.id,
-                        paymentMethod: paymentMethods[i].paymentMethod,
-                        percentPayment: paymentMethods[i].percentPayment
-                    });
-                }
-            }
-
-            let instrumentUsagePaymentCommand = {
-                command: eventToSave.id ? 'update' : 'insert',
-                schemaName: 'targetedms',
-                queryName: 'instrumentUsagePayment',
-                rows: instrumentUsagePaymentRows
-            };
-
-
-            let commandsToExecute = [instrumentScheduleCommand];
-            if (eventToSave.id) {
-                commandsToExecute.push(instrumentUsagePaymentCommand);
-            }
-
 
             LABKEY.Query.saveRows({
                 commands: [instrumentScheduleCommand],
@@ -589,16 +723,6 @@
                         for (let i = 0; i < instrumentUsagePaymentRows.length; i++) {
                             instrumentUsagePaymentRows[i].instrumentScheduleId = instrumentScheduleId;
                         }
-
-                        LABKEY.Query.saveRows({
-                            commands: [instrumentUsagePaymentCommand],
-                            success: function () {
-                                // Do nothing
-                            },
-                            failure: function (errorInfo) {
-                                $('#schedule-save-error').text('Error saving. ' + (errorInfo.exception ? errorInfo.exception : ''));
-                            }
-                        });
                     }
                 },
                 failure: function (errorInfo) {
@@ -694,7 +818,7 @@
                 queryName: 'instrumentSchedule',
                 columns: 'Id,startTime,endTime,name,notes,instrument/color,instrument/Id,project/Id, project/Title',
                 filterArray: [
-                    LABKEY.Filter.create('instrument', instrument ? instrument : $('#instrumentDropDown').val()),
+                    LABKEY.Filter.create('instrument', currentInstrument),
                 ],
                 success: function (data) {
                     let rows = data.rows;
@@ -737,36 +861,51 @@
             $('#event-modal').modal('hide');
         });
 
-    });
-    let paymentMethodsData;
-    let paymentMethodCount = 1;
-    document.addEventListener('DOMContentLoaded', function () {
+        let paymentMethodsData;
+        let paymentMethodCount = 1;
         const addPaymentMethodEl = document.getElementById('addPaymentMethod');
         addPaymentMethodEl.addEventListener('click', function () {
             paymentMethodCount++;
             let id = 'paymentMethodDropDown' + paymentMethodCount;
-            let paymentMethodDropDown = '<select id=' + id + ' name=' + id + '">';
+            let paymentMethodDropDown = '<select id="' + id + '" name="' + id + '">';
             for (let i = 0; i < paymentMethodsData.length; i++) {
                 paymentMethodDropDown += '<option value="' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].Id) + '">' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].name) + '</option>';
             }
             paymentMethodDropDown += '</select>';
 
-            paymentMethodDropDown += '&nbsp<input type="text" id="paymentMethodPercent" name="paymentMethodPercent" value="0" size="3" maxlength="3">';
-            paymentMethodDropDown += '<label for="paymentMethodPercent">%</label>';
+            // Always render a percent input group; visibility toggled by updatePercentInputsVisibility
+            paymentMethodDropDown += '&nbsp;<span class="paymentPercentGroup" style="display:none;"><input type="text" class="paymentMethodPercent" name="paymentMethodPercent" value="0" size="3" maxlength="3"><label>%</label></span>';
 
-            // TODO: add delete icon
             paymentMethodDropDown += '&nbsp' +
                     '<span id="removePaymentMethod" role="button" style="cursor: pointer;">[Remove]</span>';
             let logElt = document.createElement('div');
             logElt.innerHTML = paymentMethodDropDown;
 
-            document.querySelector('#paymentMethodDropDown').appendChild(logElt);
+            const container = document.querySelector('#paymentMethodDropDown');
+            container.appendChild(logElt);
+
+            // Attach live validation listeners to the newly added input
+            const newInput = logElt.querySelector('.paymentMethodPercent');
+            if (newInput) {
+                newInput.addEventListener('input', validatePaymentMethodPercentsAndShow);
+                newInput.addEventListener('change', validatePaymentMethodPercentsAndShow);
+            }
+
+            // Ensure percent inputs are shown only when multiple rows are present
+            updatePercentInputsVisibility();
+
+            // Re-run validation after adding a row
+            validatePaymentMethodPercentsAndShow();
         });
 
         document.addEventListener('click', function (event) {
             if (event.target.id === 'removePaymentMethod') {
                 event.preventDefault();
                 event.target.parentElement.remove();
+                // Update visibility after removal
+                updatePercentInputsVisibility();
+                // Re-validate after removal to update the message and totals
+                validatePaymentMethodPercentsAndShow();
             }
         });
 
@@ -781,7 +920,5 @@
         });
 
         document.getElementById('instrument-rates').innerHTML = LABKEY.Utils.textLink({text: 'View the current rates for instruments', href: LABKEY.ActionURL.buildURL('query', 'executeQuery', LABKEY.ActionURL.getContainer(), {schemaName: 'targetedms', 'query.queryName': 'InstrumentRate'})});
-
     });
-
 </script>
