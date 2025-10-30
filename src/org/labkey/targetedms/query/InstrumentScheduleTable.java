@@ -20,12 +20,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class InstrumentScheduleTable extends SimpleTargetedMSTable
+public class InstrumentScheduleTable extends OwnProjectSchedulingTable
 {
     public InstrumentScheduleTable(TargetedMSSchema schema, ContainerFilter cf)
     {
         super(TargetedMSSchema.TABLE_INSTRUMENT_SCHEDULE, schema, cf);
-        addTriggerFactory((c, table, extraContext) -> List.of(new InstrumentUsagePaymentTrigger("Id")));
+        addTriggerFactory((c, table, extraContext) -> List.of(
+            new InstrumentUsagePaymentTrigger("Id"),
+            new InstrumentScheduleOverlapTrigger()
+        ));
     }
 
     @Override

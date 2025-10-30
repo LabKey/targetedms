@@ -84,6 +84,7 @@ import org.labkey.panoramapremium.query.QCEmailNotificationsTable;
 import org.labkey.targetedms.parser.Chromatogram;
 import org.labkey.targetedms.parser.ChromatogramBinaryFormat;
 import org.labkey.targetedms.parser.SkylineBinaryParser;
+import org.labkey.targetedms.query.AdminSchedulingTable;
 import org.labkey.targetedms.query.InstrumentScheduleTable;
 import org.labkey.targetedms.query.InstrumentUsagePaymentTrigger;
 import org.labkey.targetedms.query.AnnotatedTargetedMSTable;
@@ -96,6 +97,7 @@ import org.labkey.targetedms.query.GuideSetTable;
 import org.labkey.targetedms.query.MoleculePrecursorTableInfo;
 import org.labkey.targetedms.query.MoleculeTableInfo;
 import org.labkey.targetedms.query.MoleculeTransitionsTableInfo;
+import org.labkey.targetedms.query.OwnProjectSchedulingTable;
 import org.labkey.targetedms.query.PTMPercentsGroupedCustomizer;
 import org.labkey.targetedms.query.PeptideIsotopeModificationTableInfo;
 import org.labkey.targetedms.query.PeptideStructuralModificationTableInfo;
@@ -1598,9 +1600,16 @@ public class TargetedMSSchema extends UserSchema
             return new SimpleUserSchema.SimpleTable<>(this, getSchema().getTable(TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION), cf).init();
         }
 
-        if(TABLE_QC_EMAIL_NOTIFICATIONS.equalsIgnoreCase(name))
+        if (TABLE_QC_EMAIL_NOTIFICATIONS.equalsIgnoreCase(name))
         {
             return new QCEmailNotificationsTable(this, cf);
+        }
+
+        if (TABLE_INSTRUMENT_NICKNAME.equalsIgnoreCase(name))
+        {
+            var result = new SimpleTargetedMSTable(name, this, cf);
+            result.setAuditBehavior(AuditBehaviorType.DETAILED);
+            return result;
         }
 
         if (TABLE_INSTRUMENT_SCHEDULE.equalsIgnoreCase(name))
@@ -1608,21 +1617,21 @@ public class TargetedMSSchema extends UserSchema
             return new InstrumentScheduleTable(this, cf);
         }
 
-        if (TABLE_MS_PROJECT.equalsIgnoreCase(name) ||
-                TABLE_PROJECT_RESEARCHER.equalsIgnoreCase(name) ||
-                TABLE_MS_INSTRUMENT.equalsIgnoreCase(name) ||
+        if (TABLE_MS_INSTRUMENT.equalsIgnoreCase(name) ||
                 TABLE_PAYMENT_METHOD.equalsIgnoreCase(name) ||
-                TABLE_PROJECT_PAYMENT_METHOD.equalsIgnoreCase(name) ||
                 TABLE_RATE_TYPE.equalsIgnoreCase(name) ||
                 TABLE_INSTRUMENT_RATE.equalsIgnoreCase(name) ||
-                TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name) ||
-                TABLE_INSTRUMENT_NICKNAME.equalsIgnoreCase(name))
+                // TODO - who can edit this mapping table?
+                TABLE_PROJECT_PAYMENT_METHOD.equalsIgnoreCase(name))
         {
-            var result = new SimpleTargetedMSTable(name, this, cf);
-            if (TABLE_INSTRUMENT_NICKNAME.equalsIgnoreCase(name))
-            {
-                result.setAuditBehavior(AuditBehaviorType.DETAILED);
-            }
+            return new AdminSchedulingTable(name, this, cf);
+        }
+
+        if (TABLE_MS_PROJECT.equalsIgnoreCase(name) ||
+                TABLE_PROJECT_RESEARCHER.equalsIgnoreCase(name) ||
+                TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name))
+        {
+            var result = new OwnProjectSchedulingTable(name, this, cf);
             if (TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name))
             {
                 result.addTriggerFactory((c, table, extraContext) -> List.of(new InstrumentUsagePaymentTrigger("InstrumentScheduleId")));

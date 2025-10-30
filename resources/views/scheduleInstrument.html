@@ -5,12 +5,12 @@
             <td><select id="instrumentDropDown" name="instrumentDropDown"></select></td>
         </tr>
         <tr>
-            <td class="labkey-form-label"><label for="instrumentOperatorDropDown">Operator</label></td>
-            <td><select id="instrumentOperatorDropDown" name="instrumentOperatorDropDown"></select></td>
-        </tr>
-        <tr>
             <td class="labkey-form-label"><label for="projectDropDown">Project</label></td>
             <td><select id="projectDropDown" name="projectDropDown"></select></td>
+        </tr>
+        <tr>
+            <td class="labkey-form-label"><label for="instrumentOperatorDropDown">Operator</label></td>
+            <td><select id="instrumentOperatorDropDown" name="instrumentOperatorDropDown"></select></td>
         </tr>
         <tr>
             <td class="labkey-form-label" rowspan="10"><label for="paymentMethodDropDown">Payment method</label></td>
@@ -46,14 +46,10 @@
 
                         <div class="form-group row">
                             <label for="min-date" class="col-sm-2 control-label">Dates</label>
-                            <div class="col-sm-5">
-                                <div class="input-group input-daterange" data-provide="datepicker">
-                                    <input id="min-date" name="event-start-date" type="datetime-local" class="form-control">
-                                    <div class="input-group-prepend input-group-append">
-                                        <div class="input-group-text"><label for="event-end-date">to</label></div>
-                                    </div>
-                                    <input name="event-end-date" id="event-end-date" type="datetime-local" class="form-control">
-                                </div>
+                            <div class="col-sm-10">
+                                <input id="min-date" name="event-start-date" type="datetime-local">
+                                <label for="event-end-date">to</label>
+                                <input id="event-end-date" name="event-end-date" type="datetime-local">
                             </div>
                         </div>
                         <div class="form-group row">
@@ -68,6 +64,28 @@
                                 <input id="event-notes" name="event-notes" size="50" type="text" class="form-control">
                             </div>
                         </div>
+                        <!-- Live cost preview -->
+                        <div class="form-group row">
+                            <label class="col-sm-2 control-label" for="preview-setup-cost">Setup fee</label>
+                            <div class="col-sm-2">
+                                <input id="preview-setup-cost" name="preview-setup-cost" type="text" readonly="readonly" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-2 control-label" for="preview-instrument-fee">Instrument fee</label>
+                            <div class="col-sm-2">
+                                <input id="preview-instrument-fee" name="preview-instrument-fee" type="text" readonly="readonly" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-2 control-label" for="preview-total-cost">Total fee</label>
+                            <div class="col-sm-2">
+                                <input id="preview-total-cost" name="preview-total-cost" type="text" readonly="readonly" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-12 labkey-error" style="min-height: 2em;" id="schedule-preview-error"></div>
+                        </div>
                         <div class="form-group row" >
                             <div class="col-sm-10 offset-sm-2 labkey-error" style="min-height: 2em;" id="schedule-save-error"></div>
                         </div>
@@ -80,64 +98,6 @@
                     </button>
                     <button type="button" class="btn btn-primary" id="add-event">
                         Add
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="cost-modal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirm Instrument Time</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="event-index">
-                    <form class="form-horizontal">
-
-                        <div class="form-group row">
-                            <div class="col-sm-8">
-                                <div class="input-group-text">The requested time will incur the following cost:</div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-4 control-label" for="setup-cost">Setup fee</label>
-                            <div class="col-sm-8">
-                                <input id="setup-cost" name="setup-cost" type="text" readonly="readonly" class="form-control"/>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-4 control-label" for="instrument-fee">Instrument fee</label>
-                            <div class="col-sm-8">
-                                <input id="instrument-fee" type="text" readonly="readonly" class="form-control"/>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-4 control-label" for="total-cost">Total fee</label>
-                            <div class="col-sm-8">
-                                <input id="total-cost" type="text" readonly="readonly" class="form-control"/>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <div class="col-sm-8">
-                                <div class="input-group-text">Are you sure you want to continue?</div>
-                            </div>
-                        </div>
-                        <div class="form-group row" >
-                            <div class="col-sm-12 labkey-error" style="min-height: 2em;" id="schedule-cost-error"></div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="close-event">
-                        No
-                    </button>
-                    <button type="button" class="btn btn-primary" id="save-event">
-                        Yes
                     </button>
                 </div>
             </div>
@@ -187,7 +147,7 @@
 
         LABKEY.Query.selectRows({
             schemaName: 'targetedms',
-            queryName: 'msProject',
+            queryName: 'userProjects',
             sort: 'Title',
             columns: 'Id,Title',
             scope: this,
@@ -269,7 +229,7 @@
                         eventMouseEnter: function (mouseEnterInfo) {
                             removeEventLog();
                             let instrumentID = instrument ? instrument : $('#instrumentDropDown').val();
-                            fetchInstrumentCosts(instrumentID, mouseEnterInfo.event.start, mouseEnterInfo.event.end, false);
+                            fetchInstrumentCosts(instrumentID, mouseEnterInfo.event.start, mouseEnterInfo.event.end);
                             let content = '';
                             let dateStr = DateFormat.format.date(mouseEnterInfo.event.start, LABKEY.container.formats.dateTimeFormat) + ' - ' + DateFormat.format.date(mouseEnterInfo.event.end, LABKEY.container.formats.dateTimeFormat);
                             content += '<div class="event-tooltip-content">'
@@ -486,7 +446,7 @@
         LABKEY.Query.selectRows({
             schemaName: 'targetedms',
             queryName: 'projectResearcher',
-            sort: 'name',
+            sort: 'researcher/displayName',
             columns: 'Id,researcher/displayName,researcher/UserId,project',
             filterArray: [
                 LABKEY.Filter.create('project', project, LABKEY.Filter.Types.EQUAL),
@@ -503,7 +463,7 @@
                     let option = document.createElement('option');
                     option.value = rows[i]['researcher/UserId'];
                     option.text = rows[i]['researcher/displayName'];
-                    if (instrument === rows[i].Id) {
+                    if (LABKEY.user.id === rows[i]['researcher/UserId']) {
                         option.selected = true;
                     }
                     instrumentOperatorDropDown.appendChild(option);
@@ -536,13 +496,13 @@
             $('#event-modal input[name="event-notes"]').val(event ? event.notes : '');
             $('#delete-event').toggle(!!event.id);
             $('#add-event').text('Save');
+            $('#schedule-save-error').text('');
+            $('#schedule-cost-error').text('');
             $('#event-modal').modal();
         }
 
         function closeEvent() {
             removeEventLog();
-            $('#schedule-cost-error').text('');
-            $('#cost-modal').modal('hide');
         }
 
         function addEvent() {
@@ -558,26 +518,6 @@
             if (eventToSave.endTime < eventToSave.startTime) {
                 alert('End date must be after start date');
                 return;
-            }
-
-            const events = calendar.getEvents();
-            // validate that the events time do not overlap with existing events
-            for (let i = 0; i < events.length; i++) {
-                if (eventToSave.id !== events[i].id) {
-                    let newEvent = {
-                        start: new Date(eventToSave.startTime),
-                        end: new Date(eventToSave.endTime)
-                    };
-                    let existingEvent = {
-                        start: events[i].start,
-                        end: events[i].end
-                    };
-
-                    if (eventsOverlap(newEvent, existingEvent)) {
-                        alert('New schedule overlaps with existing instrument schedule');
-                        return;
-                    }
-                }
             }
 
             // get the paymentMethod and percentPayment from the html fields
@@ -617,13 +557,122 @@
                 scheduleError.textContent = '';
             }
 
-            fetchInstrumentCosts(eventToSave.instrument, eventToSave.startTime, eventToSave.endTime, true);
-
-            // TODO: Make sure user has not exceeded instrument time quota
-            // TODO: Email admins
+            // Live preview is already shown as dates change. Save directly.
+            saveEvent();
         }
 
-        function fetchInstrumentCosts(instrumentId, startDate, endDate, showCostModal) {
+        // Debounce helper for frequent UI events
+        function debounce(fn, wait) {
+            let t;
+            return function() {
+                const ctx = this, args = arguments;
+                clearTimeout(t);
+                t = setTimeout(function(){ fn.apply(ctx, args); }, wait);
+            };
+        }
+
+        // Calculate and render live cost preview inside the event modal without changing logs
+        function calculateAndRenderCostPreview(instrumentId, startDate, endDate) {
+            const previewErrorEl = $('#schedule-preview-error');
+            const setupEl = $('#preview-setup-cost');
+            const instEl = $('#preview-instrument-fee');
+            const totalEl = $('#preview-total-cost');
+
+            // Clear previous values
+            setupEl.val('');
+            instEl.val('');
+            totalEl.val('');
+            previewErrorEl.text('');
+
+            if (!instrumentId || !startDate || !endDate) {
+                return;
+            }
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                return;
+            }
+            if (end <= start) {
+                previewErrorEl.text('End date must be after start date.');
+                return;
+            }
+
+            LABKEY.Query.selectRows({
+                schemaName: 'targetedms',
+                queryName: 'instrumentRate',
+                columns: 'Id,fee,rateType',
+                filterArray: [
+                    LABKEY.Filter.create('instrument', instrumentId, LABKEY.Filter.Types.EQUAL)
+                ],
+                success: function (data) {
+                    if (data.rows.length === 0) {
+                        previewErrorEl.text('No rate found for instrument.');
+                        return;
+                    }
+                    let fee = data.rows[0].fee;
+                    let rateType = data.rows[0].rateType;
+                    let cost = fee * (Math.abs(end - start)) / 1000 / 60 / 60;
+
+                    LABKEY.Query.selectRows({
+                        schemaName: 'targetedms',
+                        queryName: 'rateType',
+                        columns: 'Id,name,setupFee',
+                        filterArray: [
+                            LABKEY.Filter.create('Id', rateType, LABKEY.Filter.Types.EQUAL)
+                        ],
+                        success: function (rt) {
+                            let setupFee = rt.rows[0].setupFee;
+                            let instrumentFee = Math.round((cost + Number.EPSILON) * 100) / 100;
+                            setupFee = Math.round((setupFee + Number.EPSILON) * 100) / 100;
+                            let total = Math.round(((setupFee + instrumentFee) + Number.EPSILON) * 100) / 100;
+
+                            setupEl.val('$' + setupFee.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }));
+                            instEl.val('$' + instrumentFee.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }));
+                            totalEl.val('$' + total.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }));
+                        },
+                        failure: function (errorInfo) {
+                            previewErrorEl.text('Error calculating cost ' + (errorInfo.exception ? errorInfo.exception : ''));
+                        }
+                    });
+                },
+                failure: function (errorInfo) {
+                    previewErrorEl.text('Error fetching instrument rate ' + (errorInfo.exception ? errorInfo.exception : ''));
+                }
+            });
+        }
+
+        // Helper to read current form values and trigger preview
+        function triggerCostPreviewNow() {
+            const currentInstrument = instrument ? instrument : $('#instrumentDropDown').val();
+            const startVal = $('#event-modal input[name="event-start-date"]').val();
+            const endVal = $('#event-modal input[name="event-end-date"]').val();
+            calculateAndRenderCostPreview(currentInstrument, startVal, endVal);
+        }
+        const triggerCostPreview = debounce(triggerCostPreviewNow, 300);
+
+        // Bind listeners for live updates
+        $(document).on('input change', '#event-modal input[name="event-start-date"], #event-modal input[name="event-end-date"]', function(){
+            triggerCostPreview();
+        });
+        $(document).on('change', '#instrumentDropDown', function(){
+            triggerCostPreview();
+        });
+
+        // Kick off preview when the modal opens
+        $('#event-modal').on('shown.bs.modal', function(){
+            triggerCostPreviewNow();
+        });
+
+        function fetchInstrumentCosts(instrumentId, startDate, endDate) {
             LABKEY.Query.selectRows({
                 schemaName: 'targetedms',
                 queryName: 'instrumentRate',
@@ -660,20 +709,30 @@
                             let totalCost = Math.round(((setupFee + cost) + Number.EPSILON) * 100) / 100;
                             cost = Math.round((cost + Number.EPSILON) * 100) / 100;
                             setupFee = Math.round((setupFee + Number.EPSILON) * 100) / 100;
-                            rowElt.innerHTML = '<td>' + startDateFormatted + '</td><td>' + endDateFormatted + '</td><td id="event-cost">' + '$' + totalCost + '</td>';
+                            rowElt.innerHTML = '<td>' + startDateFormatted + '</td><td>' + endDateFormatted + '</td><td id="event-cost">' + '$' + totalCost.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }) + '</td>';
                             tableElt.appendChild(rowElt);
 
                             const totalEventCostElt = document.getElementById('total-event-cost');
-                            totalEventCostElt.innerHTML = 'Total Cost: $' + totalCost;
+                            totalEventCostElt.innerHTML = 'Total Cost: $' + totalCost.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            });
 
-                            if (showCostModal) {
-                                $('#setup-cost').val(setupFee);
-                                $('#instrument-fee').val(cost);
-                                $('#total-cost').val(setupFee + cost);
-
-                                // open the cost modal
-                                $('#cost-modal').modal();
-                            }
+                            $('#setup-cost').val('$' + setupFee.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }));
+                            $('#instrument-fee').val('$' + cost.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }));
+                            $('#total-cost').val('$' + (setupFee + cost).toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }));
                         },
                         failure: function (errorInfo) {
                             $('#schedule-cost-error').text('Error calculating cost ' + (errorInfo.exception ? errorInfo.exception : ''));
@@ -713,8 +772,9 @@
                     loadInstrumentSchedule(function (data) {
                         calendar.getEventSources()[0].remove();
                         calendar.addEventSource(data);
+                        // Update the session events log and totals using the same calculation logic (no modal)
+                        fetchInstrumentCosts(eventToSave.instrument, eventToSave.startTime, eventToSave.endTime);
                         $('#event-modal').modal('hide');
-                        $('#cost-modal').modal('hide');
                     }, true);
 
                     if (instrumentUsagePaymentRows.length > 0 && !eventToSave.id && response?.result[0]?.rows?.length > 0) {
@@ -729,11 +789,6 @@
                     $('#schedule-save-error').text('Error saving. ' + (errorInfo.exception ? errorInfo.exception : ''));
                 }
             });
-        }
-
-        function eventsOverlap(newEvent, existingEvent) {
-            // Check if newEvent starts after existingEvent ends or ends before existingEvent starts
-            return !(newEvent.end <= existingEvent.start || newEvent.start >= existingEvent.end);
         }
 
         function removeEventLog() {
@@ -774,24 +829,25 @@
                         });
                     }
 
-                    let instrumentUsagePaymentCommand = {
-                        command: 'delete',
-                        schemaName: 'targetedms',
-                        queryName: 'instrumentUsagePayment',
-                        rows: instrumentUsagePaymentRows
-                    };
+                    const commands = [];
+                    if (instrumentUsagePaymentRows.length > 0) {
+                        commands.push({
+                            command: 'delete',
+                            schemaName: 'targetedms',
+                            queryName: 'instrumentUsagePayment',
+                            rows: instrumentUsagePaymentRows
+                        });
+                    }
 
-                    let instrumentScheduleCommand = {
+                    commands.push({
                         command: 'delete',
                         schemaName: 'targetedms',
                         queryName: 'instrumentSchedule',
-                        rows: [
-                            event
-                        ]
-                    };
+                        rows: [event]
+                    });
 
                     LABKEY.Query.saveRows({
-                        commands: [instrumentUsagePaymentCommand, instrumentScheduleCommand],
+                        commands: commands,
                         success: function () {
                             loadInstrumentSchedule(function (data) {
                                 calendar.getEventSources()[0].remove()
@@ -840,24 +896,12 @@
             });
         }
 
-        $('#add-event').click(function() {
-            addEvent();
-        });
+        $('#add-event').on('click', addEvent);
+        $('#close-event').on('click', closeEvent);
+        $('#save-event').on('click', saveEvent);
+        $('#delete-event').on('click', deleteEvent);
 
-        $('#close-event').click(function() {
-            closeEvent();
-        });
-
-        $('#save-event').click(function() {
-            saveEvent();
-        });
-
-        $('#delete-event').click(function () {
-            deleteEvent();
-        });
-
-        $('#close-schedule').click(function () {
-            $('#schedule-save-error').text('');
+        $('#close-schedule').on('click', function () {
             $('#event-modal').modal('hide');
         });
 
