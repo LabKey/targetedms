@@ -18,3 +18,8 @@ SELECT
   SampleFileId AS SampleFileId,
   TotalArea AS MetricValue
 FROM PrecursorChromInfo
+WHERE
+    -- Ensure we have precursor areas for peptides or small molecules
+    EXISTS (SELECT * FROM QCMetricEnabled_precursorArea)
+    -- Ensure we have transition areas for peptides or small molecules
+    AND EXISTS (SELECT * FROM QCMetricEnabled_transitionArea)

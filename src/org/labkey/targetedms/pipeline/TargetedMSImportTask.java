@@ -83,7 +83,7 @@ public class TargetedMSImportTask extends PipelineJob.Task<TargetedMSImportTask.
         }
 
         @Override
-        public PipelineJob.Task createTask(PipelineJob job)
+        public TargetedMSImportTask createTask(PipelineJob job)
         {
             return new TargetedMSImportTask(this, job);
         }

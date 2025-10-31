@@ -24,7 +24,6 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
     private String _name;
     private String _queryName;
     private boolean _precursorScoped;
-    private String _enabledQueryName;
     private QCMetricStatus _status;
     private String _traceName;
     private Double _minTimeValue;
@@ -73,16 +72,6 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
     public void setPrecursorScoped(boolean precursorScoped)
     {
         _precursorScoped = precursorScoped;
-    }
-
-    public String getEnabledQueryName()
-    {
-        return _enabledQueryName;
-    }
-
-    public void setEnabledQueryName(String enabledQueryName)
-    {
-        _enabledQueryName = enabledQueryName;
     }
 
     public QCMetricStatus getStatus()
@@ -182,9 +171,6 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
         jsonObject.put("queryName", _queryName);
         jsonObject.put("precursorScoped",  _precursorScoped);
         jsonObject.put("metricStatus", getStatus() == null ? QCMetricStatus.DEFAULT.toString() : getStatus().toString());
-        if (_enabledQueryName != null) {
-            jsonObject.put("enabledQueryName", _enabledQueryName);
-        }
         if (_traceName != null) {
             jsonObject.put("traceName", _traceName);
         }

@@ -162,7 +162,43 @@ public class TargetedMSManager
      * A cache to make it faster to render QC folders. A number of API calls come from the
      * client rendering the overview, all of which need to know the enabled configs.
      */
-    private static final Cache<Container, List<QCMetricConfiguration>> _metricCache = CacheManager.getCache(1000, TimeUnit.HOURS.toMillis(1), "Enabled QC metric configs");
+    private static final Cache<Container, List<QCMetricConfiguration>> _metricCache = CacheManager.getBlockingCache(1000, TimeUnit.HOURS.toMillis(1), "Enabled QC metric configs",
+            (c, argument) ->
+            {
+                try
+                {
+                    TargetedMSSchema schema = (TargetedMSSchema) argument;
+                    TableInfo metricsTable = schema.getTableOrThrow("qcMetricsConfig", null);
+                    List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, null, new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
+
+                    OutlierGenerator.get().cachePrecursorMetricValues(schema, metrics);
+
+                    // Identify which precursor-scoped metrics have any cached data in this container
+                    SQLFragment sql = new SQLFragment("SELECT DISTINCT MetricId FROM (");
+                    sql.append(OutlierGenerator.get().getRawMetricSql(schema, metrics));
+                    sql.append(") y WHERE MetricValue IS NOT NULL");
+                    Set<Integer> cachedMetricIds = new HashSet<>(new SqlSelector(getSchema(), sql).getCollection(Integer.class));
+
+                    for (QCMetricConfiguration metric : metrics)
+                    {
+                        if (!cachedMetricIds.contains(metric.getId()))
+                        {
+                            metric.setStatus(QCMetricStatus.NoData);
+                        }
+                        else if (metric.getStatus() == null)
+                        {
+                            metric.setStatus(QCMetricStatus.DEFAULT);
+                        }
+                    }
+                    // Ensure we get a case-insensitive sort regardless of DB collation
+                    Collections.sort(metrics);
+                    return Collections.unmodifiableList(metrics);
+                }
+                catch (RuntimeException e)
+                {
+                    throw new PanoramaBadDataException("Failed to calculate metric values. Double-check the metric configurations and the backing queries. " + (e.getMessage() == null ? "" : e.getMessage()), e);
+                }
+            });
 
     public static TargetedMSManager get()
     {
@@ -549,6 +585,11 @@ public class TargetedMSManager
     public static TableInfo getTableQCTraceMetricValues()
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_QC_TRACE_METRIC_VALUES);
+    }
+
+    public static TableInfo getTableInfoQCMetricCache()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_QC_METRIC_CACHE);
     }
 
     public static TableInfo getTableInfoSkylineAuditLogEntry()
@@ -1288,7 +1329,7 @@ public class TargetedMSManager
         }
 
         // We may have deleted the last set of data for a given metric
-        containers.forEach(c2 -> TargetedMSManager.get().clearCachedEnabledQCMetrics(c2));
+        containers.forEach(c2 -> TargetedMSManager.get().clearQCMetricCache(c2, true));
 
         // Mark all the runs for deletion
         SQLFragment markDeleted = new SQLFragment("UPDATE " + getTableInfoRuns() + " SET ExperimentRunLSID = NULL, DataId = NULL, SkydDataId = NULL, Deleted=?, Modified=? ", Boolean.TRUE, new Date());
@@ -1602,7 +1643,7 @@ public class TargetedMSManager
     /**
      * @return the file paths of the Skyline documents containing the given sample files
      */
-    @Nullable
+    @NotNull
     public static List<String> deleteSampleFilesAndDependencies(List<Long> sampleFileIds)
     {
         purgeDeletedSampleFiles(sampleFileIds);
@@ -1648,6 +1689,10 @@ public class TargetedMSManager
 
         // Delete from PrecursorAreaRatio (dependent of PrecursorChromInfo)
         execute(getTempChromInfoIdsDependentDeleteSql(getTableInfoPrecursorAreaRatio(), "PrecursorChromInfoId", precursorChromInfoIdsTempTableName));
+
+        // Delete from QCMetricCache (dependent of PrecursorChromInfo and SampleFile)
+        execute(getTempChromInfoIdsDependentDeleteSql(getTableInfoQCMetricCache(), "PrecursorChromInfoId", precursorChromInfoIdsTempTableName));
+        execute(new SQLFragment("DELETE FROM ").append(getTableInfoQCMetricCache()).append(whereClause));
 
         // Delete from PrecursorChromInfo
         execute(getTempChromInfoIdsDependentDeleteSql(getTableInfoPrecursorChromInfo(), "Id", precursorChromInfoIdsTempTableName));
@@ -2348,52 +2393,7 @@ public class TargetedMSManager
 
     public static List<QCMetricConfiguration> getAllQCMetricConfigurations(TargetedMSSchema schema)
     {
-        return _metricCache.get(schema.getContainer(), null, (c, argument) ->
-        {
-            TableInfo metricsTable = schema.getTableOrThrow("qcMetricsConfig", null);
-            SimpleFilter filter = new SimpleFilter(FieldKey.fromParts("Status"), QCMetricStatus.Disabled.toString(), CompareType.NEQ_OR_NULL);
-            List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, filter, new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
-
-            // We may encounter the same query to see if metrics have data more than once, so remember the values
-            // so we don't have to requery
-            Map<String, Boolean> hasDataQueries = new CaseInsensitiveHashMap<>();
-
-            for (QCMetricConfiguration metric : metrics)
-            {
-                if (metric.getStatus() == null)
-                {
-                    if (metric.getEnabledQueryName() == null)
-                    {
-                        metric.setStatus(QCMetricStatus.DEFAULT);
-                    }
-                    else
-                    {
-                        boolean hasData = hasDataQueries.computeIfAbsent(metric.getEnabledQueryName(), p ->
-                        {
-                            TableInfo enabledQuery = schema.getTable(metric.getEnabledQueryName(), null);
-                            if (enabledQuery != null)
-                            {
-                                return new TableSelector(enabledQuery).exists();
-                            }
-                            _log.warn("Could not find query " + schema.getName() + "." + metric.getEnabledQueryName() + " to determine if metric " + metric.getName() + " should be enabled in container " + c.getPath());
-                            return false;
-                        });
-
-                        if (!hasData)
-                        {
-                            metric.setStatus(QCMetricStatus.NoData);
-                        }
-                    }
-                }
-                if (metric.getStatus() == null)
-                {
-                    metric.setStatus(QCMetricStatus.DEFAULT);
-                }
-            }
-            // Ensure we get a case-insensitive sort regardless of DB collation
-            Collections.sort(metrics);
-            return Collections.unmodifiableList(metrics);
-        });
+        return _metricCache.get(schema.getContainer(), schema, null);
     }
     public static List<QCMetricConfiguration> getEnabledQCMetricConfigurations(TargetedMSSchema schema)
     {
@@ -2473,9 +2473,11 @@ public class TargetedMSManager
         return maxCount != null ? maxCount.intValue() : 0;
     }
 
-    static void moveRun(TargetedMSRun run, Container newContainer, String newRunLSID, long newDataRowId, User user)
+    public void moveRun(TargetedMSRun run, Container newContainer, String newRunLSID, long newDataRowId, User user)
     {
         // MoveRunsTask.moveRun ensures a transaction
+        Container oldContainer = run.getContainer();
+
         SQLFragment updatePrecChromInfoSql = new SQLFragment("UPDATE ");
         updatePrecChromInfoSql.append(getTableInfoPrecursorChromInfo(), "");
         updatePrecChromInfoSql.append(" SET container = ?").add(newContainer);
@@ -2491,6 +2493,11 @@ public class TargetedMSManager
         run.setDataId(newDataRowId);
         run.setContainer(newContainer);
         updateRun(run, user);
+
+        // Clear caches for both source and destination containers
+        if (oldContainer != null)
+            clearQCMetricCache(oldContainer, true);
+        clearQCMetricCache(newContainer, true);
     }
 
     private static void addParentRunsToChain(ArrayDeque<Long> chainRowIds, Map<Long, Long> replacedByMap, Long rowId)
@@ -2894,10 +2901,10 @@ public class TargetedMSManager
 
     public static List<QCMetricConfiguration> getTraceMetricConfigurations(Container container, User user)
     {
-        return getEnabledQCMetricConfigurations(new TargetedMSSchema(user, container))
+        return getAllQCMetricConfigurations(new TargetedMSSchema(user, container))
                 .stream()
                 .filter(qcMetricConfiguration -> qcMetricConfiguration.getTraceName() != null)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static List<IKeyword> getKeywords(long sequenceId)
@@ -2929,9 +2936,22 @@ public class TargetedMSManager
         return new SqlSelector(getSchema(), sql).getMap();
     }
 
-    public void clearCachedEnabledQCMetrics(Container container)
+    /**
+     * Invalidate the stored QC metric value cache for this container.
+     * Called when underlying data or metric definitions change (e.g., Skyline import/delete, config edits).
+     */
+    public void clearQCMetricCache(Container container, boolean clearMetricValues)
     {
         getSchema().getScope().addCommitTask(() -> _metricCache.remove(container), DbScope.CommitTaskOption.IMMEDIATE, DbScope.CommitTaskOption.POSTCOMMIT, DbScope.CommitTaskOption.POSTROLLBACK);
+
+        if (clearMetricValues)
+        {
+            SQLFragment sql = new SQLFragment("DELETE FROM ");
+            sql.append(getTableInfoQCMetricCache());
+            sql.append(" WHERE Container = ?");
+            sql.add(container.getEntityId());
+            new SqlExecutor(getSchema()).execute(sql);
+        }
     }
 
     @NotNull

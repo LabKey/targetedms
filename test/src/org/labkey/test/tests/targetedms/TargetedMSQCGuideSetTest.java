@@ -430,7 +430,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
     {
         for (GuideSetStats stats : gs.getStats())
         {
-
+            log("Testing guide set stats for " + stats.getMetricName());
             SelectRowsCommand cmd = new SelectRowsCommand("targetedms", "GuideSetStats_" + stats.getMetricName());
             cmd.setRequiredVersion(9.1);
             cmd.setColumns(Arrays.asList("GuideSetId", "TrainingStart", "TrainingEnd", "ReferenceEnd", "SeriesLabel", "NumRecords", "Mean", "StandardDev"));
@@ -549,13 +549,11 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         String precursor = "C16,";
 
         gs.addStats(new GuideSetStats("retentionTime", 2, precursor, 0.7729333639144897, 9.424035327035906E-5));
-        gs.addStats(new GuideSetStats("peakArea", 2, precursor, 2.4647614E7, 5061170.5265));
         gs.addStats(new GuideSetStats("fwhm", 2, precursor, 0.023859419859945774, 0.0010710133238455678));
         gs.addStats(new GuideSetStats("fwb", 2, precursor, 0.11544176936149597, 0.012810408164340708));
         gs.addStats(new GuideSetStats("lhRatio", 0));
         gs.addStats(new GuideSetStats("transitionPrecursorRatio", 0, precursor, null, null));
         gs.addStats(new GuideSetStats("transitionArea", 2, precursor, 2.4647614E7, 5061170.5265));
-        gs.addStats(new GuideSetStats("precursorArea", 2, precursor, 0.0, 0.0));
 
         validateGuideSetStats(gs);
     }

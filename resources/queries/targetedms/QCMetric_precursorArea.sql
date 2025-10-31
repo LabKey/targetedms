@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 SELECT
-  Id AS PrecursorChromInfoId,
-  SampleFileId AS SampleFileId,
-  TotalPrecursorArea AS MetricValue
+    Id AS PrecursorChromInfoId,
+    SampleFileId AS SampleFileId,
+    TotalPrecursorArea AS MetricValue
 FROM PrecursorChromInfo
+WHERE
+    EXISTS (SELECT * FROM QCMetricEnabled_precursorArea)
