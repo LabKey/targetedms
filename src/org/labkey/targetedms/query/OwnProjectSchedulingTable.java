@@ -27,9 +27,12 @@ import java.util.Set;
 
 public class OwnProjectSchedulingTable extends SimpleTargetedMSTable
 {
-    public OwnProjectSchedulingTable(String name, TargetedMSSchema schema, ContainerFilter cf)
+    private final boolean _allowCollaboratorsToInsert;
+
+    public OwnProjectSchedulingTable(String name, TargetedMSSchema schema, ContainerFilter cf, boolean allowCollaboratorsToInsert)
     {
         super(name, schema, cf);
+        _allowCollaboratorsToInsert = allowCollaboratorsToInsert;
         addTriggerFactory((c, table, extraContext) -> List.of(new OwnProjectTrigger()));
     }
 
@@ -39,6 +42,12 @@ public class OwnProjectSchedulingTable extends SimpleTargetedMSTable
         if (isAdmin())
         {
             return true;
+        }
+
+        // Collaborators shouldn't be able to insert new projects but should be able to edit ones they're attached to
+        if (perm.equals(InsertPermission.class) && !_allowCollaboratorsToInsert)
+        {
+            return isLabMember();
         }
 
         // Let lab members and collaborators past the initial check for insert/update/delete permission and enforce

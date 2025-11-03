@@ -68,6 +68,7 @@ import org.labkey.api.query.SimpleUserSchema;
 import org.labkey.api.query.UserIdQueryForeignKey;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
+import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.util.ContainerContext;
@@ -1621,7 +1622,6 @@ public class TargetedMSSchema extends UserSchema
                 TABLE_PAYMENT_METHOD.equalsIgnoreCase(name) ||
                 TABLE_RATE_TYPE.equalsIgnoreCase(name) ||
                 TABLE_INSTRUMENT_RATE.equalsIgnoreCase(name) ||
-                // TODO - who can edit this mapping table?
                 TABLE_PROJECT_PAYMENT_METHOD.equalsIgnoreCase(name))
         {
             return new AdminSchedulingTable(name, this, cf);
@@ -1631,12 +1631,46 @@ public class TargetedMSSchema extends UserSchema
                 TABLE_PROJECT_RESEARCHER.equalsIgnoreCase(name) ||
                 TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name))
         {
-            var result = new OwnProjectSchedulingTable(name, this, cf);
+            var result = new OwnProjectSchedulingTable(name, this, cf, TABLE_MS_PROJECT.equalsIgnoreCase(name));
             if (TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name))
             {
                 result.addTriggerFactory((c, table, extraContext) -> List.of(new InstrumentUsagePaymentTrigger("InstrumentScheduleId")));
             }
             TargetedMSTable.fixupLookups(result);
+
+            if (TABLE_MS_PROJECT.equalsIgnoreCase(name))
+            {
+                SQLFragment projectMemberSql = new SQLFragment("EXISTS (SELECT Project FROM ");
+                projectMemberSql.append(TargetedMSManager.getTableInfoProjectResearcher(), "pr");
+                projectMemberSql.append(" WHERE pr.researcher = ? AND pr.project = ");
+                projectMemberSql.add(getUser().getUserId());
+                projectMemberSql.append(ExprColumn.STR_TABLE_ALIAS).append(".Id)");
+
+                ExprColumn projectMemberCol = new ExprColumn(result, "ProjectMember", projectMemberSql, JdbcType.BOOLEAN);
+                result.addColumn(projectMemberCol);
+
+                // For non-admins, completely hide projects they're not associated with
+                if (!getContainer().hasPermission(getUser(), AdminPermission.class))
+                {
+                    result.addCondition(projectMemberSql, FieldKey.fromParts("Id"));
+                }
+            }
+            else if (TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name))
+            {
+                // For non-admins, completely hide payment data for projects they're not associated with
+                if (!getContainer().hasPermission(getUser(), AdminPermission.class))
+                {
+                    SQLFragment projectMemberSql = new SQLFragment("EXISTS (SELECT Project FROM ");
+                    projectMemberSql.append(TargetedMSManager.getTableInfoProjectResearcher(), "pr");
+                    projectMemberSql.append(" WHERE pr.researcher = ? AND pr.project = ");
+                    projectMemberSql.add(getUser().getUserId());
+                    projectMemberSql.append(ExprColumn.STR_TABLE_ALIAS).append(".Project)");
+                    result.addCondition(projectMemberSql, FieldKey.fromParts("Project"));
+                }
+
+            }
+
+
             return result;
         }
 

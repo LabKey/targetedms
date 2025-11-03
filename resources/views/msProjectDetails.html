@@ -1,12 +1,9 @@
-<div id="project-details">
-</div>
-<div id="schedule-instrument-time">
-</div>
+<div id="project-details"></div>
+<div id="schedule-instrument-time"></div>
 <br/>
-<div id="payment-methods">
-</div>
-<div id="payment-summary">
-</div>
+<div id="researchers"></div>
+<div id="payment-methods"></div>
+<div id="payment-summary"></div>
 
 <script type="text/javascript" nonce="<%=scriptNonce%>">
     $(function() {
@@ -101,6 +98,16 @@
             title: 'Payment Methods',
             schemaName: 'targetedms',
             queryName: 'projectPaymentMethod',
+            filterArray: [LABKEY.Filter.create('project', project, LABKEY.Filter.Types.EQUAL)],
+            containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
+        });
+
+        new LABKEY.QueryWebPart({
+            renderTo: 'researchers',
+            frame: 'portal',
+            title: 'Researchers for this Project',
+            schemaName: 'targetedms',
+            queryName: 'projectResearcher',
             filterArray: [LABKEY.Filter.create('project', project, LABKEY.Filter.Types.EQUAL)],
             containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
         });
