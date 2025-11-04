@@ -21,7 +21,6 @@ import org.junit.experimental.categories.Category;
 import org.labkey.remoteapi.CommandException;
 import org.labkey.remoteapi.query.InsertRowsCommand;
 import org.labkey.remoteapi.security.WhoAmICommand;
-import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestTimeoutException;
 import org.labkey.test.util.APIContainerHelper;
@@ -29,7 +28,6 @@ import org.labkey.test.util.ApiPermissionsHelper;
 import org.labkey.test.util.PermissionsHelper;
 import org.labkey.test.util.PortalHelper;
 import org.labkey.test.util.PostgresOnlyTest;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -40,8 +38,8 @@ import java.util.Map;
 @Category({})
 public class InstrumentSchedulingTest extends TargetedMSTest implements PostgresOnlyTest
 {
-    protected static final String SCHEDULER_USER_1 = "scheduler1@targetedms.test";
-    protected static final String SCHEDULER_USER_2 = "scheduler2@targetedms.test";
+    protected static final String LAB_MEMBER_USER = "labmember@targetedms.test";
+    protected static final String EXTERNAL_COLLABORATOR_USER = "collaborator@targetedms.test";
 
     public static final String INSTRUMENT_1 = "Instrument1";
     public static final String INSTRUMENT_2 = "Instrument2";
@@ -63,11 +61,11 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         setupFolder(FolderType.Experiment);
         new PortalHelper(this).addWebPart("Instrument Scheduling Admin");
 
-        int schedulerUser1Id = _userHelper.createUser(SCHEDULER_USER_1).getUserId();
-        int schedulerUser2Id = _userHelper.createUser(SCHEDULER_USER_2).getUserId();
+        int labMemberUserId = _userHelper.createUser(LAB_MEMBER_USER).getUserId();
+        int collaboratorUserId = _userHelper.createUser(EXTERNAL_COLLABORATOR_USER).getUserId();
         ApiPermissionsHelper apiPermissionsHelper = new ApiPermissionsHelper(this);
-        apiPermissionsHelper.addMemberToRole(SCHEDULER_USER_1, "Editor", PermissionsHelper.MemberType.user);
-        apiPermissionsHelper.addMemberToRole(SCHEDULER_USER_2, "Editor", PermissionsHelper.MemberType.user);
+        apiPermissionsHelper.addMemberToRole(LAB_MEMBER_USER, "Editor", PermissionsHelper.MemberType.user);
+        apiPermissionsHelper.addMemberToRole(EXTERNAL_COLLABORATOR_USER, "Submitter", PermissionsHelper.MemberType.user);
 
         InsertRowsCommand instrumentInsert = new InsertRowsCommand("targetedms", "msInstrument");
         instrumentInsert.setRows(Arrays.asList(
@@ -109,9 +107,9 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
 
         InsertRowsCommand projectResearcherInsert = new InsertRowsCommand("targetedms", "projectResearcher");
         projectResearcherInsert.setRows(Arrays.asList(
-                Map.of("Project", projects.get(0).get("Id"), "Researcher", schedulerUser1Id),
-                Map.of("Project", projects.get(1).get("Id"), "Researcher", schedulerUser1Id),
-                Map.of("Project", projects.get(1).get("Id"), "Researcher", schedulerUser2Id),
+                Map.of("Project", projects.get(0).get("Id"), "Researcher", labMemberUserId),
+                Map.of("Project", projects.get(1).get("Id"), "Researcher", labMemberUserId),
+                Map.of("Project", projects.get(1).get("Id"), "Researcher", collaboratorUserId),
                 Map.of("Project", projects.get(0).get("Id"), "Researcher", currentUserId),
                 Map.of("Project", projects.get(1).get("Id"), "Researcher", currentUserId)
         ));
@@ -149,7 +147,6 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
 
         assertProjectEventCounts(2, 0);
 
-        sleep(1000);
         doAndWaitForPageToLoad(() -> selectOptionByText(Locator.id("projectDropDown"), PROJECT_2));
 
         scheduleInstrument(yearMonth + "-04");
@@ -158,7 +155,6 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         scheduleInstrument(yearMonth + "-05");
         assertProjectEventCounts(2, 2);
 
-        sleep(1000);
         doAndWaitForPageToLoad(() -> selectOptionByText(Locator.id("instrumentDropDown"), INSTRUMENT_2));
         scheduleInstrument(yearMonth + "-06");
         assertProjectEventCounts(1, 0);
@@ -220,7 +216,6 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
             setFormElement(EVENT_NAME_FIELD.findElement(getDriver()), "A name!");
             setFormElement(EVENT_NOTE_FIELD.findElement(getDriver()), "A note!");
             waitAndClick(Locator.button("Save"));
-            waitAndClick(Locator.button("Yes"));
         }
     }
 
@@ -231,7 +226,7 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         APIContainerHelper apiContainerHelper = new APIContainerHelper(this);
         apiContainerHelper.deleteProject(getProjectName(), afterTest);
         
-        _userHelper.deleteUsers(false, SCHEDULER_USER_1);
-        _userHelper.deleteUsers(false, SCHEDULER_USER_2);
+        _userHelper.deleteUsers(false, LAB_MEMBER_USER);
+        _userHelper.deleteUsers(false, EXTERNAL_COLLABORATOR_USER);
     }
 }

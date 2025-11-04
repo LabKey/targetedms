@@ -82,17 +82,21 @@ public class OwnProjectSchedulingTable extends SimpleTargetedMSTable
 
         private void validateProject(Integer projectId) throws ValidationException
         {
-            if (_projectIds == null)
+            // Admins can make changes to any project. Others need to be members
+            if (!getUserSchema().getContainer().hasPermission(getUserSchema().getUser(), AdminPermission.class))
             {
-                _projectIds = new HashSet<>(new SqlSelector(getSchema(),
-                        new SQLFragment("SELECT Project FROM ").
-                                append(TargetedMSManager.getTableInfoProjectResearcher(), "pr").
-                                append(" WHERE Researcher = ?").
-                                add(getUserSchema().getUser().getUserId())).getArrayList(Integer.class));
-            }
-            if (projectId == null || !_projectIds.contains(projectId))
-            {
-                throw new ValidationException("User is not a member of the project");
+                if (_projectIds == null)
+                {
+                    _projectIds = new HashSet<>(new SqlSelector(getSchema(),
+                            new SQLFragment("SELECT Project FROM ").
+                                    append(TargetedMSManager.getTableInfoProjectResearcher(), "pr").
+                                    append(" WHERE Researcher = ?").
+                                    add(getUserSchema().getUser().getUserId())).getArrayList(Integer.class));
+                }
+                if (projectId == null || !_projectIds.contains(projectId))
+                {
+                    throw new ValidationException("User is not a member of the project");
+                }
             }
         }
 
