@@ -15,6 +15,7 @@
  */
 package org.labkey.test.tests.targetedms;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -30,6 +31,7 @@ import org.labkey.test.util.PortalHelper;
 import org.labkey.test.util.PostgresOnlyTest;
 
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
@@ -48,6 +50,10 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
     public static final String PROJECT_2 = "Project2";
     public static final Locator.IdLocator EVENT_NAME_FIELD = Locator.id("event-name");
     public static final Locator.IdLocator EVENT_NOTE_FIELD = Locator.id("event-notes");
+
+    public static final Locator.IdLocator START_DATE_TIME_FIELD = Locator.id("event-start-date");
+    public static final Locator.IdLocator END_DATE_TIME_FIELD = Locator.id("event-end-date");
+
 
     @BeforeClass
     public static void initProject() throws IOException, CommandException
@@ -99,6 +105,7 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         InsertRowsCommand projectPaymentMethodInsert = new InsertRowsCommand("targetedms", "projectPaymentMethod");
         projectPaymentMethodInsert.setRows(Arrays.asList(
                 Map.of("PaymentMethod", paymentMethods.get(0).get("Id"), "Project", projects.get(0).get("Id")),
+                Map.of("PaymentMethod", paymentMethods.get(0).get("Id"), "Project", projects.get(1).get("Id")),
                 Map.of("PaymentMethod", paymentMethods.get(1).get("Id"), "Project", projects.get(1).get("Id"))
         ));
         List<Map<String, Object>> projectPaymentMethods = projectPaymentMethodInsert.execute(createDefaultConnection(), getProjectName()).getRows();
@@ -132,32 +139,41 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         clickAndWait(Locator.linkWithText(PROJECT_1));
         waitAndClickAndWait(Locator.linkWithText("Schedule instrument time"));
 
-        String yearMonth = Calendar.getInstance().get(Calendar.YEAR) + "-";
         int month = (Calendar.getInstance().get(Calendar.MONTH) + 1);
-        if (month < 10)
-        {
-            yearMonth += yearMonth;
-        }
-        yearMonth += month;
+        String yearMonth = Calendar.getInstance().get(Calendar.YEAR) + "-" + (month < 10 ? "0" + month : "" + month);
 
-        scheduleInstrument(yearMonth + "-02");
-        scheduleInstrument(yearMonth + "-03");
+        scheduleInstrument(yearMonth + "-02", false);
+        scheduleInstrument(yearMonth + "-03", false, () ->
+        {
+            String originalStart = getFormElement(START_DATE_TIME_FIELD.findElement(getDriver()));
+            String originalEnd = getFormElement(END_DATE_TIME_FIELD.findElement(getDriver()));
+            // Try scheduling over the first reservation and verify it is blocked
+            setFormElement(START_DATE_TIME_FIELD.findElement(getDriver()), originalStart.replace("-03T", "-02T"));
+            setFormElement(END_DATE_TIME_FIELD.findElement(getDriver()), originalEnd.replace("-03T", "-02T"));
+            waitAndClick(Locator.button("Save"));
+            waitForText("Error saving. Instrument schedule overlaps with an existing reservation for this instrument");
+            setFormElement(START_DATE_TIME_FIELD.findElement(getDriver()), originalStart);
+            waitForText("End date must be after start date.");
+            setFormElement(END_DATE_TIME_FIELD.findElement(getDriver()), originalEnd);
+        });
         scheduleInstrument(yearMonth + "-03", true);
-        scheduleInstrument(yearMonth + "-03");
+        scheduleInstrument(yearMonth + "-03", false);
 
         assertProjectEventCounts(2, 0);
 
         doAndWaitForPageToLoad(() -> selectOptionByText(Locator.id("projectDropDown"), PROJECT_2));
 
-        scheduleInstrument(yearMonth + "-04");
+        scheduleInstrument(yearMonth + "-04", false);
         assertProjectEventCounts(1, 2);
 
-        scheduleInstrument(yearMonth + "-05");
+        scheduleInstrument(yearMonth + "-05", false);
         assertProjectEventCounts(2, 2);
 
         doAndWaitForPageToLoad(() -> selectOptionByText(Locator.id("instrumentDropDown"), INSTRUMENT_2));
-        scheduleInstrument(yearMonth + "-06");
+        scheduleInstrument(yearMonth + "-06", false);
         assertProjectEventCounts(1, 0);
+
+        impersonate(LAB_MEMBER_USER);
 
         goToDashboard();
         waitAndClickAndWait(Locator.linkWithText("All instrument calendar view"));
@@ -185,27 +201,21 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
     {
         Locator activeLocator = Locator.byClass("activeProjectEvent");
         Locator otherLocator = Locator.byClass("otherProjectEvent");
-        if (expectedActiveCount > 0)
-        {
-            waitForElementToBeVisible(activeLocator);
-        }
-        if (expectedOtherCount > 0)
-        {
-            waitForElementToBeVisible(otherLocator);
-        }
+        waitFor(() -> expectedActiveCount == getElementCount(activeLocator) && expectedOtherCount == getElementCount(otherLocator), 5_000);
         assertElementPresent(activeLocator, expectedActiveCount);
         assertElementPresent(otherLocator, expectedOtherCount);
     }
 
-    private void scheduleInstrument(String yearMonthDay)
+    private void scheduleInstrument(String yearMonthDay, boolean delete)
     {
-        scheduleInstrument(yearMonthDay, false);
+        scheduleInstrument(yearMonthDay, delete, () -> {});
     }
 
-    private void scheduleInstrument(String yearMonthDay, boolean delete)
+    private void scheduleInstrument(String yearMonthDay, boolean delete, @NotNull Runnable extraSteps)
     {
         waitAndClick(Locator.tagWithAttribute("td", "data-date", yearMonthDay));
         waitForText("Add Instrument Time");
+        extraSteps.run();
         if (delete)
         {
             waitAndClick(Locator.button("Delete"));
