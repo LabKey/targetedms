@@ -116,6 +116,7 @@ import org.labkey.targetedms.query.ModificationManager;
 import org.labkey.targetedms.query.PeptideManager;
 import org.labkey.targetedms.query.PrecursorManager;
 import org.labkey.targetedms.query.RepresentativeStateManager;
+import org.labkey.vfs.FileLike;
 
 import java.io.IOException;
 import java.net.URI;
@@ -144,7 +145,6 @@ import java.util.stream.Collectors;
 import static org.labkey.api.targetedms.TargetedMSService.FOLDER_TYPE_PROP_NAME;
 import static org.labkey.api.targetedms.TargetedMSService.FolderType.Library;
 import static org.labkey.api.targetedms.TargetedMSService.FolderType.LibraryProtein;
-import static org.labkey.api.targetedms.TargetedMSService.MODULE_NAME;
 import static org.labkey.targetedms.TargetedMSSchema.TABLE_INSTRUMENT_NICKNAME;
 
 public class TargetedMSManager
@@ -707,7 +707,7 @@ public class TargetedMSManager
             XarSource source = new AbstractFileXarSource("Wrap Targeted MS Run", container, user)
             {
                 @Override
-                public Path getLogFilePath()
+                public FileLike getLogFilePath()
                 {
                     throw new UnsupportedOperationException();
                 }
@@ -1308,7 +1308,7 @@ public class TargetedMSManager
                     PipeRoot root = PipelineService.get().getPipelineRootSetting(run.getContainer());
                     if (null != root)
                     {
-                        LocalDirectory localDirectory = LocalDirectory.create(root, MODULE_NAME);
+                        LocalDirectory localDirectory = LocalDirectory.create(root);
                         try
                         {
                             RepresentativeStateManager.setRepresentativeState(user, run.getContainer(), localDirectory, run, RunRepresentativeDataState.NotRepresentative);

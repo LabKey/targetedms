@@ -69,7 +69,7 @@ public class TargetedMSRunsTable extends DataRegionTable
         if (rowIndex < 0)
             fail("Unable to find checkbox for non-existent file: " + documentName);
         checkCheckbox(rowIndex);
-        clickHeaderButtonByText("Delete");
+        clickHeaderButton("Delete");
         getWrapper().clickButton("Confirm Delete");
     }
 
@@ -90,7 +90,7 @@ public class TargetedMSRunsTable extends DataRegionTable
             checkCheckbox(rowIndex);
         }
 
-        clickHeaderButtonByText(buttonText);
+        clickHeaderButton(buttonText);
     }
 
     public void showAllVersions()

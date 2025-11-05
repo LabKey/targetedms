@@ -285,7 +285,6 @@ import org.w3c.dom.Document;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -3226,7 +3225,7 @@ public class TargetedMSController extends SpringActionController
         PipeRoot root = PipelineService.get().getPipelineRootSetting(getContainer());
         if (null != root)
         {
-            LocalDirectory localDirectory = LocalDirectory.create(root, MODULE_NAME);
+            LocalDirectory localDirectory = LocalDirectory.create(root);
             try
             {
                 List<SpeclibReaderException> specLibErrors = new ArrayList<>();
@@ -3935,18 +3934,6 @@ public class TargetedMSController extends SpringActionController
         public void setPeptideRepresentative(String[] peptideRepresentative)
         {
             _peptideRepresentative = peptideRepresentative;
-        }
-
-        @Override
-        public List<File> getValidatedFiles(Container c)
-        {
-            List<File> files = super.getValidatedFiles(c);
-            List<File> resolvedFiles = new ArrayList<>(files.size());
-            for(File file: files)
-            {
-                resolvedFiles.add(FileUtil.resolveFile(file));  // Strips out ".." and "." from the path
-            }
-            return resolvedFiles;
         }
     }
 
@@ -6281,7 +6268,7 @@ public class TargetedMSController extends SpringActionController
                 PipeRoot root = PipelineService.get().getPipelineRootSetting(getContainer());
                 if (null != root)
                 {
-                    LocalDirectory localDirectory = LocalDirectory.create(root, MODULE_NAME);
+                    LocalDirectory localDirectory = LocalDirectory.create(root);
                     try
                     {
                         ChromatogramLibraryUtils.incrementLibraryRevision(getContainer(), getUser(), localDirectory);
@@ -6573,7 +6560,7 @@ public class TargetedMSController extends SpringActionController
                     PipeRoot root = PipelineService.get().getPipelineRootSetting(getContainer());
                     if (null != root)
                     {
-                        LocalDirectory localDirectory = LocalDirectory.create(root, MODULE_NAME);
+                        LocalDirectory localDirectory = LocalDirectory.create(root);
                         try
                         {
                             ChromatogramLibraryUtils.writeLibrary(container, getUser(), localDirectory, libraryRevision);
