@@ -170,7 +170,15 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         assertProjectEventCounts(2, 2);
 
         doAndWaitForPageToLoad(() -> selectOptionByText(Locator.id("instrumentDropDown"), INSTRUMENT_2));
-        scheduleInstrument(yearMonth + "-06", false);
+        click(Locator.id("addPaymentMethod"));
+
+        scheduleInstrument(yearMonth + "-06", false, () -> {
+            // Make it a two-day reservation
+            String originalEnd = getFormElement(END_DATE_TIME_FIELD.findElement(getDriver()));
+            setFormElement(END_DATE_TIME_FIELD.findElement(getDriver()), originalEnd.replace("-06T", "-07T"));
+
+
+        });
         assertProjectEventCounts(1, 0);
 
         impersonate(LAB_MEMBER_USER);

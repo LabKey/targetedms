@@ -3,6 +3,5 @@
         <dependency path="internal/jQuery"/>
         <dependency path="targetedms/instrumentCalendar"/>
         <dependency path="TargetedMS/css/instrumentScheduler.css"/>
-        <dependency path="TargetedMS/js/scheduleUtils.js"/>
     </dependencies>
 </view>
