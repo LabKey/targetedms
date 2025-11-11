@@ -17,10 +17,14 @@ package org.labkey.test.tests.targetedms;
 
 import org.jetbrains.annotations.NotNull;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runners.MethodSorters;
 import org.labkey.remoteapi.CommandException;
+import org.labkey.remoteapi.query.Filter;
 import org.labkey.remoteapi.query.InsertRowsCommand;
+import org.labkey.remoteapi.query.SelectRowsCommand;
 import org.labkey.remoteapi.security.WhoAmICommand;
 import org.labkey.test.Locator;
 import org.labkey.test.TestTimeoutException;
@@ -29,30 +33,43 @@ import org.labkey.test.util.ApiPermissionsHelper;
 import org.labkey.test.util.PermissionsHelper;
 import org.labkey.test.util.PortalHelper;
 import org.labkey.test.util.PostgresOnlyTest;
+import org.openqa.selenium.WebElement;
 
 import java.io.IOException;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 @Category({})
+@FixMethodOrder(MethodSorters.NAME_ASCENDING) // Don't insert additional projects until after testSchedule() has run
 public class InstrumentSchedulingTest extends TargetedMSTest implements PostgresOnlyTest
 {
-    protected static final String LAB_MEMBER_USER = "labmember@targetedms.test";
-    protected static final String EXTERNAL_COLLABORATOR_USER = "collaborator@targetedms.test";
-
     public static final String INSTRUMENT_1 = "Instrument1";
     public static final String INSTRUMENT_2 = "Instrument2";
     public static final String INACTIVE_INSTRUMENT = "InactiveInstrument";
     public static final String PROJECT_1 = "Project1";
     public static final String PROJECT_2 = "Project2";
+    public static final String PAYMENT_METHOD_1 = "PaymentMethod1";
+    public static final String PAYMENT_METHOD_2 = "PaymentMethod2";
+    public static final String PAYMENT_METHOD_3 = "PaymentMethod3";
+    protected static final String LAB_MEMBER_USER = "labmember@targetedms.test";
+    protected static final String EXTERNAL_COLLABORATOR_USER = "collaborator@targetedms.test";
+
     public static final Locator.IdLocator EVENT_NAME_FIELD = Locator.id("event-name");
     public static final Locator.IdLocator EVENT_NOTE_FIELD = Locator.id("event-notes");
 
     public static final Locator.IdLocator START_DATE_TIME_FIELD = Locator.id("event-start-date");
     public static final Locator.IdLocator END_DATE_TIME_FIELD = Locator.id("event-end-date");
+    public static final Locator.IdLocator INSTRUMENT_DROP_DOWN = Locator.id("instrumentDropDown");
+    public static final Locator.IdLocator PROJECT_DROP_DOWN = Locator.id("projectDropDown");
+    public static final Locator PAYMENT_METHOD_DROP_DOWNS = Locator.tagWithClass("select", "paymentMethodDropDown");
+    public static final Locator PAYMENT_METHOD_PERCENTS = Locator.tagWithClass("input", "paymentMethodPercent");
 
 
     @BeforeClass
@@ -70,8 +87,9 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         int labMemberUserId = _userHelper.createUser(LAB_MEMBER_USER).getUserId();
         int collaboratorUserId = _userHelper.createUser(EXTERNAL_COLLABORATOR_USER).getUserId();
         ApiPermissionsHelper apiPermissionsHelper = new ApiPermissionsHelper(this);
-        apiPermissionsHelper.addMemberToRole(LAB_MEMBER_USER, "Editor", PermissionsHelper.MemberType.user);
-        apiPermissionsHelper.addMemberToRole(EXTERNAL_COLLABORATOR_USER, "Submitter", PermissionsHelper.MemberType.user);
+        apiPermissionsHelper.addMemberToRole(LAB_MEMBER_USER, PermissionsHelper.EDITOR_ROLE, PermissionsHelper.MemberType.user);
+        apiPermissionsHelper.addMemberToRole(EXTERNAL_COLLABORATOR_USER, PermissionsHelper.SUBMITTER_ROLE, PermissionsHelper.MemberType.user);
+        apiPermissionsHelper.addMemberToRole(EXTERNAL_COLLABORATOR_USER, PermissionsHelper.READER_ROLE, PermissionsHelper.MemberType.user);
 
         InsertRowsCommand instrumentInsert = new InsertRowsCommand("targetedms", "msInstrument");
         instrumentInsert.setRows(Arrays.asList(
@@ -97,8 +115,9 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
 
         InsertRowsCommand paymentMethodInsert = new InsertRowsCommand("targetedms", "paymentMethod");
         paymentMethodInsert.setRows(Arrays.asList(
-                Map.of("UWBudgetNumber", "1111", "Name", "PaymentMethod1"),
-                Map.of("UWBudgetNumber", "2222", "Name", "PaymentMethod2")
+                Map.of("UWBudgetNumber", "1111", "Name", PAYMENT_METHOD_1),
+                Map.of("UWBudgetNumber", "2222", "Name", PAYMENT_METHOD_2),
+                Map.of("UWBudgetNumber", "3333", "Name", PAYMENT_METHOD_3) // Intentionally not associated with a project
         ));
         List<Map<String, Object>> paymentMethods = paymentMethodInsert.execute(createDefaultConnection(), getProjectName()).getRows();
 
@@ -130,14 +149,28 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         List<Map<String, Object>> instrumentRates = instrumentRateInsert.execute(createDefaultConnection(), getProjectName()).getRows();
     }
 
+    @Override
+    protected void doCleanup(boolean afterTest) throws TestTimeoutException
+    {
+        // these tests use the UIContainerHelper for project creation, but we can use the APIContainerHelper for deletion
+        APIContainerHelper apiContainerHelper = new APIContainerHelper(this);
+        apiContainerHelper.deleteProject(getProjectName(), afterTest);
+
+        _userHelper.deleteUsers(false, LAB_MEMBER_USER);
+        _userHelper.deleteUsers(false, EXTERNAL_COLLABORATOR_USER);
+    }
+
     @Test
-    public void testSchedule()
+    public void testSchedule() throws IOException, CommandException
     {
         goToProjectHome();
         clickAndWait(Locator.linkWithText("Your project list"));
         waitForText(PROJECT_1, PROJECT_2);
         clickAndWait(Locator.linkWithText(PROJECT_1));
         waitAndClickAndWait(Locator.linkWithText("Schedule instrument time"));
+
+        assertTrue("Wrong instrument list", waitFor(() -> Arrays.asList(INSTRUMENT_1, INSTRUMENT_2).equals(getSelectOptions(INSTRUMENT_DROP_DOWN)), 5_000));
+        assertTrue("Wrong payment method list", waitFor(() -> Arrays.asList(PAYMENT_METHOD_1).equals(getSelectOptions(PAYMENT_METHOD_DROP_DOWNS)), 5_000));
 
         int month = (Calendar.getInstance().get(Calendar.MONTH) + 1);
         String yearMonth = Calendar.getInstance().get(Calendar.YEAR) + "-" + (month < 10 ? "0" + month : "" + month);
@@ -161,7 +194,7 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
 
         assertProjectEventCounts(2, 0);
 
-        doAndWaitForPageToLoad(() -> selectOptionByText(Locator.id("projectDropDown"), PROJECT_2));
+        doAndWaitForPageToLoad(() -> selectOptionByText(PROJECT_DROP_DOWN, PROJECT_2));
 
         scheduleInstrument(yearMonth + "-04", false);
         assertProjectEventCounts(1, 2);
@@ -169,23 +202,90 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         scheduleInstrument(yearMonth + "-05", false);
         assertProjectEventCounts(2, 2);
 
-        doAndWaitForPageToLoad(() -> selectOptionByText(Locator.id("instrumentDropDown"), INSTRUMENT_2));
+        doAndWaitForPageToLoad(() -> selectOptionByText(INSTRUMENT_DROP_DOWN, INSTRUMENT_2));
+        sleep(1000);
         click(Locator.id("addPaymentMethod"));
+        List<WebElement> percentInputs = getDriver().findElements(PAYMENT_METHOD_PERCENTS);
+        assertEquals("Wrong number of payment method percents", 2, percentInputs.size());
+        List<WebElement> methodInputs = getDriver().findElements(PAYMENT_METHOD_DROP_DOWNS);
+        assertEquals("Wrong number of payment method dropdowns", 2, methodInputs.size());
+
+        // Duplicate payment methods
+        selectOptionByText(methodInputs.get(0), PAYMENT_METHOD_2);
+        assertTextPresent("The same payment method cannot be selected more than once.");
+        selectOptionByText(methodInputs.get(0), PAYMENT_METHOD_1);
+
+        // Bogus payment percentages
+        setFormElement(percentInputs.get(1), "0");
+        assertTextPresent("Each payment percentage must be a number between 0 and 100.");
+        setFormElement(percentInputs.get(1), "60");
+        assertTextPresent("When multiple payment methods are used, the percentages must add up to 100% (current total: 110%).");
+        setFormElement(percentInputs.get(0), "40");
 
         scheduleInstrument(yearMonth + "-06", false, () -> {
             // Make it a two-day reservation
             String originalEnd = getFormElement(END_DATE_TIME_FIELD.findElement(getDriver()));
             setFormElement(END_DATE_TIME_FIELD.findElement(getDriver()), originalEnd.replace("-06T", "-07T"));
-
-
         });
         assertProjectEventCounts(1, 0);
 
         impersonate(LAB_MEMBER_USER);
+        assertEquals("Wrong number of projects for " + LAB_MEMBER_USER,
+                2,
+                new SelectRowsCommand("targetedms", "msProject").execute(createDefaultConnection(), getProjectName()).getRows().size());
 
-        goToDashboard();
+        stopImpersonating();
+        impersonate(EXTERNAL_COLLABORATOR_USER);
+        List<Map<String, Object>> projects = new SelectRowsCommand("targetedms", "msProject").execute(createDefaultConnection(), getProjectName()).getRows();
+        assertEquals("Wrong number of projects for " + EXTERNAL_COLLABORATOR_USER, 1, projects.size());
+        int project2Id = (Integer) projects.get(0).get("Id");
+        SelectRowsCommand instrumentSelect = new SelectRowsCommand("targetedms", "msInstrument");
+        instrumentSelect.setFilters(Arrays.asList(new Filter("Name", INSTRUMENT_1)));
+        List<Map<String, Object>> instruments = instrumentSelect.execute(createDefaultConnection(), getProjectName()).getRows();
+        assertEquals("Wrong number of instruments", 1, instruments.size());
+        int instrument1Id = (Integer) instruments.get(0).get("Id");
+
+        SelectRowsCommand paymentMethodSelect = new SelectRowsCommand("targetedms", "paymentMethod");
+        paymentMethodSelect.setFilters(Arrays.asList(new Filter("Name", PAYMENT_METHOD_1)));
+        List<Map<String, Object>> paymentMethods = paymentMethodSelect.execute(createDefaultConnection(), getProjectName()).getRows();
+        assertEquals("Wrong number of paymentMethods", 1, paymentMethods.size());
+        int paymentMethod1Id = (Integer) paymentMethods.get(0).get("Id");
+
+        int project1Id = project2Id - 1;  // Assume sequential auto-incrementing ids
+        int inactiveInstrumentId = instrument1Id + 2;
+        int paymentMethod3Id = paymentMethod1Id + 2;
+
+        attemptScheduleInsertExpectingFailure(
+                Map.of("Project", project1Id, "Instrument", instrument1Id),
+                "User is not a member of the project");
+        attemptScheduleInsertExpectingFailure(
+                Map.of("Project", project2Id, "Instrument", instrument1Id),
+                "StartTime and EndTime are required");
+        Calendar start = Calendar.getInstance();
+        start.add(Calendar.MONTH, 1);
+        Calendar end = Calendar.getInstance();
+        end.add(Calendar.MONTH, 1);
+        end.add(Calendar.DATE, 1);
+        Date startDate = new Date(start.getTimeInMillis());
+        Date endDate = new Date(end.getTimeInMillis());
+        attemptScheduleInsertExpectingFailure(
+                Map.of("Project", project2Id, "Instrument", instrument1Id, "StartTime", endDate, "EndTime", startDate),
+                "StartTime must be before EndTime");
+        attemptScheduleInsertExpectingFailure(
+                Map.of("Project", project2Id, "Instrument", instrument1Id, "StartTime", startDate, "EndTime", endDate),
+                "Instrument usage payments do not add up to 100%");
+        attemptScheduleInsertExpectingFailure(
+                Map.of("Project", project2Id, "Instrument", instrument1Id, "StartTime", startDate, "EndTime", endDate, "UsagePayments", Arrays.asList(Map.of("PaymentMethod", paymentMethod3Id, "PercentPayment", 100))),
+                "Instrument usage payments are not using a payment method that is configured for the project.");
+        attemptScheduleInsertExpectingFailure(
+                Map.of("Project", project2Id, "Instrument", inactiveInstrumentId, "StartTime", startDate, "EndTime", endDate, "UsagePayments", Arrays.asList(Map.of("PaymentMethod", paymentMethod1Id, "PercentPayment", 100))),
+                "Instrument does not exist or is not active");
+
+        stopImpersonating();
+
+        goToProjectHome();
         waitAndClickAndWait(Locator.linkWithText("All instrument calendar view"));
-        assertTextPresent(INSTRUMENT_1, INSTRUMENT_2, INACTIVE_INSTRUMENT);
+        waitForText(INSTRUMENT_1, INSTRUMENT_2, INACTIVE_INSTRUMENT);
 
         assertProjectEventCounts(5, 0);
 
@@ -194,16 +294,93 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
 
         goToDashboard();
         waitAndClickAndWait(Locator.linkWithText("Instrument billing report"));
-        assertTextPresent("$950.00", 4);
-        assertTextPresent("$1,040.00", 1);
+        assertTextPresent("$950.00", 8);
+        // Two rows, one for each of the two payment methods
+        assertTextPresent("$3,680.00", 2);
+        assertTextPresent(PAYMENT_METHOD_1, 5);
+        assertTextPresent(PAYMENT_METHOD_2, 1);
+        // Verify the 40/60 split
+        assertTextPresent("$1,472.00", "$2,208.00");
 
-        // Future test cases:
-        // Split payment across multiple methods
-        // Schedule for hours within a day instead of 24-hour periods
-        // Check billing for individual months, including reservations that span month boundaries with start/end dates
-        // Ensure that overlapping reservations are rejected
-        // Ensure that reservations cannot be made for inactive instruments
+        goToDashboard();
+        clickAndWait(Locator.linkWithText("Monthly instrument billing report"));
+        // Choose a date that splits a reservation into two parts
+        setFormElement(Locator.name("query.param.StartBillDate"), yearMonth + "-07");
+        clickButton("Submit");
+        // Only some hours should be in the range for this billing report
+        assertTextPresent("17.0", 2);
+        assertTextPresent("$748.00", "$1,122.00");
     }
+
+    private void attemptScheduleInsertExpectingFailure(Map<String, Object> row, String expected) throws IOException
+    {
+        InsertRowsCommand scheduleInsert = new InsertRowsCommand("targetedms", "instrumentSchedule");
+        scheduleInsert.setRows(Arrays.asList(row));
+        failInsert(scheduleInsert, expected);
+    }
+
+    @Test
+    public void testSetupInsertPermissions() throws IOException, CommandException
+    {
+        // Validate that a collaborator can't add a project themselves
+        int adminId = getCurrentUserId();
+        impersonate(EXTERNAL_COLLABORATOR_USER);
+        InsertRowsCommand projectInsert = new InsertRowsCommand("targetedms", "msProject");
+        projectInsert.setRows(Arrays.asList(
+                Map.of("Affiliation", "External", "Title", "External", "SubmitDate", "1/1/2025", "CollaborationWith", "Mike", "ScientificQuestion", "Why are collaborators so great?", "abstract", "c")
+        ));
+
+        failInsert(projectInsert, null);
+
+        // Insert as a lab member
+        stopImpersonating();
+        impersonate(LAB_MEMBER_USER);
+        Map<String, Object> project = projectInsert.execute(createDefaultConnection(), getProjectName()).getRows().get(0);
+        int projectId = (Integer) project.get("Id");
+
+        // Collaborator isn't part of the project, so they shouldn't be able to add a researcher
+        stopImpersonating();
+        impersonate(EXTERNAL_COLLABORATOR_USER);
+        int collaboratorId = getCurrentUserId();
+        InsertRowsCommand researcherInsert = new InsertRowsCommand("targetedms", "projectResearcher");
+        researcherInsert.setRows(Arrays.asList(
+                Map.of("Project", projectId, "Researcher", collaboratorId)
+        ));
+        failInsert(researcherInsert, null);
+
+        // Add the collaborator
+        stopImpersonating();
+        impersonate(LAB_MEMBER_USER);
+        researcherInsert.execute(createDefaultConnection(), getProjectName());
+
+        // Now the collaborator should be able to add another researcher
+        stopImpersonating();
+        impersonate(EXTERNAL_COLLABORATOR_USER);
+        researcherInsert.setRows(Arrays.asList(
+                Map.of("Project", projectId, "Researcher", adminId)
+        ));
+        researcherInsert.execute(createDefaultConnection(), getProjectName());
+
+
+    }
+
+    private void failInsert(InsertRowsCommand insert, String expectedMessage) throws IOException
+    {
+        try
+        {
+            insert.execute(createDefaultConnection(), getProjectName());
+            fail("Shouldn't have permissions");
+        }
+        catch (CommandException e)
+        {
+            if (expectedMessage != null)
+            {
+                assertEquals(expectedMessage, e.getMessage());
+            }
+        }
+    }
+
+
 
     private void assertProjectEventCounts(int expectedActiveCount, int expectedOtherCount)
     {
@@ -237,14 +414,4 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         }
     }
 
-    @Override
-    protected void doCleanup(boolean afterTest) throws TestTimeoutException
-    {
-        // these tests use the UIContainerHelper for project creation, but we can use the APIContainerHelper for deletion
-        APIContainerHelper apiContainerHelper = new APIContainerHelper(this);
-        apiContainerHelper.deleteProject(getProjectName(), afterTest);
-        
-        _userHelper.deleteUsers(false, LAB_MEMBER_USER);
-        _userHelper.deleteUsers(false, EXTERNAL_COLLABORATOR_USER);
-    }
 }

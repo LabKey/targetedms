@@ -2,11 +2,15 @@
     <metadata>
         <tables xmlns="http://labkey.org/data/xml">
             <table tableName="instrumentBilling" tableDbType="TABLE">
+                <tableTitle>Instrument Billing</tableTitle>
                 <columns>
                     <column columnName="Hours">
                         <formatString>0.0</formatString>
                     </column>
                     <column columnName="TotalCost">
+                        <formatString>$#,##0.00</formatString>
+                    </column>
+                    <column columnName="AmountBilled">
                         <formatString>$#,##0.00</formatString>
                     </column>
                 </columns>

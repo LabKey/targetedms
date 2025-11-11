@@ -24,7 +24,7 @@ public class InstrumentScheduleTable extends OwnProjectSchedulingTable
 {
     public InstrumentScheduleTable(TargetedMSSchema schema, ContainerFilter cf)
     {
-        super(TargetedMSSchema.TABLE_INSTRUMENT_SCHEDULE, schema, cf, false);
+        super(TargetedMSSchema.TABLE_INSTRUMENT_SCHEDULE, schema, cf, true);
         addTriggerFactory((c, table, extraContext) -> List.of(
             new InstrumentUsagePaymentTrigger("Id"),
             new InstrumentScheduleOverlapTrigger()

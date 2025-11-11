@@ -105,6 +105,7 @@ import org.labkey.targetedms.query.PeptideStructuralModificationTableInfo;
 import org.labkey.targetedms.query.PeptideTableInfo;
 import org.labkey.targetedms.query.PrecursorChromInfoTable;
 import org.labkey.targetedms.query.PrecursorTableInfo;
+import org.labkey.targetedms.query.ProjectAddUserTrigger;
 import org.labkey.targetedms.query.QCAnnotationTable;
 import org.labkey.targetedms.query.QCAnnotationTypeTable;
 import org.labkey.targetedms.query.QCEnabledMetricsTable;
@@ -1631,7 +1632,7 @@ public class TargetedMSSchema extends UserSchema
                 TABLE_PROJECT_RESEARCHER.equalsIgnoreCase(name) ||
                 TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name))
         {
-            var result = new OwnProjectSchedulingTable(name, this, cf, TABLE_MS_PROJECT.equalsIgnoreCase(name));
+            var result = new OwnProjectSchedulingTable(name, this, cf, !TABLE_MS_PROJECT.equalsIgnoreCase(name));
             if (TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name))
             {
                 result.addTriggerFactory((c, table, extraContext) -> List.of(new InstrumentUsagePaymentTrigger("InstrumentScheduleId")));
@@ -1654,17 +1655,19 @@ public class TargetedMSSchema extends UserSchema
                 {
                     result.addCondition(projectMemberSql, FieldKey.fromParts("Id"));
                 }
+                result.addTriggerFactory((c, table, extraContext) -> List.of(new ProjectAddUserTrigger()));
             }
             else if (TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name))
             {
                 // For non-admins, completely hide payment data for projects they're not associated with
                 if (!getContainer().hasPermission(getUser(), AdminPermission.class))
                 {
-                    SQLFragment projectMemberSql = new SQLFragment("EXISTS (SELECT Project FROM ");
+                    SQLFragment projectMemberSql = new SQLFragment("InstrumentScheduleId IN (SELECT i.Id FROM ");
+                    projectMemberSql.append(TargetedMSManager.getTableInfoInstrumentSchedule(), "i");
+                    projectMemberSql.append(" INNER JOIN ");
                     projectMemberSql.append(TargetedMSManager.getTableInfoProjectResearcher(), "pr");
-                    projectMemberSql.append(" WHERE pr.researcher = ? AND pr.project = ");
+                    projectMemberSql.append(" ON i.Project = pr.Project AND pr.researcher = ?)");
                     projectMemberSql.add(getUser().getUserId());
-                    projectMemberSql.append(ExprColumn.STR_TABLE_ALIAS).append(".Project)");
                     result.addCondition(projectMemberSql, FieldKey.fromParts("Project"));
                 }
 

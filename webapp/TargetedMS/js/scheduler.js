@@ -6,11 +6,6 @@ $(function() {
     project = project ? parseInt(project) || null : null;
     instrument = instrument ? parseInt(instrument) || null : null;
 
-    if (!project) {
-        document.getElementById('calendar').innerText = 'Invalid or no project specified';
-        return;
-    }
-
     let calendar = null;
     let eventToSave = {};
     let paymentMethods = [];
@@ -26,6 +21,9 @@ $(function() {
             let projectDropDown = document.getElementById('projectDropDown');
             while (projectDropDown.firstChild) {
                 projectDropDown.removeChild(projectDropDown.firstChild);
+            }
+            if (!project && rows.length > 0) {
+                project = rows[0].Id;
             }
             for (let i = 0; i < rows.length; i++) {
                 let option = document.createElement('option');
@@ -296,7 +294,6 @@ $(function() {
         scope: this,
         success: function (result) {
             let rows = result.rows || [];
-            // Normalize to the same shape used elsewhere in this file
             paymentMethodsData = rows.map(function(r) {
                 return {
                     Id: r.paymentMethod,
@@ -306,14 +303,8 @@ $(function() {
                     budgetExpirationDate: r['paymentMethod/budgetExpirationDate']
                 };
             });
-            let paymentMethodDropDown = '<select id="paymentMethodDropDown" name="paymentMethodDropDown">';
-            for (let i = 0; i < paymentMethodsData.length; i++) {
-                paymentMethodDropDown += '<option value="' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].Id) + '">' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].name) + '</option>';
-            }
-            paymentMethodDropDown += '</select>';
-            // Always render a percent input for the first row; visibility will be toggled based on row count
-            paymentMethodDropDown += '&nbsp;<span class="paymentPercentGroup" style="display:none;"><input type="text" class="paymentMethodPercent" name="paymentMethodPercent" value="100" size="3" maxlength="3"><label>%</label></span>';
-
+            // Use shared renderer to build the initial row (no remove link; default percent 100)
+            const paymentMethodDropDown = buildPaymentMethodRow(1,  false);
             jQuery('#paymentMethodDropDown').html(paymentMethodDropDown);
 
             // Attach live validation listeners to the first row percent input
@@ -423,11 +414,6 @@ $(function() {
         eventToSave.name = $('#event-modal input[name="event-name"]').val();
         eventToSave.notes = $('#event-modal input[name="event-notes"]').val();
         eventToSave.instrumentoperator = $('#instrumentOperatorDropDown').val();
-
-        if (eventToSave.endTime < eventToSave.startTime) {
-            alert('End date must be after start date');
-            return;
-        }
 
         // get the paymentMethod and percentPayment from the html fields
         paymentMethods = [];
@@ -814,23 +800,30 @@ $(function() {
         $('#event-modal').modal('hide');
     });
 
+    // Helper to render a single payment method row (select + percent input [+ optional remove])
+    function buildPaymentMethodRow(index, includeRemove) {
+        let html = '<select id="paymentMethodDropDown' + id + '" name="paymentMethodDropDown' + id + '" class="paymentMethodDropDown">';
+        for (let i = 0; i < paymentMethodsData.length; i++) {
+            html += '<option value="' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].Id) + '">' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].name) + '</option>';
+        }
+        html += '</select>';
+
+        // Always render a percent input group; visibility toggled by updatePercentInputsVisibility
+        html += '&nbsp;<span class="paymentPercentGroup" style="display:none;"><input type="text" class="paymentMethodPercent" name="paymentMethodPercent" value="100" size="3" maxlength="3"><label>%</label></span>';
+
+        if (includeRemove) {
+            html += '&nbsp' +
+                '<span id="removePaymentMethod" role="button" style="cursor: pointer;">[Remove]</span>';
+        }
+        return html;
+    }
+
     let paymentMethodsData;
     let paymentMethodCount = 1;
     const addPaymentMethodEl = document.getElementById('addPaymentMethod');
     addPaymentMethodEl.addEventListener('click', function () {
         paymentMethodCount++;
-        let id = 'paymentMethodDropDown' + paymentMethodCount;
-        let paymentMethodDropDown = '<select id="' + id + '" name="' + id + '">';
-        for (let i = 0; i < paymentMethodsData.length; i++) {
-            paymentMethodDropDown += '<option value="' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].Id) + '">' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].name) + '</option>';
-        }
-        paymentMethodDropDown += '</select>';
-
-        // Always render a percent input group; visibility toggled by updatePercentInputsVisibility
-        paymentMethodDropDown += '&nbsp;<span class="paymentPercentGroup" style="display:none;"><input type="text" class="paymentMethodPercent" name="paymentMethodPercent" value="0" size="3" maxlength="3"><label>%</label></span>';
-
-        paymentMethodDropDown += '&nbsp' +
-                '<span id="removePaymentMethod" role="button" style="cursor: pointer;">[Remove]</span>';
+        const paymentMethodDropDown = buildPaymentMethodRow(paymentMethodCount, true);
         let logElt = document.createElement('div');
         logElt.innerHTML = paymentMethodDropDown;
 

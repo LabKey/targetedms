@@ -15,27 +15,33 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * Prevents overlapping instrument schedule entries for the same instrument.
+ * Prevents overlapping instrument schedule entries for the same instrument and that the instrument is active.
  */
 public class InstrumentScheduleOverlapTrigger implements Trigger
 {
     @Override
-    public void beforeInsert(TableInfo table, Container c, User user, Map<String, Object> newRow, ValidationException errors, Map<String, Object> extraContext)
+    public void beforeInsert(TableInfo table, Container c, User user, Map<String, Object> newRow, ValidationException errors, Map<String, Object> extraContext) throws ValidationException
     {
-        validateNoOverlap(newRow, null, errors);
+        validateNoOverlap(newRow, null);
+        Number instrument = (Number) newRow.get("Instrument");
+        SqlSelector selector = new SqlSelector(TargetedMSManager.getSchema(), "SELECT Id FROM " + TargetedMSManager.getTableInfoMSInstrument() + " WHERE Id = ? AND Active = ?", instrument, true);
+        if (!selector.exists())
+        {
+            throw new ValidationException("Instrument does not exist or is not active");
+        }
     }
 
     @Override
-    public void beforeUpdate(TableInfo table, Container c, User user, @Nullable Map<String, Object> newRow, @Nullable Map<String, Object> oldRow, ValidationException errors, Map<String, Object> extraContext)
+    public void beforeUpdate(TableInfo table, Container c, User user, @Nullable Map<String, Object> newRow, @Nullable Map<String, Object> oldRow, ValidationException errors, Map<String, Object> extraContext) throws ValidationException
     {
         // Use the Id from either newRow or oldRow to exclude the current record
         Integer id = getId(newRow);
         if (id == null)
             id = getId(oldRow);
-        validateNoOverlap(newRow, id, errors);
+        validateNoOverlap(newRow, id);
     }
 
-    private void validateNoOverlap(Map<String, Object> row, @Nullable Integer excludeId, ValidationException errors)
+    private void validateNoOverlap(Map<String, Object> row, @Nullable Integer excludeId) throws ValidationException
     {
         Number instrument = (Number) row.get("Instrument");
         Date start = (Date) row.get("StartTime");
@@ -43,18 +49,15 @@ public class InstrumentScheduleOverlapTrigger implements Trigger
 
         if (instrument == null)
         {
-            errors.addGlobalError("Instrument is required");
-            return;
+            throw new ValidationException("Instrument is required");
         }
         if (start == null || end == null)
         {
-            errors.addGlobalError("StartTime and EndTime are required");
-            return;
+            throw new ValidationException("StartTime and EndTime are required");
         }
         if (!start.before(end))
         {
-            errors.addGlobalError("StartTime must be before EndTime");
-            return;
+            throw new ValidationException("StartTime must be before EndTime");
         }
 
         // Overlap condition: existing.start < new.end AND existing.end > new.start
@@ -75,7 +78,7 @@ public class InstrumentScheduleOverlapTrigger implements Trigger
         boolean overlapExists = new SqlSelector(TargetedMSManager.getSchema(), sql).exists();
         if (overlapExists)
         {
-            errors.addGlobalError("Instrument schedule overlaps with an existing reservation for this instrument");
+            throw new ValidationException("Instrument schedule overlaps with an existing reservation for this instrument");
         }
     }
 

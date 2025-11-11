@@ -81,6 +81,26 @@ public class InstrumentUsagePaymentTrigger implements Trigger
             {
                 throw new ApiUsageException("Instrument usage payments do not add up to 100%");
             }
+
+            for (int scheduleId : _schedulesToCheck)
+            {
+                SQLFragment wrongProjectSql = new SQLFragment("SELECT * FROM ");
+                wrongProjectSql.append(TargetedMSManager.getTableInfoInstrumentUsagePayment(), "iup");
+                wrongProjectSql.append(" INNER JOIN ");
+                wrongProjectSql.append(TargetedMSManager.getTableInfoInstrumentSchedule(), "s");
+                wrongProjectSql.append(" ON iup.InstrumentScheduleId = s.Id\n");
+                wrongProjectSql.append(" WHERE iup.InstrumentScheduleId = ? AND iup.PaymentMethod NOT IN (SELECT PaymentMethod FROM ");
+                wrongProjectSql.add(scheduleId);
+                wrongProjectSql.append(TargetedMSManager.getTableInfoProjectPaymentMethod(), "ppm");
+                wrongProjectSql.append(" WHERE ppm.Project = s.Project)");
+
+                if (new SqlSelector(TargetedMSManager.getSchema(), wrongProjectSql).exists())
+                {
+                    throw new ApiUsageException("Instrument usage payments are not using a payment method that is configured for the project.");
+                }
+            }
+
+
         }, DbScope.CommitTaskOption.PRECOMMIT);
     }
 }

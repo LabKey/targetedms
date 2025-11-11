@@ -3,17 +3,17 @@ package org.labkey.targetedms.query;
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.data.ContainerFilter;
 import org.labkey.api.query.DefaultQueryUpdateService;
-import org.labkey.api.query.FilteredTable;
 import org.labkey.api.query.QueryUpdateService;
+import org.labkey.api.query.SimpleUserSchema;
 import org.labkey.api.security.UserPrincipal;
 import org.labkey.api.security.permissions.Permission;
 import org.labkey.targetedms.TargetedMSSchema;
 
-public class SimpleTargetedMSTable extends FilteredTable<TargetedMSSchema>
+public class SimpleTargetedMSTable extends SimpleUserSchema.SimpleTable<TargetedMSSchema>
 {
     public SimpleTargetedMSTable(String name, TargetedMSSchema schema, ContainerFilter cf)
     {
-        super(TargetedMSSchema.getSchema().getTable(name), schema, cf);
+        super(schema, TargetedMSSchema.getSchema().getTable(name), cf);
         wrapAllColumns(true);
     }
 
