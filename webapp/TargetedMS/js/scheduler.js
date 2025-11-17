@@ -802,7 +802,7 @@ $(function() {
 
     // Helper to render a single payment method row (select + percent input [+ optional remove])
     function buildPaymentMethodRow(index, includeRemove) {
-        let html = '<select id="paymentMethodDropDown' + id + '" name="paymentMethodDropDown' + id + '" class="paymentMethodDropDown">';
+        let html = '<select id="paymentMethodDropDown' + index + '" name="paymentMethodDropDown' + index + '" class="paymentMethodDropDown">';
         for (let i = 0; i < paymentMethodsData.length; i++) {
             html += '<option value="' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].Id) + '">' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].name) + '</option>';
         }
