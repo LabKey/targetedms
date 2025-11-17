@@ -29,6 +29,8 @@ import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.Pair;
 import org.labkey.targetedms.parser.Peptide;
 import org.labkey.targetedms.view.spectrum.LibrarySpectrumMatchGetter;
+import org.labkey.vfs.FileLike;
+import org.labkey.vfs.FileSystemLike;
 import org.sqlite.SQLiteConfig;
 
 import java.io.File;
@@ -161,9 +163,9 @@ public abstract class LibSpectrumReader
             Path remotePath = pair.second;
             if (null != container && null != remotePath)
             {
-                File file = LocalDirectory.copyToContainerDirectory(container, remotePath, LOG);
+                FileLike file = LocalDirectory.copyToContainerDirectory(container, FileSystemLike.wrapFile(remotePath), LOG);
                 if (null != file)
-                    return file.getAbsolutePath();
+                    return file.toNioPathForRead().toFile().getAbsolutePath();
             }
         }
         return null;

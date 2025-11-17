@@ -71,6 +71,7 @@ import org.labkey.targetedms.query.ConflictResultsManager;
 import org.labkey.targetedms.query.ReplicateManager;
 import org.labkey.targetedms.query.RepresentativeStateManager;
 import org.labkey.targetedms.query.SkylineListManager;
+import org.labkey.vfs.FileLike;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayInputStream;
@@ -239,17 +240,17 @@ public class SkylineDocImporter
 
         try
         {
-            File inputFile = getInputFile();
+            FileLike inputFile = getInputFile();
             if (null == inputFile)
                 throw new FileNotFoundException();
 
             // Set the size of the Skyline document (.sky.zip) file.
-            run.setDocumentSize(Files.size(inputFile.toPath()));
+            run.setDocumentSize(inputFile.getSize());
             saveRunDocumentSize(run);
 
             updateRunStatus(IMPORT_STARTED);
             _log.info("Starting to import Skyline document from " + run.getFileName());
-            importSkylineDoc(run, inputFile);
+            importSkylineDoc(run, inputFile.toNioPathForRead().toFile());
             _log.info("Completed import of Skyline document from " + run.getFileName());
 
             updateRunStatus(IMPORT_SUCCEEDED, STATUS_SUCCESS);
@@ -2725,10 +2726,10 @@ public class SkylineDocImporter
     }
 
     @Nullable
-    private File getInputFile()
+    private FileLike getInputFile()
     {
         if (_expData.hasFileScheme())
-            return _expData.getFile();
+            return _expData.getFileLike();
 
         if (null == _pipeRoot || null == _localDirectory)
             return null;
