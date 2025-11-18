@@ -203,6 +203,7 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
         QCSummaryWebPart qcSummaryWebPart = new PanoramaDashboard(this).getQcSummaryWebPart();
         qcSummaryWebPart.gotoUtilizationCalendar();
         qcSummaryWebPart = new QCSummaryWebPart(getDriver());
+        waitForElement(Locator.tagContainingText("div", replicate));
         scrollIntoView(Locator.tagContainingText("div", replicate));
         mouseOver(Locator.tagContainingText("div", replicate));
         mouseOver(Locator.tagContainingText("div", replicate));
