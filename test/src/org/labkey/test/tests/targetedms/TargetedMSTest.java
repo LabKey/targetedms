@@ -341,6 +341,10 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
 
     protected void verifyQcSummary(int sampleFileCount, int precursorCount)
     {
+        Locator.tagWithClass("div", "x4-panel")
+                .withDescendant(Locator.tagWithText("label", "Loading..."))
+                .waitForElementToDisappear(getDriver(), 15_000);
+
         QCSummaryWebPart qcSummaryWebPart = new PanoramaDashboard(this).getQcSummaryWebPart();
         verifyQcSummary(qcSummaryWebPart.getQcSummaryTiles().get(0), null, sampleFileCount, precursorCount);
     }
