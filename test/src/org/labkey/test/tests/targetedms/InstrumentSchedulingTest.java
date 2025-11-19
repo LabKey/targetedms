@@ -25,7 +25,6 @@ import org.labkey.remoteapi.CommandException;
 import org.labkey.remoteapi.query.Filter;
 import org.labkey.remoteapi.query.InsertRowsCommand;
 import org.labkey.remoteapi.query.SelectRowsCommand;
-import org.labkey.remoteapi.security.WhoAmICommand;
 import org.labkey.test.Locator;
 import org.labkey.test.TestTimeoutException;
 import org.labkey.test.util.APIContainerHelper;
@@ -129,15 +128,11 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         ));
         List<Map<String, Object>> projectPaymentMethods = projectPaymentMethodInsert.execute(createDefaultConnection(), getProjectName()).getRows();
 
-        int currentUserId = new WhoAmICommand().execute(createDefaultConnection(), getProjectName()).getUserId().intValue();
-
         InsertRowsCommand projectResearcherInsert = new InsertRowsCommand("targetedms", "projectResearcher");
         projectResearcherInsert.setRows(Arrays.asList(
                 Map.of("Project", projects.get(0).get("Id"), "Researcher", labMemberUserId),
                 Map.of("Project", projects.get(1).get("Id"), "Researcher", labMemberUserId),
-                Map.of("Project", projects.get(1).get("Id"), "Researcher", collaboratorUserId),
-                Map.of("Project", projects.get(0).get("Id"), "Researcher", currentUserId),
-                Map.of("Project", projects.get(1).get("Id"), "Researcher", currentUserId)
+                Map.of("Project", projects.get(1).get("Id"), "Researcher", collaboratorUserId)
         ));
         List<Map<String, Object>> projectResearchers = projectResearcherInsert.execute(createDefaultConnection(), getProjectName()).getRows();
 
