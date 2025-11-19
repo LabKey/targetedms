@@ -355,6 +355,9 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         verifyGuideSetSmallMoleculeStats(gsSmallMolecule);
 
         clickAndWait(Locator.linkWithText("Pareto Plot")); //go to Pareto Plot tab
+        Locator.tagWithClass("div", "x4-mask-msg-text")
+                .withText("Loading...").waitForElementToDisappear(getDriver(), 15_000);
+
         ParetoPlotPage paretoPage = new ParetoPlotPage(getDriver());
         ParetoPlotsWebPart paretoPlotsWebPart = paretoPage.getParetoPlotsWebPart();
 
