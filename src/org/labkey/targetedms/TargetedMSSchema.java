@@ -1622,15 +1622,15 @@ public class TargetedMSSchema extends UserSchema
         if (TABLE_MS_INSTRUMENT.equalsIgnoreCase(name) ||
                 TABLE_PAYMENT_METHOD.equalsIgnoreCase(name) ||
                 TABLE_RATE_TYPE.equalsIgnoreCase(name) ||
-                TABLE_INSTRUMENT_RATE.equalsIgnoreCase(name) ||
-                TABLE_PROJECT_PAYMENT_METHOD.equalsIgnoreCase(name))
+                TABLE_INSTRUMENT_RATE.equalsIgnoreCase(name))
         {
             return new AdminSchedulingTable(name, this, cf);
         }
 
         if (TABLE_MS_PROJECT.equalsIgnoreCase(name) ||
                 TABLE_PROJECT_RESEARCHER.equalsIgnoreCase(name) ||
-                TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name))
+                TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name) ||
+                TABLE_PROJECT_PAYMENT_METHOD.equalsIgnoreCase(name))
         {
             var result = new OwnProjectSchedulingTable(name, this, cf, !TABLE_MS_PROJECT.equalsIgnoreCase(name));
             if (TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name))

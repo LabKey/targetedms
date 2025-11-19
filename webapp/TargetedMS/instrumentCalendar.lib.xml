@@ -2,6 +2,5 @@
     <library compileInProductionMode="true">
         <script path="TargetedMS/js/fullcalendar.js"/>
         <script path="TargetedMS/js/scheduleUtils.js"/>
-        <script path="TargetedMS/js/scheduler.js"/>
     </library>
 </libraries>
