@@ -1,4 +1,4 @@
-<view xmlns="http://labkey.org/data/xml/view" title="Schedule Instrument Time">
+<view xmlns="http://labkey.org/data/xml/view" title="Instrument Schedules">
     <dependencies>
         <dependency path="internal/jQuery"/>
         <dependency path="targetedms/instrumentCalendar"/>

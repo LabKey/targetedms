@@ -2,6 +2,7 @@
     <metadata>
         <tables xmlns="http://labkey.org/data/xml">
             <table tableName="instrumentBillingByMonth" tableDbType="TABLE">
+                <tableTitle>Instrument Billing by Month</tableTitle>
                 <columns>
                     <column columnName="HoursInRange">
                         <formatString>0.0</formatString>

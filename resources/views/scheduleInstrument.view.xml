@@ -1,8 +1,8 @@
 <view xmlns="http://labkey.org/data/xml/view" title="Schedule Instrument Time">
     <dependencies>
         <dependency path="internal/jQuery"/>
-        <dependency path="targetedms/instrumentCalendar"/>
+        <dependency path="TargetedMS/instrumentCalendar"/>
+        <dependency path="TargetedMS/js/scheduler.js"/>
         <dependency path="TargetedMS/css/instrumentScheduler.css"/>
-        <dependency path="TargetedMS/js/scheduleUtils.js"/>
     </dependencies>
 </view>

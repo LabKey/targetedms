@@ -7,8 +7,11 @@
         renderTo: 'ms-project',
         frame: 'none',
         schemaName: 'targetedms',
-        queryName: 'userProjects',
-        containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders
+        queryName: 'msProject',
+        containerFilter: LABKEY.Query.containerFilter.currentAndSubfolders,
+        filters: [
+            LABKEY.Filter.create('ProjectMember', true)
+        ]
     };
     // admins can see all projects, non-admins can only see projects they are a researcher on
     new LABKEY.QueryWebPart(config);

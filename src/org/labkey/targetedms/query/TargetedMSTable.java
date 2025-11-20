@@ -81,7 +81,7 @@ public class TargetedMSTable extends FilteredTable<TargetedMSSchema>
         for (var columnInfo : table.getMutableColumns())
         {
             ForeignKey fk = columnInfo.getFk();
-            if (fk != null && TargetedMSSchema.SCHEMA_NAME.equalsIgnoreCase(fk.getLookupSchemaName()))
+            if (fk != null && TargetedMSSchema.SCHEMA_KEY.equals(fk.getLookupSchemaKey()))
             {
                 columnInfo.setFk(new QueryForeignKey(table.getUserSchema(), table.getContainerFilter(), table.getUserSchema(), null, fk.getLookupTableName(), fk.getLookupColumnName(), fk.getLookupDisplayName()));
             }
@@ -144,7 +144,7 @@ public class TargetedMSTable extends FilteredTable<TargetedMSSchema>
     }
 
     /*
-    This is an additional filter that is applied to the table that has the container column. This can be used, for example,
+    This is an additional filter applied to the table that has the container column. This can be used, for example,
     to filter the results of the Precursor table to a single run in a container (Id column in the targetedms.runs table).
     Tables in the targetedms schema that have a container column are:
      - runs, autoqcping, irtscale, experimentannotations, guideset, qcannotation, qcannotationtype
