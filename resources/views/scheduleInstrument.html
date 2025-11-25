@@ -5,20 +5,22 @@
             <td><select id="instrumentDropDown" name="instrumentDropDown"></select></td>
         </tr>
         <tr>
-            <td class="labkey-form-label"><label for="instrumentOperatorDropDown">Operator</label></td>
-            <td><select id="instrumentOperatorDropDown" name="instrumentOperatorDropDown"></select></td>
-        </tr>
-        <tr>
             <td class="labkey-form-label"><label for="projectDropDown">Project</label></td>
             <td><select id="projectDropDown" name="projectDropDown"></select></td>
         </tr>
         <tr>
-            <td class="labkey-form-label"><label for="paymentMethodDropDown">Payment method</label></td>
+            <td class="labkey-form-label"><label for="instrumentOperatorDropDown">Operator</label></td>
+            <td><select id="instrumentOperatorDropDown" name="instrumentOperatorDropDown"></select></td>
+        </tr>
+        <tr>
+            <td class="labkey-form-label" rowspan="10"><label for="paymentMethodDropDown">Payment method</label></td>
             <td><div id="paymentMethodDropDown"></div></td>
         </tr>
         <tr>
-            <td class="labkey-form-label"></td>
-            <td><span id="addPaymentMethod" role="button" style="cursor: pointer;">[Add Payment Method]</span></td>
+            <td>
+                <div id="addPaymentMethod" role="button" style="cursor: pointer;">[Add payment method]</div>
+                <div id="payment-method-error" class="labkey-error"></div>
+            </td>
         </tr>
     </table>
 </div>
@@ -29,7 +31,7 @@
         Loading...
     </div>
 
-    <div class="modal fade" id="event-modal">
+    <div class="modal" id="event-modal">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -43,15 +45,11 @@
                     <form class="form-horizontal">
 
                         <div class="form-group row">
-                            <label for="min-date" class="col-sm-2 control-label">Dates</label>
-                            <div class="col-sm-5">
-                                <div class="input-group input-daterange" data-provide="datepicker">
-                                    <input id="min-date" name="event-start-date" type="datetime-local" class="form-control">
-                                    <div class="input-group-prepend input-group-append">
-                                        <div class="input-group-text"><label for="event-end-date">to</label></div>
-                                    </div>
-                                    <input name="event-end-date" id="event-end-date" type="datetime-local" class="form-control">
-                                </div>
+                            <label for="event-start-date" class="col-sm-2 control-label">Dates</label>
+                            <div class="col-sm-10">
+                                <input id="event-start-date" name="event-start-date" type="datetime-local">
+                                <label for="event-end-date">to</label>
+                                <input id="event-end-date" name="event-end-date" type="datetime-local">
                             </div>
                         </div>
                         <div class="form-group row">
@@ -66,6 +64,28 @@
                                 <input id="event-notes" name="event-notes" size="50" type="text" class="form-control">
                             </div>
                         </div>
+                        <!-- Live cost preview -->
+                        <div class="form-group row">
+                            <label class="col-sm-2 control-label" for="preview-setup-cost">Setup fee</label>
+                            <div class="col-sm-2">
+                                <input id="preview-setup-cost" name="preview-setup-cost" type="text" readonly="readonly" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-2 control-label" for="preview-instrument-fee">Instrument fee</label>
+                            <div class="col-sm-2">
+                                <input id="preview-instrument-fee" name="preview-instrument-fee" type="text" readonly="readonly" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-2 control-label" for="preview-total-cost">Total fee</label>
+                            <div class="col-sm-2">
+                                <input id="preview-total-cost" name="preview-total-cost" type="text" readonly="readonly" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-12 labkey-error" style="min-height: 2em;" id="schedule-preview-error"></div>
+                        </div>
                         <div class="form-group row" >
                             <div class="col-sm-10 offset-sm-2 labkey-error" style="min-height: 2em;" id="schedule-save-error"></div>
                         </div>
@@ -78,64 +98,6 @@
                     </button>
                     <button type="button" class="btn btn-primary" id="add-event">
                         Add
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="cost-modal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirm Instrument Time</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="event-index">
-                    <form class="form-horizontal">
-
-                        <div class="form-group row">
-                            <div class="col-sm-8">
-                                <div class="input-group-text">The requested time will incur the following cost:</div>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-4 control-label" for="setup-cost">Setup fee</label>
-                            <div class="col-sm-8">
-                                <input id="setup-cost" name="setup-cost" type="text" readonly="readonly" class="form-control"/>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-4 control-label" for="instrument-fee">Instrument fee</label>
-                            <div class="col-sm-8">
-                                <input id="instrument-fee" type="text" readonly="readonly" class="form-control"/>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-sm-4 control-label" for="total-cost">Total fee</label>
-                            <div class="col-sm-8">
-                                <input id="total-cost" type="text" readonly="readonly" class="form-control"/>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <div class="col-sm-8">
-                                <div class="input-group-text">Are you sure you want to continue?</div>
-                            </div>
-                        </div>
-                        <div class="form-group row" >
-                            <div class="col-sm-12 labkey-error" style="min-height: 2em;" id="schedule-cost-error"></div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="close-event">
-                        No
-                    </button>
-                    <button type="button" class="btn btn-primary" id="save-event">
-                        Yes
                     </button>
                 </div>
             </div>
@@ -164,624 +126,3 @@
     </div>
 
 </div>
-
-<script type="text/javascript" nonce="<%=scriptNonce%>">
-    $(function() {
-
-        let project = LABKEY.ActionURL.getParameter('project');
-        let instrument = LABKEY.ActionURL.getParameter('instrument');
-        // Parse as integers, defaulting to null if empty/invalid
-        project = project ? parseInt(project) || null : null;
-        instrument = instrument ? parseInt(instrument) || null : null;
-
-        if (!project) {
-            document.getElementById('calendar').innerText = 'Invalid or no project specified';
-            return;
-        }
-
-        let calendar = null;
-        let eventToSave = {};
-        let paymentMethods = [];
-
-        LABKEY.Query.selectRows({
-            schemaName: 'targetedms',
-            queryName: 'msProject',
-            sort: 'Title',
-            columns: 'Id,Title',
-            scope: this,
-            success: function (result) {
-                let rows = result.rows;
-                let projectDropDown = document.getElementById('projectDropDown');
-                while (projectDropDown.firstChild) {
-                    projectDropDown.removeChild(projectDropDown.firstChild);
-                }
-                for (let i = 0; i < rows.length; i++) {
-                    let option = document.createElement('option');
-                    option.value = rows[i].Id;
-                    option.text = rows[i].Title;
-                    if (project === rows[i].Id) {
-                        option.selected = true;
-                    }
-                    projectDropDown.appendChild(option);
-                }
-            }
-        });
-
-        LABKEY.Query.selectRows({
-            schemaName: 'targetedms',
-            queryName: 'msInstrument',
-            sort: 'name',
-            columns: 'Id,name,active',
-            filterArray: [
-                LABKEY.Filter.create('active', true, LABKEY.Filter.Types.EQUAL)
-            ],
-            scope: this,
-            success: function (result) {
-                let rows = result.rows;
-                let instrumentDropDown = document.getElementById('instrumentDropDown');
-                while (instrumentDropDown.firstChild) {
-                    instrumentDropDown.removeChild(instrumentDropDown.firstChild);
-                }
-
-                for (let i = 0; i < rows.length; i++) {
-                    let option = document.createElement('option');
-                    option.value = rows[i].Id;
-                    option.text = rows[i].name;
-                    if (instrument === rows[i].Id) {
-                        option.selected = true;
-                    }
-                    instrumentDropDown.appendChild(option);
-                }
-
-                loadInstrumentSchedule(function(instrumentSchedule) {
-
-                    var calendarEl = document.getElementById('calendar');
-
-                    calendar = new FullCalendar.Calendar(calendarEl, {
-                        headerToolbar: {
-                            left: 'prev,next today',
-                            center: 'title',
-                            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                        },
-                        initialDate: new Date(),
-                        navLinks: true, // can click day/week names to navigate views
-                        selectable: true,
-                        selectMirror: true,
-                        eventContent: function(e) {
-
-                            let content = '';
-                            let bgColor = e.event.extendedProps.project === project ? e.backgroundColor : 'gray';
-                            const cl = e.event.extendedProps.project === project ? 'activeProjectEvent' : 'otherProjectEvent';
-                            let textColor = ScheduleUtils.getContrastTextColor(ScheduleUtils.stringToColor(bgColor));
-                            let timeFormatString = LABKEY.container.formats.timeFormat;
-                            // Strip seconds and milliseconds
-                            timeFormatString = timeFormatString.replace(':ss', '').replace('.SSS', '');
-                            let dateStr = DateFormat.format.date(e.event.start, timeFormatString) + ' - ' + DateFormat.format.date(e.event.end, timeFormatString);
-                            let style = 'background-color: ' + LABKEY.Utils.encodeHtml(bgColor) + '; color: ' + LABKEY.Utils.encodeHtml(textColor) + ';' + 'width: 100%';
-                            content += '<div class="' + LABKEY.Utils.encodeHtml(cl) + '" style="' + style + ';">'
-                                        + '<div class="event-date">' + LABKEY.Utils.encodeHtml(dateStr) + '</div>'
-                                        + '<div class="event-id" >' + 'Project : &nbsp' + LABKEY.Utils.encodeHtml(e.event.extendedProps.project) + '</div>'
-                                    + '</div>';
-                            return { html: content };
-                        },
-                        eventMouseEnter: function (mouseEnterInfo) {
-                            removeEventLog();
-                            let instrumentID = instrument ? instrument : $('#instrumentDropDown').val();
-                            fetchInstrumentCosts(instrumentID, mouseEnterInfo.event.start, mouseEnterInfo.event.end, false);
-                            let content = '';
-                            let dateStr = DateFormat.format.date(mouseEnterInfo.event.start, LABKEY.container.formats.dateTimeFormat) + ' - ' + DateFormat.format.date(mouseEnterInfo.event.end, LABKEY.container.formats.dateTimeFormat);
-                            content += '<div class="event-tooltip-content">'
-                                    + '<div class="event-id" >' + 'Project Id : &nbsp' + LABKEY.Utils.encodeHtml(mouseEnterInfo.event.extendedProps.project) + '</div>'
-                                    + '<div class="event-title">' + 'Title : &nbsp' + LABKEY.Utils.encodeHtml(mouseEnterInfo.event.title) + '</div>'
-                                    + '<div class="event-date">' + LABKEY.Utils.encodeHtml(dateStr) + '</div>'
-                                    + '</div>';
-
-
-                            $(mouseEnterInfo.el).popover({
-                                trigger: 'manual',
-                                container: 'body',
-                                html:true,
-                                content: content,
-
-                            });
-
-                            $(mouseEnterInfo.el).popover('show');
-
-                            const $popover = $('.popover'); // Get the popover element
-                            // Keep the popover open when hovering over it
-                            $popover.on('mouseenter', function () {
-                                $(mouseEnterInfo.el).popover('show');
-                            });
-
-                            // Close the popover when the mouse leaves it
-                            $popover.on('mouseleave', function () {
-                                $(mouseEnterInfo.el).popover('hide');
-                            });
-                        },
-                        eventMouseLeave: function (mouseLeaveInfo) {
-                            setTimeout(() => {
-                                const $popover = $('.popover:hover');
-                                if ($popover.length === 0) {
-                                    $(mouseLeaveInfo.el).popover('hide');
-                                }
-                            }, 200); // Add a delay to allow for hover on the popover
-                        },
-                        select: function(arg) {
-                            editEvent({
-                                startDate: arg.start,
-                                endDate: arg.end,
-                                id: null,
-                                name: '',
-                                notes: ''
-                            });
-                            calendar.unselect()
-                        },
-                        eventClick: function(arg) {
-                            editEvent({
-                                startDate: arg.event.start,
-                                endDate: arg.event.end,
-                                id: arg.event.id,
-                                name: arg.event.extendedProps.name,
-                                notes: arg.event.extendedProps.notes
-                            });
-                        },
-                        editable: true,
-                        events: instrumentSchedule
-                    });
-
-                    // remove loading text
-                    calendarEl.innerHTML = '';
-                    calendar.render();
-
-                });
-            }
-        });
-
-        LABKEY.Query.selectRows({
-            schemaName: 'targetedms',
-            queryName: 'paymentMethod',
-            sort: 'name',
-            columns: 'Id,UWBudgetNumber,worktag, budgetExpirationDate, name',
-            scope: this,
-            success: function (result) {
-                let rows = result.rows;
-                paymentMethodsData = rows;
-                let paymentMethodDropDown = '<select id="paymentMethodDropDown" name="paymentMethodDropDown">';
-                for (let i = 0; i < rows.length; i++) {
-                    paymentMethodDropDown += '<option value="' + LABKEY.Utils.encodeHtml(rows[i].Id) + '">' + LABKEY.Utils.encodeHtml(rows[i].name) + '</option>';
-                }
-                paymentMethodDropDown += '</select>';
-
-                paymentMethodDropDown += '&nbsp<input type="text" id="paymentMethodPercent" name="paymentMethodPercent" value="100" size="3" maxlength="3">';
-                paymentMethodDropDown += '<label for="paymentMethodPercent">%</label>';
-
-                jQuery('#paymentMethodDropDown').html(paymentMethodDropDown);
-
-            }
-        });
-
-        LABKEY.Query.selectRows({
-            schemaName: 'targetedms',
-            queryName: 'projectResearcher',
-            sort: 'name',
-            columns: 'Id,researcher/displayName,researcher/UserId,project',
-            filterArray: [
-                LABKEY.Filter.create('project', project, LABKEY.Filter.Types.EQUAL),
-                LABKEY.Filter.create('researcher/UserId', project, LABKEY.Filter.Types.NONBLANK)
-            ],
-            scope: this,
-            success: function (result) {
-                let rows = result.rows;
-                let instrumentOperatorDropDown = document.getElementById('instrumentOperatorDropDown');
-                while (instrumentOperatorDropDown.firstChild) {
-                    instrumentOperatorDropDown.removeChild(instrumentOperatorDropDown.firstChild);
-                }
-                for (let i = 0; i < rows.length; i++) {
-                    let option = document.createElement('option');
-                    option.value = rows[i]['researcher/UserId'];
-                    option.text = rows[i]['researcher/displayName'];
-                    if (instrument === rows[i].Id) {
-                        option.selected = true;
-                    }
-                    instrumentOperatorDropDown.appendChild(option);
-                }
-            }
-        });
-
-
-        function editEvent(event) {
-            let startDate = event.startDate;
-            let endDate = event.endDate;
-
-            if (!event.id && startDate.getHours() === 0 && startDate.getMinutes() === 0 && endDate.getHours() === 0 && endDate.getMinutes() === 0) {
-                // Default to starting at 8AM and ending at 5PM
-                startDate.setHours(8);
-                endDate.setHours(17);
-                endDate.setDate(endDate.getDate() - 1);
-            }
-
-            let startDateFormatted = DateFormat.format.date(startDate, LABKEY.container.formats.dateTimeFormat);
-            let endDateFormatted = DateFormat.format.date(endDate, LABKEY.container.formats.dateTimeFormat);
-
-            // remove the old event log rows
-            removeEventLog();
-
-            $('#event-modal input[name="event-index"]').val(event ? event.id : '');
-            $('#event-modal input[name="event-start-date"]').val(startDateFormatted);
-            $('#event-modal input[name="event-end-date"]').val(endDateFormatted);
-            $('#event-modal input[name="event-name"]').val(event ? event.name : '');
-            $('#event-modal input[name="event-notes"]').val(event ? event.notes : '');
-            $('#delete-event').toggle(!!event.id);
-            $('#add-event').text('Save');
-            $('#event-modal').modal();
-        }
-
-        function closeEvent() {
-            removeEventLog();
-            $('#schedule-cost-error').text('');
-            $('#cost-modal').modal('hide');
-        }
-
-        function addEvent() {
-            eventToSave.id = $('#event-modal input[name="event-index"]').val();
-            eventToSave.startTime = $('#event-modal input[name="event-start-date"]').val();
-            eventToSave.endTime = $('#event-modal input[name="event-end-date"]').val();
-            eventToSave.project = project;
-            eventToSave.instrument = instrument ? instrument : $('#instrumentDropDown').val();
-            eventToSave.name = $('#event-modal input[name="event-name"]').val();
-            eventToSave.notes = $('#event-modal input[name="event-notes"]').val();
-            eventToSave.instrumentoperator = $('#instrumentOperatorDropDown').val();
-
-            if (eventToSave.endTime < eventToSave.startTime) {
-                alert('End date must be after start date');
-                return;
-            }
-
-            const events = calendar.getEvents();
-            // validate that the events time do not overlap with existing events
-            for (let i = 0; i < events.length; i++) {
-                if (eventToSave.id !== events[i].id) {
-                    let newEvent = {
-                        start: new Date(eventToSave.startTime),
-                        end: new Date(eventToSave.endTime)
-                    };
-                    let existingEvent = {
-                        start: events[i].start,
-                        end: events[i].end
-                    };
-
-                    if (eventsOverlap(newEvent, existingEvent)) {
-                        alert('New schedule overlaps with existing instrument schedule');
-                        return;
-                    }
-                }
-            }
-
-            // get the paymentMethod and percentPayment from the html fields
-            paymentMethods = [];
-            let paymentMethodDropDowns = document.querySelectorAll('#paymentMethodDropDown select');
-            let percentPaymentFields = document.querySelectorAll('#paymentMethodPercent');
-            for (let i = 0; i < paymentMethodDropDowns.length; i++) {
-                let paymentMethodId = paymentMethodDropDowns[i].value;
-                let paymentMethodPercent = percentPaymentFields[i].value;
-                paymentMethods.push({
-                    paymentMethod: paymentMethodId,
-                    percentPayment: paymentMethodPercent
-                });
-            }
-
-            fetchInstrumentCosts(eventToSave.instrument, eventToSave.startTime, eventToSave.endTime, true);
-
-            // TODO: Make sure user has not exceeded instrument time quota
-            // TODO: Email admins
-        }
-
-        function fetchInstrumentCosts(instrumentId, startDate, endDate, showCostModal) {
-            LABKEY.Query.selectRows({
-                schemaName: 'targetedms',
-                queryName: 'instrumentRate',
-                columns: 'Id,fee,rateType',
-                filterArray: [
-                    LABKEY.Filter.create('instrument', instrumentId, LABKEY.Filter.Types.EQUAL)
-                ],
-                success: function (data) {
-                    if (data.rows.length === 0) {
-                        $('#schedule-save-error').text('Error calculating cost. No rate found for instrument');
-                        return;
-                    }
-                    let fee = data.rows[0].fee;
-                    let rateType = data.rows[0].rateType;
-                    let cost = fee * (Math.abs(new Date(endDate) - new Date(startDate))) / 1000 / 60 / 60;
-
-                    // query the rateType
-                    LABKEY.Query.selectRows({
-                        schemaName: 'targetedms',
-                        queryName: 'rateType',
-                        columns: 'Id,name,setupFee',
-                        filterArray: [
-                            LABKEY.Filter.create('Id', rateType, LABKEY.Filter.Types.EQUAL)
-                        ],
-                        success: function (data) {
-                            let setupFee = data.rows[0].setupFee;
-
-                            let startDateFormatted = DateFormat.format.date(startDate, LABKEY.container.formats.dateTimeFormat);
-                            let endDateFormatted = DateFormat.format.date(endDate, LABKEY.container.formats.dateTimeFormat);
-
-                            let tableElt = document.getElementById('event-cost-table');
-                            let rowElt = document.createElement('tr');
-                            rowElt.className = 'labkey-row';
-                            let totalCost = Math.round(((setupFee + cost) + Number.EPSILON) * 100) / 100;
-                            cost = Math.round((cost + Number.EPSILON) * 100) / 100;
-                            setupFee = Math.round((setupFee + Number.EPSILON) * 100) / 100;
-                            rowElt.innerHTML = '<td>' + startDateFormatted + '</td><td>' + endDateFormatted + '</td><td id="event-cost">' + '$' + totalCost + '</td>';
-                            tableElt.appendChild(rowElt);
-
-                            const totalEventCostElt = document.getElementById('total-event-cost');
-                            totalEventCostElt.innerHTML = 'Total Cost: $' + totalCost;
-
-                            if (showCostModal) {
-                                $('#setup-cost').val(setupFee);
-                                $('#instrument-fee').val(cost);
-                                $('#total-cost').val(setupFee + cost);
-
-                                // open the cost modal
-                                $('#cost-modal').modal();
-                            }
-                        },
-                        failure: function (errorInfo) {
-                            $('#schedule-cost-error').text('Error calculating cost ' + (errorInfo.exception ? errorInfo.exception : ''));
-                        }
-                    });
-                }
-            });
-        }
-
-        function saveEvent() {
-
-            let instrumentScheduleCommand = {
-                command: eventToSave.id ? 'update' : 'insert',
-                schemaName: 'targetedms',
-                queryName: 'instrumentSchedule',
-                rows: [
-                    eventToSave
-                ]
-            };
-
-            let instrumentUsagePaymentRows = [];
-            if (paymentMethods.length > 0) {
-                for (let i = 0; i < paymentMethods.length; i++) {
-                    instrumentUsagePaymentRows.push({
-                        instrumentScheduleId: eventToSave.id,
-                        paymentMethod: paymentMethods[i].paymentMethod,
-                        percentPayment: paymentMethods[i].percentPayment
-                    });
-                }
-            }
-
-            let instrumentUsagePaymentCommand = {
-                command: eventToSave.id ? 'update' : 'insert',
-                schemaName: 'targetedms',
-                queryName: 'instrumentUsagePayment',
-                rows: instrumentUsagePaymentRows
-            };
-
-
-            let commandsToExecute = [instrumentScheduleCommand];
-            if (eventToSave.id) {
-                commandsToExecute.push(instrumentUsagePaymentCommand);
-            }
-
-
-            LABKEY.Query.saveRows({
-                commands: [instrumentScheduleCommand],
-                success: function (response) {
-
-                    loadInstrumentSchedule(function (data) {
-                        calendar.getEventSources()[0].remove();
-                        calendar.addEventSource(data);
-                        $('#event-modal').modal('hide');
-                        $('#cost-modal').modal('hide');
-                    }, true);
-
-                    if (instrumentUsagePaymentRows.length > 0 && !eventToSave.id && response?.result[0]?.rows?.length > 0) {
-                        let responseRows = response.result[0].rows;
-                        let instrumentScheduleId = responseRows[0].id;
-                        for (let i = 0; i < instrumentUsagePaymentRows.length; i++) {
-                            instrumentUsagePaymentRows[i].instrumentScheduleId = instrumentScheduleId;
-                        }
-
-                        LABKEY.Query.saveRows({
-                            commands: [instrumentUsagePaymentCommand],
-                            success: function () {
-                                // Do nothing
-                            },
-                            failure: function (errorInfo) {
-                                $('#schedule-save-error').text('Error saving. ' + (errorInfo.exception ? errorInfo.exception : ''));
-                            }
-                        });
-                    }
-                },
-                failure: function (errorInfo) {
-                    $('#schedule-save-error').text('Error saving. ' + (errorInfo.exception ? errorInfo.exception : ''));
-                }
-            });
-        }
-
-        function eventsOverlap(newEvent, existingEvent) {
-            // Check if newEvent starts after existingEvent ends or ends before existingEvent starts
-            return !(newEvent.end <= existingEvent.start || newEvent.start >= existingEvent.end);
-        }
-
-        function removeEventLog() {
-            let tableElt = document.querySelector('#events-log table');
-            // remove the table rows if it exists
-            if (tableElt) {
-                let rows = tableElt.querySelectorAll('tr');
-                for (let i = 1; i < rows.length; i++) {
-                    rows[i].remove();
-                }
-            }
-
-            let infoElt = document.querySelector('#total-event-cost');
-            if (infoElt) {
-                infoElt.innerHTML = '';
-            }
-        }
-
-        function deleteEvent() {
-            removeEventLog()
-
-            const event = {
-                id: $('#event-modal input[name="event-index"]').val(),
-            };
-
-            LABKEY.Query.executeSql({
-                schemaName: 'targetedms',
-                sql: 'SELECT paymentMethod FROM targetedms.instrumentUsagePayment WHERE instrumentScheduleId = ' + event.id,
-                scope: this,
-                success: function (data) {
-                    let dataRows = data.rows;
-                    let instrumentUsagePaymentRows = [];
-
-                    for (let i = 0; i < dataRows.length; i++) {
-                        instrumentUsagePaymentRows.push({
-                            instrumentScheduleId: event.id,
-                            paymentMethod: dataRows[i].paymentMethod
-                        });
-                    }
-
-                    let instrumentUsagePaymentCommand = {
-                        command: 'delete',
-                        schemaName: 'targetedms',
-                        queryName: 'instrumentUsagePayment',
-                        rows: instrumentUsagePaymentRows
-                    };
-
-                    let instrumentScheduleCommand = {
-                        command: 'delete',
-                        schemaName: 'targetedms',
-                        queryName: 'instrumentSchedule',
-                        rows: [
-                            event
-                        ]
-                    };
-
-                    LABKEY.Query.saveRows({
-                        commands: [instrumentUsagePaymentCommand, instrumentScheduleCommand],
-                        success: function () {
-                            loadInstrumentSchedule(function (data) {
-                                calendar.getEventSources()[0].remove()
-                                calendar.addEventSource(data)
-                                $('#event-modal').modal('hide');
-                            }, true);
-                        },
-                        failure: function (errorInfo) {
-                            $('#schedule-save-error').text('Error saving. ' + (errorInfo.exception ? errorInfo.exception : ''));
-                        }
-                    });
-                },
-                failure: function (errorInfo) {
-                    $('#schedule-save-error').text('Error saving. ' + (errorInfo.exception ? errorInfo.exception : ''));
-                }
-            });
-        }
-
-        function loadInstrumentSchedule(callback) {
-            let instrumentSchedule = [];
-            const currentInstrument = instrument ? instrument : parseInt($('#instrumentDropDown').val());
-            LABKEY.Query.selectRows({
-                schemaName: 'targetedms',
-                queryName: 'instrumentSchedule',
-                columns: 'Id,startTime,endTime,name,notes,instrument/color,instrument/Id,project/Id, project/Title',
-                filterArray: [
-                    LABKEY.Filter.create('instrument', instrument ? instrument : $('#instrumentDropDown').val()),
-                ],
-                success: function (data) {
-                    let rows = data.rows;
-                    for (let i = 0; i < rows.length; i++) {
-                        let row = rows[i];
-                        instrumentSchedule.push({
-                            id: row.Id,
-                            start: new Date(row.startTime),
-                            end: new Date(row.endTime),
-                            name: row.name,
-                            notes: row.notes,
-                            color: row['instrument/color'],
-                            project: row['project/Id'],
-                            title: row['project/Title']
-                        });
-                    }
-                    callback(instrumentSchedule);
-                }
-            });
-        }
-
-        $('#add-event').click(function() {
-            addEvent();
-        });
-
-        $('#close-event').click(function() {
-            closeEvent();
-        });
-
-        $('#save-event').click(function() {
-            saveEvent();
-        });
-
-        $('#delete-event').click(function () {
-            deleteEvent();
-        });
-
-        $('#close-schedule').click(function () {
-            $('#schedule-save-error').text('');
-            $('#event-modal').modal('hide');
-        });
-
-    });
-    let paymentMethodsData;
-    let paymentMethodCount = 1;
-    document.addEventListener('DOMContentLoaded', function () {
-        const addPaymentMethodEl = document.getElementById('addPaymentMethod');
-        addPaymentMethodEl.addEventListener('click', function () {
-            paymentMethodCount++;
-            let id = 'paymentMethodDropDown' + paymentMethodCount;
-            let paymentMethodDropDown = '<select id=' + id + ' name=' + id + '">';
-            for (let i = 0; i < paymentMethodsData.length; i++) {
-                paymentMethodDropDown += '<option value="' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].Id) + '">' + LABKEY.Utils.encodeHtml(paymentMethodsData[i].name) + '</option>';
-            }
-            paymentMethodDropDown += '</select>';
-
-            paymentMethodDropDown += '&nbsp<input type="text" id="paymentMethodPercent" name="paymentMethodPercent" value="0" size="3" maxlength="3">';
-            paymentMethodDropDown += '<label for="paymentMethodPercent">%</label>';
-
-            // TODO: add delete icon
-            paymentMethodDropDown += '&nbsp' +
-                    '<span id="removePaymentMethod" role="button" style="cursor: pointer;">[Remove]</span>';
-            let logElt = document.createElement('div');
-            logElt.innerHTML = paymentMethodDropDown;
-
-            document.querySelector('#paymentMethodDropDown').appendChild(logElt);
-        });
-
-        document.addEventListener('click', function (event) {
-            if (event.target.id === 'removePaymentMethod') {
-                event.preventDefault();
-                event.target.parentElement.remove();
-            }
-        });
-
-        // refresh the page on project change
-        document.getElementById('projectDropDown').addEventListener('change', function () {
-            document.location.href = LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument', null, {project: document.getElementById('projectDropDown').value});
-        });
-
-        // refresh the page on instrument change
-        document.getElementById('instrumentDropDown').addEventListener('change', function () {
-            document.location.href = LABKEY.ActionURL.buildURL('targetedms', 'scheduleInstrument', null, {project: LABKEY.ActionURL.getParameter('project'), instrument: document.getElementById('instrumentDropDown').value});
-        });
-
-        document.getElementById('instrument-rates').innerHTML = LABKEY.Utils.textLink({text: 'View the current rates for instruments', href: LABKEY.ActionURL.buildURL('query', 'executeQuery', LABKEY.ActionURL.getContainer(), {schemaName: 'targetedms', 'query.queryName': 'InstrumentRate'})});
-
-    });
-
-</script>

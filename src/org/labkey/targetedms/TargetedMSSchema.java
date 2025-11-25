@@ -17,6 +17,7 @@
 package org.labkey.targetedms;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
@@ -50,7 +51,6 @@ import org.labkey.api.exp.query.ExpSchema;
 import org.labkey.api.gwt.client.AuditBehaviorType;
 import org.labkey.api.module.Module;
 import org.labkey.api.query.CustomView;
-import org.labkey.api.query.DefaultQueryUpdateService;
 import org.labkey.api.query.DefaultSchema;
 import org.labkey.api.query.DetailsURL;
 import org.labkey.api.query.ExprColumn;
@@ -62,15 +62,13 @@ import org.labkey.api.query.QueryForeignKey;
 import org.labkey.api.query.QuerySchema;
 import org.labkey.api.query.QueryService;
 import org.labkey.api.query.QuerySettings;
-import org.labkey.api.query.QueryUpdateService;
 import org.labkey.api.query.QueryView;
 import org.labkey.api.query.SchemaKey;
 import org.labkey.api.query.SimpleUserSchema;
 import org.labkey.api.query.UserIdQueryForeignKey;
 import org.labkey.api.query.UserSchema;
 import org.labkey.api.security.User;
-import org.labkey.api.security.UserPrincipal;
-import org.labkey.api.security.permissions.Permission;
+import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.util.ContainerContext;
@@ -87,6 +85,9 @@ import org.labkey.panoramapremium.query.QCEmailNotificationsTable;
 import org.labkey.targetedms.parser.Chromatogram;
 import org.labkey.targetedms.parser.ChromatogramBinaryFormat;
 import org.labkey.targetedms.parser.SkylineBinaryParser;
+import org.labkey.targetedms.query.AdminSchedulingTable;
+import org.labkey.targetedms.query.InstrumentScheduleTable;
+import org.labkey.targetedms.query.InstrumentUsagePaymentTrigger;
 import org.labkey.targetedms.query.AnnotatedTargetedMSTable;
 import org.labkey.targetedms.query.CalibrationCurveTable;
 import org.labkey.targetedms.query.DocTransitionsTableInfo;
@@ -97,12 +98,14 @@ import org.labkey.targetedms.query.GuideSetTable;
 import org.labkey.targetedms.query.MoleculePrecursorTableInfo;
 import org.labkey.targetedms.query.MoleculeTableInfo;
 import org.labkey.targetedms.query.MoleculeTransitionsTableInfo;
+import org.labkey.targetedms.query.OwnProjectSchedulingTable;
 import org.labkey.targetedms.query.PTMPercentsGroupedCustomizer;
 import org.labkey.targetedms.query.PeptideIsotopeModificationTableInfo;
 import org.labkey.targetedms.query.PeptideStructuralModificationTableInfo;
 import org.labkey.targetedms.query.PeptideTableInfo;
 import org.labkey.targetedms.query.PrecursorChromInfoTable;
 import org.labkey.targetedms.query.PrecursorTableInfo;
+import org.labkey.targetedms.query.ProjectAddUserTrigger;
 import org.labkey.targetedms.query.QCAnnotationTable;
 import org.labkey.targetedms.query.QCAnnotationTypeTable;
 import org.labkey.targetedms.query.QCEnabledMetricsTable;
@@ -111,6 +114,7 @@ import org.labkey.targetedms.query.QCMetricExclusionTable;
 import org.labkey.targetedms.query.QCTraceMetricValuesTable;
 import org.labkey.targetedms.query.RepresentativeStateDisplayColumn;
 import org.labkey.targetedms.query.SampleFileTable;
+import org.labkey.targetedms.query.SimpleTargetedMSTable;
 import org.labkey.targetedms.query.SkylineAuditTable;
 import org.labkey.targetedms.query.TargetedMSCrosstabView;
 import org.labkey.targetedms.query.TargetedMSForeignKey;
@@ -1598,41 +1602,78 @@ public class TargetedMSSchema extends UserSchema
             return new SimpleUserSchema.SimpleTable<>(this, getSchema().getTable(TABLE_PEPTIDE_MOLECULE_PRECURSOR_EXCLUSION), cf).init();
         }
 
-        if(TABLE_QC_EMAIL_NOTIFICATIONS.equalsIgnoreCase(name))
+        if (TABLE_QC_EMAIL_NOTIFICATIONS.equalsIgnoreCase(name))
         {
             return new QCEmailNotificationsTable(this, cf);
         }
+
+        if (TABLE_INSTRUMENT_NICKNAME.equalsIgnoreCase(name))
+        {
+            var result = new SimpleTargetedMSTable(name, this, cf);
+            result.setAuditBehavior(AuditBehaviorType.DETAILED);
+            return result;
+        }
+
+        if (TABLE_INSTRUMENT_SCHEDULE.equalsIgnoreCase(name))
+        {
+            return new InstrumentScheduleTable(this, cf);
+        }
+
+        if (TABLE_MS_INSTRUMENT.equalsIgnoreCase(name) ||
+                TABLE_PAYMENT_METHOD.equalsIgnoreCase(name) ||
+                TABLE_RATE_TYPE.equalsIgnoreCase(name) ||
+                TABLE_INSTRUMENT_RATE.equalsIgnoreCase(name))
+        {
+            return new AdminSchedulingTable(name, this, cf);
+        }
+
         if (TABLE_MS_PROJECT.equalsIgnoreCase(name) ||
                 TABLE_PROJECT_RESEARCHER.equalsIgnoreCase(name) ||
-                TABLE_MS_INSTRUMENT.equalsIgnoreCase(name) ||
-                TABLE_PAYMENT_METHOD.equalsIgnoreCase(name) ||
-                TABLE_PROJECT_PAYMENT_METHOD.equalsIgnoreCase(name) ||
-                TABLE_INSTRUMENT_SCHEDULE.equalsIgnoreCase(name) ||
-                TABLE_RATE_TYPE.equalsIgnoreCase(name) ||
-                TABLE_INSTRUMENT_RATE.equalsIgnoreCase(name) ||
                 TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name) ||
-                TABLE_INSTRUMENT_NICKNAME.equalsIgnoreCase(name))
+                TABLE_PROJECT_PAYMENT_METHOD.equalsIgnoreCase(name))
         {
-            var result = new FilteredTable<>(getSchema().getTable(name), this, cf)
+            var result = new OwnProjectSchedulingTable(name, this, cf, !TABLE_MS_PROJECT.equalsIgnoreCase(name));
+            if (TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name))
             {
-                @Override
-                public boolean hasPermission(@NotNull UserPrincipal user, @NotNull Class<? extends Permission> perm)
-                {
-                    return getContainer().hasPermission(user, perm);
-                }
-
-                @Override @NotNull
-                public QueryUpdateService getUpdateService()
-                {
-                    return new DefaultQueryUpdateService(this, getRealTable());
-                }
-            };
-            result.wrapAllColumns(true);
-            if (TABLE_INSTRUMENT_NICKNAME.equalsIgnoreCase(name))
-            {
-                result.setAuditBehavior(AuditBehaviorType.DETAILED);
+                result.addTriggerFactory((c, table, extraContext) -> List.of(new InstrumentUsagePaymentTrigger("InstrumentScheduleId")));
             }
             TargetedMSTable.fixupLookups(result);
+
+            if (TABLE_MS_PROJECT.equalsIgnoreCase(name))
+            {
+                SQLFragment projectMemberSql = new SQLFragment("EXISTS (SELECT Project FROM ");
+                projectMemberSql.append(TargetedMSManager.getTableInfoProjectResearcher(), "pr");
+                projectMemberSql.append(" WHERE pr.researcher = ? AND pr.project = ");
+                projectMemberSql.add(getUser().getUserId());
+                projectMemberSql.append(ExprColumn.STR_TABLE_ALIAS).append(".Id)");
+
+                ExprColumn projectMemberCol = new ExprColumn(result, "ProjectMember", projectMemberSql, JdbcType.BOOLEAN);
+                result.addColumn(projectMemberCol);
+
+                // For non-admins, completely hide projects they're not associated with
+                if (!getContainer().hasPermission(getUser(), AdminPermission.class))
+                {
+                    result.addCondition(projectMemberSql, FieldKey.fromParts("Id"));
+                }
+                result.addTriggerFactory((c, table, extraContext) -> List.of(new ProjectAddUserTrigger()));
+            }
+            else if (TABLE_INSTRUMENT_USAGE_PAYMENT.equalsIgnoreCase(name))
+            {
+                // For non-admins, completely hide payment data for projects they're not associated with
+                if (!getContainer().hasPermission(getUser(), AdminPermission.class))
+                {
+                    SQLFragment projectMemberSql = new SQLFragment("InstrumentScheduleId IN (SELECT i.Id FROM ");
+                    projectMemberSql.append(TargetedMSManager.getTableInfoInstrumentSchedule(), "i");
+                    projectMemberSql.append(" INNER JOIN ");
+                    projectMemberSql.append(TargetedMSManager.getTableInfoProjectResearcher(), "pr");
+                    projectMemberSql.append(" ON i.Project = pr.Project AND pr.researcher = ?)");
+                    projectMemberSql.add(getUser().getUserId());
+                    result.addCondition(projectMemberSql, FieldKey.fromParts("Project"));
+                }
+
+            }
+
+
             return result;
         }
 
@@ -1862,12 +1903,12 @@ public class TargetedMSSchema extends UserSchema
     {
         QueryDefinition result = super.getQueryDef(queryName);
 
-        if (result == null && StringUtils.startsWithIgnoreCase(queryName, QUERY_PTM_PERCENTS_PREFIX))
+        if (result == null && Strings.CI.startsWith(queryName, QUERY_PTM_PERCENTS_PREFIX))
         {
             result = createRunScopedPTMQuery(QUERY_PTM_PERCENTS_PREFIX, "PTMPercents", queryName);
         }
 
-        if (result == null && StringUtils.startsWithIgnoreCase(queryName, QUERY_PTM_PERCENTS_GROUPED_PREFIX))
+        if (result == null && Strings.CI.startsWith(queryName, QUERY_PTM_PERCENTS_GROUPED_PREFIX))
         {
             result = createRunScopedPTMQuery(QUERY_PTM_PERCENTS_GROUPED_PREFIX, "PTMPercentsGrouped", queryName);
         }

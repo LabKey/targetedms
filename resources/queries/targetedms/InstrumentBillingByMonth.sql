@@ -31,7 +31,8 @@ SELECT
     Payment_Method,
     Payment_Method_Name,
     PercentPayment,
-    ((HoursInRange * Fee + Setup_Cost) * PercentPayment / 100) AS AmountBilled
+    -- Only include the setup fee when the beginning of the reservation falls within the report's time window
+    ((HoursInRange * Fee + (CASE WHEN StartDate <= StartBillDate THEN 0 ELSE Setup_Cost END)) * PercentPayment / 100) AS AmountBilled
 
 FROM
     (SELECT
