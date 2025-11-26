@@ -1,3 +1,9 @@
+DELETE FROM targetedms.QCMetricExclusion WHERE MetricId IN
+    (SELECT Id FROM targetedms.QCMetricConfiguration WHERE Series2QueryName IS NOT NULL);
+
+DELETE FROM targetedms.QCTraceMetricValues WHERE Metric IN
+   (SELECT Id FROM targetedms.QCMetricConfiguration WHERE Series2QueryName IS NOT NULL);
+
 DELETE FROM targetedms.QCEnabledMetrics WHERE Metric IN
     (SELECT Id FROM targetedms.QCMetricConfiguration WHERE Series2QueryName IS NOT NULL);
 
