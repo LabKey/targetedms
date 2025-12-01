@@ -689,6 +689,11 @@ public class TargetedMSManager
         return getSchema().getTable(TargetedMSSchema.TABLE_INSTRUMENT_SCHEDULE);
     }
 
+    public static TableInfo getTableInfoInstrumentUsagePayment()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_INSTRUMENT_USAGE_PAYMENT);
+    }
+
     /** @return rowId for pipeline job that will perform the import asynchronously */
     public static Long addRunToQueue(ViewBackgroundInfo info,
                                         final Path path) throws XarFormatException, PipelineValidationException
