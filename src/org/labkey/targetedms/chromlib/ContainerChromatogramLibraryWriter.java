@@ -113,7 +113,7 @@ public class ContainerChromatogramLibraryWriter
 
     public String writeLibrary(LocalDirectory localDirectory, int libraryRevision) throws SQLException, IOException
     {
-        Path tempChromLibFile = ChromatogramLibraryUtils.getChromLibTempFile(_container, localDirectory, libraryRevision);
+        Path tempChromLibFile = ChromatogramLibraryUtils.getChromLibTempFile(_container, localDirectory, libraryRevision).toNioPathForWrite();
 
         try
         {

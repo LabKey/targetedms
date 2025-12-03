@@ -68,7 +68,7 @@ public class TargetedMSImportPipelineJob extends PipelineJob
             throw new RuntimeException("Cannot process ExpData when its schema does not match root URI scheme.");
 
         LocalDirectory localDirectory = LocalDirectory.create(root, baseLogFileName,
-                null != _expData.getFile() ? _expData.getFile().getParentFile().getPath() : FileUtil.getTempDirectory().getPath());
+                null != _expData.getFile() ? _expData.getFileLike().getParent() : FileUtil.getTempDirectoryFileLike());
         setLocalDirectory(localDirectory);
         setLogFile(localDirectory.determineLogFile());
     }

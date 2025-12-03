@@ -33,6 +33,7 @@ import org.labkey.targetedms.TargetedMSController;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSRun;
 import org.labkey.targetedms.query.ConflictResultsManager;
+import org.labkey.vfs.FileLike;
 import org.sqlite.SQLiteConfig;
 
 import java.io.File;
@@ -182,14 +183,14 @@ public class ChromatogramLibraryUtils
         return null;
     }
 
-    public static Path getChromLibTempFile(Container container, LocalDirectory localDirectory, int revision) throws IOException
+    public static FileLike getChromLibTempFile(Container container, LocalDirectory localDirectory, int revision) throws IOException
     {
         // Temp file in LocalDirectory (guaranteed to be local File dir)
-        File localDir = localDirectory.getLocalDirectoryFile();
-        Path chromLibDir = localDir.toPath().resolve(CHROM_LIB_FILE_DIR);
-        if(!Files.exists(chromLibDir))
+        FileLike localDir = localDirectory.getLocalDirectoryFile();
+        FileLike chromLibDir = localDir.resolveChild(CHROM_LIB_FILE_DIR);
+        if(!chromLibDir.exists())
             FileUtil.createDirectory(chromLibDir);
-        return chromLibDir.resolve(
+        return chromLibDir.resolveChild(
                         FileUtil.makeFileNameWithTimestamp(CHROM_LIB_FILE_BASE_NAME+"_"+container.getRowId()+"_rev"+revision,
                                                            CHROM_LIB_FILE_EXT));
     }
