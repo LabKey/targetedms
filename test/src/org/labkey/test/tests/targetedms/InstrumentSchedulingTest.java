@@ -292,10 +292,10 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         waitAndClickAndWait(Locator.linkWithText("All instrument calendar view"));
         waitForText(INSTRUMENT_1, INSTRUMENT_2, INACTIVE_INSTRUMENT);
 
-        assertProjectEventCounts(twoDayReservationOverWeekend.get() ? 6: 5, 0);
+        assertProjectEventCounts(twoDayReservationOverWeekend.get() ? 6 : 5, 0);
 
         selectOptionByText(Locator.id("projectFilter"), PROJECT_2);
-        assertProjectEventCounts(twoDayReservationOverWeekend.get() ? 4: 3, 2);
+        assertProjectEventCounts(twoDayReservationOverWeekend.get() ? 4 : 3, 2);
 
         goToDashboard();
         waitAndClickAndWait(Locator.linkWithText("Instrument billing report"));
