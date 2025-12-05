@@ -35,11 +35,14 @@ import org.labkey.test.util.PostgresOnlyTest;
 import org.openqa.selenium.WebElement;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -217,12 +220,19 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         assertTextPresent("When multiple payment methods are used, the percentages must add up to 100% (current total: 110%).");
         setFormElement(percentInputs.get(0), "40");
 
+        AtomicBoolean twoDayReservationOverWeekend = new AtomicBoolean(false);
         scheduleInstrument(yearMonth + "-06", false, () -> {
             // Make it a two-day reservation
             String originalEnd = getFormElement(END_DATE_TIME_FIELD.findElement(getDriver()));
+            try {
+                Calendar c = Calendar.getInstance();
+                c.setTime(new SimpleDateFormat(getCurrentDateFormatString()).parse(originalEnd));
+                twoDayReservationOverWeekend.set(c.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY);
+            } catch (ParseException ignore) {}
             setFormElement(END_DATE_TIME_FIELD.findElement(getDriver()), originalEnd.replace("-06T", "-07T"));
         });
-        assertProjectEventCounts(1, 0);
+        // If an event spans a weekend, it will be represented by two separate event elements
+        assertProjectEventCounts(twoDayReservationOverWeekend.get() ? 2 : 1, 0);
 
         impersonate(LAB_MEMBER_USER);
         assertEquals("Wrong number of projects for " + LAB_MEMBER_USER,
@@ -282,10 +292,10 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         waitAndClickAndWait(Locator.linkWithText("All instrument calendar view"));
         waitForText(INSTRUMENT_1, INSTRUMENT_2, INACTIVE_INSTRUMENT);
 
-        assertProjectEventCounts(5, 0);
+        assertProjectEventCounts(twoDayReservationOverWeekend.get() ? 6 : 5, 0);
 
         selectOptionByText(Locator.id("projectFilter"), PROJECT_2);
-        assertProjectEventCounts(3, 2);
+        assertProjectEventCounts(twoDayReservationOverWeekend.get() ? 4 : 3, 2);
 
         goToDashboard();
         waitAndClickAndWait(Locator.linkWithText("Instrument billing report"));
