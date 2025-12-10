@@ -1906,19 +1906,49 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             return 'M' + (-s) + ',0 L' + s + ',0 M0,' + (-s) + ' L0,' + s;
         };
 
-        let nonAnnotations = this.getSvgElForPlot(plot).selectAll("path.non-annotation").data(nonAnnotationsData)
-                .enter().append("path").attr("class", "non-annotation")
-                .attr("d", addShape(20)).attr('transform', transformAcc)
+
+        let nonAnnotationGroups = this.getSvgElForPlot(plot).selectAll("g.non-annotation-group").data(nonAnnotationsData)
+                .enter().append("g").attr("class", "non-annotation-group")
+                .attr('transform', transformAcc);
+
+        // Add background-rectangle (initially hidden)
+        nonAnnotationGroups.append("rect")
+                .attr("class", "non-annotation-background")
+                .attr("x", -10).attr("y", -10)
+                .attr("width", 20).attr("height", 20)
+                .attr("rx", 2).attr("ry", 2)
+                .style("fill", '#000000')
+                .style("opacity", 0);
+
+        // Add the plus shape
+        nonAnnotationGroups.append("path")
+                .attr("class", "non-annotation")
+                .attr("d", addShape(15))
                 .style("fill", 'none').style("stroke", '#000000')
                 .style("stroke-width", 2)
                 .style("opacity", 0.05);
 
         // Add mouseover effects for non-annotations
-        nonAnnotations.on("mouseover", function () {
-            d3.select(this).transition().duration(300).style("opacity", 1).style("cursor", "pointer");
+        nonAnnotationGroups.append("title")
+                .text("Add annotation");
+
+        nonAnnotationGroups.on("mouseover", function () {
+            d3.select(this).select(".non-annotation-background")
+                    .transition().duration(300)
+                    .style("opacity", 0.2);
+            d3.select(this).select(".non-annotation")
+                    .transition().duration(300)
+                    .style("opacity", 1)
+                    .style("cursor", "pointer");
         });
-        nonAnnotations.on("mouseout", function () {
-            d3.select(this).transition().duration(300).style("opacity", 0.05).style("cursor", "default");
+        nonAnnotationGroups.on("mouseout", function () {
+            d3.select(this).select(".non-annotation-background")
+                    .transition().duration(300)
+                    .style("opacity", 0);
+            d3.select(this).select(".non-annotation")
+                    .transition().duration(300)
+                    .style("opacity", 0.05)
+                    .style("cursor", "default");
         });
     },
 
