@@ -1844,6 +1844,23 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             });
         }
 
+        let nonAnnotationsData = [];
+        Ext4.each(precursorInfo.data, function (row) {
+            let obj = {};
+            obj['Date'] = row.fullDate;
+            obj['yStepIndex'] = 0;
+            nonAnnotationsData.push(obj);
+        });
+
+        // Remove objects from nonAnnotationsData where date matches in annotationsData
+        let annotationDates = Ext4.Array.pluck(this.annotationData, 'Date').map(function (d) {
+            return me.formatDate(new Date(d), !me.groupedX);
+        });
+        nonAnnotationsData = nonAnnotationsData.filter(function (obj) {
+            var objDate = me.formatDate(new Date(obj['Date']), !me.groupedX);
+            return annotationDates.indexOf(objDate) === -1;
+        });
+
         // use direct D3 code to inject the annotation icons to the rendered SVG
         var xAcc = function(d) {
             var annotationDate = me.formatDate(new Date(d['Date']), !me.groupedX);
@@ -1858,10 +1875,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         var colorAcc = function(d) {
             return '#' + d['Color'];
         };
-        var annotations = this.getSvgElForPlot(plot).selectAll("path.annotation").data(this.annotationData)
-            .enter().append("path").attr("class", "annotation")
-            .attr("d", this.annotationShape(5)).attr('transform', transformAcc)
-            .style("fill", colorAcc).style("stroke", colorAcc);
+
+        let annotations = this.getSvgElForPlot(plot).selectAll("path.annotation").data(this.annotationData)
+                .enter().append("path").attr("class", "annotation")
+                .attr("d", this.annotationShape(4)).attr('transform', transformAcc)
+                .style("fill", colorAcc).style("stroke", colorAcc);
 
         // add hover text for the annotation details
         annotations.append("title")
@@ -1881,6 +1899,27 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         };
         annotations.on("mouseover", function(){ return mouseOn(this, 3); });
         annotations.on("mouseout", function(){ return mouseOff(this); });
+
+        // Add non-annotation markers with '+' shape
+        let addShape = function (size) {
+            var s = size / 2;
+            return 'M' + (-s) + ',0 L' + s + ',0 M0,' + (-s) + ' L0,' + s;
+        };
+
+        let nonAnnotations = this.getSvgElForPlot(plot).selectAll("path.non-annotation").data(nonAnnotationsData)
+                .enter().append("path").attr("class", "non-annotation")
+                .attr("d", addShape(20)).attr('transform', transformAcc)
+                .style("fill", 'none').style("stroke", '#000000')
+                .style("stroke-width", 2)
+                .style("opacity", 0.05);
+
+        // Add mouseover effects for non-annotations
+        nonAnnotations.on("mouseover", function () {
+            d3.select(this).transition().duration(300).style("opacity", 1).style("cursor", "pointer");
+        });
+        nonAnnotations.on("mouseout", function () {
+            d3.select(this).transition().duration(300).style("opacity", 0.05).style("cursor", "default");
+        });
     },
 
     formatDate: function(d, includeTime) {
