@@ -1304,7 +1304,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         var config = this.getReportConfig();
 
-        var annotationSql = "SELECT qca.Date, qca.Description, qca.Created, qca.CreatedBy.DisplayName, qcat.Name, qcat.Color FROM qcannotation qca JOIN qcannotationtype qcat ON qcat.Id = qca.QCAnnotationTypeId";
+        var annotationSql = "SELECT qca.Id AS qcAnnotationId, qca.Date, qca.Description, qca.Created, qca.CreatedBy.DisplayName, qcat.Id AS qcAnnotationTypeId, qcat.Name, qcat.Color FROM qcannotation qca JOIN qcannotationtype qcat ON qcat.Id = qca.QCAnnotationTypeId";
 
         // Filter on start/end dates
         var separator = " WHERE ";
@@ -1900,8 +1900,12 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         annotations.on("mouseover", function(){ return mouseOn(this, 3); });
         annotations.on("mouseout", function(){ return mouseOff(this); });
 
+        annotations.on("click", function (d) {
+            me.openAnnotationDialog(false, d).show();
+        });
+
         // Add non-annotation markers with '+' shape
-        let addShape = function (size) {
+        const addShape = function (size) {
             var s = size / 2;
             return 'M' + (-s) + ',0 L' + s + ',0 M0,' + (-s) + ' L0,' + s;
         };
@@ -1926,7 +1930,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 .attr("d", addShape(15))
                 .style("fill", 'none').style("stroke", '#000000')
                 .style("stroke-width", 2)
-                .style("opacity", 0.05);
+                .style("opacity", 0.03);
 
         // Add mouseover effects for non-annotations
         nonAnnotationGroups.append("title")
@@ -1935,7 +1939,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         nonAnnotationGroups.on("mouseover", function () {
             d3.select(this).select(".non-annotation-background")
                     .transition().duration(300)
-                    .style("opacity", 0.2);
+                    .style("opacity", 0.03)
+                    .style("cursor", "pointer");
             d3.select(this).select(".non-annotation")
                     .transition().duration(300)
                     .style("opacity", 1)
@@ -1944,15 +1949,183 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         nonAnnotationGroups.on("mouseout", function () {
             d3.select(this).select(".non-annotation-background")
                     .transition().duration(300)
-                    .style("opacity", 0);
+                    .style("opacity", 0)
+                    .style("cursor", "default");
             d3.select(this).select(".non-annotation")
                     .transition().duration(300)
                     .style("opacity", 0.05)
                     .style("cursor", "default");
         });
+
+        nonAnnotationGroups.on("click", function (d) {
+            me.openAnnotationDialog(true, d).show();
+        });
     },
 
-    formatDate: function(d, includeTime) {
+    openAnnotationDialog: function (addNew, data) {
+        const date = this.formatDate(new Date(data['Date']), false);
+        const title = addNew ? 'Add Annotation' : 'Edit Annotation';
+        const me = this;
+
+        return Ext4.create('Ext.window.Window', {
+            title: title,
+            width: 400,
+            height: 200,
+            modal: true,
+            items: [{
+                xtype: 'labkey-combo',
+                fieldLabel: 'Annotation Type',
+                name: 'annotationType',
+                labelWidth: 150,
+                width: 350,
+                margin: '10 0 10 0',
+                store: Ext4.create('LABKEY.ext4.data.Store', {
+                    schemaName: 'targetedms',
+                    queryName: 'QCAnnotationType',
+                    columns: 'Id,Name',
+                    autoLoad: true
+                }),
+                displayField: 'Name',
+                valueField: 'Id',
+                editable: false,
+                allowBlank: false,
+                value: addNew ? null : data['qcAnnotationTypeId'],
+                
+            }, {
+                xtype: 'textarea',
+                labelWidth: 150,
+                width: 350,
+                fieldLabel: 'Comment',
+                height: 40,
+                name: 'comment',
+                value: addNew ? '' : data['Description']
+            }, {
+                xtype: 'datefield',
+                labelWidth: 150,
+                width: 350,
+                fieldLabel: 'Date',
+                name: 'annotationDate',
+                format: 'Y-m-d',
+                allowBlank: false,
+                value: date
+            }],
+
+            buttons: [{
+                text: 'Save',
+                hidden: !addNew,
+                handler: function () {
+                    const win = this.up('window');
+                    const form = win.down('form') || win;
+                    const annotationType = form.down('[name=annotationType]').getValue();
+                    const comment = form.down('[name=comment]').getValue();
+                    const annotationDate = form.down('[name=annotationDate]').getValue();
+
+                    if (!annotationType || !annotationDate) {
+                        Ext4.Msg.alert('Error', 'Please fill in all required fields.');
+                        return;
+                    }
+
+                    me.saveAnnotation(annotationType, comment, annotationDate, win);
+                }
+            }, {
+                text: 'Update',
+                hidden: addNew,
+                handler: function () {
+                    const win = this.up('window');
+                    const form = win.down('form') || win;
+                    const annotationType = form.down('[name=annotationType]').getValue();
+                    const comment = form.down('[name=comment]').getValue();
+                    const annotationDate = form.down('[name=annotationDate]').getValue();
+
+                    if (!annotationType || !annotationDate) {
+                        Ext4.Msg.alert('Error', 'Please fill in all required fields.');
+                        return;
+                    }
+
+                    me.updateAnnotation(data['qcAnnotationId'], annotationType, comment, annotationDate, win);
+                }
+            }, {
+                text: 'Delete',
+                hidden: addNew,
+                handler: function () {
+                    const win = this.up('window');
+                    Ext4.Msg.confirm('Confirm Delete', 'Are you sure you want to delete this annotation?', function (btn) {
+                        if (btn === 'yes') {
+                            me.deleteAnnotation(data['qcAnnotationId'], win);
+                        }
+                    });
+                }
+            }, {
+                text: 'Cancel',
+                handler: function () {
+                    this.up('window').close();
+                }
+            }]
+
+        });
+    },
+
+    saveAnnotation: function (annotationType, comment, annotationDate, win) {
+        LABKEY.Query.insertRows({
+            schemaName: 'targetedms',
+            queryName: 'QCAnnotation',
+            rows: [{
+                QCAnnotationTypeId: annotationType,
+                Description: comment,
+                Date: annotationDate
+            }],
+            success: function () {
+                Ext4.Msg.alert('Success', 'Annotation saved successfully.');
+                win.close();
+                this.displayTrendPlot();
+            },
+            failure: function (response) {
+                Ext4.Msg.alert('Error', 'Failed to save annotation: ' + response.exception);
+            },
+            scope: this
+        });
+    },
+
+    updateAnnotation: function (annotationId, annotationType, comment, annotationDate, win) {
+        LABKEY.Query.updateRows({
+            schemaName: 'targetedms',
+            queryName: 'QCAnnotation',
+            rows: [{
+                Id: annotationId,
+                QCAnnotationTypeId: annotationType,
+                Description: comment,
+                Date: annotationDate
+            }],
+            success: function () {
+                Ext4.Msg.alert('Success', 'Annotation updated successfully.');
+                win.close();
+                this.displayTrendPlot();
+            },
+            failure: function (response) {
+                Ext4.Msg.alert('Error', 'Failed to update annotation: ' + response.exception);
+            },
+            scope: this
+        });
+    },
+
+    deleteAnnotation: function (annotationId, win) {
+        LABKEY.Query.deleteRows({
+            schemaName: 'targetedms',
+            queryName: 'QCAnnotation',
+            rows: [{ Id: annotationId }],
+            success: function () {
+                Ext4.Msg.alert('Success', 'Annotation deleted successfully.');
+                win.close();
+                this.displayTrendPlot();
+            },
+            failure: function (response) {
+                Ext4.Msg.alert('Error', 'Failed to delete annotation: ' + response.exception);
+            },
+            scope: this
+        });
+    },
+
+    formatDate: function (d, includeTime) {
         if (d instanceof Date) {
             if (includeTime) {
                 return Ext4.util.Format.date(d, 'Y-m-d H:i:s');
