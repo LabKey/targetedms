@@ -255,6 +255,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.filterQCPlotsToInitialData(PRECURSORS.length, true);
         checkForCorrectAnnotations("Individual Plots", qcPlotsWebPart);
+        verifyAddAnnotationsFromQCPlots();
     }
 
     @Test
@@ -1056,4 +1057,60 @@ public class TargetedMSQCTest extends TargetedMSTest
             assertEquals("Wrong annotations in " + plotType + ":" + plot.getPrecursor(), expectedAnnotations, plotAnnotations);
         }
     }
+
+    private void verifyAddAnnotationsFromQCPlots()
+    {
+        log("Testing add annotation from QC plots");
+        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        qcPlotsWebPart.filterQCPlotsToInitialData(PRECURSORS.length, true);
+
+        // Hover over the add annotation button and verify tooltip
+        Locator addAnnotationButton = Locator.tagWithClass("path", "non-annotation");
+        mouseOver(addAnnotationButton);
+        waitForElement(Locator.tagWithText("title", "Add annotation"));
+
+        // Click the add annotation button
+        click(addAnnotationButton);
+
+        // Wait for the annotation window to appear
+        _ext4Helper.waitForMaskToDisappear();
+        waitForElement(Locator.xpath("//div[contains(@class, 'x4-window')]//span[text()='Add Annotation']"));
+
+        // Select annotation type
+        _ext4Helper.selectComboBoxItem(Locator.xpath("//input[@name='annotationType']"), instrumentChange.getType());
+
+        // Enter comment
+        String testComment = "Test annotation from QC plot";
+        setFormElement(Locator.xpath("//textarea[@name='description']"), testComment);
+
+        // Click save button
+        clickButton("Save", 0);
+        _ext4Helper.waitForMaskToDisappear();
+
+        // Wait for the plots to refresh
+        qcPlotsWebPart.waitForPlots(PRECURSORS.length);
+
+        // Verify the annotation appears in the QC plots
+        QCHelper.Annotation testAnnotation = new QCHelper.Annotation(instrumentChange.getType(), testComment);
+        List<QCPlot> qcPlots = qcPlotsWebPart.getPlots();
+        boolean annotationFound = false;
+        for (QCPlot plot : qcPlots)
+        {
+            List<QCHelper.Annotation> annotations = plot.getAnnotations();
+            for (QCHelper.Annotation annotation : annotations)
+            {
+                if (annotation.getType().equals(testAnnotation.getType()) &&
+                        annotation.getDescription().equals(testAnnotation.getDescription()))
+                {
+                    annotationFound = true;
+                    break;
+                }
+            }
+            if (annotationFound)
+                break;
+        }
+        assertTrue("Newly added annotation should appear in QC plots", annotationFound);
+    }
+
 }
