@@ -1067,7 +1067,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         // Hover over the add annotation button and verify tooltip
         Locator addAnnotationButton = Locator.tagWithClass("path", "non-annotation");
         mouseOver(addAnnotationButton);
-        waitForElement(Locator.tagWithText("title", "Add annotation"));
+        waitForElement(Locator.tagWithText("title", "Add Annotation"));
 
         // Click the add annotation button
         click(addAnnotationButton);
