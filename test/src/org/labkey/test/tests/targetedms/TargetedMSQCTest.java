@@ -1063,7 +1063,6 @@ public class TargetedMSQCTest extends TargetedMSTest
         log("Testing add annotation from QC plots");
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        qcPlotsWebPart.filterQCPlotsToInitialData(PRECURSORS.length, true);
 
         // Hover over the add annotation button and verify tooltip
         Locator addAnnotationButton = Locator.tagWithClass("path", "non-annotation");
