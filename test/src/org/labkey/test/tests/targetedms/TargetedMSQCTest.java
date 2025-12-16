@@ -1066,25 +1066,24 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         // Hover over the add annotation button and verify tooltip
         Locator addAnnotationButton = Locator.tagWithClass("path", "non-annotation");
+        scrollIntoView(addAnnotationButton);
         mouseOver(addAnnotationButton);
-        waitForElement(Locator.tagWithText("title", "Add Annotation"));
 
         // Click the add annotation button
         click(addAnnotationButton);
-
-        // Wait for the annotation window to appear
-        _ext4Helper.waitForMaskToDisappear();
         waitForElement(Locator.xpath("//div[contains(@class, 'x4-window')]//span[text()='Add Annotation']"));
 
-        // Select annotation type
-        _ext4Helper.selectComboBoxItem(Locator.xpath("//input[@name='annotationType']"), instrumentChange.getType());
+        // Select an annotation type
+        _ext4Helper.selectComboBoxItem(Ext4Helper.Locators.formItemWithInputNamed("annotationType"), Ext4Helper.TextMatchTechnique.CONTAINS, instrumentChange.getType());
 
         // Enter comment
         String testComment = "Test annotation from QC plot";
-        setFormElement(Locator.xpath("//textarea[@name='description']"), testComment);
+        setFormElement(Locator.name("comment"), testComment);
 
-        // Click save button
+        // Click the save button
         clickButton("Save", 0);
+        waitForText("Annotation saved successfully");
+        clickButton("OK", 0);
         _ext4Helper.waitForMaskToDisappear();
 
         // Wait for the plots to refresh
