@@ -1047,8 +1047,6 @@ public class TargetedMSQCTest extends TargetedMSTest
     {
         List<QCPlot> qcPlots = qcPlotsWebPart.getPlots();
         Bag<QCHelper.Annotation> expectedAnnotations = new HashBag<>();
-        // instrumentChange is added twice, once using traditional insert and then via qc plots
-        expectedAnnotations.add(instrumentChange);
         expectedAnnotations.add(instrumentChange);
         expectedAnnotations.add(reagentChange);
         expectedAnnotations.add(technicianChange);
@@ -1113,6 +1111,36 @@ public class TargetedMSQCTest extends TargetedMSTest
                 break;
         }
         assertTrue("Newly added annotation should appear in QC plots", annotationFound);
+
+        Locator deleteAnnotation = Locator.tagWithClass("path", "annotation");
+        mouseOver(deleteAnnotation);
+        click(deleteAnnotation);
+        waitForElement(Locator.xpath("//div[contains(@class, 'x4-window')]//span[text()='Edit Annotation']"));
+        clickButton("Delete", 0);
+        waitForText("Are you sure you want to delete this annotation?");
+        clickButton("Yes", 0);
+        waitForText("Annotation deleted successfully");
+        clickButton("OK", 0);
+        _ext4Helper.waitForMaskToDisappear();
+
+        refresh();
+        qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        annotationFound = false;
+        qcPlots = qcPlotsWebPart.getPlots();
+        for (QCPlot plot : qcPlots)
+        {
+            List<QCHelper.Annotation> annotations = plot.getAnnotations();
+            for (QCHelper.Annotation annotation : annotations)
+            {
+                if (annotation.getType().equals(testAnnotation.getType()) &&
+                        annotation.getDescription().equals(testAnnotation.getDescription()))
+                {
+                    annotationFound = true;
+                    break;
+                }
+            }
+        }
+        assertFalse("Newly deleted annotation should not appear in QC plots", annotationFound);
     }
 
 }
