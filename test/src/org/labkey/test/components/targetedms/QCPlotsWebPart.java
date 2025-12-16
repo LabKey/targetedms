@@ -744,7 +744,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     public ConfigureMetricsUIPage clickConfigureQCMetrics()
     {
         clickMenuItem("Configure QC Metrics");
-        getWrapper().waitForElement(Locator.tagWithText("button", ConfigureMetricsUIPage.ADD_NEW_CUSTOM_METRIC));
         return new ConfigureMetricsUIPage(getDriver());
     }
 
