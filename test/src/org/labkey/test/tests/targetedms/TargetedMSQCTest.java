@@ -1088,6 +1088,8 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         // Wait for the plots to refresh
         qcPlotsWebPart.waitForPlots(PRECURSORS.length);
+        refresh();
+        qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
 
         // Verify the annotation appears in the QC plots
         QCHelper.Annotation testAnnotation = new QCHelper.Annotation(instrumentChange.getType(), testComment);
