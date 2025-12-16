@@ -1047,6 +1047,8 @@ public class TargetedMSQCTest extends TargetedMSTest
     {
         List<QCPlot> qcPlots = qcPlotsWebPart.getPlots();
         Bag<QCHelper.Annotation> expectedAnnotations = new HashBag<>();
+        // instrumentChange is added twice, once using traditional insert and then via qc plots
+        expectedAnnotations.add(instrumentChange);
         expectedAnnotations.add(instrumentChange);
         expectedAnnotations.add(reagentChange);
         expectedAnnotations.add(technicianChange);
