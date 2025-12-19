@@ -1900,24 +1900,25 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         annotations.on("mouseover", function(){ return mouseOn(this, 3); });
         annotations.on("mouseout", function(){ return mouseOff(this); });
 
-        annotations.on("click", function (d) {
-            me.openAnnotationDialog(false, d).show();
-        });
+        if (this.canUserEdit()) {
+            annotations.on("click", function (d) {
+                me.openAnnotationDialog(false, d).show();
+            });
+        }
 
-        // Add non-annotation markers with '+' shape
+        // Add add-annotation markers with '+' shape
         const addShape = function (size) {
             var s = size / 2;
             return 'M' + (-s) + ',0 L' + s + ',0 M0,' + (-s) + ' L0,' + s;
         };
 
-
-        let nonAnnotationGroups = this.getSvgElForPlot(plot).selectAll("g.non-annotation-group").data(nonAnnotationsData)
-                .enter().append("g").attr("class", "non-annotation-group")
+        let nonAnnotationGroups = this.getSvgElForPlot(plot).selectAll("g.add-annotation-group").data(nonAnnotationsData)
+                .enter().append("g").attr("class", "add-annotation-group")
                 .attr('transform', transformAcc);
 
         // Add background-rectangle (initially hidden)
         nonAnnotationGroups.append("rect")
-                .attr("class", "non-annotation-background")
+                .attr("class", "add-annotation-background")
                 .attr("x", -10).attr("y", -10)
                 .attr("width", 20).attr("height", 20)
                 .attr("rx", 2).attr("ry", 2)
@@ -1926,40 +1927,47 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         // Add the plus shape
         nonAnnotationGroups.append("path")
-                .attr("class", "non-annotation")
+                .attr("class", "add-annotation")
                 .attr("d", addShape(15))
                 .style("fill", 'none').style("stroke", '#000000')
                 .style("stroke-width", 2)
-                .style("opacity", 0.03);
+                .style("opacity", 0);
 
-        // Add mouseover effects for non-annotations
+        // Add mouseover effects for add-annotations
         nonAnnotationGroups.append("title")
                 .text("Add annotation");
 
         nonAnnotationGroups.on("mouseover", function () {
-            d3.select(this).select(".non-annotation-background")
+            d3.select(this).select(".add-annotation-background")
                     .transition().duration(300)
-                    .style("opacity", 0.03)
+                    .style("opacity", 0)
                     .style("cursor", "pointer");
-            d3.select(this).select(".non-annotation")
+            d3.select(this).select(".add-annotation")
                     .transition().duration(300)
                     .style("opacity", 1)
                     .style("cursor", "pointer");
         });
         nonAnnotationGroups.on("mouseout", function () {
-            d3.select(this).select(".non-annotation-background")
+            d3.select(this).select(".add-annotation-background")
                     .transition().duration(300)
                     .style("opacity", 0)
                     .style("cursor", "default");
-            d3.select(this).select(".non-annotation")
+            d3.select(this).select(".add-annotation")
                     .transition().duration(300)
-                    .style("opacity", 0.05)
+                    .style("opacity", 0)
                     .style("cursor", "default");
         });
 
         nonAnnotationGroups.on("click", function (d) {
-            me.openAnnotationDialog(true, d).show();
+            if (me.canUserEdit()) {
+                me.openAnnotationDialog(true, d).show();
+            }
         });
+
+        // Hide add-annotation markers if the user cannot modify annotations
+        if (!this.canUserEdit()) {
+            nonAnnotationGroups.style("display", "none");
+        }
     },
 
     openAnnotationDialog: function (addNew, data) {
@@ -1978,7 +1986,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 name: 'annotationType',
                 labelWidth: 150,
                 width: 350,
-                margin: '10 0 10 0',
+                margin: '10 10 10 10',
                 store: Ext4.create('LABKEY.ext4.data.Store', {
                     schemaName: 'targetedms',
                     queryName: 'QCAnnotationType',
@@ -1997,12 +2005,15 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 width: 350,
                 fieldLabel: 'Comment',
                 height: 40,
+                margin: '10 10 10 10',
                 name: 'comment',
-                value: addNew ? '' : data['Description']
+                allowBlank: false,
+                value: addNew ? null : data['Description']
             }, {
                 xtype: 'datefield',
                 labelWidth: 150,
                 width: 350,
+                margin: '10 10 10 10',
                 fieldLabel: 'Date',
                 name: 'annotationDate',
                 format: 'Y-m-d',
@@ -2013,6 +2024,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             buttons: [{
                 text: 'Save',
                 hidden: !addNew,
+                disabled: !me.canUserEdit(),
                 handler: function () {
                     const win = this.up('window');
                     const form = win.down('form') || win;
@@ -2030,6 +2042,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }, {
                 text: 'Update',
                 hidden: addNew,
+                disabled: !me.canUserEdit(),
                 handler: function () {
                     const win = this.up('window');
                     const form = win.down('form') || win;
@@ -2047,6 +2060,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }, {
                 text: 'Delete',
                 hidden: addNew,
+                disabled: !me.canUserEdit(),
                 handler: function () {
                     const win = this.up('window');
                     Ext4.Msg.confirm('Confirm Delete', 'Are you sure you want to delete this annotation?', function (btn) {
@@ -2075,12 +2089,19 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 Date: annotationDate
             }],
             success: function () {
-                Ext4.Msg.alert('Success', 'Annotation saved successfully.');
                 win.close();
                 this.displayTrendPlot();
             },
             failure: function (response) {
-                Ext4.Msg.alert('Error', 'Failed to save annotation: ' + response.exception);
+
+                Ext4.Msg.show({
+                    title: 'Error',
+                    msg: 'Failed to save annotation: ' + response.exception,
+                    buttons: Ext4.Msg.OK,
+                    icon: Ext4.MessageBox.ERROR,
+                    minWidth: 300,
+                    maxWidth: 600
+                });
             },
             scope: this
         });
@@ -2097,12 +2118,18 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 Date: annotationDate
             }],
             success: function () {
-                Ext4.Msg.alert('Success', 'Annotation updated successfully.');
                 win.close();
                 this.displayTrendPlot();
             },
             failure: function (response) {
-                Ext4.Msg.alert('Error', 'Failed to update annotation: ' + response.exception);
+                Ext4.Msg.show({
+                    title: 'Error',
+                    msg: 'Failed to update annotation: ' + response.exception,
+                    buttons: Ext4.Msg.OK,
+                    icon: Ext4.MessageBox.ERROR,
+                    minWidth: 300,
+                    maxWidth: 600
+                });
             },
             scope: this
         });
@@ -2114,12 +2141,18 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             queryName: 'QCAnnotation',
             rows: [{ Id: annotationId }],
             success: function () {
-                Ext4.Msg.alert('Success', 'Annotation deleted successfully.');
                 win.close();
                 this.displayTrendPlot();
             },
             failure: function (response) {
-                Ext4.Msg.alert('Error', 'Failed to delete annotation: ' + response.exception);
+                Ext4.Msg.show({
+                    title: 'Error',
+                    msg: 'Failed to delete annotation: ' + response.exception,
+                    buttons: Ext4.Msg.OK,
+                    icon: Ext4.MessageBox.ERROR,
+                    minWidth: 300,
+                    maxWidth: 600
+                });
             },
             scope: this
         });

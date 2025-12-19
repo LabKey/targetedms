@@ -26,6 +26,7 @@ import org.labkey.test.Locator;
 import org.labkey.test.SortDirection;
 import org.labkey.test.TestFileUtils;
 import org.labkey.test.components.ext4.RadioButton;
+import org.labkey.test.components.ext4.Window;
 import org.labkey.test.components.html.SiteNavBar;
 import org.labkey.test.components.targetedms.GuideSet;
 import org.labkey.test.components.targetedms.QCAnnotationTypeWebPart;
@@ -1065,13 +1066,13 @@ public class TargetedMSQCTest extends TargetedMSTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
 
         // Hover over the add annotation button and verify tooltip
-        Locator addAnnotationButton = Locator.tagWithClass("path", "non-annotation");
+        Locator addAnnotationButton = Locator.tagWithClass("path", "add-annotation");
         scrollIntoView(addAnnotationButton);
         mouseOver(addAnnotationButton);
 
         // Click the add annotation button
         click(addAnnotationButton);
-        waitForElement(Locator.xpath("//div[contains(@class, 'x4-window')]//span[text()='Add Annotation']"));
+        Window<?> addAnnotationDialog = new Window.WindowFinder(getDriver()).withTitle("Add Annotation").waitFor();
 
         // Select an annotation type
         _ext4Helper.selectComboBoxItem(Ext4Helper.Locators.formItemWithInputNamed("annotationType"), Ext4Helper.TextMatchTechnique.CONTAINS, instrumentChange.getType());
@@ -1081,9 +1082,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         setFormElement(Locator.name("comment"), testComment);
 
         // Click the save button
-        clickButton("Save", 0);
-        waitForText("Annotation saved successfully");
-        clickButton("OK", 0);
+        addAnnotationDialog.clickButton("Save", 0);
         _ext4Helper.waitForMaskToDisappear();
 
         // Wait for the plots to refresh
@@ -1115,12 +1114,10 @@ public class TargetedMSQCTest extends TargetedMSTest
         Locator deleteAnnotation = Locator.tagWithClass("path", "annotation");
         mouseOver(deleteAnnotation);
         click(deleteAnnotation);
-        waitForElement(Locator.xpath("//div[contains(@class, 'x4-window')]//span[text()='Edit Annotation']"));
-        clickButton("Delete", 0);
+        addAnnotationDialog = new Window.WindowFinder(getDriver()).withTitle("Edit Annotation").waitFor();
+        addAnnotationDialog.clickButton("Delete", 0);
         waitForText("Are you sure you want to delete this annotation?");
         clickButton("Yes", 0);
-        waitForText("Annotation deleted successfully");
-        clickButton("OK", 0);
         _ext4Helper.waitForMaskToDisappear();
 
         refresh();
