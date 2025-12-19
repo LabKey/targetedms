@@ -2029,7 +2029,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     const win = this.up('window');
                     const form = win.down('form') || win;
                     const annotationType = form.down('[name=annotationType]').getValue();
-                    const comment = form.down('[name=comment]').getValue();
+                    const description = form.down('[name=description]').getValue();
                     const annotationDate = form.down('[name=annotationDate]').getValue();
 
                     if (!annotationType || !annotationDate) {
@@ -2037,7 +2037,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         return;
                     }
 
-                    me.saveAnnotation(annotationType, comment, annotationDate, win);
+                    me.saveAnnotation(annotationType, description, annotationDate, win);
                 }
             }, {
                 text: 'Update',
@@ -2047,7 +2047,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     const win = this.up('window');
                     const form = win.down('form') || win;
                     const annotationType = form.down('[name=annotationType]').getValue();
-                    const comment = form.down('[name=comment]').getValue();
+                    const description = form.down('[name=description]').getValue();
                     const annotationDate = form.down('[name=annotationDate]').getValue();
 
                     if (!annotationType || !annotationDate) {
@@ -2055,7 +2055,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         return;
                     }
 
-                    me.updateAnnotation(data['qcAnnotationId'], annotationType, comment, annotationDate, win);
+                    me.updateAnnotation(data['qcAnnotationId'], annotationType, description, annotationDate, win);
                 }
             }, {
                 text: 'Delete',
@@ -2079,13 +2079,13 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         });
     },
 
-    saveAnnotation: function (annotationType, comment, annotationDate, win) {
+    saveAnnotation: function (annotationType, description, annotationDate, win) {
         LABKEY.Query.insertRows({
             schemaName: 'targetedms',
             queryName: 'QCAnnotation',
             rows: [{
                 QCAnnotationTypeId: annotationType,
-                Description: comment,
+                Description: description,
                 Date: annotationDate
             }],
             success: function () {
@@ -2107,14 +2107,14 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         });
     },
 
-    updateAnnotation: function (annotationId, annotationType, comment, annotationDate, win) {
+    updateAnnotation: function (annotationId, annotationType, description, annotationDate, win) {
         LABKEY.Query.updateRows({
             schemaName: 'targetedms',
             queryName: 'QCAnnotation',
             rows: [{
                 Id: annotationId,
                 QCAnnotationTypeId: annotationType,
-                Description: comment,
+                Description: description,
                 Date: annotationDate
             }],
             success: function () {
