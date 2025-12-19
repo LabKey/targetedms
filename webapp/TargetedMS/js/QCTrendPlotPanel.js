@@ -2003,10 +2003,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 xtype: 'textarea',
                 labelWidth: 150,
                 width: 350,
-                fieldLabel: 'Comment',
+                fieldLabel: 'Description',
                 height: 40,
                 margin: '10 10 10 10',
-                name: 'comment',
+                name: 'description',
                 allowBlank: false,
                 value: addNew ? null : data['Description']
             }, {

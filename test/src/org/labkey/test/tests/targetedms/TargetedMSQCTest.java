@@ -1079,7 +1079,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         // Enter comment
         String testComment = "Test annotation from QC plot";
-        setFormElement(Locator.name("comment"), testComment);
+        setFormElement(Locator.name("description"), testComment);
 
         // Click the save button
         addAnnotationDialog.clickButton("Save", 0);
