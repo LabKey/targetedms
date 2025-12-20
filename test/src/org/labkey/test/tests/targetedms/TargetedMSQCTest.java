@@ -1082,13 +1082,13 @@ public class TargetedMSQCTest extends TargetedMSTest
         setFormElement(Locator.name("description"), testComment);
 
         // Click the save button
-        addAnnotationDialog.clickButton("Save", 0);
+        addAnnotationDialog.clickButton("Save", true);
         _ext4Helper.waitForMaskToDisappear();
 
         // Wait for the plots to refresh
-        qcPlotsWebPart.waitForPlots(PRECURSORS.length);
         refresh();
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        qcPlotsWebPart.waitForReady();
 
         // Verify the annotation appears in the QC plots
         QCHelper.Annotation testAnnotation = new QCHelper.Annotation(instrumentChange.getType(), testComment);
