@@ -1169,7 +1169,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (!this.createGuideSetToggleButton) {
             this.createGuideSetToggleButton = Ext4.create('Ext.button.Button', {
                 text: 'Create Guide Set',
-                tooltip: 'Enable/disable guide set creation mode. Supported for separate plots, not grouped by date, when ' + LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries + ' or fewer samples are shown',
+                tooltip: 'Enable/disable guide set creation mode. Supported for plots not grouped by date, when ' + LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries + ' or fewer samples are shown',
                 disabled: !this.canCreateGuideSetFromPlot(),
                 enableToggle: true,
                 handler: function(btn) {
@@ -1183,11 +1183,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     canCreateGuideSetFromPlot : function() {
-        return !(this.groupedX || this.singlePlot || this.isMultiSeries() || this.showExpRunRange || !this.showDataPoints);
+        return !(this.groupedX || this.isMultiSeries() || this.showExpRunRange || !this.showDataPoints);
     },
 
     setBrushingEnabled : function(enabled) {
-        // we don't currently allow creation of guide sets in single plot mode, grouped x-axis mode, multi series mode or when showingExpRunRange
+        // we don't currently allow creation of guide sets in grouped x-axis mode, multi series mode or when showingExpRunRange
         this.getGuideSetCreateButton().setDisabled(!this.canCreateGuideSetFromPlot());
 
         this.enableBrushing = enabled;
@@ -1561,7 +1561,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     allowGuideSetBrushing : function() {
-        return this.canUserEdit() && !this.groupedX;
+        return this.canUserEdit() && !this.groupedX && !this.isMultiSeries();
     },
 
     createGuideSetSvgButton : function(plot, text, xLeftPos, width) {
