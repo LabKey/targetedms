@@ -1087,6 +1087,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         // Wait for the plots to refresh
         refresh();
+        qcDashboard = new PanoramaDashboard(this);
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.waitForReady();
 
