@@ -11,7 +11,6 @@ import org.labkey.test.components.targetedms.QCSummaryWebPart;
 import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
 import org.labkey.test.tests.panoramapremium.TargetedMSPremiumTest;
-import org.labkey.test.util.DataRegion;
 import org.labkey.test.util.DataRegionTable;
 import org.openqa.selenium.WebElement;
 
@@ -114,6 +113,8 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
     @Test
     public void testFixedDeviationFromMeanOption()
     {
+        goToProjectHome();
+
         QCPlotsWebPart.MetricType metricType = QCPlotsWebPart.MetricType.TRANSITION_AREA;
         ConfigureMetricsUIPage configureQCMetrics = goToDashboard().getQcSummaryWebPart().clickConfigureQCMetrics();
 
@@ -153,6 +154,8 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
     @Test
     public void testFixedValueCutOffOption()
     {
+        goToProjectHome();
+
         QCPlotsWebPart.MetricType metric = QCPlotsWebPart.MetricType.TRANSITION_MASS_ERROR;
         ConfigureMetricsUIPage configureQCMetrics = goToDashboard().getQcSummaryWebPart().clickConfigureQCMetrics();
 
@@ -185,6 +188,8 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
     @Test
     public void testPlotOnlyOption()
     {
+        goToProjectHome();
+
         QCPlotsWebPart.MetricType metric = QCPlotsWebPart.MetricType.ISOTOPE_DOTP;
         ConfigureMetricsUIPage configureQCMetrics = goToDashboard().getQcSummaryWebPart().clickConfigureQCMetrics();
         configureQCMetrics.setShowMetricNoOutlier(metric);
