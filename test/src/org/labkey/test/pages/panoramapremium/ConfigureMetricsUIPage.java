@@ -2,7 +2,6 @@ package org.labkey.test.pages.panoramapremium;
 
 import org.jetbrains.annotations.Nullable;
 import org.junit.Assert;
-import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.components.ext4.Window;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
@@ -21,6 +20,12 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
     public ConfigureMetricsUIPage(WebDriver driver)
     {
         super(driver);
+    }
+
+    @Override
+    protected void waitForPage()
+    {
+        waitForElement(Locator.tagWithText("button", ConfigureMetricsUIPage.ADD_NEW_CUSTOM_METRIC), 15_000);
     }
 
     public ConfigureMetricsUIPage setLeveyJennings(String metric, @Nullable String lowerBound, @Nullable String upperBound)
