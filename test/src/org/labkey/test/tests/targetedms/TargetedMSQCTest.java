@@ -26,6 +26,7 @@ import org.labkey.test.Locator;
 import org.labkey.test.SortDirection;
 import org.labkey.test.TestFileUtils;
 import org.labkey.test.components.ext4.RadioButton;
+import org.labkey.test.components.ext4.Window;
 import org.labkey.test.components.html.SiteNavBar;
 import org.labkey.test.components.targetedms.GuideSet;
 import org.labkey.test.components.targetedms.QCAnnotationTypeWebPart;
@@ -255,6 +256,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.filterQCPlotsToInitialData(PRECURSORS.length, true);
         checkForCorrectAnnotations("Individual Plots", qcPlotsWebPart);
+        verifyAddAnnotationsFromQCPlots();
     }
 
     @Test
@@ -1056,4 +1058,87 @@ public class TargetedMSQCTest extends TargetedMSTest
             assertEquals("Wrong annotations in " + plotType + ":" + plot.getPrecursor(), expectedAnnotations, plotAnnotations);
         }
     }
+
+    private void verifyAddAnnotationsFromQCPlots()
+    {
+        log("Testing add annotation from QC plots");
+        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+
+        // Hover over the add annotation button and verify tooltip
+        Locator addAnnotationButton = Locator.tagWithClass("path", "add-annotation");
+        scrollIntoView(addAnnotationButton);
+        mouseOver(addAnnotationButton);
+
+        // Click the add annotation button
+        click(addAnnotationButton);
+        Window<?> addAnnotationDialog = new Window.WindowFinder(getDriver()).withTitle("Add Annotation").waitFor();
+
+        // Select an annotation type
+        _ext4Helper.selectComboBoxItem(Ext4Helper.Locators.formItemWithInputNamed("annotationType"), Ext4Helper.TextMatchTechnique.CONTAINS, instrumentChange.getType());
+
+        // Enter comment
+        String testComment = "Test annotation from QC plot";
+        setFormElement(Locator.name("description"), testComment);
+
+        // Click the save button
+        addAnnotationDialog.clickButton("Save", true);
+        _ext4Helper.waitForMaskToDisappear();
+
+        // Wait for the plots to refresh
+        refresh();
+        qcDashboard = new PanoramaDashboard(this);
+        qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        qcPlotsWebPart.waitForReady();
+
+        // Verify the annotation appears in the QC plots
+        QCHelper.Annotation testAnnotation = new QCHelper.Annotation(instrumentChange.getType(), testComment);
+        List<QCPlot> qcPlots = qcPlotsWebPart.getPlots();
+        boolean annotationFound = false;
+        for (QCPlot plot : qcPlots)
+        {
+            List<QCHelper.Annotation> annotations = plot.getAnnotations();
+            for (QCHelper.Annotation annotation : annotations)
+            {
+                if (annotation.getType().equals(testAnnotation.getType()) &&
+                        annotation.getDescription().equals(testAnnotation.getDescription()))
+                {
+                    annotationFound = true;
+                    break;
+                }
+            }
+            if (annotationFound)
+                break;
+        }
+        assertTrue("Newly added annotation should appear in QC plots", annotationFound);
+
+        Locator deleteAnnotation = Locator.tagWithClass("path", "annotation");
+        mouseOver(deleteAnnotation);
+        click(deleteAnnotation);
+        addAnnotationDialog = new Window.WindowFinder(getDriver()).withTitle("Edit Annotation").waitFor();
+        addAnnotationDialog.clickButton("Delete", 0);
+        waitForText("Are you sure you want to delete this annotation?");
+        clickButton("Yes", 0);
+        _ext4Helper.waitForMaskToDisappear();
+
+        refresh();
+        qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        annotationFound = false;
+        qcPlots = qcPlotsWebPart.getPlots();
+        for (QCPlot plot : qcPlots)
+        {
+            List<QCHelper.Annotation> annotations = plot.getAnnotations();
+            for (QCHelper.Annotation annotation : annotations)
+            {
+                if (annotation.getType().equals(testAnnotation.getType()) &&
+                        annotation.getDescription().equals(testAnnotation.getDescription()))
+                {
+                    annotationFound = true;
+                    break;
+                }
+            }
+        }
+        assertFalse("Newly deleted annotation should not appear in QC plots", annotationFound);
+    }
+
 }
