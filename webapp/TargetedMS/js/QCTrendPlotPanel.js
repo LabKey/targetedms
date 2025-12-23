@@ -1183,7 +1183,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     canCreateGuideSetFromPlot : function() {
-        return !(this.groupedX || this.isMultiSeries() || this.showExpRunRange || !this.showDataPoints);
+        return !(this.groupedX || this.showExpRunRange || !this.showDataPoints);
     },
 
     setBrushingEnabled : function(enabled) {
@@ -1561,7 +1561,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     allowGuideSetBrushing : function() {
-        return this.canUserEdit() && !this.groupedX && !this.isMultiSeries();
+        return this.canUserEdit() && !this.groupedX ;
     },
 
     createGuideSetSvgButton : function(plot, text, xLeftPos, width) {
