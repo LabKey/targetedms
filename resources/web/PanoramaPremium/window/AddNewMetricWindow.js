@@ -285,36 +285,82 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
         this.queryError.setVisible(!isValid);
     },
 
+    checkMetricNameExists: function (metricName, callback) {
+        let filterArray = [LABKEY.Filter.create('Name', metricName, LABKEY.Filter.Types.EQUAL)];
+
+        // If updating, exclude the current metric from the check
+        if (this.operation === this.update && this.metric) {
+            filterArray.push(LABKEY.Filter.create('id', this.metric.id, LABKEY.Filter.Types.NOT_EQUAL));
+        }
+
+        LABKEY.Query.selectRows({
+            containerPath: LABKEY.container.id,
+            schemaName: this.SCHEMA_NAME,
+            queryName: 'qcmetricconfiguration',
+            filterArray: filterArray,
+            scope: this,
+            success: function (data) {
+                callback.call(this, data.rows.length > 0);
+            },
+            failure: function () {
+                callback.call(this, false);
+            }
+        });
+    },
+
     saveNewMetric: function () {
-        var isValid = this.validateValues();
+        let isValid = this.validateValues();
 
         if(isValid) {
-            var records = [];
-            var newMetric = {};
-            newMetric.Name = this.metricNameField.getValue();
-            newMetric.QueryName = this.queriesCombo.getValue();
-            newMetric.YAxisLabel = this.yAxisLabelField.getValue();
-            newMetric.PrecursorScoped = this.metricTypeCombo.getValue();
+            let metricName = this.metricNameField.getValue();
 
-            if(this.operation === this.update) {
-                newMetric.id = this.metric.id;
-            }
-
-            records.push(newMetric);
-
-            LABKEY.Query.saveRows({
-                containerPath: LABKEY.container.id,
-                commands: [{
-                    schemaName: 'targetedms',
-                    queryName: 'qcmetricconfiguration',
-                    command: this.operation,
-                    rows: records
-                }],
-                scope: this,
-                method: 'POST',
-                success: function () {
-                    window.location.reload();
+            // Check if metric name already exists
+            this.checkMetricNameExists(metricName, function (exists) {
+                if (exists) {
+                    let errorMessage = 'A metric with the name "' + Ext4.util.Format.htmlEncode(metricName) + '" already exists. Please choose a different name.';
+                    this.queryError.setText(errorMessage);
+                    this.queryError.setVisible(true);
+                    this.metricNameField.setActiveError('Metric name already exists');
+                    return;
                 }
+
+                let records = [];
+                let newMetric = {};
+                newMetric.Name = metricName;
+                newMetric.QueryName = this.queriesCombo.getValue();
+                newMetric.YAxisLabel = this.yAxisLabelField.getValue();
+                newMetric.PrecursorScoped = this.metricTypeCombo.getValue();
+
+                if (this.operation === this.update) {
+                    newMetric.id = this.metric.id;
+                }
+
+                records.push(newMetric);
+
+                LABKEY.Query.saveRows({
+                    containerPath: LABKEY.container.id,
+                    commands: [{
+                        schemaName: 'targetedms',
+                        queryName: 'qcmetricconfiguration',
+                        command: this.operation,
+                        rows: records
+                    }],
+                    scope: this,
+                    method: 'POST',
+                    success: function () {
+                        window.location.reload();
+                    },
+                    failure: function (response) {
+                        let errorMessage = 'Error saving metric';
+                        if (response && response.exception) {
+                            errorMessage = response.exception;
+                        } else if (response && response.message) {
+                            errorMessage = response.message;
+                        }
+                        this.queryError.setText(errorMessage);
+                        this.queryError.setVisible(true);
+                    }
+                });
             });
         }
 
