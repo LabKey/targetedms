@@ -214,7 +214,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
             this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.TrailingCV, false, me);
         }
 
-
+        this.setPlotBrushingDisplayStyle();
         return true;
     },
 

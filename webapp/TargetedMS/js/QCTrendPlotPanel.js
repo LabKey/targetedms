@@ -1183,11 +1183,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     canCreateGuideSetFromPlot : function() {
-        return !(this.groupedX || this.showExpRunRange || !this.showDataPoints);
+        return !(this.showExpRunRange || !this.showDataPoints);
     },
 
     setBrushingEnabled : function(enabled) {
-        // we don't currently allow creation of guide sets in grouped x-axis mode, multi series mode or when showingExpRunRange
+        // we don't currently allow creation when showingExpRunRange
         this.getGuideSetCreateButton().setDisabled(!this.canCreateGuideSetFromPlot());
 
         this.enableBrushing = enabled;
@@ -1552,7 +1552,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         this.bringSvgElementToFront(plot, "g.guideset-svg-button");
     },
 
-    plotBrushClearEvent : function(data, plot) {
+    plotBrushClearEvent : function() {
         this.plotBrushSelection = undefined;
     },
 
@@ -1561,7 +1561,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     allowGuideSetBrushing : function() {
-        return this.canUserEdit() && !this.groupedX ;
+        return this.canUserEdit();
     },
 
     createGuideSetSvgButton : function(plot, text, xLeftPos, width) {
@@ -1586,8 +1586,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     setPlotBrushingDisplayStyle : function() {
         // hide the brushing related components for all plots if not in "create guide set" mode
         var displayStyle = this.enableBrushing ? 'inline' : 'none';
-        d3.selectAll('.brush').style({'display': displayStyle});
-        d3.selectAll('.x-axis-handle').style({'display': displayStyle});
+        // Scope the selection to only plots within the current plotDivId to avoid affecting other plot types
+        d3.select('#' + this.plotDivId).selectAll('.brush').style({'display': displayStyle});
+        d3.select('#' + this.plotDivId).selectAll('.x-axis-handle').style({'display': displayStyle});
     },
 
     clearPlotBrush : function(plot) {
