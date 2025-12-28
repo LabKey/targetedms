@@ -317,7 +317,7 @@ Ext4.define('Panorama.Window.AddCustomMetricWindow', {
             // Check if metric name already exists
             this.checkMetricNameExists(metricName, function (exists) {
                 if (exists) {
-                    let errorMessage = 'A metric with the name "' + Ext4.util.Format.htmlEncode(metricName) + '" already exists. Please choose a different name.';
+                    let errorMessage = 'A metric with the name "' + metricName + '" already exists. Please choose a different name.';
                     this.queryError.setText(errorMessage);
                     this.queryError.setVisible(true);
                     this.metricNameField.setActiveError('Metric name already exists');

@@ -64,7 +64,7 @@ public class TargetedMSQCFolderImportExport extends TargetedMSPremiumTest
         String annotationType = "Test QC Annotation type";
         log("Updating the folder to be exported with data points");
         createGuideSet(getProjectName());
-        addCustomMetric(getProjectName(), customMetricName, "AQCTest_Metric");
+        addCustomMetric(getProjectName(), customMetricName, "AQCTest_Metric", false);
         addAnnotationType(getProjectName(), annotationType);
         excludePrecursors(getProjectName(), 0);
 
@@ -118,7 +118,7 @@ public class TargetedMSQCFolderImportExport extends TargetedMSPremiumTest
         Assert.assertEquals("Guide Set was not added correctly", 1, table.getDataRowCount());
     }
 
-    private void addCustomMetric(String projectName, String metricName, String queryName)
+    private void addCustomMetric(String projectName, String metricName, String queryName, boolean checkForDuplicate)
     {
         goToProjectHome(projectName);
         Map<ConfigureMetricsUIPage.CustomMetricProperties, String> metricProperties = new LinkedHashMap<>();
@@ -128,7 +128,7 @@ public class TargetedMSQCFolderImportExport extends TargetedMSPremiumTest
         metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.metricType, ConfigureMetricsUIPage.MetricType.Precursor.name());
 
         ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
-        configureUI.addNewCustomMetric(metricProperties);
+        configureUI.addNewCustomMetric(metricProperties, checkForDuplicate);
     }
 
     private void addAnnotationType(String projectName, String name)
