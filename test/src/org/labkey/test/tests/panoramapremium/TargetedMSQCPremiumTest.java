@@ -268,7 +268,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         Assertions.assertThat(pressureTraceHoverText).as("Tooltip value").contains(tooltipValue);
     }
 
-    private void addNewTimeTraceMetrics(String metricName, String timeValueOption, String traceName, boolean checkForDuplicate)
+    private void addNewTimeTraceMetrics(String metricName, String timeValueOption, String traceName, boolean duplicateNameErrorExpected)
     {
         String yAxisLabel = "psi";
         String minTimeValue = "5";
@@ -284,7 +284,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.maxTimeValue, maxTimeValue);
 
         ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
-        configureUI.addNewTraceMetric(metricProperties, checkForDuplicate);
+        configureUI.addNewTraceMetric(metricProperties, duplicateNameErrorExpected);
 
         log("Verify new trace metrics got added");
         goToConfigureMetricsUI();

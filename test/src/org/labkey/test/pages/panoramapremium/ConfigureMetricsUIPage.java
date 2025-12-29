@@ -118,20 +118,20 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         return errorMsgId.findElement(getDriver()).getText();
     }
 
-    public void addNewCustomMetric(Map<CustomMetricProperties, String> metricProperties, boolean checkForDuplicate)
+    public void addNewCustomMetric(Map<CustomMetricProperties, String> metricProperties, boolean duplicateNameErrorExpected)
     {
         click(Locator.tagWithText("button", ADD_NEW_CUSTOM_METRIC));
         waitForElement(Ext4Helper.Locators.window("Add New Metric"));
         Window<?> metricWindow = new Window.WindowFinder(getDriver()).withTitle("Add New Metric").waitFor();
-        editCustomMetricValues(metricWindow, metricProperties, checkForDuplicate);
+        editCustomMetricValues(metricWindow, metricProperties, duplicateNameErrorExpected);
     }
 
-    public void addNewTraceMetric(Map<TraceMetricProperties, String> traceProperties, boolean checkForDuplicate)
+    public void addNewTraceMetric(Map<TraceMetricProperties, String> traceProperties, boolean duplicateNameErrorExpected)
     {
         click(Locator.tagWithText("button", "Add New Trace Metric"));
         waitForElement(Ext4Helper.Locators.window("Add New Trace Metric"));
         Window<?> metricWindow = new Window.WindowFinder(getDriver()).withTitle("Add New Trace Metric").waitFor();
-        editTraceMetricValues(metricWindow, traceProperties, checkForDuplicate);
+        editTraceMetricValues(metricWindow, traceProperties, duplicateNameErrorExpected);
     }
 
     public void editMetric(String metric, Map<CustomMetricProperties, String> metricProperties)
@@ -155,7 +155,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         return new Window.WindowFinder(getDriver()).withTitle("Edit Metric").waitFor();
     }
 
-    private void editCustomMetricValues(Window<?> metricWindow, Map<CustomMetricProperties, String> metricProperties, boolean checkForDuplicate)
+    private void editCustomMetricValues(Window<?> metricWindow, Map<CustomMetricProperties, String> metricProperties, boolean duplicateNameErrorExpected)
     {
         metricProperties.forEach((prop, val) -> {
             if (!prop.isSelect)
@@ -176,9 +176,9 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
                 }
             }
         });
-        if (checkForDuplicate)
+        if (duplicateNameErrorExpected)
         {
-            checkForDuplicate(metricProperties.get(CustomMetricProperties.metricName));
+            duplicateNameErrorExpected(metricProperties.get(CustomMetricProperties.metricName));
         }
         else
         {
@@ -186,7 +186,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         }
     }
 
-    private void editTraceMetricValues(Window<?> metricWindow, Map<TraceMetricProperties, String> metricProperties, boolean checkForDuplicate)
+    private void editTraceMetricValues(Window<?> metricWindow, Map<TraceMetricProperties, String> metricProperties, boolean duplicateNameErrorExpected)
     {
         metricProperties.forEach((prop, val) -> {
             if (!prop.isSelect)
@@ -202,7 +202,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
                 _ext4Helper.selectComboBoxItem(prop.loc, val);
             }
         });
-        if (checkForDuplicate)
+        if (duplicateNameErrorExpected)
         {
             click(Ext4Helper.Locators.ext4Button("Save"));
             assertTextPresent("A metric with the name \"" + metricProperties.get(ConfigureMetricsUIPage.TraceMetricProperties.metricName) + "\" already exists. Please choose a different name.");
@@ -215,7 +215,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         }
     }
 
-    private void checkForDuplicate(String metricName)
+    private void duplicateNameErrorExpected(String metricName)
     {
         click(Ext4Helper.Locators.ext4Button("Save"));
         assertTextPresent("A metric with the name \"" + metricName + "\" already exists. Please choose a different name.");

@@ -118,7 +118,7 @@ public class TargetedMSQCFolderImportExport extends TargetedMSPremiumTest
         Assert.assertEquals("Guide Set was not added correctly", 1, table.getDataRowCount());
     }
 
-    private void addCustomMetric(String projectName, String metricName, String queryName, boolean checkForDuplicate)
+    private void addCustomMetric(String projectName, String metricName, String queryName, boolean duplicateNameErrorExpected)
     {
         goToProjectHome(projectName);
         Map<ConfigureMetricsUIPage.CustomMetricProperties, String> metricProperties = new LinkedHashMap<>();
@@ -128,7 +128,7 @@ public class TargetedMSQCFolderImportExport extends TargetedMSPremiumTest
         metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.metricType, ConfigureMetricsUIPage.MetricType.Precursor.name());
 
         ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
-        configureUI.addNewCustomMetric(metricProperties, checkForDuplicate);
+        configureUI.addNewCustomMetric(metricProperties, duplicateNameErrorExpected);
     }
 
     private void addAnnotationType(String projectName, String name)
