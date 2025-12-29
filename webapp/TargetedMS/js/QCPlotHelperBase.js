@@ -735,6 +735,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             color: 'fragment',
             defaultGuideSetLabel: 'fragment',
             pointSize: 2,
+            pointIdAttr: function(row) { return row['fullDate'] + row['fragment']; },
             shapeRange: [LABKEY.vis.Scale.Shape()[0] /* circle */, LABKEY.vis.Scale.DataspaceShape()[0] /* open circle */, LABKEY.vis.Scale.Shape()[1], LABKEY.vis.Scale.Shape()[2]],
             shapeDomain: shapeDomain,
             showTrendLine: true,
