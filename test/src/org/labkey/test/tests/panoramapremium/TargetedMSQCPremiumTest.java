@@ -156,6 +156,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
 
         ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
         configureUI.addNewCustomMetric(metricProperties, false);
+        configureUI = goToConfigureMetricsUI();
         configureUI.addNewCustomMetric(metricProperties, true);
 
         log("Verifying new metric got added");
