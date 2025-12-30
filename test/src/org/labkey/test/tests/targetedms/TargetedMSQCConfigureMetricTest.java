@@ -89,7 +89,7 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
                 ConfigureMetricsUIPage.CustomMetricProperties.metricName, metricName,
                 ConfigureMetricsUIPage.CustomMetricProperties.queryName, metricName,
                 ConfigureMetricsUIPage.CustomMetricProperties.yAxisLabel, "Label",
-                ConfigureMetricsUIPage.CustomMetricProperties.metricType, ConfigureMetricsUIPage.MetricType.Precursor.name()));
+                ConfigureMetricsUIPage.CustomMetricProperties.metricType, ConfigureMetricsUIPage.MetricType.Precursor.name()), false);
 
         // Break the query and force a recaching
         goToSchemaBrowser();

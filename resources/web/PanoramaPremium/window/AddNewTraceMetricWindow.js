@@ -48,7 +48,8 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
             this.getMetricNameField(),
             this.getTracesCombo(),
             this.getYAxisLabelField(),
-            this.getTraceValueRadioGroup()
+            this.getTraceValueRadioGroup(),
+            this.getQueryError()
         ];
     },
 
@@ -287,6 +288,19 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
         return this.yAxisLabelField;
     },
 
+    getQueryError: function() {
+        if (!this.queryError) {
+            this.queryError = Ext4.create('Ext.form.Label', {
+                name: 'errorMsg',
+                hidden: true,
+                cls: 'labkey-error',
+                text:''
+            });
+        }
+
+        return this.queryError;
+    },
+
     getSaveButton: function() {
         if (!this.saveButton) {
             this.saveButton = Ext4.create('Ext.button.Button', {
@@ -367,52 +381,98 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
         return isValid;
     },
 
+    checkMetricNameExists: function (metricName, callback) {
+        let filterArray = [LABKEY.Filter.create('Name', metricName, LABKEY.Filter.Types.EQUAL)];
+
+        // If updating, exclude the current metric from the check
+        if (this.operation === this.update && this.metric) {
+            filterArray.push(LABKEY.Filter.create('id', this.metric.id, LABKEY.Filter.Types.NOT_EQUAL));
+        }
+
+        LABKEY.Query.selectRows({
+            containerPath: LABKEY.container.id,
+            schemaName: 'targetedms',
+            queryName: 'qcmetricconfiguration',
+            filterArray: filterArray,
+            scope: this,
+            success: function (data) {
+                callback.call(this, data.rows.length > 0);
+            },
+            failure: function () {
+                callback.call(this, false);
+            }
+        });
+    },
+    
+    
+
     saveNewMetric: function () {
         var isValid = this.validateValues();
 
         if (isValid) {
-            var records = [];
-            var newMetric = {};
-            newMetric.Name = this.metricNameField.getValue();
-            newMetric.QueryName = 'QCTraceMetric'; // dummy text to insert and not an actual query
-            newMetric.PrecursorScoped = false;
-            newMetric.TraceName = this.tracesCombo.getValue();
-            newMetric.YAxisLabel = this.yAxisLabelField.getValue();
+            var metricName = this.metricNameField.getValue();
 
-            if (this.traceValueNumberField.getValue()) {
-                newMetric.TraceValue = this.traceValueNumberField.getValue();
-            }
-            else {
-                if (this.timeValueOptionField.getValue()) {
-                    newMetric.TimeValueOption = this.timeValueOptionField.getValue();
+            this.checkMetricNameExists(metricName, function (exists) {
+                if (exists) {
+                    let errorMessage = 'A metric with the name "' + metricName + '" already exists. Please choose a different name.';
+                    this.queryError.setText(errorMessage);
+                    this.queryError.setVisible(true);
+                    this.metricNameField.setActiveError('Metric name already exists');
+                    return;
                 }
-                if (this.minTimeValueNumberField.getValue()) {
-                    newMetric.MinTimeValue = this.minTimeValueNumberField.getValue();
-                }
-                if (this.maxTimeValueNumberField.getValue()) {
-                    newMetric.MaxTimeValue = this.maxTimeValueNumberField.getValue();
-                }
-            }
 
-            if(this.operation === this.update) {
-                newMetric.id = this.metric.id;
-            }
+                var records = [];
+                var newMetric = {};
+                newMetric.Name = metricName;
+                newMetric.QueryName = 'QCTraceMetric'; // dummy text to insert and not an actual query
+                newMetric.PrecursorScoped = false;
+                newMetric.TraceName = this.tracesCombo.getValue();
+                newMetric.YAxisLabel = this.yAxisLabelField.getValue();
 
-            records.push(newMetric);
-
-            LABKEY.Query.saveRows({
-                containerPath: LABKEY.container.id,
-                commands: [{
-                    schemaName: 'targetedms',
-                    queryName: 'qcmetricconfiguration',
-                    command: this.operation,
-                    rows: records
-                }],
-                scope: this,
-                method: 'POST',
-                success: function () {
-                    window.location.reload();
+                if (this.traceValueNumberField.getValue()) {
+                    newMetric.TraceValue = this.traceValueNumberField.getValue();
+                } else {
+                    if (this.timeValueOptionField.getValue()) {
+                        newMetric.TimeValueOption = this.timeValueOptionField.getValue();
+                    }
+                    if (this.minTimeValueNumberField.getValue()) {
+                        newMetric.MinTimeValue = this.minTimeValueNumberField.getValue();
+                    }
+                    if (this.maxTimeValueNumberField.getValue()) {
+                        newMetric.MaxTimeValue = this.maxTimeValueNumberField.getValue();
+                    }
                 }
+
+                if (this.operation === this.update) {
+                    newMetric.id = this.metric.id;
+                }
+
+                records.push(newMetric);
+
+                LABKEY.Query.saveRows({
+                    containerPath: LABKEY.container.id,
+                    commands: [{
+                        schemaName: 'targetedms',
+                        queryName: 'qcmetricconfiguration',
+                        command: this.operation,
+                        rows: records
+                    }],
+                    scope: this,
+                    method: 'POST',
+                    success: function () {
+                        window.location.reload();
+                    },
+                    failure: function (response) {
+                        let errorMessage = 'Error saving metric';
+                        if (response && response.exception) {
+                            errorMessage = response.exception;
+                        } else if (response && response.message) {
+                            errorMessage = response.message;
+                        }
+                        this.queryError.setText(errorMessage);
+                        this.queryError.setVisible(true);
+                    }
+                });
             });
         }
 
@@ -441,6 +501,16 @@ Ext4.define('Panorama.Window.AddTraceMetricWindow', {
                     method: 'POST',
                     success: function () {
                         window.location.reload();
+                    },
+                    failure: function (response) {
+                        let errorMessage = 'Error saving metric';
+                        if (response && response.exception) {
+                            errorMessage = response.exception;
+                        } else if (response && response.message) {
+                            errorMessage = response.message;
+                        }
+                        this.queryError.setText(errorMessage);
+                        this.queryError.setVisible(true);
                     }
                 });
                 win.close();
