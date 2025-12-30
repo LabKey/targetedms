@@ -155,7 +155,9 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         metricProperties.put(ConfigureMetricsUIPage.CustomMetricProperties.metricType, ConfigureMetricsUIPage.MetricType.Precursor.name());
 
         ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
-        configureUI.addNewCustomMetric(metricProperties);
+        configureUI.addNewCustomMetric(metricProperties, false);
+        configureUI = goToConfigureMetricsUI();
+        configureUI.addNewCustomMetric(metricProperties, true);
 
         log("Verifying new metric got added");
         goToConfigureMetricsUI();
@@ -208,9 +210,10 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         setUpFolder(projectName, FolderType.QC);
         importData(SAMPLE_FILE_CHROM_INFO);
 
-        addNewTimeTraceMetrics(firstMetric, "First", traceName);
-        addNewTimeTraceMetrics(minMetric, "Min", "ColumnPressure (channel 4)");
-        addNewTimeTraceMetrics(maxMetric, "Max", traceName);
+        addNewTimeTraceMetrics(firstMetric, "First", traceName, false);
+        addNewTimeTraceMetrics(firstMetric, "First", traceName, true);
+        addNewTimeTraceMetrics(minMetric, "Min", "ColumnPressure (channel 4)", false);
+        addNewTimeTraceMetrics(maxMetric, "Max", traceName, false);
 
         log("Verify trace values after metric addition");
         assertTrue("Trace values are not present", getTraceMetricValueRowCount() > 0);
@@ -266,7 +269,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         Assertions.assertThat(pressureTraceHoverText).as("Tooltip value").contains(tooltipValue);
     }
 
-    private void addNewTimeTraceMetrics(String metricName, String timeValueOption, String traceName)
+    private void addNewTimeTraceMetrics(String metricName, String timeValueOption, String traceName, boolean duplicateNameErrorExpected)
     {
         String yAxisLabel = "psi";
         String minTimeValue = "5";
@@ -282,7 +285,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         metricProperties.put(ConfigureMetricsUIPage.TraceMetricProperties.maxTimeValue, maxTimeValue);
 
         ConfigureMetricsUIPage configureUI = goToConfigureMetricsUI();
-        configureUI.addNewTraceMetric(metricProperties);
+        configureUI.addNewTraceMetric(metricProperties, duplicateNameErrorExpected);
 
         log("Verify new trace metrics got added");
         goToConfigureMetricsUI();
