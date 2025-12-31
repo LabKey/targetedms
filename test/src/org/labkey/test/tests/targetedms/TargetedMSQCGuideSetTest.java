@@ -82,16 +82,16 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
     @BeforeClass
     public static void initProject()
     {
-//        TargetedMSQCGuideSetTest init = getCurrentTest();
-//
-//        init.setupFolder(FolderType.QC);
-//        init.importData(SProCoP_FILE);
-//
-//        init.createGuideSet(gs1);
-//        init.createGuideSet(gs2);
-//        init.createGuideSet(gs3);
-//        init.createGuideSet(gs4);
-//        init.createGuideSet(gs5);
+        TargetedMSQCGuideSetTest init = getCurrentTest();
+
+        init.setupFolder(FolderType.QC);
+        init.importData(SProCoP_FILE);
+
+        init.createGuideSet(gs1);
+        init.createGuideSet(gs2);
+        init.createGuideSet(gs3);
+        init.createGuideSet(gs4);
+        init.createGuideSet(gs5);
     }
 
     @Before
@@ -105,7 +105,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
     {
         // Use the API-based approach for deletion so that we don't trigger AJAX requests navigating to the delete page
         // that may run in the background and cause SQL Server deadlock exceptions
-//        new APIContainerHelper(this).deleteProject(getProjectName(), afterTest);
+        new APIContainerHelper(this).deleteProject(getProjectName(), afterTest);
     }
 
     @Test
