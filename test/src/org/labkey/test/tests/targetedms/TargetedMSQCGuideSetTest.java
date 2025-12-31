@@ -212,13 +212,13 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         List<Pair<String, Integer>> shapeCounts = new ArrayList<>();
         shapeCounts.add(Pair.of(SvgShapes.CIRCLE.getPathPrefix(), 289));
         shapeCounts.add(Pair.of(SvgShapes.TRIANGLE.getPathPrefix(), 40));
-        verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 4, shapeCounts, 47);
+        verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 5, shapeCounts, 47);
 
         // check box for group x-axis values by date and verify
         qcPlotsWebPart.setGroupXAxisValuesByDate(true);
-        verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 4, shapeCounts, 20);
+        verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 5, shapeCounts, 20);
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
-        assertEquals("Unexpected number of training range rects visible", 4, qcPlotsWebPart.getGuideSetTrainingRectCount());
+        assertEquals("Unexpected number of training range rects visible", 5, qcPlotsWebPart.getGuideSetTrainingRectCount());
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false);
         qcPlotsWebPart.setGroupXAxisValuesByDate(false);
 
