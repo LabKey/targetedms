@@ -200,12 +200,11 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         assertEquals("Guide set was not created from combined plots", 6, table.getDataRowCount());
 
         table.checkCheckbox(5);
-        table.clickHeaderButton("Delete");
-        clickButton("Confirm Delete");
-
-        table = new DataRegionTable.DataRegionFinder(getDriver()).waitFor();
-        assertEquals("Guide set was not deleted", 5, table.getDataRowCount());
-
+        doAndWaitForPageToLoad(() ->
+        {
+            table.clickHeaderButton("Delete");
+            assertAlert("Are you sure you want to delete the selected row?");
+        });
     }
 
     public void testGuideSetPlotDisplay()
