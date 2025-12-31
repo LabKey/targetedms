@@ -2329,17 +2329,26 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
     
     createGuideSetBtnClick: function() {
-        var minGuideSetPointCount = 5; // to warn user if less than this many points are selected for the new guide set
+        let minGuideSetReplicateCount = 5; // to warn user if less than this many replicates are selected for the new guide set
 
         if (this.plotBrushSelection && this.plotBrushSelection.points.length > 0) {
-            var startDate = this.plotBrushSelection.points[0]['fullDate'];
-            var endDate = this.plotBrushSelection.points[this.plotBrushSelection.points.length - 1]['fullDate'];
+            let startDate = this.plotBrushSelection.points[0]['fullDate'];
+            let endDate = this.plotBrushSelection.points[this.plotBrushSelection.points.length - 1]['fullDate'];
 
-            if (this.plotBrushSelection.points.length < minGuideSetPointCount) {
+            let distinctSampleFileIds = {};
+            for (let i = 0; i < this.plotBrushSelection.points.length; i++) {
+                let sampleFileId = this.plotBrushSelection.points[i].SampleFileId;
+                if (sampleFileId !== undefined && sampleFileId !== null) {
+                    distinctSampleFileIds[sampleFileId] = true;
+                }
+            }
+            let distinctCount = Object.keys(distinctSampleFileIds).length;
+
+            if (distinctCount < minGuideSetReplicateCount) {
                 Ext4.Msg.show({
-                    title:'Create Guide Set Warning',
+                    title: 'Create Guide Set Warning',
                     icon: Ext4.MessageBox.WARNING,
-                    msg: 'Fewer than ' + minGuideSetPointCount + ' data points were selected for the new guide set, which may not be statistically significant. Would you like to proceed anyway?',
+                    msg: 'Fewer than ' + minGuideSetReplicateCount + ' replicates were selected for the new guide set, which may not be statistically significant. Would you like to proceed anyway?',
                     buttons: Ext4.Msg.YESNO,
                     scope: this,
                     fn: function(btnId, text, opt){
