@@ -82,16 +82,16 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
     @BeforeClass
     public static void initProject()
     {
-        TargetedMSQCGuideSetTest init = getCurrentTest();
-
-        init.setupFolder(FolderType.QC);
-        init.importData(SProCoP_FILE);
-
-        init.createGuideSet(gs1);
-        init.createGuideSet(gs2);
-        init.createGuideSet(gs3);
-        init.createGuideSet(gs4);
-        init.createGuideSet(gs5);
+//        TargetedMSQCGuideSetTest init = getCurrentTest();
+//
+//        init.setupFolder(FolderType.QC);
+//        init.importData(SProCoP_FILE);
+//
+//        init.createGuideSet(gs1);
+//        init.createGuideSet(gs2);
+//        init.createGuideSet(gs3);
+//        init.createGuideSet(gs4);
+//        init.createGuideSet(gs5);
     }
 
     @Before
@@ -105,7 +105,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
     {
         // Use the API-based approach for deletion so that we don't trigger AJAX requests navigating to the delete page
         // that may run in the background and cause SQL Server deadlock exceptions
-        new APIContainerHelper(this).deleteProject(getProjectName(), afterTest);
+//        new APIContainerHelper(this).deleteProject(getProjectName(), afterTest);
     }
 
     @Test
@@ -198,6 +198,14 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         clickTab("Guide Sets");
         DataRegionTable table = new DataRegionTable.DataRegionFinder(getDriver()).waitFor();
         assertEquals("Guide set was not created from combined plots", 6, table.getDataRowCount());
+
+        table.checkCheckbox(5);
+        table.clickHeaderButton("Delete");
+        clickButton("Confirm Delete");
+
+        table = new DataRegionTable.DataRegionFinder(getDriver()).waitFor();
+        assertEquals("Guide set was not deleted", 5, table.getDataRowCount());
+
     }
 
     public void testGuideSetPlotDisplay()
@@ -212,13 +220,13 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         List<Pair<String, Integer>> shapeCounts = new ArrayList<>();
         shapeCounts.add(Pair.of(SvgShapes.CIRCLE.getPathPrefix(), 289));
         shapeCounts.add(Pair.of(SvgShapes.TRIANGLE.getPathPrefix(), 40));
-        verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 5, shapeCounts, 47);
+        verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 4, shapeCounts, 47);
 
         // check box for group x-axis values by date and verify
         qcPlotsWebPart.setGroupXAxisValuesByDate(true);
-        verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 5, shapeCounts, 20);
+        verifyGuideSetRelatedElementsForPlots(qcPlotsWebPart, 4, shapeCounts, 20);
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
-        assertEquals("Unexpected number of training range rects visible", 5, qcPlotsWebPart.getGuideSetTrainingRectCount());
+        assertEquals("Unexpected number of training range rects visible", 4, qcPlotsWebPart.getGuideSetTrainingRectCount());
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false);
         qcPlotsWebPart.setGroupXAxisValuesByDate(false);
 
@@ -266,8 +274,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
                 QCPlotsWebPart.MetricType.FWHM,
                 QCPlotsWebPart.MetricType.FWB,
                 QCPlotsWebPart.MetricType.TIC_AREA,
-                QCPlotsWebPart.MetricType.ISOTOPE_DOTP
-        );
+                QCPlotsWebPart.MetricType.ISOTOPE_DOTP);
         verifyNavigationToPanoramaDashboard(guideSetId, 0, QCPlotsWebPart.MetricType.TOTAL_PEAK, true);
 
         clickAndWait(Locator.linkWithText("Pareto Plot")); //go to Pareto Plot tab
@@ -357,7 +364,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         ParetoPlotsWebPart paretoPlotsWebPart = paretoPage.getParetoPlotsWebPart();
 
         paretoPlotsWebPart.verifyEmpty();
-    }
+   }
 
     public void testSmallMoleculePareto() throws IOException, CommandException
     {
@@ -380,10 +387,10 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         ParetoPlotsWebPart paretoPlotsWebPart = paretoPage.getParetoPlotsWebPart();
 
         verifyTicksOnPlots(paretoPlotsWebPart, 1, QCPlotsWebPart.QCPlotType.MetricValue,
-                QCPlotsWebPart.MetricType.FWB,
-                QCPlotsWebPart.MetricType.FWHM,
-                QCPlotsWebPart.MetricType.RETENTION,
-                QCPlotsWebPart.MetricType.TRANSITION_AREA);
+                    QCPlotsWebPart.MetricType.FWB,
+                    QCPlotsWebPart.MetricType.FWHM,
+                    QCPlotsWebPart.MetricType.RETENTION,
+                    QCPlotsWebPart.MetricType.TRANSITION_AREA);
 
         clickExportPDFIcon("chart-render-div", 0);
         clickExportPNGIcon("chart-render-div", 0);
@@ -400,17 +407,17 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         selectQuery("targetedms", "Replicate");
         //confirm table columns are present and of correct type representing replicate annotations:
         GetQueryDetailsCommand queryDetailsCommand = new GetQueryDetailsCommand("targetedms", "Replicate");
-        GetQueryDetailsResponse queryDetailsResponse = queryDetailsCommand.execute(createDefaultConnection(), getProjectName() + "/" + folderName);
+        GetQueryDetailsResponse queryDetailsResponse = queryDetailsCommand.execute(createDefaultConnection(),getProjectName() + "/" + folderName);
         List<GetQueryDetailsResponse.Column> columns = queryDetailsResponse.getColumns();
 
         int groupingIndex = 11;
-        assertEquals("", "Day", columns.get(groupingIndex).getName());
-        assertEquals("", "Day", columns.get(groupingIndex).getCaption());
+        assertEquals("","Day", columns.get(groupingIndex).getName());
+        assertEquals("","Day", columns.get(groupingIndex).getCaption());
         assertEquals("", "Text (String)", columns.get(groupingIndex).getType());
 
         int ignoreIndex = 12;
-        assertEquals("", "SampleIdentifier", columns.get(ignoreIndex).getName());
-        assertEquals("", "SampleIdentifier", columns.get(ignoreIndex).getCaption());
+        assertEquals("","SampleIdentifier", columns.get(ignoreIndex).getName());
+        assertEquals("","SampleIdentifier", columns.get(ignoreIndex).getCaption());
         assertEquals("", "Text (String)", columns.get(ignoreIndex).getType());
 
         //confirm data in grid view
@@ -468,7 +475,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
             Rowset rowset = response.getRowset();
             assertEquals("Unexpected number of filtered rows", 1, rowset.getSize());
             Row row = rowset.iterator().next();
-            assertEquals("Unexpected guide set stats record count", stats.getNumRecords(), ((Number) row.getValue("NumRecords")).intValue());
+            assertEquals("Unexpected guide set stats record count", stats.getNumRecords(), ((Number)row.getValue("NumRecords")).intValue());
 
             if (stats.getMean() != null)
             {
@@ -480,7 +487,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
             if (stats.getStdDev() != null)
             {
                 double delta = Math.abs(stats.getStdDev() * 0.001);
-                double actual = ((Number) row.getValue("StandardDev")).doubleValue();
+                double actual = ((Number)row.getValue("StandardDev")).doubleValue();
                 assertEquals("Unexpected guide set stats std dev for " + stats.getMetricName(), stats.getStdDev(), actual, delta);
             }
         }
@@ -620,7 +627,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         guideSet.setRowId(guideSetWebPart.getRowId(guideSet));
     }
 
-    private void verifyTicksOnPlots(ParetoPlotsWebPart paretoPlotsWebPart, int guideSetNum, QCPlotsWebPart.QCPlotType plotType, QCPlotsWebPart.MetricType... metrics)
+    private void verifyTicksOnPlots(ParetoPlotsWebPart paretoPlotsWebPart, int guideSetNum, QCPlotsWebPart.QCPlotType plotType, QCPlotsWebPart.MetricType ... metrics)
     {
         paretoPlotsWebPart.waitForTickLoad(guideSetNum, plotType);
 
@@ -664,7 +671,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         assertEquals("startDate in the URL does not equal 'Start Date' on the page", parseUrlDate(getUrlParam("startDate", true)), parseFormDate(qcPlotsWebPart.getCurrentStartDate()));
 
         //compare url End Date with input form End Date
-        if (checkEndDate)
+        if(checkEndDate)
             assertEquals("endDate in the URL does not equal 'End Date' on the page", parseUrlDate(getUrlParam("endDate", true)), parseFormDate(qcPlotsWebPart.getCurrentEndDate()));
     }
 
