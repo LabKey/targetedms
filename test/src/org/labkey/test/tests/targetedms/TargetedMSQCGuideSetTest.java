@@ -141,7 +141,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
                     "LEFT JOIN QCMetric_" + metricName + " as p\n" +
                     "  ON p.SampleFileId.AcquiredTime >= gs.TrainingStart AND p.SampleFileId.AcquiredTime <= gs.TrainingEnd\n" +
                     "LEFT JOIN PrecursorChromInfo pci ON p.precursorchrominfoid = pci.Id\n" +
-                    "GROUP BY gs.RowId, gs.TrainingStart, gs.TrainingEnd, gs.ReferenceEnd, \n" +
+                    "GROUP BY gs.RowId, gs.TrainingStart, gs.TrainingEnd, gs.ReferenceEnd, \n"+
                     " pci.PrecursorId.PeptideId.Sequence, pci.PrecursorId.Charge, \n" +
                     "pci.PrecursorId.ModifiedSequence, pci.MoleculePrecursorId.CustomIonName, \n" +
                     "pci.MoleculePrecursorId.IonFormula, pci.MoleculePrecursorId.massMonoisotopic, pci.MoleculePrecursorId.massAverage, \n" +
@@ -274,7 +274,8 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
                 QCPlotsWebPart.MetricType.FWHM,
                 QCPlotsWebPart.MetricType.FWB,
                 QCPlotsWebPart.MetricType.TIC_AREA,
-                QCPlotsWebPart.MetricType.ISOTOPE_DOTP);
+                QCPlotsWebPart.MetricType.ISOTOPE_DOTP
+                );
         verifyNavigationToPanoramaDashboard(guideSetId, 0, QCPlotsWebPart.MetricType.TOTAL_PEAK, true);
 
         clickAndWait(Locator.linkWithText("Pareto Plot")); //go to Pareto Plot tab
@@ -387,10 +388,10 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         ParetoPlotsWebPart paretoPlotsWebPart = paretoPage.getParetoPlotsWebPart();
 
         verifyTicksOnPlots(paretoPlotsWebPart, 1, QCPlotsWebPart.QCPlotType.MetricValue,
-                    QCPlotsWebPart.MetricType.FWB,
-                    QCPlotsWebPart.MetricType.FWHM,
-                    QCPlotsWebPart.MetricType.RETENTION,
-                    QCPlotsWebPart.MetricType.TRANSITION_AREA);
+                        QCPlotsWebPart.MetricType.FWB,
+                        QCPlotsWebPart.MetricType.FWHM,
+                        QCPlotsWebPart.MetricType.RETENTION,
+                        QCPlotsWebPart.MetricType.TRANSITION_AREA);
 
         clickExportPDFIcon("chart-render-div", 0);
         clickExportPNGIcon("chart-render-div", 0);
