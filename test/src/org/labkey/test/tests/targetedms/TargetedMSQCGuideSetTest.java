@@ -199,7 +199,8 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         DataRegionTable table = new DataRegionTable.DataRegionFinder(getDriver()).waitFor();
         assertEquals("Guide set was not created from combined plots", 6, table.getDataRowCount());
 
-        table.checkCheckbox(5);
+        int rowIndex = table.getRowIndex("Comment", "guide set created from combined plots");
+        table.checkCheckbox(rowIndex);
         doAndWaitForPageToLoad(() ->
         {
             table.clickHeaderButton("Delete");
