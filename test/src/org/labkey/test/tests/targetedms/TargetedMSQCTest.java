@@ -1086,10 +1086,9 @@ public class TargetedMSQCTest extends TargetedMSTest
         _ext4Helper.waitForMaskToDisappear();
 
         // Wait for the plots to refresh
-        refresh();
-        qcDashboard = new PanoramaDashboard(this);
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.waitForReady();
+        qcPlotsWebPart.waitForPlots(7);
 
         // Verify the annotation appears in the QC plots
         QCHelper.Annotation testAnnotation = new QCHelper.Annotation(instrumentChange.getType(), testComment);
@@ -1113,6 +1112,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertTrue("Newly added annotation should appear in QC plots", annotationFound);
 
         Locator deleteAnnotation = Locator.tagWithClass("path", "annotation");
+        scrollIntoView(deleteAnnotation);
         mouseOver(deleteAnnotation);
         click(deleteAnnotation);
         addAnnotationDialog = new Window.WindowFinder(getDriver()).withTitle("Edit Annotation").waitFor();
@@ -1121,8 +1121,9 @@ public class TargetedMSQCTest extends TargetedMSTest
         clickButton("Yes", 0);
         _ext4Helper.waitForMaskToDisappear();
 
-        refresh();
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        qcPlotsWebPart.waitForReady();
+        qcPlotsWebPart.waitForPlots(7);
         annotationFound = false;
         qcPlots = qcPlotsWebPart.getPlots();
         for (QCPlot plot : qcPlots)
