@@ -1081,6 +1081,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         String testComment = "Test annotation from QC plot";
         setFormElement(Locator.name("description"), testComment);
 
+        log("Clicking Save button in add annotation dialog");
         // Click the save button
         addAnnotationDialog.clickButton("Save", true);
         _ext4Helper.waitForMaskToDisappear();

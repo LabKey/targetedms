@@ -128,6 +128,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
     },
 
     addCombinedPeptideSinglePlot : function(metricProps) {
+        const me = this; // for plot brushing
         let     yAxisCount = this.isMultiSeries() ? 2 : 1, //Will only have a right if there is already a left y-axis
                 groupColors = this.getColorRange(),
                 combinePlotData = this.getCombinedPlotInitData(),
@@ -195,25 +196,25 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
             legendMargin = 300;
 
         if (this.showMetricValuePlot()) {
-            this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex++], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.LeveyJennings);
+            this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex++], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.LeveyJennings, false, me);
         }
         if (this.showMovingRangePlot()) {
-            this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex++], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.MovingRange);
+            this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex++], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.MovingRange, false, me);
         }
         if (this.showMeanCUSUMPlot()) {
-            this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex++], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.CUSUM, true);
+            this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex++], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.CUSUM, true, me);
         }
         if (this.showVariableCUSUMPlot()) {
-            this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.CUSUM, false);
+            this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.CUSUM, false, me);
         }
         if (this.showTrailingMeanPlot()) {
-            this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.TrailingMean, false);
+            this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.TrailingMean, false, me);
         }
         if (this.showTrailingCVPlot()) {
-            this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.TrailingCV, false);
+            this.addEachCombinedPrecursorPlot(plotIndex, ids[plotIndex], combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, LABKEY.vis.TrendingLinePlotType.TrailingCV, false, me);
         }
 
-
+        this.setPlotBrushingDisplayStyle();
         return true;
     },
 
