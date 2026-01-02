@@ -1169,7 +1169,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (!this.createGuideSetToggleButton) {
             this.createGuideSetToggleButton = Ext4.create('Ext.button.Button', {
                 text: 'Create Guide Set',
-                tooltip: 'Enable/disable guide set creation mode. Supported for separate plots, not grouped by date, when ' + LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries + ' or fewer samples are shown',
+                tooltip: 'Enable/disable guide set creation mode. Supported for plots when ' + LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries + ' or fewer samples are shown',
                 disabled: !this.canCreateGuideSetFromPlot(),
                 enableToggle: true,
                 handler: function(btn) {
@@ -1183,11 +1183,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     canCreateGuideSetFromPlot : function() {
-        return !(this.groupedX || this.singlePlot || this.isMultiSeries() || this.showExpRunRange || !this.showDataPoints);
+        return !(this.showExpRunRange || !this.showDataPoints);
     },
 
     setBrushingEnabled : function(enabled) {
-        // we don't currently allow creation of guide sets in single plot mode, grouped x-axis mode, multi series mode or when showingExpRunRange
+        // we don't currently allow creation when showingExpRunRange
         this.getGuideSetCreateButton().setDisabled(!this.canCreateGuideSetFromPlot());
 
         this.enableBrushing = enabled;
@@ -1552,7 +1552,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         this.bringSvgElementToFront(plot, "g.guideset-svg-button");
     },
 
-    plotBrushClearEvent : function(data, plot) {
+    plotBrushClearEvent : function() {
         this.plotBrushSelection = undefined;
     },
 
@@ -1561,7 +1561,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     allowGuideSetBrushing : function() {
-        return this.canUserEdit() && !this.groupedX;
+        return this.canUserEdit();
     },
 
     createGuideSetSvgButton : function(plot, text, xLeftPos, width) {
@@ -1586,8 +1586,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     setPlotBrushingDisplayStyle : function() {
         // hide the brushing related components for all plots if not in "create guide set" mode
         var displayStyle = this.enableBrushing ? 'inline' : 'none';
-        d3.selectAll('.brush').style({'display': displayStyle});
-        d3.selectAll('.x-axis-handle').style({'display': displayStyle});
+        // Scope the selection to only plots within the current plotDivId to avoid affecting other plot types
+        d3.select('#' + this.plotDivId).selectAll('.brush').style({'display': displayStyle});
+        d3.select('#' + this.plotDivId).selectAll('.x-axis-handle').style({'display': displayStyle});
     },
 
     clearPlotBrush : function(plot) {
@@ -2328,17 +2329,26 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
     
     createGuideSetBtnClick: function() {
-        var minGuideSetPointCount = 5; // to warn user if less than this many points are selected for the new guide set
+        let minGuideSetReplicateCount = 5; // to warn user if less than this many replicates are selected for the new guide set
 
         if (this.plotBrushSelection && this.plotBrushSelection.points.length > 0) {
-            var startDate = this.plotBrushSelection.points[0]['fullDate'];
-            var endDate = this.plotBrushSelection.points[this.plotBrushSelection.points.length - 1]['fullDate'];
+            let startDate = this.plotBrushSelection.points[0]['fullDate'];
+            let endDate = this.plotBrushSelection.points[this.plotBrushSelection.points.length - 1]['fullDate'];
 
-            if (this.plotBrushSelection.points.length < minGuideSetPointCount) {
+            let distinctSampleFileIds = {};
+            for (let i = 0; i < this.plotBrushSelection.points.length; i++) {
+                let sampleFileId = this.plotBrushSelection.points[i].SampleFileId;
+                if (sampleFileId !== undefined && sampleFileId !== null) {
+                    distinctSampleFileIds[sampleFileId] = true;
+                }
+            }
+            let distinctCount = Object.keys(distinctSampleFileIds).length;
+
+            if (distinctCount < minGuideSetReplicateCount) {
                 Ext4.Msg.show({
-                    title:'Create Guide Set Warning',
+                    title: 'Create Guide Set Warning',
                     icon: Ext4.MessageBox.WARNING,
-                    msg: 'Fewer than ' + minGuideSetPointCount + ' data points were selected for the new guide set, which may not be statistically significant. Would you like to proceed anyway?',
+                    msg: 'Fewer than ' + minGuideSetReplicateCount + ' replicates were selected for the new guide set, which may not be statistically significant. Would you like to proceed anyway?',
                     buttons: Ext4.Msg.YESNO,
                     scope: this,
                     fn: function(btnId, text, opt){

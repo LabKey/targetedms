@@ -113,6 +113,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
     {
         testGuideSetStats();
         testGuideSetCreateValidation();
+        testCombinedPlotsGuideSetCreation();
         testGuideSetPlotDisplay();
         testParetoPlot();
         testEmptyParetoPlot();
@@ -180,6 +181,31 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
         createGuideSet(new GuideSet("", "2013/08/11 18:34:14", null, 2), overlapErrorMsg);
         createGuideSet(new GuideSet("2013/08/21 01:12:00", "2013/08/21 07:56:12", null, 5), overlapErrorMsg);
         createGuideSet(new GuideSet("", "", null, 47), overlapErrorMsg);
+    }
+
+
+    private void testCombinedPlotsGuideSetCreation()
+    {
+        preTest();
+        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        qcPlotsWebPart.resetInitialQCPlotFields();
+        qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
+
+        GuideSet gsCombined = new GuideSet("2013/08/17 16:01:37", "2013/08/20 13:35:16", "guide set created from combined plots");
+        createGuideSet(gsCombined);
+
+        clickTab("Guide Sets");
+        DataRegionTable table = new DataRegionTable.DataRegionFinder(getDriver()).waitFor();
+        assertEquals("Guide set was not created from combined plots", 6, table.getDataRowCount());
+
+        int rowIndex = table.getRowIndex("Comment", "guide set created from combined plots");
+        table.checkCheckbox(rowIndex);
+        doAndWaitForPageToLoad(() ->
+        {
+            table.clickHeaderButton("Delete");
+            assertAlert("Are you sure you want to delete the selected row?");
+        });
     }
 
     public void testGuideSetPlotDisplay()

@@ -694,7 +694,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         return precursor;
     },
 
-    addEachCombinedPrecursorPlot: function(plotIndex, id, combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, plotType, isCUSUMMean) {
+    addEachCombinedPrecursorPlot: function(plotIndex, id, combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, plotType, isCUSUMMean, scope) {
         let plotLegendData = this.getCombinedPlotLegendData(metricProps, groupColors, yAxisCount, plotType, isCUSUMMean);
 
         if (plotType !== LABKEY.vis.TrendingLinePlotType.CUSUM) {
@@ -735,6 +735,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             color: 'fragment',
             defaultGuideSetLabel: 'fragment',
             pointSize: 2,
+            pointIdAttr: function(row) { return row['fullDate'] + row['fragment']; },
             shapeRange: [LABKEY.vis.Scale.Shape()[0] /* circle */, LABKEY.vis.Scale.DataspaceShape()[0] /* open circle */, LABKEY.vis.Scale.Shape()[1], LABKEY.vis.Scale.Shape()[2]],
             shapeDomain: shapeDomain,
             showTrendLine: true,
@@ -792,6 +793,24 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 yRight: {
                     value: this.isMultiSeries() ? this.getYScaleLabel(plotType, trendLineProps.valueConversion, metricProps[this.metric2]) : undefined,
                     visibility: this.isMultiSeries() ? undefined : 'hidden'
+                }
+            },
+            brushing: !this.allowGuideSetBrushing() ? undefined : {
+                dimension: 'x',
+                fillOpacity: 0.4,
+                fillColor: 'rgba(20, 204, 201, 1)',
+                strokeColor: 'rgba(20, 204, 201, 1)',
+                brushstart: function(event, data, extent, plot, layerSelections) {
+                    scope.plotBrushStartEvent(plot);
+                },
+                brush: function(event, data, extent, plot, layerSelections) {
+                    scope.plotBrushEvent(extent, plot, layerSelections);
+                },
+                brushend: function(event, data, extent, plot, layerSelections) {
+                    scope.plotBrushEndEvent(data[data.length - 1], extent, plot);
+                },
+                brushclear: function(event, data, plot, layerSelections) {
+                    scope.plotBrushClearEvent(data[data.length - 1], plot);
                 }
             },
             properties: trendLineProps
