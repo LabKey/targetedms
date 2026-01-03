@@ -95,6 +95,10 @@ Ext4.define('LABKEY.targetedms.QCPlotHoverPanel', {
                 this.add(this.getPlotPointDetailField('Value', LABKEY.targetedms.PlotSettingsUtil.formatNumeric(this.pointData.rawValue)));
                 this.add(this.getPlotPointDetailField('Std Devs', this.valueName ? this.pointData[this.valueName] : this.pointData['value']))
             }
+            else if (this.pointData.conversion === 'deltaFromMean') {
+                this.add(this.getPlotPointDetailField('Value', LABKEY.targetedms.PlotSettingsUtil.formatNumeric(this.pointData.rawValue)));
+                this.add(this.getPlotPointDetailField('Delta From Mean', LABKEY.targetedms.PlotSettingsUtil.formatNumeric(this.valueName ? this.pointData[this.valueName] : this.pointData['value'])))
+            }
             else {
                 this.add(this.getPlotPointDetailField('Value', LABKEY.targetedms.PlotSettingsUtil.formatNumeric(this.valueName ? this.pointData[this.valueName] : this.pointData['value'])));
             }

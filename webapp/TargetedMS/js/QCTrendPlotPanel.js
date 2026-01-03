@@ -696,7 +696,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     getYAxisOptions: function () {
         return {
             fields: ['value', 'display'],
-            data: [['linear', 'Linear'], ['log', 'Log'], ['percentDeviation', 'Percent of Mean'], ['standardDeviation', 'Standard Deviations']]
+            data: [['linear', 'Linear'], ['log', 'Log'], ['percentDeviation', 'Percent of Mean'], ['standardDeviation', 'Standard Deviations'], ['deltaFromMean', 'Delta from Mean']]
         }
     },
 
