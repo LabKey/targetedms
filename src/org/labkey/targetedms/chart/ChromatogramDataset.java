@@ -1462,6 +1462,7 @@ public abstract class ChromatogramDataset
 
     public static class GroupDataset extends RtRangeDataset
     {
+        private static final int SERIES_LIMIT = 25;
         private final PeptideGroup _group;
         private final SampleFile _sampleFile;
         private final ViewContext _context;
@@ -1568,6 +1569,12 @@ public abstract class ChromatogramDataset
                     _allMolecules = filtered;
                     break;
                 }
+            }
+
+            // Ticket 54342: PanoramaWeb overwhelmed with requests for massive targetedms-groupChromatogramChart.view plots
+            if (_allMolecules.size() > SERIES_LIMIT)
+            {
+                _allMolecules = _allMolecules.entrySet().stream().limit(SERIES_LIMIT).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
             }
 
             List<PrecursorChromInfoPlus> nonOptimizationPeaks = new ArrayList<>();
