@@ -1823,6 +1823,7 @@
                 <inputType>text</inputType>
             </column>
             <column columnName="UWBudgetNumber"/>
+            <column columnName="RateType"/>
             <column columnName="budgetExpirationDate"/>
             <column columnName="PONumber"/>
             <column columnName="contactNameFirst"/>

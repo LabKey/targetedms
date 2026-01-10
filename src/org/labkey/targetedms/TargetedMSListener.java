@@ -15,16 +15,11 @@
  */
 package org.labkey.targetedms;
 
-import org.jetbrains.annotations.NotNull;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerManager;
 import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.security.User;
 import org.labkey.targetedms.parser.speclib.LibSpectrumReader;
-
-import java.beans.PropertyChangeEvent;
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * User: vsharma
@@ -33,11 +28,6 @@ import java.util.Collections;
  */
 public class TargetedMSListener implements ContainerManager.ContainerListener
 {
-    @Override
-    public void containerCreated(Container c, User user)
-    {
-    }
-
     @Override
     public void containerDeleted(Container c, User user)
     {
@@ -71,22 +61,15 @@ public class TargetedMSListener implements ContainerManager.ContainerListener
 
         new SqlExecutor(TargetedMSManager.getSchema()).execute("DELETE FROM " + TargetedMSManager.getTableInfoQCEmailNotifications() + " WHERE Container = ?", c);
         new SqlExecutor(TargetedMSManager.getSchema()).execute("DELETE FROM " + TargetedMSManager.getTableInfoInstrumentNickname() + " WHERE Container = ?", c);
-    }
 
-    @Override
-    public void containerMoved(Container c, Container oldParent, User user)
-    {
-    }
-
-    @NotNull
-    @Override
-    public Collection<String> canMove(Container c, Container newParent, User user)
-    {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt)
-    {
+        new SqlExecutor(TargetedMSManager.getSchema()).execute("DELETE FROM " + TargetedMSManager.getTableInfoInstrumentUsagePayment() + " WHERE Container = ?", c);
+        new SqlExecutor(TargetedMSManager.getSchema()).execute("DELETE FROM " + TargetedMSManager.getTableInfoInstrumentSchedule() + " WHERE Container = ?", c);
+        new SqlExecutor(TargetedMSManager.getSchema()).execute("DELETE FROM " + TargetedMSManager.getTableInfoProjectPaymentMethod() + " WHERE Container = ?", c);
+        new SqlExecutor(TargetedMSManager.getSchema()).execute("DELETE FROM " + TargetedMSManager.getTableInfoProjectResearcher() + " WHERE Container = ?", c);
+        new SqlExecutor(TargetedMSManager.getSchema()).execute("DELETE FROM " + TargetedMSManager.getTableInfoMSProject() + " WHERE Container = ?", c);
+        new SqlExecutor(TargetedMSManager.getSchema()).execute("DELETE FROM " + TargetedMSManager.getTableInfoInstrumentRate() + " WHERE Container = ?", c);
+        new SqlExecutor(TargetedMSManager.getSchema()).execute("DELETE FROM " + TargetedMSManager.getTableInfoMSInstrument() + " WHERE Container = ?", c);
+        new SqlExecutor(TargetedMSManager.getSchema()).execute("DELETE FROM " + TargetedMSManager.getTableInfoPaymentMethod() + " WHERE Container = ?", c);
+        new SqlExecutor(TargetedMSManager.getSchema()).execute("DELETE FROM " + TargetedMSManager.getTableInfoRateType() + " WHERE Container = ?", c);
     }
 }

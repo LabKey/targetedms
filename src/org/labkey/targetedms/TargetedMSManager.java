@@ -214,6 +214,16 @@ public class TargetedMSManager
         return new TableSelector(getTableInfoSampleFileChromInfo(), new SimpleFilter(FieldKey.fromParts("Id"), id).addCondition(FieldKey.fromParts("Container"), c), null).getObject(SampleFileChromInfo.class);
     }
 
+    public static TableInfo getTableInfoRateType()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_RATE_TYPE);
+    }
+
+    public static TableInfo getTableInfoInstrumentRate()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_INSTRUMENT_RATE);
+    }
+
     public String getSchemaName()
     {
         return TargetedMSSchema.SCHEMA_NAME;
