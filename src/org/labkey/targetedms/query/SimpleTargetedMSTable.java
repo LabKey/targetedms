@@ -15,6 +15,7 @@ public class SimpleTargetedMSTable extends SimpleUserSchema.SimpleTable<Targeted
     {
         super(schema, TargetedMSSchema.getSchema().getTable(name), cf);
         wrapAllColumns(true);
+        TargetedMSTable.fixupLookups(this);
     }
 
     @Override
