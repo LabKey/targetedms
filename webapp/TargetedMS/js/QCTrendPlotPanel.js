@@ -1972,9 +1972,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     openAnnotationDialog: function (addNew, data) {
-        // Parse date as UTC to avoid timezone conversion issues
-        const dateStr = this.formatDate(new Date(data['Date']), false);
-        const date = new Date(dateStr + 'T00:00:00Z');
+        const date = this.formatDate(new Date(data['Date']), false);
         const title = addNew ? 'Add Annotation' : 'Edit Annotation';
         const me = this;
 
