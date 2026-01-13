@@ -1972,7 +1972,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     openAnnotationDialog: function (addNew, data) {
-        const date = this.formatDate(new Date(data['Date']), false);
+        const date = this.formatDate(data['Date'], false);
         const title = addNew ? 'Add Annotation' : 'Edit Annotation';
         const me = this;
 
