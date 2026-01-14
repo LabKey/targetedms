@@ -58,20 +58,27 @@
                 },
                 eventMouseEnter: function(mouseEnterInfo) {
                     const e = mouseEnterInfo.event;
-                    const dateStr = DateFormat.format.date(e.start, LABKEY.container.formats.dateTimeFormat) + ' - ' + DateFormat.format.date(e.end, LABKEY.container.formats.dateTimeFormat);
                     let content = '';
                     content += '<div class="event-tooltip-content">';
-                    if (e.extendedProps && e.extendedProps.instrumentName) {
-                        content += '<div class="event-id">Instrument: ' + LABKEY.Utils.encodeHtml(e.extendedProps.instrumentName) + '</div>';
+                    if (e.extendedProps) {
+                        if (e.extendedProps.instrumentName) {
+                            content += '<div class="event-id">Instrument: ' + LABKEY.Utils.encodeHtml(e.extendedProps.instrumentName) + '</div>';
+                        }
+                        if (e.extendedProps.projectTitle) {
+                            content += '<div class="event-id">Project: ' + LABKEY.Utils.encodeHtml(e.extendedProps.projectTitle) + '</div>';
+                        }
+                        if (e.extendedProps.name) {
+                            content += '<div class="event-id">Name: ' + LABKEY.Utils.encodeHtml(e.extendedProps.name) + '</div>';
+                        }
+                        if (e.extendedProps.notes) {
+                            content += '<div class="event-id">Notes: ' + LABKEY.Utils.encodeHtml(e.extendedProps.notes) + '</div>';
+                        }
                     }
-                    if (e.extendedProps && e.extendedProps.projectTitle) {
-                        content += '<div class="event-id">Project: ' + LABKEY.Utils.encodeHtml(e.extendedProps.projectTitle) + '</div>';
-                    }
-                    content += '<div class="event-date">' + LABKEY.Utils.encodeHtml(dateStr) + '</div>';
                     content += '</div>';
 
                     $(mouseEnterInfo.el).popover({
                         trigger: 'manual',
+                        placement: 'auto top',
                         container: 'body',
                         html: true,
                         content: content
@@ -202,6 +209,8 @@
                                     extendedProps: {
                                         baseColor: color,
                                         instrumentId: instId,
+                                        name: r['name'],
+                                        notes: r['notes'],
                                         instrumentName: r['instrument/name'] || info.name,
                                         projectId: r['project/Id'] || null,
                                         projectTitle: r['project/title'] || ''

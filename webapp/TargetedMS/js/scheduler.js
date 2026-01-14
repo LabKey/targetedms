@@ -101,18 +101,23 @@ $(function() {
                         let content = '';
                         let dateStr = DateFormat.format.date(mouseEnterInfo.event.start, LABKEY.container.formats.dateTimeFormat) + ' - ' + DateFormat.format.date(mouseEnterInfo.event.end, LABKEY.container.formats.dateTimeFormat);
                         content += '<div class="event-tooltip-content">'
-                                + '<div class="event-id" >' + 'Project Id : &nbsp' + LABKEY.Utils.encodeHtml(mouseEnterInfo.event.extendedProps.project) + '</div>'
-                                + '<div class="event-title">' + 'Title : &nbsp' + LABKEY.Utils.encodeHtml(mouseEnterInfo.event.title) + '</div>'
-                                + '<div class="event-date">' + LABKEY.Utils.encodeHtml(dateStr) + '</div>'
-                                + '</div>';
+                                + '<div class="event-title">' + 'Project: ' + LABKEY.Utils.encodeHtml(mouseEnterInfo.event.title) + '</div>'
+                                + '<div class="event-id">' + 'Project Id: ' + LABKEY.Utils.encodeHtml(mouseEnterInfo.event.extendedProps.project) + '</div>';
+                        if (mouseEnterInfo.event.extendedProps.name) {
+                            content += '<div>' + 'Name: ' + LABKEY.Utils.encodeHtml(mouseEnterInfo.event.extendedProps.name) + '</div>'
+                        }
+                        if (mouseEnterInfo.event.extendedProps.name) {
+                            content += '<div>' + 'Notes: ' + LABKEY.Utils.encodeHtml(mouseEnterInfo.event.extendedProps.notes) + '</div>'
+                        }
+                        content += '</div>';
 
 
                         $(mouseEnterInfo.el).popover({
                             trigger: 'manual',
+                            placement: 'auto top',
                             container: 'body',
                             html:true,
                             content: content,
-
                         });
 
                         $(mouseEnterInfo.el).popover('show');
