@@ -1972,7 +1972,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     openAnnotationDialog: function (addNew, data) {
-        const date = this.formatDate(new Date(data['Date']), false);
+        const date = this.formatDate(data['Date'], false);
         const title = addNew ? 'Add Annotation' : 'Edit Annotation';
         const me = this;
 
@@ -2019,7 +2019,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 name: 'annotationDate',
                 format: 'Y-m-d',
                 allowBlank: false,
-                value: date
+                value: date,
+                submitFormat: 'Y-m-d'
             }],
 
             buttons: [{
@@ -2081,13 +2082,16 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     saveAnnotation: function (annotationType, description, annotationDate, win) {
+        // Format date as UTC string (YYYY-MM-DD) to avoid timezone conversion
+        const dateStr = Ext4.util.Format.date(annotationDate, 'Y-m-d');
+
         LABKEY.Query.insertRows({
             schemaName: 'targetedms',
             queryName: 'QCAnnotation',
             rows: [{
                 QCAnnotationTypeId: annotationType,
                 Description: description,
-                Date: annotationDate
+                Date: dateStr
             }],
             success: function () {
                 win.close();
@@ -2109,6 +2113,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     updateAnnotation: function (annotationId, annotationType, description, annotationDate, win) {
+        // Format date as UTC string (YYYY-MM-DD) to avoid timezone conversion
+        const dateStr = Ext4.util.Format.date(annotationDate, 'Y-m-d');
+
         LABKEY.Query.updateRows({
             schemaName: 'targetedms',
             queryName: 'QCAnnotation',
@@ -2116,7 +2123,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 Id: annotationId,
                 QCAnnotationTypeId: annotationType,
                 Description: description,
-                Date: annotationDate
+                Date: dateStr
             }],
             success: function () {
                 win.close();
