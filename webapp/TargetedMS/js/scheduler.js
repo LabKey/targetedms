@@ -103,6 +103,9 @@ $(function() {
                         content += '<div class="event-tooltip-content">'
                                 + '<div class="event-title">' + 'Project: ' + LABKEY.Utils.encodeHtml(mouseEnterInfo.event.title) + '</div>'
                                 + '<div class="event-id">' + 'Project Id: ' + LABKEY.Utils.encodeHtml(mouseEnterInfo.event.extendedProps.project) + '</div>';
+                        if (mouseEnterInfo.event.extendedProps.reservedBy) {
+                            content += '<div>' + 'Reserved by: ' + LABKEY.Utils.encodeHtml(mouseEnterInfo.event.extendedProps.reservedBy) + '</div>'
+                        }
                         if (mouseEnterInfo.event.extendedProps.name) {
                             content += '<div>' + 'Name: ' + LABKEY.Utils.encodeHtml(mouseEnterInfo.event.extendedProps.name) + '</div>'
                         }
@@ -772,7 +775,7 @@ $(function() {
         LABKEY.Query.selectRows({
             schemaName: 'targetedms',
             queryName: 'instrumentSchedule',
-            columns: 'Id,startTime,endTime,name,notes,instrument/color,instrument/Id,project/Id, project/Title',
+            columns: 'Id,startTime,endTime,name,notes,instrument/color,instrument/Id,project/Id,project/Title,CreatedBy/DisplayName',
             filterArray: [
                 LABKEY.Filter.create('instrument', currentInstrument),
             ],
@@ -786,6 +789,7 @@ $(function() {
                         end: new Date(row.endTime),
                         name: row.name,
                         notes: row.notes,
+                        reservedBy: row['CreatedBy/DisplayName'],
                         color: row['instrument/color'],
                         project: row['project/Id'],
                         title: row['project/Title']

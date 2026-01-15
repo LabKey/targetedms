@@ -65,7 +65,13 @@
                             content += '<div class="event-id">Instrument: ' + LABKEY.Utils.encodeHtml(e.extendedProps.instrumentName) + '</div>';
                         }
                         if (e.extendedProps.projectTitle) {
-                            content += '<div class="event-id">Project: ' + LABKEY.Utils.encodeHtml(e.extendedProps.projectTitle) + '</div>';
+                            content += '<div class="event-id">Project: ' + LABKEY.Utils.encodeHtml(e.extendedProps.projectId) + '</div>';
+                        }
+                        if (e.extendedProps.projectId) {
+                            content += '<div class="event-id">Project Id: ' + LABKEY.Utils.encodeHtml(e.extendedProps.projectTitle) + '</div>';
+                        }
+                        if (e.extendedProps.reservedBy) {
+                            content += '<div class="event-id">Reserved by: ' + LABKEY.Utils.encodeHtml(e.extendedProps.reservedBy) + '</div>';
                         }
                         if (e.extendedProps.name) {
                             content += '<div class="event-id">Name: ' + LABKEY.Utils.encodeHtml(e.extendedProps.name) + '</div>';
@@ -190,7 +196,7 @@
                     LABKEY.Query.selectRows({
                         schemaName: 'targetedms',
                         queryName: 'instrumentSchedule',
-                        columns: 'Id,startTime,endTime,name,notes,instrument/Id,instrument/name,instrument/color,project/Id,project/title',
+                        columns: 'Id,startTime,endTime,name,notes,instrument/Id,instrument/name,instrument/color,project/Id,project/title,CreatedBy/DisplayName',
                         success: function (data) {
                             const schedRows = data.rows || [];
                             for (let i = 0; i < schedRows.length; i++) {
@@ -211,6 +217,7 @@
                                         instrumentId: instId,
                                         name: r['name'],
                                         notes: r['notes'],
+                                        reservedBy: r['CreatedBy/DisplayName'],
                                         instrumentName: r['instrument/name'] || info.name,
                                         projectId: r['project/Id'] || null,
                                         projectTitle: r['project/title'] || ''
