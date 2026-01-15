@@ -111,15 +111,15 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         InsertRowsCommand rateTypeInsert = new InsertRowsCommand("targetedms", "rateType");
         rateTypeInsert.setRows(Arrays.asList(
                 Map.of("Name", "DefaultRate", "SetupFee", 50),
-                Map.of("Name", "BigSpenderRate", "SetupFee", 50)
+                Map.of("Name", "BigSpenderRate", "SetupFee", 66)
         ));
         List<Map<String, Object>> rateTypes = rateTypeInsert.execute(createDefaultConnection(), getProjectName()).getRows();
 
         InsertRowsCommand paymentMethodInsert = new InsertRowsCommand("targetedms", "paymentMethod");
         paymentMethodInsert.setRows(Arrays.asList(
-                Map.of("UWBudgetNumber", "1111", "Name", PAYMENT_METHOD_1),
-                Map.of("UWBudgetNumber", "2222", "Name", PAYMENT_METHOD_2),
-                Map.of("UWBudgetNumber", "3333", "Name", PAYMENT_METHOD_3) // Intentionally not associated with a project
+                Map.of("UWBudgetNumber", "1111", "Name", PAYMENT_METHOD_1, "RateType", rateTypes.get(0).get("Id")),
+                Map.of("UWBudgetNumber", "2222", "Name", PAYMENT_METHOD_2, "RateType", rateTypes.get(1).get("Id")),
+                Map.of("UWBudgetNumber", "3333", "Name", PAYMENT_METHOD_3, "RateType", rateTypes.get(0).get("Id")) // Intentionally not associated with a project
         ));
         List<Map<String, Object>> paymentMethods = paymentMethodInsert.execute(createDefaultConnection(), getProjectName()).getRows();
 
@@ -142,7 +142,9 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         InsertRowsCommand instrumentRateInsert = new InsertRowsCommand("targetedms", "instrumentRate");
         instrumentRateInsert.setRows(Arrays.asList(
                 Map.of("Instrument", instruments.get(0).get("Id"), "rateType", rateTypes.get(0).get("Id"), "fee", 100),
-                Map.of("Instrument", instruments.get(1).get("Id"), "rateType", rateTypes.get(1).get("Id"), "fee", 110)
+                Map.of("Instrument", instruments.get(0).get("Id"), "rateType", rateTypes.get(1).get("Id"), "fee", 211),
+                Map.of("Instrument", instruments.get(1).get("Id"), "rateType", rateTypes.get(0).get("Id"), "fee", 100),
+                Map.of("Instrument", instruments.get(1).get("Id"), "rateType", rateTypes.get(1).get("Id"), "fee", 330)
         ));
         List<Map<String, Object>> instrumentRates = instrumentRateInsert.execute(createDefaultConnection(), getProjectName()).getRows();
     }
@@ -301,11 +303,12 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         waitAndClickAndWait(Locator.linkWithText("Instrument billing report"));
         assertTextPresent("$950.00", 8);
         // Two rows, one for each of the two payment methods
-        assertTextPresent("$3,680.00", 2);
+        assertTextPresent("$3,350.00", 1);
+        assertTextPresent("$10,956.00", 1);
         assertTextPresent(PAYMENT_METHOD_1, 5);
         assertTextPresent(PAYMENT_METHOD_2, 1);
-        // Verify the 40/60 split
-        assertTextPresent("$1,472.00", "$2,208.00");
+        // Verify the 40/60 split (though odd since they're different rate types)
+        assertTextPresent("$1,340.00", "$6,573.60");
 
         goToDashboard();
         clickAndWait(Locator.linkWithText("Monthly instrument billing report"));
@@ -314,7 +317,7 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         clickButton("Submit");
         // Only some hours should be in the range for this billing report
         assertTextPresent("17.0", 2);
-        assertTextPresent("$748.00", "$1,122.00");
+        assertTextPresent("$680.00", "$3,366.00");
     }
 
     private void attemptScheduleInsertExpectingFailure(Map<String, Object> row, String expected) throws IOException
