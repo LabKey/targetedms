@@ -730,7 +730,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             shape: shapeProp,
             combined: true,
             yAxisScale: (showLogInvalid ? 'linear' : (this.yAxisScale !== 'log' ? 'linear' : 'log')),
-            valueConversion: (this.yAxisScale === 'percentDeviation' || this.yAxisScale === 'standardDeviation' || this.yAxisScale === 'deltaFromMean' ? this.yAxisScale : undefined),
+            valueConversion: (this.yAxisScale === LABKEY.vis.PlotProperties.ValueConversion.PercentDeviation ||
+                                this.yAxisScale === LABKEY.vis.PlotProperties.ValueConversion.StandardDeviation ||
+                                this.yAxisScale === LABKEY.vis.PlotProperties.ValueConversion.DeltaFromMean ? this.yAxisScale : undefined),
             groupBy: 'fragment',
             color: 'fragment',
             defaultGuideSetLabel: 'fragment',
@@ -873,7 +875,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             xTick: this.groupedX ? 'groupedXTick' : 'fullDate',
             xTickLabel: 'date',
             yAxisScale: (precursorInfo.showLogInvalid ? 'linear' : (this.yAxisScale !== 'log' ? 'linear' : 'log')),
-            valueConversion: (this.yAxisScale === 'percentDeviation' || this.yAxisScale === 'standardDeviation' || this.yAxisScale === 'deltaFromMean' ? this.yAxisScale : undefined),
+            valueConversion: (this.yAxisScale === LABKEY.vis.PlotProperties.ValueConversion.PercentDeviation ||
+                                this.yAxisScale === LABKEY.vis.PlotProperties.ValueConversion.StandardDeviation ||
+                                this.yAxisScale === LABKEY.vis.PlotProperties.ValueConversion.DeltaFromMean ? this.yAxisScale : undefined),
             shape: shapeProp,
             combined: false,
             pointSize: 2,
