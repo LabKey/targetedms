@@ -1,5 +1,0 @@
-ALTER TABLE targetedms.TransitionChromInfo
-    ADD COLUMN Skewness DOUBLE PRECISION,
-    ADD COLUMN Kurtosis DOUBLE PRECISION,
-    ADD COLUMN StdDev DOUBLE PRECISION,
-    ADD COLUMN ShapeCorrelation DOUBLE PRECISION;
