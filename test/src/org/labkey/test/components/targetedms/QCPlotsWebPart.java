@@ -752,7 +752,8 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         LINEAR("Linear"),
         LOG("Log"),
         PERCENT_OF_MEAN("Percent of Mean"),
-        STANDARD_DEVIATIONS("Standard Deviations");
+        STANDARD_DEVIATIONS("Standard Deviations"),
+        DELTA_FROM_MEAN("Delta from Mean");
 
         private final String _text;
 
@@ -773,7 +774,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         {
             return _text;
         }
-    }
+        }
 
     public enum DateRangeOffset
     {

@@ -317,6 +317,8 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1")));
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.STANDARD_DEVIATIONS);
         assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1")));
+        qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.DELTA_FROM_MEAN);
+        assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1")));
 
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LINEAR);
 
@@ -927,6 +929,15 @@ public class TargetedMSQCTest extends TargetedMSTest
         //Expected y axis values are 90 95 100 105 110 115
         log("SVG text " + svgPlotText);
         assertTrue("New plot is not as expected for percent of mean (y-axis) values", svgPlotText.contains("9095100105110115"));
+
+        log("Verifying delta from mean plots");
+        qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.DELTA_FROM_MEAN);
+        svgPlotText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
+        assertFalse("Plot with delta from mean option is blank", svgPlotText.isEmpty());
+        //Expected y axis values are -3 -2.5 -2 -1.5 -1 -0.5 0 0.5 1 1.5 2 2.5
+        log("SVG text " + svgPlotText);
+        assertTrue("New plot is not as expected for percent of mean (y-axis) values", svgPlotText.contains("-3-2.5-2-1.5-1-0.500.511.522.5"));
+
     }
 
     /*
