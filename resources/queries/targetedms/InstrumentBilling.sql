@@ -32,5 +32,5 @@ SELECT
     ((TIMESTAMPDIFF('SQL_TSI_HOUR', StartTime, EndTime) * Fee + ir.rateType.setupFee) * PercentPayment / 100) AS AmountBilled
 
 FROM targetedms.InstrumentSchedule i
-INNER JOIN targetedms.InstrumentRate ir ON i.Instrument = ir.Instrument
 INNER JOIN targetedms.InstrumentUsagePayment iup ON i.Id = iup.InstrumentScheduleId
+INNER JOIN targetedms.InstrumentRate ir ON i.Instrument = ir.Instrument AND iup.PaymentMethod.RateType = ir.rateType
