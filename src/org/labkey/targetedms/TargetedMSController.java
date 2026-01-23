@@ -4398,6 +4398,7 @@ public class TargetedMSController extends SpringActionController
         public abstract String getDataRegionNameSmallMolecule();
     }
 
+    @RequiresLogin // Require a login to protect public folders against aggressive bots hitting this page on very large documents
     @RequiresPermission(ReadPermission.class)
     public class ShowTransitionListAction extends ShowRunSplitDetailsAction<DocumentTransitionsView>
     {
