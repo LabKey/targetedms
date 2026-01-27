@@ -155,7 +155,16 @@ protein =
         if (chromatogram) {
             parentElement.empty();
             parentElement.show();
-            LABKEY.targetedms.SVGChart.requestAndRenderSVG(chromatogramUrl + "id=" + chromatogram + "&syncY=true&syncX=false&chartWidth=250&chartHeight=400", parentElement[0], $('#seriesLegend')[0])
+            const chromatogramUrl = LABKEY.ActionURL.buildURL("targetedms", "precursorChromatogramChart",
+                    LABKEY.ActionURL.getContainer(),
+                    {
+                        id: chromatogram,
+                        syncY: true,
+                        syncX: false,
+                        chartWidth: 250,
+                        chartHeight: 400
+                    });
+            LABKEY.targetedms.SVGChart.requestAndRenderSVG(chromatogramUrl, parentElement[0], $('#seriesLegend')[0]);
             return true;
         }
         else {
@@ -193,7 +202,9 @@ protein =
         }
 
         // sets panorama peptide link
-        $('#selectedPeptideLink').attr("href", showPeptideUrl + "id=" + protein.selectedPeptide.PeptideId);
+        const showPeptideUrl = LABKEY.ActionURL.buildURL("targetedms", "showPeptide", LABKEY.ActionURL.getContainer(), {id: protein.selectedPeptide.PeptideId});
+        $('#selectedPeptideLink').attr("href", showPeptideUrl);
+
         // sets basic peptide info (Seq, location, length, etc..
         $('#peptideinfo').empty();
         var value = protein.selectedPeptide["Before Incubation"] ? protein.selectedPeptide["Before Incubation"] : protein.selectedPeptide["Total Area"];
