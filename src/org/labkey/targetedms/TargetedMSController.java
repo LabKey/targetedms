@@ -2217,7 +2217,7 @@ public class TargetedMSController extends SpringActionController
     }
 
 
-    @RequiresLogin
+    @RequiresLogin // Require a login to protect public folders against aggressive bots hitting this page on very large documents
     @RequiresPermission(ReadPermission.class)
     public class PrecursorAllChromatogramsChartAction extends SimpleViewAction<ChromatogramForm>
     {
@@ -2352,7 +2352,7 @@ public class TargetedMSController extends SpringActionController
         // No match found so no need to redirect
     }
 
-    @RequiresLogin
+    @RequiresLogin // Require a login to protect public folders against aggressive bots hitting this page on very large documents
     @RequiresPermission(ReadPermission.class)
     public class MoleculePrecursorAllChromatogramsChartAction extends SimpleViewAction<ChromatogramForm>
     {
