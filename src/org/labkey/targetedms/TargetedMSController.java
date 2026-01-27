@@ -2217,6 +2217,7 @@ public class TargetedMSController extends SpringActionController
     }
 
 
+    @RequiresLogin
     @RequiresPermission(ReadPermission.class)
     public class PrecursorAllChromatogramsChartAction extends SimpleViewAction<ChromatogramForm>
     {
@@ -2351,6 +2352,7 @@ public class TargetedMSController extends SpringActionController
         // No match found so no need to redirect
     }
 
+    @RequiresLogin
     @RequiresPermission(ReadPermission.class)
     public class MoleculePrecursorAllChromatogramsChartAction extends SimpleViewAction<ChromatogramForm>
     {
