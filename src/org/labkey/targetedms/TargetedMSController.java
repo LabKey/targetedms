@@ -134,6 +134,7 @@ import org.labkey.api.reports.report.RedirectReport;
 import org.labkey.api.reports.report.ReportDescriptor;
 import org.labkey.api.security.ActionNames;
 import org.labkey.api.security.Group;
+import org.labkey.api.security.LoginUrls;
 import org.labkey.api.security.RequiresLogin;
 import org.labkey.api.security.RequiresPermission;
 import org.labkey.api.security.SecurityManager;
@@ -2217,7 +2218,6 @@ public class TargetedMSController extends SpringActionController
     }
 
 
-    @RequiresLogin // Require a login to protect public folders against aggressive bots hitting this page on very large documents
     @RequiresPermission(ReadPermission.class)
     public class PrecursorAllChromatogramsChartAction extends SimpleViewAction<ChromatogramForm>
     {
@@ -2228,6 +2228,12 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(ChromatogramForm form, BindException errors)
         {
+            if (getViewContext().getUser().isGuest())
+            {
+                // Require a login to protect public folders against aggressive bots hitting this page on very large documents
+                return TargetedMSController.getLoginView(getViewContext(), getContainer());
+            }
+
             long precursorId = form.getId();
             _precursor = PrecursorManager.getPrecursor(getContainer(), precursorId, getUser());
             if (_precursor == null)
@@ -2352,7 +2358,6 @@ public class TargetedMSController extends SpringActionController
         // No match found so no need to redirect
     }
 
-    @RequiresLogin // Require a login to protect public folders against aggressive bots hitting this page on very large documents
     @RequiresPermission(ReadPermission.class)
     public class MoleculePrecursorAllChromatogramsChartAction extends SimpleViewAction<ChromatogramForm>
     {
@@ -2363,6 +2368,12 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(ChromatogramForm form, BindException errors)
         {
+            if (getViewContext().getUser().isGuest())
+            {
+                // Require a login to protect public folders against aggressive bots hitting this page on very large documents
+                return TargetedMSController.getLoginView(getViewContext(), getContainer());
+            }
+
             long precursorId = form.getId();
             _precursor = MoleculePrecursorManager.getPrecursor(getContainer(), precursorId, getUser());
             if (_precursor == null)
@@ -4400,10 +4411,18 @@ public class TargetedMSController extends SpringActionController
         public abstract String getDataRegionNameSmallMolecule();
     }
 
-    @RequiresLogin // Require a login to protect public folders against aggressive bots hitting this page on very large documents
     @RequiresPermission(ReadPermission.class)
     public class ShowTransitionListAction extends ShowRunSplitDetailsAction<DocumentTransitionsView>
     {
+        @Override
+        public ModelAndView getHtmlView(final RunDetailsForm form, BindException errors) throws Exception
+        {
+            return getViewContext().getUser().isGuest()
+                    // Require a login to protect public folders against aggressive bots hitting this page on very large documents
+                    ? TargetedMSController.getLoginView(getViewContext(), getContainer())
+                    : super.getHtmlView(form, errors);
+        }
+
         @Override
         protected DocumentTransitionsView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
         {
@@ -4437,6 +4456,18 @@ public class TargetedMSController extends SpringActionController
         {
             return SmallMoleculeTransitionsView.DATAREGION_NAME;
         }
+    }
+
+    @NotNull
+    private static HtmlView getLoginView(ViewContext context, Container container)
+    {
+        return new HtmlView(DOM.createHtmlFragment(
+                DOM.DIV(cl("alert alert-info"),
+                        "Please ",
+                        DOM.A(at(style, "font-weight: bold;",
+                                 href, PageFlowUtil.urlProvider(LoginUrls.class).getLoginURL(container, context.getActionURL())),
+                                "login"),
+                        " to view this data")));
     }
 
     @RequiresPermission(ReadPermission.class)
