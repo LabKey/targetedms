@@ -240,6 +240,12 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         return true;
     }
 
+    @Override
+    public boolean isAvailable(Container container)
+    {
+        return container.isRoot() || container.getActiveModules().contains(this);
+    }
+
     @NotNull
     @Override
     protected Collection<WebPartFactory> createWebPartFactories()
