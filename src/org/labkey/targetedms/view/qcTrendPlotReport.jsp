@@ -30,6 +30,7 @@
         dependencies.add("Ext4");
         dependencies.add("Ext4ClientApi");
         dependencies.add("vis/vis");
+        dependencies.add("internal/tippy");
         dependencies.add("hopscotch/css/hopscotch.min.css");
         dependencies.add("hopscotch/js/hopscotch.min.js");
         dependencies.add("targetedms/css/SVGExportIcon.css");

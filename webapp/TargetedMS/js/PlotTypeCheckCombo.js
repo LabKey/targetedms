@@ -84,10 +84,14 @@ Ext4.define('Ext.ux.CheckCombo', {
 
                 boundList.getEl().on({
                     mouseover: function(event, target) {
-                        createPlotTypeTooltip(event.currentTarget, target.textContent);
-                    },
-                    mouseout: function() {
-                        destroyPlotTypeTooltip();
+                        if (target) {
+                            var text = target.textContent || target.innerText;
+                            if (text) {
+                                // Strip whitespace and leading &nbsp; (which might be present from the template)
+                                text = text.trim();
+                                createPlotTypeTooltip(target, text);
+                            }
+                        }
                     },
                     delegate: "." + Ext4.baseCSSPrefix + 'boundlist-item',
                     scope: this

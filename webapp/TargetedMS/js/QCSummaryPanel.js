@@ -483,16 +483,23 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
         // add mouse listeners to the div element for when to show the hover details for this sample file
         divEl.on('mouseover', function() {
             task.delay(1000, function(el){
-                var calloutMgr = hopscotch.getCalloutManager();
-                calloutMgr.removeAllCallouts();
-                calloutMgr.createCallout({
-                    id: Ext4.id(),
-                    target: el.dom,
-                    placement: 'bottom',
-                    width: sampleFile.Metrics.length > 0 ? 800 : 300,
+                tippy(el.dom, {
                     content: content,
-                    onShow: this.attachHopscotchMouseClose
+                    theme: 'light',
+                    sticky: true,
+                    followCursor: true,
+                    maxWidth: 800
                 });
+                // var calloutMgr = hopscotch.getCalloutManager();
+                // calloutMgr.removeAllCallouts();
+                // calloutMgr.createCallout({
+                //     id: Ext4.id(),
+                //     target: el.dom,
+                //     placement: 'bottom',
+                //     width: sampleFile.Metrics.length > 0 ? 800 : 300,
+                //     content: content,
+                //     onShow: this.attachHopscotchMouseClose
+                // });
             }, this, [divEl]);
         }, this);
 

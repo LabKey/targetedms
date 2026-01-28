@@ -1169,13 +1169,21 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (!this.createGuideSetToggleButton) {
             this.createGuideSetToggleButton = Ext4.create('Ext.button.Button', {
                 text: 'Create Guide Set',
-                tooltip: 'Enable/disable guide set creation mode. Supported for plots when ' + LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries + ' or fewer samples are shown',
+                id: 'create-guide-set-button',
+
+                // tooltip: 'Enable/disable guide set creation mode. Supported for plots when ' + LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries + ' or fewer samples are shown',
                 disabled: !this.canCreateGuideSetFromPlot(),
                 enableToggle: true,
                 handler: function(btn) {
                     this.setBrushingEnabled(btn.pressed);
                 },
                 scope: this
+            });
+
+            tippy.delegate('body', {
+                target: '#create-guide-set-button', // The selector for elements that don't exist yet
+                content: 'I am a dynamic tooltip!',
+                // any other tippy props...
             });
         }
 
@@ -1400,8 +1408,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     plotPointMouseOver : function(event, row, layerSel, point, valueName, plotConfig) {
-        var showHoverTask = new Ext4.util.DelayedTask(),
-            metricProps = this.getMetricPropsById(row.MetricId),
+        let metricProps = this.getMetricPropsById(row.MetricId),
             me = this;
 
         let panelY = me.canUserEdit() ? -375 : -270;
@@ -1413,52 +1420,57 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         let trailingStartDate = Ext4.util.Format.date(row['TrailingStartDate'], 'Y-m-d H:i');
         let trailingEndDate = Ext4.util.Format.date(row['fullDate'], 'Y-m-d H:i');
 
-        showHoverTask.delay(500, function() {
-            var calloutMgr = hopscotch.getCalloutManager(),
-                hopscotchId = Ext4.id(),
-                contentDivId = Ext4.id(),
-                shiftLeft = (event.clientX || event.x) > (Ext4.getBody().getWidth() / 2),
-                config = {
-                    id: hopscotchId,
-                    showCloseButton: true,
-                    bubbleWidth: 450,
-                    placement: 'top',
-                    xOffset: shiftLeft ? -428 : -53,
-                    arrowOffset: shiftLeft ? 410 : 35,
-                    yOffset: panelY,
-                    target: point,
-                    content: '<div id="' + contentDivId + '"></div>',
-                    onShow: function() {
-                        me.attachHopscotchMouseClose();
+        // Hide any previously open tooltip
+        if (me.currentTippy && me.currentTippy !== point._tippy) {
+            me.currentTippy.hide();
+        }
 
-                        Ext4.create('LABKEY.targetedms.QCPlotHoverPanel', {
-                            renderTo: contentDivId,
-                            pointData: row,
-                            valueName: valueName,
-                            trailingRuns: trailingRuns,
-                            trailingStartDate: trailingStartDate,
-                            trailingEndDate: trailingEndDate,
-                            metricProps: metricProps,
-                            canEdit: me.canUserEdit(),
-                            listeners: {
-                                scope: me,
-                                close: function() {
-                                    calloutMgr.removeAllCallouts();
-                                }
-                            }
-                        });
-                    }
-                };
+        if (!point._tippy) {
+        const container = document.createElement('div');
+        container.id = Ext4.id();
+        document.body.appendChild(container);
 
-            calloutMgr.removeAllCallouts();
-            calloutMgr.createCallout(config);
+        new LABKEY.targetedms.QCPlotHoverPanel({
+            pointData: row,
+            valueName: valueName,
+            trailingRuns: trailingRuns,
+            trailingStartDate: trailingStartDate,
+            trailingEndDate: trailingEndDate,
+            metricProps: metricProps,
+            canEdit: me.canUserEdit(),
+            renderTo: container
         });
 
-        // cancel the hover details show event if the user was just
-        // passing over the point without stopping for X amount of time
-        Ext4.get(point).on('mouseout', function() {
-            showHoverTask.cancel();
-        }, this);
+        tippy(point, {
+            allowHTML: true,
+            interactive: true,
+            theme: 'light',
+            content: container,
+            hideOnClick: 'toggle',
+            arrow: true,
+            maxWidth: 500,
+            appendTo: document.body,
+            onShow(instance) {
+                const tippyBox = instance.popper.querySelector('.tippy-box');
+                const tippyContent = instance.popper.querySelector('.tippy-content');
+                if (tippyBox) {
+                    tippyBox.style.backgroundColor = 'transparent';
+                    tippyBox.style.border = 'none';
+                    tippyBox.style.boxShadow = 'none';
+                }
+                if (tippyContent) {
+                    tippyContent.style.padding = '5px';
+                    tippyContent.style.wordWrap = 'break-word';
+                    tippyContent.style.overflowWrap = 'break-word';
+                }
+            }
+        });
+        } else {
+            point._tippy.show();
+        }
+
+        // Track the currently open tooltip
+        me.currentTippy = point._tippy;
 
         // for the combined / single plot case, we want to have point hover highlight the given series
         // by using opacity to "push" the other points and lines to the background
