@@ -1169,21 +1169,13 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (!this.createGuideSetToggleButton) {
             this.createGuideSetToggleButton = Ext4.create('Ext.button.Button', {
                 text: 'Create Guide Set',
-                id: 'create-guide-set-button',
-
-                // tooltip: 'Enable/disable guide set creation mode. Supported for plots when ' + LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries + ' or fewer samples are shown',
+                tooltip: 'Enable/disable guide set creation mode. Supported for plots when ' + LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries + ' or fewer samples are shown',
                 disabled: !this.canCreateGuideSetFromPlot(),
                 enableToggle: true,
                 handler: function(btn) {
                     this.setBrushingEnabled(btn.pressed);
                 },
                 scope: this
-            });
-
-            tippy.delegate('body', {
-                target: '#create-guide-set-button', // The selector for elements that don't exist yet
-                content: 'I am a dynamic tooltip!',
-                // any other tippy props...
             });
         }
 
