@@ -4461,13 +4461,20 @@ public class TargetedMSController extends SpringActionController
     @NotNull
     private static HtmlView getLoginView(ViewContext context, Container container)
     {
+        ActionURL registerUrl = new ActionURL("login", "register", container);
+        registerUrl.addReturnUrl(context.getActionURL());
+
         return new HtmlView(DOM.createHtmlFragment(
                 DOM.DIV(cl("alert alert-info"),
-                        "Please ",
                         DOM.A(at(style, "font-weight: bold;",
                                  href, PageFlowUtil.urlProvider(LoginUrls.class).getLoginURL(container, context.getActionURL())),
-                                "login"),
-                        " to view this data")));
+                                "Login"),
+                        " to view this data.",
+                       DOM.BR(),
+                       "Don't have an account? ",
+                        DOM.A(at(style, "font-weight: bold;",
+                                        href, registerUrl),
+                                "Register"))));
     }
 
     @RequiresPermission(ReadPermission.class)
