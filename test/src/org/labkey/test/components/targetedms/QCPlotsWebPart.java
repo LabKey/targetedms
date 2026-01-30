@@ -530,10 +530,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
                     WebElement point = getPointByAcquiredDate(acquiredDate);
                     ScrollUtils.scrollIntoView(point, center, center);
                     getWrapper().mouseOverWithoutScrolling(point);
-                    return getWrapper().isElementPresent(Locator.tagWithClass("div", "x4-form-display-field")
-                            .containing(acquiredDate.substring(0, 16))); // drop seconds part (e.g. "2013-08-12 04:54") for trailing mean/CV
+                    return getWrapper().isElementPresent(Locator.tagWithClass("div", "qc-plot-hover-panel")
+                            .withDescendant(Locator.tagWithClass("div", "qc-hover-field")
+                                    .containing(acquiredDate.substring(0, 16)))); // drop seconds part (e.g. "2013-08-12 04:54") for trailing mean/CV
                 });
-        return elementCache().hopscotchBubble.findElement(getDriver());
+        return elementCache().tippyBubble.findElement(getDriver());
     }
 
     @LogMethod
@@ -972,6 +973,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         Locator.CssLocator svgBackgrounds = Locator.css("svg g.brush rect.background");
         Locator.XPathLocator hopscotchBubble = Locator.byClass("hopscotch-bubble-container");
         Locator.XPathLocator hopscotchBubbleClose = Locator.byClass("hopscotch-bubble-close");
+        Locator.XPathLocator tippyBubble = Locator.tagWithClass("div", "qc-plot-hover-panel");
 
         List<WebElement> findSeriesPanels()
         {
