@@ -733,13 +733,12 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public Locator.XPathLocator getBubble()
     {
-        return Locator.byClass("hopscotch-bubble-container");
+        return Locator.tagWithClass("div", "qc-plot-hover-panel");
     }
 
     public Locator.XPathLocator getBubbleContent()
     {
-        Locator.XPathLocator hopscotchBubble = Locator.byClass("hopscotch-bubble-container");
-        return hopscotchBubble.append(Locator.byClass("hopscotch-bubble-content").append(Locator.byClass("hopscotch-content").withText()));
+        return Locator.tagWithClass("div", "qc-plot-hover-panel");
     }
 
     public ConfigureMetricsUIPage clickConfigureQCMetrics()
