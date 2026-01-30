@@ -133,6 +133,7 @@ import org.labkey.api.reports.model.ViewCategoryManager;
 import org.labkey.api.reports.report.RedirectReport;
 import org.labkey.api.reports.report.ReportDescriptor;
 import org.labkey.api.security.ActionNames;
+import org.labkey.api.security.AuthenticationManager;
 import org.labkey.api.security.Group;
 import org.labkey.api.security.LoginUrls;
 import org.labkey.api.security.RequiresLogin;
@@ -2309,10 +2310,9 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void addNavTrail(NavTree root)
         {
+            root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
             if (null != _run)
             {
-                root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
-
                 root.addChild(_run.getDescription(), getShowRunURL(getContainer(), _run.getId()));
 
                 ActionURL pepDetailsUrl = new ActionURL(ShowPeptideAction.class, getContainer());
@@ -4461,20 +4461,20 @@ public class TargetedMSController extends SpringActionController
     @NotNull
     private static HtmlView getLoginView(ViewContext context, Container container)
     {
-        ActionURL registerUrl = new ActionURL("login", "register", container);
-        registerUrl.addReturnUrl(context.getActionURL());
+        ActionURL loginUrl = PageFlowUtil.urlProvider(LoginUrls.class).getLoginURL(container, context.getActionURL());
+        ActionURL registerUrl = PageFlowUtil.urlProvider(LoginUrls.class).getRegisterURL(container, context.getActionURL());
+        HtmlString loginLink = DOM.createHtmlFragment(
+                                DOM.A(at(style, "font-weight: bold;", href, loginUrl),"Login"),
+                                " to view this data");
+        HtmlString registerLink = DOM.createHtmlFragment(
+                                    DOM.BR(),
+                                    "Don't have an account? ",
+                                    DOM.A(at(style, "font-weight: bold;", href, registerUrl), "Register"));
 
         return new HtmlView(DOM.createHtmlFragment(
                 DOM.DIV(cl("alert alert-info"),
-                        DOM.A(at(style, "font-weight: bold;",
-                                 href, PageFlowUtil.urlProvider(LoginUrls.class).getLoginURL(container, context.getActionURL())),
-                                "Login"),
-                        " to view this data.",
-                       DOM.BR(),
-                       "Don't have an account? ",
-                        DOM.A(at(style, "font-weight: bold;",
-                                        href, registerUrl),
-                                "Register"))));
+                        loginLink,
+                        AuthenticationManager.isRegistrationEnabled() ? registerLink : "")));
     }
 
     @RequiresPermission(ReadPermission.class)
