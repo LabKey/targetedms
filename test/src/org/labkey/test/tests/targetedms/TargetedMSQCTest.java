@@ -1001,8 +1001,12 @@ public class TargetedMSQCTest extends TargetedMSTest
     {
         QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
         WebElement bubble = qcPlotsWebPart.openExclusionBubble(acquiredDate);
-        RadioButton radioButton = RadioButton.RadioButton().withLabel(state.getLabel()).find(bubble);
-        assertTrue("QC data point exclusion selection not as expected:" + state.getLabel(), radioButton.isChecked());
+        // Updated for tippy implementation - uses standard HTML radio buttons with name="exclusion-status"
+        WebElement radioButton = Locator.tag("input").withAttribute("type", "radio")
+                .withAttribute("name", "exclusion-status")
+                .followingSibling("label").withText(state.getLabel())
+                .precedingSibling("input").findElement(bubble);
+        assertTrue("QC data point exclusion selection not as expected:" + state.getLabel(), radioButton.isSelected());
         qcPlotsWebPart.closeBubble();
     }
 
@@ -1010,11 +1014,16 @@ public class TargetedMSQCTest extends TargetedMSTest
     {
         QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
         WebElement bubble = qcPlotsWebPart.openExclusionBubble(acquiredDate);
-        RadioButton radioButton = RadioButton.RadioButton().withLabel(state.getLabel()).find(bubble);
-        if (!radioButton.isChecked())
+        // Updated for tippy implementation - uses standard HTML radio buttons with name="exclusion-status"
+        WebElement radioButton = Locator.tag("input").withAttribute("type", "radio")
+                .withAttribute("name", "exclusion-status")
+                .followingSibling("label").withText(state.getLabel())
+                .precedingSibling("input").findElement(bubble);
+        if (!radioButton.isSelected())
         {
-            radioButton.check();
-            clickAndWait(Ext4Helper.Locators.ext4Button("Save").findElement(bubble));
+            radioButton.click();
+            // Updated for tippy implementation - uses standard HTML button with class="labkey-button"
+            clickAndWait(Locator.tagWithClass("button", "labkey-button").withText("Save").findElement(bubble));
         }
         else
             qcPlotsWebPart.closeBubble();

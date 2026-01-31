@@ -207,10 +207,16 @@ LABKEY.targetedms.QCPlotHoverPanel.prototype = {
 
     getPlotPointExclusionSaveBtn: function () {
         if (!this.exclusionsSaveBtn) {
+            var btnContainer = document.createElement('div');
+            btnContainer.style.marginLeft = '120px';
+            btnContainer.style.marginTop = '10px';
+
             this.exclusionsSaveBtn = document.createElement('button');
             this.exclusionsSaveBtn.textContent = 'Save';
             this.exclusionsSaveBtn.disabled = true;
             this.exclusionsSaveBtn.className = 'labkey-button';
+
+            btnContainer.appendChild(this.exclusionsSaveBtn);
 
             var self = this;
             this.exclusionsSaveBtn.addEventListener('click', function () {
@@ -292,9 +298,11 @@ LABKEY.targetedms.QCPlotHoverPanel.prototype = {
                     self.onClose();
                 }
             });
+
+            return btnContainer;
         }
 
-        return this.exclusionsSaveBtn;
+        return this.exclusionsSaveBtn.parentNode;
     },
 
     getPlotPointExclusionRadioGroup: function () {
