@@ -30,6 +30,9 @@ import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestFileUtils;
 import org.labkey.test.components.FilesWebPart;
+import org.labkey.test.pages.core.admin.ShowAdminPage;
+import org.labkey.test.pages.core.login.LoginConfigurePage;
+import org.labkey.test.util.ApiPermissionsHelper;
 import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.Ext4Helper;
 import org.labkey.test.util.FileBrowserHelper;
@@ -47,9 +50,11 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.labkey.test.util.DataRegionTable.DataRegion;
+import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
 
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 8)
@@ -96,6 +101,9 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         // Verify product ion labels
         importData(SKY_FILE3, ++jobCount);
         verifyFragmentIonLabels(SKY_FILE3);
+
+        // Verify that guests access is blocked on some actions
+        verifyGuestAccess();
     }
 
     @LogMethod
@@ -798,5 +806,90 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         List<String> missing = expectedLegendTexts.stream().filter(l -> !svgTexts.contains(l)).toList();
 
         assertTrue("Missing legend items in chromatogram plot - " + missing, missing.isEmpty());
+    }
+
+    @LogMethod
+    private void verifyGuestAccess()
+    {
+        // Enable self sign up
+        ShowAdminPage adminPage = goToAdminConsole();
+        LoginConfigurePage loginConfigurePage = adminPage.clickAuthentication();
+        loginConfigurePage.setSelfSignup(true);
+        loginConfigurePage.clickSaveAndFinish();
+
+        // Make folder public
+        goToProjectHome(getProjectName());
+        ApiPermissionsHelper permissionsHelper = new ApiPermissionsHelper(this);
+        permissionsHelper.setSiteGroupPermissions("Guests", READER_ROLE);
+
+        // Signout
+        signOut();
+        verifyGuestAccess(true);
+
+        // Disable self-signup
+        signIn();
+        adminPage = goToAdminConsole();
+        loginConfigurePage = adminPage.clickAuthentication();
+        loginConfigurePage.setSelfSignup(false);
+        loginConfigurePage.clickSaveAndFinish();
+
+        // Message on blocked pages should not include link to register
+        signOut();
+        verifyGuestAccess(false);
+    }
+
+    private void verifyGuestAccess(boolean selfSignupEnabled)
+    {
+        goToProjectHome(getProjectName());
+        goToDashboard();
+
+        // Verify guest CAN view the document details page (ShowPrecursorListAction)
+        clickAndWait(Locator.linkWithText(SKY_FILE));
+        assertTextPresent("Document Summary");
+
+        // Verify guest CAN view the protein details page (ShowProteinAction)
+        String targetProtein = "YAL038W";
+        clickAndWait(Locator.linkWithText(targetProtein));
+        assertTextPresentInThisOrder(targetProtein,
+                "Protein",
+                "Sequence Coverage",
+                "Annotations for " + targetProtein,
+                "Peptides",
+                "Chromatograms",
+                "Summary Charts");
+
+        // Verify guest CAN view the peptide details page (ShowPeptideAction)
+        String targetPeptide = "LTSLNVVAGSDLR";
+        clickAndWait(Locator.linkWithText(targetPeptide));
+        assertTextPresentInThisOrder(targetPeptide,
+                "Peptide Summary",
+                "Chromatograms",
+                "Summary Charts",
+                "LTSLNVVAGSDLR, Charge 2"); // Title of the MS/MS spectrum viewer panel
+
+        // Verify guest CANNOT view the precursor details page (PrecursorAllChromatogramsChartAction)
+        clickAndWait(Locator.linkWithImage("TransitionGroupLib.png"));
+        verifyNoGuestAccessMessage(selfSignupEnabled);
+
+        // Go back to the document details page and in Document Summary click the transitions link
+        // Verify guest CANNOT view the transitions list (ShowTransitionListAction)
+        goToDashboard();
+        clickAndWait(Locator.linkWithText(SKY_FILE));
+        clickAndWait(Locator.linkWithText("296 transitions"));
+        verifyNoGuestAccessMessage(selfSignupEnabled);
+    }
+
+    private void verifyNoGuestAccessMessage(boolean selfSignupEnabled)
+    {
+        String fullBodyText = getBodyText();
+        if (selfSignupEnabled)
+        {
+            assertTrue(fullBodyText.contains("Login to view this data" + "\n" + "Don't have an account? Register"));
+        }
+        else
+        {
+            assertTrue(fullBodyText.contains("Login to view this data"));
+            assertFalse(fullBodyText.contains("Don't have an account? Register"));
+        }
     }
 }
