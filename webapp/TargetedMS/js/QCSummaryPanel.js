@@ -227,8 +227,10 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
     },
 
     showAutoQCMessage : function(divId, autoQC, hasChildren) {
+
         var divEl = Ext4.get(divId),
-            content = '';
+            content = '',
+            me = this;
 
         if (!divEl)
             return;
@@ -248,26 +250,58 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
 
         content = '<div>' + content + '</div><br/>' + this.getAutoQCSetupInfo();
 
-        // add mouse listeners to the div element for when to show the AutoQC message
-        divEl.on('mouseover', function() {
-            var calloutMgr = hopscotch.getCalloutManager();
-            calloutMgr.removeAllCallouts();
-            calloutMgr.createCallout({
-                id: Ext4.id(),
-                target: divEl.dom,
-                placement: 'left',
-                yOffset: -22,
-                arrowOffset: 7,
-                width: 300,
-                showCloseButton: false,
-                content: content
-            });
-        }, this);
+        tippy(divEl.dom, {
+            content: content,
+            allowHTML: true,
+            placement: 'right',
+            arrow: true,
+            maxWidth: 300,
+            trigger: 'mouseenter',
+            hideOnClick: false,
+            appendTo: document.body,
+            followCursor: 'initial',
+            onShow(instance) {
+                // Hide any previously open tooltip
+                if (me.currentTippy && me.currentTippy !== instance) {
+                    me.currentTippy.hide();
+                }
+                me.currentTippy = instance;
 
-        // close the hover details on mouseout of the autoQC element
-        divEl.on('mouseout', function() {
-            hopscotch.getCalloutManager().removeAllCallouts();
-        }, this);
+                const tippyBox = instance.popper.querySelector('.tippy-box');
+                const tippyContent = instance.popper.querySelector('.tippy-content');
+                const tippyArrow = instance.popper.querySelector('.tippy-arrow');
+
+                if (tippyBox) {
+                    tippyBox.style.backgroundColor = 'white';
+                    tippyBox.style.color = 'black';
+                    tippyBox.style.border = '2px solid #808080';
+                    tippyBox.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
+                }
+                if (tippyContent) {
+                    tippyContent.style.padding = '10px';
+                    tippyContent.style.maxHeight = 'none';
+                    tippyContent.style.overflow = 'visible';
+                    tippyContent.style.height = 'auto';
+                    tippyContent.style.width = 'auto';
+                }
+                if (tippyArrow) {
+                    tippyArrow.style.color = 'white';
+                    // Create border using multiple 1px drop shadows
+                    tippyArrow.style.filter = 'drop-shadow(0 0 0 #808080) drop-shadow(0 1px 0 #808080) drop-shadow(0 -1px 0 #808080) drop-shadow(1px 0 0 #808080) drop-shadow(-1px 0 0 #808080)';
+                    // Adjust positioning to account for the border
+                    const placement = instance.props.placement;
+                    if (placement.startsWith('bottom')) {
+                        tippyArrow.style.top = '-1px';
+                    } else if (placement.startsWith('top')) {
+                        tippyArrow.style.bottom = '-1px';
+                    } else if (placement.startsWith('left')) {
+                        tippyArrow.style.right = '-1px';
+                    } else if (placement.startsWith('right')) {
+                        tippyArrow.style.left = '-1px';
+                    }
+                }
+            }
+        });
     },
 
     queryContainerSampleFileStats: function (container) {
@@ -407,7 +441,8 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
     showSampleFileStatsDetails : function(divId, sampleFile) {
         var task = new Ext4.util.DelayedTask(),
             divEl = Ext4.get(divId),
-            content = '';
+            content = '',
+            me = this;
 
         var sampleHREF = LABKEY.ActionURL.buildURL('targetedms', 'showSampleFile', LABKEY.ActionURL.getContainer(), {id: sampleFile.SampleId});
 
@@ -480,42 +515,68 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
             content += '</table>';
         }
 
-        // add mouse listeners to the div element for when to show the hover details for this sample file
-        divEl.on('mouseover', function() {
-            task.delay(1000, function(el){
-                var calloutMgr = hopscotch.getCalloutManager();
-                calloutMgr.removeAllCallouts();
-                calloutMgr.createCallout({
-                    id: Ext4.id(),
-                    target: el.dom,
-                    placement: 'bottom',
-                    width: sampleFile.Metrics.length > 0 ? 800 : 300,
-                    content: content,
-                    onShow: this.attachHopscotchMouseClose
+        tippy(divEl.dom, {
+            content: content,
+            allowHTML: true,
+            placement: 'bottom',
+            arrow: true,
+            maxWidth: sampleFile.Metrics.length > 0 ? 800 : 300,
+            trigger: 'mouseenter',
+            delay: [500, 0],
+            interactive: true,
+            hideOnClick: false,
+            appendTo: document.body,
+            followCursor: 'initial',
+            onShow(instance) {
+                // Hide any previously open tooltip
+                if (me.currentTippy && me.currentTippy !== instance) {
+                    me.currentTippy.hide();
+                }
+                me.currentTippy = instance;
+
+                // Apply light background styling
+                const tippyBox = instance.popper.querySelector('.tippy-box');
+                const tippyContent = instance.popper.querySelector('.tippy-content');
+                const tippyArrow = instance.popper.querySelector('.tippy-arrow');
+
+                if (tippyBox) {
+                    tippyBox.style.backgroundColor = 'white';
+                    tippyBox.style.color = 'black';
+                    tippyBox.style.border = '2px solid #808080';
+                    tippyBox.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
+                }
+                if (tippyContent) {
+                    tippyContent.style.padding = '10px';
+                    tippyContent.style.maxHeight = 'none';
+                    tippyContent.style.overflow = 'visible';
+                    tippyContent.style.height = 'auto';
+                    tippyContent.style.width = 'auto';
+                }
+                if (tippyArrow) {
+                    tippyArrow.style.color = 'white';
+                    // Create border using multiple 1px drop shadows
+                    tippyArrow.style.filter = 'drop-shadow(0 0 0 #808080) drop-shadow(0 1px 0 #808080) drop-shadow(0 -1px 0 #808080) drop-shadow(1px 0 0 #808080) drop-shadow(-1px 0 0 #808080)';
+                    // Adjust positioning to account for the border
+                    const placement = instance.props.placement;
+                    if (placement.startsWith('bottom')) {
+                        tippyArrow.style.top = '-1px';
+                    } else if (placement.startsWith('top')) {
+                        tippyArrow.style.bottom = '-1px';
+                    } else if (placement.startsWith('left')) {
+                        tippyArrow.style.right = '-1px';
+                    } else if (placement.startsWith('right')) {
+                        tippyArrow.style.left = '-1px';
+                    }
+                }
+
+                // Add a delay before hiding when mouse leaves
+                instance.popper.addEventListener('mouseleave', function() {
+                    setTimeout(function() {
+                        if (!instance.state.isVisible) return;
+                        instance.hide();
+                    }, 1000);
                 });
-            }, this, [divEl]);
-        }, this);
-
-        // cancel the hover details show event if the user was just passing over the div without stopping for X amount of time
-        divEl.on('mouseout', function() {
-            task.cancel();
-        }, this);
-    },
-
-    attachHopscotchMouseClose: function() {
-        var closeTask = new Ext4.util.DelayedTask();
-        var h = Ext4.select('.hopscotch-bubble-container');
-
-        // on mouseout call the delayed task to close the callout
-        h.on('mouseout', function() {
-            closeTask.delay(1000, function() {
-                hopscotch.getCalloutManager().removeAllCallouts();
-            });
-        });
-
-        // if the mouseover happens again for this element before the delay, cancel it to keep callout open
-        h.on('mouseover', function() {
-            closeTask.cancel();
+            }
         });
     },
 
