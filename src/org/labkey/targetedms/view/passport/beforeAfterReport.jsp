@@ -2,7 +2,6 @@
 <%@ page import="org.labkey.api.view.HttpView" %>
 <%@ page import="org.labkey.api.view.JspView" %>
 <%@ page import="org.labkey.api.view.template.ClientDependencies" %>
-<%@ page import="org.labkey.targetedms.TargetedMSController" %>
 <%@ page import="org.labkey.targetedms.model.passport.IPeptide" %>
 <%@ page import="org.labkey.targetedms.model.passport.IProtein" %>
 <%@ taglib prefix="labkey" uri="http://www.labkey.org/taglib" %>
@@ -52,8 +51,6 @@
     document.addEventListener("DOMContentLoaded", function() {
         protein.initialize();
     });
-    var chromatogramUrl = "<%=h(urlFor(TargetedMSController.PrecursorChromatogramChartAction.class))%>";
-    var showPeptideUrl = "<%=h(urlFor(TargetedMSController.ShowPeptideAction.class))%>";
 </script>
 <!--END IMPORTS-->
 
