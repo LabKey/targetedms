@@ -1202,7 +1202,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     displayTrendPlot: function() {
-        hopscotch.getCalloutManager().removeAllCallouts();
 
         this.setBrushingEnabled(false);
         this.updateSelectedAnnotations();
@@ -1493,23 +1492,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             return d.name.indexOf(fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1
         };
         legendItems.attr('fill-opacity', legendOpacityAcc).attr('stroke-opacity', legendOpacityAcc);
-    },
-
-    attachHopscotchMouseClose: function() {
-        var closeTask = new Ext4.util.DelayedTask();
-        var h = Ext4.select('.hopscotch-bubble-container');
-
-        // on mouseout call the delayed task to close the callout
-        h.on('mouseout', function() {
-            closeTask.delay(1000, function() {
-                hopscotch.getCalloutManager().removeAllCallouts();
-            });
-        });
-
-        // if the mouseover happens again for this element before the delay, cancel it to keep callout open
-        h.on('mouseover', function() {
-            closeTask.cancel();
-        });
     },
 
     plotBrushStartEvent : function(plot) {

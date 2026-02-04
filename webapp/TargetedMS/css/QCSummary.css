@@ -81,16 +81,6 @@
     margin: 0;
 }
 
-div.hopscotch-bubble .hopscotch-actions,
-div.hopscotch-bubble .hopscotch-content {
-    margin: 0;
-    padding: 0;
-}
-
-div.hopscotch-bubble .hopscotch-title {
-    padding-bottom: 5px;
-}
-
 td.outlier-column-header, td.outlier-metric-label {
     white-space: nowrap;
 }
