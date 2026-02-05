@@ -31,8 +31,6 @@
         dependencies.add("Ext4ClientApi");
         dependencies.add("vis/vis");
         dependencies.add("internal/tippy");
-        dependencies.add("hopscotch/css/hopscotch.min.css");
-        dependencies.add("hopscotch/js/hopscotch.min.js");
         dependencies.add("targetedms/css/SVGExportIcon.css");
         dependencies.add("targetedms/css/qcTrendPlotReport.css");
         dependencies.add("targetedms/js/QCPlotHelperBase.js");
@@ -100,24 +98,53 @@
             });
         }
 
+        let plotTypeTooltipInstance = null;
+
         function createPlotTypeTooltip(tgt, plotType) {
-            let calloutMgr = hopscotch.getCalloutManager();
-            calloutMgr.removeAllCallouts();
-            calloutMgr.createCallout({
-                id: Ext4.id(),
-                target: tgt,
+            destroyPlotTypeTooltip();
+
+            const title = plotType.trim() + ' Plot Type';
+            const content = getPlotTypeHelpTooltip(plotType.trim());
+
+            plotTypeTooltipInstance = tippy(tgt, {
+                content: '<div style="padding: 15px;">' +
+                         '<div style="font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #000;">' +
+                         LABKEY.Utils.encodeHtml(title) + '</div><div style="font-size: 14px; line-height: 1.5; color: #000;">' +
+                         content + '</div></div>',
+                allowHTML: true,
                 placement: 'top',
-                width: 300,
-                xOffset: -250,
-                arrowOffset: 270,
-                showCloseButton: false,
-                title: plotType.trim() + ' Plot Type',
-                content: this.getPlotTypeHelpTooltip(plotType.trim())
-            }, this);
+                maxWidth: 350,
+                showOnCreate: true,
+                trigger: 'manual',
+                hideOnClick: false,
+                offset: [-250, 10],
+                onShow(instance) {
+                    const tippyBox = instance.popper.querySelector('.tippy-box');
+                    if (tippyBox) {
+                        tippyBox.style.border = '5px solid #5d5c5c';
+                        tippyBox.style.backgroundColor = 'white';
+                        tippyBox.style.borderRadius = '4px';
+                    }
+
+                    const arrow = instance.popper.querySelector('.tippy-arrow');
+                    if (arrow) {
+                        arrow.style.color = '#5d5c5c';
+                        arrow.style.width = '20px';
+                        arrow.style.height = '20px';
+                        const arrowBorder = arrow.querySelector('svg');
+                        if (arrowBorder) {
+                            arrowBorder.style.fill = '#5d5c5c';
+                        }
+                    }
+                }
+            });
         }
 
         function destroyPlotTypeTooltip() {
-            hopscotch.getCalloutManager().removeAllCallouts();
+            if (plotTypeTooltipInstance) {
+                plotTypeTooltipInstance.destroy();
+                plotTypeTooltipInstance = null;
+            }
         }
 
         function  getPlotTypeHelpTooltip(plotTypeName) {

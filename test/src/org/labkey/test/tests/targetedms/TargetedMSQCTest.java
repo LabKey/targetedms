@@ -812,20 +812,11 @@ public class TargetedMSQCTest extends TargetedMSTest
         //Check for clickable PDF and PNG export icons for Combined plot
         verifyDownloadablePlotIcons(1);
 
-        checkAndCloseTooltip();
-
         //deselect "Show All Peptides in Single Plot"
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false, currentPagePlotCount);
 
         //Check for no. of PDF and PNG export icons for individual plots
         verifyDownloadablePlotIcons(currentPagePlotCount);
-    }
-
-    private void checkAndCloseTooltip()
-    {
-        Locator bubbleClose = Locator.byClass("hopscotch-bubble-close");
-        if (isElementPresent(bubbleClose) && isElementVisible(bubbleClose))
-            click(bubbleClose);
     }
 
     @Test
@@ -1007,7 +998,6 @@ public class TargetedMSQCTest extends TargetedMSTest
                 .followingSibling("label").withText(state.getLabel())
                 .precedingSibling("input").findElement(bubble);
         assertTrue("QC data point exclusion selection not as expected:" + state.getLabel(), radioButton.isSelected());
-        qcPlotsWebPart.closeBubble();
     }
 
     private void changePointExclusionState(String acquiredDate, QCPlotsWebPart.QCPlotExclusionState state, int waitForPlotCount)
@@ -1025,8 +1015,6 @@ public class TargetedMSQCTest extends TargetedMSTest
             // Updated for tippy implementation - uses standard HTML button with class="labkey-button"
             clickAndWait(Locator.tagWithClass("button", "labkey-button").withText("Save").findElement(bubble));
         }
-        else
-            qcPlotsWebPart.closeBubble();
         qcPlotsWebPart.waitForPlots(waitForPlotCount);
     }
 
