@@ -992,7 +992,6 @@ public class TargetedMSQCTest extends TargetedMSTest
     {
         QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
         WebElement bubble = qcPlotsWebPart.openExclusionBubble(acquiredDate);
-        // Updated for tippy implementation - uses standard HTML radio buttons with name="exclusion-status"
         WebElement radioButton = Locator.tag("input").withAttribute("type", "radio")
                 .withAttribute("name", "exclusion-status")
                 .followingSibling("label").withText(state.getLabel())
@@ -1004,7 +1003,6 @@ public class TargetedMSQCTest extends TargetedMSTest
     {
         QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
         WebElement bubble = qcPlotsWebPart.openExclusionBubble(acquiredDate);
-        // Updated for tippy implementation - uses standard HTML radio buttons with name="exclusion-status"
         WebElement radioButton = Locator.tag("input").withAttribute("type", "radio")
                 .withAttribute("name", "exclusion-status")
                 .followingSibling("label").withText(state.getLabel())
@@ -1012,7 +1010,6 @@ public class TargetedMSQCTest extends TargetedMSTest
         if (!radioButton.isSelected())
         {
             radioButton.click();
-            // Updated for tippy implementation - uses standard HTML button with class="labkey-button"
             clickAndWait(Locator.tagWithClass("button", "labkey-button").withText("Save").findElement(bubble));
         }
         qcPlotsWebPart.waitForPlots(waitForPlotCount);
