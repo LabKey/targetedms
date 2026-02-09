@@ -133,7 +133,9 @@ import org.labkey.api.reports.model.ViewCategoryManager;
 import org.labkey.api.reports.report.RedirectReport;
 import org.labkey.api.reports.report.ReportDescriptor;
 import org.labkey.api.security.ActionNames;
+import org.labkey.api.security.AuthenticationManager;
 import org.labkey.api.security.Group;
+import org.labkey.api.security.LoginUrls;
 import org.labkey.api.security.RequiresLogin;
 import org.labkey.api.security.RequiresPermission;
 import org.labkey.api.security.SecurityManager;
@@ -2226,6 +2228,12 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(ChromatogramForm form, BindException errors)
         {
+            if (getViewContext().getUser().isGuest())
+            {
+                // Require a login to protect public folders against aggressive bots hitting this page on very large documents
+                return TargetedMSController.getLoginView(getViewContext(), getContainer());
+            }
+
             long precursorId = form.getId();
             _precursor = PrecursorManager.getPrecursor(getContainer(), precursorId, getUser());
             if (_precursor == null)
@@ -2301,10 +2309,9 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void addNavTrail(NavTree root)
         {
+            root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
             if (null != _run)
             {
-                root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
-
                 root.addChild(_run.getDescription(), getShowRunURL(getContainer(), _run.getId()));
 
                 ActionURL pepDetailsUrl = new ActionURL(ShowPeptideAction.class, getContainer());
@@ -2360,6 +2367,12 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(ChromatogramForm form, BindException errors)
         {
+            if (getViewContext().getUser().isGuest())
+            {
+                // Require a login to protect public folders against aggressive bots hitting this page on very large documents
+                return TargetedMSController.getLoginView(getViewContext(), getContainer());
+            }
+
             long precursorId = form.getId();
             _precursor = MoleculePrecursorManager.getPrecursor(getContainer(), precursorId, getUser());
             if (_precursor == null)
@@ -4389,6 +4402,15 @@ public class TargetedMSController extends SpringActionController
     public class ShowTransitionListAction extends ShowRunSplitDetailsAction<DocumentTransitionsView>
     {
         @Override
+        public ModelAndView getHtmlView(final RunDetailsForm form, BindException errors) throws Exception
+        {
+            return getViewContext().getUser().isGuest()
+                    // Require a login to protect public folders against aggressive bots hitting this page on very large documents
+                    ? TargetedMSController.getLoginView(getViewContext(), getContainer())
+                    : super.getHtmlView(form, errors);
+        }
+
+        @Override
         protected DocumentTransitionsView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
         {
             DocumentTransitionsView view;
@@ -4421,6 +4443,25 @@ public class TargetedMSController extends SpringActionController
         {
             return SmallMoleculeTransitionsView.DATAREGION_NAME;
         }
+    }
+
+    @NotNull
+    private static HtmlView getLoginView(ViewContext context, Container container)
+    {
+        ActionURL loginUrl = PageFlowUtil.urlProvider(LoginUrls.class).getLoginURL(container, context.getActionURL());
+        ActionURL registerUrl = PageFlowUtil.urlProvider(LoginUrls.class).getRegisterURL(container, context.getActionURL());
+        HtmlString loginLink = DOM.createHtmlFragment(
+                                DOM.A(at(style, "font-weight: bold;", href, loginUrl),"Login"),
+                                " to view this data");
+        HtmlString registerLink = DOM.createHtmlFragment(
+                                    DOM.BR(),
+                                    "Don't have an account? ",
+                                    DOM.A(at(style, "font-weight: bold;", href, registerUrl), "Register"));
+
+        return new HtmlView(DOM.createHtmlFragment(
+                DOM.DIV(cl("alert alert-info"),
+                        loginLink,
+                        AuthenticationManager.isRegistrationEnabled() ? registerLink : "")));
     }
 
     @RequiresPermission(ReadPermission.class)

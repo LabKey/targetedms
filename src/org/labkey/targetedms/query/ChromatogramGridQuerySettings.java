@@ -27,11 +27,13 @@ import org.labkey.api.view.ViewContext;
 public class ChromatogramGridQuerySettings extends QuerySettings
 {
     private int _maxRowSize;
+    private static final int DEFAULT_ROWS = 10;
+    private static final int MAX_ROWS_FOR_GUESTS = 50;
 
     public ChromatogramGridQuerySettings(ViewContext context, String dataRegionName, boolean replicateChromatogramsGrouped)
     {
         super(dataRegionName);
-        setMaxRows(10);
+        setMaxRows(DEFAULT_ROWS);
         // On the peptide / molecule details page all the chromatograms from a replicate are displayed together. These are
         // the total precursor ion chromatogram and the fragment ion chromatograms from all the peptide / molecule precursors
         // In this case we set the default row size to 1 so that each row displays the chromatograms from a single replicate.
@@ -46,6 +48,13 @@ public class ChromatogramGridQuerySettings extends QuerySettings
     public void init(ViewContext context)
     {
         super.init(context);
+
+        if (context.getUser().isGuest())
+        {
+            // Multiple chart rendering requests are triggered per row. Cap guest users at 50 rows to prevent bot abuse on large documents
+            setMaxRows(Math.min(MAX_ROWS_FOR_GUESTS, getMaxRows()));
+        }
+
         String param = _getParameter("maxRowSize");
         if (param != null)
         {
