@@ -175,13 +175,13 @@ LABKEY.targetedms.QCPlotHoverPanel.prototype = {
         labelSpan.style.width = '120px';
         labelSpan.style.fontWeight = 'bold';
         labelSpan.style.flexShrink = '0';
-        labelSpan.textContent = label + ':';
+        labelSpan.textContent = LABKEY.Utils.encodeHtml(label) + ':';
 
         var valueSpan = document.createElement('span');
         valueSpan.className = 'qc-hover-field-value';
         valueSpan.style.flex = '1';
         valueSpan.style.wordBreak = 'break-all';
-        valueSpan.innerHTML = value;
+        valueSpan.innerText = LABKEY.Utils.encodeHtml(value);
 
         fieldDiv.appendChild(labelSpan);
         fieldDiv.appendChild(valueSpan);

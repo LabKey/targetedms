@@ -108,7 +108,7 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
         qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.IRTSLOPE);
         checker().verifyEquals("Incorrect plot displayed for iRT Slope metric", Arrays.asList("iRT Slope"), qcPlotsWebPart.getPlotTitles());
         qcPlotsWebPart.openExclusionBubble(acquiredDate);
-        waitForElement(qcPlotsWebPart.getBubble());
+        waitForElement(qcPlotsWebPart.getBubbleContent());
         ticAreaHoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
         checker().withScreenshot("IRTSlope").verifyTrue("Incorrect iRT Slope value calculated", ticAreaHoverText.contains("0.646"));
         mouseOut();

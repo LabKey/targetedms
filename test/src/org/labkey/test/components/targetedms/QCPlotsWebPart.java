@@ -702,14 +702,9 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         getWrapper().doAndWaitForPageToLoad(() -> elementCache().paginationNextBtn.findElement(this).click());
     }
 
-    public Locator.XPathLocator getBubble()
-    {
-        return Locator.tagWithClass("div", "qc-plot-hover-panel");
-    }
-
     public Locator.XPathLocator getBubbleContent()
     {
-        return Locator.tagWithClass("div", "qc-plot-hover-panel");
+        return elementCache().tippyBubble;
     }
 
     public ConfigureMetricsUIPage clickConfigureQCMetrics()
