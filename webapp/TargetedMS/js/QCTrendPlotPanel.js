@@ -1432,6 +1432,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             renderTo: container
         });
 
+        let observer = null;
+
         tippy(point, {
             allowHTML: true,
             interactive: true,
@@ -1441,7 +1443,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             arrow: true,
             maxWidth: 500,
             appendTo: document.body,
-            onShow(instance) {
+            placement: 'top',
+            onMount(instance) {
                 const tippyBox = instance.popper.querySelector('.tippy-box');
                 const tippyContent = instance.popper.querySelector('.tippy-content');
                 if (tippyBox) {
@@ -1453,6 +1456,44 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     tippyContent.style.padding = '5px';
                     tippyContent.style.wordWrap = 'break-word';
                     tippyContent.style.overflowWrap = 'break-word';
+                }
+
+                instance.popper.style.maxWidth = '500px';
+                instance.popper.style.visibility = 'hidden';
+            },
+            onShow(instance) {
+                observer = new MutationObserver((mutations) => {
+                    const hoverPanel = container.querySelector('.qc-plot-hover-panel');
+                    if (hoverPanel) {
+                        hoverPanel.style.minWidth = 'auto';
+                        hoverPanel.style.maxWidth = '500px';
+                        hoverPanel.style.width = 'auto';
+
+                        instance.popperInstance.update().then(() => {
+                            instance.popper.style.visibility = 'visible';
+                        });
+
+                        observer.disconnect();
+                    }
+                });
+                observer.observe(container, { childList: true, subtree: true });
+
+                setTimeout(() => {
+                    const hoverPanel = container.querySelector('.qc-plot-hover-panel');
+                    if (hoverPanel && instance.popper.style.visibility === 'hidden') {
+                        hoverPanel.style.minWidth = 'auto';
+                        hoverPanel.style.maxWidth = '500px';
+                        hoverPanel.style.width = 'auto';
+                        instance.popperInstance.update().then(() => {
+                            instance.popper.style.visibility = 'visible';
+                        });
+                    }
+                }, 10);
+            },
+            onHide() {
+                if (observer) {
+                    observer.disconnect();
+                    observer = null;
                 }
             }
         });

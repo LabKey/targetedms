@@ -181,7 +181,7 @@ LABKEY.targetedms.QCPlotHoverPanel.prototype = {
         valueSpan.className = 'qc-hover-field-value';
         valueSpan.style.flex = '1';
         valueSpan.style.wordBreak = 'break-all';
-        valueSpan.innerText = LABKEY.Utils.encodeHtml(value);
+        valueSpan.innerHTML = value;
 
         fieldDiv.appendChild(labelSpan);
         fieldDiv.appendChild(valueSpan);

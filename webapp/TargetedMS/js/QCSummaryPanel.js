@@ -446,7 +446,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
 
         var sampleHREF = LABKEY.ActionURL.buildURL('targetedms', 'showSampleFile', LABKEY.ActionURL.getContainer(), {id: sampleFile.SampleId});
 
-        content += '<h3 title="' + Ext4.util.Format.htmlEncode(sampleFile.FilePath) + '"><a href="' + sampleHREF + '">' +
+        content += '<h3 style="font-size: 16px; font-weight: 700; font-family: Arial, Helvetica;" title="' + Ext4.util.Format.htmlEncode(sampleFile.FilePath) + '"><a href="' + sampleHREF + '">' +
                 Ext4.util.Format.htmlEncode(sampleFile.ReplicateName) +
                 '</a>' + (sampleFile.AcquiredTime ? (', acquired ' + Ext4.util.Format.date(sampleFile.AcquiredTime ? new Date(sampleFile.AcquiredTime) : null, LABKEY.extDefaultDateTimeFormat || 'Y-m-d H:i:s')) : '' ) +
                 '</h3><br/>';
@@ -546,6 +546,9 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                     tippyBox.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
                 }
                 if (tippyContent) {
+                    tippyContent.style.fontSize = '13px';
+                    tippyContent.style.fontWeight = '400';
+                    tippyContent.style.fontFamily = 'Arial, Helvetica';
                     tippyContent.style.padding = '10px';
                     tippyContent.style.maxHeight = 'none';
                     tippyContent.style.overflow = 'visible';
