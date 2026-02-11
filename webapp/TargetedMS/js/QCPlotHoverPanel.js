@@ -181,7 +181,8 @@ LABKEY.targetedms.QCPlotHoverPanel.prototype = {
         valueSpan.className = 'qc-hover-field-value';
         valueSpan.style.flex = '1';
         valueSpan.style.wordBreak = 'break-all';
-        valueSpan.innerHTML = value;
+        // file path is already getting formatted in the caller
+        valueSpan.innerHTML = label === 'File Path' ? value : LABKEY.Utils.encodeHtml(value);
 
         fieldDiv.appendChild(labelSpan);
         fieldDiv.appendChild(valueSpan);
