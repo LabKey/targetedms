@@ -65,22 +65,17 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
 
     public Locator.XPathLocator getBubble()
     {
-        return Locators.hopscotchBubble;
-    }
-
-    public void closeBubble()
-    {
-        getWrapper().click(Locators.hopscotchBubbleClose);
+        return Locators.tippyBubble;
     }
 
     public Locator.XPathLocator getBubbleContent()
     {
-        return Locators.hopscotchBubbleContent;
+        return Locators.tippyBubbleContent;
     }
 
     public String getBubbleText()
     {
-        return Locators.hopscotchBubbleContent.withText().waitForElement(getDriver(), 1000).getText();
+        return Locators.tippyBubbleContent.withText().waitForElement(getDriver(), 1000).getText();
     }
 
     public List<QcSummaryTile> getQcSummaryTiles()
@@ -130,9 +125,8 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
 
     private static abstract class Locators
     {
-        static final Locator.XPathLocator hopscotchBubble = Locator.byClass("hopscotch-bubble-container");
-        static final Locator.XPathLocator hopscotchBubbleContent = hopscotchBubble.append(Locator.byClass("hopscotch-bubble-content").append(Locator.byClass("hopscotch-content")));
-        static final Locator.XPathLocator hopscotchBubbleClose = Locator.byClass("hopscotch-bubble-close");
+        static final Locator.XPathLocator tippyBubble = Locator.byClass("tippy-box");
+        static final Locator.XPathLocator tippyBubbleContent = Locator.byClass("tippy-content");
         static final Locator summaryTile = Locator.tagWithClass("div", "summary-tile");
         static final Locator recentSampleFilesLoading = Locator.tagWithClass("div", "sample-file-details-loading");
         static final Locator recentSampleFile = Locator.css("div.sample-file-item");

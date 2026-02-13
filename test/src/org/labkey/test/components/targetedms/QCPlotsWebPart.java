@@ -85,7 +85,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         WebElement plot = waitForPlotPanel();
 
-        closeBubble();
         action.run();
 
         getWrapper().shortWait().until(ExpectedConditions.stalenessOf(plot));
@@ -159,7 +158,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         {
             doAndWaitForUpdate(() ->
             {
-                // scroll to prevent inadvertent hover over QC Summary webpart items that show hopscotch tooltips
                 getWrapper().scrollIntoView(metricTypeCombo, true);
                 getWrapper()._ext4Helper.selectComboBoxItem(metricTypeCombo, metricType.toString());
             });
@@ -530,10 +528,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
                     WebElement point = getPointByAcquiredDate(acquiredDate);
                     ScrollUtils.scrollIntoView(point, center, center);
                     getWrapper().mouseOverWithoutScrolling(point);
-                    return getWrapper().isElementPresent(Locator.tagWithClass("div", "x4-form-display-field")
-                            .containing(acquiredDate.substring(0, 16))); // drop seconds part (e.g. "2013-08-12 04:54") for trailing mean/CV
+                    return getWrapper().isElementPresent(Locator.tagWithClass("div", "qc-plot-hover-panel")
+                            .withDescendant(Locator.tagWithClass("div", "qc-hover-field")
+                                    .containing(acquiredDate.substring(0, 16)))); // drop seconds part (e.g. "2013-08-12 04:54") for trailing mean/CV
                 });
-        return elementCache().hopscotchBubble.findElement(getDriver());
+        return elementCache().tippyBubble.findElement(getDriver());
     }
 
     @LogMethod
@@ -676,21 +675,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         }
     }
 
-    private void dismissTooltip()
-    {
-        int halfWidth = elementCache().webPartTitle.getSize().getWidth() / 2;
-        int xOffset = elementCache().webPartTitle.getLocation().getX() + halfWidth; // distance to edge of window from center of element
-        getWrapper().scrollIntoView(elementCache().webPartTitle);
-        new Actions(getDriver())
-                .moveToElement(elementCache().webPartTitle) // Start at the center of the title
-                .moveByOffset(-xOffset, 0) // Move all the way to the left edge of the window
-                .perform(); // Should dismiss hover tooltips
-        WebElement closeHopscotch = Locator.byClass("hopscotch-close").findElementOrNull(getDriver());
-        if (closeHopscotch != null && closeHopscotch.isDisplayed())
-            closeHopscotch.click();
-        getWrapper().shortWait().until(ExpectedConditions.invisibilityOfElementLocated(Locator.byClass("hopscotch-callout")));
-    }
-
     public boolean isPlotTypeSelected(QCPlotType plotType)
     {
         return getCurrentQCPlotTypes().contains(plotType);
@@ -708,37 +692,19 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         }
     }
 
-    public void closeBubble()
-    {
-        Optional<WebElement> optCloseButton = elementCache().hopscotchBubbleClose.findOptionalElement(getDriver());
-        optCloseButton.ifPresent(closeButton -> {
-            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(2));
-            wait.until(ExpectedConditions.elementToBeClickable(closeButton)).click();
-            wait.until(ExpectedConditions.stalenessOf(closeButton));
-        });
-    }
-
     public void goToPreviousPage()
     {
-        closeBubble();
         getWrapper().doAndWaitForPageToLoad(() -> elementCache().paginationPrevBtn.findElement(this).click());
     }
 
     public void goToNextPage()
     {
-        closeBubble();
         getWrapper().doAndWaitForPageToLoad(() -> elementCache().paginationNextBtn.findElement(this).click());
-    }
-
-    public Locator.XPathLocator getBubble()
-    {
-        return Locator.byClass("hopscotch-bubble-container");
     }
 
     public Locator.XPathLocator getBubbleContent()
     {
-        Locator.XPathLocator hopscotchBubble = Locator.byClass("hopscotch-bubble-container");
-        return hopscotchBubble.append(Locator.byClass("hopscotch-bubble-content").append(Locator.byClass("hopscotch-content").withText()));
+        return elementCache().tippyBubble;
     }
 
     public ConfigureMetricsUIPage clickConfigureQCMetrics()
@@ -970,8 +936,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         Locator.CssLocator paginationPrevBtn = Locator.css(".qc-paging-prev");
         Locator.CssLocator paginationNextBtn = Locator.css(".qc-paging-next");
         Locator.CssLocator svgBackgrounds = Locator.css("svg g.brush rect.background");
-        Locator.XPathLocator hopscotchBubble = Locator.byClass("hopscotch-bubble-container");
-        Locator.XPathLocator hopscotchBubbleClose = Locator.byClass("hopscotch-bubble-close");
+        Locator.XPathLocator tippyBubble = Locator.tagWithClass("div", "qc-plot-hover-panel");
 
         List<WebElement> findSeriesPanels()
         {

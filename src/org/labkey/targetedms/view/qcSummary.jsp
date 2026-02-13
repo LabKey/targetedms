@@ -24,8 +24,7 @@
     {
         dependencies.add("Ext4");
         dependencies.add("vis/vis");
-        dependencies.add("hopscotch/css/hopscotch.min.css");
-        dependencies.add("hopscotch/js/hopscotch.min.js");
+        dependencies.add("internal/tippy");
         dependencies.add("targetedms/js/BaseQCPlotPanel.js");
         dependencies.add("targetedms/css/QCSummary.css");
         dependencies.add("targetedms/js/QCSummaryPanel.js");

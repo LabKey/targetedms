@@ -369,9 +369,8 @@ public class TargetedMSQCSummaryTest extends TargetedMSTest
                     fail("The bubble text for the file detail not as expected. Bubble text: '" + actualText + "' Missing: '" + perBubbleTexts.stream().filter(s -> !actualText.contains(s)).collect(Collectors.joining(",")) + "'");
                 }
             }
-            qcSummaryWebPart.closeBubble();
-            
-            log("Move the mouse to avoid another hopscotch bubble.");
+
+            log("Move the mouse to avoid another tippy bubble.");
             mouseOver(Locator.css(".labkey-page-nav"));
             waitForElementToDisappear(qcSummaryWebPart.getBubble());
 

@@ -812,20 +812,11 @@ public class TargetedMSQCTest extends TargetedMSTest
         //Check for clickable PDF and PNG export icons for Combined plot
         verifyDownloadablePlotIcons(1);
 
-        checkAndCloseTooltip();
-
         //deselect "Show All Peptides in Single Plot"
         qcPlotsWebPart.setShowAllPeptidesInSinglePlot(false, currentPagePlotCount);
 
         //Check for no. of PDF and PNG export icons for individual plots
         verifyDownloadablePlotIcons(currentPagePlotCount);
-    }
-
-    private void checkAndCloseTooltip()
-    {
-        Locator bubbleClose = Locator.byClass("hopscotch-bubble-close");
-        if (isElementPresent(bubbleClose) && isElementVisible(bubbleClose))
-            click(bubbleClose);
     }
 
     @Test
@@ -1001,23 +992,26 @@ public class TargetedMSQCTest extends TargetedMSTest
     {
         QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
         WebElement bubble = qcPlotsWebPart.openExclusionBubble(acquiredDate);
-        RadioButton radioButton = RadioButton.RadioButton().withLabel(state.getLabel()).find(bubble);
-        assertTrue("QC data point exclusion selection not as expected:" + state.getLabel(), radioButton.isChecked());
-        qcPlotsWebPart.closeBubble();
+        WebElement radioButton = Locator.tag("input").withAttribute("type", "radio")
+                .withAttribute("name", "exclusion-status")
+                .followingSibling("label").withText(state.getLabel())
+                .precedingSibling("input").findElement(bubble);
+        assertTrue("QC data point exclusion selection not as expected:" + state.getLabel(), radioButton.isSelected());
     }
 
     private void changePointExclusionState(String acquiredDate, QCPlotsWebPart.QCPlotExclusionState state, int waitForPlotCount)
     {
         QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
         WebElement bubble = qcPlotsWebPart.openExclusionBubble(acquiredDate);
-        RadioButton radioButton = RadioButton.RadioButton().withLabel(state.getLabel()).find(bubble);
-        if (!radioButton.isChecked())
+        WebElement radioButton = Locator.tag("input").withAttribute("type", "radio")
+                .withAttribute("name", "exclusion-status")
+                .followingSibling("label").withText(state.getLabel())
+                .precedingSibling("input").findElement(bubble);
+        if (!radioButton.isSelected())
         {
-            radioButton.check();
-            clickAndWait(Ext4Helper.Locators.ext4Button("Save").findElement(bubble));
+            radioButton.click();
+            clickAndWait(Locator.tagWithClass("button", "labkey-button").withText("Save").findElement(bubble));
         }
-        else
-            qcPlotsWebPart.closeBubble();
         qcPlotsWebPart.waitForPlots(waitForPlotCount);
     }
 

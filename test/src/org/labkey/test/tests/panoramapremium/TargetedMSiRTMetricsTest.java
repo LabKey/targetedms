@@ -94,7 +94,6 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
         qcPlotsWebPart.openExclusionBubble(acquiredDate);
         String ticAreaHoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
         checker().withScreenshot("IRTCorrelation").verifyTrue("Incorrect iRT Correlation value calculated", ticAreaHoverText.contains("0.999"));
-        qcPlotsWebPart.closeBubble();
 
         log("Verifying the iRT Intercept plot values");
         acquiredDate = "2014-03-16 05:21:58";
@@ -103,17 +102,15 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
         qcPlotsWebPart.openExclusionBubble(acquiredDate);
         ticAreaHoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
         checker().withScreenshot("IRTIntercept").verifyTrue("Incorrect  iRT Intercept value calculated", ticAreaHoverText.contains("34.2"));
-        qcPlotsWebPart.closeBubble();
 
         log("Verifying the iRT Slope plot values");
         acquiredDate = "2014-03-17 06:46:14";
         qcPlotsWebPart.setMetric1Type(QCPlotsWebPart.MetricType.IRTSLOPE);
         checker().verifyEquals("Incorrect plot displayed for iRT Slope metric", Arrays.asList("iRT Slope"), qcPlotsWebPart.getPlotTitles());
         qcPlotsWebPart.openExclusionBubble(acquiredDate);
-        waitForElement(qcPlotsWebPart.getBubble());
+        waitForElement(qcPlotsWebPart.getBubbleContent());
         ticAreaHoverText = waitForElement(qcPlotsWebPart.getBubbleContent()).getText();
         checker().withScreenshot("IRTSlope").verifyTrue("Incorrect iRT Slope value calculated", ticAreaHoverText.contains("0.646"));
-        qcPlotsWebPart.closeBubble();
         mouseOut();
 
         log("Verifying the tooltip area of QC summary web part");
