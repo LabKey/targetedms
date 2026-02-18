@@ -71,6 +71,7 @@ import org.labkey.api.security.User;
 import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.api.targetedms.RunRepresentativeDataState;
+import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.HtmlString;
 import org.labkey.api.util.Pair;
@@ -232,6 +233,7 @@ public class TargetedMSSchema extends UserSchema
     public static final String TABLE_QC_ENABLED_METRICS = "QCEnabledMetrics";
     public static final String TABLE_QC_TRACE_METRIC_VALUES = "QCTraceMetricValues";
     public static final String TABLE_QC_METRIC_CACHE = "QCMetricCache";
+    public static final String TABLE_PTM_PERCENTS_GROUPED_PREPIVOT_CACHE = "PTMPercentsGroupedPrepivotCache";
 
     public static final String TABLE_GUIDE_SET = "GuideSet";
 
@@ -1718,7 +1720,7 @@ public class TargetedMSSchema extends UserSchema
         String queryName = settings.getQueryName();
         if (queryName != null && ("PTMPercentsGrouped".equalsIgnoreCase(queryName) || queryName.toLowerCase().startsWith(QUERY_PTM_PERCENTS_GROUPED_PREFIX.toLowerCase())))
         {
-            return new TargetedMSCrosstabView(TargetedMSSchema.this, settings, errors)
+             return new TargetedMSCrosstabView(TargetedMSSchema.this, settings, errors)
             {
                 @Override
                 protected DataRegion createDataRegion()
@@ -1882,6 +1884,7 @@ public class TargetedMSSchema extends UserSchema
         hs.add(TABLE_RATE_TYPE);
         hs.add(TABLE_INSTRUMENT_RATE);
         hs.add(TABLE_INSTRUMENT_USAGE_PAYMENT);
+        hs.add(TABLE_PTM_PERCENTS_GROUPED_PREPIVOT_CACHE);
 
         return hs;
     }
@@ -1921,6 +1924,11 @@ public class TargetedMSSchema extends UserSchema
         try
         {
             long runId = Long.parseLong(runIdString);
+            if (TargetedMSManager.getFolderType(getContainer()) != TargetedMSService.FolderType.ExperimentMAM)
+            {
+                throw new IllegalStateException("PTM queries are only supported in ExperimentMAM folders");
+            }
+
             QueryDefinition queryDef = Objects.requireNonNull(getQueryDef(baseQueryName));
             QueryDefinition result = QueryService.get().createQueryDef(getUser(), getContainer(), getSchemaPath(), queryName);
             result.setSql(queryDef.getSql() + " IN (SELECT r.Name FROM targetedms.Replicate r WHERE r.RunId = " + runId + ")");
