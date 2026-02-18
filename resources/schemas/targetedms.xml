@@ -1952,7 +1952,7 @@
     </table>
     <table tableName="PTMPercentsGroupedPrepivotCache" tableDbType="TABLE">
         <columns>
-            <column columnName="Id"/>
+            <column columnName="Id"/> <!-- PeptideId lookup, not a primary key -->
             <column columnName="Container"/>
             <column columnName="RunId"/>
             <column columnName="Modification"/>
@@ -1960,7 +1960,6 @@
             <column columnName="PercentModified"/>
             <column columnName="MaxPercentModified"/>
             <column columnName="ModificationCount"/>
-            <column columnName="GeneralMoleculeChromInfoId"/>
             <column columnName="PeptideModifiedSequence"/>
             <column columnName="Sequence"/>
             <column columnName="PreviousAA"/>

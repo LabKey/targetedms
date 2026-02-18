@@ -87,6 +87,8 @@ public class TargetedMSUpgradeCode implements UpgradeCode
             return;
         }
 
+        new SqlExecutor(TargetedMSManager.getSchema()).execute("TRUNCATE " + TargetedMSManager.getTableInfoPTMPercentsGroupedPrepivotCache());
+
         User user = moduleContext.getUpgradeUser();
         LOG.info("Populating PTMPercentsGroupedPrepivotCache for existing ExperimentMAM folders");
 

@@ -39,10 +39,20 @@ public class TargetedMSEarlyStagePTMReportTest extends TargetedMSTest
     @Test
     public void testEarlyStagePrepivot()
     {
+        // Test against the live-query version
         goToProjectHome();
         goToSchemaBrowser();
         DataRegionTable table = viewQueryData("targetedms", "PTMPercentsGroupedPrepivot");
+        verifyPrepivotData(table);
 
+        // Test against the cached version too
+        goToSchemaBrowser();
+        table = viewQueryData("targetedms", "PTMPercentsGroupedPrepivotCache");
+        verifyPrepivotData(table);
+    }
+
+    private void verifyPrepivotData(DataRegionTable table)
+    {
         // Test special-cased peptide
         table.setFilter("PeptideModifiedSequence", "Starts With", "EEQ");
         table = new DataRegionTable("query", this);
@@ -59,7 +69,7 @@ public class TargetedMSEarlyStagePTMReportTest extends TargetedMSTest
         table.setFilter("PeptideModifiedSequence", "Starts With", "VTN");
         table = new DataRegionTable("query", this);
         assertEquals(List.of("true", "true"), table.getColumnDataAsText("IsCdr"));
-        assertEquals(List.of("High", "Medium"), table.getColumnDataAsText("Risk"));
+        assertEquals(List.of("Medium", "High"), table.getColumnDataAsText("Risk"));
 
         // Test special-cased N-Term Modification, present on QVTL peptide (Q is modified, so don't use it in the filter)
         table.setFilter("PeptideModifiedSequence", "Contains", "VTL");

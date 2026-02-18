@@ -1691,6 +1691,14 @@ public class TargetedMSSchema extends UserSchema
                 result.getMutableColumnOrThrow("ExperimentRunLSID").setFk(QueryForeignKey.from(_expSchema, cf).to("Runs", "LSID", null));
             }
             TargetedMSTable.fixupLookups(result);
+
+            if (name.equalsIgnoreCase(TABLE_PTM_PERCENTS_GROUPED_PREPIVOT_CACHE))
+            {
+                // Inject two null columns to match how the uncached version wires up DisplayColumns
+                result.addColumn(new ExprColumn(result, "Risk", new SQLFragment("CAST(NULL AS VARCHAR)"), JdbcType.VARCHAR));
+                result.addColumn(new ExprColumn(result, "IsCdr", new SQLFragment("CAST(NULL AS VARCHAR)"), JdbcType.VARCHAR));
+            }
+
             return result;
         }
 

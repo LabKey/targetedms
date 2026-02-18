@@ -2794,7 +2794,7 @@ public class TargetedMSManager
             SQLFragment insertSql = new SQLFragment();
             insertSql.append("INSERT INTO ").append(getTableInfoPTMPercentsGroupedPrepivotCache());
             insertSql.append(" (Container, RunId, Modification, TotalPercentModified, PercentModified, MaxPercentModified,");
-            insertSql.append(" ModificationCount, GeneralMoleculeChromInfoId, PeptideModifiedSequence, Sequence,");
+            insertSql.append(" ModificationCount, Id, PeptideModifiedSequence, Sequence,");
             insertSql.append(" PreviousAA, NextAA, SampleFileId, ReplicateName, AminoAcid, SiteLocation, Location, PeptideGroupId)");
             insertSql.append(" SELECT ?, ?, lk.Modification, lk.TotalPercentModified, lk.PercentModified, lk.MaxPercentModified,");
             insertSql.append(" lk.ModificationCount, lk.Id, lk.PeptideModifiedSequence, lk.Sequence,");
