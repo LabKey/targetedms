@@ -1728,7 +1728,7 @@ public class TargetedMSSchema extends UserSchema
         String queryName = settings.getQueryName();
         if (queryName != null && ("PTMPercentsGrouped".equalsIgnoreCase(queryName) || queryName.toLowerCase().startsWith(QUERY_PTM_PERCENTS_GROUPED_PREFIX.toLowerCase())))
         {
-             return new TargetedMSCrosstabView(TargetedMSSchema.this, settings, errors)
+            return new TargetedMSCrosstabView(TargetedMSSchema.this, settings, errors)
             {
                 @Override
                 protected DataRegion createDataRegion()

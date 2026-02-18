@@ -23,7 +23,6 @@ import org.apache.logging.log4j.Logger;
 import org.fhcrc.cpas.exp.xml.ExperimentArchiveDocument;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.labkey.api.action.SpringActionController;
 import org.labkey.api.cache.Cache;
 import org.labkey.api.cache.CacheManager;
 import org.labkey.api.collections.CaseInsensitiveHashMap;
@@ -2749,7 +2748,7 @@ public class TargetedMSManager
      * Pre-compute PTMPercentsGroupedPrepivot results during import and store in PTMPercentsCache.
      * Only populates cache for ExperimentMAM folders.
      */
-    public static void populatePTMPercentsGroupedPrepivotCache(@Nullable Logger log, @NotNull TargetedMSRun run, @NotNull User user, @NotNull Container container)
+    public static void populatePTMPercentsGroupedPrepivotCache(@NotNull TargetedMSRun run, @NotNull User user, @NotNull Container container)
     {
         // Delete any existing cache rows for this run
         new SqlExecutor(getSchema()).execute(
@@ -2761,10 +2760,7 @@ public class TargetedMSManager
             return;
         }
 
-        if (log != null)
-        {
-            log.info("Populating PTMPercentsGroupedPrepivotCache for run " + run.getId());
-        }
+        _log.info("Populating PTMPercentsGroupedPrepivotCache for run " + run.getId());
 
         String labkeySql = "SELECT\n" +
                 "  Modification,\n" +
@@ -2789,26 +2785,20 @@ public class TargetedMSManager
         UserSchema schema = QueryService.get().getUserSchema(user, container, TargetedMSSchema.SCHEMA_KEY);
         TableInfo tableInfo = QueryService.get().createTable(schema, labkeySql, null, true);
 
-        try (var ignored = SpringActionController.ignoreSqlUpdates())
-        {
-            SQLFragment insertSql = new SQLFragment();
-            insertSql.append("INSERT INTO ").append(getTableInfoPTMPercentsGroupedPrepivotCache());
-            insertSql.append(" (Container, RunId, Modification, TotalPercentModified, PercentModified, MaxPercentModified,");
-            insertSql.append(" ModificationCount, Id, PeptideModifiedSequence, Sequence,");
-            insertSql.append(" PreviousAA, NextAA, SampleFileId, ReplicateName, AminoAcid, SiteLocation, Location, PeptideGroupId)");
-            insertSql.append(" SELECT ?, ?, lk.Modification, lk.TotalPercentModified, lk.PercentModified, lk.MaxPercentModified,");
-            insertSql.append(" lk.ModificationCount, lk.Id, lk.PeptideModifiedSequence, lk.Sequence,");
-            insertSql.append(" lk.PreviousAA, lk.NextAA, lk.SampleFileId, lk.ReplicateName, lk.AminoAcid, lk.SiteLocation, lk.Location, lk.PeptideGroupId");
-            insertSql.append(" FROM ").append(tableInfo, "lk");
-            insertSql.add(container.getEntityId());
-            insertSql.add(run.getId());
-            new SqlExecutor(getSchema()).execute(insertSql);
-        }
+        SQLFragment insertSql = new SQLFragment();
+        insertSql.append("INSERT INTO ").append(getTableInfoPTMPercentsGroupedPrepivotCache());
+        insertSql.append(" (Container, RunId, Modification, TotalPercentModified, PercentModified, MaxPercentModified,");
+        insertSql.append(" ModificationCount, Id, PeptideModifiedSequence, Sequence,");
+        insertSql.append(" PreviousAA, NextAA, SampleFileId, ReplicateName, AminoAcid, SiteLocation, Location, PeptideGroupId)");
+        insertSql.append(" SELECT ?, ?, lk.Modification, lk.TotalPercentModified, lk.PercentModified, lk.MaxPercentModified,");
+        insertSql.append(" lk.ModificationCount, lk.Id, lk.PeptideModifiedSequence, lk.Sequence,");
+        insertSql.append(" lk.PreviousAA, lk.NextAA, lk.SampleFileId, lk.ReplicateName, lk.AminoAcid, lk.SiteLocation, lk.Location, lk.PeptideGroupId");
+        insertSql.append(" FROM ").append(tableInfo, "lk");
+        insertSql.add(container.getEntityId());
+        insertSql.add(run.getId());
+        new SqlExecutor(getSchema()).execute(insertSql);
 
-        if (log != null)
-        {
-            log.info("Finished populating PTMPercentsGroupedPrepivotCache for run " + run.getId());
-        }
+        _log.info("Finished populating PTMPercentsGroupedPrepivotCache for run " + run.getId());
     }
 
     /**
