@@ -602,6 +602,11 @@ public class TargetedMSManager
         return getSchema().getTable(TargetedMSSchema.TABLE_QC_METRIC_CACHE);
     }
 
+    public static TableInfo getTableInfoPTMPercentsGroupedPrepivotCache()
+    {
+        return getSchema().getTable(TargetedMSSchema.TABLE_PTM_PERCENTS_GROUPED_PREPIVOT_CACHE);
+    }
+
     public static TableInfo getTableInfoSkylineAuditLogEntry()
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_SKYLINE_AUDITLOG_ENTRY);
@@ -1027,6 +1032,12 @@ public class TargetedMSManager
     {
         return getRuns("Container=? AND StatusId=? AND deleted=?",
                 container.getId(), SkylineDocImporter.STATUS_SUCCESS, Boolean.FALSE);
+    }
+
+    public static TargetedMSRun[] getAllNonDeletedRuns()
+    {
+        return getRuns("StatusId=? AND deleted=?",
+                SkylineDocImporter.STATUS_SUCCESS, Boolean.FALSE);
     }
 
     @Nullable
@@ -1762,6 +1773,7 @@ public class TargetedMSManager
     /** Actually delete runs that have been marked as deleted from the database */
     private static void purgeDeletedRuns()
     {
+        deleteRunDependent(getTableInfoPTMPercentsGroupedPrepivotCache());
         // Delete from FoldChange
         deleteRunDependent(getTableInfoFoldChange());
         // Delete from CalibrationCurve
@@ -2730,6 +2742,63 @@ public class TargetedMSManager
         executor.execute("DROP TABLE " + precursorGroupingsTableName);
         executor.execute("DROP TABLE " + moleculeGroupingsTableName);
         executor.execute("DROP TABLE " + areasTableName);
+    }
+
+    /**
+     * Pre-compute PTMPercentsGroupedPrepivot results during import and store in PTMPercentsCache.
+     * Only populates cache for ExperimentMAM folders.
+     */
+    public static void populatePTMPercentsGroupedPrepivotCache(@NotNull TargetedMSRun run, @NotNull User user, @NotNull Container container)
+    {
+        // Delete any existing cache rows for this run
+        new SqlExecutor(getSchema()).execute(
+                new SQLFragment("DELETE FROM ").append(getTableInfoPTMPercentsGroupedPrepivotCache()).append(" WHERE RunId = ?").add(run.getId()));
+
+        // Only populate cache for ExperimentMAM folders
+        if (getFolderType(container) != TargetedMSService.FolderType.ExperimentMAM)
+        {
+            return;
+        }
+
+        _log.info("Populating PTMPercentsGroupedPrepivotCache for run " + run.getId());
+
+        String labkeySql = "SELECT\n" +
+                "  Modification,\n" +
+                "  TotalPercentModified,\n" +
+                "  PercentModified,\n" +
+                "  MaxPercentModified,\n" +
+                "  ModificationCount,\n" +
+                "  Id,\n" +
+                "  PeptideModifiedSequence,\n" +
+                "  Sequence,\n" +
+                "  PreviousAA,\n" +
+                "  NextAA,\n" +
+                "  SampleFileId,\n" +
+                "  ReplicateName,\n" +
+                "  AminoAcid,\n" +
+                "  SiteLocation,\n" +
+                "  Location,\n" +
+                "  PeptideGroupId\n" +
+                "FROM PTMPercentsGroupedPrepivot\n" +
+                "WHERE PeptideGroupId.RunId = " + run.getId();
+
+        UserSchema schema = QueryService.get().getUserSchema(user, container, TargetedMSSchema.SCHEMA_KEY);
+        TableInfo tableInfo = QueryService.get().createTable(schema, labkeySql, null, true);
+
+        SQLFragment insertSql = new SQLFragment();
+        insertSql.append("INSERT INTO ").append(getTableInfoPTMPercentsGroupedPrepivotCache());
+        insertSql.append(" (Container, RunId, Modification, TotalPercentModified, PercentModified, MaxPercentModified,");
+        insertSql.append(" ModificationCount, Id, PeptideModifiedSequence, Sequence,");
+        insertSql.append(" PreviousAA, NextAA, SampleFileId, ReplicateName, AminoAcid, SiteLocation, Location, PeptideGroupId)");
+        insertSql.append(" SELECT ?, ?, lk.Modification, lk.TotalPercentModified, lk.PercentModified, lk.MaxPercentModified,");
+        insertSql.append(" lk.ModificationCount, lk.Id, lk.PeptideModifiedSequence, lk.Sequence,");
+        insertSql.append(" lk.PreviousAA, lk.NextAA, lk.SampleFileId, lk.ReplicateName, lk.AminoAcid, lk.SiteLocation, lk.Location, lk.PeptideGroupId");
+        insertSql.append(" FROM ").append(tableInfo, "lk");
+        insertSql.add(container.getEntityId());
+        insertSql.add(run.getId());
+        new SqlExecutor(getSchema()).execute(insertSql);
+
+        _log.info("Finished populating PTMPercentsGroupedPrepivotCache for run " + run.getId());
     }
 
     /**

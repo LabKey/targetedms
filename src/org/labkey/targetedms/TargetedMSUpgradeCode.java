@@ -15,7 +15,10 @@
  */
 package org.labkey.targetedms;
 
+import org.apache.logging.log4j.Logger;
+import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerManager;
+import org.labkey.api.data.DeferredUpgrade;
 import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SqlExecutor;
 import org.labkey.api.data.UpgradeCode;
@@ -23,6 +26,8 @@ import org.labkey.api.module.Module;
 import org.labkey.api.module.ModuleContext;
 import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.security.User;
+import org.labkey.api.targetedms.TargetedMSService;
+import org.labkey.api.util.logging.LogHelper;
 import org.labkey.targetedms.query.QCAnnotationTypeTable;
 
 import java.util.Date;
@@ -36,6 +41,8 @@ import java.util.Set;
  */
 public class TargetedMSUpgradeCode implements UpgradeCode
 {
+    private static final Logger LOG = LogHelper.getLogger(TargetedMSUpgradeCode.class, "TargetedMS schema upgrade operations");
+
     // called at every bootstrap to initialize annotation types
     @SuppressWarnings({"UnusedDeclaration"})
     public void populateDefaultAnnotationTypes(final ModuleContext moduleContext)
@@ -68,5 +75,37 @@ public class TargetedMSUpgradeCode implements UpgradeCode
         sql.add(name);
         sql.add(color);
         new SqlExecutor(TargetedMSManager.getSchema()).execute(sql);
+    }
+
+    /** Populate PTMPercentsGroupedPrepivotCache for all runs in existing ExperimentMAM folders */
+    @SuppressWarnings("UnusedDeclaration")
+    @DeferredUpgrade
+    public void populatePTMPercentsGroupedPrepivotCache(final ModuleContext moduleContext)
+    {
+        if (moduleContext.isNewInstall())
+        {
+            return;
+        }
+
+        User user = moduleContext.getUpgradeUser();
+        LOG.info("Populating PTMPercentsGroupedPrepivotCache for existing ExperimentMAM folders");
+
+        for (TargetedMSRun run : TargetedMSManager.getAllNonDeletedRuns())
+        {
+            Container container = run.getContainer();
+            if (container != null && TargetedMSManager.getFolderType(container) == TargetedMSService.FolderType.ExperimentMAM)
+            {
+                try
+                {
+                    TargetedMSManager.populatePTMPercentsGroupedPrepivotCache(run, user, container);
+                }
+                catch (Exception e)
+                {
+                    LOG.error("Error populating PTMPercentsGroupedPrepivotCache for run " + run.getId() + " in " + container.getPath(), e);
+                }
+            }
+        }
+
+        LOG.info("Finished populating PTMPercentsGroupedPrepivotCache for existing ExperimentMAM folders");
     }
 }
