@@ -35,6 +35,7 @@ import org.labkey.api.util.NetworkDrive;
 import org.labkey.api.util.Pair;
 import org.labkey.api.util.Tuple3;
 import org.labkey.api.util.UnexpectedException;
+import org.labkey.api.util.XmlBeansUtil;
 import org.labkey.targetedms.IrtPeptide;
 import org.labkey.targetedms.SkylineDocImporter.IProgressStatus;
 import org.labkey.targetedms.chromlib.ConnectionSource;
@@ -230,8 +231,7 @@ public class SkylineDocumentParser implements AutoCloseable
         _progressStatus = progressStatus;
         _container = container;
         _inputStream = new ProgressInputStream(new FileInputStream(_file));
-        XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-        _reader = inputFactory.createXMLStreamReader(_inputStream);
+        _reader = XmlBeansUtil.XML_INPUT_FACTORY.createXMLStreamReader(_inputStream);
         _log = log;
         readDocumentVersion(_reader);
     }

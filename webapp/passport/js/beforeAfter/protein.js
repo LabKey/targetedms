@@ -86,7 +86,7 @@ protein =
 
                     var label = document.createElement('Label');
                     label.setAttribute("for",checkbox.id);
-                    label.innerHTML = capitalizeFirstLetter(type);
+                    label.innerText = capitalizeFirstLetter(type);
                     label.setAttribute("style", "padding-left: 5px; border-left: 5px solid "+protein.UI.features.colors[featureId] +";");
 
                     var listItem = document.createElement("li");

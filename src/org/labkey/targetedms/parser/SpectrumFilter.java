@@ -18,10 +18,10 @@ package org.labkey.targetedms.parser;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.junit.Assert;
 import org.junit.Test;
+import org.labkey.api.util.XmlBeansUtil;
 import org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass;
 import org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.FilterOperation;
 
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.StringReader;
@@ -260,7 +260,7 @@ public class SpectrumFilter
                     "        </spectrum_filter>",
                     "        <bibliospec_spectrum_info count_measured=\"1\" />",
                     "      </precursor>");
-            XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StringReader(xml));
+            XMLStreamReader reader = XmlBeansUtil.XML_INPUT_FACTORY.createXMLStreamReader(new StringReader(xml));
             int bibliospecSpectrumInfoCount = 0;
             List<FilterClause> clauses = new ArrayList<>();
             while (reader.hasNext())
