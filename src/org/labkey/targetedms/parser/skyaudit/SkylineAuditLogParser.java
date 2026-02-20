@@ -26,12 +26,12 @@ import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.resource.FileResource;
 import org.labkey.api.util.GUID;
 import org.labkey.api.util.Path;
+import org.labkey.api.util.XmlBeansUtil;
 import org.labkey.targetedms.TargetedMSModule;
 import org.labkey.targetedms.parser.XmlUtil;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.stream.StreamSource;
@@ -44,7 +44,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
@@ -124,7 +123,7 @@ public class SkylineAuditLogParser implements AutoCloseable
     }
 
     @NotNull
-    private InputStream openSchemaInputStream() throws AuditLogParsingException, FileNotFoundException, UnsupportedEncodingException
+    private InputStream openSchemaInputStream() throws AuditLogParsingException, FileNotFoundException
     {
         if (ModuleLoader.getInstance() != null)
         {   //if we are running web test
@@ -148,8 +147,7 @@ public class SkylineAuditLogParser implements AutoCloseable
     private void parseLogHeader() throws IOException, XMLStreamException
     {
         _fileStream = new FileInputStream(_file);
-        XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-        _stream = inputFactory.createXMLStreamReader(_fileStream);
+        _stream = XmlBeansUtil.XML_INPUT_FACTORY.createXMLStreamReader(_fileStream);
 
         //Skipping most XML structure validation since the file passed the schema validation
         int evtType = _stream.nextTag();     //log root element read
@@ -305,8 +303,6 @@ public class SkylineAuditLogParser implements AutoCloseable
     //--------------------------------------------
     public static class TestCase extends Assert{
 
-        private File _logFile;
-        private SkylineAuditLogParser _parser;
         private static final Logger _logger = LogManager.getLogger(TestCase.class);
         public final static String SYS_PROPERTY_CWD = "user.dir";
         public final static String SKYLINE_LOG_EXTENSION = "skyl";
@@ -325,49 +321,55 @@ public class SkylineAuditLogParser implements AutoCloseable
             List<AuditLogEntry> entries = new LinkedList<>();
 
             File fZip = UnitTestUtil.getSampleDataFile("AuditLogFiles/MethodEdit_v6.2.zip");
-            _logFile = UnitTestUtil.extractLogFromZip(fZip, _logger);
-            _parser = new SkylineAuditLogParser(_logFile, _logger);
-            Assert.assertNotNull(_parser.getEnRootHash());
-
-            AuditLogEntry prevEntry = null;
-
-            while(_parser.hasNextEntry())
+            File logFile = UnitTestUtil.extractLogFromZip(fZip, _logger);
+            try (SkylineAuditLogParser parser = new SkylineAuditLogParser(logFile, _logger))
             {
-                AuditLogEntry ent = _parser.parseLogEntry();
-                ent.setDocumentGUID(_docGUID);
-                if(prevEntry != null)
-                    ent.setParentEntryHash(prevEntry.getEntryHash());
-                entries.add(ent);
-                _logger.debug(ent.toString());
-                //all messages in this file should have expanded text
-                //ent.persist();
+                Assert.assertNotNull(parser.getEnRootHash());
 
-                for(AuditLogMessage msg : ent.getAllInfoMessage())
+                AuditLogEntry prevEntry = null;
+
+                while (parser.hasNextEntry())
                 {
-                    Assert.assertNotNull(msg.getEnText());
+                    AuditLogEntry ent = parser.parseLogEntry();
+                    ent.setDocumentGUID(_docGUID);
+                    if (prevEntry != null)
+                        ent.setParentEntryHash(prevEntry.getEntryHash());
+                    entries.add(ent);
+                    _logger.debug(ent.toString());
+                    //all messages in this file should have expanded text
+                    //ent.persist();
+
+                    for (AuditLogMessage msg : ent.getAllInfoMessage())
+                    {
+                        Assert.assertNotNull(msg.getEnText());
+                    }
+                    prevEntry = ent;
                 }
-                prevEntry = ent;
+
+                Assert.assertNotNull(entries.get(2).getExtraInfo());
+                Assert.assertNull(entries.get(1).getExtraInfo());
+
+                Assert.assertEquals(11, entries.size());
+                Assert.assertEquals(6, entries.get(5).getAllInfoMessage().size());
+                Assert.assertTrue(entries.get(0).canBeHashed());
             }
-
-            Assert.assertNotNull(entries.get(2).getExtraInfo());
-            Assert.assertNull(entries.get(1).getExtraInfo());
-
-            Assert.assertEquals(11, entries.size());
-            Assert.assertEquals(6, entries.get(5).getAllInfoMessage().size());
-            Assert.assertTrue(entries.get(0).canBeHashed());
         }
 
         @Test
         public void testInvalidXmlFile() throws IOException
         {
+            SkylineAuditLogParser parser = null;
             try
             {
                 File logFile = UnitTestUtil.getSampleDataFile("AuditLogFiles/InvalidSchemaTest.skyl");
-                SkylineAuditLogParser parser = new SkylineAuditLogParser(logFile, _logger);
+                parser = new SkylineAuditLogParser(logFile, _logger);
                 Assert.fail("Expected file validation failure but it succeeded.");
             }
-            catch (AuditLogException ignored)
+            catch (AuditLogException _) {}
+            finally
             {
+                if (parser != null)
+                    parser.close();
             }
         }
 

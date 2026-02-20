@@ -2,9 +2,9 @@ package org.labkey.targetedms.parser;
 
 import org.apache.logging.log4j.Logger;
 import org.labkey.api.util.UnexpectedException;
+import org.labkey.api.util.XmlBeansUtil;
 import org.labkey.targetedms.parser.proto.SkylineDocument;
 
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.File;
@@ -38,7 +38,7 @@ public class TransitionChromInfoAndPrecursorTally
         XMLStreamReader reader;
         try (FileInputStream inputStream = new FileInputStream(file))
         {
-            reader = XMLInputFactory.newInstance().createXMLStreamReader(inputStream);
+            reader = XmlBeansUtil.XML_INPUT_FACTORY.createXMLStreamReader(inputStream);
             try
             {
                 readCounts(reader);
