@@ -145,7 +145,6 @@ import org.labkey.api.security.permissions.ApplicationAdminPermission;
 import org.labkey.api.security.permissions.InsertPermission;
 import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.security.permissions.UpdatePermission;
-import org.labkey.api.settings.AppProps;
 import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.targetedms.TargetedMSService;
@@ -6464,13 +6463,10 @@ public class TargetedMSController extends SpringActionController
         navTree.addChild(fullDownloadNavTree);
 
         ActionURL runURL = new ActionURL(ShowPrecursorListAction.class, run.getContainer()).addParameter("fileName", run.getFileName());
-        if (AppProps.getInstance().getUseContainerRelativeURL())
-        {
-            NavTree relativeURLNavTree = new NavTree("Copy relative URL to clipboard", runURL.toContainerRelativeURL());
-            relativeURLNavTree.setScript("copyStringToClipboard(" + PageFlowUtil.jsString(runURL.toContainerRelativeURL()) + ");return false;");
-            relativeURLNavTree.setTip("Relative URLs are good for using in wiki pages in this folder, especially for folders that may later move or be copied");
-            navTree.addChild(relativeURLNavTree);
-        }
+        NavTree relativeURLNavTree = new NavTree("Copy relative URL to clipboard", runURL.toRelativeURL());
+        relativeURLNavTree.setScript("copyStringToClipboard(" + PageFlowUtil.jsString(runURL.toRelativeURL()) + ");return false;");
+        relativeURLNavTree.setTip("Relative URLs are good for using in wiki pages in this folder, especially for folders that may later move or be copied");
+        navTree.addChild(relativeURLNavTree);
 
         NavTree fullURL = new NavTree("Copy full URL to clipboard", runURL.getURIString());
         fullURL.setScript("copyStringToClipboard(" + PageFlowUtil.jsString(runURL.getURIString()) + ");return false;");
