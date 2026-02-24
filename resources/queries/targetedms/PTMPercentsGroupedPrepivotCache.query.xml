@@ -1,0 +1,43 @@
+<query xmlns="http://labkey.org/data/xml/query">
+    <metadata>
+        <tables xmlns="http://labkey.org/data/xml">
+            <table tableName="PTMPercentsGroupedPrepivotCache" tableDbType="TABLE">
+                <columns>
+                    <column columnName="PeptideModifiedSequence">
+                        <displayColumnFactory>
+                            <className>org.labkey.targetedms.query.ModifiedSequenceDisplayColumn$PeptideDisplayColumnFactory</className>
+                            <properties>
+                                <property name="showNextAndPrevious">true</property>
+                                <property name="useParens">true</property>
+                                <property name="modificationSite">SiteLocation</property>
+                            </properties>
+                        </displayColumnFactory>
+                        <columnTitle>Sequence</columnTitle>
+                    </column>
+                    <column columnName="TotalPercentModified">
+                        <formatString>0.00%</formatString>
+                    </column>
+                    <column columnName="PercentModified">
+                        <formatString>0.00%</formatString>
+                    </column>
+                    <column columnName="MaxPercentModified">
+                        <formatString>0.00%</formatString>
+                    </column>
+                    <column columnName="Sequence">
+                        <columnTitle>UnmodifiedSequence</columnTitle>
+                    </column>
+                    <column columnName="IsCdr">
+                        <displayColumnFactory>
+                           <className>org.labkey.targetedms.query.CDRDisplayColumnFactory</className>
+                        </displayColumnFactory>
+                    </column>
+                    <column columnName="Risk">
+                        <displayColumnFactory>
+                           <className>org.labkey.targetedms.query.PTMRiskDisplayColumnFactory</className>
+                        </displayColumnFactory>
+                    </column>
+                </columns>
+            </table>
+        </tables>
+    </metadata>
+</query>
