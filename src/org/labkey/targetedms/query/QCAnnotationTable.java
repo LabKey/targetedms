@@ -15,12 +15,24 @@
  */
 package org.labkey.targetedms.query;
 
+import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
+import org.labkey.api.data.TableInfo;
 import org.labkey.api.gwt.client.AuditBehaviorType;
+import org.labkey.api.query.DefaultQueryUpdateService;
+import org.labkey.api.query.DuplicateKeyException;
 import org.labkey.api.query.QueryForeignKey;
+import org.labkey.api.query.QueryUpdateService;
+import org.labkey.api.query.QueryUpdateServiceException;
 import org.labkey.api.query.SimpleUserSchema;
+import org.labkey.api.query.ValidationException;
+import org.labkey.api.security.User;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 import static org.labkey.targetedms.query.GuideSetTable.appendFormatLabel;
 
@@ -43,5 +55,34 @@ public class QCAnnotationTable extends SimpleUserSchema.SimpleTable<TargetedMSSc
         appendFormatLabel(getMutableColumn("Date"));
         appendFormatLabel(getMutableColumn("EndDate"));
         setAuditBehavior(AuditBehaviorType.DETAILED);
+    }
+
+    @Override
+    public QueryUpdateService getUpdateService()
+    {
+        TableInfo table = getRealTable();
+        if (table != null)
+        {
+            return new DefaultQueryUpdateService(this, getRealTable())
+            {
+                @Override
+                protected Map<String, Object> insertRow(User user, Container container, Map<String, Object> row) throws SQLException, ValidationException, QueryUpdateServiceException, DuplicateKeyException
+                {
+                    // Check if the QCAnnotationType is shareable
+                    int qcAnnotationTypeId = (Integer) row.get("QCAnnotationTypeId");
+                    boolean isShareable = TargetedMSManager.isQCAnnotationTypeShareable(qcAnnotationTypeId);
+
+                    if (isShareable)
+                    {
+                        // Check if the current container has an instrument and include its nickname
+                        var instrumentNickName = TargetedMSManager.getInstrumentNickName(getContainer());
+                        row.put("instrument", instrumentNickName);
+                    }
+
+                    return super.insertRow(user, container, row);
+                }
+            };
+        }
+        return null;
     }
 }
