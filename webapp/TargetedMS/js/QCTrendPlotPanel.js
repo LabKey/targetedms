@@ -1303,7 +1303,21 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         var config = this.getReportConfig();
 
-        var annotationSql = "SELECT qca.Id AS qcAnnotationId, qca.Date, qca.Description, qca.Created, qca.CreatedBy.DisplayName, qcat.Id AS qcAnnotationTypeId, qcat.Name, qcat.Color FROM qcannotation qca JOIN qcannotationtype qcat ON qcat.Id = qca.QCAnnotationTypeId";
+        // First, get the current container's instrument nickname to filter shareable annotations
+        LABKEY.Query.executeSql({
+            schemaName: 'targetedms',
+            sql: "SELECT DISTINCT Nickname FROM InstrumentNickname",
+            scope: this,
+            success: function(data) {
+                var instrumentNickname = data.rows.length > 0 ? data.rows[0]['Nickname'] : null;
+                this.fetchAnnotations(config, instrumentNickname);
+            },
+            failure: this.failureHandler
+        });
+    },
+
+    fetchAnnotations: function(config, instrumentNickname) {
+        var annotationSql = "SELECT qca.Id AS qcAnnotationId, qca.Date, qca.Description, qca.Created, qca.CreatedBy.DisplayName, qcat.Id AS qcAnnotationTypeId, qcat.Name, qcat.Color, qca.Container FROM qcannotation qca JOIN qcannotationtype qcat ON qcat.Id = qca.QCAnnotationTypeId";
 
         // Filter on start/end dates
         var separator = " WHERE ";
@@ -1313,13 +1327,27 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }
         if (config.EndDate) {
             annotationSql += separator + "CAST(Date AS Date) <= '" + config.EndDate + "'";
+            separator = " AND ";
         }
+
+        // Filter logic:
+        // 1. All annotations from the shared container
+        // 2. Annotations from the current container
+        // 3. Shareable annotations from any container with a matching instrument
+        var sharedContainer = LABKEY.Security.getSharedContainer();
+
+        var containerClause = "qca.Container.Name = '" + sharedContainer + "'";
+        containerClause += " OR (qca.Container = '" + LABKEY.Security.currentContainer.id + "')";
+        if (instrumentNickname) {
+            containerClause += " OR (qcat.IsShareable = TRUE AND qca.instrument = '" + instrumentNickname + "')";
+        }
+        annotationSql += separator + "(" + containerClause + ")";
 
         LABKEY.Query.executeSql({
             schemaName: 'targetedms',
             sql: annotationSql,
             sort: 'Date',
-            containerFilter: LABKEY.Query.containerFilter.currentPlusProjectAndShared,
+            containerFilter: LABKEY.Query.containerFilter.allFolders,
             scope: this,
             success: this.processAnnotationData,
             failure: this.failureHandler
