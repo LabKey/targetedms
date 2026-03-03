@@ -1,0 +1,7 @@
+<customView xmlns="http://labkey.org/data/xml/queryCustomView" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <sorts>
+        <sort column="Modification" />
+        <sort column="Sequence" />
+        <sort column="ReplicateName" />
+    </sorts>
+</customView>

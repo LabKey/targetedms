@@ -21,6 +21,7 @@ import org.labkey.api.module.Module;
 import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.resource.FileResource;
 import org.labkey.api.util.Path;
+import org.labkey.api.util.XmlBeansUtil;
 import org.labkey.targetedms.TargetedMSModule;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -29,7 +30,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
@@ -75,12 +75,11 @@ public class PsiInstruments
             LOG.error("File not found: psi-ms-PARSED.xml.");
             return Collections.emptyList();
         }
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db;
         Document document;
         try
         {
-            db = dbf.newDocumentBuilder();
+            db = XmlBeansUtil.DOCUMENT_BUILDER_FACTORY.newDocumentBuilder();
             document = db.parse(file);
         }
         catch (ParserConfigurationException | SAXException | IOException e)

@@ -1952,4 +1952,26 @@
             <column columnName="SeriesLabel"/>
         </columns>
     </table>
+    <table tableName="PTMPercentsGroupedPrepivotCache" tableDbType="TABLE">
+        <columns>
+            <column columnName="Id"/> <!-- PeptideId lookup, not a primary key -->
+            <column columnName="Container"/>
+            <column columnName="RunId"/>
+            <column columnName="Modification"/>
+            <column columnName="TotalPercentModified"/>
+            <column columnName="PercentModified"/>
+            <column columnName="MaxPercentModified"/>
+            <column columnName="ModificationCount"/>
+            <column columnName="PeptideModifiedSequence"/>
+            <column columnName="Sequence"/>
+            <column columnName="PreviousAA"/>
+            <column columnName="NextAA"/>
+            <column columnName="SampleFileId"/>
+            <column columnName="ReplicateName"/>
+            <column columnName="AminoAcid"/>
+            <column columnName="SiteLocation"/>
+            <column columnName="Location"/>
+            <column columnName="PeptideGroupId"/>
+        </columns>
+    </table>
 </tables>

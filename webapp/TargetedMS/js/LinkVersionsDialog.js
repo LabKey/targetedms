@@ -208,7 +208,7 @@ Ext4.define('LABKEY.targetedms.LinkedVersions', {
     removeColumnCellClick : function(grid, td, cellIndex, record, tr, rowIndex, e) {
         // 'Remove' column listener to remove a record from an existing method chain
         if (cellIndex == 0 && e.target.className.indexOf('remove-link-version') > 0) {
-            Ext4.Msg.confirm('Remove Confirmation', 'Are you sure you want to remove <b>' + record.get('File/FileName')
+            Ext4.Msg.confirm('Remove Confirmation', 'Are you sure you want to remove <b>' + LABKEY.Utils.encodeHtml(record.get('File/FileName'))
                     + '</b> from its existing method chain?',
                 function(btnId) {
                     if (btnId == 'yes') {

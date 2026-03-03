@@ -71,6 +71,7 @@ import org.labkey.api.security.User;
 import org.labkey.api.security.permissions.AdminPermission;
 import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.api.targetedms.RunRepresentativeDataState;
+import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.HtmlString;
 import org.labkey.api.util.Pair;
@@ -232,6 +233,7 @@ public class TargetedMSSchema extends UserSchema
     public static final String TABLE_QC_ENABLED_METRICS = "QCEnabledMetrics";
     public static final String TABLE_QC_TRACE_METRIC_VALUES = "QCTraceMetricValues";
     public static final String TABLE_QC_METRIC_CACHE = "QCMetricCache";
+    public static final String TABLE_PTM_PERCENTS_GROUPED_PREPIVOT_CACHE = "PTMPercentsGroupedPrepivotCache";
 
     public static final String TABLE_GUIDE_SET = "GuideSet";
 
@@ -1689,6 +1691,14 @@ public class TargetedMSSchema extends UserSchema
                 result.getMutableColumnOrThrow("ExperimentRunLSID").setFk(QueryForeignKey.from(_expSchema, cf).to("Runs", "LSID", null));
             }
             TargetedMSTable.fixupLookups(result);
+
+            if (name.equalsIgnoreCase(TABLE_PTM_PERCENTS_GROUPED_PREPIVOT_CACHE))
+            {
+                // Inject two null columns to match how the uncached version wires up DisplayColumns
+                result.addColumn(new ExprColumn(result, "Risk", new SQLFragment("CAST(NULL AS VARCHAR)"), JdbcType.VARCHAR));
+                result.addColumn(new ExprColumn(result, "IsCdr", new SQLFragment("CAST(NULL AS VARCHAR)"), JdbcType.VARCHAR));
+            }
+
             return result;
         }
 
@@ -1882,6 +1892,7 @@ public class TargetedMSSchema extends UserSchema
         hs.add(TABLE_RATE_TYPE);
         hs.add(TABLE_INSTRUMENT_RATE);
         hs.add(TABLE_INSTRUMENT_USAGE_PAYMENT);
+        hs.add(TABLE_PTM_PERCENTS_GROUPED_PREPIVOT_CACHE);
 
         return hs;
     }
@@ -1921,6 +1932,11 @@ public class TargetedMSSchema extends UserSchema
         try
         {
             long runId = Long.parseLong(runIdString);
+            if (TargetedMSManager.getFolderType(getContainer()) != TargetedMSService.FolderType.ExperimentMAM)
+            {
+                throw new IllegalStateException("PTM queries are only supported in ExperimentMAM folders");
+            }
+
             QueryDefinition queryDef = Objects.requireNonNull(getQueryDef(baseQueryName));
             QueryDefinition result = QueryService.get().createQueryDef(getUser(), getContainer(), getSchemaPath(), queryName);
             result.setSql(queryDef.getSql() + " IN (SELECT r.Name FROM targetedms.Replicate r WHERE r.RunId = " + runId + ")");

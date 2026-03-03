@@ -18,7 +18,7 @@ SELECT
     MAX(ModificationCount) AS ModificationCount @hidden
 
 FROM
-    PTMPercentsGroupedPrepivot
+    PTMPercentsGroupedPrepivotCache
 GROUP BY
     ReplicateName,
     Sequence,
