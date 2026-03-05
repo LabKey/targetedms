@@ -1301,55 +1301,106 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     getAnnotationData: function() {
         this.setLoadingMsg();
 
-        var config = this.getReportConfig();
+        let config = this.getReportConfig();
 
-        // First, get the current container's instrument nickname to filter shareable annotations
-        LABKEY.Query.executeSql({
-            schemaName: 'targetedms',
-            sql: "SELECT DISTINCT Nickname FROM InstrumentNickname",
-            scope: this,
-            success: function(data) {
-                var instrumentNickname = data.rows.length > 0 ? data.rows[0]['Nickname'] : null;
-                this.fetchAnnotations(config, instrumentNickname);
-            },
-            failure: this.failureHandler
-        });
-    },
-
-    fetchAnnotations: function(config, instrumentNickname) {
-        var annotationSql = "SELECT qca.Id AS qcAnnotationId, qca.Date, qca.Description, qca.Created, qca.CreatedBy.DisplayName, qcat.Id AS qcAnnotationTypeId, qcat.Name, qcat.Color, qca.Container FROM qcannotation qca JOIN qcannotationtype qcat ON qcat.Id = qca.QCAnnotationTypeId";
+        let annotationSql = "SELECT qca.Id AS qcAnnotationId, qca.Date, qca.Description, qca.Created, qca.CreatedBy.DisplayName, qcat.Id AS qcAnnotationTypeId, qcat.Name, qcat.Color FROM qcannotation qca JOIN qcannotationtype qcat ON qcat.Id = qca.QCAnnotationTypeId";
 
         // Filter on start/end dates
-        var separator = " WHERE ";
+        let dateFilter = "";
         if (config.StartDate) {
-            annotationSql += separator + "CAST(Date AS Date) >= '" + config.StartDate + "'";
-            separator = " AND ";
+            dateFilter += " AND CAST(Date AS Date) >= '" + config.StartDate + "'";
         }
         if (config.EndDate) {
-            annotationSql += separator + "CAST(Date AS Date) <= '" + config.EndDate + "'";
-            separator = " AND ";
+            dateFilter += " AND CAST(Date AS Date) <= '" + config.EndDate + "'";
         }
+        annotationSql += " WHERE 1=1 " + dateFilter;
 
-        // Filter logic:
-        // 1. All annotations from the shared container
-        // 2. Annotations from the current container
-        // 3. Shareable annotations from any container with a matching instrument
-        var sharedContainer = LABKEY.Security.getSharedContainer();
+        let handleAnnotationData = function(data) {
+            let annotationData = data ? data.rows : [];
 
-        var containerClause = "qca.Container.Name = '" + sharedContainer + "'";
-        containerClause += " OR (qca.Container = '" + LABKEY.Security.currentContainer.id + "')";
-        if (instrumentNickname) {
-            containerClause += " OR (qcat.IsShareable = TRUE AND qca.instrument = '" + instrumentNickname + "')";
-        }
-        annotationSql += separator + "(" + containerClause + ")";
+            // Check if there is an instrument attached to the current container from samplefile table.
+            LABKEY.Query.executeSql({
+                schemaName: 'targetedms',
+                sql: "SELECT DISTINCT InstrumentId.Model, InstrumentSerialNumber, InstrumentNickname FROM samplefile",
+                scope: this,
+                success: function(instrumentData) {
+                    if (instrumentData && instrumentData.rows && instrumentData.rows.length > 0) {
+                        let instrumentFilter = "";
+                        let separator = "";
+                        for (let i = 0; i < instrumentData.rows.length; i++) {
+                            let row = instrumentData.rows[i];
+                            let model = row["Model"];
+                            let serial = row["InstrumentSerialNumber"];
+                            let nickname = row["InstrumentNickname"];
+
+                            instrumentFilter += separator + "(";
+                            let innerSep = "";
+                            if (model) {
+                                instrumentFilter += "(qca.instrumentModel = '" + model + "'";
+                                innerSep = " AND ";
+                            } else {
+                                instrumentFilter += "(qca.instrumentModel IS NULL";
+                                innerSep = " AND ";
+                            }
+
+                            if (serial) {
+                                instrumentFilter += innerSep + "qca.instrumentSerialNumber = '" + serial + "')";
+                            } else {
+                                instrumentFilter += innerSep + "qca.instrumentSerialNumber IS NULL)";
+                            }
+
+                            if (nickname) {
+                                instrumentFilter += " OR qca.instrumentNickName = '" + nickname + "'";
+                            }
+                            instrumentFilter += ")";
+                            separator = " OR ";
+                        }
+
+                        let sharedAnnotationSql = "SELECT qca.Id AS qcAnnotationId, qca.Date, qca.Description, qca.Created, qca.CreatedBy.DisplayName, qcat.Id AS qcAnnotationTypeId, qcat.Name, qcat.Color " +
+                                "FROM qcannotation qca " +
+                                "JOIN qcannotationtype qcat ON qcat.Id = qca.QCAnnotationTypeId " +
+                                "WHERE qcat.IsShareable = true AND (" + instrumentFilter + ")" + dateFilter;
+
+                        LABKEY.Query.executeSql({
+                            schemaName: 'targetedms',
+                            sql: sharedAnnotationSql,
+                            containerFilter: LABKEY.Query.containerFilter.allFolders,
+                            scope: this,
+                            success: function(sharedData) {
+                                if (sharedData && sharedData.rows) {
+                                    // add shared annotations but avoid duplicates if they were already in the first list
+                                    let existingIds = {};
+                                    for (let j = 0; j < annotationData.length; j++) {
+                                        existingIds[annotationData[j].qcAnnotationId] = true;
+                                    }
+                                    for (let k = 0; k < sharedData.rows.length; k++) {
+                                        if (!existingIds[sharedData.rows[k].qcAnnotationId]) {
+                                            annotationData.push(sharedData.rows[k]);
+                                        }
+                                    }
+                                }
+                                this.processAnnotationData({rows: annotationData});
+                            },
+                            failure: this.failureHandler
+                        });
+                    } else {
+                        this.processAnnotationData({rows: annotationData});
+                    }
+                },
+                failure: function() {
+                    // if instrument fetch fails, just proceed with what we have
+                    this.processAnnotationData({rows: annotationData});
+                }
+            });
+        };
 
         LABKEY.Query.executeSql({
             schemaName: 'targetedms',
             sql: annotationSql,
             sort: 'Date',
-            containerFilter: LABKEY.Query.containerFilter.allFolders,
+            containerFilter: LABKEY.Query.containerFilter.currentPlusProjectAndShared,
             scope: this,
-            success: this.processAnnotationData,
+            success: handleAnnotationData,
             failure: this.failureHandler
         });
     },

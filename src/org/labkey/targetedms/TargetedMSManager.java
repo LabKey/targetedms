@@ -17,6 +17,8 @@
 package org.labkey.targetedms;
 
 import com.google.common.base.Joiner;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -3074,15 +3076,163 @@ public class TargetedMSManager
         return Objects.requireNonNull(table.getUpdateService());
     }
 
+    public static class InstrumentDetails
+    {
+        @Getter @Setter
+        private String instrumentSerialNumber;
+        @Getter @Setter
+        private String model;
+        @Getter @Setter
+        private Long instrumentId;
 
-    public static String getInstrumentNickName(Container container)
+        public InstrumentDetails()
+        {
+        }
+    }
+
+    public static List<InstrumentDetails> getInstrumentDetails(Container container)
+    {
+        SQLFragment sql = new SQLFragment("SELECT DISTINCT sf.InstrumentSerialNumber, i.Model, i.Id AS InstrumentId FROM ");
+        sql.append(getTableInfoSampleFile(), "sf");
+        sql.append(" INNER JOIN ");
+        sql.append(getTableInfoInstrument(), "i");
+        sql.append(" ON sf.InstrumentId = i.Id ");
+        sql.append(" INNER JOIN ");
+        sql.append(getTableInfoReplicate(), "rep");
+        sql.append(" ON sf.ReplicateId = rep.Id ");
+        sql.append(" INNER JOIN ");
+        sql.append(getTableInfoRuns(), "r");
+        sql.append(" ON rep.RunId = r.Id ");
+        sql.append(" WHERE r.Container = ?");
+        sql.add(container);
+
+        return new SqlSelector(getSchema(), sql).getArrayList(InstrumentDetails.class);
+
+    }
+
+    public static List<String> getInstrumentNickName(Container container)
     {
         SimpleFilter filter = SimpleFilter.createContainerFilter(container);
+
         List<InstrumentNickname> nicknames = new TableSelector(getTableInfoInstrumentNickname(), filter, null).getArrayList(InstrumentNickname.class);
         return nicknames.stream()
                 .map(InstrumentNickname::getNickname)
                 .distinct()
-                .collect(Collectors.joining(","));
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Returns the instrument nickname for the given instrument, similar to the logic in SampleFileTable.
+     * First checks for a custom nickname matching the serial number and model, then falls back to a default name.
+     *
+     * @param container    The container to search in (including project and shared containers)
+     * @param user         The user for permission checking
+     * @param instrumentId The instrument ID
+     * @return The resolved nickname, or null if no instrument is found
+     */
+    @Nullable
+    public static String getInstrumentNickName(@NotNull Container container, @NotNull User user,
+                                               @Nullable Long instrumentId)
+    {
+        if (instrumentId == null)
+        {
+            return null;
+        }
+
+        TargetedMSSchema schema = new TargetedMSSchema(user, container);
+
+        // Get the serial number and model from the sample file table
+        SQLFragment sampleFileSQL = new SQLFragment("SELECT DISTINCT sf.InstrumentSerialNumber, i.Model FROM ");
+        sampleFileSQL.append(getTableInfoSampleFile(), "sf");
+        sampleFileSQL.append(" INNER JOIN ");
+        sampleFileSQL.append(getTableInfoInstrument(), "i");
+        sampleFileSQL.append(" ON sf.InstrumentId = i.Id WHERE i.Id = ?").add(instrumentId);
+
+        Map<String, Object> sampleFileData = new SqlSelector(getSchema(), sampleFileSQL).getMap();
+        String serialNumber = sampleFileData != null ? (String) sampleFileData.get("InstrumentSerialNumber") : null;
+        String instrumentModel = sampleFileData != null ? (String) sampleFileData.get("Model") : null;
+
+        // First, try to find a custom nickname matching the serial number and model
+        // Join conditions match the logic in SampleFileTable:
+        // - SerialNumber matches or both are NULL
+        // - Model matches or both are NULL
+        SimpleFilter filter = new SimpleFilter();
+
+        // Build a filter for nickname lookup with proper NULL handling
+        if (serialNumber != null)
+        {
+            filter.addCondition(FieldKey.fromParts("SerialNumber"), serialNumber);
+        }
+        else
+        {
+            filter.addCondition(FieldKey.fromParts("SerialNumber"), null, CompareType.ISBLANK);
+        }
+
+        if (instrumentModel != null)
+        {
+            filter.addCondition(new SimpleFilter.OrClause(
+                    new CompareType.EqualsCompareClause(FieldKey.fromParts("Model"), CompareType.EQUAL, instrumentModel),
+                    new CompareType.CompareClause(FieldKey.fromParts("Model"), CompareType.ISBLANK, null)
+            ));
+        }
+        else
+        {
+            filter.addCondition(FieldKey.fromParts("Model"), null, CompareType.ISBLANK);
+        }
+
+        // Search in current container, project, and shared containers, prioritizing by container proximity
+        TableInfo nicknameTable = schema.getTableOrThrow(TABLE_INSTRUMENT_NICKNAME,
+                ContainerFilter.Type.CurrentPlusProjectAndShared.create(container, user));
+
+        List<InstrumentNickname> matches = new TableSelector(nicknameTable, filter, null).getArrayList(InstrumentNickname.class);
+
+        // Sort by container proximity: current > project > shared
+        Container shared = ContainerManager.getSharedContainer();
+        Container project = container.getProject();
+
+        matches.sort((a, b) -> {
+            int aScore = getContainerScore(a.getContainer(), container, project, shared);
+            int bScore = getContainerScore(b.getContainer(), container, project, shared);
+            return Integer.compare(bScore, aScore); // Higher score first
+        });
+
+        if (!matches.isEmpty())
+        {
+            return matches.get(0).getNickname();
+        }
+
+        // Fall back to default naming: COALESCE(Model + ' - ' + SerialNumber, SerialNumber, Model)
+        if (instrumentModel != null && serialNumber != null)
+        {
+            return instrumentModel + " - " + serialNumber;
+        }
+        else if (serialNumber != null)
+        {
+            return serialNumber;
+        }
+        else if (instrumentModel != null)
+        {
+            return instrumentModel;
+        }
+
+        return null;
+    }
+
+    private static int getContainerScore(Container c, Container current, Container project, Container shared)
+    {
+        if (c.equals(current))
+        {
+            return 3;
+        }
+        else if (project != null && c.equals(project))
+        {
+            return 2;
+        }
+        else if (shared != null && c.equals(shared))
+        {
+            return 1;
+        }
+        return 0;
     }
 
 
