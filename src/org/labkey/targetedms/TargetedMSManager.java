@@ -359,7 +359,7 @@ public class TargetedMSManager
 
     public static TableInfo getTableInfoPeptideAreaRatio()
     {
-        return getSchema().getTable(TargetedMSSchema.TABLE_PEPTIDE_AREA_RATIO);
+       return getSchema().getTable(TargetedMSSchema.TABLE_PEPTIDE_AREA_RATIO);
     }
 
     public static TableInfo getTableInfoInstrument()
@@ -502,7 +502,6 @@ public class TargetedMSManager
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_QC_EMAIL_NOTIFICATIONS);
     }
-
     public static TableInfo getTableInfoAnnotationSettings()
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_ANNOTATION_SETTINGS);
@@ -547,7 +546,6 @@ public class TargetedMSManager
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_QC_ANNOTATION);
     }
-
     public static TableInfo getTableInfoQuantificationSettings()
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_QUANTIIFICATION_SETTINGS);
@@ -623,9 +621,7 @@ public class TargetedMSManager
         return getSchema().getTable(TargetedMSSchema.TABLE_SKYLINE_RUN_AUDITLOG_ENTRY);
     }
 
-    /**
-     * View that's a CTE to pull in the RunId
-     */
+    /** View that's a CTE to pull in the RunId */
     public static TableInfo getTableInfoSkylineAuditLog()
     {
         return getSchema().getTable(TargetedMSSchema.TABLE_SKYLINE_AUDITLOG);
@@ -721,22 +717,20 @@ public class TargetedMSManager
         return getSchema().getTable(TargetedMSSchema.TABLE_INSTRUMENT_USAGE_PAYMENT);
     }
 
-    /**
-     * @return rowId for pipeline job that will perform the import asynchronously
-     */
+    /** @return rowId for pipeline job that will perform the import asynchronously */
     public static Long addRunToQueue(ViewBackgroundInfo info,
-                                     final Path path) throws XarFormatException, PipelineValidationException
+                                        final Path path) throws XarFormatException, PipelineValidationException
     {
         String description = "Skyline document import - " + FileUtil.getFileName(path);
         XarContext xarContext = new XarContext(description, info.getContainer(), info.getUser());
-        User user = info.getUser();
+        User user =  info.getUser();
         Container container = info.getContainer();
 
         // If an entry does not already exist for this data file in exp.data create it now.
-        // This should happen only if a file was copied to the pipeline directory instead
-        // of being uploaded via the files browser.
+		// This should happen only if a file was copied to the pipeline directory instead
+		// of being uploaded via the files browser.
         ExpData expData = ExperimentService.get().getExpDataByURL(path, container);
-        if (expData == null)
+        if(expData == null)
         {
             XarSource source = new AbstractFileXarSource("Wrap Targeted MS Run", container, user)
             {
@@ -804,7 +798,7 @@ public class TargetedMSManager
 
             // Make sure that we have a protocol in this folder
             String protocolPrefix = run.isZipFile() ? TargetedMSModule.IMPORT_SKYZIP_PROTOCOL_OBJECT_PREFIX :
-                    TargetedMSModule.IMPORT_SKYDOC_PROTOCOL_OBJECT_PREFIX;
+                                                      TargetedMSModule.IMPORT_SKYDOC_PROTOCOL_OBJECT_PREFIX;
 
             Lsid lsid = new Lsid("Protocol.Folder-" + container.getRowId(), protocolPrefix);
             ExpProtocol protocol = ExperimentService.get().getExpProtocol(lsid.toString());
@@ -829,11 +823,11 @@ public class TargetedMSManager
             outputDatas.put(expData, "sky");
 
             ExpData expSkydData = null;
-            if (run.getSkydDataId() != null)
+            if(run.getSkydDataId() != null)
             {
                 expSkydData = ExperimentService.get().getExpData(run.getSkydDataId());
             }
-            if (expSkydData != null)
+            if(expSkydData != null)
             {
                 outputDatas.put(expSkydData, "skyd");
             }
@@ -850,12 +844,12 @@ public class TargetedMSManager
             }
 
             expRun = ExperimentService.get().saveSimpleExperimentRun(expRun,
-                    Collections.emptyMap(),
-                    inputDatas,
-                    Collections.emptyMap(),
-                    outputDatas,
-                    Collections.emptyMap(),
-                    info, _log, false);
+                                                                     Collections.emptyMap(),
+                                                                     inputDatas,
+                                                                     Collections.emptyMap(),
+                                                                     outputDatas,
+                                                                     Collections.emptyMap(),
+                                                                     info, _log, false);
 
             run.setExperimentRunLSID(expRun.getLSID());
             TargetedMSManager.updateRun(run, user);
@@ -922,7 +916,7 @@ public class TargetedMSManager
     public static TargetedMSRun getRunByDataId(long dataId, Container c)
     {
         TargetedMSRun[] runs;
-        if (c != null)
+        if(c != null)
         {
             runs = getRuns("DataId = ? AND Deleted = ? AND Container = ?", dataId, Boolean.FALSE, c.getId());
         }
@@ -930,11 +924,11 @@ public class TargetedMSManager
         {
             runs = getRuns("DataId = ? AND Deleted = ?", dataId, Boolean.FALSE);
         }
-        if (runs.length == 0)
+        if(runs.length == 0)
         {
             return null;
         }
-        if (runs.length == 1)
+        if(runs.length == 1)
         {
             return runs[0];
         }
@@ -949,7 +943,7 @@ public class TargetedMSManager
     public static TargetedMSRun getRunBySkydDataId(long skydDataId, Container c)
     {
         TargetedMSRun[] runs;
-        if (c != null)
+        if(c != null)
         {
             runs = getRuns("SkydDataId = ? AND Deleted = ? AND Container = ?", skydDataId, Boolean.FALSE, c.getId());
         }
@@ -957,11 +951,11 @@ public class TargetedMSManager
         {
             runs = getRuns("SkydDataId = ? AND Deleted = ?", skydDataId, Boolean.FALSE);
         }
-        if (runs.length == 0)
+        if(runs.length == 0)
         {
             return null;
         }
-        if (runs.length == 1)
+        if(runs.length == 1)
         {
             return runs[0];
         }
@@ -972,15 +966,15 @@ public class TargetedMSManager
     public static TargetedMSRun getRunByLsid(String lsid, Container c)
     {
         TargetedMSRun[] runs = getRuns("experimentrunlsid = ? AND container = ?", lsid, c.getId());
-        if (runs.length == 0)
+        if(runs.length == 0)
         {
             return null;
         }
-        if (runs.length == 1)
+        if(runs.length == 1)
         {
             return runs[0];
         }
-        throw new IllegalArgumentException("More than one TargetedMS runs found for LSID " + lsid);
+        throw new IllegalArgumentException("More than one TargetedMS runs found for LSID "+lsid);
     }
 
     public static boolean updateSkydDataId(ITargetedMSRun run, ExpData newSkydData, User user)
@@ -1071,11 +1065,11 @@ public class TargetedMSManager
     {
         Collection<Long> representativeRunIds = Collections.emptyList();
 
-        if (representativeState == RunRepresentativeDataState.Representative_Protein)
+        if(representativeState == RunRepresentativeDataState.Representative_Protein)
         {
             representativeRunIds = getProteinRepresentativeRunIds(container);
         }
-        else if (representativeState == RunRepresentativeDataState.Representative_Peptide)
+        else if(representativeState == RunRepresentativeDataState.Representative_Peptide)
         {
             representativeRunIds = getPeptideRepresentativeRunIds(container);
         }
@@ -1086,7 +1080,7 @@ public class TargetedMSManager
         }
 
         SQLFragment updateSql = new SQLFragment();
-        updateSql.append("UPDATE " + TargetedMSManager.getTableInfoRuns());
+        updateSql.append("UPDATE "+TargetedMSManager.getTableInfoRuns());
         updateSql.append(" SET RepresentativeDataState = ?");
         updateSql.add(RunRepresentativeDataState.NotRepresentative.ordinal());
         updateSql.append(" WHERE Container = ?");
@@ -1098,7 +1092,7 @@ public class TargetedMSManager
         // for the documents not yet imported.
         updateSql.append(" AND StatusId = ? ");
         updateSql.add(SkylineDocImporter.STATUS_SUCCESS);
-        updateSql.append(" AND Id NOT IN (" + StringUtils.join(representativeRunIds, ",") + ")");
+        updateSql.append(" AND Id NOT IN ("+StringUtils.join(representativeRunIds, ",")+")");
 
         new SqlExecutor(TargetedMSManager.getSchema()).execute(updateSql);
     }
@@ -1106,11 +1100,11 @@ public class TargetedMSManager
     public static List<Long> getCurrentRepresentativeRunIds(Container container)
     {
         List<Long> representativeRunIds = null;
-        if (getFolderType(container) == TargetedMSService.FolderType.LibraryProtein)
+        if(getFolderType(container) == TargetedMSService.FolderType.LibraryProtein)
         {
             representativeRunIds = getCurrentProteinRepresentativeRunIds(container);
         }
-        else if (getFolderType(container) == TargetedMSService.FolderType.Library)
+        else if(getFolderType(container) == TargetedMSService.FolderType.Library)
         {
             representativeRunIds = getCurrentPeptideRepresentativeRunIds(container);
         }
@@ -1126,8 +1120,8 @@ public class TargetedMSManager
     private static List<Long> getProteinRepresentativeRunIds(Container container)
     {
         return getProteinRepresentativeRunIds(container, RepresentativeDataState.Representative.ordinal(),
-                RepresentativeDataState.Deprecated.ordinal(),
-                RepresentativeDataState.Conflicted.ordinal());
+                                                         RepresentativeDataState.Deprecated.ordinal(),
+                                                         RepresentativeDataState.Conflicted.ordinal());
     }
 
     private static List<Long> getProteinRepresentativeRunIds(Container container, int... stateArray)
@@ -1155,8 +1149,8 @@ public class TargetedMSManager
     private static List<Long> getPeptideRepresentativeRunIds(Container container)
     {
         return getPeptideRepresentativeRunIds(container, RepresentativeDataState.Representative.ordinal(),
-                RepresentativeDataState.Deprecated.ordinal(),
-                RepresentativeDataState.Conflicted.ordinal());
+                                                         RepresentativeDataState.Deprecated.ordinal(),
+                                                         RepresentativeDataState.Conflicted.ordinal());
     }
 
     private static List<Long> getPeptideRepresentativeRunIds(Container container, int... stateArray)
@@ -1189,9 +1183,7 @@ public class TargetedMSManager
         Table.update(user, getTableInfoRuns(), run, run.getRunId());
     }
 
-    /**
-     * Delete all of the TargetedMS runs in the container, including their experiment run wrappers
-     */
+    /** Delete all of the TargetedMS runs in the container, including their experiment run wrappers */
     public static void deleteIncludingExperimentWrapper(Container c, User user)
     {
         List<Long> runIds = new SqlSelector(getSchema(), "SELECT Id FROM " + getTableInfoRuns() + " WHERE Container = ?", c).getArrayList(Long.class);
@@ -1237,13 +1229,9 @@ public class TargetedMSManager
         return name;
     }
 
-    private record NicknameKey(String serialNumber, String model)
-    {
-    }
+    private record NicknameKey(String serialNumber, String model) {}
 
-    /**
-     * @return the matches in order of closest to furthest match, injecting a virtual option if the list is empty
-     */
+    /** @return the matches in order of closest to furthest match, injecting a virtual option if the list is empty */
     public List<InstrumentNickname> getNickname(String name, TargetedMSSchema schema)
     {
         TableInfo info = schema.getTableOrThrow(TABLE_INSTRUMENT_NICKNAME, new ContainerFilter.CurrentPlusProjectAndShared(schema.getContainer(), schema.getUser()));
@@ -1314,14 +1302,13 @@ public class TargetedMSManager
     /**
      * Delete just the targetedms run and its child tables
      * Pulled out into separate method so could be called by itself from data handlers
-     *
      * @param runIds targetedms.run.id values
      */
     public static void deleteRuns(List<Long> runIds, Container c, User user, boolean containerDeletion)
     {
         List<Long> cantDelete = new ArrayList<>();
         List<TargetedMSRun> runsToDelete = new ArrayList<>();
-        for (long runId : runIds)
+        for (long runId: runIds)
         {
             TargetedMSRun run = getRun(runId);
             if (run == null || run.isDeleted())
@@ -1330,7 +1317,7 @@ public class TargetedMSManager
             }
             if (!run.getContainer().equals(c) && !run.getContainer().hasPermission(user, DeletePermission.class))
             {
-                cantDelete.add(runId);
+               cantDelete.add(runId);
             }
             runsToDelete.add(run);
         }
@@ -1403,22 +1390,22 @@ public class TargetedMSManager
 
     public static TargetedMSRun getRunForPrecursor(long precursorId)
     {
-        String sql = "SELECT run.* FROM " +
-                getTableInfoRuns() + " AS run, " +
-                getTableInfoPeptideGroup() + " AS pg, " +
-                getTableInfoGeneralMolecule() + " AS gm, " +
-                getTableInfoGeneralPrecursor() + " AS gp " +
-                "WHERE run.Id=pg.RunId " +
-                "AND pg.Id=gm.PeptideGroupId " +
-                "AND gm.Id=gp.GeneralMoleculeId " +
-                "AND gp.Id=?";
+        String sql = "SELECT run.* FROM "+
+                     getTableInfoRuns()+" AS run, "+
+                     getTableInfoPeptideGroup()+" AS pg, "+
+                     getTableInfoGeneralMolecule()+" AS gm, "+
+                     getTableInfoGeneralPrecursor()+" AS gp "+
+                     "WHERE run.Id=pg.RunId "+
+                     "AND pg.Id=gm.PeptideGroupId "+
+                     "AND gm.Id=gp.GeneralMoleculeId "+
+                     "AND gp.Id=?";
         SQLFragment sf = new SQLFragment(sql);
         sf.add(precursorId);
 
         TargetedMSRun run = new SqlSelector(getSchema(), sf).getObject(TargetedMSRun.class);
-        if (run == null)
+        if(run == null)
         {
-            throw new NotFoundException("No run found for precursor: " + precursorId);
+            throw new NotFoundException("No run found for precursor: "+precursorId);
         }
         return run;
     }
@@ -1426,18 +1413,18 @@ public class TargetedMSManager
     @NotNull
     public static TargetedMSRun getRunForGeneralMolecule(long id)
     {
-        String sql = "SELECT run.* FROM " +
-                getTableInfoRuns() + " AS run, " +
-                getTableInfoPeptideGroup() + " AS pg, " +
-                getTableInfoGeneralMolecule() + " AS gm " +
-                "WHERE run.Id=pg.RunId " +
-                "AND pg.Id=gm.PeptideGroupId " +
-                "AND gm.Id=?";
+        String sql = "SELECT run.* FROM "+
+                     getTableInfoRuns()+" AS run, "+
+                     getTableInfoPeptideGroup()+" AS pg, "+
+                     getTableInfoGeneralMolecule()+" AS gm "+
+                     "WHERE run.Id=pg.RunId "+
+                     "AND pg.Id=gm.PeptideGroupId "+
+                     "AND gm.Id=?";
         SQLFragment sf = new SQLFragment(sql);
         sf.add(id);
 
         TargetedMSRun run = new SqlSelector(getSchema(), sf).getObject(TargetedMSRun.class);
-        if (run == null)
+        if(run == null)
         {
             throw new NotFoundException("No run found for general molecule: " + id);
         }
@@ -1538,7 +1525,7 @@ public class TargetedMSManager
         sql.append(getTableInfoRuns(), "r");
         sql.append(", ");
         sql.append(ExperimentService.get().getTinfoData(), "d");
-        sql.append(" WHERE rep.Id = sf.ReplicateId AND rep.RunId = r.Id AND d.RowId = r.DataId AND d.DataFileUrl = ?");
+        sql.append( " WHERE rep.Id = sf.ReplicateId AND rep.RunId = r.Id AND d.RowId = r.DataId AND d.DataFileUrl = ?");
         sql.add(FileUtil.uriToString(uri));
 
         return new SqlSelector(getSchema(), sql).exists();
@@ -1680,7 +1667,7 @@ public class TargetedMSManager
 
         var map = new SqlSelector(getSchema(), sql).getMap();
         String filePath = null;
-        if (map != null)
+        if(map != null)
         {
             filePath = (String) map.get("dataFileUrl");
         }
@@ -1767,7 +1754,7 @@ public class TargetedMSManager
     private static String createTempChromInfoIdsTable(TableInfo tableInfo, String tempTableNamePrefix, SQLFragment whereClause)
     {
         final String suffix = StringUtilsLabKey.getPaddedUniquifier(9);
-        final String tempTableName = TargetedMSManager.getSqlDialect().getTempTablePrefix() + tempTableNamePrefix + suffix;
+        final String tempTableName = TargetedMSManager.getSqlDialect().getTempTablePrefix() +  tempTableNamePrefix + suffix;
         new SqlExecutor(TargetedMSSchema.getSchema()).execute("CREATE " +
                 TargetedMSManager.getSqlDialect().getTempTableKeyword() + " TABLE " + tempTableName +
                 " ( Id BIGINT NOT NULL PRIMARY KEY )");
@@ -1791,9 +1778,7 @@ public class TargetedMSManager
         return new SQLFragment("DELETE FROM " + fromTable + " WHERE " + fromFk + " IN (SELECT Id FROM " + tempIdsTable).append(")");
     }
 
-    /**
-     * Actually delete runs that have been marked as deleted from the database
-     */
+    /** Actually delete runs that have been marked as deleted from the database */
     private static void purgeDeletedRuns()
     {
         deleteRunDependent(getTableInfoPTMPercentsGroupedPrepivotCache());
@@ -1953,7 +1938,7 @@ public class TargetedMSManager
         // Get a list of deleted runs
         SQLFragment sql = new SQLFragment("SELECT Id FROM " + getTableInfoRuns() + " WHERE Deleted =  ?", true);
         List<Long> deletedRunIds = new SqlSelector(getSchema(), sql).getArrayList(Long.class);
-        if (!deletedRunIds.isEmpty())
+        if(!deletedRunIds.isEmpty())
         {
             ModificationManager.removeRunCachedResults(deletedRunIds);
             PeptideManager.removeRunCachedResults(deletedRunIds);
@@ -1975,7 +1960,7 @@ public class TargetedMSManager
     public static void deletePrecursorChromInfoDependent(TableInfo tableInfo)
     {
         execute(" DELETE FROM " + tableInfo +
-                " WHERE PrecursorChromInfoId IN (SELECT pci.Id FROM " + getTableInfoPrecursorChromInfo() + " pci " +
+                " WHERE PrecursorChromInfoId IN (SELECT pci.Id FROM " + getTableInfoPrecursorChromInfo() + " pci "+
                 " INNER JOIN " + getTableInfoSampleFile() + " s ON pci.SampleFileId = s.Id " +
                 " INNER JOIN " + getTableInfoReplicate() + " rep ON s.ReplicateId = rep.Id " +
                 " INNER JOIN " + getTableInfoRuns() + " r ON rep.RunId = r.Id " +
@@ -1985,7 +1970,7 @@ public class TargetedMSManager
     public static void deleteGeneralMoleculeChromInfoDependent(TableInfo tableInfo)
     {
         execute(" DELETE FROM " + tableInfo +
-                " WHERE PeptideChromInfoId IN (SELECT mci.Id FROM " + getTableInfoGeneralMoleculeChromInfo() + " mci " +
+                " WHERE PeptideChromInfoId IN (SELECT mci.Id FROM " + getTableInfoGeneralMoleculeChromInfo() + " mci "+
                 " INNER JOIN " + getTableInfoSampleFile() + " s ON mci.SampleFileId = s.Id " +
                 " INNER JOIN " + getTableInfoReplicate() + " rep ON s.ReplicateId = rep.Id " +
                 " INNER JOIN " + getTableInfoRuns() + " r ON rep.RunId = r.Id " +
@@ -1995,8 +1980,8 @@ public class TargetedMSManager
     public static void deleteGeneralTransitionDependent(TableInfo tableInfo, String colName, SQLFragment whereClause)
     {
         execute(new SQLFragment(" DELETE FROM " + tableInfo +
-                " WHERE " + colName + " IN (SELECT gt.Id FROM " + getTableInfoGeneralTransition() + " gt " +
-                " INNER JOIN " + getTableInfoGeneralPrecursor() + " gp ON gt.GeneralPrecursorId = gp.Id " +
+                " WHERE " + colName + " IN (SELECT gt.Id FROM " + getTableInfoGeneralTransition() + " gt "+
+                " INNER JOIN " + getTableInfoGeneralPrecursor() + " gp ON gt.GeneralPrecursorId = gp.Id "+
                 " INNER JOIN " + getTableInfoGeneralMolecule() + " gm ON gp.GeneralMoleculeId = gm.Id " +
                 " INNER JOIN " + getTableInfoPeptideGroup() + " pg ON gm.PeptideGroupId = pg.Id " +
                 " INNER JOIN " + getTableInfoRuns() + " r ON pg.RunId = r.Id ").append(whereClause).append(")"));
@@ -2014,7 +1999,7 @@ public class TargetedMSManager
     private static void deleteGeneralPrecursorDependent(TableInfo tableInfo, String colName)
     {
         execute(" DELETE FROM " + tableInfo +
-                " WHERE " + colName + " IN (SELECT gp.Id FROM " + getTableInfoGeneralPrecursor() + " gp " +
+                " WHERE " + colName + " IN (SELECT gp.Id FROM " + getTableInfoGeneralPrecursor() + " gp "+
                 " INNER JOIN " + getTableInfoGeneralMolecule() + " gm ON gp.GeneralMoleculeId = gm.Id " +
                 " INNER JOIN " + getTableInfoPeptideGroup() + " pg ON gm.PeptideGroupId = pg.Id " +
                 " INNER JOIN " + getTableInfoRuns() + " r ON pg.RunId = r.Id " +
@@ -2024,7 +2009,7 @@ public class TargetedMSManager
     private static void deleteGeneralMoleculeDependent(TableInfo tableInfo, String colName)
     {
         execute(" DELETE FROM " + tableInfo +
-                " WHERE " + colName + " IN (SELECT gm.Id FROM " + getTableInfoGeneralMolecule() + " gm " +
+                " WHERE " + colName + " IN (SELECT gm.Id FROM " + getTableInfoGeneralMolecule() + " gm "+
                 " INNER JOIN " + getTableInfoPeptideGroup() + " pg ON gm.PeptideGroupId = pg.Id " +
                 " INNER JOIN " + getTableInfoRuns() + " r ON pg.RunId = r.Id " +
                 " WHERE r.Deleted = ?)", true);
@@ -2033,7 +2018,7 @@ public class TargetedMSManager
     private static void deletePeptideGroupDependent(TableInfo tableInfo)
     {
         execute(" DELETE FROM " + tableInfo +
-                " WHERE PeptideGroupId IN (SELECT pg.Id FROM " + getTableInfoPeptideGroup() + " pg " +
+                " WHERE PeptideGroupId IN (SELECT pg.Id FROM " + getTableInfoPeptideGroup() + " pg "+
                 " INNER JOIN " + getTableInfoRuns() + " r ON pg.RunId = r.Id " +
                 " WHERE r.Deleted = ?)", true);
     }
@@ -2047,7 +2032,7 @@ public class TargetedMSManager
     private static void deleteReplicateDependent(TableInfo tableInfo)
     {
         execute(" DELETE FROM " + tableInfo +
-                " WHERE ReplicateId IN (SELECT rep.Id FROM " + getTableInfoReplicate() + " rep " +
+                " WHERE ReplicateId IN (SELECT rep.Id FROM " + getTableInfoReplicate() + " rep "+
                 " INNER JOIN " + getTableInfoRuns() + " r ON rep.RunId = r.Id " +
                 " WHERE r.Deleted = ?)", true);
     }
@@ -2060,9 +2045,9 @@ public class TargetedMSManager
     private static void deleteTransitionPredictionSettingsDependent()
     {
         execute("DELETE FROM " + getTableInfoPredictorSettings() + " WHERE PredictorId IN (SELECT Id FROM " +
-                        getTableInfoPredictor() + " WHERE " +
-                        "Id IN (SELECT CePredictorId FROM " + getTableInfoTransitionPredictionSettings() + " tps, " + getTableInfoRuns() + " r WHERE r.Id = tps.RunId AND r.Deleted = ?)" +
-                        "OR Id IN (SELECT DpPredictorId FROM " + getTableInfoTransitionPredictionSettings() + " tps, " + getTableInfoRuns() + " r WHERE r.Id = tps.RunId AND r.Deleted = ?))"
+                getTableInfoPredictor() + " WHERE " +
+                "Id IN (SELECT CePredictorId FROM " + getTableInfoTransitionPredictionSettings() + " tps, " + getTableInfoRuns() + " r WHERE r.Id = tps.RunId AND r.Deleted = ?)" +
+                "OR Id IN (SELECT DpPredictorId FROM " + getTableInfoTransitionPredictionSettings() + " tps, " + getTableInfoRuns() + " r WHERE r.Id = tps.RunId AND r.Deleted = ?))"
                 , true, true);
 
         List<Long> predictorsToDelete = getPredictorsToDelete();
@@ -2136,7 +2121,7 @@ public class TargetedMSManager
     public static List<Integer> getIrtScaleIds(Container c)
     {
         SimpleFilter conFil = SimpleFilter.createContainerFilter(c);
-        return new TableSelector(TargetedMSManager.getTableInfoiRTScale().getColumn(FieldKey.fromParts("id")), conFil, null).getArrayList(Integer.class);
+        return new TableSelector(TargetedMSManager.getTableInfoiRTScale().getColumn(FieldKey.fromParts("id")), conFil , null).getArrayList(Integer.class);
     }
 
     // return the ModuleProperty value for "TARGETED_MS_FOLDER_TYPE"
@@ -2179,7 +2164,7 @@ public class TargetedMSManager
             return;
 
         new SqlExecutor(getSchema()).execute("UPDATE " + getTableInfoRuns() + " SET Description=? WHERE Id = ?",
-                newDescription, runId);
+                            newDescription, runId);
         TargetedMSRun run = getRun(runId);
         if (run != null)
         {
@@ -2193,9 +2178,7 @@ public class TargetedMSManager
         }
     }
 
-    /**
-     * @return the sample file if it has already been imported in the container
-     */
+    /** @return the sample file if it has already been imported in the container */
     @Nullable
     public static Replicate getReplicate(long replicateId, Container container)
     {
@@ -2203,23 +2186,19 @@ public class TargetedMSManager
         sql.append(getTableInfoReplicate(), "rep");
         sql.append(", ");
         sql.append(getTableInfoRuns(), "r");
-        sql.append(" WHERE r.Id = rep.RunId AND rep.Id = ? AND r.Container = ? ");
+        sql.append( " WHERE r.Id = rep.RunId AND rep.Id = ? AND r.Container = ? ");
         sql.add(replicateId);
         sql.add(container);
         return new SqlSelector(getSchema(), sql).getObject(Replicate.class);
     }
 
-    /**
-     * @return the sample file if it has already been imported in the container
-     */
+    /** @return the sample file if it has already been imported in the container */
     public static List<SampleFile> getSampleFile(String filePath, Date acquiredTime, Container container)
     {
         return getSampleFile(filePath, acquiredTime, container, true);
     }
 
-    /**
-     * @return the sample file if it has already been imported in the container
-     */
+    /** @return the sample file if it has already been imported in the container */
     @Nullable
     public static SampleFile getSampleFile(long id, Container container)
     {
@@ -2266,13 +2245,13 @@ public class TargetedMSManager
      */
     public static List<SampleFile> getMatchingSampleFiles(@NotNull SampleFile sampleFile, Container container)
     {
-        if (sampleFile.getAcquiredTime() != null)
+        if(sampleFile.getAcquiredTime() != null)
         {
             // Issue 38270. A file may have been imported from a different path in a previous document.  
             // If SampleFile has an acquired time check for a file with same name and acquired time.
             String filePath = sampleFile.getFilePath();
             String fileName = FilenameUtils.getName(filePath);
-            if (!StringUtils.isBlank(fileName) && fileName.length() < filePath.length())
+            if(!StringUtils.isBlank(fileName) && fileName.length() < filePath.length())
             {
                 fileName = filePath.substring(filePath.indexOf(fileName) - 1); // Include the separator char
             }
@@ -2287,7 +2266,7 @@ public class TargetedMSManager
     private static List<SampleFile> getSampleFile(String filePath, Date acquiredTime, Container container, boolean fullPath)
     {
         SQLFragment sql = new SQLFragment();
-        if (fullPath)
+        if(fullPath)
         {
             sql.append(" sf.FilePath = ? ");
             sql.add(filePath);
@@ -2297,7 +2276,7 @@ public class TargetedMSManager
             sql.append(" sf.FilePath LIKE ? ");
             sql.add("%" + getSqlDialect().encodeLikeOpSearchString(filePath));
         }
-        if (acquiredTime == null)
+        if(acquiredTime == null)
             sql.append(" AND sf.AcquiredTime IS NULL");
         else
         {
@@ -2367,13 +2346,13 @@ public class TargetedMSManager
 
         Map<String, Map<String, Double>> intensities = new HashMap<>();
 
-        for (Map<String, Object> rowMap : new TableSelector(table).getMapArray())
+        for (Map<String, Object> rowMap:new TableSelector(table).getMapArray())
         {
-            List<ColumnInfo> columns = table.getColumns();
+            List <ColumnInfo> columns = table.getColumns();
 
             List<Double> values = new ArrayList<>();
 
-            for (ColumnInfo column : columns)
+            for(ColumnInfo column : columns)
             {
                 //Skip pivot column and row name column
                 String colName = column.getName();
@@ -2396,10 +2375,10 @@ public class TargetedMSManager
 
             MathStat stats = StatsService.get().getStats(primitiveValues);
 
-            String proteinName = (String) rowMap.get(rowHeadingColumnName);
+            String proteinName = (String)rowMap.get(rowHeadingColumnName);
             Map<String, Double> intensityMap = new TreeMap<>();
             boolean hasValue = false;
-            for (ColumnInfo column : columns)
+            for(ColumnInfo column : columns)
             {
                 String colName = column.getName();
                 if (colName.compareToIgnoreCase(intensityColumnName) == 0 || colName.compareToIgnoreCase(rowHeadingColumnName) == 0)
@@ -2438,7 +2417,7 @@ public class TargetedMSManager
 
     private static Double getValue(Object o)
     {
-        Double value = (Double) JdbcType.DOUBLE.convert(o);
+        Double value = (Double)JdbcType.DOUBLE.convert(o);
         if (value == null || value == 0.0)
         {
             return null;
@@ -2451,7 +2430,6 @@ public class TargetedMSManager
     {
         return _metricCache.get(schema.getContainer(), schema, null);
     }
-
     public static List<QCMetricConfiguration> getEnabledQCMetricConfigurations(TargetedMSSchema schema)
     {
         List<QCMetricConfiguration> result = new ArrayList<>();
@@ -2469,7 +2447,7 @@ public class TargetedMSManager
     {
         TargetedMSSchema schema = new TargetedMSSchema(user, container);
         List<QCMetricConfiguration> enabledQCMetricConfigurations = getEnabledQCMetricConfigurations(schema);
-        if (!enabledQCMetricConfigurations.isEmpty())
+        if(!enabledQCMetricConfigurations.isEmpty())
         {
             List<GuideSet> guideSets = TargetedMSManager.getGuideSets(container, user);
             Map<Integer, QCMetricConfiguration> metricMap = enabledQCMetricConfigurations.stream().collect(Collectors.toMap(QCMetricConfiguration::getId, Function.identity()));
@@ -2675,7 +2653,7 @@ public class TargetedMSManager
     public static boolean containerHasDocVersions(Container container)
     {
         ExperimentService svc = ExperimentService.get();
-        return new SqlSelector(svc.getSchema(), new SQLFragment("SELECT r.rowId FROM ", Boolean.FALSE, container)
+        return new SqlSelector(svc.getSchema(), new SQLFragment("SELECT r.rowId FROM ", Boolean.FALSE, container )
                 .append(svc.getTinfoExperimentRun(), "r")
                 .append(" INNER JOIN ").append(TargetedMSManager.getTableInfoRuns(), "tRuns")
                 .append(" ON (tRuns.ExperimentRunLSID = r.lsid AND tRuns.Deleted = ?)")
@@ -2687,7 +2665,7 @@ public class TargetedMSManager
         final String suffix = StringUtilsLabKey.getPaddedUniquifier(9);
         final String precursorGroupingsTableName = getSqlDialect().getTempTablePrefix() + "PrecursorGroupings" + suffix;
         final String moleculeGroupingsTableName = getSqlDialect().getTempTablePrefix() + "MoleculeGroupings" + suffix;
-        final String areasTableName = getSqlDialect().getTempTablePrefix() + "Areas" + suffix;
+        final String areasTableName = getSqlDialect().getTempTablePrefix() +  "Areas" + suffix;
 
         if (log != null)
         {
@@ -2739,7 +2717,7 @@ public class TargetedMSManager
                 .append("WHERE g.PrecursorId = targetedms.precursorchrominfo.PrecursorId AND \n")
                 .append("a.SampleFileId = targetedms.precursorchrominfo.SampleFileId) X) ");
         updatePrecursorSQL.append(" WHERE PrecursorId IN \n")
-                .append("(SELECT PrecursorId FROM ").append(precursorGroupingsTableName).append(")");
+            .append("(SELECT PrecursorId FROM ").append(precursorGroupingsTableName).append(")");
 
         if (log != null)
         {
@@ -2756,7 +2734,7 @@ public class TargetedMSManager
                 .append("WHERE g.GeneralMoleculeId = targetedms.generalmoleculechrominfo.GeneralMoleculeId AND \n")
                 .append("a.SampleFileId = targetedms.generalmoleculechrominfo.SampleFileId) X)");
         updateMoleculeSQL.append(" WHERE GeneralMoleculeId IN \n")
-                .append("(SELECT GeneralMoleculeId FROM ").append(moleculeGroupingsTableName).append(")");
+            .append("(SELECT GeneralMoleculeId FROM ").append(moleculeGroupingsTableName).append(")");
 
         if (log != null)
         {
@@ -3000,7 +2978,7 @@ public class TargetedMSManager
 
                 if (!valuesToStore.isEmpty())
                 {
-                    valuesToStore.forEach((key, val) -> {
+                    valuesToStore.forEach((key,val) -> {
                         QCTraceMetricValues qcTraceMetricValues = new QCTraceMetricValues();
                         qcTraceMetricValues.setMetric(qcMetricConfiguration.getId());
                         qcTraceMetricValues.setSampleFileId(key.getSampleFileId());
@@ -3039,7 +3017,7 @@ public class TargetedMSManager
         return keywords;
     }
 
-    public static Map<String, Object> getQCFolderDateRange(Container container)
+    public static Map<String,Object> getQCFolderDateRange(Container container)
     {
         var sql = new SQLFragment("SELECT MIN(sf.AcquiredTime) AS startDate, MAX(sf.AcquiredTime) AS endDate ");
         sql.append(" FROM ").append(getTableInfoSampleFile(), "sf");
@@ -3108,131 +3086,6 @@ public class TargetedMSManager
 
         return new SqlSelector(getSchema(), sql).getArrayList(InstrumentDetails.class);
 
-    }
-
-    public static List<String> getInstrumentNickName(Container container)
-    {
-        SimpleFilter filter = SimpleFilter.createContainerFilter(container);
-
-        List<InstrumentNickname> nicknames = new TableSelector(getTableInfoInstrumentNickname(), filter, null).getArrayList(InstrumentNickname.class);
-        return nicknames.stream()
-                .map(InstrumentNickname::getNickname)
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Returns the instrument nickname for the given instrument, similar to the logic in SampleFileTable.
-     * First checks for a custom nickname matching the serial number and model, then falls back to a default name.
-     *
-     * @param container    The container to search in (including project and shared containers)
-     * @param user         The user for permission checking
-     * @param instrumentId The instrument ID
-     * @return The resolved nickname, or null if no instrument is found
-     */
-    @Nullable
-    public static String getInstrumentNickName(@NotNull Container container, @NotNull User user,
-                                               @Nullable Long instrumentId)
-    {
-        if (instrumentId == null)
-        {
-            return null;
-        }
-
-        TargetedMSSchema schema = new TargetedMSSchema(user, container);
-
-        // Get the serial number and model from the sample file table
-        SQLFragment sampleFileSQL = new SQLFragment("SELECT DISTINCT sf.InstrumentSerialNumber, i.Model FROM ");
-        sampleFileSQL.append(getTableInfoSampleFile(), "sf");
-        sampleFileSQL.append(" INNER JOIN ");
-        sampleFileSQL.append(getTableInfoInstrument(), "i");
-        sampleFileSQL.append(" ON sf.InstrumentId = i.Id WHERE i.Id = ?").add(instrumentId);
-
-        Map<String, Object> sampleFileData = new SqlSelector(getSchema(), sampleFileSQL).getMap();
-        String serialNumber = sampleFileData != null ? (String) sampleFileData.get("InstrumentSerialNumber") : null;
-        String instrumentModel = sampleFileData != null ? (String) sampleFileData.get("Model") : null;
-
-        // First, try to find a custom nickname matching the serial number and model
-        // Join conditions match the logic in SampleFileTable:
-        // - SerialNumber matches or both are NULL
-        // - Model matches or both are NULL
-        SimpleFilter filter = new SimpleFilter();
-
-        // Build a filter for nickname lookup with proper NULL handling
-        if (serialNumber != null)
-        {
-            filter.addCondition(FieldKey.fromParts("SerialNumber"), serialNumber);
-        }
-        else
-        {
-            filter.addCondition(FieldKey.fromParts("SerialNumber"), null, CompareType.ISBLANK);
-        }
-
-        if (instrumentModel != null)
-        {
-            filter.addCondition(new SimpleFilter.OrClause(
-                    new CompareType.EqualsCompareClause(FieldKey.fromParts("Model"), CompareType.EQUAL, instrumentModel),
-                    new CompareType.CompareClause(FieldKey.fromParts("Model"), CompareType.ISBLANK, null)
-            ));
-        }
-        else
-        {
-            filter.addCondition(FieldKey.fromParts("Model"), null, CompareType.ISBLANK);
-        }
-
-        // Search in current container, project, and shared containers, prioritizing by container proximity
-        TableInfo nicknameTable = schema.getTableOrThrow(TABLE_INSTRUMENT_NICKNAME,
-                ContainerFilter.Type.CurrentPlusProjectAndShared.create(container, user));
-
-        List<InstrumentNickname> matches = new TableSelector(nicknameTable, filter, null).getArrayList(InstrumentNickname.class);
-
-        // Sort by container proximity: current > project > shared
-        Container shared = ContainerManager.getSharedContainer();
-        Container project = container.getProject();
-
-        matches.sort((a, b) -> {
-            int aScore = getContainerScore(a.getContainer(), container, project, shared);
-            int bScore = getContainerScore(b.getContainer(), container, project, shared);
-            return Integer.compare(bScore, aScore); // Higher score first
-        });
-
-        if (!matches.isEmpty())
-        {
-            return matches.get(0).getNickname();
-        }
-
-        // Fall back to default naming: COALESCE(Model + ' - ' + SerialNumber, SerialNumber, Model)
-        if (instrumentModel != null && serialNumber != null)
-        {
-            return instrumentModel + " - " + serialNumber;
-        }
-        else if (serialNumber != null)
-        {
-            return serialNumber;
-        }
-        else if (instrumentModel != null)
-        {
-            return instrumentModel;
-        }
-
-        return null;
-    }
-
-    private static int getContainerScore(Container c, Container current, Container project, Container shared)
-    {
-        if (c.equals(current))
-        {
-            return 3;
-        }
-        else if (project != null && c.equals(project))
-        {
-            return 2;
-        }
-        else if (shared != null && c.equals(shared))
-        {
-            return 1;
-        }
-        return 0;
     }
 
 
