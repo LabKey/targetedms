@@ -1303,7 +1303,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         let config = this.getReportConfig();
 
-        let annotationSql = "SELECT qca.Id AS qcAnnotationId, qca.Date, qca.Description, qca.Created, qca.CreatedBy.DisplayName, qcat.Id AS qcAnnotationTypeId, qcat.Name, qcat.Color FROM qcannotation qca JOIN qcannotationtype qcat ON qcat.Id = qca.QCAnnotationTypeId";
+        let annotationSql = "SELECT qca.Id AS qcAnnotationId, qca.Date, qca.Description, qca.Created, qca.CreatedBy.DisplayName, qcat.Id AS qcAnnotationTypeId, qcat.Name, qcat.Color, qca.container.Path AS ContainerPath FROM qcannotation qca JOIN qcannotationtype qcat ON qcat.Id = qca.QCAnnotationTypeId";
 
         // Filter on start/end dates
         let dateFilter = "";
@@ -1356,7 +1356,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                             separator = " OR ";
                         }
 
-                        let sharedAnnotationSql = "SELECT qca.Id AS qcAnnotationId, qca.Date, qca.Description, qca.Created, qca.CreatedBy.DisplayName, qcat.Id AS qcAnnotationTypeId, qcat.Name, qcat.Color " +
+                        let sharedAnnotationSql = "SELECT qca.Id AS qcAnnotationId, qca.Date, qca.Description, qca.Created, qca.CreatedBy.DisplayName, qcat.Id AS qcAnnotationTypeId, qcat.Name, qcat.Color, qca.container.Path AS ContainerPath " +
                                 "FROM qcannotation qca " +
                                 "JOIN qcannotationtype qcat ON qcat.Id = qca.QCAnnotationTypeId " +
                                 "WHERE qcat.IsShareable = true AND (" + instrumentFilter + ")" + dateFilter;
@@ -1988,23 +1988,37 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 .attr("d", this.annotationShape(4)).attr('transform', transformAcc)
                 .style("fill", colorAcc).style("stroke", colorAcc);
 
-        // add hover text for the annotation details
-        annotations.append("title")
-            .text(function(d) {
-                return "Created By: " + d['DisplayName'] + ", "
-                        + "\nType: " + d['Name'] + ", "
-                    + "\nDate: " + me.formatDate(new Date(d['Date']), true) + ", "
-                    + "\nDescription: " + d['Description'];
-            });
-
-        // add some mouseover effects for fun
-        var mouseOn = function(pt, strokeWidth) {
+        // add mouseover effects for fun
+        let mouseOn = function(pt, strokeWidth, d) {
             d3.select(pt).transition().duration(800).attr("stroke-width", strokeWidth).ease("elastic");
+
+            if (!pt._tippy) {
+                let content = "Created By: " + d['DisplayName'] + ", "
+                        + "<br/>Type: " + d['Name'] + ", "
+                        + "<br/>Date: " + me.formatDate(new Date(d['Date']), true) + ", "
+                        + "<br/>Description: " + d['Description'];
+
+                if (d['ContainerPath'] && d['ContainerPath'] !== LABKEY.ActionURL.getContainer()) {
+                    let containerPath = d['ContainerPath'];
+                    if (containerPath.startsWith('/')) {
+                        containerPath = containerPath.substring(1);
+                    }
+                    content += ",<br/>Shared From: " + containerPath;
+                }
+
+                tippy(pt, {
+                    content: content,
+                    allowHTML: true,
+                    arrow: true,
+                    theme: 'light-border',
+                    placement: 'top'
+                });
+            }
         };
         var mouseOff = function(pt) {
             d3.select(pt).transition().duration(800).attr("stroke-width", 1).ease("elastic");
         };
-        annotations.on("mouseover", function(){ return mouseOn(this, 3); });
+        annotations.on("mouseover", function(d){ return mouseOn(this, 3, d); });
         annotations.on("mouseout", function(){ return mouseOff(this); });
 
         if (this.canUserEdit()) {
@@ -2041,10 +2055,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 .style("opacity", 0);
 
         // Add mouseover effects for add-annotations
-        nonAnnotationGroups.append("title")
-                .text("Add annotation");
-
-        nonAnnotationGroups.on("mouseover", function () {
+        nonAnnotationGroups.on("mouseover", function (d) {
             d3.select(this).select(".add-annotation-background")
                     .transition().duration(300)
                     .style("opacity", 0)
@@ -2053,6 +2064,15 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     .transition().duration(300)
                     .style("opacity", 1)
                     .style("cursor", "pointer");
+
+            if (!this._tippy) {
+                tippy(this, {
+                    content: "Add annotation",
+                    arrow: true,
+                    theme: 'light-border',
+                    placement: 'top'
+                });
+            }
         });
         nonAnnotationGroups.on("mouseout", function () {
             d3.select(this).select(".add-annotation-background")
