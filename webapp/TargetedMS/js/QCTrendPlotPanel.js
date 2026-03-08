@@ -1331,7 +1331,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                             let row = instrumentData.rows[i];
                             let model = row["Model"];
                             let serial = row["InstrumentSerialNumber"];
-                            let nickname = row["InstrumentNickname"];
 
                             instrumentFilter += separator + "(";
                             let innerSep = "";
@@ -1349,9 +1348,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                                 instrumentFilter += innerSep + "qca.instrumentSerialNumber IS NULL)";
                             }
 
-                            if (nickname) {
-                                instrumentFilter += " OR qca.instrumentNickName = '" + nickname + "'";
-                            }
                             instrumentFilter += ")";
                             separator = " OR ";
                         }
