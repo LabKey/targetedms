@@ -1318,10 +1318,19 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         let handleAnnotationData = function(data) {
             let annotationData = data ? data.rows : [];
 
-            // Check if there is an instrument attached to the current container from samplefile table.
+            
+            // Check if there is an instrument attached to the current container from samplefile table
+            // check the exact instruments in the current container &
+            // any other instruments that share a nickname with an instrument used in the current folder.
+            let getInstrumentsSql = "SELECT DISTINCT Model, SerialNumber AS InstrumentSerialNumber FROM InstrumentNickname " +
+                    "WHERE Nickname IN (SELECT DISTINCT Nickname FROM InstrumentNickname " +
+                    "WHERE (Model || '-' || SerialNumber) IN (SELECT DISTINCT (InstrumentId.Model || '-' || InstrumentSerialNumber) FROM samplefile)) " +
+                    "UNION " +
+                    "SELECT DISTINCT InstrumentId.Model, InstrumentSerialNumber FROM samplefile";
+            
             LABKEY.Query.executeSql({
                 schemaName: 'targetedms',
-                sql: "SELECT DISTINCT InstrumentId.Model, InstrumentSerialNumber, InstrumentNickname FROM samplefile",
+                sql: getInstrumentsSql,
                 scope: this,
                 success: function(instrumentData) {
                     if (instrumentData && instrumentData.rows && instrumentData.rows.length > 0) {
