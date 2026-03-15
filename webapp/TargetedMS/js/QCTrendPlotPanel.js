@@ -1998,25 +1998,42 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             d3.select(pt).transition().duration(800).attr("stroke-width", strokeWidth).ease("elastic");
 
             if (!pt._tippy) {
-                let content = "Created By: " + d['DisplayName'] + ", "
-                        + "<br/>Type: " + d['Name'] + ", "
-                        + "<br/>Date: " + me.formatDate(new Date(d['Date']), true) + ", "
-                        + "<br/>Description: " + d['Description'];
+                let date = new Date(d['Date']);
+                let dateStr = me.formatDate(date, date.getHours() !== 0 || date.getMinutes() !== 0 || date.getSeconds() !== 0);
+                let content = "<table>"
+                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Created By:</td><td>" + LABKEY.Utils.encodeHtml(d['DisplayName']) + "</td></tr>"
+                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Type:</td><td>" + LABKEY.Utils.encodeHtml(d['Name']) + "</td></tr>"
+                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Date:</td><td>" + dateStr + "</td></tr>"
+                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Description:</td><td>" + LABKEY.Utils.encodeHtml(d['Description']) + "</td></tr>";
 
                 if (d['ContainerPath'] && d['ContainerPath'] !== LABKEY.ActionURL.getContainer()) {
-                    let containerPath = d['ContainerPath'];
-                    if (containerPath.startsWith('/')) {
-                        containerPath = containerPath.substring(1);
+                    let containerPath = LABKEY.Utils.encodeHtml(d['ContainerPath']);
+                    if (!containerPath.startsWith('/')) {
+                        containerPath = '/' + containerPath;
                     }
-                    content += ",<br/>Shared From: " + containerPath;
+                    content += "<tr><td style='vertical-align: top; padding-right: 5px;'>Shared From:</td><td>" + containerPath + "</td></tr>";
                 }
+                content += "</table>";
 
                 tippy(pt, {
                     content: content,
                     allowHTML: true,
                     arrow: true,
                     theme: 'light-border',
-                    placement: 'top'
+                    placement: 'top',
+                    onMount(instance) {
+                        const tippyBox = instance.popper.querySelector('.tippy-box');
+                        const tippyContent = instance.popper.querySelector('.tippy-content');
+
+                        if (tippyBox) {
+                            tippyBox.style.color = 'black';
+                            tippyBox.style.backgroundColor = 'white';
+                            tippyBox.style.border = '1px solid black';
+                        }
+                        if (tippyContent) {
+                            tippyContent.style.padding = '2px';
+                        }
+                    }
                 });
             }
         };
@@ -2075,7 +2092,15 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     content: "Add annotation",
                     arrow: true,
                     theme: 'light-border',
-                    placement: 'top'
+                    placement: 'top',
+                    onMount(instance) {
+                        const tippyBox = instance.popper.querySelector('.tippy-box');
+                        if (tippyBox) {
+                            tippyBox.style.color = 'black';
+                            tippyBox.style.backgroundColor = 'white';
+                            tippyBox.style.border = '1px solid black';
+                        }
+                    }
                 });
             }
         });
