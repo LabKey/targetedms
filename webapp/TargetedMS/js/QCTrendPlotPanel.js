@@ -1412,41 +1412,57 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     processAnnotationData: function(data) {
         if (data) {
-            this.annotationData = data.rows;
             this.annotationShape = LABKEY.vis.Scale.Shape()[4]; // 0: circle, 1: triangle, 2: square, 3: diamond, 4: X
+            this.legendData = [];
+
+            const collapsedData = [];
+            const collapsedMap = {};
+
+            for (let i = 0; i < data.rows.length; i++) {
+                const row = data.rows[i];
+                const key = row['Date'] + '|' + row['Description'] + '|' + row['qcAnnotationTypeId'];
+                if (collapsedMap[key] === undefined) {
+                    collapsedMap[key] = collapsedData.length;
+                    row.qcAnnotationIds = [row.qcAnnotationId];
+                    collapsedData.push(row);
+                }
+                else {
+                    collapsedData[collapsedMap[key]].qcAnnotationIds.push(row.qcAnnotationId);
+                }
+            }
+
+            this.annotationData = collapsedData;
 
             var dateCount = {};
-            this.legendData = [];
 
             // if more than one type of legend present, add a legend header for annotations
             if (this.annotationData.length > 0 && (this.singlePlot || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot())) {
-                    this.legendData.push({
-                        text: 'Annotations',
-                        separator: true
-                    });
+                this.legendData.push({
+                    text: 'Annotations',
+                    separator: true
+                });
             }
 
-        for (let i = 0; i < this.annotationData.length; i++)
-        {
+            for (let i = 0; i < this.annotationData.length; i++) {
                 const annotation = this.annotationData[i];
                 const annotationDate = this.formatDate(new Date(annotation['Date']), !this.groupedX);
 
-                    // track if we need to stack annotations that fall on the same date
-                    if (!dateCount[annotationDate]) {
-                        dateCount[annotationDate] = 0;
-                    }
-                    annotation.yStepIndex = dateCount[annotationDate];
-                    dateCount[annotationDate]++;
-
-                    // get unique annotation names and colors for the legend
-                if (Ext4.Array.pluck(this.legendData, "text").indexOf(annotation['Name']) === -1) {
-                        this.legendData.push({
-                            text: annotation['Name'],
-                            color: '#' + annotation['Color'],
-                            shape: this.annotationShape
-                        });
-                    }
+                // track if we need to stack annotations that fall on the same date
+                if (!dateCount[annotationDate]) {
+                    dateCount[annotationDate] = 0;
                 }
+                annotation.yStepIndex = dateCount[annotationDate];
+                dateCount[annotationDate]++;
+
+                // get unique annotation names and colors for the legend
+                if (Ext4.Array.pluck(this.legendData, "text").indexOf(annotation['Name']) === -1) {
+                    this.legendData.push({
+                        text: annotation['Name'],
+                        color: '#' + annotation['Color'],
+                        shape: this.annotationShape
+                    });
+                }
+            }
 
             this.getPlotsData();
         }
@@ -2246,7 +2262,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         return;
                     }
 
-                    me.updateAnnotation(data['qcAnnotationId'], annotationType, description, annotationDate, win);
+                    me.updateAnnotation(data['qcAnnotationIds'], annotationType, description, annotationDate, win);
                 }
             }, {
                 text: 'Delete',
@@ -2256,7 +2272,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     const win = this.up('window');
                     Ext4.Msg.confirm('Confirm Delete', 'Are you sure you want to delete this annotation?', function (btn) {
                         if (btn === 'yes') {
-                            me.deleteAnnotation(data['qcAnnotationId'], win);
+                            me.deleteAnnotation(data['qcAnnotationIds'], win);
                         }
                     });
                 }
@@ -2301,19 +2317,21 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         });
     },
 
-    updateAnnotation: function (annotationId, annotationType, description, annotationDate, win) {
+    updateAnnotation: function (annotationIds, annotationType, description, annotationDate, win) {
         // Format date as UTC string (YYYY-MM-DD) to avoid timezone conversion
         const dateStr = Ext4.util.Format.date(annotationDate, 'Y-m-d');
+
+        const rows = annotationIds.map(id => ({
+            Id: id,
+            QCAnnotationTypeId: annotationType,
+            Description: description,
+            Date: dateStr
+        }));
 
         LABKEY.Query.updateRows({
             schemaName: 'targetedms',
             queryName: 'QCAnnotation',
-            rows: [{
-                Id: annotationId,
-                QCAnnotationTypeId: annotationType,
-                Description: description,
-                Date: dateStr
-            }],
+            rows: rows,
             success: function () {
                 win.close();
                 this.displayTrendPlot();
@@ -2332,11 +2350,13 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         });
     },
 
-    deleteAnnotation: function (annotationId, win) {
+    deleteAnnotation: function (annotationIds, win) {
+        const rows = annotationIds.map(id => ({ Id: id }));
+
         LABKEY.Query.deleteRows({
             schemaName: 'targetedms',
             queryName: 'QCAnnotation',
-            rows: [{ Id: annotationId }],
+            rows: rows,
             success: function () {
                 win.close();
                 this.displayTrendPlot();
