@@ -2135,7 +2135,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return Ext4.create('Ext.window.Window', {
             title: title,
             width: 400,
-            height: 200,
+            height: 230,
             modal: true,
             items: [{
                 xtype: 'labkey-combo',
@@ -2147,15 +2147,48 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 store: Ext4.create('LABKEY.ext4.data.Store', {
                     schemaName: 'targetedms',
                     queryName: 'QCAnnotationType',
-                    columns: 'Id,Name',
-                    autoLoad: true
+                    columns: 'Id,Name,IsShareable',
+                    autoLoad: true,
+                    listeners: {
+                        load: function() {
+                            const field = me.sharedAnnotationDisplayField;
+                            if (field && field.rendered) {
+                                field.updateVisibility();
+                            }
+                        }
+                    }
                 }),
                 displayField: 'Name',
                 valueField: 'Id',
                 editable: false,
                 allowBlank: false,
                 value: addNew ? null : data['qcAnnotationTypeId'],
-                
+                listeners: {
+                    change: function (combo, newValue) {
+                        const record = combo.getStore().findRecord('Id', newValue);
+                        const isShared = record ? record.get('IsShareable') : false;
+                        const field = combo.up('window').down('#shared-annotation-display');
+                        field.setVisible(isShared);
+                    }
+                }
+            }, {
+                xtype: 'displayfield',
+                itemId: 'shared-annotation-display',
+                value: '<span style="color: #555;"><i class="fa fa-share-alt"></i> Shared</span>',
+                margin: '0 0 10 165',
+                hidden: true,
+                listeners: {
+                    afterrender: function (field) {
+                        me.sharedAnnotationDisplayField = field;
+                        field.updateVisibility = function() {
+                            const combo = field.up('window').down('labkey-combo[name=annotationType]');
+                            const record = combo.getStore().findRecord('Id', combo.getValue());
+                            const isShared = record ? record.get('IsShareable') : false;
+                            field.setVisible(isShared);
+                        };
+                        field.updateVisibility();
+                    }
+                }
             }, {
                 xtype: 'textarea',
                 labelWidth: 150,
