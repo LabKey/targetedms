@@ -3117,7 +3117,7 @@ public class TargetedMSManager
 
     public static boolean isQCAnnotationTypeShareable(int qcAnnotationTypeId)
     {
-        SQLFragment sql = new SQLFragment("SELECT IsShareable FROM ");
+        SQLFragment sql = new SQLFragment("SELECT Shareable FROM ");
         sql.append(getTableInfoQCAnnotationType());
         sql.append(" WHERE Id = ?");
         sql.add(qcAnnotationTypeId);

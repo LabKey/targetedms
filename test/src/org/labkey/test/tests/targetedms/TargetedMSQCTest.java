@@ -234,7 +234,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         goToProjectHome();
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        scrollIntoView(Locator.tagWithText("span","FFVAPFPEVFGK ++, 692.8686"));
+        scrollIntoView(Locator.tagWithText("span", "FFVAPFPEVFGK ++, 692.8686"));
         qcPlotsWebPart.openExclusionBubble(date);
         clickAndWait(Locator.linkWithText("view chromatogram"));
         assertTrue("Navigated to incorrect replicate", isTextPresent(replicate));
@@ -957,6 +957,30 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         qcPlotsWebPart.waitForPlots(7);
         verifyExclusionButtonSelection(acquiredDate, QCPlotsWebPart.QCPlotExclusionState.Include);
+    }
+
+    @Test
+    public void testShareableAnnotations()
+    {
+        String folderA = "Folder A";
+        String folderB = "Folder B";
+
+        setupSubfolder(getProjectName(), folderA, FolderType.QC);
+        importData(ISOTOPOLOGUE_FILE_ANNOTATED);
+
+        setupSubfolder(getProjectName(), folderB, FolderType.QC);
+        importData(ISOTOPOLOGUE_FILE_ANNOTATED);
+
+        clickFolder(folderA);
+        clickTab("Annotations");
+
+        QCAnnotationWebPart annotationWebPart = new PanoramaAnnotations(this).getQcAnnotationWebPart();
+        QCHelper.Annotation shareableAnnotation = new QCHelper.Annotation("Instrumentation Change", "This is a shareable annotation", "2018-08-25");
+        annotationWebPart.startInsert().insert(shareableAnnotation);
+
+        clickTab("Annotations");
+        annotationWebPart = new PanoramaAnnotations(this).getQcAnnotationWebPart();
+        assertEquals("Expected two annotation rows to be created for shareable annotation", 2, annotationWebPart.getDataRegion().getDataRowCount());
     }
 
     private void verifyQCSummarySampleFileOutliers(String acquiredDate, String outlierInfo)

@@ -4,7 +4,7 @@
         <column name="Description" />
         <column name="Color" />
         <column name="Container" />
-        <column name="IsShareable"/>
+        <column name="Shareable"/>
         <column name="Created" />
         <column name="Modified" />
     </columns>

@@ -1262,7 +1262,7 @@
             <column columnName="Name"/>
             <column columnName="Description"/>
             <column columnName="Color"/>
-            <column columnName="IsShareable"/>
+            <column columnName="Shareable"/>
         </columns>
     </table>
 

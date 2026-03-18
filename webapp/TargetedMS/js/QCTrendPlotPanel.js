@@ -1364,7 +1364,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         let sharedAnnotationSql = "SELECT qca.Id AS qcAnnotationId, qca.Date, qca.Description, qca.Created, qca.CreatedBy.DisplayName, qcat.Id AS qcAnnotationTypeId, qcat.Name, qcat.Color, qca.container.Path AS ContainerPath " +
                                 "FROM qcannotation qca " +
                                 "JOIN qcannotationtype qcat ON qcat.Id = qca.QCAnnotationTypeId " +
-                                "WHERE qcat.IsShareable = true AND (" + instrumentFilter + ")" + dateFilter;
+                                "WHERE qcat.Shareable = true AND (" + instrumentFilter + ")" + dateFilter;
 
                         LABKEY.Query.executeSql({
                             schemaName: 'targetedms',
@@ -2163,7 +2163,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 store: Ext4.create('LABKEY.ext4.data.Store', {
                     schemaName: 'targetedms',
                     queryName: 'QCAnnotationType',
-                    columns: 'Id,Name,IsShareable',
+                    columns: 'Id,Name,Shareable',
                     autoLoad: true,
                     listeners: {
                         load: function() {
@@ -2182,7 +2182,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 listeners: {
                     change: function (combo, newValue) {
                         const record = combo.getStore().findRecord('Id', newValue);
-                        const isShared = record ? record.get('IsShareable') : false;
+                        const isShared = record ? record.get('Shareable') : false;
                         const field = combo.up('window').down('#shared-annotation-display');
                         field.setVisible(isShared);
                     }
@@ -2199,7 +2199,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         field.updateVisibility = function() {
                             const combo = field.up('window').down('labkey-combo[name=annotationType]');
                             const record = combo.getStore().findRecord('Id', combo.getValue());
-                            const isShared = record ? record.get('IsShareable') : false;
+                            const isShared = record ? record.get('Shareable') : false;
                             field.setVisible(isShared);
                         };
                         field.updateVisibility();
