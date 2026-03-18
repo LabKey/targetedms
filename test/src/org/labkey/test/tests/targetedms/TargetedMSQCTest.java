@@ -980,7 +980,35 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         clickTab("Annotations");
         annotationWebPart = new PanoramaAnnotations(this).getQcAnnotationWebPart();
+        // expect two annotations because the data has association with two instruments
         assertEquals("Expected two annotation rows to be created for shareable annotation", 2, annotationWebPart.getDataRegion().getDataRowCount());
+        
+        clickFolder(folderB);
+        clickTab("Panorama Dashboard");
+        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        qcPlotsWebPart.waitForPlots(35);
+
+        // Verify the shareable annotation from Folder A appears in Folder B's QC plots
+        List<QCPlot> qcPlots = qcPlotsWebPart.getPlots();
+        boolean shareableAnnotationFound = false;
+        for (QCPlot plot : qcPlots)
+        {
+            List<QCHelper.Annotation> annotations = plot.getAnnotations();
+            for (QCHelper.Annotation annotation : annotations)
+            {
+                if (annotation.getType().equals(shareableAnnotation.getType()) &&
+                        annotation.getDescription().equals(shareableAnnotation.getDescription()))
+                {
+                    shareableAnnotationFound = true;
+                    break;
+                }
+            }
+            if (shareableAnnotationFound)
+                break;
+        }
+        assertTrue("Shareable annotation from Folder A should appear in Folder B QC plots", shareableAnnotationFound);
+
     }
 
     private void verifyQCSummarySampleFileOutliers(String acquiredDate, String outlierInfo)
