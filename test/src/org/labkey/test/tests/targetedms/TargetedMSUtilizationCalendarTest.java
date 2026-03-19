@@ -59,7 +59,7 @@ public class TargetedMSUtilizationCalendarTest extends TargetedMSTest
 
         log("Input data validation checks");
         utilizationCalendar.setDisplay("1")
-                .markOfflineExpectingError("2013-08-2", null, null, "Error saving. Missing value for required property: Description")
+                .markOfflineExpectingError("2013-08-2", null, null, "Error saving. A value is required for field 'Description'")
                 .markOfflineExpectingError("2013-08-2", "2013-0802", null, "Error saving. " + getConversionErrorMessage("2013-0802", "EndDate", Timestamp.class))
                 .markOfflineExpectingError("2013-08-2", "2013-08-01", null, "Error saving. End date cannot be before the start date");
 
