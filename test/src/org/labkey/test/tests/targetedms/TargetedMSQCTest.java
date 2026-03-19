@@ -192,6 +192,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         goToProjectHome();
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        scrollIntoView(qcPlotsWebPart.getComponentElement());
         qcPlotsWebPart.revertToDefaultView();
     }
 
@@ -234,7 +235,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         goToProjectHome();
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        scrollIntoView(Locator.tagWithText("span","FFVAPFPEVFGK ++, 692.8686"));
+        scrollIntoView(Locator.tagWithText("span", "FFVAPFPEVFGK ++, 692.8686"));
         qcPlotsWebPart.openExclusionBubble(date);
         clickAndWait(Locator.linkWithText("view chromatogram"));
         assertTrue("Navigated to incorrect replicate", isTextPresent(replicate));
@@ -959,6 +960,58 @@ public class TargetedMSQCTest extends TargetedMSTest
         verifyExclusionButtonSelection(acquiredDate, QCPlotsWebPart.QCPlotExclusionState.Include);
     }
 
+    @Test
+    public void testShareableAnnotations()
+    {
+        String folderA = "Folder A";
+        String folderB = "Folder B";
+
+        setupSubfolder(getProjectName(), folderA, FolderType.QC);
+        importData(ISOTOPOLOGUE_FILE_ANNOTATED);
+
+        setupSubfolder(getProjectName(), folderB, FolderType.QC);
+        importData(ISOTOPOLOGUE_FILE_ANNOTATED);
+
+        clickFolder(folderA);
+        clickTab("Annotations");
+
+        QCAnnotationWebPart annotationWebPart = new PanoramaAnnotations(this).getQcAnnotationWebPart();
+        QCHelper.Annotation shareableAnnotation = new QCHelper.Annotation("Instrumentation Change", "This is a shareable annotation", "2018-08-25");
+        annotationWebPart.startInsert().insert(shareableAnnotation);
+
+        clickTab("Annotations");
+        annotationWebPart = new PanoramaAnnotations(this).getQcAnnotationWebPart();
+        // expect two annotations because the data has association with two instruments
+        assertEquals("Expected two annotation rows to be created for shareable annotation", 2, annotationWebPart.getDataRegion().getDataRowCount());
+        
+        clickFolder(folderB);
+        clickTab("Panorama Dashboard");
+        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        qcPlotsWebPart.waitForPlots(35);
+
+        // Verify the shareable annotation from Folder A appears in Folder B's QC plots
+        List<QCPlot> qcPlots = qcPlotsWebPart.getPlots();
+        boolean shareableAnnotationFound = false;
+        for (QCPlot plot : qcPlots)
+        {
+            List<QCHelper.Annotation> annotations = plot.getAnnotations();
+            for (QCHelper.Annotation annotation : annotations)
+            {
+                if (annotation.getType().equals(shareableAnnotation.getType()) &&
+                        annotation.getDescription().equals(shareableAnnotation.getDescription()))
+                {
+                    shareableAnnotationFound = true;
+                    break;
+                }
+            }
+            if (shareableAnnotationFound)
+                break;
+        }
+        assertTrue("Shareable annotation from Folder A should appear in Folder B QC plots", shareableAnnotationFound);
+
+    }
+
     private void verifyQCSummarySampleFileOutliers(String acquiredDate, String outlierInfo)
     {
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
@@ -1059,6 +1112,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         expectedAnnotations.add(candyChange);
         for (QCPlot plot : qcPlots)
         {
+            log("verifying for qc plot - " + plot.getPlot().getText());
             Bag<QCHelper.Annotation> plotAnnotations = new HashBag<>(plot.getAnnotations());
             assertEquals("Wrong annotations in " + plotType + ":" + plot.getPrecursor(), expectedAnnotations, plotAnnotations);
         }

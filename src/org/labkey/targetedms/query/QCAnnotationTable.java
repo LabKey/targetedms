@@ -15,12 +15,26 @@
  */
 package org.labkey.targetedms.query;
 
+import org.jetbrains.annotations.Nullable;
+import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerFilter;
+import org.labkey.api.data.TableInfo;
 import org.labkey.api.gwt.client.AuditBehaviorType;
+import org.labkey.api.query.BatchValidationException;
+import org.labkey.api.query.DefaultQueryUpdateService;
+import org.labkey.api.query.DuplicateKeyException;
 import org.labkey.api.query.QueryForeignKey;
+import org.labkey.api.query.QueryUpdateService;
+import org.labkey.api.query.QueryUpdateServiceException;
 import org.labkey.api.query.SimpleUserSchema;
+import org.labkey.api.query.ValidationException;
+import org.labkey.api.security.User;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 import static org.labkey.targetedms.query.GuideSetTable.appendFormatLabel;
 
@@ -43,5 +57,65 @@ public class QCAnnotationTable extends SimpleUserSchema.SimpleTable<TargetedMSSc
         appendFormatLabel(getMutableColumn("Date"));
         appendFormatLabel(getMutableColumn("EndDate"));
         setAuditBehavior(AuditBehaviorType.DETAILED);
+    }
+
+    @Override
+    public QueryUpdateService getUpdateService()
+    {
+        TableInfo table = getRealTable();
+        if (table != null)
+        {
+            return new DefaultQueryUpdateService(this, getRealTable())
+            {
+                @Override
+                public List<Map<String, Object>> insertRows(User user, Container container, List<Map<String, Object>> rows, BatchValidationException errors, @Nullable Map<Enum, Object> configParameters, @Nullable Map<String, Object> extraScriptContext) throws SQLException, QueryUpdateServiceException, DuplicateKeyException
+                {
+                    List<Map<String, Object>> resultRows = new java.util.ArrayList<>();
+                    for (Map<String, Object> row : rows)
+                    {
+                        try
+                        {
+                            // Check if the QCAnnotationType is shareable
+                            int qcAnnotationTypeId = (Integer) row.get("QCAnnotationTypeId");
+                            boolean isShareable = TargetedMSManager.isQCAnnotationTypeShareable(qcAnnotationTypeId);
+
+                            if (isShareable)
+                            {
+                                List<TargetedMSManager.InstrumentDetails> instruments = TargetedMSManager.getInstrumentDetails(getContainer());
+                                if (instruments.isEmpty())
+                                {
+                                    resultRows.add(super.insertRow(user, container, row));
+                                }
+                                else
+                                {
+                                    for (TargetedMSManager.InstrumentDetails instrument : instruments)
+                                    {
+                                        Map<String, Object> newRow = new java.util.HashMap<>(row);
+                                        newRow.put("instrumentModel", instrument.getModel());
+                                        newRow.put("instrumentSerialNumber", instrument.getInstrumentSerialNumber());
+                                        newRow.put("Container", getContainer().getId());
+                                        resultRows.add(super.insertRow(user, container, newRow));
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                resultRows.add(super.insertRow(user, container, row));
+                            }
+                        }
+                        catch (ValidationException e)
+                        {
+                            errors.addRowError(e);
+                        }
+                    }
+
+                    if (errors.hasErrors())
+                       return null;
+
+                    return resultRows;
+                }
+            };
+        }
+        return null;
     }
 }

@@ -1262,6 +1262,7 @@
             <column columnName="Name"/>
             <column columnName="Description"/>
             <column columnName="Color"/>
+            <column columnName="Shareable"/>
         </columns>
     </table>
 
@@ -1307,6 +1308,8 @@
                 <columnTitle>Annotation Type</columnTitle>
                 <description>The category of the event</description>
             </column>
+            <column columnName="instrumentModel"/>
+            <column columnName="instrumentSerialNumber"/>
         </columns>
     </table>
     <table tableName="QCMetricConfiguration" tableDbType="TABLE">

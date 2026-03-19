@@ -16,6 +16,7 @@
 package org.labkey.test.components.targetedms;
 
 import org.junit.Assert;
+import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.util.targetedms.QCHelper;
 import org.openqa.selenium.WebElement;
@@ -26,6 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.labkey.test.BaseWebDriverTest.getCurrentTest;
+import static org.labkey.test.util.TestLogger.log;
 
 public class QCPlot
 {
@@ -64,18 +68,28 @@ public class QCPlot
 
     private QCHelper.Annotation parseAnnotation(WebElement annotationEl)
     {
-        String annotationString = annotationEl.getText();
-        String annotationRegex = "Created By: (.+)\\s*, " +
-                "Date: (\\d\\d\\d\\d-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d)\\s*, " +
-                "Description: (.+)";
+        getCurrentTest().scrollIntoView(annotationEl);
+        getCurrentTest().mouseOver(annotationEl);
+        Locator tippyLocator = Locator.tagWithClass("div", "tippy-content");
+        getCurrentTest().waitForElement(tippyLocator);
+        WebElement tippyContent = tippyLocator.findElement(getCurrentTest().getDriver());
+        String annotationString = tippyContent.getText();
+
+        String annotationRegex = "(?s)Created By:\\s*(.*?)\\s+" +
+                "Type:\\s*(.*?)\\s+" +
+                "Date:\\s*(\\d\\d\\d\\d-\\d\\d-\\d\\d(?: \\d\\d:\\d\\d:\\d\\d)?)\\s+" +
+                "Description:\\s*(.*?)(?:\\s+Shared From:.*|$)";
         Pattern annotationPattern = Pattern.compile(annotationRegex, Pattern.MULTILINE);
         Matcher annotationMatcher = annotationPattern.matcher(annotationString);
 
-        Assert.assertTrue(annotationString, annotationMatcher.find());
-        String date = annotationMatcher.group(2);
-        String description = annotationMatcher.group(3);
+        Assert.assertTrue("Annotation text did not match regex: " + annotationString, annotationMatcher.find());
+        String description = annotationMatcher.group(4).trim();
         String color = annotationEl.getCssValue("fill");
         QCHelper.AnnotationType type = getAnnotationTypes().get(color);
+
+        // Hide tippy to not interfere with other elements
+        getCurrentTest().mouseOver(Locator.tag("body"));
+        getCurrentTest().waitForElementToDisappear(tippyLocator);
 
         return new QCHelper.Annotation(type.getName(), description);
     }

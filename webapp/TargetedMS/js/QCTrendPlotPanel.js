@@ -1301,19 +1301,103 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     getAnnotationData: function() {
         this.setLoadingMsg();
 
-        var config = this.getReportConfig();
+        let config = this.getReportConfig();
 
-        var annotationSql = "SELECT qca.Id AS qcAnnotationId, qca.Date, qca.Description, qca.Created, qca.CreatedBy.DisplayName, qcat.Id AS qcAnnotationTypeId, qcat.Name, qcat.Color FROM qcannotation qca JOIN qcannotationtype qcat ON qcat.Id = qca.QCAnnotationTypeId";
+        let annotationSql = "SELECT qca.Id AS qcAnnotationId, qca.Date, qca.Description, qca.Created, qca.CreatedBy.DisplayName, qcat.Id AS qcAnnotationTypeId, qcat.Name, qcat.Color, qca.container.Path AS ContainerPath FROM qcannotation qca JOIN qcannotationtype qcat ON qcat.Id = qca.QCAnnotationTypeId";
 
         // Filter on start/end dates
-        var separator = " WHERE ";
+        let dateFilter = "";
         if (config.StartDate) {
-            annotationSql += separator + "CAST(Date AS Date) >= '" + config.StartDate + "'";
-            separator = " AND ";
+            dateFilter += " AND CAST(Date AS Date) >= '" + config.StartDate + "'";
         }
         if (config.EndDate) {
-            annotationSql += separator + "CAST(Date AS Date) <= '" + config.EndDate + "'";
+            dateFilter += " AND CAST(Date AS Date) <= '" + config.EndDate + "'";
         }
+        annotationSql += " WHERE 1=1 " + dateFilter;
+
+        let handleAnnotationData = function(data) {
+            let annotationData = data ? data.rows : [];
+
+            
+            // Check if there is an instrument attached to the current container from samplefile table
+            // check the exact instruments in the current container &
+            // any other instruments that share a nickname with an instrument used in the current folder.
+            let getInstrumentsSql = "SELECT DISTINCT Model, SerialNumber AS InstrumentSerialNumber FROM InstrumentNickname " +
+                    "WHERE Nickname IN (SELECT DISTINCT Nickname FROM InstrumentNickname " +
+                    "WHERE (Model || '-' || SerialNumber) IN (SELECT DISTINCT (InstrumentId.Model || '-' || InstrumentSerialNumber) FROM samplefile)) " +
+                    "UNION " +
+                    "SELECT DISTINCT InstrumentId.Model, InstrumentSerialNumber FROM samplefile";
+            
+            LABKEY.Query.executeSql({
+                schemaName: 'targetedms',
+                sql: getInstrumentsSql,
+                scope: this,
+                success: function(instrumentData) {
+                    if (instrumentData && instrumentData.rows && instrumentData.rows.length > 0) {
+                        let instrumentFilter = "";
+                        let separator = "";
+                        for (let i = 0; i < instrumentData.rows.length; i++) {
+                            let row = instrumentData.rows[i];
+                            let model = row["Model"];
+                            let serial = row["InstrumentSerialNumber"];
+
+                            instrumentFilter += separator + "(";
+                            let innerSep = "";
+                            if (model) {
+                                instrumentFilter += "(qca.instrumentModel = '" + model + "'";
+                                innerSep = " AND ";
+                            } else {
+                                instrumentFilter += "(qca.instrumentModel IS NULL";
+                                innerSep = " AND ";
+                            }
+
+                            if (serial) {
+                                instrumentFilter += innerSep + "qca.instrumentSerialNumber = '" + serial + "')";
+                            } else {
+                                instrumentFilter += innerSep + "qca.instrumentSerialNumber IS NULL)";
+                            }
+
+                            instrumentFilter += ")";
+                            separator = " OR ";
+                        }
+
+                        let sharedAnnotationSql = "SELECT qca.Id AS qcAnnotationId, qca.Date, qca.Description, qca.Created, qca.CreatedBy.DisplayName, qcat.Id AS qcAnnotationTypeId, qcat.Name, qcat.Color, qca.container.Path AS ContainerPath " +
+                                "FROM qcannotation qca " +
+                                "JOIN qcannotationtype qcat ON qcat.Id = qca.QCAnnotationTypeId " +
+                                "WHERE qcat.Shareable = true AND (" + instrumentFilter + ")" + dateFilter;
+
+                        LABKEY.Query.executeSql({
+                            schemaName: 'targetedms',
+                            sql: sharedAnnotationSql,
+                            containerFilter: LABKEY.Query.containerFilter.allFolders,
+                            scope: this,
+                            success: function(sharedData) {
+                                if (sharedData && sharedData.rows) {
+                                    // add shared annotations but avoid duplicates if they were already in the first list
+                                    let existingIds = {};
+                                    for (let j = 0; j < annotationData.length; j++) {
+                                        existingIds[annotationData[j].qcAnnotationId] = true;
+                                    }
+                                    for (let k = 0; k < sharedData.rows.length; k++) {
+                                        if (!existingIds[sharedData.rows[k].qcAnnotationId]) {
+                                            annotationData.push(sharedData.rows[k]);
+                                        }
+                                    }
+                                }
+                                this.processAnnotationData({rows: annotationData});
+                            },
+                            failure: this.failureHandler
+                        });
+                    } else {
+                        this.processAnnotationData({rows: annotationData});
+                    }
+                },
+                failure: function() {
+                    // if instrument fetch fails, just proceed with what we have
+                    this.processAnnotationData({rows: annotationData});
+                }
+            });
+        };
 
         LABKEY.Query.executeSql({
             schemaName: 'targetedms',
@@ -1321,48 +1405,64 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             sort: 'Date',
             containerFilter: LABKEY.Query.containerFilter.currentPlusProjectAndShared,
             scope: this,
-            success: this.processAnnotationData,
+            success: handleAnnotationData,
             failure: this.failureHandler
         });
     },
 
     processAnnotationData: function(data) {
         if (data) {
-            this.annotationData = data.rows;
             this.annotationShape = LABKEY.vis.Scale.Shape()[4]; // 0: circle, 1: triangle, 2: square, 3: diamond, 4: X
+            this.legendData = [];
+
+            const collapsedData = [];
+            const collapsedMap = {};
+
+            for (let i = 0; i < data.rows.length; i++) {
+                const row = data.rows[i];
+                const key = row['Date'] + '|' + row['Description'] + '|' + row['qcAnnotationTypeId'];
+                if (collapsedMap[key] === undefined) {
+                    collapsedMap[key] = collapsedData.length;
+                    row.qcAnnotationIds = [row.qcAnnotationId];
+                    collapsedData.push(row);
+                }
+                else {
+                    collapsedData[collapsedMap[key]].qcAnnotationIds.push(row.qcAnnotationId);
+                }
+            }
+
+            this.annotationData = collapsedData;
 
             var dateCount = {};
-            this.legendData = [];
 
             // if more than one type of legend present, add a legend header for annotations
             if (this.annotationData.length > 0 && (this.singlePlot || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot())) {
-                    this.legendData.push({
-                        text: 'Annotations',
-                        separator: true
-                    });
+                this.legendData.push({
+                    text: 'Annotations',
+                    separator: true
+                });
             }
 
-        for (let i = 0; i < this.annotationData.length; i++)
-        {
+            for (let i = 0; i < this.annotationData.length; i++) {
                 const annotation = this.annotationData[i];
                 const annotationDate = this.formatDate(new Date(annotation['Date']), !this.groupedX);
 
-                    // track if we need to stack annotations that fall on the same date
-                    if (!dateCount[annotationDate]) {
-                        dateCount[annotationDate] = 0;
-                    }
-                    annotation.yStepIndex = dateCount[annotationDate];
-                    dateCount[annotationDate]++;
-
-                    // get unique annotation names and colors for the legend
-                if (Ext4.Array.pluck(this.legendData, "text").indexOf(annotation['Name']) === -1) {
-                        this.legendData.push({
-                            text: annotation['Name'],
-                            color: '#' + annotation['Color'],
-                            shape: this.annotationShape
-                        });
-                    }
+                // track if we need to stack annotations that fall on the same date
+                if (!dateCount[annotationDate]) {
+                    dateCount[annotationDate] = 0;
                 }
+                annotation.yStepIndex = dateCount[annotationDate];
+                dateCount[annotationDate]++;
+
+                // get unique annotation names and colors for the legend
+                if (Ext4.Array.pluck(this.legendData, "text").indexOf(annotation['Name']) === -1) {
+                    this.legendData.push({
+                        text: annotation['Name'],
+                        color: '#' + annotation['Color'],
+                        shape: this.annotationShape
+                    });
+                }
+            }
 
             this.getPlotsData();
         }
@@ -1909,23 +2009,54 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 .attr("d", this.annotationShape(4)).attr('transform', transformAcc)
                 .style("fill", colorAcc).style("stroke", colorAcc);
 
-        // add hover text for the annotation details
-        annotations.append("title")
-            .text(function(d) {
-                return "Created By: " + d['DisplayName'] + ", "
-                        + "\nType: " + d['Name'] + ", "
-                    + "\nDate: " + me.formatDate(new Date(d['Date']), true) + ", "
-                    + "\nDescription: " + d['Description'];
-            });
-
-        // add some mouseover effects for fun
-        var mouseOn = function(pt, strokeWidth) {
+        // add mouseover effects for fun
+        let mouseOn = function(pt, strokeWidth, d) {
             d3.select(pt).transition().duration(800).attr("stroke-width", strokeWidth).ease("elastic");
+
+            if (!pt._tippy) {
+                let date = new Date(d['Date']);
+                let dateStr = me.formatDate(date, date.getHours() !== 0 || date.getMinutes() !== 0 || date.getSeconds() !== 0);
+                let content = "<table>"
+                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Created By:</td><td>" + LABKEY.Utils.encodeHtml(d['DisplayName']) + "</td></tr>"
+                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Type:</td><td>" + LABKEY.Utils.encodeHtml(d['Name']) + "</td></tr>"
+                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Date:</td><td>" + dateStr + "</td></tr>"
+                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Description:</td><td>" + LABKEY.Utils.encodeHtml(d['Description']) + "</td></tr>";
+
+                if (d['ContainerPath'] && d['ContainerPath'] !== LABKEY.ActionURL.getContainer()) {
+                    let containerPath = LABKEY.Utils.encodeHtml(d['ContainerPath']);
+                    if (!containerPath.startsWith('/')) {
+                        containerPath = '/' + containerPath;
+                    }
+                    content += "<tr><td style='vertical-align: top; padding-right: 5px;'>Shared From:</td><td>" + containerPath + "</td></tr>";
+                }
+                content += "</table>";
+
+                tippy(pt, {
+                    content: content,
+                    allowHTML: true,
+                    arrow: true,
+                    theme: 'light-border',
+                    placement: 'top',
+                    onMount(instance) {
+                        const tippyBox = instance.popper.querySelector('.tippy-box');
+                        const tippyContent = instance.popper.querySelector('.tippy-content');
+
+                        if (tippyBox) {
+                            tippyBox.style.color = 'black';
+                            tippyBox.style.backgroundColor = 'white';
+                            tippyBox.style.border = '1px solid black';
+                        }
+                        if (tippyContent) {
+                            tippyContent.style.padding = '2px';
+                        }
+                    }
+                });
+            }
         };
         var mouseOff = function(pt) {
             d3.select(pt).transition().duration(800).attr("stroke-width", 1).ease("elastic");
         };
-        annotations.on("mouseover", function(){ return mouseOn(this, 3); });
+        annotations.on("mouseover", function(d){ return mouseOn(this, 3, d); });
         annotations.on("mouseout", function(){ return mouseOff(this); });
 
         if (this.canUserEdit()) {
@@ -1962,10 +2093,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 .style("opacity", 0);
 
         // Add mouseover effects for add-annotations
-        nonAnnotationGroups.append("title")
-                .text("Add annotation");
-
-        nonAnnotationGroups.on("mouseover", function () {
+        nonAnnotationGroups.on("mouseover", function (d) {
             d3.select(this).select(".add-annotation-background")
                     .transition().duration(300)
                     .style("opacity", 0)
@@ -1974,6 +2102,23 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     .transition().duration(300)
                     .style("opacity", 1)
                     .style("cursor", "pointer");
+
+            if (!this._tippy) {
+                tippy(this, {
+                    content: "Add annotation",
+                    arrow: true,
+                    theme: 'light-border',
+                    placement: 'top',
+                    onMount(instance) {
+                        const tippyBox = instance.popper.querySelector('.tippy-box');
+                        if (tippyBox) {
+                            tippyBox.style.color = 'black';
+                            tippyBox.style.backgroundColor = 'white';
+                            tippyBox.style.border = '1px solid black';
+                        }
+                    }
+                });
+            }
         });
         nonAnnotationGroups.on("mouseout", function () {
             d3.select(this).select(".add-annotation-background")
@@ -2006,7 +2151,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return Ext4.create('Ext.window.Window', {
             title: title,
             width: 400,
-            height: 200,
+            height: 230,
             modal: true,
             items: [{
                 xtype: 'labkey-combo',
@@ -2018,15 +2163,48 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 store: Ext4.create('LABKEY.ext4.data.Store', {
                     schemaName: 'targetedms',
                     queryName: 'QCAnnotationType',
-                    columns: 'Id,Name',
-                    autoLoad: true
+                    columns: 'Id,Name,Shareable',
+                    autoLoad: true,
+                    listeners: {
+                        load: function() {
+                            const field = me.sharedAnnotationDisplayField;
+                            if (field && field.rendered) {
+                                field.updateVisibility();
+                            }
+                        }
+                    }
                 }),
                 displayField: 'Name',
                 valueField: 'Id',
                 editable: false,
                 allowBlank: false,
                 value: addNew ? null : data['qcAnnotationTypeId'],
-                
+                listeners: {
+                    change: function (combo, newValue) {
+                        const record = combo.getStore().findRecord('Id', newValue);
+                        const isShared = record ? record.get('Shareable') : false;
+                        const field = combo.up('window').down('#shared-annotation-display');
+                        field.setVisible(isShared);
+                    }
+                }
+            }, {
+                xtype: 'displayfield',
+                itemId: 'shared-annotation-display',
+                value: '<span style="color: #555;"><i class="fa fa-share-alt"></i> Shared</span>',
+                margin: '0 0 10 165',
+                hidden: true,
+                listeners: {
+                    afterrender: function (field) {
+                        me.sharedAnnotationDisplayField = field;
+                        field.updateVisibility = function() {
+                            const combo = field.up('window').down('labkey-combo[name=annotationType]');
+                            const record = combo.getStore().findRecord('Id', combo.getValue());
+                            const isShared = record ? record.get('Shareable') : false;
+                            field.setVisible(isShared);
+                        };
+                        field.updateVisibility();
+                    }
+                }
             }, {
                 xtype: 'textarea',
                 labelWidth: 150,
@@ -2084,7 +2262,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         return;
                     }
 
-                    me.updateAnnotation(data['qcAnnotationId'], annotationType, description, annotationDate, win);
+                    me.updateAnnotation(data['qcAnnotationIds'], annotationType, description, annotationDate, win);
                 }
             }, {
                 text: 'Delete',
@@ -2094,7 +2272,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     const win = this.up('window');
                     Ext4.Msg.confirm('Confirm Delete', 'Are you sure you want to delete this annotation?', function (btn) {
                         if (btn === 'yes') {
-                            me.deleteAnnotation(data['qcAnnotationId'], win);
+                            me.deleteAnnotation(data['qcAnnotationIds'], win);
                         }
                     });
                 }
@@ -2139,19 +2317,21 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         });
     },
 
-    updateAnnotation: function (annotationId, annotationType, description, annotationDate, win) {
+    updateAnnotation: function (annotationIds, annotationType, description, annotationDate, win) {
         // Format date as UTC string (YYYY-MM-DD) to avoid timezone conversion
         const dateStr = Ext4.util.Format.date(annotationDate, 'Y-m-d');
+
+        const rows = annotationIds.map(id => ({
+            Id: id,
+            QCAnnotationTypeId: annotationType,
+            Description: description,
+            Date: dateStr
+        }));
 
         LABKEY.Query.updateRows({
             schemaName: 'targetedms',
             queryName: 'QCAnnotation',
-            rows: [{
-                Id: annotationId,
-                QCAnnotationTypeId: annotationType,
-                Description: description,
-                Date: dateStr
-            }],
+            rows: rows,
             success: function () {
                 win.close();
                 this.displayTrendPlot();
@@ -2170,11 +2350,13 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         });
     },
 
-    deleteAnnotation: function (annotationId, win) {
+    deleteAnnotation: function (annotationIds, win) {
+        const rows = annotationIds.map(id => ({ Id: id }));
+
         LABKEY.Query.deleteRows({
             schemaName: 'targetedms',
             queryName: 'QCAnnotation',
-            rows: [{ Id: annotationId }],
+            rows: rows,
             success: function () {
                 win.close();
                 this.displayTrendPlot();
