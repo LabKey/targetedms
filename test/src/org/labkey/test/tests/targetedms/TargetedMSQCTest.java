@@ -192,6 +192,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         goToProjectHome();
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        scrollIntoView(qcPlotsWebPart.getComponentElement());
         qcPlotsWebPart.revertToDefaultView();
     }
 
@@ -1111,6 +1112,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         expectedAnnotations.add(candyChange);
         for (QCPlot plot : qcPlots)
         {
+            log("verifying for qc plot - " + plot.getPlot().getText());
             Bag<QCHelper.Annotation> plotAnnotations = new HashBag<>(plot.getAnnotations());
             assertEquals("Wrong annotations in " + plotType + ":" + plot.getPrecursor(), expectedAnnotations, plotAnnotations);
         }

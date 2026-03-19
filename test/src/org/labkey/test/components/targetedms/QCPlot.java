@@ -16,6 +16,7 @@
 package org.labkey.test.components.targetedms;
 
 import org.junit.Assert;
+import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.util.targetedms.QCHelper;
 import org.openqa.selenium.WebElement;
@@ -67,16 +68,17 @@ public class QCPlot
 
     private QCHelper.Annotation parseAnnotation(WebElement annotationEl)
     {
+        getCurrentTest().scrollIntoView(annotationEl);
         getCurrentTest().mouseOver(annotationEl);
         Locator tippyLocator = Locator.tagWithClass("div", "tippy-content");
         getCurrentTest().waitForElement(tippyLocator);
         WebElement tippyContent = tippyLocator.findElement(getCurrentTest().getDriver());
         String annotationString = tippyContent.getText();
-        
-        String annotationRegex = "(?s)Created By:\\s*(.+?)\\s+" +
-                "Type:\\s*(.+?)\\s+" +
+
+        String annotationRegex = "(?s)Created By:\\s*(.*?)\\s+" +
+                "Type:\\s*(.*?)\\s+" +
                 "Date:\\s*(\\d\\d\\d\\d-\\d\\d-\\d\\d(?: \\d\\d:\\d\\d:\\d\\d)?)\\s+" +
-                "Description:\\s*(.+?)(?:\\s+Shared From:.*|$)";
+                "Description:\\s*(.*?)(?:\\s+Shared From:.*|$)";
         Pattern annotationPattern = Pattern.compile(annotationRegex, Pattern.MULTILINE);
         Matcher annotationMatcher = annotationPattern.matcher(annotationString);
 
