@@ -2204,7 +2204,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }, {
                 xtype: 'displayfield',
                 itemId: 'shared-annotation-display',
-                value: '<span style="color: #555;"><i class="fa fa-share-alt"></i> Shared</span>',
+                value: '<span style="color: #555;"><i class="fa fa-share-alt"></i> Shared with other folders using this instrument</span>',
                 margin: '0 0 10 165',
                 hidden: true,
                 listeners: {
