@@ -2037,10 +2037,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     arrow: true,
                     theme: 'light-border',
                     placement: 'top',
-                    offset: [0, 9],
+                    offset: [0, 8],
                     onMount(instance) {
                         const tippyBox = instance.popper.querySelector('.tippy-box');
                         const tippyContent = instance.popper.querySelector('.tippy-content');
+                        const tippyArrow = instance.popper.querySelector('.tippy-arrow');
 
                         if (tippyBox) {
                             tippyBox.style.color = 'black';
@@ -2049,6 +2050,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         }
                         if (tippyContent) {
                             tippyContent.style.padding = '6px';
+                        }
+                        if (tippyArrow) {
+                            tippyArrow.style.bottom = '-1px';
                         }
                     }
                 });
@@ -2110,10 +2114,12 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     arrow: true,
                     theme: 'light-border',
                     placement: 'top',
-                    offset: [0, 9],
+                    offset: [0, 8],
                     onMount(instance) {
                         const tippyBox = instance.popper.querySelector('.tippy-box');
                         const tippyContent = instance.popper.querySelector('.tippy-content');
+                        const tippyArrow = instance.popper.querySelector('.tippy-arrow');
+
                         if (tippyBox) {
                             tippyBox.style.color = 'black';
                             tippyBox.style.backgroundColor = 'white';
@@ -2121,6 +2127,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         }
                         if (tippyContent) {
                             tippyContent.style.padding = '6px';
+                        }
+                        if (tippyArrow) {
+                            tippyArrow.style.bottom = '-1px';
                         }
                     }
                 });
