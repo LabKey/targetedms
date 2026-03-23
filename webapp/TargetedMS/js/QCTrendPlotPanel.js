@@ -1344,7 +1344,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                             instrumentFilter += separator + "(";
                             let innerSep = "";
                             if (model) {
-                                instrumentFilter += "(qca.instrumentModel = '" + model + "'";
+                                instrumentFilter += "(qca.instrumentModel = '" + LABKEY.Utils.encodeHtml(model) + "'";
                                 innerSep = " AND ";
                             } else {
                                 instrumentFilter += "(qca.instrumentModel IS NULL";
@@ -1352,7 +1352,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                             }
 
                             if (serial) {
-                                instrumentFilter += innerSep + "qca.instrumentSerialNumber = '" + serial + "')";
+                                instrumentFilter += innerSep + "qca.instrumentSerialNumber = '" + LABKEY.Utils.encodeHtml(serial) + "')";
                             } else {
                                 instrumentFilter += innerSep + "qca.instrumentSerialNumber IS NULL)";
                             }
@@ -2037,6 +2037,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     arrow: true,
                     theme: 'light-border',
                     placement: 'top',
+                    offset: [0, 9],
                     onMount(instance) {
                         const tippyBox = instance.popper.querySelector('.tippy-box');
                         const tippyContent = instance.popper.querySelector('.tippy-content');
@@ -2047,7 +2048,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                             tippyBox.style.border = '1px solid black';
                         }
                         if (tippyContent) {
-                            tippyContent.style.padding = '2px';
+                            tippyContent.style.padding = '6px';
                         }
                     }
                 });
@@ -2109,12 +2110,17 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     arrow: true,
                     theme: 'light-border',
                     placement: 'top',
+                    offset: [0, 9],
                     onMount(instance) {
                         const tippyBox = instance.popper.querySelector('.tippy-box');
+                        const tippyContent = instance.popper.querySelector('.tippy-content');
                         if (tippyBox) {
                             tippyBox.style.color = 'black';
                             tippyBox.style.backgroundColor = 'white';
                             tippyBox.style.border = '1px solid black';
+                        }
+                        if (tippyContent) {
+                            tippyContent.style.padding = '6px';
                         }
                     }
                 });
@@ -2147,13 +2153,20 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         const date = this.formatDate(data['Date'], false);
         const title = addNew ? 'Add Annotation' : 'Edit Annotation';
         const me = this;
+        const currentContainer = LABKEY.ActionURL.getContainer();
+        const fromOtherContainer = !addNew && data['ContainerPath'] && data['ContainerPath'] !== currentContainer;
 
         return Ext4.create('Ext.window.Window', {
             title: title,
             width: 400,
-            height: 230,
+            height: fromOtherContainer ? 280 : 230,
             modal: true,
             items: [{
+                xtype: 'displayfield',
+                value: '<div class="alert alert-info">This annotation is shared from another container (' + LABKEY.Utils.encodeHtml(data['ContainerPath']) + ') and cannot be edited or deleted here.</div>',
+                margin: '10 10 10 10',
+                hidden: !fromOtherContainer
+            }, {
                 xtype: 'labkey-combo',
                 fieldLabel: 'Annotation Type',
                 name: 'annotationType',
@@ -2176,6 +2189,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 }),
                 displayField: 'Name',
                 valueField: 'Id',
+                readOnly: !addNew,
                 editable: false,
                 allowBlank: false,
                 value: addNew ? null : data['qcAnnotationTypeId'],
@@ -2214,6 +2228,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 margin: '10 10 10 10',
                 name: 'description',
                 allowBlank: false,
+                readOnly: fromOtherContainer,
                 value: addNew ? null : data['Description']
             }, {
                 xtype: 'datefield',
@@ -2224,6 +2239,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 name: 'annotationDate',
                 format: 'Y-m-d',
                 allowBlank: false,
+                readOnly: fromOtherContainer,
                 value: date,
                 submitFormat: 'Y-m-d'
             }],
@@ -2249,7 +2265,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }, {
                 text: 'Update',
                 hidden: addNew,
-                disabled: !me.canUserEdit(),
+                disabled: !me.canUserEdit() || fromOtherContainer,
                 handler: function () {
                     const win = this.up('window');
                     const form = win.down('form') || win;
@@ -2267,7 +2283,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }, {
                 text: 'Delete',
                 hidden: addNew,
-                disabled: !me.canUserEdit(),
+                disabled: !me.canUserEdit() || fromOtherContainer,
                 handler: function () {
                     const win = this.up('window');
                     Ext4.Msg.confirm('Confirm Delete', 'Are you sure you want to delete this annotation?', function (btn) {
@@ -2282,7 +2298,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     this.up('window').close();
                 }
             }]
-
         });
     },
 
