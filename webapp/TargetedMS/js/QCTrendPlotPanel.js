@@ -2019,7 +2019,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 let content = "<table>"
                         + "<tr><td style='vertical-align: top; padding-right: 5px;'>Created By:</td><td>" + LABKEY.Utils.encodeHtml(d['DisplayName']) + "</td></tr>"
                         + "<tr><td style='vertical-align: top; padding-right: 5px;'>Type:</td><td>" + LABKEY.Utils.encodeHtml(d['Name']) + "</td></tr>"
-                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Date:</td><td>" + dateStr + "</td></tr>"
+                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Date:</td><td>" + LABKEY.Utils.encodeHtml(dateStr) + "</td></tr>"
                         + "<tr><td style='vertical-align: top; padding-right: 5px;'>Description:</td><td>" + LABKEY.Utils.encodeHtml(d['Description']) + "</td></tr>";
 
                 if (d['ContainerPath'] && d['ContainerPath'] !== LABKEY.ActionURL.getContainer()) {
