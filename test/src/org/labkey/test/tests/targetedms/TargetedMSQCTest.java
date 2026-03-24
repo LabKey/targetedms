@@ -1028,10 +1028,10 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertTrue("Shareable annotation from Folder A should appear in Folder B QC plots", shareableAnnotationFoundInB);
 
         stopImpersonating();
-        impersonate(testUserNoAccess);
 
         // Case 2: In Folder C, user does NOT have access to Folder A, so they SHOULD NOT see the shareable annotation
         clickFolder(folderC);
+        impersonate(testUserNoAccess);
         clickTab("Panorama Dashboard");
         qcDashboard = new PanoramaDashboard(this);
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
