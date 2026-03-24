@@ -1030,6 +1030,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         stopImpersonating();
 
         // Case 2: In Folder C, user does NOT have access to Folder A, so they SHOULD NOT see the shareable annotation
+        goToProjectHome();
         clickFolder(folderC);
         impersonate(testUserNoAccess);
         clickTab("Panorama Dashboard");
