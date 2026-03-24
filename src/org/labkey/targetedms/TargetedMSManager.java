@@ -3060,8 +3060,6 @@ public class TargetedMSManager
         private String instrumentSerialNumber;
         @Getter @Setter
         private String model;
-        @Getter @Setter
-        private Long instrumentId;
 
         public InstrumentDetails()
         {
@@ -3070,7 +3068,7 @@ public class TargetedMSManager
 
     public static List<InstrumentDetails> getInstrumentDetails(Container container)
     {
-        SQLFragment sql = new SQLFragment("SELECT DISTINCT sf.InstrumentSerialNumber, i.Model, i.Id AS InstrumentId FROM ");
+        SQLFragment sql = new SQLFragment("SELECT DISTINCT sf.InstrumentSerialNumber, i.Model FROM ");
         sql.append(getTableInfoSampleFile(), "sf");
         sql.append(" INNER JOIN ");
         sql.append(getTableInfoInstrument(), "i");
