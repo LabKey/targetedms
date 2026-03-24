@@ -2168,11 +2168,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return Ext4.create('Ext.window.Window', {
             title: title,
             width: 400,
-            height: fromOtherContainer ? 280 : 230,
+            height: fromOtherContainer ? 350 : 230,
             modal: true,
             items: [{
                 xtype: 'displayfield',
-                value: '<div class="alert alert-info">This annotation is shared from another container (' + LABKEY.Utils.encodeHtml(data['ContainerPath']) + ') and cannot be edited or deleted here.</div>',
+                value: '<div class="alert alert-info">This annotation is shared from another folder (' + LABKEY.Utils.encodeHtml(data['ContainerPath']) + ') and cannot be edited or deleted here.</div>',
                 margin: '10 10 10 10',
                 hidden: !fromOtherContainer
             }, {
