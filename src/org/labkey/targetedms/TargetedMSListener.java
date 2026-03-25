@@ -71,5 +71,6 @@ public class TargetedMSListener implements ContainerManager.ContainerListener
         new SqlExecutor(TargetedMSManager.getSchema()).execute("DELETE FROM " + TargetedMSManager.getTableInfoMSInstrument() + " WHERE Container = ?", c);
         new SqlExecutor(TargetedMSManager.getSchema()).execute("DELETE FROM " + TargetedMSManager.getTableInfoPaymentMethod() + " WHERE Container = ?", c);
         new SqlExecutor(TargetedMSManager.getSchema()).execute("DELETE FROM " + TargetedMSManager.getTableInfoRateType() + " WHERE Container = ?", c);
+        new SqlExecutor(TargetedMSManager.getSchema()).execute("DELETE FROM " + TargetedMSManager.getTableInfoSampleFileChromInfo() + " WHERE Container = ?", c);
     }
 }
