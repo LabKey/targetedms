@@ -61,7 +61,7 @@ public class TargetedMSUtilizationCalendarTest extends TargetedMSTest
         utilizationCalendar.setDisplay("1")
                 .markOfflineExpectingError("2013-08-2", null, null, "Error saving. A value is required for field 'Description'")
                 .markOfflineExpectingError("2013-08-2", "2013-0802", null, "Error saving. Unable to convert value '2013-0802' to Date and Time")
-                .markOfflineExpectingError("2013-08-2", "2013-08-01", null, "Error saving. End date cannot be before the start date");
+                .markOfflineExpectingError("2013-08-2", "2013-08-01", "Offline", "Error saving. End date cannot be before the start date");
 
         log("Marking single day offline");
         String offlineDate = "2013-08-13";
