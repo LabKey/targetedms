@@ -73,46 +73,36 @@ public class QCAnnotationTable extends SimpleUserSchema.SimpleTable<TargetedMSSc
                     List<Map<String, Object>> resultRows = new java.util.ArrayList<>();
                     for (Map<String, Object> row : rows)
                     {
-                        try
-                        {
-                            // Check if the QCAnnotationType is shareable
-                            int qcAnnotationTypeId = (Integer) row.get("QCAnnotationTypeId");
-                            boolean isShareable = TargetedMSManager.isQCAnnotationTypeShareable(qcAnnotationTypeId);
+                        // Check if the QCAnnotationType is shareable
+                        int qcAnnotationTypeId = (Integer) row.get("QCAnnotationTypeId");
+                        boolean isShareable = TargetedMSManager.isQCAnnotationTypeShareable(qcAnnotationTypeId);
 
-                            if (isShareable)
+                        if (isShareable)
+                        {
+                            List<TargetedMSManager.InstrumentDetails> instruments = TargetedMSManager.getInstrumentDetails(getContainer());
+                            if (instruments.isEmpty())
                             {
-                                List<TargetedMSManager.InstrumentDetails> instruments = TargetedMSManager.getInstrumentDetails(getContainer());
-                                if (instruments.isEmpty())
-                                {
-                                    resultRows.add(super.insertRow(user, container, row));
-                                }
-                                else
-                                {
-                                    for (TargetedMSManager.InstrumentDetails instrument : instruments)
-                                    {
-                                        Map<String, Object> newRow = new java.util.HashMap<>(row);
-                                        newRow.put("instrumentModel", instrument.getModel());
-                                        newRow.put("instrumentSerialNumber", instrument.getInstrumentSerialNumber());
-                                        newRow.put("Container", getContainer().getId());
-                                        resultRows.add(super.insertRow(user, container, newRow));
-                                    }
-                                }
+                                resultRows.add(row);
                             }
                             else
                             {
-                                resultRows.add(super.insertRow(user, container, row));
+                                for (TargetedMSManager.InstrumentDetails instrument : instruments)
+                                {
+                                    Map<String, Object> newRow = new java.util.HashMap<>(row);
+                                    newRow.put("instrumentModel", instrument.getModel());
+                                    newRow.put("instrumentSerialNumber", instrument.getInstrumentSerialNumber());
+                                    newRow.put("Container", getContainer().getId());
+                                    resultRows.add(newRow);
+                                }
                             }
                         }
-                        catch (ValidationException e)
+                        else
                         {
-                            errors.addRowError(e);
+                            resultRows.add(row);
                         }
                     }
 
-                    if (errors.hasErrors())
-                       return null;
-
-                    return resultRows;
+                    return super.insertRows(user, container, resultRows, errors, configParameters, extraScriptContext);
                 }
             };
         }
