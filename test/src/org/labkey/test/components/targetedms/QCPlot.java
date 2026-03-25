@@ -87,10 +87,6 @@ public class QCPlot
         String color = annotationEl.getCssValue("fill");
         QCHelper.AnnotationType type = getAnnotationTypes().get(color);
 
-        // Hide tippy to not interfere with other elements
-        getCurrentTest().mouseOver(Locator.tagWithClass("table", "labkey-wp qc-plot-wp"));
-        getCurrentTest().waitForElementToDisappear(tippyLocator, 2000);
-
         return new QCHelper.Annotation(type.getName(), description);
     }
 
