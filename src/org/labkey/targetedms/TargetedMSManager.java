@@ -163,7 +163,7 @@ public class TargetedMSManager
      * client rendering the overview, all of which need to know the enabled configs.
      */
     private static final Cache<Container, List<QCMetricConfiguration>> _metricCache = CacheManager.getBlockingCache(1000, TimeUnit.HOURS.toMillis(1), "Enabled QC metric configs",
-            (c, argument) ->
+            (_, argument) ->
             {
                 try
                 {
@@ -1048,7 +1048,7 @@ public class TargetedMSManager
         List<TargetedMSRun> matches = new TableSelector(TargetedMSManager.getTableInfoRuns(), filter, null).getArrayList(TargetedMSRun.class);
         if (matches.size() == 1)
         {
-            return matches.get(0);
+            return matches.getFirst();
         }
         return null;
     }
@@ -1084,7 +1084,7 @@ public class TargetedMSManager
         // for the documents not yet imported.
         updateSql.append(" AND StatusId = ? ");
         updateSql.add(SkylineDocImporter.STATUS_SUCCESS);
-        updateSql.append(" AND Id NOT IN ("+StringUtils.join(representativeRunIds, ",")+")");
+        updateSql.append(" AND Id NOT IN (").append(StringUtils.join(representativeRunIds, ",")).append(")");
 
         new SqlExecutor(TargetedMSManager.getSchema()).execute(updateSql);
     }
@@ -1125,7 +1125,7 @@ public class TargetedMSManager
         reprRunIdSql.append(TargetedMSManager.getTableInfoRuns(), "runs");
         String states = StringUtils.join(stateArray, ',');
 
-        reprRunIdSql.append(" WHERE pepgrp.RepresentativeDataState IN (" + states + ")");
+        reprRunIdSql.append(" WHERE pepgrp.RepresentativeDataState IN (").append(states).append(")");
         reprRunIdSql.append(" AND runs.Container = ?");
         reprRunIdSql.add(container);
         reprRunIdSql.append(" AND runs.Id = pepgrp.RunId");
@@ -1160,7 +1160,7 @@ public class TargetedMSManager
 
         String states = StringUtils.join(stateArray, ',');
 
-        reprRunIdSql.append(" WHERE gp.RepresentativeDataState IN (" + states + ")");
+        reprRunIdSql.append(" WHERE gp.RepresentativeDataState IN (").append(states).append(")");
         reprRunIdSql.append(" AND gp.GeneralMoleculeId = gm.Id");
         reprRunIdSql.append(" AND gm.PeptideGroupId = pepgrp.Id");
         reprRunIdSql.append(" AND Container = ?");
@@ -1918,19 +1918,15 @@ public class TargetedMSManager
         // Delete from all list-related tables
         deleteListDependent();
 
+        // Get a list of runs to be deleted so that we can flush them from the cache
+        SQLFragment sql = new SQLFragment("SELECT Id FROM " + getTableInfoRuns() + " WHERE Deleted =  ?", true);
+        List<Long> deletedRunIds = new SqlSelector(getSchema(), sql).getArrayList(Long.class);
+
         // Delete from runs
         execute("DELETE FROM " + getTableInfoRuns() + " WHERE Deleted = ?", true);
 
         // Remove any cached results for the deleted runs
-        removeCachedResults();
-    }
-
-    private static void removeCachedResults()
-    {
-        // Get a list of deleted runs
-        SQLFragment sql = new SQLFragment("SELECT Id FROM " + getTableInfoRuns() + " WHERE Deleted =  ?", true);
-        List<Long> deletedRunIds = new SqlSelector(getSchema(), sql).getArrayList(Long.class);
-        if(!deletedRunIds.isEmpty())
+        if (!deletedRunIds.isEmpty())
         {
             ModificationManager.removeRunCachedResults(deletedRunIds);
             PeptideManager.removeRunCachedResults(deletedRunIds);
@@ -2155,17 +2151,20 @@ public class TargetedMSManager
         if (newDescription == null || newDescription.isEmpty())
             return;
 
-        new SqlExecutor(getSchema()).execute("UPDATE " + getTableInfoRuns() + " SET Description=? WHERE Id = ?",
-                            newDescription, runId);
-        TargetedMSRun run = getRun(runId);
-        if (run != null)
+        try (DbScope.Transaction _ = getSchema().getScope().ensureTransaction())
         {
-            // Keep the experiment run wrapper in sync
-            ExpRun expRun = ExperimentService.get().getExpRun(run.getExperimentRunLSID());
-            if (expRun != null)
+            new SqlExecutor(getSchema()).execute("UPDATE " + getTableInfoRuns() + " SET Description=? WHERE Id = ?",
+                    newDescription, runId);
+            TargetedMSRun run = getRun(runId);
+            if (run != null)
             {
-                expRun.setName(newDescription);
-                expRun.save(user);
+                // Keep the experiment run wrapper in sync
+                ExpRun expRun = ExperimentService.get().getExpRun(run.getExperimentRunLSID());
+                if (expRun != null)
+                {
+                    expRun.setName(newDescription);
+                    expRun.save(user);
+                }
             }
         }
     }
@@ -2199,7 +2198,7 @@ public class TargetedMSManager
         {
             throw new IllegalStateException("More than one SampleFile for Id " + id);
         }
-        return matches.isEmpty() ? null : matches.get(0);
+        return matches.isEmpty() ? null : matches.getFirst();
     }
 
     public static List<SampleFile> getSampleFiles(Container container, @Nullable SQLFragment whereClause)
@@ -2813,13 +2812,6 @@ public class TargetedMSManager
                 .getObject(TransitionSettings.FullScanSettings.class);
     }
 
-    public static TransitionSettings.Predictor getReplicatePredictor(long predictorId)
-    {
-        return new TableSelector(TargetedMSManager.getTableInfoTransitionFullScanSettings(),
-                new SimpleFilter(FieldKey.fromParts("Id"), predictorId), null)
-                .getObject(TransitionSettings.Predictor.class);
-    }
-
     private static List<Long> getPredictorsToDelete()
     {
         SQLFragment sql = new SQLFragment("Select Id FROM " + getTableInfoPredictor() + " WHERE " +
@@ -2871,12 +2863,12 @@ public class TargetedMSManager
                         Double minTimeValue = qcMetricConfiguration.getMinTimeValue();
                         Double maxTimeValue = qcMetricConfiguration.getMaxTimeValue();
                         Double traceValue = qcMetricConfiguration.getTraceValue();
-                        String timeValueOption = qcMetricConfiguration.getTimeValueOption();
+                        QCMetricConfiguration.TimeValueOption timeValueOption = qcMetricConfiguration.getParsedTimeValueOption();
                         float minValue = Float.MAX_VALUE;
-                        float maxValue = Float.MIN_VALUE;
+                        float maxValue = -Float.MIN_VALUE;
                         for (int i = 0; i < times.length; i++)
                         {
-                            if (timeValueOption != null && timeValueOption.equals("First"))
+                            if (timeValueOption == QCMetricConfiguration.TimeValueOption.First)
                             {
                                 // first value after the minTimeValue
                                 if (minTimeValue != null && times[i] > minTimeValue)
@@ -2891,7 +2883,7 @@ public class TargetedMSManager
                                     break;
                                 }
                             }
-                            else if (timeValueOption != null && timeValueOption.equals("Last"))
+                            else if (timeValueOption == QCMetricConfiguration.TimeValueOption.Last)
                             {
                                 // last value before the maxTimeValue
                                 if (maxTimeValue != null && times[i] < maxTimeValue)
@@ -2904,7 +2896,7 @@ public class TargetedMSManager
                                     valuesToStore.put(sampleFileChromInfo, values[i]);
                                 }
                             }
-                            else if (timeValueOption != null && timeValueOption.equals("Min"))
+                            else if (timeValueOption == QCMetricConfiguration.TimeValueOption.Min)
                             {
                                 // minValue between minTimeValue and maxTimeValue
                                 if (minTimeValue != null && maxTimeValue != null && times[i] >= minTimeValue && times[i] <= maxTimeValue)
@@ -2929,9 +2921,8 @@ public class TargetedMSManager
                                 {
                                     minValue = values[i];
                                 }
-                                valuesToStore.put(sampleFileChromInfo, minValue);
                             }
-                            else if (timeValueOption != null && timeValueOption.equals("Max"))
+                            else if (timeValueOption == QCMetricConfiguration.TimeValueOption.Max)
                             {
                                 // maxValue between minTimeValue and maxTimeValue
                                 if (minTimeValue != null && maxTimeValue != null && times[i] >= minTimeValue && times[i] <= maxTimeValue)
@@ -2956,7 +2947,6 @@ public class TargetedMSManager
                                 {
                                     maxValue = values[i];
                                 }
-                                valuesToStore.put(sampleFileChromInfo, maxValue);
                             }
 
                             else if (traceValue != null && values[i] >= traceValue)
@@ -2964,6 +2954,16 @@ public class TargetedMSManager
                                 valuesToStore.put(sampleFileChromInfo, times[i]);
                                 break;
                             }
+                        }
+
+                        // Store Min/Max only if at least one data point matched the time filter
+                        if (timeValueOption == QCMetricConfiguration.TimeValueOption.Min && minValue != Float.MAX_VALUE)
+                        {
+                            valuesToStore.put(sampleFileChromInfo, minValue);
+                        }
+                        else if (timeValueOption == QCMetricConfiguration.TimeValueOption.Max && maxValue != Float.MIN_VALUE)
+                        {
+                            valuesToStore.put(sampleFileChromInfo, maxValue);
                         }
                     }
                 }

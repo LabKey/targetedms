@@ -16,10 +16,16 @@
 package org.labkey.api.targetedms.model;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
 {
+    public enum TimeValueOption
+    {
+        First, Last, Min, Max
+    }
+
     private int _id;
     private String _name;
     private String _queryName;
@@ -122,6 +128,21 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
     public void setTimeValueOption(String timeValueOption)
     {
         _timeValueOption = timeValueOption;
+    }
+
+    @Nullable
+    public TimeValueOption getParsedTimeValueOption()
+    {
+        if (_timeValueOption == null)
+            return null;
+        try
+        {
+            return TimeValueOption.valueOf(_timeValueOption);
+        }
+        catch (IllegalArgumentException e)
+        {
+            return null;
+        }
     }
 
     public Double getTraceValue()
