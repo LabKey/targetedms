@@ -2151,7 +2151,7 @@ public class TargetedMSManager
         if (newDescription == null || newDescription.isEmpty())
             return;
 
-        try (DbScope.Transaction _ = getSchema().getScope().ensureTransaction())
+        try (DbScope.Transaction t = getSchema().getScope().ensureTransaction())
         {
             new SqlExecutor(getSchema()).execute("UPDATE " + getTableInfoRuns() + " SET Description=? WHERE Id = ?",
                     newDescription, runId);
@@ -2166,6 +2166,7 @@ public class TargetedMSManager
                     expRun.save(user);
                 }
             }
+            t.commit();
         }
     }
 
@@ -2865,7 +2866,7 @@ public class TargetedMSManager
                         Double traceValue = qcMetricConfiguration.getTraceValue();
                         QCMetricConfiguration.TimeValueOption timeValueOption = qcMetricConfiguration.getParsedTimeValueOption();
                         float minValue = Float.MAX_VALUE;
-                        float maxValue = -Float.MIN_VALUE;
+                        float maxValue = -Float.MAX_VALUE;
                         for (int i = 0; i < times.length; i++)
                         {
                             if (timeValueOption == QCMetricConfiguration.TimeValueOption.First)
@@ -2961,7 +2962,7 @@ public class TargetedMSManager
                         {
                             valuesToStore.put(sampleFileChromInfo, minValue);
                         }
-                        else if (timeValueOption == QCMetricConfiguration.TimeValueOption.Max && maxValue != Float.MIN_VALUE)
+                        else if (timeValueOption == QCMetricConfiguration.TimeValueOption.Max && maxValue != -Float.MAX_VALUE)
                         {
                             valuesToStore.put(sampleFileChromInfo, maxValue);
                         }
