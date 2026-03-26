@@ -4,6 +4,8 @@
         <column name="Date" />
         <column name="EndDate" />
         <column name="QCAnnotationTypeId" />
+        <column name="instrumentModel" />
+        <column name="instrumentSerialNumber" />
         <column name="Container" />
         <column name="Created" />
         <column name="Modified" />

@@ -41,6 +41,7 @@ import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.Ext4Helper;
 import org.labkey.test.util.LogMethod;
 import org.labkey.test.util.LoggedParam;
+import org.labkey.test.util.PermissionsHelper;
 import org.labkey.test.util.PipelineStatusTable;
 import org.labkey.test.util.PortalHelper;
 import org.labkey.test.util.targetedms.QCHelper;
@@ -192,6 +193,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         goToProjectHome();
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        scrollIntoView(qcPlotsWebPart.getComponentElement());
         qcPlotsWebPart.revertToDefaultView();
     }
 
@@ -234,7 +236,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         goToProjectHome();
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        scrollIntoView(Locator.tagWithText("span","FFVAPFPEVFGK ++, 692.8686"));
+        scrollIntoView(Locator.tagWithText("span", "FFVAPFPEVFGK ++, 692.8686"));
         qcPlotsWebPart.openExclusionBubble(date);
         clickAndWait(Locator.linkWithText("view chromatogram"));
         assertTrue("Navigated to incorrect replicate", isTextPresent(replicate));
@@ -959,6 +961,102 @@ public class TargetedMSQCTest extends TargetedMSTest
         verifyExclusionButtonSelection(acquiredDate, QCPlotsWebPart.QCPlotExclusionState.Include);
     }
 
+    @Test
+    public void testShareableAnnotations()
+    {
+        String folderA = "Folder A";
+        String folderB = "Folder B";
+        String folderC = "Folder C";
+
+        setupSubfolder(getProjectName(), folderA, FolderType.QC);
+        importData(ISOTOPOLOGUE_FILE_ANNOTATED);
+
+        setupSubfolder(getProjectName(), folderB, FolderType.QC);
+        importData(ISOTOPOLOGUE_FILE_ANNOTATED);
+
+        setupSubfolder(getProjectName(), folderC, FolderType.QC);
+        importData(ISOTOPOLOGUE_FILE_ANNOTATED);
+
+        clickFolder(folderA);
+        clickTab("Annotations");
+
+        QCAnnotationWebPart annotationWebPart = new PanoramaAnnotations(this).getQcAnnotationWebPart();
+        QCHelper.Annotation shareableAnnotation = new QCHelper.Annotation("Instrumentation Change", "This is a shareable annotation", "2018-08-25");
+        annotationWebPart.startInsert().insert(shareableAnnotation);
+
+        clickTab("Annotations");
+        annotationWebPart = new PanoramaAnnotations(this).getQcAnnotationWebPart();
+        // expect two annotations because the data has association with two instruments
+        assertEquals("Expected two annotation rows to be created for shareable annotation", 2, annotationWebPart.getDataRegion().getDataRowCount());
+
+        String testUser = "test_shareable_annotations@targetedms.test";
+        _userHelper.createUser(testUser);
+        String testUserNoAccess = "test_shareable_annotations_no_access@targetedms.test";
+        _userHelper.createUser(testUserNoAccess);
+
+        ApiPermissionsHelper permissionsHelper = new ApiPermissionsHelper(this);
+        // Test user has access to Folder B and Folder A (so should see Folder A's annotation in Folder B)
+        permissionsHelper.addMemberToRole(testUser, READER_ROLE, PermissionsHelper.MemberType.user, getProjectName() + "/" + folderA);
+        permissionsHelper.addMemberToRole(testUser, READER_ROLE, PermissionsHelper.MemberType.user, getProjectName() + "/" + folderB);
+
+        // Test user with NO access to Folder A, only access to Folder C
+        permissionsHelper.addMemberToRole(testUserNoAccess, READER_ROLE, PermissionsHelper.MemberType.user, getProjectName() + "/" + folderC);
+
+        impersonate(testUser);
+
+        // Case 1: In Folder B, user HAS access to Folder A, so they SHOULD see the shareable annotation
+        clickFolder(folderB);
+        clickTab("Panorama Dashboard");
+        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        qcPlotsWebPart.waitForPlots(35);
+
+        List<QCPlot> qcPlots = qcPlotsWebPart.getPlots();
+        boolean shareableAnnotationFoundInB = false;
+        for (QCPlot plot : qcPlots)
+        {
+            List<QCHelper.Annotation> annotations = plot.getAnnotations();
+            for (QCHelper.Annotation annotation : annotations)
+            {
+                if (annotation.getType().equals(shareableAnnotation.getType()) &&
+                        annotation.getDescription().equals(shareableAnnotation.getDescription()))
+                {
+                    shareableAnnotationFoundInB = true;
+                }
+            }
+        }
+        assertTrue("Shareable annotation from Folder A should appear in Folder B QC plots", shareableAnnotationFoundInB);
+
+        stopImpersonating();
+
+        // Case 2: In Folder C, user does NOT have access to Folder A, so they SHOULD NOT see the shareable annotation
+        goToProjectHome();
+        clickFolder(folderC);
+        impersonate(testUserNoAccess);
+        clickTab("Panorama Dashboard");
+        qcDashboard = new PanoramaDashboard(this);
+        qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        qcPlotsWebPart.waitForPlots(35);
+
+        qcPlots = qcPlotsWebPart.getPlots();
+        boolean shareableAnnotationFoundInC = false;
+        for (QCPlot plot : qcPlots)
+        {
+            List<QCHelper.Annotation> annotations = plot.getAnnotations();
+            for (QCHelper.Annotation annotation : annotations)
+            {
+                if (annotation.getType().equals(shareableAnnotation.getType()) &&
+                        annotation.getDescription().equals(shareableAnnotation.getDescription()))
+                {
+                    shareableAnnotationFoundInC = true;
+                }
+            }
+        }
+        assertFalse("Shareable annotation from Folder A should NOT appear in Folder C QC plots for user without read access to Folder A", shareableAnnotationFoundInC);
+
+        stopImpersonating();
+    }
+
     private void verifyQCSummarySampleFileOutliers(String acquiredDate, String outlierInfo)
     {
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
@@ -1059,6 +1157,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         expectedAnnotations.add(candyChange);
         for (QCPlot plot : qcPlots)
         {
+            log("verifying for qc plot - " + plot.getPlot().getText());
             Bag<QCHelper.Annotation> plotAnnotations = new HashBag<>(plot.getAnnotations());
             assertEquals("Wrong annotations in " + plotType + ":" + plot.getPrecursor(), expectedAnnotations, plotAnnotations);
         }
