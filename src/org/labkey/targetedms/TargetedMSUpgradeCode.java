@@ -108,4 +108,42 @@ public class TargetedMSUpgradeCode implements UpgradeCode
 
         LOG.info("Finished populating PTMPercentsGroupedPrepivotCache for existing ExperimentMAM folders");
     }
+
+    @SuppressWarnings("UnusedDeclaration")
+    public void reparentOrphanedTargetedMSData(final ModuleContext moduleContext)
+    {
+        if (moduleContext.isNewInstall())
+        {
+            return;
+        }
+
+        Container sharedContainer = ContainerManager.getSharedContainer();
+
+        SqlExecutor executor = new SqlExecutor(TargetedMSManager.getSchema());
+
+        String[] tablesToDeleteOrphans = {"QCAnnotation", "GuideSet", "AutoQCPing"};
+        for (String tableName : tablesToDeleteOrphans)
+        {
+            SQLFragment deleteSql = new SQLFragment("DELETE FROM targetedms.").append(tableName)
+                    .append(" WHERE Container NOT IN (SELECT EntityId FROM core.Containers)");
+            int deletedCount = executor.execute(deleteSql);
+            if (deletedCount > 0)
+            {
+                LOG.info("Deleted " + deletedCount + " orphaned rows from targetedms." + tableName);
+            }
+        }
+
+        String[] tablesToReparentOrphans = {"Runs", "PrecursorChromInfo", "SampleFileChromInfo"};
+        for (String tableName : tablesToReparentOrphans)
+        {
+            SQLFragment updateSql = new SQLFragment("UPDATE targetedms.").append(tableName)
+                    .append(" SET Container = ? WHERE Container NOT IN (SELECT EntityId FROM core.Containers)")
+                    .add(sharedContainer.getEntityId());
+            int updatedCount = executor.execute(updateSql);
+            if (updatedCount > 0)
+            {
+                LOG.info("Reparented " + updatedCount + " orphaned rows from targetedms." + tableName + " to /Shared");
+            }
+        }
+    }
 }
