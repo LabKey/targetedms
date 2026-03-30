@@ -167,9 +167,18 @@ public class TargetedMSManager
     private static final Cache<Container, List<QCMetricConfiguration>> _metricCache = CacheManager.getBlockingCache(1000, TimeUnit.HOURS.toMillis(1), "Enabled QC metric configs",
             (c, argument) ->
             {
+                if (!(argument instanceof TargetedMSSchema schema))
+                {
+                    throw new IllegalArgumentException("Argument must be a TargetedMSSchema but was " + argument);
+                }
+
+                if (getFolderType(schema.getContainer()) != TargetedMSService.FolderType.QC)
+                {
+                    return Collections.emptyList();
+                }
+
                 try
                 {
-                    TargetedMSSchema schema = (TargetedMSSchema) argument;
                     TableInfo metricsTable = schema.getTableOrThrow("qcMetricsConfig", null);
                     List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, null, new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
 

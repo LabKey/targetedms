@@ -505,6 +505,9 @@ public class TargetedMSController extends SpringActionController
             addDataPipelineTab(c);
             addRawFilesPipelineTab(c);
 
+            // We may have toggled into or out of QC folder type, so clear out the cache
+            TargetedMSManager.get().clearQCMetricCache(c, true);
+
             // Inform listeners so that any additional folder configuration can be done.
             TargetedMSService.get().getTargetedMSFolderTypeListeners().forEach(listener -> listener.folderCreated(c, getUser()));
 
