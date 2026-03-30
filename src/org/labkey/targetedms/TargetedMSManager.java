@@ -2533,6 +2533,17 @@ public class TargetedMSManager
 
         new SqlExecutor(getSchema()).execute(updatePrecChromInfoSql);
 
+        SQLFragment updateSampleFileChromInfoSql = new SQLFragment("UPDATE ");
+        updateSampleFileChromInfoSql.append(getTableInfoSampleFileChromInfo(), "");
+        updateSampleFileChromInfoSql.append(" SET container = ?").add(newContainer);
+        updateSampleFileChromInfoSql.append(" WHERE sampleFileId IN (");
+        updateSampleFileChromInfoSql.append(" SELECT sf.Id FROM ").append(getTableInfoSampleFile(), "sf");
+        updateSampleFileChromInfoSql.append(" INNER JOIN ").append(getTableInfoReplicate(), "rep").append(" ON rep.Id = sf.ReplicateId");
+        updateSampleFileChromInfoSql.append(" WHERE rep.runId = ?").add(run.getId());
+        updateSampleFileChromInfoSql.append(" )");
+
+        new SqlExecutor(getSchema()).execute(updateSampleFileChromInfoSql);
+
         run.setExperimentRunLSID(newRunLSID);
         run.setDataId(newDataRowId);
         run.setContainer(newContainer);
