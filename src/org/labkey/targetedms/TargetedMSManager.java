@@ -17,6 +17,8 @@
 package org.labkey.targetedms;
 
 import com.google.common.base.Joiner;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -165,9 +167,18 @@ public class TargetedMSManager
     private static final Cache<Container, List<QCMetricConfiguration>> _metricCache = CacheManager.getBlockingCache(1000, TimeUnit.HOURS.toMillis(1), "Enabled QC metric configs",
             (_, argument) ->
             {
+                if (!(argument instanceof TargetedMSSchema schema))
+                {
+                    throw new IllegalArgumentException("Argument must be a TargetedMSSchema but was " + argument);
+                }
+
+                if (getFolderType(schema.getContainer()) != TargetedMSService.FolderType.QC)
+                {
+                    return Collections.emptyList();
+                }
+
                 try
                 {
-                    TargetedMSSchema schema = (TargetedMSSchema) argument;
                     TableInfo metricsTable = schema.getTableOrThrow("qcMetricsConfig", null);
                     List<QCMetricConfiguration> metrics = new TableSelector(metricsTable, null, new Sort(FieldKey.fromParts("Name"))).getArrayList(QCMetricConfiguration.class);
 
@@ -207,7 +218,8 @@ public class TargetedMSManager
 
     public static List<SampleFileChromInfo> getSampleFileChromInfos(SampleFile sampleFile)
     {
-        return new TableSelector(getTableInfoSampleFileChromInfo(), new SimpleFilter(FieldKey.fromParts("SampleFileId"), sampleFile.getId()), new Sort("TextId")).getArrayList(SampleFileChromInfo.class);    }
+        return new TableSelector(getTableInfoSampleFileChromInfo(), new SimpleFilter(FieldKey.fromParts("SampleFileId"), sampleFile.getId()), new Sort("TextId")).getArrayList(SampleFileChromInfo.class);
+    }
 
     public static SampleFileChromInfo getSampleFileChromInfo(int id, Container c)
     {
@@ -548,7 +560,8 @@ public class TargetedMSManager
         return getSchema().getTable(TargetedMSSchema.TABLE_QUANTIIFICATION_SETTINGS);
     }
 
-    public static TableInfo getTableInfoCalibrationCurve() {
+    public static TableInfo getTableInfoCalibrationCurve()
+    {
         return getSchema().getTable(TargetedMSSchema.TABLE_CALIBRATION_CURVE);
     }
 
@@ -628,19 +641,23 @@ public class TargetedMSManager
         return getSchema().getTable(TargetedMSSchema.TABLE_SKYLINE_AUDITLOG_MESSAGE);
     }
 
-    public static TableInfo getTableInfoListDefinition() {
+    public static TableInfo getTableInfoListDefinition()
+    {
         return getSchema().getTable(TargetedMSSchema.TABLE_LIST_DEFINITION);
     }
 
-    public static TableInfo getTableInfoListColumnDefinition() {
+    public static TableInfo getTableInfoListColumnDefinition()
+    {
         return getSchema().getTable(TargetedMSSchema.TABLE_LIST_COLUMN_DEFINITION);
     }
 
-    public static TableInfo getTableInfoListItem() {
+    public static TableInfo getTableInfoListItem()
+    {
         return getSchema().getTable(TargetedMSSchema.TABLE_LIST_ITEM);
     }
 
-    public static TableInfo getTableInfoListItemValue() {
+    public static TableInfo getTableInfoListItemValue()
+    {
         return getSchema().getTable(TargetedMSSchema.TABLE_LIST_ITEM_VALUE);
     }
 
@@ -1246,7 +1263,7 @@ public class TargetedMSManager
         }
 
         List<InstrumentNickname> result = new ArrayList<>(dedupeAcrossContainers.values());
-        
+
         if (matches.isEmpty())
         {
             String sql = "SELECT DISTINCT InstrumentNickname, " +
@@ -2516,6 +2533,17 @@ public class TargetedMSManager
 
         new SqlExecutor(getSchema()).execute(updatePrecChromInfoSql);
 
+        SQLFragment updateSampleFileChromInfoSql = new SQLFragment("UPDATE ");
+        updateSampleFileChromInfoSql.append(getTableInfoSampleFileChromInfo(), "");
+        updateSampleFileChromInfoSql.append(" SET container = ?").add(newContainer);
+        updateSampleFileChromInfoSql.append(" WHERE sampleFileId IN (");
+        updateSampleFileChromInfoSql.append(" SELECT sf.Id FROM ").append(getTableInfoSampleFile(), "sf");
+        updateSampleFileChromInfoSql.append(" INNER JOIN ").append(getTableInfoReplicate(), "rep").append(" ON rep.Id = sf.ReplicateId");
+        updateSampleFileChromInfoSql.append(" WHERE rep.runId = ?").add(run.getId());
+        updateSampleFileChromInfoSql.append(" )");
+
+        new SqlExecutor(getSchema()).execute(updateSampleFileChromInfoSql);
+
         run.setExperimentRunLSID(newRunLSID);
         run.setDataId(newDataRowId);
         run.setContainer(newContainer);
@@ -3047,6 +3075,39 @@ public class TargetedMSManager
         return Objects.requireNonNull(table.getUpdateService());
     }
 
+    public static class InstrumentDetails
+    {
+        @Getter @Setter
+        private String instrumentSerialNumber;
+        @Getter @Setter
+        private String model;
+
+        public InstrumentDetails()
+        {
+        }
+    }
+
+    public static List<InstrumentDetails> getInstrumentDetails(Container container)
+    {
+        SQLFragment sql = new SQLFragment("SELECT DISTINCT sf.InstrumentSerialNumber, i.Model FROM ");
+        sql.append(getTableInfoSampleFile(), "sf");
+        sql.append(" INNER JOIN ");
+        sql.append(getTableInfoInstrument(), "i");
+        sql.append(" ON sf.InstrumentId = i.Id ");
+        sql.append(" INNER JOIN ");
+        sql.append(getTableInfoReplicate(), "rep");
+        sql.append(" ON sf.ReplicateId = rep.Id ");
+        sql.append(" INNER JOIN ");
+        sql.append(getTableInfoRuns(), "r");
+        sql.append(" ON rep.RunId = r.Id ");
+        sql.append(" WHERE r.Container = ?");
+        sql.add(container);
+
+        return new SqlSelector(getSchema(), sql).getArrayList(InstrumentDetails.class);
+
+    }
+
+
     public void deleteNickname(InstrumentNickname name, User user) throws SQLException, BatchValidationException, QueryUpdateServiceException, InvalidKeyException
     {
         getNicknameUpdateService(user, name.getContainer()).
@@ -3071,5 +3132,16 @@ public class TargetedMSManager
             getNicknameUpdateService(user, name.getContainer()).
                     insertRows(user, name.getContainer(), Arrays.asList(row), errors, null, null);
         }
+    }
+
+    public static boolean isQCAnnotationTypeShareable(int qcAnnotationTypeId)
+    {
+        SQLFragment sql = new SQLFragment("SELECT Shareable FROM ");
+        sql.append(getTableInfoQCAnnotationType());
+        sql.append(" WHERE Id = ?");
+        sql.add(qcAnnotationTypeId);
+
+        Boolean isShareable = new SqlSelector(getSchema(), sql).getObject(Boolean.class);
+        return isShareable != null && isShareable;
     }
 }
