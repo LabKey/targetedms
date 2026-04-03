@@ -6,6 +6,7 @@ import org.labkey.api.data.SQLFragment;
 import org.labkey.api.data.SqlSelector;
 import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.triggers.Trigger;
+import org.labkey.api.query.QueryUpdateService;
 import org.labkey.api.query.ValidationException;
 import org.labkey.api.security.User;
 import org.labkey.targetedms.TargetedMSManager;
@@ -20,7 +21,7 @@ import java.util.Map;
 public class InstrumentScheduleOverlapTrigger implements Trigger
 {
     @Override
-    public void beforeInsert(TableInfo table, Container c, User user, Map<String, Object> newRow, ValidationException errors, Map<String, Object> extraContext) throws ValidationException
+    public void beforeInsert(TableInfo table, Container c, User user, @Nullable QueryUpdateService.InsertOption insertOption, Map<String, Object> newRow, ValidationException errors, Map<String, Object> extraContext) throws ValidationException
     {
         validateNoOverlap(newRow, null);
         Number instrument = (Number) newRow.get("Instrument");
@@ -32,7 +33,7 @@ public class InstrumentScheduleOverlapTrigger implements Trigger
     }
 
     @Override
-    public void beforeUpdate(TableInfo table, Container c, User user, @Nullable Map<String, Object> newRow, @Nullable Map<String, Object> oldRow, ValidationException errors, Map<String, Object> extraContext) throws ValidationException
+    public void beforeUpdate(TableInfo table, Container c, User user, @Nullable QueryUpdateService.InsertOption insertOption, @Nullable Map<String, Object> newRow, @Nullable Map<String, Object> oldRow, ValidationException errors, Map<String, Object> extraContext) throws ValidationException
     {
         // Use the Id from either newRow or oldRow to exclude the current record
         Integer id = getId(newRow);
