@@ -25,6 +25,7 @@ import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.SortDirection;
 import org.labkey.test.TestFileUtils;
+import org.labkey.test.TestTimeoutException;
 import org.labkey.test.components.ext4.RadioButton;
 import org.labkey.test.components.ext4.Window;
 import org.labkey.test.components.html.SiteNavBar;
@@ -36,6 +37,7 @@ import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.components.targetedms.QCSummaryWebPart;
 import org.labkey.test.pages.targetedms.PanoramaAnnotations;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
+import org.labkey.test.util.APIContainerHelper;
 import org.labkey.test.util.ApiPermissionsHelper;
 import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.Ext4Helper;
@@ -195,6 +197,14 @@ public class TargetedMSQCTest extends TargetedMSTest
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         scrollIntoView(qcPlotsWebPart.getComponentElement());
         qcPlotsWebPart.revertToDefaultView();
+    }
+
+    @Override
+    protected void doCleanup(boolean afterTest) throws TestTimeoutException
+    {
+        // Use the API-based approach for deletion so that we don't trigger AJAX requests navigating to the delete page
+        // that may run in the background and cause deadlock exceptions
+        new APIContainerHelper(this).deleteProject(getProjectName(), afterTest);
     }
 
     @Test
