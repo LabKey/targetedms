@@ -21,6 +21,8 @@ public class QCPlotFragment
     private List<GuideSetStats> guideSetStats;
     @Nullable
     private Color _seriesColor;
+    @Nullable
+    private Long precursorRowId;
 
     public String getSeriesLabel()
     {
@@ -204,5 +206,16 @@ public class QCPlotFragment
     public Color getSeriesColor()
     {
         return _seriesColor;
+    }
+
+    @Nullable
+    public Long getPrecursorRowId()
+    {
+        return precursorRowId;
+    }
+
+    public void setPrecursorRowId(Long precursorRowId)
+    {
+        this.precursorRowId = precursorRowId;
     }
 }

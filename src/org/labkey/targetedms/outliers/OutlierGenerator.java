@@ -539,7 +539,11 @@ public class OutlierGenerator
             Optional<RawMetricDataSet> bestPrecursorIdRow = entry.getValue().stream().filter(x -> x.getPrecursorId() != null).min(Comparator.comparing(RawMetricDataSet::getPrecursorId));
 
             // Remember the precursor ID so that we can assign a series color based on Skyline's algorithm
-            bestPrecursorIdRow.ifPresent(rawMetricDataSet -> fragmentsByPrecursorId.put(rawMetricDataSet.getPrecursorId(), qcPlotFragment));
+            // and to sort by Skyline document order (row ID) instead of alphabetically
+            bestPrecursorIdRow.ifPresent(rawMetricDataSet -> {
+                fragmentsByPrecursorId.put(rawMetricDataSet.getPrecursorId(), qcPlotFragment);
+                qcPlotFragment.setPrecursorRowId(rawMetricDataSet.getPrecursorId());
+            });
 
             qcPlotFragment.setSeriesLabel(entry.getKey());
             qcPlotFragment.setQcPlotData(entry.getValue());
@@ -591,7 +595,10 @@ public class OutlierGenerator
             }
         }
 
-        qcPlotFragments.sort(Comparator.comparing(QCPlotFragment::getSeriesLabel));
+        // Sort by precursor row ID to preserve Skyline document order. Fragments with no precursor ID
+        // (e.g. trace metrics) fall back to alphabetical order after all precursor-scoped series.
+        qcPlotFragments.sort(Comparator.comparing(QCPlotFragment::getPrecursorRowId, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(QCPlotFragment::getSeriesLabel));
         return qcPlotFragments;
     }
 
