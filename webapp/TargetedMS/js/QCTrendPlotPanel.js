@@ -77,6 +77,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     enableBrushing: false,
     havePlotOptionsChanged: false,
     selectedAnnotations: {},
+    hiddenPrecursorSeries: null,  // Plain object mapping fragment label -> true when hidden in the combined plot
     runs: null,
     trailingRuns: null,
     minWidth: 1250, // Keep in sync with the width defined in qcTrendPlot.jsp
@@ -1612,12 +1613,17 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     plotPointMouseOut : function(event, row, layerSel, valueName, plotConfig) {
+        let hidden = this.hiddenPrecursorSeries || {};
         d3.selectAll('.point path').attr('fill-opacity', 1).attr('stroke-opacity', 1);
         d3.selectAll('path.line').attr('fill-opacity', 1).attr('stroke-opacity', 1);
-        d3.selectAll('.legend .legend-item').attr('fill-opacity', 1).attr('stroke-opacity', 1);
+        d3.selectAll('.legend .legend-item').each(function(d) {
+            var opacity = (d && d.name && !d.separator && hidden[d.hoverText || d.name.split('|')[0]]) ? 0.3 : 1;
+            d3.select(this).attr('fill-opacity', opacity).attr('stroke-opacity', opacity);
+        });
     },
 
     highlightFragmentSeries : function(fragment) {
+        let hidden = this.hiddenPrecursorSeries || {};
         var points = d3.selectAll('.point path');
         var pointOpacityAcc = function(d) { return d.fragment === undefined || d.fragment === null || d.fragment === fragment ? 1 : 0.1 };
         points.attr('fill-opacity', pointOpacityAcc).attr('stroke-opacity', pointOpacityAcc);
@@ -1627,12 +1633,56 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         var lineOpacityAcc = function(d) { return d.group === undefined || d.group === null || d.group.indexOf(fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1 };
         lines.attr('fill-opacity', lineOpacityAcc).attr('stroke-opacity', lineOpacityAcc);
 
-        var legendItems = d3.selectAll('.legend .legend-item');
-        var legendOpacityAcc = function(d) {
+        let legendItems = d3.selectAll('.legend .legend-item');
+        let legendOpacityAcc = function(d) {
             if (!d.name) return 1;
-            return d.name.indexOf(fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1
+            let frag = d.hoverText || d.name.split('|')[0];
+            if (hidden[frag]) return 0.3; // keep hidden series dimmed during hover
+            return d.name.indexOf(fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1;
         };
         legendItems.attr('fill-opacity', legendOpacityAcc).attr('stroke-opacity', legendOpacityAcc);
+    },
+
+    // Let users toggle a precursor's series by clicking on its color swatch.
+    toggleCombinedSeriesVisibility: function(fragment) {
+        if (!this.hiddenPrecursorSeries) {
+            this.hiddenPrecursorSeries = {};
+        }
+        this.hiddenPrecursorSeries[fragment] = !this.hiddenPrecursorSeries[fragment];
+        this.applySeriesVisibility();
+    },
+
+    applySeriesVisibility: function() {
+        let hidden = this.hiddenPrecursorSeries || {};
+
+        d3.selectAll('.point path').attr('display', function(d) {
+            return (d && d.fragment && hidden[d.fragment]) ? 'none' : null;
+        });
+
+        d3.selectAll('path.line').attr('display', function(d) {
+            if (!d || !d.group) return null;
+            return hidden[d.group.split('|')[0]] ? 'none' : null;
+        });
+
+        d3.selectAll('.legend .legend-item').each(function(d) {
+            if (!d || !d.name || d.separator) return;
+            var opacity = hidden[d.hoverText || d.name.split('|')[0]] ? 0.3 : 1;
+            d3.select(this).attr('fill-opacity', opacity).attr('stroke-opacity', opacity);
+        });
+    },
+
+    attachCombinedLegendClickHandlers: function() {
+        let me = this;
+        d3.selectAll('.legend .legend-item').each(function(d) {
+            if (!d || !d.name || d.separator) return;
+            d3.select(this)
+                .style('cursor', 'pointer')
+                .on('click.toggleSeries', function(d) {
+                    d3.event.stopPropagation();
+                    me.toggleCombinedSeriesVisibility(d.hoverText || d.name.split('|')[0]);
+                });
+        });
+        this.applySeriesVisibility();
     },
 
     plotBrushStartEvent : function(plot) {

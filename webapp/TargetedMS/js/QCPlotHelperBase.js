@@ -822,6 +822,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         const plot = LABKEY.vis.TrendingLinePlot(plotConfig);
         plot.render();
 
+        this.attachCombinedLegendClickHandlers();
+
         this.addAnnotationsToPlot(plot, combinePlotData);
 
         this.addGuideSetTrainingRangeToPlot(plot, combinePlotData);
