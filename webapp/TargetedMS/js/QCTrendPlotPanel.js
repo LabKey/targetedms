@@ -1812,6 +1812,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     }
                 });
                 me.applySeriesVisibility();
+                me.havePlotOptionsChanged = true;
+                me.persistSelectedFormOptions();
             });
         });
     },
