@@ -44,9 +44,11 @@ import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.model.SampleFileQCMetadata;
 import org.labkey.targetedms.parser.GeneralMolecule;
 import org.labkey.targetedms.parser.GeneralPrecursor;
+import org.labkey.targetedms.parser.PeptideGroup;
 import org.labkey.targetedms.parser.SampleFile;
 import org.labkey.targetedms.query.MoleculeManager;
 import org.labkey.targetedms.query.MoleculePrecursorManager;
+import org.labkey.targetedms.query.PeptideGroupManager;
 import org.labkey.targetedms.query.PeptideManager;
 import org.labkey.targetedms.query.PrecursorManager;
 
@@ -592,6 +594,14 @@ public class OutlierGenerator
                 Color color = ColorGenerator.getColor(molecule.getTextId(), seriesColors);
                 entry.getValue().setSeriesColor(color);
                 seriesColors.add(color);
+
+                // set the peptide group (protein / molecule list) for the combined plot tree legend
+                PeptideGroup peptideGroup = PeptideGroupManager.getPeptideGroup(c, molecule.getPeptideGroupId());
+                if (peptideGroup != null)
+                {
+                    entry.getValue().setPeptideGroupId(peptideGroup.getId());
+                    entry.getValue().setPeptideGroupLabel(peptideGroup.getLabel());
+                }
             }
         }
 

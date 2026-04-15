@@ -148,6 +148,17 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         }
                         initValues[key] = annotations;
                     }
+                    else if (key === 'hiddenSeries' && value) {
+                        try {
+                            var hiddenArr = JSON.parse(value);
+                            var hiddenMap = {};
+                            if (Array.isArray(hiddenArr)) {
+                                hiddenArr.forEach(function(f) { hiddenMap[f] = true; });
+                            }
+                            initValues['hiddenPrecursorSeries'] = hiddenMap;
+                        }
+                        catch (e) { /* ignore malformed stored value */ }
+                    }
                     else {
                         initValues[key] = value;
                     }
@@ -1650,6 +1661,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }
         this.hiddenPrecursorSeries[fragment] = !this.hiddenPrecursorSeries[fragment];
         this.applySeriesVisibility();
+        this.havePlotOptionsChanged = true;
+        this.persistSelectedFormOptions();
     },
 
     applySeriesVisibility: function() {
@@ -1669,6 +1682,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             var opacity = hidden[d.hoverText || d.name.split('|')[0]] ? 0.3 : 1;
             d3.select(this).attr('fill-opacity', opacity).attr('stroke-opacity', opacity);
         });
+
+        this.updateTreeLegendState();
     },
 
     attachCombinedLegendClickHandlers: function() {
@@ -1683,6 +1698,143 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 });
         });
         this.applySeriesVisibility();
+    },
+
+    // Build an ordered list of protein/molecule-list groups from fragmentPlotData for the combined plot.
+    buildPeptideGroups: function() {
+        let groups = {};
+        for (var i = 0; i < this.precursors.length; i++) {
+            let fragment = this.precursors[i];
+            let info = this.fragmentPlotData[fragment];
+            if (!info || info.peptideGroupId == null) continue;
+            let gid = info.peptideGroupId;
+            if (!groups[gid]) {
+                groups[gid] = { id: gid, label: info.peptideGroupLabel || '', fragments: [] };
+            }
+            groups[gid].fragments.push(fragment);
+        }
+        let groupArray = Object.values(groups);
+        groupArray.sort(function(a, b) { return a.id - b.id; });
+        return groupArray;
+    },
+
+    hasPeptideGroupTree: function() {
+        return !!this.peptideGroups && this.peptideGroups.length > 1;
+    },
+
+    renderCombinedTreeLegend: function(firstPlotId, legendMargin) {
+        let existing = document.getElementById('qc-combined-tree-legend');
+        if (existing) existing.parentNode.removeChild(existing);
+
+        if (!this.hasPeptideGroupTree()) return;
+
+        let plotEl = document.getElementById(firstPlotId);
+        if (!plotEl) return;
+
+        plotEl.style.position = 'relative';
+
+        let treeDiv = document.createElement('div');
+        treeDiv.id = 'qc-combined-tree-legend';
+        treeDiv.className = 'qc-combined-tree-legend';
+        treeDiv.style.cssText = [
+            'position: absolute',
+            'right: 0',
+            'top: 65px',
+            'width: ' + legendMargin + 'px',
+            'overflow-y: auto',
+            'max-height: 430px',
+            'font-size: 11px',
+            'font-family: Roboto, arial, helvetica, sans-serif',
+            'padding: 0 4px',
+            'box-sizing: border-box'
+        ].join('; ');
+
+        treeDiv.innerHTML = this.buildTreeLegendHTML();
+        plotEl.appendChild(treeDiv);
+        this.attachTreeLegendHandlers(treeDiv);
+    },
+
+    buildTreeLegendHTML: function() {
+        let hidden = this.hiddenPrecursorSeries || {};
+        let html = '';
+        for (let g = 0; g < this.peptideGroups.length; g++) {
+            let group = this.peptideGroups[g];
+            let allHidden = group.fragments.every(function(f) { return !!hidden[f]; });
+            html += '<div class="qc-tree-group" style="margin-bottom: 6px;">';
+            html += '<label style="cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 4px;">';
+            html += '<input type="checkbox" class="qc-tree-group-check" data-group-idx="' + g + '"' + (allHidden ? '' : ' checked') + '>';
+            html += Ext4.util.Format.htmlEncode(group.label || 'Unknown');
+            html += '</label>';
+            html += '<div style="padding-left: 12px;">';
+            for (let p = 0; p < group.fragments.length; p++) {
+                let fragment = group.fragments[p];
+                let info = this.fragmentPlotData[fragment];
+                if (!info) continue;
+                let text = this.legendHelper.getLegendItemText(info);
+                let color = info.color || '#000000';
+                let opacity = hidden[fragment] ? '0.3' : '1';
+                html += '<div class="qc-tree-precursor" data-fragment="' + Ext4.util.Format.htmlEncode(fragment) + '" ';
+                html += 'style="cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 2px 0; opacity: ' + opacity + ';">';
+                html += '<svg width="10" height="10" style="flex-shrink: 0;"><rect width="10" height="10" fill="' + Ext4.util.Format.htmlEncode(color) + '"/></svg>';
+                html += '<span>' + Ext4.util.Format.htmlEncode(text) + '</span>';
+                html += '</div>';
+            }
+            html += '</div></div>';
+        }
+        return html;
+    },
+
+    attachTreeLegendHandlers: function(treeDiv) {
+        let me = this;
+        let hidden = this.hiddenPrecursorSeries || {};
+
+        treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(el) {
+            el.addEventListener('click', function() {
+                me.toggleCombinedSeriesVisibility(el.getAttribute('data-fragment'));
+            });
+        });
+
+        treeDiv.querySelectorAll('.qc-tree-group-check').forEach(function(checkbox) {
+            let groupIdx = parseInt(checkbox.getAttribute('data-group-idx'));
+            let group = me.peptideGroups[groupIdx];
+            let someHidden = group.fragments.some(function(f) { return !!hidden[f]; });
+            let allHidden = group.fragments.every(function(f) { return !!hidden[f]; });
+            checkbox.indeterminate = someHidden && !allHidden;
+
+            checkbox.addEventListener('change', function() {
+                if (!me.hiddenPrecursorSeries) me.hiddenPrecursorSeries = {};
+                let shouldHide = !checkbox.checked;
+                group.fragments.forEach(function(f) {
+                    if (shouldHide) {
+                        me.hiddenPrecursorSeries[f] = true;
+                    } else {
+                        delete me.hiddenPrecursorSeries[f];
+                    }
+                });
+                me.applySeriesVisibility();
+            });
+        });
+    },
+
+    updateTreeLegendState: function() {
+        let treeDiv = document.getElementById('qc-combined-tree-legend');
+        if (!treeDiv || !this.peptideGroups) return;
+
+        let hidden = this.hiddenPrecursorSeries || {};
+        let me = this;
+
+        treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(el) {
+            el.style.opacity = hidden[el.getAttribute('data-fragment')] ? '0.3' : '1';
+        });
+
+        treeDiv.querySelectorAll('.qc-tree-group-check').forEach(function(checkbox) {
+            let groupIdx = parseInt(checkbox.getAttribute('data-group-idx'));
+            let group = me.peptideGroups[groupIdx];
+            let allHidden = group.fragments.every(function(f) { return !!hidden[f]; });
+            let someHidden = group.fragments.some(function(f) { return !!hidden[f]; });
+            checkbox.checked = !allHidden;
+            checkbox.indeterminate = someHidden && !allHidden;
+        });
     },
 
     plotBrushStartEvent : function(plot) {
@@ -2701,6 +2853,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }
         });
 
+        var hiddenSeriesArr = Object.keys(this.hiddenPrecursorSeries || {}).filter(function(k) {
+            return !!this.hiddenPrecursorSeries[k];
+        }, this);
+
         var props = {
             metric: this.metric,
             metric2: this.metric2,
@@ -2712,7 +2868,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             dateRangeOffset: this.dateRangeOffset,
             selectedAnnotations: annotationsProp,
             showExcludedPrecursors: this.showExcludedPrecursors,
-            trailingRuns: this.trailingRuns
+            trailingRuns: this.trailingRuns,
+            hiddenSeries: JSON.stringify(hiddenSeriesArr)
         };
 
         // set start and end date to null unless we are

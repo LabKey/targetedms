@@ -412,9 +412,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         }
 
         if (this.singlePlot && this.getMetricPropsById(this.metric).precursorScoped) {
+            this.peptideGroups = this.buildPeptideGroups();
             addedPlot = this.addCombinedPeptideSinglePlot(metricProps);
         }
         else {
+            this.peptideGroups = null;
             addedPlot = this.addIndividualPrecursorPlots(metricProps);
         }
 

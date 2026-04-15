@@ -23,6 +23,10 @@ public class QCPlotFragment
     private Color _seriesColor;
     @Nullable
     private Long precursorRowId;
+    @Nullable
+    private Long peptideGroupId;
+    @Nullable
+    private String peptideGroupLabel;
 
     public String getSeriesLabel()
     {
@@ -79,6 +83,11 @@ public class QCPlotFragment
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("DataType", getDataType());
         jsonObject.put("SeriesLabel", getSeriesLabel());
+        if (peptideGroupId != null)
+        {
+            jsonObject.put("PeptideGroupId", peptideGroupId);
+            jsonObject.put("PeptideGroupLabel", peptideGroupLabel != null ? peptideGroupLabel : "");
+        }
         if (_seriesColor != null)
         {
             jsonObject.put("SeriesColor", "#" + Integer.toHexString(_seriesColor.getRGB()).substring(2).toUpperCase());
@@ -217,5 +226,27 @@ public class QCPlotFragment
     public void setPrecursorRowId(Long precursorRowId)
     {
         this.precursorRowId = precursorRowId;
+    }
+
+    @Nullable
+    public Long getPeptideGroupId()
+    {
+        return peptideGroupId;
+    }
+
+    public void setPeptideGroupId(Long peptideGroupId)
+    {
+        this.peptideGroupId = peptideGroupId;
+    }
+
+    @Nullable
+    public String getPeptideGroupLabel()
+    {
+        return peptideGroupLabel;
+    }
+
+    public void setPeptideGroupLabel(String peptideGroupLabel)
+    {
+        this.peptideGroupLabel = peptideGroupLabel;
     }
 }
