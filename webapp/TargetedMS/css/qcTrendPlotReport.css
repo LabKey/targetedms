@@ -104,7 +104,6 @@
   font-weight: normal;
 }
 
-/* Combined plot tree legend (shown when document has multiple proteins / molecule lists) */
 .qc-combined-tree-legend {
     background: white;
     line-height: 1.4;

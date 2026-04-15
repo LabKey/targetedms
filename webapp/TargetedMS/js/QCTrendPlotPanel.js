@@ -77,7 +77,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     enableBrushing: false,
     havePlotOptionsChanged: false,
     selectedAnnotations: {},
-    hiddenPrecursorSeries: null,  // Plain object mapping fragment label -> true when hidden in the combined plot
+    hiddenPrecursorSeries: null,
     runs: null,
     trailingRuns: null,
     minWidth: 1250, // Keep in sync with the width defined in qcTrendPlot.jsp
