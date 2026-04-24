@@ -1733,16 +1733,20 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         plotEl.style.position = 'relative';
 
+        let legendTop = 65 + this.getMaxStackedAnnotations() * 12;
+        let plotHeight = this.singlePlot ? 500 : 300;
+        let maxHeight = plotHeight - legendTop - 10;
+
         let treeDiv = document.createElement('div');
         treeDiv.id = 'qc-combined-tree-legend';
         treeDiv.className = 'qc-combined-tree-legend';
         treeDiv.style.cssText = [
             'position: absolute',
             'right: 0',
-            'top: 65px',
+            'top: ' + legendTop + 'px',
             'width: ' + legendMargin + 'px',
+            'max-height: ' + Math.max(50, maxHeight) + 'px',
             'overflow-y: auto',
-            'max-height: 430px',
             'font-size: 11px',
             'font-family: Roboto, arial, helvetica, sans-serif',
             'padding: 0 4px',
@@ -1752,20 +1756,36 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         treeDiv.innerHTML = this.buildTreeLegendHTML();
         plotEl.appendChild(treeDiv);
         this.attachTreeLegendHandlers(treeDiv);
+
+        d3.selectAll('[id^="combinedPlot"] .legend').style('display', 'none');
     },
 
     buildTreeLegendHTML: function() {
         let hidden = this.hiddenPrecursorSeries || {};
         let html = '';
+
+        let peptideGroups = [];
+        let ionGroups = [];
         for (let g = 0; g < this.peptideGroups.length; g++) {
             let group = this.peptideGroups[g];
+            let firstInfo = this.fragmentPlotData[group.fragments[0]];
+            if (firstInfo && firstInfo.dataType === 'Peptide') {
+                peptideGroups.push({group: group, idx: g});
+            } else {
+                ionGroups.push({group: group, idx: g});
+            }
+        }
+
+        let sectionHeaderStyle = 'font-weight: bold; font-size: 11px; padding: 2px 0 3px; border-bottom: 1px solid #ccc; margin-bottom: 4px;';
+
+        let renderGroup = function(group, g) {
             let allHidden = group.fragments.every(function(f) { return !!hidden[f]; });
-            html += '<div class="qc-tree-group" style="margin-bottom: 6px;">';
-            html += '<label style="cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 4px;">';
-            html += '<input type="checkbox" class="qc-tree-group-check" data-group-idx="' + g + '"' + (allHidden ? '' : ' checked') + '>';
-            html += Ext4.util.Format.htmlEncode(group.label || 'Unknown');
-            html += '</label>';
-            html += '<div style="padding-left: 12px;">';
+            let out = '<div class="qc-tree-group" style="margin-bottom: 6px;">';
+            out += '<label style="cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden;">';
+            out += '<input type="checkbox" class="qc-tree-group-check" data-group-idx="' + g + '"' + (allHidden ? '' : ' checked') + ' style="flex-shrink: 0;">';
+            out += '<span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;">' + Ext4.util.Format.htmlEncode(group.label || 'Unknown') + '</span>';
+            out += '</label>';
+            out += '<div style="padding-left: 12px;">';
             for (let p = 0; p < group.fragments.length; p++) {
                 let fragment = group.fragments[p];
                 let info = this.fragmentPlotData[fragment];
@@ -1773,14 +1793,29 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 let text = this.legendHelper.getLegendItemText(info);
                 let color = info.color || '#000000';
                 let opacity = hidden[fragment] ? '0.3' : '1';
-                html += '<div class="qc-tree-precursor" data-fragment="' + Ext4.util.Format.htmlEncode(fragment) + '" ';
-                html += 'style="cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 2px 0; opacity: ' + opacity + ';">';
-                html += '<svg width="10" height="10" style="flex-shrink: 0;"><rect width="10" height="10" fill="' + Ext4.util.Format.htmlEncode(color) + '"/></svg>';
-                html += '<span>' + Ext4.util.Format.htmlEncode(text) + '</span>';
-                html += '</div>';
+                out += '<div class="qc-tree-precursor" data-fragment="' + Ext4.util.Format.htmlEncode(fragment) + '" ';
+                out += 'style="cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 2px 0; opacity: ' + opacity + '; min-width: 0; overflow: hidden;">';
+                out += '<svg width="10" height="10" style="flex-shrink: 0;"><rect width="10" height="10" fill="' + Ext4.util.Format.htmlEncode(color) + '"/></svg>';
+                out += '<span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;" title="' + Ext4.util.Format.htmlEncode(text) + '">' + Ext4.util.Format.htmlEncode(text) + '</span>';
+                out += '</div>';
             }
-            html += '</div></div>';
+            out += '</div></div>';
+            return out;
+        }.bind(this);
+
+        if (peptideGroups.length > 0) {
+            html += '<div style="' + sectionHeaderStyle + '">Peptides</div>';
+            for (let i = 0; i < peptideGroups.length; i++) {
+                html += renderGroup(peptideGroups[i].group, peptideGroups[i].idx);
+            }
         }
+        if (ionGroups.length > 0) {
+            html += '<div style="' + sectionHeaderStyle + '">Ions</div>';
+            for (let i = 0; i < ionGroups.length; i++) {
+                html += renderGroup(ionGroups[i].group, ionGroups[i].idx);
+            }
+        }
+
         return html;
     },
 
