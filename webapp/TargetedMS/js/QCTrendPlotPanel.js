@@ -1806,6 +1806,16 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         let plotHeight = this.singlePlot ? 500 : 300;
         let maxHeight = plotHeight - legendTop - 10;
 
+        if (!document.getElementById('qc-tree-legend-styles')) {
+            let style = document.createElement('style');
+            style.id = 'qc-tree-legend-styles';
+            style.textContent =
+                '#qc-combined-tree-legend .qc-tree-precursor:hover,' +
+                '#qc-combined-tree-legend .qc-tree-group label:hover' +
+                '{ background: none !important; }';
+            document.head.appendChild(style);
+        }
+
         let treeDiv = document.createElement('div');
         treeDiv.id = 'qc-combined-tree-legend';
         treeDiv.className = 'qc-combined-tree-legend';
