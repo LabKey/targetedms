@@ -1654,6 +1654,35 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         legendItems.attr('fill-opacity', legendOpacityAcc).attr('stroke-opacity', legendOpacityAcc);
     },
 
+    highlightGroupSeries: function(fragments, treeDiv) {
+        let hidden = this.hiddenPrecursorSeries || {};
+        let hasYRightMetric = this.metric2;
+        let fragmentSet = {};
+        fragments.forEach(function(f) { fragmentSet[f] = true; });
+
+        d3.selectAll('.point path').attr('fill-opacity', function(d) {
+            return d.fragment === undefined || d.fragment === null || fragmentSet[d.fragment] ? 1 : 0.1;
+        }).attr('stroke-opacity', function(d) {
+            return d.fragment === undefined || d.fragment === null || fragmentSet[d.fragment] ? 1 : 0.1;
+        });
+
+        d3.selectAll('path.line').attr('fill-opacity', function(d) {
+            if (d.group === undefined || d.group === null) return 1;
+            return fragmentSet[d.group.split('|')[0]] ? 1 : 0.1;
+        }).attr('stroke-opacity', function(d) {
+            if (d.group === undefined || d.group === null) return 1;
+            return fragmentSet[d.group.split('|')[0]] ? 1 : 0.1;
+        });
+
+        if (treeDiv) {
+            treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(item) {
+                let itemFragment = item.getAttribute('data-fragment');
+                let inGroup = fragmentSet[itemFragment];
+                item.style.opacity = inGroup ? (hidden[itemFragment] ? '0.3' : '1') : (hidden[itemFragment] ? '0.03' : '0.1');
+            });
+        }
+    },
+
     // Let users toggle a precursor's series by clicking on its color swatch.
     toggleCombinedSeriesVisibility: function(fragment) {
         if (!this.hiddenPrecursorSeries) {
@@ -1827,6 +1856,24 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             el.addEventListener('click', function() {
                 me.toggleCombinedSeriesVisibility(el.getAttribute('data-fragment'));
             });
+
+            el.addEventListener('mouseenter', function() {
+                let fragment = el.getAttribute('data-fragment');
+                me.highlightFragmentSeries(fragment);
+                let hidden = me.hiddenPrecursorSeries || {};
+                treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(item) {
+                    let itemFragment = item.getAttribute('data-fragment');
+                    item.style.opacity = itemFragment === fragment ? '1' : (hidden[itemFragment] ? '0.03' : '0.1');
+                });
+            });
+
+            el.addEventListener('mouseleave', function() {
+                me.plotPointMouseOut();
+                let hidden = me.hiddenPrecursorSeries || {};
+                treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(item) {
+                    item.style.opacity = hidden[item.getAttribute('data-fragment')] ? '0.3' : '1';
+                });
+            });
         });
 
         treeDiv.querySelectorAll('.qc-tree-group-check').forEach(function(checkbox) {
@@ -1835,6 +1882,20 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             let someHidden = group.fragments.some(function(f) { return !!hidden[f]; });
             let allHidden = group.fragments.every(function(f) { return !!hidden[f]; });
             checkbox.indeterminate = someHidden && !allHidden;
+
+            let label = checkbox.closest('label');
+            if (label) {
+                label.addEventListener('mouseenter', function() {
+                    me.highlightGroupSeries(group.fragments, treeDiv);
+                });
+                label.addEventListener('mouseleave', function() {
+                    me.plotPointMouseOut();
+                    let hidden = me.hiddenPrecursorSeries || {};
+                    treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(item) {
+                        item.style.opacity = hidden[item.getAttribute('data-fragment')] ? '0.3' : '1';
+                    });
+                });
+            }
 
             checkbox.addEventListener('change', function() {
                 if (!me.hiddenPrecursorSeries) me.hiddenPrecursorSeries = {};
