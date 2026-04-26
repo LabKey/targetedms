@@ -1631,6 +1631,16 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             var opacity = (d && d.name && !d.separator && hidden[d.hoverText || d.name.split('|')[0]]) ? 0.3 : 1;
             d3.select(this).attr('fill-opacity', opacity).attr('stroke-opacity', opacity);
         });
+
+        let treeDiv = document.getElementById('qc-combined-tree-legend');
+        if (treeDiv) {
+            treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(item) {
+                item.style.opacity = hidden[item.getAttribute('data-fragment')] ? '0.3' : '1';
+            });
+            treeDiv.querySelectorAll('.qc-tree-group label').forEach(function(label) {
+                label.style.opacity = '1';
+            });
+        }
     },
 
     highlightFragmentSeries : function(fragment) {
@@ -1652,9 +1662,38 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             return d.name.indexOf(fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1;
         };
         legendItems.attr('fill-opacity', legendOpacityAcc).attr('stroke-opacity', legendOpacityAcc);
+
+        let baseFragment = fragment.split('|')[0];
+        let activeGroupIdx = this.getGroupIdxForFragment(baseFragment);
+        let treeDiv = document.getElementById('qc-combined-tree-legend');
+        if (treeDiv) {
+            treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(item) {
+                let itemFragment = item.getAttribute('data-fragment');
+                item.style.opacity = itemFragment === baseFragment ? '1' : (hidden[itemFragment] ? '0.03' : '0.1');
+            });
+            this.applyTreeGroupLabelHighlight(treeDiv, activeGroupIdx);
+        }
     },
 
-    highlightGroupSeries: function(fragments, treeDiv) {
+    getGroupIdxForFragment: function(fragment) {
+        if (!this.peptideGroups) return -1;
+        for (let g = 0; g < this.peptideGroups.length; g++) {
+            if (this.peptideGroups[g].fragments.indexOf(fragment) !== -1) return g;
+        }
+        return -1;
+    },
+
+    applyTreeGroupLabelHighlight: function(treeDiv, activeGroupIdx) {
+        treeDiv.querySelectorAll('.qc-tree-group').forEach(function(groupEl) {
+            let checkbox = groupEl.querySelector('.qc-tree-group-check');
+            let label = groupEl.querySelector('label');
+            if (checkbox && label) {
+                label.style.opacity = parseInt(checkbox.getAttribute('data-group-idx')) === activeGroupIdx ? '1' : '0.1';
+            }
+        });
+    },
+
+    highlightGroupSeries: function(fragments, groupIdx, treeDiv) {
         let hidden = this.hiddenPrecursorSeries || {};
         let hasYRightMetric = this.metric2;
         let fragmentSet = {};
@@ -1680,6 +1719,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 let inGroup = fragmentSet[itemFragment];
                 item.style.opacity = inGroup ? (hidden[itemFragment] ? '0.3' : '1') : (hidden[itemFragment] ? '0.03' : '0.1');
             });
+            this.applyTreeGroupLabelHighlight(treeDiv, groupIdx);
         }
     },
 
@@ -1886,7 +1926,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             let label = checkbox.closest('label');
             if (label) {
                 label.addEventListener('mouseenter', function() {
-                    me.highlightGroupSeries(group.fragments, treeDiv);
+                    me.highlightGroupSeries(group.fragments, groupIdx, treeDiv);
                 });
                 label.addEventListener('mouseleave', function() {
                     me.plotPointMouseOut();
