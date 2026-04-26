@@ -1829,6 +1829,18 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         d3.selectAll('[id^="combinedPlot"] .legend').style('display', 'none');
     },
 
+    makeColorCheckboxSVG: function(color, checked) {
+        if (checked) {
+            return '<svg width="12" height="12" style="flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg">' +
+                   '<rect width="12" height="12" rx="2" fill="' + color + '"/>' +
+                   '<polyline points="2,6 5,9 10,3" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+                   '</svg>';
+        }
+        return '<svg width="12" height="12" style="flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg">' +
+               '<rect x="1" y="1" width="10" height="10" rx="2" fill="none" stroke="' + color + '" stroke-width="2"/>' +
+               '</svg>';
+    },
+
     buildTreeLegendHTML: function() {
         let hidden = this.hiddenPrecursorSeries || {};
         let html = '';
@@ -1862,9 +1874,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 let text = this.legendHelper.getLegendItemText(info);
                 let color = info.color || '#000000';
                 let opacity = hidden[fragment] ? '0.3' : '1';
-                out += '<div class="qc-tree-precursor" data-fragment="' + Ext4.util.Format.htmlEncode(fragment) + '" ';
+                out += '<div class="qc-tree-precursor" data-fragment="' + Ext4.util.Format.htmlEncode(fragment) + '" data-color="' + Ext4.util.Format.htmlEncode(color) + '" ';
                 out += 'style="cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 2px 0; opacity: ' + opacity + '; min-width: 0; overflow: hidden;">';
-                out += '<svg width="10" height="10" style="flex-shrink: 0;"><rect width="10" height="10" fill="' + Ext4.util.Format.htmlEncode(color) + '"/></svg>';
+                out += this.makeColorCheckboxSVG(color, !hidden[fragment]);
                 out += '<span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;" title="' + Ext4.util.Format.htmlEncode(text) + '">' + Ext4.util.Format.htmlEncode(text) + '</span>';
                 out += '</div>';
             }
@@ -1962,7 +1974,14 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         let me = this;
 
         treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(el) {
-            el.style.opacity = hidden[el.getAttribute('data-fragment')] ? '0.3' : '1';
+            let fragment = el.getAttribute('data-fragment');
+            let color = el.getAttribute('data-color');
+            let isHidden = !!hidden[fragment];
+            el.style.opacity = isHidden ? '0.5' : '1';
+            let svg = el.querySelector('svg');
+            if (svg && color) {
+                svg.outerHTML = me.makeColorCheckboxSVG(color, !isHidden);
+            }
         });
 
         treeDiv.querySelectorAll('.qc-tree-group-check').forEach(function(checkbox) {
