@@ -1863,7 +1863,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             let allHidden = group.fragments.every(function(f) { return !!hidden[f]; });
             let out = '<div class="qc-tree-group" style="margin-bottom: 6px;">';
             out += '<label style="cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden;">';
-            out += '<input type="checkbox" class="qc-tree-group-check" data-group-idx="' + g + '"' + (allHidden ? '' : ' checked') + ' style="flex-shrink: 0;">';
+            out += '<input type="checkbox" class="qc-tree-group-check" data-group-idx="' + g + '"' + (allHidden ? '' : ' checked') + ' style="flex-shrink: 0; accent-color: #767676;">';
             out += '<span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;">' + Ext4.util.Format.htmlEncode(group.label || 'Unknown') + '</span>';
             out += '</label>';
             out += '<div style="padding-left: 12px;">';
