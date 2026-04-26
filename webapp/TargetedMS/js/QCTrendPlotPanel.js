@@ -1866,7 +1866,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             out += '<input type="checkbox" class="qc-tree-group-check" data-group-idx="' + g + '"' + (allHidden ? '' : ' checked') + ' style="flex-shrink: 0; accent-color: #767676;">';
             out += '<span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;">' + Ext4.util.Format.htmlEncode(group.label || 'Unknown') + '</span>';
             out += '</label>';
-            out += '<div style="padding-left: 12px;">';
+            out += '<div style="padding-left: 20px;">';
             for (let p = 0; p < group.fragments.length; p++) {
                 let fragment = group.fragments[p];
                 let info = this.fragmentPlotData[fragment];
@@ -1911,8 +1911,17 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
             el.addEventListener('mouseenter', function() {
                 let fragment = el.getAttribute('data-fragment');
-                me.highlightFragmentSeries(fragment);
                 let hidden = me.hiddenPrecursorSeries || {};
+                if (hidden[fragment]) {
+                    // Temporarily reveal this hidden series so hover shows it in the plot
+                    d3.selectAll('.point path').each(function(d) {
+                        if (d && d.fragment === fragment) d3.select(this).attr('display', null);
+                    });
+                    d3.selectAll('path.line').each(function(d) {
+                        if (d && d.group && d.group.split('|')[0] === fragment) d3.select(this).attr('display', null);
+                    });
+                }
+                me.highlightFragmentSeries(fragment);
                 treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(item) {
                     let itemFragment = item.getAttribute('data-fragment');
                     item.style.opacity = itemFragment === fragment ? '1' : (hidden[itemFragment] ? '0.03' : '0.1');
@@ -1920,11 +1929,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             });
 
             el.addEventListener('mouseleave', function() {
-                me.plotPointMouseOut();
-                let hidden = me.hiddenPrecursorSeries || {};
-                treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(item) {
-                    item.style.opacity = hidden[item.getAttribute('data-fragment')] ? '0.3' : '1';
-                });
+                me.applySeriesVisibility(); // re-applies display:none on hidden series
+                me.plotPointMouseOut();     // resets plot opacity and tree label opacity
             });
         });
 
@@ -1938,14 +1944,21 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             let label = checkbox.closest('label');
             if (label) {
                 label.addEventListener('mouseenter', function() {
+                    let hidden = me.hiddenPrecursorSeries || {};
+                    let hiddenFragments = group.fragments.filter(function(f) { return !!hidden[f]; });
+                    if (hiddenFragments.length > 0) {
+                        d3.selectAll('.point path').each(function(d) {
+                            if (d && hiddenFragments.indexOf(d.fragment) !== -1) d3.select(this).attr('display', null);
+                        });
+                        d3.selectAll('path.line').each(function(d) {
+                            if (d && d.group && hiddenFragments.indexOf(d.group.split('|')[0]) !== -1) d3.select(this).attr('display', null);
+                        });
+                    }
                     me.highlightGroupSeries(group.fragments, groupIdx, treeDiv);
                 });
                 label.addEventListener('mouseleave', function() {
+                    me.applySeriesVisibility();
                     me.plotPointMouseOut();
-                    let hidden = me.hiddenPrecursorSeries || {};
-                    treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(item) {
-                        item.style.opacity = hidden[item.getAttribute('data-fragment')] ? '0.3' : '1';
-                    });
                 });
             }
 
