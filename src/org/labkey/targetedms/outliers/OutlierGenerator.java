@@ -565,6 +565,7 @@ public class OutlierGenerator
         // Now that we have all the precursor IDs, in order (important so that we de-dupe the colors in a stable order),
         // run through them and choose a color
         Set<Color> seriesColors = new HashSet<>();
+        Map<Long, PeptideGroup> peptideGroupCache = new HashMap<>();
         for (Map.Entry<Long, QCPlotFragment> entry : fragmentsByPrecursorId.entrySet())
         {
             long precursorId = entry.getKey();
@@ -596,7 +597,7 @@ public class OutlierGenerator
                 seriesColors.add(color);
 
                 // set the peptide group (protein / molecule list) for the combined plot tree legend
-                PeptideGroup peptideGroup = PeptideGroupManager.getPeptideGroup(c, molecule.getPeptideGroupId());
+                PeptideGroup peptideGroup = peptideGroupCache.computeIfAbsent(molecule.getPeptideGroupId(), id -> PeptideGroupManager.getPeptideGroup(c, id));
                 if (peptideGroup != null)
                 {
                     entry.getValue().setPeptideGroupId(peptideGroup.getId());

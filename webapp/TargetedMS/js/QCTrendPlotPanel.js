@@ -1628,7 +1628,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         d3.selectAll('.point path').attr('fill-opacity', 1).attr('stroke-opacity', 1);
         d3.selectAll('path.line').attr('fill-opacity', 1).attr('stroke-opacity', 1);
         d3.selectAll('.legend .legend-item').each(function(d) {
-            var opacity = (d && d.name && !d.separator && hidden[d.hoverText || d.name.split('|')[0]]) ? 0.3 : 1;
+            var opacity = (d && d.name && !d.separator && hidden[d.hoverText || d.name.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]]) ? 0.3 : 1;
             d3.select(this).attr('fill-opacity', opacity).attr('stroke-opacity', opacity);
         });
 
@@ -1651,19 +1651,19 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         var hasYRightMetric = this.metric2;
         var lines = d3.selectAll('path.line');
-        var lineOpacityAcc = function(d) { return d.group === undefined || d.group === null || d.group.indexOf(fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1 };
+        var lineOpacityAcc = function(d) { return d.group === undefined || d.group === null || d.group.indexOf(fragment + (hasYRightMetric ? LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP : '')) === 0 ? 1 : 0.1 };
         lines.attr('fill-opacity', lineOpacityAcc).attr('stroke-opacity', lineOpacityAcc);
 
         let legendItems = d3.selectAll('.legend .legend-item');
         let legendOpacityAcc = function(d) {
             if (!d.name) return 1;
-            let frag = d.hoverText || d.name.split('|')[0];
+            let frag = d.hoverText || d.name.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0];
             if (hidden[frag]) return 0.3; // keep hidden series dimmed during hover
-            return d.name.indexOf(fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1;
+            return d.name.indexOf(fragment + (hasYRightMetric ? LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP : '')) === 0 ? 1 : 0.1;
         };
         legendItems.attr('fill-opacity', legendOpacityAcc).attr('stroke-opacity', legendOpacityAcc);
 
-        let baseFragment = fragment.split('|')[0];
+        let baseFragment = fragment.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0];
         let activeGroupIdx = this.getGroupIdxForFragment(baseFragment);
         let treeDiv = document.getElementById('qc-combined-tree-legend');
         if (treeDiv) {
@@ -1707,10 +1707,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         d3.selectAll('path.line').attr('fill-opacity', function(d) {
             if (d.group === undefined || d.group === null) return 1;
-            return fragmentSet[d.group.split('|')[0]] ? 1 : 0.1;
+            return fragmentSet[d.group.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]] ? 1 : 0.1;
         }).attr('stroke-opacity', function(d) {
             if (d.group === undefined || d.group === null) return 1;
-            return fragmentSet[d.group.split('|')[0]] ? 1 : 0.1;
+            return fragmentSet[d.group.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]] ? 1 : 0.1;
         });
 
         if (treeDiv) {
@@ -1743,12 +1743,12 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         d3.selectAll('path.line').attr('display', function(d) {
             if (!d || !d.group) return null;
-            return hidden[d.group.split('|')[0]] ? 'none' : null;
+            return hidden[d.group.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]] ? 'none' : null;
         });
 
         d3.selectAll('.legend .legend-item').each(function(d) {
             if (!d || !d.name || d.separator) return;
-            var opacity = hidden[d.hoverText || d.name.split('|')[0]] ? 0.3 : 1;
+            var opacity = hidden[d.hoverText || d.name.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]] ? 0.3 : 1;
             d3.select(this).attr('fill-opacity', opacity).attr('stroke-opacity', opacity);
         });
 
@@ -1763,7 +1763,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 .style('cursor', 'pointer')
                 .on('click.toggleSeries', function(d) {
                     d3.event.stopPropagation();
-                    me.toggleCombinedSeriesVisibility(d.hoverText || d.name.split('|')[0]);
+                    me.toggleCombinedSeriesVisibility(d.hoverText || d.name.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]);
                 });
         });
         this.applySeriesVisibility();
@@ -1928,7 +1928,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         if (d && d.fragment === fragment) d3.select(this).attr('display', null);
                     });
                     d3.selectAll('path.line').each(function(d) {
-                        if (d && d.group && d.group.split('|')[0] === fragment) d3.select(this).attr('display', null);
+                        if (d && d.group && d.group.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0] === fragment) d3.select(this).attr('display', null);
                     });
                 }
                 me.highlightFragmentSeries(fragment);
@@ -1961,7 +1961,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                             if (d && hiddenFragments.indexOf(d.fragment) !== -1) d3.select(this).attr('display', null);
                         });
                         d3.selectAll('path.line').each(function(d) {
-                            if (d && d.group && hiddenFragments.indexOf(d.group.split('|')[0]) !== -1) d3.select(this).attr('display', null);
+                            if (d && d.group && hiddenFragments.indexOf(d.group.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]) !== -1) d3.select(this).attr('display', null);
                         });
                     }
                     me.highlightGroupSeries(group.fragments, groupIdx, treeDiv);

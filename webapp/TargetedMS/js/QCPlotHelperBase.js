@@ -8,7 +8,10 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     statics: {
         qcPlotTypes : ['Metric Value', 'Moving Range', 'CUSUMm', 'CUSUMv', 'Trailing CV', 'Trailing Mean'],
         maxPointsPerSeries : 300,
-        shapeDomain: ['Include', 'Exclude', 'Include-Outlier', 'Exclude-Outlier']
+        shapeDomain: ['Include', 'Exclude', 'Include-Outlier', 'Exclude-Outlier'],
+        // Separates fragment from series name in legend item names (e.g. "PEPTIDE|Left"). Fragments are peptide
+        // sequences or molecule names and are not expected to contain this character.
+        SERIES_NAME_SEP: '|'
     },
 
     showMetricValuePlot: function() {
@@ -604,7 +607,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 const series1Legend = precursorInfo.dataType === 'Peptide' ? proteomicsLegend : ionLegend;
 
                 series1Legend.push({
-                    name: precursorInfo.fragment + (this.isMultiSeries() ? '|' + legendSeries[0] : ''),
+                    name: precursorInfo.fragment + (this.isMultiSeries() ? LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP + legendSeries[0] : ''),
                     text: this.legendHelper.getLegendItemText(precursorInfo),
                     hoverText: precursorInfo.fragment,
                     color: groupColors[i % groupColors.length]
@@ -630,7 +633,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
                 precursorInfo = this.fragmentPlotData[this.precursors[i]];
                 series2Legend.push({
-                    name: precursorInfo.fragment + '|' + legendSeries[1],
+                    name: precursorInfo.fragment + LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP + legendSeries[1],
                     text: this.legendHelper.getLegendItemText(precursorInfo),
                     hoverText: precursorInfo.fragment,
                     color: groupColors[(this.precursors.length + i) % groupColors.length]
