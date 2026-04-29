@@ -1628,8 +1628,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         d3.selectAll('.point path').attr('fill-opacity', 1).attr('stroke-opacity', 1);
         d3.selectAll('path.line').attr('fill-opacity', 1).attr('stroke-opacity', 1);
         d3.selectAll('.legend .legend-item').each(function(d) {
-            var opacity = (d && d.name && !d.separator && hidden[d.hoverText || d.name.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]]) ? 0.3 : 1;
-            d3.select(this).attr('fill-opacity', opacity).attr('stroke-opacity', opacity);
+            if (!d || !d.name || d.separator) return;
+            let isHidden = !!(hidden[d.hoverText || d.name.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]]);
+            let item = d3.select(this);
+            item.select('path').attr('fill', isHidden ? 'none' : (d.color || null));
+            item.select('text').attr('opacity', isHidden ? 0.3 : 1);
         });
 
         let treeDiv = document.getElementById('qc-combined-tree-legend');
@@ -1655,13 +1658,15 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         lines.attr('fill-opacity', lineOpacityAcc).attr('stroke-opacity', lineOpacityAcc);
 
         let legendItems = d3.selectAll('.legend .legend-item');
-        let legendOpacityAcc = function(d) {
-            if (!d.name) return 1;
+        legendItems.each(function(d) {
+            if (!d.name) return;
             let frag = d.hoverText || d.name.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0];
-            if (hidden[frag]) return 0.3; // keep hidden series dimmed during hover
-            return d.name.indexOf(fragment + (hasYRightMetric ? LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP : '')) === 0 ? 1 : 0.1;
-        };
-        legendItems.attr('fill-opacity', legendOpacityAcc).attr('stroke-opacity', legendOpacityAcc);
+            let isHidden = !!hidden[frag];
+            let isActive = d.name.indexOf(fragment + (hasYRightMetric ? LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP : '')) === 0;
+            let item = d3.select(this);
+            item.select('path').attr('fill', isHidden ? 'none' : (d.color || null));
+            item.select('text').attr('opacity', isHidden ? 0.1 : (isActive ? 1 : 0.1));
+        });
 
         let baseFragment = fragment.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0];
         let activeGroupIdx = this.getGroupIdxForFragment(baseFragment);
@@ -1748,8 +1753,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         d3.selectAll('.legend .legend-item').each(function(d) {
             if (!d || !d.name || d.separator) return;
-            var opacity = hidden[d.hoverText || d.name.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]] ? 0.3 : 1;
-            d3.select(this).attr('fill-opacity', opacity).attr('stroke-opacity', opacity);
+            let isHidden = !!hidden[d.hoverText || d.name.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]];
+            let item = d3.select(this);
+            item.select('path').attr('fill', isHidden ? 'none' : (d.color || null));
+            item.select('text').attr('opacity', isHidden ? 0.3 : 1);
         });
 
         this.updateTreeLegendState();

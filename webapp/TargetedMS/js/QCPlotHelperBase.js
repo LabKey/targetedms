@@ -11,7 +11,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         shapeDomain: ['Include', 'Exclude', 'Include-Outlier', 'Exclude-Outlier'],
         // Separates fragment from series name in legend item names (e.g. "PEPTIDE|Left"). Fragments are peptide
         // sequences or molecule names and are not expected to contain this character.
-        SERIES_NAME_SEP: '|'
+        SERIES_NAME_SEP: '|',
+        // Square 12x12 shape for combined plot legend swatches, matching the tree legend checkbox size.
+        SQUARE_LEGEND_SHAPE: function() { return 'M-6,-6 L6,-6 6,6 -6,6 Z'; }
     },
 
     showMetricValuePlot: function() {
@@ -610,7 +612,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     name: precursorInfo.fragment + (this.isMultiSeries() ? LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP + legendSeries[0] : ''),
                     text: this.legendHelper.getLegendItemText(precursorInfo),
                     hoverText: precursorInfo.fragment,
-                    color: groupColors[i % groupColors.length]
+                    color: groupColors[i % groupColors.length],
+                    shape: LABKEY.targetedms.QCPlotHelperBase.SQUARE_LEGEND_SHAPE
                 });
             }
         }
@@ -636,7 +639,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     name: precursorInfo.fragment + LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP + legendSeries[1],
                     text: this.legendHelper.getLegendItemText(precursorInfo),
                     hoverText: precursorInfo.fragment,
-                    color: groupColors[(this.precursors.length + i) % groupColors.length]
+                    color: groupColors[(this.precursors.length + i) % groupColors.length],
+                    shape: LABKEY.targetedms.QCPlotHelperBase.SQUARE_LEGEND_SHAPE
                 });
             }
         }
