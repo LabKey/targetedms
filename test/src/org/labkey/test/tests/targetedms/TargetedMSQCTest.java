@@ -498,16 +498,16 @@ public class TargetedMSQCTest extends TargetedMSTest
             assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Change", false), 4);
             if (plotType == CUSUMm || plotType == QCPlotsWebPart.QCPlotType.CUSUMv)
                 assertElementPresent(qcPlotsWebPart.getLegendItemLocator("CUSUM Group", true));
-            for (String precursor : PRECURSORS)
-            {
-                Locator legendItemLoc = qcPlotsWebPart.getLegendItemLocatorByTitle(precursor);
-                assertElementPresent("Unexpected number of QC plot legend items found for " + precursor, legendItemLoc, 2);
-            }
-
-            // Metric name headers appear in the combined tree legend; switch to combined mode to check them
+            // Precursor items and metric name headers are in the combined tree legend; switch to combined mode to check them
             qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
             assertElementPresent(qcPlotsWebPart.getTreeLegendItemLocator(QCPlotsWebPart.MetricType.TRANSITION_AREA.toString(), true));
             assertElementPresent(qcPlotsWebPart.getTreeLegendItemLocator(QCPlotsWebPart.MetricType.PRECURSOR_AREA.toString(), true));
+            for (String precursor : PRECURSORS)
+            {
+                // Each precursor appears once per metric section (2 total in multi-series combined mode)
+                Locator legendItemLoc = qcPlotsWebPart.getTreeLegendPrecursorLocator(precursor);
+                assertElementPresent("Unexpected number of QC plot legend items found for " + precursor, legendItemLoc, 2);
+            }
         }
         // reset to avoid test case dependency
         qcPlotsWebPart.resetInitialQCPlotFields();
