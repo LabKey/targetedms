@@ -632,13 +632,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
             for (let i = 0; i < this.precursors.length; i++)
             {
-                const series2Legend = precursorInfo.dataType === 'Peptide' ?  proteomicsLegend : ionLegend;
+                const series2Legend = precursorInfo?.dataType === 'Peptide' ?  proteomicsLegend : ionLegend;
 
                 precursorInfo = this.fragmentPlotData[this.precursors[i]];
                 series2Legend.push({
-                    name: precursorInfo.fragment + LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP + legendSeries[1],
+                    name: precursorInfo?.fragment + LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP + legendSeries[1],
                     text: this.legendHelper.getLegendItemText(precursorInfo),
-                    hoverText: precursorInfo.fragment,
+                    hoverText: precursorInfo?.fragment,
                     color: groupColors[(this.precursors.length + i) % groupColors.length],
                     shape: LABKEY.targetedms.QCPlotHelperBase.SQUARE_LEGEND_SHAPE
                 });
@@ -658,6 +658,26 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         newLegendData = newLegendData.concat(extraPlotLegendData);
 
         return newLegendData;
+    },
+
+    getCombinedPlotColorMap: function(metricProps, groupColors, plotType, isCUSUMMean) {
+        const SEP = LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP;
+        const legendSeries = this.getCombinedPlotLegendSeries(plotType, isCUSUMMean);
+        let colorMap = {};
+
+        for (let i = 0; i < this.precursors.length; i++) {
+            let precursorInfo = this.fragmentPlotData[this.precursors[i]];
+            if (!precursorInfo) continue;
+
+            let name1 = precursorInfo.fragment + (this.isMultiSeries() ? SEP + legendSeries[0] : '');
+            colorMap[name1] = groupColors[i % groupColors.length];
+
+            if (this.isMultiSeries()) {
+                let name2 = precursorInfo.fragment + SEP + legendSeries[1];
+                colorMap[name2] = groupColors[(this.precursors.length + i) % groupColors.length];
+            }
+        }
+        return colorMap;
     },
 
     getYScaleLabel: function(plotType, conversion, metricProp) {
@@ -704,7 +724,16 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     },
 
     addEachCombinedPrecursorPlot: function(plotIndex, id, combinePlotData, groupColors, yAxisCount, metricProps, showLogInvalid, legendMargin, plotType, isCUSUMMean, scope) {
-        let plotLegendData = this.getCombinedPlotLegendData(metricProps, groupColors, yAxisCount, plotType, isCUSUMMean);
+        let plotLegendData, treeColorMap;
+        if (this.hasPeptideGroupTree && this.hasPeptideGroupTree()) {
+            plotLegendData = this.getCombinedPlotLegendData(metricProps, groupColors, yAxisCount, plotType, isCUSUMMean)
+                    .filter(function(d) {
+                        return (!d.name && !d.separator) || (d.separator && d.text === 'Annotations');
+                    });
+            treeColorMap = this.getCombinedPlotColorMap(metricProps, groupColors, plotType, isCUSUMMean);
+        } else {
+            plotLegendData = this.getCombinedPlotLegendData(metricProps, groupColors, yAxisCount, plotType, isCUSUMMean);
+        }
 
         if (plotType !== LABKEY.vis.TrendingLinePlotType.CUSUM) {
             this.showInvalidLogMsg(id, showLogInvalid);
@@ -770,6 +799,10 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             hideSDLines: true
         };
 
+
+        if (treeColorMap) {
+            trendLineProps.colorMap = treeColorMap;
+        }
 
         if (plotType === 'Levey-Jennings') {
             trendLineProps.showBoundLines = false;

@@ -1809,9 +1809,24 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         plotEl.style.position = 'relative';
 
-        let legendTop = 65 + this.getMaxStackedAnnotations() * 12;
-        let plotHeight = this.singlePlot ? 500 : 300;
-        let maxHeight = plotHeight - legendTop - 10;
+        // Position the tree below the bottom of the last annotation legend item.
+        let legendTop = 65 + this.getMaxStackedAnnotations() * 12; // fallback
+        let plotRect = plotEl.getBoundingClientRect();
+        let plotHeight = plotEl.getBoundingClientRect().height;
+        let lastLegendBottom = null;
+        let annotLegendCount = Array.isArray(this.legendData) ? this.legendData.length : 0;
+        d3.selectAll('#' + firstPlotId + ' .legend .legend-item').each(function(d, i) {
+            if (i >= annotLegendCount) return;
+            let bottom = this.getBoundingClientRect().bottom - plotRect.top;
+            if (lastLegendBottom === null || bottom > lastLegendBottom) {
+                lastLegendBottom = bottom;
+            }
+        });
+        if (lastLegendBottom !== null && lastLegendBottom > 0 && lastLegendBottom < plotHeight) {
+            legendTop = lastLegendBottom + 8;
+        }
+
+        let maxHeight = Math.max(50, plotEl.getBoundingClientRect().height - legendTop - 10);
 
         if (!document.getElementById('qc-tree-legend-styles')) {
             let style = document.createElement('style');
@@ -1835,15 +1850,14 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             'overflow-y: auto',
             'font-size: 11px',
             'font-family: Roboto, arial, helvetica, sans-serif',
-            'padding: 0 4px',
-            'box-sizing: border-box'
+            // 'padding: 1px 4px 0 4px',
+            'box-sizing: border-box',
+            'background-color: white'
         ].join('; ');
 
         treeDiv.innerHTML = this.buildTreeLegendHTML();
         plotEl.appendChild(treeDiv);
         this.attachTreeLegendHandlers(treeDiv);
-
-        d3.selectAll('[id^="combinedPlot"] .legend').style('display', 'none');
     },
 
     makeColorCheckboxSVG: function(color, checked) {
@@ -1874,9 +1888,17 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }
         }
 
-        let sectionHeaderStyle = 'font-weight: bold; font-size: 11px; padding: 2px 0 3px; border-bottom: 1px solid #ccc; margin-bottom: 4px;';
+        let sectionHeaderStyle = 'font-weight: bold; font-size: 12px; padding: 2px 0 3px 16px; border-bottom: 1px solid #ccc; margin-bottom: 4px;';
+        let metricSubHeaderStyle = 'font-weight: bold; font-size: 12px; padding: 2px 0 3px 16px; margin-bottom: 4px; margin-top: 6px;';
 
-        let renderGroup = function(group, g) {
+        // Build a fragment:index map for series color lookup in multi-series mode
+        let precursorIndexMap = {};
+        for (let i = 0; i < this.precursors.length; i++) {
+            precursorIndexMap[this.precursors[i]] = i;
+        }
+        let groupColors = this.getColorRange();
+
+        let renderGroup = function(group, g, colorFn) {
             let allHidden = group.fragments.every(function(f) { return !!hidden[f]; });
             let out = '<div class="qc-tree-group" style="margin-bottom: 6px;">';
             out += '<label style="cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden;">';
@@ -1889,7 +1911,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 let info = this.fragmentPlotData[fragment];
                 if (!info) continue;
                 let text = this.legendHelper.getLegendItemText(info);
-                let color = info.color || '#000000';
+                let color = colorFn ? colorFn(fragment) : (info.color || '#000000');
                 let opacity = hidden[fragment] ? '0.3' : '1';
                 out += '<div class="qc-tree-precursor" data-fragment="' + Ext4.util.Format.htmlEncode(fragment) + '" data-color="' + Ext4.util.Format.htmlEncode(color) + '" ';
                 out += 'style="cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 2px 0; opacity: ' + opacity + '; min-width: 0; overflow: hidden;">';
@@ -1901,17 +1923,62 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             return out;
         }.bind(this);
 
-        if (peptideGroups.length > 0) {
-            html += '<div style="' + sectionHeaderStyle + '">Peptides</div>';
-            for (let i = 0; i < peptideGroups.length; i++) {
-                html += renderGroup(peptideGroups[i].group, peptideGroups[i].idx);
+        let renderSection = function(colorFn) {
+            let sectionHtml = '';
+            if (peptideGroups.length > 0) {
+                sectionHtml += '<div style="' + sectionHeaderStyle + '">Peptides</div>';
+                for (let i = 0; i < peptideGroups.length; i++) {
+                    sectionHtml += renderGroup(peptideGroups[i].group, peptideGroups[i].idx, colorFn);
+                }
+            }
+            if (ionGroups.length > 0) {
+                sectionHtml += '<div style="' + sectionHeaderStyle + '">Ions</div>';
+                for (let i = 0; i < ionGroups.length; i++) {
+                    sectionHtml += renderGroup(ionGroups[i].group, ionGroups[i].idx, colorFn);
+                }
+            }
+            return sectionHtml;
+        };
+
+        if (this.isMultiSeries()) {
+            let n = this.precursors.length;
+            let series1ColorFn = function(fragment) {
+                let idx = precursorIndexMap[fragment];
+                return idx !== undefined ? groupColors[idx % groupColors.length] : '#000000';
+            };
+            let series2ColorFn = function(fragment) {
+                let idx = precursorIndexMap[fragment];
+                return idx !== undefined ? groupColors[(n + idx) % groupColors.length] : '#000000';
+            };
+
+            let metric1Props = this.getMetricPropsById(this.metric);
+            let metric2Props = this.getMetricPropsById(this.metric2);
+            let metric1Name = metric1Props ? metric1Props.name : 'Series 1';
+            let metric2Name = metric2Props ? metric2Props.name : 'Series 2';
+
+            // Structure matches flat SVG legend: type header → metric1 sub-header → list → metric2 sub-header → list
+            let renderTypeSection = function(groups, typeLabel) {
+                let out = '<div style="' + sectionHeaderStyle + '">' + Ext4.util.Format.htmlEncode(typeLabel) + '</div>';
+                out += '<div style="' + metricSubHeaderStyle + '">' + Ext4.util.Format.htmlEncode(metric1Name) + '</div>';
+                for (let i = 0; i < groups.length; i++) {
+                    out += renderGroup(groups[i].group, groups[i].idx, series1ColorFn);
+                }
+                out += '<div style="' + metricSubHeaderStyle + '">' + Ext4.util.Format.htmlEncode(metric2Name) + '</div>';
+                for (let i = 0; i < groups.length; i++) {
+                    out += renderGroup(groups[i].group, groups[i].idx, series2ColorFn);
+                }
+                return out;
+            };
+
+            if (peptideGroups.length > 0) {
+                html += renderTypeSection(peptideGroups, 'Peptides');
+            }
+            if (ionGroups.length > 0) {
+                html += renderTypeSection(ionGroups, 'Ions');
             }
         }
-        if (ionGroups.length > 0) {
-            html += '<div style="' + sectionHeaderStyle + '">Ions</div>';
-            for (let i = 0; i < ionGroups.length; i++) {
-                html += renderGroup(ionGroups[i].group, ionGroups[i].idx);
-            }
+        else {
+            html += renderSection(null);
         }
 
         return html;

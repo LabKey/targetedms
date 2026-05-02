@@ -493,11 +493,9 @@ public class TargetedMSQCTest extends TargetedMSTest
                 testEachMultiSeriesQCPlot(plotType, scale);
             }
 
-            // Test once per plot type, not once for each scale
+            // Test once per plot type, not once for each scale (per-precursor mode, SVG legend)
             assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Annotations", true));
             assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Change", false), 4);
-            assertElementPresent(qcPlotsWebPart.getLegendItemLocator(QCPlotsWebPart.MetricType.TRANSITION_AREA.toString(), true));
-            assertElementPresent(qcPlotsWebPart.getLegendItemLocator(QCPlotsWebPart.MetricType.PRECURSOR_AREA.toString(), true));
             if (plotType == CUSUMm || plotType == QCPlotsWebPart.QCPlotType.CUSUMv)
                 assertElementPresent(qcPlotsWebPart.getLegendItemLocator("CUSUM Group", true));
             for (String precursor : PRECURSORS)
@@ -506,7 +504,10 @@ public class TargetedMSQCTest extends TargetedMSTest
                 assertElementPresent("Unexpected number of QC plot legend items found for " + precursor, legendItemLoc, 2);
             }
 
+            // Metric name headers appear in the combined tree legend; switch to combined mode to check them
             qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
+            assertElementPresent(qcPlotsWebPart.getTreeLegendItemLocator(QCPlotsWebPart.MetricType.TRANSITION_AREA.toString(), true));
+            assertElementPresent(qcPlotsWebPart.getTreeLegendItemLocator(QCPlotsWebPart.MetricType.PRECURSOR_AREA.toString(), true));
         }
         // reset to avoid test case dependency
         qcPlotsWebPart.resetInitialQCPlotFields();
