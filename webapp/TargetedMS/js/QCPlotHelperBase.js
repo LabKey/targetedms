@@ -632,9 +632,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
             for (let i = 0; i < this.precursors.length; i++)
             {
+                precursorInfo = this.fragmentPlotData[this.precursors[i]];
                 const series2Legend = precursorInfo?.dataType === 'Peptide' ?  proteomicsLegend : ionLegend;
 
-                precursorInfo = this.fragmentPlotData[this.precursors[i]];
                 series2Legend.push({
                     name: precursorInfo?.fragment + LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP + legendSeries[1],
                     text: this.legendHelper.getLegendItemText(precursorInfo),
