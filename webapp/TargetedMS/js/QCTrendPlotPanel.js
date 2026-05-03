@@ -1631,8 +1631,24 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             if (!d || !d.name || d.separator) return;
             let isHidden = !!(hidden[d.hoverText || d.name.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]]);
             let item = d3.select(this);
-            item.select('path').attr('fill', isHidden ? 'none' : (d.color || null));
+            item.select('path').attr('fill', isHidden ? 'transparent' : (d.color || null));
             item.select('text').attr('opacity', isHidden ? 0.3 : 1);
+            item.select('.legend-check').remove();
+            if (!isHidden) {
+                let pathEl = item.select('path').node();
+                if (pathEl) {
+                    item.append('polyline')
+                            .attr('class', 'legend-check')
+                            .attr('points', '-3.5,0 -0.5,1.5 3.5,-1.5')
+                            .attr('fill', 'none')
+                            .attr('stroke', 'white')
+                            .attr('stroke-width', '1.5')
+                            .attr('stroke-linecap', 'round')
+                            .attr('stroke-linejoin', 'round')
+                            .attr('transform', pathEl.getAttribute('transform'))
+                            .attr('pointer-events', 'none');
+                }
+            }
         });
 
         let treeDiv = document.getElementById('qc-combined-tree-legend');
@@ -1664,7 +1680,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             let isHidden = !!hidden[frag];
             let isActive = d.name.indexOf(fragment + (hasYRightMetric ? LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP : '')) === 0;
             let item = d3.select(this);
-            item.select('path').attr('fill', isHidden ? 'none' : (d.color || null));
+            item.select('path').attr('fill', isHidden ? 'transparent' : (d.color || null));
             item.select('text').attr('opacity', isHidden ? 0.1 : (isActive ? 1 : 0.1));
         });
 
@@ -1755,8 +1771,24 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             if (!d || !d.name || d.separator) return;
             let isHidden = !!hidden[d.hoverText || d.name.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]];
             let item = d3.select(this);
-            item.select('path').attr('fill', isHidden ? 'none' : (d.color || null));
+            item.select('path').attr('fill', isHidden ? 'transparent' : (d.color || null));
             item.select('text').attr('opacity', isHidden ? 0.3 : 1);
+            item.select('.legend-check').remove();
+            if (!isHidden) {
+                let pathEl = item.select('path').node();
+                if (pathEl) {
+                    item.append('polyline')
+                            .attr('class', 'legend-check')
+                            .attr('points', '-3.5,0 -0.5,1.5 3.5,-1.5')
+                            .attr('fill', 'none')
+                            .attr('stroke', 'white')
+                            .attr('stroke-width', '1.5')
+                            .attr('stroke-linecap', 'round')
+                            .attr('stroke-linejoin', 'round')
+                            .attr('transform', pathEl.getAttribute('transform'))
+                            .attr('pointer-events', 'none');
+                }
+            }
         });
 
         this.updateTreeLegendState();
@@ -1868,7 +1900,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                    '</svg>';
         }
         return '<svg width="12" height="12" style="flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg">' +
-               '<rect x="1" y="1" width="10" height="10" rx="2" fill="none" stroke="' + color + '" stroke-width="2"/>' +
+               '<rect x="1" y="1" width="10" height="10" rx="2" fill="transparent" stroke="' + color + '" stroke-width="2"/>' +
                '</svg>';
     },
 
