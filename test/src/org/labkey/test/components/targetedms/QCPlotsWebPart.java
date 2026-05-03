@@ -646,8 +646,8 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public Locator getTreeLegendPrecursorLocator(String text)
     {
-        // Use containing to ignore charge state suffixes like "(2+)"
-        return elementCache().combinedTreeLegendPrecursor.containing(text);
+        // Match data-fragment attribute to avoid relying on potentially overflow-hidden span text
+        return Locator.css(".qc-tree-precursor").withAttributeContaining("data-fragment", text);
     }
 
     public Locator getLegendItemLocatorByTitle(String text)
@@ -948,7 +948,6 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         Locator.CssLocator legendItemTitle = Locator.css("svg g.legend-item title");
         Locator.CssLocator legendItemPopup = Locator.css(".headerlegendpopup svg g.legend-item");
         Locator.CssLocator combinedTreeLegendItem = Locator.css(".qc-combined-tree-legend > div");
-        Locator.CssLocator combinedTreeLegendPrecursor = Locator.css(".qc-tree-precursor > div");
         Locator.CssLocator paginationPrevBtn = Locator.css(".qc-paging-prev");
         Locator.CssLocator paginationNextBtn = Locator.css(".qc-paging-next");
         Locator.CssLocator svgBackgrounds = Locator.css("svg g.brush rect.background");

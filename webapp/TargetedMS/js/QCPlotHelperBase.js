@@ -728,7 +728,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         if (this.hasPeptideGroupTree && this.hasPeptideGroupTree()) {
             plotLegendData = this.getCombinedPlotLegendData(metricProps, groupColors, yAxisCount, plotType, isCUSUMMean)
                     .filter(function(d) {
-                        return (!d.name && !d.separator) || (d.separator && d.text === 'Annotations');
+                        return (!d.name && !d.separator) || (d.separator && (d.text === 'Annotations' || d.text === 'CUSUM Group'));
                     });
             treeColorMap = this.getCombinedPlotColorMap(metricProps, groupColors, plotType, isCUSUMMean);
         } else {
