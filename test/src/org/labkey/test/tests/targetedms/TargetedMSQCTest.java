@@ -918,9 +918,13 @@ public class TargetedMSQCTest extends TargetedMSTest
         log("Enabling Moving range along with Levey-Jennings");
         qcPlotsWebPart.checkPlotType(MovingRange);
 
+        // ATEEQLK ++, 409.7163 has sufficient data variation to produce
+        // non-trivial y-axis values across all three scale options being tested
+        int precursorPlotIndex = Arrays.asList(PRECURSOR_TITLES).indexOf("ATEEQLK ++, 409.7163");
+
         log("Verifying standard deviations plots");
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.STANDARD_DEVIATIONS);
-        String svgPlotText = qcPlotsWebPart.getSVGPlotText("precursorPlot5");
+        String svgPlotText = qcPlotsWebPart.getSVGPlotText("precursorPlot" + precursorPlotIndex);
         assertFalse("Plot with standard deviations option is blank", svgPlotText.isEmpty());
         //Expected y axis values are -3 -2 -1 0 1 2 3 4
         log("SVG text " + svgPlotText);
@@ -928,7 +932,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         log("Verifying percent of mean plots");
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.PERCENT_OF_MEAN);
-        svgPlotText = qcPlotsWebPart.getSVGPlotText("precursorPlot5");
+        svgPlotText = qcPlotsWebPart.getSVGPlotText("precursorPlot" + precursorPlotIndex);
         assertFalse("Plot with percent of mean option is blank", svgPlotText.isEmpty());
         //Expected y axis values are 90 95 100 105 110 115
         log("SVG text " + svgPlotText);
@@ -936,7 +940,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         log("Verifying delta from mean plots");
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.DELTA_FROM_MEAN);
-        svgPlotText = qcPlotsWebPart.getSVGPlotText("precursorPlot5");
+        svgPlotText = qcPlotsWebPart.getSVGPlotText("precursorPlot" + precursorPlotIndex);
         assertFalse("Plot with delta from mean option is blank", svgPlotText.isEmpty());
         //Expected y axis values are -3 -2.5 -2 -1.5 -1 -0.5 0 0.5 1 1.5 2 2.5
         log("SVG text " + svgPlotText);

@@ -1827,7 +1827,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     hasPeptideGroupTree: function() {
-        return !!this.peptideGroups && this.peptideGroups.length > 1;
+        return !!this.peptideGroups && this.peptideGroups.length > 0;
     },
 
     renderCombinedTreeLegend: function(firstPlotId, legendMargin) {
@@ -1882,7 +1882,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             'overflow-y: auto',
             'font-size: 11px',
             'font-family: Roboto, arial, helvetica, sans-serif',
-            // 'padding: 1px 4px 0 4px',
             'box-sizing: border-box',
             'background-color: white'
         ].join('; ');
