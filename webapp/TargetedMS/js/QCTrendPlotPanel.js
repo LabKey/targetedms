@@ -1844,7 +1844,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         // Position the tree below the bottom of the last annotation legend item.
         let legendTop = 65 + this.getMaxStackedAnnotations() * 12; // fallback
         let plotRect = plotEl.getBoundingClientRect();
-        let plotHeight = plotEl.getBoundingClientRect().height;
+        let plotHeight = plotRect.height;
         let lastLegendBottom = null;
         let annotLegendCount = Array.isArray(this.legendData) ? this.legendData.length : 0;
         d3.selectAll('#' + firstPlotId + ' .legend .legend-item').each(function(d, i) {
