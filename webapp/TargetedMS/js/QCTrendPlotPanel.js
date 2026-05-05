@@ -2019,12 +2019,15 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         let me = this;
         let hidden = this.hiddenPrecursorSeries || {};
 
+        let precursorLeaveTimer = null;
+
         treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(el) {
             el.addEventListener('click', function() {
                 me.toggleCombinedSeriesVisibility(el.getAttribute('data-fragment'));
             });
 
             el.addEventListener('mouseenter', function() {
+                clearTimeout(precursorLeaveTimer);
                 let fragment = el.getAttribute('data-fragment');
                 let hidden = me.hiddenPrecursorSeries || {};
                 if (hidden[fragment]) {
@@ -2044,8 +2047,12 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             });
 
             el.addEventListener('mouseleave', function() {
-                me.applySeriesVisibility(); // re-applies display:none on hidden series
-                me.plotPointMouseOut();     // resets plot opacity and tree label opacity
+                // Using this timer solves a flickering problem on OSX when the cursor is at the junction between two
+                // precursors in the list
+                precursorLeaveTimer = setTimeout(function() {
+                    me.applySeriesVisibility(); // re-applies display:none on hidden series
+                    me.plotPointMouseOut();     // resets plot opacity and tree label opacity
+                }, 30);
             });
         });
 
