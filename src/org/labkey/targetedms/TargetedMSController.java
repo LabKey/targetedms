@@ -874,6 +874,7 @@ public class TargetedMSController extends SpringActionController
         private Integer _trailingRuns;
         private Integer _calendarMonthsToShow;
         private String _heatmapDataSource;
+        private String _hiddenSeries;
 
         public Map<String, String> getAsMapOfStrings()
         {
@@ -906,6 +907,8 @@ public class TargetedMSController extends SpringActionController
                 valueMap.put("calendarMonthsToShow", Integer.toString(_calendarMonthsToShow));
             if (_heatmapDataSource != null)
                 valueMap.put("heatMapDataSource", _heatmapDataSource);
+            if (_hiddenSeries != null)
+                valueMap.put("hiddenSeries", _hiddenSeries);
             // note: start and end date handled separately since they can be null and we want to persist that
             return valueMap;
         }
@@ -1033,6 +1036,16 @@ public class TargetedMSController extends SpringActionController
         public void setHeatmapDataSource(String heatmapDataSource)
         {
             _heatmapDataSource = heatmapDataSource;
+        }
+
+        public String getHiddenSeries()
+        {
+            return _hiddenSeries;
+        }
+
+        public void setHiddenSeries(String hiddenSeries)
+        {
+            _hiddenSeries = hiddenSeries;
         }
     }
 

@@ -100,8 +100,8 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
         String expRange = "Skyline File: " + SProCoP_FILE + ", " +
                 "Start: 2013-08-09 11:39:00, " +
                 "End: 2013-08-27 14:45:49, " +
-                "Mean: 14.669, Std Dev: 0.501, " +
-                "%CV: 3.415";
+                "Mean: 28.764, Std Dev: 0.666, " +
+                "%CV: 2.315";
 
         goToProjectHome(QC_FOLDER_1);
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
@@ -114,16 +114,16 @@ public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest
                         "Start: 2013-08-03 00:00:00, " +
                         "End: 2013-08-09 23:59:00, " +
                         "# Runs: 5, " +
-                        "Mean: 15.427, " +
-                        "Std Dev: 0.973, " +
-                        "%CV: 6.307",
+                        "Mean: 32.798, " +
+                        "Std Dev: 7.613, " +
+                        "%CV: 23.212",
                 "Guide Set ID: " + getGuideSetRowId("Second") + ", " +
                         "Start: 2013-08-19 00:00:00, " +
                         "End: 2013-08-21 23:59:00, " +
                         "# Runs: 17, " +
-                        "Mean: 14.687, " +
-                        "Std Dev: 0.588, " +
-                        "%CV: 4.004");
+                        "Mean: 28.854, " +
+                        "Std Dev: 0.675, " +
+                        "%CV: 2.339");
 
         goToProjectHome();
         DataRegionTable table = new DataRegionTable("TargetedMSRuns", getDriver());

@@ -93,9 +93,9 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
                 Metric:
                 Retention Time
                 Peptide:
-                ATEEQLK ++, 409.7163
+                VYVEELKPTPEGDLEILLQK ++, 1,157.1330
                 Value:
-                15.652
+                35.156
                 Replicate:
                 3 runs average
                 Acquired:
@@ -117,9 +117,9 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
                 Metric:
                 Retention Time
                 Peptide:
-                ATEEQLK ++, 409.7163
+                VYVEELKPTPEGDLEILLQK ++, 1,157.1330
                 Value:
-                15.684
+                35.102
                 Replicate:
                 3 runs average
                 Acquired:
@@ -160,9 +160,9 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
                 Metric:
                 Retention Time
                 Peptide:
-                ATEEQLK ++, 409.7163
+                VYVEELKPTPEGDLEILLQK ++, 1,157.1330
                 Value:
-                6.831
+                22.645
                 Replicate:
                 3 runs average
                 Acquired:
@@ -183,9 +183,9 @@ public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest
                 Metric:
                 Retention Time
                 Peptide:
-                ATEEQLK ++, 409.7163
+                VYVEELKPTPEGDLEILLQK ++, 1,157.1330
                 Value:
-                3.704
+                2.225
                 Replicate:
                 3 runs average
                 Acquired:

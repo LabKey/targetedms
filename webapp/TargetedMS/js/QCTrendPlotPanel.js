@@ -77,6 +77,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     enableBrushing: false,
     havePlotOptionsChanged: false,
     selectedAnnotations: {},
+    hiddenPrecursorSeries: null,
     runs: null,
     trailingRuns: null,
     minWidth: 1250, // Keep in sync with the width defined in qcTrendPlot.jsp
@@ -146,6 +147,17 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                             selected.push(val);
                         }
                         initValues[key] = annotations;
+                    }
+                    else if (key === 'hiddenSeries' && value) {
+                        try {
+                            var hiddenArr = JSON.parse(value);
+                            var hiddenMap = {};
+                            if (Array.isArray(hiddenArr)) {
+                                hiddenArr.forEach(function(f) { hiddenMap[f] = true; });
+                            }
+                            initValues['hiddenPrecursorSeries'] = hiddenMap;
+                        }
+                        catch (e) { /* ignore malformed stored value */ }
                     }
                     else {
                         initValues[key] = value;
@@ -1612,27 +1624,509 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     plotPointMouseOut : function(event, row, layerSel, valueName, plotConfig) {
+        let hidden = this.hiddenPrecursorSeries || {};
         d3.selectAll('.point path').attr('fill-opacity', 1).attr('stroke-opacity', 1);
         d3.selectAll('path.line').attr('fill-opacity', 1).attr('stroke-opacity', 1);
-        d3.selectAll('.legend .legend-item').attr('fill-opacity', 1).attr('stroke-opacity', 1);
+        d3.selectAll('.legend .legend-item').each(function(d) {
+            if (!d || !d.name || d.separator) return;
+            let isHidden = !!(hidden[d.hoverText || d.name.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]]);
+            let item = d3.select(this);
+            item.select('path').attr('fill', isHidden ? 'transparent' : (d.color || null));
+            item.select('text').attr('opacity', isHidden ? 0.3 : 1);
+            item.select('.legend-check').remove();
+            if (!isHidden) {
+                let pathEl = item.select('path').node();
+                if (pathEl) {
+                    item.append('polyline')
+                            .attr('class', 'legend-check')
+                            .attr('points', '-3.5,0 -0.5,1.5 3.5,-1.5')
+                            .attr('fill', 'none')
+                            .attr('stroke', 'white')
+                            .attr('stroke-width', '1.5')
+                            .attr('stroke-linecap', 'round')
+                            .attr('stroke-linejoin', 'round')
+                            .attr('transform', pathEl.getAttribute('transform'))
+                            .attr('pointer-events', 'none');
+                }
+            }
+        });
+
+        let treeDiv = document.getElementById('qc-combined-tree-legend');
+        if (treeDiv) {
+            treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(item) {
+                item.style.opacity = hidden[item.getAttribute('data-fragment')] ? '0.3' : '1';
+            });
+            treeDiv.querySelectorAll('.qc-tree-group label').forEach(function(label) {
+                label.style.opacity = '1';
+            });
+        }
     },
 
     highlightFragmentSeries : function(fragment) {
+        let hidden = this.hiddenPrecursorSeries || {};
         var points = d3.selectAll('.point path');
         var pointOpacityAcc = function(d) { return d.fragment === undefined || d.fragment === null || d.fragment === fragment ? 1 : 0.1 };
         points.attr('fill-opacity', pointOpacityAcc).attr('stroke-opacity', pointOpacityAcc);
 
         var hasYRightMetric = this.metric2;
         var lines = d3.selectAll('path.line');
-        var lineOpacityAcc = function(d) { return d.group === undefined || d.group === null || d.group.indexOf(fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1 };
+        var lineOpacityAcc = function(d) { return d.group === undefined || d.group === null || d.group.indexOf(fragment + (hasYRightMetric ? LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP : '')) === 0 ? 1 : 0.1 };
         lines.attr('fill-opacity', lineOpacityAcc).attr('stroke-opacity', lineOpacityAcc);
 
-        var legendItems = d3.selectAll('.legend .legend-item');
-        var legendOpacityAcc = function(d) {
-            if (!d.name) return 1;
-            return d.name.indexOf(fragment + (hasYRightMetric ? '|' : '')) === 0 ? 1 : 0.1
+        let legendItems = d3.selectAll('.legend .legend-item');
+        legendItems.each(function(d) {
+            if (!d.name) return;
+            let frag = d.hoverText || d.name.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0];
+            let isHidden = !!hidden[frag];
+            let isActive = d.name.indexOf(fragment + (hasYRightMetric ? LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP : '')) === 0;
+            let item = d3.select(this);
+            item.select('path').attr('fill', isHidden ? 'transparent' : (d.color || null));
+            item.select('text').attr('opacity', isHidden ? 0.1 : (isActive ? 1 : 0.1));
+        });
+
+        let baseFragment = fragment.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0];
+        let activeGroupIdx = this.getGroupIdxForFragment(baseFragment);
+        let treeDiv = document.getElementById('qc-combined-tree-legend');
+        if (treeDiv) {
+            treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(item) {
+                let itemFragment = item.getAttribute('data-fragment');
+                item.style.opacity = itemFragment === baseFragment ? '1' : (hidden[itemFragment] ? '0.03' : '0.1');
+            });
+            this.applyTreeGroupLabelHighlight(treeDiv, activeGroupIdx);
+        }
+    },
+
+    getGroupIdxForFragment: function(fragment) {
+        if (!this.peptideGroups) return -1;
+        for (let g = 0; g < this.peptideGroups.length; g++) {
+            if (this.peptideGroups[g].fragments.indexOf(fragment) !== -1) return g;
+        }
+        return -1;
+    },
+
+    applyTreeGroupLabelHighlight: function(treeDiv, activeGroupIdx) {
+        treeDiv.querySelectorAll('.qc-tree-group').forEach(function(groupEl) {
+            let checkbox = groupEl.querySelector('.qc-tree-group-check');
+            let label = groupEl.querySelector('label');
+            if (checkbox && label) {
+                label.style.opacity = parseInt(checkbox.getAttribute('data-group-idx')) === activeGroupIdx ? '1' : '0.1';
+            }
+        });
+    },
+
+    highlightGroupSeries: function(fragments, groupIdx, treeDiv) {
+        let hidden = this.hiddenPrecursorSeries || {};
+        let hasYRightMetric = this.metric2;
+        let fragmentSet = {};
+        fragments.forEach(function(f) { fragmentSet[f] = true; });
+
+        d3.selectAll('.point path').attr('fill-opacity', function(d) {
+            return d.fragment === undefined || d.fragment === null || fragmentSet[d.fragment] ? 1 : 0.1;
+        }).attr('stroke-opacity', function(d) {
+            return d.fragment === undefined || d.fragment === null || fragmentSet[d.fragment] ? 1 : 0.1;
+        });
+
+        d3.selectAll('path.line').attr('fill-opacity', function(d) {
+            if (d.group === undefined || d.group === null) return 1;
+            return fragmentSet[d.group.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]] ? 1 : 0.1;
+        }).attr('stroke-opacity', function(d) {
+            if (d.group === undefined || d.group === null) return 1;
+            return fragmentSet[d.group.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]] ? 1 : 0.1;
+        });
+
+        if (treeDiv) {
+            treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(item) {
+                let itemFragment = item.getAttribute('data-fragment');
+                let inGroup = fragmentSet[itemFragment];
+                item.style.opacity = inGroup ? (hidden[itemFragment] ? '0.3' : '1') : (hidden[itemFragment] ? '0.03' : '0.1');
+            });
+            this.applyTreeGroupLabelHighlight(treeDiv, groupIdx);
+        }
+    },
+
+    // Let users toggle a precursor's series by clicking on its color swatch.
+    toggleCombinedSeriesVisibility: function(fragment) {
+        if (!this.hiddenPrecursorSeries) {
+            this.hiddenPrecursorSeries = {};
+        }
+        this.hiddenPrecursorSeries[fragment] = !this.hiddenPrecursorSeries[fragment];
+        this.applySeriesVisibility();
+        this.havePlotOptionsChanged = true;
+        this.persistSelectedFormOptions();
+    },
+
+    applySeriesVisibility: function() {
+        let hidden = this.hiddenPrecursorSeries || {};
+
+        d3.selectAll('.point path').attr('display', function(d) {
+            return (d && d.fragment && hidden[d.fragment]) ? 'none' : null;
+        });
+
+        d3.selectAll('path.line').attr('display', function(d) {
+            if (!d || !d.group) return null;
+            return hidden[d.group.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]] ? 'none' : null;
+        });
+
+        d3.selectAll('.legend .legend-item').each(function(d) {
+            if (!d || !d.name || d.separator) return;
+            let isHidden = !!hidden[d.hoverText || d.name.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]];
+            let item = d3.select(this);
+            item.select('path').attr('fill', isHidden ? 'transparent' : (d.color || null));
+            item.select('text').attr('opacity', isHidden ? 0.3 : 1);
+            item.select('.legend-check').remove();
+            if (!isHidden) {
+                let pathEl = item.select('path').node();
+                if (pathEl) {
+                    item.append('polyline')
+                            .attr('class', 'legend-check')
+                            .attr('points', '-3.5,0 -0.5,1.5 3.5,-1.5')
+                            .attr('fill', 'none')
+                            .attr('stroke', 'white')
+                            .attr('stroke-width', '1.5')
+                            .attr('stroke-linecap', 'round')
+                            .attr('stroke-linejoin', 'round')
+                            .attr('transform', pathEl.getAttribute('transform'))
+                            .attr('pointer-events', 'none');
+                }
+            }
+        });
+
+        this.updateTreeLegendState();
+    },
+
+    attachCombinedLegendClickHandlers: function() {
+        let me = this;
+        d3.selectAll('.legend .legend-item').each(function(d) {
+            if (!d || !d.name || d.separator) return;
+            d3.select(this)
+                .style('cursor', 'pointer')
+                .on('click.toggleSeries', function(d) {
+                    d3.event.stopPropagation();
+                    me.toggleCombinedSeriesVisibility(d.hoverText || d.name.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]);
+                });
+        });
+        this.applySeriesVisibility();
+    },
+
+    // Build an ordered list of protein/molecule-list groups from fragmentPlotData for the combined plot.
+    buildPeptideGroups: function() {
+        let groups = {};
+        for (var i = 0; i < this.precursors.length; i++) {
+            let fragment = this.precursors[i];
+            let info = this.fragmentPlotData[fragment];
+            if (!info || info.peptideGroupId == null) continue;
+            let gid = info.peptideGroupId;
+            if (!groups[gid]) {
+                groups[gid] = { id: gid, label: info.peptideGroupLabel || '', fragments: [] };
+            }
+            groups[gid].fragments.push(fragment);
+        }
+        let groupArray = Object.values(groups);
+        groupArray.sort(function(a, b) { return a.id - b.id; });
+        return groupArray;
+    },
+
+    hasPeptideGroupTree: function() {
+        return !!this.peptideGroups && this.peptideGroups.length > 0;
+    },
+
+    renderCombinedTreeLegend: function(firstPlotId, legendMargin) {
+        let existing = document.getElementById('qc-combined-tree-legend');
+        if (existing) existing.parentNode.removeChild(existing);
+
+        if (!this.hasPeptideGroupTree()) return;
+
+        let plotEl = document.getElementById(firstPlotId);
+        if (!plotEl) return;
+
+        plotEl.style.position = 'relative';
+
+        // Position the tree below the bottom of the last annotation legend item.
+        let legendTop = 65 + this.getMaxStackedAnnotations() * 12; // fallback
+        let plotRect = plotEl.getBoundingClientRect();
+        let plotHeight = plotRect.height;
+        let lastLegendBottom = null;
+        let annotLegendCount = Array.isArray(this.legendData) ? this.legendData.length : 0;
+        d3.selectAll('#' + firstPlotId + ' .legend .legend-item').each(function(d, i) {
+            if (i >= annotLegendCount) return;
+            let bottom = this.getBoundingClientRect().bottom - plotRect.top;
+            if (lastLegendBottom === null || bottom > lastLegendBottom) {
+                lastLegendBottom = bottom;
+            }
+        });
+        if (lastLegendBottom !== null && lastLegendBottom > 0 && lastLegendBottom < plotHeight) {
+            legendTop = lastLegendBottom + 8;
+        }
+
+        let maxHeight = Math.max(50, plotEl.getBoundingClientRect().height - legendTop - 10);
+
+        if (!document.getElementById('qc-tree-legend-styles')) {
+            let style = document.createElement('style');
+            style.id = 'qc-tree-legend-styles';
+            style.textContent =
+                '#qc-combined-tree-legend .qc-tree-precursor:hover,' +
+                '#qc-combined-tree-legend .qc-tree-group label:hover' +
+                '{ background: none !important; }';
+            document.head.appendChild(style);
+        }
+
+        let treeDiv = document.createElement('div');
+        treeDiv.id = 'qc-combined-tree-legend';
+        treeDiv.className = 'qc-combined-tree-legend';
+        treeDiv.style.cssText = [
+            'position: absolute',
+            'right: 0',
+            'top: ' + legendTop + 'px',
+            'width: ' + legendMargin + 'px',
+            'max-height: ' + Math.max(50, maxHeight) + 'px',
+            'overflow-y: auto',
+            'font-size: 11px',
+            'font-family: Roboto, arial, helvetica, sans-serif',
+            'box-sizing: border-box',
+            'background-color: white'
+        ].join('; ');
+
+        treeDiv.innerHTML = this.buildTreeLegendHTML();
+        plotEl.appendChild(treeDiv);
+        this.attachTreeLegendHandlers(treeDiv);
+    },
+
+    makeColorCheckboxSVG: function(color, checked) {
+        if (checked) {
+            return '<svg width="12" height="12" style="flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg">' +
+                   '<rect width="12" height="12" rx="2" fill="' + color + '"/>' +
+                   '<polyline points="2,6 5,9 10,3" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+                   '</svg>';
+        }
+        return '<svg width="12" height="12" style="flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg">' +
+               '<rect x="1" y="1" width="10" height="10" rx="2" fill="transparent" stroke="' + color + '" stroke-width="2"/>' +
+               '</svg>';
+    },
+
+    buildTreeLegendHTML: function() {
+        let hidden = this.hiddenPrecursorSeries || {};
+        let html = '';
+
+        let peptideGroups = [];
+        let ionGroups = [];
+        for (let g = 0; g < this.peptideGroups.length; g++) {
+            let group = this.peptideGroups[g];
+            let firstInfo = this.fragmentPlotData[group.fragments[0]];
+            if (firstInfo && firstInfo.dataType === 'Peptide') {
+                peptideGroups.push({group: group, idx: g});
+            } else {
+                ionGroups.push({group: group, idx: g});
+            }
+        }
+
+        let sectionHeaderStyle = 'font-weight: bold; font-size: 12px; padding: 2px 0 3px 16px; border-bottom: 1px solid #ccc; margin-bottom: 4px;';
+        let metricSubHeaderStyle = 'font-weight: bold; font-size: 12px; padding: 2px 0 3px 16px; margin-bottom: 4px; margin-top: 6px;';
+
+        // Build a fragment:index map for series color lookup in multi-series mode
+        let precursorIndexMap = {};
+        for (let i = 0; i < this.precursors.length; i++) {
+            precursorIndexMap[this.precursors[i]] = i;
+        }
+        let groupColors = this.getColorRange();
+
+        let renderGroup = function(group, g, colorFn) {
+            let allHidden = group.fragments.every(function(f) { return !!hidden[f]; });
+            let out = '<div class="qc-tree-group" style="margin-bottom: 6px;">';
+            out += '<label style="cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden;">';
+            out += '<input type="checkbox" class="qc-tree-group-check" data-group-idx="' + g + '"' + (allHidden ? '' : ' checked') + ' style="flex-shrink: 0; accent-color: #767676; width: 12px; height: 12px; margin: 0;">';
+            out += '<span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;">' + Ext4.util.Format.htmlEncode(group.label || 'Unknown') + '</span>';
+            out += '</label>';
+            out += '<div style="padding-left: 16px;">';
+            for (let p = 0; p < group.fragments.length; p++) {
+                let fragment = group.fragments[p];
+                let info = this.fragmentPlotData[fragment];
+                if (!info) continue;
+                let text = this.legendHelper.getLegendItemText(info);
+                let color = colorFn ? colorFn(fragment) : (info.color || '#000000');
+                let opacity = hidden[fragment] ? '0.3' : '1';
+                out += '<div class="qc-tree-precursor" data-fragment="' + Ext4.util.Format.htmlEncode(fragment) + '" data-color="' + Ext4.util.Format.htmlEncode(color) + '" ';
+                out += 'style="cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 2px 0; opacity: ' + opacity + '; min-width: 0; overflow: hidden;">';
+                out += this.makeColorCheckboxSVG(color, !hidden[fragment]);
+                out += '<span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;" title="' + Ext4.util.Format.htmlEncode(text) + '">' + Ext4.util.Format.htmlEncode(text) + '</span>';
+                out += '</div>';
+            }
+            out += '</div></div>';
+            return out;
+        }.bind(this);
+
+        let renderSection = function(colorFn) {
+            let sectionHtml = '';
+            if (peptideGroups.length > 0) {
+                sectionHtml += '<div style="' + sectionHeaderStyle + '">Peptides</div>';
+                for (let i = 0; i < peptideGroups.length; i++) {
+                    sectionHtml += renderGroup(peptideGroups[i].group, peptideGroups[i].idx, colorFn);
+                }
+            }
+            if (ionGroups.length > 0) {
+                sectionHtml += '<div style="' + sectionHeaderStyle + '">Ions</div>';
+                for (let i = 0; i < ionGroups.length; i++) {
+                    sectionHtml += renderGroup(ionGroups[i].group, ionGroups[i].idx, colorFn);
+                }
+            }
+            return sectionHtml;
         };
-        legendItems.attr('fill-opacity', legendOpacityAcc).attr('stroke-opacity', legendOpacityAcc);
+
+        if (this.isMultiSeries()) {
+            let n = this.precursors.length;
+            let series1ColorFn = function(fragment) {
+                let idx = precursorIndexMap[fragment];
+                return idx !== undefined ? groupColors[idx % groupColors.length] : '#000000';
+            };
+            let series2ColorFn = function(fragment) {
+                let idx = precursorIndexMap[fragment];
+                return idx !== undefined ? groupColors[(n + idx) % groupColors.length] : '#000000';
+            };
+
+            let metric1Props = this.getMetricPropsById(this.metric);
+            let metric2Props = this.getMetricPropsById(this.metric2);
+            let metric1Name = metric1Props ? metric1Props.name : 'Series 1';
+            let metric2Name = metric2Props ? metric2Props.name : 'Series 2';
+
+            // Structure matches flat SVG legend: type header → metric1 sub-header → list → metric2 sub-header → list
+            let renderTypeSection = function(groups, typeLabel) {
+                let out = '<div style="' + sectionHeaderStyle + '">' + Ext4.util.Format.htmlEncode(typeLabel) + '</div>';
+                out += '<div style="' + metricSubHeaderStyle + '">' + Ext4.util.Format.htmlEncode(metric1Name) + '</div>';
+                for (let i = 0; i < groups.length; i++) {
+                    out += renderGroup(groups[i].group, groups[i].idx, series1ColorFn);
+                }
+                out += '<div style="' + metricSubHeaderStyle + '">' + Ext4.util.Format.htmlEncode(metric2Name) + '</div>';
+                for (let i = 0; i < groups.length; i++) {
+                    out += renderGroup(groups[i].group, groups[i].idx, series2ColorFn);
+                }
+                return out;
+            };
+
+            if (peptideGroups.length > 0) {
+                html += renderTypeSection(peptideGroups, 'Peptides');
+            }
+            if (ionGroups.length > 0) {
+                html += renderTypeSection(ionGroups, 'Ions');
+            }
+        }
+        else {
+            html += renderSection(null);
+        }
+
+        return html;
+    },
+
+    attachTreeLegendHandlers: function(treeDiv) {
+        let me = this;
+        let hidden = this.hiddenPrecursorSeries || {};
+
+        let precursorLeaveTimer = null;
+
+        treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(el) {
+            el.addEventListener('click', function() {
+                me.toggleCombinedSeriesVisibility(el.getAttribute('data-fragment'));
+            });
+
+            el.addEventListener('mouseenter', function() {
+                clearTimeout(precursorLeaveTimer);
+                let fragment = el.getAttribute('data-fragment');
+                let hidden = me.hiddenPrecursorSeries || {};
+                if (hidden[fragment]) {
+                    // Temporarily reveal this hidden series so hover shows it in the plot
+                    d3.selectAll('.point path').each(function(d) {
+                        if (d && d.fragment === fragment) d3.select(this).attr('display', null);
+                    });
+                    d3.selectAll('path.line').each(function(d) {
+                        if (d && d.group && d.group.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0] === fragment) d3.select(this).attr('display', null);
+                    });
+                }
+                me.highlightFragmentSeries(fragment);
+                treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(item) {
+                    let itemFragment = item.getAttribute('data-fragment');
+                    item.style.opacity = itemFragment === fragment ? '1' : (hidden[itemFragment] ? '0.03' : '0.1');
+                });
+            });
+
+            el.addEventListener('mouseleave', function() {
+                // Using this timer solves a flickering problem on OSX when the cursor is at the junction between two
+                // precursors in the list
+                precursorLeaveTimer = setTimeout(function() {
+                    me.applySeriesVisibility(); // re-applies display:none on hidden series
+                    me.plotPointMouseOut();     // resets plot opacity and tree label opacity
+                }, 30);
+            });
+        });
+
+        treeDiv.querySelectorAll('.qc-tree-group-check').forEach(function(checkbox) {
+            let groupIdx = parseInt(checkbox.getAttribute('data-group-idx'));
+            let group = me.peptideGroups[groupIdx];
+            let someHidden = group.fragments.some(function(f) { return !!hidden[f]; });
+            let allHidden = group.fragments.every(function(f) { return !!hidden[f]; });
+            checkbox.indeterminate = someHidden && !allHidden;
+
+            let label = checkbox.closest('label');
+            if (label) {
+                label.addEventListener('mouseenter', function() {
+                    let hidden = me.hiddenPrecursorSeries || {};
+                    let hiddenFragments = group.fragments.filter(function(f) { return !!hidden[f]; });
+                    if (hiddenFragments.length > 0) {
+                        d3.selectAll('.point path').each(function(d) {
+                            if (d && hiddenFragments.indexOf(d.fragment) !== -1) d3.select(this).attr('display', null);
+                        });
+                        d3.selectAll('path.line').each(function(d) {
+                            if (d && d.group && hiddenFragments.indexOf(d.group.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]) !== -1) d3.select(this).attr('display', null);
+                        });
+                    }
+                    me.highlightGroupSeries(group.fragments, groupIdx, treeDiv);
+                });
+                label.addEventListener('mouseleave', function() {
+                    me.applySeriesVisibility();
+                    me.plotPointMouseOut();
+                });
+            }
+
+            checkbox.addEventListener('change', function() {
+                if (!me.hiddenPrecursorSeries) me.hiddenPrecursorSeries = {};
+                let shouldHide = !checkbox.checked;
+                group.fragments.forEach(function(f) {
+                    if (shouldHide) {
+                        me.hiddenPrecursorSeries[f] = true;
+                    } else {
+                        delete me.hiddenPrecursorSeries[f];
+                    }
+                });
+                me.applySeriesVisibility();
+                me.havePlotOptionsChanged = true;
+                me.persistSelectedFormOptions();
+            });
+        });
+    },
+
+    updateTreeLegendState: function() {
+        let treeDiv = document.getElementById('qc-combined-tree-legend');
+        if (!treeDiv || !this.peptideGroups) return;
+
+        let hidden = this.hiddenPrecursorSeries || {};
+        let me = this;
+
+        treeDiv.querySelectorAll('.qc-tree-precursor').forEach(function(el) {
+            let fragment = el.getAttribute('data-fragment');
+            let color = el.getAttribute('data-color');
+            let isHidden = !!hidden[fragment];
+            el.style.opacity = isHidden ? '0.5' : '1';
+            let svg = el.querySelector('svg');
+            if (svg && color) {
+                svg.outerHTML = me.makeColorCheckboxSVG(color, !isHidden);
+            }
+        });
+
+        treeDiv.querySelectorAll('.qc-tree-group-check').forEach(function(checkbox) {
+            let groupIdx = parseInt(checkbox.getAttribute('data-group-idx'));
+            let group = me.peptideGroups[groupIdx];
+            let allHidden = group.fragments.every(function(f) { return !!hidden[f]; });
+            let someHidden = group.fragments.some(function(f) { return !!hidden[f]; });
+            checkbox.checked = !allHidden;
+            checkbox.indeterminate = someHidden && !allHidden;
+        });
     },
 
     plotBrushStartEvent : function(plot) {
@@ -2651,6 +3145,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }
         });
 
+        var hiddenSeriesArr = Object.keys(this.hiddenPrecursorSeries || {}).filter(function(k) {
+            return !!this.hiddenPrecursorSeries[k];
+        }, this);
+
         var props = {
             metric: this.metric,
             metric2: this.metric2,
@@ -2662,7 +3160,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             dateRangeOffset: this.dateRangeOffset,
             selectedAnnotations: annotationsProp,
             showExcludedPrecursors: this.showExcludedPrecursors,
-            trailingRuns: this.trailingRuns
+            trailingRuns: this.trailingRuns,
+            hiddenSeries: JSON.stringify(hiddenSeriesArr)
         };
 
         // set start and end date to null unless we are

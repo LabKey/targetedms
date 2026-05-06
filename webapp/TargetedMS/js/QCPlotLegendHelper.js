@@ -204,8 +204,8 @@ if (!LABKEY.targetedms.QCPlotLegendHelper) {
 
         getLegendItemText: function(precursorInfo)
         {
-            var prefix = this.getUniquePrefix(precursorInfo.fragment, (precursorInfo.dataType === 'Peptide'));
-            return prefix + ", " + precursorInfo.mz;
+            var prefix = this.getUniquePrefix(precursorInfo?.fragment, (precursorInfo?.dataType === 'Peptide'));
+            return prefix + ", " + precursorInfo?.mz;
         }
     };
 }
