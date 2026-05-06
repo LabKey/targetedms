@@ -69,6 +69,9 @@ import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.Mo
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.TrailingCV;
 import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
 
+/**
+ * Broad QC folder test covering plots, metric types, annotations, guide sets, and permissions together in one suite.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 35)
 public class TargetedMSQCTest extends TargetedMSTest

@@ -56,6 +56,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
 
+/**
+ * Tests the QC summary dashboard including guide sets, annotations, permissions, and trailing statistic calculations.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 12)
 public class TargetedMSQCSummaryTest extends TargetedMSTest

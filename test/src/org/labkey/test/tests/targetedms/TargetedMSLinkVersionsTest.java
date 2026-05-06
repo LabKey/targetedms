@@ -28,6 +28,9 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * Tests the version-linking feature for multiple QC documents within experiment folders.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 25)
 public class TargetedMSLinkVersionsTest extends TargetedMSTest

@@ -15,6 +15,9 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * Validates light/heavy ratio metrics specifically for small molecule data in QC dashboards.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 3)
 public class TargetedMSSmallMoleculeLightHeavyRatioTest extends TargetedMSTest

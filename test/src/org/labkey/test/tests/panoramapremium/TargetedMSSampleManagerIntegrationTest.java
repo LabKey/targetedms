@@ -20,6 +20,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Tests integration between TargetedMS and the Sample Manager module, including linked sample type data flowing into
+ * Skyline documents.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 3)
 public class TargetedMSSampleManagerIntegrationTest extends TargetedMSPremiumTest

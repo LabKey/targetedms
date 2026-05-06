@@ -17,6 +17,9 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * Tests the peptide/molecule summary heatmap visualization in QC dashboards.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSPeptideSummaryHeatmapTest extends TargetedMSTest

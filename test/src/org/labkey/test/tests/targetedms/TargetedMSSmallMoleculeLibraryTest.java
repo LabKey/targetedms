@@ -32,6 +32,10 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Tests small molecule library folders, document revisions, and conflict resolution (parallel to the peptide library
+ * test but for small molecules).
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSSmallMoleculeLibraryTest extends TargetedMSTest

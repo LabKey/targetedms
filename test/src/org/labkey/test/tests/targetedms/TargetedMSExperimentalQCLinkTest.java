@@ -17,6 +17,9 @@ import org.labkey.test.util.DataRegionTable;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Tests linking of experiment folders to QC folders, then validates guide sets and metrics flow across the link.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 4)
 public class TargetedMSExperimentalQCLinkTest extends TargetedMSTest

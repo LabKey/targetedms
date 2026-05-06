@@ -11,6 +11,9 @@ import org.labkey.test.TestTimeoutException;
 import org.labkey.test.util.APIContainerHelper;
 import org.labkey.test.util.DataRegionTable;
 
+/**
+ * Verifies that Skyline documents can be moved between different folder types (experiment and MAM).
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 4)
 public class TargetedMSMovingSKYDocAcrossFoldersTest extends TargetedMSTest

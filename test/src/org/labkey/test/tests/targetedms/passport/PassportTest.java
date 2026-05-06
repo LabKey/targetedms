@@ -24,6 +24,10 @@ import org.labkey.test.util.LogMethod;
 
 import java.util.List;
 
+/**
+ * Tests Panorama Passport integration end-to-end, covering user management, permission setup, and project
+ * configuration for both normal and admin users.
+ */
 @Category({})
 public class PassportTest extends PassportTestPart
 {

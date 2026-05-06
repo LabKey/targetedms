@@ -21,6 +21,9 @@ import org.labkey.test.BaseWebDriverTest;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * Tests iRT (indexed Retention Time) scale import in experiment folders, validating the standard peptide set.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSExperimentIrtTest extends TargetedMSIrtTest

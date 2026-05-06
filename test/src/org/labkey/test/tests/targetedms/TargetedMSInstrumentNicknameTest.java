@@ -35,6 +35,9 @@ import static org.junit.Assert.assertEquals;
 import static org.labkey.test.util.PermissionsHelper.EDITOR_ROLE;
 import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
 
+/**
+ * Tests creation, inheritance, and permission-gating of instrument nicknames across folder hierarchies.
+ */
 @Category({})
 public class TargetedMSInstrumentNicknameTest extends TargetedMSTest
 {

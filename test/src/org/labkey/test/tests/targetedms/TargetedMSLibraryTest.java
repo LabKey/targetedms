@@ -36,6 +36,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
 
+/**
+ * Tests library folder behavior across multiple document imports and revision tracking.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSLibraryTest extends TargetedMSTest

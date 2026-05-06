@@ -13,6 +13,10 @@ import org.labkey.test.util.PortalHelper;
 
 import java.util.Arrays;
 
+/**
+ * Tests the ability to hide/show specific peptides and molecules in QC folders across multiple folder structure
+ * configurations.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 6)
 public class TargetedMSHidePeptidesAndMolecules extends TargetedMSTest
