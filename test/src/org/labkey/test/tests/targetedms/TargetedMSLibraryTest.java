@@ -37,7 +37,7 @@ import static org.junit.Assert.assertTrue;
 import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
 
 /**
- * Tests library folder behavior across multiple document imports and revision tracking.
+ * Tests protein library folders, library revisions, and conflict resolution when uploaded documents contain the same targets as the existing library (parallel to the peptide and small molecule library tests).
  */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
