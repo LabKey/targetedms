@@ -29,7 +29,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests the version-linking feature for multiple QC documents within experiment folders.
+ * Tests the version-linking feature for multiple documents within experiment folders.
  */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 25)
