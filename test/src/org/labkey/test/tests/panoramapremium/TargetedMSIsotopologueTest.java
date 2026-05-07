@@ -13,6 +13,9 @@ import org.labkey.test.pages.targetedms.PanoramaDashboard;
 
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Validates isotopologue metric display and calculation in the Panorama Dashboard QC metrics panel.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 3)
 public class TargetedMSIsotopologueTest extends TargetedMSPremiumTest

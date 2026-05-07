@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Tests iRT metrics calculations and their visualization specifically within the QC dashboard context.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest

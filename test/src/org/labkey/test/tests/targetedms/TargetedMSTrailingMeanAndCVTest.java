@@ -13,6 +13,9 @@ import org.labkey.test.pages.targetedms.PanoramaDashboard;
 import org.labkey.test.util.PortalHelper;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
+/**
+ * Tests trailing mean and coefficient-of-variation metric calculations in the QC system.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSTrailingMeanAndCVTest extends TargetedMSTest

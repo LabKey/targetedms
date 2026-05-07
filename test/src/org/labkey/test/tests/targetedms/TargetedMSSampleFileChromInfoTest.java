@@ -27,6 +27,9 @@ import org.labkey.test.util.DataRegionTable;
 
 import java.util.Arrays;
 
+/**
+ * Tests sample file-scoped chromatograms (e.g., pressure traces) parsed from Skyline documents.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 6)
 public class TargetedMSSampleFileChromInfoTest extends TargetedMSTest

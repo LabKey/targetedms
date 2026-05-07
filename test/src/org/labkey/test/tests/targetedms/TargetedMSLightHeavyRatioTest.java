@@ -15,6 +15,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.labkey.test.Locator.tag;
 
+/**
+ * Validates light/heavy peptide ratio calculations and reproducibility report output.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 3)
 public class TargetedMSLightHeavyRatioTest extends TargetedMSTest
