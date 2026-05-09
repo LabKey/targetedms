@@ -461,7 +461,7 @@ public class PrecursorChromInfo extends AbstractChromInfo implements Comparable<
             }
             catch (IOException e)
             {
-                LOG.error("Unable to read " + bytes.length + " of transition chromatogram indices");
+                LOG.error("Unable to read {} of transition chromatogram indices", bytes.length);
             }
 
         }

@@ -169,7 +169,7 @@ public final class SkylineDocument {
       }
       public static final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptor() {
-        return org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.getDescriptor().getEnumTypes().get(0);
+        return org.labkey.targetedms.parser.proto.SkylineDocument.SkylineDocumentProto.getDescriptor().getEnumTypes().getFirst();
       }
 
       private static final UserSet[] VALUES = values();
@@ -18724,7 +18724,7 @@ public final class SkylineDocument {
       }
       public static final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptor() {
-        return org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.getDescriptor().getEnumTypes().get(0);
+        return org.labkey.targetedms.parser.proto.SkylineDocument.LibraryKeyProto.getDescriptor().getEnumTypes().getFirst();
       }
 
       private static final KeyType[] VALUES = values();
@@ -22554,7 +22554,7 @@ public final class SkylineDocument {
           com.google.protobuf.WrappersProto.getDescriptor(),
         });
     internal_static_SkylineDocumentProto_descriptor =
-      getDescriptor().getMessageTypes().get(0);
+      getDescriptor().getMessageTypes().getFirst();
     internal_static_SkylineDocumentProto_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SkylineDocumentProto_descriptor,
@@ -22578,7 +22578,7 @@ public final class SkylineDocument {
         internal_static_SkylineDocumentProto_TransitionPeak_descriptor,
         new java.lang.String[] { "ReplicateIndex", "FileIndexInReplicate", "MassError", "RetentionTime", "StartRetentionTime", "EndRetentionTime", "IonMobility", "IonMobilityWindow", "Area", "BackgroundArea", "Height", "Fwhm", "IsFwhmDegenerate", "Truncated", "Identified", "Rank", "RankByLevel", "PointsAcrossPeak", "UserSet", "OptimizationStep", "Annotations", "ForcedIntegration", "PeakShapeValues", "IonMobilityCollisionCrossSection", });
     internal_static_SkylineDocumentProto_TransitionPeak_PeakShapeValues_descriptor =
-      internal_static_SkylineDocumentProto_TransitionPeak_descriptor.getNestedTypes().get(0);
+      internal_static_SkylineDocumentProto_TransitionPeak_descriptor.getNestedTypes().getFirst();
     internal_static_SkylineDocumentProto_TransitionPeak_PeakShapeValues_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SkylineDocumentProto_TransitionPeak_PeakShapeValues_descriptor,

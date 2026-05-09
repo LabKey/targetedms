@@ -62,7 +62,7 @@ public abstract class AbstractChromInfo extends ChromInfo<PrecursorChromInfoAnno
         int length = key.third;
 
         long startTime = System.currentTimeMillis();
-        LOG.debug("Loading chromatogram from " + path + ", offset " + offset + ", length " + length);
+        LOG.debug("Loading chromatogram from {}, offset {}, length {}", path, offset, length);
         try (SeekableByteChannel channel = Files.newByteChannel(path, StandardOpenOption.READ, StandardOpenOption.SPARSE))
         {
             channel.position(offset);
@@ -70,13 +70,13 @@ public abstract class AbstractChromInfo extends ChromInfo<PrecursorChromInfoAnno
             channel.read(byteBuffer);
             byteBuffer.position(0);
             byte[] results = byteBuffer.array();
-            LOG.debug("Finished loading from " + path + ", offset " + offset + ", length " + length + " in " + (System.currentTimeMillis() - startTime) + "ms");
+            LOG.debug("Finished loading from {}, offset {}, length {} in {}ms", path, offset, length, System.currentTimeMillis() - startTime);
             return new CachedBytes(results);
         }
         catch (NoSuchFileException e)
         {
             // Avoid a separate call to Files.exists() as it adds ~1 second overhead
-            LOG.debug("Could not find SKYD file to get chromatogram at path " + path);
+            LOG.debug("Could not find SKYD file to get chromatogram at path {}", path);
             return null;
         }
         catch (RuntimeException e)
@@ -84,14 +84,14 @@ public abstract class AbstractChromInfo extends ChromInfo<PrecursorChromInfoAnno
             if (e.getMessage() != null && e.getMessage().contains("The specified key does not exist"))
             {
                 // Avoid a separate call to Files.exists() as it adds ~1 second overhead
-                LOG.debug("Could not find SKYD file to get chromatogram at path " + path + ": " + e.getMessage());
+                LOG.debug("Could not find SKYD file to get chromatogram at path {}: {}", path, e.getMessage());
                 return null;
             }
             throw e;
         }
         catch (IOException e)
         {
-            LOG.warn("Unable to fetch chromatogram from " + path, e);
+            LOG.warn("Unable to fetch chromatogram from {}", path, e);
             return null;
         }
     });
@@ -237,11 +237,11 @@ public abstract class AbstractChromInfo extends ChromInfo<PrecursorChromInfoAnno
                 if (skydPath == null)
                 {
                     status = Chromatogram.SourceStatus.skydMissing;
-                    LOG.debug("No path available for " + this + ", bucket may be unavailable for URL " + skydData.getDataFileUrl());
+                    LOG.debug("No path available for {}, bucket may be unavailable for URL {}", this, skydData.getDataFileUrl());
                 }
                 else
                 {
-                    LOG.debug("Attempting to fetch chromatogram bytes (possibly cached) from " + skydPath + " for " + this);
+                    LOG.debug("Attempting to fetch chromatogram bytes (possibly cached) from {} for {}", skydPath, this);
                     CachedBytes diskBytes = ON_DEMAND_CHROM_CACHE.get(new Tuple3<>(skydPath, _chromatogramOffset, _chromatogramLength));
                     if (diskBytes == null)
                     {
@@ -249,7 +249,7 @@ public abstract class AbstractChromInfo extends ChromInfo<PrecursorChromInfoAnno
                     }
                     else if (databaseBytes != null && !Arrays.equals(databaseBytes, diskBytes._bytes))
                     {
-                        LOG.error("Chromatogram bytes for " + this + " do not match between .skyd and DB. Using database copy. Lengths: " + diskBytes._bytes.length + " vs " + databaseBytes.length);
+                        LOG.error("Chromatogram bytes for {} do not match between .skyd and DB. Using database copy. Lengths: {} vs {}", this, diskBytes._bytes.length, databaseBytes.length);
                         status = Chromatogram.SourceStatus.mismatch;
                     }
                     else
@@ -266,7 +266,7 @@ public abstract class AbstractChromInfo extends ChromInfo<PrecursorChromInfoAnno
         }
         else
         {
-            LOG.debug("No length, offset, and/or SKYD DataId for " + this);
+            LOG.debug("No length, offset, and/or SKYD DataId for {}", this);
             status = Chromatogram.SourceStatus.dbOnly;
         }
 

@@ -207,7 +207,7 @@ public class MsDataSourceUtil
         List<MsDataSource> sourceTypes = MsDataSourceTypes.getSourceForName(sampleFile.getFileName());
         if(sourceTypes.size() == 1)
         {
-            return sourceTypes.get(0);
+            return sourceTypes.getFirst();
         }
         else if(sourceTypes.size() > 1)
         {
@@ -685,9 +685,9 @@ public class MsDataSourceUtil
             assertTrue(sourceType instanceof MsMultiDataSource);
             MsMultiDataSource multiSourceType = (MsMultiDataSource) sourceType;
             assertEquals("Expected one directory source", 1, multiSourceType.getDirSources().size());
-            assertEquals("Expected Waters source", MsDataSourceTypes.WATERS, multiSourceType.getDirSources().get(0));
+            assertEquals("Expected Waters source", MsDataSourceTypes.WATERS, multiSourceType.getDirSources().getFirst());
             assertEquals("Expected one file source", 1, multiSourceType.getFileSources().size());
-            assertEquals("Expected Thermo source", MsDataSourceTypes.THERMO, multiSourceType.getFileSources().get(0));
+            assertEquals("Expected Thermo source", MsDataSourceTypes.THERMO, multiSourceType.getFileSources().getFirst());
 
             // .d
             sampleFile.setFilePath("C:\\RawData\\file.d");

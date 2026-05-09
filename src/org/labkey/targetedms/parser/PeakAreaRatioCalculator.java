@@ -276,13 +276,7 @@ public class PeakAreaRatioCalculator<TransitionType extends GeneralTransition, P
         TransitionAreaRatioCalculator getTransitionAreaRatioCalculator(TransitionType transition, PrecursorType precursor)
         {
             String transitionKey = getTransitionKey(transition, precursor);
-            TransitionAreaRatioCalculator calculator = _calculatorMap.get(transitionKey);
-            if(calculator == null)
-            {
-                calculator = new TransitionAreaRatioCalculator();
-                _calculatorMap.put(transitionKey, calculator);
-            }
-            return calculator;
+            return _calculatorMap.computeIfAbsent(transitionKey, _ -> new TransitionAreaRatioCalculator());
         }
     }
 

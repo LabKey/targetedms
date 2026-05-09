@@ -78,7 +78,7 @@ public class Chromatogram
     {
         if (_mergedTimes == null) {
             if (allSameTimes()) {
-                _mergedTimes = getTransitionTimeIntensities().get(0).getTimes();
+                _mergedTimes = getTransitionTimeIntensities().getFirst().getTimes();
             } else {
                 _mergedTimes = getAllTimesMerged();
             }

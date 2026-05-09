@@ -127,7 +127,7 @@ public class BlibSpectrumReader extends LibSpectrumReader
     {
         if(e.getMessage().contains("no such table") || e.getMessage().contains("no such column") || e.getMessage().contains("File opened that is not a database file"))
         {
-            LOG.error("Malformed .blib file " + blibFilePath + ". Error was: " + e.getMessage());
+            LOG.error("Malformed .blib file {}. Error was: {}", blibFilePath, e.getMessage());
             return true;
         }
         return false;
@@ -415,7 +415,7 @@ public class BlibSpectrumReader extends LibSpectrumReader
                 if (rSpec.isBestSpectrum())
                 {
                     // If this is the reference spectrum keep it in front of the list.
-                    redundantSpectra.add(0, rSpec);
+                    redundantSpectra.addFirst(rSpec);
                 }
                 else
                 {

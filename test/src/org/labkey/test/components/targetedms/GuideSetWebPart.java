@@ -78,7 +78,7 @@ public class GuideSetWebPart extends BodyWebPart
 
             if (!selResp.getRows().isEmpty())
             {
-                String rowIdStr = selResp.getRows().get(0).get("RowId").toString();
+                String rowIdStr = selResp.getRows().getFirst().get("RowId").toString();
                 return Integer.parseInt(rowIdStr);
             }
         }

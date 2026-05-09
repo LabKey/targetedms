@@ -52,7 +52,7 @@
         List<String> accessions = proteins.stream().map(Protein::getAccession).filter(Objects::nonNull).toList();
     %>
     <% if (accessions.size() == 1) {
-        String accession = accessions.get(0); %>
+        String accession = accessions.getFirst(); %>
         <tr>
             <td class="labkey-form-label">Accession</td>
             <td>

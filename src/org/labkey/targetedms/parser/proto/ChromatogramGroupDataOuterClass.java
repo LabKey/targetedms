@@ -9315,7 +9315,7 @@ public final class ChromatogramGroupDataOuterClass {
       }
       public static final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptor() {
-        return org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.getDescriptor().getEnumTypes().get(0);
+        return org.labkey.targetedms.parser.proto.ChromatogramGroupDataOuterClass.ChromatogramGroupIdsProto.getDescriptor().getEnumTypes().getFirst();
       }
 
       private static final FilterOperation[] VALUES = values();
@@ -15982,7 +15982,7 @@ public final class ChromatogramGroupDataOuterClass {
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         });
     internal_static_ChromatogramGroupData_descriptor =
-      getDescriptor().getMessageTypes().get(0);
+      getDescriptor().getMessageTypes().getFirst();
     internal_static_ChromatogramGroupData_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_ChromatogramGroupData_descriptor,
@@ -16060,7 +16060,7 @@ public final class ChromatogramGroupDataOuterClass {
         internal_static_ChromatogramGroupIdsProto_SpectrumFilter_descriptor,
         new java.lang.String[] { "Predicates", });
     internal_static_ChromatogramGroupIdsProto_SpectrumFilter_Predicate_descriptor =
-      internal_static_ChromatogramGroupIdsProto_SpectrumFilter_descriptor.getNestedTypes().get(0);
+      internal_static_ChromatogramGroupIdsProto_SpectrumFilter_descriptor.getNestedTypes().getFirst();
     internal_static_ChromatogramGroupIdsProto_SpectrumFilter_Predicate_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_ChromatogramGroupIdsProto_SpectrumFilter_Predicate_descriptor,

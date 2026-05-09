@@ -15,7 +15,6 @@
 
 package org.labkey.targetedms.view;
 
-import org.labkey.api.data.Sort;
 import org.labkey.api.query.QueryNestingOption;
 import org.labkey.api.view.ViewContext;
 import org.labkey.targetedms.TargetedMSSchema;
@@ -37,11 +36,5 @@ public abstract class DocumentTransitionsView extends DocumentView
         _targetedMsSchema = schema;
         _context = ctx;
         setTitle(title);
-    }
-
-    @Override
-    protected Sort getBaseSort()
-    {
-        return new Sort("Id");
     }
 }

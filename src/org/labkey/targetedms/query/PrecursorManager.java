@@ -176,7 +176,7 @@ public class PrecursorManager
                 return chromInfo;
             }
         }
-        return chromInfos.get(0);
+        return chromInfos.getFirst();
     }
 
     @NotNull

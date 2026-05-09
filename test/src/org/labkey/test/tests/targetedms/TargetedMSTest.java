@@ -346,7 +346,7 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
                 .waitForElementToDisappear(getDriver(), 15_000);
 
         QCSummaryWebPart qcSummaryWebPart = new PanoramaDashboard(this).getQcSummaryWebPart();
-        verifyQcSummary(qcSummaryWebPart.getQcSummaryTiles().get(0), null, sampleFileCount, precursorCount);
+        verifyQcSummary(qcSummaryWebPart.getQcSummaryTiles().getFirst(), null, sampleFileCount, precursorCount);
     }
 
     @LogMethod

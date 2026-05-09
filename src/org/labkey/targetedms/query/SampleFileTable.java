@@ -310,7 +310,7 @@ public class SampleFileTable extends TargetedMSTable
                 List<Aggregate.Result> result = aggValues.get(aggregate.getFieldKey().toString());
                 if(result != null)
                 {
-                    Aggregate.Result aggResult = result.get(0);
+                    Aggregate.Result aggResult = result.getFirst();
                     if (aggResult.getValue() != null)
                     {
                         defaultCols.add(aggResult.getAggregate().getFieldKey());

@@ -86,7 +86,7 @@ public class GroupComparisonDataSet {
         DesignMatrix designMatrix = DesignMatrix.getDesignMatrix(foldChangeDataSet, false);
         try
         {
-            LinearFitResult linearFitResult = designMatrix.performLinearFit().get(0);
+            LinearFitResult linearFitResult = designMatrix.performLinearFit().getFirst();
             return linearFitResult;
         }
         catch (Exception x)

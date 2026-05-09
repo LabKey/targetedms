@@ -634,7 +634,7 @@ public class ComparisonDataset
 
             if(pciPlusList.size() == 1)
             {
-                Double pciVal = getValue(pciPlusList.get(0));
+                Double pciVal = getValue(pciPlusList.getFirst());
                 if(pciVal != null && !cvValues)
                 {
                     value = pciVal;
@@ -683,7 +683,7 @@ public class ComparisonDataset
         {
             if(pciPlusList.size() == 1)
             {
-                PrecursorChromInfoLitePlus pciPlus = pciPlusList.get(0);
+                PrecursorChromInfoLitePlus pciPlus = pciPlusList.getFirst();
                 if(pciPlus.getBestRetentionTime() == null || pciPlus.getMinStartTime() == null || pciPlus.getMaxEndTime() == null)
                 {
                     return null;

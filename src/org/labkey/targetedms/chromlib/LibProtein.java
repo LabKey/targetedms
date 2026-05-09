@@ -44,7 +44,7 @@ public class LibProtein extends AbstractLibEntity
         List<Protein> proteins = PeptideGroupManager.getProteinsForPeptideGroup(pepGroup.getId(), false);
         if (!proteins.isEmpty())
         {
-            setSequence(proteins.get(0).getSequence());
+            setSequence(proteins.getFirst().getSequence());
         }
     }
 

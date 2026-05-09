@@ -63,7 +63,7 @@ public class ChromatogramLibraryWriter
 
     public void openLibrary(Path libFile) throws SQLException
     {
-        _log.info("Writing chromatogram library " + FileUtil.getFileName(libFile));
+        _log.info("Writing chromatogram library {}", FileUtil.getFileName(libFile));
         if(Files.exists(libFile))
         {
             throw new IllegalStateException("Chromatogram library file "+ FileUtil.pathToString(libFile) +" already exists.");
@@ -113,7 +113,7 @@ public class ChromatogramLibraryWriter
         {
             _connectionSource.close();
         }
-        _log.info("Done writing chromatogram library " + FileUtil.pathToString(_libFile));
+        _log.info("Done writing chromatogram library {}", FileUtil.pathToString(_libFile));
     }
 
     private void flushCache() throws SQLException
@@ -196,7 +196,7 @@ public class ChromatogramLibraryWriter
         }
         catch(SQLException e)
         {
-            _log.error("Error saving to " + dao.getTableName(), e);
+            _log.error("Error saving to {}", dao.getTableName(), e);
             throw e;
         }
     }
@@ -209,7 +209,7 @@ public class ChromatogramLibraryWriter
         }
         catch(SQLException e)
         {
-            _log.error("Error saving list to " + dao.getTableName(), e);
+            _log.error("Error saving list to {}", dao.getTableName(), e);
             throw e;
         }
     }

@@ -1,6 +1,5 @@
 package org.labkey.test.tests.targetedms;
 
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

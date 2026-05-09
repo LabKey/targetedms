@@ -140,7 +140,7 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
                 listDefs = listDefs.stream().filter((l) -> lookup.equals(l.getName())).toList();
                 if (!listDefs.isEmpty())
                 {
-                    ListDefinition listDef = listDefs.get(0);
+                    ListDefinition listDef = listDefs.getFirst();
                     // Use the first one (the most recent import) as our FK to a UNION version of the table
                     LookupForeignKey fk = new LookupForeignKey()
                     {

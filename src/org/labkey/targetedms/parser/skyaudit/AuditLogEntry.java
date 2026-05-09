@@ -76,7 +76,7 @@ public class AuditLogEntry
         List<AuditLogEntry> results = sel.getArrayList(AuditLogEntry.class);
         // Possible to get more than one match if two documents share an audit history. In this case, we don't care
         // which we use
-        return results.isEmpty() ? null : results.get(0);
+        return results.isEmpty() ? null : results.getFirst();
     }
 
     public AuditLogTree getTreeEntry(){

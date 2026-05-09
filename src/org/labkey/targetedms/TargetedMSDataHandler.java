@@ -30,7 +30,6 @@ import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.exp.api.ExpRun;
 import org.labkey.api.exp.api.ExperimentService;
 import org.labkey.api.pipeline.PipeRoot;
-import org.labkey.api.pipeline.PipelineJob;
 import org.labkey.api.pipeline.PipelineJobException;
 import org.labkey.api.pipeline.PipelineService;
 import org.labkey.api.security.User;
@@ -377,7 +376,7 @@ public class TargetedMSDataHandler extends AbstractExperimentDataHandler
         catch (IOException | IllegalArgumentException e)
         {
             //ignore - see issue 29485 for IllegalArgumentException case
-            _log.warn("Failed to open zip file " + f + " to check if it contains .sky files" + e.getMessage());
+            _log.warn("Failed to open zip file {} to check if it contains .sky files{}", f, e.getMessage());
         }
 
         return false;

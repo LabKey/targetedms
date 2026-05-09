@@ -667,7 +667,7 @@ public class TransitionSettings
         }
 
         @Override
-        public int compareTo(PredictorSettings o)
+        public int compareTo(@NotNull PredictorSettings o)
         {
             return o == null ? -1 : this.toString().compareTo(o.toString());
         }

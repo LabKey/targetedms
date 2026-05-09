@@ -116,7 +116,7 @@ public class SkylineBinaryParser
         {
             if (!_file.delete())
             {
-                _log.warn("Failed to delete temp copy of SKYD file: " + _file.getAbsolutePath());
+                _log.warn("Failed to delete temp copy of SKYD file: {}", _file.getAbsolutePath());
             }
             else
             {
@@ -133,11 +133,11 @@ public class SkylineBinaryParser
         _cacheFormat = new CacheFormat(_cacheHeaderStruct);
 
         if (_cacheFormat.getFormatVersion().compareTo(CacheFormatVersion.Two) < 0) {
-            _log.warn("Version " + _cacheFormat.getFormatVersion() + " is not supported for .skyd files. The earliest supported version is " + CacheFormatVersion.Two + ". Skipping chromatogram import.");
+            _log.warn("Version {} is not supported for .skyd files. The earliest supported version is {}. Skipping chromatogram import.", _cacheFormat.getFormatVersion(), CacheFormatVersion.Two);
             return;
         }
         if (_cacheFormat.getVersionRequired().compareTo(FORMAT_VERSION_CACHE) > 0) {
-            _log.warn("Version " + _cacheFormat.getVersionRequired() + " is not supported for .skyd files. The newest supported version is " + FORMAT_VERSION_CACHE + ". Skipping chromatogram import.");
+            _log.warn("Version {} is not supported for .skyd files. The newest supported version is {}. Skipping chromatogram import.", _cacheFormat.getVersionRequired(), FORMAT_VERSION_CACHE);
             return;
         }
 

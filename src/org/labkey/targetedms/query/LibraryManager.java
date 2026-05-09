@@ -167,13 +167,13 @@ public class LibraryManager
         }
         catch (IOException e)
         {
-            LOG.info("Failed to determine the document library file name for " + skyFilesDir + ", continuing without a library file name.", e);
+            LOG.info("Failed to determine the document library file name for {}, continuing without a library file name.", skyFilesDir, e);
         }
 
         if(!skyFiles.isEmpty())
         {
             // Documents libraries have the same name as the .sky file, with a .blib extension.
-            return skyFiles.get(0).substring(0, skyFiles.get(0).lastIndexOf('.')) + SkylineFileUtils.EXT_BLIB_W_DOT;
+            return skyFiles.getFirst().substring(0, skyFiles.getFirst().lastIndexOf('.')) + SkylineFileUtils.EXT_BLIB_W_DOT;
         }
 
         return null;

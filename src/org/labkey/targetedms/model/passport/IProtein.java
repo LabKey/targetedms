@@ -236,7 +236,7 @@ public class IProtein
             htmlStrings[i] = HtmlString.of(str[i]);
         }
         List<HtmlString> groups = new ArrayList<>();
-        if (features != null && !features.isEmpty() && features.get(features.size() - 1).getEndIndex() < str.length)
+        if (features != null && !features.isEmpty() && features.getLast().getEndIndex() < str.length)
         {
             for (int i = 0; i < features.size(); i++)
             {

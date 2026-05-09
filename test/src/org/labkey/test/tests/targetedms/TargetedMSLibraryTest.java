@@ -133,7 +133,7 @@ public class TargetedMSLibraryTest extends TargetedMSTest
             assertTrue("Expected protein " + protein + " not found in table", idx != -1);
             List<String>fileName = proteinsTable.getRowDataAsText(idx, "RunId/File");
             assertEquals(1, fileName.size());
-            assertEquals("Unexpected file name for " + protein, files.get(i), fileName.get(0));
+            assertEquals("Unexpected file name for " + protein, files.get(i), fileName.getFirst());
             i++;
         }
 

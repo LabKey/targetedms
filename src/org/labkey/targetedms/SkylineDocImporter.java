@@ -214,7 +214,7 @@ public class SkylineDocImporter
         // Skip if run was already fully imported
         if (run.getStatusId() == SkylineDocImporter.STATUS_SUCCESS)
         {
-            _log.info(_expData.getName() + " has already been imported so it does not need to be imported again");
+            _log.info("{} has already been imported so it does not need to be imported again", _expData.getName());
             return run;
         }
 
@@ -249,9 +249,9 @@ public class SkylineDocImporter
             saveRunDocumentSize(run);
 
             updateRunStatus(IMPORT_STARTED);
-            _log.info("Starting to import Skyline document from " + run.getFileName());
+            _log.info("Starting to import Skyline document from {}", run.getFileName());
             importSkylineDoc(run, inputFile.toNioPathForRead().toFile());
-            _log.info("Completed import of Skyline document from " + run.getFileName());
+            _log.info("Completed import of Skyline document from {}", run.getFileName());
 
             updateRunStatus(IMPORT_SUCCEEDED, STATUS_SUCCESS);
 
@@ -401,17 +401,14 @@ public class SkylineDocImporter
                         modInfo, libraryNameIdMap, pepGroup, parser, peptides, smallMolecules, parser.getTransitionSettings());
                 if (++peptideGroupCount % 100 == 0)
                 {
-                    _log.info("Imported " + peptideGroupCount + " peptide groups.");
+                    _log.info("Imported {} peptide groups.", peptideGroupCount);
                 }
             }
 
             if (!_shouldSaveTransitionChromInfos)
             {
                 TargetedMSModule targetedMSModule = ModuleLoader.getInstance().getModule(TargetedMSModule.class);
-                _log.info("None of the " + parser.getTransitionChromInfoCount() + " TransitionChromInfos in the file " +
-                        "were imported because they exceed the limit of " +
-                        targetedMSModule.MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(_container) + " and there are more than " +
-                        targetedMSModule.MAX_PRECURSORS_PROPERTY.getEffectiveValue(_container) + " precursors");
+                _log.info("None of the {} TransitionChromInfos in the file were imported because they exceed the limit of {} and there are more than {} precursors", parser.getTransitionChromInfoCount(), targetedMSModule.MAX_TRANSITION_CHROM_INFOS_PROPERTY.getEffectiveValue(_container), targetedMSModule.MAX_PRECURSORS_PROPERTY.getEffectiveValue(_container));
             }
 
             // Done parsing document
@@ -546,7 +543,7 @@ public class SkylineDocImporter
             return;
         }
 
-        _log.info("Calculating iRT correlations for " + replicateInfo.skylineIdSampleFileIdMap.size() + " sample(s)");
+        _log.info("Calculating iRT correlations for {} sample(s)", replicateInfo.skylineIdSampleFileIdMap.size());
 
         // Get the iRT scale to which we are comparing each sample
         SimpleFilter iRTFilter = new SimpleFilter(FieldKey.fromParts("iRTScaleId"), run.getiRTscaleId());
@@ -600,7 +597,7 @@ public class SkylineDocImporter
                 updatedCount++;
             }
         }
-        _log.info("Finished calculating iRT correlations for all samples. " + updatedCount + " had a regression line calculated.");
+        _log.info("Finished calculating iRT correlations for all samples. {} had a regression line calculated.", updatedCount);
 
     }
 
@@ -691,9 +688,9 @@ public class SkylineDocImporter
             return;
         }
 
-        _log.info(String.format("Updating previously imported data for %d old sample files.", total));
+        _log.info("Updating previously imported data for {} old sample files.", total);
         _log.debug("Found data for the following old sample files in the QC folder:");
-        replicateInfo.oldSamplesToDelete.keySet().forEach(key -> _log.debug(String.format("  %s", key)));
+        replicateInfo.oldSamplesToDelete.keySet().forEach(key -> _log.debug("  {}", key));
 
         List<Long> existingSamples = new LongArrayList(total);
         replicateInfo.oldSamplesToDelete.forEach((key, value) -> value.forEach(existingSample -> existingSamples.add(existingSample.getId())));
@@ -709,7 +706,7 @@ public class SkylineDocImporter
                 }
                 catch (URISyntaxException e)
                 {
-                    _log.error("Unable to delete file " + srcFile + ". May be an invalid path. This file is no longer needed on the server.");
+                    _log.error("Unable to delete file {}. May be an invalid path. This file is no longer needed on the server.", srcFile);
                 }
             }
         }
@@ -819,7 +816,7 @@ public class SkylineDocImporter
             }
             else
             {
-                enzyme = existingEnzymes.get(0);
+                enzyme = existingEnzymes.getFirst();
             }
 
             PeptideSettings.EnzymeDigestionSettings digestSettings = pepSettings.getEnzymeDigestionSettings();
@@ -988,9 +985,9 @@ public class SkylineDocImporter
                 // If there is an ignore_in_QC annotation and we already have existing exclusions, don't insert but compare and
                 // give a warning if there is a mismatch.
                 if (!shouldExcludeFromAnnot)
-                    _log.warn("Replicate " + replicate.getName() + " has an ignore_in_QC=false annotation but there are existing exclusions that were added within Panorama or from a previous import.");
+                    _log.warn("Replicate {} has an ignore_in_QC=false annotation but there are existing exclusions that were added within Panorama or from a previous import.", replicate.getName());
                 else if (!hasExistingExcludeAllMetrics)
-                    _log.warn("Replicate " + replicate.getName() + " has an ignore_in_QC=true annotation but there are existing metric specific exclusions that were added within Panorama.");
+                    _log.warn("Replicate {} has an ignore_in_QC=true annotation but there are existing metric specific exclusions that were added within Panorama.", replicate.getName());
             }
         }
     }
@@ -1074,7 +1071,7 @@ public class SkylineDocImporter
                 newScale = true;
             else
             {
-                iRTScaleId = scaleIds.get(0);
+                iRTScaleId = scaleIds.getFirst();
                 SimpleFilter iRTFilter = new SimpleFilter(FieldKey.fromParts("iRTScaleId"), iRTScaleId);
                 List<IrtPeptide> existingScale = new TableSelector(TargetedMSManager.getTableInfoiRTPeptide(), iRTFilter, null).getArrayList(IrtPeptide.class);
 
@@ -1123,7 +1120,7 @@ public class SkylineDocImporter
         IRegressionFunction regressionLine = IrtRegressionCalculator.calcRegressionLine(new RetentionTimeProviderImpl(importScale), new ArrayList<>(existingStandards.values()), new ArrayList<>(existingLibrary.values()), _log);
 
         if (regressionLine == null)
-            throw new PipelineJobException(makeIrtStandardsErrorMsg(existingScale.get(0).getiRTScaleId(), new ArrayList<>(existingStandards.values()), importScale));
+            throw new PipelineJobException(makeIrtStandardsErrorMsg(existingScale.getFirst().getiRTScaleId(), new ArrayList<>(existingStandards.values()), importScale));
 
         applyIrtRegressionLine(regressionLine, importScale);
 
@@ -1284,7 +1281,7 @@ public class SkylineDocImporter
         }
 
         // CONSIDER: If there is already an identical entry in the PeptideGroup table re-use it.
-        _log.info("Inserting " + pepGroup.getLabel());
+        _log.info("Inserting {}", pepGroup.getLabel());
         pepGroup = Table.insert(_user, TargetedMSManager.getTableInfoPeptideGroup(), pepGroup);
 
         for (Protein protein : pepGroup.getProteins())
@@ -1332,7 +1329,7 @@ public class SkylineDocImporter
                     peptideCount++;
                     if (peptideCount % 50 == 0)
                     {
-                        _log.debug(String.format("Inserted %d peptides", peptideCount));
+                        _log.debug("Inserted {} peptides", peptideCount);
                     }
                 }
                 case MOLECULE -> {
@@ -1346,7 +1343,7 @@ public class SkylineDocImporter
                     moleculeCount++;
                     if (moleculeCount % 50 == 0)
                     {
-                        _log.debug(String.format("Inserted %d molecules", moleculeCount));
+                        _log.debug("Inserted {} molecules", moleculeCount);
                     }
                 }
             }
@@ -1356,11 +1353,11 @@ public class SkylineDocImporter
         }
         if(peptideCount > 0)
         {
-            _log.debug(String.format("Total peptides inserted: %d", peptideCount));
+            _log.debug("Total peptides inserted: {}", peptideCount);
         }
         if(moleculeCount > 0)
         {
-            _log.debug(String.format("Total molecules inserted: %d", moleculeCount));
+            _log.debug("Total molecules inserted: {}", moleculeCount);
         }
     }
 
@@ -1726,7 +1723,7 @@ public class SkylineDocImporter
                 if (_missingLibraries.add(libraryInfo.getLibraryName()))
                 {
                     // Only log the first time
-                    _log.warn("'" + libraryInfo.getLibraryName() + "' library was not found in settings.");
+                    _log.warn("'{}' library was not found in settings.", libraryInfo.getLibraryName());
                 }
             }
             else
@@ -2304,7 +2301,7 @@ public class SkylineDocImporter
 
             if (pathToSampleFile.containsKey(sampleFile.getFilePath()))
             {
-                _log.warn("Duplicate entries found for file path " + sampleFile.getFilePath() + ", may not resolve sample file-scoped chromatograms correctly");
+                _log.warn("Duplicate entries found for file path {}, may not resolve sample file-scoped chromatograms correctly", sampleFile.getFilePath());
             }
             else
             {
@@ -2362,7 +2359,7 @@ public class SkylineDocImporter
     {
         Path dest = targetParentPath.resolve(FileUtil.getFileName(sourcePath));
         Files.copy(sourcePath, dest, StandardCopyOption.REPLACE_EXISTING);
-        _log.info("Copied " + FileUtil.getFileName(sourcePath) + " to cloud storage.");
+        _log.info("Copied {} to cloud storage.", FileUtil.getFileName(sourcePath));
         return dest;
     }
 
@@ -2616,7 +2613,7 @@ public class SkylineDocImporter
             TargetedMSRun run = getRun();
             if (run == null)
             {
-                _log.info("Starting import from " + _expData.getName());
+                _log.info("Starting import from {}", _expData.getName());
                 run = createRun();
             }
 
@@ -2685,7 +2682,7 @@ public class SkylineDocImporter
         }
         for (GroupComparisonSettings groupComparison : groupComparisons)
         {
-            _log.debug(String.format("Calculating fold change for group comparison %s, %d of %d", groupComparison.getName(), ++i, groupComparisons.size()));
+            _log.debug("Calculating fold change for group comparison {}, {} of {}", groupComparison.getName(), ++i, groupComparisons.size());
             for (FoldChange foldChange : quantifier.calculateFoldChanges(groupComparison))
             {
                 Table.insert(_user, TargetedMSManager.getTableInfoFoldChange(), foldChange);
@@ -2928,7 +2925,7 @@ public class SkylineDocImporter
             {
                 _job.setStatus(PipelineJob.TaskStatus.running + ", " + percDone + "%"); // This will throw a CancelledException if the job was cancelled.
             }
-            _log.info(percDone + "% Done");
+            _log.info("{}% Done", percDone);
         }
 
 
@@ -3043,7 +3040,7 @@ public class SkylineDocImporter
         // To prevent giant DIA documents from overwhelming the DB, we skip importing TransitionChromInfos if the document
         // has more than 100,000 AND has more than 1,000 precursors. We use both because a document may have a lot of
         // replicates, so the TransitionChromInfo count by itself isn't sufficient to do the desired screening
-        log.info("Reading Skyline file, " + file.getName() + ", to determine if the TransitionChromInfos in the document should be stored...");
+        log.info("Reading Skyline file, {}, to determine if the TransitionChromInfos in the document should be stored...", file.getName());
         boolean documentWithinLimits = new TransitionChromInfoAndPrecursorTally(maxTransitionChromInfos, maxPrecursors).isWithinLimits(file, log);
         if (documentWithinLimits)
         {
@@ -3051,9 +3048,7 @@ public class SkylineDocImporter
         }
         else
         {
-            log.info("TransitionChromInfos in the document exceed the limit of " + maxTransitionChromInfos +
-                            ", and there are more than " + maxPrecursors + " precursors." +
-                            " TransitionChromInfos will not be stored.");
+            log.info("TransitionChromInfos in the document exceed the limit of {}, and there are more than {} precursors. TransitionChromInfos will not be stored.", maxTransitionChromInfos, maxPrecursors);
         }
         return documentWithinLimits;
     }

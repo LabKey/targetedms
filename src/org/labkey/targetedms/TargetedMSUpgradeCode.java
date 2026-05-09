@@ -101,7 +101,7 @@ public class TargetedMSUpgradeCode implements UpgradeCode
                 }
                 catch (Exception e)
                 {
-                    LOG.error("Error populating PTMPercentsGroupedPrepivotCache for run " + run.getId() + " in " + container.getPath(), e);
+                    LOG.error("Error populating PTMPercentsGroupedPrepivotCache for run {} in {}", run.getId(), container.getPath(), e);
                 }
             }
         }
@@ -129,7 +129,7 @@ public class TargetedMSUpgradeCode implements UpgradeCode
             int deletedCount = executor.execute(deleteSql);
             if (deletedCount > 0)
             {
-                LOG.info("Deleted " + deletedCount + " orphaned rows from targetedms." + tableName);
+                LOG.info("Deleted {} orphaned rows from targetedms.{}", deletedCount, tableName);
             }
         }
 
@@ -142,7 +142,7 @@ public class TargetedMSUpgradeCode implements UpgradeCode
             int updatedCount = executor.execute(updateSql);
             if (updatedCount > 0)
             {
-                LOG.info("Reparented " + updatedCount + " orphaned rows from targetedms." + tableName + " to /Shared");
+                LOG.info("Reparented {} orphaned rows from targetedms.{} to /Shared", updatedCount, tableName);
             }
         }
     }

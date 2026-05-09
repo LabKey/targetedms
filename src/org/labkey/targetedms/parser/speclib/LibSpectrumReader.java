@@ -218,7 +218,7 @@ public abstract class LibSpectrumReader
             }
             else
             {
-                LOG.debug("Unable to copy " + libPath + " to local file, referenced from " + container.getPath());
+                LOG.debug("Unable to copy {} to local file, referenced from {}", libPath, container.getPath());
                 return null;
             }
         }
@@ -229,12 +229,12 @@ public abstract class LibSpectrumReader
         File f = new File(libPathString);
         if(!f.exists())
         {
-            LOG.debug("Library file not found: " + libPathString + ", referenced from container " + container.getPath());
+            LOG.debug("Library file not found: {}, referenced from container {}", libPathString, container.getPath());
             return null;
         }
         if(f.length() == 0)
         {
-            LOG.debug("Found 0 byte library file: " + libPathString + ", referenced from container " + container.getPath());
+            LOG.debug("Found 0 byte library file: {}, referenced from container {}", libPathString, container.getPath());
             return null;
         }
         return libPathString;

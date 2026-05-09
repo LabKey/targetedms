@@ -131,7 +131,7 @@ public class Target
 
         if (!parts.isEmpty())
         {
-            target.name = parts.get(0);
+            target.name = parts.getFirst();
         }
         if (parts.size() > 1)
         {
