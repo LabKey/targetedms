@@ -179,7 +179,7 @@
             <column columnName="DocumentGUID"/>
             <column columnName="PeptideGroupCount">
                 <formatString>#,###</formatString>
-                <url>/targetedms-showPrecursorList.view?id=${Id}</url>
+                <url>/targetedms-showProteinList.view?id=${Id}</url>
             </column>
             <column columnName="PeptideCount">
                 <formatString>#,###</formatString>

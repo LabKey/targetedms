@@ -4535,6 +4535,53 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
+    public class ShowProteinListAction extends SimpleViewAction<RunDetailsForm>
+    {
+        private static final String DATA_REGION_NAME = "ProteinList";
+
+        @Override
+        public ModelAndView getView(RunDetailsForm form, BindException errors)
+        {
+            if (!form.hasRunId())
+                throw new RedirectException(new ActionURL(ShowListAction.class, getContainer()));
+
+            TargetedMSRun run = validateRun(form.getId());
+
+            TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+            QuerySettings settings;
+            String title;
+
+            if (run.getPeptideCount() > 0)
+            {
+                settings = new QuerySettings(getViewContext(), DATA_REGION_NAME, TargetedMSSchema.TABLE_PROTEIN);
+                settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("PeptideGroupId", "RunId"), form.getId()));
+                title = "Proteins";
+            }
+            else
+            {
+                settings = new QuerySettings(getViewContext(), DATA_REGION_NAME, TargetedMSSchema.TABLE_PEPTIDE_GROUP);
+                settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("RunId"), form.getId()));
+                title = "Molecule Lists";
+            }
+
+            settings.setContainerFilterName(null);
+            QueryView view = schema.createView(getViewContext(), settings, errors);
+            view.setAllowableContainerFilterTypes();
+            view.setShowDetailsColumn(false);
+            view.setShowFilterDescription(false);
+            view.setFrame(WebPartView.FrameType.PORTAL);
+            view.setTitle(title);
+            return view;
+        }
+
+        @Override
+        public void addNavTrail(NavTree root)
+        {
+            root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
+        }
+    }
+
+    @RequiresPermission(ReadPermission.class)
     public class ShowGroupComparisonAction extends ShowRunSplitDetailsAction<GroupComparisonView>
     {
         public ShowGroupComparisonAction()
