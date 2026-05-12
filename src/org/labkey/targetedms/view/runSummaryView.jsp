@@ -52,6 +52,9 @@
     ActionURL precursorListAction = new ActionURL(TargetedMSController.ShowPrecursorListAction.class, getContainer());
     precursorListAction.addParameter("id", run.getId());
 
+    ActionURL proteinListAction = new ActionURL(TargetedMSController.ShowProteinListAction.class, getContainer());
+    proteinListAction.addParameter("id", run.getId());
+
     ActionURL ptmReportAction = new ActionURL(TargetedMSController.ShowPTMReportAction.class, getContainer());
     ptmReportAction.addParameter("id", run.getId());
 
@@ -94,7 +97,7 @@
     </div>
     &nbsp;
     <div>
-        <a href="<%= h(precursorListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getPeptideGroupCount(), peptideGroupLabel))%></a>,
+        <a href="<%= h(proteinListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getPeptideGroupCount(), peptideGroupLabel))%></a>,
         <% if (run.getPeptideCount() > 0) { %><a href="<%= h(precursorListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getPeptideCount(), "peptide"))%></a>,<% } %>
         <% if (run.getSmallMoleculeCount() > 0) { %><a href="<%= h(precursorListAction + "#Small Molecule Precursor List") %>"><%= h(StringUtilsLabKey.pluralize(run.getSmallMoleculeCount(), "small molecule"))%></a>,<% } %>
         <a href="<%= h(precursorListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getPrecursorCount(), "precursor"))%></a>,
