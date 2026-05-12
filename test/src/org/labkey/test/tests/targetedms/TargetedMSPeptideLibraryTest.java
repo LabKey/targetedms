@@ -35,6 +35,9 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Tests peptide library folder revisions and conflict resolution when multiple documents define the same library entries.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSPeptideLibraryTest extends TargetedMSTest

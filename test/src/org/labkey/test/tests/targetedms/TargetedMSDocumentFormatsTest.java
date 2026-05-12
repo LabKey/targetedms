@@ -31,6 +31,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Tests backward compatibility by importing Skyline documents across multiple historical format versions.
+ */
 @Category({})
 public class TargetedMSDocumentFormatsTest extends TargetedMSTest
 {

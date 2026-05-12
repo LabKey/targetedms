@@ -215,6 +215,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         }
 
         this.setPlotBrushingDisplayStyle();
+
+        if (this.hasPeptideGroupTree()) {
+            this.renderCombinedTreeLegend(id, legendMargin);
+        }
+
         return true;
     },
 
@@ -293,6 +298,12 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperWrapper", {
         if (!this.fragmentPlotData[fragment])
         {
             this.fragmentPlotData[fragment] = this.getInitFragmentPlotData(fragment, dataType, mz, color);
+        }
+
+        // Store peptide group info (protein / molecule list) for the combined plot tree legend
+        if (this.fragmentPlotData[fragment].peptideGroupId == null && plotDataRow['PeptideGroupId'] != null) {
+            this.fragmentPlotData[fragment].peptideGroupId = plotDataRow['PeptideGroupId'];
+            this.fragmentPlotData[fragment].peptideGroupLabel = plotDataRow['PeptideGroupLabel'];
         }
 
         var metricId = row['MetricId'];

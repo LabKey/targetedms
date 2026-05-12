@@ -17,6 +17,9 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Tests import/export of QC folder configurations and data as a round-trip operation.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 6)
 public class TargetedMSQCFolderImportExport extends TargetedMSPremiumTest

@@ -10,6 +10,9 @@ import org.labkey.test.components.targetedms.SequenceCoverageWebPart;
 
 import java.util.Arrays;
 
+/**
+ * Tests protein sequence views including confidence score display and rendering of modified peptides.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 12)
 public class TargetedMSProteinSequenceViewTest extends TargetedMSTest

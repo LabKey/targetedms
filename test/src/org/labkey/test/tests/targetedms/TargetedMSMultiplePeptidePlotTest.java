@@ -14,6 +14,9 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import java.io.File;
 import java.util.List;
 
+/**
+ * Tests rendering of multiple peptides on the same chromatogram visualization panel.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 2)
 public class TargetedMSMultiplePeptidePlotTest extends TargetedMSTest

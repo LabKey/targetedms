@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+/**
+ * Tests the QC metric configuration UI and verifies settings propagate consistently across folder hierarchies.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest

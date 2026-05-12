@@ -23,6 +23,9 @@ import java.sql.SQLException;
 
 import static org.labkey.test.Locator.tag;
 
+/**
+ * Tests M×N reproducibility reports with both single and multiple replicate configurations.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 6)
 public class TargetedMSMxNReproducibilityReportTest extends TargetedMSTest
