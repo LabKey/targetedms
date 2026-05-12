@@ -6,12 +6,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.BaseWebDriverTest;
-import org.labkey.test.Locators;
 import org.labkey.test.components.targetedms.GuideSet;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.pages.targetedms.PanoramaDashboard;
 import org.labkey.test.util.PortalHelper;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)

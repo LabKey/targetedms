@@ -226,7 +226,7 @@ class PeptideSettingsParser
         }
 
         // Mark the label types that were used as an internal standard
-        isotopeLabelNames.add(0, PeptideSettings.IsotopeLabel.LIGHT);
+        isotopeLabelNames.addFirst(PeptideSettings.IsotopeLabel.LIGHT);
 
         // If we did not find either the "internal_standard" attribute or elements, check if we have
         // a "heavy" isotope label.  If we do, set "heavy" as the internal standard

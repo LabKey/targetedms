@@ -80,7 +80,7 @@ public abstract class TargetedMSIrtTest extends TargetedMSTest
 
     protected Map<String, Object> getIrtPeptide(String peptide)
     {
-        return getRowsForPeptide(peptide).get(0);
+        return getRowsForPeptide(peptide).getFirst();
     }
 
     protected double getIrtValue(String peptide)

@@ -85,7 +85,7 @@ public class IrtRegressionCalculator
                     correlation = statIrts.R(statTimes);
                     if (correlation >= MIN_IRT_TO_TIME_CORRELATION)
                     {
-                        pipelineLog.info("Calculated iRT regression line by ignoring import value for standard: " + standardPeptideList.get(i).getModifiedSequence());
+                        pipelineLog.info("Calculated iRT regression line by ignoring import value for standard: {}", standardPeptideList.get(i).getModifiedSequence());
                         break;
                     }
                 }
@@ -121,7 +121,7 @@ public class IrtRegressionCalculator
                 }
                 Statistics statTimes = new Statistics(regressionTimes);
                 Statistics statIrts = new Statistics(regressionScores);
-                pipelineLog.info("Successfully calculated iRT regression line from " + Integer.toString(regression.getPeptideTimes().size()) + " shared peptides.");
+                pipelineLog.info("Successfully calculated iRT regression line from {} shared peptides.", Integer.toString(regression.getPeptideTimes().size()));
                 return new RegressionLine(statIrts.Slope(statTimes), statIrts.Intercept(statTimes));
             }
         }

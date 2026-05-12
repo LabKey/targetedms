@@ -26,7 +26,6 @@ import org.labkey.test.Locator;
 import org.labkey.test.SortDirection;
 import org.labkey.test.TestFileUtils;
 import org.labkey.test.TestTimeoutException;
-import org.labkey.test.components.ext4.RadioButton;
 import org.labkey.test.components.ext4.Window;
 import org.labkey.test.components.html.SiteNavBar;
 import org.labkey.test.components.targetedms.GuideSet;
@@ -302,7 +301,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         // test option to "Group X-Axis values by Date"
         String initialSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
         qcPlotsWebPart.setGroupXAxisValuesByDate(true);
-        assertFalse(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0")));
+        assertNotEquals(initialSVGText, qcPlotsWebPart.getSVGPlotText("precursorPlot0"));
         qcPlotsWebPart.setGroupXAxisValuesByDate(false);
 
         // test that plot0 changes based on scale
@@ -314,7 +313,7 @@ public class TargetedMSQCTest extends TargetedMSTest
                 qcPlotsWebPart.setScale(scale);
                 String svgPlotText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
                 assertFalse(svgPlotText.isEmpty());
-                assertFalse(initialSVGText.equals(svgPlotText));
+                assertNotEquals(initialSVGText, svgPlotText);
             }
         }
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LINEAR);
@@ -324,13 +323,13 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart.checkPlotType(CUSUMm);
         initialSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1");
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LOG);
-        assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1")));
+        assertEquals(initialSVGText, qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1"));
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.PERCENT_OF_MEAN);
-        assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1")));
+        assertEquals(initialSVGText, qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1"));
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.STANDARD_DEVIATIONS);
-        assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1")));
+        assertEquals(initialSVGText, qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1"));
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.DELTA_FROM_MEAN);
-        assertTrue(initialSVGText.equals(qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1")));
+        assertEquals(initialSVGText, qcPlotsWebPart.getSVGPlotText("precursorPlot0_plotType_1"));
 
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.LINEAR);
 
@@ -845,9 +844,9 @@ public class TargetedMSQCTest extends TargetedMSTest
         //confirm 3 exclusions
         DataRegionTable drt = getSchemaBrowserDataView("targetedms", "QCMetricExclusion");
         assertEquals("Wrong count", 3, drt.getDataRowCount());
-        assertEquals("Wrong metric", " ", drt.getRowDataAsText(0, "MetricId").get(0));
-        assertEquals("Wrong metric", " ", drt.getRowDataAsText(1, "MetricId").get(0));
-        assertEquals("Wrong metric", " ", drt.getRowDataAsText(2, "MetricId").get(0));
+        assertEquals("Wrong metric", " ", drt.getRowDataAsText(0, "MetricId").getFirst());
+        assertEquals("Wrong metric", " ", drt.getRowDataAsText(1, "MetricId").getFirst());
+        assertEquals("Wrong metric", " ", drt.getRowDataAsText(2, "MetricId").getFirst());
 
         importData(QC_1b_FILE, 2);
         clickFolder(subFolderName);
@@ -855,9 +854,9 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         drt = getSchemaBrowserDataView("targetedms", "QCMetricExclusion");
         assertEquals("Wrong count", 3, drt.getDataRowCount());
-        assertEquals("Wrong metric", " ", drt.getRowDataAsText(0, "MetricId").get(0));
-        assertEquals("Wrong metric", " ", drt.getRowDataAsText(1, "MetricId").get(0));
-        assertEquals("Wrong metric", " ", drt.getRowDataAsText(2, "MetricId").get(0));
+        assertEquals("Wrong metric", " ", drt.getRowDataAsText(0, "MetricId").getFirst());
+        assertEquals("Wrong metric", " ", drt.getRowDataAsText(1, "MetricId").getFirst());
+        assertEquals("Wrong metric", " ", drt.getRowDataAsText(2, "MetricId").getFirst());
 
         verifyUploadReport("Replicate 25fmol_Pepmix_spike_SRM_1601_03 has an ignore_in_QC=false annotation " +
                 "but there are existing exclusions that were added within Panorama or from a previous import.");
@@ -1071,7 +1070,7 @@ public class TargetedMSQCTest extends TargetedMSTest
     {
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         qcDashboard.getQcSummaryWebPart().waitForRecentSampleFiles(3);
-        QCSummaryWebPart.QcSummaryTile qcSummaryTile = qcDashboard.getQcSummaryWebPart().getQcSummaryTiles().get(0);
+        QCSummaryWebPart.QcSummaryTile qcSummaryTile = qcDashboard.getQcSummaryWebPart().getQcSummaryTiles().getFirst();
         assertEquals("Unexpected outlier information for QC summary sample file for "
                 + acquiredDate, outlierInfo, qcSummaryTile.getRecentSampleFileWithOutliers(acquiredDate));
     }

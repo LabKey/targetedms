@@ -118,9 +118,9 @@ public class JoinedTargetedMSTable extends AnnotatedTargetedMSTable
 
         // Join based on the PKs on both tables
         result.append(" ON G.");
-        result.append(getRealTable().getPkColumnNames().get(0));
+        result.append(getRealTable().getPkColumnNames().getFirst());
         result.append(" = S.");
-        result.append(_specializedTable.getPkColumnNames().get(0));
+        result.append(_specializedTable.getPkColumnNames().getFirst());
         result.append(") i ");
 
         // Re-add the clauses, but only the ones associated with a FieldKey because the others wouldn't have been removed above

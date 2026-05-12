@@ -525,7 +525,7 @@ public final class RetentionTimeRegression
             listPeptides.add(mrt.getPeptideSequence());
 
         // Set these now so that we can return null on some conditions
-        calculatorSpec.set(calculators.get(0));
+        calculatorSpec.set(calculators.getFirst());
         statistics.set(null);
 
         int count = listPeptides.size();

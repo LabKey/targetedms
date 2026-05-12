@@ -61,7 +61,7 @@ public abstract class BaseDaoImpl<T extends AbstractLibEntity> implements Dao<T>
     @Override
     public void saveAll(Collection<T> list, Connection connection) throws SQLException
     {
-        _log.debug("Batch insert of " + list.size() + " objects");
+        _log.debug("Batch insert of {} objects", list.size());
         if (!list.isEmpty())
         {
             String sql = getInsertSql();
@@ -172,7 +172,7 @@ public abstract class BaseDaoImpl<T extends AbstractLibEntity> implements Dao<T>
         {
             throw new SQLException("More than one entries found in "+getTableName()+" for Id "+id);
         }
-        return results.get(0);
+        return results.getFirst();
     }
 
     @Override

@@ -389,7 +389,7 @@ public enum PanoramaQCSettings
         Integer replicateId = getNullableRowIdFromName(TargetedMSSchema.TABLE_REPLICATE, Collections.singleton("Id"), filter, ctx.getUser(), ctx.getContainer(), null);
         if (replicateId == null)
         {
-            ctx.getLogger().info("No replicate '" + replicateName + "' found for exclusion. Skipping.");
+            ctx.getLogger().info("No replicate '{}' found for exclusion. Skipping.", replicateName);
         }
         else
         {

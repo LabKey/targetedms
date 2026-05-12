@@ -84,7 +84,7 @@ public class PsiInstruments
         }
         catch (ParserConfigurationException | SAXException | IOException e)
         {
-            LOG.error("Error parsing psi-ms-PARSED.xml. " + e.getMessage(), e);
+            LOG.error("Error parsing psi-ms-PARSED.xml. {}", e.getMessage(), e);
             return Collections.emptyList();
         }
 

@@ -281,8 +281,8 @@ public class SampleFile extends SkylineEntity implements ISampleFile
             String path = "C:\\Users\\lab\\Data\\2017-Geoduck-SRM-raw\\" + fileName;
             String pathWithParams = path + "?centroid_ms1=true&centroid_ms2=true";
 
-            assertTrue(fileName.equals(getFileName(path)));
-            assertTrue(fileName.equals(getFileName(pathWithParams)));
+            assertEquals(fileName, getFileName(path));
+            assertEquals(fileName, getFileName(pathWithParams));
 
             // Skyline stores multi-injection wiff file paths as: <wiff_file_path>|<sample_name>|<sample_index>
             // Example: C:\Analyst Data\Projects\CPTAC\Site54_STUDY9S_PHASE1_6ProtMix_090919\Site54_190909_Study9S_PHASE-1.wiff|Site54_STUDY9S_PHASE1_6ProtMix_QC_03|2
@@ -290,14 +290,14 @@ public class SampleFile extends SkylineEntity implements ISampleFile
             path = "C:\\Analyst Data\\Projects\\CPTAC\\Site54_STUDY9S_PHASE1_6ProtMix_090919\\" + fileName;
             String pathWithSampleInfo = path + "|Site54_STUDY9S_PHASE1_6ProtMix_QC_03|2";
 
-            assertTrue(fileName.equals(getFileName(path)));
-            assertTrue(fileName.equals(getFileName(pathWithSampleInfo)));
+            assertEquals(fileName, getFileName(path));
+            assertEquals(fileName, getFileName(pathWithSampleInfo));
 
             // Add a bogus param with a '|' character
             String pathWithSampleInfoAndParams = pathWithSampleInfo + "?centroid_ms1=true&centroid_ms2=true&madeup_param=a|b";
 
-            assertTrue(fileName.equals(getFileName(path)));
-            assertTrue(fileName.equals(getFileName(pathWithSampleInfoAndParams)));
+            assertEquals(fileName, getFileName(path));
+            assertEquals(fileName, getFileName(pathWithSampleInfoAndParams));
         }
     }
 }

@@ -211,9 +211,9 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         assertEquals("Wrong number of payment method dropdowns", 2, methodInputs.size());
 
         // Duplicate payment methods
-        selectOptionByText(methodInputs.get(0), PAYMENT_METHOD_2);
+        selectOptionByText(methodInputs.getFirst(), PAYMENT_METHOD_2);
         assertTextPresent("The same payment method cannot be selected more than once.");
-        selectOptionByText(methodInputs.get(0), PAYMENT_METHOD_1);
+        selectOptionByText(methodInputs.getFirst(), PAYMENT_METHOD_1);
 
         // Bogus payment percentages
         setFormElement(percentInputs.get(1), "0");
@@ -245,18 +245,18 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         impersonate(EXTERNAL_COLLABORATOR_USER);
         List<Map<String, Object>> projects = new SelectRowsCommand("targetedms", "msProject").execute(createDefaultConnection(), getProjectName()).getRows();
         assertEquals("Wrong number of projects for " + EXTERNAL_COLLABORATOR_USER, 1, projects.size());
-        int project2Id = (Integer) projects.get(0).get("Id");
+        int project2Id = (Integer) projects.getFirst().get("Id");
         SelectRowsCommand instrumentSelect = new SelectRowsCommand("targetedms", "msInstrument");
         instrumentSelect.setFilters(Arrays.asList(new Filter("Name", INSTRUMENT_1)));
         List<Map<String, Object>> instruments = instrumentSelect.execute(createDefaultConnection(), getProjectName()).getRows();
         assertEquals("Wrong number of instruments", 1, instruments.size());
-        int instrument1Id = (Integer) instruments.get(0).get("Id");
+        int instrument1Id = (Integer) instruments.getFirst().get("Id");
 
         SelectRowsCommand paymentMethodSelect = new SelectRowsCommand("targetedms", "paymentMethod");
         paymentMethodSelect.setFilters(Arrays.asList(new Filter("Name", PAYMENT_METHOD_1)));
         List<Map<String, Object>> paymentMethods = paymentMethodSelect.execute(createDefaultConnection(), getProjectName()).getRows();
         assertEquals("Wrong number of paymentMethods", 1, paymentMethods.size());
-        int paymentMethod1Id = (Integer) paymentMethods.get(0).get("Id");
+        int paymentMethod1Id = (Integer) paymentMethods.getFirst().get("Id");
 
         int project1Id = project2Id - 1;  // Assume sequential auto-incrementing ids
         int inactiveInstrumentId = instrument1Id + 2;
@@ -343,7 +343,7 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         // Insert as a lab member
         stopImpersonating();
         impersonate(LAB_MEMBER_USER);
-        Map<String, Object> project = projectInsert.execute(createDefaultConnection(), getProjectName()).getRows().get(0);
+        Map<String, Object> project = projectInsert.execute(createDefaultConnection(), getProjectName()).getRows().getFirst();
         int projectId = (Integer) project.get("Id");
 
         // Collaborator isn't part of the project, so they shouldn't be able to add a researcher

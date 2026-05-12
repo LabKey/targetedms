@@ -37,7 +37,7 @@ public class ListData
         if (_columnDatas.isEmpty()) {
             return 0;
         }
-        return _columnDatas.get(0).size();
+        return _columnDatas.getFirst().size();
     }
 
     public int getColumnCount() {

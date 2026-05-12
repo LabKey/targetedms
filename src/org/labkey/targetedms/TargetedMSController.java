@@ -2841,7 +2841,7 @@ public class TargetedMSController extends SpringActionController
                     }
                     catch (NumberFormatException e)
                     {
-                        LOG.debug("Error parsing replicate Id: "+rep,e);
+                        LOG.debug("Error parsing replicate Id: {}", rep, e);
                     }
                 }
 
@@ -3284,7 +3284,7 @@ public class TargetedMSController extends SpringActionController
             HtmlView view = new HtmlView(DIV("Annotated spectra cannot be displayed from the following unsupported "
                             + (unsupportedLibraries.size() == 1 ? "library" : "libraries") + ": ",
                     (unsupportedLibraries.size() == 1 ?
-                            SPAN(cl("labkey-error"), unsupportedLibraries.get(0))
+                            SPAN(cl("labkey-error"), unsupportedLibraries.getFirst())
                             : DIV(cl("labkey-error"), UL(unsupportedLibraries.stream().map(DOM::LI)))
                     )
             ));
@@ -5216,7 +5216,7 @@ public class TargetedMSController extends SpringActionController
             List<? extends ExpMaterial> materials = ExperimentService.get().getExpMaterialsByName(sampleName, null, getUser());
             if (materials.size() == 1)
             {
-                ExpMaterial material = materials.get(0);
+                ExpMaterial material = materials.getFirst();
                 materialURL = material.detailsURL(material.getContainer(), true);
             }
 
@@ -5590,7 +5590,7 @@ public class TargetedMSController extends SpringActionController
     {
         if (proteinId == null && !proteins.isEmpty())
         {
-            return proteins.get(0);
+            return proteins.getFirst();
         }
         if (proteinId != null)
         {
@@ -7342,8 +7342,7 @@ public class TargetedMSController extends SpringActionController
             }
             catch (IOException | SQLException e)
             {
-                LOG.error("Error reading from chromatogram library file " + ChromatogramLibraryUtils.getDownloadFileName(container, libRevision)
-                        + " in container " + container.getPath(), e);
+                LOG.error("Error reading from chromatogram library file {} in container {}", ChromatogramLibraryUtils.getDownloadFileName(container, libRevision), container.getPath(), e);
             }
             return counts == null ? ChromLibAnalyteCounts.NOT_EXISTS : counts;
         }
@@ -7724,7 +7723,7 @@ public class TargetedMSController extends SpringActionController
         public Object execute(RowIdForm form, BindException errors) throws BatchValidationException
         {
             ExpRun run = ExperimentService.get().getExpRun(form.getRowId());
-            ExpRun replaces = run.getReplacesRuns().isEmpty() ? null : run.getReplacesRuns().get(0);
+            ExpRun replaces = run.getReplacesRuns().isEmpty() ? null : run.getReplacesRuns().getFirst();
             ExpRun replacedBy = run.getReplacedByRun();
 
             DbScope scope = ExperimentService.get().getSchema().getScope();

@@ -119,7 +119,7 @@ public class AuditLogTree implements Iterable<AuditLogTree>
 
         while (!stack.isEmpty())
         {
-            AuditLogTree current = stack.remove(0);
+            AuditLogTree current = stack.removeFirst();
             result += current._children.size();
             stack.addAll(current._children.values());
         }
@@ -176,7 +176,7 @@ public class AuditLogTree implements Iterable<AuditLogTree>
                 {
                     if (currentEntry._entryId != 0)                  //No need to check for the root node.
                     {
-                        LOG.warn(String.format("Audit log entry with ID %d is a leaf but has no version ID. This might be a data corruption.", this._entryId));
+                        LOG.warn("Audit log entry with ID {} is a leaf but has no version ID. This might be a data corruption.", this._entryId);
                     }
                 }
                 else if (versionId == currentEntry._versionId)      //check if it is the right version id
@@ -232,7 +232,7 @@ public class AuditLogTree implements Iterable<AuditLogTree>
 
         while (!stack.isEmpty())
         {
-            AuditLogTree currentEntry = stack.remove(0);
+            AuditLogTree currentEntry = stack.removeFirst();
             // check if it is the right version id
             if (currentEntry._versionId != null && currentEntry._versionId == pVersionId)
             {

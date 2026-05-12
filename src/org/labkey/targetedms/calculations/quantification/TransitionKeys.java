@@ -14,6 +14,8 @@
  */
 package org.labkey.targetedms.calculations.quantification;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -76,7 +78,7 @@ public class TransitionKeys implements Iterable<String>
     }
 
     @Override
-    public Iterator<String> iterator() {
+    public @NotNull Iterator<String> iterator() {
         return Arrays.asList(_keys).iterator();
     }
 

@@ -44,19 +44,12 @@ public class IconFactory
             }
             else
             {
-                switch (standardTypeEnum)
+                iconFile = switch (standardTypeEnum)
                 {
-                    case Normalization:
-                    case SurrogateStandard:
-                        iconFile = "/TargetedMS/images/PeptideStandardLib.png";
-                        break;
-                    case QC:
-                        iconFile = "/TargetedMS/images/PeptideQcLib.png";
-                        break;
-                    case iRT:
-                        iconFile = "/TargetedMS/images/PeptideIrtLib.png";
-                        break;
-                }
+                    case Normalization, SurrogateStandard -> "/TargetedMS/images/PeptideStandardLib.png";
+                    case QC -> "/TargetedMS/images/PeptideQcLib.png";
+                    case iRT -> "/TargetedMS/images/PeptideIrtLib.png";
+                };
             }
         }
         else
@@ -67,19 +60,12 @@ public class IconFactory
             }
             else
             {
-                switch (standardTypeEnum)
+                iconFile = switch (standardTypeEnum)
                 {
-                    case Normalization:
-                    case SurrogateStandard:
-                        iconFile = "/TargetedMS/images/PeptideStandard.png";
-                        break;
-                    case QC:
-                        iconFile = "/TargetedMS/images/PeptideQc.png";
-                        break;
-                    case iRT:
-                        iconFile = "/TargetedMS/images/PeptideIrt.png";
-                        break;
-                }
+                    case Normalization, SurrogateStandard -> "/TargetedMS/images/PeptideStandard.png";
+                    case QC -> "/TargetedMS/images/PeptideQc.png";
+                    case iRT -> "/TargetedMS/images/PeptideIrt.png";
+                };
             }
         }
 

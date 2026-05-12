@@ -62,7 +62,7 @@ public class QCFolderImporter implements FolderImporter
                             {
                                 ctx.getLogger().info("Starting QC Plot settings import");
                                 numRows = qcSetting.importSettingsFromFile(ctx, panoramaQCDir, null, null, null, null);
-                                ctx.getLogger().info("Finished importing " + numRows + " QC Plot settings from " + qcSetting.getSettingsFileName() + " as properties.");
+                                ctx.getLogger().info("Finished importing {} QC Plot settings from {} as properties.", numRows, qcSetting.getSettingsFileName());
                             }
                             else
                             {
@@ -70,9 +70,9 @@ public class QCFolderImporter implements FolderImporter
                                 QueryUpdateService qus = ti.getUpdateService();
                                 BatchValidationException errors = new BatchValidationException();
 
-                                ctx.getLogger().info("Starting data import from " + qcSetting.getSettingsFileName() + " into targetedms." + qcSetting.getTableName());
+                                ctx.getLogger().info("Starting data import from {} into targetedms.{}", qcSetting.getSettingsFileName(), qcSetting.getTableName());
                                 numRows = qcSetting.importSettingsFromFile(ctx, panoramaQCDir, schema, ti, qus, errors);
-                                ctx.getLogger().info("Finished importing " + numRows + " rows from " + qcSetting.getSettingsFileName() + " into targetedms." + qcSetting.getTableName());
+                                ctx.getLogger().info("Finished importing {} rows from {} into targetedms.{}", numRows, qcSetting.getSettingsFileName(), qcSetting.getTableName());
                             }
                         }
                         catch (IOException e)

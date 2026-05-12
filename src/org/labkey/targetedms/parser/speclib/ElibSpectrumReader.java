@@ -106,7 +106,7 @@ public class ElibSpectrumReader extends LibSpectrumReader
         if(!spectra.isEmpty())
         {
             sortElibSpectra(spectra);
-            ElibSpectrum bestSpectrum = spectra.get(0);
+            ElibSpectrum bestSpectrum = spectra.getFirst();
             readPeaks(conn, bestSpectrum);
 
             if(getRedundant)

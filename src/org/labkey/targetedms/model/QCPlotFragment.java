@@ -195,7 +195,7 @@ public class QCPlotFragment
         return jsonObject;
     }
 
-    public void setSeriesColor(Color seriesColor)
+    public void setSeriesColor(@Nullable Color seriesColor)
     {
         _seriesColor = seriesColor;
     }

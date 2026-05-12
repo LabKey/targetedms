@@ -126,8 +126,8 @@ public class TargetedMSSkydTextIdTest extends TargetedMSTest
         for (String href : detailHrefs)
         {
             goToURL(new URL(href), 10000);
-            waitForElement(locators.get(0));
-            List<WebElement> firstReplicateChromatograms = locators.get(0).findElements(getDriver());
+            waitForElement(locators.getFirst());
+            List<WebElement> firstReplicateChromatograms = locators.getFirst().findElements(getDriver());
             Assert.assertNotEquals(0, firstReplicateChromatograms.size());
             for (int iReplicate = 1; iReplicate < locators.size(); iReplicate++)
             {

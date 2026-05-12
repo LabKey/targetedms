@@ -218,8 +218,8 @@ public class CrossLinkedPeptideInfo
             Assert.assertEquals("Linker count", 1, i._linkers.size());
             Assert.assertEquals("Extra sequences", 1, i.getExtraSequences().size());
             Assert.assertEquals("Link location", Set.of(1), i.getBaseSequence().getLinkIndices());
-            Assert.assertEquals("Link location", Set.of(2), i.getExtraSequences().get(0).getLinkIndices());
-            Assert.assertEquals("Linker mass", -2.01565, i._linkers.get(0).getMass(), 0.00001);
+            Assert.assertEquals("Link location", Set.of(2), i.getExtraSequences().getFirst().getLinkIndices());
+            Assert.assertEquals("Linker mass", -2.01565, i._linkers.getFirst().getMass(), 0.00001);
         }
 
         @Test
@@ -230,7 +230,7 @@ public class CrossLinkedPeptideInfo
             Assert.assertEquals("Modified peptides", Arrays.asList("SC[+57.0]DK", "GE[-4.5]C"), i._modifiedPeptides);
             Assert.assertEquals("Linker count", 1, i._linkers.size());
             Assert.assertEquals("Link location", Set.of(1, 2), i.getBaseSequence().getLinkIndices());
-            Assert.assertEquals("Link location", Set.of(0, 1), i.getExtraSequences().get(0).getLinkIndices());
+            Assert.assertEquals("Link location", Set.of(0, 1), i.getExtraSequences().getFirst().getLinkIndices());
         }
 
         @Test

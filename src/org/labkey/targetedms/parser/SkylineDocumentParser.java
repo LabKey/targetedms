@@ -45,7 +45,6 @@ import org.labkey.targetedms.parser.list.ListData;
 import org.labkey.targetedms.parser.proto.SkylineDocument;
 import org.labkey.targetedms.parser.skyd.ChromGroupHeaderInfo;
 
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.File;
@@ -286,7 +285,7 @@ public class SkylineDocumentParser implements AutoCloseable
             String optDbFileName = FilenameUtils.getName(optDbPath);
             File optDbFile = new File(_file.getParent(), optDbFileName);
             if (! optDbFile.exists() ) {
-                _log.warn("Input OPTDB database does not exist " + optDbFileName);
+                _log.warn("Input OPTDB database does not exist {}", optDbFileName);
             }
             else
             {
@@ -303,7 +302,7 @@ public class SkylineDocumentParser implements AutoCloseable
                                 schemaVersion = rs.getInt("SchemaVersion");
                                 if (schemaVersion > 3)
                                 {
-                                    _log.warn("Unsupported OPTDB version: " + schemaVersion + " in OPTDB file " + optDbFile + ", attempting to continue");
+                                    _log.warn("Unsupported OPTDB version: {} in OPTDB file {}, attempting to continue", schemaVersion, optDbFile);
                                 }
                             }
                             else
@@ -358,7 +357,7 @@ public class SkylineDocumentParser implements AutoCloseable
             String iRTFileName = FilenameUtils.getName(irtDatabasePath);
             File iRTFile = new File(_file.getParent(), iRTFileName);
             if (! iRTFile.exists() ) {
-                _log.warn("Input iRT database does not exist " + iRTFileName);
+                _log.warn("Input iRT database does not exist {}", iRTFileName);
             }
             else
             {
@@ -412,7 +411,7 @@ public class SkylineDocumentParser implements AutoCloseable
         }
         else
         {
-            _log.warn("Unable to find file " + skydFile + ", unable to import chromatograms");
+            _log.warn("Unable to find file {}, unable to import chromatograms", skydFile);
         }
         return null;
     }
@@ -460,8 +459,7 @@ public class SkylineDocumentParser implements AutoCloseable
                 else if(version > MAX_SUPPORTED_VERSION)
                 {
                     // We will log a warning but continue with the import.
-                    _log.warn("The version of this Skyline document is " + version +
-                              ". This is newer than the highest supported version " + MAX_SUPPORTED_VERSION);
+                    _log.warn("The version of this Skyline document is {}. This is newer than the highest supported version " + MAX_SUPPORTED_VERSION, version);
                 }
 
                 _formatVersion = String.valueOf(version);
@@ -1054,7 +1052,7 @@ public class SkylineDocumentParser implements AutoCloseable
             if(sampleFileList.size() == 1)
             {
                 // Only for replicates with single sample files, store the id given by Skyline to the sample file.
-                _replicateSampleFileIdMap.put(replicate.getName(), sampleFileList.get(0).getSkylineId());
+                _replicateSampleFileIdMap.put(replicate.getName(), sampleFileList.getFirst().getSkylineId());
             }
         }
 
@@ -1391,7 +1389,7 @@ public class SkylineDocumentParser implements AutoCloseable
     {
         for (Map.Entry<String, AtomicInteger> entry : _missingChromatograms.entrySet())
         {
-            _log.warn("Missed importing " + entry.getValue().intValue() + " chromatograms from sample file " + entry.getKey());
+            _log.warn("Missed importing {} chromatograms from sample file {}", entry.getValue().intValue(), entry.getKey());
         }
     }
 

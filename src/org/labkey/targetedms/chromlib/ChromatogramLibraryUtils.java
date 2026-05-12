@@ -36,7 +36,6 @@ import org.labkey.targetedms.query.ConflictResultsManager;
 import org.labkey.vfs.FileLike;
 import org.sqlite.SQLiteConfig;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

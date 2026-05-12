@@ -95,7 +95,7 @@ public class PeptideGroupManager
     public static Protein getProteinForPeptideGroupId(long id)
     {
         List<Protein> result = getProteins(new SQLFragment("pg.Id = ?", id));
-        return result.isEmpty() ? null : result.get(0);
+        return result.isEmpty() ? null : result.getFirst();
     }
 
     public static List<Protein> getProteins(SQLFragment whereSql)

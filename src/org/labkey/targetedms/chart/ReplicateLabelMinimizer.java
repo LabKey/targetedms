@@ -48,7 +48,7 @@ public class ReplicateLabelMinimizer
 
         List<String> normalizedLabels = normalizeLabels(labels);
 
-        String[] labelParts = normalizedLabels.get(0).split(String.valueOf(LABEL_SEP_CHAR));
+        String[] labelParts = normalizedLabels.getFirst().split(String.valueOf(LABEL_SEP_CHAR));
         if(labelParts.length == 1)
         {
             return originalLabels(labels);

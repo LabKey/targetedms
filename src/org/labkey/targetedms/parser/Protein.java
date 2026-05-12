@@ -179,7 +179,7 @@ public class Protein extends AnnotatedEntity<ProteinAnnotation>
                 }
                 catch (NumberFormatException e)
                 {
-                    LOG.debug("Invalid protein CDR value: " + cdrRangesString);
+                    LOG.debug("Invalid protein CDR value: {}", cdrRangesString);
                 }
             }
         }

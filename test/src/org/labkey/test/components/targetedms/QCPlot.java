@@ -16,7 +16,6 @@
 package org.labkey.test.components.targetedms;
 
 import org.junit.Assert;
-import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.util.targetedms.QCHelper;
 import org.openqa.selenium.WebElement;
@@ -29,7 +28,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.labkey.test.BaseWebDriverTest.getCurrentTest;
-import static org.labkey.test.util.TestLogger.log;
 
 public class QCPlot
 {

@@ -198,7 +198,7 @@ public class SkylineAuditLogManager
                 ent.setDocumentGUID(pContext._documentGUID);
                 pContext._rootHash.update(ent.getEntryHash().getBytes(StandardCharsets.UTF_8));
                 // Insert at the beginning of the list so we can quickly iterate in reverse order for validation
-                entries.add(0, ent);
+                entries.addFirst(ent);
             }
             catch (XMLStreamException e)
             {
@@ -247,7 +247,7 @@ public class SkylineAuditLogManager
         }
 
         if (pContext._runId != null)       //set the document version id on the chronologically last log entry.
-            entries.get(entries.size() - 1).setVersionId(pContext._runId);
+            entries.getLast().setVersionId(pContext._runId);
 
         AuditLogTree treePointer = pContext._logTree;
         int persistedEntriesCount = 0;
@@ -280,7 +280,7 @@ public class SkylineAuditLogManager
             }
         }
         if (persistedEntriesCount == 0)      //if no entries were actually saved into the database we are uploading an earlier document version
-            entries.get(entries.size() - 1).insertRunAuditLogEntry(user, pContext._runId);   //and still need to update the terminal entry with the versionId.
+            entries.getLast().insertRunAuditLogEntry(user, pContext._runId);   //and still need to update the terminal entry with the versionId.
 
         return entries.size();
     }
@@ -304,7 +304,8 @@ public class SkylineAuditLogManager
      * Builds a tree of audit log entry tokens representing the document versioning tree
      * @return the root node of the tree
      */
-    private AuditLogTree buildLogTree(@NotNull GUID pDocumentGUID) throws AuditLogException {
+    private AuditLogTree buildLogTree(@NotNull GUID pDocumentGUID)
+    {
 
         TableInfo entryTbl = TargetedMSManager.getTableInfoSkylineAuditLogEntry();
 
@@ -440,7 +441,7 @@ public class SkylineAuditLogManager
             run.setContainer(container);
             run.setDocumentGUID(pDocumentGUID);
             Table.insert(_user, TargetedMSManager.getTableInfoRuns(), run);
-            _logger.info(String.format("new run is inserted with id %d", run.getId()));
+            _logger.info("new run is inserted with id {}", run.getId());
             return run;
         }
 
@@ -564,7 +565,7 @@ public class SkylineAuditLogManager
 
             for(String fileName : testFileNames)
             {
-                _logger.info("AuditLogFiles/" + fileName);
+                _logger.info("AuditLogFiles/{}", fileName);
                 runs.push(getNewRun(_docGUID));
                 tree = persistALogFile("AuditLogFiles/" + fileName, runs.peek());
             }

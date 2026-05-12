@@ -65,7 +65,7 @@ public class SkylineFileUtils
         TargetedMSRun run = TargetedMSManager.getRunByLsid(runLSID, container);
         if (run == null)
         {
-            LOG.warn("Run with experimentRunLSID " + runLSID + " does not exist in container " + container.getPath());
+            LOG.warn("Run with experimentRunLSID {} does not exist in container {}", runLSID, container.getPath());
             return null;
         }
 
@@ -79,11 +79,11 @@ public class SkylineFileUtils
             }
             else
             {
-                LOG.warn("Skyline file does not exist: " + (skyDocfile != null ? FileUtil.getFileName(skyDocfile) : null) + ", referenced from " + container.getPath());
+                LOG.warn("Skyline file does not exist: {}, referenced from {}", skyDocfile != null ? FileUtil.getFileName(skyDocfile) : null, container.getPath());
                 return null;
             }
         }
-        LOG.warn("No input data found for targetedms run " + run.getId() + " in container " + container.getPath());
+        LOG.warn("No input data found for targetedms run {} in container {}", run.getId(), container.getPath());
         return null;
     }
 }

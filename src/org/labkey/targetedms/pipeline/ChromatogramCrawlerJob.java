@@ -47,7 +47,7 @@ public class ChromatogramCrawlerJob extends PipelineJob
         getLogger().info("Description of key statuses:");
         for (Chromatogram.SourceStatus value : Chromatogram.SourceStatus.values())
         {
-            getLogger().info("\t" + value.toString() + ": " + value.getDescription());
+            getLogger().info("\t{}: {}", value.toString(), value.getDescription());
         }
         getLogger().info("\n");
     }
@@ -81,7 +81,7 @@ public class ChromatogramCrawlerJob extends PipelineJob
         setStatus(TaskStatus.running);
         var containers = ContainerManager.getAllChildren(getContainer(), getUser());
 
-        getLogger().info("Starting to process chromatogram rows over " + containers.size() + " containers");
+        getLogger().info("Starting to process chromatogram rows over {} containers", containers.size());
 
         CrawlSummary crawlSummary = new CrawlSummary();
 
@@ -99,11 +99,11 @@ public class ChromatogramCrawlerJob extends PipelineJob
 
             if (containerPCICount == 0)
             {
-                getLogger().info("Skipping container " + container.getPath() + " - no chromatogram rows to process");
+                getLogger().info("Skipping container {} - no chromatogram rows to process", container.getPath());
             }
             else
             {
-                getLogger().info("Starting processing of container " + container.getPath() + " (" + containerCount + " of " + containers.size() + ") with " + containerPCICount + " chromatogram rows to process");
+                getLogger().info("Starting processing of container {} ({} of {}) with {} chromatogram rows to process", container.getPath(), containerCount, containers.size(), containerPCICount);
 
                 var handler = new PrecursorChromInfoHandler(container);
                 try

@@ -61,7 +61,7 @@ public class SkylineListSchema extends UserSchema
             if (!listDefs.isEmpty())
             {
                 // Use the first one as the base, as it is the most recently imported version
-                ListDefinition firstListDef = listDefs.get(0);
+                ListDefinition firstListDef = listDefs.getFirst();
                 SkylineListTable firstTable = new SkylineListTable(this, firstListDef);
                 SkylineListUnionTable result = new SkylineListUnionTable(this, firstTable);
 

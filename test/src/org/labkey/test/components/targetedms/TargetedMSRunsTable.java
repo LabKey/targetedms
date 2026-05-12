@@ -23,6 +23,7 @@ import org.openqa.selenium.WebElement;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -126,7 +127,7 @@ public class TargetedMSRunsTable extends DataRegionTable
             assertTrue(idx != -1);
             List<String>verCount = getRowDataAsText(idx, "Versions");
             assertEquals(1, verCount.size());
-            assertEquals("Expected version count for " + latestVersions, String.valueOf(verCounts[i]), verCount.get(0));
+            assertEquals("Expected version count for " + latestVersions, String.valueOf(verCounts[i]), verCount.getFirst());
             i++;
         }
     }
@@ -134,10 +135,10 @@ public class TargetedMSRunsTable extends DataRegionTable
     public void verifyNoChain(int rowCount)
     {
         List<WebElement> buttons = getHeaderButtons();
-        assertTrue(!getWrapper().getTexts(buttons).contains(ALL_VERSIONS));
-        assertTrue(!getWrapper().getTexts(buttons).contains(LATEST_VERSIONS));
+        assertFalse(getWrapper().getTexts(buttons).contains(ALL_VERSIONS));
+        assertFalse(getWrapper().getTexts(buttons).contains(LATEST_VERSIONS));
         assertEquals(rowCount, getDataRowCount());
-        assertTrue(!getColumnLabels().contains("Versions"));
-        assertTrue(!getColumnLabels().contains("Replaced By"));
+        assertFalse(getColumnLabels().contains("Versions"));
+        assertFalse(getColumnLabels().contains("Replaced By"));
     }
 }

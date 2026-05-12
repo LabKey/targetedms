@@ -11,7 +11,6 @@ import org.labkey.test.pages.targetedms.PanoramaDashboard;
 import org.labkey.test.util.DataRegionTable;
 import org.openqa.selenium.NoSuchElementException;
 
-import java.sql.Timestamp;
 import java.util.Arrays;
 
 import static org.labkey.test.util.PermissionsHelper.READER_ROLE;

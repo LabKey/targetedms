@@ -19,7 +19,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.Locator;
-import org.labkey.test.util.DataRegion;
 import org.labkey.test.util.DataRegionTable;
 
 import static org.junit.Assert.assertTrue;

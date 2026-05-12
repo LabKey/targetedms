@@ -529,7 +529,7 @@ public class OutlierGenerator
         {
             QCPlotFragment qcPlotFragment = new QCPlotFragment();
 
-            RawMetricDataSet firstValue = entry.getValue().get(0);
+            RawMetricDataSet firstValue = entry.getValue().getFirst();
 
             /* Common values for the whole peptide */
             qcPlotFragment.setDataType(firstValue.getDataType());
@@ -620,7 +620,7 @@ public class OutlierGenerator
                     outlierCountsPerMetric.put(rawMetricDataSet.getMetric().getName(), outlierCountsPerMetric.get(rawMetricDataSet.getMetric().getName()) + 1);
                 }
             }
-            peptideOutlier.setPrecursorId(entry.getValue().get(0).getPrecursorChromInfoId());
+            peptideOutlier.setPrecursorId(entry.getValue().getFirst().getPrecursorChromInfoId());
             peptideOutlier.setOutlierCountsPerMetric(outlierCountsPerMetric);
             peptideOutlier.setTotalOutliers(totalOutliers);
             peptideOutliers.add(peptideOutlier);

@@ -42,7 +42,6 @@ import org.labkey.targetedms.view.ModifiedPeptideHtmlMaker;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -320,13 +319,13 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
                                 }
                                 else
                                 {
-                                    LOG.debug("Modified residue didn't match for " + modificationSite + " at calculated index " + aaIndex + " on peptide " + sequence + " in document " + runId);
+                                    LOG.debug("Modified residue didn't match for {} at calculated index {} on peptide {} in document {}", modificationSite, aaIndex, sequence, runId);
                                 }
                             }
                         }
                         catch (NumberFormatException ignored)
                         {
-                            LOG.debug("Bad modificationSite value: " + modificationSite + " in document " + runId);
+                            LOG.debug("Bad modificationSite value: {} in document {}", modificationSite, runId);
                         }
                     }
                 }

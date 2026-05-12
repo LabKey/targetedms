@@ -281,7 +281,7 @@ public interface ComparisonCategory
 
             if(peptideCategories.size() == 1)
             {
-                ComparisonCategory.PeptideCategory category = peptideCategories.get(0);
+                ComparisonCategory.PeptideCategory category = peptideCategories.getFirst();
                 String sequence = category.getSequence();
                 prefixLen = Math.max(3, prefixLen - 1);
                 category.setSeqPrefix(sequence.substring(0, Math.min(prefixLen, sequence.length())));
@@ -296,7 +296,7 @@ public interface ComparisonCategory
             if(uniqSequences.size() == 1)
             {
                 prefixLen = Math.max(3, prefixLen - 1);
-                prefixLen = Math.min(prefixLen, peptideCategories.get(0).getSequence().length());
+                prefixLen = Math.min(prefixLen, peptideCategories.getFirst().getSequence().length());
 
                 // If all the given categories have the same sequence, set the
                 for(ComparisonCategory.PeptideCategory category: peptideCategories)

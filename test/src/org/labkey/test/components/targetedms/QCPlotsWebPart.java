@@ -33,14 +33,11 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -78,7 +75,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
                         els.addAll(elementCache().findNoRecordsMessage()) ||
                         els.addAll(elementCache().findNoDataMessage()),
                 "QC Plots Webpart load", 10_000);
-        return els.get(0);
+        return els.getFirst();
     }
 
     private void doAndWaitForUpdate(Runnable action)
@@ -556,7 +553,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         }
         else
         {
-            startPoint = elementCache().svgBackgrounds.findElements(this).get(0);
+            startPoint = elementCache().svgBackgrounds.findElements(this).getFirst();
             xStartOffset = -1 * (Integer.parseInt(startPoint.getAttribute("width")) / 2);
         }
 
@@ -568,7 +565,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         }
         else
         {
-            endPoint = elementCache().svgBackgrounds.findElements(this).get(0);
+            endPoint = elementCache().svgBackgrounds.findElements(this).getFirst();
             xEndOffset = (Integer.parseInt(endPoint.getAttribute("width")) / 2) - 1;
         }
 
@@ -579,7 +576,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         builder.moveToElement(startPoint, xStartOffset, yStartOffset).clickAndHold().moveToElement(endPoint, xEndOffset, yEndOffset).release().perform();
 
         List<WebElement> gsButtons = elementCache().guideSetSvgButton.findElements(this);
-        getWrapper().shortWait().until(ExpectedConditions.elementToBeClickable(gsButtons.get(0)));
+        getWrapper().shortWait().until(ExpectedConditions.elementToBeClickable(gsButtons.getFirst()));
 
         Integer brushPointCount = getPointElements("fill", "rgba(20, 204, 201, 1)", false).size();
         assertEquals("Unexpected number of points selected via brushing", guideSet.getBrushSelectedPoints(), brushPointCount);
@@ -587,7 +584,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         boolean expectPageReload = expectErrorMsg == null;
         if (guideSet.getBrushSelectedPoints() != null && guideSet.getBrushSelectedPoints() < 5)
         {
-            gsButtons.get(0).click(); // Create button : index 0
+            gsButtons.getFirst().click(); // Create button : index 0
             Window<?> warning = Window(getDriver()).withTitle("Create Guide Set Warning").waitFor();
             if (expectPageReload)
                 warning.clickButton("Yes");
@@ -596,12 +593,12 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         }
         else if (expectPageReload)
         {
-            getWrapper().clickAndWait(gsButtons.get(0)); // Create button : index 0
+            getWrapper().clickAndWait(gsButtons.getFirst()); // Create button : index 0
             waitForReady();
         }
         else
         {
-            gsButtons.get(0).click(); // Create button : index 0
+            gsButtons.getFirst().click(); // Create button : index 0
         }
 
         if (expectErrorMsg != null)

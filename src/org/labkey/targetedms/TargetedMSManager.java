@@ -2788,7 +2788,7 @@ public class TargetedMSManager
             return;
         }
 
-        _log.info("Populating PTMPercentsGroupedPrepivotCache for run " + run.getId());
+        _log.info("Populating PTMPercentsGroupedPrepivotCache for run {}", run.getId());
 
         String labkeySql = "SELECT\n" +
                 "  Modification,\n" +
@@ -2826,7 +2826,7 @@ public class TargetedMSManager
         insertSql.add(run.getId());
         new SqlExecutor(getSchema()).execute(insertSql);
 
-        _log.info("Finished populating PTMPercentsGroupedPrepivotCache for run " + run.getId());
+        _log.info("Finished populating PTMPercentsGroupedPrepivotCache for run {}", run.getId());
     }
 
     /**
