@@ -258,7 +258,9 @@ import org.labkey.targetedms.view.CalibrationCurveView;
 import org.labkey.targetedms.view.CalibrationCurvesView;
 import org.labkey.targetedms.view.ChromatogramGridView;
 import org.labkey.targetedms.view.ChromatogramsDataRegion;
+import org.labkey.targetedms.view.DocumentMoleculeGroupsView;
 import org.labkey.targetedms.view.DocumentPrecursorsView;
+import org.labkey.targetedms.view.DocumentProteinsView;
 import org.labkey.targetedms.view.DocumentTransitionsView;
 import org.labkey.targetedms.view.DocumentView;
 import org.labkey.targetedms.view.FiguresOfMeritView;
@@ -4377,7 +4379,7 @@ public class TargetedMSController extends SpringActionController
     // Action to display a document's transition or precursor list, with both proteomics and small molecule views
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public abstract class ShowRunSplitDetailsAction<VIEWTYPE extends DocumentView> extends AbstractShowRunDetailsAction<RunDetailsForm, VIEWTYPE>
+    public abstract class ShowRunSplitDetailsAction<VIEWTYPE extends QueryView> extends AbstractShowRunDetailsAction<RunDetailsForm, VIEWTYPE>
     {
         public ShowRunSplitDetailsAction()
         {
@@ -4535,49 +4537,38 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class ShowProteinListAction extends SimpleViewAction<RunDetailsForm>
+    public class ShowProteinListAction extends ShowRunSplitDetailsAction<QueryView>
     {
-        private static final String DATA_REGION_NAME = "ProteinList";
-
         @Override
-        public ModelAndView getView(RunDetailsForm form, BindException errors)
+        protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
         {
-            if (!form.hasRunId())
-                throw new RedirectException(new ActionURL(ShowListAction.class, getContainer()));
-
-            TargetedMSRun run = validateRun(form.getId());
-
             TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
-            QuerySettings settings;
-            String title;
+            QueryView view;
 
-            if (run.getPeptideCount() > 0)
+            if (DocumentProteinsView.DATAREGION_NAME.equals(dataRegion))
             {
-                settings = new QuerySettings(getViewContext(), DATA_REGION_NAME, TargetedMSSchema.TABLE_PROTEIN);
-                settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("PeptideGroupId", "RunId"), form.getId()));
-                title = "Proteins";
+                view = new DocumentProteinsView(getViewContext(), schema, form.getId(), forExport);
             }
             else
             {
-                settings = new QuerySettings(getViewContext(), DATA_REGION_NAME, TargetedMSSchema.TABLE_PEPTIDE_GROUP);
-                settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("RunId"), form.getId()));
-                title = "Molecule Lists";
+                view = new DocumentMoleculeGroupsView(getViewContext(), schema, form.getId(), forExport);
             }
 
-            settings.setContainerFilterName(null);
-            QueryView view = schema.createView(getViewContext(), settings, errors);
-            view.setAllowableContainerFilterTypes();
             view.setShowDetailsColumn(false);
             view.setShowFilterDescription(false);
-            view.setFrame(WebPartView.FrameType.PORTAL);
-            view.setTitle(title);
             return view;
         }
 
         @Override
-        public void addNavTrail(NavTree root)
+        public String getDataRegionNamePeptide()
         {
-            root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
+            return DocumentProteinsView.DATAREGION_NAME;
+        }
+
+        @Override
+        public String getDataRegionNameSmallMolecule()
+        {
+            return DocumentMoleculeGroupsView.DATAREGION_NAME;
         }
     }
 
