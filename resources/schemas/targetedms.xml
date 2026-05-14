@@ -1358,6 +1358,7 @@
             <column columnName="TimeValueOption"/>
             <column columnName="TraceName"/>
             <column columnName="YAxisLabel"/>
+            <column columnName="AnnotationName"/>
         </columns>
     </table>
     <table tableName="QCMetricExclusion" tableDbType="TABLE">

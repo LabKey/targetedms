@@ -63,6 +63,7 @@
                     '<button type="button" class="labkey-button" id="cancelButton" style="margin-right: 20px;">Cancel</button>' +
                     '<button type="button" class="labkey-button" id="createNewCustomMetricButton" style="margin-right: 20px;">Add New Custom Metric</button>' +
                     '<button type="button" class="labkey-button" id="createNewTraceMetricButton" style="margin-right: 20px;">Add New Trace Metric</button>' +
+                    '<button type="button" class="labkey-button" id="createNewAnnotationMetricButton" style="margin-right: 20px;">Add Annotation-Backed Metric</button>' +
                     '<button type="button" class="labkey-button" id="clearCacheButton">Clear Cached Metric Values</button>' +
                     '</form><br>Edits to queries backing existing custom metrics require a manual cache clearing to display the updated results.</p>';
 
@@ -80,7 +81,10 @@
                 LABKEY.internal.ConfigureQCMetrics.addNewMetric('custom');
             });
             jQuery('#createNewTraceMetricButton').click(function() {
-                LABKEY.internal.ConfigureQCMetrics.addNewMetric('trace')
+                LABKEY.internal.ConfigureQCMetrics.addNewMetric('trace');
+            });
+            jQuery('#createNewAnnotationMetricButton').click(function() {
+                LABKEY.internal.ConfigureQCMetrics.addNewMetric('annotation');
             });
             jQuery('#clearCacheButton').click(function() {
                 jQuery('#qcMetricsError').text('Clearing cached metrics...');
@@ -169,7 +173,10 @@
 
                 const op = 'update';
                 if (clickedQcMetricConfig.TraceName) {
-                    LABKEY.internal.ConfigureQCMetrics.showTraceMetricWindow(op, clickedQcMetricConfig)
+                    LABKEY.internal.ConfigureQCMetrics.showTraceMetricWindow(op, clickedQcMetricConfig);
+                }
+                else if (clickedQcMetricConfig.AnnotationName) {
+                    LABKEY.internal.ConfigureQCMetrics.showAnnotationMetricWindow(op, clickedQcMetricConfig);
                 }
                 else {
                     LABKEY.internal.ConfigureQCMetrics.showCustomMetricWindow(op, clickedQcMetricConfig);
@@ -242,13 +249,27 @@
                 });
             },
 
+            showAnnotationMetricWindow: function (op, clickedMetric) {
+                const windowConfig = {
+                    parent: this,
+                    operation: op
+                };
+                if (clickedMetric) {
+                    windowConfig.metric = clickedMetric;
+                }
+                Ext4.create('Panorama.Window.AddAnnotationMetricWindow', windowConfig).show();
+            },
+
             addNewMetric: function (metricType) {
                 const op = 'insert';
                 if (metricType === 'custom') {
                     this.showCustomMetricWindow(op);
                 }
                 else if (metricType === 'trace') {
-                    this.showTraceMetricWindow(op)
+                    this.showTraceMetricWindow(op);
+                }
+                else if (metricType === 'annotation') {
+                    this.showAnnotationMetricWindow(op);
                 }
             },
 
