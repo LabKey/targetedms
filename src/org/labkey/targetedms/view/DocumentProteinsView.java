@@ -42,7 +42,6 @@ public class DocumentProteinsView extends QueryView
     @Override
     public TableInfo createTable()
     {
-        assert null != _schema : "TargetedMSSchema was not set in DocumentProteinsView";
         TargetedMSTable tinfo = (TargetedMSTable) _schema.getTable(TargetedMSSchema.TABLE_PROTEIN, null, true, true);
         tinfo.addContainerTableFilter(new CompareType.EqualsCompareClause(FieldKey.fromParts("Id"), CompareType.EQUAL, _runId));
         tinfo.setLocked(true);

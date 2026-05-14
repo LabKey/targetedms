@@ -26,7 +26,7 @@ import org.labkey.targetedms.query.TargetedMSTable;
 public class DocumentMoleculeGroupsView extends QueryView
 {
     public static final String DATAREGION_NAME = "document_molecule_groups_view";
-    public static final String TITLE = "Molecule Lists";
+    public static final String TITLE = "Molecules List";
 
     private final TargetedMSSchema _schema;
     private final long _runId;
@@ -42,7 +42,6 @@ public class DocumentMoleculeGroupsView extends QueryView
     @Override
     public TableInfo createTable()
     {
-        assert null != _schema : "TargetedMSSchema was not set in DocumentMoleculeGroupsView";
         TargetedMSTable tinfo = (TargetedMSTable) _schema.getTable(TargetedMSSchema.TABLE_PEPTIDE_GROUP, null, true, true);
         tinfo.addContainerTableFilter(new CompareType.EqualsCompareClause(FieldKey.fromParts("Id"), CompareType.EQUAL, _runId));
         tinfo.setLocked(true);
