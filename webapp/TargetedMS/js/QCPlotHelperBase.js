@@ -805,6 +805,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         }
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(combinePlotData, plotType, isCUSUMMean, metricProps));
 
+        var yZoomDomainCombined = this.getYZoomDomain ? this.getYZoomDomain(id) : null;
+        if (yZoomDomainCombined) {
+            trendLineProps.yZoomDomain = yZoomDomainCombined;
+        }
+
         // Suppress the mean line for multi-series plots
         trendLineProps.mean = undefined;
 
@@ -860,6 +865,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         const plot = LABKEY.vis.TrendingLinePlot(plotConfig);
         plot.render();
 
+        this.addYZoomInteraction(plot, id);
         this.attachCombinedLegendClickHandlers();
 
         this.addAnnotationsToPlot(plot, combinePlotData);
@@ -945,6 +951,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(precursorInfo, plotType, isCUSUMMean, metricProps));
 
+        var yZoomDomain = this.getYZoomDomain ? this.getYZoomDomain(id) : null;
+        if (yZoomDomain) {
+            trendLineProps.yZoomDomain = yZoomDomain;
+        }
+
         var plotLegendData = this.getAdditionalPlotLegend(plotType);
         if (Ext4.isArray(this.legendData)) {
             plotLegendData = plotLegendData.concat(this.legendData);
@@ -1022,6 +1033,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         const plot = LABKEY.vis.TrendingLinePlot(plotConfig);
         plot.render();
 
+        this.addYZoomInteraction(plot, id);
         this.addAnnotationsToPlot(plot, precursorInfo);
         this.addGuideSetTrainingRangeToPlot(plot, precursorInfo);
 
@@ -1065,5 +1077,131 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
     showInPlotLegends: function () {
         return true;
+    },
+
+    addYZoomInteraction: function(plot, plotId) {
+        var me = this;
+        var svg = this.getSvgElForPlot(plot);
+        var grid = plot.grid;
+
+        if (!plot.scales.yLeft || !plot.scales.yLeft.scale || !plot.scales.yLeft.scale.invert) {
+            return;
+        }
+
+        var yScale = plot.scales.yLeft.scale;
+        var overlayWidth = grid.leftEdge - 2;
+        var gridTop = grid.topEdge;
+        var gridBottom = grid.bottomEdge;
+
+        var dragStartY = null;
+        var dragCurrentY = null;
+        var selectionRect = null;
+        var zoomButtonGroup = null;
+
+        var clampY = function(y) {
+            return Math.max(gridTop, Math.min(gridBottom, y));
+        };
+
+        var removeOverlays = function() {
+            if (selectionRect) {
+                selectionRect.remove();
+                selectionRect = null;
+            }
+            if (zoomButtonGroup) {
+                zoomButtonGroup.remove();
+                zoomButtonGroup = null;
+            }
+        };
+
+        var drag = d3.behavior.drag()
+            .on('dragstart', function() {
+                dragStartY = clampY(d3.mouse(svg.node())[1]);
+                dragCurrentY = dragStartY;
+                removeOverlays();
+            })
+            .on('drag', function() {
+                dragCurrentY = clampY(d3.mouse(svg.node())[1]);
+
+                var y1 = Math.min(dragStartY, dragCurrentY);
+                var y2 = Math.max(dragStartY, dragCurrentY);
+                var h = y2 - y1;
+
+                if (h < 1) { return; }
+
+                if (selectionRect) {
+                    selectionRect.attr('y', y1).attr('height', h);
+                }
+                else {
+                    selectionRect = svg.append('rect')
+                        .attr('class', 'y-zoom-selection')
+                        .attr('x', 1)
+                        .attr('y', y1)
+                        .attr('width', overlayWidth - 2)
+                        .attr('height', h)
+                        .style('pointer-events', 'none');
+                }
+            })
+            .on('dragend', function() {
+                var y1 = Math.min(dragStartY, dragCurrentY);
+                var y2 = Math.max(dragStartY, dragCurrentY);
+
+                if (y2 - y1 < 5) {
+                    removeOverlays();
+                    return;
+                }
+
+                // SVG y is inverted: smaller pixel y = larger domain value
+                var domainMax = yScale.invert(y1);
+                var domainMin = yScale.invert(y2);
+
+                var yMid = y1 + (y2 - y1) / 2;
+                var xMid = overlayWidth / 2;
+
+                zoomButtonGroup = svg.append('g').attr('class', 'y-zoom-buttons');
+
+                var makeBtn = function(text, xLeft, width, onClick) {
+                    var btnG = zoomButtonGroup.append('g');
+                    btnG.append('rect')
+                        .attr('x', xLeft).attr('y', yMid - 10).attr('rx', 5).attr('ry', 5)
+                        .attr('width', width).attr('height', 20)
+                        .style({'fill': '#ffffff', 'stroke': '#b4b4b4'});
+                    btnG.append('text')
+                        .text(text)
+                        .attr('x', xLeft + 5).attr('y', yMid + 4)
+                        .style({'fill': '#126495', 'font-size': '10px', 'font-weight': 'bold',
+                                'text-transform': 'uppercase', 'pointer-events': 'none'});
+                    btnG.on('click', onClick);
+                    return btnG;
+                };
+
+                makeBtn('Zoom', xMid - 57, 50, function() {
+                    removeOverlays();
+                    me.applyYZoom(plotId, domainMin, domainMax);
+                });
+
+                makeBtn('Cancel', xMid + 3, 55, function() {
+                    removeOverlays();
+                });
+            });
+
+        svg.append('rect')
+            .attr('class', 'y-zoom-overlay')
+            .attr('x', 0)
+            .attr('y', gridTop)
+            .attr('width', overlayWidth)
+            .attr('height', gridBottom - gridTop)
+            .style('fill', 'transparent')
+            .call(drag);
+
+        if (this.getYZoomDomain && this.getYZoomDomain(plotId)) {
+            svg.append('text')
+                .attr('class', 'qc-reset-zoom-link')
+                .text('Reset Zoom')
+                .attr('x', grid.leftEdge + 5)
+                .attr('y', grid.topEdge - 5)
+                .on('click', function() {
+                    me.resetYZoom(plotId);
+                });
+        }
     }
 });

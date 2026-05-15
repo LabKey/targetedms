@@ -82,6 +82,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     trailingRuns: null,
     minWidth: 1250, // Keep in sync with the width defined in qcTrendPlot.jsp
     width: '100%',
+    yZoomByPlot: {},
 
     SHOW_ALL_IN_A_SINGLE_PLOT: 'Show all series in a single plot',
     LABEL_WIDTH: 115,
@@ -1213,8 +1214,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         Ext4.get(this.plotDivId).mask("Loading...");
     },
 
-    displayTrendPlot: function() {
-
+    displayTrendPlot: function(preserveZoom) {
+        if (!preserveZoom) {
+            this.yZoomByPlot = {};
+        }
         this.setBrushingEnabled(false);
         this.updateSelectedAnnotations();
         this.setLoadingMsg();
@@ -2221,6 +2224,26 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 this.plotBrushSelection.plot.clearBrush();
             }
         }
+    },
+
+    getYZoomDomain: function(plotId) {
+        return this.yZoomByPlot && this.yZoomByPlot[plotId] ? this.yZoomByPlot[plotId] : null;
+    },
+
+    applyYZoom: function(plotId, yMin, yMax) {
+        if (!this.yZoomByPlot) {
+            this.yZoomByPlot = {};
+        }
+        this.yZoomByPlot[plotId] = [yMin, yMax];
+        this.displayTrendPlot(true /* preserveZoom */);
+        // TODO: add server-side metric tracking action (targetedms/trackQCPlotAction.api)
+    },
+
+    resetYZoom: function(plotId) {
+        if (this.yZoomByPlot) {
+            delete this.yZoomByPlot[plotId];
+        }
+        this.displayTrendPlot(true /* preserveZoom */);
     },
 
     getSvgElForPlot : function(plot) {
