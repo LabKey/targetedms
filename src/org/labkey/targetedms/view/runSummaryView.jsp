@@ -70,6 +70,12 @@
     ActionURL calibrationCurveListAction = new ActionURL(TargetedMSController.ShowCalibrationCurvesAction.class, getContainer());
     calibrationCurveListAction.addParameter("id", run.getId());
 
+    ActionURL peptideListAction = new ActionURL(TargetedMSController.ShowPeptideListAction.class, getContainer());
+    peptideListAction.addParameter("id", run.getId());
+
+    ActionURL moleculeListAction = new ActionURL(TargetedMSController.ShowMoleculeListAction.class, getContainer());
+    moleculeListAction.addParameter("id", run.getId());
+
     ActionURL listAction = new ActionURL(TargetedMSController.ShowListsAction.class, getContainer());
     listAction.addParameter("id", run.getId());
 
@@ -98,8 +104,8 @@
     &nbsp;
     <div>
         <a href="<%= h(proteinListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getPeptideGroupCount(), peptideGroupLabel))%></a>,
-        <% if (run.getPeptideCount() > 0) { %><a href="<%= h(precursorListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getPeptideCount(), "peptide"))%></a>,<% } %>
-        <% if (run.getSmallMoleculeCount() > 0) { %><a href="<%= h(precursorListAction + "#Small Molecule Precursor List") %>"><%= h(StringUtilsLabKey.pluralize(run.getSmallMoleculeCount(), "small molecule"))%></a>,<% } %>
+        <% if (run.getPeptideCount() > 0) { %><a href="<%= h(peptideListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getPeptideCount(), "peptide"))%></a>,<% } %>
+        <% if (run.getSmallMoleculeCount() > 0) { %><a href="<%= h(moleculeListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getSmallMoleculeCount(), "small molecule"))%></a>,<% } %>
         <a href="<%= h(precursorListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getPrecursorCount(), "precursor"))%></a>,
         <a href="<%= h(transitionListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getTransitionCount(), "transition"))%></a>
         &nbsp;-&nbsp;

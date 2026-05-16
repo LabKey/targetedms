@@ -90,6 +90,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         verifyImportedSmallMoleculeData();
         verifyAttributeGroupIdCalcs();
         testRawFileLinks(SKY_FILE_SMALLMOL_PEP);
+        verifyRunDetailLinks();
 
         // SKYD version 14
         importData(SKY_FILE_SKYD_14, ++jobCount);
@@ -483,7 +484,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         query.setFilter("Sequence", "Equals", "TNNPETLVALR");
         query = new DataRegionTable("query", this);
         assertEquals(1, query.getDataRowCount());
-        assertEquals("YAL038W", query.getDataAsText(0, "Protein / Label"));
+        assertEquals("YAL038W", query.getDataAsText(0, "Protein / Label").replace("⁠", ""));
         assertElementPresent(Locator.linkWithText("YAL038W"));
         assertEquals("TNNPETLVALR", query.getDataAsText(0, "Modified Peptide"));
         assertEquals("K", query.getDataAsText(0, "Next Aa"));
@@ -516,7 +517,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         query = new DataRegionTable("query", this);
         assertEquals(1, query.getDataRowCount());
         assertEquals("677.8818", query.getDataAsText(0, "Q1 m/z"));
-        assertEquals("YAL038W", query.getDataAsText(0, "Protein / Label"));
+        assertEquals("YAL038W", query.getDataAsText(0, "Protein / Label").replace("⁠", ""));
         assertElementPresent(Locator.linkWithText("YAL038W"));
         assertEquals("LTSLNVVAGSDLR", query.getDataAsText(0, "Peptide"));
         assertEquals("1343.7409", query.getDataAsText(0, "Peptide Neutral Mass"));
@@ -552,7 +553,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         query = new DataRegionTable("query", this);
         assertEquals(3, query.getDataRowCount());
         assertEquals("677.8818", query.getDataAsText(0, "Precursor Id Mz"));
-        assertEquals("YAL038W", query.getDataAsText(0, "Protein / Label"));
+        assertEquals("YAL038W", query.getDataAsText(0, "Protein / Label").replace("⁠", ""));
         assertElementPresent(Locator.linkWithText("YAL038W"));
         assertEquals("LTSLNVVAGSDLR", query.getDataAsText(0, "Peptide"));
         assertEquals("1343.7409", query.getDataAsText(0, "Peptide Neutral Mass"));
@@ -894,5 +895,57 @@ public class TargetedMSExperimentTest extends TargetedMSTest
             assertTrue(fullBodyText.contains("Login to view this data"));
             assertFalse(fullBodyText.contains("Don't have an account? Register"));
         }
+    }
+
+    @LogMethod
+    protected void verifyRunDetailLinks()
+    {
+        // From the runs listing (Panorama Dashboard), clicking a run's name navigates to the default
+        // run view. A mixed proteomics + small molecule document shows both precursor grids there.
+        // precursors_view is nested by protein group (24 total groups, 10 shown per page due to maxRows).
+        // getDataRowCount() returns outer rows + even-indexed expanded rows: 5+5+5=15 for 10 groups.
+        // small_mol_precursors_view has 3 molecule groups (all fit on one page): 2+1+2=5.
+        goToDashboard();
+        clickAndWait(Locator.linkContainingText(SKY_FILE_SMALLMOL_PEP));
+        DataRegionTable precursorsView = DataRegion(getDriver()).withName("precursors_view").find();
+        assertEquals(15, precursorsView.getDataRowCount());
+        DataRegionTable smallMolPrecursorsView = DataRegion(getDriver()).withName("small_mol_precursors_view").find();
+        assertEquals(5, smallMolPrecursorsView.getDataRowCount());
+
+        // Test each header link from runSummaryView.jsp while on the default run view.
+        // Each link must reach its own dedicated list page, not the precursor list.
+
+        // "27 molecule lists" → protein/molecule-list page: 24 protein groups + 3 molecule groups
+        clickAndWait(Locator.linkContainingText("27 molecule lists"));
+        DataRegionTable peptideGroupView = DataRegion(getDriver()).withName("PeptideGroup").find();
+        assertEquals(24, peptideGroupView.getDataRowCount());
+        DataRegionTable moleculeGroupView = DataRegion(getDriver()).withName("MoleculeGroup").find();
+        assertEquals(3, moleculeGroupView.getDataRowCount());
+
+        // Navigate back to the run's precursor list via the breadcrumb.
+        clickAndWait(Locator.linkContainingText("Targeted MS Runs"));
+
+        // "44 peptides" → peptide list page: one row per peptide
+        clickAndWait(Locator.linkContainingText("44"));
+        DataRegionTable peptideView = DataRegion(getDriver()).withName("Peptide").find();
+        assertEquals(44, peptideView.getDataRowCount());
+
+        // "98 small molecules" → small molecule list page: one row per molecule
+        clickAndWait(Locator.linkContainingText("98 small molecules"));
+        DataRegionTable moleculeView = DataRegion(getDriver()).withName("Molecule").find();
+        assertEquals(98, moleculeView.getDataRowCount());
+
+        // Verify the runSummaryView.jsp header links also work when on a non-default run detail page.
+        // The header is embedded on every run detail view, not just the precursor list.
+        // From the small molecule list page, click "27 molecule lists".
+        clickAndWait(Locator.linkContainingText("27 molecule lists"));
+        peptideGroupView = DataRegion(getDriver()).withName("PeptideGroup").find();
+        assertEquals(24, peptideGroupView.getDataRowCount());
+        moleculeGroupView = DataRegion(getDriver()).withName("MoleculeGroup").find();
+        assertEquals(3, moleculeGroupView.getDataRowCount());
+        // From the protein/molecule-list page, click "44 peptides".
+        clickAndWait(Locator.linkContainingText("44 peptides"));
+        peptideView = DataRegion(getDriver()).withName("Peptide").find();
+        assertEquals(44, peptideView.getDataRowCount());
     }
 }

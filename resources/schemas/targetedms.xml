@@ -183,11 +183,11 @@
             </column>
             <column columnName="PeptideCount">
                 <formatString>#,###</formatString>
-                <url>/targetedms-showPrecursorList.view?id=${Id}</url>
+                <url>/targetedms-showPeptideList.view?id=${Id}</url>
             </column>
             <column columnName="SmallMoleculeCount">
                 <formatString>#,###</formatString>
-                <url>/targetedms-showPrecursorList.view?id=${Id}</url>
+                <url>/targetedms-showMoleculeList.view?id=${Id}</url>
             </column>
             <column columnName="PrecursorCount">
                 <formatString>#,###</formatString>
