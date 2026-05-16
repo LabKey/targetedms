@@ -4497,7 +4497,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         protected DocumentPrecursorsView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
         {
-            DocumentPrecursorsView view;
+            DocumentPrecursorsView view = null;
             if (PeptidePrecursorsView.DATAREGION_NAME.equals(dataRegion))
             {
                 view = new PeptidePrecursorsView(getViewContext(),
