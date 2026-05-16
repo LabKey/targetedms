@@ -1569,7 +1569,7 @@ public class TargetedMSSchema extends UserSchema
         return null;
     }
 
-    private @NonNull TargetedMSTable createGroupTable(String name, ContainerFilter cf)
+    private @NotNull TargetedMSTable createGroupTable(String name, ContainerFilter cf)
     {
         boolean proteomics = TABLE_PEPTIDE_GROUP.equalsIgnoreCase(name);
         TargetedMSTable result = new AnnotatedTargetedMSTable(getSchema().getTable(TABLE_PEPTIDE_GROUP),

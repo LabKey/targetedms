@@ -4498,7 +4498,7 @@ public class TargetedMSController extends SpringActionController
         protected DocumentPrecursorsView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
         {
             DocumentPrecursorsView view;
-            if(PeptidePrecursorsView.DATAREGION_NAME.equals(dataRegion))
+            if (PeptidePrecursorsView.DATAREGION_NAME.equals(dataRegion))
             {
                 view = new PeptidePrecursorsView(getViewContext(),
                         new TargetedMSSchema(getUser(), getContainer()),
@@ -4506,7 +4506,7 @@ public class TargetedMSController extends SpringActionController
                         form.getId(),
                         forExport);
             }
-            else
+            else if (SmallMoleculePrecursorsView.DATAREGION_NAME.equals(dataRegion))
             {
                 view = new SmallMoleculePrecursorsView(getViewContext(),
                         new TargetedMSSchema(getUser(), getContainer()),
@@ -4515,9 +4515,12 @@ public class TargetedMSController extends SpringActionController
                         forExport);
             }
 
-            view.setShowExportButtons(true);
-            view.setShowDetailsColumn(false);
-            view.setButtonBarPosition(DataRegion.ButtonBarPosition.BOTH);
+            if (view != null)
+            {
+                view.setShowExportButtons(true);
+                view.setShowDetailsColumn(false);
+                view.setButtonBarPosition(DataRegion.ButtonBarPosition.BOTH);
+            }
 
             return view;
         }
