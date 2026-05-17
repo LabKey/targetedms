@@ -111,7 +111,7 @@ public class TargetedMSLibraryTest extends TargetedMSTest
         // Verify proteins in the library
         // Proteins in SKY_FILE1: "CTCF", "TAF11", "MAX", "QPrEST_CystC_HPRR5000001", "HPRR1440042", "DifferentProteinSameLabel",  "iRT-C18 Standard Peptides"
         List<String> proteins  = Arrays.asList("CTCF", "TAF11", "MAX", "QPrEST_CystC_HPRR5000001", "HPRR1440042", "DifferentProteinSameLabel",  "iRT-C18 Standard Peptides");
-        List<String> files = new ArrayList();
+        List<String> files = new ArrayList<>();
         for (int i = 0; i < proteins.size(); i++)
         {
             files.add(SKY_FILE1); // All proteins are from the same file in version 1.
@@ -132,7 +132,7 @@ public class TargetedMSLibraryTest extends TargetedMSTest
         int i = 0;
         for(String protein: proteins)
         {
-            int idx = proteinsTable.getRowIndex("Label", protein);
+            int idx = proteinsTable.getRowIndex("Label", protein + "⁠"); // Include trailing non-breaking space
             assertTrue("Expected protein " + protein + " not found in table", idx != -1);
             List<String>fileName = proteinsTable.getRowDataAsText(idx, "RunId/File");
             assertEquals(1, fileName.size());
@@ -275,8 +275,8 @@ public class TargetedMSLibraryTest extends TargetedMSTest
         var proteinName = "MAX";
         var oldProteinCb = getCheckBox(proteinName, true).waitForElement(shortWait());
         var newProteinCb = getCheckBox(proteinName, false).waitForElement(shortWait());
-        assertTrue(isChecked(newProteinCb));   // checkbox for the protein in the new document should be checked
-        assertFalse(isChecked(oldProteinCb));  // checkbox for the protein in the old document should be unchecked
+        assertTrue(newProteinCb.isSelected());   // checkbox for the protein in the new document should be checked
+        assertFalse(oldProteinCb.isSelected());  // checkbox for the protein in the old document should be unchecked
         // check, uncheck and check again (See Issue 44424)
         changeChecked(oldProteinCb, newProteinCb , true, proteinName);
         changeChecked(oldProteinCb, newProteinCb , false, proteinName);
@@ -290,13 +290,13 @@ public class TargetedMSLibraryTest extends TargetedMSTest
         setCheckbox(oldProteinCb, selectOld);
         if (selectOld)
         {
-            assertFalse("Expected " + proteinName + " from the new document to be unchecked", isChecked(newProteinCb));  // new protein unchecked
-            assertTrue("Expected " + proteinName + " from the old document to be checked", isChecked(oldProteinCb));   // old protein checked
+            assertFalse("Expected " + proteinName + " from the new document to be unchecked", newProteinCb.isSelected());  // new protein unchecked
+            assertTrue("Expected " + proteinName + " from the old document to be checked", oldProteinCb.isSelected());   // old protein checked
         }
         else
         {
-            assertTrue("Expected " + proteinName + " from the new document to be checked", isChecked(newProteinCb));  // new protein checked
-            assertFalse("Expected " + proteinName + " from the old document to be unchecked", isChecked(oldProteinCb));   // old protein unchecked
+            assertTrue("Expected " + proteinName + " from the new document to be checked", newProteinCb.isSelected());  // new protein checked
+            assertFalse("Expected " + proteinName + " from the old document to be unchecked", oldProteinCb.isSelected());   // old protein unchecked
         }
     }
 

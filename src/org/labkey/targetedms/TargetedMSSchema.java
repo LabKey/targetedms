@@ -78,6 +78,7 @@ import org.labkey.api.util.Pair;
 import org.labkey.api.util.SafeToRender;
 import org.labkey.api.util.UnexpectedException;
 import org.labkey.api.view.ActionURL;
+import org.labkey.api.view.NotFoundException;
 import org.labkey.api.view.PopupMenu;
 import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.template.ClientDependency;
@@ -1959,7 +1960,7 @@ public class TargetedMSSchema extends UserSchema
             long runId = Long.parseLong(runIdString);
             if (TargetedMSManager.getFolderType(getContainer()) != TargetedMSService.FolderType.ExperimentMAM)
             {
-                throw new IllegalStateException("PTM queries are only supported in ExperimentMAM folders");
+                throw new NotFoundException("PTM queries are only supported in ExperimentMAM folders");
             }
 
             QueryDefinition queryDef = Objects.requireNonNull(getQueryDef(baseQueryName));
