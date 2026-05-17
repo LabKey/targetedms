@@ -230,6 +230,7 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
         log("Verify metric appears in configure QC metrics table");
         waitForElement(Locator.linkWithText(metricName));
 
+        goToDashboard();
         log("Verify metric appears in QC plots dropdown");
         QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
         Assert.assertTrue("Annotation-backed metric should appear in QC plots dropdown",
