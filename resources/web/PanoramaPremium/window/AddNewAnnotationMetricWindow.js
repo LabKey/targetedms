@@ -48,7 +48,7 @@ Ext4.define('Panorama.Window.AddAnnotationMetricWindow', {
 
     getAnnotationTarget: function() {
         var val = this.annotationTypeGroup.down('radiogroup').getValue();
-        return val && val['annotationType'] === 'precursor' ? 'precursor_result' : 'replicates';
+        return val && val['annotationType'] === 'precursor' ? 'precursor_result' : 'replicate';
     },
 
     getFilteredAnnotations: function() {
