@@ -361,7 +361,7 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
             // However, rows with class "labkey-row" have a nested row without a class attribute (TODO: add class attribute to nested rows)
             // so they don't get counted in DataRegionTable.getDataRows().
             // To get the protein names, we have to skip every other nested row. The very first row in the grid has the "labkey-alternate-row" class.
-            peptideGroups.add(precursorTable.getDataAsText(i, 0));
+            peptideGroups.add(DataRegionTable.stripWordJoiner(precursorTable.getDataAsText(i, 0)));
         }
         return peptideGroups;
     }
