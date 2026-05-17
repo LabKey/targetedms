@@ -257,7 +257,7 @@
                 if (clickedMetric) {
                     windowConfig.metric = clickedMetric;
                 }
-                Ext4.create('Panorama.Window.AddAnnotationMetricWindow', windowConfig).show();
+                Panorama.Window.AddAnnotationMetricWindow.show(windowConfig);
             },
 
             addNewMetric: function (metricType) {

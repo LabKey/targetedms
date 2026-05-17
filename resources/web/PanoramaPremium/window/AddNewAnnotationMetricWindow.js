@@ -3,384 +3,224 @@
  * any form or by any electronic or mechanical means without written permission from LabKey Corporation.
  */
 
-Ext4.define('Panorama.Window.AddAnnotationMetricWindow', {
-    extend: 'Ext.window.Window',
+(function($) {
+    window.Panorama = window.Panorama || {};
+    window.Panorama.Window = window.Panorama.Window || {};
 
-    modal: true,
-    closeAction: 'destroy',
-    bodyStyle: 'padding: 10px;',
-    autoScroll: true,
-    border: false,
-    update: 'update',
-    insert: 'insert',
+    const DIALOG_ID = 'lk-annotation-metric-dialog';
+    let _config = null;
+    let _allAnnotations = [];
 
-    initComponent: function() {
-        var title = this.operation === this.insert ? 'Add Annotation-Backed Metric' : 'Edit Annotation-Backed Metric';
-        this.setTitle(title);
-        this.height = Ext4.max([Ext4.getBody().getHeight() * 0.3, 300]);
-        this.width = Ext4.max([Ext4.getBody().getWidth() * 0.25, 500]);
-        this._allAnnotations = [];
-        this.items = this.getItems();
-        this.dockedItems = [{
-            xtype: 'toolbar',
-            dock: 'bottom',
-            ui: 'footer',
-            items: this.getButtons()
-        }];
+    function closeDialog() {
+        $('#' + DIALOG_ID).remove();
+    }
 
-        this.callParent();
-        this.loadAnnotations();
-    },
+    function showError(msg) {
+        $('#lk-annotation-metric-error').text(msg).show();
+    }
 
-    loadAnnotations: function() {
-        LABKEY.Query.selectRows({
-            schemaName: 'targetedms',
-            queryName: 'AnnotationSettings',
-            columns: ['Name', 'Targets', 'Type'],
-            filterArray: [LABKEY.Filter.create('Type', 'number', LABKEY.Filter.Types.EQUAL)],
-            scope: this,
-            success: function(data) {
-                this._allAnnotations = data.rows || [];
-                this.refreshAnnotationsCombo();
-            }
-        });
-    },
+    function clearErrors() {
+        $('#lk-annotation-metric-error').hide().text('');
+        $('#lk-annotation-metric-name, #lk-annotation-metric-ylabel, #lk-annotation-name-select')
+            .css('border-color', '');
+    }
 
-    getAnnotationTarget: function() {
-        var val = this.annotationTypeGroup.down('radiogroup').getValue();
-        return val && val['annotationType'] === 'precursor' ? 'precursor_result' : 'replicate';
-    },
+    function markInvalid($field) {
+        $field.css('border-color', 'red');
+    }
 
-    getFilteredAnnotations: function() {
-        var target = this.getAnnotationTarget();
-        var seen = {};
-        var result = [];
-        this._allAnnotations.forEach(function(row) {
-            var targets = (row['Targets'] || '').split(',').map(function(s) { return s.trim(); });
+    function validate() {
+        clearErrors();
+        let isValid = true;
+
+        if (!$('#lk-annotation-metric-name').val().trim()) {
+            markInvalid($('#lk-annotation-metric-name'));
+            isValid = false;
+        }
+        if (!$('#lk-annotation-metric-ylabel').val().trim()) {
+            markInvalid($('#lk-annotation-metric-ylabel'));
+            isValid = false;
+        }
+        if (!$('#lk-annotation-name-select').val()) {
+            markInvalid($('#lk-annotation-name-select'));
+            isValid = false;
+        }
+
+        if (!isValid) {
+            showError('Please fill in all required fields.');
+        }
+        return isValid;
+    }
+
+    function getAnnotationTarget() {
+        return $('input[name="annotationType"]:checked').val() === 'precursor'
+            ? 'precursor_result'
+            : 'replicate';
+    }
+
+    function getFilteredAnnotations() {
+        const target = getAnnotationTarget();
+        const seen = {};
+        const result = [];
+        _allAnnotations.forEach(function(row) {
+            const targets = (row['Targets'] || '').split(',').map(function(s) { return s.trim(); });
             if (targets.indexOf(target) >= 0 && !seen[row['Name']]) {
                 seen[row['Name']] = true;
-                result.push({ Name: row['Name'] });
+                result.push(row['Name']);
             }
         });
+        result.sort();
         return result;
-    },
+    }
 
-    refreshAnnotationsCombo: function() {
-        var annotations = this.getFilteredAnnotations();
-        var store = Ext4.create('Ext.data.Store', {
-            fields: ['Name'],
-            sorters: [{property: 'Name'}],
-            data: annotations
+    function refreshAnnotationsSelect() {
+        const $select = $('#lk-annotation-name-select');
+        const currentVal = $select.val();
+        $select.empty().append($('<option>').val('').text('-- Select annotation --'));
+        getFilteredAnnotations().forEach(function(name) {
+            $select.append($('<option>').val(name).text(name));
         });
-        this.annotationsCombo.bindStore(store);
-        if (this.operation === this.update && this.metric && this.metric.AnnotationName) {
-            this.annotationsCombo.setValue(this.metric.AnnotationName);
-        } else {
-            this.annotationsCombo.clearValue();
+
+        const metric = _config && _config.metric;
+        if (_config.operation === 'update' && metric && metric.AnnotationName) {
+            $select.val(metric.AnnotationName);
+        } else if (currentVal) {
+            $select.val(currentVal);
         }
-    },
+    }
 
-    getItems: function() {
-        return [
-            this.getMetricNameField(),
-            this.getYAxisLabelField(),
-            this.getAnnotationTypeRadioGroup(),
-            this.getAnnotationsCombo(),
-            this.getQueryError()
-        ];
-    },
-
-    getButtons: function() {
-        var buttons = [];
-        buttons.push(this.getCancelButton());
-        buttons.push('->');
-        if (this.operation === this.update) {
-            buttons.push(this.getDeleteButton());
+    function checkMetricNameExists(metricName, callback) {
+        const filterArray = [LABKEY.Filter.create('Name', metricName, LABKEY.Filter.Types.EQUAL)];
+        if (_config.operation === 'update' && _config.metric) {
+            filterArray.push(LABKEY.Filter.create('id', _config.metric.id, LABKEY.Filter.Types.NOT_EQUAL));
         }
-        buttons.push(this.getSaveButton());
-        return buttons;
-    },
-
-    getMetricNameField: function() {
-        if (!this.metricNameField) {
-            this.metricNameField = Ext4.create('Ext.form.field.Text', {
-                fieldLabel: 'Metric Name',
-                labelWidth: 150,
-                width: 450,
-                name: 'metricName'
-            });
-            if (this.operation === this.update) {
-                this.metricNameField.setValue(this.metric.name);
-            }
-        }
-        return this.metricNameField;
-    },
-
-    getYAxisLabelField: function() {
-        if (!this.yAxisLabelField) {
-            this.yAxisLabelField = Ext4.create('Ext.form.field.Text', {
-                fieldLabel: 'Y-Axis Label',
-                labelWidth: 150,
-                width: 450,
-                name: 'yAxisLabel'
-            });
-            if (this.operation === this.update) {
-                this.yAxisLabelField.setValue(this.metric.YAxisLabel);
-            }
-        }
-        return this.yAxisLabelField;
-    },
-
-    getAnnotationTypeRadioGroup: function() {
-        if (!this.annotationTypeGroup) {
-            var isPrecursor = this.operation === this.update ? this.metric.PrecursorScoped : false;
-            this.annotationTypeGroup = Ext4.create('Ext.form.Panel', {
-                border: false,
-                width: 450,
-                items: [{
-                    xtype: 'radiogroup',
-                    fieldLabel: 'Annotation Type',
-                    labelWidth: 150,
-                    columns: 2,
-                    items: [
-                        {
-                            xtype: 'radio',
-                            name: 'annotationType',
-                            inputValue: 'replicate',
-                            boxLabel: 'Replicate',
-                            checked: !isPrecursor,
-                            listeners: {
-                                change: {
-                                    fn: function(cmp, newVal) {
-                                        if (newVal) {
-                                            this.refreshAnnotationsCombo();
-                                        }
-                                    },
-                                    scope: this
-                                }
-                            }
-                        },
-                        {
-                            xtype: 'radio',
-                            name: 'annotationType',
-                            inputValue: 'precursor',
-                            boxLabel: 'Precursor',
-                            checked: isPrecursor,
-                            listeners: {
-                                change: {
-                                    fn: function(cmp, newVal) {
-                                        if (newVal) {
-                                            this.refreshAnnotationsCombo();
-                                        }
-                                    },
-                                    scope: this
-                                }
-                            }
-                        }
-                    ]
-                }]
-            });
-        }
-        return this.annotationTypeGroup;
-    },
-
-    getAnnotationsCombo: function() {
-        if (!this.annotationsCombo) {
-            this.annotationsCombo = Ext4.create('Ext.form.field.ComboBox', {
-                fieldLabel: 'Annotation',
-                labelWidth: 150,
-                width: 450,
-                name: 'annotationName',
-                displayField: 'Name',
-                valueField: 'Name',
-                store: Ext4.create('Ext.data.Store', { fields: ['Name'] }),
-                emptyText: 'Loading annotations...',
-                forceSelection: true,
-                queryMode: 'local'
-            });
-        }
-        return this.annotationsCombo;
-    },
-
-    getQueryError: function() {
-        if (!this.queryError) {
-            this.queryError = Ext4.create('Ext.form.Label', {
-                name: 'errorMsg',
-                hidden: true,
-                cls: 'labkey-error',
-                text: ''
-            });
-        }
-        return this.queryError;
-    },
-
-    getSaveButton: function() {
-        if (!this.saveButton) {
-            this.saveButton = Ext4.create('Ext.button.Button', {
-                text: 'Save',
-                scope: this,
-                handler: this.saveMetric
-            });
-        }
-        return this.saveButton;
-    },
-
-    getDeleteButton: function() {
-        if (!this.deleteButton) {
-            this.deleteButton = Ext4.create('Ext.button.Button', {
-                text: 'Delete',
-                scope: this,
-                handler: this.deleteMetric
-            });
-        }
-        return this.deleteButton;
-    },
-
-    getCancelButton: function() {
-        if (!this.cancelButton) {
-            this.cancelButton = Ext4.create('Ext.button.Button', {
-                text: 'Cancel',
-                scope: this,
-                handler: function(btn) {
-                    btn.up('window').close();
-                }
-            });
-        }
-        return this.cancelButton;
-    },
-
-    validateValues: function() {
-        var isValid = true;
-        var errorText = 'Required';
-
-        if (!(this.metricNameField.getValue().length > 0)) {
-            this.metricNameField.setActiveError(errorText);
-            isValid = false;
-        }
-
-        if (!(this.yAxisLabelField.getValue().length > 0)) {
-            this.yAxisLabelField.setActiveError(errorText);
-            isValid = false;
-        }
-
-        if (!this.annotationsCombo.getValue()) {
-            this.annotationsCombo.setActiveError(errorText);
-            isValid = false;
-        }
-
-        return isValid;
-    },
-
-    checkMetricNameExists: function(metricName, callback) {
-        var filterArray = [LABKEY.Filter.create('Name', metricName, LABKEY.Filter.Types.EQUAL)];
-
-        if (this.operation === this.update && this.metric) {
-            filterArray.push(LABKEY.Filter.create('id', this.metric.id, LABKEY.Filter.Types.NOT_EQUAL));
-        }
-
         LABKEY.Query.selectRows({
             containerPath: LABKEY.container.id,
             schemaName: 'targetedms',
             queryName: 'qcmetricconfiguration',
             filterArray: filterArray,
-            scope: this,
-            success: function(data) {
-                callback.call(this, data.rows.length > 0);
-            },
-            failure: function() {
-                callback.call(this, false);
-            }
+            success: function(data) { callback(data.rows.length > 0); },
+            failure: function() { callback(false); }
         });
-    },
+    }
 
-    saveMetric: function() {
-        if (!this.validateValues()) {
-            return;
-        }
+    function save() {
+        if (!validate()) return;
 
-        var metricName = this.metricNameField.getValue();
-
-        this.checkMetricNameExists(metricName, function(exists) {
+        const metricName = $('#lk-annotation-metric-name').val().trim();
+        checkMetricNameExists(metricName, function(exists) {
             if (exists) {
-                this.queryError.setText('A metric with the name "' + metricName + '" already exists. Please choose a different name.');
-                this.queryError.setVisible(true);
-                this.metricNameField.setActiveError('Metric name already exists');
+                showError('A metric with the name "' + LABKEY.Utils.encodeHtml(metricName) + '" already exists. Please choose a different name.');
+                markInvalid($('#lk-annotation-metric-name'));
                 return;
             }
 
-            var typeVal = this.annotationTypeGroup.down('radiogroup').getValue();
-            var isPrecursor = typeVal && typeVal['annotationType'] === 'precursor';
-
-            var newMetric = {
+            const newMetric = {
                 Name: metricName,
                 QueryName: 'QCAnnotationMetric',
-                YAxisLabel: this.yAxisLabelField.getValue(),
-                PrecursorScoped: isPrecursor,
-                AnnotationName: this.annotationsCombo.getValue()
+                YAxisLabel: $('#lk-annotation-metric-ylabel').val().trim(),
+                PrecursorScoped: $('input[name="annotationType"]:checked').val() === 'precursor',
+                AnnotationName: $('#lk-annotation-name-select').val()
             };
-
-            if (this.operation === this.update) {
-                newMetric.id = this.metric.id;
+            if (_config.operation === 'update') {
+                newMetric.id = _config.metric.id;
             }
 
             LABKEY.Query.saveRows({
                 containerPath: LABKEY.container.id,
-                commands: [{
-                    schemaName: 'targetedms',
-                    queryName: 'qcmetricconfiguration',
-                    command: this.operation,
-                    rows: [newMetric]
-                }],
-                scope: this,
+                commands: [{ schemaName: 'targetedms', queryName: 'qcmetricconfiguration', command: _config.operation, rows: [newMetric] }],
                 method: 'POST',
-                success: function() {
-                    window.location.reload();
-                },
+                success: function() { window.location.reload(); },
                 failure: function(response) {
-                    var errorMessage = 'Error saving metric';
-                    if (response && response.exception) {
-                        errorMessage = response.exception;
-                    } else if (response && response.message) {
-                        errorMessage = response.message;
-                    }
-                    this.queryError.setText(errorMessage);
-                    this.queryError.setVisible(true);
+                    showError((response && (response.exception || response.message)) || 'Error saving metric');
                 }
             });
         });
-    },
-
-    deleteMetric: function() {
-        Ext4.Msg.confirm('Delete Annotation-Backed Metric', 'This will delete ' + LABKEY.Utils.encodeHtml(this.metric.name) + ' metric. Are you sure?', function(val) {
-            if (val === 'yes') {
-                LABKEY.Query.saveRows({
-                    containerPath: LABKEY.container.id,
-                    commands: [{
-                        schemaName: 'targetedms',
-                        queryName: 'qcenabledmetrics',
-                        command: 'delete',
-                        rows: [{metric: this.metric.id}]
-                    }, {
-                        schemaName: 'targetedms',
-                        queryName: 'qcmetricconfiguration',
-                        command: 'delete',
-                        rows: [{id: this.metric.id}]
-                    }],
-                    scope: this,
-                    method: 'POST',
-                    success: function() {
-                        window.location.reload();
-                    },
-                    failure: function(response) {
-                        var errorMessage = 'Error deleting metric';
-                        if (response && response.exception) {
-                            errorMessage = response.exception;
-                        }
-                        this.queryError.setText(errorMessage);
-                        this.queryError.setVisible(true);
-                    }
-                });
-            }
-        }, this);
     }
-});
+
+    function deleteMetric() {
+        if (!confirm('This will delete the "' + _config.metric.name + '" metric. Are you sure?')) return;
+
+        LABKEY.Query.saveRows({
+            containerPath: LABKEY.container.id,
+            commands: [
+                { schemaName: 'targetedms', queryName: 'qcenabledmetrics', command: 'delete', rows: [{ metric: _config.metric.id }] },
+                { schemaName: 'targetedms', queryName: 'qcmetricconfiguration', command: 'delete', rows: [{ id: _config.metric.id }] }
+            ],
+            method: 'POST',
+            success: function() { window.location.reload(); },
+            failure: function(response) {
+                showError((response && (response.exception || response.message)) || 'Error deleting metric');
+            }
+        });
+    }
+
+    function buildDialogHtml() {
+        const op = _config.operation;
+        const metric = _config.metric || {};
+        const isPrecursor = op === 'update' && metric.PrecursorScoped;
+        const title = op === 'insert' ? 'Add Annotation-Backed Metric' : 'Edit Annotation-Backed Metric';
+
+        return '<div id="' + DIALOG_ID + '" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">'
+            + '<div class="x4-window x4-window-default" style="min-width:480px;max-width:580px;">'
+            +   '<div class="x4-window-header x4-window-header-default x4-window-header-default-top" style="padding:4px 8px;border:none;">'
+            +     '<p class="x4-window-header-text-container-default" style="font-size:14px;margin:0;">' + LABKEY.Utils.encodeHtml(title) + '</p>'
+            +   '</div>'
+            +   '<div class="x4-window-body" style="background:white;padding:10px 12px;">'
+            +     '<table style="border-collapse:collapse;width:100%;">'
+            +       '<tr><td style="padding:5px 10px 5px 0;white-space:nowrap;"><label for="lk-annotation-metric-name">Metric Name *</label></td>'
+            +           '<td style="padding:5px 0;"><input type="text" id="lk-annotation-metric-name" style="width:100%;box-sizing:border-box;" value="' + LABKEY.Utils.encodeHtml(metric.name || '') + '"/></td></tr>'
+            +       '<tr><td style="padding:5px 10px 5px 0;white-space:nowrap;"><label for="lk-annotation-metric-ylabel">Y-Axis Label *</label></td>'
+            +           '<td style="padding:5px 0;"><input type="text" id="lk-annotation-metric-ylabel" style="width:100%;box-sizing:border-box;" value="' + LABKEY.Utils.encodeHtml(metric.YAxisLabel || '') + '"/></td></tr>'
+            +       '<tr><td style="padding:5px 10px 5px 0;white-space:nowrap;">Annotation Type</td>'
+            +           '<td style="padding:5px 0;">'
+            +             '<label style="margin-right:16px;"><input type="radio" name="annotationType" value="replicate"' + (!isPrecursor ? ' checked' : '') + '> Replicate</label>'
+            +             '<label><input type="radio" name="annotationType" value="precursor"' + (isPrecursor ? ' checked' : '') + '> Precursor</label>'
+            +           '</td></tr>'
+            +       '<tr><td style="padding:5px 10px 5px 0;white-space:nowrap;"><label for="lk-annotation-name-select">Annotation *</label></td>'
+            +           '<td style="padding:5px 0;"><select id="lk-annotation-name-select" style="width:100%;box-sizing:border-box;"><option value="">Loading...</option></select></td></tr>'
+            +     '</table>'
+            +     '<div id="lk-annotation-metric-error" class="labkey-error" style="display:none;margin-top:8px;"></div>'
+            +     '<div style="margin-top:12px;text-align:right;">'
+            +       '<button type="button" class="labkey-button" id="lk-annotation-metric-cancel">Cancel</button>'
+            +       (op === 'update' ? ' <button type="button" class="labkey-button" id="lk-annotation-metric-delete">Delete</button>' : '')
+            +       ' <button type="button" class="labkey-button primary" id="lk-annotation-metric-save">Save</button>'
+            +     '</div>'
+            +   '</div>'
+            + '</div>'
+            + '</div>';
+    }
+
+    window.Panorama.Window.AddAnnotationMetricWindow = {
+        show: function(config) {
+            _config = config;
+            _allAnnotations = [];
+
+            $('#' + DIALOG_ID).remove();
+            $('body').append(buildDialogHtml());
+
+            $('#lk-annotation-metric-cancel').on('click', closeDialog);
+            $('#lk-annotation-metric-save').on('click', save);
+            if (config.operation === 'update') {
+                $('#lk-annotation-metric-delete').on('click', deleteMetric);
+            }
+            $('input[name="annotationType"]').on('change', refreshAnnotationsSelect);
+
+            // close on overlay click
+            $('#' + DIALOG_ID).on('click', function(e) {
+                if (e.target === this) closeDialog();
+            });
+
+            LABKEY.Query.selectRows({
+                schemaName: 'targetedms',
+                queryName: 'AnnotationSettings',
+                columns: ['Name', 'Targets', 'Type'],
+                filterArray: [LABKEY.Filter.create('Type', 'number', LABKEY.Filter.Types.EQUAL)],
+                success: function(data) {
+                    _allAnnotations = data.rows || [];
+                    refreshAnnotationsSelect();
+                }
+            });
+        }
+    };
+})(jQuery);
