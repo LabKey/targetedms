@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -132,7 +133,9 @@ public class TargetedMSLibraryTest extends TargetedMSTest
         int i = 0;
         for(String protein: proteins)
         {
-            int idx = proteinsTable.getRowIndex("Label", protein + "⁠"); // Include trailing non-breaking space
+            int idx = IntStream.range(0, proteinsTable.getDataRowCount())
+                    .filter(row -> protein.equals(DataRegionTable.stripWordJoiner(proteinsTable.getDataAsText(row, "Label"))))
+                    .findFirst().orElse(-1);
             assertTrue("Expected protein " + protein + " not found in table", idx != -1);
             List<String>fileName = proteinsTable.getRowDataAsText(idx, "RunId/File");
             assertEquals(1, fileName.size());

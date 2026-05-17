@@ -147,7 +147,7 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
             List<String>fileNameAndProtein = precursorTable.getRowDataAsText(idx, "File", "Protein / Label");
             assertEquals(2, fileNameAndProtein.size());
             assertEquals("Unexpected file name for " + precursor, entry.getValue().first, fileNameAndProtein.get(0));
-            assertEquals("Unexpected protein name for " + precursor, entry.getValue().second, fileNameAndProtein.get(1).replace("⁠", "")); // Strip trailing non-breaking space
+            assertEquals("Unexpected protein name for " + precursor, entry.getValue().second, DataRegionTable.stripWordJoiner(fileNameAndProtein.get(1)));
         }
 
         // After the "Library Precursors" view is modified, its name in the menu appears as "LibraryPrecursors" (no space) so the
