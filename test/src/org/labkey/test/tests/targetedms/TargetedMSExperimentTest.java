@@ -926,7 +926,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         clickAndWait(Locator.linkContainingText("Targeted MS Runs"));
 
         // "44 peptides" → peptide list page: one row per peptide
-        clickAndWait(Locator.linkContainingText("44"));
+        clickAndWait(Locator.linkContainingText("44 peptides"));
         DataRegionTable peptideView = DataRegion(getDriver()).withName("Peptide").find();
         assertEquals(44, peptideView.getDataRowCount());
 
