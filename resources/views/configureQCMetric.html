@@ -59,12 +59,14 @@
             });
 
             qcMetricsTable += '</table><br>' +
-                    '<button type="button" class="labkey-button primary" id="saveButton" style="margin-right: 20px;">Save</button>' +
-                    '<button type="button" class="labkey-button" id="cancelButton" style="margin-right: 20px;">Cancel</button>' +
-                    '<button type="button" class="labkey-button" id="createNewCustomMetricButton" style="margin-right: 20px;">Add New Custom Metric</button>' +
-                    '<button type="button" class="labkey-button" id="createNewTraceMetricButton" style="margin-right: 20px;">Add New Trace Metric</button>' +
-                    '<button type="button" class="labkey-button" id="createNewAnnotationMetricButton" style="margin-right: 20px;">Add Annotation-Backed Metric</button>' +
+                    '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+                    '<button type="button" class="labkey-button primary" id="saveButton">Save</button>' +
+                    '<button type="button" class="labkey-button" id="cancelButton">Cancel</button>' +
+                    '<button type="button" class="labkey-button" id="createNewCustomMetricButton">Add New Custom Metric</button>' +
+                    '<button type="button" class="labkey-button" id="createNewTraceMetricButton">Add New Trace Metric</button>' +
+                    '<button type="button" class="labkey-button" id="createNewAnnotationMetricButton">Add Annotation-Backed Metric</button>' +
                     '<button type="button" class="labkey-button" id="clearCacheButton">Clear Cached Metric Values</button>' +
+                    '</div>' +
                     '</form><br>Edits to queries backing existing custom metrics require a manual cache clearing to display the updated results.</p>';
 
             jQuery('#qcMetricsTable').html(qcMetricsTable);
