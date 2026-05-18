@@ -210,7 +210,7 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
     public void testAnnotationBackedMetric()
     {
         String subfolderName = "AnnotationMetricsFolder";
-        String metricName = "Test Annotation-Backed Metric";
+        String metricName = "Annotation Metric R Squared";
         String yAxisLabel = "R Squared";
         String updatedYAxisLabel = "Updated R Squared";
 
