@@ -47,15 +47,15 @@ public class TargetedMSUpgradeTest extends BaseUpgradeTest
     public void testPreUpgradeCounts() throws Exception
     {
         SelectRowsCommand cmd = new SelectRowsCommand("targetedms", "Runs");
-        cmd.setColumns(List.of("Peptides", "SmallMolecules", "Replicates"));
+        cmd.setColumns(List.of("PeptideCount", "SmallMoleculeCount", "ReplicateCount"));
         SelectRowsResponse response = cmd.execute(createDefaultConnection(), getProjectName());
 
         List<Map<String, Object>> rows = response.getRows();
         assertEquals("Expected exactly one run", 1, rows.size());
-        Map<String, Object> run = rows.get(0);
-        assertEquals("PeptideCount", 44, ((Number) run.get("Peptides")).intValue());
-        assertEquals("SmallMoleculeCount", 98, ((Number) run.get("SmallMolecules")).intValue());
-        assertEquals("ReplicateCount", 5, ((Number) run.get("Replicates")).intValue());
+        Map<String, Object> run = rows.getFirst();
+        assertEquals("PeptideCount", 44, ((Number) run.get("PeptideCount")).intValue());
+        assertEquals("SmallMoleculeCount", 98, ((Number) run.get("SmallMoleculeCount")).intValue());
+        assertEquals("ReplicateCount", 5, ((Number) run.get("ReplicateCount")).intValue());
     }
 
     @Test
@@ -70,10 +70,10 @@ public class TargetedMSUpgradeTest extends BaseUpgradeTest
 
         List<Map<String, Object>> rows = response.getRows();
         assertEquals("Expected exactly one run", 1, rows.size());
-        Map<String, Object> run = rows.get(0);
-        assertEquals("PeptideGroupCount", 24, ((Number) run.get("PeptideGroups")).intValue());
-        assertEquals("MoleculeGroupCount", 3, ((Number) run.get("MoleculeLists")).intValue());
-        assertEquals("ProteinCount", 24, ((Number) run.get("Proteins")).intValue());
+        Map<String, Object> run = rows.getFirst();
+        assertEquals("PeptideGroupCount", 24, ((Number) run.get("PeptideGroupCount")).intValue());
+        assertEquals("MoleculeGroupCount", 3, ((Number) run.get("MoleculeGroupCount")).intValue());
+        assertEquals("ProteinCount", 24, ((Number) run.get("ProteinCount")).intValue());
     }
 
     @Override
