@@ -46,6 +46,7 @@ public class TargetedMSProteinGroupingTest extends TargetedMSTest
 
         goToProjectHome();
         clickAndWait(Locator.linkWithText(SKY_FILE));
+        verifyRunSummaryCountsPep(31, 47, 33, 0, 33, 198, 4, 0, 0);
         clickAndWait(Locator.linkWithText(group));
 
         log("Verifying protein matches for peptide");

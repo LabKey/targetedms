@@ -915,8 +915,8 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         // Test each header link from runSummaryView.jsp while on the default run view.
         // Each link must reach its own dedicated list page, not the combined precursor list.
 
-        // "24 peptide groups" → peptide group list: one row per peptide-bearing group
-        clickAndWait(Locator.linkContainingText("24 peptide groups"));
+        // "24 protein groups" → protein group list: one row per peptide-bearing group
+        clickAndWait(Locator.linkContainingText("24 protein groups"));
         DataRegionTable peptideGroupView = DataRegion(getDriver()).withName("PeptideGroup").find();
         assertEquals(24, peptideGroupView.getDataRowCount());
 
@@ -937,11 +937,11 @@ public class TargetedMSExperimentTest extends TargetedMSTest
 
         // Verify the runSummaryView.jsp header links also work when on a non-default run detail page.
         // The header is embedded on every run detail view, not just the precursor list.
-        // From the small molecule list page, click "24 peptide groups".
-        clickAndWait(Locator.linkContainingText("24 peptide groups"));
+        // From the small molecule list page, click "24 protein groups".
+        clickAndWait(Locator.linkContainingText("24 protein groups"));
         peptideGroupView = DataRegion(getDriver()).withName("PeptideGroup").find();
         assertEquals(24, peptideGroupView.getDataRowCount());
-        // From the peptide group list page, click "44 peptides".
+        // From the protein group list page, click "44 peptides".
         clickAndWait(Locator.linkContainingText("44 peptides"));
         peptideView = DataRegion(getDriver()).withName("Peptide").find();
         assertEquals(44, peptideView.getDataRowCount());
