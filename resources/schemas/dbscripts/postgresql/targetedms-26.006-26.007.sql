@@ -1,4 +1,4 @@
-ALTER TABLE targetedms.Runs ADD COLUMN ProteinCount INT DEFAULT 0;
+ALTER TABLE targetedms.Runs ADD COLUMN ProteinCount INT;
 
 UPDATE targetedms.Runs r
 SET ProteinCount = (
@@ -18,7 +18,7 @@ SET PeptideGroupCount = (
     WHERE pg.RunId = r.Id
 );
 
-ALTER TABLE targetedms.Runs ADD COLUMN MoleculeGroupCount INT NOT NULL DEFAULT 0;
+ALTER TABLE targetedms.Runs ADD COLUMN MoleculeGroupCount INT;
 
 UPDATE targetedms.Runs r
 SET MoleculeGroupCount = (
@@ -28,3 +28,6 @@ SET MoleculeGroupCount = (
     JOIN targetedms.Molecule m ON m.Id = gm.Id
     WHERE pg.RunId = r.Id
 );
+
+ALTER TABLE targetedms.Runs ALTER COLUMN MoleculeGroupCount SET NOT NULL;
+ALTER TABLE targetedms.Runs ALTER COLUMN ProteinCount SET NOT NULL;
