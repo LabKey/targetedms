@@ -52,7 +52,7 @@ public class TargetedMSUpgradeTest extends BaseUpgradeTest
 
         List<Map<String, Object>> rows = response.getRows();
         assertEquals("Expected exactly one run", 1, rows.size());
-        Map<String, Object> run = rows.getFirst();
+        Map<String, Object> run = rows.get(0);
         assertEquals("PeptideCount", 44, ((Number) run.get("PeptideCount")).intValue());
         assertEquals("SmallMoleculeCount", 98, ((Number) run.get("SmallMoleculeCount")).intValue());
         assertEquals("ReplicateCount", 5, ((Number) run.get("ReplicateCount")).intValue());
@@ -70,7 +70,7 @@ public class TargetedMSUpgradeTest extends BaseUpgradeTest
 
         List<Map<String, Object>> rows = response.getRows();
         assertEquals("Expected exactly one run", 1, rows.size());
-        Map<String, Object> run = rows.getFirst();
+        Map<String, Object> run = rows.get(0);
         assertEquals("PeptideGroupCount", 24, ((Number) run.get("PeptideGroupCount")).intValue());
         assertEquals("MoleculeGroupCount", 3, ((Number) run.get("MoleculeGroupCount")).intValue());
         assertEquals("ProteinCount", 24, ((Number) run.get("ProteinCount")).intValue());
