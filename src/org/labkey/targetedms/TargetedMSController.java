@@ -260,6 +260,7 @@ import org.labkey.targetedms.view.ChromatogramGridView;
 import org.labkey.targetedms.view.ChromatogramsDataRegion;
 import org.labkey.targetedms.view.DocumentGeneralMoleculesView;
 import org.labkey.targetedms.view.DocumentPeptideGroupView;
+import org.labkey.targetedms.view.DocumentProteinView;
 import org.labkey.targetedms.view.DocumentPrecursorsView;
 import org.labkey.targetedms.view.DocumentTransitionsView;
 import org.labkey.targetedms.view.FiguresOfMeritView;
@@ -4539,40 +4540,60 @@ public class TargetedMSController extends SpringActionController
     }
 
     @RequiresPermission(ReadPermission.class)
-    public class ShowProteinListAction extends ShowRunSplitDetailsAction<QueryView>
+    public class ShowPeptideGroupListAction extends ShowRunSingleDetailsAction<RunDetailsForm>
     {
+        public ShowPeptideGroupListAction()
+        {
+            super(RunDetailsForm.class, "Peptide Groups", TargetedMSSchema.TABLE_PEPTIDE_GROUP);
+        }
+
         @Override
         protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
         {
             TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
-            QueryView view;
-
-            if (TargetedMSSchema.TABLE_PEPTIDE_GROUP.equalsIgnoreCase(dataRegion))
-            {
-                view = new DocumentPeptideGroupView(getViewContext(), schema, form.getId(),
-                        TargetedMSSchema.TABLE_PEPTIDE_GROUP, "Proteins");
-            }
-            else
-            {
-                view = new DocumentPeptideGroupView(getViewContext(), schema, form.getId(),
-                        TargetedMSSchema.TABLE_MOLECULE_GROUP, "Molecule Lists");
-            }
-
+            DocumentPeptideGroupView view = new DocumentPeptideGroupView(getViewContext(), schema, form.getId(),
+                    TargetedMSSchema.TABLE_PEPTIDE_GROUP, "Peptide Groups");
             view.setShowDetailsColumn(false);
             view.setShowFilterDescription(false);
             return view;
         }
+    }
 
-        @Override
-        public String getDataRegionNamePeptide()
+    @RequiresPermission(ReadPermission.class)
+    public class ShowMoleculeGroupListAction extends ShowRunSingleDetailsAction<RunDetailsForm>
+    {
+        public ShowMoleculeGroupListAction()
         {
-            return TargetedMSSchema.TABLE_PEPTIDE_GROUP;
+            super(RunDetailsForm.class, "Molecule Lists", TargetedMSSchema.TABLE_MOLECULE_GROUP);
         }
 
         @Override
-        public String getDataRegionNameSmallMolecule()
+        protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
         {
-            return TargetedMSSchema.TABLE_MOLECULE_GROUP;
+            TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+            DocumentPeptideGroupView view = new DocumentPeptideGroupView(getViewContext(), schema, form.getId(),
+                    TargetedMSSchema.TABLE_MOLECULE_GROUP, "Molecule Lists");
+            view.setShowDetailsColumn(false);
+            view.setShowFilterDescription(false);
+            return view;
+        }
+    }
+
+    @RequiresPermission(ReadPermission.class)
+    public class ShowProteinListAction extends ShowRunSingleDetailsAction<RunDetailsForm>
+    {
+        public ShowProteinListAction()
+        {
+            super(RunDetailsForm.class, "Proteins", TargetedMSSchema.TABLE_PROTEIN);
+        }
+
+        @Override
+        protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
+        {
+            TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+            DocumentProteinView view = new DocumentProteinView(getViewContext(), schema, form.getId());
+            view.setShowDetailsColumn(false);
+            return view;
         }
     }
 

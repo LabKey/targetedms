@@ -24,9 +24,7 @@
 <%@ page import="org.labkey.api.view.JspView" %>
 <%@ page import="org.labkey.api.view.template.ClientDependencies" %>
 <%@ page import="org.labkey.targetedms.TargetedMSController" %>
-<%@ page import="org.labkey.targetedms.TargetedMSManager" %>
 <%@ page import="org.labkey.targetedms.TargetedMSRun" %>
-<%@ page import="org.labkey.targetedms.TargetedMSSchema" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 
 <%!
@@ -51,6 +49,12 @@
 
     ActionURL precursorListAction = new ActionURL(TargetedMSController.ShowPrecursorListAction.class, getContainer());
     precursorListAction.addParameter("id", run.getId());
+
+    ActionURL peptideGroupListAction = new ActionURL(TargetedMSController.ShowPeptideGroupListAction.class, getContainer());
+    peptideGroupListAction.addParameter("id", run.getId());
+
+    ActionURL moleculeGroupListAction = new ActionURL(TargetedMSController.ShowMoleculeGroupListAction.class, getContainer());
+    moleculeGroupListAction.addParameter("id", run.getId());
 
     ActionURL proteinListAction = new ActionURL(TargetedMSController.ShowProteinListAction.class, getContainer());
     proteinListAction.addParameter("id", run.getId());
@@ -89,7 +93,6 @@
     if(c.hasPermission(getUser(), UpdatePermission.class))
         renameAction = TargetedMSController.getRenameRunURL(c, run, getActionURL());
 
-    String peptideGroupLabel = TargetedMSManager.containerHasSmallMolecules(getContainer()) ? TargetedMSSchema.COL_LIST.toLowerCase() : TargetedMSSchema.COL_PROTEIN.toLowerCase();
 %>
 
 
@@ -103,7 +106,10 @@
     </div>
     &nbsp;
     <div>
-        <a href="<%= h(proteinListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getPeptideGroupCount(), peptideGroupLabel))%></a>,
+        <% if (run.getPeptideGroupCount() > 0) { %><a href="<%= h(peptideGroupListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getPeptideGroupCount(), "peptide group"))%></a><%
+        if (run.getProteinCount() > 0) { %> (with <a href="<%= h(proteinListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getProteinCount(), "protein"))%></a>)<% } %>,
+        <% } %>
+        <% if (run.getMoleculeGroupCount() > 0) { %><a href="<%= h(moleculeGroupListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getMoleculeGroupCount(), "molecule list"))%></a>,<% } %>
         <% if (run.getPeptideCount() > 0) { %><a href="<%= h(peptideListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getPeptideCount(), "peptide"))%></a>,<% } %>
         <% if (run.getSmallMoleculeCount() > 0) { %><a href="<%= h(moleculeListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getSmallMoleculeCount(), "small molecule"))%></a>,<% } %>
         <a href="<%= h(precursorListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getPrecursorCount(), "precursor"))%></a>,

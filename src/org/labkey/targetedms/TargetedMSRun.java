@@ -51,6 +51,8 @@ public class TargetedMSRun implements Serializable, ITargetedMSRun
     protected RunRepresentativeDataState _representativeDataState = NotRepresentative;
 
     protected int _peptideGroupCount;
+    protected int _moleculeGroupCount;
+    protected int _proteinCount;
     protected int _peptideCount;
     protected int _smallMoleculeCount;
     protected int _precursorCount;
@@ -247,6 +249,26 @@ public class TargetedMSRun implements Serializable, ITargetedMSRun
     public void setPeptideGroupCount(int peptideGroupCount)
     {
         _peptideGroupCount = peptideGroupCount;
+    }
+
+    public int getMoleculeGroupCount()
+    {
+        return _moleculeGroupCount;
+    }
+
+    public void setMoleculeGroupCount(int moleculeGroupCount)
+    {
+        _moleculeGroupCount = moleculeGroupCount;
+    }
+
+    public int getProteinCount()
+    {
+        return _proteinCount;
+    }
+
+    public void setProteinCount(int proteinCount)
+    {
+        _proteinCount = proteinCount;
     }
 
     public int getPeptideCount()

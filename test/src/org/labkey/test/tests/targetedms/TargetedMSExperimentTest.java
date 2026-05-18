@@ -166,7 +166,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
     {
         clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
         clickAndWait(Locator.linkContainingText(SKY_FILE));
-        verifyRunSummaryCountsPep(24,44,0, 88,296, 1, 0, 0);
+        verifyRunSummaryCountsPep(24, 24, 44, 0, 88, 296, 1, 0, 0);
         verifyDocumentDetails(false);
         verifyPeptide();
     }
@@ -176,7 +176,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
     {
         clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
         clickAndWait(Locator.linkContainingText(SKY_FILE_SMALLMOL_PEP));
-        verifyRunSummaryCountsSmallMol(27, 44, 98, 186, 394, 5, 0, 0); // Number of protein (groups), peptides, precursors, transitions, small molecules
+        verifyRunSummaryCountsMixed(24, 3, 24, 44, 98, 186, 394, 5, 0, 0);
         verifyDocumentDetails(true);
         verifyMolecule();
     }

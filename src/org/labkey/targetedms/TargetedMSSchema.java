@@ -305,6 +305,8 @@ public class TargetedMSSchema extends UserSchema
     // Cache this info at the schema level to make it easy to reuse
     private Boolean _hasSmallMolecules;
     private Boolean _hasPeptides;
+    private Boolean _hasMoleculeGroups;
+    private Boolean _hasProteins;
 
     static public void register(Module module)
     {
@@ -788,7 +790,8 @@ public class TargetedMSSchema extends UserSchema
 
         boolean hasSmallMolecules = hasSmallMolecules();
         boolean hasPeptides = hasPeptides();
-        String peptideGroupColName = (hasSmallMolecules ? COL_LIST : COL_PROTEIN) + "s";
+        boolean hasMoleculeGroups = hasMoleculeGroups();
+        boolean hasProteins = hasProteins();
 
         skyDocDetailColumn.setFk(new LookupForeignKey(url, "id", "Id", "Description")
         {
@@ -867,7 +870,9 @@ public class TargetedMSSchema extends UserSchema
                     }
                 });
 
-                result.addWrapColumn(peptideGroupColName, result.getRealTable().getColumn("PeptideGroupCount"));
+                result.addWrapColumn("PeptideGroups", result.getRealTable().getColumn("PeptideGroupCount"));
+                result.addWrapColumn("MoleculeLists", result.getRealTable().getColumn("MoleculeGroupCount"));
+                result.addWrapColumn("Proteins", result.getRealTable().getColumn("ProteinCount"));
                 result.addWrapColumn("Peptides", result.getRealTable().getColumn("PeptideCount"));
                 result.addWrapColumn("SmallMolecules", result.getRealTable().getColumn("SmallMoleculeCount"));
                 result.addWrapColumn("Precursors", result.getRealTable().getColumn("PrecursorCount"));
@@ -1003,7 +1008,13 @@ public class TargetedMSSchema extends UserSchema
 
                     _fieldKeys.add(2, FieldKey.fromParts("File"));
                     _fieldKeys.add(3, FieldKey.fromParts("File", "Download"));
-                    _fieldKeys.add(FieldKey.fromParts("File", peptideGroupColName));
+
+                    if (hasPeptides)
+                        _fieldKeys.add(FieldKey.fromParts("File", "PeptideGroups"));
+                    if (hasMoleculeGroups)
+                        _fieldKeys.add(FieldKey.fromParts("File", "MoleculeLists"));
+                    if (hasProteins)
+                        _fieldKeys.add(FieldKey.fromParts("File", "Proteins"));
 
                     // Omit peptides or small molecules if we don't have any in this container
                     if (hasPeptides || !hasSmallMolecules)
@@ -1068,9 +1079,27 @@ public class TargetedMSSchema extends UserSchema
     {
         if (_hasPeptides == null)
         {
-            _hasPeptides = TargetedMSManager.containerHasSmallMolecules(getContainer());
+            _hasPeptides = TargetedMSManager.containerHasPeptides(getContainer());
         }
         return _hasPeptides.booleanValue();
+    }
+
+    private boolean hasMoleculeGroups()
+    {
+        if (_hasMoleculeGroups == null)
+        {
+            _hasMoleculeGroups = TargetedMSManager.containerHasMoleculeGroups(getContainer());
+        }
+        return _hasMoleculeGroups.booleanValue();
+    }
+
+    private boolean hasProteins()
+    {
+        if (_hasProteins == null)
+        {
+            _hasProteins = TargetedMSManager.containerHasProteins(getContainer());
+        }
+        return _hasProteins.booleanValue();
     }
 
     @Override
@@ -1245,6 +1274,30 @@ public class TargetedMSSchema extends UserSchema
                     FieldKey.fromParts("SequenceId", "Mass"),
                     FieldKey.fromParts("Description")
             ));
+
+            var labelColumn = result.getMutableColumnOrThrow("Label");
+            labelColumn.setURL(new DetailsURL(new ActionURL(TargetedMSController.ShowProteinAction.class, getContainer()),
+                    Collections.singletonMap("id", FieldKey.fromParts("PeptideGroupId"))));
+            FieldKey containerFieldKey = result.getContainerFieldKey();
+            labelColumn.setDisplayColumnFactory(colInfo -> {
+                Map<String, FieldKey> params = new HashMap<>();
+                params.put("id", new FieldKey(colInfo.getFieldKey().getParent(), "PeptideGroupId"));
+                JSONObject props = new JSONObject();
+                props.put("width", 450);
+                props.put("title", "Protein Details");
+                return new AJAXDetailsDisplayColumn(colInfo, new ActionURL(TargetedMSController.ShowProteinAJAXAction.class, getContainer()), params, props, containerFieldKey)
+                {
+                    @Override
+                    public @NotNull Set<ClientDependency> getClientDependencies()
+                    {
+                        Set<ClientDependency> deps = super.getClientDependencies();
+                        deps.add(ClientDependency.fromPath("protein/ProteinCoverageMap.css"));
+                        deps.add(ClientDependency.fromPath("protein/ProteinCoverageMap.js"));
+                        deps.add(ClientDependency.fromPath("util.js"));
+                        return deps;
+                    }
+                };
+            });
 
             return result;
         }

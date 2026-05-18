@@ -273,22 +273,32 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         }
     }
 
-    protected void verifyRunSummaryCountsSmallMol(int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
+    protected void verifyRunSummaryCountsSmallMol(int moleculeGroupCount, int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
     {
-        verifyRunSummaryCounts(proteinCount, peptideCount, moleculeCount, precursorCount, transitionCount, replicateCount, calibrationCount, listCount, "molecule lists");
+        verifyRunSummaryCounts(0, moleculeGroupCount, proteinCount, peptideCount, moleculeCount, precursorCount, transitionCount, replicateCount, calibrationCount, listCount);
     }
 
-    protected void verifyRunSummaryCountsPep(int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
+    protected void verifyRunSummaryCountsPep(int peptideGroupCount, int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
     {
-        verifyRunSummaryCounts(proteinCount, peptideCount, moleculeCount, precursorCount, transitionCount, replicateCount, calibrationCount, listCount, "proteins");
+        verifyRunSummaryCounts(peptideGroupCount, 0, proteinCount, peptideCount, moleculeCount, precursorCount, transitionCount, replicateCount, calibrationCount, listCount);
+    }
+
+    protected void verifyRunSummaryCountsMixed(int peptideGroupCount, int moleculeGroupCount, int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
+    {
+        verifyRunSummaryCounts(peptideGroupCount, moleculeGroupCount, proteinCount, peptideCount, moleculeCount, precursorCount, transitionCount, replicateCount, calibrationCount, listCount);
     }
 
     @LogMethod
-    protected void verifyRunSummaryCounts(int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount,
-                                          int replicateCount, int calibrationCount, int listCount, String peptideGroupLabel)
+    protected void verifyRunSummaryCounts(int peptideGroupCount, int moleculeGroupCount, int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount,
+                                          int replicateCount, int calibrationCount, int listCount)
     {
         log("Verifying expected summary counts");
-        waitForElement(Locator.linkContainingText(proteinCount + " " + peptideGroupLabel));
+        if (peptideGroupCount > 0)
+            waitForElement(Locator.linkContainingText(peptideGroupCount + " peptide group" + (peptideGroupCount == 1 ? "" : "s")));
+        if (moleculeGroupCount > 0)
+            assertElementPresent(Locator.linkContainingText(moleculeGroupCount + " molecule list" + (moleculeGroupCount == 1 ? "" : "s")));
+        if (proteinCount > 0)
+            assertElementPresent(Locator.linkContainingText(proteinCount + " protein" + (proteinCount == 1 ? "" : "s")));
         if (peptideCount > 0)
         {
             assertElementPresent(Locator.linkContainingText(peptideCount + " peptides"));
