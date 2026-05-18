@@ -915,10 +915,11 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         // Test each header link from runSummaryView.jsp while on the default run view.
         // Each link must reach its own dedicated list page, not the precursor list.
 
-        // "27 molecule lists" → protein/molecule-list page: 24 protein groups + 3 molecule groups
-        clickAndWait(Locator.linkContainingText("27 molecule lists"));
+        // 24 protein groups + 3 molecule groups
+        clickAndWait(Locator.linkContainingText("24 peptide groups"));
         DataRegionTable peptideGroupView = DataRegion(getDriver()).withName("PeptideGroup").find();
         assertEquals(24, peptideGroupView.getDataRowCount());
+        clickAndWait(Locator.linkContainingText("3 molecule lists"));
         DataRegionTable moleculeGroupView = DataRegion(getDriver()).withName("MoleculeGroup").find();
         assertEquals(3, moleculeGroupView.getDataRowCount());
 
