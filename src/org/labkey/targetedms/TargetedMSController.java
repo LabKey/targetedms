@@ -4552,7 +4552,7 @@ public class TargetedMSController extends SpringActionController
         {
             TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
             DocumentPeptideGroupView view = new DocumentPeptideGroupView(getViewContext(), schema, form.getId(),
-                    TargetedMSSchema.TABLE_PEPTIDE_GROUP, "Peptide Groups");
+                    TargetedMSSchema.TABLE_PEPTIDE_GROUP, "Protein Groups");
             view.setShowDetailsColumn(false);
             view.setShowFilterDescription(false);
             return view;

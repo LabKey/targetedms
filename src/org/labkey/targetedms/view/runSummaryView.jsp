@@ -106,7 +106,7 @@
     </div>
     &nbsp;
     <div>
-        <% if (run.getPeptideGroupCount() > 0) { %><a href="<%= h(peptideGroupListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getPeptideGroupCount(), "peptide group"))%></a><%
+        <% if (run.getPeptideGroupCount() > 0) { %><a href="<%= h(peptideGroupListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getPeptideGroupCount(), "protein group"))%></a><%
         if (run.getProteinCount() > 0) { %> (with <a href="<%= h(proteinListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getProteinCount(), "protein"))%></a>)<% } %>,
         <% } %>
         <% if (run.getMoleculeGroupCount() > 0) { %><a href="<%= h(moleculeGroupListAction) %>"><%= h(StringUtilsLabKey.pluralize(run.getMoleculeGroupCount(), "molecule list"))%></a>,<% } %>

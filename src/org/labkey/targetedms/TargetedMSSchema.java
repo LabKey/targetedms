@@ -1276,12 +1276,15 @@ public class TargetedMSSchema extends UserSchema
             ));
 
             var labelColumn = result.getMutableColumnOrThrow("Label");
-            labelColumn.setURL(new DetailsURL(new ActionURL(TargetedMSController.ShowProteinAction.class, getContainer()),
-                    Collections.singletonMap("id", FieldKey.fromParts("PeptideGroupId"))));
+            Map<String, FieldKey> labelUrlParams = new HashMap<>();
+            labelUrlParams.put("id", FieldKey.fromParts("PeptideGroupId"));
+            labelUrlParams.put("proteinId", FieldKey.fromParts("Id"));
+            labelColumn.setURL(new DetailsURL(new ActionURL(TargetedMSController.ShowProteinAction.class, getContainer()), labelUrlParams));
             FieldKey containerFieldKey = result.getContainerFieldKey();
             labelColumn.setDisplayColumnFactory(colInfo -> {
                 Map<String, FieldKey> params = new HashMap<>();
                 params.put("id", new FieldKey(colInfo.getFieldKey().getParent(), "PeptideGroupId"));
+                params.put("proteinId", new FieldKey(colInfo.getFieldKey().getParent(), "Id"));
                 JSONObject props = new JSONObject();
                 props.put("width", 450);
                 props.put("title", "Protein Details");
