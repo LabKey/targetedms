@@ -168,6 +168,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         click(Locator.id("lk-annotation-metric-delete"));
         acceptAlert();
         waitForPage();
+        waitForElementToDisappear(Locator.linkWithText(metric));
     }
 
     public void editMetric(String metric, Map<CustomMetricProperties, String> metricProperties)
