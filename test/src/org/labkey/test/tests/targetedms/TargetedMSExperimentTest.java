@@ -484,7 +484,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         query.setFilter("Sequence", "Equals", "TNNPETLVALR");
         query = new DataRegionTable("query", this);
         assertEquals(1, query.getDataRowCount());
-        assertEquals("YAL038W", DataRegionTable.stripWordJoiner(query.getDataAsText(0, "Protein / Label")));
+        assertEquals("YAL038W", query.getDataAsText(0, "Protein / Label"));
         assertElementPresent(Locator.linkWithText("YAL038W"));
         assertEquals("TNNPETLVALR", query.getDataAsText(0, "Modified Peptide"));
         assertEquals("K", query.getDataAsText(0, "Next Aa"));
@@ -517,7 +517,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         query = new DataRegionTable("query", this);
         assertEquals(1, query.getDataRowCount());
         assertEquals("677.8818", query.getDataAsText(0, "Q1 m/z"));
-        assertEquals("YAL038W", DataRegionTable.stripWordJoiner(query.getDataAsText(0, "Protein / Label")));
+        assertEquals("YAL038W", query.getDataAsText(0, "Protein / Label"));
         assertElementPresent(Locator.linkWithText("YAL038W"));
         assertEquals("LTSLNVVAGSDLR", query.getDataAsText(0, "Peptide"));
         assertEquals("1343.7409", query.getDataAsText(0, "Peptide Neutral Mass"));
@@ -553,7 +553,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         query = new DataRegionTable("query", this);
         assertEquals(3, query.getDataRowCount());
         assertEquals("677.8818", query.getDataAsText(0, "Precursor Id Mz"));
-        assertEquals("YAL038W", DataRegionTable.stripWordJoiner(query.getDataAsText(0, "Protein / Label")));
+        assertEquals("YAL038W", query.getDataAsText(0, "Protein / Label"));
         assertElementPresent(Locator.linkWithText("YAL038W"));
         assertEquals("LTSLNVVAGSDLR", query.getDataAsText(0, "Peptide"));
         assertEquals("1343.7409", query.getDataAsText(0, "Peptide Neutral Mass"));

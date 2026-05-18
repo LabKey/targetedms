@@ -134,7 +134,7 @@ public class TargetedMSLibraryTest extends TargetedMSTest
         for(String protein: proteins)
         {
             int idx = IntStream.range(0, proteinsTable.getDataRowCount())
-                    .filter(row -> protein.equals(DataRegionTable.stripWordJoiner(proteinsTable.getDataAsText(row, "Label"))))
+                    .filter(row -> protein.equals(proteinsTable.getDataAsText(row, "Label")))
                     .findFirst().orElse(-1);
             assertTrue("Expected protein " + protein + " not found in table", idx != -1);
             List<String>fileName = proteinsTable.getRowDataAsText(idx, "RunId/File");

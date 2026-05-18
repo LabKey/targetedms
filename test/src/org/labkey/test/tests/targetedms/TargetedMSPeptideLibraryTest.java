@@ -147,7 +147,7 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
             List<String>fileNameAndProtein = precursorTable.getRowDataAsText(idx, "File", "Protein / Label");
             assertEquals(2, fileNameAndProtein.size());
             assertEquals("Unexpected file name for " + precursor, entry.getValue().first, fileNameAndProtein.get(0));
-            assertEquals("Unexpected protein name for " + precursor, entry.getValue().second, DataRegionTable.stripWordJoiner(fileNameAndProtein.get(1)));
+            assertEquals("Unexpected protein name for " + precursor, entry.getValue().second, fileNameAndProtein.get(1));
         }
 
         // After the "Library Precursors" view is modified, its name in the menu appears as "LibraryPrecursors" (no space) so the
@@ -361,7 +361,7 @@ public class TargetedMSPeptideLibraryTest extends TargetedMSTest
             // However, rows with class "labkey-row" have a nested row without a class attribute (TODO: add class attribute to nested rows)
             // so they don't get counted in DataRegionTable.getDataRows().
             // To get the protein names, we have to skip every other nested row. The very first row in the grid has the "labkey-alternate-row" class.
-            peptideGroups.add(DataRegionTable.stripWordJoiner(precursorTable.getDataAsText(i, 0)));
+            peptideGroups.add(precursorTable.getDataAsText(i, 0));
         }
         return peptideGroups;
     }
