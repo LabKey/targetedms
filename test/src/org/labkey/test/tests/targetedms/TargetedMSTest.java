@@ -268,18 +268,18 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         verifyRunSummaryCounts(peptideGroupCount, 0, proteinCount, peptideCount, moleculeCount, precursorCount, transitionCount, replicateCount, calibrationCount, listCount);
     }
 
-    protected void verifyRunSummaryCountsMixed(int peptideGroupCount, int moleculeGroupCount, int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
+    protected void verifyRunSummaryCountsMixed(int proteinGroupCount, int moleculeGroupCount, int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
     {
-        verifyRunSummaryCounts(peptideGroupCount, moleculeGroupCount, proteinCount, peptideCount, moleculeCount, precursorCount, transitionCount, replicateCount, calibrationCount, listCount);
+        verifyRunSummaryCounts(proteinGroupCount, moleculeGroupCount, proteinCount, peptideCount, moleculeCount, precursorCount, transitionCount, replicateCount, calibrationCount, listCount);
     }
 
     @LogMethod
-    protected void verifyRunSummaryCounts(int peptideGroupCount, int moleculeGroupCount, int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount,
+    protected void verifyRunSummaryCounts(int proteinGroupCount, int moleculeGroupCount, int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount,
                                           int replicateCount, int calibrationCount, int listCount)
     {
         log("Verifying expected summary counts");
-        if (peptideGroupCount > 0)
-            waitForElement(Locator.linkContainingText(peptideGroupCount + " peptide group" + (peptideGroupCount == 1 ? "" : "s")));
+        if (proteinGroupCount > 0)
+            waitForElement(Locator.linkContainingText(proteinGroupCount + " protein group" + (proteinGroupCount == 1 ? "" : "s")));
         if (moleculeGroupCount > 0)
             assertElementPresent(Locator.linkContainingText(moleculeGroupCount + " molecule list" + (moleculeGroupCount == 1 ? "" : "s")));
         if (proteinCount > 0)

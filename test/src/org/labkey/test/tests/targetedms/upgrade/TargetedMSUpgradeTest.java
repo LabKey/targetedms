@@ -1,5 +1,6 @@
 package org.labkey.test.tests.targetedms.upgrade;
 
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.remoteapi.query.SelectRowsCommand;
@@ -43,8 +44,26 @@ public class TargetedMSUpgradeTest extends BaseUpgradeTest
     }
 
     @Test
-    public void testRunCounts() throws Exception
+    public void testPreUpgradeCounts() throws Exception
     {
+        SelectRowsCommand cmd = new SelectRowsCommand("targetedms", "Runs");
+        cmd.setColumns(List.of("Peptides", "SmallMolecules", "Replicates"));
+        SelectRowsResponse response = cmd.execute(createDefaultConnection(), getProjectName());
+
+        List<Map<String, Object>> rows = response.getRows();
+        assertEquals("Expected exactly one run", 1, rows.size());
+        Map<String, Object> run = rows.get(0);
+        assertEquals("PeptideCount", 44, ((Number) run.get("Peptides")).intValue());
+        assertEquals("SmallMoleculeCount", 98, ((Number) run.get("SmallMolecules")).intValue());
+        assertEquals("ReplicateCount", 5, ((Number) run.get("Replicates")).intValue());
+    }
+
+    @Test
+    @EarliestVersion("26.3")
+    public void testPostUpgradeCounts() throws Exception
+    {
+        Assume.assumeFalse("Skipping post-upgrade count checks during setup phase", isUpgradeSetupPhase);
+
         SelectRowsCommand cmd = new SelectRowsCommand("targetedms", "Runs");
         cmd.setColumns(List.of("PeptideGroups", "MoleculeLists", "Proteins"));
         SelectRowsResponse response = cmd.execute(createDefaultConnection(), getProjectName());

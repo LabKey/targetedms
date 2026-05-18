@@ -30,4 +30,5 @@ SET MoleculeGroupCount = (
 );
 
 ALTER TABLE targetedms.Runs ALTER COLUMN MoleculeGroupCount SET NOT NULL;
+ALTER TABLE targetedms.Runs ALTER COLUMN PeptideGroupCount SET NOT NULL;
 ALTER TABLE targetedms.Runs ALTER COLUMN ProteinCount SET NOT NULL;
