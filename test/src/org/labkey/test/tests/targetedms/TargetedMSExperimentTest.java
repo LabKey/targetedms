@@ -913,18 +913,17 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         assertEquals(5, smallMolPrecursorsView.getDataRowCount());
 
         // Test each header link from runSummaryView.jsp while on the default run view.
-        // Each link must reach its own dedicated list page, not the precursor list.
+        // Each link must reach its own dedicated list page, not the combined precursor list.
 
-        // 24 protein groups + 3 molecule groups
+        // "24 peptide groups" → peptide group list: one row per peptide-bearing group
         clickAndWait(Locator.linkContainingText("24 peptide groups"));
         DataRegionTable peptideGroupView = DataRegion(getDriver()).withName("PeptideGroup").find();
         assertEquals(24, peptideGroupView.getDataRowCount());
+
+        // "3 molecule lists" → molecule group list: one row per molecule-bearing group
         clickAndWait(Locator.linkContainingText("3 molecule lists"));
         DataRegionTable moleculeGroupView = DataRegion(getDriver()).withName("MoleculeGroup").find();
         assertEquals(3, moleculeGroupView.getDataRowCount());
-
-        // Navigate back to the run's precursor list via the breadcrumb.
-        clickAndWait(Locator.linkContainingText("Targeted MS Runs"));
 
         // "44 peptides" → peptide list page: one row per peptide
         clickAndWait(Locator.linkContainingText("44 peptides"));
@@ -938,13 +937,11 @@ public class TargetedMSExperimentTest extends TargetedMSTest
 
         // Verify the runSummaryView.jsp header links also work when on a non-default run detail page.
         // The header is embedded on every run detail view, not just the precursor list.
-        // From the small molecule list page, click "27 molecule lists".
-        clickAndWait(Locator.linkContainingText("27 molecule lists"));
+        // From the small molecule list page, click "24 peptide groups".
+        clickAndWait(Locator.linkContainingText("24 peptide groups"));
         peptideGroupView = DataRegion(getDriver()).withName("PeptideGroup").find();
         assertEquals(24, peptideGroupView.getDataRowCount());
-        moleculeGroupView = DataRegion(getDriver()).withName("MoleculeGroup").find();
-        assertEquals(3, moleculeGroupView.getDataRowCount());
-        // From the protein/molecule-list page, click "44 peptides".
+        // From the peptide group list page, click "44 peptides".
         clickAndWait(Locator.linkContainingText("44 peptides"));
         peptideView = DataRegion(getDriver()).withName("Peptide").find();
         assertEquals(44, peptideView.getDataRowCount());
