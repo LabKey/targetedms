@@ -44,6 +44,7 @@ public class TargetedMSUpgradeTest extends BaseUpgradeTest
     }
 
     @Test
+    @EarliestVersion("25.11")
     public void testPreUpgradeCounts() throws Exception
     {
         SelectRowsCommand cmd = new SelectRowsCommand("targetedms", "Runs");
@@ -65,7 +66,7 @@ public class TargetedMSUpgradeTest extends BaseUpgradeTest
         Assume.assumeFalse("Skipping post-upgrade count checks during setup phase", isUpgradeSetupPhase);
 
         SelectRowsCommand cmd = new SelectRowsCommand("targetedms", "Runs");
-        cmd.setColumns(List.of("PeptideGroups", "MoleculeLists", "Proteins"));
+        cmd.setColumns(List.of("PeptideGroupCount", "MoleculeGroupCount", "ProteinCount"));
         SelectRowsResponse response = cmd.execute(createDefaultConnection(), getProjectName());
 
         List<Map<String, Object>> rows = response.getRows();
