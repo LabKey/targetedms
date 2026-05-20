@@ -1155,7 +1155,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 var domainMin = yScale.invert(y2);
 
                 var yMid = y1 + (y2 - y1) / 2;
-                var xMid = overlayWidth / 2;
+                var btnLeft = grid.leftEdge + 5;
 
                 zoomButtonGroup = svg.append('g').attr('class', 'y-zoom-buttons');
 
@@ -1174,12 +1174,12 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     return btnG;
                 };
 
-                makeBtn('Zoom', xMid - 57, 50, function() {
+                makeBtn('Zoom', btnLeft, 50, function() {
                     removeOverlays();
                     me.applyYZoom(plotId, domainMin, domainMax);
                 });
 
-                makeBtn('Cancel', xMid + 3, 55, function() {
+                makeBtn('Cancel', btnLeft + 60, 55, function() {
                     removeOverlays();
                 });
             });
@@ -1194,11 +1194,35 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             .call(drag);
 
         if (this.getYZoomDomain && this.getYZoomDomain(plotId)) {
+            var gridLeft = grid.leftEdge;
+            var gridRight = grid.rightEdge;
+            var gridWidth = gridRight - gridLeft;
+            var gridHeight = gridBottom - gridTop;
+            var clipId = (plot.renderTo || plotId) + '-yzoom-clip';
+
+            var svgDefs = svg.select('defs');
+            if (svgDefs.empty()) {
+                svgDefs = svg.insert('defs', ':first-child');
+            }
+            svgDefs.append('clipPath')
+                .attr('id', clipId)
+                .append('rect')
+                .attr('x', gridLeft).attr('y', gridTop)
+                .attr('width', gridWidth).attr('height', gridHeight);
+
+            svg.selectAll('g.layer').attr('clip-path', 'url(#' + clipId + ')');
+
+            svg.append('rect')
+                .attr('class', 'y-zoom-border')
+                .attr('x', gridLeft).attr('y', gridTop)
+                .attr('width', gridWidth).attr('height', gridHeight)
+                .style({'fill': 'none', 'stroke': '#888', 'stroke-width': '1px', 'pointer-events': 'none'});
+
             svg.append('text')
                 .attr('class', 'qc-reset-zoom-link')
                 .text('Reset Zoom')
-                .attr('x', grid.leftEdge + 5)
-                .attr('y', grid.topEdge - 5)
+                .attr('x', gridLeft + 5)
+                .attr('y', gridTop - 5)
                 .on('click', function() {
                     me.resetYZoom(plotId);
                 });
