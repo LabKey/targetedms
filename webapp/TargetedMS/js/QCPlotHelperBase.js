@@ -1092,6 +1092,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         var overlayWidth = grid.leftEdge - 2;
         var gridTop = grid.topEdge;
         var gridBottom = grid.bottomEdge;
+        var gridLeft = grid.leftEdge;
+        var gridRight = grid.rightEdge;
 
         var dragStartY = null;
         var dragCurrentY = null;
@@ -1134,9 +1136,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 else {
                     selectionRect = svg.append('rect')
                         .attr('class', 'y-zoom-selection')
-                        .attr('x', 1)
+                        .attr('x', gridLeft)
                         .attr('y', y1)
-                        .attr('width', overlayWidth - 2)
+                        .attr('width', gridRight - gridLeft)
                         .attr('height', h)
                         .style('pointer-events', 'none');
                 }
@@ -1194,8 +1196,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             .call(drag);
 
         if (this.getYZoomDomain && this.getYZoomDomain(plotId)) {
-            var gridLeft = grid.leftEdge;
-            var gridRight = grid.rightEdge;
             var gridWidth = gridRight - gridLeft;
             var gridHeight = gridBottom - gridTop;
             var clipId = (plot.renderTo || plotId) + '-yzoom-clip';
@@ -1222,7 +1222,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 .attr('class', 'qc-reset-zoom-link')
                 .text('Reset Zoom')
                 .attr('x', gridLeft + 5)
-                .attr('y', gridTop - 5)
+                .attr('y', gridTop - 18)
                 .on('click', function() {
                     me.resetYZoom(plotId);
                 });

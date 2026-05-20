@@ -118,7 +118,7 @@
 }
 
 .y-zoom-overlay {
-    cursor: ns-resize;
+    cursor: zoom-in;
 }
 
 .y-zoom-selection {
