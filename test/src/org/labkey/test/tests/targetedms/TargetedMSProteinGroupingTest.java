@@ -8,6 +8,9 @@ import org.labkey.test.Locator;
 import org.labkey.test.components.CustomizeView;
 import org.labkey.test.util.DataRegionTable;
 
+/**
+ * Tests protein grouping logic and the protein match visualization UI.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 2)
 public class TargetedMSProteinGroupingTest extends TargetedMSTest

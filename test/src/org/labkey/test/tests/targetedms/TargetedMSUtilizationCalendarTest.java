@@ -15,6 +15,9 @@ import java.util.Arrays;
 
 import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
 
+/**
+ * Tests the instrument utilization calendar: display options, date ranges, and permission-gating.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSUtilizationCalendarTest extends TargetedMSTest

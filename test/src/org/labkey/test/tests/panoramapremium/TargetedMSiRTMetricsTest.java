@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Tests iRT metrics calculations and their visualization specifically within the QC dashboard context.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
@@ -223,17 +226,31 @@ public class TargetedMSiRTMetricsTest extends TargetedMSPremiumTest
 
     private void verifyQCPlotColors(String peptide, String color)
     {
+        List<WebElement> treeItems = Locator.css(".qc-tree-precursor").findElements(getDriver());
+        for (WebElement e : treeItems)
+        {
+            String fragment = e.getAttribute("data-fragment");
+            if (fragment != null && fragment.contains(peptide))
+            {
+                checker().verifyEquals("Incorrect color for QC plot for " + peptide, color,
+                        e.getAttribute("data-color"));
+                return;
+            }
+        }
+
+        // Fallback for files without peptide groups (SVG-based legend)
         List<WebElement> legendList = Locator.tagWithClass("g", "legend-item").findElements(getDriver());
         for (WebElement e : legendList)
         {
-            if (e.getAttribute("title").startsWith(peptide + " "))
+            String title = e.getAttribute("title");
+            if (title != null && title.startsWith(peptide + " "))
             {
                 checker().verifyEquals("Incorrect color for QC plot for " + peptide, color,
                         Locator.tag("path").findElement(e).getAttribute("fill"));
                 return;
             }
-
         }
+
         throw new RuntimeException("Did not find the peptide " + peptide);
     }
 }

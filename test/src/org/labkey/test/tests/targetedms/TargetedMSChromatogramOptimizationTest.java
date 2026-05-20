@@ -20,6 +20,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Tests chromatogram optimization workflows and library file generation from imported Skyline documents.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 3)
 public class TargetedMSChromatogramOptimizationTest extends TargetedMSTest

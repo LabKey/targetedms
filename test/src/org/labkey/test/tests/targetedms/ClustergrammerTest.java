@@ -27,6 +27,9 @@ import org.labkey.test.components.targetedms.TargetedMSRunsTable;
 
 import java.util.Arrays;
 
+/**
+ * Tests the Clustergrammer heatmap visualization integration for peptide data.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class ClustergrammerTest extends TargetedMSTest

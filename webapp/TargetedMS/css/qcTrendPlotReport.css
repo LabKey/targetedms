@@ -103,3 +103,16 @@
 .x4-panel-header-text-container-default {
   font-weight: normal;
 }
+
+.qc-combined-tree-legend {
+    background: white;
+    line-height: 1.4;
+}
+
+.qc-combined-tree-legend .qc-tree-group label:hover {
+    background-color: #f0f0f0;
+}
+
+.qc-combined-tree-legend .qc-tree-precursor:hover {
+    background-color: #f0f0f0;
+}

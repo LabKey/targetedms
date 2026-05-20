@@ -10,6 +10,9 @@ import org.labkey.test.util.DataRegionTable;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * Verifies that audit log entries from Skyline documents are correctly imported and displayed as an audit trail.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 5)
 public class TargetedMSAuditLogTest extends TargetedMSTest

@@ -18,6 +18,9 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+/**
+ * Validates precursor-level quantification data and figures-of-merit calculations.
+ */
 @Category({})
 public class TargetedMSPrecursorLevelDataTest extends AbstractQuantificationTest
 {

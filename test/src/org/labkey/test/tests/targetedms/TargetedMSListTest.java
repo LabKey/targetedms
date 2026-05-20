@@ -35,6 +35,9 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Tests list query functionality with document imports and property handling specific to TargetedMS.
+ */
 @Category({})
 public class TargetedMSListTest extends TargetedMSTest
 {

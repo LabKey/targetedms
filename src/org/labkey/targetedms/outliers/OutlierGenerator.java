@@ -44,9 +44,11 @@ import org.labkey.targetedms.model.RawMetricDataSet;
 import org.labkey.targetedms.model.SampleFileQCMetadata;
 import org.labkey.targetedms.parser.GeneralMolecule;
 import org.labkey.targetedms.parser.GeneralPrecursor;
+import org.labkey.targetedms.parser.PeptideGroup;
 import org.labkey.targetedms.parser.SampleFile;
 import org.labkey.targetedms.query.MoleculeManager;
 import org.labkey.targetedms.query.MoleculePrecursorManager;
+import org.labkey.targetedms.query.PeptideGroupManager;
 import org.labkey.targetedms.query.PeptideManager;
 import org.labkey.targetedms.query.PrecursorManager;
 
@@ -539,7 +541,11 @@ public class OutlierGenerator
             Optional<RawMetricDataSet> bestPrecursorIdRow = entry.getValue().stream().filter(x -> x.getPrecursorId() != null).min(Comparator.comparing(RawMetricDataSet::getPrecursorId));
 
             // Remember the precursor ID so that we can assign a series color based on Skyline's algorithm
-            bestPrecursorIdRow.ifPresent(rawMetricDataSet -> fragmentsByPrecursorId.put(rawMetricDataSet.getPrecursorId(), qcPlotFragment));
+            // and to sort by Skyline document order (row ID) instead of alphabetically
+            bestPrecursorIdRow.ifPresent(rawMetricDataSet -> {
+                fragmentsByPrecursorId.put(rawMetricDataSet.getPrecursorId(), qcPlotFragment);
+                qcPlotFragment.setPrecursorRowId(rawMetricDataSet.getPrecursorId());
+            });
 
             qcPlotFragment.setSeriesLabel(entry.getKey());
             qcPlotFragment.setQcPlotData(entry.getValue());
@@ -559,6 +565,7 @@ public class OutlierGenerator
         // Now that we have all the precursor IDs, in order (important so that we de-dupe the colors in a stable order),
         // run through them and choose a color
         Set<Color> seriesColors = new HashSet<>();
+        Map<Long, PeptideGroup> peptideGroupCache = new HashMap<>();
         for (Map.Entry<Long, QCPlotFragment> entry : fragmentsByPrecursorId.entrySet())
         {
             long precursorId = entry.getKey();
@@ -588,10 +595,21 @@ public class OutlierGenerator
                 Color color = ColorGenerator.getColor(molecule.getTextId(), seriesColors);
                 entry.getValue().setSeriesColor(color);
                 seriesColors.add(color);
+
+                // set the peptide group (protein / molecule list) for the combined plot tree legend
+                PeptideGroup peptideGroup = peptideGroupCache.computeIfAbsent(molecule.getPeptideGroupId(), id -> PeptideGroupManager.getPeptideGroup(c, id));
+                if (peptideGroup != null)
+                {
+                    entry.getValue().setPeptideGroupId(peptideGroup.getId());
+                    entry.getValue().setPeptideGroupLabel(peptideGroup.getLabel());
+                }
             }
         }
 
-        qcPlotFragments.sort(Comparator.comparing(QCPlotFragment::getSeriesLabel));
+        // Sort by precursor row ID to preserve Skyline document order. Fragments with no precursor ID
+        // (e.g. trace metrics) fall back to alphabetical order after all precursor-scoped series.
+        qcPlotFragments.sort(Comparator.comparing(QCPlotFragment::getPrecursorRowId, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(QCPlotFragment::getSeriesLabel));
         return qcPlotFragments;
     }
 

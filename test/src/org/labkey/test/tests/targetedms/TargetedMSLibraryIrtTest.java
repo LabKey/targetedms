@@ -23,6 +23,9 @@ import org.labkey.test.util.LogMethod;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * Tests iRT scale updates in library folders, specifically the weighted-average recalculation logic.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 10)
 public class TargetedMSLibraryIrtTest extends TargetedMSIrtTest

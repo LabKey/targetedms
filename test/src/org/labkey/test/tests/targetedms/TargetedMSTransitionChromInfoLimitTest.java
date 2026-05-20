@@ -10,6 +10,10 @@ import org.labkey.remoteapi.query.Filter;
 
 import java.util.List;
 
+/**
+ * Validates behavior at chromatogram data storage limits for transitions and precursors, with custom configuration
+ * overrides.
+ */
 @Category({})
 public class TargetedMSTransitionChromInfoLimitTest extends TargetedMSTest
 {

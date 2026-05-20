@@ -51,6 +51,9 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * Tests guide set management, statistics computation, and Pareto plot generation in QC folders.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 25)
 public class TargetedMSQCGuideSetTest extends TargetedMSTest

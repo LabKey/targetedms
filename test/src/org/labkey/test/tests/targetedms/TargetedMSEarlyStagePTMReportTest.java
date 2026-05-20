@@ -11,6 +11,10 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * Tests the PTM (post-translational modification) peptide report feature, including data pre-pivoting for
+ * early-stage PTM analysis.
+ */
 @Category({})
 public class TargetedMSEarlyStagePTMReportTest extends TargetedMSTest
 {

@@ -633,6 +633,20 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
             return elementCache().legendItem.containing(text);
     }
 
+    public Locator getTreeLegendItemLocator(String text, boolean exactMatch)
+    {
+        if (exactMatch)
+            return elementCache().combinedTreeLegendItem.withText(text);
+        else
+            return elementCache().combinedTreeLegendItem.containing(text);
+    }
+
+    public Locator getTreeLegendPrecursorLocator(String text)
+    {
+        // Match data-fragment attribute to avoid relying on potentially overflow-hidden span text
+        return Locator.css(".qc-tree-precursor").withAttributeContaining("data-fragment", text);
+    }
+
     public Locator getLegendItemLocatorByTitle(String text)
     {
         // Use containing instead of withText() to ignore the +2 or other suffices
@@ -930,6 +944,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         Locator.CssLocator legendItem = Locator.css("svg g.legend-item");
         Locator.CssLocator legendItemTitle = Locator.css("svg g.legend-item title");
         Locator.CssLocator legendItemPopup = Locator.css(".headerlegendpopup svg g.legend-item");
+        Locator.CssLocator combinedTreeLegendItem = Locator.css(".qc-combined-tree-legend > div");
         Locator.CssLocator paginationPrevBtn = Locator.css(".qc-paging-prev");
         Locator.CssLocator paginationNextBtn = Locator.css(".qc-paging-next");
         Locator.CssLocator svgBackgrounds = Locator.css("svg g.brush rect.background");

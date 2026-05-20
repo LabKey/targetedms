@@ -37,6 +37,10 @@ import static org.junit.Assert.fail;
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.CUSUMm;
 import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
 
+/**
+ * Tests premium-tier QC functionality: guide sets, advanced QC metrics, CUSUM plots, and premium-specific permission
+ * checks.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 6)
 public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest

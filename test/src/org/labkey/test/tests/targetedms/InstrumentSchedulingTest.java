@@ -48,6 +48,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+/**
+ * Tests instrument scheduling workflows including date/time handling and permissions across QC folders.
+ */
 @Category({})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING) // Don't insert additional projects until after testSchedule() has run
 public class InstrumentSchedulingTest extends TargetedMSTest implements PostgresOnlyTest

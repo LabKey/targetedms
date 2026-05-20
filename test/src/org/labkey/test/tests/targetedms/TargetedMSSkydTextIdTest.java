@@ -27,6 +27,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Tests upload and parsing of small molecule SKYD text-format files.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 6)
 public class TargetedMSSkydTextIdTest extends TargetedMSTest

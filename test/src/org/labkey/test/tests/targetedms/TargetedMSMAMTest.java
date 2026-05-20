@@ -23,6 +23,9 @@ import org.labkey.test.util.DataRegionTable;
 
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Tests MAM (Multi-Attribute Monitoring) experiment folders, including cross-linked peptides and iRT data.
+ */
 @Category({})
 public class TargetedMSMAMTest extends TargetedMSTest
 {

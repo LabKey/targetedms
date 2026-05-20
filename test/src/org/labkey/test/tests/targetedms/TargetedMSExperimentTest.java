@@ -56,6 +56,9 @@ import static org.junit.Assert.assertTrue;
 import static org.labkey.test.util.DataRegionTable.DataRegion;
 import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
 
+/**
+ * Broad coverage of experiment folder behavior: file uploads, shared file access, and folder-level permissions.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 8)
 public class TargetedMSExperimentTest extends TargetedMSTest

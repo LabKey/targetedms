@@ -68,26 +68,29 @@ import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.Mo
 import static org.labkey.test.components.targetedms.QCPlotsWebPart.QCPlotType.TrailingCV;
 import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
 
+/**
+ * Broad QC folder test covering plots, metric types, annotations, guide sets, and permissions together in one suite.
+ */
 @Category({})
 @BaseWebDriverTest.ClassTimeout(minutes = 35)
 public class TargetedMSQCTest extends TargetedMSTest
 {
     private static final String[] PRECURSORS = {
-            "ATEEQLK",
-            "FFVAPFPEVFGK",
+            "VYVEELKPTPEGDLEILLQK",
+            "VLVLDTDYK",
+            "VLDALDSIK",
             "GASIVEDK",
             "LVNELTEFAK",
-            "VLDALDSIK",
-            "VLVLDTDYK",
-            "VYVEELKPTPEGDLEILLQK"};
+            "ATEEQLK",
+            "FFVAPFPEVFGK"};
     private static final String[] PRECURSOR_TITLES = {
-            "ATEEQLK ++, 409.7163",
-            "FFVAPFPEVFGK ++, 692.8686",
+            "VYVEELKPTPEGDLEILLQK ++, 1,157.1330",
+            "VLVLDTDYK ++, 533.2950",
+            "VLDALDSIK ++, 487.2819",
             "GASIVEDK ++, 409.7163",
             "LVNELTEFAK ++, 582.3190",
-            "VLDALDSIK ++, 487.2819",
-            "VLVLDTDYK ++, 533.2950",
-            "VYVEELKPTPEGDLEILLQK ++, 1,157.1330"};
+            "ATEEQLK ++, 409.7163",
+            "FFVAPFPEVFGK ++, 692.8686"};
 
     private static final String QCREPLICATE_1 = "25fmol_Pepmix_spike_SRM_1601_01";
     private static final String QCREPLICATE_2 = "25fmol_Pepmix_spike_SRM_1601_02";
@@ -495,17 +498,18 @@ public class TargetedMSQCTest extends TargetedMSTest
             // Test once per plot type, not once for each scale
             assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Annotations", true));
             assertElementPresent(qcPlotsWebPart.getLegendItemLocator("Change", false), 4);
-            assertElementPresent(qcPlotsWebPart.getLegendItemLocator(QCPlotsWebPart.MetricType.TRANSITION_AREA.toString(), true));
-            assertElementPresent(qcPlotsWebPart.getLegendItemLocator(QCPlotsWebPart.MetricType.PRECURSOR_AREA.toString(), true));
             if (plotType == CUSUMm || plotType == QCPlotsWebPart.QCPlotType.CUSUMv)
                 assertElementPresent(qcPlotsWebPart.getLegendItemLocator("CUSUM Group", true));
+            // Precursor items and metric name headers are in the combined tree legend; switch to combined mode to check them
+            qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
+            assertElementPresent(qcPlotsWebPart.getTreeLegendItemLocator(QCPlotsWebPart.MetricType.TRANSITION_AREA.toString(), true));
+            assertElementPresent(qcPlotsWebPart.getTreeLegendItemLocator(QCPlotsWebPart.MetricType.PRECURSOR_AREA.toString(), true));
             for (String precursor : PRECURSORS)
             {
-                Locator legendItemLoc = qcPlotsWebPart.getLegendItemLocatorByTitle(precursor);
+                // Each precursor appears once per metric section (2 total in multi-series combined mode)
+                Locator legendItemLoc = qcPlotsWebPart.getTreeLegendPrecursorLocator(precursor);
                 assertElementPresent("Unexpected number of QC plot legend items found for " + precursor, legendItemLoc, 2);
             }
-
-            qcPlotsWebPart.setShowAllPeptidesInSinglePlot(true, 1);
         }
         // reset to avoid test case dependency
         qcPlotsWebPart.resetInitialQCPlotFields();
@@ -916,9 +920,13 @@ public class TargetedMSQCTest extends TargetedMSTest
         log("Enabling Moving range along with Levey-Jennings");
         qcPlotsWebPart.checkPlotType(MovingRange);
 
+        // ATEEQLK ++, 409.7163 has sufficient data variation to produce
+        // non-trivial y-axis values across all three scale options being tested
+        int precursorPlotIndex = Arrays.asList(PRECURSOR_TITLES).indexOf("ATEEQLK ++, 409.7163");
+
         log("Verifying standard deviations plots");
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.STANDARD_DEVIATIONS);
-        String svgPlotText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
+        String svgPlotText = qcPlotsWebPart.getSVGPlotText("precursorPlot" + precursorPlotIndex);
         assertFalse("Plot with standard deviations option is blank", svgPlotText.isEmpty());
         //Expected y axis values are -3 -2 -1 0 1 2 3 4
         log("SVG text " + svgPlotText);
@@ -926,7 +934,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         log("Verifying percent of mean plots");
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.PERCENT_OF_MEAN);
-        svgPlotText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
+        svgPlotText = qcPlotsWebPart.getSVGPlotText("precursorPlot" + precursorPlotIndex);
         assertFalse("Plot with percent of mean option is blank", svgPlotText.isEmpty());
         //Expected y axis values are 90 95 100 105 110 115
         log("SVG text " + svgPlotText);
@@ -934,7 +942,7 @@ public class TargetedMSQCTest extends TargetedMSTest
 
         log("Verifying delta from mean plots");
         qcPlotsWebPart.setScale(QCPlotsWebPart.Scale.DELTA_FROM_MEAN);
-        svgPlotText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
+        svgPlotText = qcPlotsWebPart.getSVGPlotText("precursorPlot" + precursorPlotIndex);
         assertFalse("Plot with delta from mean option is blank", svgPlotText.isEmpty());
         //Expected y axis values are -3 -2.5 -2 -1.5 -1 -0.5 0 0.5 1 1.5 2 2.5
         log("SVG text " + svgPlotText);
