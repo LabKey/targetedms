@@ -805,7 +805,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         }
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(combinePlotData, plotType, isCUSUMMean, metricProps));
 
-        var yZoomDomainCombined = this.getYZoomDomain ? this.getYZoomDomain(id) : null;
+        let yZoomDomainCombined = this.getYZoomDomain ? this.getYZoomDomain(id) : null;
         if (yZoomDomainCombined) {
             trendLineProps.yZoomDomain = yZoomDomainCombined;
         }
@@ -951,7 +951,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(precursorInfo, plotType, isCUSUMMean, metricProps));
 
-        var yZoomDomain = this.getYZoomDomain ? this.getYZoomDomain(id) : null;
+        let yZoomDomain = this.getYZoomDomain ? this.getYZoomDomain(id) : null;
         if (yZoomDomain) {
             trendLineProps.yZoomDomain = yZoomDomain;
         }
@@ -1080,31 +1080,31 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     },
 
     addYZoomInteraction: function(plot, plotId) {
-        var me = this;
-        var svg = this.getSvgElForPlot(plot);
-        var grid = plot.grid;
+        let me = this;
+        let svg = this.getSvgElForPlot(plot);
+        let grid = plot.grid;
 
         if (!plot.scales.yLeft || !plot.scales.yLeft.scale || !plot.scales.yLeft.scale.invert) {
             return;
         }
 
-        var yScale = plot.scales.yLeft.scale;
-        var overlayWidth = grid.leftEdge - 2;
-        var gridTop = grid.topEdge;
-        var gridBottom = grid.bottomEdge;
-        var gridLeft = grid.leftEdge;
-        var gridRight = grid.rightEdge;
+        let yScale = plot.scales.yLeft.scale;
+        let overlayWidth = grid.leftEdge - 2;
+        let gridTop = grid.topEdge;
+        let gridBottom = grid.bottomEdge;
+        let gridLeft = grid.leftEdge;
+        let gridRight = grid.rightEdge;
 
-        var dragStartY = null;
-        var dragCurrentY = null;
-        var selectionRect = null;
-        var zoomButtonGroup = null;
+        let dragStartY = null;
+        let dragCurrentY = null;
+        let selectionRect = null;
+        let zoomButtonGroup = null;
 
-        var clampY = function(y) {
+        let clampY = function(y) {
             return Math.max(gridTop, Math.min(gridBottom, y));
         };
 
-        var removeOverlays = function() {
+        let removeOverlays = function() {
             if (selectionRect) {
                 selectionRect.remove();
                 selectionRect = null;
@@ -1115,7 +1115,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             }
         };
 
-        var drag = d3.behavior.drag()
+        let drag = d3.behavior.drag()
             .on('dragstart', function() {
                 dragStartY = clampY(d3.mouse(svg.node())[1]);
                 dragCurrentY = dragStartY;
@@ -1124,9 +1124,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             .on('drag', function() {
                 dragCurrentY = clampY(d3.mouse(svg.node())[1]);
 
-                var y1 = Math.min(dragStartY, dragCurrentY);
-                var y2 = Math.max(dragStartY, dragCurrentY);
-                var h = y2 - y1;
+                let y1 = Math.min(dragStartY, dragCurrentY);
+                let y2 = Math.max(dragStartY, dragCurrentY);
+                let h = y2 - y1;
 
                 if (h < 1) { return; }
 
@@ -1144,8 +1144,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 }
             })
             .on('dragend', function() {
-                var y1 = Math.min(dragStartY, dragCurrentY);
-                var y2 = Math.max(dragStartY, dragCurrentY);
+                let y1 = Math.min(dragStartY, dragCurrentY);
+                let y2 = Math.max(dragStartY, dragCurrentY);
 
                 if (y2 - y1 < 5) {
                     removeOverlays();
@@ -1153,16 +1153,16 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 }
 
                 // SVG y is inverted: smaller pixel y = larger domain value
-                var domainMax = yScale.invert(y1);
-                var domainMin = yScale.invert(y2);
+                let domainMax = yScale.invert(y1);
+                let domainMin = yScale.invert(y2);
 
-                var yMid = y1 + (y2 - y1) / 2;
-                var btnLeft = grid.leftEdge + 5;
+                let yMid = y1 + (y2 - y1) / 2;
+                let btnLeft = grid.leftEdge + 5;
 
                 zoomButtonGroup = svg.append('g').attr('class', 'y-zoom-buttons');
 
-                var makeBtn = function(text, xLeft, width, onClick) {
-                    var btnG = zoomButtonGroup.append('g');
+                let makeBtn = function(text, xLeft, width, onClick) {
+                    let btnG = zoomButtonGroup.append('g');
                     btnG.append('rect')
                         .attr('x', xLeft).attr('y', yMid - 10).attr('rx', 5).attr('ry', 5)
                         .attr('width', width).attr('height', 20)
@@ -1196,11 +1196,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             .call(drag);
 
         if (this.getYZoomDomain && this.getYZoomDomain(plotId)) {
-            var gridWidth = gridRight - gridLeft;
-            var gridHeight = gridBottom - gridTop;
-            var clipId = (plot.renderTo || plotId) + '-yzoom-clip';
+            let gridWidth = gridRight - gridLeft;
+            let gridHeight = gridBottom - gridTop;
+            let clipId = (plot.renderTo || plotId) + '-yzoom-clip';
 
-            var svgDefs = svg.select('defs');
+            let svgDefs = svg.select('defs');
             if (svgDefs.empty()) {
                 svgDefs = svg.insert('defs', ':first-child');
             }
