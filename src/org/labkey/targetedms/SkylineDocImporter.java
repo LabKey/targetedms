@@ -144,6 +144,9 @@ public class SkylineDocImporter
     protected static final Logger _systemLog = LogHelper.getLogger(SkylineDocImporter.class, "Imports Skyline documents");
     protected final XarContext _context;
     private int blankLabelIndex;
+    private int _importedPeptideGroupCount = 0;
+    private int _importedMoleculeGroupCount = 0;
+    private int _importedProteinCount = 0;
 
     private final LocalDirectory _localDirectory;
     private final PipeRoot _pipeRoot;
@@ -450,7 +453,9 @@ public class SkylineDocImporter
             int auditLogEntriesCount = importer.importAuditLogFile(_user, _auditLogFile, parser.getDocumentGUID(), run);
 
             run.setAuditLogEntriesCount(auditLogEntriesCount);
-            run.setPeptideGroupCount(parser.getPeptideGroupCount());
+            run.setPeptideGroupCount(_importedPeptideGroupCount);
+            run.setMoleculeGroupCount(_importedMoleculeGroupCount);
+            run.setProteinCount(_importedProteinCount);
             run.setPeptideCount(parser.getPeptideCount());
             run.setSmallMoleculeCount(parser.getSmallMoleculeCount());
             run.setPrecursorCount(parser.getPrecursorCount());
@@ -1357,10 +1362,12 @@ public class SkylineDocImporter
         if(peptideCount > 0)
         {
             _log.debug(String.format("Total peptides inserted: %d", peptideCount));
+            _importedPeptideGroupCount++;
         }
         if(moleculeCount > 0)
         {
             _log.debug(String.format("Total molecules inserted: %d", moleculeCount));
+            _importedMoleculeGroupCount++;
         }
     }
 
@@ -1381,6 +1388,7 @@ public class SkylineDocImporter
             proteinService.ensureIdentifiers(seqId, identifierMap);
         }
         Table.insert(null, TargetedMSManager.getTableInfoProtein(), protein);
+        _importedProteinCount++;
     }
 
     private static final String SKYLINE_IDENT_TYPE = "Skyline";
