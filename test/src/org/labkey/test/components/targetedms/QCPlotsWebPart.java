@@ -904,6 +904,42 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         }
     }
 
+    public void performYAxisZoom(QCPlot qcPlot)
+    {
+        WebElement plotEl = qcPlot.getPlot();
+        WebElement overlay = elementCache().yZoomOverlay.findElement(plotEl);
+        getWrapper().scrollIntoView(overlay);
+
+        int dragOffset = 50;
+        new Actions(getWrapper().getDriver())
+                .moveToElement(overlay, 0, -dragOffset)
+                .clickAndHold()
+                .moveToElement(overlay, 0, dragOffset)
+                .release()
+                .perform();
+
+        WebDriverWrapper.waitFor(() -> !elementCache().yZoomButtons.findElements(plotEl).isEmpty(),
+                "Zoom buttons did not appear after y-axis drag", WAIT_FOR_JAVASCRIPT);
+
+        WebElement buttonsGroup = elementCache().yZoomButtons.findElement(plotEl);
+        Locator.css("g").findElement(buttonsGroup).click();
+    }
+
+    public boolean isZoomActive(QCPlot qcPlot)
+    {
+        return !elementCache().yZoomBorder.findElements(qcPlot.getPlot()).isEmpty();
+    }
+
+    public boolean isResetZoomVisible(QCPlot qcPlot)
+    {
+        return !elementCache().yZoomResetLink.findElements(qcPlot.getPlot()).isEmpty();
+    }
+
+    public void clickResetZoom(QCPlot qcPlot)
+    {
+        elementCache().yZoomResetLink.findElement(qcPlot.getPlot()).click();
+    }
+
     public class Elements extends BodyWebPart<?>.ElementCache
     {
         WebElement startDate = Locator.css("#start-date-field input").findWhenNeeded(this);
@@ -939,6 +975,10 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         WebElement plotPanel = Locator.css("div.tiledPlotPanel").findWhenNeeded(this);
         WebElement paginationPanel = Locator.css("div.plotPaginationHeaderPanel").findWhenNeeded(this);
         Locator extFormDisplay = Locator.css("div.x4-form-display-field");
+        Locator.CssLocator yZoomOverlay = Locator.css("svg rect.y-zoom-overlay");
+        Locator.CssLocator yZoomButtons = Locator.css("svg g.y-zoom-buttons");
+        Locator.CssLocator yZoomBorder = Locator.css("svg rect.y-zoom-border");
+        Locator.CssLocator yZoomResetLink = Locator.css("svg text.qc-reset-zoom-link");
         Locator.CssLocator guideSetTrainingRect = Locator.css("svg rect.training");
         Locator.CssLocator experimentRangeRect = Locator.css("svg rect.expRange");
         Locator.CssLocator guideSetSvgButton = Locator.css("svg g.guideset-svg-button text");
