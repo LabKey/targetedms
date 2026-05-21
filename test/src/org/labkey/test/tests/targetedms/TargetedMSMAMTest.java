@@ -50,7 +50,7 @@ public class TargetedMSMAMTest extends TargetedMSTest
         clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
         clickAndWait(Locator.linkContainingText(SKY_FILE));
 
-        verifyRunSummaryCountsPep(125,158,0, 160,628, 1, 0, 0);
+        verifyRunSummaryCountsPep(125, 124, 158, 0, 160, 628, 1, 0, 0);
 
         clickAndWait(Locator.linkContainingText("PTM Report"));
 
@@ -83,7 +83,7 @@ public class TargetedMSMAMTest extends TargetedMSTest
         clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
         clickAndWait(Locator.linkContainingText(CROSS_LINKED_SKY_FILE));
 
-        verifyRunSummaryCountsPep(2,2,0, 2,2, 1, 0, 0);
+        verifyRunSummaryCountsPep(2, 2, 2, 0, 2, 2, 1, 0, 0);
 
         clickAndWait(Locator.linkContainingText("Peptide Map"));
         assertTextPresentInThisOrder("121-124", "342-345", "142-145");

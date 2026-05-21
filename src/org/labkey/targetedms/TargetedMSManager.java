@@ -2660,6 +2660,16 @@ public class TargetedMSManager
         return new SqlSelector(TargetedMSManager.getSchema(), new SQLFragment("SELECT Id FROM ", container, false).append(TargetedMSManager.getTableInfoRuns(), "r").append(" WHERE PeptideCount > 0 AND Container = ? AND Deleted = ?")).exists();
     }
 
+    public static boolean containerHasMoleculeGroups(Container container)
+    {
+        return new SqlSelector(TargetedMSManager.getSchema(), new SQLFragment("SELECT Id FROM ", container, false).append(TargetedMSManager.getTableInfoRuns(), "r").append(" WHERE MoleculeGroupCount > 0 AND Container = ? AND Deleted = ?")).exists();
+    }
+
+    public static boolean containerHasProteins(Container container)
+    {
+        return new SqlSelector(TargetedMSManager.getSchema(), new SQLFragment("SELECT Id FROM ", container, false).append(TargetedMSManager.getTableInfoRuns(), "r").append(" WHERE ProteinCount > 0 AND Container = ? AND Deleted = ?")).exists();
+    }
+
     public static boolean containerHasCalibrationCurves(Container container)
     {
         return new SqlSelector(TargetedMSManager.getSchema(), new SQLFragment("SELECT Id FROM ", container, false).append(TargetedMSManager.getTableInfoRuns(), "r").append(" WHERE CalibrationCurveCount > 0 AND Container = ? AND Deleted = ?")).exists();
