@@ -1,1 +1,1 @@
-ALTER TABLE targetedms.QCMetricConfiguration ADD COLUMN AnnotationName VARCHAR(200);
+ALTER TABLE targetedms.QCMetricConfiguration ADD COLUMN AnnotationName VARCHAR(255);
