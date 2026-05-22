@@ -36,7 +36,7 @@
                 qcMetricsTable += '<tr class="' + rowClass + '">';
 
                 qcMetricsTable += '<td>' + (editLock ? '<a id="editLink' + row.id + '" href="#">' : '' ) + LABKEY.Utils.encodeHtml(row.name) + '</td>' + (editLock ? '</a>' : '' );
-                qcMetricsTable += '<td>' + (row.PrecursorScoped ? 'Precursor' : 'Run') + '</td>';
+                qcMetricsTable += '<td>' + (row.PrecursorScoped ? 'Precursor' : 'Replicate') + '</td>';
 
                 if (row.EffectiveStatus === 'NoData') {
                     qcMetricsTable += '<td id=\"' + LABKEY.Utils.encodeHtml(row.name) + '\">No data in this folder</td>';
@@ -190,22 +190,11 @@
             },
 
             showCustomMetricWindow: function (op, clickedMetric) {
-                LABKEY.Query.getSchemas({
-                    scope: this,
-                    containerPath: LABKEY.container.id,
-                    success:  function(schemasInfo) {
-                        const windowConfig = {
-                            parent: this,
-                            schemas: schemasInfo.schemas,
-                            operation: op
-                        };
-
-                        if (clickedMetric) {
-                            windowConfig.metric = clickedMetric;
-                        }
-                        Ext4.create('Panorama.Window.AddCustomMetricWindow', windowConfig).show();
-                    }
-                });
+                const windowConfig = { operation: op };
+                if (clickedMetric) {
+                    windowConfig.metric = clickedMetric;
+                }
+                Panorama.Window.AddCustomMetricWindow.show(windowConfig);
             },
 
             showTraceMetricWindow: function (op, clickedMetric) {
