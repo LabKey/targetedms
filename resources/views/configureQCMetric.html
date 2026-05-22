@@ -12,6 +12,10 @@
         LABKEY.internal = {};
 
     LABKEY.internal.ConfigureQCMetrics = new function () {
+        const METRIC_TYPE_CUSTOM = 'custom';
+        const METRIC_TYPE_TRACE = 'trace';
+        const METRIC_TYPE_ANNOTATION = 'annotation';
+
         let qcMetrics;
         let qcMetricsTable ='';
         let configRows = [];
@@ -80,13 +84,13 @@
                 LABKEY.internal.ConfigureQCMetrics.resetQCMetrics();
             });
             jQuery('#createNewCustomMetricButton').click(function() {
-                LABKEY.internal.ConfigureQCMetrics.addNewMetric('custom');
+                LABKEY.internal.ConfigureQCMetrics.addNewMetric(METRIC_TYPE_CUSTOM);
             });
             jQuery('#createNewTraceMetricButton').click(function() {
-                LABKEY.internal.ConfigureQCMetrics.addNewMetric('trace');
+                LABKEY.internal.ConfigureQCMetrics.addNewMetric(METRIC_TYPE_TRACE);
             });
             jQuery('#createNewAnnotationMetricButton').click(function() {
-                LABKEY.internal.ConfigureQCMetrics.addNewMetric('annotation');
+                LABKEY.internal.ConfigureQCMetrics.addNewMetric(METRIC_TYPE_ANNOTATION);
             });
             jQuery('#clearCacheButton').click(function() {
                 jQuery('#qcMetricsError').text('Clearing cached metrics...');
@@ -253,13 +257,13 @@
 
             addNewMetric: function (metricType) {
                 const op = 'insert';
-                if (metricType === 'custom') {
+                if (metricType === METRIC_TYPE_CUSTOM) {
                     this.showCustomMetricWindow(op);
                 }
-                else if (metricType === 'trace') {
+                else if (metricType === METRIC_TYPE_TRACE) {
                     this.showTraceMetricWindow(op);
                 }
-                else if (metricType === 'annotation') {
+                else if (metricType === METRIC_TYPE_ANNOTATION) {
                     this.showAnnotationMetricWindow(op);
                 }
             },
