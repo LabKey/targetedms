@@ -179,15 +179,23 @@
             <column columnName="DocumentGUID"/>
             <column columnName="PeptideGroupCount">
                 <formatString>#,###</formatString>
-                <url>/targetedms-showPrecursorList.view?id=${Id}</url>
+                <url>/targetedms-showPeptideGroupList.view?id=${Id}</url>
+            </column>
+            <column columnName="MoleculeGroupCount">
+                <formatString>#,###</formatString>
+                <url>/targetedms-showMoleculeGroupList.view?id=${Id}</url>
+            </column>
+            <column columnName="ProteinCount">
+                <formatString>#,###</formatString>
+                <url>/targetedms-showProteinList.view?id=${Id}</url>
             </column>
             <column columnName="PeptideCount">
                 <formatString>#,###</formatString>
-                <url>/targetedms-showPrecursorList.view?id=${Id}</url>
+                <url>/targetedms-showPeptideList.view?id=${Id}</url>
             </column>
             <column columnName="SmallMoleculeCount">
                 <formatString>#,###</formatString>
-                <url>/targetedms-showPrecursorList.view?id=${Id}</url>
+                <url>/targetedms-showMoleculeList.view?id=${Id}</url>
             </column>
             <column columnName="PrecursorCount">
                 <formatString>#,###</formatString>
