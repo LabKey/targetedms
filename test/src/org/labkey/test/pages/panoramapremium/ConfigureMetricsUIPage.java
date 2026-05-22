@@ -189,9 +189,10 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
     public void deleteMetric(String metric)
     {
         openForEdit(metric);
-        click(Locator.id("lk-custom-metric-delete"));
-        acceptAlert();
-        waitForPage();
+        doAndWaitForPageToLoad(() -> {
+            click(Locator.id("lk-custom-metric-delete"));
+            acceptAlert();
+        });
     }
 
     private void openForEdit(String metric)
