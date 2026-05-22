@@ -102,12 +102,13 @@ public class OutlierGenerator
         }
         else if (configuration.getAnnotationName() != null)
         {
-            // annotation-backed metrics: escape the annotation name for SQL string literal
+            // annotation-backed metrics: escape names for SQL string literals
             String escapedName = configuration.getAnnotationName().replace("'", "''");
+            String escapedMetricName = configuration.getName().replace("'", "''");
             if (configuration.isPrecursorScoped())
             {
                 sql.append("(SELECT pcia.PrecursorChromInfoId, pci.SampleFileId,");
-                sql.append(" pcia.Name AS SeriesLabel,");
+                sql.append(" '").append(escapedMetricName).append("' AS SeriesLabel,");
                 sql.append(" CAST(pcia.Value AS REAL) AS MetricValue, ").append(configuration.getId()).append(" AS MetricId");
                 sql.append(" FROM ").append(schemaName).append(".PrecursorChromInfoAnnotation pcia");
                 sql.append(" INNER JOIN ").append(schemaName).append(".PrecursorChromInfo pci ON pcia.PrecursorChromInfoId = pci.Id");
@@ -116,7 +117,7 @@ public class OutlierGenerator
             else
             {
                 sql.append("(SELECT 0 AS PrecursorChromInfoId, sf.Id AS SampleFileId,");
-                sql.append(" ra.Name AS SeriesLabel,");
+                sql.append(" '").append(escapedMetricName).append("' AS SeriesLabel,");
                 sql.append(" CAST(ra.Value AS REAL) AS MetricValue, ").append(configuration.getId()).append(" AS MetricId");
                 sql.append(" FROM ").append(schemaName).append(".ReplicateAnnotation ra");
                 sql.append(" INNER JOIN ").append(schemaName).append(".Replicate r ON ra.ReplicateId = r.Id");
