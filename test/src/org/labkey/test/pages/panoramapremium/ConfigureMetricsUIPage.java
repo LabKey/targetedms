@@ -7,7 +7,6 @@ import org.labkey.test.components.ext4.Window;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.pages.PortalBodyPanel;
 import org.labkey.test.util.Ext4Helper;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 
 import java.util.Map;
@@ -122,9 +121,18 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
     public void addNewCustomMetric(Map<CustomMetricProperties, String> metricProperties, boolean duplicateNameErrorExpected)
     {
         click(Locator.tagWithText("button", ADD_NEW_CUSTOM_METRIC));
-        waitForElement(Ext4Helper.Locators.window("Add New Metric"));
-        Window<?> metricWindow = new Window.WindowFinder(getDriver()).withTitle("Add New Metric").waitFor();
-        editCustomMetricValues(metricWindow, metricProperties, duplicateNameErrorExpected);
+        waitForCustomMetricDialog();
+        fillCustomMetricForm(metricProperties);
+        if (duplicateNameErrorExpected)
+        {
+            click(Locator.id("lk-custom-metric-save"));
+            assertTextPresent("A metric with the name \"" + metricProperties.get(CustomMetricProperties.metricName) + "\" already exists. Please choose a different name.");
+            click(Locator.id("lk-custom-metric-cancel"));
+        }
+        else
+        {
+            clickAndWait(Locator.id("lk-custom-metric-save"));
+        }
     }
 
     public void addNewTraceMetric(Map<TraceMetricProperties, String> traceProperties, boolean duplicateNameErrorExpected)
@@ -173,54 +181,41 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
 
     public void editMetric(String metric, Map<CustomMetricProperties, String> metricProperties)
     {
-        Window<?> metricWindow = openForEdit(metric);
-        editCustomMetricValues(metricWindow, metricProperties, false);
+        openForEdit(metric);
+        fillCustomMetricForm(metricProperties);
+        clickAndWait(Locator.id("lk-custom-metric-save"));
     }
 
     public void deleteMetric(String metric)
     {
         openForEdit(metric);
-        clickButton("Delete", 0);
-        clickButton("Yes");
+        click(Locator.id("lk-custom-metric-delete"));
+        acceptAlert();
         waitForPage();
     }
 
-    private Window<?> openForEdit(String metric)
+    private void openForEdit(String metric)
     {
         waitAndClick(Locator.linkWithText(metric));
-        waitForElement(Ext4Helper.Locators.window("Edit Metric"));
-        return new Window.WindowFinder(getDriver()).withTitle("Edit Metric").waitFor();
+        waitForCustomMetricDialog();
     }
 
-    private void editCustomMetricValues(Window<?> metricWindow, Map<CustomMetricProperties, String> metricProperties, boolean duplicateNameErrorExpected)
+    private void waitForCustomMetricDialog()
     {
-        metricProperties.forEach((prop, val) -> {
-            if (!prop.isSelect)
-            {
-                setFormElement(Locator.name(prop.name()), val);
-            }
-            else
-            {
-                String label = prop.formLabel;
-                //adding waits does not help here, however it passes in catch block
-                try
-                {
-                    _ext4Helper.selectComboBoxItem(label, val);
-                }
-                catch (NoSuchElementException e)
-                {
-                    _ext4Helper.selectComboBoxItem(label, val);
-                }
-            }
-        });
-        if (duplicateNameErrorExpected)
-        {
-            duplicateNameErrorExpected(metricProperties.get(CustomMetricProperties.metricName));
-        }
-        else
-        {
-            clickAndWait(Ext4Helper.Locators.ext4Button("Save").findElement(metricWindow));
-        }
+        waitForElement(Locator.id("lk-custom-metric-dialog"));
+        waitForElement(Locator.tagWithText("option", "-- Select query --"));
+    }
+
+    private void fillCustomMetricForm(Map<CustomMetricProperties, String> props)
+    {
+        if (props.containsKey(CustomMetricProperties.metricName))
+            setFormElement(Locator.id("lk-custom-metric-name"), props.get(CustomMetricProperties.metricName));
+        if (props.containsKey(CustomMetricProperties.yAxisLabel))
+            setFormElement(Locator.id("lk-custom-metric-ylabel"), props.get(CustomMetricProperties.yAxisLabel));
+        if (props.containsKey(CustomMetricProperties.metricType))
+            click(Locator.css("input[name='customMetricType'][value='" + props.get(CustomMetricProperties.metricType).toLowerCase() + "']"));
+        if (props.containsKey(CustomMetricProperties.queryName))
+            selectOptionByText(Locator.id("lk-custom-metric-query"), props.get(CustomMetricProperties.queryName));
     }
 
     private void editTraceMetricValues(Window<?> metricWindow, Map<TraceMetricProperties, String> metricProperties, boolean duplicateNameErrorExpected)
@@ -276,9 +271,9 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
 
     private void duplicateNameErrorExpected(String metricName)
     {
-        click(Ext4Helper.Locators.ext4Button("Save"));
+        click(Locator.id("lk-custom-metric-save"));
         assertTextPresent("A metric with the name \"" + metricName + "\" already exists. Please choose a different name.");
-        click(Ext4Helper.Locators.ext4Button("Cancel"));
+        click(Locator.id("lk-custom-metric-cancel"));
     }
 
     public void clearMetricCache()
