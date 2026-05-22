@@ -95,7 +95,7 @@
             filterArray.push(LABKEY.Filter.create('id', _config.metric.id, LABKEY.Filter.Types.NOT_EQUAL));
         }
         LABKEY.Query.selectRows({
-            containerPath: LABKEY.container.id,
+            containerPath: LABKEY.container.path,
             schemaName: 'targetedms',
             queryName: 'qcmetricconfiguration',
             filterArray: filterArray,
