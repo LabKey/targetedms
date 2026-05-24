@@ -142,7 +142,7 @@
         if (!confirm('This will delete the "' + _config.metric.name + '" metric. Are you sure?')) return;
 
         LABKEY.Query.saveRows({
-            containerPath: LABKEY.container.id,
+            containerPath: LABKEY.container.path,
             commands: [
                 { schemaName: 'targetedms', queryName: 'qcenabledmetrics', command: 'delete', rows: [{ metric: _config.metric.id }] },
                 { schemaName: 'targetedms', queryName: 'qcmetricconfiguration', command: 'delete', rows: [{ id: _config.metric.id }] }
