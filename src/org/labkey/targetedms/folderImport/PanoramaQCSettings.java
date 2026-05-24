@@ -74,7 +74,7 @@ public enum PanoramaQCSettings
                             .append(TargetedMSManager.getTableInfoQCMetricConfiguration(), "qcMetricConfig")
                             .append(" ON qcEnabledMetrics.metric = qcMetricConfig.Id");
 
-                    try (Results results = QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true))
+                    try (Results results = QueryService.get().getSelectBuilder(schema, sql.getSQL(), true).select())
                     {
                         exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
                     }
@@ -131,7 +131,7 @@ public enum PanoramaQCSettings
                             .append(" ) qcAnnotationType")
                             .append(" ON qcAnnotation.QCAnnotationTypeId = qcAnnotationType.Id");
 
-                    try (Results results = QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true))
+                    try (Results results = QueryService.get().getSelectBuilder(schema, sql.getSQL(), true).select())
                     {
                         exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
                     }
@@ -173,7 +173,7 @@ public enum PanoramaQCSettings
                             .append(TargetedMSManager.getTableInfoRuns(), "runs")
                             .append(" ON replicate.RunId = runs.Id");
 
-                    try (Results results = QueryService.get().selectResults(schema, sql.getSQL(), null, null, true, true))
+                    try (Results results = QueryService.get().getSelectBuilder(schema, sql.getSQL(), true).select())
                     {
                         exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
                     }

@@ -1272,7 +1272,7 @@ public class TargetedMSManager
                     "FROM targetedms.SampleFile WHERE InstrumentNickname = " +
                     new StandardDialectStringHandler().quoteStringLiteral(name) +
                     " ORDER By InstrumentNickname, InstrumentId.Model, InstrumentSerialNumber";
-            TableSelector selector = QueryService.get().selector(schema, sql);
+            SqlSelector selector = QueryService.get().getSelectBuilder(schema, sql).buildSqlSelector();
             result = selector.getArrayList(InstrumentNickname.class);
             Container targetContainer;
             if (shared.hasPermission(schema.getUser(), UpdatePermission.class))
