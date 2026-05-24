@@ -7,6 +7,7 @@
         <dependency path="Ext4"/>
         <dependency path="PanoramaPremium/window/AddNewMetricWindow.js"/>
         <dependency path="PanoramaPremium/window/AddNewTraceMetricWindow.js"/>
+        <dependency path="PanoramaPremium/window/AddNewAnnotationMetricWindow.js"/>
         <dependency path="TargetedMS/js/misc.js"/>
     </dependencies>
 </view>
