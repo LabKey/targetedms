@@ -121,6 +121,12 @@
     cursor: zoom-in;
 }
 
+.y-zoom-pending-line {
+    stroke: rgba(20, 204, 201, 1);
+    stroke-width: 2px;
+    stroke-dasharray: 6, 3;
+}
+
 .y-zoom-selection {
     fill: rgba(20, 204, 201, 0.3);
     stroke: rgba(20, 204, 201, 1);
