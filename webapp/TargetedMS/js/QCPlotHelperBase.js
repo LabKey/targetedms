@@ -1105,6 +1105,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         let setupAxisOverlay = function(axis, yScale, overlayX, overlayW, btnAnchorX) {
             let dragStartY = null, dragCurrentY = null;
             let selectionRect = null, zoomButtonGroup = null, pendingLine = null, pendingStartY = null;
+            let interactionMask = null;
             let moveNs = 'mousemove.yzoom-' + axis;
             let keyNs = 'keydown.yzoom-' + axis;
 
@@ -1112,12 +1113,20 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 if (selectionRect) { selectionRect.remove(); selectionRect = null; }
                 if (zoomButtonGroup) { zoomButtonGroup.remove(); zoomButtonGroup = null; }
                 if (pendingLine) { pendingLine.remove(); pendingLine = null; }
+                if (interactionMask) { interactionMask.remove(); interactionMask = null; }
             };
 
             let showZoomButtons = function(y1, y2) {
                 let domainMax = yScale.invert(y1);
                 let domainMin = yScale.invert(y2);
                 let yMid = y1 + (y2 - y1) / 2;
+
+                // Block all plot interactions while zoom buttons are visible
+                interactionMask = svg.append('rect')
+                    .attr('x', 0).attr('y', 0)
+                    .attr('width', parseFloat(svg.attr('width')) || (gridRight + 80))
+                    .attr('height', parseFloat(svg.attr('height')) || (gridBottom + 50))
+                    .style({'fill': 'transparent', 'pointer-events': 'all', 'cursor': 'default'});
 
                 zoomButtonGroup = svg.append('g').attr('class', 'y-zoom-buttons');
 
