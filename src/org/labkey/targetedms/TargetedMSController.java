@@ -67,7 +67,6 @@ import org.labkey.api.action.ReturnUrlForm;
 import org.labkey.api.action.SimpleErrorView;
 import org.labkey.api.action.SimpleViewAction;
 import org.labkey.api.action.SpringActionController;
-import org.labkey.api.admin.AdminUrls;
 import org.labkey.api.analytics.AnalyticsService;
 import org.labkey.api.attachments.DocumentConversionService;
 import org.labkey.api.attachments.SvgSource;
@@ -106,7 +105,6 @@ import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.module.ModuleProperty;
 import org.labkey.api.pipeline.LocalDirectory;
 import org.labkey.api.pipeline.PipeRoot;
-import org.labkey.api.pipeline.PipelineJob;
 import org.labkey.api.pipeline.PipelineService;
 import org.labkey.api.pipeline.PipelineUrls;
 import org.labkey.api.pipeline.PipelineValidationException;
@@ -141,7 +139,6 @@ import org.labkey.api.security.RequiresPermission;
 import org.labkey.api.security.SecurityManager;
 import org.labkey.api.security.User;
 import org.labkey.api.security.permissions.AdminPermission;
-import org.labkey.api.security.permissions.ApplicationAdminPermission;
 import org.labkey.api.security.permissions.InsertPermission;
 import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.security.permissions.UpdatePermission;
@@ -151,7 +148,6 @@ import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.targetedms.TargetedMSUrls;
 import org.labkey.api.targetedms.model.QCMetricConfiguration;
 import org.labkey.api.targetedms.model.SampleFileInfo;
-import org.labkey.api.util.ButtonBuilder;
 import org.labkey.api.util.ConfigurationException;
 import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.DOM;
@@ -229,7 +225,6 @@ import org.labkey.targetedms.parser.TransitionChromInfo;
 import org.labkey.targetedms.parser.list.ListDefinition;
 import org.labkey.targetedms.parser.skyaudit.AuditLogEntry;
 import org.labkey.targetedms.parser.speclib.SpeclibReaderException;
-import org.labkey.targetedms.pipeline.ChromatogramCrawlerJob;
 import org.labkey.targetedms.query.ChromatogramDisplayColumnFactory;
 import org.labkey.targetedms.query.ConflictResultsManager;
 import org.labkey.targetedms.query.GroupChromatogramsTableInfo;
@@ -325,7 +320,6 @@ import static org.labkey.api.util.DOM.A;
 import static org.labkey.api.util.DOM.Attribute.height;
 import static org.labkey.api.util.DOM.Attribute.href;
 import static org.labkey.api.util.DOM.Attribute.id;
-import static org.labkey.api.util.DOM.Attribute.method;
 import static org.labkey.api.util.DOM.Attribute.src;
 import static org.labkey.api.util.DOM.Attribute.style;
 import static org.labkey.api.util.DOM.Attribute.width;
@@ -543,47 +537,6 @@ public class TargetedMSController extends SpringActionController
         if (!DefaultFolderType.DEFAULT_DASHBOARD.equals(tab))
         {
             Portal.addProperty(c, tab, Portal.PROP_CUSTOMTAB);
-        }
-    }
-
-    public static class ChromatogramCrawlerForm
-    {
-    }
-
-    @RequiresPermission(ApplicationAdminPermission.class)
-    public class ChromatogramCrawlerAction extends FormViewAction<ChromatogramCrawlerForm>
-    {
-        @Override
-        public void validateCommand(ChromatogramCrawlerForm target, Errors errors)
-        {
-        }
-
-        @Override
-        public ModelAndView getView(ChromatogramCrawlerForm form, boolean reshow, BindException errors)
-        {
-            return new HtmlView("Chromatogram Crawler", DIV("Crawl all containers under the parent " + getContainer().getPath(),
-                DOM.LK.FORM(at(method, "POST"),
-                    new ButtonBuilder("Start Crawl").submit(true).build())));
-        }
-
-        @Override
-        public boolean handlePost(ChromatogramCrawlerForm form, BindException errors) throws Exception
-        {
-            PipelineJob job = new ChromatogramCrawlerJob(getViewBackgroundInfo(), PipelineService.get().getPipelineRootSetting(ContainerManager.getRoot()));
-            PipelineService.get().queueJob(job);
-            return true;
-        }
-
-        @Override
-        public URLHelper getSuccessURL(ChromatogramCrawlerForm form)
-        {
-            return urlProvider(PipelineUrls.class).urlBegin(getContainer());
-        }
-
-        @Override
-        public void addNavTrail(NavTree root)
-        {
-            urlProvider(AdminUrls.class).addAdminNavTrail(root, "Chromatogram Crawler", getClass(), getContainer());
         }
     }
 

@@ -46,14 +46,11 @@ import org.labkey.api.protein.search.MSSearchWebpart;
 import org.labkey.api.protein.search.ProteinSearchForm;
 import org.labkey.api.query.QueryView;
 import org.labkey.api.security.permissions.AdminPermission;
-import org.labkey.api.security.permissions.ApplicationAdminPermission;
-import org.labkey.api.settings.AdminConsole;
 import org.labkey.api.settings.OptionalFeatureFlag;
 import org.labkey.api.settings.OptionalFeatureService;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.usageMetrics.UsageMetricsService;
 import org.labkey.api.util.PageFlowUtil;
-import org.labkey.api.view.ActionURL;
 import org.labkey.api.view.BaseWebPartFactory;
 import org.labkey.api.view.JspView;
 import org.labkey.api.view.NavTree;
@@ -380,12 +377,12 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
                     String inclSubFolders = (String)portalCtx.get("includeSubfolders");
                     if(!StringUtils.isBlank(inclSubFolders))
                     {
-                        form.setIncludeSubfolders(Boolean.valueOf(inclSubFolders));
+                        form.setIncludeSubfolders(Boolean.parseBoolean(inclSubFolders));
                     }
                     String hideIncludeSubfolder = (String)portalCtx.get("hideIncludeSubfolder");
                     if(!StringUtils.isBlank(hideIncludeSubfolder))
                     {
-                        form.setHideIncludeSubfolders(Boolean.valueOf(hideIncludeSubfolder));
+                        form.setHideIncludeSubfolders(Boolean.parseBoolean(hideIncludeSubfolder));
                     }
                     return new ModificationSearchWebPart(form);
                 }
@@ -650,9 +647,6 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
 
         TargetedMSListener listener = new TargetedMSListener();
         ContainerManager.addContainerListener(listener);
-
-        ActionURL chromatogramURL = new ActionURL(TargetedMSController.ChromatogramCrawlerAction.class, ContainerManager.getRoot());
-        AdminConsole.addLink(AdminConsole.SettingsLinkType.Premium, "Targeted MS Chromatogram Crawler", chromatogramURL, ApplicationAdminPermission.class);
 
         FileContentService fcs = FileContentService.get();
         if(null != fcs)
