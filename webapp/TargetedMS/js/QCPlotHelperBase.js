@@ -1128,9 +1128,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     .style({'fill': '#ffffff', 'stroke': '#b4b4b4'});
                 btnG.append('text')
                     .text(text)
-                    .attr('x', xLeft + 5).attr('y', yMid + 4)
+                    .attr('x', xLeft + width / 2).attr('y', yMid + 4)
                     .style({'fill': '#126495', 'font-size': '10px', 'font-weight': 'bold',
-                            'text-transform': 'uppercase', 'pointer-events': 'none'});
+                            'text-anchor': 'middle', 'text-transform': 'uppercase', 'pointer-events': 'none'});
                 btnG.on('click', onClick);
                 return btnG;
             };
