@@ -30,7 +30,8 @@ SELECT
        qmc.MaxTimeValue,
        qmc.TimeValueOption,
        qmc.TraceName,
-       qmc.YAxisLabel
+       qmc.YAxisLabel,
+       qmc.AnnotationName
 FROM
       qcmetricconfiguration qmc
 FULL JOIN   qcenabledmetrics qem
