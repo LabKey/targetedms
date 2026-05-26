@@ -2240,7 +2240,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             this.yZoomByPlot[plotId] = {};
         }
         this.yZoomByPlot[plotId][axis] = [yMin, yMax];
-        this.displayTrendPlot(true /* preserveZoom */);
+        this.processPlotData();
     },
 
     resetYZoom: function(plotId, axis) {
@@ -2255,7 +2255,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 delete this.yZoomByPlot[plotId];
             }
         }
-        this.displayTrendPlot(true /* preserveZoom */);
+        this.processPlotData();
     },
 
     getSvgElForPlot : function(plot) {
