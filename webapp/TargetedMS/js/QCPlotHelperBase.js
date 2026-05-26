@@ -807,7 +807,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         let yZoomDomainCombined = this.getYZoomDomain ? this.getYZoomDomain(id) : null;
         if (yZoomDomainCombined) {
-            trendLineProps.yZoomDomain = yZoomDomainCombined;
+            if (yZoomDomainCombined.left) trendLineProps.yZoomDomain = yZoomDomainCombined.left;
+            if (yZoomDomainCombined.right) trendLineProps.yZoomDomainRight = yZoomDomainCombined.right;
         }
 
         // Suppress the mean line for multi-series plots
@@ -953,7 +954,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         let yZoomDomain = this.getYZoomDomain ? this.getYZoomDomain(id) : null;
         if (yZoomDomain) {
-            trendLineProps.yZoomDomain = yZoomDomain;
+            if (yZoomDomain.left) trendLineProps.yZoomDomain = yZoomDomain.left;
+            if (yZoomDomain.right) trendLineProps.yZoomDomainRight = yZoomDomain.right;
         }
 
         var plotLegendData = this.getAdditionalPlotLegend(plotType);
@@ -1088,182 +1090,187 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             return;
         }
 
-        let yScale = plot.scales.yLeft.scale;
-        let overlayWidth = grid.leftEdge - 2;
         let gridTop = grid.topEdge;
         let gridBottom = grid.bottomEdge;
         let gridLeft = grid.leftEdge;
         let gridRight = grid.rightEdge;
 
-        let dragStartY = null;
-        let dragCurrentY = null;
-        let selectionRect = null;
-        let zoomButtonGroup = null;
-        let pendingLine = null;
-        let pendingStartY = null;
-
         let clampY = function(y) {
             return Math.max(gridTop, Math.min(gridBottom, y));
         };
 
-        let removeOverlays = function() {
-            if (selectionRect) { selectionRect.remove(); selectionRect = null; }
-            if (zoomButtonGroup) { zoomButtonGroup.remove(); zoomButtonGroup = null; }
-            if (pendingLine) { pendingLine.remove(); pendingLine = null; }
-        };
+        // Creates an independent drag/click overlay for one y-axis (left or right).
+        // overlayX/overlayW define where the invisible hit area sits.
+        // btnAnchorX is the left edge of the Zoom button.
+        let setupAxisOverlay = function(axis, yScale, overlayX, overlayW, btnAnchorX) {
+            let dragStartY = null, dragCurrentY = null;
+            let selectionRect = null, zoomButtonGroup = null, pendingLine = null, pendingStartY = null;
+            let moveNs = 'mousemove.yzoom-' + axis;
+            let keyNs = 'keydown.yzoom-' + axis;
 
-        let showZoomButtons = function(y1, y2) {
-            let domainMax = yScale.invert(y1);
-            let domainMin = yScale.invert(y2);
-            let yMid = y1 + (y2 - y1) / 2;
-            let btnLeft = gridLeft + 5;
-
-            zoomButtonGroup = svg.append('g').attr('class', 'y-zoom-buttons');
-
-            let makeBtn = function(text, xLeft, width, onClick) {
-                let btnG = zoomButtonGroup.append('g');
-                btnG.append('rect')
-                    .attr('x', xLeft).attr('y', yMid - 10).attr('rx', 5).attr('ry', 5)
-                    .attr('width', width).attr('height', 20)
-                    .style({'fill': '#ffffff', 'stroke': '#b4b4b4'});
-                btnG.append('text')
-                    .text(text)
-                    .attr('x', xLeft + width / 2).attr('y', yMid + 4)
-                    .style({'fill': '#126495', 'font-size': '10px', 'font-weight': 'bold',
-                            'text-anchor': 'middle', 'text-transform': 'uppercase', 'pointer-events': 'none'});
-                btnG.on('click', onClick);
-                return btnG;
+            let removeOverlays = function() {
+                if (selectionRect) { selectionRect.remove(); selectionRect = null; }
+                if (zoomButtonGroup) { zoomButtonGroup.remove(); zoomButtonGroup = null; }
+                if (pendingLine) { pendingLine.remove(); pendingLine = null; }
             };
 
-            makeBtn('Zoom', btnLeft, 50, function() {
+            let showZoomButtons = function(y1, y2) {
+                let domainMax = yScale.invert(y1);
+                let domainMin = yScale.invert(y2);
+                let yMid = y1 + (y2 - y1) / 2;
+
+                zoomButtonGroup = svg.append('g').attr('class', 'y-zoom-buttons');
+
+                let makeBtn = function(text, xLeft, width, onClick) {
+                    let btnG = zoomButtonGroup.append('g');
+                    btnG.append('rect')
+                        .attr('x', xLeft).attr('y', yMid - 10).attr('rx', 5).attr('ry', 5)
+                        .attr('width', width).attr('height', 20)
+                        .style({'fill': '#ffffff', 'stroke': '#b4b4b4'});
+                    btnG.append('text')
+                        .text(text)
+                        .attr('x', xLeft + width / 2).attr('y', yMid + 4)
+                        .style({'fill': '#126495', 'font-size': '10px', 'font-weight': 'bold',
+                                'text-anchor': 'middle', 'text-transform': 'uppercase', 'pointer-events': 'none'});
+                    btnG.on('click', onClick);
+                    return btnG;
+                };
+
+                makeBtn('Zoom', btnAnchorX, 50, function() {
+                    removeOverlays();
+                    me.applyYZoom(plotId, domainMin, domainMax, axis);
+                });
+
+                makeBtn('Cancel', btnAnchorX + 60, 55, function() {
+                    removeOverlays();
+                });
+            };
+
+            let cancelPendingClick = function() {
+                pendingStartY = null;
+                svg.on(moveNs, null);
+                d3.select(document).on(keyNs, null);
                 removeOverlays();
-                me.applyYZoom(plotId, domainMin, domainMax);
-            });
+            };
 
-            makeBtn('Cancel', btnLeft + 60, 55, function() {
-                removeOverlays();
-            });
-        };
+            let startClickModeTracking = function(startY) {
+                pendingStartY = startY;
 
-        let cancelPendingClick = function() {
-            pendingStartY = null;
-            svg.on('mousemove.yzoom', null);
-            d3.select(document).on('keydown.yzoom', null);
-            removeOverlays();
-        };
+                pendingLine = svg.append('line')
+                    .attr('class', 'y-zoom-pending-line')
+                    .attr('x1', gridLeft).attr('y1', startY)
+                    .attr('x2', gridRight).attr('y2', startY)
+                    .style('pointer-events', 'none');
 
-        let startClickModeTracking = function(startY) {
-            pendingStartY = startY;
+                svg.on(moveNs, function() {
+                    let currentY = clampY(d3.mouse(svg.node())[1]);
+                    let y1 = Math.min(pendingStartY, currentY);
+                    let y2 = Math.max(pendingStartY, currentY);
+                    let h = y2 - y1;
 
-            pendingLine = svg.append('line')
-                .attr('class', 'y-zoom-pending-line')
-                .attr('x1', gridLeft).attr('y1', startY)
-                .attr('x2', gridRight).attr('y2', startY)
-                .style('pointer-events', 'none');
+                    if (selectionRect) {
+                        selectionRect.attr('x', gridLeft).attr('y', y1)
+                            .attr('width', gridRight - gridLeft).attr('height', Math.max(1, h));
+                    } else {
+                        selectionRect = svg.append('rect')
+                            .attr('class', 'y-zoom-selection')
+                            .attr('x', gridLeft).attr('y', y1)
+                            .attr('width', gridRight - gridLeft)
+                            .attr('height', Math.max(1, h))
+                            .style('pointer-events', 'none');
+                    }
+                });
 
-            svg.on('mousemove.yzoom', function() {
-                let currentY = clampY(d3.mouse(svg.node())[1]);
-                let y1 = Math.min(pendingStartY, currentY);
-                let y2 = Math.max(pendingStartY, currentY);
-                let h = y2 - y1;
+                d3.select(document).on(keyNs, function() {
+                    if (d3.event.key === 'Escape' || d3.event.keyCode === 27) {
+                        cancelPendingClick();
+                    }
+                });
+            };
 
-                if (selectionRect) {
-                    selectionRect.attr('x', gridLeft).attr('y', y1)
-                        .attr('width', gridRight - gridLeft).attr('height', Math.max(1, h));
+            let drag = d3.behavior.drag()
+                .on('dragstart', function() {
+                    dragStartY = clampY(d3.mouse(svg.node())[1]);
+                    dragCurrentY = dragStartY;
+                    if (zoomButtonGroup) { zoomButtonGroup.remove(); zoomButtonGroup = null; }
+                })
+                .on('drag', function() {
+                    dragCurrentY = clampY(d3.mouse(svg.node())[1]);
+
+                    if (pendingStartY !== null && Math.abs(dragCurrentY - dragStartY) >= 5) {
+                        cancelPendingClick();
+                    }
+
+                    let y1 = Math.min(dragStartY, dragCurrentY);
+                    let y2 = Math.max(dragStartY, dragCurrentY);
+                    let h = y2 - y1;
+
+                    if (h < 1) { return; }
+
+                    if (selectionRect) {
+                        selectionRect.attr('x', gridLeft).attr('y', y1)
+                            .attr('width', gridRight - gridLeft).attr('height', h);
+                    } else {
+                        selectionRect = svg.append('rect')
+                            .attr('class', 'y-zoom-selection')
+                            .attr('x', gridLeft).attr('y', y1)
+                            .attr('width', gridRight - gridLeft)
+                            .attr('height', h)
+                            .style('pointer-events', 'none');
+                    }
+                })
+                .on('dragend', function() {
+                    let y1 = Math.min(dragStartY, dragCurrentY);
+                    let y2 = Math.max(dragStartY, dragCurrentY);
+
+                    if (y2 - y1 < 5) { return; }
+
+                    if (pendingStartY !== null) { cancelPendingClick(); }
+                    showZoomButtons(y1, y2);
+                });
+
+            let overlayEl = svg.append('rect')
+                .attr('class', 'y-zoom-overlay')
+                .attr('x', overlayX)
+                .attr('y', gridTop)
+                .attr('width', overlayW)
+                .attr('height', gridBottom - gridTop)
+                .style('fill', 'transparent')
+                .call(drag);
+
+            overlayEl.on('click', function() {
+                let clickY = clampY(d3.mouse(svg.node())[1]);
+
+                if (pendingStartY === null) {
+                    removeOverlays();
+                    startClickModeTracking(clickY);
                 } else {
-                    selectionRect = svg.append('rect')
-                        .attr('class', 'y-zoom-selection')
-                        .attr('x', gridLeft).attr('y', y1)
-                        .attr('width', gridRight - gridLeft)
-                        .attr('height', Math.max(1, h))
-                        .style('pointer-events', 'none');
-                }
-            });
-
-            d3.select(document).on('keydown.yzoom', function() {
-                if (d3.event.key === 'Escape' || d3.event.keyCode === 27) {
+                    let firstY = pendingStartY;
                     cancelPendingClick();
+
+                    let finalY1 = Math.min(firstY, clickY);
+                    let finalY2 = Math.max(firstY, clickY);
+                    if (finalY2 - finalY1 < 5) { return; }
+
+                    showZoomButtons(finalY1, finalY2);
                 }
             });
         };
 
-        let drag = d3.behavior.drag()
-            .on('dragstart', function() {
-                dragStartY = clampY(d3.mouse(svg.node())[1]);
-                dragCurrentY = dragStartY;
-                // Only dismiss zoom buttons; leave pending-click visuals intact
-                if (zoomButtonGroup) { zoomButtonGroup.remove(); zoomButtonGroup = null; }
-            })
-            .on('drag', function() {
-                dragCurrentY = clampY(d3.mouse(svg.node())[1]);
+        // Left axis overlay
+        setupAxisOverlay('left', plot.scales.yLeft.scale, 0, gridLeft - 2, gridLeft + 5);
 
-                // Real drag while in pending-click state
-                if (pendingStartY !== null && Math.abs(dragCurrentY - dragStartY) >= 5) {
-                    cancelPendingClick();
-                }
-
-                let y1 = Math.min(dragStartY, dragCurrentY);
-                let y2 = Math.max(dragStartY, dragCurrentY);
-                let h = y2 - y1;
-
-                if (h < 1) { return; }
-
-                if (selectionRect) {
-                    selectionRect.attr('x', gridLeft).attr('y', y1)
-                        .attr('width', gridRight - gridLeft).attr('height', h);
-                } else {
-                    selectionRect = svg.append('rect')
-                        .attr('class', 'y-zoom-selection')
-                        .attr('x', gridLeft).attr('y', y1)
-                        .attr('width', gridRight - gridLeft)
-                        .attr('height', h)
-                        .style('pointer-events', 'none');
-                }
-            })
-            .on('dragend', function() {
-                let y1 = Math.min(dragStartY, dragCurrentY);
-                let y2 = Math.max(dragStartY, dragCurrentY);
-
-                if (y2 - y1 < 5) {
-                    // Pure click — the click listener handles this
-                    return;
-                }
-
-                // Real drag: cancel any pending-click state and show buttons
-                if (pendingStartY !== null) { cancelPendingClick(); }
-                showZoomButtons(y1, y2);
-            });
-
-        let overlay = svg.append('rect')
-            .attr('class', 'y-zoom-overlay')
-            .attr('x', 0)
-            .attr('y', gridTop)
-            .attr('width', overlayWidth)
-            .attr('height', gridBottom - gridTop)
-            .style('fill', 'transparent')
-            .call(drag);
-
-        overlay.on('click', function() {
-            let clickY = clampY(d3.mouse(svg.node())[1]);
-
-            if (pendingStartY === null) {
-                // First click - set first bound and start live preview
-                removeOverlays();
-                startClickModeTracking(clickY);
-            } else {
-                // Second click: finalize the range
-                let firstY = pendingStartY;
-                cancelPendingClick();
-
-                let finalY1 = Math.min(firstY, clickY);
-                let finalY2 = Math.max(firstY, clickY);
-                if (finalY2 - finalY1 < 5) { return; }
-
-                showZoomButtons(finalY1, finalY2);
-            }
-        });
+        // Right axis overlay — only when a right scale exists
+        if (plot.scales.yRight && plot.scales.yRight.scale && plot.scales.yRight.scale.invert) {
+            let svgWidth = parseFloat(svg.attr('width')) || (gridRight + 80);
+            let rightOverlayX = gridRight + 2;
+            let rightOverlayW = Math.max(1, svgWidth - rightOverlayX);
+            // Buttons sit just inside the plot to the left of the right axis (Zoom 50px + gap 10px + Cancel 55px = 115px)
+            setupAxisOverlay('right', plot.scales.yRight.scale, rightOverlayX, rightOverlayW, gridRight - 120);
+        }
 
         if (this.getYZoomDomain && this.getYZoomDomain(plotId)) {
+            let zoomEntry = this.getYZoomDomain(plotId);
             let gridWidth = gridRight - gridLeft;
             let gridHeight = gridBottom - gridTop;
             let clipId = (plot.renderTo || plotId) + '-yzoom-clip';
@@ -1286,14 +1293,24 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 .attr('width', gridWidth).attr('height', gridHeight)
                 .style({'fill': 'none', 'stroke': '#888', 'stroke-width': '1px', 'pointer-events': 'none'});
 
-            svg.append('text')
-                .attr('class', 'qc-reset-zoom-link')
-                .text('Reset Zoom')
-                .attr('x', gridLeft + 5)
-                .attr('y', gridTop - 18)
-                .on('click', function() {
-                    me.resetYZoom(plotId);
-                });
+            if (zoomEntry.left) {
+                svg.append('text')
+                    .attr('class', 'qc-reset-zoom-link')
+                    .text('Reset Zoom')
+                    .attr('x', gridLeft + 5)
+                    .attr('y', gridTop - 18)
+                    .on('click', function() { me.resetYZoom(plotId, 'left'); });
+            }
+
+            if (zoomEntry.right) {
+                svg.append('text')
+                    .attr('class', 'qc-reset-zoom-link')
+                    .text('Reset Zoom')
+                    .attr('x', gridRight - 5)
+                    .attr('y', gridTop - 18)
+                    .style('text-anchor', 'end')
+                    .on('click', function() { me.resetYZoom(plotId, 'right'); });
+            }
         }
     }
 });

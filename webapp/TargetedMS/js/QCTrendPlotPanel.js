@@ -2227,21 +2227,33 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     },
 
     getYZoomDomain: function(plotId) {
-        return this.yZoomByPlot && this.yZoomByPlot[plotId] ? this.yZoomByPlot[plotId] : null;
+        let entry = this.yZoomByPlot && this.yZoomByPlot[plotId];
+        if (!entry || (!entry.left && !entry.right)) return null;
+        return entry;
     },
 
-    applyYZoom: function(plotId, yMin, yMax) {
+    applyYZoom: function(plotId, yMin, yMax, axis) {
         if (!this.yZoomByPlot) {
             this.yZoomByPlot = {};
         }
-        this.yZoomByPlot[plotId] = [yMin, yMax];
+        if (!this.yZoomByPlot[plotId]) {
+            this.yZoomByPlot[plotId] = {};
+        }
+        this.yZoomByPlot[plotId][axis] = [yMin, yMax];
         this.displayTrendPlot(true /* preserveZoom */);
-        // TODO: add server-side metric tracking action (targetedms/trackQCPlotAction.api)
     },
 
-    resetYZoom: function(plotId) {
-        if (this.yZoomByPlot) {
-            delete this.yZoomByPlot[plotId];
+    resetYZoom: function(plotId, axis) {
+        if (this.yZoomByPlot && this.yZoomByPlot[plotId]) {
+            if (axis) {
+                delete this.yZoomByPlot[plotId][axis];
+                if (!this.yZoomByPlot[plotId].left && !this.yZoomByPlot[plotId].right) {
+                    delete this.yZoomByPlot[plotId];
+                }
+            }
+            else {
+                delete this.yZoomByPlot[plotId];
+            }
         }
         this.displayTrendPlot(true /* preserveZoom */);
     },
