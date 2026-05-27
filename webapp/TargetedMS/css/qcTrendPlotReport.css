@@ -136,10 +136,3 @@
 .y-zoom-buttons g {
     cursor: pointer;
 }
-
-.qc-reset-zoom-link {
-    fill: #126495;
-    font-size: 11px;
-    cursor: pointer;
-    text-decoration: underline;
-}

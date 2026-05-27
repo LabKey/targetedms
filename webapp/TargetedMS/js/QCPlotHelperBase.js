@@ -1099,10 +1099,27 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             return Math.max(gridTop, Math.min(gridBottom, y));
         };
 
+        let zoomEntry = this.getYZoomDomain ? this.getYZoomDomain(plotId) : null;
+
         // Creates an independent drag/click overlay for one y-axis (left or right).
         // overlayX/overlayW define where the invisible hit area sits.
         // btnAnchorX is the left edge of the Zoom button.
         let setupAxisOverlay = function(axis, yScale, overlayX, overlayW, btnAnchorX) {
+            let isZoomed = !!(zoomEntry && zoomEntry[axis]);
+
+            let overlayEl = svg.append('rect')
+                .attr('class', 'y-zoom-overlay')
+                .attr('x', overlayX)
+                .attr('y', gridTop)
+                .attr('width', overlayW)
+                .attr('height', gridBottom - gridTop)
+                .style({'fill': 'transparent', 'cursor': isZoomed ? 'zoom-out' : 'zoom-in'});
+
+            if (isZoomed) {
+                overlayEl.on('click', function() { me.resetYZoom(plotId, axis); });
+                return;
+            }
+
             let dragStartY = null, dragCurrentY = null;
             let selectionRect = null, zoomButtonGroup = null, pendingLine = null, pendingStartY = null;
             let interactionMask = null;
@@ -1238,14 +1255,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     showZoomButtons(y1, y2);
                 });
 
-            let overlayEl = svg.append('rect')
-                .attr('class', 'y-zoom-overlay')
-                .attr('x', overlayX)
-                .attr('y', gridTop)
-                .attr('width', overlayW)
-                .attr('height', gridBottom - gridTop)
-                .style('fill', 'transparent')
-                .call(drag);
+            overlayEl.call(drag);
 
             overlayEl.on('click', function() {
                 let clickY = clampY(d3.mouse(svg.node())[1]);
@@ -1278,8 +1288,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             setupAxisOverlay('right', plot.scales.yRight.scale, rightOverlayX, rightOverlayW, gridRight - 120);
         }
 
-        if (this.getYZoomDomain && this.getYZoomDomain(plotId)) {
-            let zoomEntry = this.getYZoomDomain(plotId);
+        if (zoomEntry) {
             let gridWidth = gridRight - gridLeft;
             let gridHeight = gridBottom - gridTop;
             let clipId = (plot.renderTo || plotId) + '-yzoom-clip';
@@ -1301,25 +1310,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 .attr('x', gridLeft).attr('y', gridTop)
                 .attr('width', gridWidth).attr('height', gridHeight)
                 .style({'fill': 'none', 'stroke': '#888', 'stroke-width': '1px', 'pointer-events': 'none'});
-
-            if (zoomEntry.left) {
-                svg.append('text')
-                    .attr('class', 'qc-reset-zoom-link')
-                    .text('Reset Zoom')
-                    .attr('x', gridLeft + 5)
-                    .attr('y', gridTop - 18)
-                    .on('click', function() { me.resetYZoom(plotId, 'left'); });
-            }
-
-            if (zoomEntry.right) {
-                svg.append('text')
-                    .attr('class', 'qc-reset-zoom-link')
-                    .text('Reset Zoom')
-                    .attr('x', gridRight - 5)
-                    .attr('y', gridTop - 18)
-                    .style('text-anchor', 'end')
-                    .on('click', function() { me.resetYZoom(plotId, 'right'); });
-            }
         }
     }
 });
