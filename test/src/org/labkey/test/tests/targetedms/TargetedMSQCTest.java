@@ -1191,7 +1191,6 @@ public class TargetedMSQCTest extends TargetedMSTest
         refresh();
         qcDashboard = new PanoramaDashboard(this);
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
-        qcPlotsWebPart.filterQCPlotsToInitialData(PRECURSORS.length, true);
 
         plots = qcPlotsWebPart.getPlots();
         firstPlot = plots.get(0);
