@@ -1148,7 +1148,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 zoomButtonGroup = svg.append('g').attr('class', 'y-zoom-buttons');
 
                 let makeBtn = function(text, xLeft, width, onClick) {
-                    let btnG = zoomButtonGroup.append('g');
+                    let btnG = zoomButtonGroup.append('g').attr('class', 'y-zoom-btn-' + text.toLowerCase());
                     btnG.append('rect')
                         .attr('x', xLeft).attr('y', yMid - 10).attr('rx', 5).attr('ry', 5)
                         .attr('width', width).attr('height', 20)
