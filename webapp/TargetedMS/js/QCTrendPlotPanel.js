@@ -2232,6 +2232,18 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return entry;
     },
 
+    incrementMetric: function(metricName) {
+        if (LABKEY.user && LABKEY.user.isGuest) {
+            return;
+        }
+        LABKEY.Ajax.request({
+            url: LABKEY.ActionURL.buildURL('core', 'incrementClientSideMetricCount.api'),
+            method: 'POST',
+            jsonData: { featureArea: 'panoramaQCPlot', metricName: metricName },
+            failure: function(response) { console.error('Failed to track metric ' + metricName + ':', response); }
+        });
+    },
+
     applyYZoom: function(plotId, yMin, yMax, axis) {
         if (!this.yZoomByPlot) {
             this.yZoomByPlot = {};
@@ -2240,6 +2252,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             this.yZoomByPlot[plotId] = {};
         }
         this.yZoomByPlot[plotId][axis] = [yMin, yMax];
+        this.incrementMetric('yAxisZoom');
         this.processPlotData();
     },
 
@@ -2255,6 +2268,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 delete this.yZoomByPlot[plotId];
             }
         }
+        this.incrementMetric('yAxisZoomReset');
         this.processPlotData();
     },
 
