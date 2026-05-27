@@ -12,6 +12,10 @@
         LABKEY.internal = {};
 
     LABKEY.internal.ConfigureQCMetrics = new function () {
+        const METRIC_TYPE_CUSTOM = 'custom';
+        const METRIC_TYPE_TRACE = 'trace';
+        const METRIC_TYPE_ANNOTATION = 'annotation';
+
         let qcMetrics;
         let qcMetricsTable ='';
         let configRows = [];
@@ -36,7 +40,7 @@
                 qcMetricsTable += '<tr class="' + rowClass + '">';
 
                 qcMetricsTable += '<td>' + (editLock ? '<a id="editLink' + row.id + '" href="#">' : '' ) + LABKEY.Utils.encodeHtml(row.name) + '</td>' + (editLock ? '</a>' : '' );
-                qcMetricsTable += '<td>' + (row.PrecursorScoped ? 'Precursor' : 'Run') + '</td>';
+                qcMetricsTable += '<td>' + (row.PrecursorScoped ? 'Precursor' : 'Replicate') + '</td>';
 
                 if (row.EffectiveStatus === 'NoData') {
                     qcMetricsTable += '<td id=\"' + LABKEY.Utils.encodeHtml(row.name) + '\">No data in this folder</td>';
@@ -59,11 +63,14 @@
             });
 
             qcMetricsTable += '</table><br>' +
-                    '<button type="button" class="labkey-button primary" id="saveButton" style="margin-right: 20px;">Save</button>' +
-                    '<button type="button" class="labkey-button" id="cancelButton" style="margin-right: 20px;">Cancel</button>' +
-                    '<button type="button" class="labkey-button" id="createNewCustomMetricButton" style="margin-right: 20px;">Add New Custom Metric</button>' +
-                    '<button type="button" class="labkey-button" id="createNewTraceMetricButton" style="margin-right: 20px;">Add New Trace Metric</button>' +
+                    '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+                    '<button type="button" class="labkey-button primary" id="saveButton">Save</button>' +
+                    '<button type="button" class="labkey-button" id="cancelButton">Cancel</button>' +
+                    '<button type="button" class="labkey-button" id="createNewCustomMetricButton">Add New Custom Metric</button>' +
+                    '<button type="button" class="labkey-button" id="createNewTraceMetricButton">Add New Trace Metric</button>' +
+                    '<button type="button" class="labkey-button" id="createNewAnnotationMetricButton">Add Annotation-Backed Metric</button>' +
                     '<button type="button" class="labkey-button" id="clearCacheButton">Clear Cached Metric Values</button>' +
+                    '</div>' +
                     '</form><br>Edits to queries backing existing custom metrics require a manual cache clearing to display the updated results.</p>';
 
             jQuery('#qcMetricsTable').html(qcMetricsTable);
@@ -77,10 +84,13 @@
                 LABKEY.internal.ConfigureQCMetrics.resetQCMetrics();
             });
             jQuery('#createNewCustomMetricButton').click(function() {
-                LABKEY.internal.ConfigureQCMetrics.addNewMetric('custom');
+                LABKEY.internal.ConfigureQCMetrics.addNewMetric(METRIC_TYPE_CUSTOM);
             });
             jQuery('#createNewTraceMetricButton').click(function() {
-                LABKEY.internal.ConfigureQCMetrics.addNewMetric('trace')
+                LABKEY.internal.ConfigureQCMetrics.addNewMetric(METRIC_TYPE_TRACE);
+            });
+            jQuery('#createNewAnnotationMetricButton').click(function() {
+                LABKEY.internal.ConfigureQCMetrics.addNewMetric(METRIC_TYPE_ANNOTATION);
             });
             jQuery('#clearCacheButton').click(function() {
                 jQuery('#qcMetricsError').text('Clearing cached metrics...');
@@ -169,7 +179,10 @@
 
                 const op = 'update';
                 if (clickedQcMetricConfig.TraceName) {
-                    LABKEY.internal.ConfigureQCMetrics.showTraceMetricWindow(op, clickedQcMetricConfig)
+                    LABKEY.internal.ConfigureQCMetrics.showTraceMetricWindow(op, clickedQcMetricConfig);
+                }
+                else if (clickedQcMetricConfig.AnnotationName) {
+                    LABKEY.internal.ConfigureQCMetrics.showAnnotationMetricWindow(op, clickedQcMetricConfig);
                 }
                 else {
                     LABKEY.internal.ConfigureQCMetrics.showCustomMetricWindow(op, clickedQcMetricConfig);
@@ -181,22 +194,11 @@
             },
 
             showCustomMetricWindow: function (op, clickedMetric) {
-                LABKEY.Query.getSchemas({
-                    scope: this,
-                    containerPath: LABKEY.container.id,
-                    success:  function(schemasInfo) {
-                        const windowConfig = {
-                            parent: this,
-                            schemas: schemasInfo.schemas,
-                            operation: op
-                        };
-
-                        if (clickedMetric) {
-                            windowConfig.metric = clickedMetric;
-                        }
-                        Ext4.create('Panorama.Window.AddCustomMetricWindow', windowConfig).show();
-                    }
-                });
+                const windowConfig = { operation: op };
+                if (clickedMetric) {
+                    windowConfig.metric = clickedMetric;
+                }
+                Panorama.Window.AddCustomMetricWindow.show(windowConfig);
             },
 
             showTraceMetricWindow: function (op, clickedMetric) {
@@ -242,13 +244,27 @@
                 });
             },
 
+            showAnnotationMetricWindow: function (op, clickedMetric) {
+                const windowConfig = {
+                    parent: this,
+                    operation: op
+                };
+                if (clickedMetric) {
+                    windowConfig.metric = clickedMetric;
+                }
+                Panorama.Window.AddAnnotationMetricWindow.show(windowConfig);
+            },
+
             addNewMetric: function (metricType) {
                 const op = 'insert';
-                if (metricType === 'custom') {
+                if (metricType === METRIC_TYPE_CUSTOM) {
                     this.showCustomMetricWindow(op);
                 }
-                else if (metricType === 'trace') {
-                    this.showTraceMetricWindow(op)
+                else if (metricType === METRIC_TYPE_TRACE) {
+                    this.showTraceMetricWindow(op);
+                }
+                else if (metricType === METRIC_TYPE_ANNOTATION) {
+                    this.showAnnotationMetricWindow(op);
                 }
             },
 

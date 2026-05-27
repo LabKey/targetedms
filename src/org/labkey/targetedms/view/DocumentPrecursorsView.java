@@ -36,5 +36,4 @@ public abstract class DocumentPrecursorsView extends DocumentView
         _targetedMsSchema = schema;
         _tableName = queryName;
     }
-
 }

@@ -64,16 +64,16 @@ public class PrecursorTableInfo extends AbstractGeneralPrecursorTableInfo
 
         visibleColumns.add(FieldKey.fromParts("PeptideId", "PeptideGroupId", "Label"));
         visibleColumns.add(FieldKey.fromParts("PeptideId", "PeptideGroupId", "Description"));
-        visibleColumns.add(FieldKey.fromParts("PeptideId", "PeptideGroupId", "NoteAnnotations"));
+        visibleColumns.add(FieldKey.fromParts("PeptideId", "PeptideGroupId", NOTE_ANNOTATIONS_COLUMN_NAME));
 
         visibleColumns.add(FieldKey.fromParts("PeptideId", ModifiedSequenceDisplayColumn.PEPTIDE_COLUMN_NAME));
-        visibleColumns.add(FieldKey.fromParts("PeptideId", "NoteAnnotations"));
+        visibleColumns.add(FieldKey.fromParts("PeptideId", NOTE_ANNOTATIONS_COLUMN_NAME));
         visibleColumns.add(FieldKey.fromParts("PeptideId", "NumMissedCleavages"));
         visibleColumns.add(FieldKey.fromParts("PeptideId", "CalcNeutralMass"));
         visibleColumns.add(FieldKey.fromParts("PeptideId", "Rank"));
 
         visibleColumns.add(FieldKey.fromParts(ModifiedSequenceDisplayColumn.PRECURSOR_COLUMN_NAME));
-        visibleColumns.add(FieldKey.fromParts("NoteAnnotations"));
+        visibleColumns.add(FieldKey.fromParts(NOTE_ANNOTATIONS_COLUMN_NAME));
         visibleColumns.add(FieldKey.fromParts("IsotopeLabelId", "Name"));
         visibleColumns.add(FieldKey.fromParts("Charge"));
         visibleColumns.add(FieldKey.fromParts("Mz"));

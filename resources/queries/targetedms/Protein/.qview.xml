@@ -1,0 +1,16 @@
+<customView xmlns="http://labkey.org/data/xml/queryCustomView" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            label="Proteins" canOverride="true">
+    <columns>
+        <column name="Label" />
+        <column name="Description" />
+        <column name="Accession" />
+        <column name="PreferredName" />
+        <column name="Gene" />
+        <column name="Species" />
+
+        <column name="SequenceId/ProtSequence" />
+        <column name="Note" />
+
+    </columns>
+
+</customView>
