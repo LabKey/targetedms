@@ -910,16 +910,16 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         WebElement overlay = elementCache().yZoomOverlay.findElement(plotEl);
         getWrapper().scrollIntoView(overlay);
 
-        int dragOffset = 50;
+        int clickOffset = 40;
         new Actions(getWrapper().getDriver())
-                .moveToElement(overlay, 0, -dragOffset)
-                .clickAndHold()
-                .moveToElement(overlay, 0, dragOffset)
-                .release()
+                .moveToElement(overlay, 0, -clickOffset)
+                .click()
+                .moveToElement(overlay, 0, clickOffset)
+                .click()
                 .perform();
 
         WebDriverWrapper.waitFor(() -> !elementCache().yZoomConfirmBtn.findElements(plotEl).isEmpty(),
-                "Zoom buttons did not appear after y-axis drag", WAIT_FOR_JAVASCRIPT);
+                "Zoom buttons did not appear after y-axis clicks", WAIT_FOR_JAVASCRIPT);
 
         elementCache().yZoomConfirmBtn.findElement(plotEl).click();
     }
@@ -970,7 +970,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         WebElement paginationPanel = Locator.css("div.plotPaginationHeaderPanel").findWhenNeeded(this);
         Locator extFormDisplay = Locator.css("div.x4-form-display-field");
         Locator.CssLocator yZoomOverlay = Locator.css("svg rect.y-zoom-overlay");
-        Locator.CssLocator yZoomConfirmBtn = Locator.css("svg g.y-zoom-btn-zoom");
+        Locator.CssLocator yZoomConfirmBtn = Locator.css("svg g.y-zoom-btn-zoom rect");
         Locator.CssLocator yZoomBorder = Locator.css("svg rect.y-zoom-border");
         Locator.CssLocator guideSetTrainingRect = Locator.css("svg rect.training");
         Locator.CssLocator experimentRangeRect = Locator.css("svg rect.expRange");
