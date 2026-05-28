@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2019 LabKey Corporation
+ * Copyright (c) 2012-2026 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,7 +104,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.labkey.api.exp.api.ExperimentService.asInteger;
+import static org.labkey.api.util.IntegerUtils.asInteger;
 import static org.labkey.targetedms.TargetedMSManager.getTableInfoTransitionChromInfo;
 
 /**
