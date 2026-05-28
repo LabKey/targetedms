@@ -1,4 +1,4 @@
-    <%
+<%
 /*
  * Copyright (c) 2018-2026 LabKey Corporation
  *
@@ -19,8 +19,8 @@
 <%@ page import="org.labkey.api.view.JspView" %>
 <%@ page import="org.labkey.api.view.template.ClientDependencies" %>
 <%@ page import="org.labkey.targetedms.TargetedMSManager" %>
-    <%@ page import="org.labkey.targetedms.parser.GeneralMolecule" %>
-    <%@ page extends="org.labkey.api.jsp.JspBase" %>
+<%@ page import="org.labkey.targetedms.parser.GeneralMolecule" %>
+<%@ page extends="org.labkey.api.jsp.JspBase" %>
 <%@ taglib prefix="labkey" uri="http://www.labkey.org/taglib" %>
 <%@ taglib prefix="h" uri="http://www.labkey.org/taglib" %>
 <%
