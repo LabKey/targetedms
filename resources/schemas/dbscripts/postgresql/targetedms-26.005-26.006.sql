@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 LabKey Corporation
+ *
+ * Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
+ */
 -- When reparenting the QCEmailNotifications table from PanoramaPremium schema to targetedms, an attempt was made to
 -- drop this index, but the attempt failed because it targeted the old schema. This index is redundant with
 -- IX_qcEmailNotifications_Container.

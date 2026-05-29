@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2020-2026 LabKey Corporation
+ *
+ * Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
+ */
 function ProteinBar(project) {
 
     var parentWidth = parseInt(d3.select('#chart').style('width'), 10);
