@@ -119,12 +119,12 @@ $(document).ready(function () {
         {
             row.child.hide();
             tr.removeClass('shown');
-            $("." + cls).children('img').attr('src', "<%=getWebappURL("_images/plus.gif")%>");
+            $("." + cls).children('img').attr('src', "<%=getWebappURL("_images/minus.gif")%>");
         }
         else {
             row.child.show();
             tr.addClass('shown');
-            $("." + cls).children('img').attr('src', "<%=getWebappURL("_images/minus.gif")%>");
+            $("." + cls).children('img').attr('src', "<%=getWebappURL("_images/plus.gif")%>");
         }
 
         if(!srcTd.hasClass('content_loaded'))
@@ -271,7 +271,7 @@ function toggleCheckboxSelection(element)
              <!--<td class="representative newPrecursor <%=precursor.getNewPrecursorId()%>"><%=precursor.getNewPrecursorId()%></td>-->
              <td class="representative details-control newPrecursor <%=precursor.getNewPrecursorId()%>">
                 <span class="<%=precursor.getNewPrecursorId()%>_<%=precursor.getOldPrecursorId()%>">
-                     <img src="<%=getWebappURL("_images/plus.gif")%>"/>
+                     <img src="<%=getWebappURL("_images/minus.gif")%>" alt="Expand row details"/>
                  </span>
              </td>
              <td class="representative newPrecursor <%=precursor.getNewPrecursorId()%>">
@@ -291,7 +291,7 @@ function toggleCheckboxSelection(element)
              <!--<td class="oldPrecursor <%=precursor.getNewPrecursorId()%>"><%=precursor.getOldPrecursorId()%></td>-->
              <td class="details-control oldPrecursor <%=precursor.getNewPrecursorId()%>">
                 <span class="<%=precursor.getNewPrecursorId()%>_<%=precursor.getOldPrecursorId()%>">
-                     <img src="<%=getWebappURL("_images/plus.gif")%>"/>
+                     <img src="<%=getWebappURL("_images/minus.gif")%>" alt="Expand row details"/>
                  </span>
              </td>
              <td class="oldPrecursor <%=precursor.getNewPrecursorId()%>">
