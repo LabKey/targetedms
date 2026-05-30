@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019 LabKey Corporation
+ * Copyright (c) 2016-2026 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,16 +57,16 @@ public class MoleculePrecursorTableInfo extends AbstractGeneralPrecursorTableInf
         ArrayList<FieldKey> visibleColumns = new ArrayList<>();
         visibleColumns.add(FieldKey.fromParts("MoleculeId", "PeptideGroupId", "Label"));
         visibleColumns.add(FieldKey.fromParts("MoleculeId", "PeptideGroupId", "Description"));
-        visibleColumns.add(FieldKey.fromParts("MoleculeId", "PeptideGroupId", "NoteAnnotations"));
+        visibleColumns.add(FieldKey.fromParts("MoleculeId", "PeptideGroupId", NOTE_ANNOTATIONS_COLUMN_NAME));
 
         visibleColumns.add(FieldKey.fromParts("MoleculeId", "Molecule"));
         visibleColumns.add(FieldKey.fromParts("MoleculeId", "IonFormula"));
-        visibleColumns.add(FieldKey.fromParts("MoleculeId", "NoteAnnotations"));
+        visibleColumns.add(FieldKey.fromParts("MoleculeId", NOTE_ANNOTATIONS_COLUMN_NAME));
         visibleColumns.add(FieldKey.fromParts("MoleculeId", "MassAverage"));
         visibleColumns.add(FieldKey.fromParts("MoleculeId", "MassMonoisotopic"));
 
         visibleColumns.add(FieldKey.fromParts("CustomIonName"));
-        visibleColumns.add(FieldKey.fromParts("NoteAnnotations"));
+        visibleColumns.add(FieldKey.fromParts(NOTE_ANNOTATIONS_COLUMN_NAME));
         visibleColumns.add(FieldKey.fromParts("Charge"));
         visibleColumns.add(FieldKey.fromParts("Mz"));
         visibleColumns.add(FieldKey.fromParts("MassAverage"));

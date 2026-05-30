@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2019 LabKey Corporation
+ * Copyright (c) 2012-2026 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,6 @@ import org.labkey.api.action.ReturnUrlForm;
 import org.labkey.api.action.SimpleErrorView;
 import org.labkey.api.action.SimpleViewAction;
 import org.labkey.api.action.SpringActionController;
-import org.labkey.api.admin.AdminUrls;
 import org.labkey.api.analytics.AnalyticsService;
 import org.labkey.api.attachments.DocumentConversionService;
 import org.labkey.api.attachments.SvgSource;
@@ -106,7 +105,6 @@ import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.module.ModuleProperty;
 import org.labkey.api.pipeline.LocalDirectory;
 import org.labkey.api.pipeline.PipeRoot;
-import org.labkey.api.pipeline.PipelineJob;
 import org.labkey.api.pipeline.PipelineService;
 import org.labkey.api.pipeline.PipelineUrls;
 import org.labkey.api.pipeline.PipelineValidationException;
@@ -141,7 +139,6 @@ import org.labkey.api.security.RequiresPermission;
 import org.labkey.api.security.SecurityManager;
 import org.labkey.api.security.User;
 import org.labkey.api.security.permissions.AdminPermission;
-import org.labkey.api.security.permissions.ApplicationAdminPermission;
 import org.labkey.api.security.permissions.InsertPermission;
 import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.security.permissions.UpdatePermission;
@@ -151,7 +148,6 @@ import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.targetedms.TargetedMSUrls;
 import org.labkey.api.targetedms.model.QCMetricConfiguration;
 import org.labkey.api.targetedms.model.SampleFileInfo;
-import org.labkey.api.util.ButtonBuilder;
 import org.labkey.api.util.ConfigurationException;
 import org.labkey.api.util.ContainerContext;
 import org.labkey.api.util.DOM;
@@ -229,7 +225,6 @@ import org.labkey.targetedms.parser.TransitionChromInfo;
 import org.labkey.targetedms.parser.list.ListDefinition;
 import org.labkey.targetedms.parser.skyaudit.AuditLogEntry;
 import org.labkey.targetedms.parser.speclib.SpeclibReaderException;
-import org.labkey.targetedms.pipeline.ChromatogramCrawlerJob;
 import org.labkey.targetedms.query.ChromatogramDisplayColumnFactory;
 import org.labkey.targetedms.query.ConflictResultsManager;
 import org.labkey.targetedms.query.GroupChromatogramsTableInfo;
@@ -258,9 +253,11 @@ import org.labkey.targetedms.view.CalibrationCurveView;
 import org.labkey.targetedms.view.CalibrationCurvesView;
 import org.labkey.targetedms.view.ChromatogramGridView;
 import org.labkey.targetedms.view.ChromatogramsDataRegion;
+import org.labkey.targetedms.view.DocumentGeneralMoleculesView;
+import org.labkey.targetedms.view.DocumentPeptideGroupView;
+import org.labkey.targetedms.view.DocumentProteinView;
 import org.labkey.targetedms.view.DocumentPrecursorsView;
 import org.labkey.targetedms.view.DocumentTransitionsView;
-import org.labkey.targetedms.view.DocumentView;
 import org.labkey.targetedms.view.FiguresOfMeritView;
 import org.labkey.targetedms.view.GroupComparisonView;
 import org.labkey.targetedms.view.InstrumentSummaryWebPart;
@@ -325,7 +322,6 @@ import static org.labkey.api.util.DOM.A;
 import static org.labkey.api.util.DOM.Attribute.height;
 import static org.labkey.api.util.DOM.Attribute.href;
 import static org.labkey.api.util.DOM.Attribute.id;
-import static org.labkey.api.util.DOM.Attribute.method;
 import static org.labkey.api.util.DOM.Attribute.src;
 import static org.labkey.api.util.DOM.Attribute.style;
 import static org.labkey.api.util.DOM.Attribute.width;
@@ -543,47 +539,6 @@ public class TargetedMSController extends SpringActionController
         if (!DefaultFolderType.DEFAULT_DASHBOARD.equals(tab))
         {
             Portal.addProperty(c, tab, Portal.PROP_CUSTOMTAB);
-        }
-    }
-
-    public static class ChromatogramCrawlerForm
-    {
-    }
-
-    @RequiresPermission(ApplicationAdminPermission.class)
-    public class ChromatogramCrawlerAction extends FormViewAction<ChromatogramCrawlerForm>
-    {
-        @Override
-        public void validateCommand(ChromatogramCrawlerForm target, Errors errors)
-        {
-        }
-
-        @Override
-        public ModelAndView getView(ChromatogramCrawlerForm form, boolean reshow, BindException errors)
-        {
-            return new HtmlView("Chromatogram Crawler", DIV("Crawl all containers under the parent " + getContainer().getPath(),
-                DOM.LK.FORM(at(method, "POST"),
-                    new ButtonBuilder("Start Crawl").submit(true).build())));
-        }
-
-        @Override
-        public boolean handlePost(ChromatogramCrawlerForm form, BindException errors) throws Exception
-        {
-            PipelineJob job = new ChromatogramCrawlerJob(getViewBackgroundInfo(), PipelineService.get().getPipelineRootSetting(ContainerManager.getRoot()));
-            PipelineService.get().queueJob(job);
-            return true;
-        }
-
-        @Override
-        public URLHelper getSuccessURL(ChromatogramCrawlerForm form)
-        {
-            return urlProvider(PipelineUrls.class).urlBegin(getContainer());
-        }
-
-        @Override
-        public void addNavTrail(NavTree root)
-        {
-            urlProvider(AdminUrls.class).addAdminNavTrail(root, "Chromatogram Crawler", getClass(), getContainer());
         }
     }
 
@@ -4377,7 +4332,7 @@ public class TargetedMSController extends SpringActionController
     // Action to display a document's transition or precursor list, with both proteomics and small molecule views
     // ------------------------------------------------------------------------
     @RequiresPermission(ReadPermission.class)
-    public abstract class ShowRunSplitDetailsAction<VIEWTYPE extends DocumentView> extends AbstractShowRunDetailsAction<RunDetailsForm, VIEWTYPE>
+    public abstract class ShowRunSplitDetailsAction<VIEWTYPE extends QueryView> extends AbstractShowRunDetailsAction<RunDetailsForm, VIEWTYPE>
     {
         public ShowRunSplitDetailsAction()
         {
@@ -4496,8 +4451,8 @@ public class TargetedMSController extends SpringActionController
         @Override
         protected DocumentPrecursorsView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
         {
-            DocumentPrecursorsView view;
-            if(PeptidePrecursorsView.DATAREGION_NAME.equals(dataRegion))
+            DocumentPrecursorsView view = null;
+            if (PeptidePrecursorsView.DATAREGION_NAME.equals(dataRegion))
             {
                 view = new PeptidePrecursorsView(getViewContext(),
                         new TargetedMSSchema(getUser(), getContainer()),
@@ -4505,7 +4460,7 @@ public class TargetedMSController extends SpringActionController
                         form.getId(),
                         forExport);
             }
-            else
+            else if (SmallMoleculePrecursorsView.DATAREGION_NAME.equals(dataRegion))
             {
                 view = new SmallMoleculePrecursorsView(getViewContext(),
                         new TargetedMSSchema(getUser(), getContainer()),
@@ -4514,9 +4469,12 @@ public class TargetedMSController extends SpringActionController
                         forExport);
             }
 
-            view.setShowExportButtons(true);
-            view.setShowDetailsColumn(false);
-            view.setButtonBarPosition(DataRegion.ButtonBarPosition.BOTH);
+            if (view != null)
+            {
+                view.setShowExportButtons(true);
+                view.setShowDetailsColumn(false);
+                view.setButtonBarPosition(DataRegion.ButtonBarPosition.BOTH);
+            }
 
             return view;
         }
@@ -4531,6 +4489,102 @@ public class TargetedMSController extends SpringActionController
         public String getDataRegionNameSmallMolecule()
         {
             return SmallMoleculePrecursorsView.DATAREGION_NAME;
+        }
+    }
+
+    @RequiresPermission(ReadPermission.class)
+    public class ShowPeptideGroupListAction extends ShowRunSingleDetailsAction<RunDetailsForm>
+    {
+        public ShowPeptideGroupListAction()
+        {
+            super(RunDetailsForm.class, "Peptide Groups", TargetedMSSchema.TABLE_PEPTIDE_GROUP);
+        }
+
+        @Override
+        protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
+        {
+            TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+            DocumentPeptideGroupView view = new DocumentPeptideGroupView(getViewContext(), schema, form.getId(),
+                    TargetedMSSchema.TABLE_PEPTIDE_GROUP, "Protein Groups");
+            view.setShowDetailsColumn(false);
+            view.setShowFilterDescription(false);
+            return view;
+        }
+    }
+
+    @RequiresPermission(ReadPermission.class)
+    public class ShowMoleculeGroupListAction extends ShowRunSingleDetailsAction<RunDetailsForm>
+    {
+        public ShowMoleculeGroupListAction()
+        {
+            super(RunDetailsForm.class, "Molecule Lists", TargetedMSSchema.TABLE_MOLECULE_GROUP);
+        }
+
+        @Override
+        protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
+        {
+            TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+            DocumentPeptideGroupView view = new DocumentPeptideGroupView(getViewContext(), schema, form.getId(),
+                    TargetedMSSchema.TABLE_MOLECULE_GROUP, "Molecule Lists");
+            view.setShowDetailsColumn(false);
+            view.setShowFilterDescription(false);
+            return view;
+        }
+    }
+
+    @RequiresPermission(ReadPermission.class)
+    public class ShowProteinListAction extends ShowRunSingleDetailsAction<RunDetailsForm>
+    {
+        public ShowProteinListAction()
+        {
+            super(RunDetailsForm.class, "Proteins", TargetedMSSchema.TABLE_PROTEIN);
+        }
+
+        @Override
+        protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
+        {
+            TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+            DocumentProteinView view = new DocumentProteinView(getViewContext(), schema, form.getId());
+            view.setShowDetailsColumn(false);
+            return view;
+        }
+    }
+
+    @RequiresPermission(ReadPermission.class)
+    public class ShowPeptideListAction extends ShowRunSingleDetailsAction<RunDetailsForm>
+    {
+        public ShowPeptideListAction()
+        {
+            super(RunDetailsForm.class, "Peptides", TargetedMSSchema.TABLE_PEPTIDE);
+        }
+
+        @Override
+        protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
+        {
+            TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+            DocumentGeneralMoleculesView view = new DocumentGeneralMoleculesView(getViewContext(), schema, form.getId(),
+                    TargetedMSSchema.TABLE_PEPTIDE, "Peptides");
+            view.setShowDetailsColumn(false);
+            return view;
+        }
+    }
+
+    @RequiresPermission(ReadPermission.class)
+    public class ShowMoleculeListAction extends ShowRunSingleDetailsAction<RunDetailsForm>
+    {
+        public ShowMoleculeListAction()
+        {
+            super(RunDetailsForm.class, "Small Molecules", TargetedMSSchema.TABLE_MOLECULE);
+        }
+
+        @Override
+        protected QueryView createQueryView(RunDetailsForm form, BindException errors, boolean forExport, String dataRegion)
+        {
+            TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+            DocumentGeneralMoleculesView view = new DocumentGeneralMoleculesView(getViewContext(), schema, form.getId(),
+                    TargetedMSSchema.TABLE_MOLECULE, "Small Molecules");
+            view.setShowDetailsColumn(false);
+            return view;
         }
     }
 

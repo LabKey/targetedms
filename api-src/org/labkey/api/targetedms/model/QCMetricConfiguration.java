@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019 LabKey Corporation
+ * Copyright (c) 2016-2026 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
     private String _yAxisLabel;
     private Double _upperBound;
     private Double _lowerBound;
+    private String _annotationName;
 
     public int getId()
     {
@@ -185,6 +186,16 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
         _lowerBound = lowerBound;
     }
 
+    public String getAnnotationName()
+    {
+        return _annotationName;
+    }
+
+    public void setAnnotationName(String annotationName)
+    {
+        _annotationName = annotationName;
+    }
+
     public JSONObject toJSON(){
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("id", _id);
@@ -215,6 +226,9 @@ public class QCMetricConfiguration implements Comparable<QCMetricConfiguration>
         }
         if (_upperBound != null) {
             jsonObject.put("upperBound", _upperBound);
+        }
+        if (_annotationName != null) {
+            jsonObject.put("annotationName", _annotationName);
         }
 
         return jsonObject;

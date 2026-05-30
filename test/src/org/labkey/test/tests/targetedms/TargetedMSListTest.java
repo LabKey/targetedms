@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019 LabKey Corporation
+ * Copyright (c) 2019-2026 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,13 +53,13 @@ public class TargetedMSListTest extends TargetedMSTest
 
         clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
         clickAndWait(Locator.linkContainingText(LIST_SKY_FILE_1));
-        verifyRunSummaryCountsPep(2,4,0, 5,53, 1, 0, 6);
+        verifyRunSummaryCountsPep(2, 2, 4, 0, 5, 53, 1, 0, 6);
         clickAndWait(Locator.linkContainingText("6 lists"));
         assertTextPresent("DocumentProperties", "Lorem Ipsum", "Protein Descriptions");
         clickAndWait(Locator.linkContainingText("Protein Descriptions"));
 
         // Check that the document header remains
-        verifyRunSummaryCountsPep(2,4,0, 5,53, 1, 0, 6);
+        verifyRunSummaryCountsPep(2, 2, 4, 0, 5, 53, 1, 0, 6);
         assertTextPresent("ALBU_BOVIN", "main protein of plasma");
 
         List<String> queryNames = validateSampleInfo(1, Set.of("Mickey"), 5, 12);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 LabKey Corporation
+ * Copyright (c) 2019-2026 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,8 @@ SELECT
        qmc.MaxTimeValue,
        qmc.TimeValueOption,
        qmc.TraceName,
-       qmc.YAxisLabel
+       qmc.YAxisLabel,
+       qmc.AnnotationName
 FROM
       qcmetricconfiguration qmc
 FULL JOIN   qcenabledmetrics qem

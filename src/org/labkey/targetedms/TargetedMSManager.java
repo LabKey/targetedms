@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2019 LabKey Corporation
+ * Copyright (c) 2012-2026 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2658,6 +2658,16 @@ public class TargetedMSManager
     public static boolean containerHasPeptides(Container container)
     {
         return new SqlSelector(TargetedMSManager.getSchema(), new SQLFragment("SELECT Id FROM ", container, false).append(TargetedMSManager.getTableInfoRuns(), "r").append(" WHERE PeptideCount > 0 AND Container = ? AND Deleted = ?")).exists();
+    }
+
+    public static boolean containerHasMoleculeGroups(Container container)
+    {
+        return new SqlSelector(TargetedMSManager.getSchema(), new SQLFragment("SELECT Id FROM ", container, false).append(TargetedMSManager.getTableInfoRuns(), "r").append(" WHERE MoleculeGroupCount > 0 AND Container = ? AND Deleted = ?")).exists();
+    }
+
+    public static boolean containerHasProteins(Container container)
+    {
+        return new SqlSelector(TargetedMSManager.getSchema(), new SQLFragment("SELECT Id FROM ", container, false).append(TargetedMSManager.getTableInfoRuns(), "r").append(" WHERE ProteinCount > 0 AND Container = ? AND Deleted = ?")).exists();
     }
 
     public static boolean containerHasCalibrationCurves(Container container)

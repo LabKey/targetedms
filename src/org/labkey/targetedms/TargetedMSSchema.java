@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2019 LabKey Corporation
+ * Copyright (c) 2012-2026 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ import org.labkey.api.util.Pair;
 import org.labkey.api.util.SafeToRender;
 import org.labkey.api.util.UnexpectedException;
 import org.labkey.api.view.ActionURL;
+import org.labkey.api.view.NotFoundException;
 import org.labkey.api.view.PopupMenu;
 import org.labkey.api.view.ViewContext;
 import org.labkey.api.view.template.ClientDependency;
@@ -304,6 +305,8 @@ public class TargetedMSSchema extends UserSchema
     // Cache this info at the schema level to make it easy to reuse
     private Boolean _hasSmallMolecules;
     private Boolean _hasPeptides;
+    private Boolean _hasMoleculeGroups;
+    private Boolean _hasProteins;
 
     static public void register(Module module)
     {
@@ -787,7 +790,8 @@ public class TargetedMSSchema extends UserSchema
 
         boolean hasSmallMolecules = hasSmallMolecules();
         boolean hasPeptides = hasPeptides();
-        String peptideGroupColName = (hasSmallMolecules ? COL_LIST : COL_PROTEIN) + "s";
+        boolean hasMoleculeGroups = hasMoleculeGroups();
+        boolean hasProteins = hasProteins();
 
         skyDocDetailColumn.setFk(new LookupForeignKey(url, "id", "Id", "Description")
         {
@@ -866,7 +870,9 @@ public class TargetedMSSchema extends UserSchema
                     }
                 });
 
-                result.addWrapColumn(peptideGroupColName, result.getRealTable().getColumn("PeptideGroupCount"));
+                result.addWrapColumn("PeptideGroups", result.getRealTable().getColumn("PeptideGroupCount"));
+                result.addWrapColumn("MoleculeLists", result.getRealTable().getColumn("MoleculeGroupCount"));
+                result.addWrapColumn("Proteins", result.getRealTable().getColumn("ProteinCount"));
                 result.addWrapColumn("Peptides", result.getRealTable().getColumn("PeptideCount"));
                 result.addWrapColumn("SmallMolecules", result.getRealTable().getColumn("SmallMoleculeCount"));
                 result.addWrapColumn("Precursors", result.getRealTable().getColumn("PrecursorCount"));
@@ -1002,7 +1008,13 @@ public class TargetedMSSchema extends UserSchema
 
                     _fieldKeys.add(2, FieldKey.fromParts("File"));
                     _fieldKeys.add(3, FieldKey.fromParts("File", "Download"));
-                    _fieldKeys.add(FieldKey.fromParts("File", peptideGroupColName));
+
+                    if (hasPeptides)
+                        _fieldKeys.add(FieldKey.fromParts("File", "PeptideGroups"));
+                    if (hasMoleculeGroups)
+                        _fieldKeys.add(FieldKey.fromParts("File", "MoleculeLists"));
+                    if (hasProteins)
+                        _fieldKeys.add(FieldKey.fromParts("File", "Proteins"));
 
                     // Omit peptides or small molecules if we don't have any in this container
                     if (hasPeptides || !hasSmallMolecules)
@@ -1067,9 +1079,27 @@ public class TargetedMSSchema extends UserSchema
     {
         if (_hasPeptides == null)
         {
-            _hasPeptides = TargetedMSManager.containerHasSmallMolecules(getContainer());
+            _hasPeptides = TargetedMSManager.containerHasPeptides(getContainer());
         }
         return _hasPeptides.booleanValue();
+    }
+
+    private boolean hasMoleculeGroups()
+    {
+        if (_hasMoleculeGroups == null)
+        {
+            _hasMoleculeGroups = TargetedMSManager.containerHasMoleculeGroups(getContainer());
+        }
+        return _hasMoleculeGroups.booleanValue();
+    }
+
+    private boolean hasProteins()
+    {
+        if (_hasProteins == null)
+        {
+            _hasProteins = TargetedMSManager.containerHasProteins(getContainer());
+        }
+        return _hasProteins.booleanValue();
     }
 
     @Override
@@ -1149,144 +1179,7 @@ public class TargetedMSSchema extends UserSchema
         // Tables that have a FK directly to targetedms.Runs
         if (TABLE_PEPTIDE_GROUP.equalsIgnoreCase(name) || TABLE_MOLECULE_GROUP.equalsIgnoreCase(name))
         {
-            boolean proteomics = TABLE_PEPTIDE_GROUP.equalsIgnoreCase(name);
-            TargetedMSTable result = new AnnotatedTargetedMSTable(getSchema().getTable(TABLE_PEPTIDE_GROUP),
-                                                                  this, cf,
-                                                                  ContainerJoinType.RunFK,
-                                                                  TargetedMSManager.getTableInfoPeptideGroupAnnotation(),
-                                                                  "PeptideGroupId",
-                                                                  proteomics ? COL_PROTEIN : COL_LIST,
-                                                                  "protein")
-            {
-                @Override
-                protected Class<? extends Controller> getDetailsActionClass()
-                {
-                    return TargetedMSController.ShowProteinAction.class;
-                }
-            };
-            var labelColumn = result.getMutableColumnOrThrow("Label");
-            labelColumn.setURL(result.getDetailsURL(null, null));
-            if (proteomics)
-            {
-                // Figure out if we have at least 3 replicates marked as QCs, and we have a "Day" or "SampleGroup" annotation, or a value for BatchName
-                SQLFragment reproducibilitySQL = new SQLFragment("(SELECT CASE WHEN COUNT(DISTINCT r.Id) > 2 THEN COUNT(DISTINCT r.Id) END FROM ");
-                reproducibilitySQL.append(TargetedMSManager.getTableInfoReplicate(), "r");
-                reproducibilitySQL.append(" LEFT OUTER JOIN ");
-                reproducibilitySQL.append(TargetedMSManager.getTableInfoReplicateAnnotation(), "ra");
-                reproducibilitySQL.append(" ON ra.ReplicateId = r.Id AND (LOWER(ra.Name) = 'day' OR LOWER(ra.Name) = 'samplegroup') WHERE r.RunId = ");
-                reproducibilitySQL.append(ExprColumn.STR_TABLE_ALIAS);
-                reproducibilitySQL.append(".RunId AND (r.SampleType IS NULL OR r.SampleType IN ('qc')) AND (ra.ReplicateId IS NOT NULL OR r.BatchName IS NOT NULL)");
-                reproducibilitySQL.append(")");
-
-                // Render a link to the reproducibility report
-                ExprColumn reproducibilityCol = new ExprColumn(result, "Reproducibility", reproducibilitySQL, JdbcType.INTEGER, result.getColumn("Id"));
-                result.addColumn(reproducibilityCol);
-                reproducibilityCol.setURL(DetailsURL.fromString("passport-protein.view?proteinId=${Id}"));
-
-                reproducibilityCol.setDisplayColumnFactory(colInfo -> new FontAwesomeLinkColumn(colInfo, "fa-th", "Reproducibility Report"));
-
-                // Create SQL to see if we have one or more calibration curves.
-                // If there's a single match, the value will be the id of the curve's row. If there are multiple
-                // curves, the value will be the negative value of the run's row so that we can send the user
-                // to the full list of curves to let the user choose which peptide to view
-                SQLFragment calCurveSQL = new SQLFragment("(SELECT CASE WHEN COUNT(*) > 1 THEN ");
-                calCurveSQL.append(ExprColumn.STR_TABLE_ALIAS);
-                calCurveSQL.append(".RunId * -1 WHEN COUNT(*) = 1 THEN MIN(cc.Id) END FROM ");
-                calCurveSQL.append(TargetedMSManager.getTableInfoCalibrationCurve(), "cc");
-                calCurveSQL.append(" INNER JOIN ");
-                calCurveSQL.append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm");
-                calCurveSQL.append(" ON cc.GeneralMoleculeId = gm.Id AND gm.PeptideGroupId = ");
-                calCurveSQL.append(ExprColumn.STR_TABLE_ALIAS);
-                calCurveSQL.append(".Id)");
-
-                ExprColumn calCurvesCol = new ExprColumn(result, "CalibrationCurves", calCurveSQL, JdbcType.INTEGER, result.getColumn("Id"));
-                result.addColumn(calCurvesCol);
-
-                calCurvesCol.setDisplayColumnFactory(colInfo -> new FontAwesomeLinkColumn(colInfo, "fa-line-chart", "Calibration Curves")
-                {
-                    @Override
-                    protected String renderURLorValueURL(RenderContext ctx)
-                    {
-                        Number value = (Number)getValue(ctx);
-                        if (value != null)
-                        {
-                            // If value is positive, it means there's a single curve and we can link directly to it
-                            if (value.intValue() > 0)
-                            {
-                                return new ActionURL(TargetedMSController.ShowCalibrationCurveAction.class, getContainer()).addParameter("calibrationCurveId", value.intValue()).getLocalURIString();
-                            }
-                            Long groupId = ctx.get(new FieldKey(getColumnInfo().getFieldKey().getParent(), "Id"), Long.class);
-                            // If the value is negative, it's the run ID. Use it to send the user to the listing
-                            if (value.intValue() < 0 && groupId != null)
-                            {
-                                return new ActionURL(TargetedMSController.ShowCalibrationCurvesAction.class, getContainer()).
-                                        addParameter("id", value.intValue() * -1).
-                                        addParameter("calibration_curves.GeneralMoleculeId/PeptideGroupId~eq", groupId).
-                                        getLocalURIString();
-                            }
-                        }
-                        return null;
-                    }
-                });
-
-                labelColumn.setDisplayColumnFactory(new DisplayColumnFactory()
-                {
-                    @Override
-                    public DisplayColumn createRenderer(ColumnInfo colInfo)
-                    {
-                        FieldKey seqIdFK = new FieldKey(colInfo.getFieldKey().getParent(), "Id");
-                        Map<String, FieldKey> params = new HashMap<>();
-                        params.put("id", seqIdFK);
-                        JSONObject props = new JSONObject();
-                        props.put("width", 450);
-                        props.put("title", "Protein Details");
-                        FieldKey containerFieldKey = result.getContainerFieldKey();
-                        return new AJAXDetailsDisplayColumn(colInfo, new ActionURL(TargetedMSController.ShowProteinAJAXAction.class, getContainer()), params, props, containerFieldKey)
-                        {
-                            @Override
-                            public @NotNull Set<ClientDependency> getClientDependencies()
-                            {
-                                Set<ClientDependency> result = super.getClientDependencies();
-                                result.add(ClientDependency.fromPath("protein/ProteinCoverageMap.css"));
-                                result.add(ClientDependency.fromPath("protein/ProteinCoverageMap.js"));
-                                result.add(ClientDependency.fromPath("util.js"));
-                                return result;
-                            }
-                        };
-                    }
-                });
-            }
-            else
-            {
-                labelColumn.setLabel(TargetedMSSchema.COL_LIST);
-            }
-            result.getMutableColumnOrThrow("RunId").setFk(QueryForeignKey.from(this, cf).to(TABLE_TARGETED_MS_RUNS, "File", null));
-            result.getMutableColumnOrThrow("RepresentativeDataState").setFk(QueryForeignKey.from(this, cf).to(TargetedMSSchema.TABLE_REPRESENTATIVE_DATA_STATE, "RowId", null));
-            result.getMutableColumnOrThrow("RepresentativeDataState").setHidden(true);
-
-            SQLFragment libPrecursorCountSQL;
-            if (TargetedMSManager.isLibraryFolder(getContainer()))
-            {
-                // In a protein library folder, peptide groups that are in the library, and all their precursors, are marked as "representative".
-                // In a peptide library, however, only precursors are marked as "representative". So, applying a filter on the "representative"
-                // state of the peptide groups in a peptide library folder will display an empty grid.
-                // Add a "RepresentativePrecursorCount" column for the number of precursors in a peptide group that are marked as "representative".
-                // This count can be used as a filter to display peptide groups that are in the current library in both protein and peptide library folders.
-                libPrecursorCountSQL = new SQLFragment(" (SELECT COUNT(p.Id) FROM ")
-                        .append(TargetedMSManager.getTableInfoGeneralPrecursor(), "p")
-                        .append(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm").append(" ON p.generalmoleculeid = gm.id ")
-                        .append(" WHERE gm.peptidegroupid = ").append(ExprColumn.STR_TABLE_ALIAS).append(".id ")
-                        .append(" AND p.RepresentativeDataState = ? ").add(RepresentativeDataState.Representative.ordinal())
-                        .append(") ");
-            }
-            else
-            {
-                libPrecursorCountSQL = new SQLFragment(" (SELECT 0) ");
-            }
-            ExprColumn currentLibPrecursorCountCol = new ExprColumn(result, "RepresentativePrecursorCount", libPrecursorCountSQL, JdbcType.INTEGER);
-            currentLibPrecursorCountCol.setHidden(true);
-            result.addColumn(currentLibPrecursorCountCol);
-            return result;
+            return createGroupTable(name, cf);
         }
 
         if (TABLE_REPLICATE.equalsIgnoreCase(name))
@@ -1381,6 +1274,33 @@ public class TargetedMSSchema extends UserSchema
                     FieldKey.fromParts("SequenceId", "Mass"),
                     FieldKey.fromParts("Description")
             ));
+
+            var labelColumn = result.getMutableColumnOrThrow("Label");
+            Map<String, FieldKey> labelUrlParams = new HashMap<>();
+            labelUrlParams.put("id", FieldKey.fromParts("PeptideGroupId"));
+            labelUrlParams.put("proteinId", FieldKey.fromParts("Id"));
+            labelColumn.setURL(new DetailsURL(new ActionURL(TargetedMSController.ShowProteinAction.class, getContainer()), labelUrlParams));
+            FieldKey containerFieldKey = result.getContainerFieldKey();
+            labelColumn.setDisplayColumnFactory(colInfo -> {
+                Map<String, FieldKey> params = new HashMap<>();
+                params.put("id", new FieldKey(colInfo.getFieldKey().getParent(), "PeptideGroupId"));
+                params.put("proteinId", new FieldKey(colInfo.getFieldKey().getParent(), "Id"));
+                JSONObject props = new JSONObject();
+                props.put("width", 450);
+                props.put("title", "Protein Details");
+                return new AJAXDetailsDisplayColumn(colInfo, new ActionURL(TargetedMSController.ShowProteinAJAXAction.class, getContainer()), params, props, containerFieldKey)
+                {
+                    @Override
+                    public @NotNull Set<ClientDependency> getClientDependencies()
+                    {
+                        Set<ClientDependency> deps = super.getClientDependencies();
+                        deps.add(ClientDependency.fromPath("protein/ProteinCoverageMap.css"));
+                        deps.add(ClientDependency.fromPath("protein/ProteinCoverageMap.js"));
+                        deps.add(ClientDependency.fromPath("util.js"));
+                        return deps;
+                    }
+                };
+            });
 
             return result;
         }
@@ -1705,6 +1625,168 @@ public class TargetedMSSchema extends UserSchema
         return null;
     }
 
+    private @NotNull TargetedMSTable createGroupTable(String name, ContainerFilter cf)
+    {
+        boolean proteomics = TABLE_PEPTIDE_GROUP.equalsIgnoreCase(name);
+        TargetedMSTable result = new AnnotatedTargetedMSTable(getSchema().getTable(TABLE_PEPTIDE_GROUP),
+                                                              this, cf,
+                                                              ContainerJoinType.RunFK,
+                                                              TargetedMSManager.getTableInfoPeptideGroupAnnotation(),
+                                                              "PeptideGroupId",
+                                                              proteomics ? COL_PROTEIN : COL_LIST,
+                                                              "protein")
+        {
+            @Override
+            protected Class<? extends Controller> getDetailsActionClass()
+            {
+                return TargetedMSController.ShowProteinAction.class;
+            }
+        };
+        var labelColumn = result.getMutableColumnOrThrow("Label");
+        labelColumn.setURL(result.getDetailsURL(null, null));
+        if (proteomics)
+        {
+            SQLFragment peptideCountSQL = new SQLFragment("(SELECT COUNT(p.Id) FROM ")
+                    .append(TargetedMSManager.getTableInfoPeptide(), "p")
+                    .append(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm")
+                    .append(" ON p.Id = gm.Id WHERE gm.PeptideGroupId = ")
+                    .append(ExprColumn.STR_TABLE_ALIAS).append(".Id)");
+            ExprColumn peptideCountCol = new ExprColumn(result, "PeptideCount", peptideCountSQL, JdbcType.INTEGER, result.getColumn("Id"));
+            peptideCountCol.setLabel("Peptides");
+            peptideCountCol.setURL(result.getDetailsURL(null, null));
+            result.addColumn(peptideCountCol);
+
+            // Figure out if we have at least 3 replicates marked as QCs, and we have a "Day" or "SampleGroup" annotation, or a value for BatchName
+            SQLFragment reproducibilitySQL = new SQLFragment("(SELECT CASE WHEN COUNT(DISTINCT r.Id) > 2 THEN COUNT(DISTINCT r.Id) END FROM ");
+            reproducibilitySQL.append(TargetedMSManager.getTableInfoReplicate(), "r");
+            reproducibilitySQL.append(" LEFT OUTER JOIN ");
+            reproducibilitySQL.append(TargetedMSManager.getTableInfoReplicateAnnotation(), "ra");
+            reproducibilitySQL.append(" ON ra.ReplicateId = r.Id AND (LOWER(ra.Name) = 'day' OR LOWER(ra.Name) = 'samplegroup') WHERE r.RunId = ");
+            reproducibilitySQL.append(ExprColumn.STR_TABLE_ALIAS);
+            reproducibilitySQL.append(".RunId AND (r.SampleType IS NULL OR r.SampleType IN ('qc')) AND (ra.ReplicateId IS NOT NULL OR r.BatchName IS NOT NULL)");
+            reproducibilitySQL.append(")");
+
+            // Render a link to the reproducibility report
+            ExprColumn reproducibilityCol = new ExprColumn(result, "Reproducibility", reproducibilitySQL, JdbcType.INTEGER, result.getColumn("Id"));
+            result.addColumn(reproducibilityCol);
+            reproducibilityCol.setURL(DetailsURL.fromString("passport-protein.view?proteinId=${Id}"));
+
+            reproducibilityCol.setDisplayColumnFactory(colInfo -> new FontAwesomeLinkColumn(colInfo, "fa-th", "Reproducibility Report"));
+
+            // Create SQL to see if we have one or more calibration curves.
+            // If there's a single match, the value will be the id of the curve's row. If there are multiple
+            // curves, the value will be the negative value of the run's row so that we can send the user
+            // to the full list of curves to let the user choose which peptide to view
+            SQLFragment calCurveSQL = new SQLFragment("(SELECT CASE WHEN COUNT(*) > 1 THEN ");
+            calCurveSQL.append(ExprColumn.STR_TABLE_ALIAS);
+            calCurveSQL.append(".RunId * -1 WHEN COUNT(*) = 1 THEN MIN(cc.Id) END FROM ");
+            calCurveSQL.append(TargetedMSManager.getTableInfoCalibrationCurve(), "cc");
+            calCurveSQL.append(" INNER JOIN ");
+            calCurveSQL.append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm");
+            calCurveSQL.append(" ON cc.GeneralMoleculeId = gm.Id AND gm.PeptideGroupId = ");
+            calCurveSQL.append(ExprColumn.STR_TABLE_ALIAS);
+            calCurveSQL.append(".Id)");
+
+            ExprColumn calCurvesCol = new ExprColumn(result, "CalibrationCurves", calCurveSQL, JdbcType.INTEGER, result.getColumn("Id"));
+            result.addColumn(calCurvesCol);
+
+            calCurvesCol.setDisplayColumnFactory(colInfo -> new FontAwesomeLinkColumn(colInfo, "fa-line-chart", "Calibration Curves")
+            {
+                @Override
+                protected String renderURLorValueURL(RenderContext ctx)
+                {
+                    Number value = (Number)getValue(ctx);
+                    if (value != null)
+                    {
+                        // If value is positive, it means there's a single curve and we can link directly to it
+                        if (value.intValue() > 0)
+                        {
+                            return new ActionURL(TargetedMSController.ShowCalibrationCurveAction.class, getContainer()).addParameter("calibrationCurveId", value.intValue()).getLocalURIString();
+                        }
+                        Long groupId = ctx.get(new FieldKey(getColumnInfo().getFieldKey().getParent(), "Id"), Long.class);
+                        // If the value is negative, it's the run ID. Use it to send the user to the listing
+                        if (value.intValue() < 0 && groupId != null)
+                        {
+                            return new ActionURL(TargetedMSController.ShowCalibrationCurvesAction.class, getContainer()).
+                                    addParameter("id", value.intValue() * -1).
+                                    addParameter("calibration_curves.GeneralMoleculeId/PeptideGroupId~eq", groupId).
+                                    getLocalURIString();
+                        }
+                    }
+                    return null;
+                }
+            });
+
+            labelColumn.setDisplayColumnFactory(new DisplayColumnFactory()
+            {
+                @Override
+                public DisplayColumn createRenderer(ColumnInfo colInfo)
+                {
+                    FieldKey seqIdFK = new FieldKey(colInfo.getFieldKey().getParent(), "Id");
+                    Map<String, FieldKey> params = new HashMap<>();
+                    params.put("id", seqIdFK);
+                    JSONObject props = new JSONObject();
+                    props.put("width", 450);
+                    props.put("title", "Protein Details");
+                    FieldKey containerFieldKey = result.getContainerFieldKey();
+                    return new AJAXDetailsDisplayColumn(colInfo, new ActionURL(TargetedMSController.ShowProteinAJAXAction.class, getContainer()), params, props, containerFieldKey)
+                    {
+                        @Override
+                        public @NotNull Set<ClientDependency> getClientDependencies()
+                        {
+                            Set<ClientDependency> result = super.getClientDependencies();
+                            result.add(ClientDependency.fromPath("protein/ProteinCoverageMap.css"));
+                            result.add(ClientDependency.fromPath("protein/ProteinCoverageMap.js"));
+                            result.add(ClientDependency.fromPath("util.js"));
+                            return result;
+                        }
+                    };
+                }
+            });
+        }
+        else
+        {
+            labelColumn.setLabel(TargetedMSSchema.COL_LIST);
+
+            SQLFragment moleculeCountSQL = new SQLFragment("(SELECT COUNT(m.Id) FROM ")
+                    .append(TargetedMSManager.getTableInfoMolecule(), "m")
+                    .append(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm")
+                    .append(" ON m.Id = gm.Id WHERE gm.PeptideGroupId = ")
+                    .append(ExprColumn.STR_TABLE_ALIAS).append(".Id)");
+            ExprColumn moleculeCountCol = new ExprColumn(result, "MoleculeCount", moleculeCountSQL, JdbcType.INTEGER, result.getColumn("Id"));
+            moleculeCountCol.setLabel("Molecules");
+            moleculeCountCol.setURL(result.getDetailsURL(null, null));
+            result.addColumn(moleculeCountCol);
+        }
+        result.getMutableColumnOrThrow("RunId").setFk(QueryForeignKey.from(this, cf).to(TABLE_TARGETED_MS_RUNS, "File", null));
+        result.getMutableColumnOrThrow("RepresentativeDataState").setFk(QueryForeignKey.from(this, cf).to(TargetedMSSchema.TABLE_REPRESENTATIVE_DATA_STATE, "RowId", null));
+        result.getMutableColumnOrThrow("RepresentativeDataState").setHidden(true);
+
+        SQLFragment libPrecursorCountSQL;
+        if (TargetedMSManager.isLibraryFolder(getContainer()))
+        {
+            // In a protein library folder, peptide groups that are in the library, and all their precursors, are marked as "representative".
+            // In a peptide library, however, only precursors are marked as "representative". So, applying a filter on the "representative"
+            // state of the peptide groups in a peptide library folder will display an empty grid.
+            // Add a "RepresentativePrecursorCount" column for the number of precursors in a peptide group that are marked as "representative".
+            // This count can be used as a filter to display peptide groups that are in the current library in both protein and peptide library folders.
+            libPrecursorCountSQL = new SQLFragment(" (SELECT COUNT(p.Id) FROM ")
+                    .append(TargetedMSManager.getTableInfoGeneralPrecursor(), "p")
+                    .append(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm").append(" ON p.generalmoleculeid = gm.id ")
+                    .append(" WHERE gm.peptidegroupid = ").append(ExprColumn.STR_TABLE_ALIAS).append(".id ")
+                    .append(" AND p.RepresentativeDataState = ? ").add(RepresentativeDataState.Representative.ordinal())
+                    .append(") ");
+        }
+        else
+        {
+            libPrecursorCountSQL = new SQLFragment(" (SELECT 0) ");
+        }
+        ExprColumn currentLibPrecursorCountCol = new ExprColumn(result, "RepresentativePrecursorCount", libPrecursorCountSQL, JdbcType.INTEGER);
+        currentLibPrecursorCountCol.setHidden(true);
+        result.addColumn(currentLibPrecursorCountCol);
+        return result;
+    }
+
     @Override
     protected QuerySettings createQuerySettings(String dataRegionName, String queryName, String viewName)
     {
@@ -1934,7 +2016,7 @@ public class TargetedMSSchema extends UserSchema
             long runId = Long.parseLong(runIdString);
             if (TargetedMSManager.getFolderType(getContainer()) != TargetedMSService.FolderType.ExperimentMAM)
             {
-                throw new IllegalStateException("PTM queries are only supported in ExperimentMAM folders");
+                throw new NotFoundException("PTM queries are only supported in ExperimentMAM folders");
             }
 
             QueryDefinition queryDef = Objects.requireNonNull(getQueryDef(baseQueryName));

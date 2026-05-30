@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019 LabKey Corporation
+ * Copyright (c) 2013-2026 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.junit.BeforeClass;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
+import org.labkey.test.WebDriverWrapper;
 import org.labkey.test.ModulePropertyValue;
 import org.labkey.test.TestFileUtils;
 import org.labkey.test.TestProperties;
@@ -37,9 +38,8 @@ import org.labkey.test.util.LogMethod;
 import org.labkey.test.util.LoggedParam;
 import org.labkey.test.util.ReflectionUtils;
 import org.labkey.test.util.UIContainerHelper;
-import org.openqa.selenium.WebElement;
+import org.labkey.test.util.targetedms.TargetedMSHelper;
 
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
@@ -62,6 +62,7 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
     protected static final String SAMPLE_FILE_CHROM_INFO = "SampleFileChromInfo.sky.zip";
     protected static final String USER = "qcuser@targetedms.test";
     private static ConfiguresSite siteConfigurer;
+    protected final TargetedMSHelper _targetedMSHelper = new TargetedMSHelper(this);
 
     protected enum SvgShapes
     {
@@ -85,7 +86,7 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         Experiment
                 {
                     @Override
-                    public void chooseFolderType(TargetedMSTest test)
+                    public void chooseFolderType(WebDriverWrapper test)
                     {
                         test.click(Locator.radioButtonById("experimentalData")); // click the first radio button - Experimental Data
                     }
@@ -93,21 +94,21 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         ExperimentMAM
                 {
                     @Override
-                    public void chooseFolderType(TargetedMSTest test)
+                    public void chooseFolderType(WebDriverWrapper test)
                     {
                         test.click(Locator.radioButtonById("multiAttributeMethod")); // click the second radio button - Experimental Data
                     }
                 }, Library
                 {
                     @Override
-                    public void chooseFolderType(TargetedMSTest test)
+                    public void chooseFolderType(WebDriverWrapper test)
                     {
                         test.click(Locator.radioButtonById("chromatogramLibrary")); // click the 3rd radio button - Library
                     }
                 }, LibraryProtein
                 {
                     @Override
-                    public void chooseFolderType(TargetedMSTest test)
+                    public void chooseFolderType(WebDriverWrapper test)
                     {
                         test.click(Locator.radioButtonById("chromatogramLibrary")); // click the 3rd radio button - Library
                         test.click(Locator.checkboxByName("precursorNormalized")); // check the normalization checkbox.
@@ -115,13 +116,13 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
                 }, QC
                 {
                     @Override
-                    public void chooseFolderType(TargetedMSTest test)
+                    public void chooseFolderType(WebDriverWrapper test)
                     {
                         test.click(Locator.radioButtonById("QC")); // click the 4th radio button - QC
                     }
                 };
 
-        public abstract void chooseFolderType(TargetedMSTest test);
+        public abstract void chooseFolderType(WebDriverWrapper test);
     }
 
     public TargetedMSTest()
@@ -181,10 +182,7 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
 
     protected void setUpFolder(String folderName, FolderType folderType )
     {
-        _containerHelper.createProject(folderName, "Panorama");
-        waitForElement(Locator.linkContainingText("Save"));
-        clickAndWait(Locator.linkContainingText("Next"));
-        selectFolderType(folderType);
+        _targetedMSHelper.setupFolder(folderName, folderType);
         getSiteConfigurer().configureProject(getProjectName());
     }
 
@@ -227,20 +225,7 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
     @LogMethod
     protected void importData(@LoggedParam String file, int jobCount, boolean expectError, boolean doDbMaintenance)
     {
-        Locator.XPathLocator importButtonLoc = Locator.lkButton("Process and Import Data");
-        WebElement importButton = importButtonLoc.findElementOrNull(getDriver());
-        if (null == importButton)
-        {
-            goToModule("Pipeline");
-            importButton = importButtonLoc.findElement(getDriver());
-        }
-        clickAndWait(importButton);
-        String fileName = Paths.get(file).getFileName().toString();
-        if (!_fileBrowserHelper.fileIsPresent(fileName))
-            _fileBrowserHelper.uploadFile(TestFileUtils.getSampleData("TargetedMS/" + file));
-        _fileBrowserHelper.importFile(fileName, "Import Skyline Results");
-        waitForText("Skyline document import");
-        waitForPipelineJobsToComplete(jobCount, file, expectError);
+        _targetedMSHelper.importData(file, jobCount, expectError);
 
         if (doDbMaintenance)
         {
@@ -273,22 +258,32 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
         }
     }
 
-    protected void verifyRunSummaryCountsSmallMol(int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
+    protected void verifyRunSummaryCountsSmallMol(int moleculeGroupCount, int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
     {
-        verifyRunSummaryCounts(proteinCount, peptideCount, moleculeCount, precursorCount, transitionCount, replicateCount, calibrationCount, listCount, "molecule lists");
+        verifyRunSummaryCounts(0, moleculeGroupCount, proteinCount, peptideCount, moleculeCount, precursorCount, transitionCount, replicateCount, calibrationCount, listCount);
     }
 
-    protected void verifyRunSummaryCountsPep(int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
+    protected void verifyRunSummaryCountsPep(int peptideGroupCount, int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
     {
-        verifyRunSummaryCounts(proteinCount, peptideCount, moleculeCount, precursorCount, transitionCount, replicateCount, calibrationCount, listCount, "proteins");
+        verifyRunSummaryCounts(peptideGroupCount, 0, proteinCount, peptideCount, moleculeCount, precursorCount, transitionCount, replicateCount, calibrationCount, listCount);
+    }
+
+    protected void verifyRunSummaryCountsMixed(int proteinGroupCount, int moleculeGroupCount, int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount, int replicateCount, int calibrationCount, int listCount)
+    {
+        verifyRunSummaryCounts(proteinGroupCount, moleculeGroupCount, proteinCount, peptideCount, moleculeCount, precursorCount, transitionCount, replicateCount, calibrationCount, listCount);
     }
 
     @LogMethod
-    protected void verifyRunSummaryCounts(int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount,
-                                          int replicateCount, int calibrationCount, int listCount, String peptideGroupLabel)
+    protected void verifyRunSummaryCounts(int proteinGroupCount, int moleculeGroupCount, int proteinCount, int peptideCount, int moleculeCount, int precursorCount, int transitionCount,
+                                          int replicateCount, int calibrationCount, int listCount)
     {
         log("Verifying expected summary counts");
-        waitForElement(Locator.linkContainingText(proteinCount + " " + peptideGroupLabel));
+        if (proteinGroupCount > 0)
+            waitForElement(Locator.linkContainingText(proteinGroupCount + " protein group" + (proteinGroupCount == 1 ? "" : "s")));
+        if (moleculeGroupCount > 0)
+            assertElementPresent(Locator.linkContainingText(moleculeGroupCount + " molecule list" + (moleculeGroupCount == 1 ? "" : "s")));
+        if (proteinCount > 0)
+            assertElementPresent(Locator.linkContainingText(proteinCount + " protein" + (proteinCount == 1 ? "" : "s")));
         if (peptideCount > 0)
         {
             assertElementPresent(Locator.linkContainingText(peptideCount + " peptides"));
@@ -327,9 +322,7 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
 
     @LogMethod
     protected void selectFolderType(FolderType folderType) {
-        log("Select Folder Type: " + folderType);
-        folderType.chooseFolderType(this);
-        clickButton("Finish");
+        _targetedMSHelper.selectFolderType(folderType);
     }
 
     /** Verify that the comparison plots have been AJAX'd into place */

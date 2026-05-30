@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
- * Copyright (c) 2012-2019 LabKey Corporation
+ * Copyright (c) 2012-2026 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -179,15 +179,23 @@
             <column columnName="DocumentGUID"/>
             <column columnName="PeptideGroupCount">
                 <formatString>#,###</formatString>
-                <url>/targetedms-showPrecursorList.view?id=${Id}</url>
+                <url>/targetedms-showPeptideGroupList.view?id=${Id}</url>
+            </column>
+            <column columnName="MoleculeGroupCount">
+                <formatString>#,###</formatString>
+                <url>/targetedms-showMoleculeGroupList.view?id=${Id}</url>
+            </column>
+            <column columnName="ProteinCount">
+                <formatString>#,###</formatString>
+                <url>/targetedms-showProteinList.view?id=${Id}</url>
             </column>
             <column columnName="PeptideCount">
                 <formatString>#,###</formatString>
-                <url>/targetedms-showPrecursorList.view?id=${Id}</url>
+                <url>/targetedms-showPeptideList.view?id=${Id}</url>
             </column>
             <column columnName="SmallMoleculeCount">
                 <formatString>#,###</formatString>
-                <url>/targetedms-showPrecursorList.view?id=${Id}</url>
+                <url>/targetedms-showMoleculeList.view?id=${Id}</url>
             </column>
             <column columnName="PrecursorCount">
                 <formatString>#,###</formatString>
@@ -1358,6 +1366,7 @@
             <column columnName="TimeValueOption"/>
             <column columnName="TraceName"/>
             <column columnName="YAxisLabel"/>
+            <column columnName="AnnotationName"/>
         </columns>
     </table>
     <table tableName="QCMetricExclusion" tableDbType="TABLE">

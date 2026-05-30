@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019 LabKey Corporation
+ * Copyright (c) 2013-2026 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,6 +90,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
         verifyImportedSmallMoleculeData();
         verifyAttributeGroupIdCalcs();
         testRawFileLinks(SKY_FILE_SMALLMOL_PEP);
+        verifyRunDetailLinks();
 
         // SKYD version 14
         importData(SKY_FILE_SKYD_14, ++jobCount);
@@ -165,7 +166,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
     {
         clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
         clickAndWait(Locator.linkContainingText(SKY_FILE));
-        verifyRunSummaryCountsPep(24,44,0, 88,296, 1, 0, 0);
+        verifyRunSummaryCountsPep(24, 24, 44, 0, 88, 296, 1, 0, 0);
         verifyDocumentDetails(false);
         verifyPeptide();
     }
@@ -175,7 +176,7 @@ public class TargetedMSExperimentTest extends TargetedMSTest
     {
         clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
         clickAndWait(Locator.linkContainingText(SKY_FILE_SMALLMOL_PEP));
-        verifyRunSummaryCountsSmallMol(27, 44, 98, 186, 394, 5, 0, 0); // Number of protein (groups), peptides, precursors, transitions, small molecules
+        verifyRunSummaryCountsMixed(24, 3, 24, 44, 98, 186, 394, 5, 0, 0);
         verifyDocumentDetails(true);
         verifyMolecule();
     }
@@ -894,5 +895,55 @@ public class TargetedMSExperimentTest extends TargetedMSTest
             assertTrue(fullBodyText.contains("Login to view this data"));
             assertFalse(fullBodyText.contains("Don't have an account? Register"));
         }
+    }
+
+    @LogMethod
+    protected void verifyRunDetailLinks()
+    {
+        // From the runs listing (Panorama Dashboard), clicking a run's name navigates to the default
+        // run view. A mixed proteomics + small molecule document shows both precursor grids there.
+        // precursors_view is nested by protein group (24 total groups, 10 shown per page due to maxRows).
+        // getDataRowCount() returns outer rows + even-indexed expanded rows: 5+5+5=15 for 10 groups.
+        // small_mol_precursors_view has 3 molecule groups (all fit on one page): 2+1+2=5.
+        goToDashboard();
+        clickAndWait(Locator.linkContainingText(SKY_FILE_SMALLMOL_PEP));
+        DataRegionTable precursorsView = DataRegion(getDriver()).withName("precursors_view").find();
+        assertEquals(15, precursorsView.getDataRowCount());
+        DataRegionTable smallMolPrecursorsView = DataRegion(getDriver()).withName("small_mol_precursors_view").find();
+        assertEquals(5, smallMolPrecursorsView.getDataRowCount());
+
+        // Test each header link from runSummaryView.jsp while on the default run view.
+        // Each link must reach its own dedicated list page, not the combined precursor list.
+
+        // "24 protein groups" → protein group list: one row per peptide-bearing group
+        clickAndWait(Locator.linkContainingText("24 protein groups"));
+        DataRegionTable peptideGroupView = DataRegion(getDriver()).withName("PeptideGroup").find();
+        assertEquals(24, peptideGroupView.getDataRowCount());
+
+        // "3 molecule lists" → molecule group list: one row per molecule-bearing group
+        clickAndWait(Locator.linkContainingText("3 molecule lists"));
+        DataRegionTable moleculeGroupView = DataRegion(getDriver()).withName("MoleculeGroup").find();
+        assertEquals(3, moleculeGroupView.getDataRowCount());
+
+        // "44 peptides" → peptide list page: one row per peptide
+        clickAndWait(Locator.linkContainingText("44 peptides"));
+        DataRegionTable peptideView = DataRegion(getDriver()).withName("Peptide").find();
+        assertEquals(44, peptideView.getDataRowCount());
+
+        // "98 small molecules" → small molecule list page: one row per molecule
+        clickAndWait(Locator.linkContainingText("98 small molecules"));
+        DataRegionTable moleculeView = DataRegion(getDriver()).withName("Molecule").find();
+        assertEquals(98, moleculeView.getDataRowCount());
+
+        // Verify the runSummaryView.jsp header links also work when on a non-default run detail page.
+        // The header is embedded on every run detail view, not just the precursor list.
+        // From the small molecule list page, click "24 protein groups".
+        clickAndWait(Locator.linkContainingText("24 protein groups"));
+        peptideGroupView = DataRegion(getDriver()).withName("PeptideGroup").find();
+        assertEquals(24, peptideGroupView.getDataRowCount());
+        // From the protein group list page, click "44 peptides".
+        clickAndWait(Locator.linkContainingText("44 peptides"));
+        peptideView = DataRegion(getDriver()).withName("Peptide").find();
+        assertEquals(44, peptideView.getDataRowCount());
     }
 }

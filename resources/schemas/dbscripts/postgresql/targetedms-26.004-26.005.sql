@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 LabKey Corporation
+ *
+ * Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
+ */
 -- Dropping idx_instrumentusagepayment_instrumentscheduleid [instrumentScheduleId] because it overlaps with pk_instrumentusagepayment [instrumentScheduleId, paymentMethod]
 DROP INDEX targetedms.idx_instrumentusagepayment_instrumentscheduleid;
 -- Dropping ix_qcannotationtype_container [Container] because it overlaps with uq_qcannotationtype_containername [Container, Name]

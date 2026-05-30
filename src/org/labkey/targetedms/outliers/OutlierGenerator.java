@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 LabKey Corporation
+ * Copyright (c) 2020-2026 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,6 +99,31 @@ public class OutlierGenerator
             sql.append("\n FROM ").append(schemaName).append('.').append(TargetedMSManager.getTableQCTraceMetricValues().getName());
             sql.append(" WHERE metric = ").append(configuration.getId());
             sql.append(")");
+        }
+        else if (configuration.getAnnotationName() != null)
+        {
+            // annotation-backed metrics: escape names for SQL string literals
+            String escapedName = configuration.getAnnotationName().replace("'", "''");
+            String escapedMetricName = configuration.getName().replace("'", "''");
+            if (configuration.isPrecursorScoped())
+            {
+                sql.append("(SELECT pcia.PrecursorChromInfoId, pci.SampleFileId,");
+                sql.append(" '").append(escapedMetricName).append("' AS SeriesLabel,");
+                sql.append(" CAST(pcia.Value AS REAL) AS MetricValue, ").append(configuration.getId()).append(" AS MetricId");
+                sql.append(" FROM ").append(schemaName).append(".PrecursorChromInfoAnnotation pcia");
+                sql.append(" INNER JOIN ").append(schemaName).append(".PrecursorChromInfo pci ON pcia.PrecursorChromInfoId = pci.Id");
+                sql.append(" WHERE pcia.Name = '").append(escapedName).append("')");
+            }
+            else
+            {
+                sql.append("(SELECT 0 AS PrecursorChromInfoId, sf.Id AS SampleFileId,");
+                sql.append(" '").append(escapedMetricName).append("' AS SeriesLabel,");
+                sql.append(" CAST(ra.Value AS REAL) AS MetricValue, ").append(configuration.getId()).append(" AS MetricId");
+                sql.append(" FROM ").append(schemaName).append(".ReplicateAnnotation ra");
+                sql.append(" INNER JOIN ").append(schemaName).append(".Replicate r ON ra.ReplicateId = r.Id");
+                sql.append(" INNER JOIN ").append(schemaName).append(".SampleFile sf ON sf.ReplicateId = r.Id");
+                sql.append(" WHERE ra.Name = '").append(escapedName).append("')");
+            }
         }
         else
         {

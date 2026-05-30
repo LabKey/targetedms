@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2019 LabKey Corporation
+ * Copyright (c) 2012-2026 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,8 @@ public class TargetedMSRun implements Serializable, ITargetedMSRun
     protected RunRepresentativeDataState _representativeDataState = NotRepresentative;
 
     protected int _peptideGroupCount;
+    protected int _moleculeGroupCount;
+    protected int _proteinCount;
     protected int _peptideCount;
     protected int _smallMoleculeCount;
     protected int _precursorCount;
@@ -247,6 +249,26 @@ public class TargetedMSRun implements Serializable, ITargetedMSRun
     public void setPeptideGroupCount(int peptideGroupCount)
     {
         _peptideGroupCount = peptideGroupCount;
+    }
+
+    public int getMoleculeGroupCount()
+    {
+        return _moleculeGroupCount;
+    }
+
+    public void setMoleculeGroupCount(int moleculeGroupCount)
+    {
+        _moleculeGroupCount = moleculeGroupCount;
+    }
+
+    public int getProteinCount()
+    {
+        return _proteinCount;
+    }
+
+    public void setProteinCount(int proteinCount)
+    {
+        _proteinCount = proteinCount;
     }
 
     public int getPeptideCount()

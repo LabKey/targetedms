@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2024-2026 LabKey Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.labkey.test.tests.targetedms;
 
 import org.junit.Assert;
@@ -23,7 +38,7 @@ import java.util.regex.Pattern;
  * Tests the QC metric configuration UI and verifies settings propagate consistently across folder hierarchies.
  */
 @Category({})
-@BaseWebDriverTest.ClassTimeout(minutes = 5)
+@BaseWebDriverTest.ClassTimeout(minutes = 15)
 public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
 {
     private final static String SUBFOLDER_1 = "QC Subfolder 1";
@@ -204,6 +219,54 @@ public class TargetedMSQCConfigureMetricTest extends TargetedMSPremiumTest
 
         String replicate = "Q_Exactive_08_14_2013_JGB_54";
         verifyOutlierCount(replicate, metric, "N/A");
+    }
+
+    @Test
+    public void testAnnotationBackedMetric()
+    {
+        String subfolderName = "AnnotationMetricsFolder";
+        String metricName = "Annotation Metric R Squared";
+        String yAxisLabel = "R Squared";
+        String updatedYAxisLabel = "Updated R Squared";
+
+        log("Create subfolder and import data with numeric precursor_result annotations");
+        setupSubfolder(getProjectName(), subfolderName, FolderType.QC);
+        importData(ISOTOPOLOGUE_FILE_ANNOTATED);
+        navigateToFolder(getProjectName(), subfolderName);
+
+        log("Add annotation-backed metric backed by the RSquared precursor annotation");
+        ConfigureMetricsUIPage configureQCMetrics = goToDashboard().getQcSummaryWebPart().clickConfigureQCMetrics();
+        configureQCMetrics.addNewAnnotationMetric(Map.of(
+                ConfigureMetricsUIPage.AnnotationMetricProperties.metricName, metricName,
+                ConfigureMetricsUIPage.AnnotationMetricProperties.yAxisLabel, yAxisLabel,
+                ConfigureMetricsUIPage.AnnotationMetricProperties.annotationType, "precursor",
+                ConfigureMetricsUIPage.AnnotationMetricProperties.annotationName, "RSquared"), false);
+
+        log("Verify metric appears in configure QC metrics table");
+        waitForElement(Locator.linkWithText(metricName));
+
+        goToDashboard();
+        log("Verify metric appears in QC plots dropdown");
+        QCPlotsWebPart qcPlotsWebPart = new PanoramaDashboard(this).getQcPlotsWebPart();
+        Assert.assertTrue("Annotation-backed metric should appear in QC plots dropdown",
+                verifyMetricIsPresent(qcPlotsWebPart, metricName));
+
+        log("Test that a duplicate metric name is rejected");
+        configureQCMetrics = goToDashboard().getQcSummaryWebPart().clickConfigureQCMetrics();
+        configureQCMetrics.addNewAnnotationMetric(Map.of(
+                ConfigureMetricsUIPage.AnnotationMetricProperties.metricName, metricName,
+                ConfigureMetricsUIPage.AnnotationMetricProperties.yAxisLabel, "Duplicate Label",
+                ConfigureMetricsUIPage.AnnotationMetricProperties.annotationType, "precursor",
+                ConfigureMetricsUIPage.AnnotationMetricProperties.annotationName, "RSquared"), true);
+
+        log("Edit the annotation-backed metric's y-axis label (still on same page after cancel)");
+        configureQCMetrics.editAnnotationMetric(metricName, Map.of(
+                ConfigureMetricsUIPage.AnnotationMetricProperties.yAxisLabel, updatedYAxisLabel));
+
+        log("Delete the annotation-backed metric");
+        configureQCMetrics = goToDashboard().getQcSummaryWebPart().clickConfigureQCMetrics();
+        configureQCMetrics.deleteAnnotationMetric(metricName);
+        assertTextNotPresent(metricName);
     }
 
     private void verifyOutlierCount(String replicate, QCPlotsWebPart.MetricType metricType, String count)

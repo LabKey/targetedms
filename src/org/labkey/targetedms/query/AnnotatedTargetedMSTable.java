@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2019 LabKey Corporation
+ * Copyright (c) 2012-2026 LabKey Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
 {
     private static final String ANNOT_NAME_VALUE_SEPARATOR = ": ";
     private static final String ANNOT_DELIMITER = "\n";
+    public static final String NOTE_ANNOTATIONS_COLUMN_NAME = "NoteAnnotations";
 
     public AnnotatedTargetedMSTable(TableInfo table,
                                     TargetedMSSchema schema,
@@ -160,7 +161,7 @@ public class AnnotatedTargetedMSTable extends TargetedMSTable
 
         annotationsColumn.setDisplayColumnFactory(AnnotationsDisplayColumn::new);
 
-        var noteAnnotation = WrappedColumnInfo.wrapAsCopy(this, FieldKey.fromParts("NoteAnnotations"), annotationsColumn, labelPrefix + " Note/Annotations", null);
+        var noteAnnotation = WrappedColumnInfo.wrapAsCopy(this, FieldKey.fromParts(NOTE_ANNOTATIONS_COLUMN_NAME), annotationsColumn, labelPrefix + " Note/Annotations", null);
         noteAnnotation.setDisplayColumnFactory(AnnotationUIDisplayColumn::new);
         addColumn(noteAnnotation);
     }

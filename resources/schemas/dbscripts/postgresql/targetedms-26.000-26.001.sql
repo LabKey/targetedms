@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 LabKey Corporation
+ *
+ * Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
+ */
 -- Add FKs to Containers and delete orphaned rows
 DELETE FROM targetedms.instrumentUsagePayment WHERE Container NOT IN (SELECT EntityId FROM core.Containers);
 DELETE FROM targetedms.instrumentSchedule WHERE Container NOT IN (SELECT EntityId FROM core.Containers);

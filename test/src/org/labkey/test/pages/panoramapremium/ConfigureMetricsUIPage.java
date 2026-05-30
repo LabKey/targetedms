@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2019-2026 LabKey Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.labkey.test.pages.panoramapremium;
 
 import org.jetbrains.annotations.Nullable;
@@ -7,7 +22,6 @@ import org.labkey.test.components.ext4.Window;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.pages.PortalBodyPanel;
 import org.labkey.test.util.Ext4Helper;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 
 import java.util.Map;
@@ -16,6 +30,7 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
 {
 
     public static final String ADD_NEW_CUSTOM_METRIC = "Add New Custom Metric";
+    public static final String ADD_NEW_ANNOTATION_METRIC = "Add Annotation-Backed Metric";
 
     public ConfigureMetricsUIPage(WebDriver driver)
     {
@@ -121,9 +136,18 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
     public void addNewCustomMetric(Map<CustomMetricProperties, String> metricProperties, boolean duplicateNameErrorExpected)
     {
         click(Locator.tagWithText("button", ADD_NEW_CUSTOM_METRIC));
-        waitForElement(Ext4Helper.Locators.window("Add New Metric"));
-        Window<?> metricWindow = new Window.WindowFinder(getDriver()).withTitle("Add New Metric").waitFor();
-        editCustomMetricValues(metricWindow, metricProperties, duplicateNameErrorExpected);
+        waitForCustomMetricDialog();
+        fillCustomMetricForm(metricProperties);
+        if (duplicateNameErrorExpected)
+        {
+            click(Locator.id("lk-custom-metric-save"));
+            assertTextPresent("A metric with the name \"" + metricProperties.get(CustomMetricProperties.metricName) + "\" already exists. Please choose a different name.");
+            click(Locator.id("lk-custom-metric-cancel"));
+        }
+        else
+        {
+            clickAndWait(Locator.id("lk-custom-metric-save"));
+        }
     }
 
     public void addNewTraceMetric(Map<TraceMetricProperties, String> traceProperties, boolean duplicateNameErrorExpected)
@@ -134,56 +158,80 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         editTraceMetricValues(metricWindow, traceProperties, duplicateNameErrorExpected);
     }
 
+    public void addNewAnnotationMetric(Map<AnnotationMetricProperties, String> metricProperties, boolean duplicateNameErrorExpected)
+    {
+        click(Locator.tagWithText("button", ADD_NEW_ANNOTATION_METRIC));
+        waitForAnnotationDialog();
+        fillAnnotationForm(metricProperties);
+        if (duplicateNameErrorExpected)
+        {
+            click(Locator.id("lk-annotation-metric-save"));
+            String metricName = metricProperties.get(AnnotationMetricProperties.metricName);
+            assertTextPresent("A metric with the name \"" + metricName + "\" already exists. Please choose a different name.");
+            click(Locator.id("lk-annotation-metric-cancel"));
+        }
+        else
+        {
+            clickAndWait(Locator.id("lk-annotation-metric-save"));
+        }
+    }
+
+    public void editAnnotationMetric(String metric, Map<AnnotationMetricProperties, String> metricProperties)
+    {
+        waitAndClick(Locator.linkWithText(metric));
+        waitForAnnotationDialog();
+        fillAnnotationForm(metricProperties);
+        clickAndWait(Locator.id("lk-annotation-metric-save"));
+    }
+
+    public void deleteAnnotationMetric(String metric)
+    {
+        waitAndClick(Locator.linkWithText(metric));
+        waitForAnnotationDialog();
+        click(Locator.id("lk-annotation-metric-delete"));
+        acceptAlert();
+        waitForPage();
+        waitForElementToDisappear(Locator.linkWithText(metric));
+    }
+
     public void editMetric(String metric, Map<CustomMetricProperties, String> metricProperties)
     {
-        Window<?> metricWindow = openForEdit(metric);
-        editCustomMetricValues(metricWindow, metricProperties, false);
+        openForEdit(metric);
+        fillCustomMetricForm(metricProperties);
+        clickAndWait(Locator.id("lk-custom-metric-save"));
     }
 
     public void deleteMetric(String metric)
     {
         openForEdit(metric);
-        clickButton("Delete", 0);
-        clickButton("Yes");
-        waitForPage();
+        doAndWaitForPageToLoad(() -> {
+            click(Locator.id("lk-custom-metric-delete"));
+            acceptAlert();
+        });
     }
 
-    private Window<?> openForEdit(String metric)
+    private void openForEdit(String metric)
     {
         waitAndClick(Locator.linkWithText(metric));
-        waitForElement(Ext4Helper.Locators.window("Edit Metric"));
-        return new Window.WindowFinder(getDriver()).withTitle("Edit Metric").waitFor();
+        waitForCustomMetricDialog();
     }
 
-    private void editCustomMetricValues(Window<?> metricWindow, Map<CustomMetricProperties, String> metricProperties, boolean duplicateNameErrorExpected)
+    private void waitForCustomMetricDialog()
     {
-        metricProperties.forEach((prop, val) -> {
-            if (!prop.isSelect)
-            {
-                setFormElement(Locator.name(prop.name()), val);
-            }
-            else
-            {
-                String label = prop.formLabel;
-                //adding waits does not help here, however it passes in catch block
-                try
-                {
-                    _ext4Helper.selectComboBoxItem(label, val);
-                }
-                catch (NoSuchElementException e)
-                {
-                    _ext4Helper.selectComboBoxItem(label, val);
-                }
-            }
-        });
-        if (duplicateNameErrorExpected)
-        {
-            duplicateNameErrorExpected(metricProperties.get(CustomMetricProperties.metricName));
-        }
-        else
-        {
-            clickAndWait(Ext4Helper.Locators.ext4Button("Save").findElement(metricWindow));
-        }
+        waitForElement(Locator.id("lk-custom-metric-dialog"));
+        waitForElement(Locator.tagWithText("option", "-- Select query --"));
+    }
+
+    private void fillCustomMetricForm(Map<CustomMetricProperties, String> props)
+    {
+        if (props.containsKey(CustomMetricProperties.metricName))
+            setFormElement(Locator.id("lk-custom-metric-name"), props.get(CustomMetricProperties.metricName));
+        if (props.containsKey(CustomMetricProperties.yAxisLabel))
+            setFormElement(Locator.id("lk-custom-metric-ylabel"), props.get(CustomMetricProperties.yAxisLabel));
+        if (props.containsKey(CustomMetricProperties.metricType))
+            click(Locator.css("input[name='customMetricType'][value='" + props.get(CustomMetricProperties.metricType).toLowerCase() + "']"));
+        if (props.containsKey(CustomMetricProperties.queryName))
+            selectOptionByText(Locator.id("lk-custom-metric-query"), props.get(CustomMetricProperties.queryName));
     }
 
     private void editTraceMetricValues(Window<?> metricWindow, Map<TraceMetricProperties, String> metricProperties, boolean duplicateNameErrorExpected)
@@ -215,11 +263,33 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         }
     }
 
+    private void waitForAnnotationDialog()
+    {
+        waitForElement(Locator.id("lk-annotation-metric-dialog"));
+        waitForElement(Locator.tagWithText("option", "-- Select annotation --"));
+    }
+
+    private void fillAnnotationForm(Map<AnnotationMetricProperties, String> props)
+    {
+        if (props.containsKey(AnnotationMetricProperties.metricName))
+            setFormElement(Locator.id("lk-annotation-metric-name"), props.get(AnnotationMetricProperties.metricName));
+        if (props.containsKey(AnnotationMetricProperties.yAxisLabel))
+            setFormElement(Locator.id("lk-annotation-metric-ylabel"), props.get(AnnotationMetricProperties.yAxisLabel));
+        if (props.containsKey(AnnotationMetricProperties.annotationType))
+            click(Locator.css("input[name='annotationType'][value='" + props.get(AnnotationMetricProperties.annotationType) + "']"));
+        if (props.containsKey(AnnotationMetricProperties.annotationName))
+        {
+            String annotationName = props.get(AnnotationMetricProperties.annotationName);
+            waitForElement(Locator.tagWithText("option", annotationName));
+            selectOptionByText(Locator.id("lk-annotation-name-select"), annotationName);
+        }
+    }
+
     private void duplicateNameErrorExpected(String metricName)
     {
-        click(Ext4Helper.Locators.ext4Button("Save"));
+        click(Locator.id("lk-custom-metric-save"));
         assertTextPresent("A metric with the name \"" + metricName + "\" already exists. Please choose a different name.");
-        click(Ext4Helper.Locators.ext4Button("Cancel"));
+        click(Locator.id("lk-custom-metric-cancel"));
     }
 
     public void clearMetricCache()
@@ -249,6 +319,14 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
             this.formLabel = formLabel + ":";
             this.isSelect = isSelect;
         }
+    }
+
+    public enum AnnotationMetricProperties
+    {
+        metricName,
+        yAxisLabel,
+        annotationType,   // "replicate" or "precursor"
+        annotationName
     }
 
     public enum TraceMetricProperties
