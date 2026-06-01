@@ -1122,7 +1122,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
             let dragStartY = null, dragCurrentY = null;
             let selectionRect = null, zoomButtonGroup = null, pendingLine = null, pendingStartY = null;
-            let interactionMask = null;
+            let interactionMask = null, plotClickCapture = null;
             let moveNs = 'mousemove.yzoom-' + axis;
             let keyNs = 'keydown.yzoom-' + axis;
 
@@ -1131,6 +1131,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 if (zoomButtonGroup) { zoomButtonGroup.remove(); zoomButtonGroup = null; }
                 if (pendingLine) { pendingLine.remove(); pendingLine = null; }
                 if (interactionMask) { interactionMask.remove(); interactionMask = null; }
+                if (plotClickCapture) { plotClickCapture.remove(); plotClickCapture = null; }
             };
 
             let showZoomButtons = function(y1, y2) {
@@ -1212,6 +1213,20 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                         cancelPendingClick();
                     }
                 });
+
+                plotClickCapture = svg.append('rect')
+                    .attr('x', gridLeft).attr('y', gridTop)
+                    .attr('width', gridRight - gridLeft).attr('height', gridBottom - gridTop)
+                    .style({'fill': 'transparent', 'cursor': 'crosshair'})
+                    .on('click', function() {
+                        let clickY = clampY(d3.mouse(svg.node())[1]);
+                        let firstY = pendingStartY;
+                        cancelPendingClick();
+                        let finalY1 = Math.min(firstY, clickY);
+                        let finalY2 = Math.max(firstY, clickY);
+                        if (finalY2 - finalY1 < 5) { return; }
+                        showZoomButtons(finalY1, finalY2);
+                    });
             };
 
             let drag = d3.behavior.drag()
