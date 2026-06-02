@@ -1021,8 +1021,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 columns: 2,
                 vertical: false,
                 items: [
-                    { boxLabel: 'per replicate', id: 'x-axis-grouping-replicate', name: 'xAxisGrouping', inputValue: 'replicate', checked: this.groupedX === false },
-                    { boxLabel: 'per date', id: 'x-axis-grouping-date', name: 'xAxisGrouping', inputValue: 'date', checked: this.groupedX === true }
+                    { boxLabel: 'per replicate', id: 'x-axis-grouping-replicate', name: 'xAxisGrouping', inputValue: 'replicate', checked: this.groupedX === false, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'X-axis grouping: per replicate'}); } } },
+                    { boxLabel: 'per date', id: 'x-axis-grouping-date', name: 'xAxisGrouping', inputValue: 'date', checked: this.groupedX === true, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'X-axis grouping: per date'}); } } }
                 ],
                 listeners: {
                     scope: this,
@@ -1051,8 +1051,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 columns: 2,
                 vertical: false,
                 items: [
-                    { boxLabel: 'per precursor', name: 'showPlots', id: 'plots-per-precursor', inputValue: 'per-precursor', checked: this.singlePlot === false },
-                    { boxLabel: 'combined', name: 'showPlots', id: 'plots-combined', inputValue: 'combined', checked: this.singlePlot === true }
+                    { boxLabel: 'per precursor', name: 'showPlots', id: 'plots-per-precursor', inputValue: 'per-precursor', checked: this.singlePlot === false, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Plots: per precursor'}); } } },
+                    { boxLabel: 'combined', name: 'showPlots', id: 'plots-combined', inputValue: 'combined', checked: this.singlePlot === true, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Plots: combined'}); } } }
                 ],
                 listeners: {
                     scope: this,
@@ -1082,8 +1082,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 columns: 2,
                 vertical: false,
                 items: [
-                    { boxLabel: 'show', id: 'excluded-replicates-show', name: 'excludedSamples', inputValue: 'show', checked: this.showExcluded === true },
-                    { boxLabel: 'hide', id: 'excluded-replicates-hide', name: 'excludedSamples', inputValue: 'hide', checked: this.showExcluded === false }
+                    { boxLabel: 'show', id: 'excluded-replicates-show', name: 'excludedSamples', inputValue: 'show', checked: this.showExcluded === true, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Excluded replicates: show'}); } } },
+                    { boxLabel: 'hide', id: 'excluded-replicates-hide', name: 'excludedSamples', inputValue: 'hide', checked: this.showExcluded === false, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Excluded replicates: hide'}); } } }
                 ],
                 listeners: {
                     scope: this,
@@ -1111,8 +1111,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 columns: 2,
                 vertical: false,
                 items: [
-                    { boxLabel: 'show', id: 'excluded-precursors-show', name: 'excludedPrecursors', inputValue: 'show', checked: this.showExcludedPrecursors === true },
-                    { boxLabel: 'hide', id: 'excluded-precursors-hide', name: 'excludedPrecursors', inputValue: 'hide', checked: this.showExcludedPrecursors === false }
+                    { boxLabel: 'show', id: 'excluded-precursors-show', name: 'excludedPrecursors', inputValue: 'show', checked: this.showExcludedPrecursors === true, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Excluded precursors: show'}); } } },
+                    { boxLabel: 'hide', id: 'excluded-precursors-hide', name: 'excludedPrecursors', inputValue: 'hide', checked: this.showExcludedPrecursors === false, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Excluded precursors: hide'}); } } }
                 ],
                 listeners: {
                     scope: this,
@@ -1145,8 +1145,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 columns: 2,
                 vertical: false,
                 items: [
-                    { boxLabel: 'always show', id: 'reference-guide-set-show', name: 'referenceGuideSets', inputValue: 'show', checked: this.showReferenceGS === true },
-                    { boxLabel: 'when in date range', id: 'reference-guide-set-hide', name: 'referenceGuideSets', inputValue: 'hide', checked: this.showReferenceGS === false }
+                    { boxLabel: 'always show', id: 'reference-guide-set-show', name: 'referenceGuideSets', inputValue: 'show', checked: this.showReferenceGS === true, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Reference guide sets: always show'}); } } },
+                    { boxLabel: 'when in date range', id: 'reference-guide-set-hide', name: 'referenceGuideSets', inputValue: 'hide', checked: this.showReferenceGS === false, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Reference guide sets: when in date range'}); } } }
                 ],
                 listeners: {
                     scope: this,
@@ -1286,11 +1286,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     getPaginationBtns: function(numOfPrecursors) {
         var btnHtml = '';
 
-        btnHtml += '<span class="qc-paging-prev ' + (this.pagingStartIndex > 0 ? 'qc-paging-icon-enabled' : 'qc-paging-icon-disabled')
-                + '"><i class="fa fa-angle-left"></i></span>';
+        btnHtml += '<button type="button" class="qc-paging-prev ' + (this.pagingStartIndex > 0 ? 'qc-paging-icon-enabled' : 'qc-paging-icon-disabled')
+                + '" aria-label="Previous page"' + (this.pagingStartIndex > 0 ? '' : ' disabled') + '><i class="fa fa-angle-left" aria-hidden="true"></i></button>';
 
-        btnHtml += '<span class="qc-paging-next ' + (this.pagingEndIndex < numOfPrecursors ? 'qc-paging-icon-enabled' : 'qc-paging-icon-disabled')
-                + '"><i class="fa fa-angle-right"></i></span>';
+        btnHtml += '<button type="button" class="qc-paging-next ' + (this.pagingEndIndex < numOfPrecursors ? 'qc-paging-icon-enabled' : 'qc-paging-icon-disabled')
+                + '" aria-label="Next page"' + (this.pagingEndIndex < numOfPrecursors ? '' : ' disabled') + '><i class="fa fa-angle-right" aria-hidden="true"></i></button>';
 
         return btnHtml;
     },
