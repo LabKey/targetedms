@@ -82,6 +82,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     trailingRuns: null,
     minWidth: 1250, // Keep in sync with the width defined in qcTrendPlot.jsp
     width: '100%',
+    yZoomByPlot: {},
 
     SHOW_ALL_IN_A_SINGLE_PLOT: 'Show all series in a single plot',
     LABEL_WIDTH: 115,
@@ -1213,8 +1214,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         Ext4.get(this.plotDivId).mask("Loading...");
     },
 
-    displayTrendPlot: function() {
-
+    displayTrendPlot: function(preserveZoom) {
+        if (!preserveZoom) {
+            this.yZoomByPlot = {};
+        }
         this.setBrushingEnabled(false);
         this.updateSelectedAnnotations();
         this.setLoadingMsg();
@@ -2221,6 +2224,52 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 this.plotBrushSelection.plot.clearBrush();
             }
         }
+    },
+
+    getYZoomDomain: function(plotId) {
+        let entry = this.yZoomByPlot && this.yZoomByPlot[plotId];
+        if (!entry || (!entry.left && !entry.right)) return null;
+        return entry;
+    },
+
+    incrementMetric: function(metricName) {
+        if (LABKEY.user && LABKEY.user.isGuest) {
+            return;
+        }
+        LABKEY.Ajax.request({
+            url: LABKEY.ActionURL.buildURL('core', 'incrementClientSideMetricCount.api'),
+            method: 'POST',
+            jsonData: { featureArea: 'panoramaQCPlot', metricName: metricName },
+            failure: function(response) { console.error('Failed to track metric ' + metricName + ':', response); }
+        });
+    },
+
+    applyYZoom: function(plotId, yMin, yMax, axis) {
+        if (!this.yZoomByPlot) {
+            this.yZoomByPlot = {};
+        }
+        if (!this.yZoomByPlot[plotId]) {
+            this.yZoomByPlot[plotId] = {};
+        }
+        this.yZoomByPlot[plotId][axis] = [yMin, yMax];
+        this.incrementMetric('yAxisZoom');
+        this.processPlotData();
+    },
+
+    resetYZoom: function(plotId, axis) {
+        if (this.yZoomByPlot && this.yZoomByPlot[plotId]) {
+            if (axis) {
+                delete this.yZoomByPlot[plotId][axis];
+                if (!this.yZoomByPlot[plotId].left && !this.yZoomByPlot[plotId].right) {
+                    delete this.yZoomByPlot[plotId];
+                }
+            }
+            else {
+                delete this.yZoomByPlot[plotId];
+            }
+        }
+        this.incrementMetric('yAxisZoomReset');
+        this.processPlotData();
     },
 
     getSvgElForPlot : function(plot) {

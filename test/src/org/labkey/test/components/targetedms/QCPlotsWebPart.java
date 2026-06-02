@@ -904,6 +904,36 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         }
     }
 
+    public void performYAxisZoom(QCPlot qcPlot)
+    {
+        WebElement plotEl = qcPlot.getPlot();
+        WebElement overlay = elementCache().yZoomOverlay.findElement(plotEl);
+        getWrapper().scrollIntoView(overlay);
+
+        int clickOffset = 40;
+        new Actions(getWrapper().getDriver())
+                .moveToElement(overlay, 0, -clickOffset)
+                .click()
+                .moveToElement(overlay, 0, clickOffset)
+                .click()
+                .perform();
+
+        WebDriverWrapper.waitFor(() -> !elementCache().yZoomConfirmBtn.findElements(plotEl).isEmpty(),
+                "Zoom buttons did not appear after y-axis clicks", WAIT_FOR_JAVASCRIPT);
+
+        elementCache().yZoomConfirmBtn.findElement(plotEl).click();
+    }
+
+    public boolean isZoomActive(QCPlot qcPlot)
+    {
+        return !elementCache().yZoomBorder.findElements(qcPlot.getPlot()).isEmpty();
+    }
+
+    public void clickResetZoom(QCPlot qcPlot)
+    {
+        elementCache().yZoomOverlay.findElement(qcPlot.getPlot()).click();
+    }
+
     public class Elements extends BodyWebPart<?>.ElementCache
     {
         WebElement startDate = Locator.css("#start-date-field input").findWhenNeeded(this);
@@ -939,6 +969,9 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         WebElement plotPanel = Locator.css("div.tiledPlotPanel").findWhenNeeded(this);
         WebElement paginationPanel = Locator.css("div.plotPaginationHeaderPanel").findWhenNeeded(this);
         Locator extFormDisplay = Locator.css("div.x4-form-display-field");
+        Locator.CssLocator yZoomOverlay = Locator.css("svg rect.y-zoom-overlay");
+        Locator.CssLocator yZoomConfirmBtn = Locator.css("svg g.y-zoom-btn-zoom rect");
+        Locator.CssLocator yZoomBorder = Locator.css("svg rect.y-zoom-border");
         Locator.CssLocator guideSetTrainingRect = Locator.css("svg rect.training");
         Locator.CssLocator experimentRangeRect = Locator.css("svg rect.expRange");
         Locator.CssLocator guideSetSvgButton = Locator.css("svg g.guideset-svg-button text");
