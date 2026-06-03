@@ -45,22 +45,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     getGuideSetDataObj : function(row) {
         return {
             ReferenceEnd: row['ReferenceEnd'],
-            TrainingEnd: this.normalizeDateStr(row['TrainingEnd']),
-            TrainingStart: this.normalizeDateStr(row['TrainingStart']),
+            TrainingEnd: row['TrainingEnd'],
+            TrainingStart: row['TrainingStart'],
             Comment: row['Comment'],
             Series: {}
         };
-    },
-
-    // Jackson serializes java.util.Date with the "y-M-d" SimpleDateFormat, producing non-zero-padded strings
-    // like "2025-9-4". Zero-pad to "2025-09-04" so lexicographic comparison with this.startDate works correctly.
-    normalizeDateStr : function(d) {
-        if (!d) return d;
-        var parts = String(d).split('T')[0].split('-'); // strip any time component first
-        if (parts.length === 3) {
-            return parts[0] + '-' + ('0' + parts[1]).slice(-2) + '-' + ('0' + parts[2]).slice(-2);
-        }
-        return d;
     },
 
     processRawGuideSetData: function (plotDataRows) {
