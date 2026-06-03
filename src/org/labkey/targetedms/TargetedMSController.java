@@ -1660,8 +1660,8 @@ public class TargetedMSController extends SpringActionController
                 stats = generator.getAllProcessedMetricGuideSets(rawMetricDataSets, guideSets.stream().collect(Collectors.toMap(GuideSet::getRowId, Function.identity())), form.getTrailingRuns());
             }
             boolean zoomedRange = qcFolderStartDate != null &&
-                    qcFolderEndDate != null && rangeStartDate != null && form.getEndDate() != null &&
-                    (DateUtil.getDateOnly(qcFolderStartDate).compareTo(rangeStartDate) != 0 ||
+                    qcFolderEndDate != null && form.getStartDate() != null && form.getEndDate() != null &&
+                    (DateUtil.getDateOnly(qcFolderStartDate).compareTo(form.getStartDate()) != 0 ||
                     DateUtil.getDateOnly(qcFolderEndDate).compareTo(form.getEndDate()) != 0);
             Map<GuideSetKey, GuideSetStats> targetedStats;
 

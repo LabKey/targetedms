@@ -45,11 +45,22 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     getGuideSetDataObj : function(row) {
         return {
             ReferenceEnd: row['ReferenceEnd'],
-            TrainingEnd: row['TrainingEnd'],
-            TrainingStart: row['TrainingStart'],
+            TrainingEnd: this.normalizeDateStr(row['TrainingEnd']),
+            TrainingStart: this.normalizeDateStr(row['TrainingStart']),
             Comment: row['Comment'],
             Series: {}
         };
+    },
+
+    // Jackson serializes java.util.Date with the "y-M-d" SimpleDateFormat, producing non-zero-padded strings
+    // like "2025-9-4". Zero-pad to "2025-09-04" so lexicographic comparison with this.startDate works correctly.
+    normalizeDateStr : function(d) {
+        if (!d) return d;
+        var parts = String(d).split('T')[0].split('-'); // strip any time component first
+        if (parts.length === 3) {
+            return parts[0] + '-' + ('0' + parts[1]).slice(-2) + '-' + ('0' + parts[2]).slice(-2);
+        }
+        return d;
     },
 
     processRawGuideSetData: function (plotDataRows) {
@@ -313,40 +324,38 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     if (!this.filterPoints) {
                         this.filterPoints = {};
                     }
-                    if (!this.filterPoints[frag]) {
-                        this.filterPoints[frag] = {};
-                    }
+                    // Always reset per-fragment entry so stale filterPointsLastIndex from a
+                    // previous render doesn't prevent recalculation when the date range changes.
+                    this.filterPoints[frag] = {};
 
                     for (let j = 0; j < precursorInfo.data.length; j++) {
                         let plotData = precursorInfo.data[j];
 
-
-                        if (!this.filterPoints[frag][plotData.MetricId]) {
-                            this.filterPoints[frag][plotData.MetricId] = {}
-                        }
+                        this.filterPoints[frag][plotData.MetricId] = this.filterPoints[frag][plotData.MetricId] || {};
 
                         if (plotData.type === "missing") {
                             continue;
                         }
 
 
+                        // Default to InRange; overwritten to GuideSet below if this point is in the reference training window.
+                        plotData['ReferenceRangeSeries'] = "InRange";
                         Ext4.Object.each(this.guideSetDataMap, function(guideSetId, guideSetData) {
                             // for truncating out of range guideset data  find first index of plotDate ending at guideset.trainingEnd
-                            if (plotData.guideSetId === guideSetId && plotData.inGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {
+                            // Use == (not ===): guideSetDataMap keys are strings but plotData.guideSetId is a number.
+                            // TrainingEnd is normalized to zero-padded "yyyy-mm-dd" in getGuideSetDataObj so that
+                            // lexicographic comparison against this.startDate (also zero-padded) works for all months.
+                            if (plotData.guideSetId == guideSetId && plotData.inGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {
                                 this.filterPoints[frag][plotData.MetricId]['filterPointsFirstIndex'] = j + 1;
-                                // ReferenceRangeSeries is used to separate series
                                 plotData['ReferenceRangeSeries'] = "GuideSet";
                             }
-                            else {
-                                plotData['ReferenceRangeSeries'] = "InRange";
-                            }
-
                         }, this);
 
-                        // for truncating out of range guideset data find last index of plotData starting from this.startDate
+                        // Mark the last index to truncate as j-1 (the point just before the user range starts),
+                        // so the first in-range data point is NOT included in the removed gap.
                         if (plotData.fullDate >= this.startDate) {
-                            if (!this.filterPoints[frag][plotData.MetricId]['filterPointsLastIndex']) {
-                                this.filterPoints[frag][plotData.MetricId]['filterPointsLastIndex'] = j;
+                            if (this.filterPoints[frag][plotData.MetricId]['filterPointsLastIndex'] === undefined) {
+                                this.filterPoints[frag][plotData.MetricId]['filterPointsLastIndex'] = j - 1;
                             }
                         }
                     }
@@ -392,6 +401,16 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     renderPlots: function() {
         if (this.filterQCPoints) {
             this.truncateOutOfRangeQCPoints();
+            // Recompute showDataPoints based on post-truncation counts, since the gap between the
+            // reference guide set and the user's date range was removed and the remaining set may
+            // be well under the threshold.
+            var maxPointsPerSeries = 0;
+            for (var i = 0; i < this.precursors.length; i++) {
+                if (this.fragmentPlotData[this.precursors[i]]) {
+                    maxPointsPerSeries = Math.max(this.fragmentPlotData[this.precursors[i]].data.length, maxPointsPerSeries);
+                }
+            }
+            this.showDataPoints = maxPointsPerSeries <= LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries;
         }
         // do not persist plot options in qc folder if changed after coming through experimental folder link
         if (!this.showExpRunRange) {
@@ -434,7 +453,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         Ext4.Object.each(this.fragmentPlotData, function(label, fragmentData) {
             // traverse plotData backwards from firstIndex to lastIndex and
             // remove them from the array
-            if (this.filterQCPoints && this.filterPoints) {
+            if (this.filterQCPoints && this.filterPoints && this.filterPoints[label]) {
 
                 // when we're plotting two different metrics at the same time, then we
                 // have repeated dates (from oldest to newest for metric 1, and then oldest to newest for metric 2, all in the same array).
