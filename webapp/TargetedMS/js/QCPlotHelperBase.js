@@ -332,7 +332,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
                         Ext4.Object.each(this.guideSetDataMap, function(guideSetId, guideSetData) {
                             // for truncating out of range guideset data  find first index of plotDate ending at guideset.trainingEnd
-                            if (plotData.guideSetId === guideSetId && plotData.inGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {
+                            if (plotData.guideSetId == guideSetId && plotData.inGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {
                                 this.filterPoints[frag][plotData.MetricId]['filterPointsFirstIndex'] = j + 1;
                                 // ReferenceRangeSeries is used to separate series
                                 plotData['ReferenceRangeSeries'] = "GuideSet";
