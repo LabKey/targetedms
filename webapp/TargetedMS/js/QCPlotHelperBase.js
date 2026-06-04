@@ -313,27 +313,25 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     if (!this.filterPoints) {
                         this.filterPoints = {};
                     }
-                    // Always reset per-fragment entry so stale filterPointsLastIndex from a
-                    // previous render doesn't prevent recalculation when the date range changes.
-                    this.filterPoints[frag] = {};
+                    if (!this.filterPoints[frag]) {
+                        this.filterPoints[frag] = {};
+                    }
 
                     for (let j = 0; j < precursorInfo.data.length; j++) {
                         let plotData = precursorInfo.data[j];
 
-                        this.filterPoints[frag][plotData.MetricId] = this.filterPoints[frag][plotData.MetricId] || {};
+
+                        if (!this.filterPoints[frag][plotData.MetricId]) {
+                            this.filterPoints[frag][plotData.MetricId] = {}
+                        }
 
                         if (plotData.type === "missing") {
                             continue;
                         }
 
 
-                        // Default to InRange; overwritten to GuideSet below if this point is in the reference training window.
-                        plotData['ReferenceRangeSeries'] = "InRange";
                         Ext4.Object.each(this.guideSetDataMap, function(guideSetId, guideSetData) {
                             // for truncating out of range guideset data  find first index of plotDate ending at guideset.trainingEnd
-                            // Use == (not ===): guideSetDataMap keys are strings but plotData.guideSetId is a number.
-                            // TrainingEnd is normalized to zero-padded "yyyy-mm-dd" in getGuideSetDataObj so that
-                            // lexicographic comparison against this.startDate (also zero-padded) works for all months.
                             if (plotData.guideSetId == guideSetId && plotData.inGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {
                                 this.filterPoints[frag][plotData.MetricId]['filterPointsFirstIndex'] = j + 1;
                                 plotData['ReferenceRangeSeries'] = "GuideSet";
