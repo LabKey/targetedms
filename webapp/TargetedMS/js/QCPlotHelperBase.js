@@ -365,11 +365,18 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         if (this.showExpRunRange && this.filterPoints) {
 
             for (let i = 0; i < plotDataRows.length; i++) {
-                Ext4.Object.each(this.filterPoints[plotDataRows[i].SeriesLabel], function (metricId, filterPointsData) {
+                const seriesPoints = this.filterPoints && this.filterPoints[plotDataRows[i].SeriesLabel];
+                if (!seriesPoints) {
+                    continue;
+                }
+                Ext4.Object.each(seriesPoints, function (metricId, filterPointsData) {
                     // no need to filter if less than 6 data points are present between reference end of guideset and startdate
                     if (filterPointsData['filterPointsFirstIndex'] && filterPointsData['filterPointsLastIndex']) {
                         if (filterPointsData['filterPointsLastIndex'] - filterPointsData['filterPointsFirstIndex'] < 6) {
-                            this.filterQCPoints = false;
+                            // Fewer than 6 out-of-range points for this series/metric, so there is nothing to truncate
+                            // for it. Flag only this entry rather than clearing the global this.filterQCPoints, so that
+                            // other series still truncate and the separator / guide-set line break still render.
+                            filterPointsData['skipTruncation'] = true;
                             // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
 
                             this.getStartDateField().setValue(this.formatDate(plotDataRows[i].data[filterPointsData['filterPointsFirstIndex']].AcquiredTime));
@@ -434,7 +441,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         Ext4.Object.each(this.fragmentPlotData, function(label, fragmentData) {
             // traverse plotData backwards from firstIndex to lastIndex and
             // remove them from the array
-            if (this.filterQCPoints && this.filterPoints) {
+            if (this.filterQCPoints && this.filterPoints && this.filterPoints[label]) {
 
                 // when we're plotting two different metrics at the same time, then we
                 // have repeated dates (from oldest to newest for metric 1, and then oldest to newest for metric 2, all in the same array).
@@ -443,6 +450,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 const lab  = label;
 
                 filterPointsReversed.forEach(metricId => {
+                    if (this.filterPoints[lab][metricId]['skipTruncation']) {
+                        return; // too few out-of-range points for this series/metric to truncate
+                    }
                     let firstIndex = this.filterPoints[lab][metricId]['filterPointsFirstIndex'];
                     let lastIndex = this.filterPoints[lab][metricId]['filterPointsLastIndex'];
 

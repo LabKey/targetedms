@@ -2325,8 +2325,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         .attr('stroke', color).attr('stroke-opacity', 0.1)
                         .attr('fill', color).attr('fill-opacity', 0.1)
                         .append("title")
-                        .text(function (d) {
-                            return "Selected replicate: " + Ext4.String.htmlEncode(plot.data[d.EndIndex].ReplicateName);
+                        .text(function () {
+                            // 'data' is the already-matched point for this replicate, don't index plot.data by
+                            // seqValue (EndIndex), which breaks once out-of-range points have been truncated.
+                            return "Selected replicate: " + Ext4.String.htmlEncode(data.ReplicateName);
                         });
 
                 this.sendSvgElementToBack(plot, outlierRect);
@@ -2399,8 +2401,14 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 var pointsData = precursorInfo.data;
                 var expDataArr = [];
 
-                for (var i = startIndex; i <= endIndex; i++) {
-                    expDataArr.push(pointsData[i].value);
+                // startIndex/endIndex are seqValues (x-axis positions), not array indices. Once out-of-range
+                // points are truncated, the array positions no longer line up with seqValue, so collect the
+                // experiment-range values by matching seqValue rather than indexing pointsData directly.
+                for (var i = 0; i < pointsData.length; i++) {
+                    if (pointsData[i].seqValue >= startIndex && pointsData[i].seqValue <= endIndex
+                            && pointsData[i].value !== undefined && pointsData[i].value !== null) {
+                        expDataArr.push(pointsData[i].value);
+                    }
                 }
 
                 var expMean = LABKEY.targetedms.PlotSettingsUtil.formatNumeric(LABKEY.vis.Stat.getMean(expDataArr));
