@@ -2547,71 +2547,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             return '#' + d['Color'];
         };
 
-        let annotations = this.getSvgElForPlot(plot).selectAll("path.annotation").data(this.annotationData)
-                .enter().append("path").attr("class", "annotation")
-                .attr("d", this.annotationShape(4)).attr('transform', transformAcc)
-                .style("fill", colorAcc).style("stroke", colorAcc);
-
-        // add mouseover effects for fun
-        let mouseOn = function(pt, strokeWidth, d) {
-            d3.select(pt).transition().duration(800).attr("stroke-width", strokeWidth).ease("elastic");
-
-            if (!pt._tippy) {
-                let date = new Date(d['Date']);
-                let dateStr = me.formatDate(date, date.getHours() !== 0 || date.getMinutes() !== 0 || date.getSeconds() !== 0);
-                let content = "<table>"
-                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Created By:</td><td>" + LABKEY.Utils.encodeHtml(d['DisplayName']) + "</td></tr>"
-                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Type:</td><td>" + LABKEY.Utils.encodeHtml(d['Name']) + "</td></tr>"
-                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Date:</td><td>" + LABKEY.Utils.encodeHtml(dateStr) + "</td></tr>"
-                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Description:</td><td>" + LABKEY.Utils.encodeHtml(d['Description']) + "</td></tr>";
-
-                if (d['ContainerPath'] && d['ContainerPath'] !== LABKEY.ActionURL.getContainer()) {
-                    let containerPath = LABKEY.Utils.encodeHtml(d['ContainerPath']);
-                    if (!containerPath.startsWith('/')) {
-                        containerPath = '/' + containerPath;
-                    }
-                    content += "<tr><td style='vertical-align: top; padding-right: 5px;'>Shared From:</td><td>" + containerPath + "</td></tr>";
-                }
-                content += "</table>";
-
-                tippy(pt, {
-                    content: content,
-                    allowHTML: true,
-                    arrow: true,
-                    theme: 'light-border',
-                    placement: 'top',
-                    offset: [0, 8],
-                    onMount(instance) {
-                        const tippyBox = instance.popper.querySelector('.tippy-box');
-                        const tippyContent = instance.popper.querySelector('.tippy-content');
-                        const tippyArrow = instance.popper.querySelector('.tippy-arrow');
-
-                        if (tippyBox) {
-                            tippyBox.style.color = 'black';
-                            tippyBox.style.backgroundColor = 'white';
-                            tippyBox.style.border = '1px solid black';
-                        }
-                        if (tippyContent) {
-                            tippyContent.style.padding = '6px';
-                        }
-                        if (tippyArrow) {
-                            tippyArrow.style.bottom = '-1px';
-                        }
-                    }
-                });
-            }
-        };
-        var mouseOff = function(pt) {
-            d3.select(pt).transition().duration(800).attr("stroke-width", 1).ease("elastic");
-        };
-        annotations.on("mouseover", function(d){ return mouseOn(this, 3, d); });
-        annotations.on("mouseout", function(){ return mouseOff(this); });
-
-        if (this.canUserEdit()) {
-            annotations.on("click", function (d) {
-                me.openAnnotationDialog(false, d).show();
-            });
-        }
+        // With many replicates, the "Add annotation" markers can overlap existing annotation
+        // glyphs and intercept their hover/click events. Render the add-annotation
+        // markers first so the existing annotation glyphs paint on top and take precedence for hovering and clicking.
 
         // Add add-annotation markers with '+' shape
         const addShape = function (size) {
@@ -2698,6 +2636,74 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         // Hide add-annotation markers if the user cannot modify annotations
         if (!this.canUserEdit()) {
             nonAnnotationGroups.style("display", "none");
+        }
+
+        // Render the existing annotation glyphs after the add-annotation markers so they paint on
+        // top and take precedence for hover/click when the markers overlap them.
+        let annotations = this.getSvgElForPlot(plot).selectAll("path.annotation").data(this.annotationData)
+                .enter().append("path").attr("class", "annotation")
+                .attr("d", this.annotationShape(4)).attr('transform', transformAcc)
+                .style("fill", colorAcc).style("stroke", colorAcc);
+
+        // add mouseover effects for fun
+        let mouseOn = function(pt, strokeWidth, d) {
+            d3.select(pt).transition().duration(800).attr("stroke-width", strokeWidth).ease("elastic");
+
+            if (!pt._tippy) {
+                let date = new Date(d['Date']);
+                let dateStr = me.formatDate(date, date.getHours() !== 0 || date.getMinutes() !== 0 || date.getSeconds() !== 0);
+                let content = "<table>"
+                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Created By:</td><td>" + LABKEY.Utils.encodeHtml(d['DisplayName']) + "</td></tr>"
+                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Type:</td><td>" + LABKEY.Utils.encodeHtml(d['Name']) + "</td></tr>"
+                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Date:</td><td>" + LABKEY.Utils.encodeHtml(dateStr) + "</td></tr>"
+                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Description:</td><td>" + LABKEY.Utils.encodeHtml(d['Description']) + "</td></tr>";
+
+                if (d['ContainerPath'] && d['ContainerPath'] !== LABKEY.ActionURL.getContainer()) {
+                    let containerPath = LABKEY.Utils.encodeHtml(d['ContainerPath']);
+                    if (!containerPath.startsWith('/')) {
+                        containerPath = '/' + containerPath;
+                    }
+                    content += "<tr><td style='vertical-align: top; padding-right: 5px;'>Shared From:</td><td>" + containerPath + "</td></tr>";
+                }
+                content += "</table>";
+
+                tippy(pt, {
+                    content: content,
+                    allowHTML: true,
+                    arrow: true,
+                    theme: 'light-border',
+                    placement: 'top',
+                    offset: [0, 8],
+                    onMount(instance) {
+                        const tippyBox = instance.popper.querySelector('.tippy-box');
+                        const tippyContent = instance.popper.querySelector('.tippy-content');
+                        const tippyArrow = instance.popper.querySelector('.tippy-arrow');
+
+                        if (tippyBox) {
+                            tippyBox.style.color = 'black';
+                            tippyBox.style.backgroundColor = 'white';
+                            tippyBox.style.border = '1px solid black';
+                        }
+                        if (tippyContent) {
+                            tippyContent.style.padding = '6px';
+                        }
+                        if (tippyArrow) {
+                            tippyArrow.style.bottom = '-1px';
+                        }
+                    }
+                });
+            }
+        };
+        var mouseOff = function(pt) {
+            d3.select(pt).transition().duration(800).attr("stroke-width", 1).ease("elastic");
+        };
+        annotations.on("mouseover", function(d){ return mouseOn(this, 3, d); });
+        annotations.on("mouseout", function(){ return mouseOff(this); });
+
+        if (this.canUserEdit()) {
+            annotations.on("click", function (d) {
+                me.openAnnotationDialog(false, d).show();
+            });
         }
     },
 
