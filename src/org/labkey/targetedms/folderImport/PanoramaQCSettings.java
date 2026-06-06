@@ -70,7 +70,8 @@ public enum PanoramaQCSettings
                     List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ColumnInfo::isUserEditable).toList();
                     SimpleFilter filter = SimpleFilter.createContainerFilter(container); //only export the ones that are defined in current container (and not the ones from the root container)
 
-                    try(Results results = QueryService.get().select(ti, userEditableCols, filter, null))
+                    // select(true): exportSettingsToTSV() requires a cached result set (see that method)
+                    try(Results results = QueryService.get().getSelectBuilder(ti).columns(userEditableCols).filter(filter).select(true))
                     {
                         exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
                     }
@@ -89,7 +90,7 @@ public enum PanoramaQCSettings
                             .append(TargetedMSManager.getTableInfoQCMetricConfiguration(), "qcMetricConfig")
                             .append(" ON qcEnabledMetrics.metric = qcMetricConfig.Id");
 
-                    try (Results results = QueryService.get().getSelectBuilder(schema, sql.getSQL(), true).select())
+                    try (Results results = QueryService.get().getSelectBuilder(schema, sql.getSQL(), true).select(true))
                     {
                         exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
                     }
@@ -119,7 +120,8 @@ public enum PanoramaQCSettings
                     TableInfo ti = getTableInfo(user, container, cf);
                     List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ColumnInfo::isUserEditable).toList();
 
-                    try (Results results = QueryService.get().select(ti, userEditableCols, null, null))
+                    // select(true): exportSettingsToTSV() requires a cached result set (see that method)
+                    try (Results results = QueryService.get().getSelectBuilder(ti).columns(userEditableCols).select(true))
                     {
                         exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
                     }
@@ -146,7 +148,7 @@ public enum PanoramaQCSettings
                             .append(" ) qcAnnotationType")
                             .append(" ON qcAnnotation.QCAnnotationTypeId = qcAnnotationType.Id");
 
-                    try (Results results = QueryService.get().getSelectBuilder(schema, sql.getSQL(), true).select())
+                    try (Results results = QueryService.get().getSelectBuilder(schema, sql.getSQL(), true).select(true))
                     {
                         exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
                     }
@@ -188,7 +190,7 @@ public enum PanoramaQCSettings
                             .append(TargetedMSManager.getTableInfoRuns(), "runs")
                             .append(" ON replicate.RunId = runs.Id");
 
-                    try (Results results = QueryService.get().getSelectBuilder(schema, sql.getSQL(), true).select())
+                    try (Results results = QueryService.get().getSelectBuilder(schema, sql.getSQL(), true).select(true))
                     {
                         exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
                     }
@@ -332,12 +334,15 @@ public enum PanoramaQCSettings
         TableInfo ti = getTableInfo(user, container, null);
         List<ColumnInfo> userEditableCols = ti.getColumns().stream().filter(ColumnInfo::isUserEditable).toList();
 
-        try (Results results = QueryService.get().select(ti, userEditableCols, null, null))
+        // select(true): exportSettingsToTSV() requires a cached result set (see that method)
+        try (Results results = QueryService.get().getSelectBuilder(ti).columns(userEditableCols).select(true))
         {
             exportSettingsToTSV(vf, results, getSettingsFileName(), getTableName());
         }
     }
 
+    // NOTE: callers must pass a cached Results (select(true)). This method calls countAll() before iterating and then
+    // re-iterates the same Results via TSVGridWriter, both of which require a cached, re-iterable result set.
     protected void exportSettingsToTSV(VirtualFile vf, Results results, String fileName, String tableName) throws ImportException
     {
         try
