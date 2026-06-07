@@ -16,6 +16,7 @@
 package org.labkey.targetedms.view.spectrum;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.cache.BlockingCache;
@@ -24,6 +25,7 @@ import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.Container;
 import org.labkey.api.security.User;
 import org.labkey.api.util.FileUtil;
+import org.labkey.api.util.logging.LogHelper;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSRun;
 import org.labkey.targetedms.TargetedMSSchema;
@@ -42,6 +44,8 @@ import org.labkey.targetedms.query.ModificationManager;
 import org.labkey.targetedms.query.PeptideManager;
 import org.labkey.targetedms.query.PrecursorManager;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -59,7 +63,59 @@ import java.util.zip.DataFormatException;
  */
 public class LibrarySpectrumMatchGetter
 {
+    private static final Logger LOG = LogHelper.getLogger(LibrarySpectrumMatchGetter.class, "Matches library spectra and retention times for the library spectrum viewer");
+
     private static final int CACHE_SIZE = 10;
+
+    // Reading library spectra and retention times from large spectrum libraries can be slow over network storage.
+    // For EncyclopeDIA .elib we read one row per source file for the peptide. This can be hundreds of rows and the needed
+    // columns are not in the index, so each table row lookup is a separate network round-trip on GPFS.
+    // For BiblioSpec .blib we scan the unindexed RetentionTimes table for the RT of the peptide in all the scans and source
+    // files.
+    // PanoramaWeb has large files of both types, so the size gate covers both library types. To protect public folders from
+    // aggressive bots, library spectra are not shown to guests when the library file is at or above this size. Guests are
+    // asked to log in instead.
+    private static final long GUEST_SPECTRUM_LIBRARY_SIZE_LIMIT = 500L * 1024 * 1024; // 500 MB
+
+    /**
+     * Returns true if library spectra should NOT be shown to the given user for the given run,
+     * i.e. the user is a guest and the run references a supported spectrum library file that is at
+     * or above {@link #GUEST_SPECTRUM_LIBRARY_SIZE_LIMIT}. Logged-in users are never blocked, and
+     * small libraries are read in place as before.
+     */
+    public static boolean blockSpectraForGuest(User user, long runId)
+    {
+        if (!user.isGuest())
+        {
+            return false;
+        }
+        for (Path libPath : LibraryManager.getLibraryFilePaths(runId).values())
+        {
+            if (isLargeSpectrumLibrary(libPath))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isLargeSpectrumLibrary(Path libPath)
+    {
+        // Only .elib/.blib libraries are read for spectra; ignore anything we cannot read.
+        if (libPath == null || getReaderForLibrary(FileUtil.getFileName(libPath)) == null)
+        {
+            return false;
+        }
+        try
+        {
+            return Files.exists(libPath) && Files.size(libPath) >= GUEST_SPECTRUM_LIBRARY_SIZE_LIMIT;
+        }
+        catch (IOException e)
+        {
+            LOG.warn("Could not determine size of spectrum library file " + libPath, e);
+            return false;
+        }
+    }
 
     private static final BlockingCache<PrecursorKey, List<PeptideIdRtInfo>> _peptideIdRtsCache =
             CacheManager.getBlockingCache(CACHE_SIZE, CacheManager.DAY, "TargetedMS peptide ID retention times",
