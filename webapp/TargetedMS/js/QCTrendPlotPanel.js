@@ -2547,10 +2547,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             return '#' + d['Color'];
         };
 
-        // With many replicates, the "Add annotation" markers can overlap existing annotation
-        // glyphs and intercept their hover/click events. Render the add-annotation
-        // markers first so the existing annotation glyphs paint on top and take precedence for hovering and clicking.
-
         // Add add-annotation markers with '+' shape
         const addShape = function (size) {
             var s = size / 2;
