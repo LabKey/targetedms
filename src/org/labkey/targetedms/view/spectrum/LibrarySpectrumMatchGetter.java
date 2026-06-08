@@ -108,10 +108,14 @@ public class LibrarySpectrumMatchGetter
         }
         try
         {
-            return Files.exists(libPath) && Files.size(libPath) >= GUEST_SPECTRUM_LIBRARY_SIZE_LIMIT;
+            // Files.size throws NoSuchFileException if the file is missing, so a separate Files.exists
+            // check is unnecessary and would add a second filesystem round-trip on network storage.
+            return Files.size(libPath) >= GUEST_SPECTRUM_LIBRARY_SIZE_LIMIT;
         }
         catch (IOException e)
         {
+            // If we cannot stat the file it is missing or unreadable, in which case the
+            // downstream library read will fail too.
             LOG.warn("Could not determine size of spectrum library file " + libPath, e);
             return false;
         }

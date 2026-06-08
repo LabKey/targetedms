@@ -3366,7 +3366,7 @@ public class TargetedMSController extends SpringActionController
             // Apply the same guest gate as the spectrum views (see LibrarySpectrumMatchGetter.blockSpectraForGuest).
             if (LibrarySpectrumMatchGetter.blockSpectraForGuest(getUser(), run.getId()))
             {
-                response.put("error", "Please log in to view spectra for large libraries.");
+                response.put("error", "Login to view this data");
                 return response;
             }
 
