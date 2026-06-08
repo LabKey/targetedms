@@ -330,17 +330,23 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                         }
 
 
+                        // ReferenceRangeSeries is used to separate series. Default to "InRange" and only
+                        // promote to "GuideSet" on a match, so that a later non-matching guide set in the
+                        // map cannot clobber the label back to "InRange" when multiple guide sets exist.
+                        plotData['ReferenceRangeSeries'] = "InRange";
                         Ext4.Object.each(this.guideSetDataMap, function(guideSetId, guideSetData) {
+                            // guideSetDataMap is keyed by guide set ID, so the iteration key guideSetId is a
+                            // String (JS object keys are always strings), whereas plotData.guideSetId is a Number
+                            // (set from the numeric server value in QCPlotHelperWrapper.processPlotDataRow).
+                            // Parse the String key to an int so this is a type-safe === comparison and we don't
+                            // rely on == coercion (mirrors the parseInt pattern in QCTrendPlotPanel.js).
+                            const guideSetIdInt = parseInt(guideSetId, 10);
                             // for truncating out of range guideset data  find first index of plotDate ending at guideset.trainingEnd
-                            if (plotData.guideSetId == guideSetId && plotData.inGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {
+                            if (plotData.guideSetId === guideSetIdInt && plotData.inGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {
                                 this.filterPoints[frag][plotData.MetricId]['filterPointsFirstIndex'] = j + 1;
-                                // ReferenceRangeSeries is used to separate series
                                 plotData['ReferenceRangeSeries'] = "GuideSet";
+                                return false; // stop once the matching guide set is found
                             }
-                            else {
-                                plotData['ReferenceRangeSeries'] = "InRange";
-                            }
-
                         }, this);
 
                         // for truncating out of range guideset data find last index of plotData starting from this.startDate
@@ -377,15 +383,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                             // for it. Flag only this entry rather than clearing the global this.filterQCPoints, so that
                             // other series still truncate and the separator / guide-set line break still render.
                             filterPointsData['skipTruncation'] = true;
-                            // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
-
-                            this.getStartDateField().setValue(this.formatDate(plotDataRows[i].data[filterPointsData['filterPointsFirstIndex']].AcquiredTime));
+                            // set the startDate field = acquired time of the point right before the experiment run range
+                            this.setStartDateFromFilterIndex(plotDataRows[i], filterPointsData['filterPointsFirstIndex']);
                         }
                         else { // skip 5 points
                             filterPointsData['filterPointsLastIndex'] = filterPointsData['filterPointsLastIndex'] - 6;
-                            // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
-                            // adding 1 as the point is right after filter last index
-                            this.getStartDateField().setValue(this.formatDate(plotDataRows[i].data[filterPointsData['filterPointsLastIndex'] + 1].AcquiredTime));
+                            // set the startDate field = acquired time of the point right after the new filter last index
+                            this.setStartDateFromFilterIndex(plotDataRows[i], filterPointsData['filterPointsLastIndex'] + 1);
                         }
                     }
                 }, this);
@@ -394,6 +398,42 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         }
 
         this.renderPlots();
+    },
+
+    // Sets the start-date form field from the AcquiredTime of a point identified by a filterPoints index.
+    // The filterPoints indices (filterPointsFirstIndex / filterPointsLastIndex) are computed against
+    // this.fragmentPlotData[label].data, which has injected type:'missing' placeholder entries spliced in
+    // (see the "add any missing dates" block in processPlotData). plotDataRow.data is the raw server array:
+    // it has no missing entries and is the only place AcquiredTime is available, so a fragmentPlotData-space
+    // index cannot be used against it directly. Translate the index to raw-space by counting the non-missing
+    // entries before it, and guard the lookup so a stale/out-of-range index can never throw.
+    setStartDateFromFilterIndex: function(plotDataRow, fragIndex) {
+        if (!plotDataRow || fragIndex == null) {
+            return;
+        }
+        const fragData = this.fragmentPlotData[plotDataRow.SeriesLabel] && this.fragmentPlotData[plotDataRow.SeriesLabel].data;
+        if (!fragData || fragData.length === 0) {
+            return;
+        }
+        // Walk back to the nearest real (non-missing) entry at or before the requested index
+        let idx = Math.min(fragIndex, fragData.length - 1);
+        while (idx >= 0 && fragData[idx] && fragData[idx].type === 'missing') {
+            idx--;
+        }
+        if (idx < 0) {
+            return;
+        }
+        // raw index = number of non-missing entries strictly before idx (missing entries exist only in fragData)
+        let rawIndex = 0;
+        for (let k = 0; k < idx; k++) {
+            if (!fragData[k] || fragData[k].type !== 'missing') {
+                rawIndex++;
+            }
+        }
+        const rawPoint = plotDataRow.data[rawIndex];
+        if (rawPoint && rawPoint.AcquiredTime) {
+            this.getStartDateField().setValue(this.formatDate(rawPoint.AcquiredTime));
+        }
     },
 
     renderPlots: function() {
