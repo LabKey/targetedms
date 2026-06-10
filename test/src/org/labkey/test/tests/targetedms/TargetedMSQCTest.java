@@ -307,6 +307,12 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertNotEquals(initialSVGText, qcPlotsWebPart.getSVGPlotText("precursorPlot0"));
         qcPlotsWebPart.setGroupXAxisValuesByDate(false);
 
+        // test option to group X-Axis values by Calendar (time-scaled date axis)
+        initialSVGText = qcPlotsWebPart.getSVGPlotText("precursorPlot0");
+        qcPlotsWebPart.setGroupXAxisValuesByCalendar(true);
+        assertNotEquals(initialSVGText, qcPlotsWebPart.getSVGPlotText("precursorPlot0"));
+        qcPlotsWebPart.setGroupXAxisValuesByCalendar(false);
+
         // test that plot0 changes based on scale
         for (QCPlotsWebPart.Scale scale : QCPlotsWebPart.Scale.values())
         {
@@ -409,6 +415,13 @@ public class TargetedMSQCTest extends TargetedMSTest
         stopImpersonating();
         goToProjectHome();
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+
+        // verify the Calendar X-axis grouping option also round-trips on refresh
+        qcPlotsWebPart.setGroupXAxisValuesByCalendar(true);
+        refresh();
+        qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        qcPlotsWebPart.waitForPlots(2);
+        assertTrue("Calendar X-Axis grouping not round tripped as expected", qcPlotsWebPart.isGroupXAxisValuesByCalendarChecked());
 
         // reset plot type selection
         qcPlotsWebPart.resetInitialQCPlotFields();

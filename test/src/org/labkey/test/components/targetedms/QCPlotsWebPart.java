@@ -270,6 +270,30 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         }
     }
 
+    public void setGroupXAxisValuesByCalendar(boolean check)
+    {
+        if (isGroupXAxisValuesByCalendarChecked() != check)
+        {
+            if (check)
+                doAndWaitForUpdate(() -> elementCache().xAxisGroupingCalendarRadio.check());
+            else
+                doAndWaitForUpdate(() -> elementCache().xAxisGroupingReplicateRadio.check());
+        }
+    }
+
+    public boolean isGroupXAxisValuesByCalendarChecked()
+    {
+        try
+        {
+            return elementCache().xAxisGroupingCalendarRadio.isSelected();
+        }
+        catch (NoSuchElementException | StaleElementReferenceException e)
+        {
+            // Fallback: if radios are not present yet, assume unchecked
+            return false;
+        }
+    }
+
     public void setShowAllPeptidesInSinglePlot(boolean check)
     {
         // 'check' means show all series combined in a single plot
@@ -918,6 +942,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
         RadioButton xAxisGroupingReplicateRadio = new RadioButton.RadioButtonFinder().withLabel("per replicate").findWhenNeeded(getDriver());
         RadioButton xAxisGroupingDateRadio = new RadioButton.RadioButtonFinder().withLabel("per date").findWhenNeeded(getDriver());
+        RadioButton xAxisGroupingCalendarRadio = new RadioButton.RadioButtonFinder().withLabel("calendar").findWhenNeeded(getDriver());
 
         RadioButton plotsCombinedRadio = new RadioButton.RadioButtonFinder().withLabel("combined").findWhenNeeded(getDriver());
         RadioButton plotsPerPrecursorRadio = new RadioButton.RadioButtonFinder().withLabel("per precursor").findWhenNeeded(getDriver());
