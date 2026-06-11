@@ -471,4 +471,12 @@
     <instrument id="MS:1003557" name="AXIMA Resonance" vendor="Shimadzu MALDI-TOF" description="Shimadzu AXIMA Resonance MALDI TOF mass spectrometerwith Ion Trap for MSn."/>
     <instrument id="MS:1003556" name="AXIMA-TOF²" vendor="Shimadzu MALDI-TOF" description="Shimadzu AXIMA-TOF² MALDI TOF/TOF mass spectrometer."/>
     <instrument id="MS:1003560" name="MALDI-8020 EasyCare" vendor="Shimadzu MALDI-TOF" description="Shimadzu MALDI-8020 EasyCare benchtop MALDI TOF mass spectrometer."/>
+    <instrument id="MS:1003995" name="timsMRMS" vendor="Bruker Daltonics" description="Bruker timsMRMS instrument combining trapped ion mobility spectrometry with magnetic resonance (FT-ICR) mass spectrometry."/>
+    <instrument id="MS:1003991" name="novus V55" vendor="SCIEX" description="SCIEX novus V55 triple quadrupole mass spectrometer."/>
+    <instrument id="MS:1003987" name="Orbitrap Tribrid Apex" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Tribrid Apex mass spectrometer with Tribrid architecture consisting of quadrupole mass filter, linear ion trap and Orbitrap mass analyzers."/>
+    <instrument id="MS:1003990" name="Orbitrap Excedion" vendor="Thermo Scientific" description="Thermo Scientific Orbitrap Excedion mass spectrometer."/>
+    <instrument id="MS:1003992" name="9500 Triple Quadrupole ICP-MS" vendor="Agilent" description="Agilent 9500 Triple Quadrupole ICP-MS inductively coupled plasma triple quadrupole mass spectrometer."/>
+    <instrument id="MS:1003993" name="InfinityLab Pro iQ" vendor="Agilent" description="Agilent InfinityLab Pro iQ single quadrupole LC mass detector."/>
+    <instrument id="MS:1003988" name="Xevo MRT P10" vendor="Waters" description="Waters Xevo MRT P10 quadrupole - multi-reflecting time-of-flight mass spectrometer."/>
+    <instrument id="MS:1003989" name="Cyclic IMS P20" vendor="Waters" description="Waters Cyclic IMS P20 multipass cyclic ion mobility quadrupole time-of-flight mass spectrometer."/>
 </instruments>
