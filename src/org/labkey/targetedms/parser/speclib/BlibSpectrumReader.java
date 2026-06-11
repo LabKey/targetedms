@@ -49,12 +49,14 @@ public class BlibSpectrumReader extends LibSpectrumReader
 {
     private static final Logger LOG = LogHelper.getLogger(BlibSpectrumReader.class, "Reading BiblioSpec library files (.blib)");
 
+    // BiblioSpec .blib has no separate metadata cache in this round, so metaConn and libConn are the same
+    // .blib connection; everything is read from libConn.
     @Override
-    protected @Nullable BlibSpectrum readSpectrum(Connection conn, LibSpectrum.SpectrumKey spectrumKey, Path blibPath) throws DataFormatException, SQLException
+    protected @Nullable BlibSpectrum readSpectrum(Connection metaConn, Connection libConn, LibSpectrum.SpectrumKey spectrumKey, Path blibPath) throws DataFormatException, SQLException
     {
         try
         {
-            BlibSpectrum spectrum = readBlibSpectrum(conn, spectrumKey.getModifiedPeptide(), spectrumKey.getCharge());
+            BlibSpectrum spectrum = readBlibSpectrum(libConn, spectrumKey.getModifiedPeptide(), spectrumKey.getCharge());
             if(spectrum == null)
                 return null;
             // Make sure that the Bibliospec spectrum has peaks.  Minimized libraries in Skyline can have
@@ -64,13 +66,13 @@ public class BlibSpectrumReader extends LibSpectrumReader
                 return null;
             }
 
-            readSpectrumPeaks(conn, spectrum);
+            readSpectrumPeaks(libConn, spectrum);
 
             if(spectrum.getRetentionTime() != null // retentionTime will be null if RetentionTimes table does not exist.
                     && redundantBlibExists(blibPath))
             {
                 // Get the redundant spectra IDs
-                addRedundantSpectrumInfo(conn, spectrum);
+                addRedundantSpectrumInfo(libConn, spectrum);
             }
 
             return spectrum;
@@ -94,14 +96,14 @@ public class BlibSpectrumReader extends LibSpectrumReader
     }
 
     @Override
-    protected @Nullable LibSpectrum readRedundantSpectrum(Connection conn, LibSpectrum.SpectrumKey spectrumKey) throws DataFormatException, SQLException
+    protected @Nullable LibSpectrum readRedundantSpectrum(Connection metaConn, Connection libConn, LibSpectrum.SpectrumKey spectrumKey) throws DataFormatException, SQLException
     {
         // Returns a BlibSpectrum from the redundant library (.redundant.blib)
         // redundantRefSpectrumId is the database id of the redundant spectrum match in .redundant.blib SQLite file
-        BlibSpectrum spectrum = readRedundantSpectrum(conn, spectrumKey.getRedundantRefSpectrumId());
+        BlibSpectrum spectrum = readRedundantSpectrum(libConn, spectrumKey.getRedundantRefSpectrumId());
         if(spectrum == null)
             return null;
-        readSpectrumPeaks(conn, spectrum);
+        readSpectrumPeaks(libConn, spectrum);
 
         return spectrum;
     }
@@ -156,11 +158,11 @@ public class BlibSpectrumReader extends LibSpectrumReader
 
     @NotNull
     @Override
-    protected List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> readRetentionTimes(Connection conn, String modifiedPeptide, String blibFilePath) throws SQLException
+    protected List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> readRetentionTimes(Connection metaConn, String modifiedPeptide, String blibFilePath) throws SQLException
     {
         try
         {
-            if(!hasValidRtTable(conn))
+            if(!hasValidRtTable(metaConn))
             {
                 return Collections.emptyList();
             }
@@ -169,7 +171,7 @@ public class BlibSpectrumReader extends LibSpectrumReader
                     " INNER JOIN SpectrumSourceFiles ssf ON (rt.SpectrumSourceID = ssf.id)" +
                     " WHERE rs.peptideModSeq = ?";
 
-            try(PreparedStatement stmt = conn.prepareStatement(sql))
+            try(PreparedStatement stmt = metaConn.prepareStatement(sql))
             {
                 stmt.setString(1, modifiedPeptide);
                 List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> retentionTimes = new ArrayList<>();

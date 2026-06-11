@@ -45,9 +45,17 @@ import java.util.zip.Inflater;
 public class ElibSpectrumReader extends LibSpectrumReader
 {
     @Override
-    protected @Nullable ElibSpectrum readSpectrum(Connection conn, SpectrumKey spectrumKey, Path libPath) throws DataFormatException, SQLException
+    protected @Nullable Connection openMetadataConnection(Container container, String localLibPath)
     {
-        return readElibSpectrum(conn, spectrumKey, true);
+        // Serve the row-metadata queries from a covering-indexed cache next to the .elib when one is
+        // available (built lazily in the background on first access). Peaks are still read from the .elib.
+        return ElibCache.openIfReady(localLibPath);
+    }
+
+    @Override
+    protected @Nullable ElibSpectrum readSpectrum(Connection metaConn, Connection libConn, SpectrumKey spectrumKey, Path libPath) throws DataFormatException, SQLException
+    {
+        return readElibSpectrum(metaConn, libConn, spectrumKey, true);
     }
 
     @Override
@@ -57,9 +65,9 @@ public class ElibSpectrumReader extends LibSpectrumReader
     }
 
     @Override
-    public @Nullable ElibSpectrum readRedundantSpectrum(Connection conn, SpectrumKey spectrumKey) throws SQLException, DataFormatException
+    public @Nullable ElibSpectrum readRedundantSpectrum(Connection metaConn, Connection libConn, SpectrumKey spectrumKey) throws SQLException, DataFormatException
     {
-        return readElibSpectrum(conn, spectrumKey, false);
+        return readElibSpectrum(metaConn, libConn, spectrumKey, false);
     }
 
     @Override
@@ -68,7 +76,9 @@ public class ElibSpectrumReader extends LibSpectrumReader
         return "SELECT PeptideModSeq FROM entries WHERE PeptideSeq = ?";
     }
 
-    private ElibSpectrum readElibSpectrum(Connection conn, SpectrumKey spectrumKey, boolean getRedundant) throws SQLException, DataFormatException
+    // Reads the row metadata from metaConn (the .elib cache when available, otherwise the .elib itself) and
+    // the peaks for the best-scoring spectrum from libConn (always the .elib).
+    private ElibSpectrum readElibSpectrum(Connection metaConn, Connection libConn, SpectrumKey spectrumKey, boolean getRedundant) throws SQLException, DataFormatException
     {
         StringBuilder sql = new StringBuilder("SELECT PeptideModSeq, PrecursorCharge, PrecursorMz, SourceFile, RTInSeconds, Score FROM entries")
                          .append(" WHERE PeptideModSeq = ?").append(" AND PrecursorCharge = ?");
@@ -78,7 +88,7 @@ public class ElibSpectrumReader extends LibSpectrumReader
             }
 
         List<ElibSpectrum> spectra = new ArrayList<>();
-        try (PreparedStatement stmt = conn.prepareStatement(sql.toString()))
+        try (PreparedStatement stmt = metaConn.prepareStatement(sql.toString()))
         {
             stmt.setString(1, spectrumKey.getModifiedPeptide());
             stmt.setInt(2, spectrumKey.getCharge());
@@ -107,7 +117,7 @@ public class ElibSpectrumReader extends LibSpectrumReader
         {
             sortElibSpectra(spectra);
             ElibSpectrum bestSpectrum = spectra.get(0);
-            readPeaks(conn, bestSpectrum);
+            readPeaks(libConn, bestSpectrum);
 
             if(getRedundant)
             {
@@ -130,9 +140,10 @@ public class ElibSpectrumReader extends LibSpectrumReader
         return null;
     }
 
-    private void readPeaks(Connection conn, ElibSpectrum spectrum) throws SQLException, DataFormatException
+    // Peaks always come from the .elib (libConn); the cache holds metadata only.
+    private void readPeaks(Connection libConn, ElibSpectrum spectrum) throws SQLException, DataFormatException
     {
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT MassEncodedLength, MassArray, IntensityEncodedLength, IntensityArray FROM entries " +
+        try (PreparedStatement stmt = libConn.prepareStatement("SELECT MassEncodedLength, MassArray, IntensityEncodedLength, IntensityArray FROM entries " +
                 "WHERE PrecursorCharge = ? AND PeptideModSeq = ? AND SourceFile = ?"))
         {
             stmt.setInt(1, spectrum.getPrecursorCharge());
@@ -193,17 +204,25 @@ public class ElibSpectrumReader extends LibSpectrumReader
     {
         spectra.sort(Comparator.comparing(ElibSpectrum::getPeptideModSeq)
                 .thenComparing(ElibSpectrum::getPrecursorCharge)
-                .thenComparing(ElibSpectrum::getScore)); // Assuming this is Qvalue; "Score" is not a nullable column;
-                                                         // ascending sort will give us the best scoring spectrum
-                                                         // for a modified sequence + charge at the top
+                .thenComparing(ElibSpectrum::getScore) // Assuming this is Qvalue; "Score" is not a nullable column;
+                                                       // ascending sort will give us the best scoring spectrum
+                                                       // for a modified sequence + charge at the top
+                .thenComparing(ElibSpectrum::getSourceFile, Comparator.nullsLast(Comparator.naturalOrder())));
+                                                       // Final tie-breaker on SourceFile so the chosen "best"
+                                                       // spectrum and the ordering of the redundant list are fully
+                                                       // determined by the data, not by the order rows happen to
+                                                       // come back from the query. Without this, two rows with an
+                                                       // identical Score would keep their query order (List.sort is
+                                                       // stable), and the .elib and the metadata cache use different
+                                                       // indexes, so they can return such ties in a different order.
     }
 
     @Override
-    protected @NotNull List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> readRetentionTimes(Connection conn, String modifiedPeptide, String libPath) throws SQLException
+    protected @NotNull List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> readRetentionTimes(Connection metaConn, String modifiedPeptide, String libPath) throws SQLException
     {
         List<ElibSpectrum> spectra = new ArrayList<>();
 
-        try(PreparedStatement stmt = conn.prepareStatement("SELECT PeptideModSeq, PrecursorCharge, RTInSeconds, SourceFile, Score FROM entries WHERE PeptideModSeq = ?"))
+        try(PreparedStatement stmt = metaConn.prepareStatement("SELECT PeptideModSeq, PrecursorCharge, RTInSeconds, SourceFile, Score FROM entries WHERE PeptideModSeq = ?"))
         {
             stmt.setString(1, modifiedPeptide);
             try(ResultSet rs = stmt.executeQuery())

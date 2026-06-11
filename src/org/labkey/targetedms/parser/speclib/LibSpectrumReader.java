@@ -96,8 +96,21 @@ public abstract class LibSpectrumReader
 
         try (Connection conn = getLibConnection(localLibPath))
         {
-            SpectrumKey matchingKey = getMatchingModSeqSpecKey(conn, key);
-            return key.forRedundantSpectrum() ? readRedundantSpectrum(conn, matchingKey) : readSpectrum(conn, matchingKey, libPath);
+            // metaConn is a faster, covering-indexed source for the row-metadata queries (e.g. an .elib
+            // cache) when one is available; peaks are always read from the library connection (conn). When
+            // there is no such source, metaConn is null and conn is used for metadata too (the original path).
+            Connection metaConn = openMetadataConnection(container, localLibPath);
+            try
+            {
+                Connection meta = metaConn != null ? metaConn : conn;
+                SpectrumKey matchingKey = getMatchingModSeqSpecKey(meta, key);
+                return key.forRedundantSpectrum() ? readRedundantSpectrum(meta, conn, matchingKey) : readSpectrum(meta, conn, matchingKey, libPath);
+            }
+            finally
+            {
+                if (metaConn != null)
+                    metaConn.close();
+            }
         }
     }
 
@@ -110,8 +123,20 @@ public abstract class LibSpectrumReader
 
         try (Connection conn = getLibConnection(libFilePath))
         {
-            String matchingModSeq = findMatchingModifiedSequence(conn, modifiedPeptide, getMatchingModSeqLookupSql());
-            return readRetentionTimes(conn, matchingModSeq, libFilePath);
+            // Retention times are metadata-only (no peaks), so read them from the faster cache connection
+            // when one is available, otherwise from the library connection.
+            Connection metaConn = openMetadataConnection(container, libFilePath);
+            try
+            {
+                Connection meta = metaConn != null ? metaConn : conn;
+                String matchingModSeq = findMatchingModifiedSequence(meta, modifiedPeptide, getMatchingModSeqLookupSql());
+                return readRetentionTimes(meta, matchingModSeq, libFilePath);
+            }
+            finally
+            {
+                if (metaConn != null)
+                    metaConn.close();
+            }
         }
         catch(SQLException e)
         {
@@ -119,14 +144,27 @@ public abstract class LibSpectrumReader
         }
     }
 
+    /**
+     * Subclasses may provide a separate, faster metadata source (a covering-indexed cache built alongside
+     * the library) to serve the row-metadata queries, keeping the main library connection for peak blobs.
+     * Returns null to read metadata from the library connection itself (the default).
+     *
+     * <p>The caller closes the returned connection.
+     */
     @Nullable
-    protected abstract LibSpectrum readSpectrum(Connection conn, SpectrumKey spectrumKey, Path libPath) throws DataFormatException, SQLException;
+    protected Connection openMetadataConnection(Container container, String localLibPath)
+    {
+        return null;
+    }
+
+    @Nullable
+    protected abstract LibSpectrum readSpectrum(Connection metaConn, Connection libConn, SpectrumKey spectrumKey, Path libPath) throws DataFormatException, SQLException;
 
     @Nullable
     protected abstract Path getRedundantLibPath(Container container, Path libPath);
 
     @Nullable
-    protected abstract LibSpectrum readRedundantSpectrum(Connection conn, SpectrumKey spectrumKey) throws DataFormatException, SQLException;
+    protected abstract LibSpectrum readRedundantSpectrum(Connection metaConn, Connection libConn, SpectrumKey spectrumKey) throws DataFormatException, SQLException;
 
     // The SQL should take a single parameter, the unmodified peptide sequence
     abstract String getMatchingModSeqLookupSql();
@@ -143,7 +181,7 @@ public abstract class LibSpectrumReader
     }
 
     @NotNull
-    protected abstract List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> readRetentionTimes(Connection conn, String modifiedPeptide, String libPath) throws SQLException;
+    protected abstract List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> readRetentionTimes(Connection metaConn, String modifiedPeptide, String libPath) throws SQLException;
 
 
     private static final int LIBCACHE_LIMIT = 1000;
