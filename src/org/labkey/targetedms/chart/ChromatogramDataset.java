@@ -901,6 +901,13 @@ public abstract class ChromatogramDataset
 
         protected List<LibrarySpectrumMatchGetter.PeptideIdRtInfo> getPeptideIdRetentionTimes()
         {
+            // Skip peptide-ID retention-time markers for guests when the library is large. Reading large libraries can be slow over network storage.
+            // See LibrarySpectrumMatchGetter.blockSpectraForGuest.
+            if (LibrarySpectrumMatchGetter.blockSpectraForGuest(_user, _run.getId()))
+            {
+                return Collections.emptyList();
+            }
+
             SampleFile sampleFile = ReplicateManager.getSampleFile(_pChromInfo.getSampleFileId());
 
             // TODO: May want to move LocalDirectory up to controller, where others are created. Sharing probably desired.
