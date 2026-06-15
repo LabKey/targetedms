@@ -18,6 +18,7 @@ package org.labkey.targetedms;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.SimpleFilter;
@@ -43,12 +44,14 @@ import java.util.Set;
 /**
  * Container-scoping integration tests for {@link TargetedMSController} actions that resolve an object by a
  * global id. Each test sets up the same object in one folder and confirms the action rejects a request that addresses
+ * via the wrong container
  */
 public class TargetedMSContainerScopingTest extends AbstractContainerScopingTest
 {
     private static final Logger LOG = LogHelper.getLogger(TargetedMSContainerScopingTest.class, "TargetedMS container scoping tests");
     private static final GUID DOC_GUID = new GUID("8f1c2a44-3c5e-4f0a-9d2b-6e7a1b3c5d9e");
 
+    @Before
     @After
     public void cleanupAuditLog()
     {
@@ -87,7 +90,6 @@ public class TargetedMSContainerScopingTest extends AbstractContainerScopingTest
     @Test
     public void auditLogExtraInfoIsContainerScoped() throws Exception
     {
-        UnitTestUtil.cleanupDatabase(DOC_GUID);
         Container owner = createContainer("AuditOwner");
         Container other = createContainer("AuditOther");
 
