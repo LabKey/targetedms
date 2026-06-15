@@ -2401,12 +2401,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 var pointsData = precursorInfo.data;
                 var expDataArr = [];
 
-                // startIndex/endIndex are seqValues (x-axis positions), not array indices. Once out-of-range
-                // points are truncated, the array positions no longer line up with seqValue, so collect the
-                // experiment-range values by matching seqValue rather than indexing pointsData directly.
-                // In multi-series mode pointsData holds both metrics' points (the same seqValues repeated), so
-                // restrict to the primary metric - otherwise the experiment-range mean/std-dev/%CV would blend
-                // values from two different metrics into a single, meaningless statistic.
+                // match on seqValue (not array index); restrict to primary metric so multi-series doesn't
+                // blend both metrics into one mean/std-dev/%CV
                 for (var i = 0; i < pointsData.length; i++) {
                     if (pointsData[i].seqValue >= startIndex && pointsData[i].seqValue <= endIndex
                             && pointsData[i].MetricId === this.metric

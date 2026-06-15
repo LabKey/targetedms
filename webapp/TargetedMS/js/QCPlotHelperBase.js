@@ -330,18 +330,11 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                         }
 
 
-                        // ReferenceRangeSeries is used to separate series. Default to "InRange" and only
-                        // promote to "GuideSet" on a match, so that a later non-matching guide set in the
-                        // map cannot clobber the label back to "InRange" when multiple guide sets exist.
+                        // default "InRange"; promote to "GuideSet" on match so a later guide set can't clobber it
                         plotData['ReferenceRangeSeries'] = "InRange";
                         Ext4.Object.each(this.guideSetDataMap, function(guideSetId, guideSetData) {
-                            // guideSetDataMap is keyed by guide set ID, so the iteration key guideSetId is a
-                            // String (JS object keys are always strings), whereas plotData.guideSetId is a Number
-                            // (set from the numeric server value in QCPlotHelperWrapper.processPlotDataRow).
-                            // Parse the String key to an int so this is a type-safe === comparison and we don't
-                            // rely on == coercion (mirrors the parseInt pattern in QCTrendPlotPanel.js).
+                            // guideSetId (map key) is a String; plotData.guideSetId a Number - parse for ===
                             const guideSetIdInt = parseInt(guideSetId, 10);
-                            // for truncating out of range guideset data  find first index of plotDate ending at guideset.trainingEnd
                             if (plotData.guideSetId === guideSetIdInt && plotData.inGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {
                                 this.filterPoints[frag][plotData.MetricId]['filterPointsFirstIndex'] = j + 1;
                                 plotData['ReferenceRangeSeries'] = "GuideSet";
@@ -400,13 +393,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         this.renderPlots();
     },
 
-    // Sets the start-date form field from the AcquiredTime of a point identified by a filterPoints index.
-    // The filterPoints indices (filterPointsFirstIndex / filterPointsLastIndex) are computed against
-    // this.fragmentPlotData[label].data, which has injected type:'missing' placeholder entries spliced in
-    // (see the "add any missing dates" block in processPlotData). plotDataRow.data is the raw server array:
-    // it has no missing entries and is the only place AcquiredTime is available, so a fragmentPlotData-space
-    // index cannot be used against it directly. Translate the index to raw-space by counting the non-missing
-    // entries before it, and guard the lookup so a stale/out-of-range index can never throw.
+    // filterPoints indices include injected 'missing' entries, but AcquiredTime only exists on raw
+    // plotDataRow.data - translate to raw-space by counting non-missing entries, and guard the lookup.
     setStartDateFromFilterIndex: function(plotDataRow, fragIndex) {
         if (!plotDataRow || fragIndex == null) {
             return;
@@ -415,7 +403,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         if (!fragData || fragData.length === 0) {
             return;
         }
-        // Walk back to the nearest real (non-missing) entry at or before the requested index
+        // back up to the nearest non-missing entry at or before the index
         let idx = Math.min(fragIndex, fragData.length - 1);
         while (idx >= 0 && fragData[idx] && fragData[idx].type === 'missing') {
             idx--;
@@ -423,8 +411,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         if (idx < 0) {
             return;
         }
-        // raw index = number of non-missing entries strictly before idx (missing entries exist only in fragData)
-        let rawIndex = 0;
+        let rawIndex = 0; // count of non-missing entries before idx
+
         for (let k = 0; k < idx; k++) {
             if (!fragData[k] || fragData[k].type !== 'missing') {
                 rawIndex++;
@@ -479,28 +467,27 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
     truncateOutOfRangeQCPoints: function() {
         Ext4.Object.each(this.fragmentPlotData, function(label, fragmentData) {
-            // traverse plotData backwards from firstIndex to lastIndex and
-            // remove them from the array
             if (this.filterQCPoints && this.filterPoints && this.filterPoints[label]) {
 
-                // when we're plotting two different metrics at the same time, then we
-                // have repeated dates (from oldest to newest for metric 1, and then oldest to newest for metric 2, all in the same array).
-                // so, removing the array elements from the back
-                const filterPointsReversed = Object.keys(this.filterPoints[label]).reverse();
-                const lab  = label;
-
-                filterPointsReversed.forEach(metricId => {
-                    if (this.filterPoints[lab][metricId]['skipTruncation']) {
-                        return; // too few out-of-range points for this series/metric to truncate
+                // Points are date-sorted with both metrics interleaved, so the out-of-range block (guide set
+                // training end -> start date) is one contiguous range spanning both metrics. Splicing the
+                // per-metric ranges separately would overlap and corrupt indices, so combine them: start after
+                // the last training point of any metric, end at the last "first in-range" point of any metric.
+                let firstIndex, lastIndex;
+                Ext4.Object.each(this.filterPoints[label], function(metricId, range) {
+                    if (range['skipTruncation'] || range['filterPointsFirstIndex'] === undefined
+                            || range['filterPointsLastIndex'] === undefined) {
+                        return;
                     }
-                    let firstIndex = this.filterPoints[lab][metricId]['filterPointsFirstIndex'];
-                    let lastIndex = this.filterPoints[lab][metricId]['filterPointsLastIndex'];
+                    firstIndex = firstIndex === undefined ? range['filterPointsFirstIndex'] : Math.max(firstIndex, range['filterPointsFirstIndex']);
+                    lastIndex = lastIndex === undefined ? range['filterPointsLastIndex'] : Math.max(lastIndex, range['filterPointsLastIndex']);
+                }, this);
 
+                if (firstIndex !== undefined && lastIndex !== undefined) {
                     for (let i = lastIndex; i >= firstIndex; i--) {
                         fragmentData.data.splice(i, 1);
                     }
-                });
-
+                }
             }
         }, this);
     },
