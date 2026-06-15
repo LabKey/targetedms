@@ -1509,7 +1509,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     pathMouseOver : function(event, pathData, layerSel, path, valueName, config) {
         if (pathData.group) {
-            this.highlightFragmentSeries(pathData.group);
+            // pass base fragment, like the other highlight triggers
+            this.highlightFragmentSeries(pathData.group.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]);
         }
     },
 
