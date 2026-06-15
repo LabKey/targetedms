@@ -2070,6 +2070,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             let label = checkbox.closest('label');
             if (label) {
                 label.addEventListener('mouseenter', function() {
+                    clearTimeout(precursorLeaveTimer); // cancel a pending precursor reset when moving sub-item -> header
                     let hidden = me.hiddenPrecursorSeries || {};
                     let hiddenFragments = group.fragments.filter(function(f) { return !!hidden[f]; });
                     if (hiddenFragments.length > 0) {
