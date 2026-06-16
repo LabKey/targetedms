@@ -1160,6 +1160,56 @@ public class TargetedMSQCTest extends TargetedMSTest
         assertEquals(skylineDocName, drt.getDataAsText(row, "File"));
     }
 
+    @Test
+    public void testQCPlotYAxisZoom()
+    {
+        PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
+        QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+        qcPlotsWebPart.filterQCPlotsToInitialData(PRECURSORS.length, true);
+
+        List<QCPlot> plots = qcPlotsWebPart.getPlots();
+        assertTrue("Expected at least 2 plots for y-axis zoom test", plots.size() >= 2);
+
+        // 1. Verify zooming is possible: drag on y-axis, confirm zoom, border appears
+        log("Verifying y-axis zoom can be applied");
+        qcPlotsWebPart.performYAxisZoom(plots.get(0));
+        waitForElement(Locator.css("svg rect.y-zoom-border"), WAIT_FOR_JAVASCRIPT);
+
+        plots = qcPlotsWebPart.getPlots();
+        QCPlot firstPlot = plots.get(0);
+        QCPlot secondPlot = plots.get(1);
+
+        assertTrue("Zoom border should appear on first plot after zoom", qcPlotsWebPart.isZoomActive(firstPlot));
+
+        // 2. Verify zoom is per-plot: second plot is unaffected
+        log("Verifying zoom is independent per plot");
+        assertFalse("Second plot should not be zoomed", qcPlotsWebPart.isZoomActive(secondPlot));
+
+        // 3. Verify reset works: clicking the zoomed y-axis (zoom-out cursor) resets zoom
+        log("Verifying clicking the y-axis resets zoom on the target plot");
+        qcPlotsWebPart.clickResetZoom(firstPlot);
+        waitForElementToDisappear(Locator.css("svg rect.y-zoom-border"), WAIT_FOR_JAVASCRIPT);
+
+        plots = qcPlotsWebPart.getPlots();
+        firstPlot = plots.get(0);
+
+        assertFalse("Zoom border should be gone after reset", qcPlotsWebPart.isZoomActive(firstPlot));
+
+        // 4. Verify zoom is not persisted after page reload
+        log("Verifying zoom state is cleared on page reload");
+        qcPlotsWebPart.performYAxisZoom(firstPlot);
+        waitForElement(Locator.css("svg rect.y-zoom-border"), WAIT_FOR_JAVASCRIPT);
+
+        refresh();
+        qcDashboard = new PanoramaDashboard(this);
+        qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
+
+        plots = qcPlotsWebPart.getPlots();
+        firstPlot = plots.get(0);
+
+        assertFalse("Zoom should not persist after page reload", qcPlotsWebPart.isZoomActive(firstPlot));
+    }
+
     private void createAndInsertAnnotations()
     {
         clickTab("Annotations");

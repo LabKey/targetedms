@@ -83,6 +83,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     trailingRuns: null,
     minWidth: 1250, // Keep in sync with the width defined in qcTrendPlot.jsp
     width: '100%',
+    yZoomByPlot: {},
 
     SHOW_ALL_IN_A_SINGLE_PLOT: 'Show all series in a single plot',
     LABEL_WIDTH: 115,
@@ -1051,9 +1052,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 layout: { type: 'hbox' },
                 defaults: { xtype: 'radio', name: 'xAxisGrouping', listeners: { change: onChange } },
                 items: [
-                    { boxLabel: 'per replicate', width: colWidths[0], id: 'x-axis-grouping-replicate', inputValue: 'replicate', checked: this.groupedX === false },
-                    { boxLabel: 'per date', width: colWidths[1], id: 'x-axis-grouping-date', inputValue: 'date', checked: this.groupedX === true && this.calendarX !== true },
-                    { boxLabel: 'calendar', width: colWidths[2], id: 'x-axis-grouping-calendar', inputValue: 'calendar', checked: this.groupedX === true && this.calendarX === true }
+                    { boxLabel: 'per replicate', width: colWidths[0], id: 'x-axis-grouping-replicate', inputValue: 'replicate', checked: this.groupedX === false, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'X-axis grouping: per replicate'}); } } },
+                    { boxLabel: 'per date', width: colWidths[1], id: 'x-axis-grouping-date', inputValue: 'date', checked: this.groupedX === true && this.calendarX !== true, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'X-axis grouping: per date'}); } } },
+                    { boxLabel: 'calendar', width: colWidths[2], id: 'x-axis-grouping-calendar', inputValue: 'calendar', checked: this.groupedX === true && this.calendarX === true, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'X-axis grouping: calendar'}); } } }
                 ]
             });
         }
@@ -1070,8 +1071,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 columns: 2,
                 vertical: false,
                 items: [
-                    { boxLabel: 'per precursor', name: 'showPlots', id: 'plots-per-precursor', inputValue: 'per-precursor', checked: this.singlePlot === false },
-                    { boxLabel: 'combined', name: 'showPlots', id: 'plots-combined', inputValue: 'combined', checked: this.singlePlot === true }
+                    { boxLabel: 'per precursor', name: 'showPlots', id: 'plots-per-precursor', inputValue: 'per-precursor', checked: this.singlePlot === false, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Plots: per precursor'}); } } },
+                    { boxLabel: 'combined', name: 'showPlots', id: 'plots-combined', inputValue: 'combined', checked: this.singlePlot === true, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Plots: combined'}); } } }
                 ],
                 listeners: {
                     scope: this,
@@ -1118,8 +1119,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 layout: { type: 'hbox' },
                 defaults: { xtype: 'radio', name: 'excludedSamples', listeners: { change: onChange } },
                 items: [
-                    { boxLabel: 'show', width: colWidths[0], id: 'excluded-replicates-show', inputValue: 'show', checked: this.showExcluded === true },
-                    { boxLabel: 'hide', width: colWidths[1], id: 'excluded-replicates-hide', inputValue: 'hide', checked: this.showExcluded === false }
+                    { boxLabel: 'show', width: colWidths[0], id: 'excluded-replicates-show', inputValue: 'show', checked: this.showExcluded === true, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Excluded replicates: show'}); } } },
+                    { boxLabel: 'hide', width: colWidths[1], id: 'excluded-replicates-hide', inputValue: 'hide', checked: this.showExcluded === false, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Excluded replicates: hide'}); } } }
                 ]
             });
         }
@@ -1136,8 +1137,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 columns: 2,
                 vertical: false,
                 items: [
-                    { boxLabel: 'show', id: 'excluded-precursors-show', name: 'excludedPrecursors', inputValue: 'show', checked: this.showExcludedPrecursors === true },
-                    { boxLabel: 'hide', id: 'excluded-precursors-hide', name: 'excludedPrecursors', inputValue: 'hide', checked: this.showExcludedPrecursors === false }
+                    { boxLabel: 'show', id: 'excluded-precursors-show', name: 'excludedPrecursors', inputValue: 'show', checked: this.showExcludedPrecursors === true, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Excluded precursors: show'}); } } },
+                    { boxLabel: 'hide', id: 'excluded-precursors-hide', name: 'excludedPrecursors', inputValue: 'hide', checked: this.showExcludedPrecursors === false, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Excluded precursors: hide'}); } } }
                 ],
                 listeners: {
                     scope: this,
@@ -1170,8 +1171,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 columns: 2,
                 vertical: false,
                 items: [
-                    { boxLabel: 'always show', id: 'reference-guide-set-show', name: 'referenceGuideSets', inputValue: 'show', checked: this.showReferenceGS === true },
-                    { boxLabel: 'when in date range', id: 'reference-guide-set-hide', name: 'referenceGuideSets', inputValue: 'hide', checked: this.showReferenceGS === false }
+                    { boxLabel: 'always show', id: 'reference-guide-set-show', name: 'referenceGuideSets', inputValue: 'show', checked: this.showReferenceGS === true, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Reference guide sets: always show'}); } } },
+                    { boxLabel: 'when in date range', id: 'reference-guide-set-hide', name: 'referenceGuideSets', inputValue: 'hide', checked: this.showReferenceGS === false, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Reference guide sets: when in date range'}); } } }
                 ],
                 listeners: {
                     scope: this,
@@ -1239,8 +1240,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         Ext4.get(this.plotDivId).mask("Loading...");
     },
 
-    displayTrendPlot: function() {
-
+    displayTrendPlot: function(preserveZoom) {
+        if (!preserveZoom) {
+            this.yZoomByPlot = {};
+        }
         this.setBrushingEnabled(false);
         this.updateSelectedAnnotations();
         this.setLoadingMsg();
@@ -1309,11 +1312,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     getPaginationBtns: function(numOfPrecursors) {
         var btnHtml = '';
 
-        btnHtml += '<span class="qc-paging-prev ' + (this.pagingStartIndex > 0 ? 'qc-paging-icon-enabled' : 'qc-paging-icon-disabled')
-                + '"><i class="fa fa-angle-left"></i></span>';
+        btnHtml += '<button type="button" class="qc-paging-prev ' + (this.pagingStartIndex > 0 ? 'qc-paging-icon-enabled' : 'qc-paging-icon-disabled')
+                + '" aria-label="Previous page"' + (this.pagingStartIndex > 0 ? '' : ' disabled') + '><i class="fa fa-angle-left" aria-hidden="true"></i></button>';
 
-        btnHtml += '<span class="qc-paging-next ' + (this.pagingEndIndex < numOfPrecursors ? 'qc-paging-icon-enabled' : 'qc-paging-icon-disabled')
-                + '"><i class="fa fa-angle-right"></i></span>';
+        btnHtml += '<button type="button" class="qc-paging-next ' + (this.pagingEndIndex < numOfPrecursors ? 'qc-paging-icon-enabled' : 'qc-paging-icon-disabled')
+                + '" aria-label="Next page"' + (this.pagingEndIndex < numOfPrecursors ? '' : ' disabled') + '><i class="fa fa-angle-right" aria-hidden="true"></i></button>';
 
         return btnHtml;
     },
@@ -2257,6 +2260,52 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         }
     },
 
+    getYZoomDomain: function(plotId) {
+        let entry = this.yZoomByPlot && this.yZoomByPlot[plotId];
+        if (!entry || (!entry.left && !entry.right)) return null;
+        return entry;
+    },
+
+    incrementMetric: function(metricName) {
+        if (LABKEY.user && LABKEY.user.isGuest) {
+            return;
+        }
+        LABKEY.Ajax.request({
+            url: LABKEY.ActionURL.buildURL('core', 'incrementClientSideMetricCount.api'),
+            method: 'POST',
+            jsonData: { featureArea: 'panoramaQCPlot', metricName: metricName },
+            failure: function(response) { console.error('Failed to track metric ' + metricName + ':', response); }
+        });
+    },
+
+    applyYZoom: function(plotId, yMin, yMax, axis) {
+        if (!this.yZoomByPlot) {
+            this.yZoomByPlot = {};
+        }
+        if (!this.yZoomByPlot[plotId]) {
+            this.yZoomByPlot[plotId] = {};
+        }
+        this.yZoomByPlot[plotId][axis] = [yMin, yMax];
+        this.incrementMetric('yAxisZoom');
+        this.processPlotData();
+    },
+
+    resetYZoom: function(plotId, axis) {
+        if (this.yZoomByPlot && this.yZoomByPlot[plotId]) {
+            if (axis) {
+                delete this.yZoomByPlot[plotId][axis];
+                if (!this.yZoomByPlot[plotId].left && !this.yZoomByPlot[plotId].right) {
+                    delete this.yZoomByPlot[plotId];
+                }
+            }
+            else {
+                delete this.yZoomByPlot[plotId];
+            }
+        }
+        this.incrementMetric('yAxisZoomReset');
+        this.processPlotData();
+    },
+
     getSvgElForPlot : function(plot) {
         return d3.select('#' + plot.renderTo + ' svg');
     },
@@ -2568,72 +2617,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             return '#' + d['Color'];
         };
 
-        let annotations = this.getSvgElForPlot(plot).selectAll("path.annotation").data(this.annotationData)
-                .enter().append("path").attr("class", "annotation")
-                .attr("d", this.annotationShape(4)).attr('transform', transformAcc)
-                .style("fill", colorAcc).style("stroke", colorAcc);
-
-        // add mouseover effects for fun
-        let mouseOn = function(pt, strokeWidth, d) {
-            d3.select(pt).transition().duration(800).attr("stroke-width", strokeWidth).ease("elastic");
-
-            if (!pt._tippy) {
-                let date = new Date(d['Date']);
-                let dateStr = me.formatDate(date, date.getHours() !== 0 || date.getMinutes() !== 0 || date.getSeconds() !== 0);
-                let content = "<table>"
-                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Created By:</td><td>" + LABKEY.Utils.encodeHtml(d['DisplayName']) + "</td></tr>"
-                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Type:</td><td>" + LABKEY.Utils.encodeHtml(d['Name']) + "</td></tr>"
-                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Date:</td><td>" + LABKEY.Utils.encodeHtml(dateStr) + "</td></tr>"
-                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Description:</td><td>" + LABKEY.Utils.encodeHtml(d['Description']) + "</td></tr>";
-
-                if (d['ContainerPath'] && d['ContainerPath'] !== LABKEY.ActionURL.getContainer()) {
-                    let containerPath = LABKEY.Utils.encodeHtml(d['ContainerPath']);
-                    if (!containerPath.startsWith('/')) {
-                        containerPath = '/' + containerPath;
-                    }
-                    content += "<tr><td style='vertical-align: top; padding-right: 5px;'>Shared From:</td><td>" + containerPath + "</td></tr>";
-                }
-                content += "</table>";
-
-                tippy(pt, {
-                    content: content,
-                    allowHTML: true,
-                    arrow: true,
-                    theme: 'light-border',
-                    placement: 'top',
-                    offset: [0, 8],
-                    onMount(instance) {
-                        const tippyBox = instance.popper.querySelector('.tippy-box');
-                        const tippyContent = instance.popper.querySelector('.tippy-content');
-                        const tippyArrow = instance.popper.querySelector('.tippy-arrow');
-
-                        if (tippyBox) {
-                            tippyBox.style.color = 'black';
-                            tippyBox.style.backgroundColor = 'white';
-                            tippyBox.style.border = '1px solid black';
-                        }
-                        if (tippyContent) {
-                            tippyContent.style.padding = '6px';
-                        }
-                        if (tippyArrow) {
-                            tippyArrow.style.bottom = '-1px';
-                        }
-                    }
-                });
-            }
-        };
-        var mouseOff = function(pt) {
-            d3.select(pt).transition().duration(800).attr("stroke-width", 1).ease("elastic");
-        };
-        annotations.on("mouseover", function(d){ return mouseOn(this, 3, d); });
-        annotations.on("mouseout", function(){ return mouseOff(this); });
-
-        if (this.canUserEdit()) {
-            annotations.on("click", function (d) {
-                me.openAnnotationDialog(false, d).show();
-            });
-        }
-
         // Add add-annotation markers with '+' shape
         const addShape = function (size) {
             var s = size / 2;
@@ -2719,6 +2702,74 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         // Hide add-annotation markers if the user cannot modify annotations
         if (!this.canUserEdit()) {
             nonAnnotationGroups.style("display", "none");
+        }
+
+        // Render the existing annotation glyphs after the add-annotation markers so they paint on
+        // top and take precedence for hover/click when the markers overlap them.
+        let annotations = this.getSvgElForPlot(plot).selectAll("path.annotation").data(this.annotationData)
+                .enter().append("path").attr("class", "annotation")
+                .attr("d", this.annotationShape(4)).attr('transform', transformAcc)
+                .style("fill", colorAcc).style("stroke", colorAcc);
+
+        // add mouseover effects for fun
+        let mouseOn = function(pt, strokeWidth, d) {
+            d3.select(pt).transition().duration(800).attr("stroke-width", strokeWidth).ease("elastic");
+
+            if (!pt._tippy) {
+                let date = new Date(d['Date']);
+                let dateStr = me.formatDate(date, date.getHours() !== 0 || date.getMinutes() !== 0 || date.getSeconds() !== 0);
+                let content = "<table>"
+                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Created By:</td><td>" + LABKEY.Utils.encodeHtml(d['DisplayName']) + "</td></tr>"
+                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Type:</td><td>" + LABKEY.Utils.encodeHtml(d['Name']) + "</td></tr>"
+                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Date:</td><td>" + LABKEY.Utils.encodeHtml(dateStr) + "</td></tr>"
+                        + "<tr><td style='vertical-align: top; padding-right: 5px;'>Description:</td><td>" + LABKEY.Utils.encodeHtml(d['Description']) + "</td></tr>";
+
+                if (d['ContainerPath'] && d['ContainerPath'] !== LABKEY.ActionURL.getContainer()) {
+                    let containerPath = LABKEY.Utils.encodeHtml(d['ContainerPath']);
+                    if (!containerPath.startsWith('/')) {
+                        containerPath = '/' + containerPath;
+                    }
+                    content += "<tr><td style='vertical-align: top; padding-right: 5px;'>Shared From:</td><td>" + containerPath + "</td></tr>";
+                }
+                content += "</table>";
+
+                tippy(pt, {
+                    content: content,
+                    allowHTML: true,
+                    arrow: true,
+                    theme: 'light-border',
+                    placement: 'top',
+                    offset: [0, 8],
+                    onMount(instance) {
+                        const tippyBox = instance.popper.querySelector('.tippy-box');
+                        const tippyContent = instance.popper.querySelector('.tippy-content');
+                        const tippyArrow = instance.popper.querySelector('.tippy-arrow');
+
+                        if (tippyBox) {
+                            tippyBox.style.color = 'black';
+                            tippyBox.style.backgroundColor = 'white';
+                            tippyBox.style.border = '1px solid black';
+                        }
+                        if (tippyContent) {
+                            tippyContent.style.padding = '6px';
+                        }
+                        if (tippyArrow) {
+                            tippyArrow.style.bottom = '-1px';
+                        }
+                    }
+                });
+            }
+        };
+        var mouseOff = function(pt) {
+            d3.select(pt).transition().duration(800).attr("stroke-width", 1).ease("elastic");
+        };
+        annotations.on("mouseover", function(d){ return mouseOn(this, 3, d); });
+        annotations.on("mouseout", function(){ return mouseOff(this); });
+
+        if (this.canUserEdit()) {
+            annotations.on("click", function (d) {
+                me.openAnnotationDialog(false, d).show();
+            });
         }
     },
 

@@ -3193,8 +3193,31 @@ public class TargetedMSController extends SpringActionController
         }
     }
 
+    /**
+     * Reading library spectra from a large library file can take many seconds over network storage, especially for large
+     * EncyclopeDIA libraries. To protect public folders from aggressive bots, do not show library spectra to guests when
+     * the library is large. Show the login prompt instead.
+     * Returns true (and adds the login view) when the library spectrum should be withheld.
+     */
+    private boolean addGuestSpectrumGate(TargetedMSRun run, VBox vbox)
+    {
+        if (!LibrarySpectrumMatchGetter.blockSpectraForGuest(getUser(), run.getId()))
+        {
+            return false;
+        }
+        HtmlView loginView = getLoginView(getViewContext(), getContainer());
+        loginView.setTitle("Library Spectrum");
+        loginView.setFrame(WebPartView.FrameType.PORTAL);
+        vbox.addView(loginView);
+        return true;
+    }
+
     private void addSpectrumViews(TargetedMSRun run, VBox vbox, Precursor precursor, BindException errors)
     {
+        if (addGuestSpectrumGate(run, vbox))
+        {
+            return;
+        }
         PipeRoot root = PipelineService.get().getPipelineRootSetting(getContainer());
         if (null != root)
         {
@@ -3213,6 +3236,10 @@ public class TargetedMSController extends SpringActionController
 
     private void addSpectrumViews(TargetedMSRun run, VBox vbox, Peptide peptide, BindException errors)
     {
+        if (addGuestSpectrumGate(run, vbox))
+        {
+            return;
+        }
         PipeRoot root = PipelineService.get().getPipelineRootSetting(getContainer());
         if (null != root)
         {
@@ -3296,6 +3323,13 @@ public class TargetedMSController extends SpringActionController
                 return response;
             }
             TargetedMSRun run = TargetedMSManager.getRunForGeneralMolecule(peptide.getId());
+
+            // Apply the same guest gate as the spectrum views (see LibrarySpectrumMatchGetter.blockSpectraForGuest).
+            if (LibrarySpectrumMatchGetter.blockSpectraForGuest(getUser(), run.getId()))
+            {
+                response.put("error", "Login to view this data");
+                return response;
+            }
 
             List<PeptideSettings.SpectrumLibrary> libraries = LibraryManager.getLibraries(run.getId());
             PeptideSettings.SpectrumLibrary library = null;
