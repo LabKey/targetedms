@@ -1050,11 +1050,47 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 fieldLabel: 'X-axis grouping',
                 labelWidth: this.LABEL_WIDTH,
                 layout: { type: 'hbox' },
-                defaults: { xtype: 'radio', name: 'xAxisGrouping', listeners: { change: onChange } },
+                defaults: { xtype: 'radio', name: 'xAxisGrouping' },
                 items: [
-                    { boxLabel: 'per replicate', width: colWidths[0], id: 'x-axis-grouping-replicate', inputValue: 'replicate', checked: this.groupedX === false, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'X-axis grouping: per replicate'}); } } },
-                    { boxLabel: 'per date', width: colWidths[1], id: 'x-axis-grouping-date', inputValue: 'date', checked: this.groupedX === true && this.calendarX !== true, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'X-axis grouping: per date'}); } } },
-                    { boxLabel: 'calendar', width: colWidths[2], id: 'x-axis-grouping-calendar', inputValue: 'calendar', checked: this.groupedX === true && this.calendarX === true, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'X-axis grouping: calendar'}); } } }
+                    {
+                        boxLabel: 'per replicate',
+                        width: colWidths[0],
+                        id: 'x-axis-grouping-replicate',
+                        inputValue: 'replicate',
+                        checked: this.groupedX === false,
+                        listeners: {
+                            change: onChange,
+                            afterrender: function(r) {
+                                r.inputEl.set({'aria-label': 'X-axis grouping: per replicate'});
+                            }
+                        }
+                    },
+                    {
+                        boxLabel: 'per date',
+                        width: colWidths[1],
+                        id: 'x-axis-grouping-date',
+                        inputValue: 'date',
+                        checked: this.groupedX === true && this.calendarX !== true,
+                        listeners: {
+                            change: onChange,
+                            afterrender: function(r) {
+                                r.inputEl.set({'aria-label': 'X-axis grouping: per date'});
+                            }
+                        }
+                    },
+                    {
+                        boxLabel: 'calendar',
+                        width: colWidths[2],
+                        id: 'x-axis-grouping-calendar',
+                        inputValue: 'calendar',
+                        checked: this.groupedX === true && this.calendarX === true,
+                        listeners: {
+                            change: onChange,
+                            afterrender: function(r) {
+                                r.inputEl.set({'aria-label': 'X-axis grouping: calendar'});
+                            }
+                        }
+                    }
                 ]
             });
         }
@@ -1119,8 +1155,32 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 layout: { type: 'hbox' },
                 defaults: { xtype: 'radio', name: 'excludedSamples', listeners: { change: onChange } },
                 items: [
-                    { boxLabel: 'show', width: colWidths[0], id: 'excluded-replicates-show', inputValue: 'show', checked: this.showExcluded === true, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Excluded replicates: show'}); } } },
-                    { boxLabel: 'hide', width: colWidths[1], id: 'excluded-replicates-hide', inputValue: 'hide', checked: this.showExcluded === false, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Excluded replicates: hide'}); } } }
+                    {
+                        boxLabel: 'show',
+                        width: colWidths[0],
+                        id: 'excluded-replicates-show',
+                        inputValue: 'show',
+                        checked: this.showExcluded === true,
+                        listeners: {
+                            change: onChange,
+                            afterrender: function(r) {
+                                r.inputEl.set({'aria-label': 'Excluded replicates: show'});
+                            }
+                        }
+                    },
+                    {
+                        boxLabel: 'hide',
+                        width: colWidths[1],
+                        id: 'excluded-replicates-hide',
+                        inputValue: 'hide',
+                        checked: this.showExcluded === false,
+                        listeners: {
+                            change: onChange,
+                            afterrender: function(r) {
+                                r.inputEl.set({'aria-label': 'Excluded replicates: hide'});
+                            }
+                        }
+                    }
                 ]
             });
         }
