@@ -134,13 +134,8 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         clickAndWait(Locator.linkWithText(PROJECT_1));
         waitAndClickAndWait(Locator.linkWithText("Schedule instrument time"));
 
-        String yearMonth = Calendar.getInstance().get(Calendar.YEAR) + "-";
         int month = (Calendar.getInstance().get(Calendar.MONTH) + 1);
-        if (month < 10)
-        {
-            yearMonth += yearMonth;
-        }
-        yearMonth += month;
+        String yearMonth = Calendar.getInstance().get(Calendar.YEAR) + "-" + (month < 10 ? "0" + month : "" + month);
 
         scheduleInstrument(yearMonth + "-02");
         scheduleInstrument(yearMonth + "-03");
