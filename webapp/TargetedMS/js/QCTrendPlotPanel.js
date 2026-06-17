@@ -1509,7 +1509,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     pathMouseOver : function(event, pathData, layerSel, path, valueName, config) {
         if (pathData.group) {
-            this.highlightFragmentSeries(pathData.group);
+            // pass base fragment, like the other highlight triggers
+            this.highlightFragmentSeries(pathData.group.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]);
         }
     },
 
@@ -2069,6 +2070,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             let label = checkbox.closest('label');
             if (label) {
                 label.addEventListener('mouseenter', function() {
+                    clearTimeout(precursorLeaveTimer); // cancel a pending precursor reset when moving sub-item -> header
                     let hidden = me.hiddenPrecursorSeries || {};
                     let hiddenFragments = group.fragments.filter(function(f) { return !!hidden[f]; });
                     if (hiddenFragments.length > 0) {
