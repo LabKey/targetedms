@@ -332,7 +332,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
                         Ext4.Object.each(this.guideSetDataMap, function(guideSetId, guideSetData) {
                             // for truncating out of range guideset data  find first index of plotDate ending at guideset.trainingEnd
-                            if (plotData.guideSetId === guideSetId && plotData.inGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {
+                            // guideSetId here is the map key (always a string); plotData.guideSetId may be a number, so compare type-tolerantly
+                            if (parseInt(plotData.guideSetId, 10) === parseInt(guideSetId, 10) && plotData.inGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {
                                 this.filterPoints[frag][plotData.MetricId]['filterPointsFirstIndex'] = j + 1;
                                 // ReferenceRangeSeries is used to separate series
                                 plotData['ReferenceRangeSeries'] = "GuideSet";
@@ -387,6 +388,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         }
 
         this.renderPlots();
+    },
+
+    // True when the time-scaled calendar X-axis is in effect. Calendar falls back to per-date (ordinal)
+    // positioning while "always show reference guide set" (filterQCPoints) is active, since the truncation +
+    // separator rely on ordinal slot indexing.
+    isCalendarAxisActive: function() {
+        return this.calendarX === true && this.filterQCPoints !== true;
     },
 
     renderPlots: function() {
@@ -781,7 +789,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             mouseOutFn: this.plotPointMouseOut,
             mouseOutFnScope: this,
             position: this.groupedX ? 'sequential' : undefined,
-            timeBasedXTick: this.calendarX === true,
+            timeBasedXTick: this.isCalendarAxisActive(),
             legendMouseOverFn: this.legendMouseOver,
             legendMouseOverFnScope: this,
             legendMouseOutFn: this.plotPointMouseOut,
@@ -939,7 +947,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             mouseOverFn: this.plotPointMouseOver,
             mouseOverFnScope: this,
             position: this.groupedX ? 'sequential' : undefined,
-            timeBasedXTick: this.calendarX === true,
+            timeBasedXTick: this.isCalendarAxisActive(),
             disableRangeDisplay: this.isMultiSeries(),
             hoverTextFn: !showDataPoints ? function() { return 'Narrow the date range to show individual data points.' } : undefined,
             hideSDLines: true,

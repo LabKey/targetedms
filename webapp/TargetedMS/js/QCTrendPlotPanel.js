@@ -2373,16 +2373,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     // Pixel width of one x-axis slot, used to size guide-set/outlier highlight rectangles. For calendar
     // mode (continuous axis) this is the plot width over the distinct-day count; otherwise inter-tick spacing.
     getXBinWidth : function(plot) {
-        if (this.calendarX) {
-            const seen = {};
-            let count = 0;
-            Ext4.each(plot.data || [], function(d) {
-                if (d && d.seqValue !== undefined && !seen[d.seqValue]) {
-                    seen[d.seqValue] = true;
-                    count++;
-                }
-            });
-            return (plot.grid.rightEdge - plot.grid.leftEdge) / Math.max(count, 10);
+        if (this.isCalendarAxisActive()) {
+            // reuse the distinct-day count the time-based scale computed, so bar/rect widths match the jitter band
+            return (plot.grid.rightEdge - plot.grid.leftEdge) / Math.max(plot.scales.x.dayCount || 0, 10);
         }
         return (plot.grid.rightEdge - plot.grid.leftEdge) / (plot.scales.x.scale.domain().length);
     },
@@ -2648,8 +2641,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         });
 
         // Calendar mode keys the x-axis by day offset, so resolve the earliest plotted day for the conversion.
+        // (filterQCPoints falls back to per-date ordinal positioning, so it uses the indexOf path below.)
+        const useCalendarAxis = this.isCalendarAxisActive();
         let minDayNumber = null;
-        if (this.calendarX) {
+        if (useCalendarAxis) {
             Ext4.each(precursorInfo.data, function(row) {
                 const dn = LABKEY.vis.dateToDayNumber(row['date']);
                 if (dn !== null && (minDayNumber === null || dn < minDayNumber)) {
@@ -2661,7 +2656,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         // use direct D3 code to inject the annotation icons to the rendered SVG
         var xAcc = function(d) {
             var annotationDate = me.formatDate(new Date(d['Date']), !me.groupedX);
-            if (me.calendarX) {
+            if (useCalendarAxis) {
                 const dn = LABKEY.vis.dateToDayNumber(annotationDate);
                 return plot.scales.x.scale(dn !== null && minDayNumber !== null ? dn - minDayNumber : 0);
             }
