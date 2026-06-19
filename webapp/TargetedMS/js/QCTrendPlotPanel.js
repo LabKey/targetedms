@@ -786,6 +786,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                             this.startDate = this.formatDate(this.calculateStartDateByOffset());
                             this.endDate = this.formatDate(this.calculateEndDateByOffset());
 
+                            if (this.filterQCPoints) {
+                                this.resetFilterPointsIndices();
+                            }
+
                             this.displayTrendPlot();
                         }
                         else {
