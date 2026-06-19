@@ -693,7 +693,8 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     {
         return Set.of(
             MsDataSourceUtil.TestCase.class,
-            SkylineAuditLogManager.TestCase.class
+            SkylineAuditLogManager.TestCase.class,
+            TargetedMSContainerScopingTest.class
         );
     }
 

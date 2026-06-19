@@ -29,6 +29,7 @@ import org.labkey.api.data.TableInfo;
 import org.labkey.api.data.TableSelector;
 import org.labkey.api.query.QueryService;
 import org.labkey.api.security.User;
+import org.labkey.api.sql.LabKeySql;
 import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.util.Pair;
 import org.labkey.targetedms.TargetedMSManager;
@@ -103,7 +104,7 @@ public class OutlierGenerator
             sql.append("(SELECT PrecursorChromInfoId, SampleFileId, ");
             sql.append(" CAST(IFDEFINED(SeriesLabel) AS VARCHAR) AS SeriesLabel, ");
             sql.append("\nMetricValue, ").append(configuration.getId()).append(" AS MetricId");
-            sql.append("\n FROM ").append(schemaName).append('.').append(queryName);
+            sql.append("\n FROM ").append(schemaName).append('.').append(LabKeySql.quoteIdentifier(queryName));
             sql.append(")");
         }
         return sql.toString();
