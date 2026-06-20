@@ -113,9 +113,10 @@ public class LibrarySpectrumMatchGetter
         }
         catch (IOException e)
         {
-            // If we cannot stat the file it is missing or unreadable, in which case the
-            // downstream library read will fail too.
-            LOG.warn("Could not determine size of spectrum library file " + libPath, e);
+            // The file is missing or unreadable; the downstream library read would fail too.
+            // Log a single WARN line and keep the stack trace at DEBUG so frequent hits do not flood the primary log.
+            LOG.warn("Could not determine size of spectrum library file " + libPath + " (" + e.getClass().getSimpleName() + ")");
+            LOG.debug("Could not determine size of spectrum library file " + libPath, e);
             return false;
         }
     }
