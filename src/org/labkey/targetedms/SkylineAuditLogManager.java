@@ -592,7 +592,7 @@ public class SkylineAuditLogManager
         {
             AuditLogTree node = new SkylineAuditLogManager(_container, null).buildLogTree(_docGUID);
             while(node.iterator().hasNext()){
-                AuditLogEntry ent = AuditLogEntry.retrieve(node.getEntryId());
+                AuditLogEntry ent = AuditLogEntry.retrieve(node.getEntryId(), _container);
                 assertNotNull(ent);
                 node = node.iterator().next();
             }
