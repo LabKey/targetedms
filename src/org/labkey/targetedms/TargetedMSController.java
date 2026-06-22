@@ -5117,7 +5117,9 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(SkylineAuditLogExtraInfoForm form, BindException errors)
         {
-            AuditLogEntry ent = AuditLogEntry.retrieve(form.getEntryId());
+            AuditLogEntry ent = AuditLogEntry.retrieve(form.getEntryId(), getContainer());
+            if (ent == null)
+                throw new NotFoundException("No audit log entry found for id " + form.getEntryId() + " in this folder.");
             getPageConfig().setTemplate(PageConfig.Template.None);
             return new JspView<>("/org/labkey/targetedms/view/skylineAuditLogExtraInfoView.jsp", ent);
         }
@@ -7813,7 +7815,7 @@ public class TargetedMSController extends SpringActionController
                 // verify that the run rowId is valid and matches an existing run
                 // and if the run replaces any other runs, it should only replace one
                 ExpRun run = ExperimentService.get().getExpRun(form.getRowId());
-                if (run == null)
+                if (run == null || !run.getContainer().equals(getContainer()))
                     errors.reject(ERROR_MSG, "No run found for id " + form.getRowId() + ".");
                 else if (!run.getReplacesRuns().isEmpty() && run.getReplacesRuns().size() > 1)
                     errors.reject(ERROR_MSG, "Run " + form.getRowId() + " replaces more than one run.");

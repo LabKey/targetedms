@@ -15,6 +15,7 @@
  */
 package org.labkey.targetedms.parser.skyaudit;
 
+import org.labkey.api.data.Container;
 import org.labkey.api.data.SimpleFilter;
 import org.labkey.api.data.Table;
 import org.labkey.api.data.TableSelector;
@@ -22,6 +23,7 @@ import org.labkey.api.query.FieldKey;
 import org.labkey.api.security.User;
 import org.labkey.api.util.GUID;
 import org.labkey.targetedms.TargetedMSManager;
+import org.labkey.targetedms.TargetedMSRun;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -70,13 +72,25 @@ public class AuditLogEntry
         _documentFormatVersion = documentFormatVersion;
     }
 
-    public static AuditLogEntry retrieve(int pEntryId)
+    /**
+     * Container-scoped retrieve. Returns the entry only if its owning Skyline run lives in the supplied container,
+     * preventing callers from reading audit detail for documents in folders the user can't access. An entryId can
+     * map to more than one run when documents share an audit history, so check every match for one in the container.
+     */
+    public static AuditLogEntry retrieve(int pEntryId, Container container)
     {
         TableSelector sel = new TableSelector(TargetedMSManager.getTableInfoSkylineAuditLog(), new SimpleFilter(FieldKey.fromParts("EntryId"), pEntryId), null);
-        List<AuditLogEntry> results = sel.getArrayList(AuditLogEntry.class);
-        // Possible to get more than one match if two documents share an audit history. In this case, we don't care
-        // which we use
-        return results.isEmpty() ? null : results.getFirst();
+        for (AuditLogEntry entry : sel.getArrayList(AuditLogEntry.class))
+        {
+            Long runId = entry.getRunId();
+            if (runId != null)
+            {
+                TargetedMSRun run = TargetedMSManager.getRun(runId);
+                if (run != null && container.equals(run.getContainer()))
+                    return entry;
+            }
+        }
+        return null;
     }
 
     public AuditLogTree getTreeEntry(){
