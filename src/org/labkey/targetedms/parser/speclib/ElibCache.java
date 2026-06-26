@@ -17,14 +17,24 @@ package org.labkey.targetedms.parser.speclib;
 
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
+import org.junit.Assert;
+import org.junit.Test;
 import org.labkey.api.util.JobRunner;
 import org.labkey.api.util.logging.LogHelper;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -181,6 +191,210 @@ public class ElibCache
                 conn.close();
             }
             catch (SQLException ignored) {}
+        }
+    }
+
+    /**
+     * Exercises the cache builder ({@link ElibCacheWriter}) and the coordinator together against small
+     * temporary SQLite files standing in for an {@code .elib}. {@code ElibCacheWriter.build} has no size
+     * gate, so it can be driven directly here; only the lazy background trigger in {@code requestBuild}
+     * has the 500 MB floor, which keeps these tests deterministic (no async build is started).
+     */
+    public static class TestCase extends Assert
+    {
+        // PeptideSeq, PeptideModSeq, PrecursorCharge, PrecursorMz, SourceFile, RTInSeconds, Score
+        private static final List<Object[]> ROWS = List.of(
+                new Object[]{"PEPTIDEK", "PEPTIDEK", 2, 500.25, "a.mzML", 1800.0, 0.01},
+                new Object[]{"PEPTIDEK", "PEPTIDEK", 2, 500.25, "b.mzML", 1810.0, 0.02},
+                new Object[]{"ELVISK", "ELVIS[+80]K", 3, 333.3, "a.mzML", 600.0, 0.005});
+
+        @Test
+        public void testBuildCopiesMetadataAndStamp() throws Exception
+        {
+            Path dir = Files.createTempDirectory("elibcache");
+            try
+            {
+                File elib = dir.resolve("test.elib").toFile();
+                File cache = new File(elib.getAbsolutePath() + CACHE_SUFFIX);
+                createSourceElib(elib, ROWS);
+
+                ElibCacheWriter.build(elib, cache);
+                assertTrue("cache file should exist after build", cache.exists());
+
+                try (Connection conn = LibSpectrumReader.getLibConnection(cache.getAbsolutePath()))
+                {
+                    assertEquals("row count", ROWS.size(), count(conn, "SELECT COUNT(*) FROM entries"));
+
+                    // The stamp must reflect the source file so staleness can be detected later.
+                    try (Statement s = conn.createStatement();
+                         ResultSet rs = s.executeQuery("SELECT SourceSize, SourceModified, FormatVersion FROM cache_info"))
+                    {
+                        assertTrue(rs.next());
+                        assertEquals(elib.length(), rs.getLong("SourceSize"));
+                        assertEquals(elib.lastModified(), rs.getLong("SourceModified"));
+                        assertEquals(ElibCacheWriter.FORMAT_VERSION, rs.getInt("FormatVersion"));
+                    }
+
+                    // Metadata values are copied faithfully.
+                    try (Statement s = conn.createStatement();
+                         ResultSet rs = s.executeQuery("SELECT PrecursorMz, RTInSeconds, Score FROM entries WHERE SourceFile = 'b.mzML'"))
+                    {
+                        assertTrue(rs.next());
+                        assertEquals(500.25, rs.getDouble("PrecursorMz"), 0.0);
+                        assertEquals(1810.0, rs.getDouble("RTInSeconds"), 0.0);
+                        assertEquals(0.02, rs.getDouble("Score"), 0.0);
+                    }
+                }
+
+                // A current cache is served by openIfReady.
+                try (Connection conn = ElibCache.openIfReady(elib.getAbsolutePath()))
+                {
+                    assertNotNull("openIfReady should return a connection for a current cache", conn);
+                    assertEquals(ROWS.size(), count(conn, "SELECT COUNT(*) FROM entries"));
+                }
+            }
+            finally
+            {
+                deleteQuietly(dir);
+            }
+        }
+
+        @Test
+        public void testReaderQueriesUseCoveringIndex() throws Exception
+        {
+            Path dir = Files.createTempDirectory("elibcache");
+            try
+            {
+                File elib = dir.resolve("test.elib").toFile();
+                File cache = new File(elib.getAbsolutePath() + CACHE_SUFFIX);
+                createSourceElib(elib, ROWS);
+                ElibCacheWriter.build(elib, cache);
+
+                try (Connection conn = LibSpectrumReader.getLibConnection(cache.getAbsolutePath()))
+                {
+                    // The whole point of the cache: each of the reader's metadata queries must be served
+                    // index-only (no table lookups), which is what makes cold reads fast.
+                    assertCoveringIndex(conn, "SELECT PeptideModSeq, PrecursorCharge, PrecursorMz, SourceFile, RTInSeconds, Score "
+                            + "FROM entries WHERE PeptideModSeq = 'PEPTIDEK' AND PrecursorCharge = 2");
+                    assertCoveringIndex(conn, "SELECT PeptideModSeq, PrecursorCharge, RTInSeconds, SourceFile, Score "
+                            + "FROM entries WHERE PeptideModSeq = 'PEPTIDEK'");
+                    assertCoveringIndex(conn, "SELECT PeptideModSeq FROM entries WHERE PeptideSeq = 'PEPTIDEK'");
+                }
+            }
+            finally
+            {
+                deleteQuietly(dir);
+            }
+        }
+
+        @Test
+        public void testStaleCacheIsNotServed() throws Exception
+        {
+            Path dir = Files.createTempDirectory("elibcache");
+            try
+            {
+                File elib = dir.resolve("test.elib").toFile();
+                File cache = new File(elib.getAbsolutePath() + CACHE_SUFFIX);
+                createSourceElib(elib, ROWS);
+                ElibCacheWriter.build(elib, cache);
+                assertNotNull(serveOnce(elib)); // sanity: current cache is served
+
+                // Change the source so its size no longer matches the stamp -> the cache is stale.
+                Files.write(elib.toPath(), new byte[]{0}, StandardOpenOption.APPEND);
+
+                // The file is well under MIN_SOURCE_SIZE, so no background rebuild is triggered; the
+                // coordinator simply declines to serve the out-of-date cache.
+                assertNull("a stale cache must not be served", ElibCache.openIfReady(elib.getAbsolutePath()));
+            }
+            finally
+            {
+                deleteQuietly(dir);
+            }
+        }
+
+        @Test
+        public void testNonElibPathsReturnNull()
+        {
+            assertNull(ElibCache.openIfReady(null));
+            assertNull(ElibCache.openIfReady("/some/library.blib"));
+            assertNull(ElibCache.openIfReady("/some/library.txt"));
+        }
+
+        @Nullable
+        private static Connection serveOnce(File elib) throws SQLException
+        {
+            Connection conn = ElibCache.openIfReady(elib.getAbsolutePath());
+            if (conn != null)
+                conn.close();
+            return conn;
+        }
+
+        private static void createSourceElib(File elib, List<Object[]> rows) throws Exception
+        {
+            try (Connection conn = openWritable(elib.getAbsolutePath());
+                 Statement st = conn.createStatement())
+            {
+                st.execute("CREATE TABLE entries (PeptideSeq TEXT, PeptideModSeq TEXT, PrecursorCharge INTEGER, "
+                        + "PrecursorMz REAL, SourceFile TEXT, RTInSeconds REAL, Score REAL)");
+                try (PreparedStatement ins = conn.prepareStatement(
+                        "INSERT INTO entries (PeptideSeq, PeptideModSeq, PrecursorCharge, PrecursorMz, SourceFile, RTInSeconds, Score) VALUES (?, ?, ?, ?, ?, ?, ?)"))
+                {
+                    for (Object[] r : rows)
+                    {
+                        ins.setString(1, (String) r[0]);
+                        ins.setString(2, (String) r[1]);
+                        ins.setInt(3, (Integer) r[2]);
+                        ins.setDouble(4, (Double) r[3]);
+                        ins.setString(5, (String) r[4]);
+                        ins.setDouble(6, (Double) r[5]);
+                        ins.setDouble(7, (Double) r[6]);
+                        ins.addBatch();
+                    }
+                    ins.executeBatch();
+                }
+            }
+        }
+
+        private static Connection openWritable(String path) throws Exception
+        {
+            Class.forName("org.sqlite.JDBC");
+            return DriverManager.getConnection("jdbc:sqlite:/" + path);
+        }
+
+        private static long count(Connection conn, String sql) throws SQLException
+        {
+            try (Statement s = conn.createStatement(); ResultSet rs = s.executeQuery(sql))
+            {
+                return rs.next() ? rs.getLong(1) : -1;
+            }
+        }
+
+        private void assertCoveringIndex(Connection conn, String sql) throws SQLException
+        {
+            StringBuilder plan = new StringBuilder();
+            boolean covering = false;
+            try (Statement s = conn.createStatement(); ResultSet rs = s.executeQuery("EXPLAIN QUERY PLAN " + sql))
+            {
+                while (rs.next())
+                {
+                    String detail = rs.getString("detail");
+                    plan.append(detail).append('\n');
+                    if (detail != null && detail.contains("USING COVERING INDEX"))
+                        covering = true;
+                }
+            }
+            assertTrue("Expected a covering-index scan for:\n" + sql + "\nbut the query plan was:\n" + plan, covering);
+        }
+
+        private static void deleteQuietly(Path dir)
+        {
+            try (var paths = Files.walk(dir))
+            {
+                paths.sorted(Comparator.reverseOrder()).forEach(p -> {
+                    try { Files.deleteIfExists(p); } catch (IOException ignored) {}
+                });
+            }
+            catch (IOException ignored) {}
         }
     }
 }
