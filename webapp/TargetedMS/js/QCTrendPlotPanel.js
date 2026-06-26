@@ -2712,10 +2712,19 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         const currentContainer = LABKEY.ActionURL.getContainer();
         const fromOtherContainer = !addNew && data['ContainerPath'] && data['ContainerPath'] !== currentContainer;
 
+        // The clicked plot point (and an existing annotation) carries the full acquired time, so capture the
+        // time-of-day to seed a Time field instead of defaulting the annotation to midnight. data['Date'] is a
+        // "Y-m-d H:i:s" wall-clock string, so pull the time out by substring to avoid any timezone-shifting parse.
+        const fullDateTime = this.formatDate(data['Date'], true);
+        const timeStr = (typeof fullDateTime === 'string' && fullDateTime.length >= 19) ? fullDateTime.substring(11, 19) : '00:00:00';
+        // When the x-axis is grouped "per date", a click maps to a date bucket rather than a single
+        // acquisition, so the time is not meaningful for a new annotation: hide the field and save date-only.
+        const showTime = !(addNew && this.groupedX);
+
         return Ext4.create('Ext.window.Window', {
             title: title,
             width: 400,
-            height: fromOtherContainer ? 350 : 230,
+            height: (fromOtherContainer ? 350 : 230) + (showTime ? 40 : 0),
             modal: true,
             items: [{
                 xtype: 'displayfield',
@@ -2798,6 +2807,20 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 readOnly: fromOtherContainer,
                 value: date,
                 submitFormat: 'Y-m-d'
+            }, {
+                xtype: 'timefield',
+                labelWidth: 150,
+                width: 350,
+                margin: '0 10 10 10',
+                fieldLabel: 'Time',
+                name: 'annotationTime',
+                format: 'H:i:s',
+                increment: 30,
+                forceSelection: false,
+                allowBlank: false,
+                hidden: !showTime,
+                readOnly: fromOtherContainer,
+                value: timeStr
             }],
 
             buttons: [{
@@ -2810,13 +2833,15 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     const annotationType = form.down('[name=annotationType]').getValue();
                     const description = form.down('[name=description]').getValue();
                     const annotationDate = form.down('[name=annotationDate]').getValue();
+                    const timeField = form.down('[name=annotationTime]');
+                    const annotationTime = (timeField && !timeField.isHidden()) ? timeField.getValue() : null;
 
-                    if (!annotationType || !annotationDate) {
+                    if (!annotationType || !annotationDate || (timeField && !timeField.isHidden() && !annotationTime)) {
                         Ext4.Msg.alert('Error', 'Please fill in all required fields.');
                         return;
                     }
 
-                    me.saveAnnotation(annotationType, description, annotationDate, win);
+                    me.saveAnnotation(annotationType, description, annotationDate, annotationTime, win);
                 }
             }, {
                 text: 'Update',
@@ -2828,13 +2853,15 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     const annotationType = form.down('[name=annotationType]').getValue();
                     const description = form.down('[name=description]').getValue();
                     const annotationDate = form.down('[name=annotationDate]').getValue();
+                    const timeField = form.down('[name=annotationTime]');
+                    const annotationTime = (timeField && !timeField.isHidden()) ? timeField.getValue() : null;
 
-                    if (!annotationType || !annotationDate) {
+                    if (!annotationType || !annotationDate || (timeField && !timeField.isHidden() && !annotationTime)) {
                         Ext4.Msg.alert('Error', 'Please fill in all required fields.');
                         return;
                     }
 
-                    me.updateAnnotation(data['qcAnnotationIds'], annotationType, description, annotationDate, win);
+                    me.updateAnnotation(data['qcAnnotationIds'], annotationType, description, annotationDate, annotationTime, win);
                 }
             }, {
                 text: 'Delete',
@@ -2857,9 +2884,13 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         });
     },
 
-    saveAnnotation: function (annotationType, description, annotationDate, win) {
-        // Format date as UTC string (YYYY-MM-DD) to avoid timezone conversion
-        const dateStr = Ext4.util.Format.date(annotationDate, 'Y-m-d');
+    saveAnnotation: function (annotationType, description, annotationDate, annotationTime, win) {
+        // Build a local wall-clock string ("YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS"), formatting the date and
+        // time components separately so we never round-trip a full Date and reintroduce timezone conversion.
+        let dateStr = Ext4.util.Format.date(annotationDate, 'Y-m-d');
+        if (annotationTime) {
+            dateStr += ' ' + Ext4.util.Format.date(annotationTime, 'H:i:s');
+        }
 
         LABKEY.Query.insertRows({
             schemaName: 'targetedms',
@@ -2888,9 +2919,13 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         });
     },
 
-    updateAnnotation: function (annotationIds, annotationType, description, annotationDate, win) {
-        // Format date as UTC string (YYYY-MM-DD) to avoid timezone conversion
-        const dateStr = Ext4.util.Format.date(annotationDate, 'Y-m-d');
+    updateAnnotation: function (annotationIds, annotationType, description, annotationDate, annotationTime, win) {
+        // Build a local wall-clock string ("YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS"), formatting the date and
+        // time components separately so we never round-trip a full Date and reintroduce timezone conversion.
+        let dateStr = Ext4.util.Format.date(annotationDate, 'Y-m-d');
+        if (annotationTime) {
+            dateStr += ' ' + Ext4.util.Format.date(annotationTime, 'H:i:s');
+        }
 
         const rows = annotationIds.map(id => ({
             Id: id,
