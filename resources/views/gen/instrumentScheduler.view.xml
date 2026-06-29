@@ -1,0 +1,22 @@
+
+<view xmlns="http://labkey.org/data/xml/view" frame="none" title="Instrument Scheduler">
+    
+    
+    <permissionClasses>
+        
+        <permissionClass name="org.labkey.api.security.permissions.ReadPermission"/>
+        
+    </permissionClasses>
+    
+    
+    
+    <dependencies>
+        <dependency path="clientapi"/>
+    
+    
+        
+        <dependency path="gen/instrumentScheduler.0d0ec74aeaa5bb72a486.js"/>
+        
+    
+    </dependencies>
+</view>

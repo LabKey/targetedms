@@ -1,0 +1,18 @@
+
+<view xmlns="http://labkey.org/data/xml/view" frame="none" title="Instrument Scheduler">
+    
+    
+    <permissionClasses>
+        
+        <permissionClass name="org.labkey.api.security.permissions.ReadPermission"/>
+        
+    </permissionClasses>
+    
+    
+    
+    <dependencies>
+        <dependency path="clientapi"/>
+    
+    
+    </dependencies>
+</view>

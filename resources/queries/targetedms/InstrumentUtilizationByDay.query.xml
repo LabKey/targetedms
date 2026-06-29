@@ -1,0 +1,24 @@
+<query xmlns="http://labkey.org/data/xml/query">
+    <metadata>
+        <tables xmlns="http://labkey.org/data/xml">
+            <table tableName="InstrumentUtilizationByDay" tableDbType="TABLE">
+                <tableTitle>Runs by Day</tableTitle>
+                <columns>
+                    <column columnName="AcquisitionDate">
+                        <columnTitle>Date</columnTitle>
+                        <formatString>Date</formatString>
+                    </column>
+                    <column columnName="RunCount">
+                        <columnTitle>Runs</columnTitle>
+                    </column>
+                    <column columnName="FileCount">
+                        <columnTitle>Files</columnTitle>
+                    </column>
+                    <column columnName="InstrumentNickname">
+                        <columnTitle>Instrument</columnTitle>
+                    </column>
+                </columns>
+            </table>
+        </tables>
+    </metadata>
+</query>

@@ -4815,6 +4815,8 @@ public class TargetedMSController extends SpringActionController
         }
 
         private static final String FOLDER_SUMMARY = "FolderSummary";
+        private static final String UTILIZATION_BY_DAY = "UtilizationByDay";
+        private static final String UTILIZATION_BY_MONTH = "UtilizationByMonth";
 
         private InstrumentForm _form;
 
@@ -4846,11 +4848,29 @@ public class TargetedMSController extends SpringActionController
                 TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
                 return schema.createView(getViewContext(), settings, errors);
             }
+            if (UTILIZATION_BY_DAY.equalsIgnoreCase(dataRegion))
+            {
+                QuerySettings settings = new QuerySettings(getViewContext(), UTILIZATION_BY_DAY, "InstrumentUtilizationByDay");
+                settings.setBaseSort(new Sort("-AcquisitionDate"));
+                settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("InstrumentNickname"), form.getName()));
+                settings.setContainerFilterName(ContainerFilter.Type.AllFolders.name());
+                TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+                return schema.createView(getViewContext(), settings, errors);
+            }
+            if (UTILIZATION_BY_MONTH.equalsIgnoreCase(dataRegion))
+            {
+                QuerySettings settings = new QuerySettings(getViewContext(), UTILIZATION_BY_MONTH, "InstrumentUtilizationByMonth");
+                settings.setBaseSort(new Sort("-MonthStart"));
+                settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("InstrumentNickname"), form.getName()));
+                settings.setContainerFilterName(ContainerFilter.Type.AllFolders.name());
+                TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+                return schema.createView(getViewContext(), settings, errors);
+            }
             throw new NotFoundException("Unknown dataRegion: " + dataRegion);
         }
 
         @Override
-        public ModelAndView getView(InstrumentForm form, BindException errors)
+        public ModelAndView getView(InstrumentForm form, BindException errors) throws Exception
         {
             if (form.getName() == null)
             {
@@ -4876,6 +4896,21 @@ public class TargetedMSController extends SpringActionController
                 result.addView(nameView);
             }
 
+            var calendarView = new JspView<>("/org/labkey/targetedms/view/instrumentUtilizationCalendar.jsp", form.getName());
+            calendarView.setTitle("Utilization Calendar");
+            calendarView.setFrame(WebPartView.FrameType.PORTAL);
+            result.addView(calendarView);
+
+            QueryView byDayView = createInitializedQueryView(form, errors, false, UTILIZATION_BY_DAY);
+            byDayView.setFrame(WebPartView.FrameType.NONE);
+            QueryView byMonthView = createInitializedQueryView(form, errors, false, UTILIZATION_BY_MONTH);
+            byMonthView.setFrame(WebPartView.FrameType.NONE);
+
+            var utilizationView = new JspView<>("/org/labkey/targetedms/view/instrumentUtilizationGrids.jsp", new InstrumentUtilizationBean(byDayView, byMonthView));
+            utilizationView.setTitle("Runs Acquired");
+            utilizationView.setFrame(WebPartView.FrameType.PORTAL);
+            result.addView(utilizationView);
+
             QueryView folderSummaryView = createQueryView(form, errors, false, FOLDER_SUMMARY);
             folderSummaryView.setTitle("Summary by Folder");
             folderSummaryView.setFrame(WebPartView.FrameType.PORTAL);
@@ -4888,6 +4923,28 @@ public class TargetedMSController extends SpringActionController
             result.addView(sampleFileView);
 
             return result;
+        }
+    }
+
+    public static class InstrumentUtilizationBean
+    {
+        private final QueryView _byDayView;
+        private final QueryView _byMonthView;
+
+        public InstrumentUtilizationBean(QueryView byDayView, QueryView byMonthView)
+        {
+            _byDayView = byDayView;
+            _byMonthView = byMonthView;
+        }
+
+        public QueryView getByDayView()
+        {
+            return _byDayView;
+        }
+
+        public QueryView getByMonthView()
+        {
+            return _byMonthView;
         }
     }
 
