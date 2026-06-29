@@ -330,6 +330,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                         }
 
 
+                        // default to InRange so date-range points form a connected line; guide set points overridden below
+                        plotData['ReferenceRangeSeries'] = "InRange";
                         Ext4.Object.each(this.guideSetDataMap, function(guideSetId, guideSetData) {
                             // for truncating out of range guideset data  find first index of plotDate ending at guideset.trainingEnd
                             if (plotData.guideSetId == guideSetId && plotData.inGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {

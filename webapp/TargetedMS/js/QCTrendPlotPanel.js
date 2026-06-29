@@ -2468,7 +2468,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     + (guideSetInfo.Comment ? (",\nComment: " + Ext4.String.htmlEncode(guideSetInfo.Comment)) : "");
             });
 
-            if (this.filterQCPoints) {
+            // only draw the break line if points were truncated; no "GuideSet" point means the range overlaps, so no gap
+            var hasTruncationGap = precursorInfo.data.some(function(d) { return d.ReferenceRangeSeries === "GuideSet"; });
+            if (this.filterQCPoints && hasTruncationGap) {
                 var guideSetEndIndex = guideSetTrainingData[0]['EndIndex'];
                 this.getSvgElForPlot(plot).selectAll("line.separator").data([{'StartIndex': guideSetEndIndex + 1, 'EndIndex': guideSetEndIndex + 1}])
                         .enter().append("line").attr("class", "separator")
