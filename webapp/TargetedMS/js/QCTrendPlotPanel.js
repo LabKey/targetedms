@@ -786,6 +786,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                             this.startDate = this.formatDate(this.calculateStartDateByOffset());
                             this.endDate = this.formatDate(this.calculateEndDateByOffset());
 
+                            if (this.filterQCPoints) {
+                                this.resetFilterPointsIndices();
+                            }
+
                             this.displayTrendPlot();
                         }
                         else {
@@ -2327,8 +2331,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         .attr('stroke', color).attr('stroke-opacity', 0.1)
                         .attr('fill', color).attr('fill-opacity', 0.1)
                         .append("title")
-                        .text(function (d) {
-                            return "Selected replicate: " + Ext4.String.htmlEncode(plot.data[d.EndIndex].ReplicateName);
+                        .text(function () {
+                            // 'data' is the already-matched point for this replicate, don't index plot.data by
+                            // seqValue (EndIndex), which breaks once out-of-range points have been truncated.
+                            return "Selected replicate: " + Ext4.String.htmlEncode(data.ReplicateName);
                         });
 
                 this.sendSvgElementToBack(plot, outlierRect);
@@ -2401,8 +2407,14 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 var pointsData = precursorInfo.data;
                 var expDataArr = [];
 
-                for (var i = startIndex; i <= endIndex; i++) {
-                    expDataArr.push(pointsData[i].value);
+                // match on seqValue (not array index); restrict to primary metric so multi-series doesn't
+                // blend both metrics into one mean/std-dev/%CV
+                for (var i = 0; i < pointsData.length; i++) {
+                    if (pointsData[i].seqValue >= startIndex && pointsData[i].seqValue <= endIndex
+                            && pointsData[i].MetricId === this.metric
+                            && pointsData[i].value !== undefined && pointsData[i].value !== null) {
+                        expDataArr.push(pointsData[i].value);
+                    }
                 }
 
                 var expMean = LABKEY.targetedms.PlotSettingsUtil.formatNumeric(LABKEY.vis.Stat.getMean(expDataArr));
