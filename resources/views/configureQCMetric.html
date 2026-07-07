@@ -230,7 +230,7 @@
 
                         const windowConfig = {
                             parent: this,
-                            traces: tracesPresent ? traces : {} ,
+                            traces: tracesPresent ? traces : [] ,
                             tracesPresent: tracesPresent,
                             operation: op
                         }
@@ -239,7 +239,7 @@
                             windowConfig.metric = clickedMetric;
                         }
 
-                        Ext4.create('Panorama.Window.AddTraceMetricWindow', windowConfig).show();
+                        Panorama.Window.AddTraceMetricWindow.show(windowConfig);
                     }
                 });
             },
