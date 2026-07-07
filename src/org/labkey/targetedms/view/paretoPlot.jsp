@@ -27,11 +27,10 @@
     @Override
     public void addClientDependencies(ClientDependencies dependencies)
     {
-        dependencies.add("Ext4");
+        dependencies.add("Ext4"); // still needed by QCMetricConfigLoader.js
         dependencies.add("vis/vis");
         dependencies.add("targetedms/css/SVGExportIcon.css");
         dependencies.add("targetedms/css/ParetoPlot.css");
-        dependencies.add("targetedms/js/BaseQCPlotPanel.js");
         dependencies.add("targetedms/js/ParetoPlotPanel.js");
         dependencies.add("targetedms/js/QCMetricConfigLoader.js");
     }
@@ -47,22 +46,11 @@
         function init() {
             var tiledPlotPanelId = <%=q(tiledPlotPanelId)%>;
 
-            if (Ext4.isIE8) {
-                Ext4.get(tiledPlotPanelId).update("<span class='labkey-error'>Unable to render report in Internet Explorer < 9.</span>");
-                return;
-            }
-
-            initializeParetoPlotPanel(tiledPlotPanelId);
-        }
-
-        function initializeParetoPlotPanel(tiledPlotPanelId) {
-
-            // initialize the panel that displays Pareto plot
-            Ext4.create('LABKEY.targetedms.ParetoPlotPanel', {
-                cls: 'themed-panel',
+            // initialize the panel that displays Pareto plots
+            new LABKEY.targetedms.ParetoPlotPanel({
                 plotDivId: tiledPlotPanelId
             });
         }
 
-        Ext4.onReady(init);
+        LABKEY.Utils.onReady(init);
 </script>
