@@ -19,7 +19,7 @@ WITH RECURSIVE logTree as (
          , nxt.entryHash
          , nxt.parentEntryHash
     FROM targetedms.AuditLogEntry nxt
-             JOIN logTree prev ON prev.parentEntryHash = nxt.entryHash
+             JOIN logTree prev ON prev.entryHash = nxt.parentEntryHash
 )
 SELECT t.entryId
      , e.documentguid
