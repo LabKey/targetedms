@@ -90,6 +90,13 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     // Shared column widths (px) so the Excluded-replicates radios line up under the X-axis grouping radios.
     XAXIS_COL_WIDTHS: [100, 82, 80],
 
+    // Radio inputValues for the X-axis grouping option.
+    XAXIS_GROUPING: {
+        REPLICATE: 'replicate',
+        DATE: 'date',
+        CALENDAR: 'calendar'
+    },
+
     // Max number of plots/series to show per page
     maxCount: 50,
 
@@ -1032,8 +1039,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     return;
                 }
                 const val = radio.inputValue;
-                const newCalendarX = val === 'calendar';
-                const newGroupedX = val === 'date' || val === 'calendar';
+                const newCalendarX = val === me.XAXIS_GROUPING.CALENDAR;
+                const newGroupedX = val === me.XAXIS_GROUPING.DATE || val === me.XAXIS_GROUPING.CALENDAR;
                 // ignore the change event fired for the initially-checked radio during construction
                 if (newCalendarX === me.calendarX && newGroupedX === me.groupedX) {
                     return;
@@ -1060,7 +1067,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         boxLabel: 'per replicate',
                         width: colWidths[0],
                         id: 'x-axis-grouping-replicate',
-                        inputValue: 'replicate',
+                        inputValue: this.XAXIS_GROUPING.REPLICATE,
                         checked: this.groupedX === false,
                         listeners: {
                             change: onChange,
@@ -1073,7 +1080,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         boxLabel: 'per date',
                         width: colWidths[1],
                         id: 'x-axis-grouping-date',
-                        inputValue: 'date',
+                        inputValue: this.XAXIS_GROUPING.DATE,
                         checked: this.groupedX === true && this.calendarX !== true,
                         listeners: {
                             change: onChange,
@@ -1086,7 +1093,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         boxLabel: 'calendar',
                         width: colWidths[2],
                         id: 'x-axis-grouping-calendar',
-                        inputValue: 'calendar',
+                        inputValue: this.XAXIS_GROUPING.CALENDAR,
                         checked: this.groupedX === true && this.calendarX === true,
                         listeners: {
                             change: onChange,
