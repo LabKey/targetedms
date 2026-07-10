@@ -228,7 +228,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     @Override
     public Double getSchemaVersion()
     {
-        return 26.008;
+        return 26.009;
     }
 
     @Override
@@ -693,7 +693,8 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     {
         return Set.of(
             MsDataSourceUtil.TestCase.class,
-            SkylineAuditLogManager.TestCase.class
+            SkylineAuditLogManager.TestCase.class,
+            TargetedMSContainerScopingTest.class
         );
     }
 

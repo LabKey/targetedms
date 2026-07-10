@@ -330,18 +330,16 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                         }
 
 
+                        // default "InRange"; promote to "GuideSet" on match so a later guide set can't clobber it
+                        plotData['ReferenceRangeSeries'] = "InRange";
                         Ext4.Object.each(this.guideSetDataMap, function(guideSetId, guideSetData) {
-                            // for truncating out of range guideset data  find first index of plotDate ending at guideset.trainingEnd
-                            // guideSetId here is the map key (always a string); plotData.guideSetId may be a number, so compare type-tolerantly
-                            if (parseInt(plotData.guideSetId, 10) === parseInt(guideSetId, 10) && plotData.inGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {
+                            // guideSetId (map key) is a String; plotData.guideSetId a Number - parse for ===
+                            const guideSetIdInt = parseInt(guideSetId, 10);
+                            if (plotData.guideSetId === guideSetIdInt && plotData.inGuideSetTrainingRange && guideSetData.TrainingEnd <= this.startDate) {
                                 this.filterPoints[frag][plotData.MetricId]['filterPointsFirstIndex'] = j + 1;
-                                // ReferenceRangeSeries is used to separate series
                                 plotData['ReferenceRangeSeries'] = "GuideSet";
+                                return false; // stop once the matching guide set is found
                             }
-                            else {
-                                plotData['ReferenceRangeSeries'] = "InRange";
-                            }
-
                         }, this);
 
                         // for truncating out of range guideset data find last index of plotData starting from this.startDate
@@ -366,20 +364,25 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         if (this.showExpRunRange && this.filterPoints) {
 
             for (let i = 0; i < plotDataRows.length; i++) {
-                Ext4.Object.each(this.filterPoints[plotDataRows[i].SeriesLabel], function (metricId, filterPointsData) {
+                const seriesPoints = this.filterPoints && this.filterPoints[plotDataRows[i].SeriesLabel];
+                if (!seriesPoints) {
+                    continue;
+                }
+                Ext4.Object.each(seriesPoints, function (metricId, filterPointsData) {
                     // no need to filter if less than 6 data points are present between reference end of guideset and startdate
                     if (filterPointsData['filterPointsFirstIndex'] && filterPointsData['filterPointsLastIndex']) {
                         if (filterPointsData['filterPointsLastIndex'] - filterPointsData['filterPointsFirstIndex'] < 6) {
-                            this.filterQCPoints = false;
-                            // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
-
-                            this.getStartDateField().setValue(this.formatDate(plotDataRows[i].data[filterPointsData['filterPointsFirstIndex']].AcquiredTime));
+                            // Fewer than 6 out-of-range points for this series/metric, so there is nothing to truncate
+                            // for it. Flag only this entry rather than clearing the global this.filterQCPoints, so that
+                            // other series still truncate and the separator / guide-set line break still render.
+                            filterPointsData['skipTruncation'] = true;
+                            // set the startDate field = acquired time of the point right before the experiment run range
+                            this.setStartDateFromFilterIndex(plotDataRows[i], filterPointsData['filterPointsFirstIndex']);
                         }
                         else { // skip 5 points
                             filterPointsData['filterPointsLastIndex'] = filterPointsData['filterPointsLastIndex'] - 6;
-                            // set the startDate field = acquired time of the 1st point of 5 points before the experiment run range
-                            // adding 1 as the point is right after filter last index
-                            this.getStartDateField().setValue(this.formatDate(plotDataRows[i].data[filterPointsData['filterPointsLastIndex'] + 1].AcquiredTime));
+                            // set the startDate field = acquired time of the point right after the new filter last index
+                            this.setStartDateFromFilterIndex(plotDataRows[i], filterPointsData['filterPointsLastIndex'] + 1);
                         }
                     }
                 }, this);
@@ -395,6 +398,37 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     // separator rely on ordinal slot indexing.
     isCalendarAxisActive: function() {
         return this.calendarX === true && this.filterQCPoints !== true;
+    },
+
+    // filterPoints indices include injected 'missing' entries, but AcquiredTime only exists on raw
+    // plotDataRow.data - translate to raw-space by counting non-missing entries, and guard the lookup.
+    setStartDateFromFilterIndex: function(plotDataRow, fragIndex) {
+        if (!plotDataRow || fragIndex == null) {
+            return;
+        }
+        const fragData = this.fragmentPlotData[plotDataRow.SeriesLabel] && this.fragmentPlotData[plotDataRow.SeriesLabel].data;
+        if (!fragData || fragData.length === 0) {
+            return;
+        }
+        // back up to the nearest non-missing entry at or before the index
+        let idx = Math.min(fragIndex, fragData.length - 1);
+        while (idx >= 0 && fragData[idx] && fragData[idx].type === 'missing') {
+            idx--;
+        }
+        if (idx < 0) {
+            return;
+        }
+        let rawIndex = 0; // count of non-missing entries before idx
+
+        for (let k = 0; k < idx; k++) {
+            if (!fragData[k] || fragData[k].type !== 'missing') {
+                rawIndex++;
+            }
+        }
+        const rawPoint = plotDataRow.data[rawIndex];
+        if (rawPoint && rawPoint.AcquiredTime) {
+            this.getStartDateField().setValue(this.formatDate(rawPoint.AcquiredTime));
+        }
     },
 
     renderPlots: function() {
@@ -440,25 +474,27 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
     truncateOutOfRangeQCPoints: function() {
         Ext4.Object.each(this.fragmentPlotData, function(label, fragmentData) {
-            // traverse plotData backwards from firstIndex to lastIndex and
-            // remove them from the array
-            if (this.filterQCPoints && this.filterPoints) {
+            if (this.filterQCPoints && this.filterPoints && this.filterPoints[label]) {
 
-                // when we're plotting two different metrics at the same time, then we
-                // have repeated dates (from oldest to newest for metric 1, and then oldest to newest for metric 2, all in the same array).
-                // so, removing the array elements from the back
-                const filterPointsReversed = Object.keys(this.filterPoints[label]).reverse();
-                const lab  = label;
+                // Points are date-sorted with both metrics interleaved, so the out-of-range block (guide set
+                // training end -> start date) is one contiguous range spanning both metrics. Splicing the
+                // per-metric ranges separately would overlap and corrupt indices, so combine them: start after
+                // the last training point of any metric, end at the last "first in-range" point of any metric.
+                let firstIndex, lastIndex;
+                Ext4.Object.each(this.filterPoints[label], function(metricId, range) {
+                    if (range['skipTruncation'] || range['filterPointsFirstIndex'] === undefined
+                            || range['filterPointsLastIndex'] === undefined) {
+                        return;
+                    }
+                    firstIndex = firstIndex === undefined ? range['filterPointsFirstIndex'] : Math.max(firstIndex, range['filterPointsFirstIndex']);
+                    lastIndex = lastIndex === undefined ? range['filterPointsLastIndex'] : Math.max(lastIndex, range['filterPointsLastIndex']);
+                }, this);
 
-                filterPointsReversed.forEach(metricId => {
-                    let firstIndex = this.filterPoints[lab][metricId]['filterPointsFirstIndex'];
-                    let lastIndex = this.filterPoints[lab][metricId]['filterPointsLastIndex'];
-
+                if (firstIndex !== undefined && lastIndex !== undefined) {
                     for (let i = lastIndex; i >= firstIndex; i--) {
                         fragmentData.data.splice(i, 1);
                     }
-                });
-
+                }
             }
         }, this);
     },

@@ -794,6 +794,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                             this.startDate = this.formatDate(this.calculateStartDateByOffset());
                             this.endDate = this.formatDate(this.calculateEndDateByOffset());
 
+                            if (this.filterQCPoints) {
+                                this.resetFilterPointsIndices();
+                            }
+
                             this.displayTrendPlot();
                         }
                         else {
@@ -1603,7 +1607,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     pathMouseOver : function(event, pathData, layerSel, path, valueName, config) {
         if (pathData.group) {
-            this.highlightFragmentSeries(pathData.group);
+            // pass base fragment, like the other highlight triggers
+            this.highlightFragmentSeries(pathData.group.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]);
         }
     },
 
@@ -2163,6 +2168,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             let label = checkbox.closest('label');
             if (label) {
                 label.addEventListener('mouseenter', function() {
+                    clearTimeout(precursorLeaveTimer); // cancel a pending precursor reset when moving sub-item -> header
                     let hidden = me.hiddenPrecursorSeries || {};
                     let hiddenFragments = group.fragments.filter(function(f) { return !!hidden[f]; });
                     if (hiddenFragments.length > 0) {
@@ -2430,8 +2436,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                         .attr('stroke', color).attr('stroke-opacity', 0.1)
                         .attr('fill', color).attr('fill-opacity', 0.1)
                         .append("title")
-                        .text(function (d) {
-                            return "Selected replicate: " + Ext4.String.htmlEncode(d.ReplicateName);
+                        .text(function () {
+                            // 'data' is the already-matched point for this replicate, don't index plot.data by
+                            // seqValue (EndIndex), which breaks once out-of-range points have been truncated.
+                            return "Selected replicate: " + Ext4.String.htmlEncode(data.ReplicateName);
                         });
 
                 this.sendSvgElementToBack(plot, outlierRect);
@@ -2504,9 +2512,12 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 var pointsData = precursorInfo.data;
                 var expDataArr = [];
 
-                // startIndex/endIndex are seqValues (day offsets in calendar mode), not array indices.
-                for (let i = 0; i < pointsData.length; i++) {
-                    if (pointsData[i].seqValue >= startIndex && pointsData[i].seqValue <= endIndex && pointsData[i].value !== undefined) {
+                // match on seqValue (not array index); restrict to primary metric so multi-series doesn't
+                // blend both metrics into one mean/std-dev/%CV
+                for (var i = 0; i < pointsData.length; i++) {
+                    if (pointsData[i].seqValue >= startIndex && pointsData[i].seqValue <= endIndex
+                            && pointsData[i].MetricId === this.metric
+                            && pointsData[i].value !== undefined && pointsData[i].value !== null) {
                         expDataArr.push(pointsData[i].value);
                     }
                 }
