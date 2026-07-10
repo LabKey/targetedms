@@ -184,7 +184,10 @@ public class SampleFileTable extends TargetedMSTable
             // Do a query to look across the entire server for samples where the name matches with names from the
             // targetedms.SampleFiles table, as currently filtered by the SampleFileTable (container and/or run)
             SQLFragment sql = new SQLFragment("SELECT DISTINCT m.Container, m.CpasType FROM (\n");
-            sql.append("SELECT COALESCE(ra.value, sf.SampleId, sf.SampleName) AS SampleIdentifier FROM \n");
+            // DISTINCT collapses the many sample files that share an identifier down to the distinct set, so the
+            // planner builds the hash on this small side and scans exp.material once as the probe (instead of
+            // hashing and spilling the entire, server-wide material table).
+            sql.append("SELECT DISTINCT COALESCE(ra.value, sf.SampleId, sf.SampleName) AS SampleIdentifier FROM \n");
             sql.append(TargetedMSManager.getTableInfoSampleFile(), "sf");
             sql.append(" INNER JOIN \n");
             sql.append(TargetedMSManager.getTableInfoReplicate(), "rep");
