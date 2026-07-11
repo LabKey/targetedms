@@ -306,6 +306,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -586,6 +587,141 @@ public class TargetedMSController extends SpringActionController
         public void addNavTrail(NavTree root)
         {
             urlProvider(AdminUrls.class).addAdminNavTrail(root, "Chromatogram Crawler", getClass(), getContainer());
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Site-admin settings page: require a login for guests on targetedms actions targeted by bots.
+    // ------------------------------------------------------------------------
+    public static class GuestAccessSettingsForm
+    {
+        private boolean _masterEnabled;
+        private String[] _restrictedActions = new String[0];
+
+        public boolean isMasterEnabled()
+        {
+            return _masterEnabled;
+        }
+
+        public void setMasterEnabled(boolean masterEnabled)
+        {
+            _masterEnabled = masterEnabled;
+        }
+
+        public String[] getRestrictedActions()
+        {
+            return _restrictedActions;
+        }
+
+        public void setRestrictedActions(String[] restrictedActions)
+        {
+            _restrictedActions = restrictedActions;
+        }
+
+        /** The checked actions as an enum set, ignoring any unrecognized keys. */
+        public Set<GuestAccessManager.RestrictableAction> getCheckedActions()
+        {
+            Set<GuestAccessManager.RestrictableAction> checked = EnumSet.noneOf(GuestAccessManager.RestrictableAction.class);
+            for (String name : _restrictedActions)
+            {
+                try
+                {
+                    checked.add(GuestAccessManager.RestrictableAction.valueOf(name));
+                }
+                catch (IllegalArgumentException ignored)
+                {
+                    // Skip anything that is not a current action key
+                }
+            }
+            return checked;
+        }
+    }
+
+    /** One row on the settings page: an action, its label, and whether its checkbox is currently checked. */
+    public static class GuestAccessActionState
+    {
+        private final GuestAccessManager.RestrictableAction _action;
+        private final boolean _checked;
+
+        public GuestAccessActionState(GuestAccessManager.RestrictableAction action, boolean checked)
+        {
+            _action = action;
+            _checked = checked;
+        }
+
+        public String getName()
+        {
+            return _action.name();
+        }
+
+        public String getLabel()
+        {
+            return _action.getLabel();
+        }
+
+        public boolean isChecked()
+        {
+            return _checked;
+        }
+    }
+
+    /** Model for the settings JSP: the master switch state plus one row per restrictable action. */
+    public static class GuestAccessSettingsBean
+    {
+        private final boolean _masterEnabled;
+        private final List<GuestAccessActionState> _actions;
+
+        public GuestAccessSettingsBean()
+        {
+            _masterEnabled = GuestAccessManager.isMasterEnabled();
+            _actions = new ArrayList<>();
+            for (GuestAccessManager.RestrictableAction action : GuestAccessManager.RestrictableAction.values())
+                _actions.add(new GuestAccessActionState(action, GuestAccessManager.isActionChecked(action)));
+        }
+
+        public boolean isMasterEnabled()
+        {
+            return _masterEnabled;
+        }
+
+        public List<GuestAccessActionState> getActions()
+        {
+            return _actions;
+        }
+    }
+
+    @RequiresPermission(ApplicationAdminPermission.class)
+    public class GuestAccessSettingsAction extends FormViewAction<GuestAccessSettingsForm>
+    {
+        @Override
+        public void validateCommand(GuestAccessSettingsForm target, Errors errors)
+        {
+        }
+
+        @Override
+        public ModelAndView getView(GuestAccessSettingsForm form, boolean reshow, BindException errors)
+        {
+            return new JspView<>("/org/labkey/targetedms/view/guestAccessSettings.jsp", new GuestAccessSettingsBean(), errors);
+        }
+
+        @Override
+        public boolean handlePost(GuestAccessSettingsForm form, BindException errors)
+        {
+            GuestAccessManager.save(getUser(), form.isMasterEnabled(), form.getCheckedActions());
+            return true;
+        }
+
+        @Override
+        public URLHelper getSuccessURL(GuestAccessSettingsForm form)
+        {
+            // Reshow the settings page with the saved values.
+            return new ActionURL(GuestAccessSettingsAction.class, getContainer());
+        }
+
+        @Override
+        public void addNavTrail(NavTree root)
+        {
+            urlProvider(AdminUrls.class).addAdminNavTrail(root, "Targeted MS Guest Access", getClass(), getContainer());
         }
     }
 
@@ -1971,6 +2107,8 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void export(GroupChromatogramForm form, HttpServletResponse response, BindException errors) throws Exception
         {
+            redirectGuestToLoginForChart(GuestAccessManager.RestrictableAction.groupChromatogramChart, getViewContext(), getContainer());
+
             PeptideGroup group = PeptideGroupManager.getPeptideGroup(getContainer(), form.getGroupId());
             if (group == null)
             {
@@ -2007,6 +2145,8 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void export(ChromatogramForm form, HttpServletResponse response, BindException errors) throws Exception
         {
+            redirectGuestToLoginForChart(GuestAccessManager.RestrictableAction.precursorChromatogramChart, getViewContext(), getContainer());
+
             PrecursorChromInfo pChromInfo = PrecursorManager.getPrecursorChromInfo(getContainer(), form.getId());
             if (pChromInfo == null)
             {
@@ -3029,6 +3169,10 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(ChromatogramForm form, BindException errors)
         {
+            HtmlView loginGate = getGuestLoginGate(GuestAccessManager.RestrictableAction.showPeptide, getViewContext(), getContainer());
+            if (loginGate != null)
+                return loginGate;
+
             long peptideId = form.getId();  // peptide Id
 
             Peptide peptide = PeptideManager.getPeptide(getContainer(), peptideId);
@@ -3123,6 +3267,10 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(ChromatogramForm form, BindException errors)
         {
+            HtmlView loginGate = getGuestLoginGate(GuestAccessManager.RestrictableAction.showMolecule, getViewContext(), getContainer());
+            if (loginGate != null)
+                return loginGate;
+
             long moleculeId = form.getId();
 
             Molecule molecule = MoleculeManager.getMolecule(getContainer(), moleculeId);
@@ -3639,6 +3787,8 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void export(SummaryChartForm form, HttpServletResponse response, BindException errors) throws Exception
         {
+            redirectGuestToLoginForChart(GuestAccessManager.RestrictableAction.showPeakAreas, getViewContext(), getContainer());
+
             JFreeChart chart;
             if (form.isAsProteomics())
             {
@@ -3695,6 +3845,8 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void export(SummaryChartForm form, HttpServletResponse response, BindException errors) throws Exception
         {
+            redirectGuestToLoginForChart(GuestAccessManager.RestrictableAction.showRetentionTimesChart, getViewContext(), getContainer());
+
             if (form.getValue() == null)
                 form.setValue("All");
 
@@ -4515,6 +4667,29 @@ public class TargetedMSController extends SpringActionController
                         AuthenticationManager.isRegistrationEnabled() ? registerLink : "")));
     }
 
+    /**
+     * Returns a login view when a guest should be sent to the login page for this action (the site-admin
+     * master switch is on AND this action's checkbox is checked), otherwise null so the action runs as
+     * normal. See {@link GuestAccessSettingsAction}.
+     */
+    @Nullable
+    private static HtmlView getGuestLoginGate(GuestAccessManager.RestrictableAction action, ViewContext context, Container container)
+    {
+        if (context.getUser().isGuest() && GuestAccessManager.isRestricted(action))
+            return getLoginView(context, container);
+        return null;
+    }
+
+    /**
+     * Same check as {@link #getGuestLoginGate}, but for the chart actions that write an image. Those cannot
+     * return the HTML login view, so a restricted guest is redirected to the login page instead.
+     */
+    private static void redirectGuestToLoginForChart(GuestAccessManager.RestrictableAction action, ViewContext context, Container container)
+    {
+        if (context.getUser().isGuest() && GuestAccessManager.isRestricted(action))
+            throw new RedirectException(PageFlowUtil.urlProvider(LoginUrls.class).getLoginURL(container, context.getActionURL()));
+    }
+
     @RequiresPermission(ReadPermission.class)
     public class ShowPrecursorListAction extends ShowRunSplitDetailsAction<DocumentPrecursorsView>
     {
@@ -4527,6 +4702,13 @@ public class TargetedMSController extends SpringActionController
         public ShowPrecursorListAction(ViewContext ctx)
         {
             setViewContext(ctx);
+        }
+
+        @Override
+        public ModelAndView getHtmlView(final RunDetailsForm form, BindException errors) throws Exception
+        {
+            HtmlView loginGate = getGuestLoginGate(GuestAccessManager.RestrictableAction.showPrecursorList, getViewContext(), getContainer());
+            return loginGate != null ? loginGate : super.getHtmlView(form, errors);
         }
 
         @Override
@@ -4703,6 +4885,13 @@ public class TargetedMSController extends SpringActionController
     @RequiresPermission(ReadPermission.class)
     public class ShowCalibrationCurvesAction extends ShowRunSplitDetailsAction<CalibrationCurvesView>
     {
+        @Override
+        public ModelAndView getHtmlView(final RunDetailsForm form, BindException errors) throws Exception
+        {
+            HtmlView loginGate = getGuestLoginGate(GuestAccessManager.RestrictableAction.showCalibrationCurve, getViewContext(), getContainer());
+            return loginGate != null ? loginGate : super.getHtmlView(form, errors);
+        }
+
         @Override
         public String getDataRegionNamePeptide()
         {
@@ -5508,6 +5697,10 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(final ProteinForm form, BindException errors)
         {
+            HtmlView loginGate = getGuestLoginGate(GuestAccessManager.RestrictableAction.showProtein, getViewContext(), getContainer());
+            if (loginGate != null)
+                return loginGate;
+
             PeptideGroup group = PeptideGroupManager.getPeptideGroup(getContainer(), form.getId());
             if (group == null)
             {
