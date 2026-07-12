@@ -53,6 +53,7 @@ import org.labkey.api.action.ApiJsonWriter;
 import org.labkey.api.action.ApiResponse;
 import org.labkey.api.action.ApiSimpleResponse;
 import org.labkey.api.action.ApiUsageException;
+import org.labkey.api.action.BaseViewAction;
 import org.labkey.api.action.ExportAction;
 import org.labkey.api.action.FormHandlerAction;
 import org.labkey.api.action.FormViewAction;
@@ -2107,7 +2108,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void export(GroupChromatogramForm form, HttpServletResponse response, BindException errors) throws Exception
         {
-            redirectGuestToLoginForChart(GuestAccessManager.RestrictableAction.groupChromatogramChart, getViewContext(), getContainer());
+            redirectGuestToLoginForChart(getClass(), getViewContext(), getContainer());
 
             PeptideGroup group = PeptideGroupManager.getPeptideGroup(getContainer(), form.getGroupId());
             if (group == null)
@@ -2145,7 +2146,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void export(ChromatogramForm form, HttpServletResponse response, BindException errors) throws Exception
         {
-            redirectGuestToLoginForChart(GuestAccessManager.RestrictableAction.precursorChromatogramChart, getViewContext(), getContainer());
+            redirectGuestToLoginForChart(getClass(), getViewContext(), getContainer());
 
             PrecursorChromInfo pChromInfo = PrecursorManager.getPrecursorChromInfo(getContainer(), form.getId());
             if (pChromInfo == null)
@@ -3169,7 +3170,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(ChromatogramForm form, BindException errors)
         {
-            HtmlView loginGate = getGuestLoginGate(GuestAccessManager.RestrictableAction.showPeptide, getViewContext(), getContainer());
+            HtmlView loginGate = getGuestLoginGate(getClass(), getViewContext(), getContainer());
             if (loginGate != null)
                 return loginGate;
 
@@ -3270,7 +3271,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(ChromatogramForm form, BindException errors)
         {
-            HtmlView loginGate = getGuestLoginGate(GuestAccessManager.RestrictableAction.showMolecule, getViewContext(), getContainer());
+            HtmlView loginGate = getGuestLoginGate(getClass(), getViewContext(), getContainer());
             if (loginGate != null)
                 return loginGate;
 
@@ -3793,7 +3794,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void export(SummaryChartForm form, HttpServletResponse response, BindException errors) throws Exception
         {
-            redirectGuestToLoginForChart(GuestAccessManager.RestrictableAction.showPeakAreas, getViewContext(), getContainer());
+            redirectGuestToLoginForChart(getClass(), getViewContext(), getContainer());
 
             JFreeChart chart;
             if (form.isAsProteomics())
@@ -3851,7 +3852,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void export(SummaryChartForm form, HttpServletResponse response, BindException errors) throws Exception
         {
-            redirectGuestToLoginForChart(GuestAccessManager.RestrictableAction.showRetentionTimesChart, getViewContext(), getContainer());
+            redirectGuestToLoginForChart(getClass(), getViewContext(), getContainer());
 
             if (form.getValue() == null)
                 form.setValue("All");
@@ -4674,25 +4675,32 @@ public class TargetedMSController extends SpringActionController
     }
 
     /**
+     * True when a guest should be sent to login for this action: master switch on AND this action checked.
+     */
+    private static boolean isGuestGated(Class<? extends BaseViewAction<?>> actionClass, ViewContext context)
+    {
+        GuestAccessManager.RestrictableAction action = GuestAccessManager.RestrictableAction.forClass(actionClass);
+        return action != null && context.getUser().isGuest() && GuestAccessManager.isRestricted(action);
+    }
+
+    /**
      * Returns a login view when a guest should be sent to the login page for this action (the site-admin
      * master switch is on AND this action's checkbox is checked), otherwise null so the action runs as
      * normal. See {@link GuestAccessSettingsAction}.
      */
     @Nullable
-    private static HtmlView getGuestLoginGate(GuestAccessManager.RestrictableAction action, ViewContext context, Container container)
+    private static HtmlView getGuestLoginGate(Class<? extends BaseViewAction<?>> actionClass, ViewContext context, Container container)
     {
-        if (context.getUser().isGuest() && GuestAccessManager.isRestricted(action))
-            return getLoginView(context, container);
-        return null;
+        return isGuestGated(actionClass, context) ? getLoginView(context, container) : null;
     }
 
     /**
      * Same check as {@link #getGuestLoginGate}, but for the chart actions that write an image. Those cannot
      * return the HTML login view, so a restricted guest is redirected to the login page instead.
      */
-    private static void redirectGuestToLoginForChart(GuestAccessManager.RestrictableAction action, ViewContext context, Container container)
+    private static void redirectGuestToLoginForChart(Class<? extends BaseViewAction<?>> actionClass, ViewContext context, Container container)
     {
-        if (context.getUser().isGuest() && GuestAccessManager.isRestricted(action))
+        if (isGuestGated(actionClass, context))
             throw new RedirectException(PageFlowUtil.urlProvider(LoginUrls.class).getLoginURL(container, context.getActionURL()));
     }
 
@@ -4713,7 +4721,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(RunDetailsForm form, BindException errors) throws Exception
         {
-            HtmlView loginGate = getGuestLoginGate(GuestAccessManager.RestrictableAction.showPrecursorList, getViewContext(), getContainer());
+            HtmlView loginGate = getGuestLoginGate(getClass(), getViewContext(), getContainer());
             return loginGate != null ? loginGate : super.getView(form, errors);
         }
 
@@ -4891,13 +4899,6 @@ public class TargetedMSController extends SpringActionController
     @RequiresPermission(ReadPermission.class)
     public class ShowCalibrationCurvesAction extends ShowRunSplitDetailsAction<CalibrationCurvesView>
     {
-        @Override
-        public ModelAndView getView(RunDetailsForm form, BindException errors) throws Exception
-        {
-            HtmlView loginGate = getGuestLoginGate(GuestAccessManager.RestrictableAction.showCalibrationCurves, getViewContext(), getContainer());
-            return loginGate != null ? loginGate : super.getView(form, errors);
-        }
-
         @Override
         public String getDataRegionNamePeptide()
         {
@@ -5703,7 +5704,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(final ProteinForm form, BindException errors)
         {
-            HtmlView loginGate = getGuestLoginGate(GuestAccessManager.RestrictableAction.showProtein, getViewContext(), getContainer());
+            HtmlView loginGate = getGuestLoginGate(getClass(), getViewContext(), getContainer());
             if (loginGate != null)
                 return loginGate;
 
@@ -8441,9 +8442,11 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void addNavTrail(NavTree root)
         {
+            // Add the top-level crumb unconditionally so the page has a title even on the guest login-gate
+            // path, where validate() returns early and _run is never set.
+            root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
             if (null != _run)
             {
-                root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
                 root.addChild(_run.getDescription(), getShowCalibrationCurvesURL(getContainer(), _run.getId()));
                 if (_curvePlotView.getChart().getMolecule() != null)
                 {
@@ -8455,6 +8458,11 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void validate(CalibrationCurveForm form, BindException errors)
         {
+            // Skip the expensive CalibrationCurveView construction below. Gating only in getView would be too late,
+            // because the expensive work is done here in validate().
+            if (isGuestGated(getClass(), getViewContext()))
+                return;
+
             _curvePlotView = new CalibrationCurveView(getUser(), getContainer(), form.getCalibrationCurveId());
             CalibrationCurveEntity chart = _curvePlotView.getChart().getCalibrationCurveEntity();
             //ensure that the experiment run is valid and exists within the current container
@@ -8476,6 +8484,11 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(CalibrationCurveForm calibrationCurveForm, BindException errors)
         {
+            // A restricted guest is short-circuited here; validate() already skipped the expensive work.
+            HtmlView loginGate = getGuestLoginGate(getClass(), getViewContext(), getContainer());
+            if (loginGate != null)
+                return loginGate;
+
             CalibrationCurveChart chart = _curvePlotView.getChart();
             GeneralMolecule<?, ?> molecule = chart.getMolecule();
             if (molecule == null)

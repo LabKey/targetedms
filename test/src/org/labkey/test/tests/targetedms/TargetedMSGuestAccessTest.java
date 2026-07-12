@@ -15,6 +15,7 @@
  */
 package org.labkey.test.tests.targetedms;
 
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -22,7 +23,6 @@ import org.labkey.remoteapi.query.SelectRowsCommand;
 import org.labkey.remoteapi.query.SelectRowsResponse;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
-import org.labkey.test.TestTimeoutException;
 import org.labkey.test.WebTestHelper;
 import org.labkey.test.util.ApiPermissionsHelper;
 import org.labkey.test.util.LogMethod;
@@ -70,8 +70,7 @@ public class TargetedMSGuestAccessTest extends TargetedMSTest
 
     private static final Locator MASTER_SWITCH = Locator.id("tms-require-login-master");
 
-    // Captured during setup and read from the @Test method, which runs on a different instance than
-    // @BeforeClass setup, so these must be static (instance fields would be null in the test method).
+    // Captured during setup and read from the @Test method.
     private static String proteinUrl;   // showProtein detail page
     private static String peptideUrl;   // showPeptide detail page
     private static String chartUrl;     // precursorChromatogramChart image endpoint
@@ -79,8 +78,10 @@ public class TargetedMSGuestAccessTest extends TargetedMSTest
     private static String precursorListUrl;        // showPrecursorList HTML page (a QueryView action)
     private static String precursorListExportUrl;  // its TSV export URL (dispatched before the HTML view)
 
-    // The site-wide Guest Access state as it was before this test, so doCleanup can restore it exactly (these
-    // are root-container properties shared across the whole server, not scoped to this test's folder).
+    // The site-wide Guest Access state as it was before this test, so the @After restore can put it back
+    // exactly (these are root-container properties shared across the whole server, not scoped to this test's
+    // folder). Restored in @After rather than doCleanup so it runs even when project cleanup is skipped
+    // (clean=false).
     private static boolean origMasterEnabled;
     private static List<String> origCheckedKeys;
 
@@ -100,8 +101,7 @@ public class TargetedMSGuestAccessTest extends TargetedMSTest
     @LogMethod
     private void doSetup() throws Exception
     {
-        // Remember the site-wide Guest Access settings before touching anything, so doCleanup can put them
-        // back exactly as they were (they live on the root container and are shared across the whole server).
+        // Remember the site-wide Guest Access settings before touching anything, so they can be restored after the test.
         captureOriginalGuestAccessSettings();
 
         setupFolder(FolderType.Experiment);
@@ -130,7 +130,7 @@ public class TargetedMSGuestAccessTest extends TargetedMSTest
         chromInfoQuery.setMaxRows(1);
         SelectRowsResponse chromInfoRows = chromInfoQuery.execute(createDefaultConnection(), getCurrentContainerPath());
         assertFalse("Expected at least one PrecursorChromInfo row", chromInfoRows.getRows().isEmpty());
-        Number chromInfoId = (Number) chromInfoRows.getRows().get(0).get("Id");
+        Number chromInfoId = (Number) chromInfoRows.getRows().getFirst().get("Id");
         chartUrl = WebTestHelper.buildURL("targetedms", getCurrentContainerPath(), PRECURSOR_CHROMATOGRAM_CHART,
                 Map.of("id", String.valueOf(chromInfoId.longValue())));
 
@@ -157,34 +157,33 @@ public class TargetedMSGuestAccessTest extends TargetedMSTest
         }
     }
 
-    @Override
-    protected void doCleanup(boolean afterTest) throws TestTimeoutException
+    @After
+    public void restoreGuestAccessSettings()
     {
-        // Restore the site-wide Guest Access settings to what they were before the test. These are root-
-        // container properties shared across the whole server, so a leftover value would leak into other
-        // tests. The framework already signs back in as the site admin before doCleanup. Best effort: don't
-        // let a failure here block the project deletion in super.doCleanup.
-        try
-        {
-            if (origCheckedKeys != null)
-            {
-                // The per-action checkboxes only post while the master switch is on, so re-apply the original
-                // selections with it on, then set the master switch back to its original value.
-                saveGuestAccessSettings(true, origCheckedKeys.toArray(new String[0]));
-                if (!origMasterEnabled)
-                    saveGuestAccessSettings(false);
-            }
-        }
-        catch (Exception ignored)
-        {
-        }
-        super.doCleanup(afterTest);
+        // Put the site-wide Guest Access settings back the way the test found them. This runs in @After,
+        // not doCleanup, so it still happens when project cleanup is skipped (clean=false).
+        if (origCheckedKeys == null)
+            return; // setup did not get far enough to capture the originals
+
+        // The test signs out at the end, and the settings page requires a site admin, so sign back in first.
+        ensureSignedInAsPrimaryTestUser();
+
+        // The per-action checkboxes only post while the master switch is on, so re-apply the original
+        // selections with it on, then set the master switch back to its original value.
+        saveGuestAccessSettings(true, origCheckedKeys.toArray(new String[0]));
+        if (!origMasterEnabled)
+            saveGuestAccessSettings(false);
     }
 
     @Test
     public void testGuestAccessToggle()
     {
-        // 1. Master OFF (default): guests can view the pages and the chart; the always-on page is blocked.
+        // 1. Master OFF: establish the baseline explicitly rather than trusting the ambient site-wide state.
+        //    The master switch is a root-container property shared across the whole server, so a prior aborted
+        //    run could leave it on; set it off here (we are still signed in as the site admin) so the "guests
+        //    can view" checks below are deterministic. Guests can then view the pages and the chart, while the
+        //    always-on page stays blocked.
+        saveGuestAccessSettings(false);
         signOut();
         assertGuestAllowedPage(proteinUrl, TARGET_PROTEIN);
         assertGuestAllowedPage(peptideUrl, TARGET_PEPTIDE);

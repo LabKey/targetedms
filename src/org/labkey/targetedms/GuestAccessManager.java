@@ -16,9 +16,11 @@
 package org.labkey.targetedms;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.labkey.api.action.BaseViewAction;
+import org.labkey.api.action.SpringActionController;
 import org.labkey.api.audit.AuditLogService;
 import org.labkey.api.audit.provider.SiteSettingsAuditProvider;
-import org.labkey.api.data.Container;
 import org.labkey.api.data.ContainerManager;
 import org.labkey.api.data.PropertyManager;
 import org.labkey.api.data.PropertyManager.PropertyMap;
@@ -29,7 +31,6 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Site-admin setting that can require a login for slow targetedms pages that get hit by bots. A master
@@ -48,43 +49,67 @@ public class GuestAccessManager
     private static final String TRUE = Boolean.TRUE.toString();
 
     /**
-     * The actions a site admin can choose to require a login.
-     * defaultChecked is used when nothing has been saved yet.
+     * The actions a site admin can choose to require a login. Each entry is keyed by its action class.
      *
      * The pages that draw many charts are checked by default. The single-chart image actions and the
-     * precursor table are offered too but are off by default, so guests keep seeing inline charts and lists
-     * during normal operation. An admin can also check those to block direct requests to them during an
-     * bot attack (they show up in high volume because the detail pages embed many of them).
+     * precursor table are offered too but are off by default. An admin can also check those to block direct
+     * requests to them during a bot attack (they show up in high volume during an attack because the detail
+     * pages embed many of them).
      */
     public enum RestrictableAction
     {
-        showProtein("Protein details page (showProtein)", true),
-        showPeptide("Peptide details page (showPeptide)", true),
-        showMolecule("Small molecule details page (showMolecule)", true),
-        showCalibrationCurves("Calibration curves page (showCalibrationCurves)", true),
-        showPrecursorList("Document details page (showPrecursorList)", false),
-        showPeakAreas("Peak areas chart (showPeakAreas)", false),
-        showRetentionTimesChart("Retention times chart (showRetentionTimesChart)", false),
-        precursorChromatogramChart("Precursor chromatogram (precursorChromatogramChart)", false),
-        groupChromatogramChart("Protein chromatogram (groupChromatogramChart)", false);
+        showProtein(TargetedMSController.ShowProteinAction.class, "Protein details page", true),
+        showPeptide(TargetedMSController.ShowPeptideAction.class, "Peptide details page", true),
+        showMolecule(TargetedMSController.ShowMoleculeAction.class, "Small molecule details page", true),
+        showCalibrationCurve(TargetedMSController.ShowCalibrationCurveAction.class, "Calibration curve details page", true),
+        showPrecursorList(TargetedMSController.ShowPrecursorListAction.class, "Document details page", false),
+        showPeakAreas(TargetedMSController.ShowPeakAreasAction.class, "Peak areas chart", false),
+        showRetentionTimesChart(TargetedMSController.ShowRetentionTimesChartAction.class, "Retention times chart", false),
+        precursorChromatogramChart(TargetedMSController.PrecursorChromatogramChartAction.class, "Precursor chromatogram", false),
+        groupChromatogramChart(TargetedMSController.GroupChromatogramChartAction.class, "Protein chromatogram", false);
 
-        private final String _label;
+        private final Class<? extends BaseViewAction<?>> _actionClass;
+        private final String _description;
         private final boolean _defaultChecked;
 
-        RestrictableAction(String label, boolean defaultChecked)
+        RestrictableAction(Class<? extends BaseViewAction<?>> actionClass, String description, boolean defaultChecked)
         {
-            _label = label;
+            _actionClass = actionClass;
+            _description = description;
             _defaultChecked = defaultChecked;
         }
 
-        public String getLabel()
+        /**
+         * The action's registered URL name (e.g. "showCalibrationCurve"), derived from the action class.
+         */
+        private String getActionName()
         {
-            return _label;
+            return SpringActionController.getActionName(_actionClass);
         }
 
-        public boolean isDefaultChecked()
+        /** Settings-page label, e.g. "Calibration curve details page (showCalibrationCurve)". */
+        public String getLabel()
+        {
+            return _description + " (" + getActionName() + ")";
+        }
+
+        private boolean isDefaultChecked()
         {
             return _defaultChecked;
+        }
+
+        /**
+         * The restrictable action for this action class, or null if the class is not gated.
+         */
+        @Nullable
+        public static RestrictableAction forClass(@NotNull Class<? extends BaseViewAction<?>> actionClass)
+        {
+            for (RestrictableAction action : values())
+            {
+                if (action._actionClass.equals(actionClass))
+                    return action;
+            }
+            return null;
         }
     }
 
@@ -122,14 +147,16 @@ public class GuestAccessManager
         PropertyMap props = getProperties();
         if (!TRUE.equals(props.get(MASTER_KEY)))
             return false;
+        // saved true/false is the admin's explicit choice (an explicit uncheck is respected). Absent means
+        // never decided - e.g. an action added in a later release - so fall back to the action's default:
+        // a new default-checked action is gated once the master switch is on, without waiting for a re-save.
         String saved = props.get(action.name());
         return saved == null ? action.isDefaultChecked() : TRUE.equals(saved);
     }
 
     /** The set of currently-checked actions (independent of the master toggle). */
-    public static Set<RestrictableAction> getCheckedActions()
+    private static Set<RestrictableAction> getCheckedActions()
     {
-        // Read the property map once and reuse it rather than re-fetching per action.
         PropertyMap props = getProperties();
         Set<RestrictableAction> checked = EnumSet.noneOf(RestrictableAction.class);
         for (RestrictableAction action : RestrictableAction.values())
@@ -182,8 +209,8 @@ public class GuestAccessManager
         for (RestrictableAction action : RestrictableAction.values())
         {
             if (actions.contains(action))
-                names.add(action.name());
+                names.add(action.getActionName());
         }
-        return names.stream().collect(Collectors.joining(", "));
+        return String.join(", ", names);
     }
 }
