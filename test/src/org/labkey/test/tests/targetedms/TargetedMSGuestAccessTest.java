@@ -18,6 +18,8 @@ package org.labkey.test.tests.targetedms;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.labkey.remoteapi.query.SelectRowsCommand;
+import org.labkey.remoteapi.query.SelectRowsResponse;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
 import org.labkey.test.TestTimeoutException;
@@ -26,6 +28,8 @@ import org.labkey.test.util.ApiPermissionsHelper;
 import org.labkey.test.util.LogMethod;
 import org.openqa.selenium.WebElement;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertFalse;
@@ -43,9 +47,8 @@ import static org.labkey.test.util.PermissionsHelper.READER_ROLE;
  * - Detail pages (showProtein, showPeptide) show an inline login view at the same URL, whose text is
  *   "Login to view this data".
  * - Chart-image endpoints (precursorChromatogramChart) cannot return that HTML, so they redirect a
- *   blocked guest to the standard login page. This is tested with a dummy id, because the gate runs
- *   before the id is looked up: a blocked guest lands on login.view, while an allowed guest stays on the
- *   chart URL (a "not found" page for the dummy id).
+ *   blocked guest to the standard login page. A blocked guest lands on login.view (the gate runs before
+ *   the id is looked up), while an allowed guest renders the real chart at the same URL.
  *
  * This does not change the pages that always require a login for guests (e.g. the precursor
  * "all chromatograms" page), which stay blocked no matter what the switch is set to.
@@ -62,6 +65,7 @@ public class TargetedMSGuestAccessTest extends TargetedMSTest
     // Action keys as stored/posted by the settings page (must match the GuestAccessManager enum names).
     private static final String SHOW_PROTEIN = "showProtein";
     private static final String SHOW_PEPTIDE = "showPeptide";
+    private static final String SHOW_PRECURSOR_LIST = "showPrecursorList";
     private static final String PRECURSOR_CHROMATOGRAM_CHART = "precursorChromatogramChart";
 
     private static final Locator MASTER_SWITCH = Locator.id("tms-require-login-master");
@@ -70,8 +74,15 @@ public class TargetedMSGuestAccessTest extends TargetedMSTest
     // @BeforeClass setup, so these must be static (instance fields would be null in the test method).
     private static String proteinUrl;   // showProtein detail page
     private static String peptideUrl;   // showPeptide detail page
-    private static String chartUrl;     // precursorChromatogramChart image endpoint (dummy id)
+    private static String chartUrl;     // precursorChromatogramChart image endpoint
     private static String requiresLoginUrl;  // PrecursorAllChromatogramsChartAction, always blocked for guests
+    private static String precursorListUrl;        // showPrecursorList HTML page (a QueryView action)
+    private static String precursorListExportUrl;  // its TSV export URL (dispatched before the HTML view)
+
+    // The site-wide Guest Access state as it was before this test, so doCleanup can restore it exactly (these
+    // are root-container properties shared across the whole server, not scoped to this test's folder).
+    private static boolean origMasterEnabled;
+    private static List<String> origCheckedKeys;
 
     @Override
     protected String getProjectName()
@@ -80,31 +91,48 @@ public class TargetedMSGuestAccessTest extends TargetedMSTest
     }
 
     @BeforeClass
-    public static void initProject()
+    public static void initProject() throws Exception
     {
         TargetedMSGuestAccessTest init = getCurrentTest();
         init.doSetup();
     }
 
     @LogMethod
-    private void doSetup()
+    private void doSetup() throws Exception
     {
+        // Remember the site-wide Guest Access settings before touching anything, so doCleanup can put them
+        // back exactly as they were (they live on the root container and are shared across the whole server).
+        captureOriginalGuestAccessSettings();
+
         setupFolder(FolderType.Experiment);
         importData(SKY_FILE);
 
         // Capture the URLs we will later request as a guest.
         goToDashboard();
         clickAndWait(Locator.linkWithText(SKY_FILE));
+
+        // The document's default page is the precursor list (showPrecursorList, a QueryView action). Capture
+        // it and its TSV export URL.
+        precursorListUrl = getCurrentRelativeURL();
+        precursorListExportUrl = precursorListUrl + (precursorListUrl.contains("?") ? "&" : "?") + "exportType=exportRowsTsv";
+
         clickAndWait(Locator.linkWithText(TARGET_PROTEIN));
         proteinUrl = getCurrentRelativeURL();
 
-        // A chart-image endpoint in this same folder. A dummy id is enough because the login gate runs
-        // before the id is looked up.
-        chartUrl = WebTestHelper.buildURL("targetedms", getCurrentContainerPath(), PRECURSOR_CHROMATOGRAM_CHART,
-                Map.of("id", "1"));
-
         clickAndWait(Locator.linkWithText(TARGET_PEPTIDE));
         peptideUrl = getCurrentRelativeURL();
+
+        // Look up a real precursorChromInfoId from the database and build the chart URL from it. A real id
+        // renders an actual chart in the master-off "allowed" case; the gate still runs before the id lookup,
+        // so the master-on case redirects to login regardless of the id.
+        SelectRowsCommand chromInfoQuery = new SelectRowsCommand("targetedms", "PrecursorChromInfo");
+        chromInfoQuery.setColumns(List.of("Id"));
+        chromInfoQuery.setMaxRows(1);
+        SelectRowsResponse chromInfoRows = chromInfoQuery.execute(createDefaultConnection(), getCurrentContainerPath());
+        assertFalse("Expected at least one PrecursorChromInfo row", chromInfoRows.getRows().isEmpty());
+        Number chromInfoId = (Number) chromInfoRows.getRows().get(0).get("Id");
+        chartUrl = WebTestHelper.buildURL("targetedms", getCurrentContainerPath(), PRECURSOR_CHROMATOGRAM_CHART,
+                Map.of("id", String.valueOf(chromInfoId.longValue())));
 
         // Peptide -> precursor "all chromatograms" page, which always requires a login for guests.
         clickAndWait(Locator.linkWithImage("TransitionGroupLib.png"));
@@ -116,15 +144,36 @@ public class TargetedMSGuestAccessTest extends TargetedMSTest
         new ApiPermissionsHelper(this).setSiteGroupPermissions("Guests", READER_ROLE);
     }
 
+    /** Read the current site-wide Guest Access state from the settings page (must be signed in as site admin). */
+    private void captureOriginalGuestAccessSettings()
+    {
+        beginAt(WebTestHelper.buildURL("targetedms", "/", "guestAccessSettings"));
+        origMasterEnabled = MASTER_SWITCH.findElement(getDriver()).isSelected();
+        origCheckedKeys = new ArrayList<>();
+        for (WebElement box : Locator.tagWithClass("input", "tms-require-login-action").findElements(getDriver()))
+        {
+            if (box.isSelected())
+                origCheckedKeys.add(box.getAttribute("value"));
+        }
+    }
+
     @Override
     protected void doCleanup(boolean afterTest) throws TestTimeoutException
     {
-        // Leave the site-wide switch off so it can't leak into other tests' guest access. The framework
-        // already signs back in as the site admin before calling doCleanup, so we can just save. Best
-        // effort: don't let a failure here block the project deletion in super.doCleanup.
+        // Restore the site-wide Guest Access settings to what they were before the test. These are root-
+        // container properties shared across the whole server, so a leftover value would leak into other
+        // tests. The framework already signs back in as the site admin before doCleanup. Best effort: don't
+        // let a failure here block the project deletion in super.doCleanup.
         try
         {
-            saveGuestAccessSettings(false);
+            if (origCheckedKeys != null)
+            {
+                // The per-action checkboxes only post while the master switch is on, so re-apply the original
+                // selections with it on, then set the master switch back to its original value.
+                saveGuestAccessSettings(true, origCheckedKeys.toArray(new String[0]));
+                if (!origMasterEnabled)
+                    saveGuestAccessSettings(false);
+            }
         }
         catch (Exception ignored)
         {
@@ -165,7 +214,22 @@ public class TargetedMSGuestAccessTest extends TargetedMSTest
         saveGuestAccessSettings(false);
         signOut();
         assertGuestAllowedPage(proteinUrl, TARGET_PROTEIN);
+        assertGuestAllowedPage(peptideUrl, TARGET_PEPTIDE);
         assertGuestChartAllowed(chartUrl);
+
+        // 5. A QueryView action's export URL is a separate direct request, not a link reached through the HTML
+        //    page: showPrecursorList.view?...&exportType=exportRowsTsv serves a TSV. QueryViewAction.getView
+        //    dispatches that export branch before it would reach getHtmlView, so a client requesting the export
+        //    URL directly (e.g. a crawler replaying or constructing it) bypasses a gate placed in getHtmlView.
+        //    Gating showPrecursorList in getView closes that: a guest is sent to login for both the page and a
+        //    direct export request.
+        assertGuestAllowedPage(precursorListUrl, TARGET_PROTEIN);
+        assertGuestNotLoginGated(precursorListExportUrl);
+        signIn();
+        saveGuestAccessSettings(true, SHOW_PRECURSOR_LIST);
+        signOut();
+        assertGuestPageBlocked(precursorListUrl);
+        assertGuestPageBlocked(precursorListExportUrl);
     }
 
     /**
@@ -209,12 +273,24 @@ public class TargetedMSGuestAccessTest extends TargetedMSTest
         assertTrue("Expected the guest login view at " + url, getBodyText().contains(LOGIN_MESSAGE));
     }
 
-    /** A chart-image endpoint a guest can reach: not redirected to the login page. */
+    /** A URL a guest is not login-gated on: the login view is not shown (the response may be data or not-found). */
+    private void assertGuestNotLoginGated(String url)
+    {
+        beginAt(url);
+        assertFalse("Guest was unexpectedly shown the login view at " + url, getBodyText().contains(LOGIN_MESSAGE));
+    }
+
+    /** A chart-image endpoint a guest can reach: an actual chart image is served, not a login redirect. */
     private void assertGuestChartAllowed(String url)
     {
         beginAt(url);
         assertFalse("Guest was unexpectedly redirected to login for " + url,
                 getCurrentRelativeURL().contains("login.view"));
+        // Confirm a real chart image was served (not a not-found page). This also verifies the chart id is
+        // valid for this folder: a wrong id would render an HTML not-found page instead of an image.
+        String contentType = (String) executeScript("return document.contentType;");
+        assertTrue("Expected a chart image at " + url + " but got content type " + contentType,
+                contentType != null && contentType.startsWith("image/"));
     }
 
     /** A chart-image endpoint blocked for a guest: redirected to the standard login page. */

@@ -615,7 +615,7 @@ public class TargetedMSController extends SpringActionController
 
         public void setRestrictedActions(String[] restrictedActions)
         {
-            _restrictedActions = restrictedActions;
+            _restrictedActions = restrictedActions == null ? new String[0] : restrictedActions;
         }
 
         /** The checked actions as an enum set, ignoring any unrecognized keys. */
@@ -3246,9 +3246,12 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void addNavTrail(NavTree root)
         {
+            // Add the top-level crumb unconditionally so the page has a title even on the guest login-gate
+            // path, where getView returns early and _run is never set (the test framework flags a titleless
+            // action as a failure).
+            root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
             if (null != _run)
             {
-                root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
                 root.addChild(_run.getDescription(), getShowRunURL(getContainer(), _run.getId()));
                 root.addChild(_sequence);
             }
@@ -3340,9 +3343,12 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void addNavTrail(NavTree root)
         {
+            // Add the top-level crumb unconditionally so the page has a title even on the guest login-gate
+            // path, where getView returns early and _run is never set (the test framework flags a titleless
+            // action as a failure).
+            root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
             if (null != _run)
             {
-                root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
                 root.addChild(_run.getDescription(), getShowRunURL(getContainer(), _run.getId()));
                 root.addChild(_customIonName);
             }
@@ -4705,10 +4711,10 @@ public class TargetedMSController extends SpringActionController
         }
 
         @Override
-        public ModelAndView getHtmlView(final RunDetailsForm form, BindException errors) throws Exception
+        public ModelAndView getView(RunDetailsForm form, BindException errors) throws Exception
         {
             HtmlView loginGate = getGuestLoginGate(GuestAccessManager.RestrictableAction.showPrecursorList, getViewContext(), getContainer());
-            return loginGate != null ? loginGate : super.getHtmlView(form, errors);
+            return loginGate != null ? loginGate : super.getView(form, errors);
         }
 
         @Override
@@ -4886,10 +4892,10 @@ public class TargetedMSController extends SpringActionController
     public class ShowCalibrationCurvesAction extends ShowRunSplitDetailsAction<CalibrationCurvesView>
     {
         @Override
-        public ModelAndView getHtmlView(final RunDetailsForm form, BindException errors) throws Exception
+        public ModelAndView getView(RunDetailsForm form, BindException errors) throws Exception
         {
-            HtmlView loginGate = getGuestLoginGate(GuestAccessManager.RestrictableAction.showCalibrationCurve, getViewContext(), getContainer());
-            return loginGate != null ? loginGate : super.getHtmlView(form, errors);
+            HtmlView loginGate = getGuestLoginGate(GuestAccessManager.RestrictableAction.showCalibrationCurves, getViewContext(), getContainer());
+            return loginGate != null ? loginGate : super.getView(form, errors);
         }
 
         @Override

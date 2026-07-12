@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  * When the master switch is on, each flagged action sends a guest to the login page instead of rendering.
  * When it is off, guests can open the pages as before.
  *
- * This setting does not change actions that are already require a login:
+ * This setting does not change actions that already require a login:
  * PrecursorAllChromatogramsChartAction, MoleculePrecursorAllChromatogramsChartAction, ShowTransitionListAction
  */
 public class GuestAccessManager
@@ -61,12 +61,12 @@ public class GuestAccessManager
         showProtein("Protein details page (showProtein)", true),
         showPeptide("Peptide details page (showPeptide)", true),
         showMolecule("Small molecule details page (showMolecule)", true),
-        showCalibrationCurve("Calibration curves page (showCalibrationCurve)", true),
-        showPrecursorList("Precursor list page (showPrecursorList)", false),
-        showPeakAreas("Peak areas chart image (showPeakAreas)", false),
-        showRetentionTimesChart("Retention times chart image (showRetentionTimesChart)", false),
-        precursorChromatogramChart("Precursor chromatogram image (precursorChromatogramChart)", false),
-        groupChromatogramChart("Protein chromatogram image (groupChromatogramChart)", false);
+        showCalibrationCurves("Calibration curves page (showCalibrationCurves)", true),
+        showPrecursorList("Document details page (showPrecursorList)", false),
+        showPeakAreas("Peak areas chart (showPeakAreas)", false),
+        showRetentionTimesChart("Retention times chart (showRetentionTimesChart)", false),
+        precursorChromatogramChart("Precursor chromatogram (precursorChromatogramChart)", false),
+        groupChromatogramChart("Protein chromatogram (groupChromatogramChart)", false);
 
         private final String _label;
         private final boolean _defaultChecked;
@@ -129,10 +129,13 @@ public class GuestAccessManager
     /** The set of currently-checked actions (independent of the master toggle). */
     public static Set<RestrictableAction> getCheckedActions()
     {
+        // Read the property map once and reuse it rather than re-fetching per action.
+        PropertyMap props = getProperties();
         Set<RestrictableAction> checked = EnumSet.noneOf(RestrictableAction.class);
         for (RestrictableAction action : RestrictableAction.values())
         {
-            if (isActionChecked(action))
+            String saved = props.get(action.name());
+            if (saved == null ? action.isDefaultChecked() : TRUE.equals(saved))
                 checked.add(action);
         }
         return checked;
@@ -159,8 +162,11 @@ public class GuestAccessManager
 
         if (masterEnabled != oldMaster || !newChecked.equals(oldChecked))
         {
+            // When the master switch is off, no actions are enforced even though per-action selections are
+            // preserved, so report the effective (enforced) set rather than the saved checkboxes.
+            String enforced = masterEnabled ? describe(newChecked) : "(none - master switch off)";
             String comment = "Targeted MS Guest Access settings updated. Master switch: " + (masterEnabled ? "on" : "off")
-                    + ". Actions requiring login for guests: " + describe(newChecked) + ".";
+                    + ". Actions requiring login for guests: " + enforced + ".";
             SiteSettingsAuditProvider.SiteSettingsAuditEvent event =
                     new SiteSettingsAuditProvider.SiteSettingsAuditEvent(ContainerManager.getRoot(), comment);
             AuditLogService.get().addEvent(user, event);
