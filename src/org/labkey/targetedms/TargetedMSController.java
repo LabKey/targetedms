@@ -4854,6 +4854,7 @@ public class TargetedMSController extends SpringActionController
                 settings.setBaseSort(new Sort("-AcquisitionDate"));
                 settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("InstrumentNickname"), form.getName()));
                 settings.setContainerFilterName(ContainerFilter.Type.AllFolders.name());
+                settings.setFieldKeys(List.of(FieldKey.fromParts("AcquisitionDate"), FieldKey.fromParts("RunCount"), FieldKey.fromParts("FileCount")));
                 TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
                 return schema.createView(getViewContext(), settings, errors);
             }
@@ -4863,6 +4864,7 @@ public class TargetedMSController extends SpringActionController
                 settings.setBaseSort(new Sort("-MonthStart"));
                 settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("InstrumentNickname"), form.getName()));
                 settings.setContainerFilterName(ContainerFilter.Type.AllFolders.name());
+                settings.setFieldKeys(List.of(FieldKey.fromParts("MonthStart"), FieldKey.fromParts("RunCount"), FieldKey.fromParts("FileCount")));
                 TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
                 return schema.createView(getViewContext(), settings, errors);
             }
@@ -4912,17 +4914,14 @@ public class TargetedMSController extends SpringActionController
             byDayView.setFrame(WebPartView.FrameType.NONE);
             QueryView byMonthView = createInitializedQueryView(form, errors, false, UTILIZATION_BY_MONTH);
             byMonthView.setFrame(WebPartView.FrameType.NONE);
+            QueryView sampleFileView = createInitializedQueryView(form, errors, false, TargetedMSSchema.TABLE_SAMPLE_FILE);
+            sampleFileView.setFrame(WebPartView.FrameType.NONE);
 
-            var utilizationView = new JspView<>("/org/labkey/targetedms/view/instrumentUtilization.jsp", new InstrumentUtilizationBean(byDayView, byMonthView));
+            var utilizationView = new JspView<>("/org/labkey/targetedms/view/instrumentUtilization.jsp",
+                    new InstrumentUtilizationBean(byDayView, byMonthView, sampleFileView, "Samples from " + form.getName()));
             utilizationView.setTitle("Instrument Utilization Across Folders");
             utilizationView.setFrame(WebPartView.FrameType.PORTAL);
             result.addView(utilizationView);
-
-            QueryView sampleFileView = createQueryView(form, errors, false, TargetedMSSchema.TABLE_SAMPLE_FILE);
-            sampleFileView.setTitle("Samples from " + form.getName());
-            sampleFileView.setFrame(WebPartView.FrameType.PORTAL);
-
-            result.addView(sampleFileView);
 
             return result;
         }
@@ -4932,11 +4931,15 @@ public class TargetedMSController extends SpringActionController
     {
         private final QueryView _byDayView;
         private final QueryView _byMonthView;
+        private final QueryView _sampleFileView;
+        private final String _sampleFileTitle;
 
-        public InstrumentUtilizationBean(QueryView byDayView, QueryView byMonthView)
+        public InstrumentUtilizationBean(QueryView byDayView, QueryView byMonthView, QueryView sampleFileView, String sampleFileTitle)
         {
             _byDayView = byDayView;
             _byMonthView = byMonthView;
+            _sampleFileView = sampleFileView;
+            _sampleFileTitle = sampleFileTitle;
         }
 
         public QueryView getByDayView()
@@ -4947,6 +4950,16 @@ public class TargetedMSController extends SpringActionController
         public QueryView getByMonthView()
         {
             return _byMonthView;
+        }
+
+        public QueryView getSampleFileView()
+        {
+            return _sampleFileView;
+        }
+
+        public String getSampleFileTitle()
+        {
+            return _sampleFileTitle;
         }
     }
 

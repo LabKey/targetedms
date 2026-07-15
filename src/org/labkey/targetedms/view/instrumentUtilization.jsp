@@ -51,9 +51,10 @@
 </style>
 
 <ul class="nav nav-tabs" id="utilizationTabs" role="tablist">
-    <li class="active"><a href="#utilizationTabCalendar" data-utilization-tab="calendar">Utilization Calendar</a></li>
-    <li><a href="#utilizationTabMonth" data-utilization-tab="month">Runs by Month</a></li>
-    <li><a href="#utilizationTabDay" data-utilization-tab="day">Runs by Day</a></li>
+    <li class="active"><a href="#utilizationTabCalendar" data-utilization-tab="calendar">Calendar</a></li>
+    <li><a href="#utilizationTabMonth" data-utilization-tab="month">Summary by Month</a></li>
+    <li><a href="#utilizationTabDay" data-utilization-tab="day">Summary by Day</a></li>
+    <li><a href="#utilizationTabSamples" data-utilization-tab="samples"><%=h(bean.getSampleFileTitle())%></a></li>
 </ul>
 
 <div class="tab-content" style="padding-top: 15px;">
@@ -100,6 +101,12 @@
             <% me.include(bean.getByDayView(), out); %>
         </div>
     </div>
+
+    <div class="tab-pane" id="utilizationTabSamples">
+        <div id="utilizationSamplesGrid" style="max-width: 100%; overflow-x: auto;">
+            <% me.include(bean.getSampleFileView(), out); %>
+        </div>
+    </div>
 </div>
 
 <script type="text/javascript" nonce="<%=getScriptNonce()%>">
@@ -111,7 +118,8 @@
     const panes = {
         calendar: document.getElementById('utilizationTabCalendar'),
         month: document.getElementById('utilizationTabMonth'),
-        day: document.getElementById('utilizationTabDay')
+        day: document.getElementById('utilizationTabDay'),
+        samples: document.getElementById('utilizationTabSamples')
     };
 
     function activate(which) {

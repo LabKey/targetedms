@@ -24,15 +24,17 @@ import org.openqa.selenium.WebElement;
 
 /**
  * The "Instrument Utilization Across Folders" web part on the Show Instrument page. It shows an
- * instrument's utilization, aggregated across all readable folders, in three tabs: a heatmap calendar,
- * a runs-by-month grid, and a runs-by-day grid. Only the active tab's pane is visible at a time.
+ * instrument's utilization, aggregated across all readable folders, in four tabs: a heatmap calendar,
+ * a by-month summary grid, a by-day summary grid, and the full sample-file listing. Only the active
+ * tab's pane is visible at a time.
  */
 public class InstrumentUtilizationWebPart extends BodyWebPart<InstrumentUtilizationWebPart.Elements>
 {
     public static final String DEFAULT_TITLE = "Instrument Utilization Across Folders";
     public static final String BY_DAY_REGION = "UtilizationByDay";
     public static final String BY_MONTH_REGION = "UtilizationByMonth";
-    public static final String FILES_COLUMN = "Files";
+    public static final String SAMPLE_FILE_REGION = "SampleFile";
+    public static final String FILES_COLUMN = "FileCount";
 
     public InstrumentUtilizationWebPart(WebDriver driver)
     {
@@ -54,6 +56,11 @@ public class InstrumentUtilizationWebPart extends BodyWebPart<InstrumentUtilizat
     public boolean isByMonthVisible()
     {
         return elementCache().byMonthPane.isDisplayed();
+    }
+
+    public boolean isSamplesVisible()
+    {
+        return elementCache().samplesPane.isDisplayed();
     }
 
     public InstrumentUtilizationWebPart showCalendar()
@@ -80,6 +87,14 @@ public class InstrumentUtilizationWebPart extends BodyWebPart<InstrumentUtilizat
         return this;
     }
 
+    public InstrumentUtilizationWebPart showSamples()
+    {
+        if (!isSamplesVisible())
+            elementCache().samplesTab.click();
+        WebDriverWrapper.waitFor(this::isSamplesVisible, "Samples tab did not become visible", 5000);
+        return this;
+    }
+
     /** Selects the By Day tab (a hidden data region reports no cell text) and returns its grid. */
     public DataRegionTable getByDayTable()
     {
@@ -92,6 +107,13 @@ public class InstrumentUtilizationWebPart extends BodyWebPart<InstrumentUtilizat
     {
         showByMonth();
         return new DataRegionTable(BY_MONTH_REGION, getDriver());
+    }
+
+    /** Selects the Samples tab (a hidden data region reports no cell text) and returns the sample-file grid. */
+    public DataRegionTable getSamplesTable()
+    {
+        showSamples();
+        return new DataRegionTable(SAMPLE_FILE_REGION, getDriver());
     }
 
     /** Sum of the (integer) "Files" column, i.e. the total number of sample files represented by the grid. */
@@ -116,8 +138,10 @@ public class InstrumentUtilizationWebPart extends BodyWebPart<InstrumentUtilizat
         final WebElement calendarTab = Locator.css("#utilizationTabs a[data-utilization-tab='calendar']").findWhenNeeded(this);
         final WebElement byMonthTab = Locator.css("#utilizationTabs a[data-utilization-tab='month']").findWhenNeeded(this);
         final WebElement byDayTab = Locator.css("#utilizationTabs a[data-utilization-tab='day']").findWhenNeeded(this);
+        final WebElement samplesTab = Locator.css("#utilizationTabs a[data-utilization-tab='samples']").findWhenNeeded(this);
         final WebElement calendarPane = Locator.id("utilizationTabCalendar").findWhenNeeded(this);
         final WebElement byMonthPane = Locator.id("utilizationTabMonth").findWhenNeeded(this);
         final WebElement byDayPane = Locator.id("utilizationTabDay").findWhenNeeded(this);
+        final WebElement samplesPane = Locator.id("utilizationTabSamples").findWhenNeeded(this);
     }
 }

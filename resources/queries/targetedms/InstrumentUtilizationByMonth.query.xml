@@ -9,10 +9,10 @@
                         <formatString>yyyy-MM</formatString>
                     </column>
                     <column columnName="RunCount">
-                        <columnTitle>Runs</columnTitle>
+                        <columnTitle>Skyline Document Count</columnTitle>
                     </column>
                     <column columnName="FileCount">
-                        <columnTitle>Files</columnTitle>
+                        <columnTitle>Replicate Count</columnTitle>
                     </column>
                     <column columnName="InstrumentNickname">
                         <columnTitle>Instrument</columnTitle>
