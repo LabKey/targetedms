@@ -4888,38 +4888,40 @@ public class TargetedMSController extends SpringActionController
 
             VBox result = new VBox();
 
+            VBox instrumentInfoView = new VBox();
             for (InstrumentNickname name : names)
             {
                 var nameView = new JspView<>("/org/labkey/targetedms/view/nickname.jsp", name);
                 nameView.setTitle("Instrument Info");
                 nameView.setFrame(WebPartView.FrameType.PORTAL);
-                result.addView(nameView);
+                instrumentInfoView.addView(nameView);
             }
 
-            var calendarView = new JspView<>("/org/labkey/targetedms/view/instrumentUtilizationCalendar.jsp", form.getName());
-            calendarView.setTitle("Utilization Calendar");
-            calendarView.setFrame(WebPartView.FrameType.PORTAL);
-            result.addView(calendarView);
+            QueryView folderSummaryView = createQueryView(form, errors, false, FOLDER_SUMMARY);
+            folderSummaryView.setTitle("Summary by Folder");
+            folderSummaryView.setFrame(WebPartView.FrameType.PORTAL);
+
+            // Instrument info is narrow; pair it with the folder summary grid in a two-column row so the
+            // otherwise-empty space to the right of the info panel is put to use.
+            var infoRowView = new JspView<>("/org/labkey/targetedms/view/instrumentInfoRow.jsp",
+                    new InstrumentInfoRowBean(instrumentInfoView, folderSummaryView));
+            infoRowView.setFrame(WebPartView.FrameType.NONE);
+            result.addView(infoRowView);
 
             QueryView byDayView = createInitializedQueryView(form, errors, false, UTILIZATION_BY_DAY);
             byDayView.setFrame(WebPartView.FrameType.NONE);
             QueryView byMonthView = createInitializedQueryView(form, errors, false, UTILIZATION_BY_MONTH);
             byMonthView.setFrame(WebPartView.FrameType.NONE);
 
-            var utilizationView = new JspView<>("/org/labkey/targetedms/view/instrumentUtilizationGrids.jsp", new InstrumentUtilizationBean(byDayView, byMonthView));
-            utilizationView.setTitle("Runs Acquired");
+            var utilizationView = new JspView<>("/org/labkey/targetedms/view/instrumentUtilization.jsp", new InstrumentUtilizationBean(byDayView, byMonthView));
+            utilizationView.setTitle("Instrument Utilization Across Folders");
             utilizationView.setFrame(WebPartView.FrameType.PORTAL);
             result.addView(utilizationView);
-
-            QueryView folderSummaryView = createQueryView(form, errors, false, FOLDER_SUMMARY);
-            folderSummaryView.setTitle("Summary by Folder");
-            folderSummaryView.setFrame(WebPartView.FrameType.PORTAL);
 
             QueryView sampleFileView = createQueryView(form, errors, false, TargetedMSSchema.TABLE_SAMPLE_FILE);
             sampleFileView.setTitle("Samples from " + form.getName());
             sampleFileView.setFrame(WebPartView.FrameType.PORTAL);
 
-            result.addView(folderSummaryView);
             result.addView(sampleFileView);
 
             return result;
@@ -4945,6 +4947,28 @@ public class TargetedMSController extends SpringActionController
         public QueryView getByMonthView()
         {
             return _byMonthView;
+        }
+    }
+
+    public static class InstrumentInfoRowBean
+    {
+        private final HttpView _infoView;
+        private final HttpView _summaryView;
+
+        public InstrumentInfoRowBean(HttpView infoView, HttpView summaryView)
+        {
+            _infoView = infoView;
+            _summaryView = summaryView;
+        }
+
+        public HttpView getInfoView()
+        {
+            return _infoView;
+        }
+
+        public HttpView getSummaryView()
+        {
+            return _summaryView;
         }
     }
 

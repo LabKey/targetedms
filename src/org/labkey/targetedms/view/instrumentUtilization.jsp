@@ -15,7 +15,10 @@
      * limitations under the License.
      */
 %>
+<%@ page import="org.labkey.api.view.HttpView" %>
+<%@ page import="org.labkey.api.view.JspView" %>
 <%@ page import="org.labkey.api.view.template.ClientDependencies" %>
+<%@ page import="org.labkey.targetedms.TargetedMSController.InstrumentUtilizationBean" %>
 <%@ page extends="org.labkey.api.jsp.JspBase" %>
 <%!
     @Override
@@ -24,6 +27,10 @@
         dependencies.add("internal/jQuery");
         dependencies.add("targetedms/yearCalendar");
     }
+%>
+<%
+    JspView<InstrumentUtilizationBean> me = HttpView.currentView();
+    InstrumentUtilizationBean bean = me.getModelBean();
 %>
 
 <style nonce="<%=getScriptNonce()%>">
@@ -42,6 +49,91 @@
         overflow-x: auto;
     }
 </style>
+
+<ul class="nav nav-tabs" id="utilizationTabs" role="tablist">
+    <li class="active"><a href="#utilizationTabCalendar" data-utilization-tab="calendar">Utilization Calendar</a></li>
+    <li><a href="#utilizationTabMonth" data-utilization-tab="month">Runs by Month</a></li>
+    <li><a href="#utilizationTabDay" data-utilization-tab="day">Runs by Day</a></li>
+</ul>
+
+<div class="tab-content" style="padding-top: 15px;">
+    <div class="tab-pane active" id="utilizationTabCalendar">
+        <div style="text-align: center; width: 100%">
+            <label for="utilizationMonthNumberSelect">Display:</label>
+            <select id="utilizationMonthNumberSelect">
+                <option value="1">1 month</option>
+                <option value="4">4 months</option>
+                <option value="12">12 months</option>
+            </select>
+        </div>
+
+        <div id="instrumentUtilizationCalendarWrapper" style="min-height: 300px; max-width: 100%; overflow-x: auto;">
+            <div id="instrumentUtilizationCalendar">
+                Loading...
+            </div>
+        </div>
+
+        <div class="heatmap-footer-container">
+            <div class="heatmap-legend-container">
+                <div class="heatmap-legend-label" style="text-align: right">No data</div>
+                <div class="heatmap-legend">
+                    <div class="heatmap-legend-element"></div>
+                    <div class="heatmap-legend-element heatmap-shade0"></div>
+                    <div class="heatmap-legend-element heatmap-shade3"></div>
+                    <div class="heatmap-legend-element heatmap-shade6"></div>
+                    <div class="heatmap-legend-element heatmap-shade9"></div>
+                    <div class="heatmap-legend-element heatmap-shade13"></div>
+                </div>
+                <div class="heatmap-legend-label" id="heatmapFileLegendMax">Files acquired</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane" id="utilizationTabMonth">
+        <div id="utilizationByMonthGrid" style="max-width: 100%; overflow-x: auto;">
+            <% me.include(bean.getByMonthView(), out); %>
+        </div>
+    </div>
+
+    <div class="tab-pane" id="utilizationTabDay">
+        <div id="utilizationByDayGrid" style="max-width: 100%; overflow-x: auto;">
+            <% me.include(bean.getByDayView(), out); %>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" nonce="<%=getScriptNonce()%>">
+(function() {
+    // Simple client-side tab switching. Panes are pre-rendered; we toggle Bootstrap's `active` class
+    // (which drives .tab-pane visibility) so the calendar (default/active tab) initializes while
+    // visible and the grids simply reveal on demand.
+    const tabLinks = document.querySelectorAll('#utilizationTabs a[data-utilization-tab]');
+    const panes = {
+        calendar: document.getElementById('utilizationTabCalendar'),
+        month: document.getElementById('utilizationTabMonth'),
+        day: document.getElementById('utilizationTabDay')
+    };
+
+    function activate(which) {
+        for (const link of tabLinks) {
+            const li = link.parentNode;
+            li.classList.toggle('active', link.getAttribute('data-utilization-tab') === which);
+        }
+        for (const key in panes) {
+            if (panes[key]) {
+                panes[key].classList.toggle('active', key === which);
+            }
+        }
+    }
+
+    for (const link of tabLinks) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            activate(link.getAttribute('data-utilization-tab'));
+        });
+    }
+})();
+</script>
 
 <script type="text/javascript" nonce="<%=getScriptNonce()%>">
 (function() {
@@ -214,33 +306,3 @@
     });
 })();
 </script>
-
-<div style="text-align: center; width: 100%">
-    <label for="utilizationMonthNumberSelect">Display:</label>
-    <select id="utilizationMonthNumberSelect">
-        <option value="1">1 month</option>
-        <option value="4">4 months</option>
-        <option value="12">12 months</option>
-    </select>
-</div>
-
-<div id="instrumentUtilizationCalendarWrapper" style="min-height: 300px; max-width: 100%; overflow-x: auto;">
-    <div id="instrumentUtilizationCalendar">
-        Loading...
-    </div>
-</div>
-
-<div class="heatmap-footer-container">
-    <div class="heatmap-legend-container">
-        <div class="heatmap-legend-label" style="text-align: right">No data</div>
-        <div class="heatmap-legend">
-            <div class="heatmap-legend-element"></div>
-            <div class="heatmap-legend-element heatmap-shade0"></div>
-            <div class="heatmap-legend-element heatmap-shade3"></div>
-            <div class="heatmap-legend-element heatmap-shade6"></div>
-            <div class="heatmap-legend-element heatmap-shade9"></div>
-            <div class="heatmap-legend-element heatmap-shade13"></div>
-        </div>
-        <div class="heatmap-legend-label" id="heatmapFileLegendMax">Files acquired</div>
-    </div>
-</div>

@@ -90,14 +90,15 @@ public class TargetedMSInstrumentUtilizationTest extends TargetedMSTest
 
         beginAt(WebTestHelper.buildURL("targetedms", getProjectName(), "showInstrument", Map.of("name", _instrumentName)));
 
-        verifyCalendar();
-        verifyRunsAcquiredGrids(expectedCrossFolderFileCount);
+        InstrumentUtilizationWebPart utilization = new InstrumentUtilizationWebPart(getDriver());
+        verifyCalendarTab(utilization);
+        verifyRunsGrids(utilization, expectedCrossFolderFileCount);
     }
 
-    private void verifyCalendar()
+    private void verifyCalendarTab(InstrumentUtilizationWebPart utilization)
     {
-        log("Verifying the cross-folder Utilization Calendar renders");
-        assertElementPresent(Locator.tagWithClass("span", "labkey-wp-title-text").withText("Utilization Calendar"));
+        log("Verifying the utilization web part opens on the Utilization Calendar tab");
+        assertTrue("The Utilization Calendar tab should be active by default", utilization.isCalendarVisible());
 
         // Wait for the async selectRows call to populate the calendar with day cells
         waitForElement(Locator.tagWithClassContaining("div", "day-content"));
@@ -105,13 +106,12 @@ public class TargetedMSInstrumentUtilizationTest extends TargetedMSTest
                 "1 month", getSelectedOptionText(Locator.id("utilizationMonthNumberSelect")));
     }
 
-    private void verifyRunsAcquiredGrids(int expectedCrossFolderFileCount)
+    private void verifyRunsGrids(InstrumentUtilizationWebPart utilization, int expectedCrossFolderFileCount)
     {
-        InstrumentUtilizationWebPart utilization = new InstrumentUtilizationWebPart(getDriver());
-
-        log("Verifying the By Day grid is shown by default and aggregates across folders");
-        assertTrue("By Day grid should be visible by default", utilization.isByDayVisible());
-        assertFalse("By Month grid should be hidden by default", utilization.isByMonthVisible());
+        log("Selecting the Runs by Day tab and verifying it aggregates across folders");
+        utilization.showByDay();
+        assertTrue("By Day grid should be visible after selecting its tab", utilization.isByDayVisible());
+        assertFalse("Calendar should be hidden when the By Day tab is active", utilization.isCalendarVisible());
 
         DataRegionTable byDay = utilization.getByDayTable();
         assertTrue("By Day grid is missing expected columns",
@@ -119,10 +119,10 @@ public class TargetedMSInstrumentUtilizationTest extends TargetedMSTest
         assertEquals("By Day grid should sum files across both folders",
                 expectedCrossFolderFileCount, utilization.getTotalFiles(byDay));
 
-        log("Toggling to the By Month summary");
+        log("Selecting the Runs by Month tab");
         utilization.showByMonth();
-        assertTrue("By Month grid should be visible after toggling", utilization.isByMonthVisible());
-        assertFalse("By Day grid should be hidden after toggling", utilization.isByDayVisible());
+        assertTrue("By Month grid should be visible after selecting its tab", utilization.isByMonthVisible());
+        assertFalse("By Day grid should be hidden when the By Month tab is active", utilization.isByDayVisible());
 
         DataRegionTable byMonth = utilization.getByMonthTable();
         assertTrue("By Month grid is missing expected columns",
@@ -131,10 +131,10 @@ public class TargetedMSInstrumentUtilizationTest extends TargetedMSTest
         assertEquals("By Month grid should sum to the same cross-folder file total",
                 expectedCrossFolderFileCount, utilization.getTotalFiles(byMonth));
 
-        log("Toggling back to the By Day grid");
-        utilization.showByDay();
-        assertTrue("By Day grid should be visible after toggling back", utilization.isByDayVisible());
-        assertFalse("By Month grid should be hidden after toggling back", utilization.isByMonthVisible());
+        log("Selecting the Utilization Calendar tab again");
+        utilization.showCalendar();
+        assertTrue("Calendar should be visible after selecting its tab", utilization.isCalendarVisible());
+        assertFalse("By Month grid should be hidden when the calendar tab is active", utilization.isByMonthVisible());
     }
 
     /** @return the default nickname (model - serial number) for the instrument that acquired the imported data */

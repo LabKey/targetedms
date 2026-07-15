@@ -23,13 +23,13 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 /**
- * The "Runs Acquired" web part on the Show Instrument page. It shows an instrument's utilization,
- * aggregated across all readable folders, as a grid of runs/files by day, with a client-side toggle
- * to switch to a by-month summary.
+ * The "Instrument Utilization Across Folders" web part on the Show Instrument page. It shows an
+ * instrument's utilization, aggregated across all readable folders, in three tabs: a heatmap calendar,
+ * a runs-by-month grid, and a runs-by-day grid. Only the active tab's pane is visible at a time.
  */
 public class InstrumentUtilizationWebPart extends BodyWebPart<InstrumentUtilizationWebPart.Elements>
 {
-    public static final String DEFAULT_TITLE = "Runs Acquired";
+    public static final String DEFAULT_TITLE = "Instrument Utilization Across Folders";
     public static final String BY_DAY_REGION = "UtilizationByDay";
     public static final String BY_MONTH_REGION = "UtilizationByMonth";
     public static final String FILES_COLUMN = "Files";
@@ -37,43 +37,60 @@ public class InstrumentUtilizationWebPart extends BodyWebPart<InstrumentUtilizat
     public InstrumentUtilizationWebPart(WebDriver driver)
     {
         super(driver, DEFAULT_TITLE);
-        WebDriverWrapper.waitFor(() -> elementCache().byDayToggle.isDisplayed(),
-                "Runs Acquired web part did not load", getWrapper().defaultWaitForPage);
+        WebDriverWrapper.waitFor(() -> elementCache().calendarTab.isDisplayed(),
+                "Instrument utilization web part did not load", getWrapper().defaultWaitForPage);
+    }
+
+    public boolean isCalendarVisible()
+    {
+        return elementCache().calendarPane.isDisplayed();
     }
 
     public boolean isByDayVisible()
     {
-        return elementCache().byDayGrid.isDisplayed();
+        return elementCache().byDayPane.isDisplayed();
     }
 
     public boolean isByMonthVisible()
     {
-        return elementCache().byMonthGrid.isDisplayed();
+        return elementCache().byMonthPane.isDisplayed();
+    }
+
+    public InstrumentUtilizationWebPart showCalendar()
+    {
+        if (!isCalendarVisible())
+            elementCache().calendarTab.click();
+        WebDriverWrapper.waitFor(this::isCalendarVisible, "Calendar tab did not become visible", 5000);
+        return this;
     }
 
     public InstrumentUtilizationWebPart showByDay()
     {
         if (!isByDayVisible())
-            elementCache().byDayToggle.click();
-        WebDriverWrapper.waitFor(this::isByDayVisible, "By Day grid did not become visible", 5000);
+            elementCache().byDayTab.click();
+        WebDriverWrapper.waitFor(this::isByDayVisible, "By Day tab did not become visible", 5000);
         return this;
     }
 
     public InstrumentUtilizationWebPart showByMonth()
     {
         if (!isByMonthVisible())
-            elementCache().byMonthToggle.click();
-        WebDriverWrapper.waitFor(this::isByMonthVisible, "By Month grid did not become visible", 5000);
+            elementCache().byMonthTab.click();
+        WebDriverWrapper.waitFor(this::isByMonthVisible, "By Month tab did not become visible", 5000);
         return this;
     }
 
+    /** Selects the By Day tab (a hidden data region reports no cell text) and returns its grid. */
     public DataRegionTable getByDayTable()
     {
+        showByDay();
         return new DataRegionTable(BY_DAY_REGION, getDriver());
     }
 
+    /** Selects the By Month tab (a hidden data region reports no cell text) and returns its grid. */
     public DataRegionTable getByMonthTable()
     {
+        showByMonth();
         return new DataRegionTable(BY_MONTH_REGION, getDriver());
     }
 
@@ -96,9 +113,11 @@ public class InstrumentUtilizationWebPart extends BodyWebPart<InstrumentUtilizat
 
     public class Elements extends BodyWebPart<?>.ElementCache
     {
-        final WebElement byDayToggle = Locator.id("utilizationToggleDay").findWhenNeeded(this);
-        final WebElement byMonthToggle = Locator.id("utilizationToggleMonth").findWhenNeeded(this);
-        final WebElement byDayGrid = Locator.id("utilizationByDayGrid").findWhenNeeded(this);
-        final WebElement byMonthGrid = Locator.id("utilizationByMonthGrid").findWhenNeeded(this);
+        final WebElement calendarTab = Locator.css("#utilizationTabs a[data-utilization-tab='calendar']").findWhenNeeded(this);
+        final WebElement byMonthTab = Locator.css("#utilizationTabs a[data-utilization-tab='month']").findWhenNeeded(this);
+        final WebElement byDayTab = Locator.css("#utilizationTabs a[data-utilization-tab='day']").findWhenNeeded(this);
+        final WebElement calendarPane = Locator.id("utilizationTabCalendar").findWhenNeeded(this);
+        final WebElement byMonthPane = Locator.id("utilizationTabMonth").findWhenNeeded(this);
+        final WebElement byDayPane = Locator.id("utilizationTabDay").findWhenNeeded(this);
     }
 }
