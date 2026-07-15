@@ -10,9 +10,11 @@
                     </column>
                     <column columnName="RunCount">
                         <columnTitle>Skyline Document Count</columnTitle>
+                        <url>/targetedms-showInstrument.view?name=${InstrumentNickname}&amp;utilizationTab=samples&amp;SampleFile.AcquiredTime~dategte=${MonthStart:date('yyyy-MM-dd')}&amp;SampleFile.AcquiredTime~datelt=${MonthEnd:date('yyyy-MM-dd')}</url>
                     </column>
                     <column columnName="FileCount">
                         <columnTitle>Replicate Count</columnTitle>
+                        <url>/targetedms-showInstrument.view?name=${InstrumentNickname}&amp;utilizationTab=samples&amp;SampleFile.AcquiredTime~dategte=${MonthStart:date('yyyy-MM-dd')}&amp;SampleFile.AcquiredTime~datelt=${MonthEnd:date('yyyy-MM-dd')}</url>
                     </column>
                     <column columnName="InstrumentNickname">
                         <columnTitle>Instrument</columnTitle>

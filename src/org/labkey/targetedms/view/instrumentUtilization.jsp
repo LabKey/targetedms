@@ -48,6 +48,10 @@
     .content-left form[id^="lk-region-"] {
         overflow-x: auto;
     }
+    /* Days with acquired samples drill into the Samples tab, so signal that they're clickable */
+    #instrumentUtilizationCalendar .heatmap-shaded {
+        cursor: pointer;
+    }
 </style>
 
 <ul class="nav nav-tabs" id="utilizationTabs" role="tablist">
@@ -140,6 +144,13 @@
             activate(link.getAttribute('data-utilization-tab'));
         });
     }
+
+    // Shared with the calendar script: activate the Samples tab. The summary-grid count cells and the
+    // calendar days are ordinary links to this page with utilizationTab=samples plus an AcquiredTime
+    // filter, so following one reloads the page filtered; this reveals the Samples tab once we're back.
+    window.showInstrumentSamplesTab = function() {
+        activate('samples');
+    };
 })();
 </script>
 
@@ -151,9 +162,23 @@
 
     const instrumentName = LABKEY.ActionURL.getParameter('name');
 
+    // Following a drill-in link (a summary-grid count cell or a calendar day) reloads this page with
+    // utilizationTab=samples and an AcquiredTime filter. Let the calendar render first (it needs to be
+    // visible to size itself), then reveal the pre-filtered Samples tab the link was targeting.
+    function honorRequestedTab() {
+        if (LABKEY.ActionURL.getParameter('utilizationTab') === 'samples' && window.showInstrumentSamplesTab) {
+            window.showInstrumentSamplesTab();
+        }
+    }
+
     let dateOnly = function (d) {
         let dateTime = new Date(d);
         return new Date(dateTime.getFullYear(), dateTime.getMonth(), dateTime.getDate());
+    };
+
+    let formatDate = function (d) {
+        let pad = function (n) { return (n < 10 ? '0' : '') + n; };
+        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
     };
 
     function addEvent(data, date) {
@@ -253,6 +278,7 @@
     loadData(function (data) {
         if (!data.length) {
             $('#instrumentUtilizationCalendar').text('No samples acquired by this instrument.');
+            honorRequestedTab();
             return;
         }
 
@@ -297,6 +323,19 @@
             mouseOutDay: function (e) {
                 $(e.element).popover('hide');
             },
+            clickDay: function (e) {
+                // Drill into the samples acquired on the clicked day, matching the summary-grid links:
+                // navigate to this page on the Samples tab with a single-day AcquiredTime filter applied.
+                let event = e.events && e.events.length > 0 ? e.events[0] : null;
+                if (!event || !event.fileCount) {
+                    return;
+                }
+                window.location = LABKEY.ActionURL.buildURL('targetedms', 'showInstrument', null, {
+                    name: instrumentName,
+                    utilizationTab: 'samples',
+                    'SampleFile.AcquiredTime~dateeq': formatDate(dateOnly(e.date))
+                });
+            },
             dataSource: data
         });
 
@@ -311,6 +350,8 @@
                 }
             }
         });
+
+        honorRequestedTab();
     });
 })();
 </script>

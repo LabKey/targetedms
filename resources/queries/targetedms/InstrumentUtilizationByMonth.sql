@@ -8,6 +8,7 @@
 -- Consumed by the "Runs by Month" grid on the Show Instrument page.
 SELECT
     CAST(MonthStart || '-01' AS TIMESTAMP) AS MonthStart,
+    TIMESTAMPADD('SQL_TSI_MONTH', 1, CAST(MonthStart || '-01' AS TIMESTAMP)) AS MonthEnd,
     COUNT(*) AS FileCount,
     COUNT(DISTINCT RunId) AS RunCount,
     InstrumentNickname

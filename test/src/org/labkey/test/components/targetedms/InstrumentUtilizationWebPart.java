@@ -116,6 +116,20 @@ public class InstrumentUtilizationWebPart extends BodyWebPart<InstrumentUtilizat
         return new DataRegionTable(SAMPLE_FILE_REGION, getDriver());
     }
 
+    /**
+     * Clicks the "Replicate Count" drill-in link in the given summary-grid row. The link reloads the page
+     * on the Samples tab with the row's date-range filter applied, so this waits for the reload and returns
+     * a fresh web part handle positioned on the (filtered) Samples tab.
+     */
+    public InstrumentUtilizationWebPart drillIntoSamples(DataRegionTable summaryTable, int row)
+    {
+        getWrapper().clickAndWait(summaryTable.link(row, "Replicate Count"));
+        InstrumentUtilizationWebPart reloaded = new InstrumentUtilizationWebPart(getDriver());
+        WebDriverWrapper.waitFor(reloaded::isSamplesVisible,
+                "Samples tab did not open after the drill-in navigation", reloaded.getWrapper().defaultWaitForPage);
+        return reloaded;
+    }
+
     /** Sum of the (integer) "Files" column, i.e. the total number of sample files represented by the grid. */
     public int getTotalFiles(DataRegionTable table)
     {

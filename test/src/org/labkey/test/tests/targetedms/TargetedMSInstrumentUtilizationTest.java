@@ -93,6 +93,36 @@ public class TargetedMSInstrumentUtilizationTest extends TargetedMSTest
         InstrumentUtilizationWebPart utilization = new InstrumentUtilizationWebPart(getDriver());
         verifyCalendarTab(utilization);
         verifyRunsGrids(utilization, expectedCrossFolderFileCount);
+        verifyDrillIntoSamples(utilization);
+    }
+
+    /**
+     * The Skyline Document Count / Replicate Count cells in the summary grids drill into the Samples tab
+     * with a matching date filter applied. Verify the by-day and by-month links land on the Samples tab
+     * and narrow the sample-file grid to exactly the replicates that row represents.
+     */
+    private void verifyDrillIntoSamples(InstrumentUtilizationWebPart utilization)
+    {
+        log("Drilling into the Samples tab from a Summary by Day count link");
+        DataRegionTable byDay = utilization.getByDayTable();
+        int dayReplicates = Integer.parseInt(byDay.getDataAsText(0, "Replicate Count").trim());
+        utilization = utilization.drillIntoSamples(byDay, 0);
+        assertTrue("Samples tab should open when a day's count is clicked", utilization.isSamplesVisible());
+        waitForSamplesRowCount(dayReplicates);
+
+        log("Drilling into the Samples tab from a Summary by Month count link");
+        DataRegionTable byMonth = utilization.getByMonthTable();
+        int monthReplicates = Integer.parseInt(byMonth.getDataAsText(0, "Replicate Count").trim());
+        utilization = utilization.drillIntoSamples(byMonth, 0);
+        assertTrue("Samples tab should open when a month's count is clicked", utilization.isSamplesVisible());
+        waitForSamplesRowCount(monthReplicates);
+    }
+
+    /** Waits for the sample-file grid to refresh to the expected filtered row count (rebuilt each poll to dodge staleness). */
+    private void waitForSamplesRowCount(int expected)
+    {
+        waitFor(() -> new DataRegionTable(InstrumentUtilizationWebPart.SAMPLE_FILE_REGION, getDriver()).getDataRowCount() == expected,
+                "Samples grid did not filter to the expected " + expected + " row(s)", 10_000);
     }
 
     private void verifyCalendarTab(InstrumentUtilizationWebPart utilization)
