@@ -34,9 +34,7 @@
 
 <script type="text/javascript" nonce="<%=getScriptNonce()%>">
 (function() {
-    // Match the height of the two side-by-side web part panels (Instrument Info is shorter than the
-    // Summary by Folder grid). Done in JS rather than flex CSS so it is robust to the web part frame
-    // markup, and it self-disables when the columns stack on narrow viewports.
+    // Match the height of the two side-by-side web part panels
     function equalizeHeights() {
         var cols = document.querySelectorAll('#lk-instrument-info-row > [class*="col-"]');
         var panels = [];
