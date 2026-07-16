@@ -4918,7 +4918,7 @@ public class TargetedMSController extends SpringActionController
             sampleFileView.setFrame(WebPartView.FrameType.NONE);
 
             var utilizationView = new JspView<>("/org/labkey/targetedms/view/instrumentUtilization.jsp",
-                    new InstrumentUtilizationBean(byDayView, byMonthView, sampleFileView, "Samples from " + form.getName()));
+                    new InstrumentUtilizationBean(byDayView, byMonthView, sampleFileView));
             utilizationView.setTitle("Instrument Utilization Across Folders");
             utilizationView.setFrame(WebPartView.FrameType.PORTAL);
             result.addView(utilizationView);
@@ -4932,14 +4932,12 @@ public class TargetedMSController extends SpringActionController
         private final QueryView _byDayView;
         private final QueryView _byMonthView;
         private final QueryView _sampleFileView;
-        private final String _sampleFileTitle;
 
-        public InstrumentUtilizationBean(QueryView byDayView, QueryView byMonthView, QueryView sampleFileView, String sampleFileTitle)
+        public InstrumentUtilizationBean(QueryView byDayView, QueryView byMonthView, QueryView sampleFileView)
         {
             _byDayView = byDayView;
             _byMonthView = byMonthView;
             _sampleFileView = sampleFileView;
-            _sampleFileTitle = sampleFileTitle;
         }
 
         public QueryView getByDayView()
@@ -4955,11 +4953,6 @@ public class TargetedMSController extends SpringActionController
         public QueryView getSampleFileView()
         {
             return _sampleFileView;
-        }
-
-        public String getSampleFileTitle()
-        {
-            return _sampleFileTitle;
         }
     }
 

@@ -58,7 +58,7 @@
     <li class="active"><a href="#utilizationTabCalendar" data-utilization-tab="calendar">Calendar</a></li>
     <li><a href="#utilizationTabMonth" data-utilization-tab="month">Summary by Month</a></li>
     <li><a href="#utilizationTabDay" data-utilization-tab="day">Summary by Day</a></li>
-    <li><a href="#utilizationTabSamples" data-utilization-tab="samples"><%=h(bean.getSampleFileTitle())%></a></li>
+    <li><a href="#utilizationTabSamples" data-utilization-tab="samples">All Replicates</a></li>
 </ul>
 
 <div class="tab-content" style="padding-top: 15px;">
