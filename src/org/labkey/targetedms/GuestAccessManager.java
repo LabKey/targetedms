@@ -62,7 +62,7 @@ public class GuestAccessManager
         showPeptide(TargetedMSController.ShowPeptideAction.class, "Peptide details page", true),
         showMolecule(TargetedMSController.ShowMoleculeAction.class, "Small molecule details page", true),
         showCalibrationCurve(TargetedMSController.ShowCalibrationCurveAction.class, "Calibration curve details page", true),
-        showPrecursorList(TargetedMSController.ShowPrecursorListAction.class, "Document details page", false),
+        showPrecursorList(TargetedMSController.ShowPrecursorListAction.class, "Precursor list page", false),
         showPeakAreas(TargetedMSController.ShowPeakAreasAction.class, "Peak areas chart", false),
         showRetentionTimesChart(TargetedMSController.ShowRetentionTimesChartAction.class, "Retention times chart", false),
         precursorChromatogramChart(TargetedMSController.PrecursorChromatogramChartAction.class, "Precursor chromatogram", false),
