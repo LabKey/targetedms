@@ -141,8 +141,8 @@ public class TargetedMSInstrumentUtilizationTest extends TargetedMSTest
 
         // Wait for the async selectRows call to populate the calendar with day cells
         waitForElement(Locator.tagWithClassContaining("div", "day-content"));
-        assertEquals("Calendar should default to a single month",
-                "1 month", getSelectedOptionText(Locator.id("utilizationMonthNumberSelect")));
+        assertEquals("Calendar should default to a four-month view",
+                "4 months", getSelectedOptionText(Locator.id("utilizationMonthNumberSelect")));
     }
 
     private void verifyRunsGrids(InstrumentUtilizationWebPart utilization, int expectedCrossFolderFileCount)

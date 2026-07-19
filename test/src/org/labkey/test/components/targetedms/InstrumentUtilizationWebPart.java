@@ -34,7 +34,7 @@ public class InstrumentUtilizationWebPart extends BodyWebPart<InstrumentUtilizat
     public static final String BY_DAY_REGION = "UtilizationByDay";
     public static final String BY_MONTH_REGION = "UtilizationByMonth";
     public static final String SAMPLE_FILE_REGION = "SampleFile";
-    public static final String FILES_COLUMN = "FileCount";
+    public static final String FILES_COLUMN = "ReplicateCount";
 
     public InstrumentUtilizationWebPart(WebDriver driver)
     {
@@ -130,7 +130,7 @@ public class InstrumentUtilizationWebPart extends BodyWebPart<InstrumentUtilizat
         return reloaded;
     }
 
-    /** Sum of the (integer) "Files" column, i.e. the total number of sample files represented by the grid. */
+    /** Sum of the (integer) "Replicate Count" column, i.e. the total number of replicates represented by the grid. */
     public int getTotalFiles(DataRegionTable table)
     {
         int total = 0;

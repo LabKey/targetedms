@@ -9,7 +9,7 @@
 SELECT
     CAST(MonthStart || '-01' AS TIMESTAMP) AS MonthStart,
     TIMESTAMPADD('SQL_TSI_MONTH', 1, CAST(MonthStart || '-01' AS TIMESTAMP)) AS MonthEnd,
-    COUNT(*) AS FileCount,
+    COUNT(*) AS ReplicateCount,
     COUNT(DISTINCT RunId) AS RunCount,
     InstrumentNickname
 FROM

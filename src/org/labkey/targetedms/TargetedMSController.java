@@ -4854,7 +4854,7 @@ public class TargetedMSController extends SpringActionController
                 settings.setBaseSort(new Sort("-AcquisitionDate"));
                 settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("InstrumentNickname"), form.getName()));
                 settings.setContainerFilterName(ContainerFilter.Type.AllFolders.name());
-                settings.setFieldKeys(List.of(FieldKey.fromParts("AcquisitionDate"), FieldKey.fromParts("RunCount"), FieldKey.fromParts("FileCount")));
+                settings.setFieldKeys(List.of(FieldKey.fromParts("AcquisitionDate"), FieldKey.fromParts("RunCount"), FieldKey.fromParts("ReplicateCount")));
                 TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
                 return schema.createView(getViewContext(), settings, errors);
             }
@@ -4864,7 +4864,7 @@ public class TargetedMSController extends SpringActionController
                 settings.setBaseSort(new Sort("-MonthStart"));
                 settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("InstrumentNickname"), form.getName()));
                 settings.setContainerFilterName(ContainerFilter.Type.AllFolders.name());
-                settings.setFieldKeys(List.of(FieldKey.fromParts("MonthStart"), FieldKey.fromParts("RunCount"), FieldKey.fromParts("FileCount")));
+                settings.setFieldKeys(List.of(FieldKey.fromParts("MonthStart"), FieldKey.fromParts("RunCount"), FieldKey.fromParts("ReplicateCount")));
                 TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
                 return schema.createView(getViewContext(), settings, errors);
             }

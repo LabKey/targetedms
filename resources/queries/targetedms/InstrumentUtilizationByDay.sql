@@ -8,7 +8,7 @@
 -- Consumed by the instrument utilization calendar and the "Runs by Day" grid on the Show Instrument page.
 SELECT
     CAST(AcquisitionDay AS TIMESTAMP) AS AcquisitionDate,
-    COUNT(*) AS FileCount,
+    COUNT(*) AS ReplicateCount,
     COUNT(DISTINCT RunId) AS RunCount,
     InstrumentNickname
 FROM

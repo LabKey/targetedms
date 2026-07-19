@@ -10,9 +10,8 @@
                     </column>
                     <column columnName="RunCount">
                         <columnTitle>Skyline Document Count</columnTitle>
-                        <url>/targetedms-showInstrument.view?name=${InstrumentNickname}&amp;utilizationTab=samples&amp;SampleFile.AcquiredTime~dateeq=${AcquisitionDate:date('yyyy-MM-dd')}</url>
                     </column>
-                    <column columnName="FileCount">
+                    <column columnName="ReplicateCount">
                         <columnTitle>Replicate Count</columnTitle>
                         <url>/targetedms-showInstrument.view?name=${InstrumentNickname}&amp;utilizationTab=samples&amp;SampleFile.AcquiredTime~dateeq=${AcquisitionDate:date('yyyy-MM-dd')}</url>
                     </column>

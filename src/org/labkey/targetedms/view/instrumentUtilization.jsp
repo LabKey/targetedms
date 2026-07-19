@@ -89,7 +89,7 @@
                     <div class="heatmap-legend-element heatmap-shade9"></div>
                     <div class="heatmap-legend-element heatmap-shade13"></div>
                 </div>
-                <div class="heatmap-legend-label" id="heatmapFileLegendMax">Files acquired</div>
+                <div class="heatmap-legend-label" id="heatmapFileLegendMax">Replicates acquired</div>
             </div>
         </div>
     </div>
@@ -196,7 +196,7 @@
             schemaName: 'targetedms',
             queryName: 'InstrumentUtilizationByDay',
             containerFilter: LABKEY.Query.containerFilter.allFolders,
-            columns: 'AcquisitionDate,FileCount,RunCount',
+            columns: 'AcquisitionDate,ReplicateCount,RunCount',
             sort: 'AcquisitionDate',
             filterArray: [ LABKEY.Filter.create('InstrumentNickname', instrumentName) ],
             success: function (response) {
@@ -227,7 +227,7 @@
                     if (!data[currentIndex]) {
                         continue;
                     }
-                    data[currentIndex].fileCount = rows[i].FileCount || 0;
+                    data[currentIndex].fileCount = rows[i].ReplicateCount || 0;
                     data[currentIndex].runCount = rows[i].RunCount || 0;
                     maxFileCount = Math.max(maxFileCount, data[currentIndex].fileCount);
                 }
@@ -277,13 +277,13 @@
 
     loadData(function (data) {
         if (!data.length) {
-            $('#instrumentUtilizationCalendar').text('No samples acquired by this instrument.');
+            $('#instrumentUtilizationCalendar').text('No replicates acquired by this instrument.');
             honorRequestedTab();
             return;
         }
 
         newestDataDate = new Date(data[data.length - 1].startDate);
-        let monthsToShow = 1;
+        let monthsToShow = 4;
 
         let startDate = new Date(newestDataDate);
         startDate.setMonth(startDate.getMonth() - monthsToShow + 1);
@@ -292,7 +292,7 @@
         updateMonths();
         $('#utilizationMonthNumberSelect').on('change', updateMonths);
 
-        $('#heatmapFileLegendMax').text(maxFileCount + ' file' + (maxFileCount === 1 ? '' : 's'));
+        $('#heatmapFileLegendMax').text(maxFileCount + ' replicate' + (maxFileCount === 1 ? '' : 's'));
 
         calendar = new Calendar('#instrumentUtilizationCalendar', {
             startDate: startDate,
@@ -304,10 +304,10 @@
 
                 let content = '<div class="event-tooltip-content">';
                 if (!event || event.fileCount === 0) {
-                    content += '<div>No samples</div>';
+                    content += '<div>No replicates</div>';
                 }
                 else {
-                    content += '<div>' + event.fileCount + ' file' + (event.fileCount === 1 ? '' : 's') + ' acquired</div>';
+                    content += '<div>' + event.fileCount + ' replicate' + (event.fileCount === 1 ? '' : 's') + ' acquired</div>';
                     content += '<div>' + event.runCount + ' Skyline document' + (event.runCount === 1 ? '' : 's') + '</div>';
                 }
                 content += '</div>';
