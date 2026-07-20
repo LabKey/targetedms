@@ -4815,6 +4815,8 @@ public class TargetedMSController extends SpringActionController
         }
 
         private static final String FOLDER_SUMMARY = "FolderSummary";
+        private static final String UTILIZATION_BY_DAY = "UtilizationByDay";
+        private static final String UTILIZATION_BY_MONTH = "UtilizationByMonth";
 
         private InstrumentForm _form;
 
@@ -4846,11 +4848,31 @@ public class TargetedMSController extends SpringActionController
                 TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
                 return schema.createView(getViewContext(), settings, errors);
             }
+            if (UTILIZATION_BY_DAY.equalsIgnoreCase(dataRegion))
+            {
+                QuerySettings settings = new QuerySettings(getViewContext(), UTILIZATION_BY_DAY, "InstrumentUtilizationByDay");
+                settings.setBaseSort(new Sort("-AcquisitionDate"));
+                settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("InstrumentNickname"), form.getName()));
+                settings.setContainerFilterName(ContainerFilter.Type.AllFolders.name());
+                settings.setFieldKeys(List.of(FieldKey.fromParts("AcquisitionDate"), FieldKey.fromParts("RunCount"), FieldKey.fromParts("ReplicateCount")));
+                TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+                return schema.createView(getViewContext(), settings, errors);
+            }
+            if (UTILIZATION_BY_MONTH.equalsIgnoreCase(dataRegion))
+            {
+                QuerySettings settings = new QuerySettings(getViewContext(), UTILIZATION_BY_MONTH, "InstrumentUtilizationByMonth");
+                settings.setBaseSort(new Sort("-MonthStart"));
+                settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("InstrumentNickname"), form.getName()));
+                settings.setContainerFilterName(ContainerFilter.Type.AllFolders.name());
+                settings.setFieldKeys(List.of(FieldKey.fromParts("MonthStart"), FieldKey.fromParts("RunCount"), FieldKey.fromParts("ReplicateCount")));
+                TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+                return schema.createView(getViewContext(), settings, errors);
+            }
             throw new NotFoundException("Unknown dataRegion: " + dataRegion);
         }
 
         @Override
-        public ModelAndView getView(InstrumentForm form, BindException errors)
+        public ModelAndView getView(InstrumentForm form, BindException errors) throws Exception
         {
             if (form.getName() == null)
             {
@@ -4868,26 +4890,91 @@ public class TargetedMSController extends SpringActionController
 
             VBox result = new VBox();
 
+            VBox instrumentInfoView = new VBox();
             for (InstrumentNickname name : names)
             {
                 var nameView = new JspView<>("/org/labkey/targetedms/view/nickname.jsp", name);
                 nameView.setTitle("Instrument Info");
                 nameView.setFrame(WebPartView.FrameType.PORTAL);
-                result.addView(nameView);
+                instrumentInfoView.addView(nameView);
             }
 
             QueryView folderSummaryView = createQueryView(form, errors, false, FOLDER_SUMMARY);
             folderSummaryView.setTitle("Summary by Folder");
             folderSummaryView.setFrame(WebPartView.FrameType.PORTAL);
 
-            QueryView sampleFileView = createQueryView(form, errors, false, TargetedMSSchema.TABLE_SAMPLE_FILE);
-            sampleFileView.setTitle("Samples from " + form.getName());
-            sampleFileView.setFrame(WebPartView.FrameType.PORTAL);
+            // Instrument info is narrow; pair it with the folder summary grid in a two-column row so the
+            // otherwise-empty space to the right of the info panel is put to use.
+            var infoRowView = new JspView<>("/org/labkey/targetedms/view/instrumentInfoRow.jsp",
+                    new InstrumentInfoRowBean(instrumentInfoView, folderSummaryView));
+            infoRowView.setFrame(WebPartView.FrameType.NONE);
+            result.addView(infoRowView);
 
-            result.addView(folderSummaryView);
-            result.addView(sampleFileView);
+            QueryView byDayView = createInitializedQueryView(form, errors, false, UTILIZATION_BY_DAY);
+            byDayView.setFrame(WebPartView.FrameType.NONE);
+            QueryView byMonthView = createInitializedQueryView(form, errors, false, UTILIZATION_BY_MONTH);
+            byMonthView.setFrame(WebPartView.FrameType.NONE);
+            QueryView sampleFileView = createInitializedQueryView(form, errors, false, TargetedMSSchema.TABLE_SAMPLE_FILE);
+            sampleFileView.setFrame(WebPartView.FrameType.NONE);
+
+            var utilizationView = new JspView<>("/org/labkey/targetedms/view/instrumentUtilization.jsp",
+                    new InstrumentUtilizationBean(byDayView, byMonthView, sampleFileView));
+            utilizationView.setTitle("Instrument Utilization Across Folders");
+            utilizationView.setFrame(WebPartView.FrameType.PORTAL);
+            result.addView(utilizationView);
 
             return result;
+        }
+    }
+
+    public static class InstrumentUtilizationBean
+    {
+        private final QueryView _byDayView;
+        private final QueryView _byMonthView;
+        private final QueryView _sampleFileView;
+
+        public InstrumentUtilizationBean(QueryView byDayView, QueryView byMonthView, QueryView sampleFileView)
+        {
+            _byDayView = byDayView;
+            _byMonthView = byMonthView;
+            _sampleFileView = sampleFileView;
+        }
+
+        public QueryView getByDayView()
+        {
+            return _byDayView;
+        }
+
+        public QueryView getByMonthView()
+        {
+            return _byMonthView;
+        }
+
+        public QueryView getSampleFileView()
+        {
+            return _sampleFileView;
+        }
+    }
+
+    public static class InstrumentInfoRowBean
+    {
+        private final HttpView _infoView;
+        private final HttpView _summaryView;
+
+        public InstrumentInfoRowBean(HttpView infoView, HttpView summaryView)
+        {
+            _infoView = infoView;
+            _summaryView = summaryView;
+        }
+
+        public HttpView getInfoView()
+        {
+            return _infoView;
+        }
+
+        public HttpView getSummaryView()
+        {
+            return _summaryView;
         }
     }
 
