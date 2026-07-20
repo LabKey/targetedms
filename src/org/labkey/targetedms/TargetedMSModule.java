@@ -37,6 +37,7 @@ import org.labkey.api.module.FolderTypeManager;
 import org.labkey.api.module.Module;
 import org.labkey.api.module.ModuleContext;
 import org.labkey.api.module.ModuleHtmlView;
+import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.module.ModuleProperty;
 import org.labkey.api.module.SpringModule;
 import org.labkey.api.pipeline.PipelineService;
@@ -647,6 +648,14 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
 
         TargetedMSListener listener = new TargetedMSListener();
         ContainerManager.addContainerListener(listener);
+
+        // Only offer the guest-access setting on servers where the PanoramaPublic module is active (e.g. PanoramaWeb),
+        // Use the "panoramapublic" string (not the module class) to avoid a dependency on that module.
+        if (ModuleLoader.getInstance().hasModule("panoramapublic"))
+        {
+            ActionURL guestAccessURL = new ActionURL(TargetedMSController.GuestAccessSettingsAction.class, ContainerManager.getRoot());
+            AdminConsole.addLink(AdminConsole.SettingsLinkType.Premium, "Targeted MS Guest Access", guestAccessURL, ApplicationAdminPermission.class);
+        }
 
         FileContentService fcs = FileContentService.get();
         if(null != fcs)
