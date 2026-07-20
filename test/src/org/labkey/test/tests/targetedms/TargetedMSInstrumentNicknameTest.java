@@ -25,6 +25,7 @@ import org.labkey.remoteapi.query.Filter;
 import org.labkey.remoteapi.query.SelectRowsCommand;
 import org.labkey.test.Locator;
 import org.labkey.test.TestTimeoutException;
+import org.labkey.test.components.targetedms.InstrumentUtilizationWebPart;
 import org.labkey.test.util.ApiPermissionsHelper;
 import org.labkey.test.util.PermissionsHelper;
 
@@ -154,7 +155,8 @@ public class TargetedMSInstrumentNicknameTest extends TargetedMSTest
         setFormElement(Locator.input("name"), NICKNAME_1);
         clickButton("Save");
 
-        // Be sure that the new nickname is shown and the model/serial number aren't
+        // The nickname links render on the "All Replicates" tab, so open it before the visible-only link check
+        new InstrumentUtilizationWebPart(getDriver()).showSamples();
         waitForElement(nickname1LinkLocator);
         assertElementNotPresent(qExactiveLinkLocator);
         assertElementNotPresent(qExactiveWithSerialLinkLocator);
@@ -248,6 +250,7 @@ public class TargetedMSInstrumentNicknameTest extends TargetedMSTest
         setFormElement(Locator.input("name"), NICKNAME_3);
         clickButton("Save");
 
+        new InstrumentUtilizationWebPart(getDriver()).showSamples();
         clickAndWait(Locator.linkWithText(SAMPLE_FILE_CHROM_INFO));
         clickAndWait(Locator.linkWithText("2 replicates"));
         assertElementPresent(Locator.linkWithText(NICKNAME_3));
