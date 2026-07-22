@@ -31,7 +31,6 @@ import org.labkey.targetedms.TargetedMSModule;
 import org.labkey.targetedms.parser.XmlUtil;
 import org.xml.sax.SAXException;
 
-import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.stream.StreamSource;
@@ -114,10 +113,10 @@ public class SkylineAuditLogParser implements AutoCloseable
         try (InputStream schemaStream = new BufferedInputStream(openSchemaInputStream());
              InputStream auditLogStream = new BufferedInputStream(new FileInputStream(_file)))
             {
-                //prepare validator
-                SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                //prepare validator, hardened against XXE (CWE-611) since the audit log is attacker-supplied
+                SchemaFactory schemaFactory = XmlBeansUtil.schemaFactory();
                 Schema schema = schemaFactory.newSchema(new StreamSource(schemaStream));
-                Validator validator = schema.newValidator();
+                Validator validator = XmlBeansUtil.hardenValidator(schema.newValidator());
                 validator.validate(new StreamSource(auditLogStream));
             }
     }
