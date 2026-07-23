@@ -385,9 +385,9 @@ $(function() {
     });
 
 
-    // datetime-local inputs require a 'T' separator; the container format uses a space, which Firefox (unlike Chrome) rejects.
+    // datetime-local values use the fixed HTML format 'yyyy-MM-ddTHH:mm', independent of the container's display format; Firefox (unlike Chrome) rejects anything else.
     function toDateTimeLocalValue(date) {
-        return DateFormat.format.date(date, LABKEY.container.formats.dateTimeFormat).replace(' ', 'T');
+        return DateFormat.format.date(date, 'yyyy-MM-dd') + 'T' + DateFormat.format.date(date, 'HH:mm');
     }
 
     function editEvent(event) {
