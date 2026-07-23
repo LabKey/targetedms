@@ -53,6 +53,7 @@ import org.labkey.api.action.ApiJsonWriter;
 import org.labkey.api.action.ApiResponse;
 import org.labkey.api.action.ApiSimpleResponse;
 import org.labkey.api.action.ApiUsageException;
+import org.labkey.api.action.BaseViewAction;
 import org.labkey.api.action.ExportAction;
 import org.labkey.api.action.FormHandlerAction;
 import org.labkey.api.action.FormViewAction;
@@ -67,6 +68,7 @@ import org.labkey.api.action.ReturnUrlForm;
 import org.labkey.api.action.SimpleErrorView;
 import org.labkey.api.action.SimpleViewAction;
 import org.labkey.api.action.SpringActionController;
+import org.labkey.api.admin.AdminUrls;
 import org.labkey.api.analytics.AnalyticsService;
 import org.labkey.api.attachments.DocumentConversionService;
 import org.labkey.api.attachments.SvgSource;
@@ -139,6 +141,7 @@ import org.labkey.api.security.RequiresPermission;
 import org.labkey.api.security.SecurityManager;
 import org.labkey.api.security.User;
 import org.labkey.api.security.permissions.AdminPermission;
+import org.labkey.api.security.permissions.ApplicationAdminPermission;
 import org.labkey.api.security.permissions.InsertPermission;
 import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.security.permissions.UpdatePermission;
@@ -301,6 +304,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -539,6 +543,141 @@ public class TargetedMSController extends SpringActionController
         if (!DefaultFolderType.DEFAULT_DASHBOARD.equals(tab))
         {
             Portal.addProperty(c, tab, Portal.PROP_CUSTOMTAB);
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Site-admin settings page: require a login for guests on targetedms actions targeted by bots.
+    // ------------------------------------------------------------------------
+    public static class GuestAccessSettingsForm
+    {
+        private boolean _masterEnabled;
+        private String[] _restrictedActions = new String[0];
+
+        public boolean isMasterEnabled()
+        {
+            return _masterEnabled;
+        }
+
+        public void setMasterEnabled(boolean masterEnabled)
+        {
+            _masterEnabled = masterEnabled;
+        }
+
+        public String[] getRestrictedActions()
+        {
+            return _restrictedActions;
+        }
+
+        public void setRestrictedActions(String[] restrictedActions)
+        {
+            _restrictedActions = restrictedActions == null ? new String[0] : restrictedActions;
+        }
+
+        /** The checked actions as an enum set, ignoring any unrecognized keys. */
+        public Set<GuestAccessManager.RestrictableAction> getCheckedActions()
+        {
+            Set<GuestAccessManager.RestrictableAction> checked = EnumSet.noneOf(GuestAccessManager.RestrictableAction.class);
+            for (String name : _restrictedActions)
+            {
+                try
+                {
+                    checked.add(GuestAccessManager.RestrictableAction.valueOf(name));
+                }
+                catch (IllegalArgumentException ignored)
+                {
+                    // Skip anything that is not a current action key
+                }
+            }
+            return checked;
+        }
+    }
+
+    /** One row on the settings page: an action, its label, and whether its checkbox is currently checked. */
+    public static class GuestAccessActionState
+    {
+        private final GuestAccessManager.RestrictableAction _action;
+        private final boolean _checked;
+
+        public GuestAccessActionState(GuestAccessManager.RestrictableAction action, boolean checked)
+        {
+            _action = action;
+            _checked = checked;
+        }
+
+        public String getName()
+        {
+            return _action.name();
+        }
+
+        public String getLabel()
+        {
+            return _action.getLabel();
+        }
+
+        public boolean isChecked()
+        {
+            return _checked;
+        }
+    }
+
+    /** Model for the settings JSP: the master switch state plus one row per restrictable action. */
+    public static class GuestAccessSettingsBean
+    {
+        private final boolean _masterEnabled;
+        private final List<GuestAccessActionState> _actions;
+
+        public GuestAccessSettingsBean()
+        {
+            _masterEnabled = GuestAccessManager.isMasterEnabled();
+            _actions = new ArrayList<>();
+            for (GuestAccessManager.RestrictableAction action : GuestAccessManager.RestrictableAction.values())
+                _actions.add(new GuestAccessActionState(action, GuestAccessManager.isActionChecked(action)));
+        }
+
+        public boolean isMasterEnabled()
+        {
+            return _masterEnabled;
+        }
+
+        public List<GuestAccessActionState> getActions()
+        {
+            return _actions;
+        }
+    }
+
+    @RequiresPermission(ApplicationAdminPermission.class)
+    public class GuestAccessSettingsAction extends FormViewAction<GuestAccessSettingsForm>
+    {
+        @Override
+        public void validateCommand(GuestAccessSettingsForm target, Errors errors)
+        {
+        }
+
+        @Override
+        public ModelAndView getView(GuestAccessSettingsForm form, boolean reshow, BindException errors)
+        {
+            return new JspView<>("/org/labkey/targetedms/view/guestAccessSettings.jsp", new GuestAccessSettingsBean(), errors);
+        }
+
+        @Override
+        public boolean handlePost(GuestAccessSettingsForm form, BindException errors)
+        {
+            GuestAccessManager.save(getUser(), form.isMasterEnabled(), form.getCheckedActions());
+            return true;
+        }
+
+        @Override
+        public URLHelper getSuccessURL(GuestAccessSettingsForm form)
+        {
+            // Reshow the settings page with the saved values.
+            return new ActionURL(GuestAccessSettingsAction.class, getContainer());
+        }
+
+        @Override
+        public void addNavTrail(NavTree root)
+        {
+            urlProvider(AdminUrls.class).addAdminNavTrail(root, "Targeted MS Guest Access", getClass(), getContainer());
         }
     }
 
@@ -1932,6 +2071,8 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void export(GroupChromatogramForm form, HttpServletResponse response, BindException errors) throws Exception
         {
+            redirectGuestToLoginForChart(getClass(), getViewContext(), getContainer());
+
             PeptideGroup group = PeptideGroupManager.getPeptideGroup(getContainer(), form.getGroupId());
             if (group == null)
             {
@@ -1968,6 +2109,8 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void export(ChromatogramForm form, HttpServletResponse response, BindException errors) throws Exception
         {
+            redirectGuestToLoginForChart(getClass(), getViewContext(), getContainer());
+
             PrecursorChromInfo pChromInfo = PrecursorManager.getPrecursorChromInfo(getContainer(), form.getId());
             if (pChromInfo == null)
             {
@@ -2990,6 +3133,10 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(ChromatogramForm form, BindException errors)
         {
+            HtmlView loginGate = getGuestLoginGate(getClass(), getViewContext(), getContainer());
+            if (loginGate != null)
+                return loginGate;
+
             long peptideId = form.getId();  // peptide Id
 
             Peptide peptide = PeptideManager.getPeptide(getContainer(), peptideId);
@@ -3063,9 +3210,12 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void addNavTrail(NavTree root)
         {
+            // Add the top-level crumb unconditionally so the page has a title even on the guest login-gate
+            // path, where getView returns early and _run is never set (the test framework flags a titleless
+            // action as a failure).
+            root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
             if (null != _run)
             {
-                root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
                 root.addChild(_run.getDescription(), getShowRunURL(getContainer(), _run.getId()));
                 root.addChild(_sequence);
             }
@@ -3084,6 +3234,10 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(ChromatogramForm form, BindException errors)
         {
+            HtmlView loginGate = getGuestLoginGate(getClass(), getViewContext(), getContainer());
+            if (loginGate != null)
+                return loginGate;
+
             long moleculeId = form.getId();
 
             Molecule molecule = MoleculeManager.getMolecule(getContainer(), moleculeId);
@@ -3153,9 +3307,12 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void addNavTrail(NavTree root)
         {
+            // Add the top-level crumb unconditionally so the page has a title even on the guest login-gate
+            // path, where getView returns early and _run is never set (the test framework flags a titleless
+            // action as a failure).
+            root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
             if (null != _run)
             {
-                root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
                 root.addChild(_run.getDescription(), getShowRunURL(getContainer(), _run.getId()));
                 root.addChild(_customIonName);
             }
@@ -3600,6 +3757,8 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void export(SummaryChartForm form, HttpServletResponse response, BindException errors) throws Exception
         {
+            redirectGuestToLoginForChart(getClass(), getViewContext(), getContainer());
+
             JFreeChart chart;
             if (form.isAsProteomics())
             {
@@ -3656,6 +3815,8 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void export(SummaryChartForm form, HttpServletResponse response, BindException errors) throws Exception
         {
+            redirectGuestToLoginForChart(getClass(), getViewContext(), getContainer());
+
             if (form.getValue() == null)
                 form.setValue("All");
 
@@ -4476,6 +4637,36 @@ public class TargetedMSController extends SpringActionController
                         AuthenticationManager.isRegistrationEnabled() ? registerLink : "")));
     }
 
+    /**
+     * True when a guest should be sent to login for this action: master switch on AND this action checked.
+     */
+    private static boolean isGuestGated(Class<? extends BaseViewAction<?>> actionClass, ViewContext context)
+    {
+        GuestAccessManager.RestrictableAction action = GuestAccessManager.RestrictableAction.forClass(actionClass);
+        return action != null && context.getUser().isGuest() && GuestAccessManager.isRestricted(action);
+    }
+
+    /**
+     * Returns a login view when a guest should be sent to the login page for this action (the site-admin
+     * master switch is on AND this action's checkbox is checked), otherwise null so the action runs as
+     * normal. See {@link GuestAccessSettingsAction}.
+     */
+    @Nullable
+    private static HtmlView getGuestLoginGate(Class<? extends BaseViewAction<?>> actionClass, ViewContext context, Container container)
+    {
+        return isGuestGated(actionClass, context) ? getLoginView(context, container) : null;
+    }
+
+    /**
+     * Same check as {@link #getGuestLoginGate}, but for the chart actions that write an image. Those cannot
+     * return the HTML login view, so a restricted guest is redirected to the login page instead.
+     */
+    private static void redirectGuestToLoginForChart(Class<? extends BaseViewAction<?>> actionClass, ViewContext context, Container container)
+    {
+        if (isGuestGated(actionClass, context))
+            throw new RedirectException(PageFlowUtil.urlProvider(LoginUrls.class).getLoginURL(container, context.getActionURL()));
+    }
+
     @RequiresPermission(ReadPermission.class)
     public class ShowPrecursorListAction extends ShowRunSplitDetailsAction<DocumentPrecursorsView>
     {
@@ -4488,6 +4679,13 @@ public class TargetedMSController extends SpringActionController
         public ShowPrecursorListAction(ViewContext ctx)
         {
             setViewContext(ctx);
+        }
+
+        @Override
+        public ModelAndView getView(RunDetailsForm form, BindException errors) throws Exception
+        {
+            HtmlView loginGate = getGuestLoginGate(getClass(), getViewContext(), getContainer());
+            return loginGate != null ? loginGate : super.getView(form, errors);
         }
 
         @Override
@@ -4823,6 +5021,8 @@ public class TargetedMSController extends SpringActionController
         }
 
         private static final String FOLDER_SUMMARY = "FolderSummary";
+        private static final String UTILIZATION_BY_DAY = "UtilizationByDay";
+        private static final String UTILIZATION_BY_MONTH = "UtilizationByMonth";
 
         private InstrumentForm _form;
 
@@ -4854,11 +5054,31 @@ public class TargetedMSController extends SpringActionController
                 TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
                 return schema.createView(getViewContext(), settings, errors);
             }
+            if (UTILIZATION_BY_DAY.equalsIgnoreCase(dataRegion))
+            {
+                QuerySettings settings = new QuerySettings(getViewContext(), UTILIZATION_BY_DAY, "InstrumentUtilizationByDay");
+                settings.setBaseSort(new Sort("-AcquisitionDate"));
+                settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("InstrumentNickname"), form.getName()));
+                settings.setContainerFilterName(ContainerFilter.Type.AllFolders.name());
+                settings.setFieldKeys(List.of(FieldKey.fromParts("AcquisitionDate"), FieldKey.fromParts("RunCount"), FieldKey.fromParts("ReplicateCount")));
+                TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+                return schema.createView(getViewContext(), settings, errors);
+            }
+            if (UTILIZATION_BY_MONTH.equalsIgnoreCase(dataRegion))
+            {
+                QuerySettings settings = new QuerySettings(getViewContext(), UTILIZATION_BY_MONTH, "InstrumentUtilizationByMonth");
+                settings.setBaseSort(new Sort("-MonthStart"));
+                settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("InstrumentNickname"), form.getName()));
+                settings.setContainerFilterName(ContainerFilter.Type.AllFolders.name());
+                settings.setFieldKeys(List.of(FieldKey.fromParts("MonthStart"), FieldKey.fromParts("RunCount"), FieldKey.fromParts("ReplicateCount")));
+                TargetedMSSchema schema = new TargetedMSSchema(getUser(), getContainer());
+                return schema.createView(getViewContext(), settings, errors);
+            }
             throw new NotFoundException("Unknown dataRegion: " + dataRegion);
         }
 
         @Override
-        public ModelAndView getView(InstrumentForm form, BindException errors)
+        public ModelAndView getView(InstrumentForm form, BindException errors) throws Exception
         {
             if (form.getName() == null)
             {
@@ -4876,26 +5096,91 @@ public class TargetedMSController extends SpringActionController
 
             VBox result = new VBox();
 
+            VBox instrumentInfoView = new VBox();
             for (InstrumentNickname name : names)
             {
                 var nameView = new JspView<>("/org/labkey/targetedms/view/nickname.jsp", name);
                 nameView.setTitle("Instrument Info");
                 nameView.setFrame(WebPartView.FrameType.PORTAL);
-                result.addView(nameView);
+                instrumentInfoView.addView(nameView);
             }
 
             QueryView folderSummaryView = createQueryView(form, errors, false, FOLDER_SUMMARY);
             folderSummaryView.setTitle("Summary by Folder");
             folderSummaryView.setFrame(WebPartView.FrameType.PORTAL);
 
-            QueryView sampleFileView = createQueryView(form, errors, false, TargetedMSSchema.TABLE_SAMPLE_FILE);
-            sampleFileView.setTitle("Samples from " + form.getName());
-            sampleFileView.setFrame(WebPartView.FrameType.PORTAL);
+            // Instrument info is narrow; pair it with the folder summary grid in a two-column row so the
+            // otherwise-empty space to the right of the info panel is put to use.
+            var infoRowView = new JspView<>("/org/labkey/targetedms/view/instrumentInfoRow.jsp",
+                    new InstrumentInfoRowBean(instrumentInfoView, folderSummaryView));
+            infoRowView.setFrame(WebPartView.FrameType.NONE);
+            result.addView(infoRowView);
 
-            result.addView(folderSummaryView);
-            result.addView(sampleFileView);
+            QueryView byDayView = createInitializedQueryView(form, errors, false, UTILIZATION_BY_DAY);
+            byDayView.setFrame(WebPartView.FrameType.NONE);
+            QueryView byMonthView = createInitializedQueryView(form, errors, false, UTILIZATION_BY_MONTH);
+            byMonthView.setFrame(WebPartView.FrameType.NONE);
+            QueryView sampleFileView = createInitializedQueryView(form, errors, false, TargetedMSSchema.TABLE_SAMPLE_FILE);
+            sampleFileView.setFrame(WebPartView.FrameType.NONE);
+
+            var utilizationView = new JspView<>("/org/labkey/targetedms/view/instrumentUtilization.jsp",
+                    new InstrumentUtilizationBean(byDayView, byMonthView, sampleFileView));
+            utilizationView.setTitle("Instrument Utilization Across Folders");
+            utilizationView.setFrame(WebPartView.FrameType.PORTAL);
+            result.addView(utilizationView);
 
             return result;
+        }
+    }
+
+    public static class InstrumentUtilizationBean
+    {
+        private final QueryView _byDayView;
+        private final QueryView _byMonthView;
+        private final QueryView _sampleFileView;
+
+        public InstrumentUtilizationBean(QueryView byDayView, QueryView byMonthView, QueryView sampleFileView)
+        {
+            _byDayView = byDayView;
+            _byMonthView = byMonthView;
+            _sampleFileView = sampleFileView;
+        }
+
+        public QueryView getByDayView()
+        {
+            return _byDayView;
+        }
+
+        public QueryView getByMonthView()
+        {
+            return _byMonthView;
+        }
+
+        public QueryView getSampleFileView()
+        {
+            return _sampleFileView;
+        }
+    }
+
+    public static class InstrumentInfoRowBean
+    {
+        private final HttpView _infoView;
+        private final HttpView _summaryView;
+
+        public InstrumentInfoRowBean(HttpView infoView, HttpView summaryView)
+        {
+            _infoView = infoView;
+            _summaryView = summaryView;
+        }
+
+        public HttpView getInfoView()
+        {
+            return _infoView;
+        }
+
+        public HttpView getSummaryView()
+        {
+            return _summaryView;
         }
     }
 
@@ -5469,6 +5754,10 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(final ProteinForm form, BindException errors)
         {
+            HtmlView loginGate = getGuestLoginGate(getClass(), getViewContext(), getContainer());
+            if (loginGate != null)
+                return loginGate;
+
             PeptideGroup group = PeptideGroupManager.getPeptideGroup(getContainer(), form.getId());
             if (group == null)
             {
@@ -8202,9 +8491,11 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void addNavTrail(NavTree root)
         {
+            // Add the top-level crumb unconditionally so the page has a title even on the guest login-gate
+            // path, where validate() returns early and _run is never set.
+            root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
             if (null != _run)
             {
-                root.addChild("Targeted MS Runs", getShowListURL(getContainer()));
                 root.addChild(_run.getDescription(), getShowCalibrationCurvesURL(getContainer(), _run.getId()));
                 if (_curvePlotView.getChart().getMolecule() != null)
                 {
@@ -8216,6 +8507,11 @@ public class TargetedMSController extends SpringActionController
         @Override
         public void validate(CalibrationCurveForm form, BindException errors)
         {
+            // Skip the expensive CalibrationCurveView construction below. Gating only in getView would be too late,
+            // because the expensive work is done here in validate().
+            if (isGuestGated(getClass(), getViewContext()))
+                return;
+
             _curvePlotView = new CalibrationCurveView(getUser(), getContainer(), form.getCalibrationCurveId());
             CalibrationCurveEntity chart = _curvePlotView.getChart().getCalibrationCurveEntity();
             //ensure that the experiment run is valid and exists within the current container
@@ -8237,6 +8533,11 @@ public class TargetedMSController extends SpringActionController
         @Override
         public ModelAndView getView(CalibrationCurveForm calibrationCurveForm, BindException errors)
         {
+            // A restricted guest is short-circuited here; validate() already skipped the expensive work.
+            HtmlView loginGate = getGuestLoginGate(getClass(), getViewContext(), getContainer());
+            if (loginGate != null)
+                return loginGate;
+
             CalibrationCurveChart chart = _curvePlotView.getChart();
             GeneralMolecule<?, ?> molecule = chart.getMolecule();
             if (molecule == null)

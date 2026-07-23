@@ -1,0 +1,25 @@
+<query xmlns="http://labkey.org/data/xml/query">
+    <metadata>
+        <tables xmlns="http://labkey.org/data/xml">
+            <table tableName="InstrumentUtilizationByMonth" tableDbType="TABLE">
+                <tableTitle>Runs by Month</tableTitle>
+                <columns>
+                    <column columnName="MonthStart">
+                        <columnTitle>Month</columnTitle>
+                        <formatString>yyyy-MM</formatString>
+                    </column>
+                    <column columnName="RunCount">
+                        <columnTitle>Skyline Document Count</columnTitle>
+                    </column>
+                    <column columnName="ReplicateCount">
+                        <columnTitle>Replicate Count</columnTitle>
+                        <url>/targetedms-showInstrument.view?name=${InstrumentNickname}&amp;utilizationTab=samples&amp;SampleFile.AcquiredTime~dategte=${MonthStart:date('yyyy-MM-dd')}&amp;SampleFile.AcquiredTime~datelt=${MonthEnd:date('yyyy-MM-dd')}</url>
+                    </column>
+                    <column columnName="InstrumentNickname">
+                        <columnTitle>Instrument</columnTitle>
+                    </column>
+                </columns>
+            </table>
+        </tables>
+    </metadata>
+</query>
