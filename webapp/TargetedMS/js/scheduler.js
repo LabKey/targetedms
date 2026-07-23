@@ -385,6 +385,11 @@ $(function() {
     });
 
 
+    // datetime-local inputs require a 'T' separator; the container format uses a space, which Firefox (unlike Chrome) rejects.
+    function toDateTimeLocalValue(date) {
+        return DateFormat.format.date(date, LABKEY.container.formats.dateTimeFormat).replace(' ', 'T');
+    }
+
     function editEvent(event) {
         let startDate = event.startDate;
         let endDate = event.endDate;
@@ -396,8 +401,8 @@ $(function() {
             endDate.setDate(endDate.getDate() - 1);
         }
 
-        let startDateFormatted = DateFormat.format.date(startDate, LABKEY.container.formats.dateTimeFormat);
-        let endDateFormatted = DateFormat.format.date(endDate, LABKEY.container.formats.dateTimeFormat);
+        let startDateFormatted = toDateTimeLocalValue(startDate);
+        let endDateFormatted = toDateTimeLocalValue(endDate);
 
         // remove the old event log rows
         removeEventLog();
