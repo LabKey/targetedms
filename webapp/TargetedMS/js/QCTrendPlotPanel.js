@@ -2658,9 +2658,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             return annotationDates.indexOf(objDate) === -1;
         });
 
-        // Calendar mode keys the x-axis by day offset, so resolve the earliest plotted day for the conversion.
-        // (filterQCPoints falls back to per-date ordinal positioning, so it uses the indexOf path below.)
+        // Reuse plot.js's day-number -> offset map (handles the ordinal-prefix split) so annotations don't drift; fall back to offset-from-earliest if unavailable.
         const useCalendarAxis = this.isCalendarAxisActive();
+        const dayNumberOffsetMap = useCalendarAxis ? plot.scales.x.dayNumberOffsetMap : null;
         let minDayNumber = null;
         if (useCalendarAxis) {
             Ext4.each(precursorInfo.data, function(row) {
@@ -2676,7 +2676,16 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             var annotationDate = me.formatDate(new Date(d['Date']), !me.groupedX);
             if (useCalendarAxis) {
                 const dn = LABKEY.vis.dateToDayNumber(annotationDate);
-                return plot.scales.x.scale(dn !== null && minDayNumber !== null ? dn - minDayNumber : 0);
+                let offset = 0;
+                if (dn !== null) {
+                    if (dayNumberOffsetMap && dayNumberOffsetMap[dn] !== undefined) {
+                        offset = dayNumberOffsetMap[dn];
+                    }
+                    else if (minDayNumber !== null) {
+                        offset = dn - minDayNumber;
+                    }
+                }
+                return plot.scales.x.scale(offset);
             }
             return plot.scales.x.scale(xAxisLabels.indexOf(annotationDate));
         };

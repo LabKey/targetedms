@@ -393,11 +393,17 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         this.renderPlots();
     },
 
-    // True when the time-scaled calendar X-axis is in effect. Calendar falls back to per-date (ordinal)
-    // positioning while "always show reference guide set" (filterQCPoints) is active, since the truncation +
-    // separator rely on ordinal slot indexing.
+    // True when the time-scaled calendar X-axis is in effect (under "always show" the guide-set block becomes an ordinal prefix via calendarPrefixField/Value below, so truncation + separator keep working).
     isCalendarAxisActive: function() {
-        return this.calendarX === true && this.filterQCPoints !== true;
+        return this.calendarX === true;
+    },
+
+    // Under calendar + "always show", tell plot.js the ordinal prefix = guide-set training rows (ReferenceRangeSeries "GuideSet"); harmless otherwise since plot.js only reads these when timeBasedXTick is set.
+    applyCalendarPrefixProps: function(trendLineProps) {
+        if (this.calendarX === true && this.filterQCPoints) {
+            trendLineProps.calendarPrefixField = 'ReferenceRangeSeries';
+            trendLineProps.calendarPrefixValue = 'GuideSet';
+        }
     },
 
     // filterPoints indices include injected 'missing' entries, but AcquiredTime only exists on raw
@@ -840,6 +846,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             hideSDLines: true
         };
 
+        this.applyCalendarPrefixProps(trendLineProps);
 
         if (treeColorMap) {
             trendLineProps.colorMap = treeColorMap;
@@ -995,6 +1002,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             trendLineProps.lineColor = '#000000';
             trendLineProps.groupBy = "ReferenceRangeSeries";
         }
+
+        this.applyCalendarPrefixProps(trendLineProps);
 
         Ext4.apply(trendLineProps, this.getPlotTypeProperties(precursorInfo, plotType, isCUSUMMean, metricProps));
 
