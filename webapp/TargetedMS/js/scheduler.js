@@ -153,6 +153,7 @@ $(function() {
                         editEvent({
                             startDate: arg.start,
                             endDate: arg.end,
+                            allDay: arg.allDay,
                             id: null,
                             name: '',
                             notes: ''
@@ -394,7 +395,8 @@ $(function() {
         let startDate = event.startDate;
         let endDate = event.endDate;
 
-        if (!event.id && startDate.getHours() === 0 && startDate.getMinutes() === 0 && endDate.getHours() === 0 && endDate.getMinutes() === 0) {
+        // Rely on FullCalendar's allDay flag rather than checking for midnight, which shifts with the browser's timezone
+        if (!event.id && event.allDay) {
             // Default to starting at 8AM and ending at 5PM
             startDate.setHours(8);
             endDate.setHours(17);
