@@ -150,6 +150,18 @@ $(function() {
                         }, 200); // Add a delay to allow for hover on the popover
                     },
                     select: function(arg) {
+                        console.warn('TZDEBUG select ' + JSON.stringify({
+                            tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                            offsetMin: arg.start ? arg.start.getTimezoneOffset() : null,
+                            allDay: arg.allDay,
+                            startStr: arg.startStr,
+                            endStr: arg.endStr,
+                            start: String(arg.start),
+                            end: String(arg.end),
+                            startMs: arg.start ? arg.start.getTime() : null,
+                            endMs: arg.end ? arg.end.getTime() : null,
+                            sameRef: arg.start === arg.end
+                        }));
                         editEvent({
                             startDate: arg.start,
                             endDate: arg.end,
@@ -161,6 +173,14 @@ $(function() {
                         calendar.unselect()
                     },
                     eventClick: function(arg) {
+                        console.warn('TZDEBUG eventClick ' + JSON.stringify({
+                            id: arg.event.id,
+                            allDay: arg.event.allDay,
+                            startStr: arg.event.startStr,
+                            endStr: arg.event.endStr,
+                            start: String(arg.event.start),
+                            end: String(arg.event.end)
+                        }));
                         editEvent({
                             startDate: arg.event.start,
                             endDate: arg.event.end,
@@ -405,6 +425,17 @@ $(function() {
 
         let startDateFormatted = toDateTimeLocalValue(startDate);
         let endDateFormatted = toDateTimeLocalValue(endDate);
+
+        console.warn('TZDEBUG editEvent ' + JSON.stringify({
+            id: event.id,
+            allDay: event.allDay,
+            blockRan: !event.id && !!event.allDay,
+            startAfter: String(startDate),
+            endAfter: String(endDate),
+            startFormatted: startDateFormatted,
+            endFormatted: endDateFormatted,
+            dateTimeFormat: (window.LABKEY && LABKEY.container && LABKEY.container.formats) ? LABKEY.container.formats.dateTimeFormat : null
+        }));
 
         // remove the old event log rows
         removeEventLog();
