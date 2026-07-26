@@ -156,7 +156,9 @@ $(function() {
                             allDay: arg.allDay,
                             id: null,
                             name: '',
-                            notes: ''
+                            notes: '',
+                            _debug: 'via=select allDay=' + arg.allDay + ' startStr=' + arg.startStr + ' endStr=' + arg.endStr
+                                + ' start=' + String(arg.start) + ' end=' + String(arg.end) + ' tz=' + Intl.DateTimeFormat().resolvedOptions().timeZone
                         });
                         calendar.unselect()
                     },
@@ -166,7 +168,8 @@ $(function() {
                             endDate: arg.event.end,
                             id: arg.event.id,
                             name: arg.event.extendedProps.name,
-                            notes: arg.event.extendedProps.notes
+                            notes: arg.event.extendedProps.notes,
+                            _debug: 'via=eventClick id=' + arg.event.id + ' start=' + String(arg.event.start) + ' end=' + String(arg.event.end)
                         });
                     },
                     editable: true,
@@ -418,6 +421,10 @@ $(function() {
         $('#add-event').text('Save');
         $('#schedule-save-error').text('');
         $('#schedule-cost-error').text('');
+
+        // TZDEBUG: surface values in the DOM so they appear in the failure screenshot (console isn't captured under geckodriver)
+        $('#tzDebug').text('TZDEBUG ' + (event._debug || '') + ' | out start=' + startDateFormatted + ' end=' + endDateFormatted);
+
         $('#event-modal').modal();
     }
 
