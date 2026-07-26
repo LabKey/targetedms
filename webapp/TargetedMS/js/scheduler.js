@@ -153,12 +153,9 @@ $(function() {
                         editEvent({
                             startDate: arg.start,
                             endDate: arg.end,
-                            allDay: arg.allDay,
                             id: null,
                             name: '',
-                            notes: '',
-                            _debug: 'via=select allDay=' + arg.allDay + ' startStr=' + arg.startStr + ' endStr=' + arg.endStr
-                                + ' start=' + String(arg.start) + ' end=' + String(arg.end) + ' tz=' + Intl.DateTimeFormat().resolvedOptions().timeZone
+                            notes: ''
                         });
                         calendar.unselect()
                     },
@@ -168,8 +165,7 @@ $(function() {
                             endDate: arg.event.end,
                             id: arg.event.id,
                             name: arg.event.extendedProps.name,
-                            notes: arg.event.extendedProps.notes,
-                            _debug: 'via=eventClick id=' + arg.event.id + ' start=' + String(arg.event.start) + ' end=' + String(arg.event.end)
+                            notes: arg.event.extendedProps.notes
                         });
                     },
                     editable: true,
@@ -389,17 +385,18 @@ $(function() {
     });
 
 
-    // datetime-local values use the fixed HTML format 'yyyy-MM-ddTHH:mm', independent of the container's display format; Firefox (unlike Chrome) rejects anything else.
+    // Format to datetime-local's fixed 'yyyy-MM-ddTHH:mm' from local fields; DateFormat.format.date zeroes the time in timezones whose label contains a colon (e.g. Honolulu).
     function toDateTimeLocalValue(date) {
-        return DateFormat.format.date(date, 'yyyy-MM-dd') + 'T' + DateFormat.format.date(date, 'HH:mm');
+        let pad = function(n) { return (n < 10 ? '0' : '') + n; };
+        return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate())
+            + 'T' + pad(date.getHours()) + ':' + pad(date.getMinutes());
     }
 
     function editEvent(event) {
         let startDate = event.startDate;
         let endDate = event.endDate;
 
-        // Rely on FullCalendar's allDay flag rather than checking for midnight, which shifts with the browser's timezone
-        if (!event.id && event.allDay) {
+        if (!event.id && startDate.getHours() === 0 && startDate.getMinutes() === 0 && endDate.getHours() === 0 && endDate.getMinutes() === 0) {
             // Default to starting at 8AM and ending at 5PM
             startDate.setHours(8);
             endDate.setHours(17);
@@ -421,10 +418,6 @@ $(function() {
         $('#add-event').text('Save');
         $('#schedule-save-error').text('');
         $('#schedule-cost-error').text('');
-
-        // TZDEBUG: surface values in the DOM so they appear in the failure screenshot (console isn't captured under geckodriver)
-        $('#tzDebug').text('TZDEBUG ' + (event._debug || '') + ' | out start=' + startDateFormatted + ' end=' + endDateFormatted);
-
         $('#event-modal').modal();
     }
 
