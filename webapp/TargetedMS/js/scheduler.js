@@ -88,10 +88,7 @@ $(function() {
                         let bgColor = e.event.extendedProps.project === project ? e.backgroundColor : 'gray';
                         const cl = e.event.extendedProps.project === project ? 'activeProjectEvent' : 'otherProjectEvent';
                         let textColor = ScheduleUtils.getContrastTextColor(ScheduleUtils.stringToColor(bgColor));
-                        let timeFormatString = LABKEY.container.formats.timeFormat;
-                        // Strip seconds and milliseconds
-                        timeFormatString = timeFormatString.replace(':ss', '').replace('.SSS', '');
-                        let dateStr = DateFormat.format.date(e.event.start, timeFormatString) + ' - ' + DateFormat.format.date(e.event.end, timeFormatString);
+                        let dateStr = ScheduleUtils.formatTimeRange(e.event.start, e.event.end);
                         let style = 'background-color: ' + LABKEY.Utils.encodeHtml(bgColor) + '; color: ' + LABKEY.Utils.encodeHtml(textColor) + ';' + 'width: 100%';
                         content += '<div class="' + LABKEY.Utils.encodeHtml(cl) + '" style="' + style + ';">'
                                 + '<div class="event-date">' + LABKEY.Utils.encodeHtml(dateStr) + '</div>'
@@ -582,8 +579,12 @@ $(function() {
 
     function fetchInstrumentCosts(instrumentId, startDate, endDate) {
         // Normalize to Date: callers pass either Date objects (hover) or seconds-less datetime-local strings (post-save), which DateFormat can't parse as-is.
-        startDate = new Date(startDate);
-        endDate = new Date(endDate);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        // Bail on degenerate input so the cost log never renders $NaN or garbage dates (mirrors calculateAndRenderCostPreview).
+        if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) {
+            return;
+        }
         LABKEY.Query.selectRows({
             schemaName: 'targetedms',
             queryName: 'instrumentRate',
@@ -598,7 +599,7 @@ $(function() {
                 }
                 let fee = data.rows[0].fee;
                 let rateType = data.rows[0].rateType;
-                let cost = fee * (Math.abs(new Date(endDate) - new Date(startDate))) / 1000 / 60 / 60;
+                let cost = fee * (Math.abs(end - start)) / 1000 / 60 / 60;
 
                 // query the rateType
                 LABKEY.Query.selectRows({
@@ -611,8 +612,8 @@ $(function() {
                     success: function (data) {
                         let setupFee = data.rows[0].setupFee;
 
-                        let startDateFormatted = DateFormat.format.date(startDate, LABKEY.container.formats.dateTimeFormat);
-                        let endDateFormatted = DateFormat.format.date(endDate, LABKEY.container.formats.dateTimeFormat);
+                        let startDateFormatted = DateFormat.format.date(start, LABKEY.container.formats.dateTimeFormat);
+                        let endDateFormatted = DateFormat.format.date(end, LABKEY.container.formats.dateTimeFormat);
 
                         let tableElt = document.getElementById('event-cost-table');
                         let rowElt = document.createElement('tr');

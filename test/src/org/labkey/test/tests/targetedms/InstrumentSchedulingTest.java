@@ -200,6 +200,9 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
 
         assertProjectEventCounts(2, 0);
 
+        // The event chip time range is rendered via DateFormat (the patched parseTime path); verify it shows the real 8AM-5PM range, not a zeroed 00:00 - 00:00 as happened in colon-labelled timezones.
+        assertEquals("Event chip should show the 8AM-5PM time range", "08:00 - 17:00", getText(Locator.css(".activeProjectEvent .event-date")));
+
         doAndWaitForPageToLoad(() -> selectOptionByText(PROJECT_DROP_DOWN, PROJECT_2));
 
         scheduleInstrument(yearMonth + "-04", false);
