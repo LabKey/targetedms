@@ -396,8 +396,8 @@ $(function() {
             endDate.setDate(endDate.getDate() - 1);
         }
 
-        let startDateFormatted = DateFormat.format.date(startDate, LABKEY.container.formats.dateTimeFormat);
-        let endDateFormatted = DateFormat.format.date(endDate, LABKEY.container.formats.dateTimeFormat);
+        let startDateFormatted = ScheduleUtils.toDateTimeLocalValue(startDate);
+        let endDateFormatted = ScheduleUtils.toDateTimeLocalValue(endDate);
 
         // remove the old event log rows
         removeEventLog();
@@ -581,6 +581,9 @@ $(function() {
     });
 
     function fetchInstrumentCosts(instrumentId, startDate, endDate) {
+        // Normalize to Date: callers pass either Date objects (hover) or seconds-less datetime-local strings (post-save), which DateFormat can't parse as-is.
+        startDate = new Date(startDate);
+        endDate = new Date(endDate);
         LABKEY.Query.selectRows({
             schemaName: 'targetedms',
             queryName: 'instrumentRate',

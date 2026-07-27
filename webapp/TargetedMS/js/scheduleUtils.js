@@ -8,6 +8,19 @@
 (function(window) {
     const utils = {};
 
+    const pad = function(n) { return (n < 10 ? '0' : '') + n; };
+
+    // Format a Date as datetime-local's fixed 'yyyy-MM-ddTHH:mm' wire form from local fields; avoids DateFormat, which zeroes the time in timezones whose label contains a colon (e.g. Honolulu).
+    utils.toDateTimeLocalValue = function(date) {
+        return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate())
+            + 'T' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+    };
+
+    // Date-only 'yyyy-MM-dd' wire form, derived from the datetime variant.
+    utils.toDateValue = function(date) {
+        return utils.toDateTimeLocalValue(date).slice(0, 10);
+    };
+
     // Convert a CSS color string (named, rgb, hex) to standard 6-digit HEX color (#RRGGBB)
     utils.stringToColor = function(color) {
         if (!color) return '#888888';
