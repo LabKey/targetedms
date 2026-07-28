@@ -15,8 +15,8 @@
  */
 package org.labkey.test.tests.targetedms;
 
-import org.apache.commons.collections4.Bag;
-import org.apache.commons.collections4.bag.HashBag;
+import org.apache.commons.collections4.MultiSet;
+import org.apache.commons.collections4.multiset.HashMultiSet;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -1192,7 +1192,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
 
         plots = qcPlotsWebPart.getPlots();
-        firstPlot = plots.get(0);
+        firstPlot = plots.getFirst();
 
         assertFalse("Zoom should not persist after page reload", qcPlotsWebPart.isZoomActive(firstPlot));
     }
@@ -1217,7 +1217,7 @@ public class TargetedMSQCTest extends TargetedMSTest
     private void checkForCorrectAnnotations(String plotType, QCPlotsWebPart qcPlotsWebPart)
     {
         List<QCPlot> qcPlots = qcPlotsWebPart.getPlots();
-        Bag<QCHelper.Annotation> expectedAnnotations = new HashBag<>();
+        MultiSet<QCHelper.Annotation> expectedAnnotations = new HashMultiSet<>();
         expectedAnnotations.add(instrumentChange);
         expectedAnnotations.add(reagentChange);
         expectedAnnotations.add(technicianChange);
@@ -1225,7 +1225,7 @@ public class TargetedMSQCTest extends TargetedMSTest
         for (QCPlot plot : qcPlots)
         {
             log("verifying for qc plot - " + plot.getPlot().getText());
-            Bag<QCHelper.Annotation> plotAnnotations = new HashBag<>(plot.getAnnotations());
+            MultiSet<QCHelper.Annotation> plotAnnotations = new HashMultiSet<>(plot.getAnnotations());
             assertEquals("Wrong annotations in " + plotType + ":" + plot.getPrecursor(), expectedAnnotations, plotAnnotations);
         }
     }
