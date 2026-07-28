@@ -169,8 +169,14 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
     processPlotData: function() {
         var parsed = this.lastParsedResponse;
-        if (!parsed)
+        if (!parsed) {
+            // nothing to lay out yet (e.g. a plot option changed before the first load); drop any mask we put up
+            const plotDiv = this.plotDivId ? Ext4.get(this.plotDivId) : null;
+            if (plotDiv) {
+                plotDiv.unmask();
+            }
             return;
+        }
 
         var plotDataRows = parsed.plotDataRows;
         const metricProps = {};
@@ -186,6 +192,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
         // process the data to shape it for the JS LeveyJenningsPlot API call
         this.fragmentPlotData = {};
+        // indices below are into the rebuilt fragmentPlotData, so stale ones from a previous layout would splice the wrong rows
+        this.filterPoints = null;
 
         if (this.showMetricValuePlot()) {
             this.processLJGuideSetData(plotDataRows);

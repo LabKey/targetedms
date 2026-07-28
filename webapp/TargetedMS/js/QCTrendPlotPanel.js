@@ -2387,8 +2387,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     // mode (continuous axis) this is the plot width over the distinct-day count; otherwise inter-tick spacing.
     getXBinWidth : function(plot) {
         if (this.isCalendarAxisActive()) {
-            // reuse the distinct-day count the time-based scale computed, so bar/rect widths match the jitter band
-            return (plot.grid.rightEdge - plot.grid.leftEdge) / Math.max(plot.scales.x.dayCount || 0, 10);
+            // shared with the jitter band so bar/rect widths match it, and neither overruns the closest day spacing
+            return LABKEY.vis.calendarSlotWidth(plot.scales.x, plot.grid.rightEdge - plot.grid.leftEdge);
         }
         return (plot.grid.rightEdge - plot.grid.leftEdge) / (plot.scales.x.scale.domain().length);
     },
@@ -2658,36 +2658,27 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             return annotationDates.indexOf(objDate) === -1;
         });
 
-        // Reuse plot.js's day-number -> offset map (handles the ordinal-prefix split) so annotations don't drift; fall back to offset-from-earliest if unavailable.
+        // Reuse plot.js's day-number -> offset map (handles the ordinal-prefix split) so annotations don't drift.
         const useCalendarAxis = this.isCalendarAxisActive();
         const dayNumberOffsetMap = useCalendarAxis ? plot.scales.x.dayNumberOffsetMap : null;
-        let minDayNumber = null;
-        if (useCalendarAxis) {
-            Ext4.each(precursorInfo.data, function(row) {
-                const dn = LABKEY.vis.dateToDayNumber(row['date']);
-                if (dn !== null && (minDayNumber === null || dn < minDayNumber)) {
-                    minDayNumber = dn;
-                }
-            });
-        }
+
+        // x offset for a date, or null when calendar mode has no slot for it - the offsets are piecewise there, so
+        // deriving one would drop the glyph somewhere arbitrary
+        const xOffset = function(d) {
+            const objDate = me.formatDate(new Date(d['Date']), !me.groupedX);
+            if (!useCalendarAxis) {
+                return xAxisLabels.indexOf(objDate);
+            }
+            const dn = LABKEY.vis.dateToDayNumber(objDate);
+            return dn !== null && dayNumberOffsetMap && dayNumberOffsetMap[dn] !== undefined ? dayNumberOffsetMap[dn] : null;
+        };
+
+        nonAnnotationsData = nonAnnotationsData.filter(function(d) { return xOffset(d) !== null; });
+        const plottableAnnotations = this.annotationData.filter(function(d) { return xOffset(d) !== null; });
 
         // use direct D3 code to inject the annotation icons to the rendered SVG
         var xAcc = function(d) {
-            var annotationDate = me.formatDate(new Date(d['Date']), !me.groupedX);
-            if (useCalendarAxis) {
-                const dn = LABKEY.vis.dateToDayNumber(annotationDate);
-                let offset = 0;
-                if (dn !== null) {
-                    if (dayNumberOffsetMap && dayNumberOffsetMap[dn] !== undefined) {
-                        offset = dayNumberOffsetMap[dn];
-                    }
-                    else if (minDayNumber !== null) {
-                        offset = dn - minDayNumber;
-                    }
-                }
-                return plot.scales.x.scale(offset);
-            }
-            return plot.scales.x.scale(xAxisLabels.indexOf(annotationDate));
+            return plot.scales.x.scale(xOffset(d));
         };
         var yAcc = function(d) {
             return plot.scales.yLeft.range[1] - (d['yStepIndex'] * 12) - 12;
@@ -2788,7 +2779,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         // Render the existing annotation glyphs after the add-annotation markers so they paint on
         // top and take precedence for hover/click when the markers overlap them.
-        let annotations = this.getSvgElForPlot(plot).selectAll("path.annotation").data(this.annotationData)
+        let annotations = this.getSvgElForPlot(plot).selectAll("path.annotation").data(plottableAnnotations)
                 .enter().append("path").attr("class", "annotation")
                 .attr("d", this.annotationShape(4)).attr('transform', transformAcc)
                 .style("fill", colorAcc).style("stroke", colorAcc);
