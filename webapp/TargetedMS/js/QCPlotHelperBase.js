@@ -403,6 +403,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         if (this.calendarX === true && this.filterQCPoints) {
             trendLineProps.calendarPrefixField = 'ReferenceRangeSeries';
             trendLineProps.calendarPrefixValue = 'GuideSet';
+            // the range-start marker has no data, so name it explicitly as the day the time-scaled window starts
+            trendLineProps.calendarWindowStartDate = this.startDate ? this.formatDate(this.startDate) : undefined;
         }
     },
 
@@ -440,6 +442,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
     renderPlots: function() {
         if (this.filterQCPoints) {
             this.truncateOutOfRangeQCPoints();
+            this.addRangeStartMarkers();
         }
         // do not persist plot options in qc folder if changed after coming through experimental folder link
         if (!this.showExpRunRange) {
@@ -502,6 +505,35 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     }
                 }
             }
+        }, this);
+    },
+
+    // Blank entry + x-axis tick at the start of the selected date range, so an out-of-range guide set reads as
+    // separate from the plotted window instead of running straight into it. No-op if that day already has data.
+    addRangeStartMarkers: function() {
+        const rangeStart = this.startDate ? this.formatDate(this.startDate) : null;
+        if (!rangeStart) {
+            return;
+        }
+
+        Ext4.Object.each(this.fragmentPlotData, function(label, fragmentData) {
+            const data = fragmentData.data;
+            let insertAt = data.length;
+            for (let i = 0; i < data.length; i++) {
+                const rowDate = this.formatDate(data[i].fullDate);
+                if (rowDate === rangeStart) {
+                    return; // that day is already on the axis
+                }
+                if (insertAt === data.length && rowDate > rangeStart) {
+                    insertAt = i;
+                }
+            }
+            data.splice(insertAt, 0, {
+                type: 'missing',
+                fullDate: rangeStart,
+                date: rangeStart,
+                groupedXTick: rangeStart
+            });
         }, this);
     },
 
