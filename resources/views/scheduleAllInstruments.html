@@ -42,10 +42,7 @@
                 selectMirror: false,
                 eventContent: function(arg) {
                     const e = arg.event;
-                    const timeFormatString = LABKEY.container.formats.timeFormat
-                        .replace(':ss', '')
-                        .replace('.SSS', '');
-                    const dateStr = DateFormat.format.date(e.start, timeFormatString) + ' - ' + DateFormat.format.date(e.end, timeFormatString);
+                    const dateStr = ScheduleUtils.formatTimeRange(e.start, e.end);
                     const baseColor = e.extendedProps && e.extendedProps.baseColor ? e.extendedProps.baseColor : (arg.backgroundColor || e.backgroundColor || '#888');
                     const bg = (selectedProjectId && e.extendedProps && e.extendedProps.projectId !== selectedProjectId) ? 'gray' : baseColor;
                     const textColor = ScheduleUtils.getContrastTextColor(ScheduleUtils.stringToColor(bg));
