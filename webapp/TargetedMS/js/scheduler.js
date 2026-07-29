@@ -407,7 +407,6 @@ $(function() {
         $('#delete-event').toggle(!!event.id);
         $('#add-event').text('Save');
         $('#schedule-save-error').text('');
-        $('#schedule-cost-error').text('');
         $('#event-modal').modal();
     }
 
@@ -516,7 +515,7 @@ $(function() {
                 }
                 let fee = data.rows[0].fee;
                 let rateType = data.rows[0].rateType;
-                let cost = fee * (Math.abs(end - start)) / 1000 / 60 / 60;
+                let cost = fee * (end - start) / 1000 / 60 / 60; // the guard above establishes end > start
 
                 LABKEY.Query.selectRows({
                     schemaName: 'targetedms',
@@ -599,7 +598,7 @@ $(function() {
                 }
                 let fee = data.rows[0].fee;
                 let rateType = data.rows[0].rateType;
-                let cost = fee * (Math.abs(end - start)) / 1000 / 60 / 60;
+                let cost = fee * (end - start) / 1000 / 60 / 60; // the guard above establishes end > start
 
                 // query the rateType
                 LABKEY.Query.selectRows({
@@ -619,8 +618,6 @@ $(function() {
                         let rowElt = document.createElement('tr');
                         rowElt.className = 'labkey-row';
                         let totalCost = Math.round(((setupFee + cost) + Number.EPSILON) * 100) / 100;
-                        cost = Math.round((cost + Number.EPSILON) * 100) / 100;
-                        setupFee = Math.round((setupFee + Number.EPSILON) * 100) / 100;
                         rowElt.innerHTML = '<td>' + startDateFormatted + '</td><td>' + endDateFormatted + '</td><td id="event-cost">' + '$' + totalCost.toLocaleString('en-US', {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2
@@ -632,22 +629,9 @@ $(function() {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2
                         });
-
-                        $('#setup-cost').val('$' + setupFee.toLocaleString('en-US', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }));
-                        $('#instrument-fee').val('$' + cost.toLocaleString('en-US', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }));
-                        $('#total-cost').val('$' + (setupFee + cost).toLocaleString('en-US', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }));
                     },
                     failure: function (errorInfo) {
-                        $('#schedule-cost-error').text('Error calculating cost ' + (errorInfo.exception ? errorInfo.exception : ''));
+                        $('#schedule-save-error').text('Error calculating cost ' + (errorInfo.exception ? errorInfo.exception : ''));
                     }
                 });
             }
