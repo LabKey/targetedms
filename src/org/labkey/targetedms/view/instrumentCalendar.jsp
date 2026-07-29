@@ -23,6 +23,7 @@
     {
         dependencies.add("internal/jQuery");
         dependencies.add("targetedms/yearCalendar");
+        dependencies.add("TargetedMS/js/scheduleUtils.js");
     }
 %>
 
@@ -51,8 +52,8 @@
         $('#delete-event').css('display', event.annotation ? '' : 'none');
 
         $('#event-modal input[name="event-description"]').val(event.annotation ? event.annotation.description : '');
-        $('#event-modal input[name="event-start-date"]').val(startDate.getFullYear() + '-' + (startDate.getMonth() + 1 < 10 ? '0' : '') + (startDate.getMonth() + 1) + '-' + (startDate.getDate() < 10 ? '0' : '') + startDate.getDate());
-        $('#event-modal input[name="event-end-date"]').val(endDate.getFullYear() + '-' + (endDate.getMonth() + 1 < 10 ? '0' : '') + (endDate.getMonth() + 1) + '-' + (endDate.getDate() < 10 ? '0' : '') + endDate.getDate());
+        $('#event-modal input[name="event-start-date"]').val(ScheduleUtils.toDateValue(startDate));
+        $('#event-modal input[name="event-end-date"]').val(ScheduleUtils.toDateValue(endDate));
         $('#annotation-save-error').text('');
         $('#event-modal').modal();
     }
