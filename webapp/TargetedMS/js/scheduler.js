@@ -525,6 +525,10 @@ $(function() {
                         LABKEY.Filter.create('Id', rateType, LABKEY.Filter.Types.EQUAL)
                     ],
                     success: function (rt) {
+                        if (rt.rows.length === 0) {
+                            previewErrorEl.text('No rate type found for instrument.');
+                            return;
+                        }
                         let setupFee = rt.rows[0].setupFee;
                         let instrumentFee = Math.round((cost + Number.EPSILON) * 100) / 100;
                         setupFee = Math.round((setupFee + Number.EPSILON) * 100) / 100;
@@ -609,6 +613,10 @@ $(function() {
                         LABKEY.Filter.create('Id', rateType, LABKEY.Filter.Types.EQUAL)
                     ],
                     success: function (data) {
+                        if (data.rows.length === 0) {
+                            $('#schedule-save-error').text('Error calculating cost. No rate type found for instrument');
+                            return;
+                        }
                         let setupFee = data.rows[0].setupFee;
 
                         let startDateFormatted = DateFormat.format.date(start, LABKEY.container.formats.dateTimeFormat);
