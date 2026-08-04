@@ -88,10 +88,7 @@ $(function() {
                         let bgColor = e.event.extendedProps.project === project ? e.backgroundColor : 'gray';
                         const cl = e.event.extendedProps.project === project ? 'activeProjectEvent' : 'otherProjectEvent';
                         let textColor = ScheduleUtils.getContrastTextColor(ScheduleUtils.stringToColor(bgColor));
-                        let timeFormatString = LABKEY.container.formats.timeFormat;
-                        // Strip seconds and milliseconds
-                        timeFormatString = timeFormatString.replace(':ss', '').replace('.SSS', '');
-                        let dateStr = DateFormat.format.date(e.event.start, timeFormatString) + ' - ' + DateFormat.format.date(e.event.end, timeFormatString);
+                        let dateStr = ScheduleUtils.formatTimeRange(e.event.start, e.event.end);
                         let style = 'background-color: ' + LABKEY.Utils.encodeHtml(bgColor) + '; color: ' + LABKEY.Utils.encodeHtml(textColor) + ';' + 'width: 100%';
                         content += '<div class="' + LABKEY.Utils.encodeHtml(cl) + '" style="' + style + ';">'
                                 + '<div class="event-date">' + LABKEY.Utils.encodeHtml(dateStr) + '</div>'
@@ -396,8 +393,8 @@ $(function() {
             endDate.setDate(endDate.getDate() - 1);
         }
 
-        let startDateFormatted = DateFormat.format.date(startDate, LABKEY.container.formats.dateTimeFormat);
-        let endDateFormatted = DateFormat.format.date(endDate, LABKEY.container.formats.dateTimeFormat);
+        let startDateFormatted = ScheduleUtils.toDateTimeLocalValue(startDate);
+        let endDateFormatted = ScheduleUtils.toDateTimeLocalValue(endDate);
 
         // remove the old event log rows
         removeEventLog();
@@ -410,7 +407,6 @@ $(function() {
         $('#delete-event').toggle(!!event.id);
         $('#add-event').text('Save');
         $('#schedule-save-error').text('');
-        $('#schedule-cost-error').text('');
         $('#event-modal').modal();
     }
 
@@ -519,7 +515,7 @@ $(function() {
                 }
                 let fee = data.rows[0].fee;
                 let rateType = data.rows[0].rateType;
-                let cost = fee * (Math.abs(end - start)) / 1000 / 60 / 60;
+                let cost = fee * (end - start) / 1000 / 60 / 60; // the guard above establishes end > start
 
                 LABKEY.Query.selectRows({
                     schemaName: 'targetedms',
@@ -529,6 +525,10 @@ $(function() {
                         LABKEY.Filter.create('Id', rateType, LABKEY.Filter.Types.EQUAL)
                     ],
                     success: function (rt) {
+                        if (rt.rows.length === 0) {
+                            previewErrorEl.text('No rate type found for instrument.');
+                            return;
+                        }
                         let setupFee = rt.rows[0].setupFee;
                         let instrumentFee = Math.round((cost + Number.EPSILON) * 100) / 100;
                         setupFee = Math.round((setupFee + Number.EPSILON) * 100) / 100;
@@ -581,6 +581,13 @@ $(function() {
     });
 
     function fetchInstrumentCosts(instrumentId, startDate, endDate) {
+        // Normalize to Date: callers pass either Date objects (hover) or seconds-less datetime-local strings (post-save), which DateFormat can't parse as-is.
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        // Bail on degenerate input so the cost log never renders $NaN or garbage dates (mirrors calculateAndRenderCostPreview).
+        if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) {
+            return;
+        }
         LABKEY.Query.selectRows({
             schemaName: 'targetedms',
             queryName: 'instrumentRate',
@@ -595,7 +602,7 @@ $(function() {
                 }
                 let fee = data.rows[0].fee;
                 let rateType = data.rows[0].rateType;
-                let cost = fee * (Math.abs(new Date(endDate) - new Date(startDate))) / 1000 / 60 / 60;
+                let cost = fee * (end - start) / 1000 / 60 / 60; // the guard above establishes end > start
 
                 // query the rateType
                 LABKEY.Query.selectRows({
@@ -606,17 +613,19 @@ $(function() {
                         LABKEY.Filter.create('Id', rateType, LABKEY.Filter.Types.EQUAL)
                     ],
                     success: function (data) {
+                        if (data.rows.length === 0) {
+                            $('#schedule-save-error').text('Error calculating cost. No rate type found for instrument');
+                            return;
+                        }
                         let setupFee = data.rows[0].setupFee;
 
-                        let startDateFormatted = DateFormat.format.date(startDate, LABKEY.container.formats.dateTimeFormat);
-                        let endDateFormatted = DateFormat.format.date(endDate, LABKEY.container.formats.dateTimeFormat);
+                        let startDateFormatted = DateFormat.format.date(start, LABKEY.container.formats.dateTimeFormat);
+                        let endDateFormatted = DateFormat.format.date(end, LABKEY.container.formats.dateTimeFormat);
 
                         let tableElt = document.getElementById('event-cost-table');
                         let rowElt = document.createElement('tr');
                         rowElt.className = 'labkey-row';
                         let totalCost = Math.round(((setupFee + cost) + Number.EPSILON) * 100) / 100;
-                        cost = Math.round((cost + Number.EPSILON) * 100) / 100;
-                        setupFee = Math.round((setupFee + Number.EPSILON) * 100) / 100;
                         rowElt.innerHTML = '<td>' + startDateFormatted + '</td><td>' + endDateFormatted + '</td><td id="event-cost">' + '$' + totalCost.toLocaleString('en-US', {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2
@@ -628,22 +637,9 @@ $(function() {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2
                         });
-
-                        $('#setup-cost').val('$' + setupFee.toLocaleString('en-US', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }));
-                        $('#instrument-fee').val('$' + cost.toLocaleString('en-US', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }));
-                        $('#total-cost').val('$' + (setupFee + cost).toLocaleString('en-US', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }));
                     },
                     failure: function (errorInfo) {
-                        $('#schedule-cost-error').text('Error calculating cost ' + (errorInfo.exception ? errorInfo.exception : ''));
+                        $('#schedule-save-error').text('Error calculating cost ' + (errorInfo.exception ? errorInfo.exception : ''));
                     }
                 });
             }
