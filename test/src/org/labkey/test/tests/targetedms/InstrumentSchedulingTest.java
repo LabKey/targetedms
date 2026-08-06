@@ -183,6 +183,9 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         {
             String originalStart = getFormElement(START_DATE_TIME_FIELD.findElement(getDriver()));
             String originalEnd = getFormElement(END_DATE_TIME_FIELD.findElement(getDriver()));
+            // Pin the 8AM/5PM defaults so a regression that zeroes or shifts the time is caught even on agents whose timezone would otherwise hide it.
+            assertTrue("Start field should default to 8AM, was: " + originalStart, originalStart.endsWith("T08:00"));
+            assertTrue("End field should default to 5PM, was: " + originalEnd, originalEnd.endsWith("T17:00"));
             // Try scheduling over the first reservation and verify it is blocked
             setFormElement(START_DATE_TIME_FIELD.findElement(getDriver()), originalStart.replace("-03T", "-02T"));
             setFormElement(END_DATE_TIME_FIELD.findElement(getDriver()), originalEnd.replace("-03T", "-02T"));
@@ -196,6 +199,9 @@ public class InstrumentSchedulingTest extends TargetedMSTest implements Postgres
         scheduleInstrument(yearMonth + "-03", false);
 
         assertProjectEventCounts(2, 0);
+
+        // The event chip time range is rendered via DateFormat (the patched parseTime path); verify it shows the real 8AM-5PM range, not a zeroed 00:00 - 00:00 as happened in colon-labelled timezones.
+        assertEquals("Event chip should show the 8AM-5PM time range", "08:00 - 17:00", getText(Locator.css(".activeProjectEvent .event-date")));
 
         doAndWaitForPageToLoad(() -> selectOptionByText(PROJECT_DROP_DOWN, PROJECT_2));
 
