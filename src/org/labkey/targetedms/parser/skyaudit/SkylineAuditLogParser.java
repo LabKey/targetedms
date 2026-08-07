@@ -117,7 +117,7 @@ public class SkylineAuditLogParser implements AutoCloseable
         try (InputStream schemaStream = new BufferedInputStream(openSchemaInputStream());
              InputStream auditLogStream = new BufferedInputStream(new FileInputStream(_file)))
             {
-                // Use a factory Hardened against XXE
+                // Use a factory hardened against XXE
                 SchemaFactory schemaFactory = XmlBeansUtil.schemaFactory();
                 Schema schema = schemaFactory.newSchema(new StreamSource(schemaStream));
                 Validator validator = XmlBeansUtil.hardenValidator(schema.newValidator());
