@@ -24,6 +24,8 @@ import org.junit.Test;
 import org.labkey.api.module.Module;
 import org.labkey.api.module.ModuleLoader;
 import org.labkey.api.resource.FileResource;
+import org.labkey.api.util.ExternalReferenceProbe;
+import org.labkey.api.util.FileUtil;
 import org.labkey.api.util.GUID;
 import org.labkey.api.util.Path;
 import org.labkey.api.util.XmlBeansUtil;
@@ -44,6 +46,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -113,7 +117,7 @@ public class SkylineAuditLogParser implements AutoCloseable
         try (InputStream schemaStream = new BufferedInputStream(openSchemaInputStream());
              InputStream auditLogStream = new BufferedInputStream(new FileInputStream(_file)))
             {
-                //prepare validator, hardened against XXE (CWE-611) since the audit log is attacker-supplied
+                // Use a factory Hardened against XXE
                 SchemaFactory schemaFactory = XmlBeansUtil.schemaFactory();
                 Schema schema = schemaFactory.newSchema(new StreamSource(schemaStream));
                 Validator validator = XmlBeansUtil.hardenValidator(schema.newValidator());
@@ -375,5 +379,65 @@ public class SkylineAuditLogParser implements AutoCloseable
         //TODO: Validate against different files.
     }
 
+    /**
+     * XXE (CWE-611) coverage for {@link SkylineAuditLogParser#validateXml()}, where the hardening carries the most
+     * weight: unlike the SAML path nothing guards the uploaded .skyl before it reaches the validator, so if the
+     * hardening doesn't hold an uploader can make the server fetch a URL of their choosing.
+     *
+     * <p>Separate from {@link TestCase}, which needs a database for its {@code @Before} cleanup.
+     */
+    public static class XxeTestCase extends Assert
+    {
+        /**
+         * {@link #validateXml} resolves the schema first, so an unavailable module resource means it throws before
+         * parsing any XML and every probe-based assertion below goes green while proving nothing.
+         */
+        @Before
+        public void schemaMustBeResolvable()
+        {
+            Module module = ModuleLoader.getInstance().getModule(TargetedMSModule.class);
+            assertNotNull("TargetedMS module must be registered, otherwise validateXml() never validates", module);
+            assertNotNull("Bundled " + SCHEMA_FILE + " must be resolvable, otherwise validateXml() never validates",
+                module.getModuleResolver().lookup(Path.parse(SCHEMA_FILE)));
+        }
 
+        /** Conforming apart from the injected reference, so validation gets far enough to matter. */
+        private static final String AUDIT_LOG =
+            "<audit_log_root format_version=\"1.0\">" +
+            "<document_hash>hash</document_hash>" +
+            "<audit_log/>" +
+            "</audit_log_root>";
+
+        /**
+         * {@code XmlBeansUtil.TestCase} does primary XXE validation. Just prove that validateXml() gets the hardened factory.
+         */
+        @Test
+        public void validateXmlRefusesExternalDtdSubset() throws Exception
+        {
+            // Qualified because org.labkey.api.util.Path wins the simple name in this file
+            java.nio.file.Path dir = Files.createTempDirectory("skylineAuditLogXxe");
+
+            try (ExternalReferenceProbe probe = ExternalReferenceProbe.start())
+            {
+                File logFile = dir.resolve("audit.skyl").toFile();
+                Files.writeString(logFile.toPath(),
+                    "<!DOCTYPE audit_log_root SYSTEM \"" +
+                    probe.url("/external.dtd", ExternalReferenceProbe.DTD_BODY) + "\">" + AUDIT_LOG,
+                    StandardCharsets.UTF_8);
+
+                // Expected to fail on this input; the assertion is about the fetch on the way there
+                try (SkylineAuditLogParser ignored = new SkylineAuditLogParser(logFile, LogManager.getLogger(XxeTestCase.class)))
+                {
+                    fail("Should have failed");
+                }
+                catch (Exception _) {}
+
+                probe.assertNotContacted("Validating an uploaded Skyline audit log must not resolve an external DTD subset");
+            }
+            finally
+            {
+                FileUtil.deleteDir(dir.toFile());
+            }
+        }
+    }
 }
