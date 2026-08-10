@@ -452,6 +452,8 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             this.truncateOutOfRangeQCPoints();
             this.addRangeStartMarkers();
         }
+        // pad the axis out to the selected date range (all three x-axis groupings) whether or not data reaches the edges
+        this.addRangeBoundaryMarkers();
         // do not persist plot options in qc folder if changed after coming through experimental folder link
         if (!this.showExpRunRange) {
             this.persistSelectedFormOptions();
@@ -538,11 +540,63 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             }
             data.splice(insertAt, 0, {
                 type: 'missing',
+                rangeTick: true, // meaningful dateless tick (range start) - kept through axis thinning
                 fullDate: rangeStart,
                 date: rangeStart,
                 groupedXTick: rangeStart
             });
         }, this);
+    },
+
+    // Force x-axis ticks at the selected date-range endpoints even when no data lands on them, so per-replicate,
+    // per-date, and calendar all span the chosen window. An endpoint outside the data renders as a bare tick (no point).
+    addRangeBoundaryMarkers: function() {
+        const rangeStart = this.startDate ? this.formatDate(this.startDate) : null;
+        const rangeEnd = this.endDate ? this.formatDate(this.endDate) : null;
+        if (!rangeStart && !rangeEnd) {
+            return;
+        }
+
+        Ext4.Object.each(this.fragmentPlotData, function(label, fragmentData) {
+            const data = fragmentData.data;
+            let earliest = null, latest = null;
+            for (let i = 0; i < data.length; i++) {
+                if (data[i].type === 'missing' || data[i].type === 'empty') {
+                    continue; // skip filler rows so we measure the real data extent
+                }
+                const rowDate = this.formatDate(data[i].fullDate);
+                if (earliest === null || rowDate < earliest) { earliest = rowDate; }
+                if (latest === null || rowDate > latest) { latest = rowDate; }
+            }
+            // left endpoint only when the selected start predates the first data point; right only when it postdates the last
+            if (rangeStart && (earliest === null || rangeStart < earliest)) {
+                this.insertMissingMarker(data, rangeStart);
+            }
+            if (rangeEnd && (latest === null || rangeEnd > latest)) {
+                this.insertMissingMarker(data, rangeEnd);
+            }
+        }, this);
+    },
+
+    // Insert a blank (no-value) row at dateStr in date-sorted order, unless that day already has a row.
+    insertMissingMarker: function(data, dateStr) {
+        let insertAt = data.length;
+        for (let i = 0; i < data.length; i++) {
+            const rowDate = this.formatDate(data[i].fullDate);
+            if (rowDate === dateStr) {
+                return; // that day is already on the axis
+            }
+            if (insertAt === data.length && rowDate > dateStr) {
+                insertAt = i;
+            }
+        }
+        data.splice(insertAt, 0, {
+            type: 'missing',
+            rangeTick: true, // meaningful dateless tick (selected-range endpoint) - kept through axis thinning
+            fullDate: dateStr,
+            date: dateStr,
+            groupedXTick: dateStr
+        });
     },
 
     getBasePlotConfig : function(id, data, legenddata) {

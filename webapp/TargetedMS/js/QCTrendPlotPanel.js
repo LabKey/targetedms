@@ -220,7 +220,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     calculateStartDateByOffset : function() {
         if (this.dateRangeOffset > 0) {
             var startDateByOffset = this.maxAcquiredTime ? new Date(this.maxAcquiredTime) : new Date();
-            startDateByOffset.setDate(startDateByOffset.getDate() - this.dateRangeOffset);
+            // inclusive window: "Last N days" ending on the max date spans N days (max - (N - 1)), e.g. 7 days to the 22nd starts the 16th
+            startDateByOffset.setDate(startDateByOffset.getDate() - (this.dateRangeOffset - 1));
             return startDateByOffset;
         }
 
