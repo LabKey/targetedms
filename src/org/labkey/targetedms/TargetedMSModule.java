@@ -718,6 +718,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
             ReplicateLabelMinimizer.TestCase.class,
             SampleFile.TestCase.class,
             SkylineAuditLogParser.TestCase.class,
+            SkylineAuditLogParser.XxeTestCase.class,
             TargetedMSController.TestCase.class,
             PrecursorManager.TestCase.class,
             CrossLinkedPeptideInfo.TestCase.class,
