@@ -2646,6 +2646,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         Ext4.each(precursorInfo.data, function (row) {
             let obj = {};
             obj['Date'] = row.fullDate;
+            // the row's own axis key - the range start/end marker rows carry a date-only fullDate, which does not survive the new Date() round trip in xOffset below
+            obj['xKey'] = me.groupedX ? row['date'] : row['fullDate'];
             obj['yStepIndex'] = 0;
             nonAnnotationsData.push(obj);
         });
@@ -2655,20 +2657,20 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             return me.formatDate(new Date(d), !me.groupedX);
         });
         nonAnnotationsData = nonAnnotationsData.filter(function (obj) {
-            var objDate = me.formatDate(new Date(obj['Date']), !me.groupedX);
-            return annotationDates.indexOf(objDate) === -1;
+            return annotationDates.indexOf(obj['xKey']) === -1;
         });
 
         // Reuse plot.js's day-number -> offset map (handles the ordinal-prefix split) so annotations don't drift.
         const useCalendarAxis = this.isCalendarAxisActive();
         const dayNumberOffsetMap = useCalendarAxis ? plot.scales.x.dayNumberOffsetMap : null;
 
-        // x offset for a date, or null when calendar mode has no slot for it - the offsets are piecewise there, so
-        // deriving one would drop the glyph somewhere arbitrary
+        // x offset for a date, or null when the axis has no slot for it - an ordinal miss returns undefined from d3
+        // rather than throwing, and calendar offsets are piecewise, so either way there is nothing sane to derive
         const xOffset = function(d) {
-            const objDate = me.formatDate(new Date(d['Date']), !me.groupedX);
+            const objDate = d['xKey'] !== undefined ? d['xKey'] : me.formatDate(new Date(d['Date']), !me.groupedX);
             if (!useCalendarAxis) {
-                return xAxisLabels.indexOf(objDate);
+                const index = xAxisLabels.indexOf(objDate);
+                return index === -1 ? null : index;
             }
             const dn = LABKEY.vis.dateToDayNumber(objDate);
             return dn !== null && dayNumberOffsetMap && dayNumberOffsetMap[dn] !== undefined ? dayNumberOffsetMap[dn] : null;
