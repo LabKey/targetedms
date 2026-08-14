@@ -361,14 +361,6 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             }
         }
 
-        var maxPointsPerSeries = 0;
-        for (var i = 0; i < this.precursors.length; i++) {
-            if (this.fragmentPlotData[this.precursors[i]]) {
-                maxPointsPerSeries = Math.max(this.fragmentPlotData[this.precursors[i]].data.length, maxPointsPerSeries);
-            }
-        }
-        this.showDataPoints = maxPointsPerSeries <= LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries;
-
         if (this.showExpRunRange && this.filterPoints) {
 
             for (let i = 0; i < plotDataRows.length; i++) {
@@ -447,6 +439,18 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         }
     },
 
+    // Individual data points are only drawn when a series is small enough for them to be legible. The combined
+    // plot shares one flag across all series, so use the largest series.
+    updateShowDataPoints: function() {
+        let maxPointsPerSeries = 0;
+        for (let i = 0; i < this.precursors.length; i++) {
+            if (this.fragmentPlotData[this.precursors[i]]) {
+                maxPointsPerSeries = Math.max(this.fragmentPlotData[this.precursors[i]].data.length, maxPointsPerSeries);
+            }
+        }
+        this.showDataPoints = maxPointsPerSeries <= LABKEY.targetedms.QCPlotHelperBase.maxPointsPerSeries;
+    },
+
     renderPlots: function() {
         if (this.filterQCPoints) {
             this.truncateOutOfRangeQCPoints();
@@ -454,6 +458,10 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         }
         // pad the axis out to the selected date range (all three x-axis groupings) whether or not data reaches the edges
         this.addRangeBoundaryMarkers();
+
+        // after truncation, so an out-of-range guide set doesn't count the points it just removed - the
+        // individual plots make the same per-precursor check at render time (see addEachIndividualPrecursorPlot)
+        this.updateShowDataPoints();
         // do not persist plot options in qc folder if changed after coming through experimental folder link
         if (!this.showExpRunRange) {
             this.persistSelectedFormOptions();
