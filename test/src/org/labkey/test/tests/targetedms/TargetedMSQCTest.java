@@ -615,7 +615,8 @@ public class TargetedMSQCTest extends TargetedMSTest
         PanoramaDashboard qcDashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = qcDashboard.getQcPlotsWebPart();
         qcPlotsWebPart.resetInitialQCPlotFields();
-        assertEquals("2014-07-20", qcPlotsWebPart.getCurrentStartDate());
+        // the date fields hold the default "Last 180 days" window from page load, which is inclusive of both ends: 2015-01-16 - 179
+        assertEquals("2014-07-21", qcPlotsWebPart.getCurrentStartDate());
         assertEquals("2015-01-16", qcPlotsWebPart.getCurrentEndDate());
 
         // Check for the newly added precursors.
