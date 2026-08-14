@@ -439,8 +439,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         }
     },
 
-    // Individual data points are only drawn when a series is small enough for them to be legible. The combined
-    // plot shares one flag across all series, so use the largest series.
+    // Points are only drawn when a series is small enough to be legible; the combined plot shares one flag, so use the largest.
     updateShowDataPoints: function() {
         let maxPointsPerSeries = 0;
         for (let i = 0; i < this.precursors.length; i++) {
@@ -459,8 +458,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         // pad the axis out to the selected date range (all three x-axis groupings) whether or not data reaches the edges
         this.addRangeBoundaryMarkers();
 
-        // after truncation, so an out-of-range guide set doesn't count the points it just removed - the
-        // individual plots make the same per-precursor check at render time (see addEachIndividualPrecursorPlot)
+        // after truncation, so an out-of-range guide set doesn't count the points it just removed
         this.updateShowDataPoints();
         // do not persist plot options in qc folder if changed after coming through experimental folder link
         if (!this.showExpRunRange) {
@@ -506,7 +504,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 // Points are date-sorted with both metrics interleaved, so the out-of-range block (guide set
                 // training end -> start date) is one contiguous range spanning both metrics. Splicing the
                 // per-metric ranges separately would overlap and corrupt indices, so combine them: start after
-                // the last training point of any metric, end at the last "first in-range" point of any metric.
+                // the last training point of any metric, end before the first in-range point of any metric.
                 let firstIndex, lastIndex;
                 Ext4.Object.each(this.filterPoints[label], function(metricId, range) {
                     if (range['skipTruncation'] || range['filterPointsFirstIndex'] === undefined
@@ -514,11 +512,13 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                         return;
                     }
                     firstIndex = firstIndex === undefined ? range['filterPointsFirstIndex'] : Math.max(firstIndex, range['filterPointsFirstIndex']);
-                    lastIndex = lastIndex === undefined ? range['filterPointsLastIndex'] : Math.max(lastIndex, range['filterPointsLastIndex']);
+                    lastIndex = lastIndex === undefined ? range['filterPointsLastIndex'] : Math.min(lastIndex, range['filterPointsLastIndex']);
                 }, this);
 
                 if (firstIndex !== undefined && lastIndex !== undefined) {
-                    for (let i = lastIndex; i >= firstIndex; i--) {
+                    // filterPointsLastIndex is the first in-range point, which belongs in the plot - stop before it (showExpRunRange already trimmed to its own end index)
+                    const removeThrough = this.showExpRunRange ? lastIndex : lastIndex - 1;
+                    for (let i = removeThrough; i >= firstIndex; i--) {
                         fragmentData.data.splice(i, 1);
                     }
                 }

@@ -248,12 +248,14 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void setGroupXAxisValuesByDate(boolean check)
     {
-        if (isGroupXAxisValuesByDateChecked() != check)
+        if (check)
         {
-            if (check)
+            if (!isGroupXAxisValuesByDateChecked())
                 doAndWaitForUpdate(() -> elementCache().xAxisGroupingDateRadio.check());
-            else
-                doAndWaitForUpdate(() -> elementCache().xAxisGroupingReplicateRadio.check());
+        }
+        else
+        {
+            setGroupXAxisValuesByReplicate();
         }
     }
 
@@ -272,12 +274,34 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void setGroupXAxisValuesByCalendar(boolean check)
     {
-        if (isGroupXAxisValuesByCalendarChecked() != check)
+        if (check)
         {
-            if (check)
+            if (!isGroupXAxisValuesByCalendarChecked())
                 doAndWaitForUpdate(() -> elementCache().xAxisGroupingCalendarRadio.check());
-            else
-                doAndWaitForUpdate(() -> elementCache().xAxisGroupingReplicateRadio.check());
+        }
+        else
+        {
+            setGroupXAxisValuesByReplicate();
+        }
+    }
+
+    // check the replicate radio's own state - another radio's state misses the case where the third one is selected
+    public void setGroupXAxisValuesByReplicate()
+    {
+        if (!isGroupXAxisValuesByReplicateChecked())
+            doAndWaitForUpdate(() -> elementCache().xAxisGroupingReplicateRadio.check());
+    }
+
+    public boolean isGroupXAxisValuesByReplicateChecked()
+    {
+        try
+        {
+            return elementCache().xAxisGroupingReplicateRadio.isSelected();
+        }
+        catch (NoSuchElementException | StaleElementReferenceException e)
+        {
+            // Fallback: if radios are not present yet, treat as default so we don't click a missing radio
+            return true;
         }
     }
 

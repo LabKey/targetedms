@@ -2391,7 +2391,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             // shared with the jitter band so bar/rect widths match it, and neither overruns the closest day spacing
             return LABKEY.vis.calendarSlotWidth(plot.scales.x, plot.grid.rightEdge - plot.grid.leftEdge);
         }
-        return (plot.grid.rightEdge - plot.grid.leftEdge) / (plot.scales.x.scale.domain().length);
+        // floored at 10 slots, matching calendarSlotWidth - the ordinal axis is no longer padded, so a sparse plot would give a rect the width of the grid
+        return (plot.grid.rightEdge - plot.grid.leftEdge) / Math.max(plot.scales.x.scale.domain().length, 10);
     },
 
     toggleGuideSetMsgDisplay : function() {
