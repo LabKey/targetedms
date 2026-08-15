@@ -67,6 +67,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     startDate: null,
     endDate: null,
     groupedX: false,
+    calendarX: false,
     singlePlot: false,
     showDataPoints: false,
     showExpRunRange: false,
@@ -86,6 +87,15 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     SHOW_ALL_IN_A_SINGLE_PLOT: 'Show all series in a single plot',
     LABEL_WIDTH: 115,
+    // Shared column widths (px) so the Excluded-replicates radios line up under the X-axis grouping radios.
+    XAXIS_COL_WIDTHS: [100, 82, 80],
+
+    // Radio inputValues for the X-axis grouping option.
+    XAXIS_GROUPING: {
+        REPLICATE: 'replicate',
+        DATE: 'date',
+        CALENDAR: 'calendar'
+    },
 
     // Max number of plots/series to show per page
     maxCount: 50,
@@ -210,7 +220,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     calculateStartDateByOffset : function() {
         if (this.dateRangeOffset > 0) {
             var startDateByOffset = this.maxAcquiredTime ? new Date(this.maxAcquiredTime) : new Date();
-            startDateByOffset.setDate(startDateByOffset.getDate() - this.dateRangeOffset);
+            // inclusive window: "Last N days" ending on the max date spans N days (max - (N - 1)), e.g. 7 days to the 22nd starts the 16th
+            startDateByOffset.setDate(startDateByOffset.getDate() - (this.dateRangeOffset - 1));
             return startDateByOffset;
         }
 
@@ -227,6 +238,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
     initPlotForm : function(initValues) {
         // apply the initial values to the panel object so they are used in form field initialization
         Ext4.apply(this, initValues);
+
+        // calendar grouping is a variant of date grouping, so it always implies groupedX
+        if (this.calendarX) {
+            this.groupedX = true;
+        }
 
         // if we have a dateRangeOffset, we need to calculate the start and end date
         if (this.dateRangeOffset > -1) {
@@ -1018,28 +1034,76 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     getGroupedXRadioGroup : function() {
         if (!this.groupedXRadioGroup) {
-            this.groupedXRadioGroup = Ext4.create('Ext.form.RadioGroup', {
+            const me = this;
+            const onChange = function(radio, checked) {
+                if (!checked) {
+                    return;
+                }
+                const val = radio.inputValue;
+                const newCalendarX = val === me.XAXIS_GROUPING.CALENDAR;
+                const newGroupedX = val === me.XAXIS_GROUPING.DATE || val === me.XAXIS_GROUPING.CALENDAR;
+                // ignore the change event fired for the initially-checked radio during construction
+                if (newCalendarX === me.calendarX && newGroupedX === me.groupedX) {
+                    return;
+                }
+                me.calendarX = newCalendarX;
+                me.groupedX = newGroupedX;
+                me.havePlotOptionsChanged = true;
+
+                me.setBrushingEnabled(false);
+                me.layoutAnnotationData();
+                me.setLoadingMsg();
+                me.processPlotData();
+            };
+
+            const colWidths = this.XAXIS_COL_WIDTHS;
+            this.groupedXRadioGroup = Ext4.create('Ext.form.FieldContainer', {
                 id: 'grouped-x-field',
                 fieldLabel: 'X-axis grouping',
                 labelWidth: this.LABEL_WIDTH,
-                columns: 2,
-                vertical: false,
+                layout: { type: 'hbox' },
+                defaults: { xtype: 'radio', name: 'xAxisGrouping' },
                 items: [
-                    { boxLabel: 'per replicate', id: 'x-axis-grouping-replicate', name: 'xAxisGrouping', inputValue: 'replicate', checked: this.groupedX === false, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'X-axis grouping: per replicate'}); } } },
-                    { boxLabel: 'per date', id: 'x-axis-grouping-date', name: 'xAxisGrouping', inputValue: 'date', checked: this.groupedX === true, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'X-axis grouping: per date'}); } } }
-                ],
-                listeners: {
-                    scope: this,
-                    change: function(group, newValue) {
-                        var val = newValue && (newValue.xAxisGrouping || newValue['xAxisGrouping']);
-                        var groupByDate = val === 'date' || (val === true); // fallback safety
-                        this.groupedX = groupByDate;
-                        this.havePlotOptionsChanged = true;
-
-                        this.setBrushingEnabled(false);
-                        this.getAnnotationData();
+                    {
+                        boxLabel: 'per replicate',
+                        width: colWidths[0],
+                        id: 'x-axis-grouping-replicate',
+                        inputValue: this.XAXIS_GROUPING.REPLICATE,
+                        checked: this.groupedX === false,
+                        listeners: {
+                            change: onChange,
+                            afterrender: function(r) {
+                                r.inputEl.set({'aria-label': 'X-axis grouping: per replicate'});
+                            }
+                        }
+                    },
+                    {
+                        boxLabel: 'per date',
+                        width: colWidths[1],
+                        id: 'x-axis-grouping-date',
+                        inputValue: this.XAXIS_GROUPING.DATE,
+                        checked: this.groupedX === true && this.calendarX !== true,
+                        listeners: {
+                            change: onChange,
+                            afterrender: function(r) {
+                                r.inputEl.set({'aria-label': 'X-axis grouping: per date'});
+                            }
+                        }
+                    },
+                    {
+                        boxLabel: 'calendar',
+                        width: colWidths[2],
+                        id: 'x-axis-grouping-calendar',
+                        inputValue: this.XAXIS_GROUPING.CALENDAR,
+                        checked: this.groupedX === true && this.calendarX === true,
+                        listeners: {
+                            change: onChange,
+                            afterrender: function(r) {
+                                r.inputEl.set({'aria-label': 'X-axis grouping: calendar'});
+                            }
+                        }
                     }
-                }
+                ]
             });
         }
 
@@ -1079,27 +1143,57 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     getExcludedReplicatesRadioGroup : function() {
         if (!this.excludedReplicatesRadioGroup) {
-            this.excludedReplicatesRadioGroup = Ext4.create('Ext.form.RadioGroup', {
+            const me = this;
+            const onChange = function(radio, checked) {
+                if (!checked) {
+                    return;
+                }
+                const newShow = radio.inputValue === 'show';
+                // ignore the change event fired for the initially-checked radio during construction
+                if (newShow === me.showExcluded) {
+                    return;
+                }
+                me.showExcluded = newShow;
+                me.havePlotOptionsChanged = true;
+
+                me.getAnnotationData();
+            };
+
+            const colWidths = this.XAXIS_COL_WIDTHS;
+            this.excludedReplicatesRadioGroup = Ext4.create('Ext.form.FieldContainer', {
                 id: 'show-excluded-points',
                 fieldLabel: 'Excluded replicates',
                 labelWidth: this.LABEL_WIDTH,
-                columns: 2,
-                vertical: false,
+                layout: { type: 'hbox' },
+                defaults: { xtype: 'radio', name: 'excludedSamples', listeners: { change: onChange } },
                 items: [
-                    { boxLabel: 'show', id: 'excluded-replicates-show', name: 'excludedSamples', inputValue: 'show', checked: this.showExcluded === true, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Excluded replicates: show'}); } } },
-                    { boxLabel: 'hide', id: 'excluded-replicates-hide', name: 'excludedSamples', inputValue: 'hide', checked: this.showExcluded === false, listeners: { afterrender: function(r) { r.inputEl.set({'aria-label': 'Excluded replicates: hide'}); } } }
-                ],
-                listeners: {
-                    scope: this,
-                    change: function(group, newValue) {
-                        var val = newValue && (newValue.excludedSamples || newValue['excludedSamples']);
-                        var newShow = val === 'show' || (val === true); // fallback safety
-                        this.showExcluded = newShow;
-                        this.havePlotOptionsChanged = true;
-
-                        this.getAnnotationData();
+                    {
+                        boxLabel: 'show',
+                        width: colWidths[0],
+                        id: 'excluded-replicates-show',
+                        inputValue: 'show',
+                        checked: this.showExcluded === true,
+                        listeners: {
+                            change: onChange,
+                            afterrender: function(r) {
+                                r.inputEl.set({'aria-label': 'Excluded replicates: show'});
+                            }
+                        }
+                    },
+                    {
+                        boxLabel: 'hide',
+                        width: colWidths[1],
+                        id: 'excluded-replicates-hide',
+                        inputValue: 'hide',
+                        checked: this.showExcluded === false,
+                        listeners: {
+                            change: onChange,
+                            afterrender: function(r) {
+                                r.inputEl.set({'aria-label': 'Excluded replicates: hide'});
+                            }
+                        }
                     }
-                }
+                ]
             });
         }
 
@@ -1431,9 +1525,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
     processAnnotationData: function(data) {
         if (data) {
-            this.annotationShape = LABKEY.vis.Scale.Shape()[4]; // 0: circle, 1: triangle, 2: square, 3: diamond, 4: X
-            this.legendData = [];
-
             const collapsedData = [];
             const collapsedMap = {};
 
@@ -1452,38 +1543,49 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
             this.annotationData = collapsedData;
 
-            var dateCount = {};
+            this.layoutAnnotationData();
+            this.getPlotsData();
+        }
+    },
 
-            // if more than one type of legend present, add a legend header for annotations
-            if (this.annotationData.length > 0 && (this.singlePlot || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot())) {
+    // Compute annotation stacking and the annotation legend entries
+    layoutAnnotationData: function() {
+        this.annotationShape = LABKEY.vis.Scale.Shape()[4]; // 0: circle, 1: triangle, 2: square, 3: diamond, 4: X
+        this.legendData = [];
+
+        if (!this.annotationData) {
+            return;
+        }
+
+        const dateCount = {};
+
+        // if more than one type of legend present, add a legend header for annotations
+        if (this.annotationData.length > 0 && (this.singlePlot || this.showMeanCUSUMPlot() || this.showVariableCUSUMPlot())) {
+            this.legendData.push({
+                text: 'Annotations',
+                separator: true
+            });
+        }
+
+        for (let i = 0; i < this.annotationData.length; i++) {
+            const annotation = this.annotationData[i];
+            const annotationDate = this.formatDate(new Date(annotation['Date']), !this.groupedX);
+
+            // track if we need to stack annotations that fall on the same date
+            if (!dateCount[annotationDate]) {
+                dateCount[annotationDate] = 0;
+            }
+            annotation.yStepIndex = dateCount[annotationDate];
+            dateCount[annotationDate]++;
+
+            // get unique annotation names and colors for the legend
+            if (Ext4.Array.pluck(this.legendData, "text").indexOf(annotation['Name']) === -1) {
                 this.legendData.push({
-                    text: 'Annotations',
-                    separator: true
+                    text: annotation['Name'],
+                    color: '#' + annotation['Color'],
+                    shape: this.annotationShape
                 });
             }
-
-            for (let i = 0; i < this.annotationData.length; i++) {
-                const annotation = this.annotationData[i];
-                const annotationDate = this.formatDate(new Date(annotation['Date']), !this.groupedX);
-
-                // track if we need to stack annotations that fall on the same date
-                if (!dateCount[annotationDate]) {
-                    dateCount[annotationDate] = 0;
-                }
-                annotation.yStepIndex = dateCount[annotationDate];
-                dateCount[annotationDate]++;
-
-                // get unique annotation names and colors for the legend
-                if (Ext4.Array.pluck(this.legendData, "text").indexOf(annotation['Name']) === -1) {
-                    this.legendData.push({
-                        text: annotation['Name'],
-                        color: '#' + annotation['Color'],
-                        shape: this.annotationShape
-                    });
-                }
-            }
-
-            this.getPlotsData();
         }
     },
 
@@ -2282,6 +2384,17 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return d3.select('#' + plot.renderTo + ' svg');
     },
 
+    // Pixel width of one x-axis slot, used to size guide-set/outlier highlight rectangles. For calendar
+    // mode (continuous axis) this is the plot width over the distinct-day count; otherwise inter-tick spacing.
+    getXBinWidth : function(plot) {
+        if (this.isCalendarAxisActive()) {
+            // shared with the jitter band so bar/rect widths match it, and neither overruns the closest day spacing
+            return LABKEY.vis.calendarSlotWidth(plot.scales.x, plot.grid.rightEdge - plot.grid.leftEdge);
+        }
+        // floored at 10 slots, matching calendarSlotWidth - the ordinal axis is no longer padded, so a sparse plot would give a rect the width of the grid
+        return (plot.grid.rightEdge - plot.grid.leftEdge) / Math.max(plot.scales.x.scale.domain().length, 10);
+    },
+
     toggleGuideSetMsgDisplay : function() {
         var toolbarMsg = this.down('#GuideSetMessageToolBar');
         if (toolbarMsg) {
@@ -2293,7 +2406,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         // for each precursor in precursorInfo
         let me = this;
 
-        let binWidth = (plot.grid.rightEdge - plot.grid.leftEdge) / (plot.scales.x.scale.domain().length);
+        let binWidth = this.getXBinWidth(plot);
         let yRange = plot.scales.yLeft.range;
 
         let xAcc = function (d) {
@@ -2311,7 +2424,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 let clickedReplicateData = [];
                 clickedReplicateData.push({
                     'EndIndex': data.seqValue,
-                    'StartIndex': data.seqValue
+                    'StartIndex': data.seqValue,
+                    'ReplicateName': data.ReplicateName
                 })
 
                 let outlierRect = "rect.outlier-" + j;
@@ -2382,7 +2496,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             }
         }, this);
 
-        var binWidth = (plot.grid.rightEdge - plot.grid.leftEdge) / (plot.scales.x.scale.domain().length);
+        const binWidth = this.getXBinWidth(plot);
         var yRange = plot.scales.yLeft.range;
 
         var xAcc = function (d) {
@@ -2533,6 +2647,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         Ext4.each(precursorInfo.data, function (row) {
             let obj = {};
             obj['Date'] = row.fullDate;
+            // the row's own axis key - the range start/end marker rows carry a date-only fullDate, which does not survive the new Date() round trip in xOffset below
+            obj['xKey'] = me.groupedX ? row['date'] : row['fullDate'];
             obj['yStepIndex'] = 0;
             nonAnnotationsData.push(obj);
         });
@@ -2542,14 +2658,31 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             return me.formatDate(new Date(d), !me.groupedX);
         });
         nonAnnotationsData = nonAnnotationsData.filter(function (obj) {
-            var objDate = me.formatDate(new Date(obj['Date']), !me.groupedX);
-            return annotationDates.indexOf(objDate) === -1;
+            return annotationDates.indexOf(obj['xKey']) === -1;
         });
+
+        // Reuse plot.js's day-number -> offset map (handles the ordinal-prefix split) so annotations don't drift.
+        const useCalendarAxis = this.isCalendarAxisActive();
+        const dayNumberOffsetMap = useCalendarAxis ? plot.scales.x.dayNumberOffsetMap : null;
+
+        // x offset for a date, or null when the axis has no slot for it - an ordinal miss returns undefined from d3
+        // rather than throwing, and calendar offsets are piecewise, so either way there is nothing sane to derive
+        const xOffset = function(d) {
+            const objDate = d['xKey'] !== undefined ? d['xKey'] : me.formatDate(new Date(d['Date']), !me.groupedX);
+            if (!useCalendarAxis) {
+                const index = xAxisLabels.indexOf(objDate);
+                return index === -1 ? null : index;
+            }
+            const dn = LABKEY.vis.dateToDayNumber(objDate);
+            return dn !== null && dayNumberOffsetMap && dayNumberOffsetMap[dn] !== undefined ? dayNumberOffsetMap[dn] : null;
+        };
+
+        nonAnnotationsData = nonAnnotationsData.filter(function(d) { return xOffset(d) !== null; });
+        const plottableAnnotations = this.annotationData.filter(function(d) { return xOffset(d) !== null; });
 
         // use direct D3 code to inject the annotation icons to the rendered SVG
         var xAcc = function(d) {
-            var annotationDate = me.formatDate(new Date(d['Date']), !me.groupedX);
-            return plot.scales.x.scale(xAxisLabels.indexOf(annotationDate));
+            return plot.scales.x.scale(xOffset(d));
         };
         var yAcc = function(d) {
             return plot.scales.yLeft.range[1] - (d['yStepIndex'] * 12) - 12;
@@ -2650,7 +2783,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         // Render the existing annotation glyphs after the add-annotation markers so they paint on
         // top and take precedence for hover/click when the markers overlap them.
-        let annotations = this.getSvgElForPlot(plot).selectAll("path.annotation").data(this.annotationData)
+        let annotations = this.getSvgElForPlot(plot).selectAll("path.annotation").data(plottableAnnotations)
                 .enter().append("path").attr("class", "annotation")
                 .attr("d", this.annotationShape(4)).attr('transform', transformAcc)
                 .style("fill", colorAcc).style("stroke", colorAcc);
@@ -3220,6 +3353,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             plotTypes: this.plotTypes,
             yAxisScale: this.yAxisScale,
             groupedX: this.groupedX,
+            calendarX: this.calendarX,
             singlePlot: this.singlePlot,
             showExcluded: this.showExcluded,
             dateRangeOffset: this.dateRangeOffset,

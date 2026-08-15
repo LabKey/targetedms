@@ -956,6 +956,7 @@ public class TargetedMSController extends SpringActionController
         private String _metric2;
         private String _yAxisScale;
         private Boolean _groupedX;
+        private Boolean _calendarX;
         private Boolean _singlePlot;
         private Boolean _showExcluded;
         private Boolean _showExcludedPrecursors;
@@ -981,6 +982,8 @@ public class TargetedMSController extends SpringActionController
                 valueMap.put("yAxisScale", _yAxisScale);
             if (_groupedX != null)
                 valueMap.put("groupedX", Boolean.toString(_groupedX));
+            if (_calendarX != null)
+                valueMap.put("calendarX", Boolean.toString(_calendarX));
             if (_singlePlot != null)
                 valueMap.put("singlePlot", Boolean.toString(_singlePlot));
             if (_showExcluded != null)
@@ -1025,6 +1028,11 @@ public class TargetedMSController extends SpringActionController
         public void setGroupedX(Boolean groupedX)
         {
             _groupedX = groupedX;
+        }
+
+        public void setCalendarX(Boolean calendarX)
+        {
+            _calendarX = calendarX;
         }
 
         public void setSinglePlot(Boolean singlePlot)
