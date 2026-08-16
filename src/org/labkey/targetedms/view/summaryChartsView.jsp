@@ -224,7 +224,7 @@
             </tr>
             <tr>
                 <td class="sc-label"><label for="sc-width">Width</label></td>
-                <td><input type="number" id="sc-width" value="<%= bean.getInitialWidth() %>"></td>
+                <td><input type="number" id="sc-width" value="<%= bean.getInitialWidth() %>" min="1" step="1"></td>
             </tr>
             <tr>
                 <td class="sc-label"><label for="sc-height">Height</label></td>
