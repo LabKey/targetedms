@@ -228,7 +228,7 @@
             </tr>
             <tr>
                 <td class="sc-label"><label for="sc-height">Height</label></td>
-                <td><input type="number" id="sc-height" value="<%= bean.getInitialHeight() %>"></td>
+                <td><input type="number" id="sc-height" value="<%= bean.getInitialHeight() %>" min="1" step="1"></td>
             </tr>
             <tr>
                 <td class="sc-label"><label for="sc-value">Value</label></td>
