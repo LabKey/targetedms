@@ -315,7 +315,7 @@ if (!LABKEY.targetedms) {
             const rounded = Math.round(value * 100000) / 100000;
             // Use scientific notation if the number is large or very small
             if (exp && (rounded > 10000 || rounded < -10000 || (rounded > -0.00001 && rounded < 0.00001)))
-                rounded.toExponential(4)
+                return rounded.toExponential(4)
             return rounded;
         }
     };
