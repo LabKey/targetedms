@@ -30,7 +30,6 @@
     @Override
     public void addClientDependencies(ClientDependencies dependencies)
     {
-        dependencies.add("Ext4"); // LABKEY.vis (vis/vis) still uses Ext.isArray for log-scale axes
         dependencies.add("vis/vis");
         dependencies.add("targetedms/js/CalibrationCurve.js");
         dependencies.add("targetedms/css/CalibrationCurve.css");

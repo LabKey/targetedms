@@ -27,7 +27,6 @@
     @Override
     public void addClientDependencies(ClientDependencies dependencies)
     {
-        dependencies.add("Ext4"); // still needed by QCMetricConfigLoader.js
         dependencies.add("vis/vis");
         dependencies.add("targetedms/css/SVGExportIcon.css");
         dependencies.add("targetedms/css/ParetoPlot.css");

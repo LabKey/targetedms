@@ -18,10 +18,8 @@ package org.labkey.test.pages.panoramapremium;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Assert;
 import org.labkey.test.Locator;
-import org.labkey.test.components.ext4.Window;
 import org.labkey.test.components.targetedms.QCPlotsWebPart;
 import org.labkey.test.pages.PortalBodyPanel;
-import org.labkey.test.util.Ext4Helper;
 import org.openqa.selenium.WebDriver;
 
 import java.util.Map;
@@ -153,9 +151,8 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
     public void addNewTraceMetric(Map<TraceMetricProperties, String> traceProperties, boolean duplicateNameErrorExpected)
     {
         click(Locator.tagWithText("button", "Add New Trace Metric"));
-        waitForElement(Ext4Helper.Locators.window("Add New Trace Metric"));
-        Window<?> metricWindow = new Window.WindowFinder(getDriver()).withTitle("Add New Trace Metric").waitFor();
-        editTraceMetricValues(metricWindow, traceProperties, duplicateNameErrorExpected);
+        waitForTraceMetricDialog();
+        editTraceMetricValues(traceProperties, duplicateNameErrorExpected);
     }
 
     public void addNewAnnotationMetric(Map<AnnotationMetricProperties, String> metricProperties, boolean duplicateNameErrorExpected)
@@ -234,32 +231,35 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
             selectOptionByText(Locator.id("lk-custom-metric-query"), props.get(CustomMetricProperties.queryName));
     }
 
-    private void editTraceMetricValues(Window<?> metricWindow, Map<TraceMetricProperties, String> metricProperties, boolean duplicateNameErrorExpected)
+    private void waitForTraceMetricDialog()
     {
+        waitForElement(Locator.id("lk-trace-metric-dialog"));
+        waitForElement(Locator.tagWithText("option", "-- Select trace --"));
+    }
+
+    private void editTraceMetricValues(Map<TraceMetricProperties, String> metricProperties, boolean duplicateNameErrorExpected)
+    {
+        // the trace value field is only enabled when its radio button is selected
+        if (metricProperties.containsKey(TraceMetricProperties.traceValue))
+            click(Locator.css("input[name='metricValue'][value='traceValue']"));
+
         metricProperties.forEach((prop, val) -> {
-            if (!prop.isSelect)
-            {
-                setFormElement(Locator.name(prop.name()), val);
-            }
-            else if (prop.formLabel != null)
-            {
-                _ext4Helper.selectComboBoxItem(prop.formLabel, val);
-            }
+            if (prop.isSelect)
+                selectOptionByText(Locator.id(prop.elementId), val);
             else
-            {
-                _ext4Helper.selectComboBoxItem(prop.loc, val);
-            }
+                setFormElement(Locator.id(prop.elementId), val);
         });
+
         if (duplicateNameErrorExpected)
         {
-            click(Ext4Helper.Locators.ext4Button("Save"));
-            assertTextPresent("A metric with the name \"" + metricProperties.get(ConfigureMetricsUIPage.TraceMetricProperties.metricName) + "\" already exists. Please choose a different name.");
-            click(Ext4Helper.Locators.ext4Button("Cancel"));
+            click(Locator.id("lk-trace-metric-save"));
+            assertTextPresent("A metric with the name \"" + metricProperties.get(TraceMetricProperties.metricName) + "\" already exists. Please choose a different name.");
+            click(Locator.id("lk-trace-metric-cancel"));
         }
         else
         {
-            clickAndWait(Ext4Helper.Locators.ext4Button("Save").findElement(metricWindow));
-            waitForElement(Locator.linkWithText(metricProperties.get(ConfigureMetricsUIPage.TraceMetricProperties.metricName)));
+            clickAndWait(Locator.id("lk-trace-metric-save"));
+            waitForElement(Locator.linkWithText(metricProperties.get(TraceMetricProperties.metricName)));
         }
     }
 
@@ -331,37 +331,22 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
 
     public enum TraceMetricProperties
     {
-        metricName(null, false),
-        traceName("Use Trace", true),
-        yAxisLabel(null, false),
-        minTimeValue(null, false),
-        maxTimeValue(null, false),
-        traceValue(null, false),
-        timeValueOption(null, true, Ext4Helper.Locators.formItemWithInputNamed("timeValueOption")),;
+        metricName("lk-trace-metric-name", false),
+        traceName("lk-trace-use-trace", true),
+        yAxisLabel("lk-trace-ylabel", false),
+        minTimeValue("lk-trace-min-time", false),
+        maxTimeValue("lk-trace-max-time", false),
+        traceValue("lk-trace-value", false),
+        timeValueOption("lk-trace-time-option", true);
 
-        private final String formLabel;
+        private final String elementId;
         private final boolean isSelect;
-        private Locator.XPathLocator loc;
 
-        TraceMetricProperties(String formLabel, boolean isSelect)
+        TraceMetricProperties(String elementId, boolean isSelect)
         {
-            if (formLabel == null)
-            {
-                this.formLabel = null;
-            }
-            else
-            {
-                this.formLabel = formLabel + ":";
-            }
+            this.elementId = elementId;
             this.isSelect = isSelect;
         }
-
-        TraceMetricProperties(String formLabel, boolean isSelect, Locator.XPathLocator loc)
-        {
-            this(formLabel, isSelect);
-            this.loc = loc;
-        }
-
     }
 
 }

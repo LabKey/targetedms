@@ -30,6 +30,18 @@
         $field.css('border-color', 'red');
     }
 
+    // Disable the buttons while a save/delete is in flight so we don't submit twice
+    function setBusy(buttonId, busyText) {
+        $('#lk-trace-metric-save, #lk-trace-metric-cancel, #lk-trace-metric-delete').prop('disabled', true);
+        $('#' + buttonId).html(busyText + ' <i class="fa fa-spinner fa-pulse"></i>');
+    }
+
+    function clearBusy() {
+        $('#lk-trace-metric-save, #lk-trace-metric-cancel, #lk-trace-metric-delete').prop('disabled', false);
+        $('#lk-trace-metric-save').text('Save');
+        $('#lk-trace-metric-delete').text('Delete');
+    }
+
     function getMode() {
         return $('input[name="metricValue"]:checked').val(); // 'timeValue' or 'traceValue'
     }
@@ -43,6 +55,11 @@
 
     function isNonNegativeNumber(val) {
         return val !== '' && val !== null && !isNaN(val) && Number(val) >= 0;
+    }
+
+    // A zero trace value is treated as "not set", so require a positive number here
+    function isPositiveNumber(val) {
+        return isNonNegativeNumber(val) && Number(val) > 0;
     }
 
     function validate() {
@@ -76,7 +93,7 @@
                 isValid = false;
             }
         }
-        else if (!isNonNegativeNumber($('#lk-trace-value').val())) {
+        else if (!isPositiveNumber($('#lk-trace-value').val())) {
             markInvalid($('#lk-trace-value'));
             isValid = false;
         }
@@ -105,11 +122,14 @@
     function save() {
         if (!validate()) return;
 
+        setBusy('lk-trace-metric-save', 'Saving');
+
         const metricName = $('#lk-trace-metric-name').val().trim();
         checkMetricNameExists(metricName, function(exists) {
             if (exists) {
-                showError('A metric with the name "' + LABKEY.Utils.encodeHtml(metricName) + '" already exists. Please choose a different name.');
+                showError('A metric with the name "' + metricName + '" already exists. Please choose a different name.');
                 markInvalid($('#lk-trace-metric-name'));
+                clearBusy();
                 return;
             }
 
@@ -141,6 +161,7 @@
                 success: function() { window.location.reload(); },
                 failure: function(response) {
                     showError((response && (response.exception || response.message)) || 'Error saving metric');
+                    clearBusy();
                 }
             });
         });
@@ -148,6 +169,8 @@
 
     function deleteMetric() {
         if (!confirm('This will delete the "' + _config.metric.name + '" metric. Are you sure?')) return;
+
+        setBusy('lk-trace-metric-delete', 'Deleting');
 
         LABKEY.Query.saveRows({
             containerPath: LABKEY.container.id,
@@ -159,17 +182,22 @@
             success: function() { window.location.reload(); },
             failure: function(response) {
                 showError((response && (response.exception || response.message)) || 'Error deleting metric');
+                clearBusy();
             }
         });
     }
 
     function buildTraceOptions(selectedTrace) {
-        const traces = (_config.traces || []).slice().sort(function(a, b) {
-            return String(a.TextId).localeCompare(String(b.TextId));
+        const textIds = (_config.traces || []).map(function(row) { return row.TextId; });
+        // keep the previously saved trace available even if it is no longer in the list
+        if (selectedTrace && textIds.indexOf(selectedTrace) === -1) {
+            textIds.push(selectedTrace);
+        }
+        textIds.sort(function(a, b) {
+            return String(a).localeCompare(String(b));
         });
         let html = '<option value="">-- Select trace --</option>';
-        traces.forEach(function(row) {
-            const textId = row.TextId;
+        textIds.forEach(function(textId) {
             const sel = textId === selectedTrace ? ' selected' : '';
             html += '<option value="' + LABKEY.Utils.encodeHtml(textId) + '"' + sel + '>' + LABKEY.Utils.encodeHtml(textId) + '</option>';
         });

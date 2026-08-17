@@ -279,6 +279,9 @@
         const heightInput = byId('sc-height');
         const updateBtn = byId('sc-update');
 
+        const defaultWidth = <%=bean.getInitialWidth()%>;
+        const defaultHeight = <%=bean.getInitialHeight()%>;
+
         const showReplicate = <%=showReplicate%>;
         const showAnnotName = <%=showAnnotName%>;
         const showCv = <%=showCv%>;
@@ -346,7 +349,20 @@
             updateCvCheckbox();
         });
 
+        // type="number" still allows blank or garbage input, so fall back to the initial size
+        function chartDimension(input, defaultValue) {
+            const value = parseInt(input.value, 10);
+            if (isNaN(value) || value < 1) {
+                input.value = defaultValue;
+                return defaultValue;
+            }
+            return value;
+        }
+
         updateBtn.addEventListener('click', function() {
+
+            const chartWidth = chartDimension(widthInput, defaultWidth);
+            const chartHeight = chartDimension(heightInput, defaultHeight);
 
             const params = {
                 asProteomics: <%=asProteomics%>,
@@ -358,8 +374,8 @@
                 moleculeId: hasMolecules ? moleculeSel.value : <%=moleculeId%>,
                 cvValues: cvChk.checked,
                 logValues: logChk.checked,
-                chartWidth: widthInput.value,
-                chartHeight: heightInput.value
+                chartWidth: chartWidth,
+                chartHeight: chartHeight
             };
 
             const peakAreaUrl = LABKEY.ActionURL.buildURL(
@@ -384,10 +400,10 @@
             const timeElement = byId('retentionTimesGraph');
             LABKEY.targetedms.SVGChart.requestAndRenderSVG(retentionTimesUrl, timeElement, null, byId('retentionTimesGraphLabel'));
 
-            areaElement.style.width = parseInt(widthInput.value) + 'px';
-            areaElement.style.height = parseInt(heightInput.value) + 'px';
-            timeElement.style.width = parseInt(widthInput.value) + 'px';
-            timeElement.style.height = parseInt(heightInput.value) + 'px';
+            areaElement.style.width = chartWidth + 'px';
+            areaElement.style.height = chartHeight + 'px';
+            timeElement.style.width = chartWidth + 'px';
+            timeElement.style.height = chartHeight + 'px';
         });
 
         // peak areas / retention times graphs
