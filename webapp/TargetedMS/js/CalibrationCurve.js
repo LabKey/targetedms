@@ -50,7 +50,9 @@ if (!LABKEY.targetedms) {
         window.addEventListener("resize", function() {
             // Issue 43532 - may have been loaded even if we don't have a curve to plot
             if (me.plot) {
-                me.width = me.getPanelSize();
+                // Ext applied minWidth when the old resize handler round-tripped through
+                // setWidth()/getWidth(), so keep the plot from shrinking past it here
+                me.width = Math.max(me.getPanelSize(), me.minWidth);
                 me.plot.setWidth(me.width);
                 me.plot.render();
 
@@ -215,7 +217,7 @@ if (!LABKEY.targetedms) {
                                 d3.selectAll('svg g.layer path[stroke-opacity="0"').transition().attr('stroke-opacity', .5)
                             },
                             hoverText: function(row) {
-                                return 'Name: ' + row.name + '\nPeak Area: ' + me.formatLegendValue(row.y, true) + '\nConcentration: ' + me.formatLegendValue(row.x) + (row.excluded ? '\nExcluded from calibration' : '');
+                                return 'Name: ' + row.name + '\nPeak Area: ' + me.formatLegendValue(row.y) + '\nConcentration: ' + me.formatLegendValue(row.x) + (row.excluded ? '\nExcluded from calibration' : '');
                             }
                         }
                     })
@@ -266,7 +268,7 @@ if (!LABKEY.targetedms) {
             const result = [
                 {text: 'Selected Point', separator: true},
                 {text: 'Replicate: ' + point.name, color: 'white'},
-                {text: 'Peak Area: ' + scope.formatLegendValue(point.y, true), color: 'white'},
+                {text: 'Peak Area: ' + scope.formatLegendValue(point.y), color: 'white'},
                 {text: 'Concentration: ' + scope.formatLegendValue(point.x), color: 'white'},
                 {
                     text: 'Calc. Concentration: ' + scope.formatLegendValue(scope.getQuadraticIntersect(scope, point.y)),
@@ -287,8 +289,8 @@ if (!LABKEY.targetedms) {
                 {text: 'Regression Weighting: ' + LABKEY.Utils.encodeHtml(this.data.calibrationCurve.regressionWeighting), color: 'white'},
                 {text: 'MS Level: ' + (this.data.msLevel > 0 ? this.data.msLevel : 'All'), color: 'white'},
                 {text: '', separator: true},
-                {text: 'Slope: ' + scope.formatLegendValue(this.data.calibrationCurve.slope, true), color: 'white'},
-                {text: 'Intercept: ' + scope.formatLegendValue(this.data.calibrationCurve.intercept, true), color: 'white'}
+                {text: 'Slope: ' + scope.formatLegendValue(this.data.calibrationCurve.slope), color: 'white'},
+                {text: 'Intercept: ' + scope.formatLegendValue(this.data.calibrationCurve.intercept), color: 'white'}
             ];
             if (this.data.calibrationCurve.quadraticCoefficient && this.data.calibrationCurve.quadraticCoefficient !== 0.0) {
                 result.push({text: 'Quadratic Coefficient: ' + scope.formatLegendValue(this.data.calibrationCurve.quadraticCoefficient), color: 'white'});
@@ -309,14 +311,10 @@ if (!LABKEY.targetedms) {
             ];
         },
 
-        formatLegendValue: function(value, exp) {
+        formatLegendValue: function(value) {
             if (value == null)
                 return 'NaN';
-            const rounded = Math.round(value * 100000) / 100000;
-            // Use scientific notation if the number is large or very small
-            if (exp && (rounded > 10000 || rounded < -10000 || (rounded > -0.00001 && rounded < 0.00001)))
-                return rounded.toExponential(4)
-            return rounded;
+            return Math.round(value * 100000) / 100000;
         }
     };
 

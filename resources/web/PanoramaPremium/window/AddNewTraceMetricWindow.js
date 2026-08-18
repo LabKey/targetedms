@@ -11,9 +11,29 @@
     const DIALOG_ID = 'lk-trace-metric-dialog';
     const TIME_VALUE_OPTIONS = ['First', 'Last', 'Max', 'Min'];
     let _config = null;
+    let _busy = false;
 
     function closeDialog() {
+        $(document).off('keydown.lkTraceMetric');
         $('#' + DIALOG_ID).remove();
+    }
+
+    // Ext.window.Window used to keep Tab inside the modal; do the same by hand
+    function trapFocus(e) {
+        const $focusable = $('#' + DIALOG_ID).find('input, select, button').filter(':visible').not(':disabled');
+        if ($focusable.length === 0) {
+            return;
+        }
+        const first = $focusable[0];
+        const last = $focusable[$focusable.length - 1];
+        if (e.shiftKey && e.target === first) {
+            e.preventDefault();
+            last.focus();
+        }
+        else if (!e.shiftKey && e.target === last) {
+            e.preventDefault();
+            first.focus();
+        }
     }
 
     function showError(msg) {
@@ -32,14 +52,17 @@
 
     // Disable the buttons while a save/delete is in flight so we don't submit twice
     function setBusy(buttonId, busyText) {
+        _busy = true;
         $('#lk-trace-metric-save, #lk-trace-metric-cancel, #lk-trace-metric-delete').prop('disabled', true);
         $('#' + buttonId).html(busyText + ' <i class="fa fa-spinner fa-pulse"></i>');
     }
 
     function clearBusy() {
-        $('#lk-trace-metric-save, #lk-trace-metric-cancel, #lk-trace-metric-delete').prop('disabled', false);
-        $('#lk-trace-metric-save').text('Save');
+        _busy = false;
+        $('#lk-trace-metric-cancel, #lk-trace-metric-delete').prop('disabled', false);
         $('#lk-trace-metric-delete').text('Delete');
+        // Save stays disabled when there is no trace to pick from
+        $('#lk-trace-metric-save').prop('disabled', !_config.tracesPresent).text('Save');
     }
 
     function getMode() {
@@ -141,13 +164,20 @@
                 YAxisLabel: $('#lk-trace-ylabel').val().trim()
             };
 
+            // Null out the columns for the mode that wasn't selected. An update command only writes
+            // the columns it is given, so leaving them off would keep the previous mode's values in
+            // the row -- and the server reads TimeValueOption first, so a stale one silently wins.
             if (getMode() === 'traceValue') {
                 newMetric.TraceValue = Number($('#lk-trace-value').val());
+                newMetric.TimeValueOption = null;
+                newMetric.MinTimeValue = null;
+                newMetric.MaxTimeValue = null;
             }
             else {
                 newMetric.TimeValueOption = $('#lk-trace-time-option').val();
                 newMetric.MinTimeValue = Number($('#lk-trace-min-time').val());
                 newMetric.MaxTimeValue = Number($('#lk-trace-max-time').val());
+                newMetric.TraceValue = null;
             }
 
             if (_config.operation === 'update') {
@@ -230,10 +260,13 @@
             ? '<select id="lk-trace-use-trace" style="width:100%;box-sizing:border-box;">' + buildTraceOptions(metric.TraceName) + '</select>'
             : '<select id="lk-trace-use-trace" style="width:100%;box-sizing:border-box;" disabled><option value="">No trace can be found</option></select>';
 
-        return '<div id="' + DIALOG_ID + '" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">'
+        return '<div id="' + DIALOG_ID + '" role="dialog" aria-modal="true" aria-labelledby="lk-trace-metric-title"'
+            + ' style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">'
             + '<div class="x4-window x4-window-default" style="min-width:640px;max-width:760px;">'
+            // The x4-window* classes come from the Ext4 stylesheet, which configureQCMetric.view.xml
+            // still declares. Dropping that dependency strips this dialog's border, header and background.
             +   '<div class="x4-window-header x4-window-header-default x4-window-header-default-top" style="padding:4px 8px;border:none;">'
-            +     '<p class="x4-window-header-text-container-default" style="font-size:14px;margin:0;">' + LABKEY.Utils.encodeHtml(title) + '</p>'
+            +     '<p class="x4-window-header-text-container-default" id="lk-trace-metric-title" style="font-size:14px;margin:0;">' + LABKEY.Utils.encodeHtml(title) + '</p>'
             +   '</div>'
             +   '<div class="x4-window-body" style="background:white;padding:10px 12px;">'
             +     '<table style="border-collapse:collapse;width:100%;">'
@@ -272,8 +305,9 @@
     window.Panorama.Window.AddTraceMetricWindow = {
         show: function(config) {
             _config = config;
+            _busy = false;
 
-            $('#' + DIALOG_ID).remove();
+            closeDialog();
             $('body').append(buildDialogHtml());
 
             $('#lk-trace-metric-cancel').on('click', closeDialog);
@@ -285,10 +319,21 @@
 
             // close on overlay click
             $('#' + DIALOG_ID).on('click', function(e) {
-                if (e.target === this) closeDialog();
+                if (e.target === this && !_busy) closeDialog();
             });
 
             refreshMode();
+
+            $('#lk-trace-metric-name').trigger('focus');
+
+            $(document).on('keydown.lkTraceMetric', function(e) {
+                if (e.key === 'Escape' && !_busy) {
+                    closeDialog();
+                }
+                else if (e.key === 'Tab') {
+                    trapFocus(e);
+                }
+            });
         }
     };
 })(jQuery);

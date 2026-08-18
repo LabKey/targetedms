@@ -386,6 +386,18 @@ if (!LABKEY.targetedms) {
             if (h12 === 0) {
                 h12 = 12;
             }
+            const pad3 = function(n) { return (n < 10 ? '00' : n < 100 ? '0' : '') + n; };
+
+            // Timezone abbreviation, derived the way Ext4 derived its 'T' token
+            const tzMatch = date.toString().match(/^.* (?:\((.*)\)|([A-Z]{1,5})(?:\s|$))/);
+            const tzOffset = date.getTimezoneOffset();
+            const absOffset = Math.abs(tzOffset);
+
+            // ISO-8601 week number: a week belongs to the year that its Thursday falls in
+            const thursday = new Date(year, month, day);
+            thursday.setDate(thursday.getDate() - ((dow + 6) % 7) + 3);
+            const firstThursday = new Date(thursday.getFullYear(), 0, 4);
+            firstThursday.setDate(firstThursday.getDate() - ((firstThursday.getDay() + 6) % 7) + 3);
 
             const tokens = {
                 Y: '' + year,
@@ -406,8 +418,14 @@ if (!LABKEY.targetedms) {
                 g: '' + h12,
                 i: pad(minutes),
                 s: pad(seconds),
+                u: pad3(date.getMilliseconds()),
                 A: hours < 12 ? 'AM' : 'PM',
-                a: hours < 12 ? 'am' : 'pm'
+                a: hours < 12 ? 'am' : 'pm',
+                // toExtDateFormat emits these from the Java z, Z, w and D patterns
+                T: tzMatch ? (tzMatch[1] || tzMatch[2]) : '',
+                O: (tzOffset > 0 ? '-' : '+') + pad(Math.floor(absOffset / 60)) + pad(absOffset % 60),
+                W: pad(1 + Math.round((thursday - firstThursday) / 604800000)),
+                z: '' + Math.round((new Date(year, month, day) - new Date(year, 0, 1)) / 86400000)
             };
 
             let out = '';

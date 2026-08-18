@@ -231,17 +231,43 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
             selectOptionByText(Locator.id("lk-custom-metric-query"), props.get(CustomMetricProperties.queryName));
     }
 
+    public void editTraceMetric(String metric, Map<TraceMetricProperties, String> metricProperties)
+    {
+        waitAndClick(Locator.linkWithText(metric));
+        waitForTraceMetricDialog();
+        editTraceMetricValues(metricProperties, false);
+    }
+
+    /**
+     * Opens the metric for edit, reports which mode radio the dialog came up in, and closes it again without saving.
+     * @return "timeValue" or "traceValue"
+     */
+    public String getTraceMetricMode(String metric)
+    {
+        waitAndClick(Locator.linkWithText(metric));
+        waitForTraceMetricDialog();
+        String mode = Locator.css("input[name='metricValue']:checked").findElement(getDriver()).getAttribute("value");
+        click(Locator.id("lk-trace-metric-cancel"));
+        waitForElementToDisappear(Locator.id("lk-trace-metric-dialog"));
+        return mode;
+    }
+
     private void waitForTraceMetricDialog()
     {
         waitForElement(Locator.id("lk-trace-metric-dialog"));
-        waitForElement(Locator.tagWithText("option", "-- Select trace --"));
+        // wait on the select itself, not its placeholder option: with no traces in the container the
+        // dialog renders a disabled "No trace can be found" select instead
+        waitForElement(Locator.id("lk-trace-use-trace"));
     }
 
     private void editTraceMetricValues(Map<TraceMetricProperties, String> metricProperties, boolean duplicateNameErrorExpected)
     {
-        // the trace value field is only enabled when its radio button is selected
+        // each mode's fields are only enabled when its radio button is selected, so pick the mode
+        // before filling anything in
         if (metricProperties.containsKey(TraceMetricProperties.traceValue))
             click(Locator.css("input[name='metricValue'][value='traceValue']"));
+        else
+            click(Locator.css("input[name='metricValue'][value='timeValue']"));
 
         metricProperties.forEach((prop, val) -> {
             if (prop.isSelect)
@@ -259,7 +285,9 @@ public class ConfigureMetricsUIPage extends PortalBodyPanel
         else
         {
             clickAndWait(Locator.id("lk-trace-metric-save"));
-            waitForElement(Locator.linkWithText(metricProperties.get(TraceMetricProperties.metricName)));
+            String metricName = metricProperties.get(TraceMetricProperties.metricName);
+            if (metricName != null)
+                waitForElement(Locator.linkWithText(metricName));
         }
     }
 

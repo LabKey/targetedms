@@ -4,6 +4,8 @@
     </requiresPermissions>
     <dependencies>
         <dependency path="internal/jQuery"/>
+        <!-- The three metric dialogs below are plain jQuery/HTML but still style their chrome with
+             the Ext4 stylesheet's x4-window* classes, so this dependency is not yet removable. -->
         <dependency path="Ext4"/>
         <dependency path="PanoramaPremium/window/AddNewMetricWindow.js"/>
         <dependency path="PanoramaPremium/window/AddNewTraceMetricWindow.js"/>

@@ -399,11 +399,6 @@
             LABKEY.targetedms.SVGChart.requestAndRenderSVG(peakAreaUrl, areaElement, null, byId('peakAreasGraphLabel'));
             const timeElement = byId('retentionTimesGraph');
             LABKEY.targetedms.SVGChart.requestAndRenderSVG(retentionTimesUrl, timeElement, null, byId('retentionTimesGraphLabel'));
-
-            areaElement.style.width = chartWidth + 'px';
-            areaElement.style.height = chartHeight + 'px';
-            timeElement.style.width = chartWidth + 'px';
-            timeElement.style.height = chartHeight + 'px';
         });
 
         // peak areas / retention times graphs
