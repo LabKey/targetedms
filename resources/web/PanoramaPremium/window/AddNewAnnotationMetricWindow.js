@@ -13,7 +13,26 @@
     let _allAnnotations = [];
 
     function closeDialog() {
+        $(document).off('keydown.lkAnnotationMetric');
         $('#' + DIALOG_ID).remove();
+    }
+
+    // Ext.window.Window used to keep Tab inside the modal; do the same by hand
+    function trapFocus(e) {
+        const $focusable = $('#' + DIALOG_ID).find('input, select, button').filter(':visible').not(':disabled');
+        if ($focusable.length === 0) {
+            return;
+        }
+        const first = $focusable[0];
+        const last = $focusable[$focusable.length - 1];
+        if (e.shiftKey && e.target === first) {
+            e.preventDefault();
+            last.focus();
+        }
+        else if (!e.shiftKey && e.target === last) {
+            e.preventDefault();
+            first.focus();
+        }
     }
 
     function showError(msg) {
@@ -162,10 +181,13 @@
         const isPrecursor = op === 'update' && metric.PrecursorScoped;
         const title = op === 'insert' ? 'Add Annotation-Backed Metric' : 'Edit Annotation-Backed Metric';
 
-        return '<div id="' + DIALOG_ID + '" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">'
+        return '<div id="' + DIALOG_ID + '" role="dialog" aria-modal="true" aria-labelledby="lk-annotation-metric-title"'
+            + ' style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">'
             + '<div class="x4-window x4-window-default" style="min-width:480px;max-width:580px;">'
+            // The x4-window* classes come from the Ext4 stylesheet, which configureQCMetric.view.xml
+            // still declares. Dropping that dependency strips this dialog's border, header and background.
             +   '<div class="x4-window-header x4-window-header-default x4-window-header-default-top" style="padding:4px 8px;border:none;">'
-            +     '<p class="x4-window-header-text-container-default" style="font-size:14px;margin:0;">' + LABKEY.Utils.encodeHtml(title) + '</p>'
+            +     '<p class="x4-window-header-text-container-default" id="lk-annotation-metric-title" style="font-size:14px;margin:0;">' + LABKEY.Utils.encodeHtml(title) + '</p>'
             +   '</div>'
             +   '<div class="x4-window-body" style="background:white;padding:10px 12px;">'
             +     '<table style="border-collapse:collapse;width:100%;">'
@@ -197,7 +219,7 @@
             _config = config;
             _allAnnotations = [];
 
-            $('#' + DIALOG_ID).remove();
+            closeDialog();
             $('body').append(buildDialogHtml());
 
             $('#lk-annotation-metric-cancel').on('click', closeDialog);
@@ -210,6 +232,17 @@
             // close on overlay click
             $('#' + DIALOG_ID).on('click', function(e) {
                 if (e.target === this) closeDialog();
+            });
+
+            $('#lk-annotation-metric-name').trigger('focus');
+
+            $(document).on('keydown.lkAnnotationMetric', function(e) {
+                if (e.key === 'Escape') {
+                    closeDialog();
+                }
+                else if (e.key === 'Tab') {
+                    trapFocus(e);
+                }
             });
 
             LABKEY.Query.selectRows({
