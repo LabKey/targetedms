@@ -1150,7 +1150,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 .attr('y', gridTop)
                 .attr('width', overlayW)
                 .attr('height', gridBottom - gridTop)
-                .style({'fill': 'transparent', 'cursor': isZoomed ? 'zoom-out' : 'zoom-in'});
+                .style({'fill': 'none', 'pointer-events': 'all', 'cursor': isZoomed ? 'zoom-out' : 'zoom-in'});
 
             if (isZoomed) {
                 overlayEl.on('click', function() { me.resetYZoom(plotId, axis); });
@@ -1181,7 +1181,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                     .attr('x', 0).attr('y', 0)
                     .attr('width', parseFloat(svg.attr('width')) || (gridRight + 80))
                     .attr('height', parseFloat(svg.attr('height')) || (gridBottom + 50))
-                    .style({'fill': 'transparent', 'pointer-events': 'all', 'cursor': 'default'});
+                    .style({'fill': 'none', 'pointer-events': 'all', 'cursor': 'default'});
 
                 zoomButtonGroup = svg.append('g').attr('class', 'y-zoom-buttons');
 
@@ -1254,7 +1254,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
                 plotClickCapture = svg.append('rect')
                     .attr('x', gridLeft).attr('y', gridTop)
                     .attr('width', gridRight - gridLeft).attr('height', gridBottom - gridTop)
-                    .style({'fill': 'transparent', 'cursor': 'crosshair'})
+                    .style({'fill': 'none', 'pointer-events': 'all', 'cursor': 'crosshair'})
                     .on('click', function() {
                         let clickY = clampY(d3.mouse(svg.node())[1]);
                         let firstY = pendingStartY;
