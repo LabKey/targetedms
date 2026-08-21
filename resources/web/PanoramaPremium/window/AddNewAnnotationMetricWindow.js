@@ -17,7 +17,7 @@
         $('#' + DIALOG_ID).remove();
     }
 
-    // Ext.window.Window used to keep Tab inside the modal; do the same by hand
+    // Keep Tab inside the modal
     function trapFocus(e) {
         const $focusable = $('#' + DIALOG_ID).find('input, select, button').filter(':visible').not(':disabled');
         if ($focusable.length === 0) {
