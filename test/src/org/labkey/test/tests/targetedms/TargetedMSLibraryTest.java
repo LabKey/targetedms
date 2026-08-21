@@ -221,9 +221,10 @@ public class TargetedMSLibraryTest extends TargetedMSTest
         ensureComparisonPlots("CTCF");
 
         log("Testing chart interactivity");
-        setFormElement(Locator.name("chartHeight"), "200");
-        setFormElement(Locator.name("chartWidth"), "500");
-        clickButton("Update",0);
+        // ids from summaryChartsView.jsp; the chromatograms form has fields with the same names
+        setFormElement(Locator.id("sc-height"), "200");
+        setFormElement(Locator.id("sc-width"), "500");
+        click(Locator.id("sc-update"));
         ensureComparisonPlots("CTCF");
     }
 

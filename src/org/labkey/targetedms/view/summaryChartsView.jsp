@@ -100,8 +100,6 @@
     retentionTimesUrl.addParameter("chartWidth", bean.getInitialWidth());
     retentionTimesUrl.addParameter("chartHeight", bean.getInitialHeight());
 
-    // The ExtJS stores prepended "All"/"None" entries, so the original visibility checks were
-    // count-based (e.g. store.count() > 2). Translate those to list-size checks here.
     boolean hasPeptides = peptideList != null && !peptideList.isEmpty();
     boolean hasMolecules = moleculeList != null && !moleculeList.isEmpty();
     boolean showReplicate = replicateList.size() > 1;

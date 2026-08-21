@@ -249,16 +249,22 @@
         const tracesPresent = !!_config.tracesPresent;
         const title = op === 'insert' ? 'Add New Trace Metric' : 'Edit Trace Metric';
 
-        // In update mode, pick the mode based on the stored values; default to the time-value mode.
-        const isTraceValueMode = op === 'update' && metric.TraceValue > 0;
+        // Mirror the server, which reads a valid TimeValueOption before TraceValue.
+        // Legacy rows can have both set.
+        const isTraceValueMode = op === 'update'
+                && TIME_VALUE_OPTIONS.indexOf(metric.TimeValueOption) === -1
+                && metric.TraceValue > 0;
 
         const num = function(v) {
             return (v !== undefined && v !== null) ? LABKEY.Utils.encodeHtml(v) : '';
         };
 
-        const traceSelect = tracesPresent
-            ? '<select id="lk-trace-use-trace" style="width:100%;box-sizing:border-box;">' + buildTraceOptions(metric.TraceName) + '</select>'
-            : '<select id="lk-trace-use-trace" style="width:100%;box-sizing:border-box;" disabled><option value="">No trace can be found</option></select>';
+        // Disabled when no traces exist, but a saved trace still has to show
+        const traceOptions = (tracesPresent || metric.TraceName)
+            ? buildTraceOptions(metric.TraceName)
+            : '<option value="">No trace can be found</option>';
+        const traceSelect = '<select id="lk-trace-use-trace" style="width:100%;box-sizing:border-box;"'
+            + (tracesPresent ? '' : ' disabled') + '>' + traceOptions + '</select>';
 
         return '<div id="' + DIALOG_ID + '" role="dialog" aria-modal="true" aria-labelledby="lk-trace-metric-title"'
             + ' style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">'

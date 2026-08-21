@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.remoteapi.CommandException;
 import org.labkey.remoteapi.query.Filter;
+import org.labkey.remoteapi.query.InsertRowsCommand;
 import org.labkey.remoteapi.query.SelectRowsCommand;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
@@ -38,6 +39,7 @@ import org.openqa.selenium.NoSuchElementException;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -253,6 +255,7 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         // use the pressure trace: its values stay well above the trace-value threshold below,
         // whereas ColumnOven_FC_BridgeFlow sits around 7 and would never reach it
         verifyTraceMetricModeSwitch(projectName, "ColumnPressure (channel 4)");
+        verifyLegacyDualModeMetric(projectName, "ColumnPressure (channel 4)");
 
         log("Delete run and verify trace metric values are deleted");
         clickTab("Runs");
@@ -338,6 +341,37 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         assertTraceMetricConfig(projectName, metricName, "Min", 5.0, 7.0, null);
         assertEquals("Mode the edit dialog reopened in", "timeValue",
                 goToConfigureMetricsUI().getTraceMetricMode(metricName));
+
+        goToProjectHome(projectName);
+    }
+
+    /**
+     * A legacy row can hold both configurations. The server reads TimeValueOption first, so the dialog must open
+     * such a row in time-value mode.
+     */
+    private void verifyLegacyDualModeMetric(String projectName, String traceName) throws IOException, CommandException
+    {
+        final String metricName = "Legacy Dual Mode";
+
+        log("Insert " + metricName + " with both configurations set, as the pre-fix dialog left them");
+        InsertRowsCommand insertCmd = new InsertRowsCommand("targetedms", "qcmetricconfiguration");
+        Map<String, Object> row = new HashMap<>();
+        row.put("Name", metricName);
+        row.put("QueryName", "QCTraceMetric"); // dummy text, same as the dialog inserts
+        row.put("PrecursorScoped", false);
+        row.put("TraceName", traceName);
+        row.put("YAxisLabel", "psi");
+        row.put("TimeValueOption", "Min");
+        row.put("MinTimeValue", 5.0);
+        row.put("MaxTimeValue", 7.0);
+        row.put("TraceValue", 50.0);
+        insertCmd.setRows(List.of(row));
+        insertCmd.execute(createDefaultConnection(), "/" + projectName);
+
+        assertEquals("Mode the edit dialog opened in for a metric with both configurations stored", "timeValue",
+                goToConfigureMetricsUI().getTraceMetricMode(metricName));
+
+        goToProjectHome(projectName);
     }
 
     private void assertTraceMetricConfig(String projectName, String metricName, String timeValueOption,
