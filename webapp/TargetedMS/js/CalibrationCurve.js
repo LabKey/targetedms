@@ -6,7 +6,7 @@
 /**
  * Created by Marty on 3/16/2017.
  *
- * Plain JS/HTML implementation (no ExtJS). Renders the calibration curve plot (LABKEY.vis)
+ * Plain JS/HTML implementation. Renders the calibration curve plot (LABKEY.vis)
  * into the element identified by config.renderTo.
  */
 if (!LABKEY.targetedms) {
