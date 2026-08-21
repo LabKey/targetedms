@@ -243,7 +243,7 @@
             </tr>
             <tr>
                 <td></td>
-                <td><span class="valuelabel">Value only effects Retention Times chart.</span></td>
+                <td><span class="valuelabel">Value only affects Retention Times chart.</span></td>
             </tr>
             <tr>
                 <td></td>
