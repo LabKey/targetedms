@@ -31,7 +31,6 @@ import org.labkey.test.util.APIContainerHelper;
 import org.labkey.test.util.ApiPermissionsHelper;
 import org.labkey.test.util.PermissionsHelper;
 import org.labkey.test.util.PortalHelper;
-import org.labkey.test.util.PostgresOnlyTest;
 import org.openqa.selenium.WebElement;
 
 import java.io.IOException;
@@ -53,7 +52,7 @@ import static org.junit.Assert.fail;
  */
 @Category({})
 @FixMethodOrder(MethodSorters.NAME_ASCENDING) // Don't insert additional projects until after testSchedule() has run
-public class InstrumentSchedulingTest extends TargetedMSTest implements PostgresOnlyTest
+public class InstrumentSchedulingTest extends TargetedMSTest
 {
     public static final String INSTRUMENT_1 = "Instrument1";
     public static final String INSTRUMENT_2 = "Instrument2";

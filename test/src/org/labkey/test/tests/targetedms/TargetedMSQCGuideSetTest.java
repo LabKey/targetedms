@@ -106,8 +106,7 @@ public class TargetedMSQCGuideSetTest extends TargetedMSTest
     @Override
     protected void doCleanup(boolean afterTest) throws TestTimeoutException
     {
-        // Use the API-based approach for deletion so that we don't trigger AJAX requests navigating to the delete page
-        // that may run in the background and cause SQL Server deadlock exceptions
+        // Use the API-based approach for deletion so that we don't trigger AJAX requests by navigating to the delete page
         new APIContainerHelper(this).deleteProject(getProjectName(), afterTest);
     }
 
