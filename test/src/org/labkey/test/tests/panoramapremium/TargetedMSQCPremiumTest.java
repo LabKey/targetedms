@@ -21,6 +21,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.remoteapi.CommandException;
+import org.labkey.remoteapi.query.Filter;
+import org.labkey.remoteapi.query.InsertRowsCommand;
 import org.labkey.remoteapi.query.SelectRowsCommand;
 import org.labkey.test.BaseWebDriverTest;
 import org.labkey.test.Locator;
@@ -37,6 +39,7 @@ import org.openqa.selenium.NoSuchElementException;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -249,6 +252,11 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         assertTrue("Should have precursor-scoped metrics in the second dropdown: " + metric2Options, metric2Options.contains(QCPlotsWebPart.MetricType.TRANSITION_AREA.toString()));
         assertFalse("Shouldn't have the same metric in the second dropdown: " + metric2Options, metric2Options.contains(QCPlotsWebPart.MetricType.RETENTION.toString()));
 
+        // use the pressure trace: its values stay well above the trace-value threshold below,
+        // whereas ColumnOven_FC_BridgeFlow sits around 7 and would never reach it
+        verifyTraceMetricModeSwitch(projectName, "ColumnPressure (channel 4)");
+        verifyLegacyDualModeMetric(projectName, "ColumnPressure (channel 4)");
+
         log("Delete run and verify trace metric values are deleted");
         clickTab("Runs");
         TargetedMSRunsTable runsTable = new TargetedMSRunsTable(this);
@@ -271,6 +279,11 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
     private void verifyQCPlot(String metricName, String tooltipValue)
     {
         log("Verify qc plots");
+        Assertions.assertThat(getQCPlotHoverText(metricName)).as("Tooltip value").contains(tooltipValue);
+    }
+
+    private String getQCPlotHoverText(String metricName)
+    {
         refresh();
         PanoramaDashboard dashboard = new PanoramaDashboard(this);
         QCPlotsWebPart qcPlotsWebPart = dashboard.getQcPlotsWebPart();
@@ -280,8 +293,107 @@ public class TargetedMSQCPremiumTest extends TargetedMSPremiumTest
         assertFalse("Pressure trace plot is not present", pressurePlotSVGText.isEmpty());
         assertTrue("Y axis label is not correct or present", pressurePlotSVGText.contains("psi"));
         qcPlotsWebPart.openExclusionBubble("2009-11-03 19:37:28");
-        String pressureTraceHoverText = waitForElementToBeVisible(qcPlotsWebPart.getBubbleContent()).getText();
-        Assertions.assertThat(pressureTraceHoverText).as("Tooltip value").contains(tooltipValue);
+        return waitForElementToBeVisible(qcPlotsWebPart.getBubbleContent()).getText();
+    }
+
+    /**
+     * A trace metric holds two mutually exclusive configurations - a time-value one and a trace-value one - and the
+     * server reads TimeValueOption first. If switching modes doesn't clear the columns for the mode being left behind,
+     * the row keeps both and the metric goes on computing the old one while the UI shows the new one.
+     */
+    private void verifyTraceMetricModeSwitch(String projectName, String traceName) throws IOException, CommandException
+    {
+        final String metricName = "Mode Switch";
+        // the pressure trace stays above this for the whole 5-7 minute window (the Min there is
+        // ~72.878), so the trace is guaranteed to reach it and the metric always has a value
+        final String traceValue = "50";
+
+        log("Add " + metricName + " in time-value mode");
+        addNewTimeTraceMetrics(metricName, "Min", traceName, false);
+        assertTraceMetricConfig(projectName, metricName, "Min", 5.0, 7.0, null);
+
+        goToProjectHome(projectName);
+        String timeModeHoverText = getQCPlotHoverText(metricName);
+
+        log("Switch " + metricName + " to trace-value mode");
+        Map<ConfigureMetricsUIPage.TraceMetricProperties, String> traceMode = new LinkedHashMap<>();
+        traceMode.put(ConfigureMetricsUIPage.TraceMetricProperties.metricName, metricName);
+        traceMode.put(ConfigureMetricsUIPage.TraceMetricProperties.traceValue, traceValue);
+        goToConfigureMetricsUI().editTraceMetric(metricName, traceMode);
+
+        assertTraceMetricConfig(projectName, metricName, null, null, null, 50.0);
+        assertEquals("Mode the edit dialog reopened in", "traceValue",
+                goToConfigureMetricsUI().getTraceMetricMode(metricName));
+
+        goToProjectHome(projectName);
+        Assertions.assertThat(getQCPlotHoverText(metricName))
+                .as("Plotted value after switching to trace-value mode")
+                .isNotEqualTo(timeModeHoverText);
+
+        log("Switch " + metricName + " back to time-value mode");
+        Map<ConfigureMetricsUIPage.TraceMetricProperties, String> timeMode = new LinkedHashMap<>();
+        timeMode.put(ConfigureMetricsUIPage.TraceMetricProperties.metricName, metricName);
+        timeMode.put(ConfigureMetricsUIPage.TraceMetricProperties.timeValueOption, "Min");
+        timeMode.put(ConfigureMetricsUIPage.TraceMetricProperties.minTimeValue, "5");
+        timeMode.put(ConfigureMetricsUIPage.TraceMetricProperties.maxTimeValue, "7");
+        goToConfigureMetricsUI().editTraceMetric(metricName, timeMode);
+
+        assertTraceMetricConfig(projectName, metricName, "Min", 5.0, 7.0, null);
+        assertEquals("Mode the edit dialog reopened in", "timeValue",
+                goToConfigureMetricsUI().getTraceMetricMode(metricName));
+
+        goToProjectHome(projectName);
+    }
+
+    /**
+     * A legacy row can hold both configurations. The server reads TimeValueOption first, so the dialog must open
+     * such a row in time-value mode.
+     */
+    private void verifyLegacyDualModeMetric(String projectName, String traceName) throws IOException, CommandException
+    {
+        final String metricName = "Legacy Dual Mode";
+
+        log("Insert " + metricName + " with both configurations set, as the pre-fix dialog left them");
+        InsertRowsCommand insertCmd = new InsertRowsCommand("targetedms", "qcmetricconfiguration");
+        Map<String, Object> row = new HashMap<>();
+        row.put("Name", metricName);
+        row.put("QueryName", "QCTraceMetric"); // dummy text, same as the dialog inserts
+        row.put("PrecursorScoped", false);
+        row.put("TraceName", traceName);
+        row.put("YAxisLabel", "psi");
+        row.put("TimeValueOption", "Min");
+        row.put("MinTimeValue", 5.0);
+        row.put("MaxTimeValue", 7.0);
+        row.put("TraceValue", 50.0);
+        insertCmd.setRows(List.of(row));
+        insertCmd.execute(createDefaultConnection(), "/" + projectName);
+
+        assertEquals("Mode the edit dialog opened in for a metric with both configurations stored", "timeValue",
+                goToConfigureMetricsUI().getTraceMetricMode(metricName));
+
+        goToProjectHome(projectName);
+    }
+
+    private void assertTraceMetricConfig(String projectName, String metricName, String timeValueOption,
+                                         Double minTimeValue, Double maxTimeValue, Double traceValue)
+            throws IOException, CommandException
+    {
+        SelectRowsCommand cmd = new SelectRowsCommand("targetedms", "qcmetricconfiguration");
+        cmd.setColumns(Arrays.asList("Name", "TimeValueOption", "MinTimeValue", "MaxTimeValue", "TraceValue"));
+        cmd.addFilter(new Filter("Name", metricName));
+        List<Map<String, Object>> rows = cmd.execute(createDefaultConnection(), "/" + projectName).getRows();
+
+        assertEquals("Number of '" + metricName + "' metrics", 1, rows.size());
+        Map<String, Object> row = rows.get(0);
+        assertEquals("TimeValueOption", timeValueOption, row.get("TimeValueOption"));
+        assertEquals("MinTimeValue", minTimeValue, asDouble(row.get("MinTimeValue")));
+        assertEquals("MaxTimeValue", maxTimeValue, asDouble(row.get("MaxTimeValue")));
+        assertEquals("TraceValue", traceValue, asDouble(row.get("TraceValue")));
+    }
+
+    private Double asDouble(Object value)
+    {
+        return value == null ? null : ((Number) value).doubleValue();
     }
 
     private void addNewTimeTraceMetrics(String metricName, String timeValueOption, String traceName, boolean duplicateNameErrorExpected)

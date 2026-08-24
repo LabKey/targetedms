@@ -30,7 +30,6 @@
     @Override
     public void addClientDependencies(ClientDependencies dependencies)
     {
-        dependencies.add("Ext4");
         dependencies.add("internal/jQuery");
         dependencies.add("TargetedMS/js/svgChart.js");
         dependencies.add("TargetedMS/css/svgChart.css");
@@ -62,7 +61,9 @@
     long moleculeId = bean.getMoleculeId();
     long moleculePrecursorId = bean.getMoleculePrecursorId();
 
-    if ((peptideList != null && !peptideList.isEmpty()) || peptideId != 0 || precursorId != 0)
+    boolean asProteomics = (peptideList != null && !peptideList.isEmpty()) || peptideId != 0 || precursorId != 0;
+
+    if (asProteomics)
     {
         peakAreaUrl.addParameter("asProteomics", true);
         retentionTimesUrl.addParameter("asProteomics", true);
@@ -98,6 +99,15 @@
     peakAreaUrl.addParameter("chartHeight", bean.getInitialHeight());
     retentionTimesUrl.addParameter("chartWidth", bean.getInitialWidth());
     retentionTimesUrl.addParameter("chartHeight", bean.getInitialHeight());
+
+    boolean hasPeptides = peptideList != null && !peptideList.isEmpty();
+    boolean hasMolecules = moleculeList != null && !moleculeList.isEmpty();
+    boolean showReplicate = replicateList.size() > 1;
+    boolean showAnnotName = !replicateAnnotationNameList.isEmpty();
+    boolean showAnnotValue = !replicateAnnotationValueList.isEmpty();
+    boolean showPeptide = hasPeptides && peptideList.size() > 1;
+    boolean showMolecule = hasMolecules && moleculeList.size() > 1;
+    boolean showCv = showReplicate || showAnnotName;
 %>
 <style>
     .summary_form_box {
@@ -126,397 +136,119 @@
         font-size: 10px;
         padding-left:105px;
     }
+    .summary-form-table {
+        border-collapse: collapse;
+    }
+    .summary-form-table td {
+        padding: 3px 4px;
+        vertical-align: middle;
+    }
+    .summary-form-table td.sc-label {
+        background-color: #E0E6EA;
+        width: 150px;
+    }
+    .summary-form-table select {
+        width: 400px;
+    }
+    .summary-form-table input[type=number] {
+        width: 100px;
+    }
 </style>
-<script type="text/javascript" nonce="<%=getScriptNonce()%>">
-    Ext4.onReady(function() {
-
-    // data stores
-    var replicateStore = Ext4.create('Ext.data.Store', {
-        fields: ['name', 'replicateId'],
-        data:   [
-            {"name":"All", "replicateId":"0"}
-            <%for(int i = 0; i < replicateList.size(); i++) {%>
-            ,{"name":<%=q(replicateList.get(i).getName())%>, "replicateId":"<%=replicateList.get(i).getId()%>" }
-            <%}%>
-        ]
-    });
-
-    var replicateAnnotNameStore = Ext4.create('Ext.data.Store', {
-        fields: ['name'],
-        data:   [
-            {"name":"None"}
-            <%for(int i = 0; i < replicateAnnotationNameList.size(); i++){%>
-            ,{"name":<%=q(replicateAnnotationNameList.get(i))%>}
-            <%}%>
-        ]
-    });
-
-    var replicateAnnotNameValueStore = Ext4.create('Ext.data.Store', {
-        fields: ['name-value'],
-        data:   [
-            {"name-value":"None"}
-            <%for(int i = 0; i < replicateAnnotationValueList.size(); i++){%>
-            ,{"name-value":<%=q(replicateAnnotationValueList.get(i).getDisplayName())%>}
-
-            <%}%>
-        ]
-    });
-
-    var valueStore = Ext4.create('Ext.data.Store', {
-        fields: ['value'],
-        data:   [
-            {"value":"All"},
-            {"value":"Retention Time"},
-            {"value":"FWHM"},
-            {"value":"FWB"}
-        ]
-    });
-
-    var peptideStore = Ext4.create('Ext.data.Store', {
-        fields: ['sequence', 'peptideId'],
-        data: [
-            {"sequence":"All", "peptideId":"0"}
-            <%for(int i = 0; i < peptideList.size(); i++) {%>
-            ,{"sequence":<%=q(peptideList.get(i).getPeptideModifiedSequence())%>, "peptideId": "<%=peptideList.get(i).getId()%>"}
-            <%}%>
-        ]
-    });
-
-    var moleculeStore = Ext4.create('Ext.data.Store', {
-        fields: ['customIonName', 'moleculeId'],
-        data: [
-            {"customIonName":"All", "moleculeId":"0"}
-            <%for(int i = 0; i < moleculeList.size(); i++) {%>
-            ,{"customIonName":<%=q(moleculeList.get(i).getCustomIonName())%>, "moleculeId": "<%=moleculeList.get(i).getId()%>"}
-            <%}%>
-        ]
-    });
-
-    // combo boxes
-    var replicateComboBox;
-    if(replicateStore.count() > 0)
-    {
-        replicateComboBox = Ext4.create('Ext.form.ComboBox', {
-            fieldLabel: 'Replicate',
-            store: replicateStore ,
-            queryMode: 'local',
-            displayField: 'name',
-            valueField: 'replicateId',
-            forceSelection: 'true',
-            allowBlank: 'false',
-            value: replicateStore.getAt(0),
-            width: 400,
-            listeners:{
-                select: function(combo, record, index){
-                    var selected = combo.getValue();
-                    if(selected != 0)
-                    {
-                        replicateAnnotNameComboBox.disable();
-                        replicateAnnotNameComboBox.setValue(replicateAnnotNameStore.getAt(0));
-                        peptideComboBox.disable();
-                        peptideComboBox.setValue(peptideStore.getAt(0));
-                        moleculeComboBox.disable();
-                        moleculeComboBox.setValue(moleculeStore.getAt(0));
-                        replicateAnnotNameValueComboBox.disable();
-                        replicateAnnotNameValueComboBox.setValue(replicateAnnotNameValueStore.getAt(0));
-                    }
-                    else
-                    {
-                        replicateAnnotNameComboBox.enable();
-                        peptideComboBox.enable();
-                        moleculeComboBox.enable();
-                        replicateAnnotNameValueComboBox.enable();
-                    }
-                    updateCvCheckbox();
-                }
-            }
-        });
-    }
-
-    var replicateAnnotNameComboBox;
-    if(replicateAnnotNameStore.count() > 0)
-    {
-        replicateAnnotNameComboBox = Ext4.create('Ext.form.ComboBox',{
-            fieldLabel: 'Group By',
-            store: replicateAnnotNameStore ,
-            queryMode: 'local',
-            displayField: 'name',
-            valueField: 'name',
-            forceSelection: 'true',
-            allowBlank: 'false',
-            value: replicateAnnotNameStore.getAt(0),
-            width: 400,
-            listeners:{
-                select: function(combo, record, index) {
-                    updateCvCheckbox();
-                }
-            }
-        });
-    }
-
-    var valueComboBox;
-    valueComboBox = Ext4.create('Ext.form.ComboBox',{
-        fieldLabel: 'Value',
-        store: valueStore ,
-        queryMode: 'local',
-        displayField: 'value',
-        valueField: 'value',
-        forceSelection: 'true',
-        allowBlank: 'false',
-        value: valueStore.getAt(0),
-        width: 400,
-        listeners:{
-            select: function(combo, record, index) {
-                updateCvCheckbox();
-            }
-        }
-    });
-
-    var valueLabel;
-    valueLabel = Ext4.create('Ext.form.Label',
-            {
-                fieldLabel: 'valueLabel',
-                forId: 'valueLabel',
-                text: 'Value only effects Retention Times chart.',
-                baseCls: "valuelabel"
-            });
-
-    var replicateAnnotNameValueComboBox;
-    if(replicateAnnotNameValueStore.count() > 0)
-    {
-        replicateAnnotNameValueComboBox = Ext4.create('Ext.form.ComboBox',{
-            fieldLabel: 'Filter',
-            lazyRender: true,
-            store: replicateAnnotNameValueStore ,
-            queryMode: 'local',
-            displayField: 'name-value',
-            valueField: 'name-value',
-            forceSelection: 'true',
-            allowBlank: 'false',
-            value: replicateAnnotNameValueStore.getAt(0),
-            width: 400,
-            listeners:{
-                select: function(combo, record, index){
-                    var selected = combo.getValue();
-                    if(selected != 0)
-                    {
-                        updateCvCheckbox();
-                    }
-                }
-            }
-        });
-    }
-
-    var peptideComboBox;
-    if(peptideStore.count() > 0)
-    {
-        peptideComboBox = Ext4.create('Ext.form.ComboBox', {
-            fieldLabel: 'Peptide',
-            store: peptideStore,
-            queryMods: 'local',
-            displayField: 'sequence',
-            valueField: 'peptideId',
-            forceSelection: 'true',
-            allowBlank: 'false',
-            value: peptideStore.getAt(0),
-            width: 400,
-            listeners:{
-                select: function(combo, record, index){
-                    var selected = combo.getValue();
-                    if(selected != 0)
-                    {
-                        replicateComboBox.setValue(replicateStore.getAt(0));
-                        replicateComboBox.disable();
-                    }
-                    else
-                    {
-                        replicateComboBox.enable();
-                    }
-                    updateCvCheckbox();
-                }
-            }
-        });
-    }
-
-    var moleculeComboBox;
-    if(moleculeStore.count() > 0)
-    {
-        moleculeComboBox = Ext4.create('Ext.form.ComboBox', {
-            fieldLabel: 'Small Molecule',
-            store: moleculeStore,
-            queryMods: 'local',
-            displayField: 'customIonName',
-            valueField: 'moleculeId',
-            forceSelection: 'true',
-            allowBlank: 'false',
-            value: moleculeStore.getAt(0),
-            width: 400,
-            listeners:{
-                select: function(combo, record, index){
-                    var selected = combo.getValue();
-                    if(selected != 0)
-                    {
-                        replicateComboBox.setValue(replicateStore.getAt(0));
-                        replicateComboBox.disable();
-                    }
-                    else
-                    {
-                        replicateComboBox.enable();
-                    }
-                    updateCvCheckbox();
-                }
-            }
-        });
-    }
-
-    // check boxes
-    var cvValuesCheckbox = Ext4.create('Ext.form.Checkbox', {
-        id: 'cvCheckbox',
-        fieldLabel: 'CV Values'
-    });
-
-    var logValuesCheckbox = Ext4.create('Ext.form.Checkbox', {
-        id: 'logCheckbox',
-        fieldLabel: 'Log Scale'
-    });
-
-    // peak areas graph
-    LABKEY.targetedms.SVGChart.requestAndRenderSVG(<%= q(peakAreaUrl) %>, document.getElementById('peakAreasGraph'), null, document.getElementById('peakAreasGraphLabel'));
-    LABKEY.targetedms.SVGChart.requestAndRenderSVG(<%= q(retentionTimesUrl) %>, document.getElementById('retentionTimesGraph'), null, document.getElementById('retentionTimesGraphLabel'));
-
-    // buttons
-    var updateBtn = Ext4.create('Ext.button.Button', {
-        text:'Update',
-        handler: function(){
-
-            var params = {
-                asProteomics: <%=(peptideList != null && !peptideList.isEmpty()) || peptideId != 0 || precursorId != 0%>,
-                peptideGroupId: <%=peptideGroupId%>,
-                replicateId: replicateComboBox.getValue(),
-                groupByReplicateAnnotName: replicateAnnotNameComboBox.getValue(),
-                filterByReplicateAnnotName: replicateAnnotNameValueComboBox.getValue(),
-                peptideId: peptideStore.count() > 1 ? peptideComboBox.getValue() : <%=peptideId%>,
-                moleculeId: moleculeStore.count() > 1 ? moleculeComboBox.getValue() : <%=moleculeId%>,
-                cvValues: cvValuesCheckbox.getValue(),
-                logValues: logValuesCheckbox.getValue(),
-                chartWidth: chartWidthTb.getValue(),
-                chartHeight: chartHeightTb.getValue()
-            };
-
-            var peakAreaUrl =  LABKEY.ActionURL.buildURL(
-                    'targetedms',  // controller
-                    'showPeakAreas', // action
-                    LABKEY.ActionURL.getContainer(),
-                    params
-            );
-
-            var retentionTimeParams = Ext4.apply(Ext4.clone(params), {
-                value: valueComboBox.getValue()
-            });
-
-            var retentionTimesUrl =  LABKEY.ActionURL.buildURL(
-                    'targetedms',  // controller
-                    'showRetentionTimesChart', // action
-                    LABKEY.ActionURL.getContainer(),
-                    retentionTimeParams
-            );
-
-            // change the src of the image
-            var areaElement = document.getElementById('peakAreasGraph');
-            LABKEY.targetedms.SVGChart.requestAndRenderSVG(peakAreaUrl, areaElement, null, document.getElementById('peakAreasGraphLabel'));
-            var timeElement = document.getElementById('retentionTimesGraph');
-            LABKEY.targetedms.SVGChart.requestAndRenderSVG(retentionTimesUrl, timeElement, null, document.getElementById('retentionTimesGraphLabel'));
-            areaElement.style.width = parseInt(chartWidthTb.getValue());
-            areaElement.style.height = parseInt(chartHeightTb.getValue());
-            timeElement.style.width = parseInt(chartWidthTb.getValue());
-            timeElement.style.height = parseInt(chartHeightTb.getValue());
-        }
-    });
-
-    // chart width and height
-    var chartWidthTb = Ext4.create('Ext.form.TextField',{
-                fieldLabel: "Width",
-                name: "chartWidth",
-                id: "chartWidth",
-                allowBlank: false,
-                maskRe: /[0-9]/,
-                value: "<%= bean.getInitialWidth() %>"}
-    );
-    var chartHeightTb = Ext4.create('Ext.form.TextField',{
-                fieldLabel: "Height",
-                name: "chartHeight",
-                id: "chartHeight",
-                allowBlank: false,
-                maskRe: /[0-9]/,
-                value: "<%= bean.getInitialHeight() %>"}
-    );
-
-    var items = [];
-    if(replicateStore.count() > 2) items.push(replicateComboBox);
-    if(replicateAnnotNameStore.count() > 1) items.push(replicateAnnotNameComboBox);
-    if(replicateAnnotNameValueStore.count() > 1) items.push(replicateAnnotNameValueComboBox);
-    if(peptideStore.count() > 2) items.push(peptideComboBox);
-    if(moleculeStore.count() > 2) items.push(moleculeComboBox);
-    if(replicateStore.count() > 2 || replicateAnnotNameStore.count() > 1)
-    {
-        items.push(cvValuesCheckbox);
-    }
-    items.push(logValuesCheckbox);
-    items.push(chartWidthTb);
-    items.push(chartHeightTb);
-    items.push(valueComboBox);
-    items.push(valueLabel);
-
-    if(items.length > 0)
-    {
-        Ext4.create('Ext.form.Panel', {
-            renderTo: Ext4.get('peakAreasFormDiv'),
-            border: false, frame: false,
-            buttonAlign: 'left',
-            items: items,
-            buttons: [updateBtn],
-            defaults: {
-                labelWidth: 150,
-                labelStyle: 'background-color: #E0E6EA; padding: 2px 4px; margin: 0px;'
-            }
-        });
-    }
-    updateCvCheckbox();
-
-
-    function updateCvCheckbox()
-    {
-        if(!cvValuesCheckbox.isVisible())
-            return;
-
-        var allReplicates = replicateComboBox.getValue() == replicateStore.getAt(0).get('replicateId'); // replicate = 'All'
-        var noAnnotations = replicateAnnotNameComboBox.getValue() == replicateAnnotNameStore.getAt(0).get('name'); // annotation = 'None'
-
-        var replicateEnabled = false;
-        if(replicateComboBox.isVisible())
-            replicateEnabled = replicateComboBox.disabled == false;
-        var annotEnabled = false;
-        if(replicateAnnotNameComboBox.isVisible())
-            annotEnabled = replicateAnnotNameComboBox.disabled == false;
-
-        //alert("allReplicates: "+allReplicates+", noAnnotations: "+noAnnotations+", replicateEnabled: "+replicateEnabled+", annotEnabled: "+annotEnabled);
-        if((replicateEnabled && allReplicates) ||
-                (annotEnabled && !noAnnotations)
-                )
-        {
-            cvValuesCheckbox.enable();
-        }
-        else
-        {
-            cvValuesCheckbox.setValue(false);
-            cvValuesCheckbox.disable();
-        }
-    }
-});
-
-</script>
 <div>
-    <div id="peakAreasFormDiv" class="summary_form_box" style="display: <%=h(bean.isShowControls() ? "block" : "none")%>;"></div>
+    <div id="peakAreasFormDiv" class="summary_form_box" style="display: <%=h(bean.isShowControls() ? "block" : "none")%>;">
+        <table class="summary-form-table">
+            <tr id="sc-row-replicate" style="display: <%=h(showReplicate ? "table-row" : "none")%>;">
+                <td class="sc-label"><label for="sc-replicate">Replicate</label></td>
+                <td>
+                    <select id="sc-replicate">
+                        <option value="0">All</option>
+                        <% for (Replicate r : replicateList) { %>
+                            <option value="<%=r.getId()%>"><%=h(r.getName())%></option>
+                        <% } %>
+                    </select>
+                </td>
+            </tr>
+            <tr id="sc-row-annotName" style="display: <%=h(showAnnotName ? "table-row" : "none")%>;">
+                <td class="sc-label"><label for="sc-annotName">Group By</label></td>
+                <td>
+                    <select id="sc-annotName">
+                        <option value="None">None</option>
+                        <% for (String annotName : replicateAnnotationNameList) { %>
+                            <option value="<%=h(annotName)%>"><%=h(annotName)%></option>
+                        <% } %>
+                    </select>
+                </td>
+            </tr>
+            <tr id="sc-row-annotValue" style="display: <%=h(showAnnotValue ? "table-row" : "none")%>;">
+                <td class="sc-label"><label for="sc-annotValue">Filter</label></td>
+                <td>
+                    <select id="sc-annotValue">
+                        <option value="None">None</option>
+                        <% for (ReplicateAnnotation annotValue : replicateAnnotationValueList) { %>
+                            <option value="<%=h(annotValue.getDisplayName())%>"><%=h(annotValue.getDisplayName())%></option>
+                        <% } %>
+                    </select>
+                </td>
+            </tr>
+            <tr id="sc-row-peptide" style="display: <%=h(showPeptide ? "table-row" : "none")%>;">
+                <td class="sc-label"><label for="sc-peptide">Peptide</label></td>
+                <td>
+                    <select id="sc-peptide">
+                        <option value="0">All</option>
+                        <% if (peptideList != null) { for (Peptide p : peptideList) { %>
+                            <option value="<%=p.getId()%>"><%=h(p.getPeptideModifiedSequence())%></option>
+                        <% } } %>
+                    </select>
+                </td>
+            </tr>
+            <tr id="sc-row-molecule" style="display: <%=h(showMolecule ? "table-row" : "none")%>;">
+                <td class="sc-label"><label for="sc-molecule">Small Molecule</label></td>
+                <td>
+                    <select id="sc-molecule">
+                        <option value="0">All</option>
+                        <% if (moleculeList != null) { for (Molecule mol : moleculeList) { %>
+                            <option value="<%=mol.getId()%>"><%=h(mol.getCustomIonName())%></option>
+                        <% } } %>
+                    </select>
+                </td>
+            </tr>
+            <tr id="sc-row-cv" style="display: <%=h(showCv ? "table-row" : "none")%>;">
+                <td class="sc-label"><label for="sc-cv">CV Values</label></td>
+                <td><input type="checkbox" id="sc-cv"></td>
+            </tr>
+            <tr>
+                <td class="sc-label"><label for="sc-log">Log Scale</label></td>
+                <td><input type="checkbox" id="sc-log"></td>
+            </tr>
+            <tr>
+                <td class="sc-label"><label for="sc-width">Width</label></td>
+                <td><input type="number" id="sc-width" name="chartWidth" value="<%= bean.getInitialWidth() %>" min="1" step="1"></td>
+            </tr>
+            <tr>
+                <td class="sc-label"><label for="sc-height">Height</label></td>
+                <td><input type="number" id="sc-height" name="chartHeight" value="<%= bean.getInitialHeight() %>" min="1" step="1"></td>
+            </tr>
+            <tr>
+                <td class="sc-label"><label for="sc-value">Value</label></td>
+                <td>
+                    <select id="sc-value">
+                        <option value="All">All</option>
+                        <option value="Retention Time">Retention Time</option>
+                        <option value="FWHM">FWHM</option>
+                        <option value="FWB">FWB</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><span class="valuelabel">Value only affects Retention Times chart.</span></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><button type="button" id="sc-update" class="labkey-button">Update</button></td>
+            </tr>
+        </table>
+    </div>
     <div class="summary_title_box">
         <h3 class="title">Peak Areas</h3>
         <div id="peakAreasGraph"></div>
@@ -528,4 +260,149 @@
         <a href="<%= h(replicateListAction)%>"><div style="text-align: center" id="retentionTimesGraphLabel"></div></a>
     </div>
 </div>
+<script type="text/javascript" nonce="<%=getScriptNonce()%>">
+    LABKEY.Utils.onReady(function() {
 
+        const byId = function(id) { return document.getElementById(id); };
+
+        const replicateSel = byId('sc-replicate');
+        const annotNameSel = byId('sc-annotName');
+        const annotValueSel = byId('sc-annotValue');
+        const valueSel = byId('sc-value');
+        const peptideSel = byId('sc-peptide');
+        const moleculeSel = byId('sc-molecule');
+        const cvChk = byId('sc-cv');
+        const logChk = byId('sc-log');
+        const widthInput = byId('sc-width');
+        const heightInput = byId('sc-height');
+        const updateBtn = byId('sc-update');
+
+        const defaultWidth = <%=bean.getInitialWidth()%>;
+        const defaultHeight = <%=bean.getInitialHeight()%>;
+
+        const showReplicate = <%=showReplicate%>;
+        const showAnnotName = <%=showAnnotName%>;
+        const showCv = <%=showCv%>;
+        const hasPeptides = <%=hasPeptides%>;
+        const hasMolecules = <%=hasMolecules%>;
+
+        function updateCvCheckbox() {
+            if (!showCv) {
+                return;
+            }
+            const allReplicates = replicateSel.value === '0'; // replicate = 'All'
+            const noAnnotations = annotNameSel.value === 'None'; // annotation = 'None'
+
+            const replicateEnabled = showReplicate && !replicateSel.disabled;
+            const annotEnabled = showAnnotName && !annotNameSel.disabled;
+
+            if ((replicateEnabled && allReplicates) || (annotEnabled && !noAnnotations)) {
+                cvChk.disabled = false;
+            }
+            else {
+                cvChk.checked = false;
+                cvChk.disabled = true;
+            }
+        }
+
+        replicateSel.addEventListener('change', function() {
+            if (replicateSel.value !== '0') {
+                annotNameSel.disabled = true; annotNameSel.value = 'None';
+                peptideSel.disabled = true; peptideSel.value = '0';
+                moleculeSel.disabled = true; moleculeSel.value = '0';
+                annotValueSel.disabled = true; annotValueSel.value = 'None';
+            }
+            else {
+                annotNameSel.disabled = false;
+                peptideSel.disabled = false;
+                moleculeSel.disabled = false;
+                annotValueSel.disabled = false;
+            }
+            updateCvCheckbox();
+        });
+
+        annotNameSel.addEventListener('change', updateCvCheckbox);
+        valueSel.addEventListener('change', updateCvCheckbox);
+        annotValueSel.addEventListener('change', updateCvCheckbox);
+
+        peptideSel.addEventListener('change', function() {
+            if (peptideSel.value !== '0') {
+                replicateSel.value = '0';
+                replicateSel.disabled = true;
+            }
+            else {
+                replicateSel.disabled = false;
+            }
+            updateCvCheckbox();
+        });
+
+        moleculeSel.addEventListener('change', function() {
+            if (moleculeSel.value !== '0') {
+                replicateSel.value = '0';
+                replicateSel.disabled = true;
+            }
+            else {
+                replicateSel.disabled = false;
+            }
+            updateCvCheckbox();
+        });
+
+        // type="number" still allows blank or garbage input, so fall back to the initial size
+        function chartDimension(input, defaultValue) {
+            const value = parseInt(input.value, 10);
+            if (isNaN(value) || value < 1) {
+                input.value = defaultValue;
+                return defaultValue;
+            }
+            return value;
+        }
+
+        updateBtn.addEventListener('click', function() {
+
+            const chartWidth = chartDimension(widthInput, defaultWidth);
+            const chartHeight = chartDimension(heightInput, defaultHeight);
+
+            const params = {
+                asProteomics: <%=asProteomics%>,
+                peptideGroupId: <%=peptideGroupId%>,
+                replicateId: replicateSel.value,
+                groupByReplicateAnnotName: annotNameSel.value,
+                filterByReplicateAnnotName: annotValueSel.value,
+                peptideId: hasPeptides ? peptideSel.value : <%=peptideId%>,
+                moleculeId: hasMolecules ? moleculeSel.value : <%=moleculeId%>,
+                cvValues: cvChk.checked,
+                logValues: logChk.checked,
+                chartWidth: chartWidth,
+                chartHeight: chartHeight
+            };
+
+            const peakAreaUrl = LABKEY.ActionURL.buildURL(
+                    'targetedms',  // controller
+                    'showPeakAreas', // action
+                    LABKEY.ActionURL.getContainer(),
+                    params
+            );
+
+            const retentionTimeParams = Object.assign({}, params, {value: valueSel.value});
+
+            const retentionTimesUrl = LABKEY.ActionURL.buildURL(
+                    'targetedms',  // controller
+                    'showRetentionTimesChart', // action
+                    LABKEY.ActionURL.getContainer(),
+                    retentionTimeParams
+            );
+
+            // change the src of the image
+            const areaElement = byId('peakAreasGraph');
+            LABKEY.targetedms.SVGChart.requestAndRenderSVG(peakAreaUrl, areaElement, null, byId('peakAreasGraphLabel'));
+            const timeElement = byId('retentionTimesGraph');
+            LABKEY.targetedms.SVGChart.requestAndRenderSVG(retentionTimesUrl, timeElement, null, byId('retentionTimesGraphLabel'));
+        });
+
+        // peak areas / retention times graphs
+        LABKEY.targetedms.SVGChart.requestAndRenderSVG(<%= q(peakAreaUrl) %>, byId('peakAreasGraph'), null, byId('peakAreasGraphLabel'));
+        LABKEY.targetedms.SVGChart.requestAndRenderSVG(<%= q(retentionTimesUrl) %>, byId('retentionTimesGraph'), null, byId('retentionTimesGraphLabel'));
+
+        updateCvCheckbox();
+    });
+</script>

@@ -4,518 +4,342 @@
  * Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
  */
 
-Ext4.define('Panorama.Window.AddTraceMetricWindow', {
-    extend: 'Ext.window.Window',
+(function($) {
+    window.Panorama = window.Panorama || {};
+    window.Panorama.Window = window.Panorama.Window || {};
 
-    modal: true,
-    closeAction: 'destroy',
-    bodyStyle: 'padding: 10px;',
-    autoScroll: true,
-    border: false,
-    update: 'update',
-    insert: 'insert',
-    timeValueOptions:  Ext4.create('Ext.data.Store', {
-        fields: ['value'],
-        data : [
-            { "value":"First"},
-            { "value":"Last"},
-            { "value":"Max"},
-            { "value":"Min"}
-        ]
-    }),
+    const DIALOG_ID = 'lk-trace-metric-dialog';
+    const TIME_VALUE_OPTIONS = ['First', 'Last', 'Max', 'Min'];
+    let _config = null;
+    let _busy = false;
 
-    initComponent: function() {
-        var title = this.operation === this.insert ? 'Add New Trace Metric' : 'Edit Trace Metric';
-        this.setTitle(title);
-        this.height = Ext4.max([Ext4.getBody().getHeight() * 0.3, 250]);
-        this.width = Ext4.max([Ext4.getBody().getWidth() * 0.3, 600]);
-        this.items = this.getItems();
-        this.dockedItems= [{
-            xtype: 'toolbar',
-            dock: 'bottom',
-            ui: 'footer',
-            items: this.getButtons()
-        }]
+    function closeDialog() {
+        $(document).off('keydown.lkTraceMetric');
+        $('#' + DIALOG_ID).remove();
+    }
 
-        this.callParent();
-
-        this.timeValue = true;
-        this.traceValue = false;
-
-    },
-
-    getItems: function() {
-        return [
-            this.getMetricNameField(),
-            this.getTracesCombo(),
-            this.getYAxisLabelField(),
-            this.getTraceValueRadioGroup(),
-            this.getQueryError()
-        ];
-    },
-
-    getButtons: function () {
-        var buttons = [];
-
-        buttons.push(this.getCancelButton());
-        buttons.push('->'); // to push remaining buttons to the right
-        if (this.operation === this.update) {
-            buttons.push(this.getDeleteButton());
+    // Keep Tab inside the modal
+    function trapFocus(e) {
+        const $focusable = $('#' + DIALOG_ID).find('input, select, button').filter(':visible').not(':disabled');
+        if ($focusable.length === 0) {
+            return;
         }
-        buttons.push(this.getSaveButton());
-        return buttons;
-    },
+        const first = $focusable[0];
+        const last = $focusable[$focusable.length - 1];
+        if (e.shiftKey && e.target === first) {
+            e.preventDefault();
+            last.focus();
+        }
+        else if (!e.shiftKey && e.target === last) {
+            e.preventDefault();
+            first.focus();
+        }
+    }
 
-    getMetricNameField: function() {
-        if (!this.metricNameField) {
-            this.metricNameField = Ext4.create('Ext.form.field.Text', {
-                fieldLabel: 'Metric Name',
-                labelWidth: 150,
-                width: 570,
-                name: 'metricName'
-            });
+    function showError(msg) {
+        $('#lk-trace-metric-error').text(msg).show();
+    }
 
-            if (this.operation === this.update) {
-                this.metricNameField.setValue(this.metric.name);
+    function clearErrors() {
+        $('#lk-trace-metric-error').hide().text('');
+        $('#lk-trace-metric-name, #lk-trace-use-trace, #lk-trace-ylabel, #lk-trace-time-option, #lk-trace-min-time, #lk-trace-max-time, #lk-trace-value')
+            .css('border-color', '');
+    }
+
+    function markInvalid($field) {
+        $field.css('border-color', 'red');
+    }
+
+    // Disable the buttons while a save/delete is in flight so we don't submit twice
+    function setBusy(buttonId, busyText) {
+        _busy = true;
+        $('#lk-trace-metric-save, #lk-trace-metric-cancel, #lk-trace-metric-delete').prop('disabled', true);
+        $('#' + buttonId).html(busyText + ' <i class="fa fa-spinner fa-pulse"></i>');
+    }
+
+    function clearBusy() {
+        _busy = false;
+        $('#lk-trace-metric-cancel, #lk-trace-metric-delete').prop('disabled', false);
+        $('#lk-trace-metric-delete').text('Delete');
+        // Save stays disabled when there is no trace to pick from
+        $('#lk-trace-metric-save').prop('disabled', !_config.tracesPresent).text('Save');
+    }
+
+    function getMode() {
+        return $('input[name="metricValue"]:checked').val(); // 'timeValue' or 'traceValue'
+    }
+
+    // Enable only the fields belonging to the selected mode
+    function refreshMode() {
+        const isTime = getMode() === 'timeValue';
+        $('#lk-trace-time-option, #lk-trace-min-time, #lk-trace-max-time').prop('disabled', !isTime);
+        $('#lk-trace-value').prop('disabled', isTime);
+    }
+
+    function isNonNegativeNumber(val) {
+        return val !== '' && val !== null && !isNaN(val) && Number(val) >= 0;
+    }
+
+    // A zero trace value is treated as "not set", so require a positive number here
+    function isPositiveNumber(val) {
+        return isNonNegativeNumber(val) && Number(val) > 0;
+    }
+
+    function validate() {
+        clearErrors();
+        let isValid = true;
+
+        if (!$('#lk-trace-metric-name').val().trim()) {
+            markInvalid($('#lk-trace-metric-name'));
+            isValid = false;
+        }
+        if (!$('#lk-trace-use-trace').val()) {
+            markInvalid($('#lk-trace-use-trace'));
+            isValid = false;
+        }
+        if (!$('#lk-trace-ylabel').val().trim()) {
+            markInvalid($('#lk-trace-ylabel'));
+            isValid = false;
+        }
+
+        if (getMode() === 'timeValue') {
+            if (!$('#lk-trace-time-option').val()) {
+                markInvalid($('#lk-trace-time-option'));
+                isValid = false;
+            }
+            if (!isNonNegativeNumber($('#lk-trace-min-time').val())) {
+                markInvalid($('#lk-trace-min-time'));
+                isValid = false;
+            }
+            if (!isNonNegativeNumber($('#lk-trace-max-time').val())) {
+                markInvalid($('#lk-trace-max-time'));
+                isValid = false;
             }
         }
-
-        return this.metricNameField;
-    },
-
-    getTracesCombo: function () {
-      if (!this.tracesCombo) {
-          var config = {
-              fieldLabel: 'Use Trace',
-              name: 'useTrace',
-              labelWidth: 150,
-              width: 570
-          }
-          if (!this.tracesPresent) {
-              config.emptyText = 'No trace can be found';
-          }
-          else {
-              config.store = this.getTracesComboStore();
-              config.valueField = 'TextId';
-              config.displayField = 'TextId';
-          }
-          this.tracesCombo = Ext4.create('Ext.form.field.ComboBox', config);
-
-          if (this.operation === this.update) {
-              this.tracesCombo.setValue(this.metric.TraceName);
-              this.tracesCombo.bindStore(this.getTracesComboStore());
-          }
-      }
-      return this.tracesCombo;
-    },
-
-    getTracesComboStore: function () {
-        return Ext4.create('Ext.data.Store', {
-            fields: ['TextId'],
-            sorters: [{property: 'TextId'}],
-            data: this.traces
-        });
-    },
-
-    getTraceValueRadioGroup: function () {
-        if (!this.traceValueRadioGroup) {
-            this.traceValueRadioGroup =
-                    Ext4.create('Ext.form.Panel', {
-                        renderTo: Ext4.getBody(),
-                        width: 570,
-
-                        border:false,
-                        items: [{
-                            xtype: 'radiogroup',
-                            columns: 1, // Stack radio buttons vertically
-                            vertical: true,
-                            items: [
-                                {
-                                    xtype: 'container',
-                                    layout: 'hbox',
-                                    items: [
-                                        {
-                                            xtype: 'radio',
-                                            name: 'metricValue',
-                                            inputValue: 'timeValue',
-                                            boxLabel: 'Use the',
-                                            width: 65,
-                                            checked: this.operation === this.update ? this.metric.MinTimeValue >= 0 : true,
-                                            listeners: {
-                                                 change: {fn : function(cmp, newVal, oldVal){
-                                                     this.minTimeValueNumberField.setDisabled(oldVal);
-                                                     this.maxTimeValueNumberField.setDisabled(oldVal);
-                                                     this.timeValueOptionField.setDisabled(oldVal);
-                                                     this.traceValueNumberField.setDisabled(newVal);
-
-                                                     // restore the value onChange when it is present
-                                                     if (this.operation === this.update) {
-                                                         if (newVal) {
-                                                             this.minTimeValueNumberField.setValue(this.metric.MinTimeValue);
-                                                             this.maxTimeValueNumberField.setValue(this.metric.MaxTimeValue);
-                                                         }
-                                                         else {
-                                                             this.traceValueNumberField.setValue(this.metric.TraceValue);
-                                                         }
-                                                     }
-                                                     else {
-                                                         this.traceValueNumberField.setValue(undefined);
-                                                         this.minTimeValueNumberField.setValue(undefined);
-                                                         this.maxTimeValueNumberField.setValue(undefined);
-                                                         this.timeValueOptionField.setValue(undefined);
-                                                     }
-                                                 }},
-                                                 scope   : this
-                                            }
-                                        },
-                                        this.getTimeValueOptionField(),
-                                        {
-                                            xtype: 'displayfield',
-                                            value: 'trace value when time in minutes is between',
-                                            margin: '0 5'
-                                        },
-                                        this.getMinTimeValueNumberField(),
-                                        {
-                                            xtype: 'displayfield',
-                                            value: 'and',
-                                            margin: '0 5'
-                                        },
-                                        this.getMaxTimeValueNumberField()
-                                    ]
-                                },
-                                {
-                                    xtype: 'container',
-                                    layout: 'hbox',
-                                    items: [
-                                        {
-                                            xtype: 'radio',
-                                            name: 'metricValue',
-                                            inputValue: 'traceValue',
-                                            boxLabel: 'Use time in minutes when the trace first reaches a value greater than or equal to',
-                                            width: 450,
-                                            checked: this.operation === this.update ? this.metric.TraceValue > 0 : false
-                                        },
-                                        this.getTraceValueNumberField()
-                                    ]
-                                }
-                            ]
-                        }]
-                    });
-        }
-        return this.traceValueRadioGroup;
-    },
-
-    getTimeValueOptionField: function() {
-        if (!this.timeValueOptionField) {
-            this.timeValueOptionField = Ext4.create('Ext.form.field.ComboBox', {
-                name: 'timeValueOption',
-                store: this.timeValueOptions,
-                displayField: 'value',
-                valueField: 'value',
-                width: 50,
-                itemId: 'timeValueOption',
-            });
-
-            if(this.operation === this.update) {
-                this.timeValueOptionField.setValue(this.metric.TimeValueOption);
-            }
-        }
-
-        return this.timeValueOptionField
-    },
-
-    getMinTimeValueNumberField: function () {
-        if (!this.minTimeValueNumberField) {
-            this.minTimeValueNumberField = Ext4.create('Ext.form.field.Number', {
-                name: 'minTimeValue',
-                width: 65,
-                disabled: this.operation === this.update ? !(this.metric.MinTimeValue >= 0) : false
-            });
-
-            if (this.operation === this.update) {
-                this.minTimeValueNumberField.setValue(this.metric.MinTimeValue);
-            }
-
-        }
-        return this.minTimeValueNumberField;
-    },
-
-    getMaxTimeValueNumberField: function () {
-        if (!this.maxTimeValueNumberField) {
-            this.maxTimeValueNumberField = Ext4.create('Ext.form.field.Number', {
-                name: 'maxTimeValue',
-                width: 65,
-                disabled: this.operation === this.update ? !(this.metric.MaxTimeValue >= 0) : false
-            });
-
-            if (this.operation === this.update) {
-                this.maxTimeValueNumberField.setValue(this.metric.MaxTimeValue);
-            }
-
-        }
-        return this.maxTimeValueNumberField;
-    },
-
-
-    getTraceValueNumberField: function () {
-        if (!this.traceValueNumberField) {
-            this.traceValueNumberField = Ext4.create('Ext.form.field.Number', {
-                name: 'traceValue',
-                width: 65,
-                disabled: this.operation === this.update ? !(this.metric.TraceValue >= 0) : true
-            });
-
-            if (this.operation === this.update) {
-                this.traceValueNumberField.setValue(this.metric.TraceValue);
-            }
-        }
-        return this.traceValueNumberField;
-    },
-
-    getYAxisLabelField: function() {
-        if (!this.yAxisLabelField) {
-            this.yAxisLabelField = Ext4.create('Ext.form.field.Text', {
-                fieldLabel: 'Y Axis Label',
-                labelWidth: 150,
-                width: 570,
-                name: 'yAxisLabel'
-            });
-
-            if(this.operation === this.update) {
-                this.yAxisLabelField.setValue(this.metric.YAxisLabel);
-            }
-        }
-
-        return this.yAxisLabelField;
-    },
-
-    getQueryError: function() {
-        if (!this.queryError) {
-            this.queryError = Ext4.create('Ext.form.Label', {
-                name: 'errorMsg',
-                hidden: true,
-                cls: 'labkey-error',
-                text:''
-            });
-        }
-
-        return this.queryError;
-    },
-
-    getSaveButton: function() {
-        if (!this.saveButton) {
-            this.saveButton = Ext4.create('Ext.button.Button', {
-                text: 'Save',
-                scope: this,
-                handler: this.saveNewMetric,
-                disabled: !this.tracesPresent
-            });
-        }
-        return this.saveButton;
-    },
-
-    getDeleteButton: function() {
-        if (!this.deleteButton) {
-            this.deleteButton = Ext4.create('Ext.button.Button', {
-                text: 'Delete',
-                scope: this,
-                handler: this.deleteMetric
-            });
-        }
-        return this.deleteButton;
-    },
-
-    getCancelButton: function() {
-        if (!this.cancelButton) {
-            this.cancelButton = Ext4.create('Ext.button.Button', {
-                text: 'Cancel',
-                scope: this,
-                handler: function(btn){
-                    btn.up('window').close();
-                }
-            });
-        }
-        return this.cancelButton;
-    },
-
-    validateValues: function() {
-        var isValid = true;
-        var errorText = 'Required';
-
-        if (!(this.metricNameField.getValue().length > 0)) {
-            this.metricNameField.setActiveError(errorText);
+        else if (!isPositiveNumber($('#lk-trace-value').val())) {
+            markInvalid($('#lk-trace-value'));
             isValid = false;
         }
 
-        if (!this.tracesCombo.getValue()) {
-            this.tracesCombo.setActiveError(errorText);
-            isValid = false;
+        if (!isValid) {
+            showError('Please fill in all required fields.');
         }
-
-        if (!(this.yAxisLabelField.getValue().length > 0)) {
-            this.yAxisLabelField.setActiveError(errorText);
-            isValid = false;
-        }
-
-        if (this.timeValueOptionField.getValue() === null) {
-            this.timeValueOptionField.setActiveError(errorText);
-            isValid = false;
-        }
-
-        if (this.traceValueRadioGroup.down().getValue()['metricValue'] === 'timeValue' &&
-                (!(this.minTimeValueNumberField.getValue() >= 0))) {
-            this.minTimeValueNumberField.setActiveError(errorText);
-            isValid = false;
-        }
-
-        if (this.traceValueRadioGroup.down().getValue()['metricValue'] === 'timeValue' &&
-                (!(this.maxTimeValueNumberField.getValue() >= 0))) {
-            this.maxTimeValueNumberField.setActiveError(errorText);
-            isValid = false;
-        }
-
-        if (this.traceValueRadioGroup.down().getValue()['metricValue'] === 'traceValue' && !this.traceValueNumberField.getValue()) {
-            this.traceValueNumberField.setActiveError(errorText);
-            isValid = false;
-        }
-
         return isValid;
-    },
+    }
 
-    checkMetricNameExists: function (metricName, callback) {
-        let filterArray = [LABKEY.Filter.create('Name', metricName, LABKEY.Filter.Types.EQUAL)];
-
-        // If updating, exclude the current metric from the check
-        if (this.operation === this.update && this.metric) {
-            filterArray.push(LABKEY.Filter.create('id', this.metric.id, LABKEY.Filter.Types.NOT_EQUAL));
+    function checkMetricNameExists(metricName, callback) {
+        const filterArray = [LABKEY.Filter.create('Name', metricName, LABKEY.Filter.Types.EQUAL)];
+        if (_config.operation === 'update' && _config.metric) {
+            filterArray.push(LABKEY.Filter.create('id', _config.metric.id, LABKEY.Filter.Types.NOT_EQUAL));
         }
-
         LABKEY.Query.selectRows({
             containerPath: LABKEY.container.id,
             schemaName: 'targetedms',
             queryName: 'qcmetricconfiguration',
             filterArray: filterArray,
-            scope: this,
-            success: function (data) {
-                callback.call(this, data.rows.length > 0);
-            },
-            failure: function () {
-                callback.call(this, false);
+            success: function(data) { callback(data.rows.length > 0); },
+            failure: function() { callback(false); }
+        });
+    }
+
+    function save() {
+        if (!validate()) return;
+
+        setBusy('lk-trace-metric-save', 'Saving');
+
+        const metricName = $('#lk-trace-metric-name').val().trim();
+        checkMetricNameExists(metricName, function(exists) {
+            if (exists) {
+                showError('A metric with the name "' + metricName + '" already exists. Please choose a different name.');
+                markInvalid($('#lk-trace-metric-name'));
+                clearBusy();
+                return;
+            }
+
+            const newMetric = {
+                Name: metricName,
+                QueryName: 'QCTraceMetric', // dummy text to insert and not an actual query
+                PrecursorScoped: false,
+                TraceName: $('#lk-trace-use-trace').val(),
+                YAxisLabel: $('#lk-trace-ylabel').val().trim()
+            };
+
+            // Null out the columns for the mode that wasn't selected. An update command only writes
+            // the columns it is given, so leaving them off would keep the previous mode's values in
+            // the row -- and the server reads TimeValueOption first, so a stale one silently wins.
+            if (getMode() === 'traceValue') {
+                newMetric.TraceValue = Number($('#lk-trace-value').val());
+                newMetric.TimeValueOption = null;
+                newMetric.MinTimeValue = null;
+                newMetric.MaxTimeValue = null;
+            }
+            else {
+                newMetric.TimeValueOption = $('#lk-trace-time-option').val();
+                newMetric.MinTimeValue = Number($('#lk-trace-min-time').val());
+                newMetric.MaxTimeValue = Number($('#lk-trace-max-time').val());
+                newMetric.TraceValue = null;
+            }
+
+            if (_config.operation === 'update') {
+                newMetric.id = _config.metric.id;
+            }
+
+            LABKEY.Query.saveRows({
+                containerPath: LABKEY.container.id,
+                commands: [{ schemaName: 'targetedms', queryName: 'qcmetricconfiguration', command: _config.operation, rows: [newMetric] }],
+                method: 'POST',
+                success: function() { window.location.reload(); },
+                failure: function(response) {
+                    showError((response && (response.exception || response.message)) || 'Error saving metric');
+                    clearBusy();
+                }
+            });
+        });
+    }
+
+    function deleteMetric() {
+        if (!confirm('This will delete the "' + _config.metric.name + '" metric. Are you sure?')) return;
+
+        setBusy('lk-trace-metric-delete', 'Deleting');
+
+        LABKEY.Query.saveRows({
+            containerPath: LABKEY.container.id,
+            commands: [
+                { schemaName: 'targetedms', queryName: 'qcenabledmetrics', command: 'delete', rows: [{ metric: _config.metric.id }] },
+                { schemaName: 'targetedms', queryName: 'qcmetricconfiguration', command: 'delete', rows: [{ id: _config.metric.id }] }
+            ],
+            method: 'POST',
+            success: function() { window.location.reload(); },
+            failure: function(response) {
+                showError((response && (response.exception || response.message)) || 'Error deleting metric');
+                clearBusy();
             }
         });
-    },
-    
-    
+    }
 
-    saveNewMetric: function () {
-        var isValid = this.validateValues();
+    function buildTraceOptions(selectedTrace) {
+        const textIds = (_config.traces || []).map(function(row) { return row.TextId; });
+        // keep the previously saved trace available even if it is no longer in the list
+        if (selectedTrace && textIds.indexOf(selectedTrace) === -1) {
+            textIds.push(selectedTrace);
+        }
+        textIds.sort(function(a, b) {
+            return String(a).localeCompare(String(b));
+        });
+        let html = '<option value="">-- Select trace --</option>';
+        textIds.forEach(function(textId) {
+            const sel = textId === selectedTrace ? ' selected' : '';
+            html += '<option value="' + LABKEY.Utils.encodeHtml(textId) + '"' + sel + '>' + LABKEY.Utils.encodeHtml(textId) + '</option>';
+        });
+        return html;
+    }
 
-        if (isValid) {
-            var metricName = this.metricNameField.getValue();
+    function buildTimeOptions(selectedOption) {
+        let html = '<option value=""></option>';
+        TIME_VALUE_OPTIONS.forEach(function(opt) {
+            const sel = opt === selectedOption ? ' selected' : '';
+            html += '<option value="' + opt + '"' + sel + '>' + opt + '</option>';
+        });
+        return html;
+    }
 
-            this.checkMetricNameExists(metricName, function (exists) {
-                if (exists) {
-                    let errorMessage = 'A metric with the name "' + metricName + '" already exists. Please choose a different name.';
-                    this.queryError.setText(errorMessage);
-                    this.queryError.setVisible(true);
-                    this.metricNameField.setActiveError('Metric name already exists');
-                    return;
+    function buildDialogHtml() {
+        const op = _config.operation;
+        const metric = _config.metric || {};
+        const tracesPresent = !!_config.tracesPresent;
+        const title = op === 'insert' ? 'Add New Trace Metric' : 'Edit Trace Metric';
+
+        // Mirror the server, which reads a valid TimeValueOption before TraceValue.
+        // Legacy rows can have both set.
+        const isTraceValueMode = op === 'update'
+                && TIME_VALUE_OPTIONS.indexOf(metric.TimeValueOption) === -1
+                && metric.TraceValue > 0;
+
+        const num = function(v) {
+            return (v !== undefined && v !== null) ? LABKEY.Utils.encodeHtml(v) : '';
+        };
+
+        // Disabled when no traces exist, but a saved trace still has to show
+        const traceOptions = (tracesPresent || metric.TraceName)
+            ? buildTraceOptions(metric.TraceName)
+            : '<option value="">No trace can be found</option>';
+        const traceSelect = '<select id="lk-trace-use-trace" style="width:100%;box-sizing:border-box;"'
+            + (tracesPresent ? '' : ' disabled') + '>' + traceOptions + '</select>';
+
+        return '<div id="' + DIALOG_ID + '" role="dialog" aria-modal="true" aria-labelledby="lk-trace-metric-title"'
+            + ' style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">'
+            + '<div class="x4-window x4-window-default" style="min-width:640px;max-width:760px;">'
+            // The x4-window* classes come from the Ext4 stylesheet, which configureQCMetric.view.xml
+            // still declares. Dropping that dependency strips this dialog's border, header and background.
+            +   '<div class="x4-window-header x4-window-header-default x4-window-header-default-top" style="padding:4px 8px;border:none;">'
+            +     '<p class="x4-window-header-text-container-default" id="lk-trace-metric-title" style="font-size:14px;margin:0;">' + LABKEY.Utils.encodeHtml(title) + '</p>'
+            +   '</div>'
+            +   '<div class="x4-window-body" style="background:white;padding:10px 12px;">'
+            +     '<table style="border-collapse:collapse;width:100%;">'
+            +       '<tr><td style="padding:5px 10px 5px 0;white-space:nowrap;"><label for="lk-trace-metric-name">Metric Name *</label></td>'
+            +           '<td style="padding:5px 0;"><input type="text" id="lk-trace-metric-name" style="width:100%;box-sizing:border-box;" value="' + num(metric.name) + '"/></td></tr>'
+            +       '<tr><td style="padding:5px 10px 5px 0;white-space:nowrap;"><label for="lk-trace-use-trace">Use Trace *</label></td>'
+            +           '<td style="padding:5px 0;">' + traceSelect + '</td></tr>'
+            +       '<tr><td style="padding:5px 10px 5px 0;white-space:nowrap;"><label for="lk-trace-ylabel">Y Axis Label *</label></td>'
+            +           '<td style="padding:5px 0;"><input type="text" id="lk-trace-ylabel" style="width:100%;box-sizing:border-box;" value="' + num(metric.YAxisLabel) + '"/></td></tr>'
+            +     '</table>'
+            +     '<div style="margin-top:10px;">'
+            +       '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin-bottom:8px;">'
+            +         '<label style="margin:0;"><input type="radio" name="metricValue" value="timeValue"' + (!isTraceValueMode ? ' checked' : '') + '> Use the</label>'
+            +         '<select id="lk-trace-time-option" style="width:70px;">' + buildTimeOptions(metric.TimeValueOption) + '</select>'
+            +         '<span>trace value when time in minutes is between</span>'
+            +         '<input type="number" id="lk-trace-min-time" style="width:70px;" value="' + num(metric.MinTimeValue) + '"/>'
+            +         '<span>and</span>'
+            +         '<input type="number" id="lk-trace-max-time" style="width:70px;" value="' + num(metric.MaxTimeValue) + '"/>'
+            +       '</div>'
+            +       '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px;">'
+            +         '<label style="margin:0;"><input type="radio" name="metricValue" value="traceValue"' + (isTraceValueMode ? ' checked' : '') + '> Use time in minutes when the trace first reaches a value greater than or equal to</label>'
+            +         '<input type="number" id="lk-trace-value" style="width:70px;" value="' + num(metric.TraceValue) + '"/>'
+            +       '</div>'
+            +     '</div>'
+            +     '<div id="lk-trace-metric-error" class="labkey-error" style="display:none;margin-top:8px;"></div>'
+            +     '<div style="margin-top:12px;text-align:right;">'
+            +       '<button type="button" class="labkey-button" id="lk-trace-metric-cancel">Cancel</button>'
+            +       (op === 'update' ? ' <button type="button" class="labkey-button" id="lk-trace-metric-delete">Delete</button>' : '')
+            +       ' <button type="button" class="labkey-button primary" id="lk-trace-metric-save"' + (tracesPresent ? '' : ' disabled') + '>Save</button>'
+            +     '</div>'
+            +   '</div>'
+            + '</div>'
+            + '</div>';
+    }
+
+    window.Panorama.Window.AddTraceMetricWindow = {
+        show: function(config) {
+            _config = config;
+            _busy = false;
+
+            closeDialog();
+            $('body').append(buildDialogHtml());
+
+            $('#lk-trace-metric-cancel').on('click', closeDialog);
+            $('#lk-trace-metric-save').on('click', save);
+            if (config.operation === 'update') {
+                $('#lk-trace-metric-delete').on('click', deleteMetric);
+            }
+            $('input[name="metricValue"]').on('change', refreshMode);
+
+            // close on overlay click
+            $('#' + DIALOG_ID).on('click', function(e) {
+                if (e.target === this && !_busy) closeDialog();
+            });
+
+            refreshMode();
+
+            $('#lk-trace-metric-name').trigger('focus');
+
+            $(document).on('keydown.lkTraceMetric', function(e) {
+                if (e.key === 'Escape' && !_busy) {
+                    closeDialog();
                 }
-
-                var records = [];
-                var newMetric = {};
-                newMetric.Name = metricName;
-                newMetric.QueryName = 'QCTraceMetric'; // dummy text to insert and not an actual query
-                newMetric.PrecursorScoped = false;
-                newMetric.TraceName = this.tracesCombo.getValue();
-                newMetric.YAxisLabel = this.yAxisLabelField.getValue();
-
-                if (this.traceValueNumberField.getValue()) {
-                    newMetric.TraceValue = this.traceValueNumberField.getValue();
-                } else {
-                    if (this.timeValueOptionField.getValue()) {
-                        newMetric.TimeValueOption = this.timeValueOptionField.getValue();
-                    }
-                    if (this.minTimeValueNumberField.getValue()) {
-                        newMetric.MinTimeValue = this.minTimeValueNumberField.getValue();
-                    }
-                    if (this.maxTimeValueNumberField.getValue()) {
-                        newMetric.MaxTimeValue = this.maxTimeValueNumberField.getValue();
-                    }
+                else if (e.key === 'Tab') {
+                    trapFocus(e);
                 }
-
-                if (this.operation === this.update) {
-                    newMetric.id = this.metric.id;
-                }
-
-                records.push(newMetric);
-
-                LABKEY.Query.saveRows({
-                    containerPath: LABKEY.container.id,
-                    commands: [{
-                        schemaName: 'targetedms',
-                        queryName: 'qcmetricconfiguration',
-                        command: this.operation,
-                        rows: records
-                    }],
-                    scope: this,
-                    method: 'POST',
-                    success: function () {
-                        window.location.reload();
-                    },
-                    failure: function (response) {
-                        let errorMessage = 'Error saving metric';
-                        if (response && response.exception) {
-                            errorMessage = response.exception;
-                        } else if (response && response.message) {
-                            errorMessage = response.message;
-                        }
-                        this.queryError.setText(errorMessage);
-                        this.queryError.setVisible(true);
-                    }
-                });
             });
         }
-
-    },
-
-    deleteMetric: function() {
-        Ext4.Msg.confirm('Delete Trace Metric', 'This will delete ' + LABKEY.Utils.encodeHtml(this.metric.name) +  ' metric. Are you sure you want to do this?', function(val){
-            if (val === 'yes'){
-                const qcMetricToDelete = {metric: this.metric.id};
-                const metricToDelete = {id: this.metric.id};
-
-                LABKEY.Query.saveRows({
-                    containerPath: LABKEY.container.id,
-                    commands: [{
-                        schemaName: 'targetedms',
-                        queryName: 'qcenabledmetrics',
-                        command: 'delete',
-                        rows: [qcMetricToDelete]
-                    },{
-                        schemaName: 'targetedms',
-                        queryName: 'qcmetricconfiguration',
-                        command: 'delete',
-                        rows: [metricToDelete]
-                    }],
-                    scope: this,
-                    method: 'POST',
-                    success: function () {
-                        window.location.reload();
-                    },
-                    failure: function (response) {
-                        let errorMessage = 'Error saving metric';
-                        if (response && response.exception) {
-                            errorMessage = response.exception;
-                        } else if (response && response.message) {
-                            errorMessage = response.message;
-                        }
-                        this.queryError.setText(errorMessage);
-                        this.queryError.setVisible(true);
-                    }
-                });
-                win.close();
-            }
-        }, this);
-    }
-});
+    };
+})(jQuery);

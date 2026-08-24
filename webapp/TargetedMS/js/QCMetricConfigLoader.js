@@ -30,7 +30,7 @@ if (!LABKEY.targetedms.QCMetricConfigLoader) {
                         url: LABKEY.ActionURL.buildURL('targetedms', 'GetQCMetricConfigurations.api'),
                         method: 'GET',
                         success: function (response) {
-                            const configs = Ext4.JSON.decode(response.responseText).configurations;
+                            const configs = JSON.parse(response.responseText).configurations;
                             this.initialQcMetrics = configs;
                             for (const c of this.initialQcMetricsCallbacks) {
                                 if (c.callback) {

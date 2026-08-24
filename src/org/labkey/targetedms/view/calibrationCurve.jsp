@@ -30,7 +30,6 @@
     @Override
     public void addClientDependencies(ClientDependencies dependencies)
     {
-        dependencies.add("Ext4");
         dependencies.add("vis/vis");
         dependencies.add("targetedms/js/CalibrationCurve.js");
         dependencies.add("targetedms/css/CalibrationCurve.css");
@@ -46,9 +45,9 @@
 
     var calibrationCurvePlot;
 
-    Ext4.onReady(function () {
+    LABKEY.Utils.onReady(function () {
 
-        calibrationCurvePlot = Ext4.create('LABKEY.targetedms.CalibrationCurve', {
+        calibrationCurvePlot = new LABKEY.targetedms.CalibrationCurve({
             renderTo: <%=q(elementId)%>,
             data: <%=bean%>
         });

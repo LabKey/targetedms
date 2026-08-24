@@ -22,7 +22,6 @@ import org.labkey.test.Locator;
 import org.labkey.test.util.DataRegionTable;
 import org.labkey.test.util.LogMethod;
 import org.labkey.test.util.PipelineStatusTable;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import java.util.ArrayList;
@@ -222,13 +221,10 @@ public class TargetedMSLibraryTest extends TargetedMSTest
         ensureComparisonPlots("CTCF");
 
         log("Testing chart interactivity");
-        WebElement height= getDriver().findElement(By.xpath("//input[contains(@id, 'chartHeight-inputEl')]"));
-        height.clear();
-        height.sendKeys("200");
-        WebElement width= getDriver().findElement(By.xpath("//input[contains(@id, 'chartWidth-inputEl')]"));
-        width.clear();
-        width.sendKeys("500");
-        clickButton("Update",0);
+        // ids from summaryChartsView.jsp; the chromatograms form has fields with the same names
+        setFormElement(Locator.id("sc-height"), "200");
+        setFormElement(Locator.id("sc-width"), "500");
+        click(Locator.id("sc-update"));
         ensureComparisonPlots("CTCF");
     }
 
