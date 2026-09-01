@@ -1145,12 +1145,12 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             let isZoomed = !!(zoomEntry && zoomEntry[axis]);
 
             let overlayEl = svg.append('rect')
-                .attr('class', 'y-zoom-overlay')
+                .attr('class', 'y-zoom-overlay' + (isZoomed ? ' zoomed' : ''))
                 .attr('x', overlayX)
                 .attr('y', gridTop)
                 .attr('width', overlayW)
                 .attr('height', gridBottom - gridTop)
-                .style({'fill': '#ffffff', 'fill-opacity': 0, 'pointer-events': 'all', 'cursor': isZoomed ? 'zoom-out' : 'zoom-in'});
+                .style({'fill': '#ffffff', 'fill-opacity': 0, 'pointer-events': 'all'});
 
             if (isZoomed) {
                 overlayEl.on('click', function() { me.resetYZoom(plotId, axis); });
