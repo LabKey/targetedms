@@ -1639,7 +1639,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             if (!d || !d.name || d.separator) return;
             let isHidden = !!(hidden[d.hoverText || d.name.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]]);
             let item = d3.select(this);
-            item.select('path').attr('fill', isHidden ? 'transparent' : (d.color || null));
+            item.select('path').attr('fill', d.color || null).attr('fill-opacity', isHidden ? 0 : null);
             item.select('text').attr('opacity', isHidden ? 0.3 : 1);
             item.select('.legend-check').remove();
             if (!isHidden) {
@@ -1688,7 +1688,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             let isHidden = !!hidden[frag];
             let isActive = d.name.indexOf(fragment + (hasYRightMetric ? LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP : '')) === 0;
             let item = d3.select(this);
-            item.select('path').attr('fill', isHidden ? 'transparent' : (d.color || null));
+            item.select('path').attr('fill', d.color || null).attr('fill-opacity', isHidden ? 0 : null);
             item.select('text').attr('opacity', isHidden ? 0.1 : (isActive ? 1 : 0.1));
         });
 
@@ -1779,7 +1779,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             if (!d || !d.name || d.separator) return;
             let isHidden = !!hidden[d.hoverText || d.name.split(LABKEY.targetedms.QCPlotHelperBase.SERIES_NAME_SEP)[0]];
             let item = d3.select(this);
-            item.select('path').attr('fill', isHidden ? 'transparent' : (d.color || null));
+            item.select('path').attr('fill', d.color || null).attr('fill-opacity', isHidden ? 0 : null);
             item.select('text').attr('opacity', isHidden ? 0.3 : 1);
             item.select('.legend-check').remove();
             if (!isHidden) {
