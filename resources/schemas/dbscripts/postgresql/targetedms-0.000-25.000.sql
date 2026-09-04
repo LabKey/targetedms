@@ -1472,15 +1472,13 @@ INSERT INTO targetedms.QCMetricConfiguration (Container, Name,Series1Label,Serie
 ALTER TABLE targetedms.ReplicateAnnotation ADD COLUMN Source VARCHAR(20) NOT NULL DEFAULT 'Skyline';
 
 -- ExperimentRunLSID references exp.experimentrun.lsid
-SELECT core.fn_dropifexists('Runs','targetedms','INDEX','IX_Runs_ExperimentRunLSID');
-
 CREATE INDEX IX_Runs_ExperimentRunLSID ON targetedms.Runs(ExperimentRunLSID);
 
 ALTER TABLE targetedms.transition ALTER COLUMN MeasuredIonName TYPE VARCHAR(255);
 
 /* IX_Runs_ExperimentRunLSID */
 
-SELECT core.fn_dropifexists('Runs','targetedms','INDEX','IX_Runs_ExperimentRunLSID');
+DROP INDEX IF EXISTS targetedms.IX_Runs_ExperimentRunLSID;
 CREATE INDEX IX_Runs_ExperimentRunLSID ON targetedms.Runs(ExperimentRunLSID, Id);
 
 /* precursorchrominfo.Container */
@@ -1589,7 +1587,7 @@ ALTER TABLE targetedms.GeneralPrecursor ADD COLUMN IsotopeLabelId INT;
 UPDATE targetedms.GeneralPrecursor gp SET IsotopeLabelId = (SELECT p.IsotopeLabelId FROM targetedms.Precursor p WHERE p.Id = gp.Id);
 ALTER TABLE targetedms.GeneralPrecursor ADD CONSTRAINT FK_GeneralPrecursor_IsotopeLabel FOREIGN KEY (IsotopeLabelId) REFERENCES targetedms.IsotopeLabel(Id);
 CREATE INDEX IX_GeneralPrecursor_IsotopeLabelId ON targetedms.GeneralPrecursor(IsotopeLabelId);
-SELECT core.fn_dropifexists('Precursor', 'targetedms', 'INDEX', 'IX_Precursor_IsotopeLabelId');
+DROP INDEX IF EXISTS targetedms.IX_Precursor_IsotopeLabelId;
 ALTER TABLE targetedms.Precursor DROP CONSTRAINT FK_Precursor_IsotopeLabel;
 ALTER TABLE targetedms.Precursor DROP COLUMN IsotopeLabelId;
 ALTER TABLE targetedms.GeneralMolecule ADD COLUMN NormalizationMethod VARCHAR(255);
@@ -4026,8 +4024,8 @@ SELECT ale.EntryId AS AuditLogEntryId, ale.VersionId, r.Created, r.CreatedBy, r.
 WHERE ale.VersionId IS NOT NULL;
 
 -- VersionId Column no longer used on AuditLogEntry
-SELECT core.fn_dropifexists('AuditLogEntry', 'targetedms', 'INDEX', 'uix_auditLogEntry_version');
-SELECT core.fn_dropifexists('AuditLogEntry', 'targetedms', 'CONSTRAINT', 'fk_auditLogEntry_runs');
+DROP INDEX IF EXISTS targetedms.uix_auditLogEntry_version;
+ALTER TABLE targetedms.AuditLogEntry DROP CONSTRAINT IF EXISTS fk_auditLogEntry_runs;
 ALTER TABLE targetedms.AuditLogEntry
 DROP COLUMN VersionId;
 
