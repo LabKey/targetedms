@@ -118,8 +118,13 @@
     background-color: #f0f0f0;
 }
 
+/* Cursors stay in CSS: Batik rejects zoom-in/zoom-out in an inline style when exporting the SVG. */
 .y-zoom-overlay {
     cursor: zoom-in;
+}
+
+.y-zoom-overlay.zoomed {
+    cursor: zoom-out;
 }
 
 .y-zoom-pending-line {
