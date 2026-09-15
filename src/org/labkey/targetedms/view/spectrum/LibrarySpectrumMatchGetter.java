@@ -45,6 +45,7 @@ import org.labkey.targetedms.query.PeptideManager;
 import org.labkey.targetedms.query.PrecursorManager;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -128,7 +129,7 @@ public class LibrarySpectrumMatchGetter
                         {
                             throw new IllegalStateException("Expected Container argument in PeptideIdRts cache.");
                         }
-                        TargetedMSRun run = TargetedMSManager.getRunForGeneralMolecule(precursor.getGeneralMoleculeId());
+                        TargetedMSRun run = TargetedMSManager.getRunForGeneralMolecule(precursor.generalMoleculeId());
 
                         // Get the spectrum libraries for this run
                         Map<PeptideSettings.SpectrumLibrary, Path> libraryFilePathsMap = LibraryManager.getLibraryFilePaths(run.getId());
@@ -140,7 +141,7 @@ public class LibrarySpectrumMatchGetter
                             if(reader != null)
                             {
                                 List<PeptideIdRtInfo> rtInfos = reader.getRetentionTimes((Container) argument,
-                                        libPath, precursor.getModifiedSequence());
+                                        libPath, precursor.modifiedSequence());
 
                                 if (!rtInfos.isEmpty())
                                 {
@@ -359,49 +360,7 @@ public class LibrarySpectrumMatchGetter
         return unsupportedLibs;
     }
 
-    private static class PrecursorKey
-    {
-        private final String _modifiedSequence;
-        private final long _generalMoleculeId;
-
-
-        private PrecursorKey(String modifiedSequence, long generalMoleculeId)
-        {
-            _modifiedSequence = modifiedSequence;
-            _generalMoleculeId = generalMoleculeId;
-        }
-
-        public String getModifiedSequence()
-        {
-            return _modifiedSequence;
-        }
-
-        public long getGeneralMoleculeId()
-        {
-            return _generalMoleculeId;
-        }
-
-        @Override
-        public boolean equals(Object o)
-        {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            PrecursorKey that = (PrecursorKey) o;
-
-            if (_generalMoleculeId != that._generalMoleculeId) return false;
-            return _modifiedSequence.equals(that._modifiedSequence);
-
-        }
-
-        @Override
-        public int hashCode()
-        {
-            int result = _modifiedSequence.hashCode();
-            result = (int) (31 * result + _generalMoleculeId);
-            return result;
-        }
-    }
+    private record PrecursorKey(String modifiedSequence, long generalMoleculeId) implements Serializable { }
 
     public static class PeptideIdRtInfo
     {
