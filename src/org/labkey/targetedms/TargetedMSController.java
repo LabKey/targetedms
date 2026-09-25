@@ -8111,8 +8111,8 @@ public class TargetedMSController extends SpringActionController
             {
                 // verify that the run rowId is valid and matches an existing run
                 // and if the run replaces any other runs, it should only replace one
-                ExpRun run = ExperimentService.get().getExpRun(form.getRowId());
-                if (run == null || !run.getContainer().equals(getContainer()))
+                ExpRun run = ExperimentService.get().getExpRun(getContainer(), form.getRowId());
+                if (run == null)
                     errors.reject(ERROR_MSG, "No run found for id " + form.getRowId() + ".");
                 else if (!run.getReplacesRuns().isEmpty() && run.getReplacesRuns().size() > 1)
                     errors.reject(ERROR_MSG, "Run " + form.getRowId() + " replaces more than one run.");
@@ -8122,7 +8122,7 @@ public class TargetedMSController extends SpringActionController
         @Override
         public Object execute(RowIdForm form, BindException errors) throws BatchValidationException
         {
-            ExpRun run = ExperimentService.get().getExpRun(form.getRowId());
+            ExpRun run = ExperimentService.get().getExpRun(getContainer(), form.getRowId());
             ExpRun replaces = run.getReplacesRuns().isEmpty() ? null : run.getReplacesRuns().getFirst();
             ExpRun replacedBy = run.getReplacedByRun();
 
@@ -8174,13 +8174,13 @@ public class TargetedMSController extends SpringActionController
             {
                 if (entry.getKey() == null)
                     errors.reject(ERROR_MSG, "No run found for id " + entry.getKey());
-                ExpRun run = ExperimentService.get().getExpRun(entry.getKey());
-                if (run == null || !run.getContainer().equals(getContainer()))
+                ExpRun run = ExperimentService.get().getExpRun(getContainer(), entry.getKey());
+                if (run == null)
                     errors.reject(ERROR_MSG, "No run found for id " + entry.getKey());
                 if (entry.getValue() == null)
                     errors.reject(ERROR_MSG, "No run found for id " + entry.getValue());
-                ExpRun replacedByRun = ExperimentService.get().getExpRun(entry.getValue());
-                if (replacedByRun == null || !replacedByRun.getContainer().equals(getContainer()))
+                ExpRun replacedByRun = ExperimentService.get().getExpRun(getContainer(), entry.getValue());
+                if (replacedByRun == null)
                     errors.reject(ERROR_MSG, "No run found for id " + entry.getValue());
                 if (entry.getKey().equals(entry.getValue()))
                     errors.reject(ERROR_MSG, "Run cannot be replaced by itself: id " + entry.getValue());
