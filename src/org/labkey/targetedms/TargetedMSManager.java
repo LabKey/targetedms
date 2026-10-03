@@ -89,6 +89,7 @@ import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.targetedms.model.SampleFileInfo;
 import org.labkey.api.util.FileUtil;
+import org.labkey.api.util.GUID;
 import org.labkey.api.util.StringUtilsLabKey;
 import org.labkey.api.util.logging.LogHelper;
 import org.labkey.api.view.NotFoundException;
@@ -164,7 +165,8 @@ public class TargetedMSManager
      * A cache to make it faster to render QC folders. A number of API calls come from the
      * client rendering the overview, all of which need to know the enabled configs.
      */
-    private static final Cache<Container, List<QCMetricConfiguration>> _metricCache = CacheManager.getBlockingCache(1000, TimeUnit.HOURS.toMillis(1), "Enabled QC metric configs",
+    // Keyed by GUID, not Container: a hit on an equal key keeps the original key object, pinning stale Container copies
+    private static final Cache<GUID, List<QCMetricConfiguration>> _metricCache = CacheManager.getBlockingCache(1000, TimeUnit.HOURS.toMillis(1), "Enabled QC metric configs",
             (_, argument) ->
             {
                 if (!(argument instanceof TargetedMSSchema schema))
@@ -2437,7 +2439,7 @@ public class TargetedMSManager
 
     public static List<QCMetricConfiguration> getAllQCMetricConfigurations(TargetedMSSchema schema)
     {
-        return _metricCache.get(schema.getContainer(), schema, null);
+        return _metricCache.get(schema.getContainer().getEntityId(), schema, null);
     }
     public static List<QCMetricConfiguration> getEnabledQCMetricConfigurations(TargetedMSSchema schema)
     {
@@ -3065,7 +3067,7 @@ public class TargetedMSManager
      */
     public void clearQCMetricCache(Container container, boolean clearMetricValues)
     {
-        getSchema().getScope().addCommitTask(() -> _metricCache.remove(container), DbScope.CommitTaskOption.IMMEDIATE, DbScope.CommitTaskOption.POSTCOMMIT, DbScope.CommitTaskOption.POSTROLLBACK);
+        getSchema().getScope().addCommitTask(() -> _metricCache.remove(container.getEntityId()), DbScope.CommitTaskOption.IMMEDIATE, DbScope.CommitTaskOption.POSTCOMMIT, DbScope.CommitTaskOption.POSTROLLBACK);
 
         if (clearMetricValues)
         {
