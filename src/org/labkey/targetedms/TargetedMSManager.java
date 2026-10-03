@@ -165,7 +165,6 @@ public class TargetedMSManager
      * A cache to make it faster to render QC folders. A number of API calls come from the
      * client rendering the overview, all of which need to know the enabled configs.
      */
-    // Keyed by GUID, not Container: a hit on an equal key keeps the original key object, pinning stale Container copies
     private static final Cache<GUID, List<QCMetricConfiguration>> _metricCache = CacheManager.getBlockingCache(1000, TimeUnit.HOURS.toMillis(1), "Enabled QC metric configs",
             (_, argument) ->
             {
