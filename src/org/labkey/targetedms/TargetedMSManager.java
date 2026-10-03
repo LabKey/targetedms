@@ -2782,61 +2782,58 @@ public class TargetedMSManager
         executor.execute("DROP TABLE " + areasTableName);
     }
 
+    private static final String PTM_RUN_FILTER_MARKER = "/*RunFilter*/ TRUE";
+
     /**
      * Pre-compute PTMPercentsGroupedPrepivot results during import and store in PTMPercentsCache.
      * Only populates cache for ExperimentMAM folders.
+     * @param replaceExisting when false, a run that already has cache rows is left untouched
+     * @return number of cache rows inserted
      */
-    public static void populatePTMPercentsGroupedPrepivotCache(@NotNull TargetedMSRun run, @NotNull User user, @NotNull Container container)
+    public static int populatePTMPercentsGroupedPrepivotCache(@NotNull TargetedMSRun run, @NotNull User user, @NotNull Container container, boolean replaceExisting)
     {
-        // Delete any existing cache rows for this run
-        new SqlExecutor(getSchema()).execute(
-                new SQLFragment("DELETE FROM ").append(getTableInfoPTMPercentsGroupedPrepivotCache()).append(" WHERE RunId = ?").add(run.getId()));
+        TableInfo cacheTable = getTableInfoPTMPercentsGroupedPrepivotCache();
+        if (replaceExisting)
+        {
+            new SqlExecutor(getSchema()).execute(
+                    new SQLFragment("DELETE FROM ").append(cacheTable).append(" WHERE RunId = ?").add(run.getId()));
+        }
+        else if (new TableSelector(cacheTable, new SimpleFilter(FieldKey.fromParts("RunId"), run.getId()), null).exists())
+        {
+            return 0;
+        }
 
         // Only populate cache for ExperimentMAM folders
         if (getFolderType(container) != TargetedMSService.FolderType.ExperimentMAM)
         {
-            return;
+            return 0;
         }
 
-        _log.info("Populating PTMPercentsGroupedPrepivotCache for run {}", run.getId());
-
-        String labkeySql = "SELECT\n" +
-                "  Modification,\n" +
-                "  TotalPercentModified,\n" +
-                "  PercentModified,\n" +
-                "  MaxPercentModified,\n" +
-                "  ModificationCount,\n" +
-                "  Id,\n" +
-                "  PeptideModifiedSequence,\n" +
-                "  Sequence,\n" +
-                "  PreviousAA,\n" +
-                "  NextAA,\n" +
-                "  SampleFileId,\n" +
-                "  ReplicateName,\n" +
-                "  AminoAcid,\n" +
-                "  SiteLocation,\n" +
-                "  Location,\n" +
-                "  PeptideGroupId\n" +
-                "FROM PTMPercentsGroupedPrepivot\n" +
-                "WHERE PeptideGroupId.RunId = " + run.getId();
+        _log.debug("Populating PTMPercentsGroupedPrepivotCache for run {}", run.getId());
 
         UserSchema schema = QueryService.get().getUserSchema(user, container, TargetedMSSchema.SCHEMA_KEY);
+        String querySql = Objects.requireNonNull(schema.getQueryDef("PTMPercentsGroupedPrepivot")).getSql();
+        if (querySql == null || !querySql.contains(PTM_RUN_FILTER_MARKER))
+            throw new IllegalStateException("PTMPercentsGroupedPrepivot.sql is missing " + PTM_RUN_FILTER_MARKER);
+        String labkeySql = querySql.replace(PTM_RUN_FILTER_MARKER, "PeptideGroupId.RunId = " + run.getId());
+
         TableInfo tableInfo = QueryService.get().createTable(schema, labkeySql, null, true);
 
         SQLFragment insertSql = new SQLFragment();
-        insertSql.append("INSERT INTO ").append(getTableInfoPTMPercentsGroupedPrepivotCache());
+        insertSql.append("INSERT INTO ").append(cacheTable);
         insertSql.append(" (Container, RunId, Modification, TotalPercentModified, PercentModified, MaxPercentModified,");
         insertSql.append(" ModificationCount, Id, PeptideModifiedSequence, Sequence,");
         insertSql.append(" PreviousAA, NextAA, SampleFileId, ReplicateName, AminoAcid, SiteLocation, Location, PeptideGroupId)");
         insertSql.append(" SELECT ?, ?, lk.Modification, lk.TotalPercentModified, lk.PercentModified, lk.MaxPercentModified,");
+        insertSql.add(container.getEntityId());
+        insertSql.add(run.getId());
         insertSql.append(" lk.ModificationCount, lk.Id, lk.PeptideModifiedSequence, lk.Sequence,");
         insertSql.append(" lk.PreviousAA, lk.NextAA, lk.SampleFileId, lk.ReplicateName, lk.AminoAcid, lk.SiteLocation, lk.Location, lk.PeptideGroupId");
         insertSql.append(" FROM ").append(tableInfo, "lk");
-        insertSql.add(container.getEntityId());
-        insertSql.add(run.getId());
-        new SqlExecutor(getSchema()).execute(insertSql);
+        int rows = new SqlExecutor(getSchema()).execute(insertSql);
 
-        _log.info("Finished populating PTMPercentsGroupedPrepivotCache for run {}", run.getId());
+        _log.debug("Inserted {} PTMPercentsGroupedPrepivotCache rows for run {}", rows, run.getId());
+        return rows;
     }
 
     /**
