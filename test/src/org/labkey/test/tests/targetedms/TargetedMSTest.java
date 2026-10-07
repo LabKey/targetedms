@@ -336,7 +336,8 @@ public abstract class TargetedMSTest extends BaseWebDriverTest
     {
         Locator.tagWithClass("div", "x4-panel")
                 .withDescendant(Locator.tagWithText("label", "Loading..."))
-                .waitForElementToDisappear(getDriver(), 15_000);
+                // First load after import computes and caches all precursor metric values
+                .waitForElementToDisappear(getDriver(), WAIT_FOR_PAGE);
 
         QCSummaryWebPart qcSummaryWebPart = new PanoramaDashboard(this).getQcSummaryWebPart();
         verifyQcSummary(qcSummaryWebPart.getQcSummaryTiles().getFirst(), null, sampleFileCount, precursorCount);
