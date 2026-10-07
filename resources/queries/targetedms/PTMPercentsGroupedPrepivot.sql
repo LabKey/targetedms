@@ -19,6 +19,8 @@ WITH InitialGrouping AS (
             SiteLocation,
             PeptideGroupId
      FROM PTMPercentsPrepivot
+     -- Cache population substitutes a run filter for this marker; Postgres can't push an outer filter below these GROUP BYs
+     WHERE /*RunFilter*/ TRUE
      GROUP BY SampleFileId,
               Sequence,
               PreviousAA,

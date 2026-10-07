@@ -517,7 +517,7 @@ public class SkylineDocImporter
             parser.logMissingChromatogramCounts();
 
             TargetedMSManager.updateModifiedAreaProportions(_log, run);
-            TargetedMSManager.populatePTMPercentsGroupedPrepivotCache(run, _user, _container);
+            TargetedMSManager.populatePTMPercentsGroupedPrepivotCache(run, _user, _container, true);
 
             if (_pipeRoot.isCloudRoot())
                 copyExtractedFilesToCloud(run);

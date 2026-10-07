@@ -25,9 +25,14 @@ import org.labkey.api.data.UpgradeCode;
 import org.labkey.api.module.Module;
 import org.labkey.api.module.ModuleContext;
 import org.labkey.api.module.ModuleLoader;
+import org.labkey.api.pipeline.PipeRoot;
+import org.labkey.api.pipeline.PipelineJob;
+import org.labkey.api.pipeline.PipelineService;
+import org.labkey.api.pipeline.PipelineValidationException;
 import org.labkey.api.security.User;
-import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.util.logging.LogHelper;
+import org.labkey.api.view.ViewBackgroundInfo;
+import org.labkey.targetedms.pipeline.PTMPercentsCachePopulationJob;
 import org.labkey.targetedms.query.QCAnnotationTypeTable;
 
 import java.util.Date;
@@ -77,7 +82,7 @@ public class TargetedMSUpgradeCode implements UpgradeCode
         new SqlExecutor(TargetedMSManager.getSchema()).execute(sql);
     }
 
-    /** Populate PTMPercentsGroupedPrepivotCache for all runs in existing ExperimentMAM folders */
+    /** Queue a pipeline job to populate PTMPercentsGroupedPrepivotCache for runs in existing ExperimentMAM folders */
     @SuppressWarnings("UnusedDeclaration")
     @DeferredUpgrade
     public void populatePTMPercentsGroupedPrepivotCache(final ModuleContext moduleContext)
@@ -87,26 +92,38 @@ public class TargetedMSUpgradeCode implements UpgradeCode
             return;
         }
 
-        User user = moduleContext.getUpgradeUser();
-        LOG.info("Populating PTMPercentsGroupedPrepivotCache for existing ExperimentMAM folders");
-
-        for (TargetedMSRun run : TargetedMSManager.getAllNonDeletedRuns())
+        Container root = ContainerManager.getRoot();
+        PipeRoot pipeRoot = PipelineService.get().findPipelineRoot(root);
+        if (pipeRoot != null)
         {
-            Container container = run.getContainer();
-            if (container != null && TargetedMSManager.getFolderType(container) == TargetedMSService.FolderType.ExperimentMAM)
+            try
             {
-                try
-                {
-                    TargetedMSManager.populatePTMPercentsGroupedPrepivotCache(run, user, container);
-                }
-                catch (Exception e)
-                {
-                    LOG.error("Error populating PTMPercentsGroupedPrepivotCache for run {} in {}", run.getId(), container.getPath(), e);
-                }
+                PipelineJob job = new PTMPercentsCachePopulationJob(new ViewBackgroundInfo(root, moduleContext.getUpgradeUser(), null), pipeRoot);
+                PipelineService.get().queueJob(job);
+                LOG.info("Queued pipeline job to populate PTMPercentsGroupedPrepivotCache; progress is in its job log");
+                return;
+            }
+            catch (PipelineValidationException e)
+            {
+                LOG.warn("Unable to queue PTMPercentsGroupedPrepivotCache population job", e);
             }
         }
+        else
+        {
+            LOG.warn("No site pipeline root available to queue PTMPercentsGroupedPrepivotCache population job");
+        }
 
-        LOG.info("Finished populating PTMPercentsGroupedPrepivotCache for existing ExperimentMAM folders");
+        LOG.warn("Populating PTMPercentsGroupedPrepivotCache during startup instead");
+        PTMPercentsCachePopulationJob.populateAll(LOG, null);
+    }
+
+    /** For testing populatePTMPercentsGroupedPrepivotCache; invoke manually from the admin console, never from an upgrade script */
+    @SuppressWarnings("UnusedDeclaration")
+    public void truncatePTMPercentsGroupedPrepivotCache(final ModuleContext moduleContext)
+    {
+        new SqlExecutor(TargetedMSManager.getSchema()).execute(
+                new SQLFragment("TRUNCATE TABLE ").append(TargetedMSManager.getTableInfoPTMPercentsGroupedPrepivotCache()));
+        LOG.info("Truncated PTMPercentsGroupedPrepivotCache");
     }
 
     @SuppressWarnings("UnusedDeclaration")
