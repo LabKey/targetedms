@@ -176,10 +176,10 @@ public abstract class LibSpectrumReader
                     "SpeclibCache"), _libCacheLoader)
             {
                 @Override
-                public void remove(@NotNull String key)
+                public boolean remove(@NotNull String key)
                 {
                     deleteTempFile(key);
-                    super.remove(key);
+                    return super.remove(key);
                 }
 
                 @Override
