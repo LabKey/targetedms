@@ -46,8 +46,8 @@ import static org.labkey.targetedms.TargetedMSManager.getSchema;
 public class ModificationManager
 {
     private static final int CACHE_SIZE = 10; // Cache results for up to 10 runs.
-    private static final Cache<String, Map<Long, Set<Pair<Integer, Integer>>>> PEPTIDE_STR_MOD_INDEXES = CacheManager.getCache(CACHE_SIZE, CacheManager.DAY, "Peptide structural modification indexes");
-    private static final Cache<String, Map<Pair<Long,Long>, Set<Integer>>> PEPTIDE_ISOTOPE_MOD_INDEXES = CacheManager.getCache(CACHE_SIZE, CacheManager.DAY, "Peptide isotope modification indexes");
+    private static final Cache<String, Map<Long, Set<Pair<Integer, Integer>>>> PEPTIDE_STR_MOD_INDEXES = CacheManager.getCache(String.class, CACHE_SIZE, CacheManager.DAY, "Peptide structural modification indexes");
+    private static final Cache<String, Map<Pair<Long,Long>, Set<Integer>>> PEPTIDE_ISOTOPE_MOD_INDEXES = CacheManager.getCache(String.class, CACHE_SIZE, CacheManager.DAY, "Peptide isotope modification indexes");
 
     private ModificationManager() {}
 
