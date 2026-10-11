@@ -261,7 +261,10 @@ public class SkylineDocImporter
             TargetedMSManager.get().clearQCMetricCache(run.getContainer(), true);
 
             _progressMonitor.complete();
-            return TargetedMSManager.getRun(_runId);
+            TargetedMSRun importedRun = TargetedMSManager.getRun(_runId);
+            if (importedRun == null)
+                throw new PipelineJobException("Could not find record for runId " + _runId + ", it may have already been deleted. Please try importing again.");
+            return importedRun;
         }
         catch (FileNotFoundException fnfe)
         {

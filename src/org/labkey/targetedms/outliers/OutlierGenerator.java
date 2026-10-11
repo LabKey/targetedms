@@ -199,6 +199,8 @@ public class OutlierGenerator
     public List<RawMetricDataSet> getRawMetricDataSets(TargetedMSSchema schema, List<QCMetricConfiguration> configurations, Date startDate, Date endDate, List<AnnotationGroup> annotationGroups, boolean showExcluded, boolean showExcludedPrecursors)
     {
         List<RawMetricDataSet> result = new ArrayList<>();
+        if (configurations.isEmpty())
+            return result;
 
         TableInfo sampleFileForQC = schema.getTable("SampleFileForQC");
         List<SampleFileQCMetadata> sfs = new TableSelector(sampleFileForQC).getArrayList(SampleFileQCMetadata.class);

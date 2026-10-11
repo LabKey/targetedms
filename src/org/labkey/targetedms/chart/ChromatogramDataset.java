@@ -29,6 +29,7 @@ import org.labkey.api.pipeline.PipelineService;
 import org.labkey.api.security.User;
 import org.labkey.api.util.Formats;
 import org.labkey.api.util.logging.LogHelper;
+import org.labkey.api.view.NotFoundException;
 import org.labkey.api.view.ViewContext;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSRun;
@@ -322,7 +323,9 @@ public abstract class ChromatogramDataset
             super(user, container);
             _chromInfo = chromInfo;
             SampleFile sampleFile = TargetedMSManager.getSampleFile(chromInfo.getSampleFileId(), container);
-            Replicate replicate = TargetedMSManager.getReplicate(sampleFile.getReplicateId(), container);
+            Replicate replicate = sampleFile == null ? null : TargetedMSManager.getReplicate(sampleFile.getReplicateId(), container);
+            if (replicate == null)
+                throw new NotFoundException("Could not find sample file " + chromInfo.getSampleFileId() + " in " + container.getPath());
             _run = TargetedMSManager.getRun(replicate.getRunId());
         }
 
@@ -645,7 +648,12 @@ public abstract class ChromatogramDataset
                 Chromatogram chromatogram = pChromInfo.createChromatogram(_run);
                 if (chromatogram != null)
                 {
-                    XYSeries series = new XYSeries(getLabel(pChromInfo));
+                    // Molecule labels omit isotope label and adduct, so two precursors can share one
+                    String label = getLabel(pChromInfo);
+                    String key = label;
+                    for (int suffix = 2; _jfreeDataset.getSeriesIndex(key) >= 0; suffix++)
+                        key = label + " (" + suffix + ")";
+                    XYSeries series = new XYSeries(key);
                     _jfreeDataset.addSeries(series);
                     // Instead of displaying separate peaks for each transition of this precursor,
                     // we will sum up the intensities and display a single peak for the precursor
@@ -1222,17 +1230,14 @@ public abstract class ChromatogramDataset
             if (tciList.isEmpty() && _pChromInfo.getTransitionChromatogramIndicesList() != null)
             {
                 List<MoleculeTransition> transitions = MoleculeTransitionManager.getTransitionsForPrecursor(_molPrecursor.getId(), _user, _container);
-                if (transitions.size() != _pChromInfo.getTransitionChromatogramIndicesList().size())
-                {
-                    throw new IllegalStateException("Mismatch in transitions and indices lengths: " + transitions.size() + " vs " + _pChromInfo.getTransitionChromatogramIndicesList().size());
-                }
                 int index = 0;
                 for (MoleculeTransition transition : transitions)
                 {
-                    if (include(transition))
+                    if (include(transition) && index < _pChromInfo.getTransitionChromatogramIndicesList().size())
                     {
-                        tciList.add(new MoleculeTransChromInfoPlusTransition(_pChromInfo.makeDummyTransitionChromInfo(index++), transition));
+                        tciList.add(new MoleculeTransChromInfoPlusTransition(_pChromInfo.makeDummyTransitionChromInfo(index), transition));
                     }
+                    index++;
                 }
             }
 
