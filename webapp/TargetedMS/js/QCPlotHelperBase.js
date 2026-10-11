@@ -213,6 +213,9 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         let trainingSeqIdx = 1; // this index is used for displaying the average number of runs in tooltip (QCPlotHoverPanel.js L110)
         for (let i = this.pagingStartIndex; i < this.pagingEndIndex; i++) {
             const plotDataRow = plotDataRows[i];
+            if (!plotDataRow) {
+                continue;
+            }
             tempData = plotDataRow;
             const fragment = plotDataRow.SeriesLabel;
             Ext4.iterate(plotDataRow.data, function (plotData) {

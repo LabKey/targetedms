@@ -329,7 +329,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         if (this.metric) {
             //hiding the show All series in a single plot checkbox for run scoped metrics
-            this.getPlotGroupRadioGroup().setVisible(this.getMetricPropsById(this.metric).precursorScoped);
+            this.getPlotGroupRadioGroup().setVisible(this.isPrecursorScopedMetric(this.metric));
         }
 
         // Create vertical line separator component
@@ -376,8 +376,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
 
         // Ensure single-plot checkbox visibility mirrors previous logic when metrics are run-scoped
         if (this.metric) {
-            var showSinglePlot = this.getMetricPropsById(this.metric).precursorScoped;
-            this.getPlotGroupRadioGroup().setVisible(showSinglePlot);
+            this.getPlotGroupRadioGroup().setVisible(this.isPrecursorScopedMetric(this.metric));
         }
 
         const columnsToolbar = Ext4.create('Ext.toolbar.Toolbar', {
@@ -462,7 +461,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     if (this.trailingRuns === undefined || this.trailingRuns === null) {
                         this.trailingRuns = 10;
                     }
-                    this.getTrailingRunsField().setVisible(newValues.indexOf("Trailing Mean") > -1 || newValues.indexOf("Trailing CV") > -1);
+                    this.getTrailingRunsField().setVisible(this.plotTypes.indexOf("Trailing Mean") > -1 || this.plotTypes.indexOf("Trailing CV") > -1);
                     this.havePlotOptionsChanged = true;
                     this.displayTrendPlot();
                 }
@@ -853,6 +852,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return this.endDateField;
     },
 
+    isPrecursorScopedMetric: function (metricId) {
+        const props = this.getMetricPropsById(metricId);
+        return !!props && !!props.precursorScoped;
+    },
+
     assignDefaultMetricIfNull: function () {
         if (this.metric == null || isNaN(Number(this.metric)) || !this.getMetricPropsById(this.metric)) {
             this.metric = null;
@@ -936,8 +940,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                     }
                     this.havePlotOptionsChanged = true;
                     // Update single-plot checkbox visibility directly in the 3-column layout
-                    var showAllSeriesCheckBox = this.getMetricPropsById(this.metric).precursorScoped;
-                    this.getPlotGroupRadioGroup().setVisible(showAllSeriesCheckBox);
+                    this.getPlotGroupRadioGroup().setVisible(this.isPrecursorScopedMetric(this.metric));
 
                     if (this.filterQCPoints) {
                         this.resetFilterPointsIndices();
@@ -1347,7 +1350,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         if (this.pagingStartIndex < 0)
             this.pagingStartIndex = 0;
         else if (this.pagingStartIndex > plotDataRowsBySeriesLabel.length)
-            this.pagingStartIndex = plotDataRowsBySeriesLabel.length - this.maxCount;
+            this.pagingStartIndex = Math.max(0, plotDataRowsBySeriesLabel.length - this.maxCount);
 
         this.pagingEndIndex = Math.min(this.pagingStartIndex + this.maxCount, plotDataRowsBySeriesLabel.length);
 
@@ -1655,6 +1658,7 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         });
 
         let observer = null;
+        let showTimeout = null;
 
         tippy(point, {
             allowHTML: true,
@@ -1685,6 +1689,9 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             },
             onShow(instance) {
                 observer = new MutationObserver((mutations) => {
+                    if (!instance.state.isVisible || !instance.popperInstance) {
+                        return;
+                    }
                     const hoverPanel = container.querySelector('.qc-plot-hover-panel');
                     if (hoverPanel) {
                         hoverPanel.style.minWidth = 'auto';
@@ -1700,7 +1707,11 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 });
                 observer.observe(container, { childList: true, subtree: true });
 
-                setTimeout(() => {
+                showTimeout = setTimeout(() => {
+                    showTimeout = null;
+                    if (!instance.state.isVisible || !instance.popperInstance) {
+                        return;
+                    }
                     const hoverPanel = container.querySelector('.qc-plot-hover-panel');
                     if (hoverPanel && instance.popper.style.visibility === 'hidden') {
                         hoverPanel.style.minWidth = 'auto';
@@ -1716,6 +1727,10 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
                 if (observer) {
                     observer.disconnect();
                     observer = null;
+                }
+                if (showTimeout) {
+                    clearTimeout(showTimeout);
+                    showTimeout = null;
                 }
             }
         });
