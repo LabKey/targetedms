@@ -115,6 +115,15 @@ public abstract class ChromatogramDataset
         _user = u;
     }
 
+    /** JFreeChart rejects duplicate series keys, so suffix repeats as "X (2)", "X (3)", ... */
+    static String uniqueSeriesKey(XYSeriesCollection dataset, String label)
+    {
+        String key = label;
+        for (int suffix = 2; dataset.getSeriesIndex(key) >= 0; suffix++)
+            key = label + " (" + suffix + ")";
+        return key;
+    }
+
     public abstract String getChartTitle();
 
     // Start of the peak integration boundary. Shown as a vertical dotted line
@@ -649,11 +658,7 @@ public abstract class ChromatogramDataset
                 if (chromatogram != null)
                 {
                     // Molecule labels omit isotope label and adduct, so two precursors can share one
-                    String label = getLabel(pChromInfo);
-                    String key = label;
-                    for (int suffix = 2; _jfreeDataset.getSeriesIndex(key) >= 0; suffix++)
-                        key = label + " (" + suffix + ")";
-                    XYSeries series = new XYSeries(key);
+                    XYSeries series = new XYSeries(uniqueSeriesKey(_jfreeDataset, getLabel(pChromInfo)));
                     _jfreeDataset.addSeries(series);
                     // Instead of displaying separate peaks for each transition of this precursor,
                     // we will sum up the intensities and display a single peak for the precursor
@@ -1089,7 +1094,7 @@ public abstract class ChromatogramDataset
             float[] intensities = chromatogram.getIntensities(tci.getChromatogramIndex());
             assert times.length == intensities.length : "Length of times and intensities don't match";
 
-            XYSeries series = new XYSeries(label);
+            XYSeries series = new XYSeries(uniqueSeriesKey(dataset, label));
 
             double maxTraceIntensity = 0; // maximum intensity in the displayed range.
 
@@ -1230,6 +1235,11 @@ public abstract class ChromatogramDataset
             if (tciList.isEmpty() && _pChromInfo.getTransitionChromatogramIndicesList() != null)
             {
                 List<MoleculeTransition> transitions = MoleculeTransitionManager.getTransitionsForPrecursor(_molPrecursor.getId(), _user, _container);
+                if (transitions.size() != _pChromInfo.getTransitionChromatogramIndicesList().size())
+                {
+                    LOG.warn("Precursor {} has {} transitions but {} chromatogram indices; trace labels may be mismatched",
+                            _molPrecursor.getId(), transitions.size(), _pChromInfo.getTransitionChromatogramIndicesList().size());
+                }
                 int index = 0;
                 for (MoleculeTransition transition : transitions)
                 {
@@ -1634,14 +1644,7 @@ public abstract class ChromatogramDataset
                 GeneralMolecule<?, ?> gm = entry.getKey();
 
                 // Issue 48258:Some very old docs have duplicate molecule names
-                String seriesName = gm.getTextId();
-                int suffix = 1;
-                while (hasSeries(_jfreeDataset, seriesName))
-                {
-                    seriesName = gm.getTextId() + " " + (++suffix);
-                }
-
-                XYSeries series = new XYSeries(seriesName, true, false);
+                XYSeries series = new XYSeries(uniqueSeriesKey(_jfreeDataset, gm.getTextId()), true, false);
                 _jfreeDataset.addSeries(series);
                 _seriesColors.put(i, ColorGenerator.getColor(gm.getTextId(), _seriesColors.values()));
 
@@ -1677,18 +1680,6 @@ public abstract class ChromatogramDataset
             double padding = (fullRange._maxRt - fullRange._minRt) * 0.1;
             _minDisplayRt = fullRange.getMinRt() - padding;
             _maxDisplayRt = fullRange.getMaxRt() + padding;
-        }
-
-        private boolean hasSeries(XYSeriesCollection jfreeDataset, String seriesName)
-        {
-            for (XYSeries series : (List<XYSeries>)jfreeDataset.getSeries())
-            {
-                if (seriesName.equals(series.getKey()))
-                {
-                    return true;
-                }
-            }
-            return false;
         }
 
         private RtRange getChromatogramRange(GeneralMolecule<?, ?> generalMolecule, List<PrecursorChromInfoPlus> chromInfos)

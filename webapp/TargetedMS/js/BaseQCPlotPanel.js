@@ -19,6 +19,10 @@ Ext4.define('LABKEY.targetedms.BaseQCPlotPanel', {
         return undefined;
     },
 
+    isPrecursorScopedMetric: function(id) {
+        return !!this.getMetricPropsById(id)?.precursorScoped;
+    },
+
     isMultiSeries : function() {
         return this.metric && this.metric2;
     },

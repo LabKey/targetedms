@@ -852,11 +852,6 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
         return this.endDateField;
     },
 
-    isPrecursorScopedMetric: function (metricId) {
-        const props = this.getMetricPropsById(metricId);
-        return !!props && !!props.precursorScoped;
-    },
-
     assignDefaultMetricIfNull: function () {
         if (this.metric == null || isNaN(Number(this.metric)) || !this.getMetricPropsById(this.metric)) {
             this.metric = null;
