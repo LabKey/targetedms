@@ -122,7 +122,7 @@ public class LibrarySpectrumMatchGetter
     }
 
     private static final BlockingCache<PrecursorKey, List<PeptideIdRtInfo>> _peptideIdRtsCache =
-            CacheManager.getBlockingCache(CACHE_SIZE, CacheManager.DAY, "TargetedMS peptide ID retention times",
+            CacheManager.getBlockingCache(PrecursorKey.class, CACHE_SIZE, CacheManager.DAY, "TargetedMS peptide ID retention times",
                     (precursor, argument) -> {
                         if (!(argument instanceof Container))
                         {

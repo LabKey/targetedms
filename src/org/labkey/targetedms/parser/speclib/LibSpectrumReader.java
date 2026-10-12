@@ -47,7 +47,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.zip.DataFormatException;
 
-import static org.labkey.targetedms.parser.speclib.LibSpectrum.*;
+import static org.labkey.targetedms.parser.speclib.LibSpectrum.SpectrumKey;
 
 /**
  * User: vsharma
@@ -172,14 +172,14 @@ public abstract class LibSpectrumReader
     };
 
     private static final BlockingCache<String, String> _libCache =
-            new BlockingCache<>(CacheManager.getStringKeyCache(LIBCACHE_LIMIT, LIBCACHE_LIFETIME,
+            new BlockingCache<>(CacheManager.getCache(String.class, LIBCACHE_LIMIT, LIBCACHE_LIFETIME,
                     "SpeclibCache"), _libCacheLoader)
             {
                 @Override
-                public void remove(@NotNull String key)
+                public boolean remove(@NotNull String key)
                 {
                     deleteTempFile(key);
-                    super.remove(key);
+                    return super.remove(key);
                 }
 
                 @Override

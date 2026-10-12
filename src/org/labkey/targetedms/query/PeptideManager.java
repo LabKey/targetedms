@@ -35,7 +35,7 @@ import java.util.Set;
 public class PeptideManager
 {
     private static final int CACHE_SIZE = 10;
-    private static final Cache<String, Set<Long>> PEPTIDE_IDS_WITH_SPECTRA = CacheManager.getCache(CACHE_SIZE, CacheManager.DAY, "Peptide IDs with library spectra");
+    private static final Cache<String, Set<Long>> PEPTIDE_IDS_WITH_SPECTRA = CacheManager.getCache(String.class, CACHE_SIZE, CacheManager.DAY, "Peptide IDs with library spectra");
 
     private PeptideManager() {}
 

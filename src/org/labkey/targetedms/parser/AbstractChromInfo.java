@@ -23,7 +23,6 @@ import org.labkey.api.cache.CacheManager;
 import org.labkey.api.data.Container;
 import org.labkey.api.exp.api.ExpData;
 import org.labkey.api.exp.api.ExperimentService;
-import org.labkey.api.util.Tuple3;
 import org.labkey.api.util.UnexpectedException;
 import org.labkey.targetedms.PanoramaBadDataException;
 import org.labkey.targetedms.TargetedMSRun;
@@ -56,10 +55,12 @@ public abstract class AbstractChromInfo extends ChromInfo<PrecursorChromInfoAnno
 
     private static final Logger LOG = LogManager.getLogger(AbstractChromInfo.class);
 
-    private static final BlockingCache<Tuple3<Path, Long, Integer>, CachedBytes> ON_DEMAND_CHROM_CACHE = new BlockingCache<>(CacheManager.getCache(100, CacheManager.HOUR, "SKYD chromatogram cache"), (key, argument) -> {
-        Path path = key.first;
-        long offset = key.second;
-        int length = key.third;
+    private record ChromKey(Path path, long offset, int length) {}
+
+    private static final BlockingCache<ChromKey, CachedBytes> ON_DEMAND_CHROM_CACHE = new BlockingCache<>(CacheManager.getCache(ChromKey.class, 100, CacheManager.HOUR, "SKYD chromatogram cache"), (key, argument) -> {
+        Path path = key.path();
+        long offset = key.offset();
+        int length = key.length();
 
         long startTime = System.currentTimeMillis();
         LOG.debug("Loading chromatogram from {}, offset {}, length {}", path, offset, length);
@@ -242,7 +243,7 @@ public abstract class AbstractChromInfo extends ChromInfo<PrecursorChromInfoAnno
                 else
                 {
                     LOG.debug("Attempting to fetch chromatogram bytes (possibly cached) from {} for {}", skydPath, this);
-                    CachedBytes diskBytes = ON_DEMAND_CHROM_CACHE.get(new Tuple3<>(skydPath, _chromatogramOffset, _chromatogramLength));
+                    CachedBytes diskBytes = ON_DEMAND_CHROM_CACHE.get(new ChromKey(skydPath, _chromatogramOffset, _chromatogramLength));
                     if (diskBytes == null)
                     {
                         status = Chromatogram.SourceStatus.skydMissing;

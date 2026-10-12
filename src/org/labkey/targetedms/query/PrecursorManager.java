@@ -58,8 +58,8 @@ import java.util.stream.Collectors;
 public class PrecursorManager
 {
     private static final int CACHE_SIZE = 10; // Cache results for up to 10 runs.
-    private static final Cache<String, Set<Long>> PRECURSOR_IDS_WITH_CHROMATOGRAMS = CacheManager.getCache(CACHE_SIZE, CacheManager.DAY, "Precursors having chromatograms");
-    private static final Cache<String, Set<Long>> PRECURSOR_IDS_WITH_SPECTRA = CacheManager.getCache(CACHE_SIZE, CacheManager.DAY, "Precursors having library spectra");
+    private static final Cache<String, Set<Long>> PRECURSOR_IDS_WITH_CHROMATOGRAMS = CacheManager.getCache(String.class, CACHE_SIZE, CacheManager.DAY, "Precursors having chromatograms");
+    private static final Cache<String, Set<Long>> PRECURSOR_IDS_WITH_SPECTRA = CacheManager.getCache(String.class, CACHE_SIZE, CacheManager.DAY, "Precursors having library spectra");
 
     private PrecursorManager() {}
 
