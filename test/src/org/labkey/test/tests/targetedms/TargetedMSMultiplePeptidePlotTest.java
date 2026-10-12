@@ -27,13 +27,14 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Tests rendering of multiple peptides on the same chromatogram visualization panel.
  */
 @Category({})
-@BaseWebDriverTest.ClassTimeout(minutes = 2)
+@BaseWebDriverTest.ClassTimeout(minutes = 4)
 public class TargetedMSMultiplePeptidePlotTest extends TargetedMSTest
 {
     @BeforeClass
@@ -118,5 +119,50 @@ public class TargetedMSMultiplePeptidePlotTest extends TargetedMSTest
         table.clickHeaderMenu("Row Size", "2 replicates per row");
         // Each row will have chromatograms from two replicates. We expect 5 rows since we are displaying the first 10 replicates.
         checker().verifyEquals("Incorrect row count after changing row size to 2 replicates per row", 5, table.getDataRowCount());
+    }
+
+    @Test
+    public void testReplicateAnnotationFilter()
+    {
+        // Experiment folder, since importing a second SProCoP doc into the Library folder would create conflicts
+        String subfolder = "AnnotationFilter";
+        setupSubfolder(getProjectName(), subfolder, FolderType.Experiment);
+        importData(SProCoP_FILE_ANNOTATED, 1, false, false); // Six replicates; DB maintenance would only cost time
+
+        navigateToFolder(getProjectName(), subfolder);
+        clickAndWait(Locator.linkWithText(SProCoP_FILE_ANNOTATED));
+        clickAndWait(Locator.linkWithText("gi|14278146|pdb|1B8E|"));
+        clickAndWait(Locator.linkWithText("VYVEELKPTPEGDLEILLQK"));
+        verifyFilteredReplicates(List.of("JGB_02", "JGB_32", "JGB_38", "JGB_73", "JGB_87", "JGB_87_130815040004"));
+
+        applyAnnotationFilter("Day : 1");
+        verifyFilteredReplicates(List.of("JGB_02", "JGB_32", "JGB_38"));
+        checker().screenShotIfNewError("singleAnnotationFilter");
+
+        applyAnnotationFilter("SampleIdentifier : AnnotatedSample1", "Day : 2");
+        verifyFilteredReplicates(List.of("JGB_02", "JGB_73", "JGB_87", "JGB_87_130815040004"));
+        checker().screenShotIfNewError("multipleAnnotationFilters");
+    }
+
+    private void applyAnnotationFilter(String... annotations)
+    {
+        log("Filtering chromatograms by replicate annotations: " + Arrays.toString(annotations));
+        click(Locator.tagWithText("strong", "Display Chart Settings"));
+        new ComboBox.ComboBoxFinder(getDriver()).withInputNamed("annotationsFilter")
+                .findWhenNeeded(getDriver()).setMultiSelect(true).selectComboBoxItem(annotations);
+        clickButton("Update");
+    }
+
+    private void verifyFilteredReplicates(List<String> expectedReplicates)
+    {
+        DataRegionTable table = new DataRegionTable.DataRegionFinder(getDriver()).withName("PeptidePrecursorChromatograms").waitFor();
+        waitForElementToDisappear(Locator.tagWithAttributeContaining("div", "alt", "Chromatogram Q_Exactive")
+                .withText("Loading..."), WebDriverWrapper.WAIT_FOR_PAGE);
+        checker().verifyEquals("Incorrect number of replicates after annotation filter", expectedReplicates.size(), table.getDataRowCount());
+        for (String replicate : expectedReplicates)
+        {
+            checker().verifyTrue("Missing chromatogram for replicate " + replicate,
+                    isElementPresent(Locator.tagWithAttributeContaining("div", "alt", "Chromatogram Q_Exactive_08_09_2013_" + replicate)));
+        }
     }
 }

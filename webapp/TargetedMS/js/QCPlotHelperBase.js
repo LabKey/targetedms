@@ -214,6 +214,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         for (let i = this.pagingStartIndex; i < this.pagingEndIndex; i++) {
             const plotDataRow = plotDataRows[i];
             if (!plotDataRow) {
+                console.warn('No QC plot data row at index ' + i + ' of ' + plotDataRows.length);
                 continue;
             }
             tempData = plotDataRow;
