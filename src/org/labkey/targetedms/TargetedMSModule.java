@@ -66,6 +66,7 @@ import org.labkey.api.view.template.ClientDependency;
 import org.labkey.panoramapremium.PanoramaPremiumController;
 import org.labkey.panoramapremium.QCNotificationSender;
 import org.labkey.panoramapremium.View.QCSummaryMenuCustomizer;
+import org.labkey.targetedms.chart.ChromatogramDataset;
 import org.labkey.targetedms.chart.ComparisonCategory;
 import org.labkey.targetedms.chart.ReplicateLabelMinimizer;
 import org.labkey.targetedms.datasource.MsDataSourceUtil;
@@ -714,6 +715,7 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     public @NotNull Set<Class<?>> getUnitTests()
     {
         return Set.of(
+            ChromatogramDataset.TestCase.class,
             ComparisonCategory.TestCase.class,
             ReplicateLabelMinimizer.TestCase.class,
             SampleFile.TestCase.class,

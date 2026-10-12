@@ -305,7 +305,7 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
     },
 
     queryContainerSampleFileStats: function (container) {
-        if (container.fileCount > 0) {
+        if (container.fileCount > 0 && container.docCount > 0) {
             LABKEY.Ajax.request({
                 url: LABKEY.ActionURL.buildURL('targetedms', 'GetQCMetricOutliers.api', container.path),
                 params: {sampleLimit: this.sampleLimit},
@@ -323,6 +323,9 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
                 },
                 failure: LABKEY.Utils.getCallbackWrapper(function(response) {
                     var sampleFilesDiv = Ext4.get('qc-summary-samplefiles-' + container.id);
+                    if (!sampleFilesDiv) {
+                        return;
+                    }
 
                     if (response.message) {
                         sampleFilesDiv.update("<span>" + Ext4.util.Format.htmlEncode(response.message) + "</span>");
@@ -342,6 +345,9 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
 
     removeSampleFilesDetailsDiv: function (container) {
         var sampleFilesDiv = Ext4.get('qc-summary-samplefiles-' + container.id);
+        if (!sampleFilesDiv) {
+            return;
+        }
         sampleFilesDiv.update('');
         sampleFilesDiv.removeCls('sample-file-details-loading');
     },
@@ -426,6 +432,9 @@ Ext4.define('LABKEY.targetedms.QCSummary', {
             html += '<div class="qc-summary-text"><a href="' + LABKEY.ActionURL.buildURL('targetedms', 'qcSummaryHistory.view', container.path) + '">View all ' + container.fileCount + ' replicates and utilization calendar <span class="fa fa-calendar"></span></a></div>';
         }
         var sampleFilesDiv = Ext4.get('qc-summary-samplefiles-' + container.id);
+        if (!sampleFilesDiv) {
+            return;
+        }
         sampleFilesDiv.update(html);
         sampleFilesDiv.removeCls('sample-file-details-loading');
 

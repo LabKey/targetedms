@@ -21,6 +21,8 @@ import org.jfree.chart.ChartColor;
 import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.junit.Assert;
+import org.junit.Test;
 import org.labkey.api.collections.IntHashMap;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DataRegionSelection;
@@ -29,6 +31,7 @@ import org.labkey.api.pipeline.PipelineService;
 import org.labkey.api.security.User;
 import org.labkey.api.util.Formats;
 import org.labkey.api.util.logging.LogHelper;
+import org.labkey.api.view.NotFoundException;
 import org.labkey.api.view.ViewContext;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSRun;
@@ -112,6 +115,15 @@ public abstract class ChromatogramDataset
     {
         _container = c;
         _user = u;
+    }
+
+    /** JFreeChart rejects duplicate series keys, so suffix repeats as "X (2)", "X (3)", ... */
+    static String uniqueSeriesKey(XYSeriesCollection dataset, String label)
+    {
+        String key = label;
+        for (int suffix = 2; dataset.getSeriesIndex(key) >= 0; suffix++)
+            key = label + " (" + suffix + ")";
+        return key;
     }
 
     public abstract String getChartTitle();
@@ -322,7 +334,11 @@ public abstract class ChromatogramDataset
             super(user, container);
             _chromInfo = chromInfo;
             SampleFile sampleFile = TargetedMSManager.getSampleFile(chromInfo.getSampleFileId(), container);
+            if (sampleFile == null)
+                throw new NotFoundException("Could not find sample file " + chromInfo.getSampleFileId() + " in " + container.getPath());
             Replicate replicate = TargetedMSManager.getReplicate(sampleFile.getReplicateId(), container);
+            if (replicate == null)
+                throw new NotFoundException("Could not find replicate " + sampleFile.getReplicateId() + " for sample file " + sampleFile.getId() + " in " + container.getPath());
             _run = TargetedMSManager.getRun(replicate.getRunId());
         }
 
@@ -645,7 +661,8 @@ public abstract class ChromatogramDataset
                 Chromatogram chromatogram = pChromInfo.createChromatogram(_run);
                 if (chromatogram != null)
                 {
-                    XYSeries series = new XYSeries(getLabel(pChromInfo));
+                    // Molecule labels omit isotope label and adduct, so two precursors can share one
+                    XYSeries series = new XYSeries(uniqueSeriesKey(_jfreeDataset, getLabel(pChromInfo)));
                     _jfreeDataset.addSeries(series);
                     // Instead of displaying separate peaks for each transition of this precursor,
                     // we will sum up the intensities and display a single peak for the precursor
@@ -1081,7 +1098,7 @@ public abstract class ChromatogramDataset
             float[] intensities = chromatogram.getIntensities(tci.getChromatogramIndex());
             assert times.length == intensities.length : "Length of times and intensities don't match";
 
-            XYSeries series = new XYSeries(label);
+            XYSeries series = new XYSeries(uniqueSeriesKey(dataset, label));
 
             double maxTraceIntensity = 0; // maximum intensity in the displayed range.
 
@@ -1224,15 +1241,17 @@ public abstract class ChromatogramDataset
                 List<MoleculeTransition> transitions = MoleculeTransitionManager.getTransitionsForPrecursor(_molPrecursor.getId(), _user, _container);
                 if (transitions.size() != _pChromInfo.getTransitionChromatogramIndicesList().size())
                 {
-                    throw new IllegalStateException("Mismatch in transitions and indices lengths: " + transitions.size() + " vs " + _pChromInfo.getTransitionChromatogramIndicesList().size());
+                    LOG.warn("Precursor {} has {} transitions but {} chromatogram indices; trace labels may be mismatched",
+                            _molPrecursor.getId(), transitions.size(), _pChromInfo.getTransitionChromatogramIndicesList().size());
                 }
                 int index = 0;
                 for (MoleculeTransition transition : transitions)
                 {
-                    if (include(transition))
+                    if (include(transition) && index < _pChromInfo.getTransitionChromatogramIndicesList().size())
                     {
-                        tciList.add(new MoleculeTransChromInfoPlusTransition(_pChromInfo.makeDummyTransitionChromInfo(index++), transition));
+                        tciList.add(new MoleculeTransChromInfoPlusTransition(_pChromInfo.makeDummyTransitionChromInfo(index), transition));
                     }
+                    index++;
                 }
             }
 
@@ -1629,14 +1648,7 @@ public abstract class ChromatogramDataset
                 GeneralMolecule<?, ?> gm = entry.getKey();
 
                 // Issue 48258:Some very old docs have duplicate molecule names
-                String seriesName = gm.getTextId();
-                int suffix = 1;
-                while (hasSeries(_jfreeDataset, seriesName))
-                {
-                    seriesName = gm.getTextId() + " " + (++suffix);
-                }
-
-                XYSeries series = new XYSeries(seriesName, true, false);
+                XYSeries series = new XYSeries(uniqueSeriesKey(_jfreeDataset, gm.getTextId()), true, false);
                 _jfreeDataset.addSeries(series);
                 _seriesColors.put(i, ColorGenerator.getColor(gm.getTextId(), _seriesColors.values()));
 
@@ -1674,18 +1686,6 @@ public abstract class ChromatogramDataset
             _maxDisplayRt = fullRange.getMaxRt() + padding;
         }
 
-        private boolean hasSeries(XYSeriesCollection jfreeDataset, String seriesName)
-        {
-            for (XYSeries series : (List<XYSeries>)jfreeDataset.getSeries())
-            {
-                if (seriesName.equals(series.getKey()))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
         private RtRange getChromatogramRange(GeneralMolecule<?, ?> generalMolecule, List<PrecursorChromInfoPlus> chromInfos)
         {
             List<RtRange> ranges = new ArrayList<>();
@@ -1713,6 +1713,28 @@ public abstract class ChromatogramDataset
             RtRange summary = summarizeRanges(ranges);
 
             return new RtRange(summary._minRt, summary._maxRt, true, _syncRt);
+        }
+    }
+
+    public static class TestCase extends Assert
+    {
+        @Test
+        public void testUniqueSeriesKey()
+        {
+            XYSeriesCollection dataset = new XYSeriesCollection();
+            assertEquals("A", uniqueSeriesKey(dataset, "A"));
+
+            dataset.addSeries(new XYSeries("A"));
+            assertEquals("A (2)", uniqueSeriesKey(dataset, "A"));
+            assertEquals("B", uniqueSeriesKey(dataset, "B"));
+
+            dataset.addSeries(new XYSeries("A (2)"));
+            assertEquals("A (3)", uniqueSeriesKey(dataset, "A"));
+
+            // A real label that looks like a suffixed duplicate must not collide either
+            dataset.addSeries(new XYSeries("A (3)"));
+            assertEquals("A (2) (2)", uniqueSeriesKey(dataset, "A (2)"));
+            assertEquals("A (4)", uniqueSeriesKey(dataset, "A"));
         }
     }
 }

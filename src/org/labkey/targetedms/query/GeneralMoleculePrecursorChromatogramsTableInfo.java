@@ -154,7 +154,7 @@ public class GeneralMoleculePrecursorChromatogramsTableInfo extends FilteredTabl
         sql.append(" WHERE ").append(precursorIdKey).append(".GeneralMoleculeId=").appendValue(generalMolecule.getId());
         sql.append(" AND OptimizationStep IS NULL "); // Ignore precursorChromInfos for optimization peaks (e.g. Collision energy optimization)
 
-        form.appendReplicateFilters(sql, "SampleFileId.ReplicateId");
+        form.appendReplicateFilters(sql, "SampleFileId.ReplicateId", true);
 
         sql.append(" ) X");
         sql.append("\n GROUP BY replicate, sample, ").append(_generalMoleculeChromInfoCol).append(", isotopecharge")

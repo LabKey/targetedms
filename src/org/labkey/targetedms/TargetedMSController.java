@@ -145,6 +145,7 @@ import org.labkey.api.security.permissions.ApplicationAdminPermission;
 import org.labkey.api.security.permissions.InsertPermission;
 import org.labkey.api.security.permissions.ReadPermission;
 import org.labkey.api.security.permissions.UpdatePermission;
+import org.labkey.api.sql.LabKeySql;
 import org.labkey.api.targetedms.RepresentativeDataState;
 import org.labkey.api.targetedms.RunRepresentativeDataState;
 import org.labkey.api.targetedms.TargetedMSService;
@@ -3068,6 +3069,12 @@ public class TargetedMSController extends SpringActionController
 
         public void appendReplicateFilters(SQLFragment sql, String colName)
         {
+            appendReplicateFilters(sql, colName, false);
+        }
+
+        /** @param labKeySql inline annotation values as literals, since LabKey SQL text can't carry parameters */
+        public void appendReplicateFilters(SQLFragment sql, String colName, boolean labKeySql)
+        {
             List<Integer> replicateIds = getReplicatesFilterList();
             if (!replicateIds.isEmpty())
             {
@@ -3091,8 +3098,16 @@ public class TargetedMSController extends SpringActionController
                 {
                     if (!first)
                         sql.append(" OR ");
-                    sql.append(" (name = ").appendValue(annotation.getName())
-                       .append("  AND value = ").appendValue(annotation.getValue()).append(")");
+                    if (labKeySql)
+                    {
+                        sql.append(" (name = ").append(LabKeySql.quoteString(annotation.getName()))
+                           .append("  AND value = ").append(LabKeySql.quoteString(annotation.getValue())).append(")");
+                    }
+                    else
+                    {
+                        sql.append(" (name = ").appendValue(annotation.getName())
+                           .append("  AND value = ").appendValue(annotation.getValue()).append(")");
+                    }
                     first = false;
                 }
                 sql.append(")");

@@ -213,6 +213,10 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         let trainingSeqIdx = 1; // this index is used for displaying the average number of runs in tooltip (QCPlotHoverPanel.js L110)
         for (let i = this.pagingStartIndex; i < this.pagingEndIndex; i++) {
             const plotDataRow = plotDataRows[i];
+            if (!plotDataRow) {
+                console.warn('No QC plot data row at index ' + i + ' of ' + plotDataRows.length);
+                continue;
+            }
             tempData = plotDataRow;
             const fragment = plotDataRow.SeriesLabel;
             Ext4.iterate(plotDataRow.data, function (plotData) {
@@ -481,7 +485,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
             metricProps[this.metric2] = this.getMetricPropsById(this.metric2);
         }
 
-        if (this.singlePlot && this.getMetricPropsById(this.metric).precursorScoped) {
+        if (this.singlePlot && this.isPrecursorScopedMetric(this.metric)) {
             this.peptideGroups = this.buildPeptideGroups();
             addedPlot = this.addCombinedPeptideSinglePlot(metricProps);
         }
@@ -866,7 +870,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
 
     getSubtitle: function(precursor) {
         if (!this.isMultiSeries()) {
-            return (precursor ? (precursor + ' - ') : '')  + this.getMetricPropsById(this.metric).name;
+            return (precursor ? (precursor + ' - ') : '')  + (this.getMetricPropsById(this.metric)?.name ?? '');
         }
         return precursor;
     },
@@ -1202,7 +1206,7 @@ Ext4.define("LABKEY.targetedms.QCPlotHelperBase", {
         }
 
         const extraMargin = this.showInPlotLegends() ? 0 : 10 * this.longestLegendText;
-        this.attachPlotExportIcons(id, mainTitle + '-' + this.precursors[precursorIndex] + '-' + this.getMetricPropsById(this.metric).name, plotIndex, this.getPlotWidth(), extraMargin);
+        this.attachPlotExportIcons(id, mainTitle + '-' + this.precursors[precursorIndex] + '-' + (this.getMetricPropsById(this.metric)?.name ?? ''), plotIndex, this.getPlotWidth(), extraMargin);
     },
 
     getYAxisLeftMarginOffset: function(precursorInfo) {
