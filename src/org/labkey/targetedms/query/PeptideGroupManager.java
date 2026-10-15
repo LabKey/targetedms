@@ -16,7 +16,6 @@
 package org.labkey.targetedms.query;
 
 
-import org.apache.commons.lang3.StringUtils;
 import org.labkey.api.collections.LongArrayList;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.SQLFragment;
@@ -133,22 +132,19 @@ public class PeptideGroupManager
         if(peptideGroupIds == null || peptideGroupIds.isEmpty())
             return;
 
-        String peptideGroupIdsString = StringUtils.join(peptideGroupIds, ",");
-
         SQLFragment sql = new SQLFragment("UPDATE "+TargetedMSManager.getTableInfoPeptideGroup());
         sql.append(" SET RepresentativeDataState = ? ");
         sql.add(representativeState.ordinal());
-        sql.append(" WHERE "+TargetedMSManager.getTableInfoPeptideGroup()+".Id IN (");
-        sql.append(peptideGroupIdsString);
-        sql.append(")");
+        sql.append(" WHERE "+TargetedMSManager.getTableInfoPeptideGroup()+".Id");
+        sql.appendInClause(peptideGroupIds, TargetedMSManager.getSqlDialect());
 
         new SqlExecutor(TargetedMSManager.getSchema()).execute(sql);
 
         // Update the representative state of all precursors of the given peptide groups
-        updatePrecursorRepresentativeState(peptideGroupIdsString);
+        updatePrecursorRepresentativeState(peptideGroupIds);
     }
 
-    private static void updatePrecursorRepresentativeState(String peptideGroupIdsString)
+    private static void updatePrecursorRepresentativeState(List<Long> peptideGroupIds)
     {
         SQLFragment sql;
         sql = new SQLFragment("UPDATE "+TargetedMSManager.getTableInfoGeneralPrecursor());
@@ -159,9 +155,8 @@ public class PeptideGroupManager
         sql.append(TargetedMSManager.getTableInfoPeptide(), "pep");
         sql.append(", ");
         sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
-        sql.append(" WHERE pg.Id IN (");
-        sql.append(peptideGroupIdsString);
-        sql.append(")");
+        sql.append(" WHERE pg.Id");
+        sql.appendInClause(peptideGroupIds, TargetedMSManager.getSqlDialect());
         sql.append(" AND pep.Id = gm.Id ");
         sql.append(" AND pg.Id = gm.peptideGroupId ");
         sql.append(" AND gm.Id = "+TargetedMSManager.getTableInfoGeneralPrecursor()+".GeneralMoleculeId");
@@ -189,22 +184,19 @@ public class PeptideGroupManager
         if(peptideGroupIds == null || peptideGroupIds.isEmpty())
             return;
 
-        String peptideGroupIdsString = StringUtils.join(peptideGroupIds, ",");
-
         SQLFragment sql = new SQLFragment("UPDATE "+TargetedMSManager.getTableInfoPeptideGroup());
         sql.append(" SET RepresentativeDataState = ");
         sql.append(" CASE WHEN RepresentativeDataState = "+RepresentativeDataState.Conflicted.ordinal());
         sql.append(" THEN "+RepresentativeDataState.NotRepresentative.ordinal());
         sql.append(" ELSE "+RepresentativeDataState.Deprecated.ordinal());
         sql.append(" END");
-        sql.append(" WHERE "+TargetedMSManager.getTableInfoPeptideGroup()+".Id IN (");
-        sql.append(peptideGroupIdsString);
-        sql.append(")");
+        sql.append(" WHERE "+TargetedMSManager.getTableInfoPeptideGroup()+".Id");
+        sql.appendInClause(peptideGroupIds, TargetedMSManager.getSqlDialect());
 
         new SqlExecutor(TargetedMSManager.getSchema()).execute(sql);
 
         // Update the representative state of all precursors of the given peptide groups
-        updatePrecursorRepresentativeState(peptideGroupIdsString);
+        updatePrecursorRepresentativeState(peptideGroupIds);
     }
 
     public static List<PeptideGroup> getRepresentativePeptideGroups(long runId)
@@ -274,20 +266,14 @@ public class PeptideGroupManager
 
         Set<Long> uniqueIds = new HashSet<>(peptideGroupIds);
 
-        StringBuilder pepGrpIds = new StringBuilder();
-        for(Long id: uniqueIds)
-        {
-            pepGrpIds.append(",").append(id);
-        }
-        if(!pepGrpIds.isEmpty())
-            pepGrpIds.deleteCharAt(0);
         SQLFragment sql = new SQLFragment("SELECT COUNT(pg.Id) FROM ");
         sql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pg");
         sql.append(", ");
         sql.append(TargetedMSManager.getTableInfoRuns(), "r");
         sql.append(" WHERE ");
-        sql.append("pg.RunId = r.Id AND r.Container = ? AND pg.Id IN (" + pepGrpIds + ")");
+        sql.append("pg.RunId = r.Id AND r.Container = ? AND pg.Id");
         sql.add(container.getId());
+        sql.appendInClause(uniqueIds, TargetedMSManager.getSqlDialect());
 
         Integer count = new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Integer.class);
         return count != null && count == uniqueIds.size();

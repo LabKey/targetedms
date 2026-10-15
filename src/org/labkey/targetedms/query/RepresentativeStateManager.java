@@ -15,7 +15,6 @@
  */
 package org.labkey.targetedms.query;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DbScope;
@@ -193,7 +192,7 @@ public class RepresentativeStateManager
         makeActiveSQL.add(run.getId());
         if(!peptideGroupIdsToExclude.isEmpty())
         {
-            makeActiveSQL.append(" AND Id NOT IN (").append(StringUtils.join(peptideGroupIdsToExclude, ',')).append(")");
+            makeActiveSQL.append(" AND NOT (Id").appendInClause(peptideGroupIdsToExclude, TargetedMSManager.getSqlDialect()).append(")");
         }
         makeActiveSQL.append(" AND Id NOT IN ( ");
         // Issue 40407: Chromatogram library folder issues
@@ -256,7 +255,7 @@ public class RepresentativeStateManager
         makeConflictedSQL.add(run.getId());
         if(!peptideGroupIdsToExclude.isEmpty())
         {
-            makeConflictedSQL.append(" AND Id NOT IN (").append(StringUtils.join(peptideGroupIdsToExclude, ',')).append(")");
+            makeConflictedSQL.append(" AND NOT (Id").appendInClause(peptideGroupIdsToExclude, TargetedMSManager.getSqlDialect()).append(")");
         }
         makeConflictedSQL.append(" AND RepresentativeDataState != ?");
         makeConflictedSQL.add(RepresentativeDataState.Representative.ordinal());
@@ -304,9 +303,7 @@ public class RepresentativeStateManager
         sql.add(container);
         sql.append(" WHERE pg.Label IN (");
         sql.append(" SELECT Label FROM ").append(TargetedMSManager.getTableInfoPeptideGroup(), "pepgrp");
-        sql.append(" WHERE Id IN (");
-        sql.append(StringUtils.join(stdPepGrpIdsInRun, ","));
-        sql.append(")");
+        sql.append(" WHERE Id").appendInClause(stdPepGrpIdsInRun, TargetedMSManager.getSqlDialect());
         sql.append(")");
         sql.append(" AND pg.RepresentativeDataState=").appendValue(RepresentativeDataState.Representative.ordinal());
 
@@ -412,7 +409,7 @@ public class RepresentativeStateManager
         sql.append(TargetedMSManager.getTableInfoRuns(), "run");
         sql.append(" ON (run.Id = pg.RunId AND run.Container=?) ");
         sql.add(container);
-        sql.append(" WHERE pre1.Id in (").append(StringUtils.join(stdPrecursorIdsInRun, ",")).append(")");
+        sql.append(" WHERE pre1.Id").appendInClause(stdPrecursorIdsInRun, TargetedMSManager.getSqlDialect());
 
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(Long.class);
     }

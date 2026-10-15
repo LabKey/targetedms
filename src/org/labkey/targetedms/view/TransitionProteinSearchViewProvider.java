@@ -87,15 +87,8 @@ public class TransitionProteinSearchViewProvider implements QueryViewProvider<Pr
                 int[] seqIds = form.getSeqId();
                 if (seqIds.length > 0)
                 {
-                    sql.append("p.SequenceId IN (");
-                    String separator = "";
-                    for (int seqId : seqIds)
-                    {
-                        sql.append(separator);
-                        sql.appendValue(seqId);
-                        separator = ",";
-                    }
-                    sql.append(")");
+                    sql.append("p.SequenceId");
+                    sql.appendInClause(Arrays.stream(seqIds).boxed().toList(), TargetedMSManager.getSqlDialect());
                     sql.append(" OR ");
                 }
 

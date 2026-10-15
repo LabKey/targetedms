@@ -3081,7 +3081,10 @@ public class TargetedMSController extends SpringActionController
                 sql.append("\n AND ");
                 sql.append("(");
                 sql.append(colName);
-                sql.append(" IN (" + StringUtils.join(replicateIds,",") + ")");
+                if (labKeySql)
+                    sql.append(" IN (" + StringUtils.join(replicateIds,",") + ")");
+                else
+                    sql.appendInClause(replicateIds, TargetedMSManager.getSqlDialect());
                 sql.append(")");
             }
 

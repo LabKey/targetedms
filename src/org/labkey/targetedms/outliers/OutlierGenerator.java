@@ -15,7 +15,6 @@
  */
 package org.labkey.targetedms.outliers;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.labkey.api.action.SpringActionController;
@@ -273,15 +272,7 @@ public class OutlierGenerator
                 List<String> vals = annotation.getValues();
                 if (!vals.isEmpty())
                 {
-                    sql.append(" AND ra.Value IN (");
-                    String vsep = "";
-                    for (String v : vals)
-                    {
-                        sql.append(vsep).append("?");
-                        sql.add(v);
-                        vsep = ",";
-                    }
-                    sql.append(")");
+                    sql.append(" AND ra.Value").appendInClause(vals, TargetedMSManager.getSqlDialect());
                 }
                 intersect = " INTERSECT ";
             }
@@ -349,10 +340,7 @@ public class OutlierGenerator
             sql.append(TargetedMSManager.getTableInfoQCMetricCache(), "c");
             sql.append(" WHERE c.Container = ?\n");
             sql.add(schema.getContainer());
-            sql.append(" AND c.MetricId IN (");
-            sql.append(StringUtils.repeat("?", ",", precursorScoped.size()));
-            sql.addAll(precursorScoped.stream().map(QCMetricConfiguration::getId).toList());
-            sql.append(")");
+            sql.append(" AND c.MetricId").appendInClause(precursorScoped.stream().map(QCMetricConfiguration::getId).toList(), TargetedMSManager.getSqlDialect());
             separator = "\nUNION ALL\n";
         }
 
