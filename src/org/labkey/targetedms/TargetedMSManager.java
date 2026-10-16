@@ -1088,7 +1088,7 @@ public class TargetedMSManager
         }
 
         SQLFragment updateSql = new SQLFragment();
-        updateSql.append("UPDATE "+TargetedMSManager.getTableInfoRuns());
+        updateSql.append("UPDATE ").append(TargetedMSManager.getTableInfoRuns());
         updateSql.append(" SET RepresentativeDataState = ?");
         updateSql.add(RunRepresentativeDataState.NotRepresentative.ordinal());
         updateSql.append(" WHERE Container = ?");
@@ -1100,7 +1100,7 @@ public class TargetedMSManager
         // for the documents not yet imported.
         updateSql.append(" AND StatusId = ? ");
         updateSql.add(SkylineDocImporter.STATUS_SUCCESS);
-        updateSql.append(" AND NOT (Id").appendInClause(representativeRunIds, getSqlDialect()).append(")");
+        updateSql.append(" AND ").appendNotInClause("Id", representativeRunIds, getSqlDialect());
 
         new SqlExecutor(TargetedMSManager.getSchema()).execute(updateSql);
     }
