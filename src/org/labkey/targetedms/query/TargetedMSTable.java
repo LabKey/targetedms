@@ -117,7 +117,8 @@ public class TargetedMSTable extends FilteredTable<TargetedMSSchema>
         // See issue 38134 - don't filter if we don't need to because we're on the other side of a FK/lookup
         if ((getContainerFilter() != ContainerFilter.getUnsafeEverythingFilter() && !(getContainerFilter() instanceof TargetedMSForeignKey.AnnotationsContainerFilter)) || _containerTableFilter != null)
         {
-            sql.append(_joinType != null ? _joinType.getSQL() : "");
+            if (_joinType != null)
+                sql.append(_joinType.getSQL());
 
             sql.append(" WHERE ");
             sql.append(getContainerFilter().getSQLFragment(getSchema(), _containerSQL));

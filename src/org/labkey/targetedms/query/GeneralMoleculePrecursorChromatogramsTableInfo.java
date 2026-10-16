@@ -176,7 +176,7 @@ public class GeneralMoleculePrecursorChromatogramsTableInfo extends FilteredTabl
             {
                 sb.append(qe.getMessage()).append('\n');
             }
-            throw new IllegalStateException(sb + "\n.SQL: " + sql);
+            throw new IllegalStateException(sb + "\n.SQL: " + sql.toDebugString());
         }
 
         return tableInfo;
