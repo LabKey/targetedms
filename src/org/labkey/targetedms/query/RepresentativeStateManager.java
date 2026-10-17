@@ -15,7 +15,6 @@
  */
 package org.labkey.targetedms.query;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.labkey.api.data.Container;
 import org.labkey.api.data.DbScope;
@@ -186,15 +185,12 @@ public class RepresentativeStateManager
         List<Long> peptideGroupIdsToExclude = getAllDecoyOrStandardPeptideGroups(run);
 
         // Mark everything in this run that doesn't already have representative data in this container as being active
-        SQLFragment makeActiveSQL = new SQLFragment("UPDATE " + TargetedMSManager.getTableInfoPeptideGroup());
+        SQLFragment makeActiveSQL = new SQLFragment("UPDATE ").append(TargetedMSManager.getTableInfoPeptideGroup());
         makeActiveSQL.append(" SET RepresentativeDataState = ?");
         makeActiveSQL.add(RepresentativeDataState.Representative.ordinal());
         makeActiveSQL.append(" WHERE RunId=? ");
         makeActiveSQL.add(run.getId());
-        if(!peptideGroupIdsToExclude.isEmpty())
-        {
-            makeActiveSQL.append(" AND Id NOT IN (").append(StringUtils.join(peptideGroupIdsToExclude, ',')).append(")");
-        }
+        makeActiveSQL.append(" AND ").appendNotInClause("Id", peptideGroupIdsToExclude, TargetedMSManager.getSqlDialect());
         makeActiveSQL.append(" AND Id NOT IN ( ");
         // Issue 40407: Chromatogram library folder issues
         // We will ignore (not mark as representative) all proteins that are already in the library - i.e. the protein
@@ -249,15 +245,12 @@ public class RepresentativeStateManager
         new SqlExecutor(TargetedMSManager.getSchema()).execute(makeActiveSQL);
 
         // Mark all other peptide groups as being in the conflicted state
-        SQLFragment makeConflictedSQL = new SQLFragment("UPDATE " + TargetedMSManager.getTableInfoPeptideGroup());
+        SQLFragment makeConflictedSQL = new SQLFragment("UPDATE ").append(TargetedMSManager.getTableInfoPeptideGroup());
         makeConflictedSQL.append(" SET RepresentativeDataState = ?");
         makeConflictedSQL.add(RepresentativeDataState.Conflicted.ordinal());
         makeConflictedSQL.append(" WHERE RunId=?");
         makeConflictedSQL.add(run.getId());
-        if(!peptideGroupIdsToExclude.isEmpty())
-        {
-            makeConflictedSQL.append(" AND Id NOT IN (").append(StringUtils.join(peptideGroupIdsToExclude, ',')).append(")");
-        }
+        makeConflictedSQL.append(" AND ").appendNotInClause("Id", peptideGroupIdsToExclude, TargetedMSManager.getSqlDialect());
         makeConflictedSQL.append(" AND RepresentativeDataState != ?");
         makeConflictedSQL.add(RepresentativeDataState.Representative.ordinal());
         int conflictCount = new SqlExecutor(TargetedMSManager.getSchema()).execute(makeConflictedSQL);
@@ -304,9 +297,7 @@ public class RepresentativeStateManager
         sql.add(container);
         sql.append(" WHERE pg.Label IN (");
         sql.append(" SELECT Label FROM ").append(TargetedMSManager.getTableInfoPeptideGroup(), "pepgrp");
-        sql.append(" WHERE Id IN (");
-        sql.append(StringUtils.join(stdPepGrpIdsInRun, ","));
-        sql.append(")");
+        sql.append(" WHERE Id").appendInClause(stdPepGrpIdsInRun, TargetedMSManager.getSqlDialect());
         sql.append(")");
         sql.append(" AND pg.RepresentativeDataState=").appendValue(RepresentativeDataState.Representative.ordinal());
 
@@ -330,7 +321,7 @@ public class RepresentativeStateManager
     private static List<Long> getFilteredPeptideGroupIds(TargetedMSRun run, boolean includeStandard, boolean includeDecoy)
     {
         // Get a list of peptide group ids that only have either decoy or standard peptides
-        SQLFragment sql = new SQLFragment("SELECT DISTINCT Id FROM " + TargetedMSManager.getTableInfoPeptideGroup());
+        SQLFragment sql = new SQLFragment("SELECT DISTINCT Id FROM ").append(TargetedMSManager.getTableInfoPeptideGroup());
         sql.append(" WHERE RunId = ? ");
         sql.add(run.getId());
         sql.append(" AND Id NOT IN (");
@@ -412,7 +403,7 @@ public class RepresentativeStateManager
         sql.append(TargetedMSManager.getTableInfoRuns(), "run");
         sql.append(" ON (run.Id = pg.RunId AND run.Container=?) ");
         sql.add(container);
-        sql.append(" WHERE pre1.Id in (").append(StringUtils.join(stdPrecursorIdsInRun, ",")).append(")");
+        sql.append(" WHERE pre1.Id").appendInClause(stdPrecursorIdsInRun, TargetedMSManager.getSqlDialect());
 
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(Long.class);
     }
@@ -457,7 +448,7 @@ public class RepresentativeStateManager
                                                   SQLFragment moleculeFilterSQL, BiFunction<String, String, String> joinValue)
     {
         // Mark everything in this run that doesn't already have representative data in this container as being representative
-        SQLFragment makeActiveSQL = new SQLFragment("UPDATE " + TargetedMSManager.getTableInfoGeneralPrecursor());
+        SQLFragment makeActiveSQL = new SQLFragment("UPDATE ").append(TargetedMSManager.getTableInfoGeneralPrecursor());
         makeActiveSQL.append(" SET RepresentativeDataState = ? FROM ");
         makeActiveSQL.add(RepresentativeDataState.Representative.ordinal());
         makeActiveSQL.append(moleculeTable, "m").append(", ");
@@ -498,7 +489,7 @@ public class RepresentativeStateManager
         int result = new SqlExecutor(TargetedMSManager.getSchema()).execute(makeActiveSQL);
 
         // Mark all other precursors as being in the conflicted state
-        SQLFragment makeConflictedSQL = new SQLFragment("UPDATE "+TargetedMSManager.getTableInfoGeneralPrecursor());
+        SQLFragment makeConflictedSQL = new SQLFragment("UPDATE ").append(TargetedMSManager.getTableInfoGeneralPrecursor());
         makeConflictedSQL.append(" SET RepresentativeDataState = ?");
         makeConflictedSQL.add(RepresentativeDataState.Conflicted.ordinal());
         makeConflictedSQL.append(" FROM ");

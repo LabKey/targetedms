@@ -15,7 +15,6 @@
 
 package org.labkey.targetedms.query;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Assert;
@@ -459,9 +458,8 @@ public class PrecursorManager
         SQLFragment sql = new SQLFragment("UPDATE "+TargetedMSManager.getTableInfoGeneralPrecursor());
         sql.append(" SET RepresentativeDataState = ? ");
         sql.add(representativeState.ordinal());
-        sql.append(" WHERE "+TargetedMSManager.getTableInfoGeneralPrecursor()+".Id IN (");
-        sql.append(StringUtils.join(precursorIds, ","));
-        sql.append(")");
+        sql.append(" WHERE "+TargetedMSManager.getTableInfoGeneralPrecursor()+".Id");
+        sql.appendInClause(precursorIds, TargetedMSManager.getSqlDialect());
 
         new SqlExecutor(TargetedMSManager.getSchema()).execute(sql);
     }
@@ -477,9 +475,8 @@ public class PrecursorManager
         sql.append(" THEN "+RepresentativeDataState.NotRepresentative.ordinal());
         sql.append(" ELSE "+RepresentativeDataState.Deprecated.ordinal());
         sql.append(" END");
-        sql.append(" WHERE "+TargetedMSManager.getTableInfoGeneralPrecursor()+".Id IN (");
-        sql.append(StringUtils.join(precursorIds, ","));
-        sql.append(")");
+        sql.append(" WHERE "+TargetedMSManager.getTableInfoGeneralPrecursor()+".Id");
+        sql.appendInClause(precursorIds, TargetedMSManager.getSqlDialect());
 
         new SqlExecutor(TargetedMSManager.getSchema()).execute(sql);
     }
@@ -500,10 +497,9 @@ public class PrecursorManager
         sql.append(", ");
         sql.append(TargetedMSManager.getTableInfoRuns(), "r");
         sql.append(" WHERE gp.GeneralMoleculeId = gm.Id AND ");
-        sql.append("gm.PeptideGroupId = pg.Id AND pg.RunId = r.Id AND r.Container = ? AND gp.Id IN (");
-        sql.append(StringUtils.join(ids, ","));
-        sql.append(")");
+        sql.append("gm.PeptideGroupId = pg.Id AND pg.RunId = r.Id AND r.Container = ? AND gp.Id");
         sql.add(container.getId());
+        sql.appendInClause(ids, TargetedMSManager.getSqlDialect());
 
         Integer count = new SqlSelector(TargetedMSManager.getSchema(), sql).getObject(Integer.class);
         return count != null && count.intValue() == ids.size() ;

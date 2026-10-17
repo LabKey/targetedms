@@ -16,7 +16,6 @@
 
 package org.labkey.targetedms;
 
-import com.google.common.base.Joiner;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.io.FilenameUtils;
@@ -1089,7 +1088,7 @@ public class TargetedMSManager
         }
 
         SQLFragment updateSql = new SQLFragment();
-        updateSql.append("UPDATE "+TargetedMSManager.getTableInfoRuns());
+        updateSql.append("UPDATE ").append(TargetedMSManager.getTableInfoRuns());
         updateSql.append(" SET RepresentativeDataState = ?");
         updateSql.add(RunRepresentativeDataState.NotRepresentative.ordinal());
         updateSql.append(" WHERE Container = ?");
@@ -1101,7 +1100,7 @@ public class TargetedMSManager
         // for the documents not yet imported.
         updateSql.append(" AND StatusId = ? ");
         updateSql.add(SkylineDocImporter.STATUS_SUCCESS);
-        updateSql.append(" AND Id NOT IN (").append(StringUtils.join(representativeRunIds, ",")).append(")");
+        updateSql.append(" AND ").appendNotInClause("Id", representativeRunIds, getSqlDialect());
 
         new SqlExecutor(TargetedMSManager.getSchema()).execute(updateSql);
     }
@@ -1140,9 +1139,8 @@ public class TargetedMSManager
         reprRunIdSql.append(TargetedMSManager.getTableInfoPeptideGroup(), "pepgrp");
         reprRunIdSql.append(", ");
         reprRunIdSql.append(TargetedMSManager.getTableInfoRuns(), "runs");
-        String states = StringUtils.join(stateArray, ',');
 
-        reprRunIdSql.append(" WHERE pepgrp.RepresentativeDataState IN (").append(states).append(")");
+        reprRunIdSql.append(" WHERE pepgrp.RepresentativeDataState").appendInClause(Arrays.stream(stateArray).boxed().toList(), getSqlDialect());
         reprRunIdSql.append(" AND runs.Container = ?");
         reprRunIdSql.add(container);
         reprRunIdSql.append(" AND runs.Id = pepgrp.RunId");
@@ -1175,9 +1173,7 @@ public class TargetedMSManager
         reprRunIdSql.append(", ");
         reprRunIdSql.append(TargetedMSManager.getTableInfoRuns(), "runs");
 
-        String states = StringUtils.join(stateArray, ',');
-
-        reprRunIdSql.append(" WHERE gp.RepresentativeDataState IN (").append(states).append(")");
+        reprRunIdSql.append(" WHERE gp.RepresentativeDataState").appendInClause(Arrays.stream(stateArray).boxed().toList(), getSqlDialect());
         reprRunIdSql.append(" AND gp.GeneralMoleculeId = gm.Id");
         reprRunIdSql.append(" AND gm.PeptideGroupId = pepgrp.Id");
         reprRunIdSql.append(" AND Container = ?");
@@ -2063,9 +2059,8 @@ public class TargetedMSManager
         if (!predictorsToDelete.isEmpty())
         {
             // Delete predictors
-            execute("DELETE FROM " + getTableInfoPredictor() + " WHERE " +
-                    "Id IN (" + predictorsToDelete.stream().map(String::valueOf).collect(Collectors.joining(",")) + " )"
-            );
+            execute(new SQLFragment("DELETE FROM ").append(getTableInfoPredictor()).append(" WHERE Id")
+                    .appendInClause(predictorsToDelete, getSqlDialect()));
         }
     }
 
@@ -2331,6 +2326,10 @@ public class TargetedMSManager
         String intensityColumnName = "Area";
         String rowHeadingColumnName = "ProteinName";
 
+        String rowIdList = Arrays.stream(rowIds).filter(Objects::nonNull).map(String::valueOf).collect(Collectors.joining(", "));
+        if (rowIdList.isEmpty())
+            return new HashMap<>();
+
         //TODO: This query will be replaced once Skyline Updates are ready
         String sql = "SELECT\n" +
                 "    SUM(TotalArea) AS " + intensityColumnName + ",\n" +
@@ -2339,7 +2338,7 @@ public class TargetedMSManager
                 "FROM \n" +
                 "    PrecursorChromInfo pci, targetedms.targetedmsruns r\n" +
                 "WHERE\n" +
-                "    PrecursorId.PeptideId.PeptideGroupId.RunId = r.File.Id AND r.RowId IN (" + Joiner.on(", ").skipNulls().join(rowIds) + ")\n" +
+                "    PrecursorId.PeptideId.PeptideGroupId.RunId = r.File.Id AND r.RowId IN (" + rowIdList + ")\n" +
                 "GROUP BY\n" +
                 "    SampleFileId.SampleName,\n" +
                 "    PrecursorId.PeptideId.PeptideGroupId.Label\n" +
