@@ -588,8 +588,8 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
                 annotationFolderCountSQL.append(TargetedMSManager.getTableInfoQCAnnotationType(), "at");
                 annotationFolderCountSQL.append(" INNER JOIN " );
                 annotationFolderCountSQL.append(TargetedMSManager.getTableInfoQCAnnotation(), "a");
-                annotationFolderCountSQL.append(" ON at.Id = a.qcAnnotationTypeId GROUP BY CASE WHEN at.Container = ? THEN at.Name ELSE 'custom' END");
-                annotationFolderCountSQL.add(ContainerManager.getSharedContainer().getId());
+                // Repeating the CASE here would bind a second parameter, which Postgres won't match to the SELECT's expression
+                annotationFolderCountSQL.append(" ON at.Id = a.qcAnnotationTypeId GROUP BY 1");
 
                 UsageMetricGroup annotationFolderCounts = metrics.group("annotationFolderCounts", "Folders with at least one QC annotation of each annotation type, by built-in type name, with all custom types under 'custom'");
                 new SqlSelector(schema, annotationFolderCountSQL).forEach(rs ->
