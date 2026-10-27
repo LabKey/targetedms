@@ -564,9 +564,9 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
             svc.registerUsageMetrics(MODULE_NAME, metrics ->
             {
                 DbSchema schema = TargetedMSManager.getSchema();
-                metrics.put("runCount", new SqlSelector(schema, "SELECT COUNT(*) FROM TargetedMS.Runs WHERE Deleted = ? AND StatusId = ?", Boolean.FALSE, SkylineDocImporter.STATUS_SUCCESS).getObject(Long.class), "Successfully imported Skyline document runs across the server, excluding those marked deleted");
-                metrics.put("guideSetCount", new SqlSelector(schema, "SELECT COUNT(*) FROM TargetedMS.GuideSet").getObject(Long.class), "QC guide sets across the server");
-                metrics.put("guideSetContainerCount", new SqlSelector(schema, "SELECT COUNT(DISTINCT Container) FROM TargetedMS.GuideSet").getObject(Long.class), "Folders with at least one QC guide set");
+                metrics.put("runCount", () -> new SqlSelector(schema, "SELECT COUNT(*) FROM TargetedMS.Runs WHERE Deleted = ? AND StatusId = ?", Boolean.FALSE, SkylineDocImporter.STATUS_SUCCESS).getObject(Long.class), "Successfully imported Skyline document runs across the server, excluding those marked deleted");
+                metrics.put("guideSetCount", () -> new SqlSelector(schema, "SELECT COUNT(*) FROM TargetedMS.GuideSet").getObject(Long.class), "QC guide sets across the server");
+                metrics.put("guideSetContainerCount", () -> new SqlSelector(schema, "SELECT COUNT(DISTINCT Container) FROM TargetedMS.GuideSet").getObject(Long.class), "Folders with at least one QC guide set");
 
                 SQLFragment folderTypeSQL = new SQLFragment("SELECT p.value, COUNT(*) AS FolderCount FROM ");
                 folderTypeSQL.append(PropertySchema.getInstance().getTableInfoProperties(), "p");
