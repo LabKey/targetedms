@@ -53,7 +53,6 @@ import org.labkey.api.settings.OptionalFeatureFlag;
 import org.labkey.api.settings.OptionalFeatureService;
 import org.labkey.api.targetedms.TargetedMSService;
 import org.labkey.api.usageMetrics.SimpleMetricsService;
-import org.labkey.api.usageMetrics.UsageMetricGroup;
 import org.labkey.api.usageMetrics.UsageMetricsService;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.view.ActionURL;
@@ -97,7 +96,9 @@ import org.labkey.targetedms.view.passport.ProteinListView;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.labkey.api.targetedms.TargetedMSService.FOLDER_TYPE_PROP_NAME;
@@ -578,9 +579,12 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
                 folderTypeSQL.add(FOLDER_TYPE_PROP_NAME);
                 folderTypeSQL.add(ContainerManager.getRoot().getId());
 
-                UsageMetricGroup folderCounts = metrics.group("folderCounts", "Folders by their TargetedMS folder type setting (Experiment, Library, QC, etc.)");
-                new SqlSelector(PropertySchema.getInstance().getSchema(), folderTypeSQL).forEach(rs ->
-                        folderCounts.put(rs.getString("value"), rs.getLong("FolderCount")));
+                metrics.put("folderCounts", () -> {
+                    Map<String, Object> folderCounts = new LinkedHashMap<>();
+                    new SqlSelector(PropertySchema.getInstance().getSchema(), folderTypeSQL).forEach(rs ->
+                            folderCounts.put(rs.getString("value"), rs.getLong("FolderCount")));
+                    return folderCounts;
+                }, "Folders by their TargetedMS folder type setting (Experiment, Library, QC, etc.)");
 
                 // Built-in types live in /Shared; custom names are user-entered and can repeat across folders
                 SQLFragment annotationFolderCountSQL = new SQLFragment("SELECT CASE WHEN at.Container = ? THEN at.Name ELSE 'custom' END AS Name, COUNT(DISTINCT a.Container) AS FolderCount FROM ");
@@ -591,9 +595,12 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
                 // Repeating the CASE here would bind a second parameter, which Postgres won't match to the SELECT's expression
                 annotationFolderCountSQL.append(" ON at.Id = a.qcAnnotationTypeId GROUP BY 1");
 
-                UsageMetricGroup annotationFolderCounts = metrics.group("annotationFolderCounts", "Folders with at least one QC annotation of each annotation type, by built-in type name, with all custom types under 'custom'");
-                new SqlSelector(schema, annotationFolderCountSQL).forEach(rs ->
-                        annotationFolderCounts.put(rs.getString("Name"), rs.getLong("FolderCount")));
+                metrics.put("annotationFolderCounts", () -> {
+                    Map<String, Object> annotationFolderCounts = new LinkedHashMap<>();
+                    new SqlSelector(schema, annotationFolderCountSQL).forEach(rs ->
+                            annotationFolderCounts.put(rs.getString("Name"), rs.getLong("FolderCount")));
+                    return annotationFolderCounts;
+                }, "Folders with at least one QC annotation of each annotation type, by built-in type name, with all custom types under 'custom'");
 
                 return metrics;
             });
