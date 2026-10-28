@@ -52,6 +52,7 @@ import org.labkey.api.settings.AdminConsole;
 import org.labkey.api.settings.OptionalFeatureFlag;
 import org.labkey.api.settings.OptionalFeatureService;
 import org.labkey.api.targetedms.TargetedMSService;
+import org.labkey.api.usageMetrics.SimpleMetricsService;
 import org.labkey.api.usageMetrics.UsageMetricsService;
 import org.labkey.api.util.PageFlowUtil;
 import org.labkey.api.view.ActionURL;
@@ -95,7 +96,7 @@ import org.labkey.targetedms.view.passport.ProteinListView;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -561,41 +562,47 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
         UsageMetricsService svc = UsageMetricsService.get();
         if (null != svc)
         {
-            svc.registerUsageMetrics(MODULE_NAME, () ->
+            svc.registerUsageMetrics(MODULE_NAME, metrics ->
             {
-                Map<String, Object> metric = new HashMap<>();
                 DbSchema schema = TargetedMSManager.getSchema();
-                metric.put("runCount", new SqlSelector(schema, "SELECT COUNT(*) FROM TargetedMS.Runs WHERE Deleted = ?", Boolean.FALSE).getObject(Long.class));
-                metric.put("guideSetCount", new SqlSelector(schema, "SELECT COUNT(*) FROM TargetedMS.GuideSet").getObject(Long.class));
-                metric.put("guideSetContainerCount", new SqlSelector(schema, "SELECT COUNT(DISTINCT Container) FROM TargetedMS.GuideSet").getObject(Long.class));
+                metrics.put("runCount", () -> new SqlSelector(schema, "SELECT COUNT(*) FROM TargetedMS.Runs WHERE Deleted = ? AND StatusId = ?", Boolean.FALSE, SkylineDocImporter.STATUS_SUCCESS).getObject(Long.class), "Successfully imported Skyline document runs across the server, excluding those marked deleted");
+                metrics.put("guideSetCount", () -> new SqlSelector(schema, "SELECT COUNT(*) FROM TargetedMS.GuideSet").getObject(Long.class), "QC guide sets across the server");
+                metrics.put("guideSetContainerCount", () -> new SqlSelector(schema, "SELECT COUNT(DISTINCT Container) FROM TargetedMS.GuideSet").getObject(Long.class), "Folders with at least one QC guide set");
 
                 SQLFragment folderTypeSQL = new SQLFragment("SELECT p.value, COUNT(*) AS FolderCount FROM ");
                 folderTypeSQL.append(PropertySchema.getInstance().getTableInfoProperties(), "p");
                 folderTypeSQL.append(" INNER JOIN ");
                 folderTypeSQL.append(PropertySchema.getInstance().getTableInfoPropertySets(), "ps");
                 folderTypeSQL.append(" ON p.\"set\" = ps.\"set\" WHERE ps.category = 'moduleProperties.TargetedMS' ");
-                folderTypeSQL.append(" AND p.name = ? GROUP BY value");
+                // The root holds the site-wide default, not a folder's setting
+                folderTypeSQL.append(" AND p.name = ? AND p.value IS NOT NULL AND ps.objectid <> ? GROUP BY value");
                 folderTypeSQL.add(FOLDER_TYPE_PROP_NAME);
+                folderTypeSQL.add(ContainerManager.getRoot().getId());
 
-                Map<String, Long> folderCounts = new HashMap<>();
-                new SqlSelector(PropertySchema.getInstance().getSchema(), folderTypeSQL).forEach(rs ->
-                        folderCounts.put(rs.getString("value"), rs.getLong("FolderCount")));
+                metrics.put("folderCounts", () -> {
+                    Map<String, Object> folderCounts = new LinkedHashMap<>();
+                    new SqlSelector(PropertySchema.getInstance().getSchema(), folderTypeSQL).forEach(rs ->
+                            folderCounts.put(rs.getString("value"), rs.getLong("FolderCount")));
+                    return folderCounts;
+                }, "Folders by their TargetedMS folder type setting (Experiment, Library, QC, etc.)");
 
-                metric.put("folderCounts", folderCounts);
-
-                SQLFragment annotationFolderCountSQL = new SQLFragment("SELECT at.Name, COUNT(DISTINCT a.Container) AS FolderCount FROM ");
+                // Built-in types live in /Shared; custom names are user-entered and can repeat across folders
+                SQLFragment annotationFolderCountSQL = new SQLFragment("SELECT CASE WHEN at.Container = ? THEN at.Name ELSE 'custom' END AS Name, COUNT(DISTINCT a.Container) AS FolderCount FROM ");
+                annotationFolderCountSQL.add(ContainerManager.getSharedContainer().getId());
                 annotationFolderCountSQL.append(TargetedMSManager.getTableInfoQCAnnotationType(), "at");
                 annotationFolderCountSQL.append(" INNER JOIN " );
                 annotationFolderCountSQL.append(TargetedMSManager.getTableInfoQCAnnotation(), "a");
-                annotationFolderCountSQL.append(" ON at.Id = a.qcAnnotationTypeId GROUP BY at.Name");
+                // Repeating the CASE here would bind a second parameter, which Postgres won't match to the SELECT's expression
+                annotationFolderCountSQL.append(" ON at.Id = a.qcAnnotationTypeId GROUP BY 1");
 
-                Map<String, Long> annotationFolderCounts = new HashMap<>();
-                new SqlSelector(PropertySchema.getInstance().getSchema(), annotationFolderCountSQL).forEach(rs ->
-                        annotationFolderCounts.put(rs.getString("Name"), rs.getLong("FolderCount")));
+                metrics.put("annotationFolderCounts", () -> {
+                    Map<String, Object> annotationFolderCounts = new LinkedHashMap<>();
+                    new SqlSelector(schema, annotationFolderCountSQL).forEach(rs ->
+                            annotationFolderCounts.put(rs.getString("Name"), rs.getLong("FolderCount")));
+                    return annotationFolderCounts;
+                }, "Folders with at least one QC annotation of each annotation type, by built-in type name, with all custom types under 'custom'");
 
-                metric.put("annotationFolderCounts", annotationFolderCounts);
-
-                return metric;
+                return metrics;
             });
         }
         TargetedMSService.setInstance(new TargetedMSServiceImpl());
@@ -626,6 +633,8 @@ public class TargetedMSModule extends SpringModule implements ProteomicsModule
     @Override
     protected void startupAfterSpringConfig(ModuleContext moduleContext)
     {
+        SimpleMetricsService.get().describeClientSideFeatureArea("panoramaQCPlot", "QC trend plot y-axis zoom use: yAxisZoom when a user zooms an axis, yAxisZoomReset when a zoom is reset");
+
         PipelineService service = PipelineService.get();
         service.registerPipelineProvider(new TargetedMSPipelineProvider(this));
 
