@@ -20,8 +20,8 @@ import org.jetbrains.annotations.Nullable;
 import org.labkey.api.targetedms.model.OutlierCounts;
 import org.labkey.api.targetedms.model.QCMetricConfiguration;
 import org.labkey.api.targetedms.model.QCMetricStatus;
-import org.labkey.api.visualization.Stats;
 import org.labkey.targetedms.chart.LabelFactory;
+import org.labkey.targetedms.visualization.Stats;
 
 import java.text.DecimalFormat;
 import java.util.Date;

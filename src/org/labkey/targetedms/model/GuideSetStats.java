@@ -15,11 +15,12 @@
  */
 package org.labkey.targetedms.model;
 
-import org.labkey.api.visualization.Stats;
+
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.labkey.targetedms.visualization.Stats;
 
 public class GuideSetStats
 {

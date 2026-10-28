@@ -32,9 +32,9 @@ import org.labkey.api.query.SimpleUserSchema;
 import org.labkey.api.security.User;
 import org.labkey.api.security.UserPrincipal;
 import org.labkey.api.security.permissions.Permission;
-import org.labkey.api.view.ColorPickerDisplayColumn;
 import org.labkey.targetedms.TargetedMSManager;
 import org.labkey.targetedms.TargetedMSSchema;
+import org.labkey.targetedms.view.ColorPickerDisplayColumn;
 
 import java.sql.SQLException;
 import java.util.Map;
