@@ -155,14 +155,23 @@ public class CrossLinkedPeptideExcelWriter extends ExcelWriter
         finally
         {
             ctx.remove(PEPTIDE_INDEX);
+            // Also merge the rows already written when MaxRowsExceededException cuts the cross-link short
+            mergeSharedColumns(sheet, split, firstRow, getCurrentRow() - 1);
         }
+    }
 
-        int lastRow = getCurrentRow() - 1;
-        for (int column = 0; column < columns.size(); column++)
+    private void mergeSharedColumns(Sheet sheet, boolean[] split, int firstRow, int lastRow)
+    {
+        if (lastRow <= firstRow)
+        {
+            return;
+        }
+        for (int column = 0; column < split.length; column++)
         {
             if (!split[column])
             {
-                sheet.addMergedRegion(new CellRangeAddress(firstRow, lastRow, column, column));
+                // Regions are disjoint by construction; the validating addMergedRegion is quadratic in the region count
+                sheet.addMergedRegionUnsafe(new CellRangeAddress(firstRow, lastRow, column, column));
                 CellUtil.setVerticalAlignment(sheet.getRow(firstRow).getCell(column, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK), VerticalAlignment.CENTER);
             }
         }
