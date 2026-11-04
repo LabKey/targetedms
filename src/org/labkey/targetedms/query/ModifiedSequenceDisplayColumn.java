@@ -50,7 +50,7 @@ import java.util.Set;
 /**
  * User: vsharma
  */
-public abstract class ModifiedSequenceDisplayColumn extends IconColumn
+public abstract class ModifiedSequenceDisplayColumn extends IconColumn implements CrossLinkedPeptideExcelWriter.PerPeptideColumn
 {
     private static final Logger LOG = LogHelper.getLogger(ModifiedSequenceDisplayColumn.class, "Wires up formatting for peptide sequences");
     private final ModifiedPeptideHtmlMaker _htmlMaker;
@@ -126,6 +126,13 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
     {
         // This isn't a particularly robust way to extract text from HTML but given our simple HTML (no script, etc), it's enough
         return html.toString().replaceAll("<[^>]*>", "");
+    }
+
+    @Override
+    public int getPeptideCount(RenderContext ctx)
+    {
+        initialize(ctx);
+        return _parsedParts == null ? 1 : Math.max(1, _parsedParts.size());
     }
 
     @Override
@@ -283,6 +290,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
             if (peptideId == null || sequence == null || runId == null)
             {
                 _cellData = HtmlString.of(peptideModifiedSequence);
+                _parsedParts = null;
             }
             else
             {
@@ -381,6 +389,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
             if (precursorId == null || peptideId == null || isotopeLabelId == null || precursorModifiedSequence == null || sequence == null || runId == null)
             {
                 _cellData = HtmlString.of(precursorModifiedSequence);
+                _parsedParts = null;
             }
             else
             {
@@ -417,12 +426,23 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
         public void writeCell(Sheet sheet, int column, int row, RenderContext ctx)
         {
             ModifiedSequenceDisplayColumn.this.initialize(ctx);
+            if (_parsedParts == null)
+            {
+                super.writeCell(sheet, column, row, ctx);
+                return;
+            }
+
+            List<List<ModifiedPeptideHtmlMaker.SequencePart>> peptides = _parsedParts;
+            if (ctx.get(CrossLinkedPeptideExcelWriter.PEPTIDE_INDEX) instanceof Integer peptideIndex)
+            {
+                peptides = peptideIndex < _parsedParts.size() ? List.of(_parsedParts.get(peptideIndex)) : List.of();
+            }
 
             StringBuilder builder = new StringBuilder();
             Map<Integer, Font> highlights = new IntHashMap<>();
             int i = 0;
             String separator = "";
-            for (List<ModifiedPeptideHtmlMaker.SequencePart> parts : _parsedParts)
+            for (List<ModifiedPeptideHtmlMaker.SequencePart> parts : peptides)
             {
                 i += separator.length();
                 builder.append(separator);
@@ -469,7 +489,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
                 richText.applyFont(entry.getKey(), entry.getKey() + 1, entry.getValue());
             }
 
-            if (_parsedParts.size() > 1)
+            if (peptides.size() > 1)
             {
                 // We have multiple cross-linked peptides so we need a taller row to show them on separate lines within
                 // the same cell
@@ -479,7 +499,7 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn
                     _wrappedStyle.setWrapText(true);
                 }
                 cell.setCellStyle(_wrappedStyle);
-                float minHeight = sheet.getDefaultRowHeightInPoints() * _parsedParts.size();
+                float minHeight = sheet.getDefaultRowHeightInPoints() * peptides.size();
                 if (rowObject.getHeightInPoints() < minHeight)
                 {
                     rowObject.setHeightInPoints(minHeight);
