@@ -27,6 +27,7 @@ import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.util.Ext4Helper;
 import org.labkey.test.util.LogMethod;
 import org.labkey.test.util.LoggedParam;
+import org.labkey.test.util.ext4cmp.Ext4FieldRef;
 import org.labkey.test.util.selenium.ScrollUtils;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
@@ -126,10 +127,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         return DateRangeOffset.getEnum(scaleInput.getAttribute("value"));
     }
 
+    // Typing re-renders the plots on every keystroke that forms a valid date; set the value at once so there's a single refresh
     @LogMethod(quiet = true)
     public void setStartDate(@LoggedParam String startDate)
     {
-        getWrapper().setFormElement(elementCache().startDate, startDate);
+        new Ext4FieldRef("start-date-field", getWrapper()).setValue(startDate);
     }
 
     public String getCurrentStartDate()
@@ -140,7 +142,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     @LogMethod(quiet = true)
     public void setEndDate(@LoggedParam String endDate)
     {
-        getWrapper().setFormElement(elementCache().endDate, endDate);
+        new Ext4FieldRef("end-date-field", getWrapper()).setValue(endDate);
     }
 
     public String getCurrentEndDate()
