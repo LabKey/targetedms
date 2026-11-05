@@ -87,7 +87,7 @@ public class TargetedMSMultiplePeptidePlotTest extends TargetedMSTest
                 .findWhenNeeded(getDriver()).setMultiSelect(true).selectComboBoxItem(replicateName);
 
         clickButton("Update");
-        waitForTextToDisappear("Loading...");
+        waitForElement(Locator.tagWithAttribute("div", "alt", "Chromatogram " + replicateName).descendant(Locator.tag("svg")));
 
         checker().verifyEquals("Only one graph should have been displayed", 1, table.getDataRowCount());
         checker().verifyNotNull("Couldn't find plot with width " + width,
