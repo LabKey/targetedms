@@ -16,6 +16,9 @@
 package org.labkey.test.components.targetedms;
 
 import org.apache.commons.collections4.SetUtils;
+import org.labkey.remoteapi.CommandException;
+import org.labkey.remoteapi.CommandResponse;
+import org.labkey.remoteapi.SimplePostCommand;
 import org.labkey.test.Locator;
 import org.labkey.test.Locators;
 import org.labkey.test.WebDriverWrapper;
@@ -35,6 +38,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -486,11 +490,33 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         if (waitForPlotsToRefresh)
         {
             doAndWaitForUpdate(() -> setEndDate(endDate));
+            // Plots linked from an experiment run don't save their options
+            if (getWrapper().getUrlParam("RunId") == null)
+            {
+                waitForSavedDateRange(startDate, endDate);
+            }
         }
         else
         {
             setEndDate(endDate);
         }
+    }
+
+    // The plots save their options with an unawaited POST while redrawing, which navigating away can abort
+    private void waitForSavedDateRange(String startDate, String endDate)
+    {
+        WebDriverWrapper.waitForEquals("QC plot date range was not saved", () -> List.of(startDate, endDate), () -> {
+            try
+            {
+                CommandResponse response = new SimplePostCommand("targetedms", "leveyJenningsPlotOptions")
+                        .execute(getWrapper().createDefaultConnection(), getWrapper().getCurrentContainerPath());
+                return Arrays.asList(response.getProperty("properties.startDate"), response.getProperty("properties.endDate"));
+            }
+            catch (IOException | CommandException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }, WAIT_FOR_JAVASCRIPT);
     }
 
     public int getGuideSetTrainingRectCount()
