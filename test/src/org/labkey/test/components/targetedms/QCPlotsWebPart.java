@@ -350,13 +350,9 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void setShowExcludedPoints(boolean check)
     {
-        if (check)
+        if (isShowExcludedPointsChecked() != check)
         {
-            elementCache().excludedReplicatesShow.check();
-        }
-        else
-        {
-            elementCache().excludedReplicatesHide.check();
+            doAndWaitForUpdate(() -> (check ? elementCache().excludedReplicatesShow : elementCache().excludedReplicatesHide).check());
         }
     }
 
@@ -369,14 +365,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         if (isShowReferenceGuideSetChecked() != check)
         {
-            if (check)
-            {
-                elementCache().referenceGuideSetShow.check();
-            }
-            else
-            {
-                elementCache().referenceGuideSetHide.check();
-            }
+            doAndWaitForUpdate(() -> (check ? elementCache().referenceGuideSetShow : elementCache().referenceGuideSetHide).check());
         }
     }
 
