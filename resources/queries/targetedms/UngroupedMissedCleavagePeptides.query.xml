@@ -1,0 +1,3 @@
+<query xmlns="http://labkey.org/data/xml/query">
+    <description>Missed-cleavage peptides lacking a grouping. PTM reports show these as separate rows instead of combining them per site; set a shared Attribute Group ID in Skyline to merge them.</description>
+</query>

@@ -17,6 +17,7 @@ package org.labkey.targetedms.query;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.labkey.api.collections.LongHashMap;
@@ -34,6 +35,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Renders the cross-linked peptide info in a few different variants. For unlinked peptides, passes through the primary
@@ -87,34 +89,41 @@ public class CrossLinkedPeptideDisplayColumn extends DataColumn
             CrossLinkedPeptideInfo i = new CrossLinkedPeptideInfo(modifiedSequence);
             List<Protein> proteins = getProteinsFromRun(ctx);
             List<CrossLinkedPeptideInfo.PeptideSequence> sequences = i.getAllSequences();
-            return render(sequences, proteins, modification);
+            Integer peptideIndex = ctx.get(CrossLinkedPeptideExcelWriter.PEPTIDE_INDEX) instanceof Integer index ? index : null;
+            return render(sequences, proteins, modification, peptideIndex);
         }
         return defaultValue;
     }
 
-    protected @NotNull String render(List<CrossLinkedPeptideInfo.PeptideSequence> sequences, List<Protein> proteins, String modification)
+    /** @param peptideIndex non-null when the Excel export is writing each cross-linked peptide on its own row */
+    protected @NotNull String render(List<CrossLinkedPeptideInfo.PeptideSequence> sequences, List<Protein> proteins, String modification, @Nullable Integer peptideIndex)
     {
-        StringBuilder result = new StringBuilder();
-        String outerSeparator = "";
+        return formatAll(sequences, proteins, modification).stream()
+                .filter(value -> !value.isEmpty())
+                .collect(Collectors.joining("\n"));
+    }
 
-        for (CrossLinkedPeptideInfo.PeptideSequence sequence : sequences)
+    /** @return the formatted value for each peptide, blank when it matches no protein */
+    protected @NotNull List<String> formatAll(List<CrossLinkedPeptideInfo.PeptideSequence> sequences, List<Protein> proteins, String modification)
+    {
+        return sequences.stream().map(sequence -> formatSequence(sequence, proteins, modification)).toList();
+    }
+
+    protected @NotNull List<String> getPeptideValues(RenderContext ctx)
+    {
+        String modifiedSequence = ctx.get(getModifiedSequenceFieldKey(), String.class);
+        if (modifiedSequence == null)
         {
-            List<CrossLinkedPeptideInfo.Match> matches = sequence.findMatches(proteins);
-            if (!matches.isEmpty())
-            {
-                result.append(outerSeparator);
-                outerSeparator = "\n";
-
-                String innerSeparator = "";
-                for (CrossLinkedPeptideInfo.Match match : matches)
-                {
-                    result.append(innerSeparator);
-                    innerSeparator = "; ";
-                    result.append(_formatter.format(match, sequence, modification));
-                }
-            }
+            return List.of();
         }
-        return result.toString();
+        return formatAll(new CrossLinkedPeptideInfo(modifiedSequence).getAllSequences(), getProteinsFromRun(ctx), ctx.get(getModificationFieldKey(), String.class));
+    }
+
+    protected @NotNull String formatSequence(CrossLinkedPeptideInfo.PeptideSequence sequence, List<Protein> proteins, String modification)
+    {
+        return sequence.findMatches(proteins).stream()
+                .map(match -> _formatter.format(match, sequence, modification))
+                .collect(Collectors.joining("; "));
     }
 
     private List<Protein> getProteinsFromRun(RenderContext ctx)
@@ -127,7 +136,7 @@ public class CrossLinkedPeptideDisplayColumn extends DataColumn
         return Collections.emptyList();
     }
 
-    private FieldKey getModifiedSequenceFieldKey()
+    protected FieldKey getModifiedSequenceFieldKey()
     {
         return FieldKey.fromString(getColumnInfo().getFieldKey().getParent(), "PeptideModifiedSequence");
     }
@@ -151,12 +160,69 @@ public class CrossLinkedPeptideDisplayColumn extends DataColumn
         keys.add(getRunIdFieldKey());
     }
 
+    /** Renders one value per cross-linked peptide, so the Excel export puts each on its own row */
+    private static class PerPeptideColumn extends CrossLinkedPeptideDisplayColumn implements CrossLinkedPeptideExcelWriter.PerPeptideColumn
+    {
+        private PerPeptideColumn(ColumnInfo col, Formatter formatter)
+        {
+            super(col, formatter);
+        }
+
+        @Override
+        public int getPeptideCount(RenderContext ctx)
+        {
+            String modifiedSequence = ctx.get(getModifiedSequenceFieldKey(), String.class);
+            return modifiedSequence == null ? 1 : new CrossLinkedPeptideInfo(modifiedSequence).getAllSequences().size();
+        }
+
+        @Override
+        protected @NotNull String render(List<CrossLinkedPeptideInfo.PeptideSequence> sequences, List<Protein> proteins, String modification, @Nullable Integer peptideIndex)
+        {
+            if (peptideIndex == null)
+            {
+                return super.render(sequences, proteins, modification, null);
+            }
+            return peptideIndex < sequences.size() ? formatSequence(sequences.get(peptideIndex), proteins, modification) : "";
+        }
+    }
+
+    /** Splits across the Excel rows only when the cross-linked peptides are on different chains */
+    private static class ChainColumn extends PerPeptideColumn
+    {
+        private ChainColumn(ColumnInfo col)
+        {
+            super(col, (match, _, _) -> match.protein().getLabel() == null ? match.protein().getName() : match.protein().getLabel());
+        }
+
+        @Override
+        public boolean isSplit(RenderContext ctx)
+        {
+            return getDistinctChains(getPeptideValues(ctx)).size() > 1;
+        }
+
+        @Override
+        protected @NotNull String render(List<CrossLinkedPeptideInfo.PeptideSequence> sequences, List<Protein> proteins, String modification, @Nullable Integer peptideIndex)
+        {
+            List<String> chains = getDistinctChains(formatAll(sequences, proteins, modification));
+            if (peptideIndex == null || chains.size() > 1)
+            {
+                return super.render(sequences, proteins, modification, peptideIndex);
+            }
+            return String.join("\n", chains);
+        }
+
+        private static List<String> getDistinctChains(List<String> values)
+        {
+            return values.stream().filter(value -> !value.isEmpty()).distinct().toList();
+        }
+    }
+
     public static class ChainFactory implements DisplayColumnFactory
     {
         @Override
         public DisplayColumn createRenderer(ColumnInfo colInfo)
         {
-            return new CrossLinkedPeptideDisplayColumn(colInfo, (match, sequence, modification) -> match.protein().getLabel() == null ? match.protein().getName() : match.protein().getLabel());
+            return new ChainColumn(colInfo);
         }
     }
 
@@ -165,7 +231,7 @@ public class CrossLinkedPeptideDisplayColumn extends DataColumn
         @Override
         public DisplayColumn createRenderer(ColumnInfo colInfo)
         {
-            return new CrossLinkedPeptideDisplayColumn(colInfo, (match, sequence, modification) ->
+            return new PerPeptideColumn(colInfo, (match, sequence, modification) ->
                 (match.index() + 1) + "-" + (match.index() + getPeptideLength(sequence.getUnmodified(), modification)));
         }
     }
@@ -185,7 +251,7 @@ public class CrossLinkedPeptideDisplayColumn extends DataColumn
         @Override
         public DisplayColumn createRenderer(ColumnInfo colInfo)
         {
-            return new CrossLinkedPeptideDisplayColumn(colInfo, (match, sequence, modification) ->
+            return new PerPeptideColumn(colInfo, (match, sequence, modification) ->
             {
                 String label = match.protein().getLabel();
                 String prefix = getChainPrefix(label);
@@ -224,7 +290,7 @@ public class CrossLinkedPeptideDisplayColumn extends DataColumn
             return new CrossLinkedPeptideDisplayColumn(colInfo, null)
             {
                 @Override
-                protected @NotNull String render(List<CrossLinkedPeptideInfo.PeptideSequence> sequences, List<Protein> proteins, String modification)
+                protected @NotNull String render(List<CrossLinkedPeptideInfo.PeptideSequence> sequences, List<Protein> proteins, String modification, @Nullable Integer peptideIndex)
                 {
                     List<List<String>> allBonds = new ArrayList<>();
 
