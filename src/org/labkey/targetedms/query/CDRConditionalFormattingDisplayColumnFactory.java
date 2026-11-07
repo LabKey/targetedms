@@ -41,15 +41,15 @@ class CDRConditionalFormattingDisplayColumnFactory implements DisplayColumnFacto
     private final long _runId;
     private final Set<String> _terminalModifications;
 
-    public CDRConditionalFormattingDisplayColumnFactory(Function<Long, Protein> proteinGetter, Map<Pair<String, Long>, Pair<Boolean, String>> stressedSamples, long runId)
+    public CDRConditionalFormattingDisplayColumnFactory(Function<Long, Protein> proteinGetter, Map<Pair<String, Long>, Pair<Boolean, String>> stressedSamples, long runId, Set<String> terminalModifications)
     {
         _proteinGetter = proteinGetter;
         _stressedSamples = stressedSamples;
         _runId = runId;
-        _terminalModifications = ModificationManager.getTerminalStructuralModificationNames(runId);
+        _terminalModifications = terminalModifications;
     }
 
-    public static RiskLevel getRiskLevel(Number value, boolean inCDR, boolean stressed, String modification, boolean terminalModification, String modifiedSequence)
+    public static RiskLevel getRiskLevel(Number value, boolean inCDR, boolean stressed, boolean terminalModification, String modifiedSequence)
     {
         if (value == null)
         {
@@ -57,7 +57,7 @@ class CDRConditionalFormattingDisplayColumnFactory implements DisplayColumnFacto
         }
 
         // Issue 55036: N- and C-terminal modifications aren't risk-scored
-        if (terminalModification || "Gln->pyro-Glu (N-term Q)".equalsIgnoreCase(modification))
+        if (terminalModification)
         {
             return null;
         }
@@ -178,7 +178,7 @@ class CDRConditionalFormattingDisplayColumnFactory implements DisplayColumnFacto
         @Nullable
         private ConditionalFormat createConditionalFormat(Number value, boolean inCDR, boolean stressed, String modification, String modifiedSequence)
         {
-            RiskLevel level = getRiskLevel(value, inCDR, stressed, modification, modification != null && _terminalModifications.contains(modification), modifiedSequence);
+            RiskLevel level = getRiskLevel(value, inCDR, stressed, modification != null && _terminalModifications.contains(modification), modifiedSequence);
             if (level == null)
             {
                 return null;

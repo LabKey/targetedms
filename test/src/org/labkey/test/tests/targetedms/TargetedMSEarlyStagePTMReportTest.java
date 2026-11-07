@@ -222,7 +222,7 @@ public class TargetedMSEarlyStagePTMReportTest extends TargetedMSTest
         assertEquals("Incorrect Sample Names displayed as headers", "Sample1 QE_2",
                 Locator.xpath("//table/thead[2]/tr").findElement(reportTable).getText());
 
-        int qvtRowIndex = 0;  // Special-cased modification: Gln->pyro-Glu (N-term Q)
+        int qvtRowIndex = 0;  // N-terminal modification, so not risk-colored: Gln->pyro-Glu (N-term Q)
         int vtnRowIndex = 1;
         int eeqRowIndex = 3;  // Special-cased peptide: EEQYNSTYR(V)
         int wqqRowIndex = 7;

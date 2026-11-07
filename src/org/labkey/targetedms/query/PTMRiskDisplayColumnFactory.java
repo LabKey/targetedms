@@ -86,7 +86,7 @@ public class PTMRiskDisplayColumnFactory implements DisplayColumnFactory
 
                 boolean terminal = modification != null && _terminalModifications.computeIfAbsent(runId, ModificationManager::getTerminalStructuralModificationNames).contains(modification);
 
-                result = CDRConditionalFormattingDisplayColumnFactory.getRiskLevel(percentModified, cdr, stressed, modification, terminal, modifiedSequence);
+                result = CDRConditionalFormattingDisplayColumnFactory.getRiskLevel(percentModified, cdr, stressed, terminal, modifiedSequence);
             }
             return result;
         }

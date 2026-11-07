@@ -135,6 +135,14 @@ public abstract class ModifiedSequenceDisplayColumn extends IconColumn implement
         return _parsedParts == null ? 1 : Math.max(1, _parsedParts.size());
     }
 
+    /** Unparsed values can't be split by peptide, so merge them instead */
+    @Override
+    public boolean isSplit(RenderContext ctx)
+    {
+        initialize(ctx);
+        return _parsedParts != null;
+    }
+
     @Override
     String getIconPath()
     {
