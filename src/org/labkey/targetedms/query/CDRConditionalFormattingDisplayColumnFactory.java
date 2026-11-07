@@ -39,22 +39,25 @@ class CDRConditionalFormattingDisplayColumnFactory implements DisplayColumnFacto
     private final Function<Long, Protein> _proteinGetter;
     private final Map<Pair<String, Long>, Pair<Boolean, String>> _stressedSamples;
     private final long _runId;
+    private final Set<String> _terminalModifications;
 
     public CDRConditionalFormattingDisplayColumnFactory(Function<Long, Protein> proteinGetter, Map<Pair<String, Long>, Pair<Boolean, String>> stressedSamples, long runId)
     {
         _proteinGetter = proteinGetter;
         _stressedSamples = stressedSamples;
         _runId = runId;
+        _terminalModifications = ModificationManager.getTerminalStructuralModificationNames(runId);
     }
 
-    public static RiskLevel getRiskLevel(Number value, boolean inCDR, boolean stressed, String modification, String modifiedSequence)
+    public static RiskLevel getRiskLevel(Number value, boolean inCDR, boolean stressed, String modification, boolean terminalModification, String modifiedSequence)
     {
         if (value == null)
         {
             return null;
         }
 
-        if ("Gln->pyro-Glu (N-term Q)".equalsIgnoreCase(modification))
+        // Issue 55036: N- and C-terminal modifications aren't risk-scored
+        if (terminalModification || "Gln->pyro-Glu (N-term Q)".equalsIgnoreCase(modification))
         {
             return null;
         }
@@ -120,7 +123,7 @@ class CDRConditionalFormattingDisplayColumnFactory implements DisplayColumnFacto
     @Override
     public DisplayColumn createRenderer(ColumnInfo boundCol)
     {
-        return new Col(boundCol, _proteinGetter, _stressedSamples, _runId);
+        return new Col(boundCol, _proteinGetter, _stressedSamples, _runId, _terminalModifications);
     }
 
     public enum RiskLevel
@@ -150,13 +153,15 @@ class CDRConditionalFormattingDisplayColumnFactory implements DisplayColumnFacto
         private final Function<Long, Protein> _proteinGetter;
         private final Map<Pair<String, Long>, Pair<Boolean, String>> _stressedSamples;
         private final long _runId;
+        private final Set<String> _terminalModifications;
 
-        public Col(ColumnInfo colInfo, Function<Long, Protein> proteinGetter, Map<Pair<String, Long>, Pair<Boolean, String>> stressedSamples, long runId)
+        public Col(ColumnInfo colInfo, Function<Long, Protein> proteinGetter, Map<Pair<String, Long>, Pair<Boolean, String>> stressedSamples, long runId, Set<String> terminalModifications)
         {
             super(colInfo);
             _proteinGetter = proteinGetter;
             _stressedSamples = stressedSamples;
             _runId = runId;
+            _terminalModifications = terminalModifications;
         }
 
         @Override
@@ -173,7 +178,7 @@ class CDRConditionalFormattingDisplayColumnFactory implements DisplayColumnFacto
         @Nullable
         private ConditionalFormat createConditionalFormat(Number value, boolean inCDR, boolean stressed, String modification, String modifiedSequence)
         {
-            RiskLevel level = getRiskLevel(value, inCDR, stressed, modification, modifiedSequence);
+            RiskLevel level = getRiskLevel(value, inCDR, stressed, modification, modification != null && _terminalModifications.contains(modification), modifiedSequence);
             if (level == null)
             {
                 return null;

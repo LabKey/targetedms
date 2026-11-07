@@ -15,6 +15,7 @@
  */
 package org.labkey.targetedms.query;
 
+import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.ColumnInfo;
 import org.labkey.api.data.DataColumn;
 import org.labkey.api.data.DisplayColumnFactory;
@@ -39,6 +40,7 @@ public class PTMRiskDisplayColumnFactory implements DisplayColumnFactory
     {
         private final Function<Long, Protein> _proteinGetter = new PTMPercentsGroupedCustomizer.PeptideGroupIdProteinGetter();
         private Map<Pair<String, Long>, Pair<Boolean, String>> _stressedSamples;
+        private final Map<Long, Set<String>> _terminalModifications = new LongHashMap<>();
 
         public Col(ColumnInfo col)
         {
@@ -82,7 +84,9 @@ public class PTMRiskDisplayColumnFactory implements DisplayColumnFactory
                 Pair<Boolean, String> metadata = _stressedSamples.get(Pair.of(replicateName, runId));
                 boolean stressed = metadata != null && metadata.first.booleanValue();
 
-                result = CDRConditionalFormattingDisplayColumnFactory.getRiskLevel(percentModified, cdr, stressed, modification, modifiedSequence);
+                boolean terminal = modification != null && _terminalModifications.computeIfAbsent(runId, ModificationManager::getTerminalStructuralModificationNames).contains(modification);
+
+                result = CDRConditionalFormattingDisplayColumnFactory.getRiskLevel(percentModified, cdr, stressed, modification, terminal, modifiedSequence);
             }
             return result;
         }
