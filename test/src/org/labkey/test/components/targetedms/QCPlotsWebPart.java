@@ -16,6 +16,9 @@
 package org.labkey.test.components.targetedms;
 
 import org.apache.commons.collections4.SetUtils;
+import org.labkey.remoteapi.CommandException;
+import org.labkey.remoteapi.CommandResponse;
+import org.labkey.remoteapi.SimplePostCommand;
 import org.labkey.test.Locator;
 import org.labkey.test.Locators;
 import org.labkey.test.WebDriverWrapper;
@@ -27,6 +30,7 @@ import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.util.Ext4Helper;
 import org.labkey.test.util.LogMethod;
 import org.labkey.test.util.LoggedParam;
+import org.labkey.test.util.ext4cmp.Ext4FieldRef;
 import org.labkey.test.util.selenium.ScrollUtils;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
@@ -34,6 +38,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -126,10 +131,11 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         return DateRangeOffset.getEnum(scaleInput.getAttribute("value"));
     }
 
+    // Typing re-renders the plots on every keystroke that forms a valid date; set the value at once so there's a single refresh
     @LogMethod(quiet = true)
     public void setStartDate(@LoggedParam String startDate)
     {
-        getWrapper().setFormElement(elementCache().startDate, startDate);
+        new Ext4FieldRef("start-date-field", getWrapper()).setValue(startDate);
     }
 
     public String getCurrentStartDate()
@@ -140,7 +146,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     @LogMethod(quiet = true)
     public void setEndDate(@LoggedParam String endDate)
     {
-        getWrapper().setFormElement(elementCache().endDate, endDate);
+        new Ext4FieldRef("end-date-field", getWrapper()).setValue(endDate);
     }
 
     public String getCurrentEndDate()
@@ -348,13 +354,9 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void setShowExcludedPoints(boolean check)
     {
-        if (check)
+        if (isShowExcludedPointsChecked() != check)
         {
-            elementCache().excludedReplicatesShow.check();
-        }
-        else
-        {
-            elementCache().excludedReplicatesHide.check();
+            doAndWaitForUpdate(() -> (check ? elementCache().excludedReplicatesShow : elementCache().excludedReplicatesHide).check());
         }
     }
 
@@ -367,14 +369,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         if (isShowReferenceGuideSetChecked() != check)
         {
-            if (check)
-            {
-                elementCache().referenceGuideSetShow.check();
-            }
-            else
-            {
-                elementCache().referenceGuideSetHide.check();
-            }
+            doAndWaitForUpdate(() -> (check ? elementCache().referenceGuideSetShow : elementCache().referenceGuideSetHide).check());
         }
     }
 
@@ -495,11 +490,33 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         if (waitForPlotsToRefresh)
         {
             doAndWaitForUpdate(() -> setEndDate(endDate));
+            // Plots linked from an experiment run don't save their options
+            if (getWrapper().getUrlParam("RunId") == null)
+            {
+                waitForSavedDateRange(startDate, endDate);
+            }
         }
         else
         {
             setEndDate(endDate);
         }
+    }
+
+    // The plots save their options with an unawaited POST while redrawing, which navigating away can abort
+    private void waitForSavedDateRange(String startDate, String endDate)
+    {
+        WebDriverWrapper.waitForEquals("QC plot date range was not saved", () -> List.of(startDate, endDate), () -> {
+            try
+            {
+                CommandResponse response = new SimplePostCommand("targetedms", "leveyJenningsPlotOptions")
+                        .execute(getWrapper().createDefaultConnection(), getWrapper().getCurrentContainerPath());
+                return Arrays.asList(response.getProperty("properties.startDate"), response.getProperty("properties.endDate"));
+            }
+            catch (IOException | CommandException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }, WAIT_FOR_JAVASCRIPT);
     }
 
     public int getGuideSetTrainingRectCount()
