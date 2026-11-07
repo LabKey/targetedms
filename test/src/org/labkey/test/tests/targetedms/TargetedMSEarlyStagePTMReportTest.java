@@ -32,8 +32,10 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -109,6 +111,14 @@ public class TargetedMSEarlyStagePTMReportTest extends TargetedMSTest
         table = new DataRegionTable("query", this);
         assertEquals(List.of("false", "false"), table.getColumnDataAsText("IsCdr"));
         assertEquals(List.of(" ", " "), table.getColumnDataAsText("Risk"));
+
+        // C-terminal modification without a special-cased name: Lys clipping
+        table.clearFilter("PeptideModifiedSequence");
+        table.setFilter("PeptideModifiedSequence", "Contains", "SLSLSPGK");
+        table = new DataRegionTable("query", this);
+        List<String> risks = table.getColumnDataAsText("Risk");
+        assertFalse("Expected rows for SLSLSPGK", risks.isEmpty());
+        assertTrue("Terminal modification should not be risk-scored: " + risks, risks.stream().allMatch(String::isBlank));
     }
 
     @Test
@@ -143,10 +153,14 @@ public class TargetedMSEarlyStagePTMReportTest extends TargetedMSTest
     }
 
     /** Chrome may report opaque colors as rgba(r, g, b, 1) */
+    private String getBackgroundColor(WebElement cell)
+    {
+        return cell.getCssValue("background-color").replaceFirst("^rgba\\((.*), 1\\)$", "rgb($1)");
+    }
+
     private void assertColor(String message, String expectedRgb, WebElement cell)
     {
-        String actual = cell.getCssValue("background-color");
-        assertEquals(message, expectedRgb, actual.replaceFirst("^rgba\\((.*), 1\\)$", "rgb($1)"));
+        assertEquals(message, expectedRgb, getBackgroundColor(cell));
     }
 
     private void invokeUpgradeCode(String method)
@@ -232,5 +246,13 @@ public class TargetedMSEarlyStagePTMReportTest extends TargetedMSTest
                 Locator.xpath("//table/tbody/tr[" + (eeqRowIndex + 1) + "]/td[6]").findElement(reportTable));
         assertColor("Incorrect risk category color for WQQ/Sample1 - Green", "rgb(137, 202, 83)",
                 Locator.xpath("//table/tbody/tr[" + (wqqRowIndex + 1) + "]/td[6]").findElement(reportTable));
+
+        log("Verifying a C-terminal modification isn't risk-colored");
+        List<String> sequences = reportTable.getColumnDataAsText("Sequence");
+        int slsRowIndex = IntStream.range(0, sequences.size()).filter(i -> sequences.get(i).contains("SLSLSPGK")).findFirst()
+                .orElseThrow(() -> new AssertionError("SLSLSPGK not found in report: " + sequences));
+        String slsColor = getBackgroundColor(Locator.xpath("//table/tbody/tr[" + (slsRowIndex + 1) + "]/td[6]").findElement(reportTable));
+        assertFalse("C-terminal Lys clipping should not be risk-colored: " + slsColor,
+                List.of("rgb(137, 202, 83)", "rgb(254, 255, 63)", "rgb(250, 8, 26)").contains(slsColor));
     }
 }
