@@ -42,7 +42,6 @@ import org.labkey.targetedms.query.PeptideManager;
 import org.labkey.targetedms.query.PrecursorManager;
 import org.labkey.targetedms.query.ReplicateManager;
 
-import java.text.DecimalFormat;
 import java.util.Map;
 
 /**
@@ -61,8 +60,6 @@ public class LabelFactory
                                                 "-",
                                                 "--",
                                                 "---"};
-
-    private static final DecimalFormat sign = new DecimalFormat("+0;-0");
 
     private LabelFactory() {}
 
@@ -101,7 +98,7 @@ public class LabelFactory
             label.append("M");
             if(massIndex != null && massIndex != 0)
             {
-                label.append(sign.format(massIndex));
+                label.append(massIndex > 0 ? "+" : "").append(massIndex);
             }
         }
         else if(IonType.isCustom(ionType))
