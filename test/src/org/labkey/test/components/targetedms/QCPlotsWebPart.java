@@ -114,7 +114,8 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         if (getCurrentDateRangeOffset() != dateRangeOffset)
         {
             Runnable selectDateRange = () -> getWrapper()._ext4Helper.selectComboBoxItem(elementCache().dateRangeCombo, dateRangeOffset.toString());
-            if (dateRangeOffset == DateRangeOffset.ALL)
+            // Switching to a custom range redraws the plots with the current date fields
+            if (dateRangeOffset == DateRangeOffset.ALL || dateRangeOffset == DateRangeOffset.CUSTOM)
             {
                 doAndWaitForUpdate(selectDateRange);
             }
@@ -486,10 +487,9 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     public void filterQCPlots(@LoggedParam String startDate, @LoggedParam String endDate, boolean waitForPlotsToRefresh)
     {
         setDateRangeOffset(DateRangeOffset.CUSTOM);
-        setStartDate(startDate);
         if (waitForPlotsToRefresh)
         {
-            doAndWaitForUpdate(() -> setEndDate(endDate));
+            doAndWaitForUpdate(() -> setDateRange(startDate, endDate));
             // Plots linked from an experiment run don't save their options
             if (getWrapper().getUrlParam("RunId") == null)
             {
@@ -498,8 +498,20 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         }
         else
         {
+            setStartDate(startDate);
             setEndDate(endDate);
         }
+    }
+
+    // Each date field redraws the plots on change, so set both and apply them once
+    private void setDateRange(String startDate, String endDate)
+    {
+        getWrapper().executeScript("""
+                const start = Ext4.getCmp('start-date-field'), end = Ext4.getCmp('end-date-field');
+                start.suspendEvents(); end.suspendEvents();
+                start.setValue(arguments[0]); end.setValue(arguments[1]);
+                start.resumeEvents(); end.resumeEvents();
+                end.fireEvent('change', end, end.getValue());""", startDate, endDate);
     }
 
     // The plots save their options with an unawaited POST while redrawing, which navigating away can abort
