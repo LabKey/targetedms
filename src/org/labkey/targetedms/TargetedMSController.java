@@ -249,6 +249,7 @@ import org.labkey.targetedms.query.ReplicateManager;
 import org.labkey.targetedms.query.SampleFileTable;
 import org.labkey.targetedms.query.SkylineListManager;
 import org.labkey.targetedms.query.SkylineListSchema;
+import org.labkey.targetedms.query.TargetedMSQueryView;
 import org.labkey.targetedms.query.TargetedMSTable;
 import org.labkey.targetedms.query.TransitionManager;
 import org.labkey.targetedms.search.ModificationSearchWebPart;
@@ -5353,7 +5354,12 @@ public class TargetedMSController extends SpringActionController
         {
             QuerySettings settings = new QuerySettings(getViewContext(), _dataRegionName, "PeptideIds");
             settings.setBaseFilter(new SimpleFilter(FieldKey.fromParts("PeptideGroupId", "RunId"), form.getId()));
-            return createViewWithNoContainerFilterOptions(settings, errors);
+            QueryView result = createViewWithNoContainerFilterOptions(settings, errors);
+            if (result instanceof TargetedMSQueryView view)
+            {
+                view.setSplitCrossLinkedPeptides(true);
+            }
+            return result;
         }
     }
 

@@ -17,6 +17,7 @@ package org.labkey.targetedms.query;
 
 import org.labkey.api.cache.Cache;
 import org.labkey.api.cache.CacheManager;
+import org.labkey.api.collections.CaseInsensitiveHashSet;
 import org.labkey.api.collections.IntHashMap;
 import org.labkey.api.collections.LongHashMap;
 import org.labkey.api.data.SQLFragment;
@@ -173,6 +174,22 @@ public class ModificationManager
         sql.add(runId);
 
         return new SqlSelector(TargetedMSManager.getSchema(), sql).getArrayList(PeptideSettings.RunStructuralModification.class);
+    }
+
+    /** Names of the run's N- or C-terminal structural modifications, as reported by PTMPercentsGroupedPrepivot */
+    public static Set<String> getTerminalStructuralModificationNames(long runId)
+    {
+        Set<String> result = new CaseInsensitiveHashSet();
+        getStructuralModificationsForRun(runId).stream()
+                .filter(mod -> mod.getTerminus() != null && !mod.getTerminus().isBlank())
+                .map(PeptideSettings.Modification::getName)
+                .forEach(result::add);
+        // PTMPercentsGroupedPrepivot.sql renames this modification
+        if (result.contains("Lys-loss (Protein C-term K)"))
+        {
+            result.add("C-term K");
+        }
+        return result;
     }
 
     /**

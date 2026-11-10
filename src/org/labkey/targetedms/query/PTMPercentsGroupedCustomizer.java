@@ -114,6 +114,7 @@ public class PTMPercentsGroupedCustomizer extends PTMPercentsCustomizer
             Optional<Protein> opt = proteins.stream().filter(p -> p.getPeptideGroupId() == peptideGroupId.intValue()).findFirst();
             return opt.orElse(null);
         };
+        Set<String> terminalModifications = ModificationManager.getTerminalStructuralModificationNames(runId);
 
         for (ColumnInfo c : tableInfo.getColumns())
         {
@@ -122,7 +123,7 @@ public class PTMPercentsGroupedCustomizer extends PTMPercentsCustomizer
             if (col.getName().endsWith("::TotalPercentModified") || col.getName().endsWith("::PercentModified"))
             {
                 col.setFormat("0.0%");
-                col.setDisplayColumnFactory(new CDRConditionalFormattingDisplayColumnFactory(proteinGetter, stressedSamples, runId));
+                col.setDisplayColumnFactory(new CDRConditionalFormattingDisplayColumnFactory(proteinGetter, stressedSamples, runId, terminalModifications));
             }
 
             if (col.getName().endsWith("::TotalPercentModified") ||
