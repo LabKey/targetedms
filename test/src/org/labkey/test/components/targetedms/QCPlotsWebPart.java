@@ -30,7 +30,6 @@ import org.labkey.test.pages.panoramapremium.ConfigureMetricsUIPage;
 import org.labkey.test.util.Ext4Helper;
 import org.labkey.test.util.LogMethod;
 import org.labkey.test.util.LoggedParam;
-import org.labkey.test.util.ext4cmp.Ext4FieldRef;
 import org.labkey.test.util.selenium.ScrollUtils;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
@@ -44,6 +43,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -132,11 +132,10 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         return DateRangeOffset.getEnum(scaleInput.getAttribute("value"));
     }
 
-    // Typing re-renders the plots on every keystroke that forms a valid date; set the value at once so there's a single refresh
     @LogMethod(quiet = true)
     public void setStartDate(@LoggedParam String startDate)
     {
-        new Ext4FieldRef("start-date-field", getWrapper()).setValue(startDate);
+        getWrapper().setFormElement(elementCache().startDate, startDate);
     }
 
     public String getCurrentStartDate()
@@ -147,7 +146,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     @LogMethod(quiet = true)
     public void setEndDate(@LoggedParam String endDate)
     {
-        new Ext4FieldRef("end-date-field", getWrapper()).setValue(endDate);
+        getWrapper().setFormElement(elementCache().endDate, endDate);
     }
 
     public String getCurrentEndDate()
@@ -489,7 +488,16 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         setDateRangeOffset(DateRangeOffset.CUSTOM);
         if (waitForPlotsToRefresh)
         {
-            doAndWaitForUpdate(() -> setDateRange(startDate, endDate));
+            if (startDate.compareTo(getCurrentEndDate()) > 0)
+            {
+                // A start date after the current end date is rejected without a redraw
+                setStartDate(startDate);
+            }
+            else
+            {
+                setDateAndWait(this::getCurrentStartDate, this::setStartDate, startDate);
+            }
+            setDateAndWait(this::getCurrentEndDate, this::setEndDate, endDate);
             // Plots linked from an experiment run don't save their options
             if (getWrapper().getUrlParam("RunId") == null)
             {
@@ -503,15 +511,13 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         }
     }
 
-    // Each date field redraws the plots on change, so set both and apply them once
-    private void setDateRange(String startDate, String endDate)
+    // Each date field redraws the plots when it changes; an unchanged field doesn't redraw
+    private void setDateAndWait(Supplier<String> currentDate, Consumer<String> setDate, String date)
     {
-        getWrapper().executeScript("""
-                const start = Ext4.getCmp('start-date-field'), end = Ext4.getCmp('end-date-field');
-                start.suspendEvents(); end.suspendEvents();
-                start.setValue(arguments[0]); end.setValue(arguments[1]);
-                start.resumeEvents(); end.resumeEvents();
-                end.fireEvent('change', end, end.getValue());""", startDate, endDate);
+        if (!date.equals(currentDate.get()))
+        {
+            doAndWaitForUpdate(() -> setDate.accept(date));
+        }
     }
 
     // The plots save their options with an unawaited POST while redrawing, which navigating away can abort
