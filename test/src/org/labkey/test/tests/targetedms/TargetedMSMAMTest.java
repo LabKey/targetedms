@@ -15,12 +15,22 @@
  */
 package org.labkey.test.tests.targetedms;
 
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.labkey.test.Locator;
+import org.labkey.test.util.DataRegionExportHelper;
 import org.labkey.test.util.DataRegionTable;
+import org.labkey.test.util.ExcelHelper;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -92,5 +102,44 @@ public class TargetedMSMAMTest extends TargetedMSTest
 
         // Ensure that the highlighting is as expected for both crosslinking and modification
         assertTrue(getHtmlSource().contains("(R)<span style=\"font-weight:bold;color:green;text-decoration:underline;\">V</span>SS<span style=\"font-weight:bold;color:green;\">Q</span>(Q)"));
+    }
+
+    @Test
+    public void testCrossLinkedPeptideMapExcelExport() throws IOException
+    {
+        goToProjectHome();
+
+        clickAndWait(Locator.linkContainingText("Panorama Dashboard"));
+        clickAndWait(Locator.linkContainingText(CROSS_LINKED_SKY_FILE));
+        clickAndWait(Locator.linkContainingText("Peptide Map"));
+
+        DataRegionTable table = new DataRegionTable("PeptideIds", getDriver());
+        File export = new DataRegionExportHelper(table).exportExcel(DataRegionExportHelper.ExcelFileType.XLSX);
+        try (Workbook workbook = ExcelHelper.create(export))
+        {
+            Sheet sheet = workbook.getSheetAt(0);
+            List<String> captions = ExcelHelper.getRowData(sheet, 0);
+            int retentionTime = captions.indexOf("Retention Time");
+            int peptideIdentity = captions.indexOf("Peptide Identity");
+            int bondLocation = captions.indexOf("Disulfide Bond Connection");
+            int peptide = captions.indexOf("Peptide");
+
+            // Each of the two three-peptide cross-links spans three sheet rows
+            assertEquals("Sheet rows", 7, sheet.getLastRowNum() + 1);
+            assertEquals("Peptide Identity", List.of("121-124", "342-345", "142-145"), ExcelHelper.getColumnData(sheet, peptideIdentity).subList(1, 4));
+            assertEquals("Peptide", "(R)VSSQ(Q)", ExcelHelper.getCellContentsAt(sheet, peptide, 1));
+            assertEquals("Disulfide Bond Connection", "V121-S345-Q142/\nQ124-S345-Q142", ExcelHelper.getCellContentsAt(sheet, bondLocation, 1));
+
+            List<CellRangeAddress> merged = sheet.getMergedRegions();
+            for (int column : List.of(retentionTime, bondLocation))
+            {
+                assertTrue("Column " + captions.get(column) + " not merged for first cross-link", merged.contains(new CellRangeAddress(1, 3, column, column)));
+                assertTrue("Column " + captions.get(column) + " not merged for second cross-link", merged.contains(new CellRangeAddress(4, 6, column, column)));
+            }
+            for (int column : List.of(peptideIdentity, peptide))
+            {
+                assertTrue("Per-peptide column " + captions.get(column) + " should not be merged", merged.stream().noneMatch(r -> r.getFirstColumn() == column));
+            }
+        }
     }
 }

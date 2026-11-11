@@ -17,9 +17,12 @@ package org.labkey.targetedms.query;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.labkey.api.data.DataRegion;
 import org.labkey.api.data.ExcelWriter;
+import org.labkey.api.data.RenderContext;
 import org.labkey.api.query.QuerySettings;
 import org.labkey.api.query.QueryView;
+import org.labkey.api.view.DataView;
 import org.labkey.targetedms.TargetedMSSchema;
 import org.springframework.validation.BindException;
 
@@ -28,6 +31,8 @@ import java.util.Map;
 
 public class TargetedMSQueryView extends QueryView
 {
+    private boolean _splitCrossLinkedPeptides = false;
+
     public TargetedMSQueryView(TargetedMSSchema schema, @NotNull QuerySettings settings, BindException errors)
     {
         super(schema, settings, errors);
@@ -43,6 +48,23 @@ public class TargetedMSQueryView extends QueryView
         {
             docType = ExcelWriter.ExcelDocumentType.xlsxSharedStrings;
         }
-        return super.getExcelWriter(docType, renameColumnMap);
+        if (!_splitCrossLinkedPeptides)
+        {
+            return super.getExcelWriter(docType, renameColumnMap);
+        }
+
+        DataView view = createDataView();
+        DataRegion rgn = view.getDataRegion();
+        RenderContext rc = configureForExcelExport(docType, view, rgn);
+        ExcelWriter ew = new CrossLinkedPeptideExcelWriter(() -> rgn.getResults(rc), getExportColumns(rgn.getDisplayColumns()), docType, renameColumnMap);
+        ew.setFilenamePrefix(getSettings().getQueryName());
+        ew.setAutoSize(true);
+        return ew;
+    }
+
+    /** Excel export writes each peptide of a cross-linked peptide on its own row */
+    public void setSplitCrossLinkedPeptides(boolean splitCrossLinkedPeptides)
+    {
+        _splitCrossLinkedPeptides = splitCrossLinkedPeptides;
     }
 }
