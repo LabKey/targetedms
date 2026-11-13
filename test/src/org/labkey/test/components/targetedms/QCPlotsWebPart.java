@@ -16,6 +16,9 @@
 package org.labkey.test.components.targetedms;
 
 import org.apache.commons.collections4.SetUtils;
+import org.labkey.remoteapi.CommandException;
+import org.labkey.remoteapi.CommandResponse;
+import org.labkey.remoteapi.SimplePostCommand;
 import org.labkey.test.Locator;
 import org.labkey.test.Locators;
 import org.labkey.test.WebDriverWrapper;
@@ -34,11 +37,13 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -109,7 +114,8 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
         if (getCurrentDateRangeOffset() != dateRangeOffset)
         {
             Runnable selectDateRange = () -> getWrapper()._ext4Helper.selectComboBoxItem(elementCache().dateRangeCombo, dateRangeOffset.toString());
-            if (dateRangeOffset == DateRangeOffset.ALL)
+            // Switching to a custom range redraws the plots with the current date fields
+            if (dateRangeOffset == DateRangeOffset.ALL || dateRangeOffset == DateRangeOffset.CUSTOM)
             {
                 doAndWaitForUpdate(selectDateRange);
             }
@@ -348,13 +354,9 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
 
     public void setShowExcludedPoints(boolean check)
     {
-        if (check)
+        if (isShowExcludedPointsChecked() != check)
         {
-            elementCache().excludedReplicatesShow.check();
-        }
-        else
-        {
-            elementCache().excludedReplicatesHide.check();
+            doAndWaitForUpdate(() -> (check ? elementCache().excludedReplicatesShow : elementCache().excludedReplicatesHide).check());
         }
     }
 
@@ -367,14 +369,7 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     {
         if (isShowReferenceGuideSetChecked() != check)
         {
-            if (check)
-            {
-                elementCache().referenceGuideSetShow.check();
-            }
-            else
-            {
-                elementCache().referenceGuideSetHide.check();
-            }
+            doAndWaitForUpdate(() -> (check ? elementCache().referenceGuideSetShow : elementCache().referenceGuideSetHide).check());
         }
     }
 
@@ -491,15 +486,55 @@ public final class QCPlotsWebPart extends BodyWebPart<QCPlotsWebPart.Elements>
     public void filterQCPlots(@LoggedParam String startDate, @LoggedParam String endDate, boolean waitForPlotsToRefresh)
     {
         setDateRangeOffset(DateRangeOffset.CUSTOM);
-        setStartDate(startDate);
         if (waitForPlotsToRefresh)
         {
-            doAndWaitForUpdate(() -> setEndDate(endDate));
+            if (startDate.compareTo(getCurrentEndDate()) > 0)
+            {
+                // A start date after the current end date is rejected without a redraw
+                setStartDate(startDate);
+            }
+            else
+            {
+                setDateAndWait(this::getCurrentStartDate, this::setStartDate, startDate);
+            }
+            setDateAndWait(this::getCurrentEndDate, this::setEndDate, endDate);
+            // Plots linked from an experiment run don't save their options
+            if (getWrapper().getUrlParam("RunId") == null)
+            {
+                waitForSavedDateRange(startDate, endDate);
+            }
         }
         else
         {
+            setStartDate(startDate);
             setEndDate(endDate);
         }
+    }
+
+    // Each date field redraws the plots when it changes; an unchanged field doesn't redraw
+    private void setDateAndWait(Supplier<String> currentDate, Consumer<String> setDate, String date)
+    {
+        if (!date.equals(currentDate.get()))
+        {
+            doAndWaitForUpdate(() -> setDate.accept(date));
+        }
+    }
+
+    // The plots save their options with an unawaited POST while redrawing, which navigating away can abort
+    private void waitForSavedDateRange(String startDate, String endDate)
+    {
+        WebDriverWrapper.waitForEquals("QC plot date range was not saved", () -> List.of(startDate, endDate), () -> {
+            try
+            {
+                CommandResponse response = new SimplePostCommand("targetedms", "leveyJenningsPlotOptions")
+                        .execute(getWrapper().createDefaultConnection(), getWrapper().getCurrentContainerPath());
+                return Arrays.asList(response.getProperty("properties.startDate"), response.getProperty("properties.endDate"));
+            }
+            catch (IOException | CommandException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }, WAIT_FOR_JAVASCRIPT);
     }
 
     public int getGuideSetTrainingRectCount()
