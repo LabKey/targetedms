@@ -7093,8 +7093,7 @@ public class TargetedMSController extends SpringActionController
 
             // Check panorama server.
             URLHelper requestParamServerUrl = new URLHelper(form.getPanoramaServer());
-            URLHelper requestServerUrl = new URLHelper(getViewContext().getActionURL().getBaseServerURI());
-            if(!URLHelper.queryEqual(requestParamServerUrl, requestServerUrl))
+            if(!getViewContext().getActionURL().isSameOrigin(requestParamServerUrl))
             {
                 response.put("errorMessage", "Incorrect Panorama server: "+form.getPanoramaServer());
                 return response;
