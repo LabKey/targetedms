@@ -65,11 +65,6 @@ public class ChromatogramLibraryUtils
 {
     public static final int NO_LIB_REVISION = -1;
 
-    public static boolean isRevisionCurrent(Container container, User user, String schemaVersion, int revisionNumber)
-    {
-        return Constants.SCHEMA_VERSION.equals(schemaVersion) && getCurrentRevision(container, user) == revisionNumber;
-    }
-
     public static int getCurrentRevision(Container container, User user)
     {
         Map<String, String> propMap = PropertyManager.getProperties(container, MODULE_NAME);
