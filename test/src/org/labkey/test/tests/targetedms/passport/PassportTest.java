@@ -23,7 +23,10 @@ import org.labkey.test.util.APIUserHelper;
 import org.labkey.test.util.LogMethod;
 
 import java.util.List;
+import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -33,6 +36,9 @@ import static org.junit.Assert.assertTrue;
 @Category({})
 public class PassportTest extends PassportTestPart
 {
+    // Before/After ratio of Normalization-standard area for Haptoglobin in data1.sky.zip; TotalArea is float4, so allow its rounding
+    private static final double EXPECTED_NORMALIZATION_RATIO = 1.00232153;
+    private static final double NORMALIZATION_RATIO_TOLERANCE = 1e-6;
 
     @Test
     public void testSteps()
@@ -62,6 +68,7 @@ public class PassportTest extends PassportTestPart
 
         clickAndWait(Locator.xpath("//tr[contains(@class,'labkey-alternate-row')]//a[@class='labkey-text-link'][contains(text(),'PASSPORT VIEW')]"));
         assertTextPresent("Haptoglobin", "data1.sky.zip");
+        verifyNormalizedIntensities();
         assertElementPresent(Locator.xpath("//div[@id='rangesliderdeg']"));
         assertElementPresent(Locator.xpath("//div[@id='rangesliderlength']"));
         assertElementPresent(Locator.xpath("//button[@id='formreset']"));
@@ -102,6 +109,36 @@ public class PassportTest extends PassportTestPart
         waitForElementsAtLeast(Locator.tagWithClass("td", "feature-glycosylationsite"), 3);
         waitForElementsAtLeast(Locator.tagWithClass("td", "feature-helix"), 3);
         waitForElementsAtLeast(Locator.tagWithClass("td", "feature-turn"), 3);
+    }
+
+    // normalizedAfter = after * beforeNormSum / afterNormSum, so every peptide shares one ratio to its raw After area
+    private void verifyNormalizedIntensities()
+    {
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> peptides = (List<Map<String, Object>>) executeScript("return proteinJSON.peptides;");
+        assertEquals("Peptide count", 19, peptides.size());
+        Double firstRatio = null;
+        for (Map<String, Object> peptide : peptides)
+        {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> replicates = (List<Map<String, Object>>) peptide.get("replicateInfo");
+            double rawAfter = replicates.stream()
+                    .filter(r -> "AfterIncubation".equals(r.get("replicate")))
+                    .reduce((_, b) -> b) // the page keeps the last precursor's area
+                    .map(r -> ((Number) r.get("intensity")).doubleValue())
+                    .orElseThrow();
+            Number normalizedAfter = (Number) peptide.get("normalizedafterintensity");
+            if (rawAfter == 0)
+            {
+                assertNull("Normalized intensity for unmeasured " + peptide.get("sequence"), normalizedAfter);
+                continue;
+            }
+            double ratio = normalizedAfter.doubleValue() / rawAfter;
+            assertEquals("Normalization ratio for " + peptide.get("sequence"), EXPECTED_NORMALIZATION_RATIO, ratio, NORMALIZATION_RATIO_TOLERANCE);
+            if (firstRatio == null)
+                firstRatio = ratio;
+            assertEquals("Normalization ratio differs between peptides for " + peptide.get("sequence"), firstRatio, ratio, 1e-12);
+        }
     }
 
     public void waitForElementsAtLeast(final Locator loc, final int count)
