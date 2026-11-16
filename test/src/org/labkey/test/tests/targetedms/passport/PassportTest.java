@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -122,15 +123,18 @@ public class PassportTest extends PassportTestPart
         {
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> replicates = (List<Map<String, Object>>) peptide.get("replicateInfo");
-            double rawAfter = replicates.stream()
-                    .filter(r -> "AfterIncubation".equals(r.get("replicate")))
-                    .reduce((_, b) -> b) // the page keeps the last precursor's area
-                    .map(r -> ((Number) r.get("intensity")).doubleValue())
-                    .orElseThrow();
+            Double rawBefore = lastArea(replicates, "BeforeIncubation");
+            Double rawAfter = lastArea(replicates, "AfterIncubation");
             Number normalizedAfter = (Number) peptide.get("normalizedafterintensity");
+            if (rawBefore == null || rawAfter == null || rawBefore == 0)
+            {
+                assertNull("Normalized intensity without a measured Before area for " + peptide.get("sequence"), normalizedAfter);
+                continue;
+            }
+            assertNotNull("Normalized intensity for " + peptide.get("sequence"), normalizedAfter);
             if (rawAfter == 0)
             {
-                assertNull("Normalized intensity for unmeasured " + peptide.get("sequence"), normalizedAfter);
+                assertEquals("Normalized intensity for unmeasured After area of " + peptide.get("sequence"), 0, normalizedAfter.doubleValue(), 0);
                 continue;
             }
             double ratio = normalizedAfter.doubleValue() / rawAfter;
@@ -139,6 +143,15 @@ public class PassportTest extends PassportTestPart
                 firstRatio = ratio;
             assertEquals("Normalization ratio differs between peptides for " + peptide.get("sequence"), firstRatio, ratio, 1e-12);
         }
+    }
+
+    private static Double lastArea(List<Map<String, Object>> replicates, String replicate)
+    {
+        return replicates.stream()
+                .filter(r -> replicate.equals(r.get("replicate")))
+                .reduce((_, b) -> b) // the page keeps the last precursor's area
+                .map(r -> ((Number) r.get("intensity")).doubleValue())
+                .orElse(null);
     }
 
     public void waitForElementsAtLeast(final Locator loc, final int count)

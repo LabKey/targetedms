@@ -346,7 +346,8 @@ public class PassportController extends SpringActionController
         List<IPeptide> peptides = new ArrayList<>();
         for (IPeptide peptide : peptideMap.values())
         {
-            // Normalize AfterIncubation TotalArea to global standards from Panorama, or use raw areas if the document has none
+            // Normalize AfterIncubation TotalArea to global standards from Panorama, or use raw areas if the document has none.
+            // NaN (serialized as null) hides a peptide that lacks a replicate or a standard sum when the document has standards.
             double normalizedAfterTotalArea = peptide.getAfterTotalArea();
             if (peptide.getBeforeSumArea() > 0 && peptide.getAfterSumArea() > 0)
             {
@@ -354,6 +355,10 @@ public class PassportController extends SpringActionController
                 double beforeRatioToGlobalStandards = peptide.getBeforeTotalArea() / peptide.getBeforeSumArea();
                 double afterToBeforeRatio = afterRatioToGlobalStandards / beforeRatioToGlobalStandards;
                 normalizedAfterTotalArea = peptide.getBeforeTotalArea() * afterToBeforeRatio;
+            }
+            else if (!normalizationSums.isEmpty())
+            {
+                normalizedAfterTotalArea = Double.NaN;
             }
             peptide.setBeforeIntensity(peptide.getBeforeTotalArea());
             peptide.setAfterIntensity(normalizedAfterTotalArea);
