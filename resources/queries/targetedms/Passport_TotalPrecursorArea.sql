@@ -21,9 +21,5 @@ SELECT PrecursorId.Id,
   PrecursorId.PeptideId.EndIndex,
   TotalArea,
   SampleFileId,
-  PrecursorId.PeptideId.PeptideGroupId.id as PepGroupId,
-  (SELECT SUM(pci.TotalArea) AS SumArea
-   FROM precursorchrominfo AS pci
-   WHERE pci.PrecursorId.PeptideId.StandardType='Normalization'
-         AND pci.SampleFileId = precursorchrominfo.SampleFileId) AS SumArea
+  PrecursorId.PeptideId.PeptideGroupId.id as PepGroupId
 FROM precursorchrominfo
