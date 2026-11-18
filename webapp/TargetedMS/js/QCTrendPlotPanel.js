@@ -823,6 +823,8 @@ Ext4.define('LABKEY.targetedms.QCTrendPlotPanel', {
             width: '45%',
             allowBlank: false,
             format: 'Y-m-d',
+            // Every partial date that parses fires a change and redraws the plots, so wait for typing to pause
+            checkChangeBuffer: 500,
             listeners: {
                 scope: this,
                 change: this.applyCustomDateRange

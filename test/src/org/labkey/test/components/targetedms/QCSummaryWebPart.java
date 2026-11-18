@@ -54,6 +54,8 @@ public final class QCSummaryWebPart extends BodyWebPart<QCSummaryWebPart.Element
 
     public void waitForLoad()
     {
+        // Tiles, and their per-tile loading placeholders, only render after the initial summary request returns
+        WebDriverWrapper.waitFor(() -> Locators.summaryTile.findElementOrNull(this), "QC summary tiles did not render", 30000);
         Locators.recentSampleFilesLoading.waitForElementToDisappear(this, 30000);
     }
 

@@ -21,6 +21,7 @@ import org.labkey.test.Locator;
 import org.labkey.test.WebDriverWrapper;
 import org.labkey.test.components.BodyWebPart;
 import org.labkey.test.components.bootstrap.ModalDialog;
+import org.labkey.test.util.LabKeyExpectedConditions;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -112,7 +113,9 @@ public class UtilizationCalendarWebPart extends BodyWebPart<UtilizationCalendarW
         String clickDate = extractDay(date);
         getWrapper().log("Clicking " + clickDate + " to update the status");
         elementCache().dayLoc.withText(clickDate).findElement(elementCache().calendar.findWhenNeeded(this)).click();
-        return new ModalDialog.ModalDialogFinder(getDriver()).withTitle("Instrument Offline Annotation").waitFor();
+        ModalDialog dialog = new ModalDialog.ModalDialogFinder(getDriver()).withTitle("Instrument Offline Annotation").waitFor();
+        getWrapper().shortWait().until(LabKeyExpectedConditions.animationIsDone(dialog.getComponentElement()));
+        return dialog;
     }
 
     private String extractDay(String date)

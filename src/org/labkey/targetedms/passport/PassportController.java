@@ -60,10 +60,13 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import static org.labkey.targetedms.TargetedMSController.getShowListURL;
 import static org.labkey.targetedms.TargetedMSController.getShowRunURL;
@@ -281,6 +284,8 @@ public class PassportController extends SpringActionController
             return;
 
         Map<Long, IPeptide> peptideMap = new LongHashMap<>();
+        Map<Long, Long> beforeSampleFiles = new LongHashMap<>();
+        Map<Long, Long> afterSampleFiles = new LongHashMap<>();
 
         UserSchema schema = QueryService.get().getUserSchema(getUser(), getContainer(), "targetedms");
         TableInfo tinfo = schema.getTable("Passport_TotalPrecursorArea");
@@ -306,13 +311,13 @@ public class PassportController extends SpringActionController
             {
                 peptide.setBeforeTotalArea(totalArea);
                 peptide.setPrecursorbeforeid(pep.getLong("panoramaprecursorid"));
-                peptide.setBeforeSumArea(pep.getInt("sumarea"));
+                beforeSampleFiles.put(peptideId, pep.getLong("samplefileid"));
             }
             else if ("AfterIncubation".equals(replicateName))
             {
                 peptide.setAfterTotalArea(totalArea);
                 peptide.setPrecursorafterid(pep.getLong("panoramaprecursorid"));
-                peptide.setAfterSumArea(pep.getInt("sumarea"));
+                afterSampleFiles.put(peptideId, pep.getLong("samplefileid"));
             }
 
             String grouping = pep.getString("grouping");
@@ -332,18 +337,52 @@ public class PassportController extends SpringActionController
             peptide.addReplicateInfo(replicateName, timepoint, grouping, totalArea, pep.getLong("panoramaprecursorid"), pep.getDate("acquiredTime"));
         });
 
+        Set<Long> sampleFileIds = new HashSet<>(beforeSampleFiles.values());
+        sampleFileIds.addAll(afterSampleFiles.values());
+        Map<Long, Double> normalizationSums = getNormalizationSums(sampleFileIds);
+        beforeSampleFiles.forEach((peptideId, sampleFileId) -> peptideMap.get(peptideId).setBeforeSumArea(normalizationSums.getOrDefault(sampleFileId, 0.0)));
+        afterSampleFiles.forEach((peptideId, sampleFileId) -> peptideMap.get(peptideId).setAfterSumArea(normalizationSums.getOrDefault(sampleFileId, 0.0)));
+
         List<IPeptide> peptides = new ArrayList<>();
         for (IPeptide peptide : peptideMap.values())
         {
-            // Normalize AfterIncubation TotalArea to global standards from Panorama
-            double afterRatioToGlobalStandards = peptide.getAfterTotalArea() / peptide.getAfterSumArea();
-            double beforeRatioToGlobalStandards = peptide.getBeforeTotalArea() / peptide.getBeforeSumArea();
-            double afterToBeforeRatio = afterRatioToGlobalStandards / beforeRatioToGlobalStandards;
-            double normalizedAfterTotalArea = peptide.getBeforeTotalArea() * afterToBeforeRatio;
+            // Normalize AfterIncubation TotalArea to global standards from Panorama, or use raw areas if the document has none.
+            // NaN (serialized as null) hides a peptide that lacks a replicate or a standard sum when the document has standards.
+            double normalizedAfterTotalArea = peptide.getAfterTotalArea();
+            if (peptide.getBeforeSumArea() > 0 && peptide.getAfterSumArea() > 0)
+            {
+                double afterRatioToGlobalStandards = peptide.getAfterTotalArea() / peptide.getAfterSumArea();
+                double beforeRatioToGlobalStandards = peptide.getBeforeTotalArea() / peptide.getBeforeSumArea();
+                double afterToBeforeRatio = afterRatioToGlobalStandards / beforeRatioToGlobalStandards;
+                normalizedAfterTotalArea = peptide.getBeforeTotalArea() * afterToBeforeRatio;
+            }
+            else if (!normalizationSums.isEmpty())
+            {
+                normalizedAfterTotalArea = Double.NaN;
+            }
             peptide.setBeforeIntensity(peptide.getBeforeTotalArea());
             peptide.setAfterIntensity(normalizedAfterTotalArea);
             peptides.add(peptide);
         }
         p.setPep(peptides);
+    }
+
+    /** Total area of Normalization-standard peptides, keyed by sample file */
+    private Map<Long, Double> getNormalizationSums(Collection<Long> sampleFileIds)
+    {
+        Map<Long, Double> result = new LongHashMap<>();
+        if (sampleFileIds.isEmpty())
+            return result;
+
+        SQLFragment sql = SQLFragment.unsafe("SELECT pci.SampleFileId, SUM(CAST(pci.TotalArea AS DOUBLE PRECISION)) AS SumArea FROM ")
+                .append(TargetedMSManager.getTableInfoPrecursorChromInfo(), "pci")
+                .unsafeAppend(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralPrecursor(), "gp").unsafeAppend(" ON gp.Id = pci.PrecursorId")
+                .unsafeAppend(" INNER JOIN ").append(TargetedMSManager.getTableInfoGeneralMolecule(), "gm").unsafeAppend(" ON gm.Id = gp.GeneralMoleculeId")
+                .unsafeAppend(" INNER JOIN ").append(TargetedMSManager.getTableInfoPeptide(), "pep").unsafeAppend(" ON pep.Id = gm.Id")
+                .unsafeAppend(" WHERE gm.StandardType = 'Normalization' AND pci.Container = ").appendValue(getContainer())
+                .unsafeAppend(" AND ").appendInClause("pci.SampleFileId", sampleFileIds, getSqlDialect())
+                .unsafeAppend(" GROUP BY pci.SampleFileId");
+        new SqlSelector(TargetedMSManager.getSchema(), sql).forEach(rs -> result.put(rs.getLong("SampleFileId"), rs.getDouble("SumArea")));
+        return result;
     }
 }
