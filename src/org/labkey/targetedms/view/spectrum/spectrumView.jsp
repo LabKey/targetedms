@@ -55,7 +55,7 @@
 Ext4.onReady(function () {
 
     /* render the spectrum with the given options */
-    $("#<%=unsafe(bean.getLorikeetId())%>").specview({sequence: <%= q(bean.getPeptide()) %>,
+    $(<%=q("#" + bean.getLorikeetId())%>).specview({sequence: <%= q(bean.getPeptide()) %>,
         staticMods: <%=JavaScriptFragment.unsafe(bean.getStructuralModifications())%>,
         variableMods: <%=JavaScriptFragment.unsafe(bean.getVariableModifications())%>,
         ntermMod: <%=JavaScriptFragment.unsafe(bean.getNtermModMass())%>,

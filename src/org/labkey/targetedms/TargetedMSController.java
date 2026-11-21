@@ -6852,7 +6852,7 @@ public class TargetedMSController extends SpringActionController
     public static PopupMenu createDownloadMenu(@NotNull TargetedMSRun run)
     {
         String onClickScript = null;
-        if (!StringUtils.isBlank(AnalyticsService.getTrackingScript()))
+        if (!HtmlString.isBlank(AnalyticsService.getTrackingScript()))
         {
             // http://www.blastam.com/blog/how-to-track-downloads-in-google-analytics
             // Tell the browser to wait 400ms before going to the download.  This is to ensure
